@@ -1,0 +1,61 @@
+{
+ "recovered_at": "2026-10-06T18:35:00+05:30",
+ "recovered_by": "Claude session (second post-crash recovery), working tree C:/Users/cheta/.codex/worktrees/uri-phase1-integration/uri-agent",
+ "relation_to_first_record": "crash_recovery_20261006.json (first crash, 12:06-13:30) stays valid; this file records the second crash of the same day",
+ "crash": {
+  "classification": "CAUSE UNKNOWN",
+  "windows_evidence": {
+   "kernel_power_41": {"time": "2026-10-06T18:18:16+05:30", "BugcheckCode": 0, "PowerButtonTimestamp": 0, "LongPowerButtonPressDetected": false, "WHEABootErrorCount": 0,
+                       "meaning": "unclean restart with no recorded bugcheck: a hard hang or power loss, not a blue screen (same signature as the 13:30 event)"},
+   "kernel_boot_20": "The last shutdown's success status was false (18:18:12)",
+   "eventlog_6008": "previous shutdown reported as unexpected; its timestamp field again shows the last clean record (13:30:35), not the freeze time",
+   "system_events_between_14:00_and_18:18": 0,
+   "application_errors_between_14:00_and_18:18": 0,
+   "whea_events": 0, "bugcheck_1001_events": 0, "display_driver_tdr_4101_events": 0,
+   "minidump": "none (C:/Windows/Minidump, MEMORY.DMP, LiveKernelReports empty)",
+   "reliability_records_after_14:00": "only the 6008 entry and a post-boot MSI reconfigure (Microsoft GameInput)",
+   "overclock_tools": "MSI Afterburner installed, startup profile for VEN_1002&DEV_744C has every field empty (no clock/voltage/power offset); AMD driver PP_AutoODActive=0, PP_AutoOCEngineClock=0 (no auto overclock); HWiNFO64 installed in sensors-only mode, no log file configured, not running",
+   "temperature_telemetry": "none available (no ACPI thermal zones exposed, HWiNFO logging off, pyadl Overdrive5 temperature call fails on RDNA3)"
+  },
+  "last_writes_before_freeze": {
+   "evidence/uri_engine/queue_runner.lock": "2026-10-06T14:25:08 - 4 bytes allocated, content is four NUL bytes: the runner's pid write never reached the disk (NTFS allocated the cluster, data lost in the freeze)",
+   "evidence/uri_engine/queue_manifest.json": "2026-10-06T14:25:10 - intact (ctx_prod_split marked running, start 14:25:08)",
+   "evidence/uri_engine/context_reuse/logs/server_ctx_prod_split.log": "2026-10-06T14:25:12.9 - 481 bytes, ends mid-line at server uptime 0.512 s ('0.00.512.484 I ') i.e. before the 'loading model' line"
+  },
+  "freeze_window_estimate": "between 14:25:13 and 18:18:12 (no file under C:/Users/cheta or D: carries an mtime inside that window; boot at 18:18:12)",
+  "experiment_in_progress": {
+   "id": "ctx_prod_split", "script": "model_lab/uri_engine/bench_context_reuse.py --layout split",
+   "config": "release b11425 Vulkan llama-server, -b 2048 -ub 1024 --cache-ram 1024, 32k ctx, vision projector loaded, no speculative decoding (the production configuration)",
+   "progress": "server process was ~0.5 s old; the model load (13.7 GB GGUF from D: into VRAM) had not yet been logged. The run before it (ctx_prod, identical flags, layout single) completed normally at 14:24:44, 24 s earlier",
+   "telemetry": "host_before: free RAM 16,256 MiB, VRAM 458 MiB (idle); no sample inside the run (the sampler had not started)"
+  },
+  "correlation_note": "Two hard freezes in one day, both while llama-server.exe (Vulkan, RX 7900 GRE) was the only GPU workload: the first ~55 s into a stock ngram-mod speculative run (mid-generation, ~15.6 GB VRAM), the second ~0.5 s into a plain production-flag server start (model upload phase or earlier). The second freeze removes 'ngram-mod speculation' as a sufficient explanation; the common factor is a llama-server/Vulkan session on this GPU, which also ran ~35 times today without incident. No driver, WHEA, thermal or bugcheck evidence exists. This is a correlation, not a cause.",
+  "risk_handling": "Identical ngram-mod settings stay blocked. Production-flag runs resume (the same flags completed ctx_control, ctx_prod and 13 bench_uri runs today) with per-run host telemetry flushed to disk every few seconds so a third freeze leaves a VRAM/RAM trace; the queue runner marks the running entry 'interrupted' with the last telemetry sample on restart."
+ },
+ "safety_baseline_after_recovery": {
+  "git_status_vs_end_of_previous_session": "identical (end_git_status.txt sorted == live git status --porcelain sorted)",
+  "git_diff_vs_baseline_git_diff.patch": "byte-identical after stripping the PowerShell BOM/CRLF from the stored copy",
+  "frozen_phase1_inventory": "freeze_check_recovery_start.json (14:07): checked 121, unexpected_differences 0, archive sha256 31a34dcb... matches; re-run as freeze_recheck2 before resuming",
+  "core_untouched": "the 21 uri_core/ entries in git status are the same 21 entries recorded in baseline_git_status.txt before the research started (Batch ARN.1 work in progress on this worktree); no uri_core file changed during the research",
+  "processes": "no llama-server.exe, no lab python, no watchdog after reboot; GPU dedicated memory 457 MiB (desktop idle); one unrelated system python (Python313, started at boot)",
+  "disk": {"C_free_gb": 147.8, "D_free_gb": 492.6},
+  "ram": {"total_mb": 24501, "free_mb": 18348},
+  "gpu": {"name": "AMD Radeon RX 7900 GRE", "driver": "32.0.31041.1004", "status": "OK"}
+ },
+ "experiment_state_delta_since_first_recovery": {
+  "complete_valid_new": [
+   "determinism_probe.json (3 configs x 5 decision_contract calls; prod/nocache 5/5 = 24d00b2474 188 tokens, nockpt 5/5 = 6e3b63a840 198 tokens)",
+   "context_reuse/ctx_control (48 calls, 0 errors), context_reuse/ctx_prod (48 calls, 0 errors), compare_20261006-142509.json",
+   "context_reuse/prompts_single.json (byte-identical prompts for every single-layout config)"
+  ],
+  "invalid_crash_or_hang": ["ctx_prod_split: INTERRUPTED by the second freeze at server start; no result file; retry"],
+  "not_started": ["ctx_ckpt1024, ctx_sb_prod, ctx_ux_fine1024, ctx_ux_fine512, uri_base_16k, uri_mtp3_16k, ue_base16k, ue_mtp3_16k, ue_base16k_rep, mtp2_32k_vision, mtp3_24k_vision, mtp2_16k_vision, mtp4_16k_vision, stream_overhead, sb_prod_canon, ux_prod_canon, uri_ngram_simple, freeze_end"],
+  "blocked": ["uri_ngram_mod16, ux_ngram_mod8 (crash-adjacent ngram-mod class; user decision)"]
+ },
+ "determinism_anomaly_status": {
+  "probe_result": "the probe did not reproduce the 192-token rep1 text: with the production flags all five decision_contract occurrences (stream, non-stream, after 4 filler tasks) gave the 188-token rep0 text. With --ctx-checkpoints 0 all five gave a third text (198 tokens, differs in the goal and reason strings). So the output depends on the server's prompt-processing layout: with checkpoints enabled the prompt is split into ubatches at the message boundaries where checkpoints are created (19 / 231 tokens in the trace), without checkpoints it is processed in plain 1024-token ubatches, and the two layouts give slightly different logits that flip near-tie tokens.",
+  "why_rep1_was_not_reproduced": "bench_spec runs 8 tasks per rep; the probe ran only 4 fillers, so the slot/checkpoint state before the second occurrence differed (the stored trace of spec_off shows rep1 resuming from a restored checkpoint at n_past = 54, i.e. yet another layout).",
+  "ctx_control_observation": "with --cache-ram 0 --ctx-checkpoints 0 (full recompute every call) the same A prompt gave a different 48-token output in 6 of 30 occurrences across the 2x3 (rep,size) sequences (e.g. 30k rep1 B_repeat differs from A_fresh immediately before it). That is run-to-run, same-layout variation and is not explained by layout alone.",
+  "next": "determinism_probe2: (1) same prompt, no cache/checkpoints, -ub 1024/512/256, 3 calls each with top-3 logprobs -> does the output follow the ubatch layout and is it stable within a layout; (2) exact bench_spec order replay under production flags with the server trace -> reproduce 192 and read the first divergent token margin."
+ }
+}

@@ -930,10 +930,23 @@ async def _lifespan(_app: FastAPI):
         _UserScopedStoreInitializer(),
         _GraphifyIndexLoader(),
     ])
+    # C1 opt-in only. Ordinary accepted startup and all authority gates retain
+    # their behavior. Readiness observes real lifespan results, not model probes.
+    runtime = getattr(_app.state, "runtime_identity", None)
+    if runtime is not None:
+        runtime.catalogue_ready = bool(_graphify_index.records)
+        runtime.legacy_state_ready = os.path.isfile(_user_identity_store.storage_path)
+        runtime.started = True
+        runtime.guard.starting = False
     yield
 
 
 app = FastAPI(title="URI API", lifespan=_lifespan)
+
+from uri_core.app.runtime_routes import register_runtime_routes
+from uri_core.app.client_routes import register_client_routes
+register_runtime_routes(app, _resolve_authenticated_principal)
+register_client_routes(app)
 
 # M22.3 (Decision 7, docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md
 # section 6.6): CORS is never left at allow_origins=["*"]. Production
@@ -4033,4 +4046,3 @@ def update_provider_config(
     config_store.set_provider_config(payload.provider_id, updates)
 
     return {"provider_id": payload.provider_id, "status": "updated", **updates}
-

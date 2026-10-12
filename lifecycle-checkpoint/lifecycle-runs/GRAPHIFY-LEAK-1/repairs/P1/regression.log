@@ -1,0 +1,145 @@
+=== tests/graphify/test_graphify_leak_1.py BEFORE (9ae7c60cd02b3a7be87a465db4170705d28f9d72) DONE
+e 'graphify_server' not found
+>       available fixtures: _server, anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, env, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py:18
+_ ERROR at setup of test_the_no_login_view_shows_its_own_store_and_stays_current _
+file /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py, line 111
+  def test_the_no_login_view_shows_its_own_store_and_stays_current(env):
+file /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py, line 18
+  @pytest.fixture(scope="module", autouse=True)
+  def _server(graphify_server):
+E       fixture 'graphify_server' not found
+>       available fixtures: _server, anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, env, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py:18
+______ ERROR at setup of test_the_no_login_view_follows_a_replaced_store _______
+file /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py, line 118
+  def test_the_no_login_view_follows_a_replaced_store(env, tmp_path, monkeypatch):
+file /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py, line 18
+  @pytest.fixture(scope="module", autouse=True)
+  def _server(graphify_server):
+E       fixture 'graphify_server' not found
+>       available fixtures: _server, anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, env, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py:18
+_ ERROR at setup of test_a_broken_memory_store_gives_no_pointers_and_no_error __
+file /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py, line 125
+  def test_a_broken_memory_store_gives_no_pointers_and_no_error(env):
+file /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py, line 18
+  @pytest.fixture(scope="module", autouse=True)
+  def _server(graphify_server):
+E       fixture 'graphify_server' not found
+>       available fixtures: _server, anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, env, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py:18
+_ ERROR at setup of test_the_brain_hint_for_another_user_has_no_primary_pointer _
+file /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py, line 136
+  def test_the_brain_hint_for_another_user_has_no_primary_pointer(env):
+file /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py, line 18
+  @pytest.fixture(scope="module", autouse=True)
+  def _server(graphify_server):
+E       fixture 'graphify_server' not found
+>       available fixtures: _server, anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, env, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py:18
+=========================== short test summary info ============================
+ERROR tests/graphify/test_graphify_leak_1.py::test_the_shared_index_holds_the_primary_pointer
+ERROR tests/graphify/test_graphify_leak_1.py::test_another_users_view_has_no_primary_pointer
+ERROR tests/graphify/test_graphify_leak_1.py::test_a_users_own_memory_appears_even_when_added_after_the_view_was_built
+ERROR tests/graphify/test_graphify_leak_1.py::test_a_deleted_memory_leaves_the_view
+ERROR tests/graphify/test_graphify_leak_1.py::test_two_users_never_see_each_others_pointers
+ERROR tests/graphify/test_graphify_leak_1.py::test_a_users_view_never_changes_the_shared_index
+ERROR tests/graphify/test_graphify_leak_1.py::test_other_scopes_are_still_shared
+ERROR tests/graphify/test_graphify_leak_1.py::test_the_no_login_view_shows_its_own_store_and_stays_current
+ERROR tests/graphify/test_graphify_leak_1.py::test_the_no_login_view_follows_a_replaced_store
+ERROR tests/graphify/test_graphify_leak_1.py::test_a_broken_memory_store_gives_no_pointers_and_no_error
+ERROR tests/graphify/test_graphify_leak_1.py::test_the_brain_hint_for_another_user_has_no_primary_pointer
+11 errors in 0.07s
+
+=== tests/graphify/test_graphify_leak_1.py AFTER (6c62281fb6b37acfc486fa29468e66824912e151) DONE
+...........                                                              [100%]
+11 passed in 1.45s
+
+=== tests/graphify/test_graphify_leak_1_repair.py BEFORE (9ae7c60cd02b3a7be87a465db4170705d28f9d72) DONE
+_tests(tmp_path):
+        probe = tmp_path / "test_zz_probe.py"
+        probe.write_text(textwrap.dedent(_PROBE))
+        env = {k: v for k, v in os.environ.items() if k != "URI_EXTERNAL_CREDENTIAL_SECRET"}
+        run = subprocess.run(
+            [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "--rootdir", str(REPO),
+             "tests/graphify/test_graphify_leak_1.py", str(probe)],
+            cwd=REPO, env=env, capture_output=True, text=True, timeout=600,
+        )
+>       assert run.returncode == 0, run.stdout[-4000:] + run.stderr[-2000:]
+E       AssertionError:        use 'pytest --fixtures [testpath]' for help on them.
+E         
+E         /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py:18
+E         _ ERROR at setup of test_the_brain_hint_for_another_user_has_no_primary_pointer _
+E         file /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py, line 136
+E           def test_the_brain_hint_for_another_user_has_no_primary_pointer(env):
+E         file /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py, line 18
+E           @pytest.fixture(scope="module", autouse=True)
+E           def _server(graphify_server):
+E         E       fixture 'graphify_server' not found
+E         >       available fixtures: _server, anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, env, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+E         >       use 'pytest --fixtures [testpath]' for help on them.
+E         
+E         /tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/pre_repair/tests/graphify/test_graphify_leak_1.py:18
+E         =================================== FAILURES ===================================
+E         _____________ test_nothing_from_the_graphify_placeholders_survives _____________
+E         
+E             def test_nothing_from_the_graphify_placeholders_survives():
+E                 bad = []
+E                 for name, module in list(sys.modules.items()):
+E                     if isinstance(module, mock.MagicMock):
+E                         bad.append(name)
+E                         continue
+E                     if not name.startswith("uri_core"):
+E                         continue
+E                     for attr, value in list(vars(module).items()):
+E                         if isinstance(value, mock.MagicMock):
+E                             bad.append(f"{name}.{attr}")
+E                         elif (isinstance(value, types.ModuleType) and value.__name__.startswith("uri_core")
+E                               and sys.modules.get(value.__name__) is not value):
+E                             bad.append(f"{name}.{attr} (stale module)")
+E         >       assert not bad, bad
+E         E       AssertionError: ['uri_core.core.google_auth_common.Request', 'uri_core.core.google_auth_common.Credentials', 'uri_core.services.gmail_...mail_service.Credentials', 'uri_core.services.gmail_service.InstalledAppFlow', 'uri_core.services.gmail_service.build']
+E         E       assert not ['uri_core.core.google_auth_common.Request', 'uri_core.core.google_auth_common.Credentials', 'uri_core.services.gmail_...mail_service.Credentials', 'uri_core.services.gmail_service.InstalledAppFlow', 'uri_core.services.gmail_service.build']
+E         
+E         /tmp/pytest-of-root/pytest-991/test_graphify_placeholders_do_0/test_zz_probe.py:22: AssertionError
+E         =========================== short test summary info ============================
+E         FAILED ::test_nothing_from_the_graphify_placeholders_survives - AssertionErro...
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_the_shared_index_holds_the_primary_pointer
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_another_users_view_has_no_primary_pointer
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_a_users_own_memory_appears_even_when_added_after_the_view_was_built
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_a_deleted_memory_leaves_the_view
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_two_users_never_see_each_others_pointers
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_a_users_view_never_changes_the_shared_index
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_other_scopes_are_still_shared
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_the_no_login_view_shows_its_own_store_and_stays_current
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_the_no_login_view_follows_a_replaced_store
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_a_broken_memory_store_gives_no_pointers_and_no_error
+E         ERROR tests/graphify/test_graphify_leak_1.py::test_the_brain_hint_for_another_user_has_no_primary_pointer
+E         1 failed, 11 errors in 0.10s
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/tmp/claude-0/venv/bin/python', '-m', 'pytest', '-q', '-p', 'no:cacheprovider', '--rootdir', '...ify_leak_1.py::test_the_brain_hint_for_another_user_has_no_primary_pointer\n1 failed, 11 errors in 0.10s\n', stderr='').returncode
+
+tests/graphify/test_graphify_leak_1_repair.py:201: AssertionError
+=========================== short test summary info ============================
+FAILED tests/graphify/test_graphify_leak_1_repair.py::test_a_concurrent_lookup_does_not_break_a_running_lookup
+FAILED tests/graphify/test_graphify_leak_1_repair.py::test_the_capability_refresh_does_not_break_a_running_lookup
+FAILED tests/graphify/test_graphify_leak_1_repair.py::test_a_lookup_never_raises_when_the_memory_store_misbehaves
+FAILED tests/graphify/test_graphify_leak_1_repair.py::test_graphify_placeholders_do_not_reach_later_tests
+4 failed in 1.80s
+
+=== tests/graphify/test_graphify_leak_1_repair.py AFTER (6c62281fb6b37acfc486fa29468e66824912e151) DONE
+....                                                                     [100%]
+4 passed in 3.02s
+

@@ -1,0 +1,21 @@
+I fixed R10-01: the selection now skips hidden text and script/style source, just as the page text already did. The new regression tests fail on 20a646f and pass with the fix.
+
+**The fix** (`uri_assist/browser_extension/snapshot.js`, 10 lines added): before a text node's slice goes into the selection, `selectionOf()` now checks its parent element with the same `visible()` rule and cache the page-text walker uses. That rule rejects text that is `[hidden]`, `aria-hidden`, inside `template`, `script`, `style` or `noscript`, invisible to `checkVisibility` (including `display:none` and `opacity:0`), zero-size, under 2px font, clipped, or off-screen. Skipped text adds to the `hidden_text` count, as it does for page text. A selection made entirely inside hidden content comes back empty. Field withholding from R9-01 is unchanged.
+
+**Regression test** (`tests/assist/test_a0_r10_review_regressions.py`, 6 tests): it drives real Chromium with a new page fixture (`hidden_selection_page.html`) and runner script (`run_hidden_selection.cjs`). Between a visible heading and paragraph the page holds the reviewer's injected `SYSTEM:` instruction, a `<script>` with the e-mail address and CSRF token, and aria-hidden, 1px-font, transparent, off-screen, `<template>`, `<noscript>` and `<style>` content.
+- **Selecting across it** with a real Ctrl+A, a real mouse drag and a script-built range must give exactly `Welcome back You have 3 new messages.`, with no hidden payload and a `hidden_text` count of at least 1.
+- **A range entirely inside the hidden div** must give an empty selection.
+- **The Brain request**, built from the real Ctrl+A and drag snapshots through `AssistCommands` (FakeClient, OBSERVE grant, `assist_ask`), still carries `Selected text` with the visible text and none of the payloads.
+
+**Test results:**
+- On 20a646f's `snapshot.js`: 6 failed.
+- With the fix: 6 passed. None were skipped, so Chromium really ran.
+- Full `tests/assist` and `tests/web`: 2633 passed.
+
+**Not verified:** Flutter tests weren't run, since nothing under `uri_ui/` changed. `graphify update .` could not run because graphify isn't installed here and there is no `graphify-out/`. Neither affects the result. Nothing is committed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R10-01"], "not_repaired": [],
+ "regression_tests": ["tests/assist/test_a0_r10_review_regressions.py"],
+ "notes": "selectionOf() in uri_assist/browser_extension/snapshot.js now filters each selected text node by its parent element using the page walker's visible() rule and cache (rejects hidden, aria-hidden, template/script/style/noscript, checkVisibility failures including display:none and opacity:0, zero-size, font<2px, clip-path, off-screen) and adds to hidden_text. New fixtures: tests/assist/fixtures/hidden_selection_page.html and run_hidden_selection.cjs (real Chromium: Ctrl+A, mouse drag, script-built range, range inside hidden content). Brain-body tests go through AssistCommands with FakeClient. Regression tests: 6 failed on 20a646f snapshot.js, 6 passed with the fix, none skipped; tests/assist + tests/web: 2633 passed. Flutter not run (no uri_ui change). graphify update not run: graphify is not installed and graphify-out/ is absent. Nothing committed."}
+REPAIR_RESULT_END

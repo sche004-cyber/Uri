@@ -1,0 +1,20 @@
+That background notice was my own watcher finishing; I had already used its results, so the verdict stays ACCEPT WITH FINDINGS. It is repeated below so that this message ends with the audit block.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "6c62281fb6b37acfc486fa29468e66824912e151", "baseline": "e07b71c68ea44096020ca8865ae228b550b48e16", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [{"id": "R2-01", "severity": "LOW", "blocking": false, "category": "security", "owner_decision": true,
+   "title": "Non-memory skill: records in every user's view still come from the install-wide legacy SkillMemory, not the user's own per-user SkillMemory",
+   "files": ["uri_core/app/server.py:615", "uri_core/app/server.py:969", "uri_core/app/server.py:251"],
+   "evidence": "_GraphifyIndexLoader builds the shared index with skill_memory=_orchestrator.skill_memory (legacy, install-wide). _build_user_context creates a per-user SkillMemory (server.py ~line 469) but _MemoryScopedGraphifyView copies every non-memory record of the shared index unchanged, so 'skill:<tool>:<task_type>:<domain>' records learned by the legacy/primary user reach every signed-in user's relevant_subset hint, and a user's own learned skills never appear. AC5 keeps this on purpose; it already existed and is outside the memory-pointer scope of this milestone.",
+   "suggested_fix": "Owner decides whether skill: records should be per-user; if so, rebuild the skill scope from the context's own SkillMemory, the same way the memory scope is rebuilt."}],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "python -m pytest -q tests/graphify", "result": "15 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -m pytest -q --rootdir=. tests/graphify /tmp/uri_review_R2/test_zz_after.py (leak probe: no MagicMock modules or bindings, no finder, secret unset, server import fails on missing google)", "result": "16 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -m pytest -q test_graphify_index.py test_user_memory.py tests/graphify <probe> test_startup_services.py", "result": "57 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "tests/graphify/test_graphify_leak_1_repair.py on 9ae7c60c source", "result": "4 failed (as expected before the repair)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "tests/graphify/* on e07b71c6 source", "result": "11 failed, 4 passed (leak and repair tests fail on the baseline)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R2/stress.py (8 reader threads on 2 user views, memory add/delete writers, refresh_user_external_lifecycle loops; freshness, legacy replacement, failing store, cost)", "result": "0 errors, no cross-user or primary IDs, legacy view follows replaced store, shared index unchanged, failing store gives no memory pointers and no exception; relevant_subset 0.8 ms (10 memories) / 36 ms (2000)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest -p gstub -k 'graphify or turn_state or decision or startup or multi_user or memory or server or orchestrator or isolation or lifecycle or batch' test_*.py tests/test_m31_model_brain_ux.py on baseline vs candidate", "result": "both: 12 failed, 714 passed, 2 skipped, 12 errors (identical totals; individual failing test names not captured; failures seen were package staging errors)", "status": "COMPLETED_WITH_RESULT"}],
+ "unverified": ["Owner authorisation D12 for changing the protected file uri_core/app/server.py (only the plan document's statement was seen)", "Behaviour on a host with the real Google client packages installed (placeholder branch not taken)", "Whether the module removal after tests/graphify affects modules that were loaded before the window and changed during the server import", "Individual failing test names in the baseline vs candidate comparison (only totals compared)"]}
+AUDIT_RESULT_END

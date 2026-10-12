@@ -1,0 +1,129 @@
+{
+ "addresses": [
+  "R2-01",
+  "R2-02",
+  "R2-03"
+ ],
+ "changed": [
+  "docs/assist/03_PERMISSION_AND_DATA_FLOW.md",
+  "tests/assist/test_a0_d10_pixel_checked_text.py",
+  "tests/assist/test_a0_r13_differential_render.py",
+  "tests/assist/test_a0_r2_decoration_regressions.py",
+  "tests/web/test_w1_r2_review_regressions.py",
+  "uri_assist/browser_extension/probe.js",
+  "uri_assist/onscreen.py",
+  "uri_web/surface.py",
+  "uri_web/synthesize.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "f370064354ba678ec5fed956a709cd0e7626c269",
+ "ended_at": "2026-10-11T09:55:20Z",
+ "pre": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_d10_pixel_checked_text.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/assist/test_a0_r13_differential_render.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/assist/test_a0_r2_decoration_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/web/test_w1_r2_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 2,
+ "report": {
+  "not_repaired": [],
+  "notes": "Verified: both regression files fail on a clean export of ca622bc (web: 61 failed / 6 guard cases pass both ways; assist: 3 failed, reviewer's STRIKE-PAYLOAD and 4 other payloads leak) and pass after the change. Full tests/assist + tests/web: 2782 passed. R2-03: probe.js takes clear/tint/tint2 with all decorations off (NODECO), adds a 'plain' shot (op 'plain') and a per-unit 'd' flag for decorations it cannot switch off (inline/id !important, decorated ::first-line/::first-letter on the unit or a flat-tree ancestor, a page CSS highlight over the unit); onscreen.py requires 'plain' (missing -> no page text), counts ink only where plain differs from clear and base equals plain, and drops units with 'd' or decorations covering more than 25% of the box ('decorated'). ::first-letter/::first-line are not in NODECO (a rule there splits text runs and moves glyphs, which dropped an ordinary link); the 'd' check covers them. Existing test helpers updated for the new shot (shared Playwright driver in test_a0_r13, synthetic probes in test_a0_r13 and test_a0_d10, plus a missing-plain case); no assertion weakened. R2-01: untrusted.normalise = NFKC + delete default-ignorables, used for detection and display; U+3002/U+FF0E/U+FF61 count as dots; Unicode labels; any-case/IDN TLD accepted when known, followed by '/', or the host has a hyphen/digit; a second pass on an accent-stripped, homoglyph-folded skeleton; surface.clean masks link-bearing tokens through untrusted.mask_links; LINK_PATTERN removed (only surface used it). uri_a2ui/validate._URLISH is outside the permitted paths and unchanged; the surface masks before it runs. R2-02: synthesize._excerpt replaces the subsequence test: matched in order, each gap at most 2 content words and no clause word, clause punctuation or quantity; the claim's own joining words must match the source; memoised. A strictly contiguous rule would break two existing tests (test_w1_d7_verbatim_numbers::test_claim_without_quantity_is_still_checked_not_quoted, test_w1_r9::test_r9_02_any_added_content_word...), so short modifier gaps are allowed; making it fully contiguous is an owner decision. Quantity list extended as a second check only. Not verified: the real extension adapter (docs mark the extension channel NOT IMPLEMENTED) and whether page highlights are visible from the isolated world; only the Playwright stand-in was run. Over-detection: missing-space typos where the next word is a real TLD ('Caf\u00e9.Bar') now count as links (extra masking/quoting only). tests/phase2a/test_frozen_core.py::test_base_commit... fails on the HEAD commit check, unrelated. graphify not run; nothing committed.",
+  "regression_tests": [
+   "tests/web/test_w1_r2_review_regressions.py",
+   "tests/assist/test_a0_r2_decoration_regressions.py"
+  ],
+  "repaired": [
+   "R2-01",
+   "R2-02",
+   "R2-03"
+  ]
+ },
+ "started_at": "2026-10-11T09:38:33Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "0cd6ad80-8f25-4be3-8311-63d88822f1ae",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 254
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 3.9642063,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T09:54:36Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 57,
+  "pid": 24846,
+  "prompt_sha256": "c3c69a0875dddda4e1662d8a671169be609d6a11aa5297d7740914b32c935f2d",
+  "provider": "claude_cli",
+  "result_text_sha256": "a37a8b3525a668acd13179d4250979c4b13a8cd187235a252435bd2c9889d757",
+  "role": "implementer",
+  "session_id": "0cd6ad80-8f25-4be3-8311-63d88822f1ae",
+  "session_id_requested": "0cd6ad80-8f25-4be3-8311-63d88822f1ae",
+  "started_at": "2026-10-11T09:38:34Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "54552acf04552042e9da7ee1a25e60f9a5a64c4d64e680daed7baf88cf64dab7"
+ }
+}

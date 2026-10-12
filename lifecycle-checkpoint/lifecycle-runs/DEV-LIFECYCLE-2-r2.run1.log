@@ -1,0 +1,85 @@
+{
+ "schema": "uri-dev-lifecycle/1",
+ "milestone": "DEV-LIFECYCLE-2",
+ "stage": "BLOCKED",
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+ "rounds": 2,
+ "reviewers": [
+  {
+   "round": 1,
+   "provider": "claude_cli",
+   "session_id": "4ea43b42-633b-46ea-8a8a-09ef2c55de7f",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "73bdbef1e34e0b0a9456ee13e8b7b3f9c0e51f47",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 2,
+   "provider": "claude_cli",
+   "session_id": "76c2b25e-9190-46b6-9cc1-c393ca7c8a8a",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+   "verdict": "ACCEPT WITH FINDINGS",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "repairs": [
+  {
+   "repair": 1,
+   "status": "COMMITTED",
+   "commit": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+   "addresses": [
+    "R1-01"
+   ],
+   "reason": null
+  }
+ ],
+ "open_findings": [
+  {
+   "id": "R2-01",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Windows: a worker whose communicate() raises OSError after spawn is never finished; its job stays unterminated and untracked, and the next precheck() reports contained=True"
+  }
+ ],
+ "gates": {
+  "0ee6885a68ec": {
+   "ok": true,
+   "blocked": null,
+   "new_failures": {
+    "dev_workflow": []
+   }
+  }
+ },
+ "integration": {
+  "at": "2026-10-11T13:19:15Z",
+  "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+  "command": "git push origin 0ee6885a68ec14eabec7645b4501f87d17bde6f0:refs/heads/integration/git-sync-20261008",
+  "mode": "fast-forward",
+  "remote": "origin",
+  "status": "AWAITING_OWNER_AUTHORIZATION",
+  "target_ref": "integration/git-sync-20261008",
+  "target_tip_before": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80"
+ },
+ "blocker": {
+  "at": "2026-10-11T13:19:15Z",
+  "kind": "OWNER_AUTHORIZATION",
+  "needs": "git push origin 0ee6885a68ec14eabec7645b4501f87d17bde6f0:refs/heads/integration/git-sync-20261008",
+  "reason": "integration into integration/git-sync-20261008 needs owner authorisation",
+  "stage": "VERIFIED"
+ },
+ "events": 19,
+ "evidence_ok_for_candidate": true
+}

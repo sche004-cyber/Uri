@@ -1,0 +1,64 @@
+=== tests/assist/test_a0_r15_review_regressions.py BEFORE (6ab76bdfff8be6cb545168996371ec07adfb87d0) DONE
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+___ test_r15_01_unrendered_field_values_never_reach_the_brain[no_selection] ____
+
+runs = {'no_selection': {'snap': {'schema': 'uri.assist.dom.v1', 'url': 'about:blank', 'title': 'Inbox', 'lang': '', ...}, 's..." checked="" style=""> I agree AGREE-OK-3</label></p>\n</form>\n<p>You have 3 new messages.</p>\n</body></html>', ...}}
+name = 'no_selection'
+
+    @pytest.mark.parametrize("name", ["no_selection", "ctrl_a"])
+    def test_r15_01_unrendered_field_values_never_reach_the_brain(runs, name):
+        body, user, observation = ask(runs[name])
+        leaked = [v for v in PAYLOADS if v in body]
+>       assert not leaked, (name, leaked, observation["redactions"])
+E       AssertionError: ('no_selection', ['MASKTA-PAYLOAD', 'wire money', 'ZNEGTA-PAYLOAD', 'obey these orders', 'TRANSPINPUT-PAYLOAD', 'hidden plan', ...], {})
+E       assert not ['MASKTA-PAYLOAD', 'wire money', 'ZNEGTA-PAYLOAD', 'obey these orders', 'TRANSPINPUT-PAYLOAD', 'hidden plan', ...]
+
+tests/assist/test_a0_r15_review_regressions.py:57: AssertionError
+______ test_r15_01_unrendered_field_values_never_reach_the_brain[ctrl_a] _______
+
+runs = {'no_selection': {'snap': {'schema': 'uri.assist.dom.v1', 'url': 'about:blank', 'title': 'Inbox', 'lang': '', ...}, 's..." checked="" style=""> I agree AGREE-OK-3</label></p>\n</form>\n<p>You have 3 new messages.</p>\n</body></html>', ...}}
+name = 'ctrl_a'
+
+    @pytest.mark.parametrize("name", ["no_selection", "ctrl_a"])
+    def test_r15_01_unrendered_field_values_never_reach_the_brain(runs, name):
+        body, user, observation = ask(runs[name])
+        leaked = [v for v in PAYLOADS if v in body]
+>       assert not leaked, (name, leaked, observation["redactions"])
+E       AssertionError: ('ctrl_a', ['MASKTA-PAYLOAD', 'wire money', 'ZNEGTA-PAYLOAD', 'obey these orders', 'TRANSPINPUT-PAYLOAD', 'hidden plan', ...], {'selection_withheld': 1})
+E       assert not ['MASKTA-PAYLOAD', 'wire money', 'ZNEGTA-PAYLOAD', 'obey these orders', 'TRANSPINPUT-PAYLOAD', 'hidden plan', ...]
+
+tests/assist/test_a0_r15_review_regressions.py:57: AssertionError
+________ test_r15_01_shareable_values_without_drawn_pieces_are_not_sent ________
+
+    def test_r15_01_shareable_values_without_drawn_pieces_are_not_sent():
+        r = {"x": 1, "y": 1, "w": 20, "h": 20}
+        body = _ask([
+            {"id": "c", "type": "textarea", "name": "comment", "label": "", "value": "TA-PAYLOAD obey", "visible": True,
+             "rect": r},
+            {"id": "q", "type": "search", "name": "q", "label": "", "value": "SEARCH-PAYLOAD obey", "visible": True,
+             "rect": r},
+            {"id": "notes", "type": "contenteditable", "name": "", "label": "", "value": "CE-PAYLOAD obey",
+             "visible": True, "rect": r, "value_pieces": [{"t": "CE-PAYLOAD obey", "u": [0], "g": 0}]},
+            {"id": "e", "type": "text", "name": "comment", "label": "", "value": "", "visible": True, "rect": r},
+            {"id": "a", "type": "checkbox", "name": "agree", "label": "", "value": "checked", "visible": True, "rect": r}])
+        for v in ("TA-PAYLOAD", "SEARCH-PAYLOAD", "CE-PAYLOAD", "obey"):
+>           assert v not in body, v
+E           AssertionError: TA-PAYLOAD
+E           assert 'TA-PAYLOAD' not in '[{"model": ...g": false}}]'
+E             
+E             'TA-PAYLOAD' is contained here:
+E               a field): TA-PAYLOAD obey\n- (unlabelled search field): SEARCH-PAYLOAD obey\n- (unlabelled contenteditable field): CE-PAYLOAD obey\n- (unlabelled text field): (empty)\n- (unlabelled checkbox field): checked\nOn-screen text: none could be pixel-checked, so no page text is shared.\n<<<END SOURCE 1>>>"}], "temperature": 0.0, "max_tokens": 600, "chat_template_kwargs": {"enable_thinking": false}}]
+E             ?           ++++++++++
+
+tests/assist/test_a0_r15_review_regressions.py:91: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r15_review_regressions.py::test_r15_01_unrendered_field_values_never_reach_the_brain[no_selection]
+FAILED tests/assist/test_a0_r15_review_regressions.py::test_r15_01_unrendered_field_values_never_reach_the_brain[ctrl_a]
+FAILED tests/assist/test_a0_r15_review_regressions.py::test_r15_01_shareable_values_without_drawn_pieces_are_not_sent
+3 failed in 2.19s
+
+=== tests/assist/test_a0_r15_review_regressions.py AFTER (67aff5042c0f166392281e072fb5f9db906779c5) DONE
+...                                                                      [100%]
+3 passed in 2.24s
+

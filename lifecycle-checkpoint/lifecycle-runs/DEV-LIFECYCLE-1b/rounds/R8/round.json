@@ -1,0 +1,211 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R8",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R8-01"
+ ],
+ "candidate": "e029675cc9f229596af26365277f2ae536be232b",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T04:29:36Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "e029675cc9f229596af26365277f2ae536be232b",
+   "impl_head": "e029675cc9f229596af26365277f2ae536be232b",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "00abb208e7f3816a548248cb7a4c706e590984fc3dc2491c702dd25e393ac664",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "e029675cc9f229596af26365277f2ae536be232b",
+   "impl_head": "e029675cc9f229596af26365277f2ae536be232b",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "00abb208e7f3816a548248cb7a4c706e590984fc3dc2491c702dd25e393ac664",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "e029675cc9f229596af26365277f2ae536be232b",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "reviewer_config_dir() creates /tmp/uri-reviewer-claude-* (predictable prefix, same user as the workers). config_dir_clean() only inspects the directory after the run. Probe /tmp/uri_review_R8/p1: daemon.py calls os.setsid() (escapes _killpg, an accepted threat per URI_DEVELOPMENT_LIFECYCLE.md section 6), polls the temp dir, writes {env:{ANTHROPIC_BASE_URL:http://127.0.0.1:18777, ANTHROPIC_API_KEY:...}} into .claude.json, then removes the key after HOLD seconds. probe.py calls run_worker({provider: claude_cli, _anchor: reviewer_executable(...)}, 'reviewer', ...) on the real /opt/node22/bin/claude 2.1.296. With HOLD=1.5 and HOLD=0.8: the local server received POST /v1/messages; reviewer_result.txt = 'AUDIT_RESULT_BEGIN {\"verdict\":\"ACCEPT\",\"findings\":[]} AUDIT_RESULT_END'; record status=COMPLETED, binary_anchor_ok=true, binary_is_default=true, config_isolated=true. That satisfies is_independent's R6-01 and R7-01 conditions. With HOLD=8, config_isolated=false, showing the check sees only the end state. Also checked directly: CLAUDE_CONFIG_DIR=<dir with env in .claude.json> claude -p --safe-mode --setting-sources '' --strict-mcp-config sends its requests to the env base URL. Run with the host-injected ANTHROPIC_BASE_URL and CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST unset, as on the owner's PC; in this cloud host those vars take priority. Incidental confirmation: while the injector was alive, 3 R7-01 regression tests failed because their fake reviewer saw the injected env; all 185 passed once it exited. The documentation says lingering setsid children are 'detected, not prevented'; this channel is neither.",
+    "files": [
+     "scripts/dev_workflow/lifecycle_providers.py:213",
+     "scripts/dev_workflow/lifecycle_providers.py:246",
+     "scripts/dev_workflow/lifecycle_providers.py:292",
+     "scripts/dev_workflow/lifecycle_providers.py:326",
+     "scripts/dev_workflow/lifecycle.py:315",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:79"
+    ],
+    "id": "R8-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Do not rely on a post-run snapshot of a same-user-writable directory. Options: (a) before launching any reviewer, verify that no process from earlier workers survives: run every worker in its own cgroup, PID namespace or systemd scope and kill or verify the whole unit, not just the process group; (b) watch the config dir during the run (inotify/fanotify) and set config_isolated=false on any write not made by the reviewer process tree; (c) pass the base URL and credentials only via the driver-built environment and make the CLI ignore config-file env, e.g. a read-only bind-mounted config dir in a mount namespace. Add a regression test with a setsid injector that writes and then removes env during the run.",
+    "title": "R7-01 config isolation is a post-run end-state check: a lingering setsid worker child injects env.ANTHROPIC_BASE_URL into the fresh reviewer CLAUDE_CONFIG_DIR, removes it after CLI startup, and the scripted ACCEPT is recorded with config_isolated=true"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow",
+    "result": "185 passed, 1 warning (145s), clean run after the probe injectors exited",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow (first run)",
+    "result": "4 failed, 181 passed: caused by my still-running probe injector writing env into the tests' reviewer config dirs, not a candidate defect; not used as pass/fail evidence",
+    "status": "FAILED"
+   },
+   {
+    "command": "CLAUDE_CONFIG_DIR=<dir with .claude.json env> claude -p --output-format json --safe-mode --setting-sources '' --strict-mcp-config 'say hi' (host ANTHROPIC_BASE_URL/CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST unset)",
+    "result": "requests reached the local scripted server: config-file env is honoured",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "HOLD=1.5 and HOLD=0.8: setsid daemon.py + probe.py (run_worker claude_cli reviewer, real CLI, PLAN anchor)",
+    "result": "scripted ACCEPT, config_isolated=true, binary_anchor_ok=true",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "HOLD=8: setsid daemon.py + probe.py",
+    "result": "scripted ACCEPT but config_isolated=false (detected only because env was still present at the end)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --name-only ffdf5343..e029675 against the protected path list",
+    "result": "no protected path changed",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Did not drive a full lifecycle `run` end-to-end to VERIFIED with the injector against the real CLI; shown at the run_worker plus is_independent level (the record carries every field is_independent requires). Does not change the verdict.",
+   "Prior findings R1-01..R6-02 are judged FIXED from their passing regression tests and code reading of the diff, not by re-running each original exploit.",
+   "codex_cli path (CODEX_HOME/config.toml, the same race) not exercised: codex is not installed.",
+   "Gate, integration and flutter parsing areas were not re-audited in depth this round beyond the passing test suite.",
+   "In this cloud host, host-injected ANTHROPIC_BASE_URL/CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST take priority over config env; the exploit applies where they are absent, e.g. the owner's PC."
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 8,
+ "started_at": "2026-10-11T04:21:15Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "a3eea134-06ef-4035-b61d-22d55d5e6b6f",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 0.9282158,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R8",
+  "ended_at": "2026-10-11T04:29:35Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 17,
+  "pid": 22083,
+  "prompt_sha256": "5a107442279c35433841f71866640e74ac1ce2e5c20101e626d1d07d9f4ed439",
+  "provider": "claude_cli",
+  "result_text_sha256": "53d508b714198b20f6ecd21b2e7b334a32a1d675b9ec328a922eea54007a7313",
+  "role": "reviewer",
+  "session_id": "a3eea134-06ef-4035-b61d-22d55d5e6b6f",
+  "session_id_requested": "a3eea134-06ef-4035-b61d-22d55d5e6b6f",
+  "started_at": "2026-10-11T04:21:15Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "5fbcd7322eab68a2dc205d91db66540f04d89851cedc572affd59df55ab4675d"
+ }
+}

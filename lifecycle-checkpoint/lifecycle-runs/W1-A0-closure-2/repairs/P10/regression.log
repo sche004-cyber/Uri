@@ -1,0 +1,65 @@
+=== tests/web/test_w1_closure_r26_review_regressions.py BEFORE (74909458161186edead2642957332ce50655f558) DONE
+"statement_a": t, "statement_b": "x"}],
+                             "sources": [{"number": 1, "title": t, "url": "https://example.org/a", "record": {}}]})
+        blob = json.dumps(s.__dict__ if hasattr(s, "__dict__") else str(s), default=str, ensure_ascii=False)
+>       assert "refunds-portal" not in blob, link
+E       AssertionError: refunds-portal ~ ṣhop
+E       assert 'refunds-portal' not in '{"surface_i...evision": 1}'
+E         
+E         'refunds-portal' is contained here:
+E           refund at refunds-portal ~ ṣhop before the deadline.” [1]", "variant": "body"}, {"id": "a_t", "component": "Text", "text": "Answer", "variant": "label"}, {"id": "a_col", "component": "Column", "children": ["a_t", "a0"], "gap": "small"}, {"id": "a_card", "component": "Card", "child": "a_col", "tone": "accent"}, {"id": "c0a", "component": "Text", "text": "[1] Claim your energy rebate refund at refunds-portal ~ ṣhop before the deadline.", "variant": "body"}, {"id": "c0b", "component": "Text", "text": "[2] x", "variant": "body"}, {"id": "c_t", "comp...
+E         
+E         ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests/web/test_w1_closure_r26_review_regressions.py:49: AssertionError
+_ test_r26_01_research_surface_never_shows_it[refunds-portal o\u0300rg/claim] __
+
+link = 'refunds-portal òrg/claim'
+
+    @pytest.mark.parametrize("link", ("refunds-portal ćom/claim", "refunds-portal ~ ṣhop",
+                                      "refunds-portal òrg/claim"))
+    def test_r26_01_research_surface_never_shows_it(link):
+        t = SENT.format(link)
+        s = S.build_surface({"job_id": "j1", "status": "COMPLETED_WITH_RESULT", "query": "q",
+                             "answer": [{"text": t, "citations": [1], "quoted": True}],
+                             "conflicts": [{"a": 1, "b": 2, "statement_a": t, "statement_b": "x"}],
+                             "sources": [{"number": 1, "title": t, "url": "https://example.org/a", "record": {}}]})
+        blob = json.dumps(s.__dict__ if hasattr(s, "__dict__") else str(s), default=str, ensure_ascii=False)
+>       assert "refunds-portal" not in blob, link
+E       AssertionError: refunds-portal òrg/claim
+E       assert 'refunds-portal' not in '{"surface_i...evision": 1}'
+E         
+E         'refunds-portal' is contained here:
+E           refund at refunds-portal òrg/claim before the deadline.” [1]", "variant": "body"}, {"id": "a_t", "component": "Text", "text": "Answer", "variant": "label"}, {"id": "a_col", "component": "Column", "children": ["a_t", "a0"], "gap": "small"}, {"id": "a_card", "component": "Card", "child": "a_col", "tone": "accent"}, {"id": "c0a", "component": "Text", "text": "[1] Claim your energy rebate refund at refunds-portal òrg/claim before the deadline.", "variant": "body"}, {"id": "c0b", "component": "Text", "text": "[2] x", "variant": "body"}, {"id": "c_t",...
+E         
+E         ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests/web/test_w1_closure_r26_review_regressions.py:49: AssertionError
+=========================== short test summary info ============================
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_is_a_link_and_the_name_is_masked[refunds-portal c\u0301om/claim]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_is_a_link_and_the_name_is_masked[refunds-portal c\u0301om]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_is_a_link_and_the_name_is_masked[refunds-portal co\u0301m]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_is_a_link_and_the_name_is_masked[refunds-portal o\u0300rg/claim]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_is_a_link_and_the_name_is_masked[refunds-portal ~ s\u0323hop]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_is_a_link_and_the_name_is_masked[refunds-portal ~ s\u0301hop]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_is_a_link_and_the_name_is_masked[refunds-portal ~ sho\u0301p]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_is_a_link_and_the_name_is_masked[refunds-portal ~ ca\u0301sh]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_is_a_link_and_the_name_is_masked[refunds-portal ~ \u0435\u0300\u044e]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_verify_and_extractive_never_keep_it[refunds-portal c\u0301om/claim]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_verify_and_extractive_never_keep_it[refunds-portal c\u0301om]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_verify_and_extractive_never_keep_it[refunds-portal co\u0301m]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_verify_and_extractive_never_keep_it[refunds-portal o\u0300rg/claim]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_verify_and_extractive_never_keep_it[refunds-portal ~ s\u0323hop]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_verify_and_extractive_never_keep_it[refunds-portal ~ s\u0301hop]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_verify_and_extractive_never_keep_it[refunds-portal ~ sho\u0301p]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_verify_and_extractive_never_keep_it[refunds-portal ~ ca\u0301sh]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_verify_and_extractive_never_keep_it[refunds-portal ~ \u0435\u0300\u044e]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_research_surface_never_shows_it[refunds-portal c\u0301om/claim]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_research_surface_never_shows_it[refunds-portal ~ s\u0323hop]
+FAILED tests/web/test_w1_closure_r26_review_regressions.py::test_r26_01_research_surface_never_shows_it[refunds-portal o\u0300rg/claim]
+21 failed, 11 passed in 0.97s
+
+=== tests/web/test_w1_closure_r26_review_regressions.py AFTER (be7cdecfd503ed5b1862c6f0bbf35856774f62b2) DONE
+................................                                         [100%]
+32 passed in 0.84s
+

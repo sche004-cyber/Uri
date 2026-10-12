@@ -1,0 +1,222 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R10",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R10-01"
+ ],
+ "candidate": "2d419f6922380f16cf1486c7380f4c8619d66b00",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T04:56:16Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "2d419f6922380f16cf1486c7380f4c8619d66b00",
+   "impl_head": "2d419f6922380f16cf1486c7380f4c8619d66b00",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "2fbdc7540728c85152884a3391afc1b73f90e1ec3e9110789a8da9720d077872",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "2d419f6922380f16cf1486c7380f4c8619d66b00",
+   "impl_head": "2d419f6922380f16cf1486c7380f4c8619d66b00",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "2fbdc7540728c85152884a3391afc1b73f90e1ec3e9110789a8da9720d077872",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "2d419f6922380f16cf1486c7380f4c8619d66b00",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "run_cmd and _run call communicate(timeout), then on TimeoutExpired call killpg and communicate() with no timeout. killpg does not reach a child that called setsid(), and the sweep_orphans() that would kill it comes only after communicate returns. Probe /tmp/uri_review_R10/hang.py: run_cmd([python,-c,'Popen([\"setsid\",\"sleep\",\"30\"])'], '.', 3) had not returned after 15 s. Probe /tmp/uri_review_R10/worker.py: run_worker(command 'setsid sleep 40 & echo done', timeout_s=3) had not returned after 20 s. Any gate, test or worker child can keep the driver blocked indefinitely (a malicious implementer can also open its CLI's stdout through /proc/$PPID/fd/1). The only recovery is killing the driver, which moves the orphan outside the subreaper tree (see R10-02).",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:663",
+     "scripts/dev_workflow/lifecycle.py:665",
+     "scripts/dev_workflow/lifecycle.py:669",
+     "scripts/dev_workflow/lifecycle_providers.py:426",
+     "scripts/dev_workflow/lifecycle_providers.py:430",
+     "scripts/dev_workflow/lifecycle_providers.py:442"
+    ],
+    "id": "R10-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "After TimeoutExpired (and before any blocking second communicate), killpg then sweep_orphans() first, and bound the second communicate with a timeout (or close the pipes and kill). Do the same in _run. Add tests where a setsid child keeps stdout open.",
+    "title": "Timeout path calls communicate() without a timeout before the R8-01 orphan sweep: a setsid descendant holding stdout hangs the driver indefinitely and the sweep is never reached"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "Probe: a driver running run_worker(sleep 300) was killed with SIGKILL. The worker kept running (ppid 1, its own session), and a new driver's sweep_orphans() returned {'contained': True, 'killed': 0}. Workers run with start_new_session, so a launcher timeout that kills the driver (or R10-01 forcing one) leaves them alive while the resumed run records contained=true.",
+    "files": [
+     "scripts/dev_workflow/lifecycle_providers.py:402",
+     "scripts/dev_workflow/lifecycle_providers.py:443",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:79"
+    ],
+    "id": "R10-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Record each worker's/command's session id (pid) in state before launch. At run start, scan /proc for live processes in those sessions and kill them, or refuse contained=true until none is left.",
+    "title": "contained=true is recorded although workers or orphans of an earlier, killed driver process are still running (outside the subreaper tree); documented limitation, but realistic and reachable through R10-01"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -p no:cacheprovider -x",
+    "result": "189 passed, 1 warning in 159.59s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R10/hang.py (run_cmd timeout with setsid child holding stdout)",
+    "result": "run_cmd not returned after 15s with timeout=3 (defect R10-01)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R10/worker.py",
+    "result": "setsid child with redirected stdio swept (contained True, killed 1, process gone); setsid child holding stdout: run_worker not returned after 20s with timeout_s=3",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R10/killdrv.py + SIGKILL driver + fresh sweep_orphans()",
+    "result": "worker survives under init; new sweep reports contained True killed 0 (R10-02)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --name-only ffdf534..2d419f6 | protected-path filter",
+    "result": "no protected paths changed",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "R1-R7 FIXED status rests on the passing regression tests and reading the code, not on new adversarial probes this round. Does not change the verdict (it rests on R10-01).",
+   "No real claude CLI review run in this round, so the ConfigWatch 10 ms poll window (a documented residual) was not tested against the real CLI's read timing.",
+   "Flutter gates, GPU lease and real push/integration were not run end to end (no GPU; integration covered only by unit tests in the suite)."
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 10,
+ "started_at": "2026-10-11T04:49:26Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "1b59ac4d-2fd7-42fa-b892-143d4f8998ad",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.2385190000000001,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R10",
+  "ended_at": "2026-10-11T04:56:15Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 14,
+  "pid": 26605,
+  "prompt_sha256": "86a762060d8af380560a2d7952048db684bd77e6b00788d63e47116da8458bfc",
+  "provider": "claude_cli",
+  "result_text_sha256": "2c786d91a0b7a7482e09b512bc22eb4a252855031980d0d7ca727a175fd247c0",
+  "role": "reviewer",
+  "session_id": "1b59ac4d-2fd7-42fa-b892-143d4f8998ad",
+  "session_id_requested": "1b59ac4d-2fd7-42fa-b892-143d4f8998ad",
+  "started_at": "2026-10-11T04:49:26Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "e4b330ec4509cd4b7a305a7ccbc380eaf134adce314f6617964bc8325dd1c5f2"
+ }
+}

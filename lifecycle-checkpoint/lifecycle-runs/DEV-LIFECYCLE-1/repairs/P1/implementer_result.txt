@@ -1,0 +1,39 @@
+I've repaired all five findings, and each has a regression test that fails on d5fccdf and passes now. Nothing is committed.
+
+**Test runs:**
+- **Old code:** I extracted d5fccdf's `scripts/`, `tests/dev_workflow` and `uri_a2ui` into the scratchpad with `git archive` and ran the new test file there. All 8 R2 tests failed, each for the reason the reviewer reported. For example, the R2-03 test saw the main checkout's `canon` branch move, and the R2-04 test hit the `FileNotFoundError`.
+- **This tree:** all 8 pass, and the full `tests/dev_workflow` suite passes (134 tests, nothing skipped or removed).
+
+**What changed** (all in `scripts/dev_workflow/lifecycle.py` unless noted):
+
+- **R2-01 (forged round + edited `resume_to`):**
+  - `verify()` now requires round and repair numbers to be exactly 1..n in order, with no duplicates.
+  - Each recorded entry in `state.json` must equal its hashed `round.json` / `repair.json`.
+  - A round with no review event must be a genuine started review, and the only repair allowed without an event is the last one, still in progress.
+  - `resume_to` and `blocker` are now written into the BLOCKED / WAITING_FOR_MODEL stage events and checked against `state.json`.
+  - `accepted_review()` now reads the independent ACCEPT only from intact `REVIEW_RECORDED` events and hash-checked `round.json` files, never from `state.json`.
+- **R2-02 (replace refs hiding a protected change):**
+  - Every driver git call now runs with `--no-replace-objects` and `GIT_NO_REPLACE_OBJECTS=1`. That covers `worktree_changes`, merge-base, merge and push, which previously called git directly.
+  - `refs_digest` now includes every `refs/replace/*` ref, so creating one during a review or repair is caught as tampering.
+  - `git_control_digest` now also covers the files in the shared git dir's `info/` folder (grafts, attributes, exclude).
+  - `changed_paths` now uses `--no-renames`, so a rename out of a protected path also lists the protected source.
+  - `git replace` is added to the denied commands in `lifecycle_providers.py`. That list is a convenience, not the real boundary.
+- **R2-03 (rewritten `.git` gitfile):** a new `worktree_identity()` check confirms the worktree's `.git` still leads to its own git dir. It runs before and after the implementer, in both review snapshots, at the start of each `run()` step, and inside `_restore()`. If it fails, the run blocks as TAMPER and nothing is reset.
+- **R2-04 (repair deleting a test file):**
+  - A repair that deletes an existing test file is refused (`DELETES_TESTS`).
+  - Regression proof only uses test files that exist in the repair commit.
+  - Everything after the driver's commit moved into `_commit_and_prove()`, wrapped so that any error records the repair as REFUSED and restores the worktree to the pre-repair commit.
+- **R2-05 (GPU lease busy):** for a GPU gate, exit 75 together with gpu_lease's `"refused"` report now gives status BLOCKED, so the run stops as BLOCKED (RESOURCE) instead of creating gate findings.
+- **Docs:** `docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md` describes all of the above.
+
+**Limits and side effects:**
+- **No real GPU:** R2-05 is tested with a fake `gpu_lease` module, not the real lease.
+- **Renamed tests are refused:** with `--no-renames`, renaming a test file counts as deleting it.
+- **Archived event logs:** older logs don't record `resume_to` or `blocker`. Running `verify` on an archived run that ended BLOCKED or waiting would now report a mismatch. No test re-verifies the archived evidence under `docs/dev_workflow/evidence/`, and I didn't run `verify` on it.
+- **Graph not updated:** `graphify update .` wasn't run because graphify isn't installed here.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R2-01", "R2-02", "R2-03", "R2-04", "R2-05"], "not_repaired": [],
+ "regression_tests": ["tests/dev_workflow/test_lifecycle.py"],
+ "notes": "New tests (all fail on d5fccdf, all pass now): test_r2_01_forged_duplicate_round_and_resume_to_cannot_verify, test_r2_01_edited_resume_to_alone_is_detected, test_r2_02_replace_refs_cannot_hide_a_protected_change, test_r2_02_driver_git_ignores_replace_refs, test_r2_03_redirected_gitfile_does_not_reset_the_main_checkout, test_r2_04_repair_deleting_a_test_is_refused_and_restored, test_r2_04_error_after_the_repair_commit_is_refused_and_restored, test_r2_05_gpu_lease_busy_is_blocked_not_a_gate_failure. Full tests/dev_workflow: 134 passed. R2-05 tested with a fake gpu_lease module (no GPU). A renamed test file now counts as a deleted test and is refused. Older event logs lack resume_to/blocker in stage events, so verify would flag an archived run that ended BLOCKED or waiting; archived evidence was not re-verified. graphify is not installed, so the graph was not updated. Also: info/ files in the git control digest, --no-renames in changed_paths, git replace added to GIT_WRITE_DENY."}
+REPAIR_RESULT_END

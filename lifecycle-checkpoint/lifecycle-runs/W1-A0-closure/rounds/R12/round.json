@@ -1,0 +1,272 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure/audit_R12",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R12-01"
+ ],
+ "candidate": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T06:52:47Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+   "impl_head": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "4cd9d5d55c3528746e8523221ee1880d4ddcb8594051ba14c0f85872db1f58c8",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+   "impl_head": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "4cd9d5d55c3528746e8523221ee1880d4ddcb8594051ba14c0f85872db1f58c8",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Real Chromium (Playwright, viewport 1000x900, Ctrl+A), page with <div style='filter:opacity(0)'>FILTEROPACITY-PAYLOAD-B</div>, <div style='-webkit-text-fill-color:transparent'>TEXTFILL-PAYLOAD-C</div>, <div style='clip-path:inset(0 0 100% 0)'>\u2026D</div>, clip-path:circle(0) \u2026E, mask-image:linear-gradient(transparent,transparent) \u2026H, clip-path:polygon(0 0,0 0,0 0) \u2026I, clip-path:inset(0 100% 0 0) \u2026Q, clip-path:inset(60%) \u2026R, <details><summary>Sum</summary>DETAILS-PAYLOAD-S</details>. A screenshot shows none of them rendered, yet snapshot.text and snapshot.selection contain all of them (hidden_text count 8 covers only other cases). Feeding that snapshot through tests.assist.test_a0_access_perception mk()/grant(observe)/ask_and_wait gives status COMPLETE and each payload occurs twice in FakeClient.bodies. Root cause: visible() relies on checkVisibility(opacityProperty) which only catches opacity:0 (not filter/mask/near-zero opacity); the clip-path regex /inset\\(\\s*(50%|100%)/ only matches a leading 50%/100% inset; textVisible checks only alpha(color), not -webkit-text-fill-color; closed-details slot content returns client rects. None of these are in the documented 'Not covered' list, and docs/assist/03 row claims opacity, transparent text colour and clip-path inset are covered.",
+    "files": [
+     "uri_assist/browser_extension/snapshot.js:57",
+     "uri_assist/browser_extension/snapshot.js:63",
+     "uri_assist/browser_extension/snapshot.js:87",
+     "uri_assist/browser_extension/snapshot.js:126",
+     "uri_assist/browser_extension/snapshot.js:120",
+     "uri_assist/bridge.py:61",
+     "docs/assist/03_PERMISSION_AND_DATA_FLOW.md:77"
+    ],
+    "id": "R12-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Treat effective opacity (product of ancestor opacity and filter:opacity) below a small threshold as hidden; treat -webkit-text-fill-color alpha 0 like transparent colour; for clip-path parse every inset side (and treat circle/ellipse/polygon with zero area, or any non-inset shape conservatively) and check mask-image/-webkit-mask; exclude text inside a closed <details> other than its <summary>; add these cases to a self-contained Chromium regression test and make the docs/03 coverage claims match the code exactly.",
+    "title": "In-page hidden-text filter still misses fully invisible text (filter:opacity(0), -webkit-text-fill-color:transparent, non-leading/other clip-path insets and shapes, transparent mask-image, closed <details> content, near-zero opacity); injected instructions reach the Brain request as 'Visible text' and 'Selected text' (R11-01 class not closed)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R10-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "NOT_FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/assist tests/web",
+    "result": "2631 passed in 33.14s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "flutter test test/living/ (from uri_ui)",
+    "result": "253 passed, All tests passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "node /tmp/uri_review_R12/run.cjs snapshot.js /tmp/uri_review_R12/page.html (real Chromium, Ctrl+A)",
+    "result": "9 fully invisible payloads present in snapshot text and selection",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "Python bridge probe with real Chromium snapshot (FakeClient, observe grant, ask)",
+    "result": "COMPLETE; each payload appears 2x in Brain request body",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf534..d5a9b41 -- <protected paths>",
+    "result": "empty (no protected path changed)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "ws_frozen_check zip part",
+    "result": "Phase 1 checkpoint zip not present",
+    "status": "BLOCKED"
+   }
+  ],
+  "unverified": [
+   "Fresh adversarial re-audit of areas not touched since R11 (safe_fetch/netpolicy SSRF, vision gating, access/bridge permissions, worker dispatch, Dart controller lifecycle) beyond the passing test suites and spot probes",
+   "ws_frozen_check zip part (checkpoint zip absent)",
+   "Real Windows/UIA adapters and a real browser extension channel (owner checklist #8, not built)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 12,
+ "started_at": "2026-10-11T06:49:48Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "e5e6f379-17f2-4b11-b603-5cf22ec39580",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 61
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7762223000000001,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure/audit_R12",
+  "ended_at": "2026-10-11T06:52:46Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 15,
+  "pid": 24455,
+  "prompt_sha256": "7fbbcb6d153b28a35d6b3244e73e5149b9a89106ea7897eb1869811c7ced4da0",
+  "provider": "claude_cli",
+  "result_text_sha256": "44ee5bfb20f0e403f6f523acbae1c20e42a544600c29db99a3a24a0d2e3614a5",
+  "role": "reviewer",
+  "session_id": "e5e6f379-17f2-4b11-b603-5cf22ec39580",
+  "session_id_requested": "e5e6f379-17f2-4b11-b603-5cf22ec39580",
+  "started_at": "2026-10-11T06:49:48Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "377e72632ccf7bc96212577589926450a4df2d5dd581cb20f8ccc2db6e6e0929"
+ }
+}

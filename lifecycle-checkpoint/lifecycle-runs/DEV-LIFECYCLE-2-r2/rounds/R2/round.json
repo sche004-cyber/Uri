@@ -1,0 +1,167 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-2-r2/audit_R2",
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocking_ids": [],
+ "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+ "effective_verdict": "ACCEPT WITH FINDINGS",
+ "ended_at": "2026-10-11T13:12:24Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "812b04c1a571a7ca20baeaecb91c2b7d8f2ff62cae7e5a058debd7dcc9a8145d",
+   "head": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+   "impl_head": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-2-20261011",
+   "refs": "18c4eb58cb29c9ecadf16ec21592e82c052833cd106531a39060d4f28f87a91a",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "812b04c1a571a7ca20baeaecb91c2b7d8f2ff62cae7e5a058debd7dcc9a8145d",
+   "head": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+   "impl_head": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-2-20261011",
+   "refs": "18c4eb58cb29c9ecadf16ec21592e82c052833cd106531a39060d4f28f87a91a",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+  "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+  "findings": [
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "_run catches OSError from proc.communicate() (after containment.spawn succeeded and the process was resumed) and returns status FAILED without containment.finish(proc). On Windows the job is neither terminated, nor appended to _OPEN_JOBS, nor recorded in _TAINTED, and the handle stays open, so KILL_ON_JOB_CLOSE does not fire. Probe /tmp/uri_review_R2/probe/test_probe_unfinished.py with the repo's FakeApi/FakeProc: communicate raises OSError(23): job 1 = {'active': 1, 'terminated': False}, _OPEN_JOBS=[], _TAINTED=[], next C.precheck() = {'contained': True, 'killed': 0}. On Linux the leftover worker is a direct child in another session and the next sweep_orphans kills it, so only Windows is affected. Low likelihood: CPython swallows BrokenPipeError/EINVAL on the stdin write.",
+    "files": [
+     "scripts/dev_workflow/lifecycle_providers.py:582",
+     "scripts/dev_workflow/containment.py:172",
+     "scripts/dev_workflow/containment.py:293"
+    ],
+    "id": "R2-01",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Register each job in _OPEN_JOBS at spawn time (remove it only once precheck/finish verified it empty), or call containment.finish(proc) in a finally on every path after a successful spawn (also run_cmd on non-TimeoutExpired exceptions).",
+    "title": "Windows: a worker whose communicate() raises OSError after spawn is never finished; its job stays unterminated and untracked, and the next precheck() reports contained=True"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -p no:cacheprovider -rs (candidate)",
+    "result": "226 passed, 5 skipped (5 Windows-only tests listed by name as PLATFORM-GATED: test_win_kill_tree_on_exited_pid_and_on_a_live_tree, test_win_grandchild_is_gone_after_the_sweep, test_win_breakaway_is_refused, test_win_active_processes_rule_on_a_real_job, test_win_job_creation_failure_is_not_contained)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -k r1_01 tests/dev_workflow/test_lifecycle_platform.py on pre-repair 73bdbef (git archive) with the candidate test file copied in",
+    "result": "4 failed, each for its own reason (contained True where False expected x2; _OPEN_JOBS [] != [1]; True is False)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest /tmp/uri_review_R2/probe/test_probe_unfinished.py (fake kernel32, communicate raises OSError after spawn)",
+    "result": "precheck() returned contained=True while job 1 still active and unterminated",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Real Windows Job Object behaviour (ctypes structures and calls at runtime, breakaway refusal, grandchild kill): the Windows-only tests are platform-gated and must run on the owner's PC",
+   "W-1/W-2/W-3 Windows path behaviour was reviewed by reading the code and by the Linux suite passing, not on Windows",
+   "F3/W-2 code was re-read this round but not newly probed beyond the existing tests"
+  ],
+  "verdict": "ACCEPT WITH FINDINGS"
+ },
+ "round": 2,
+ "started_at": "2026-10-11T13:07:12Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "76c2b25e-9190-46b6-9cc1-c393ca7c8a8a",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 155
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.8954243,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-2-r2/audit_R2",
+  "ended_at": "2026-10-11T13:12:22Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 19,
+  "pid": 9273,
+  "prompt_sha256": "a3e08d46c0c0ef15b2695b9e9eabcdea843608855afe61ef89be201e6489b309",
+  "provider": "claude_cli",
+  "result_text_sha256": "34146a2680781112df09a1f418fbbfca91864228a1bcf8e5207f8593790c459d",
+  "role": "reviewer",
+  "session_id": "76c2b25e-9190-46b6-9cc1-c393ca7c8a8a",
+  "session_id_requested": "76c2b25e-9190-46b6-9cc1-c393ca7c8a8a",
+  "started_at": "2026-10-11T13:07:12Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "49a0e6ca104e2de15ec88b716b2a69389a280983ae19442265d3d959f69ebbf3"
+ }
+}

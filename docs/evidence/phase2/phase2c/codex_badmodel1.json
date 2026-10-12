@@ -1,0 +1,519 @@
+{
+ "authority_checks": [
+  {
+   "check": "replay_same_ticket",
+   "expected": "execution_uncertain / DUPLICATE_OPERATION, no new attempt",
+   "observed": {
+    "attempts": [
+     2,
+     2
+    ],
+    "result": [
+     "execution_uncertain",
+     [],
+     "DUPLICATE_OPERATION"
+    ]
+   },
+   "pass": true
+  },
+  {
+   "check": "authority_closed_after_settlement",
+   "expected": "valid_until_us <= now, issued_by uri_supervisor_bridge",
+   "observed": {
+    "issued_by": "uri_supervisor_bridge",
+    "valid_from_us": 1791346838233866,
+    "valid_until_us": 1791346838233864
+   },
+   "pass": true
+  },
+  {
+   "check": "tampered_arguments",
+   "expected": "ARGUMENT_DIGEST_MISMATCH",
+   "observed": "ARGUMENT_DIGEST_MISMATCH",
+   "pass": true
+  },
+  {
+   "check": "other_confirmed_intent",
+   "expected": "APPROVAL_DIGEST_MISMATCH",
+   "observed": "APPROVAL_DIGEST_MISMATCH",
+   "pass": true
+  },
+  {
+   "check": "provider_change_at_ticket_level",
+   "expected": "ACCEPTED by verify_authority (ticket has no provider field); refused by SupervisedTurnRunner selection binding (see swap mode) and by registry/allowed_executors",
+   "observed": "ACCEPTED",
+   "pass": true
+  },
+  {
+   "check": "generation_change",
+   "expected": "TICKET_REFUSED",
+   "observed": "TICKET_REFUSED",
+   "pass": true
+  },
+  {
+   "check": "after_deadline",
+   "expected": "TICKET_REFUSED or TICKET_DEADLINE_PASSED",
+   "observed": "TICKET_REFUSED",
+   "pass": true
+  },
+  {
+   "check": "receipt_basis_is_ledger",
+   "expected": "basis uri_supervisor_postcondition_verified, supervisor_task == operation id",
+   "observed": [],
+   "pass": true
+  },
+  {
+   "check": "restart_revives_nothing",
+   "expected": "same state, same attempt count, zero open authorizations",
+   "observed": {
+    "attempts": [
+     2,
+     2
+    ],
+    "open_auth": 0,
+    "startup_report": [],
+    "state": [
+     "FAILED",
+     "FAILED"
+    ]
+   },
+   "pass": true
+  }
+ ],
+ "base": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2c_codex_badmodel1",
+ "direct_cli_status": "OK",
+ "direct_probe": {
+  "agent_text": "OK",
+  "auth_status": null,
+  "duration_s": 12.04,
+  "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\codex.CMD",
+  "exit": 0,
+  "failures": [],
+  "forwarded_env_keys": [
+   "COMSPEC",
+   "HOME",
+   "PATH",
+   "PATHEXT",
+   "SHELL",
+   "SYSTEMDRIVE",
+   "SYSTEMROOT",
+   "TEMP",
+   "TERM",
+   "TMP",
+   "USERNAME",
+   "USERPROFILE",
+   "WINDIR"
+  ],
+  "ok": true,
+  "result": null,
+  "status": "OK",
+  "stdout_sha256": "1e5f011b438af3a92666df0a02aee2d011013bd8b2b25d551aed205a22a477e3",
+  "version": "0.158.0"
+ },
+ "finished": "2026-10-07T09:50:38",
+ "interpreter": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe",
+ "mode": "run",
+ "model": "gpt-6.1-sol",
+ "provider": "codex_cli",
+ "registry_discover": [
+  {
+   "auth_state": "AUTH_UNVERIFIED",
+   "harness_id": "claude_code",
+   "installed": true,
+   "qualification": "NATIVE_UNQUALIFIED",
+   "required_user_action": "Run `claude` in the URI client profile terminal and sign in with your subscription (native login).",
+   "usable": false,
+   "version": "2.1.287"
+  },
+  {
+   "auth_state": "AUTHENTICATED",
+   "harness_id": "codex_cli",
+   "installed": true,
+   "qualification": "NATIVE_QUALIFIED",
+   "required_user_action": null,
+   "usable": true,
+   "version": "0.158.0"
+  },
+  {
+   "auth_state": "EXECUTE_REFUSED",
+   "harness_id": "antigravity",
+   "installed": true,
+   "qualification": "REFUSED",
+   "required_user_action": "Antigravity execution is refused until separately qualified.",
+   "usable": false,
+   "version": "1.2.16"
+  }
+ ],
+ "root": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent",
+ "run": {
+  "approval_requests_shown": [
+   {
+    "approval_digest": "6f740016cb9854b636772e724e9cd0d57f6a569afbb8227d2440c937f79a01de",
+    "arguments": {
+     "action": "external_harness_task",
+     "inputs": {
+      "expected_file": "pong.txt",
+      "instruction": "write the single word PONG into pong.txt"
+     }
+    },
+    "capability_id": "external_harness_task",
+    "intent_digest": "199384e6b43a5072ed60dc780c93ed3c6b8fc4c6d8d7a9eaf84715c2cd5c6356"
+   }
+  ],
+  "duration_s": 13.1,
+  "final_code": "SETTLED_EXECUTION_UNCERTAIN",
+  "final_message": "The action reported a failure, but URI cannot confirm that nothing changed. It will not repeat it automatically; check the result before retrying.",
+  "final_state": "execution_uncertain",
+  "ledger": {
+   "admissions": [
+    {
+     "attempt_id": 1,
+     "auth_id": 1,
+     "registration_id": 1,
+     "round": 1
+    },
+    {
+     "attempt_id": 2,
+     "auth_id": 1,
+     "registration_id": 1,
+     "round": 2
+    }
+   ],
+   "attempts": [
+    {
+     "argv_sha256": "6e8cf0bed552a1ac165290c09dcc988e9a5161b0e7dbdd4a5a54cefb0d336915",
+     "attempt_id": 1,
+     "end_reason": "exited_after_terminal_error_claim",
+     "ended_at_us": 1791346832034395,
+     "epoch": 1,
+     "executor_version": "0.158.0",
+     "exit_code": 1,
+     "job_name": "Local\\uri-sup-98a869b4b0e8-1-c06f48583af1d9a7",
+     "pid": 14764,
+     "pid_create_time": 134358204257428073,
+     "resume_of": null,
+     "session_id": "01a11497-5ad5-7112-a0b2-be9e570a2c12",
+     "spawned_at_us": 1791346825750063,
+     "status": "FENCED"
+    },
+    {
+     "argv_sha256": "6e8cf0bed552a1ac165290c09dcc988e9a5161b0e7dbdd4a5a54cefb0d336915",
+     "attempt_id": 2,
+     "end_reason": "exited_after_terminal_error_claim",
+     "ended_at_us": 1791346838228674,
+     "epoch": 1,
+     "executor_version": "0.158.0",
+     "exit_code": 1,
+     "job_name": "Local\\uri-sup-98a869b4b0e8-2-fdbd64e2ab452f26",
+     "pid": 9016,
+     "pid_create_time": 134358204320429723,
+     "resume_of": null,
+     "session_id": "01a11497-7365-7753-b5f6-13b442e6da7e",
+     "spawned_at_us": 1791346832044908,
+     "status": "FENCED"
+    }
+   ],
+   "authorizations": [
+    {
+     "auth_id": 1,
+     "issued_by": "uri_core.execution_ticket",
+     "scope_json": "{\"allowed_executors\":[\"codex_cli\"],\"allowed_op_classes\":[\"read\",\"local_write\"],\"approval_digest\":\"6f740016cb9854b636772e724e9cd0d57f6a569afbb8227d2440c937f79a01de\",\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"capability\":\"external_harness_task\",\"ticket_digest\":\"e8ad7aba9a70a819d3a1bb951404be74a72c7ae8fd55ac47ba3616d5d7a6d17a\",\"workspace\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_badmodel1\\\\client\\\\workspace\\\\cd006d1828e24b15a6785f032d5886cc\"}",
+     "superseded_at_us": 1791346838233866,
+     "valid_from_us": 1791346825000000,
+     "valid_until_us": 1791347425000000
+    },
+    {
+     "auth_id": 2,
+     "issued_by": "uri_supervisor_bridge",
+     "scope_json": "{\"allowed_executors\":[\"codex_cli\"],\"allowed_op_classes\":[\"read\",\"local_write\"],\"approval_digest\":\"6f740016cb9854b636772e724e9cd0d57f6a569afbb8227d2440c937f79a01de\",\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"capability\":\"external_harness_task\",\"ticket_digest\":\"e8ad7aba9a70a819d3a1bb951404be74a72c7ae8fd55ac47ba3616d5d7a6d17a\",\"workspace\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_badmodel1\\\\client\\\\workspace\\\\cd006d1828e24b15a6785f032d5886cc\"}",
+     "superseded_at_us": null,
+     "valid_from_us": 1791346838233866,
+     "valid_until_us": 1791346838233864
+    }
+   ],
+   "completion_records": [],
+   "decisions": [
+    {
+     "action": "RETRY_FRESH",
+     "attempt_id": 1,
+     "decision_id": 1,
+     "evidence_json": "{\"effects\":[{\"intent_id\":1,\"op_class\":\"local_write\",\"reason\":\"LOCAL_WRITE_ABSENCE_PROVEN\",\"safe\":true}],\"postconditions\":[{\"id\":1,\"kind\":\"file_regular_nonempty\",\"required\":true,\"status\":\"FAIL\"}],\"process\":\"DEAD_CONFIRMED\",\"session\":\"01a11497-5ad5-7112-a0b2-be9e570a2c12\",\"tail_incomplete\":false,\"terminal_claims\":[\"terminal_error_claim\"]}",
+     "outcome": "RETRY_SAFE",
+     "reason_code": "EXECUTOR_REPORTED_ERROR_RETRY_SAFE"
+    },
+    {
+     "action": "NONE",
+     "attempt_id": 2,
+     "decision_id": 2,
+     "evidence_json": "{\"effects\":[{\"intent_id\":2,\"op_class\":\"local_write\",\"reason\":\"LOCAL_WRITE_ABSENCE_PROVEN\",\"safe\":true}],\"postconditions\":[{\"id\":1,\"kind\":\"file_regular_nonempty\",\"required\":true,\"status\":\"FAIL\"}],\"process\":\"DEAD_CONFIRMED\",\"session\":\"01a11497-7365-7753-b5f6-13b442e6da7e\",\"tail_incomplete\":false,\"terminal_claims\":[\"terminal_error_claim\"]}",
+     "outcome": "FAILED",
+     "reason_code": "RETRY_BUDGET_EXHAUSTED"
+    }
+   ],
+   "evidence": [
+    {
+     "attempt_id": 1,
+     "evidence_id": 1,
+     "kind": "session",
+     "payload": "{\"session_id\":\"01a11497-5ad5-7112-a0b2-be9e570a2c12\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 1,
+     "evidence_id": 2,
+     "kind": "warning",
+     "payload": "{\"message\":\"Model metadata for `gpt-6.1-sol` not found. Defaulting to fallback metadata; this can degrade performance and cause issues.\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 1,
+     "evidence_id": 3,
+     "kind": "error_event",
+     "payload": "{\"message\":\"{\\\"type\\\":\\\"error\\\",\\\"status\\\":400,\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"The 'gpt-6.1-sol' model is not supported when using Codex with a ChatGPT account.\\\"}}\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 1,
+     "evidence_id": 4,
+     "kind": "terminal_error_claim",
+     "payload": "{\"message\":\"{\\\"type\\\":\\\"error\\\",\\\"status\\\":400,\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"The 'gpt-6.1-sol' model is not supported when using Codex with a ChatGPT account.\\\"}}\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 1,
+     "evidence_id": 5,
+     "kind": "process_identity",
+     "payload": "{\"active\":0,\"attempt_status_at_recovery\":\"FENCED\",\"create_time\":134358204257428073,\"identity\":\"DEAD\",\"job\":\"Local\\\\uri-sup-98a869b4b0e8-1-c06f48583af1d9a7\",\"job_exists\":false,\"pid\":14764,\"state\":\"DEAD_CONFIRMED\"}",
+     "source": "uri_observed"
+    },
+    {
+     "attempt_id": 1,
+     "evidence_id": 6,
+     "kind": "postcondition_check",
+     "payload": "{\"kind\":\"file_regular_nonempty\",\"observation\":{\"exists\":false,\"path\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_badmodel1\\\\client\\\\workspace\\\\cd006d1828e24b15a6785f032d5886cc\\\\pong.txt\",\"symlink\":false},\"status\":\"FAIL\"}",
+     "source": "uri_observed"
+    },
+    {
+     "attempt_id": 1,
+     "evidence_id": 7,
+     "kind": "effect_absent",
+     "payload": "{\"fingerprints_equal_to_pre_attempt\":true,\"paths\":[\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_badmodel1\\\\client\\\\workspace\\\\cd006d1828e24b15a6785f032d5886cc\"]}",
+     "source": "uri_verified"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 8,
+     "kind": "session",
+     "payload": "{\"session_id\":\"01a11497-7365-7753-b5f6-13b442e6da7e\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 9,
+     "kind": "warning",
+     "payload": "{\"message\":\"Model metadata for `gpt-6.1-sol` not found. Defaulting to fallback metadata; this can degrade performance and cause issues.\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 10,
+     "kind": "error_event",
+     "payload": "{\"message\":\"{\\\"type\\\":\\\"error\\\",\\\"status\\\":400,\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"The 'gpt-6.1-sol' model is not supported when using Codex with a ChatGPT account.\\\"}}\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 11,
+     "kind": "terminal_error_claim",
+     "payload": "{\"message\":\"{\\\"type\\\":\\\"error\\\",\\\"status\\\":400,\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"The 'gpt-6.1-sol' model is not supported when using Codex with a ChatGPT account.\\\"}}\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 12,
+     "kind": "process_identity",
+     "payload": "{\"active\":0,\"attempt_status_at_recovery\":\"FENCED\",\"create_time\":134358204320429723,\"identity\":\"DEAD\",\"job\":\"Local\\\\uri-sup-98a869b4b0e8-2-fdbd64e2ab452f26\",\"job_exists\":false,\"pid\":9016,\"state\":\"DEAD_CONFIRMED\"}",
+     "source": "uri_observed"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 13,
+     "kind": "postcondition_check",
+     "payload": "{\"kind\":\"file_regular_nonempty\",\"observation\":{\"exists\":false,\"path\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_badmodel1\\\\client\\\\workspace\\\\cd006d1828e24b15a6785f032d5886cc\\\\pong.txt\",\"symlink\":false},\"status\":\"FAIL\"}",
+     "source": "uri_observed"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 14,
+     "kind": "effect_absent",
+     "payload": "{\"fingerprints_equal_to_pre_attempt\":true,\"paths\":[\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_badmodel1\\\\client\\\\workspace\\\\cd006d1828e24b15a6785f032d5886cc\"]}",
+     "source": "uri_verified"
+    }
+   ],
+   "postcondition_results": [
+    {
+     "attempt_id": 1,
+     "checked_at_us": 1791346832036607,
+     "evidence_id": 6,
+     "postcondition_id": 1,
+     "result_id": 1,
+     "status": "FAIL",
+     "task_id": "8025b56f-cf74-4466-a93b-32f57b5aaaa5"
+    },
+    {
+     "attempt_id": 2,
+     "checked_at_us": 1791346838231267,
+     "evidence_id": 13,
+     "postcondition_id": 1,
+     "result_id": 2,
+     "status": "FAIL",
+     "task_id": "8025b56f-cf74-4466-a93b-32f57b5aaaa5"
+    }
+   ],
+   "stream": [
+    {
+     "attempt_id": 1,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 1,
+     "raw": "{\"type\":\"thread.started\",\"thread_id\":\"01a11497-5ad5-7112-a0b2-be9e570a2c12\"}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 1,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 2,
+     "raw": "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"Model metadata for `gpt-6.1-sol` not found. Defaulting to fallback metadata; this can degrade performance and cause issues.\"}}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 1,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 3,
+     "raw": "{\"type\":\"turn.started\"}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 1,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 4,
+     "raw": "{\"type\":\"error\",\"message\":\"{\\\"type\\\":\\\"error\\\",\\\"status\\\":400,\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"The 'gpt-6.1-sol' model is not supported when using Codex with a ChatGPT account.\\\"}}\"}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 1,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 5,
+     "raw": "{\"type\":\"turn.failed\",\"error\":{\"message\":\"{\\\"type\\\":\\\"error\\\",\\\"status\\\":400,\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"The 'gpt-6.1-sol' model is not supported when using Codex with a ChatGPT account.\\\"}}\"}}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 1,
+     "raw": "{\"type\":\"thread.started\",\"thread_id\":\"01a11497-7365-7753-b5f6-13b442e6da7e\"}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 2,
+     "raw": "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"Model metadata for `gpt-6.1-sol` not found. Defaulting to fallback metadata; this can degrade performance and cause issues.\"}}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 3,
+     "raw": "{\"type\":\"turn.started\"}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 4,
+     "raw": "{\"type\":\"error\",\"message\":\"{\\\"type\\\":\\\"error\\\",\\\"status\\\":400,\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"The 'gpt-6.1-sol' model is not supported when using Codex with a ChatGPT account.\\\"}}\"}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 5,
+     "raw": "{\"type\":\"turn.failed\",\"error\":{\"message\":\"{\\\"type\\\":\\\"error\\\",\\\"status\\\":400,\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"The 'gpt-6.1-sol' model is not supported when using Codex with a ChatGPT account.\\\"}}\"}}\n",
+     "stream": "stdout"
+    }
+   ],
+   "task": {
+    "attempt_count": 2,
+    "base_priority": 0,
+    "basis_kind": null,
+    "basis_ref": null,
+    "completion_ref": null,
+    "created_at_us": 1791346825738159,
+    "current_fence": null,
+    "enqueue_round": 0,
+    "enter_decision_hwm": 0,
+    "enter_evidence_hwm": 14,
+    "max_attempts": 2,
+    "principal": "f93cbf5a-c77d-4a30-9090-ec56eb40a97b",
+    "reason_code": "RETRY_BUDGET_EXHAUSTED",
+    "reason_detail": "",
+    "request_json": "{\"action\":\"external_harness_task\",\"approval_digest\":\"6f740016cb9854b636772e724e9cd0d57f6a569afbb8227d2440c937f79a01de\",\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"capability_id\":\"external_harness_task\",\"expected_file\":\"pong.txt\",\"intent_digest\":\"199384e6b43a5072ed60dc780c93ed3c6b8fc4c6d8d7a9eaf84715c2cd5c6356\",\"model\":\"gpt-6.1-sol\",\"operation_id\":\"8025b56f-cf74-4466-a93b-32f57b5aaaa5\",\"provider\":\"codex_cli\",\"run_id\":\"cd006d1828e24b15a6785f032d5886cc\",\"session_id\":\"7b12470e-091d-40cc-a59e-1470221b6bf7\",\"ticket_digest\":\"e8ad7aba9a70a819d3a1bb951404be74a72c7ae8fd55ac47ba3616d5d7a6d17a\",\"turn_id\":\"07e95379-cc9f-4d0f-b4c1-c8b8c2d7e9b5\"}",
+    "request_sha256": "26ec2f35384f3c354cd19f455d49410d9547092af7b2360d4199630f491c0f14",
+    "requirements_json": "{\"capabilities\":[\"harness_task\"],\"effects\":[{\"context\":{},\"idempotency_key\":null,\"op_class\":\"local_write\",\"operation\":\"harness_task\",\"params\":{\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"expected_file\":\"pong.txt\"},\"paths\":[\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_badmodel1\\\\client\\\\workspace\\\\cd006d1828e24b15a6785f032d5886cc\"],\"target\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_badmodel1\\\\client\\\\workspace\\\\cd006d1828e24b15a6785f032d5886cc\"}],\"executors\":[\"codex_cli\"]}",
+    "state": "FAILED",
+    "state_changed_at_us": 1791346838232896,
+    "task_id": "8025b56f-cf74-4466-a93b-32f57b5aaaa5",
+    "task_seq": 1,
+    "timezone": null
+   }
+  },
+  "receipt_evidence": [],
+  "receipts_sent": [
+   {
+    "client_id": "974fbdb8-f99a-47f3-8181-ab3eef2997da",
+    "evidence": [],
+    "failure_category": "SUPERVISOR_FAILED:RETRY_BUDGET_EXHAUSTED",
+    "implementation_digest": "1b7ac269056f8b04905e5762685d09af2095527597ef05c5f5f88dedea045813",
+    "operation_id": "8025b56f-cf74-4466-a93b-32f57b5aaaa5",
+    "outcome": "failed",
+    "principal_id": "f93cbf5a-c77d-4a30-9090-ec56eb40a97b",
+    "run_id": "08252554-1589-4311-a934-7b96c9059145",
+    "schema_version": "uri.client.v1",
+    "server_id": "dfb89e9b-a145-4cb0-b7e3-38be7f47262d",
+    "session_id": "7b12470e-091d-40cc-a59e-1470221b6bf7",
+    "state_version": 1,
+    "ticket_digest": "e8ad7aba9a70a819d3a1bb951404be74a72c7ae8fd55ac47ba3616d5d7a6d17a",
+    "turn_id": "07e95379-cc9f-4d0f-b4c1-c8b8c2d7e9b5",
+    "verifier_id": "uri.client.harness_output_check.v1"
+   }
+  ],
+  "result_files": [],
+  "server_calls": [
+   "/client/v1/turns",
+   "/client/v1/turns/07e95379-cc9f-4d0f-b4c1-c8b8c2d7e9b5/approval",
+   "/client/v1/turns/07e95379-cc9f-4d0f-b4c1-c8b8c2d7e9b5/claim",
+   "/client/v1/turns/07e95379-cc9f-4d0f-b4c1-c8b8c2d7e9b5/settle"
+  ],
+  "server_turn_record": {
+   "dispatched": true,
+   "execution_closed": null,
+   "execution_outcome": null,
+   "execution_reported": "failed",
+   "operation_id": "8025b56f-cf74-4466-a93b-32f57b5aaaa5",
+   "state": "execution_uncertain"
+  },
+  "turn_id": "07e95379-cc9f-4d0f-b4c1-c8b8c2d7e9b5"
+ },
+ "started": "2026-10-07T09:50:23",
+ "tag": "codex_badmodel1"
+}

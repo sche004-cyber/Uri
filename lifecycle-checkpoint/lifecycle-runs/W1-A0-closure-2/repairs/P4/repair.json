@@ -1,0 +1,101 @@
+{
+ "addresses": [
+  "R4-01",
+  "R4-02"
+ ],
+ "changed": [
+  "tests/web/test_w1_closure_r4_review_regressions.py",
+  "uri_web/synthesize.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+ "ended_at": "2026-10-11T10:22:28Z",
+ "pre": "462be42c992c273155e83801b32dc01580a897ef",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/web/test_w1_closure_r4_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 4,
+ "report": {
+  "not_repaired": [],
+  "notes": "R4-01: _BARE tld group widened from [^\\W\\d_]{2,24} to (?i:[a-z0-9]{2}--[\\w-]{1,59})|[^\\W\\d_]{2,63}, and _is_domain returns True for any ACE ('xx--') label in host or tld before the _SENTENCE_WORDS/CJK exceptions. This fixes has_link_or_contact, verify, extractive, mask_links and build_surface. R4-02: gap_ok allows determiners, or one determiner plus at most 2 words from the fixed allow-list _PLAIN_MODIFIERS (long lengthy public formal official detailed). Any other skipped word fails closed, so the result no longer depends on states_quantity. _QUANTITY gained \\w+ennial(ly), unanimous(ly), unanimity, fraction(s), trio(s), quartet(s), midnight, noon, gross as a second check only. Chose the allow-list over determiners-only because 3 existing tests (test_w1_d7_verbatim_numbers::test_claim_without_quantity_is_still_checked_not_quoted, test_w1_r2...::test_r2_02_excerpts_and_modifier_drops_are_still_the_brains_words, test_w1_r3...::test_r3_02_noun_phrase_modifiers_may_still_be_left_out) require 'after a long public consultation' to stay unquoted, and tests must not be weakened. Determiners-only needs owner approval to invert them. tests/web plus tests/assist: 2897 passed. New file on clean 462be42: 39 failed, 4 passed; the passes are the ordinary-text guard and the www2.refunds.xn--80asehdb case, which _OTHER's www rule already caught. The claim that real TLDs are letters-only or ACE-form comes from the RFCs; the IANA root zone list was not fetched. No graphify write commands run.",
+  "regression_tests": [
+   "tests/web/test_w1_closure_r4_review_regressions.py"
+  ],
+  "repaired": [
+   "R4-01",
+   "R4-02"
+  ]
+ },
+ "started_at": "2026-10-11T10:18:14Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "001790cf-b8ca-4bfb-b262-0461c7828010",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 77
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7770764000000001,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T10:22:22Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 13,
+  "pid": 19250,
+  "prompt_sha256": "ea2a44a21554ebdcb51b45c2da913814df1c210a42503a26c77d38161e03993e",
+  "provider": "claude_cli",
+  "result_text_sha256": "213bc8c0bc5afe7429dbb7faf5f41cb0b4932cd588ab6cd81a9c2dd350eef32a",
+  "role": "implementer",
+  "session_id": "001790cf-b8ca-4bfb-b262-0461c7828010",
+  "session_id_requested": "001790cf-b8ca-4bfb-b262-0461c7828010",
+  "started_at": "2026-10-11T10:18:14Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "377357cb10c17929a841b9eee476ab8f58ae9716d28f43b6617c52e18c9c20a7"
+ }
+}

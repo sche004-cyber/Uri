@@ -1,0 +1,479 @@
+{
+ "fast/C": {
+  "n": 14,
+  "score": 0.92,
+  "ttft_p50": 0.336,
+  "ttfa_p50": 0.475,
+  "total_p50": 0.781,
+  "total_p95": 1.174,
+  "gen_tps_p50": 136.4,
+  "prefill_tps_p50": 970.1,
+  "gen_tokens_p50": 67,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 0
+ },
+ "fast/D": {
+  "n": 72,
+  "score": 0.722,
+  "ttft_p50": 0.769,
+  "ttfa_p50": 1.234,
+  "total_p50": 1.712,
+  "total_p95": 2.435,
+  "gen_tps_p50": 132.8,
+  "prefill_tps_p50": 2972.4,
+  "gen_tokens_p50": 139,
+  "errors": 0,
+  "truncated": 0,
+  "invalid": 13,
+  "golden_acc": 0.789,
+  "extra_acc": 0.467,
+  "categories": {
+   "correct": 52,
+   "invalid": 13,
+   "under_tooling": 1,
+   "false_capability": 1,
+   "false_unsupported": 1,
+   "missed_continuation": 1,
+   "mismatch": 3
+  }
+ },
+ "fast/DG": {
+  "n": 72,
+  "score": 0.875,
+  "ttft_p50": 0.773,
+  "ttfa_p50": 1.128,
+  "total_p50": 1.705,
+  "total_p95": 2.354,
+  "gen_tps_p50": 132.2,
+  "prefill_tps_p50": 2957.0,
+  "gen_tokens_p50": 128,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/F": {
+  "n": 30,
+  "score": 1.0,
+  "ttft_p50": 0.329,
+  "ttfa_p50": 0.411,
+  "total_p50": 0.473,
+  "total_p95": 1.24,
+  "gen_tps_p50": 138.8,
+  "prefill_tps_p50": 217.2,
+  "gen_tokens_p50": 23,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/H": {
+  "n": 22,
+  "score": 0.909,
+  "ttft_p50": 0.323,
+  "ttfa_p50": 0.446,
+  "total_p50": 0.642,
+  "total_p95": 1.815,
+  "gen_tps_p50": 137.1,
+  "prefill_tps_p50": 243.5,
+  "gen_tokens_p50": 48,
+  "errors": 0,
+  "truncated": 0,
+  "over_escalation": 0,
+  "under_escalation": 1
+ },
+ "fast/L": {
+  "n": 3,
+  "score": 0.4,
+  "ttft_p50": 6.156,
+  "ttfa_p50": 2.704,
+  "total_p50": 10.957,
+  "total_p95": 20.34,
+  "gen_tps_p50": 124.1,
+  "prefill_tps_p50": 2694.8,
+  "gen_tokens_p50": 600,
+  "errors": 0,
+  "truncated": 2,
+  "by_size": {
+   "l_4k": {
+    "score": 0.8,
+    "prompt_tokens": 4176,
+    "total_s": 3.127,
+    "prefill_tps": 3216.0,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": false,
+     "entity_set": true
+    }
+   },
+   "l_16k": {
+    "score": 0.2,
+    "prompt_tokens": 15707,
+    "total_s": 10.957,
+    "prefill_tps": 2694.8,
+    "checks": {
+     "valid_json": false,
+     "no_roll_numbers": true,
+     "current_date": false,
+     "ordinal_reference": false,
+     "entity_set": false
+    }
+   },
+   "l_32k": {
+    "score": 0.2,
+    "prompt_tokens": 31024,
+    "total_s": 20.34,
+    "prefill_tps": 2104.5,
+    "checks": {
+     "valid_json": false,
+     "no_roll_numbers": true,
+     "current_date": false,
+     "ordinal_reference": false,
+     "entity_set": false
+    }
+   }
+  }
+ },
+ "fast/O": {
+  "n": 4,
+  "score": 0.712,
+  "ttft_p50": 0.356,
+  "ttfa_p50": 0.474,
+  "total_p50": 1.158,
+  "total_p95": 1.713,
+  "gen_tps_p50": 138.3,
+  "prefill_tps_p50": 964.3,
+  "gen_tokens_p50": 115,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/P": {
+  "n": 12,
+  "score": 0.833,
+  "ttft_p50": null,
+  "ttfa_p50": null,
+  "total_p50": null,
+  "total_p95": null,
+  "gen_tps_p50": null,
+  "prefill_tps_p50": null,
+  "gen_tokens_p50": null,
+  "errors": 1,
+  "truncated": 0,
+  "proposer_invalid": 0,
+  "failed_ids": [
+   "p09_vague_reference",
+   "p10_plain_save"
+  ]
+ },
+ "fast/R": {
+  "n": 12,
+  "score": 0.833,
+  "ttft_p50": 0.348,
+  "ttfa_p50": 0.993,
+  "total_p50": 1.039,
+  "total_p95": 2.304,
+  "gen_tps_p50": 137.1,
+  "prefill_tps_p50": 931.5,
+  "gen_tokens_p50": 101,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/S": {
+  "n": 12,
+  "score": 0.972,
+  "ttft_p50": 0.335,
+  "ttfa_p50": 0.861,
+  "total_p50": 1.267,
+  "total_p95": 1.334,
+  "gen_tps_p50": 137.3,
+  "prefill_tps_p50": 844.0,
+  "gen_tokens_p50": 130,
+  "errors": 0,
+  "truncated": 0,
+  "prompt_score": 0.972,
+  "prompt_valid": 6,
+  "prompt_hallucinated_fields": 1,
+  "grammar_score": 0.972,
+  "grammar_valid": 6,
+  "grammar_hallucinated_fields": 1
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\gptoss-20b\20261005-234119
+{
+ "deep/C": {
+  "n": 14,
+  "score": 0.92,
+  "ttft_p50": 0.342,
+  "ttfa_p50": 3.28,
+  "total_p50": 3.6,
+  "total_p95": 5.258,
+  "gen_tps_p50": 136.8,
+  "prefill_tps_p50": 1017.4,
+  "gen_tokens_p50": 449,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 0
+ },
+ "deep/D": {
+  "n": 72,
+  "score": 0.375,
+  "ttft_p50": 0.821,
+  "ttfa_p50": 10.988,
+  "total_p50": 44.367,
+  "total_p95": 46.746,
+  "gen_tps_p50": 131.2,
+  "prefill_tps_p50": 2960.3,
+  "gen_tokens_p50": 5716,
+  "errors": 0,
+  "truncated": 34,
+  "invalid": 34,
+  "golden_acc": 0.351,
+  "extra_acc": 0.467,
+  "categories": {
+   "correct": 27,
+   "invalid": 34,
+   "false_unsupported": 3,
+   "false_clarification": 3,
+   "under_tooling": 2,
+   "mismatch": 3
+  }
+ },
+ "deep/H": {
+  "n": 22,
+  "score": 0.818,
+  "ttft_p50": 0.329,
+  "ttfa_p50": 1.298,
+  "total_p50": 1.655,
+  "total_p95": 29.9,
+  "gen_tps_p50": 137.1,
+  "prefill_tps_p50": 268.7,
+  "gen_tokens_p50": 186,
+  "errors": 0,
+  "truncated": 3,
+  "over_escalation": 0,
+  "under_escalation": 1
+ },
+ "deep/P": {
+  "n": 12,
+  "score": 0.333,
+  "ttft_p50": null,
+  "ttfa_p50": null,
+  "total_p50": null,
+  "total_p95": null,
+  "gen_tps_p50": null,
+  "prefill_tps_p50": null,
+  "gen_tokens_p50": null,
+  "errors": 4,
+  "truncated": 0,
+  "proposer_invalid": 6,
+  "failed_ids": [
+   "p01_ambiguous_reference_full_loop",
+   "p02_followup_reuses_referent",
+   "p03_correction",
+   "p04_implicit_fact",
+   "p05_conversation",
+   "p08_injected_approval",
+   "p11_preference_statement",
+   "p12_typed_confirm_never_confirms"
+  ]
+ },
+ "deep/R": {
+  "n": 12,
+  "score": 0.917,
+  "ttft_p50": 0.359,
+  "ttfa_p50": 3.958,
+  "total_p50": 4.853,
+  "total_p95": 11.738,
+  "gen_tps_p50": 137.3,
+  "prefill_tps_p50": 1066.2,
+  "gen_tokens_p50": 621,
+  "errors": 0,
+  "truncated": 1
+ },
+ "normal/C": {
+  "n": 14,
+  "score": 0.968,
+  "ttft_p50": 0.336,
+  "ttfa_p50": 1.262,
+  "total_p50": 1.488,
+  "total_p95": 1.817,
+  "gen_tps_p50": 136.9,
+  "prefill_tps_p50": 971.3,
+  "gen_tokens_p50": 152,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 0
+ },
+ "normal/D": {
+  "n": 72,
+  "score": 0.75,
+  "ttft_p50": 0.779,
+  "ttfa_p50": 4.165,
+  "total_p50": 4.844,
+  "total_p95": 10.311,
+  "gen_tps_p50": 133.0,
+  "prefill_tps_p50": 2993.4,
+  "gen_tokens_p50": 548,
+  "errors": 0,
+  "truncated": 1,
+  "invalid": 1,
+  "golden_acc": 0.772,
+  "extra_acc": 0.667,
+  "categories": {
+   "correct": 54,
+   "invalid": 1,
+   "false_clarification": 6,
+   "under_tooling": 3,
+   "missed_continuation": 1,
+   "false_capability": 1,
+   "false_unsupported": 1,
+   "mismatch": 5
+  }
+ },
+ "normal/H": {
+  "n": 22,
+  "score": 0.864,
+  "ttft_p50": 0.325,
+  "ttfa_p50": 0.772,
+  "total_p50": 0.988,
+  "total_p95": 2.851,
+  "gen_tps_p50": 137.2,
+  "prefill_tps_p50": 265.5,
+  "gen_tokens_p50": 95,
+  "errors": 0,
+  "truncated": 0,
+  "over_escalation": 0,
+  "under_escalation": 2
+ },
+ "normal/P": {
+  "n": 12,
+  "score": 0.667,
+  "ttft_p50": null,
+  "ttfa_p50": null,
+  "total_p50": null,
+  "total_p95": null,
+  "gen_tps_p50": null,
+  "prefill_tps_p50": null,
+  "gen_tokens_p50": null,
+  "errors": 2,
+  "truncated": 0,
+  "proposer_invalid": 1,
+  "failed_ids": [
+   "p05_conversation",
+   "p08_injected_approval",
+   "p10_plain_save",
+   "p11_preference_statement"
+  ]
+ },
+ "normal/R": {
+  "n": 12,
+  "score": 0.917,
+  "ttft_p50": 0.354,
+  "ttfa_p50": 2.363,
+  "total_p50": 2.407,
+  "total_p95": 4.291,
+  "gen_tps_p50": 137.3,
+  "prefill_tps_p50": 1037.7,
+  "gen_tokens_p50": 283,
+  "errors": 0,
+  "truncated": 0
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\gptoss-20b\20261005-235144
+{
+ "fast/L": {
+  "n": 3,
+  "score": 0.6,
+  "ttft_p50": 6.078,
+  "ttfa_p50": 23.193,
+  "total_p50": 23.54,
+  "total_p95": 36.583,
+  "gen_tps_p50": 124.9,
+  "prefill_tps_p50": 2713.9,
+  "gen_tokens_p50": 2186,
+  "errors": 0,
+  "truncated": 0,
+  "by_size": {
+   "l_4k": {
+    "score": 0.6,
+    "prompt_tokens": 4173,
+    "total_s": 2.734,
+    "prefill_tps": 3240.9,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": false,
+     "entity_set": false
+    }
+   },
+   "l_16k": {
+    "score": 0.6,
+    "prompt_tokens": 15707,
+    "total_s": 23.54,
+    "prefill_tps": 2713.9,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": false,
+     "entity_set": false
+    }
+   },
+   "l_32k": {
+    "score": 0.6,
+    "prompt_tokens": 31024,
+    "total_s": 36.583,
+    "prefill_tps": 2112.1,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": false,
+     "entity_set": false
+    }
+   }
+  }
+ },
+ "fast/O": {
+  "n": 4,
+  "score": 0.712,
+  "ttft_p50": 0.356,
+  "ttfa_p50": 0.479,
+  "total_p50": 1.172,
+  "total_p95": 1.623,
+  "gen_tps_p50": 138.4,
+  "prefill_tps_p50": 930.3,
+  "gen_tokens_p50": 115,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/P": {
+  "n": 12,
+  "score": 1.0,
+  "ttft_p50": null,
+  "ttfa_p50": null,
+  "total_p50": null,
+  "total_p95": null,
+  "gen_tps_p50": null,
+  "prefill_tps_p50": null,
+  "gen_tokens_p50": null,
+  "errors": 0,
+  "truncated": 0,
+  "proposer_invalid": 0,
+  "failed_ids": []
+ },
+ "fast/RH": {
+  "n": 8,
+  "score": 0.625,
+  "ttft_p50": 0.356,
+  "ttfa_p50": 3.576,
+  "total_p50": 3.642,
+  "total_p95": 14.043,
+  "gen_tps_p50": 137.9,
+  "prefill_tps_p50": 1173.4,
+  "gen_tokens_p50": 457,
+  "errors": 0,
+  "truncated": 0
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\gptoss-20b\20261006-080408

@@ -1,0 +1,112 @@
+[
+ {
+  "label": "ub512",
+  "extra": [
+   "-b",
+   "2048",
+   "-ub",
+   "512"
+  ],
+  "decision_ttft_p50": 1.033,
+  "decision_total_p50": 2.501,
+  "decision_correct": 11.0,
+  "long_prompt_tokens": 17935,
+  "long_prefill_tps": 1841.9,
+  "long_ttft_s": 10.039,
+  "long_repeat_ttft_s": 0.292,
+  "resources": {
+   "load_seconds": 7.51,
+   "vram_dedicated_before_load_mib": 964.2,
+   "vram_dedicated_now_mib": 15471.8,
+   "server_rss_now_mib": 1250.5,
+   "system_available_ram_mib": 14864.0,
+   "peak_server_rss_mib": 1248.9,
+   "peak_vram_dedicated_mib": 15471.8,
+   "min_system_available_ram_mib": 14837.4,
+   "mean_server_cpu_pct_of_machine": 1.7
+  }
+ },
+ {
+  "label": "ub1024",
+  "extra": [
+   "-b",
+   "2048",
+   "-ub",
+   "1024"
+  ],
+  "decision_ttft_p50": 0.962,
+  "decision_total_p50": 2.424,
+  "decision_correct": 11.0,
+  "long_prompt_tokens": 17935,
+  "long_prefill_tps": 2158.1,
+  "long_ttft_s": 8.608,
+  "long_repeat_ttft_s": 0.29,
+  "resources": {
+   "load_seconds": 6.21,
+   "vram_dedicated_before_load_mib": 961.4,
+   "vram_dedicated_now_mib": 15594.4,
+   "server_rss_now_mib": 1324.8,
+   "system_available_ram_mib": 14786.1,
+   "peak_server_rss_mib": 1324.8,
+   "peak_vram_dedicated_mib": 15594.4,
+   "min_system_available_ram_mib": 14770.8,
+   "mean_server_cpu_pct_of_machine": 1.7
+  }
+ },
+ {
+  "label": "ub2048",
+  "extra": [
+   "-b",
+   "2048",
+   "-ub",
+   "2048"
+  ],
+  "decision_ttft_p50": 0.929,
+  "decision_total_p50": 2.377,
+  "decision_correct": 11.0,
+  "long_prompt_tokens": 17935,
+  "long_prefill_tps": 2168.2,
+  "long_ttft_s": 8.577,
+  "long_repeat_ttft_s": 0.302,
+  "resources": {
+   "load_seconds": 6.23,
+   "vram_dedicated_before_load_mib": 961.4,
+   "vram_dedicated_now_mib": 15820.3,
+   "server_rss_now_mib": 1472.0,
+   "system_available_ram_mib": 14486.5,
+   "peak_server_rss_mib": 1469.9,
+   "peak_vram_dedicated_mib": 15820.3,
+   "min_system_available_ram_mib": 14485.9,
+   "mean_server_cpu_pct_of_machine": 1.8
+  }
+ },
+ {
+  "label": "ub_best_cache1024",
+  "extra": [
+   "-b",
+   "2048",
+   "-ub",
+   "2048",
+   "--cache-ram",
+   "1024"
+  ],
+  "decision_ttft_p50": 0.916,
+  "decision_total_p50": 2.386,
+  "decision_correct": 11.0,
+  "long_prompt_tokens": 17935,
+  "long_prefill_tps": 2164.7,
+  "long_ttft_s": 8.599,
+  "long_repeat_ttft_s": 0.313,
+  "resources": {
+   "load_seconds": 6.23,
+   "vram_dedicated_before_load_mib": 961.4,
+   "vram_dedicated_now_mib": 15820.3,
+   "server_rss_now_mib": 1472.9,
+   "system_available_ram_mib": 14517.0,
+   "peak_server_rss_mib": 1470.6,
+   "peak_vram_dedicated_mib": 15820.3,
+   "min_system_available_ram_mib": 14489.3,
+   "mean_server_cpu_pct_of_machine": 1.8
+  }
+ }
+]

@@ -1,0 +1,225 @@
+{
+ "started": "2026-10-08T10:53:08",
+ "gates": {
+  "phase2": {
+   "exit": 0,
+   "passed": 472,
+   "failed": 0,
+   "skipped": 2,
+   "errors": 0,
+   "line": "472 passed, 2 skipped, 1 warning in 478.14s (0:07:58)",
+   "PASS": true
+  },
+  "authority": {
+   "exit": 0,
+   "passed": 134,
+   "failed": 0,
+   "skipped": 0,
+   "errors": 0,
+   "line": "134 passed, 1 warning in 169.13s (0:02:49)",
+   "PASS": true
+  },
+  "phase1-full": {
+   "exit": 1,
+   "passed": 2676,
+   "failed": 11,
+   "skipped": 11,
+   "errors": 0,
+   "line": "11 failed, 2676 passed, 11 skipped, 3 warnings, 88 subtests passed in 672.61s (0:11:12)",
+   "failed_ids": [
+    "step3_test.py::test_drive",
+    "step4_test.py::test_download",
+    "test_capability_directory.py::PrivacyTests::test_no_credentials_tokens_or_secrets_appear_in_serialized_output",
+    "test_m20_feasibility_validation.py::UnavailableCapabilityIsNotPromotedTests::test_strict_single_action_proposal_for_unavailable_capability_falls_back",
+    "test_m20_recovery_loop.py::CapabilityPlannerFailureReachesRecoveryTests::test_capability_planner_failure_reaches_recovery_loop",
+    "test_m20_recovery_loop.py::LearnedSkillFailureReachesRecoveryTests::test_learned_skill_failure_reaches_recovery_loop",
+    "test_m20_semantic_interpreter_resilience.py::SemanticInterpreterFailureDegradesHonestlyTests::test_capability_planner_gets_the_degraded_result_without_raising",
+    "test_m20_semantic_interpreter_resilience.py::SemanticInterpreterFailureDegradesHonestlyTests::test_raising_interpreter_does_not_fail_the_whole_turn",
+    "test_orchestrator_session_workflow.py::TestOrchestratorSessionWorkflow::test_session_facts_are_used_for_clarification",
+    "test_usage_import_boundary.py::test_orchestrator_newline_count_does_not_increase",
+    "test_workflow_restart_recovery.py::TestWorkflowRestartRecovery::test_workflow_survives_restart_and_resumes"
+   ],
+   "baseline_log": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\evidence\\phase2ops_r6\\phase1_full.log",
+   "SAME_FAILURE_SET": true,
+   "total": 2698,
+   "baseline_total": 2698,
+   "ollama_base_url": "http://127.0.0.1:9",
+   "PASS": true
+  },
+  "residue": {
+   "removed": [],
+   "PASS": true
+  },
+  "flutter": {
+   "exit": 0,
+   "passed": 205,
+   "skipped": 2,
+   "failed": 0,
+   "verdict": "All tests passed!",
+   "PASS": true
+  },
+  "bridge": {
+   "runs": 10,
+   "passed": 10,
+   "refusal_lines": 0,
+   "results": [
+    {
+     "run": 1,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 2,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 3,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 4,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 5,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 6,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 7,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 8,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 9,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 10,
+     "exit": 0,
+     "flutter_exit": 0
+    }
+   ],
+   "PASS": true
+  },
+  "native": {
+   "exit": 0,
+   "runs": {
+    "lifecycle": {
+     "state": "completed",
+     "reason": null,
+     "code": "SETTLED_VERIFIED",
+     "pid_after_cancel": null
+    },
+    "mid_run_cancel": {
+     "state": "uncertain",
+     "reason": "CANCELLED_AFTER_DISPATCH",
+     "code": "SETTLED_EXECUTION_UNCERTAIN",
+     "pid_after_cancel": "DEAD"
+    },
+    "_qualification": "PERSISTED NATIVE_QUALIFIED",
+    "_report": [
+     "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\evidence\\phase2oq\\chain4\\native\\codex_cli_lifecycle_111730.json"
+    ]
+   },
+   "PASS": true
+  },
+  "native-worker": {
+   "exit": 0,
+   "summary": {
+    "tag": "native_worker_111819",
+    "probe": "OK",
+    "logged_in": false,
+    "W": {
+     "result": "OK",
+     "code": null,
+     "state": "approval_required",
+     "approval_request": true,
+     "execution_proposal": true
+    },
+    "W_begin": {
+     "code": "HARNESS_NOT_USABLE",
+     "result": "REFUSED"
+    },
+    "W_harness": {
+     "auth_state": "NOT_AUTHENTICATED",
+     "qualification": "NATIVE_QUALIFIED",
+     "reason": "HARNESS_NOT_USABLE",
+     "required_user_action": "Run `codex login` in the URI client profile terminal (native login).",
+     "usable": false
+    },
+    "W_codex_row": [
+     {
+      "evidence_sha256": "c7add5c353d054e60ba2f777a38c79aebb8881f8f02f72dc1d7aad1d492047e5",
+      "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+      "executable_sha256": "af02050cc0c95f5aeb714af2c1077e635c58e9896c13c89d75099cf5b96477be",
+      "expires_at": 1794030502,
+      "level": "NATIVE_QUALIFIED",
+      "models": [
+       null
+      ],
+      "path": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2oq_native_worker_111819_2fa4ce2d\\client\\control\\supervisor\\qualification\\codex_cli.json",
+      "pinned_files": 33,
+      "provider": "codex_cli",
+      "qualified_at": 1791438502,
+      "reason": null,
+      "status": "QUALIFIED",
+      "version": "0.158.0"
+     }
+    ],
+    "W2": [
+     [
+      "INVALIDATED",
+      "CODEX_WINDOWS_SANDBOX_NOT_CONFIGURED"
+     ]
+    ],
+    "W3": [
+     [
+      "INVALIDATED",
+      "LAUNCH_CHAIN_RESOLUTION_CHANGED"
+     ]
+    ],
+    "L": {
+     "lifecycle": {
+      "state": "completed",
+      "code": "SETTLED_VERIFIED",
+      "reason": null,
+      "pid_after": null,
+      "survivors": null,
+      "files": [
+       {
+        "content": "PONG",
+        "path": "workspace\\results\\9224351b8c66483da49c01830b8c4c9d\\pong.txt"
+       }
+      ]
+     },
+     "mid_run_cancel": {
+      "state": "uncertain",
+      "code": "SETTLED_EXECUTION_UNCERTAIN",
+      "reason": "CANCELLED_AFTER_DISPATCH",
+      "pid_after": "DEAD",
+      "survivors": 0,
+      "files": null
+     }
+    }
+   },
+   "PASS": true
+  }
+ },
+ "finished": "2026-10-08T11:18:52",
+ "ALL_PASS": true
+}

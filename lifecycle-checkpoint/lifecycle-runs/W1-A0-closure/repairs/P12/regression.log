@@ -1,0 +1,54 @@
+=== tests/assist/test_a0_r11_review_regressions.py BEFORE (2de591eca07d9410f691ac20ff71242d3befc6f6) DONE
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____ test_r11_01_clipped_indented_and_covered_text_never_leaves_the_page ______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-357/test_r11_01_clipped_indented_a0')
+
+    def test_r11_01_clipped_indented_and_covered_text_never_leaves_the_page(tmp_path):
+        runs = _runs(tmp_path)
+        for name in ("ctrl_a", "range_all"):
+            snap = runs[name]["snap"]
+            sel, text, heads = snap["selection"], snap["text"], " ".join(snap["headings"])
+            for v in PAYLOADS:
+>               assert v not in sel, (name, v, sel)
+E               AssertionError: ('ctrl_a', 'HEADSRONLY-PAYLOAD', 'Welcome backHEADSRONLY-PAYLOAD-0 SRONLY-PAYLOAD-1 CLIPPED-PAYLOAD-2 COLORTRANSPARENT...OAD-7 COVERED-PAYLOAD-8 Card keeps STRETCHED-OK-1 Escaping ESCAPE-OK-2 You have 3 new messages. Footer BELOWFOLD-OK-3')
+E               assert 'HEADSRONLY-PAYLOAD' not in 'Welcome bac...LOWFOLD-OK-3'
+E                 
+E                 'HEADSRONLY-PAYLOAD' is contained here:
+E                   Welcome backHEADSRONLY-PAYLOAD-0 SRONLY-PAYLOAD-1 CLIPPED-PAYLOAD-2 COLORTRANSPARENT-PAYLOAD-3 INDENT-PAYLOAD-5 MAXH-PAYLOAD-7 COVERED-PAYLOAD-8 Card keeps STRETCHED-OK-1 Escaping ESCAPE-OK-2 You have 3 new messages. Footer BELOWFOLD-OK-3
+E                 ?             ++++++++++++++++++
+
+tests/assist/test_a0_r11_review_regressions.py:86: AssertionError
+________ test_r11_01_real_snapshot_to_brain_body_has_no_clipped_payload ________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-357/test_r11_01_real_snapshot_to_b0')
+
+    def test_r11_01_real_snapshot_to_brain_body_has_no_clipped_payload(tmp_path):
+        snap = _runs(tmp_path)["ctrl_a"]["snap"]
+        client = FakeClient(text="You have three new messages.")
+        br, _ = mk(snap=snap, client=client)
+        grant(br, perms=("observe",))
+        assert ask_and_wait(br, "What did I select?")["status"] == "COMPLETE"
+        body = json.dumps(client.bodies)
+        assert "Selected text: Welcome back" in body
+        for v in PAYLOADS:
+>           assert v not in body, v
+E           AssertionError: HEADSRONLY-PAYLOAD
+E           assert 'HEADSRONLY-PAYLOAD' not in '[{"model": ...g": false}}]'
+E             
+E             'HEADSRONLY-PAYLOAD' is contained here:
+E               lcome backHEADSRONLY-PAYLOAD-0 SRONLY-PAYLOAD-1 CLIPPED-PAYLOAD-2 COLORTRANSPARENT-PAYLOAD-3 INDENT-PAYLOAD-5 MAXH-PAYLOAD-7 COVERED-PAYLOAD-8 Card keeps STRETCHED-OK-1 Escaping ESCAPE-OK-2 You have 3 new messages. Footer BELOWFOLD-OK-3\nHeadings: Welcome back HEADSRONLY-PAYLOAD-0\nVisible text:\nWelcome back\nHEADSRONLY-PAYLOAD-0\nSRONLY-PAYLOAD-1\nCLIPPED-PAYLOAD-2\nCOLORTRANSPARENT-PAYLOAD-3\nINDENT-PAYLOAD-5\nMAXH-PAYLOAD-7\nCOVERED-PAYLOAD-8\nCard keeps STRETCHED-OK-1\nEscaping ESCAPE-OK-2\nYou have 3 new messages.\nFooter BELOWFOLD...
+E             
+E             ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests/assist/test_a0_r11_review_regressions.py:105: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r11_review_regressions.py::test_r11_01_clipped_indented_and_covered_text_never_leaves_the_page
+FAILED tests/assist/test_a0_r11_review_regressions.py::test_r11_01_real_snapshot_to_brain_body_has_no_clipped_payload
+2 failed in 1.51s
+
+=== tests/assist/test_a0_r11_review_regressions.py AFTER (d5a9b41c79b4c9d0be83ab7c43e61f106177d022) DONE
+..                                                                       [100%]
+2 passed in 1.64s
+

@@ -1,0 +1,1780 @@
+{
+ "schema": "uri.ti.live_matrix.v1",
+ "started": "2026-10-09T19:47:27+0530",
+ "url": "http://127.0.0.1:18470",
+ "health": {
+  "status": "ok"
+ },
+ "model": "Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+ "tier": "fast",
+ "input_note": "Transcript inputs are SIMULATED (typed text in the uri.text_input.v1 envelope, engine 'simulated'); no microphone or recogniser was used.",
+ "cases": {
+  "M7_hinglish#1": [
+   {
+    "text_in": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "hi-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.278,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.4699,
+     "total_s": 4.2729,
+     "prompt_n": 58,
+     "predicted_n": 491,
+     "predicted_per_second": 128.86913129318594,
+     "cache_n": 703,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal leave application addressed to the principal requesting three days of leave starting from tomorrow due to the sender's daughter's wedding. Missing: [City], [Designation/Class], [School Name], [Your Name], Sender's name, Sender's designation or class. 5 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "To,\nThe Principal,\n[School Name],\n[City]\n\nSubject: Application for leave for three days\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from tomorrow. My daughter's wedding is scheduled during this time, and my presence is required for the ceremonies. I kindly request you to grant me leave for these three days.\n\nThanking you,\n\nYours faithfully,\n[Your Name]\n[Designation/Class]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Principal,\n[School Name],\n[City]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Application for leave for three days"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to request leave for three days starting from tomorrow. My daughter's wedding is scheduled during this time, and my presence is required for the ceremonies. I kindly request you to grant me leave for these three days."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Thanking you,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "Yours faithfully,\n[Your Name]\n[Designation/Class]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "leave_duration: three days"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     }
+    ],
+    "flag_codes": [
+     "FACT_UNSOURCED",
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "FACT_UNSOURCED",
+     "FACT_MISSING"
+    ],
+    "missing": [
+     "[City]",
+     "[Designation/Class]",
+     "[School Name]",
+     "[Your Name]",
+     "Sender's name",
+     "Sender's designation or class",
+     "Specific dates for the leave"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "hi-IN",
+     "uncertain": []
+    },
+    "first_text": "To,\nThe Principal,\n[School Name],\n[City]\n\nSubject: Application for leave for three days\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from tomorrow. My daughter's wedding is scheduled during this time, and my presence is required for the ceremonies. I kindly request you to grant me leave for these three days.\n\nThanking you,\n\nYours faithfully,\n[Your Name]\n[Designation/Class]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "english": true,
+     "three_days": true,
+     "daughter_wedding": true,
+     "no_invented_date": true
+    }
+   },
+   {
+    "text_in": "isko thoda chhota karo",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "isko thoda chhota karo",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "hi-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.51,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3404,
+     "total_s": 1.506,
+     "prompt_n": 410,
+     "predicted_n": 125,
+     "predicted_per_second": 106.40351818084307,
+     "cache_n": 622,
+     "retried": false
+    },
+    "answer": "Letter (version 2 of 2): Condensed the body text to be more concise while retaining all facts. Missing: [City], [Designation/Class], [School Name], [Your Name]. 5 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "To,\nThe Principal,\n[School Name],\n[City]\n\nSubject: Application for leave for three days\n\nRespected Sir/Madam,\n\nI request leave for three days from tomorrow for my daughter's wedding.\n\nThanking you,\n\nYours faithfully,\n[Your Name]\n[Designation/Class]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Principal,\n[School Name],\n[City]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Application for leave for three days"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I request leave for three days from tomorrow for my daughter's wedding."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Thanking you,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "Yours faithfully,\n[Your Name]\n[Designation/Class]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "leave_duration: three days"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     }
+    ],
+    "flag_codes": [
+     "FACT_UNSOURCED",
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "FACT_UNSOURCED",
+     "FACT_MISSING"
+    ],
+    "missing": [
+     "[City]",
+     "[Designation/Class]",
+     "[School Name]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "hi-IN",
+     "uncertain": []
+    },
+    "first_text": "To,\nThe Principal,\n[School Name],\n[City]\n\nSubject: Application for leave for three days\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from tomorrow. My daughter's wedding is scheduled during this time, and my presence is required for the ceremonies. I kindly request you to grant me leave for these three days.\n\nThanking you,\n\nYours faithfully,\n[Your Name]\n[Designation/Class]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "shorter": true
+    }
+   }
+  ],
+  "L9a_grammar_clock_currency#1": [
+   {
+    "text_in": "Correct the grammar only: the bus departure are at 18:00 from the east gate and the fee are Rs5400 per student.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "CORRECT",
+    "status": "ok",
+    "wall_s": 1.36,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.1165,
+     "total_s": 1.3591,
+     "prompt_n": 4,
+     "predicted_n": 136,
+     "predicted_per_second": 108.67368993866779,
+     "cache_n": 860,
+     "retried": false
+    },
+    "answer": "Text (version 2 of 2): Corrected subject-verb agreement and capitalization. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "corrected",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "The bus departures are at 18:00 from the east gate and the fee is Rs5400 per student.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "body",
+      "text": "The bus departures are at 18:00 from the east gate and the fee is Rs5400 per student."
+     }
+    ],
+    "changed": [
+     "b1"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "the bus departure are at 18:00 from the east gate and the fee are Rs5400 per student.",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "clock_kept_or_flagged": true,
+     "amount_kept_or_flagged": true,
+     "no_error_if_kept": true,
+     "grammar_route": true
+    }
+   }
+  ],
+  "L9b_comma_replacement#1": [
+   {
+    "text_in": "Write a short notice that the visitors' gate is in the west wing and opens at 9 am.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.233,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2477,
+     "total_s": 2.2321,
+     "prompt_n": 51,
+     "predicted_n": 237,
+     "predicted_per_second": 118.95215250472405,
+     "cache_n": 703,
+     "retried": false
+    },
+    "answer": "Notice (version 1 of 1): A notice stating that the visitors' gate is in the west wing and opens at 9 am. Missing: [Your Designation], [Your Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "NOTICE\n\nVisitors' Gate Location and Timing\n\nThis is to inform all visitors that the visitors' gate is located in the west wing. The gate opens at 9:00 AM daily.\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Visitors' Gate Location and Timing"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "This is to inform all visitors that the visitors' gate is located in the west wing. The gate opens at 9:00 AM daily."
+     },
+     {
+      "id": "b4",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "NEW_DETAIL",
+      "severity": "review",
+      "detail": "not in your words: location"
+     }
+    ],
+    "flag_codes": [
+     "NEW_DETAIL"
+    ],
+    "missing": [
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nVisitors' Gate Location and Timing\n\nThis is to inform all visitors that the visitors' gate is located in the west wing. The gate opens at 9:00 AM daily.\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "west_wing": true
+    }
+   },
+   {
+    "text_in": "Don't say west wing; say east wing, sector C.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.549,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2919,
+     "total_s": 1.5462,
+     "prompt_n": 234,
+     "predicted_n": 144,
+     "predicted_per_second": 114.03827060563893,
+     "cache_n": 622,
+     "retried": false
+    },
+    "answer": "Notice (version 2 of 2): Updated the gate location from west wing to east wing, sector C. Missing: [Your Designation], [Your Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "NOTICE\n\nVisitors' Gate Location and Timing\n\nThis is to inform all visitors that the visitors' gate is located in the east wing, sector C. The gate opens at 9:00 AM daily.\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Visitors' Gate Location and Timing"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "This is to inform all visitors that the visitors' gate is located in the east wing, sector C. The gate opens at 9:00 AM daily."
+     },
+     {
+      "id": "b4",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b3"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nVisitors' Gate Location and Timing\n\nThis is to inform all visitors that the visitors' gate is located in the west wing. The gate opens at 9:00 AM daily.\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "replacement_whole_or_flagged": true,
+     "old_gone_or_flagged": true,
+     "time_kept_or_flagged": true
+    }
+   }
+  ],
+  "L9c_title_replacement#1": [
+   {
+    "text_in": "Write a two-line note that the advisor will attend the parents' meeting on Friday.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 1.425,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.218,
+     "total_s": 1.4236,
+     "prompt_n": 47,
+     "predicted_n": 123,
+     "predicted_per_second": 101.22532425292393,
+     "cache_n": 703,
+     "retried": false
+    },
+    "answer": "Note (version 1 of 1): A two-line note confirming the advisor's attendance at the Friday parents' meeting. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "This is to confirm that the advisor will attend the parents' meeting scheduled for Friday.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "body",
+      "text": "This is to confirm that the advisor will attend the parents' meeting scheduled for Friday."
+     }
+    ],
+    "changed": [
+     "b1"
+    ],
+    "flags": [
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: 2"
+     }
+    ],
+    "flag_codes": [
+     "USER_DETAIL_MISSING"
+    ],
+    "missing": [],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "This is to confirm that the advisor will attend the parents' meeting scheduled for Friday.",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "advisor": true
+    }
+   },
+   {
+    "text_in": "Replace advisor with Dr. Mehta.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.441,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2438,
+     "total_s": 1.4396,
+     "prompt_n": 131,
+     "predicted_n": 133,
+     "predicted_per_second": 110.41109731901783,
+     "cache_n": 622,
+     "retried": false
+    },
+    "answer": "Note (version 2 of 2): Replaced 'advisor' with 'Dr. Mehta' in the note. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "This is to confirm that Dr. Mehta will attend the parents' meeting scheduled for Friday.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "body",
+      "text": "This is to confirm that Dr. Mehta will attend the parents' meeting scheduled for Friday."
+     }
+    ],
+    "changed": [
+     "b1"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "This is to confirm that the advisor will attend the parents' meeting scheduled for Friday.",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "dr_mehta_or_flagged": true,
+     "no_bare_dr": true,
+     "friday_kept_or_flagged": true
+    }
+   }
+  ],
+  "L9d_hinglish_kal#1": [
+   {
+    "text_in": "Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "hi-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.778,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.251,
+     "total_s": 4.7744,
+     "prompt_n": 56,
+     "predicted_n": 590,
+     "predicted_per_second": 130.23093327378237,
+     "cache_n": 703,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal leave application addressed to the Principal requesting three days of leave due to a family function. Missing: [City], [Class/Designation], [Roll Number/ID], [School/College Name], [Start Date], [Your Name]. 6 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence for three days.\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from [Start Date]. There is a family function at home that requires my presence. I assure you that I will cover any missed work upon my return.\n\nI kindly request you to grant me leave for the mentioned period.\n\nYours faithfully,\n\n[Your Name]\n[Class/Designation]\n[Roll Number/ID]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Principal,\n[School/College Name],\n[City]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Application for leave of absence for three days."
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to request leave for three days starting from [Start Date]. There is a family function at home that requires my presence. I assure you that I will cover any missed work upon my return."
+     },
+     {
+      "id": "b5",
+      "role": "body",
+      "text": "I kindly request you to grant me leave for the mentioned period."
+     },
+     {
+      "id": "b6",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b7",
+      "role": "signature",
+      "text": "[Your Name]\n[Class/Designation]\n[Roll Number/ID]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6",
+     "b7"
+    ],
+    "flags": [
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "leave_duration: three days"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "start_date: kal se (from yesterday/tomorrow - ambiguous in dictated speech, assuming 'from tomorrow' or 'from yesterday' based on context of applying for future leave. Given 'kal se' usually means 'from yesterday' in Hindi if spoken today, but for a leave application, it implies the start date. I will use [Date"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "start_date: kal se (from yesterday/tomorrow - ambiguous in dictated speech, assuming 'from tomorrow' or 'from yesterday' based on context of applying for future leave. Given 'kal se' usually means 'from yesterday' in Hindi if spoken today, but for a leave application, it implies the start date. I will use [Date"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "reason: ghar mein function hai (function at home)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "reason: ghar mein function hai (function at home)"
+     },
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: kal"
+     }
+    ],
+    "flag_codes": [
+     "FACT_UNSOURCED",
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "USER_DETAIL_MISSING"
+    ],
+    "missing": [
+     "[City]",
+     "[Class/Designation]",
+     "[Roll Number/ID]",
+     "[School/College Name]",
+     "[Start Date]",
+     "[Your Name]",
+     "Sender's Name",
+     "Sender's Class/Designation",
+     "Sender's Roll Number/ID",
+     "Specific Start Date"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "hi-IN",
+     "uncertain": []
+    },
+    "first_text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence for three days.\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from [Start Date]. There is a family function at home that requires my presence. I assure you that I will cover any missed work upon my return.\n\nI kindly request you to grant me leave for the mentioned period.\n\nYours faithfully,\n\n[Your Name]\n[Class/Designation]\n[Roll Number/ID]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "not_yesterday_or_flagged": true,
+     "three_days": true,
+     "drafted": true
+    }
+   }
+  ],
+  "L9e_tone_change_keeps_facts#1": [
+   {
+    "text_in": "Draft an email to the accounts office: the fee of 5400 rupees was paid on Wednesday by Sunil Verma, receipt number 2231.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 3.794,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.1697,
+     "total_s": 3.7918,
+     "prompt_n": 4,
+     "predicted_n": 481,
+     "predicted_per_second": 132.52804141501295,
+     "cache_n": 765,
+     "retried": false
+    },
+    "answer": "Email (version 1 of 1): An email to the accounts office confirming a fee payment of 5400 rupees made by Sunil Verma on Wednesday with receipt number 2231. Missing: [Your Designation], [Your Name], Sender Name, Sender Designation, Date. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Confirmation of Fee Payment - Receipt No. 2231\n\nDear Accounts Team,\n\nThis is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma. The receipt number for this transaction is 2231.\n\nKindly look into this and confirm the receipt of the payment.\n\nRegards,\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Confirmation of Fee Payment - Receipt No. 2231"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Accounts Team,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "This is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma. The receipt number for this transaction is 2231."
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "Kindly look into this and confirm the receipt of the payment."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Regards,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "NEW_DETAIL",
+      "severity": "review",
+      "detail": "not in your words: payment"
+     }
+    ],
+    "flag_codes": [
+     "NEW_DETAIL"
+    ],
+    "missing": [
+     "[Your Designation]",
+     "[Your Name]",
+     "Sender Name",
+     "Sender Designation",
+     "Date"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Confirmation of Fee Payment - Receipt No. 2231\n\nDear Accounts Team,\n\nThis is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma. The receipt number for this transaction is 2231.\n\nKindly look into this and confirm the receipt of the payment.\n\nRegards,\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "facts": true
+    }
+   },
+   {
+    "text_in": "Make it warmer and a bit shorter.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.968,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3469,
+     "total_s": 1.9647,
+     "prompt_n": 429,
+     "predicted_n": 198,
+     "predicted_per_second": 121.81811998157268,
+     "cache_n": 622,
+     "retried": false
+    },
+    "answer": "Email (version 2 of 2): Reworded body paragraphs to be warmer and more concise while retaining all facts. Missing: [Your Designation], [Your Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "Confirmation of Fee Payment - Receipt No. 2231\n\nDear Accounts Team,\n\nThis is to confirm that Sunil Verma paid a fee of 5400 rupees on Wednesday. The receipt number for this transaction is 2231.\n\nPlease confirm receipt of this payment at your earliest convenience.\n\nRegards,\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Confirmation of Fee Payment - Receipt No. 2231"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Accounts Team,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "This is to confirm that Sunil Verma paid a fee of 5400 rupees on Wednesday. The receipt number for this transaction is 2231."
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "Please confirm receipt of this payment at your earliest convenience."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Regards,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b3",
+     "b4"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Confirmation of Fee Payment - Receipt No. 2231\n\nDear Accounts Team,\n\nThis is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma. The receipt number for this transaction is 2231.\n\nKindly look into this and confirm the receipt of the payment.\n\nRegards,\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "amount_kept_or_flagged": true,
+     "receipt_kept_or_flagged": true,
+     "name_kept_or_flagged": true,
+     "no_error_if_kept": true
+    }
+   }
+  ],
+  "M7_hinglish#2": [
+   {
+    "text_in": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "hi-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.037,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2485,
+     "total_s": 4.0337,
+     "prompt_n": 58,
+     "predicted_n": 491,
+     "predicted_per_second": 129.46345061841257,
+     "cache_n": 703,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal leave application addressed to the principal requesting three days of leave starting from tomorrow due to the sender's daughter's wedding. Missing: [City], [Designation/Class], [School Name], [Your Name], Sender's name, Sender's designation or class. 5 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "To,\nThe Principal,\n[School Name],\n[City]\n\nSubject: Application for leave for three days\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from tomorrow. My daughter's wedding is scheduled during this time, and my presence is required for the ceremonies. I kindly request you to grant me leave for these three days.\n\nThanking you,\n\nYours faithfully,\n[Your Name]\n[Designation/Class]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Principal,\n[School Name],\n[City]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Application for leave for three days"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to request leave for three days starting from tomorrow. My daughter's wedding is scheduled during this time, and my presence is required for the ceremonies. I kindly request you to grant me leave for these three days."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Thanking you,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "Yours faithfully,\n[Your Name]\n[Designation/Class]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "leave_duration: three days"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     }
+    ],
+    "flag_codes": [
+     "FACT_UNSOURCED",
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "FACT_UNSOURCED",
+     "FACT_MISSING"
+    ],
+    "missing": [
+     "[City]",
+     "[Designation/Class]",
+     "[School Name]",
+     "[Your Name]",
+     "Sender's name",
+     "Sender's designation or class",
+     "Specific dates for the leave"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "hi-IN",
+     "uncertain": []
+    },
+    "first_text": "To,\nThe Principal,\n[School Name],\n[City]\n\nSubject: Application for leave for three days\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from tomorrow. My daughter's wedding is scheduled during this time, and my presence is required for the ceremonies. I kindly request you to grant me leave for these three days.\n\nThanking you,\n\nYours faithfully,\n[Your Name]\n[Designation/Class]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "english": true,
+     "three_days": true,
+     "daughter_wedding": true,
+     "no_invented_date": true
+    }
+   },
+   {
+    "text_in": "isko thoda chhota karo",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "isko thoda chhota karo",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "hi-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.481,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2995,
+     "total_s": 1.4779,
+     "prompt_n": 410,
+     "predicted_n": 125,
+     "predicted_per_second": 105.26137077468974,
+     "cache_n": 622,
+     "retried": false
+    },
+    "answer": "Letter (version 2 of 2): Condensed the body text to be more concise while retaining all facts. Missing: [City], [Designation/Class], [School Name], [Your Name]. 5 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "To,\nThe Principal,\n[School Name],\n[City]\n\nSubject: Application for leave for three days\n\nRespected Sir/Madam,\n\nI request leave for three days from tomorrow for my daughter's wedding.\n\nThanking you,\n\nYours faithfully,\n[Your Name]\n[Designation/Class]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Principal,\n[School Name],\n[City]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Application for leave for three days"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I request leave for three days from tomorrow for my daughter's wedding."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Thanking you,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "Yours faithfully,\n[Your Name]\n[Designation/Class]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "leave_duration: three days"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     }
+    ],
+    "flag_codes": [
+     "FACT_UNSOURCED",
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "FACT_UNSOURCED",
+     "FACT_MISSING"
+    ],
+    "missing": [
+     "[City]",
+     "[Designation/Class]",
+     "[School Name]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "hi-IN",
+     "uncertain": []
+    },
+    "first_text": "To,\nThe Principal,\n[School Name],\n[City]\n\nSubject: Application for leave for three days\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from tomorrow. My daughter's wedding is scheduled during this time, and my presence is required for the ceremonies. I kindly request you to grant me leave for these three days.\n\nThanking you,\n\nYours faithfully,\n[Your Name]\n[Designation/Class]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "shorter": true
+    }
+   }
+  ],
+  "L9a_grammar_clock_currency#2": [
+   {
+    "text_in": "Correct the grammar only: the bus departure are at 18:00 from the east gate and the fee are Rs5400 per student.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "CORRECT",
+    "status": "ok",
+    "wall_s": 1.354,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.1126,
+     "total_s": 1.3526,
+     "prompt_n": 4,
+     "predicted_n": 136,
+     "predicted_per_second": 108.89713818320855,
+     "cache_n": 860,
+     "retried": false
+    },
+    "answer": "Text (version 2 of 2): Corrected subject-verb agreement and capitalization. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "corrected",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "The bus departures are at 18:00 from the east gate and the fee is Rs5400 per student.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "body",
+      "text": "The bus departures are at 18:00 from the east gate and the fee is Rs5400 per student."
+     }
+    ],
+    "changed": [
+     "b1"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "the bus departure are at 18:00 from the east gate and the fee are Rs5400 per student.",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "clock_kept_or_flagged": true,
+     "amount_kept_or_flagged": true,
+     "no_error_if_kept": true,
+     "grammar_route": true
+    }
+   }
+  ],
+  "L9b_comma_replacement#2": [
+   {
+    "text_in": "Write a short notice that the visitors' gate is in the west wing and opens at 9 am.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.272,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2608,
+     "total_s": 2.2711,
+     "prompt_n": 51,
+     "predicted_n": 237,
+     "predicted_per_second": 117.40744462696769,
+     "cache_n": 703,
+     "retried": false
+    },
+    "answer": "Notice (version 1 of 1): A notice stating that the visitors' gate is in the west wing and opens at 9 am. Missing: [Your Designation], [Your Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "NOTICE\n\nVisitors' Gate Location and Timing\n\nThis is to inform all visitors that the visitors' gate is located in the west wing. The gate opens at 9:00 AM daily.\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Visitors' Gate Location and Timing"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "This is to inform all visitors that the visitors' gate is located in the west wing. The gate opens at 9:00 AM daily."
+     },
+     {
+      "id": "b4",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "NEW_DETAIL",
+      "severity": "review",
+      "detail": "not in your words: location"
+     }
+    ],
+    "flag_codes": [
+     "NEW_DETAIL"
+    ],
+    "missing": [
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nVisitors' Gate Location and Timing\n\nThis is to inform all visitors that the visitors' gate is located in the west wing. The gate opens at 9:00 AM daily.\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "west_wing": true
+    }
+   },
+   {
+    "text_in": "Don't say west wing; say east wing, sector C.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.545,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2909,
+     "total_s": 1.5423,
+     "prompt_n": 234,
+     "predicted_n": 144,
+     "predicted_per_second": 114.36843431212985,
+     "cache_n": 622,
+     "retried": false
+    },
+    "answer": "Notice (version 2 of 2): Updated the gate location from west wing to east wing, sector C. Missing: [Your Designation], [Your Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "NOTICE\n\nVisitors' Gate Location and Timing\n\nThis is to inform all visitors that the visitors' gate is located in the east wing, sector C. The gate opens at 9:00 AM daily.\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Visitors' Gate Location and Timing"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "This is to inform all visitors that the visitors' gate is located in the east wing, sector C. The gate opens at 9:00 AM daily."
+     },
+     {
+      "id": "b4",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b3"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nVisitors' Gate Location and Timing\n\nThis is to inform all visitors that the visitors' gate is located in the west wing. The gate opens at 9:00 AM daily.\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "replacement_whole_or_flagged": true,
+     "old_gone_or_flagged": true,
+     "time_kept_or_flagged": true
+    }
+   }
+  ],
+  "L9c_title_replacement#2": [
+   {
+    "text_in": "Write a two-line note that the advisor will attend the parents' meeting on Friday.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 1.37,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.209,
+     "total_s": 1.3689,
+     "prompt_n": 47,
+     "predicted_n": 123,
+     "predicted_per_second": 105.20333994734658,
+     "cache_n": 703,
+     "retried": false
+    },
+    "answer": "Note (version 1 of 1): A two-line note confirming the advisor's attendance at the Friday parents' meeting. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "This is to confirm that the advisor will attend the parents' meeting scheduled for Friday.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "body",
+      "text": "This is to confirm that the advisor will attend the parents' meeting scheduled for Friday."
+     }
+    ],
+    "changed": [
+     "b1"
+    ],
+    "flags": [
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: 2"
+     }
+    ],
+    "flag_codes": [
+     "USER_DETAIL_MISSING"
+    ],
+    "missing": [],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "This is to confirm that the advisor will attend the parents' meeting scheduled for Friday.",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "advisor": true
+    }
+   },
+   {
+    "text_in": "Replace advisor with Dr. Mehta.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.432,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2447,
+     "total_s": 1.4305,
+     "prompt_n": 131,
+     "predicted_n": 133,
+     "predicted_per_second": 111.34842948101509,
+     "cache_n": 622,
+     "retried": false
+    },
+    "answer": "Note (version 2 of 2): Replaced 'advisor' with 'Dr. Mehta' in the note. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "This is to confirm that Dr. Mehta will attend the parents' meeting scheduled for Friday.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "body",
+      "text": "This is to confirm that Dr. Mehta will attend the parents' meeting scheduled for Friday."
+     }
+    ],
+    "changed": [
+     "b1"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "This is to confirm that the advisor will attend the parents' meeting scheduled for Friday.",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "dr_mehta_or_flagged": true,
+     "no_bare_dr": true,
+     "friday_kept_or_flagged": true
+    }
+   }
+  ],
+  "L9d_hinglish_kal#2": [
+   {
+    "text_in": "Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "hi-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.916,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2606,
+     "total_s": 4.9122,
+     "prompt_n": 56,
+     "predicted_n": 612,
+     "predicted_per_second": 131.36281937719835,
+     "cache_n": 703,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal leave application addressed to the Principal requesting three days of leave due to a family function at home. Missing: [City], [Class/Designation], [Roll Number/ID], [School/College Name], [Start Date], [Your Name]. 6 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from [Start Date]. There is a family function at home that requires my presence. I kindly request you to grant me leave for these three days.\n\nYours faithfully,\n\n[Your Name]\n[Class/Designation]\n[Roll Number/ID]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Principal,\n[School/College Name],\n[City]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Application for leave of absence"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to request leave for three days starting from [Start Date]. There is a family function at home that requires my presence. I kindly request you to grant me leave for these three days."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Class/Designation]\n[Roll Number/ID]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "leave_duration: three days"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "start_date: kal se (from yesterday/tomorrow - ambiguous in dictated speech, assuming 'tomorrow' or 'from today' is intended for a future leave, but user said 'kal se'. In Indian English context 'kal se' often means 'from tomorrow' if spoken on the day before, or 'from yesterday' if spoken late. Given it's a lea"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "start_date: kal se (from yesterday/tomorrow - ambiguous in dictated speech, assuming 'tomorrow' or 'from today' is intended for a future leave, but user said 'kal se'. In Indian English context 'kal se' often means 'from tomorrow' if spoken on the day before, or 'from yesterday' if spoken late. Given it's a lea"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "reason: ghar mein function hai (function at home)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "reason: ghar mein function hai (function at home)"
+     },
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: kal"
+     }
+    ],
+    "flag_codes": [
+     "FACT_UNSOURCED",
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "USER_DETAIL_MISSING"
+    ],
+    "missing": [
+     "[City]",
+     "[Class/Designation]",
+     "[Roll Number/ID]",
+     "[School/College Name]",
+     "[Start Date]",
+     "[Your Name]",
+     "Sender's Name",
+     "Sender's Class/Designation",
+     "Sender's Roll Number/ID",
+     "Specific Start Date"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "hi-IN",
+     "uncertain": []
+    },
+    "first_text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from [Start Date]. There is a family function at home that requires my presence. I kindly request you to grant me leave for these three days.\n\nYours faithfully,\n\n[Your Name]\n[Class/Designation]\n[Roll Number/ID]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "not_yesterday_or_flagged": true,
+     "three_days": true,
+     "drafted": true
+    }
+   }
+  ],
+  "L9e_tone_change_keeps_facts#2": [
+   {
+    "text_in": "Draft an email to the accounts office: the fee of 5400 rupees was paid on Wednesday by Sunil Verma, receipt number 2231.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 3.72,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.1471,
+     "total_s": 3.7173,
+     "prompt_n": 4,
+     "predicted_n": 481,
+     "predicted_per_second": 134.45792447386333,
+     "cache_n": 765,
+     "retried": false
+    },
+    "answer": "Email (version 1 of 1): An email to the accounts office confirming a fee payment of 5400 rupees made by Sunil Verma on Wednesday with receipt number 2231. Missing: [Your Designation], [Your Name], Sender Name, Sender Designation, Date. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Confirmation of Fee Payment - Receipt No. 2231\n\nDear Accounts Team,\n\nThis is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma. The receipt number for this transaction is 2231.\n\nKindly look into this and confirm the receipt of the payment.\n\nRegards,\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Confirmation of Fee Payment - Receipt No. 2231"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Accounts Team,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "This is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma. The receipt number for this transaction is 2231."
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "Kindly look into this and confirm the receipt of the payment."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Regards,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "NEW_DETAIL",
+      "severity": "review",
+      "detail": "not in your words: payment"
+     }
+    ],
+    "flag_codes": [
+     "NEW_DETAIL"
+    ],
+    "missing": [
+     "[Your Designation]",
+     "[Your Name]",
+     "Sender Name",
+     "Sender Designation",
+     "Date"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Confirmation of Fee Payment - Receipt No. 2231\n\nDear Accounts Team,\n\nThis is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma. The receipt number for this transaction is 2231.\n\nKindly look into this and confirm the receipt of the payment.\n\nRegards,\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "facts": true
+    }
+   },
+   {
+    "text_in": "Make it warmer and a bit shorter.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.992,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3474,
+     "total_s": 1.9879,
+     "prompt_n": 429,
+     "predicted_n": 198,
+     "predicted_per_second": 120.11741019546824,
+     "cache_n": 622,
+     "retried": false
+    },
+    "answer": "Email (version 2 of 2): Reworded body paragraphs to be warmer and more concise while retaining all facts. Missing: [Your Designation], [Your Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "Confirmation of Fee Payment - Receipt No. 2231\n\nDear Accounts Team,\n\nThis is to confirm that Sunil Verma paid a fee of 5400 rupees on Wednesday. The receipt number for this transaction is 2231.\n\nPlease confirm receipt of this payment at your earliest convenience.\n\nRegards,\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Confirmation of Fee Payment - Receipt No. 2231"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Accounts Team,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "This is to confirm that Sunil Verma paid a fee of 5400 rupees on Wednesday. The receipt number for this transaction is 2231."
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "Please confirm receipt of this payment at your earliest convenience."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Regards,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b3",
+     "b4"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Confirmation of Fee Payment - Receipt No. 2231\n\nDear Accounts Team,\n\nThis is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma. The receipt number for this transaction is 2231.\n\nKindly look into this and confirm the receipt of the payment.\n\nRegards,\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "amount_kept_or_flagged": true,
+     "receipt_kept_or_flagged": true,
+     "name_kept_or_flagged": true,
+     "no_error_if_kept": true
+    }
+   }
+  ]
+ },
+ "baseline": {},
+ "summary": {
+  "checks": 50,
+  "passed": 50
+ }
+}

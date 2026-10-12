@@ -1,0 +1,29 @@
+I repaired R13-01 and both causes named in the diagnosis. Nothing is committed. The full `tests/assist tests/web` suite passes (2656 tests). All 6 tests in the new regression file fail on `fcfb465` and pass after the change, as do the 2 Chromium tests I extended in the D10 test file. I checked this by copying the test files into a clean export of `fcfb465`.
+
+**Field labels were not checked at all** (part 1 of the diagnosis):
+- **In the page (`snapshot.js`):** a field's label is now built only from visible text inside its `<label for>`, its surrounding `<label>` and its `aria-labelledby` targets. Text inside other fields is skipped. The label is sent with its on-screen positions so the screenshot check can test it, like headings. A field that isn't shown gets no label.
+- **Attributes:** `aria-label`, `name`, `id`, `placeholder` and the old `innerText` label are now used only for the in-page "is this sensitive?" test. They are never sent as a label.
+- **In URI (`perception.py`):** a field's label for the Brain (`shown_label`) comes only from label text the screenshot shows drawn.
+- **In the Brain request (`bridge.py`):** `_context_block` no longer falls back to `name` or `id`. A field without a drawn label is named neutrally, e.g. "text field 3".
+- **Unchanged:** the local form checks (`assist_check`) still use the full label. Their results go to the user, not the Brain.
+
+**The screenshot check wasn't tied to the text** (part 2):
+- **In URI (`onscreen.untangle`):** after the screenshot check, two kept pieces whose text differs and whose boxes overlap substantially are both dropped. This applies across page text, selection, headings and labels, and each drop is counted as `overlapping_text`. This rule alone is what removes the `pointer-events:none` variants: with it switched off, two of the test payloads still reached the Brain.
+- **In the page, opaque layers:** `covered()` now uses the browser's painting order at the text's position (`elementsFromPoint`). An opaque layer painted above the text now hides it even when that layer is the text's own ancestor (the negative z-index case).
+- **In the page, background colour:** text drawn in the same colour as the opaque background directly beneath it is now dropped everywhere. Before, this rule only applied to selected text.
+
+**The R13-01 techniques** are now also removed in the page:
+- SVG text uses its `fill` (none, transparent or a `url()` fill count as not drawn) times `fill-opacity`, or its stroke if one is drawn.
+- `-webkit-mask-box-image` / `mask-border` counts as masked.
+
+**One existing test changed.** In `test_a0_d10_pixel_checked_text.py`, `PIXEL_ONLY` asserted that the R13 payloads get past the in-page rules. That is no longer true, so it now lists only BLUR, PEN and BELOWFOLD. A new assertion requires the R13 payloads to be removed in the page, and the `no_ink` minimum dropped from 9 to 2 because fewer pieces now reach the screenshot check. Every check on what reaches the Brain is unchanged.
+
+**Docs.** `docs/assist/03` §4 and `A0_QUALIFICATION` (the A0-AC8 row, L-A0-5 and a new evidence row) now describe the field-label channel and the overlap rule. Each has a correction note recording that at `fcfb465` field labels were an unchecked channel.
+
+**Still not covered** (written into the docs): hidden text placed over drawn ink that isn't page text, such as borders, images or canvas, still passes unless an in-page rule catches it. The "pixel-checked" wording in the Brain request is kept, with that limit documented. The thresholds were tuned only on headless Chromium at pixel ratio 1; Windows rendering and other pixel ratios are not verified.
+
+`graphify update .` created files in `graphify-out/`, which is outside the paths I'm allowed to change, so I deleted them.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R13-01"], "not_repaired": [], "regression_tests": ["tests/assist/test_a0_r13_review_regressions.py", "tests/assist/test_a0_d10_pixel_checked_text.py"], "notes": "Fixes R13-01 and both causes in the D7 diagnosis. (1) Field-label channel: snapshot.js builds labels only from textVisible text nodes of label[for], the wrapping label and aria-labelledby targets, sent as label_pieces; aria-label/name/id/placeholder are used only for the in-page sensitivity test; fields not shown have no label. perception.py pixel-checks label_pieces into shown_label; bridge._context_block uses shown_label only, otherwise a neutral '<type> field N' name (no name/id fallback). (2) Text-bound pixel check: onscreen.untangle drops overlapping drawn pieces with different text (counted overlapping_text) across text, selection, headings and labels; in page, covered() uses elementsFromPoint paint order (an ancestor painted above the text covers it), the background-colour rule applies to all text using the first opaque background below the text, SVG fill/fill-opacity/stroke is evaluated, and -webkit-mask-box-image/mask-border counts as masked. In test_a0_d10_pixel_checked_text.py, PIXEL_ONLY now lists only BLUR/PEN/BELOWFOLD, a new assertion requires the R13 payloads to be removed in page, and the no_ink minimum went from 9 to 2 because fewer pieces reach the pixel check; every assertion on what reaches the Brain is unchanged. Verified: all 6 new tests and both extended Chromium tests fail on a clean export of fcfb465 and pass after the change; tests/assist + tests/web: 2656 passed. Docs 03 section 4 and A0_QUALIFICATION (A0-AC8 row, L-A0-5, evidence row) updated with explicit correction notes. Remaining residual (documented): hidden text over drawn ink that is not page text (borders/images/canvas) passes unless an in-page rule catches it; thresholds verified only on headless Chromium at DPR 1. graphify-out/ files created by 'graphify update .' were deleted because they are outside the permitted paths."}
+REPAIR_RESULT_END

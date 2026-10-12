@@ -1,0 +1,98 @@
+{
+ "addresses": [
+  "R10-01"
+ ],
+ "changed": [
+  "tests/assist/test_a0_r10_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js"
+ ],
+ "commit": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+ "ended_at": "2026-10-11T06:44:11Z",
+ "pre": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r10_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 11,
+ "report": {
+  "not_repaired": [],
+  "notes": "snapshot.js selectionOf() now runs each text node through shownText(), which applies the page-text visibility rule (visible(), shared cache) to the parent element and counts hidden_text; this also covers script/style/noscript/template, and a selection inside a single text node is checked too. The regression test embeds its page and Playwright runner, written to tmp_path at run time, and uses real Ctrl+A, a real mouse drag and a programmatic range in real Chromium, then checks the Brain request body via FakeClient. Verified: 2 failed on 20a646f's snapshot.js, 2 passed after the fix; tests/assist + tests/web: 2629 passed. graphify CLI not installed (exit 127), so the graph was not updated. Python layer unchanged: it cannot judge page visibility.",
+  "regression_tests": [
+   "tests/assist/test_a0_r10_review_regressions.py"
+  ],
+  "repaired": [
+   "R10-01"
+  ]
+ },
+ "started_at": "2026-10-11T06:42:22Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "686aa3c0-cc55-4805-bfcf-1cf7b4015b5b",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 58
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.4686004,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T06:44:03Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 10,
+  "pid": 16134,
+  "prompt_sha256": "5277cc4d657389b85e197a1a49cd4a5bc6053ea494729b8c2b501bf498efa6d2",
+  "provider": "claude_cli",
+  "result_text_sha256": "60465ea1e775813620b306567ccfbb97cfcfd30445dad278849368cf8774e43b",
+  "role": "implementer",
+  "session_id": "686aa3c0-cc55-4805-bfcf-1cf7b4015b5b",
+  "session_id_requested": "686aa3c0-cc55-4805-bfcf-1cf7b4015b5b",
+  "started_at": "2026-10-11T06:42:23Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "93e16ba0d3007ca69986f647b81cf5b1226301447a0ffc1e2bec1c486d53efb8"
+ }
+}

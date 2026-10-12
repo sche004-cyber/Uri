@@ -1,0 +1,192 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/audit_R2",
+ "baseline": "e07b71c68ea44096020ca8865ae228b550b48e16",
+ "blocking_ids": [],
+ "candidate": "6c62281fb6b37acfc486fa29468e66824912e151",
+ "effective_verdict": "ACCEPT WITH FINDINGS",
+ "ended_at": "2026-10-12T04:07:18Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "6c62281fb6b37acfc486fa29468e66824912e151",
+   "impl_head": "6c62281fb6b37acfc486fa29468e66824912e151",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/graphify-leak-1-20261012",
+   "refs": "63cf7745982009e55f104d1fda1dec80546555c36255c146aa30eadb45d3b7ad",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "6c62281fb6b37acfc486fa29468e66824912e151",
+   "impl_head": "6c62281fb6b37acfc486fa29468e66824912e151",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/graphify-leak-1-20261012",
+   "refs": "63cf7745982009e55f104d1fda1dec80546555c36255c146aa30eadb45d3b7ad",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "e07b71c68ea44096020ca8865ae228b550b48e16",
+  "candidate": "6c62281fb6b37acfc486fa29468e66824912e151",
+  "findings": [
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "_GraphifyIndexLoader builds the shared index with skill_memory=_orchestrator.skill_memory (legacy, install-wide). _build_user_context creates a per-user SkillMemory (server.py ~line 469) but _MemoryScopedGraphifyView copies every non-memory record of the shared index unchanged, so 'skill:<tool>:<task_type>:<domain>' records learned by the legacy/primary user reach every signed-in user's relevant_subset hint, and a user's own learned skills never appear. AC5 keeps this on purpose; it already existed and is outside the memory-pointer scope of this milestone.",
+    "files": [
+     "uri_core/app/server.py:615",
+     "uri_core/app/server.py:969",
+     "uri_core/app/server.py:251"
+    ],
+    "id": "R2-01",
+    "owner_decision": true,
+    "severity": "LOW",
+    "suggested_fix": "Owner decides whether skill: records should be per-user; if so, rebuild the skill scope from the context's own SkillMemory, the same way the memory scope is rebuilt.",
+    "title": "Non-memory skill: records in every user's view still come from the install-wide legacy SkillMemory, not the user's own per-user SkillMemory"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "python -m pytest -q tests/graphify",
+    "result": "15 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -m pytest -q --rootdir=. tests/graphify /tmp/uri_review_R2/test_zz_after.py (leak probe: no MagicMock modules or bindings, no finder, secret unset, server import fails on missing google)",
+    "result": "16 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -m pytest -q test_graphify_index.py test_user_memory.py tests/graphify <probe> test_startup_services.py",
+    "result": "57 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "tests/graphify/test_graphify_leak_1_repair.py on 9ae7c60c source",
+    "result": "4 failed (as expected before the repair)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "tests/graphify/* on e07b71c6 source",
+    "result": "11 failed, 4 passed (leak and repair tests fail on the baseline)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R2/stress.py (8 reader threads on 2 user views, memory add/delete writers, refresh_user_external_lifecycle loops; freshness, legacy replacement, failing store, cost)",
+    "result": "0 errors, no cross-user or primary IDs, legacy view follows replaced store, shared index unchanged, failing store gives no memory pointers and no exception; relevant_subset 0.8 ms (10 memories) / 36 ms (2000)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -p gstub -k 'graphify or turn_state or decision or startup or multi_user or memory or server or orchestrator or isolation or lifecycle or batch' test_*.py tests/test_m31_model_brain_ux.py on baseline vs candidate",
+    "result": "both: 12 failed, 714 passed, 2 skipped, 12 errors (identical totals; individual failing test names not captured; failures seen were package staging errors)",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Owner authorisation D12 for changing the protected file uri_core/app/server.py (only the plan document's statement was seen)",
+   "Behaviour on a host with the real Google client packages installed (placeholder branch not taken)",
+   "Whether the module removal after tests/graphify affects modules that were loaded before the window and changed during the server import",
+   "Individual failing test names in the baseline vs candidate comparison (only totals compared)"
+  ],
+  "verdict": "ACCEPT WITH FINDINGS"
+ },
+ "round": 2,
+ "started_at": "2026-10-12T03:56:10Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "5e013633-7abd-423f-b930-ecaa60d755d0",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 2
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.5643727000000003,
+  "cwd": "/tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/audit_R2",
+  "ended_at": "2026-10-12T04:07:17Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 1,
+  "pid": 21396,
+  "prompt_sha256": "5d6e6b678d46bd3a653c58aaf34c0df841c7f8320a106cce8a9a168db5293cef",
+  "provider": "claude_cli",
+  "result_text_sha256": "00f83cc1d5f1d9b20ac395ff3c76e60eafe86a727c1b61341fdc4292cb552d24",
+  "role": "reviewer",
+  "session_id": "5e013633-7abd-423f-b930-ecaa60d755d0",
+  "session_id_requested": "5e013633-7abd-423f-b930-ecaa60d755d0",
+  "started_at": "2026-10-12T03:56:10Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "28e91552f26ad3d4b4fe464e8eaf45a5982483ee7282629531dbf078e7ed341c"
+ }
+}

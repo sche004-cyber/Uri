@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'glass_theme.dart';
+
 /// URI's own visual identity: a warm-neutral, spacious SaaS surface
 /// with a single confident accent (a deep violet-blue) rather than the
 /// brighter indigo/purple gradients common to template SaaS sites.
@@ -140,6 +142,110 @@ class UriColors extends ThemeExtension<UriColors> {
     warningSoft: Color(0xFFFBF0DC),
     danger: Color(0xFFC23B3B),
     dangerSoft: Color(0xFFFBE9E9),
+  );
+
+  /// UI Living Companion phase (2026-10-08, `docs/ui_phase/`): the
+  /// "Dark Glass + Cyan" direction. Deep charcoal/blue-black canvas,
+  /// restrained glass surfaces (see `glass_theme.dart`) and one cool
+  /// cyan illumination. Added as a fifth choice so the four Hybrid
+  /// themes above (user-approved 2026-09-16) stay byte-identical.
+  /// Token rationale in `docs/ui_phase/UI_DESIGN_REFERENCE.md`.
+  static const obsidianCyan = UriColors(
+    ink: Color(0xFFE6EEF5),
+    inkSoft: Color(0xFF9FB0C0),
+    inkFaint: Color(0xFF70849A),
+    canvas: Color(0xFF070A0F),
+    surface: Color(0xFF0E131A),
+    surfaceSunken: Color(0xFF141B24),
+    border: Color(0xFF1E2A36),
+    accent: Color(0xFF38D1E8),
+    accentSoft: Color(0xFF0F2A33),
+    accentInk: Color(0xFF8AE6F3),
+    success: Color(0xFF4FD6A6),
+    successSoft: Color(0xFF0E2F26),
+    warning: Color(0xFFE8B44F),
+    warningSoft: Color(0xFF332810),
+    danger: Color(0xFFFF7A7A),
+    dangerSoft: Color(0xFF3A1C1C),
+  );
+
+  // -------------------------------------------------------------------------
+  // Living Companion themes (2026-10-08, docs/companions/).
+  //
+  // One palette per companion identity. The four Hybrid themes above stay
+  // byte-identical; these are added alongside them.
+  //
+  // Rule applied to all three: the status colours (success / warning / danger)
+  // keep their own hue family in every companion theme, because they carry
+  // meaning rather than mood. Where a companion accent sits near a status hue
+  // the accent was moved, not the status - Solar's accent is solar orange
+  // rather than amber so that `warning` stays legible beside it, and Sakura's
+  // accent sits at magenta-pink rather than rose so that `danger` does not
+  // read as a brand colour. Status is additionally never colour-only: every
+  // badge carries its text label and a `Semantics` label (status_badge.dart).
+  // -------------------------------------------------------------------------
+
+  /// Solar: dark glass and warm celestial energy.
+  static const solarEmber = UriColors(
+    ink: Color(0xFFF6ECE3),
+    inkSoft: Color(0xFFB9A796),
+    // 0xFF86776A measured 4.42:1 on `surface`, just under WCAG AA 4.5:1 for
+    // normal text, and this tier is used for placeholder and inactive labels.
+    // Lifted to 4.73:1. Measurements in rnd/companions/contrast.py.
+    inkFaint: Color(0xFF8B7C6F),
+    canvas: Color(0xFF0A0806),
+    surface: Color(0xFF130F0B),
+    surfaceSunken: Color(0xFF1B1511),
+    border: Color(0xFF2E241B),
+    accent: Color(0xFFFF9F45),
+    accentSoft: Color(0xFF33200E),
+    accentInk: Color(0xFFFFD79A),
+    success: Color(0xFF5FD6A0),
+    successSoft: Color(0xFF0F2E24),
+    warning: Color(0xFFF2D04C),
+    warningSoft: Color(0xFF332E10),
+    danger: Color(0xFFFF6B5E),
+    dangerSoft: Color(0xFF3A1714),
+  );
+
+  /// Sakura: dark glass and elegant spring luminosity.
+  static const sakuraBloom = UriColors(
+    ink: Color(0xFFF7EAF0),
+    inkSoft: Color(0xFFC2A7B4),
+    inkFaint: Color(0xFF8E7585),
+    canvas: Color(0xFF0B060A),
+    surface: Color(0xFF150C13),
+    surfaceSunken: Color(0xFF1D121A),
+    border: Color(0xFF33202C),
+    accent: Color(0xFFFF77B4),
+    accentSoft: Color(0xFF331323),
+    accentInk: Color(0xFFFFBBD8),
+    success: Color(0xFF5BD3A6),
+    successSoft: Color(0xFF0F2E25),
+    warning: Color(0xFFE9B457),
+    warningSoft: Color(0xFF342713),
+    danger: Color(0xFFFF5A4E),
+    dangerSoft: Color(0xFF3A1613),
+  );
+
+  /// Lunar: dark glass and moonlit night.
+  static const lunarSilver = UriColors(
+    ink: Color(0xFFEAEFF7),
+    inkSoft: Color(0xFFA7B2C4),
+    inkFaint: Color(0xFF78839A),
+    canvas: Color(0xFF070912),
+    surface: Color(0xFF0D1120),
+    surfaceSunken: Color(0xFF131829),
+    border: Color(0xFF222A42),
+    accent: Color(0xFFB9C6E8),
+    accentSoft: Color(0xFF1A2138),
+    accentInk: Color(0xFFE2E9F8),
+    success: Color(0xFF56CFA8),
+    successSoft: Color(0xFF0E2E26),
+    warning: Color(0xFFE3B35A),
+    warningSoft: Color(0xFF332912),
+    danger: Color(0xFFFF7A7A),
+    dangerSoft: Color(0xFF3A1C1C),
   );
 
   /// The active palette for [context], resolved through the current
@@ -290,7 +396,22 @@ class UriBreakpoints {
 /// [UriColors.graphite] or [UriColors.lightProfessional] — the same pair
 /// this app's old binary dark/light default mapped to — until the user
 /// makes an explicit 4-theme choice; see [ThemeStore]).
-enum UriThemeChoice { system, graphite, deepNavy, slateTeal, lightProfessional }
+enum UriThemeChoice {
+  system,
+  graphite,
+  deepNavy,
+  slateTeal,
+  lightProfessional,
+
+  /// Living Companion phase: Dark Glass + Cyan (see [UriColors.obsidianCyan]).
+  obsidianCyan,
+
+  /// Companion themes. Selected by choosing a companion rather than from the
+  /// Appearance list alone, but listed here so one resolver serves both.
+  solarEmber,
+  sakuraBloom,
+  lunarSilver,
+}
 
 extension UriThemeChoiceLabel on UriThemeChoice {
   String get label => switch (this) {
@@ -299,6 +420,10 @@ extension UriThemeChoiceLabel on UriThemeChoice {
     UriThemeChoice.deepNavy => 'Deep Navy',
     UriThemeChoice.slateTeal => 'Slate + Teal',
     UriThemeChoice.lightProfessional => 'Light Professional',
+    UriThemeChoice.obsidianCyan => 'Obsidian Cyan',
+    UriThemeChoice.solarEmber => 'Solar Ember',
+    UriThemeChoice.sakuraBloom => 'Sakura Bloom',
+    UriThemeChoice.lunarSilver => 'Lunar Silver',
   };
 
   /// The circular swatch color shown for this choice in the topbar and
@@ -310,6 +435,10 @@ extension UriThemeChoiceLabel on UriThemeChoice {
     UriThemeChoice.deepNavy => UriColors.deepNavy.accent,
     UriThemeChoice.slateTeal => UriColors.slateTeal.accent,
     UriThemeChoice.lightProfessional => UriColors.lightProfessional.accent,
+    UriThemeChoice.obsidianCyan => UriColors.obsidianCyan.accent,
+    UriThemeChoice.solarEmber => UriColors.solarEmber.accent,
+    UriThemeChoice.sakuraBloom => UriColors.sakuraBloom.accent,
+    UriThemeChoice.lunarSilver => UriColors.lunarSilver.accent,
   };
 }
 
@@ -329,6 +458,14 @@ UriColors resolveUriColors(UriThemeChoice choice, Brightness platformBrightness)
       return UriColors.slateTeal;
     case UriThemeChoice.lightProfessional:
       return UriColors.lightProfessional;
+    case UriThemeChoice.obsidianCyan:
+      return UriColors.obsidianCyan;
+    case UriThemeChoice.solarEmber:
+      return UriColors.solarEmber;
+    case UriThemeChoice.sakuraBloom:
+      return UriColors.sakuraBloom;
+    case UriThemeChoice.lunarSilver:
+      return UriColors.lunarSilver;
   }
 }
 
@@ -402,7 +539,7 @@ ThemeData buildUriTheme(UriColors palette) {
   );
 
   return base.copyWith(
-    extensions: [palette],
+    extensions: [palette, UriGlass.fromPalette(palette)],
     textTheme: textTheme,
     dividerColor: palette.border,
     cardTheme: CardThemeData(

@@ -1,0 +1,364 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R37",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R37-01"
+ ],
+ "candidate": "fc7bbf7b7d8d955f6387816bce2d154989dd32c2",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T20:38:06Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "fc7bbf7b7d8d955f6387816bce2d154989dd32c2",
+   "impl_head": "fc7bbf7b7d8d955f6387816bce2d154989dd32c2",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "7260c34d5af9b3c45fd0404871ae550692380932dc21dadcb60d4173c0e07653",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "fc7bbf7b7d8d955f6387816bce2d154989dd32c2",
+   "impl_head": "fc7bbf7b7d8d955f6387816bce2d154989dd32c2",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "7260c34d5af9b3c45fd0404871ae550692380932dc21dadcb60d4173c0e07653",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "fc7bbf7b7d8d955f6387816bce2d154989dd32c2",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probes in /tmp/uri_review_R37/p2.py and p3.py: has_link_or_contact False for 'refunds-portal ~ \u04410\u043c' (Cyrillic \u0441, digit 0, Cyrillic \u043c), 'refunds-portal . \u04410\u043c', 'refunds-portal [.] \u04410\u043c', 'refunds-portal \u04410\u043c' (core domain, plain space), 'refunds-portal ~ \u04cf0\u04cf', 'refunds-portal . \u04cf0\u04cf' (.lol), 'refunds-portal ~ |\u043e\u0406' (.lol), 'refunds-portal ~ \u0455|' (.sl). In SENT 'Claim your energy rebate refund at {} before the deadline.': verify() keeps the claim with [1], extractive() keeps the sentence, surface.clean returns it unmasked, and validate._no_urls reports no error. Detected for comparison: 'refunds-portal ~ \u04410m', '~ c0\u043c', '~ \u0441\u043e\u043c'. Cause: _RUN=[A-Za-z0-9|]+ isolates the lone '0'/'|' among non-ASCII letters (letters<2, no TLD reading), and the skeleton/Unicode fold does not map 0/1/I/|. All of these characters are listed in the UTS #39 data, so D29 does not cover them. Also, mask_links('Go to refunds-portal \u04410\u043c/claim now') gives 'Go to refunds-portal [X] now', which leaves the name on screen, while '\u0441\u043e\u043c/claim' and 'c0m/claim' are fully masked.",
+    "files": [
+     "uri_web/untrusted.py:790",
+     "uri_web/untrusted.py:808",
+     "uri_web/untrusted.py:829",
+     "uri_web/untrusted.py:837",
+     "uri_web/untrusted.py:846",
+     "uri_web/surface.py:38",
+     "uri_a2ui/validate.py:150"
+    ],
+    "id": "R37-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Apply the ASCII look-alike fold to the skeleton text as well (or fold 0/1/I/| inside the skeleton map), so endings are read with both fold sets at once. Add regressions for the mixed forms and for full masking of the name.",
+    "title": "R1-01/R31-01 class still open: an ending mixing confusables-listed Cyrillic look-alikes with an ASCII look-alike ('\u04410\u043c', '\u04cf0\u04cf', '|\u043e\u0406', '\u0455|') is folded by neither the skeleton nor _ascii_variant, so it passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16/D29)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R28-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R29-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R30-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R31-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R32-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R33-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R34-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R35-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R36-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x tests/web tests/assist -p no:cacheprovider",
+    "result": "5497 passed in 103.60s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R37/p1.py, p2.py, p3.py (adversarial link probes)",
+    "result": "R37-01 reproduced; R36-01 forms detected",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter uri_ui tests and Playwright browser tests not run this round",
+   "Non-link prior findings (R1-02..R1-06, R2-02, R2-03, R3-02..R7-02, R11-02, R16-02) were not re-probed this round; their FIXED status rests on their regression tests passing in the suite run",
+   "ws_frozen_check zip part BLOCKED (checkpoint zip absent)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 37,
+ "started_at": "2026-10-11T20:34:58Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "d3112b37-e791-4fe1-ba73-f03e85d667cc",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 74
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.5423129999999999,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R37",
+  "ended_at": "2026-10-11T20:38:04Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 10,
+  "pid": 11248,
+  "prompt_sha256": "fbd4e1c9a585e332049c74a0ab99f8ea2f84d74c9e0032af6d33985b26c53d0f",
+  "provider": "claude_cli",
+  "result_text_sha256": "809c982f37db11b07abda0d3d5d9aafc8b2fd1bbfeeef52eeeceb85138cb86fa",
+  "role": "reviewer",
+  "session_id": "d3112b37-e791-4fe1-ba73-f03e85d667cc",
+  "session_id_requested": "d3112b37-e791-4fe1-ba73-f03e85d667cc",
+  "started_at": "2026-10-11T20:34:58Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "84f83e06223272d7d472c47f8b26296b1c408c9387f93a729d54fd68be1150b9"
+ }
+}

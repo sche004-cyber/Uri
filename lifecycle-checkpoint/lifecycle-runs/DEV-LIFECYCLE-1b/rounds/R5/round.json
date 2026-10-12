@@ -1,0 +1,209 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R5",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R5-01"
+ ],
+ "candidate": "6784424d48df221bedd271707ff2b687c0719e4e",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T03:25:02Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "6784424d48df221bedd271707ff2b687c0719e4e",
+   "impl_head": "6784424d48df221bedd271707ff2b687c0719e4e",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "b344ce7dc1a05d4ae20ea4438f97611720a9683df01adfacfce57077ebeb6d1e",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "6784424d48df221bedd271707ff2b687c0719e4e",
+   "impl_head": "6784424d48df221bedd271707ff2b687c0719e4e",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "b344ce7dc1a05d4ae20ea4438f97611720a9683df01adfacfce57077ebeb6d1e",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "6784424d48df221bedd271707ff2b687c0719e4e",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "integrate() calls evidence_ok (incl. control_drift) once at the top; in mode=merge it then runs qualify(cfg, st, result_sha, wt=iwt), executing the candidate's test code, and pushes and verifies via ls-remote with no further control check. Probe /tmp/uri_review_R5/test_probe_r5.py (HOME=/tmp/uri_review_R5/home, DEVTEST fixture, mode merge, authorized): candidate tests/conftest.py appends [url fake.git] insteadOf=canonical.git to $HOME/.gitconfig only when cwd is the 'integration' worktree. Result: stage COMPLETE, integration status INTEGRATED, push_stderr 'To .../fake.git 9c379a5..ca5248b', target_tip_after == result_commit read via the redirected ls-remote; real canonical canon still at base 9c379a5; L.verify(cfg) == []. Same redirection class as R4-01, through a path its repair does not check.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:1212",
+     "scripts/dev_workflow/lifecycle.py:1252",
+     "scripts/dev_workflow/lifecycle.py:1264",
+     "scripts/dev_workflow/lifecycle.py:1266",
+     "scripts/dev_workflow/lifecycle.py:1269"
+    ],
+    "id": "R5-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Re-run control_drift (and refs/replace check) after the combined-gate qualify and immediately before and after the push; block TAMPER on drift. Resolve the remote URL once from the anchored config and push/ls-remote against that explicit URL (with -c url.*.insteadOf unset / GIT_CONFIG_GLOBAL=/dev/null for the push), or run gate commands with HOME/GIT_CONFIG_GLOBAL pointed at a throwaway directory.",
+    "title": "Merge-mode integration runs candidate gate code after the last control-drift check; a test that writes ~/.gitconfig insteadOf redirects the push and its ls-remote verification, yielding a false COMPLETE"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "_control_config reads the repo config with --no-includes. Probe: repo with include.path=<inc.cfg>; writing an insteadOf into inc.cfg leaves git_control_digest unchanged (True), while git config --get-regexp url shows the new entry. Requires a pre-existing include in the repo config.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:330",
+     "scripts/dev_workflow/lifecycle.py:382"
+    ],
+    "id": "R5-02",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Also hash `git config --local --includes --list -z` (or the bytes of every include.path target), as already done for --global/--system.",
+    "title": "Contents of files included from the repository config (include.path / includeIf) are not bound by git_control_digest"
+   },
+   {
+    "blocking": false,
+    "category": "documentation",
+    "evidence": "Limits section: 'The retry fingerprint relies on ... ; `max_rounds` is the hard bound.' load_config raises on limits.max_rounds (lifecycle.py:121); the cap is continuation.budget.max_rounds (L-AC22).",
+    "files": [
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:86"
+    ],
+    "id": "R5-03",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Refer to continuation.budget.max_rounds and the stall rule.",
+    "title": "URI_DEVELOPMENT_LIFECYCLE.md \u00a76 still names `max_rounds` as the hard bound"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "PYTHONDONTWRITEBYTECODE=1 /tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow",
+    "result": "174 passed, 1 warning in 141.54s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow -x (earlier run, concurrent with reviewer probe)",
+    "result": "test_status_surface_is_valid_a2ui failed; caused by the reviewer probe appending to the real /root/.gitconfig mid-run (control anchor drift); not attributed to the candidate; clean rerun above passes",
+    "status": "FAILED"
+   },
+   {
+    "command": "HOME=/tmp/uri_review_R5/home PYTHONPATH=. pytest -s /tmp/uri_review_R5/test_probe_r5.py (merge-mode redirect probe)",
+    "result": "COMPLETE/INTEGRATED while real remote canon unchanged and fake.git received the merge commit; verify() == []",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python probe: repo include.path target modified -> git_control_digest unchanged",
+    "result": "digest same: True",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter gate parsing and Flutter regression runner were reviewed in code only, not executed against flutter test --machine",
+   "Real claude_cli reviewer/implementer runs not executed in this round; independence checks verified by code reading and the existing scripted tests",
+   "GPU lease path (no GPU), codex_cli adapter (not installed), Windows behaviour",
+   "REVIEWER SIDE EFFECT: the first merge-mode probe ran gate code with the real HOME and appended a 2-line [url \".../pytest-174/.../fake.git\"] insteadOf block to /root/.gitconfig (lines 21-22). Removal was denied by the sandbox. The paths are non-existent temp paths, but the change alters the driver's anchored user-level git control digest, so the coordinating lifecycle run will see GIT_CONTROL drift for this round; the owner should delete those two lines and acknowledge with unblock --note. The candidate checkout itself is unchanged (git status clean, HEAD 6784424)."
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 5,
+ "started_at": "2026-10-11T03:18:50Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "56f26871-716a-4121-8138-92882bed920d",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.9140442000000004,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R5",
+  "ended_at": "2026-10-11T03:25:01Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 33,
+  "pid": 31820,
+  "prompt_sha256": "0bfb77abbf5669c8b3a60ca4d9ffe4ab586fc097ada10d7f9501a81162429e85",
+  "provider": "claude_cli",
+  "result_text_sha256": "f669eac45c3a754faa20272f6cad2b4ba75a623253d0aeacceac0368a7003ea0",
+  "role": "reviewer",
+  "session_id": "56f26871-716a-4121-8138-92882bed920d",
+  "session_id_requested": "56f26871-716a-4121-8138-92882bed920d",
+  "started_at": "2026-10-11T03:18:50Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "d423ba157232afd8f8bdebcaada054f84c27c6006d100510d116ea978fcb37b8"
+ }
+}

@@ -1,0 +1,147 @@
+=== tests/assist/test_a0_r4_review_regressions.py BEFORE (16155129b72685f25eca48a65252f6cd51fa47e4) DONE
+ric_values[sessionkey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[shared-key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[sharedKey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[shared_key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[sharedkey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[signing-key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[signingKey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[signing_key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[signingkey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[socialsecuritynumber]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[ssh-key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[sshKey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[ssh_key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[sshkey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[stripe-publishable-key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[stripePublishableKey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[stripe_publishable_key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[stripeapikey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[stripepublishablekey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[tax-id]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[taxId]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[tax_id]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[taxid]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[unlock-code]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[unlockCode]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[unlock_code]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[unlockcode]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[userapikey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[wallet-mnemonic]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[walletMnemonic]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[wallet_mnemonic]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[walletmnemonic]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[wifi-psk]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[wifiPsk]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[wifi_psk]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[wifipsk]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_secret_names_are_sensitive_with_alphanumeric_values[xapikey]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_alphanumeric_codes_in_code_or_key_fields_are_sensitive[Recovery code]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_alphanumeric_codes_in_code_or_key_fields_are_sensitive[Backup code]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_alphanumeric_codes_in_code_or_key_fields_are_sensitive[Enter code]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_alphanumeric_codes_in_code_or_key_fields_are_sensitive[Enter the 8-character code]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_alphanumeric_codes_in_code_or_key_fields_are_sensitive[Security key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_alphanumeric_codes_in_code_or_key_fields_are_sensitive[Your access key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_alphanumeric_codes_in_code_or_key_fields_are_sensitive[Unlock key]
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_in_page_patterns_are_the_python_patterns
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_in_page_layer_hides_corpus_and_matches_python
+FAILED tests/assist/test_a0_r4_review_regressions.py::test_r4_01_values_never_reach_the_brain_request
+213 failed, 218 passed in 8.16s
+
+=== tests/assist/test_a0_r4_review_regressions.py AFTER (52e852dcce592e15fc2098bc1e169a7e009eb26a) DONE
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+........................................................................ [ 50%]
+........................................................................ [ 66%]
+........................................................................ [ 83%]
+.......................................................................  [100%]
+431 passed in 2.68s
+
+=== tests/web/test_w1_r4_review_regressions.py BEFORE (16155129b72685f25eca48a65252f6cd51fa47e4) DONE
+rec.fetch_status == R.TIMED_OUT
+E       AssertionError: assert 'UNREACHABLE' == 'TIMED_OUT'
+E         
+E         - TIMED_OUT
+E         + UNREACHABLE
+
+tests/web/test_w1_r4_review_regressions.py:114: AssertionError
+____ test_r4_03_total_timeout_holds_while_the_server_drips[chunk-extension] ____
+
+drip_server = <function drip_server.<locals>.start at 0x7f9b0989c7c0>
+payload = b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nTransfer-Encoding: chunked\r\n\r\n1;x=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    @pytest.mark.parametrize("payload", [SLOW_HEADERS, CHUNK_DRIP], ids=["headers", "chunk-extension"])
+    def test_r4_03_total_timeout_holds_while_the_server_drips(drip_server, payload):
+        rec, elapsed = _fetch(drip_server(payload))
+>       assert rec.fetch_status == R.TIMED_OUT
+E       AssertionError: assert 'UNREACHABLE' == 'TIMED_OUT'
+E         
+E         - TIMED_OUT
+E         + UNREACHABLE
+
+tests/web/test_w1_r4_review_regressions.py:114: AssertionError
+___________ test_r4_03_cancel_holds_while_the_server_drips[headers] ____________
+
+drip_server = <function drip_server.<locals>.start at 0x7f9b0989c900>
+payload = b'HTTP/1.1 200 OK\r\nX-Pad: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    @pytest.mark.parametrize("payload", [SLOW_HEADERS, CHUNK_DRIP], ids=["headers", "chunk-extension"])
+    def test_r4_03_cancel_holds_while_the_server_drips(drip_server, payload):
+        cf = SF.CancelFlag()
+        threading.Timer(0.5, cf.cancel).start()
+        rec, elapsed = _fetch(drip_server(payload), cancel=cf)
+>       assert rec.fetch_status == R.CANCELLED
+E       AssertionError: assert 'UNREACHABLE' == 'CANCELLED'
+E         
+E         - CANCELLED
+E         + UNREACHABLE
+
+tests/web/test_w1_r4_review_regressions.py:123: AssertionError
+_______ test_r4_03_cancel_holds_while_the_server_drips[chunk-extension] ________
+
+drip_server = <function drip_server.<locals>.start at 0x7f9b0989cd60>
+payload = b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nTransfer-Encoding: chunked\r\n\r\n1;x=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    @pytest.mark.parametrize("payload", [SLOW_HEADERS, CHUNK_DRIP], ids=["headers", "chunk-extension"])
+    def test_r4_03_cancel_holds_while_the_server_drips(drip_server, payload):
+        cf = SF.CancelFlag()
+        threading.Timer(0.5, cf.cancel).start()
+        rec, elapsed = _fetch(drip_server(payload), cancel=cf)
+>       assert rec.fetch_status == R.CANCELLED
+E       AssertionError: assert 'UNREACHABLE' == 'CANCELLED'
+E         
+E         - CANCELLED
+E         + UNREACHABLE
+
+tests/web/test_w1_r4_review_regressions.py:123: AssertionError
+=========================== short test summary info ============================
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_verify_drops_a_claim_with_another_magnitude[$5bn-$5m]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_verify_drops_a_claim_with_another_magnitude[$5M-$5k]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_verify_drops_a_claim_with_another_magnitude[2 crore-2 lakh]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_verify_drops_a_claim_with_another_magnitude[Rs.500 trillion-Rs.500 crore]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_verify_drops_a_claim_with_another_magnitude[5 miles-5 km]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_verify_drops_a_claim_with_another_magnitude[3.2bn-3.2mn]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_verify_drops_a_claim_with_another_magnitude[10 lakhs-10 crores]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_verify_keeps_the_same_amount_written_differently[$5m-$5 million]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_verify_keeps_the_same_amount_written_differently[$5m-$5,000,000]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_verify_keeps_the_same_amount_written_differently[2.5bn-2.5 billion]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_conflict_detector_sees_magnitude_differences[$5bn-$5m]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_conflict_detector_sees_magnitude_differences[$5M-$5k]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_conflict_detector_sees_magnitude_differences[2 crore-2 lakh]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_conflict_detector_sees_magnitude_differences[Rs.500 trillion-Rs.500 crore]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_conflict_detector_sees_magnitude_differences[5 miles-5 km]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_conflict_detector_sees_magnitude_differences[3.2bn-3.2mn]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_conflict_detector_sees_magnitude_differences[10 lakhs-10 crores]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_same_amount_is_not_a_conflict[$5m-$5 million]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_same_amount_is_not_a_conflict[$5m-$5,000,000]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_02_same_amount_is_not_a_conflict[2.5bn-2.5 billion]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_03_total_timeout_holds_while_the_server_drips[headers]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_03_total_timeout_holds_while_the_server_drips[chunk-extension]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_03_cancel_holds_while_the_server_drips[headers]
+FAILED tests/web/test_w1_r4_review_regressions.py::test_r4_03_cancel_holds_while_the_server_drips[chunk-extension]
+24 failed, 7 passed in 361.35s (0:06:01)
+
+=== tests/web/test_w1_r4_review_regressions.py AFTER (52e852dcce592e15fc2098bc1e169a7e009eb26a) DONE
+...............................                                          [100%]
+31 passed in 4.50s
+

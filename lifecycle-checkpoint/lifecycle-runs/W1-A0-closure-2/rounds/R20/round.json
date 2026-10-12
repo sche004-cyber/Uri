@@ -1,0 +1,318 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R20",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R20-01",
+  "R20-02"
+ ],
+ "candidate": "eb4d676de99d18710bffd9b3a0cdb7ab1baca7d5",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T14:41:17Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "eb4d676de99d18710bffd9b3a0cdb7ab1baca7d5",
+   "impl_head": "eb4d676de99d18710bffd9b3a0cdb7ab1baca7d5",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "725c31a2a4416bcb618297cc3d21ba951ee16d17d98b763e037c207799a4dce9",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "eb4d676de99d18710bffd9b3a0cdb7ab1baca7d5",
+   "impl_head": "eb4d676de99d18710bffd9b3a0cdb7ab1baca7d5",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "725c31a2a4416bcb618297cc3d21ba951ee16d17d98b763e037c207799a4dce9",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "eb4d676de99d18710bffd9b3a0cdb7ab1baca7d5",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_separator_word only accepts words made entirely of marks (category M). A word of listed stroke letters plus one mark fails set(w[2]) <= _STROKES because the mark is not in _STROKES; an odd Latin letter plus a mark fails _odd because Mn is not Lo/Lm. The word is then the 'name', the gap is a plain space, and the non-core TLD is skipped. Probe: has_link_or_contact('Claim your energy rebate refund at refunds-portal \u4e36\u4e3f\u0323 shop before the deadline.') == False, also for '\\u318d\\u11a2\\u0323', '\\u30cb\\u30cf\\u30c8\\u0323', '\\u4e28\\u4e36\\u4e3f\\u0323', '\\u0298\\u0323', '\\u01c3\\u0323', '\\u4e36\\u4e3f\\u0301'; mask_links leaves the text unchanged; SY.verify keeps the claim with its citation; SY.extractive returns the sentence; surface.build_surface emits it without error. Without the mark ('\u4e36\u4e3f', '\u0298') all are links. The letters are inside the D20 groups, so the 'list is final' residual does not apply.",
+    "files": [
+     "uri_web/untrusted.py:561",
+     "uri_web/untrusted.py:563",
+     "uri_web/untrusted.py:534",
+     "uri_web/untrusted.py:538",
+     "uri_web/untrusted.py:585"
+    ],
+    "id": "R20-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "In _separator_word (and _odd, and the stroke-set test) remove combining marks (category M) from the word before classifying it, and treat a word that is empty after that as a separator.",
+    "title": "R19-01 repair incomplete: a separator word plus a combining mark ('\u4e36\u4e3f\u0323', '\u119e\u11a2\u0323', '\u30cb\u30cf\u30c8\u0323', '\u0298\u0323') is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive() and the research surface (W1-AC12/AC15, D17/D19)"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "The skeleton lookup (R19-02) is applied only to single words; the spelt-out paths (single letters joined by spaces, word + one letter) compare text.casefold() against _ALL_TLDS without the skeleton. Probe: has_link_or_contact('Claim your energy rebate refund at refunds-portal \u0441 \u043e \u043c before the deadline.') == False; same for '\u0441\u043e \u043c'; verify() keeps the claim, extractive() returns it. Control: 'refunds-portal c o m' and 'refunds-portal co m' are links. With '/claim' the link is detected, but mask_links gives 'refunds-portal \u0441 \u043e [X]', so the name stays visible.",
+    "files": [
+     "uri_web/untrusted.py:485",
+     "uri_web/untrusted.py:492",
+     "uri_web/untrusted.py:498",
+     "uri_web/untrusted.py:518"
+    ],
+    "id": "R20-02",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Apply the same skeleton match (non-Latin letters, only after a name in a different script) to the spelt-out and split-ending branches of _endings, and mask from the name rather than from the path.",
+    "title": "R19-02 repair incomplete: a look-alike core domain spelt with spaces ('refunds-portal \u0441 \u043e \u043c', '\u0441\u043e \u043c') is not an ending, although Latin 'c o m' / 'co m' are links; with a path, masking still leaves 'refunds-portal \u0441 \u043e' on screen"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "NOT_FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist",
+    "result": "5111 passed in 98.63s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider /tmp/uri_review_R20/test_r20_regressions.py",
+    "result": "12 failed (all R20-01/R20-02 reproductions)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R20/p1.py, p2.py, p3.py (adversarial probes incl. surface.build_surface)",
+    "result": "bypasses listed in R20-01/R20-02 confirmed through verify, extractive and the research surface",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf534..eb4d676 -- <protected paths>",
+    "result": "no changes",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter widget tests (uri_ui) not re-run this round",
+   "ws_frozen_check zip part (Phase 1 checkpoint zip not present)",
+   "browser_extension snapshot.js/probe.js parity, vision and access/bridge permission paths not re-probed this round; no changes to them since R19",
+   "Skeleton table gap: '\u04bb' (U+04BB) not mapped, so 'refunds-portal ~ \u0455\u04bb\u043e\u0440' passes; not reported as a finding"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 20,
+ "started_at": "2026-10-11T14:35:45Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "586829f2-57de-4d4f-b19b-a70fbcf36aa4",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 151
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.8346115000000001,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R20",
+  "ended_at": "2026-10-11T14:41:16Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 16,
+  "pid": 26541,
+  "prompt_sha256": "7b2403454ad36fbb0fee4eab7fba836ebbd2c634d0cb01dc649cebb2e80c0dce",
+  "provider": "claude_cli",
+  "result_text_sha256": "8fc232507321b629aaf61c8e4c7e54d6d5c96575e850589fe1baacd9f78a3fc3",
+  "role": "reviewer",
+  "session_id": "586829f2-57de-4d4f-b19b-a70fbcf36aa4",
+  "session_id_requested": "586829f2-57de-4d4f-b19b-a70fbcf36aa4",
+  "started_at": "2026-10-11T14:35:45Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "ece2f58a60beec67048de2ae18f20f108f2555d197e0dd2ed2aa12244391ce0c"
+ }
+}

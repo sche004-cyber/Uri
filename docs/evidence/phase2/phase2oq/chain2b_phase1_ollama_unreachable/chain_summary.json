@@ -1,0 +1,35 @@
+{
+ "started": "2026-10-08T10:24:03",
+ "gates": {
+  "phase1-full": {
+   "exit": 1,
+   "passed": 2676,
+   "failed": 11,
+   "skipped": 11,
+   "errors": 0,
+   "line": "11 failed, 2676 passed, 11 skipped, 3 warnings, 88 subtests passed in 690.71s (0:11:30)",
+   "failed_ids": [
+    "step3_test.py::test_drive",
+    "step4_test.py::test_download",
+    "test_capability_directory.py::PrivacyTests::test_no_credentials_tokens_or_secrets_appear_in_serialized_output",
+    "test_m20_feasibility_validation.py::UnavailableCapabilityIsNotPromotedTests::test_strict_single_action_proposal_for_unavailable_capability_falls_back",
+    "test_m20_recovery_loop.py::CapabilityPlannerFailureReachesRecoveryTests::test_capability_planner_failure_reaches_recovery_loop",
+    "test_m20_recovery_loop.py::LearnedSkillFailureReachesRecoveryTests::test_learned_skill_failure_reaches_recovery_loop",
+    "test_m20_semantic_interpreter_resilience.py::SemanticInterpreterFailureDegradesHonestlyTests::test_capability_planner_gets_the_degraded_result_without_raising",
+    "test_m20_semantic_interpreter_resilience.py::SemanticInterpreterFailureDegradesHonestlyTests::test_raising_interpreter_does_not_fail_the_whole_turn",
+    "test_orchestrator_session_workflow.py::TestOrchestratorSessionWorkflow::test_session_facts_are_used_for_clarification",
+    "test_usage_import_boundary.py::test_orchestrator_newline_count_does_not_increase",
+    "test_workflow_restart_recovery.py::TestWorkflowRestartRecovery::test_workflow_survives_restart_and_resumes"
+   ],
+   "baseline_log": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\evidence\\phase2ops_r6\\phase1_full.log",
+   "SAME_FAILURE_SET": true,
+   "PASS": false
+  },
+  "residue": {
+   "removed": [],
+   "PASS": true
+  }
+ },
+ "finished": "2026-10-08T10:35:35",
+ "ALL_PASS": false
+}

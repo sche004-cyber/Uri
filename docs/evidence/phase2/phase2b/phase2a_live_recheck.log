@@ -1,0 +1,4 @@
+LIVE codex_cli {"state": "RETRY_SAFE", "exit": 1, "end_reason": "exited_after_terminal_error_claim", "stdout_lines": 5, "claims": ["terminal_error_claim"], "reason": "EXECUTOR_REPORTED_ERROR_RETRY_SAFE", "version": "0.158.0"}
+.LIVE claude_code {"state": "RETRY_SAFE", "exit": 1, "end_reason": "exited_after_terminal_error_claim", "stdout_lines": 3, "claims": ["terminal_error_claim"], "reason": "EXECUTOR_REPORTED_ERROR_RETRY_SAFE", "version": "2.1.287"}
+.
+2 passed in 6.46s

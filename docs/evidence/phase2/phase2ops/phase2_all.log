@@ -1,0 +1,35 @@
+C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Scripts\python.exe -I -m pytest -c C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\scripts\phase2d_pytest.ini --rootdir C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent -q -rfEs --ignore=work --ignore=evidence --ignore=uri_workspace --ignore=temp_evidence --ignore=reports --ignore=research_notes --ignore=graphify-out --ignore=uri_ui --ignore=.venv tests/phase2a tests/phase2b tests/phase2c tests/phase2d tests/phase2ops
+........................................................................ [ 17%]
+.................ss..................................................... [ 35%]
+............................................................F........... [ 52%]
+........................................................................ [ 70%]
+........................................................................ [ 87%]
+..................................................                       [100%]
+================================== FAILURES ===================================
+________ test_bridge_runner_overrides_only_the_harness_execution_seam _________
+
+    def test_bridge_runner_overrides_only_the_harness_execution_seam():
+        text = (BRIDGE / "runner.py").read_text(encoding="utf-8")
+        overridden = set(re.findall(r"^    def (\w+)\(", text, re.M))
+        # `begin` (Phase 2C) only records the reasoning selection the approval was requested under; it calls the frozen
+        # begin unchanged and alters neither the envelope nor the protocol.
+>       assert overridden <= {"__init__", "begin", "_validate_ticket", "_run_harness", "_runner"}, overridden
+E       AssertionError: {'__init__', '_execute', '_run_harness', '_runner', '_validate_ticket', 'begin'}
+E       assert {'__init__', ...ket', 'begin'} <= {'__init__', ...ket', 'begin'}
+E         
+E         Extra items in the left set:
+E         '_execute'
+
+tests\phase2b\test_boundary.py:41: AssertionError
+============================== warnings summary ===============================
+tests/phase2b/test_bridge_e2e.py::test_full_chain_verified_once_with_supervisor_evidence
+  C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/phase2b/test_boundary.py::test_bridge_runner_overrides_only_the_harness_execution_seam
+SKIPPED [2] tests\phase2a\test_live_executors.py:36: live executors are opt-in (URI_PHASE2A_LIVE=1)
+1 failed, 407 passed, 2 skipped, 1 warning in 359.47s (0:05:59)
+
+EXIT=1 DURATION_S=360.4

@@ -1,0 +1,52 @@
+R1-01 keeps coming back because the number reader in `uri_web/evaluate.py` can't tell when it has split one amount into pieces, and both number checks trust whatever pieces it returns. Each repair added the reviewer's exact examples to the regex instead of fixing that. I re-ran the R5-01 probes at commit 52e852d and every one still reproduces; the probe script is `/tmp/d3probe/p.py`.
+
+**What goes wrong**
+
+1. **The number regex knows too few formats.** `_NUMBER` at `uri_web/evaluate.py:19` only accepts commas every three digits (`1,234,567`) or plain digit runs, and it never captures a sign. Anything else comes back in pieces:
+   - `Rs 5,00,000` → `{'5','00000'}`
+   - `Rs 5,00,00,000` → `{'5','00','00000'}`
+   - `1 000 000` → `{'1','000'}`, while `1 500 000` → `{'1','500','000'}`
+   - `-3.2%` and `−3.2%` → `{'3.2%'}`; `-12 degrees` → `{'12'}`
+2. **Both checks then compare those pieces with subset tests:**
+   - `verify` keeps a claim when the claim's numbers are a subset of the source sentence's (`uri_web/synthesize.py:99`).
+   - `find_conflicts` skips any pair where one set is a subset of the other (`uri_web/evaluate.py:162`).
+   
+   A smaller amount split into pieces is very often a subset of a larger amount's pieces, so the defect fails open.
+
+**Probe results at 52e852d** (claim vs source in the same sentence):
+
+| Claim | Source | `verify` | Conflicts found |
+|---|---|---|---|
+| `Rs 5,00,000` | `Rs 5,00,00,000` | kept | 0 |
+| `₹5,00,000` | `₹5,00,00,000` | kept | 0 |
+| `1 000 000 euros` | `1 500 000 euros` | kept | 0 |
+| `-3.2%` | `3.2%` | kept | 0 |
+| `−3.2%` | `3.2%` | kept | 0 |
+| `-12 degrees` | `12 degrees` | kept | 0 |
+
+The same weakness also breaks things the reviewers haven't reported yet:
+- `1,000.5` and `1,000.50` are treated as different numbers, so a correct claim is dropped. Values are compared as strings, not as numbers.
+- `10,00,000 lakh` becomes `{'0','10'}`.
+
+The user-facing text in `uri_web/surface.py:58` still says citations are "checked against the sources (wording, numbers, negation)".
+
+**Why the earlier repairs missed it**
+
+- **Repair 1 (16f75d8):** a one-line change to the lookbehind before the number (`(?<![\w.])` → `(?<!\d)`). Its tests in `tests/web/test_w1_r1_review_regressions.py` cover only the three strings the reviewer named: `Rs.500`, `approx.900` and `No.5`.
+- **Repair 4 (52e852d):** added unit and scale handling after the number (`_SCALE`, `_UNIT`, `_fmt`) for R4-02. The comma grouping, missing sign handling and subset comparison were left as they were, so a fix aimed at lakh/crore words didn't touch lakh-style digit grouping. Its tests cover only the cases R4-02 listed (`$5bn` vs `$5m`, `2 crore` vs `2 lakh`, and so on).
+- **Repairs 2 and 3 (627f6b9, 1615512):** changed only `uri_assist`, not `uri_web`.
+- No repair added a test that every number in a sentence is read as one whole value, and nothing tests the subset rules against split numbers. All 36 R1-01/R4-02 regression tests pass at HEAD while R5-01 reproduces, so the tests passing proves nothing about this class.
+
+**Proposed fix**
+
+Change the number reader so it can't return fragments, rather than adding more examples to the regex:
+- Accept Western, Indian and space/no-break-space grouping, each as one value.
+- Keep a leading `-`, `−` or "minus" as part of the value.
+- Turn each value into one exact canonical form (`Decimal` normalised, with unit and scale applied), so `1000.5` equals `1000.50`.
+- If a digit run can't be read cleanly, mark the sentence as unverifiable instead of returning pieces. `verify` should then drop the claim and `find_conflicts` should not use the pair to rule out a conflict.
+
+Add property-style regression tests over every grouping and sign form, for both `verify` and `find_conflicts`, in both directions. The R5-02 redaction finding in the history is a separate defect in `uri_assist`.
+
+DIAGNOSIS_BEGIN
+{"root_cause": "uri_web/evaluate.py:19 _NUMBER is a single ad-hoc regex that only knows western 3-digit comma grouping (\\d{1,3}(,\\d{3})+) or bare digit runs, and captures no sign. Any other numeral (Indian lakh/crore grouping 5,00,000, space/NBSP-grouped thousands 1 000 000, leading -/− sign) is silently split into fragments ('5','00000' / '5','00','00000') or loses its sign, and numbers() (evaluate.py:69-80) returns those fragments as if they were values, compared as raw strings. Both consumers then use set-subset comparisons — verify keeps a claim when claim_nums <= source_nums (synthesize.py:99), and find_conflicts skips any pair where one set is a subset of the other (evaluate.py:162) — so a fragmented smaller amount is usually a subset of the larger amount's fragments and the check fails open (5 lakh vs 5 crore KEPT, 0 conflicts). The tokenizer has no 'whole numeral or unparseable' invariant, and the comparators trust its output.", "why_earlier_repairs_failed": "Each repair patched only the literal example strings of the latest finding. Repair 1 (16f75d8) changed only the lookbehind (?<![\\w.]) -> (?<!\\d) and tested exactly Rs.500/approx.900/No.5 (tests/web/test_w1_r1_review_regressions.py). Repair 4 (52e852d) bolted unit/scale suffix handling (_SCALE/_UNIT/_fmt) onto group 2 for R4-02, leaving the integer-grouping alternative, sign handling and the subset-based comparators unchanged, and tested only the reviewer's magnitude-word pairs ($5bn vs $5m, 2 crore vs 2 lakh). Repairs 2 and 3 (627f6b9, 1615512) did not touch uri_web. No repair added a test that every numeral is extracted whole, or covered fragmentation against the subset rules, so the 36 existing R1-01/R4-02 regressions pass at HEAD while R5-01 reproduces.", "evidence": ["uri_web/evaluate.py:19 _NUMBER alternatives: \\d{1,3}(?:,\\d{3})+(?:\\.\\d+)? | \\d+(?:\\.\\d+)?, lookbehind (?<!\\d) only, no sign capture", "uri_web/evaluate.py:72 n = m.group(1).replace(',', '') emits raw string fragments, no numeric canonicalisation", "uri_web/synthesize.py:99 `not claim_nums <= best[2]` subset test lets fragment subsets pass", "uri_web/evaluate.py:162 `na <= nb or nb <= na` -> continue suppresses conflicts for fragment subsets", "probe /tmp/d3probe/p.py at 52e852d: numbers('Rs 5,00,000')={'00000','5'}, numbers('Rs 5,00,00,000')={'00','00000','5'} -> verify KEPT, conflicts 0; same for '₹5,00,000' vs '₹5,00,00,000'", "probe: '1 000 000 euros'={'000','1'} vs '1 500 000 euros'={'000','1','500'} -> KEPT, 0 conflicts", "probe: '-3.2%', '−3.2%' -> {'3.2%'}; '-12 degrees' -> {'12'}; each vs unsigned -> KEPT, 0 conflicts", "probe (additional, unreported): '1,000.5' vs '1,000.50' -> NUMBER_NOT_IN_CITED_SOURCE (string not numeric equality); '10,00,000 lakh' -> {'0','10'}", "git show 16f75d8 -- uri_web/evaluate.py: one-line lookbehind change only", "git show 52e852d -- uri_web/evaluate.py: adds _SCALE/_UNIT/_fmt suffix handling, grouping/sign/comparators unchanged", "pytest tests/web/test_w1_r1_review_regressions.py tests/web/test_w1_r4_review_regressions.py -k 'r1_01 or r4_02' -> 36 passed at HEAD despite reproduction", "uri_web/surface.py:58 still claims 'citations checked against the sources (wording, numbers, negation)'"], "proposed_fix": "Replace the regex-plus-string approach in evaluate.numbers with a numeral tokenizer that has an explicit invariant: each numeral is either parsed whole into one canonical value or reported as unparseable. Accept optional sign (-, −, U+2212, 'minus'); integer part as western grouping \\d{1,3}(,\\d{3})+, Indian grouping \\d{1,2}(,\\d{2})*,\\d{3}, space/NBSP/thin-space/narrow-NBSP grouping \\d{1,3}([ \\u00a0\\u2009\\u202f]\\d{3})+, or a bare digit run; optional .fraction. Strip separators, parse to Decimal, apply sign and existing _SCALE/_UNIT, and emit a normalised canonical string (so 1000.5 == 1000.50). Return a sentinel for numerals that cannot be read cleanly: verify should drop the claim (NUMBER_NOT_IN_CITED_SOURCE / unverifiable) and find_conflicts should not use subset suppression to rule out a conflict for that pair. Add property-style regressions in tests/web covering each grouping style, sign variant and decimal-normalisation case in both verify and find_conflicts, in both directions (5,00,000 vs 5,00,00,000; 1 000 000 vs 1 500 000; -3.2% vs 3.2%; −3.2% vs 3.2%; 1,000.5 vs 1,000.50 kept), plus an invariant test that numbers() never yields a value that is a digit-substring fragment of a longer grouped numeral.", "needs_owner": false}
+DIAGNOSIS_END

@@ -1,0 +1,115 @@
+{
+ "addresses": [
+  "r2.R1-02",
+  "r2.R1-03",
+  "r2.R1-04",
+  "r2.R2-01"
+ ],
+ "changed": [
+  "docs/dev_workflow/CAPABILITY_LEDGER.md",
+  "docs/dev_workflow/LIFECYCLE_QUALIFICATION.md",
+  "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+  "scripts/dev_workflow/lifecycle.py",
+  "scripts/dev_workflow/lifecycle_providers.py",
+  "tests/dev_workflow/test_lifecycle_dl2_r2_repair.py",
+  "tests/dev_workflow/test_lifecycle_windows_cli.py"
+ ],
+ "commit": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+ "ended_at": "2026-10-11T13:26:05Z",
+ "pre": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle_dl2_r2_repair.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/dev_workflow/test_lifecycle_windows_cli.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 0,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 1,
+ "report": {
+  "not_repaired": [],
+  "notes": "R1-02: _win_launcher_target ignores REM/:: lines, refuses programs named cmd/powershell/pwsh/cscript/wscript and .bat/.cmd/.ps1/.vbs/.wsf scripts, and requires %* on the line that runs the program; npm shim shapes still bind. R2-01: _run and run_cmd catch OSError from communicate() after a successful spawn and still call containment.finish (job terminated and tracked; a failed termination keeps the job in _OPEN_JOBS so the next precheck fails closed). I did not register jobs at spawn time because the precheck inside drain_after_timeout would close a handle finish() still uses. R1-03 (test finding, not a regression file): test_lifecycle_windows_cli.py now asserts the launcher was found and the exact refusal reason; the .ps1 test also binds a .cmd beside it; added an npm-shim-with-comments test. All 11 tests in that file fail on ce1a90c on Linux (checked in a clean export); they pass on 0ee6885 as expected. R1-04: CAPABILITY_LEDGER marks Windows containment in a real milestone run NOT VERIFIED (windows_only unit tests owner-reported passed); URI_DEVELOPMENT_LIFECYCLE documents the W-2 identity (launcher/program/interpreter/launch) and the R1-02 refusal rules and narrows the re-check claim; LIFECYCLE_QUALIFICATION gets a dated correction note (history kept). The regression file's 11 tests all fail on 0ee6885 and pass after; full tests/dev_workflow: 238 passed, 5 skipped (windows_only, PLATFORM-GATED). The Windows code paths were checked only with the fake kernel32 and fixture launchers, not on Windows. graphify not run (coordinator rebuilds).",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle_dl2_r2_repair.py"
+  ],
+  "repaired": [
+   "r2.R1-02",
+   "r2.R1-03",
+   "r2.R1-04",
+   "r2.R2-01"
+  ]
+ },
+ "started_at": "2026-10-11T13:19:36Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "6b5ba646-fb5a-4e78-949b-a695803df33d",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 165
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.6768051000000002,
+  "cwd": "/home/user/uri-wt/dl2",
+  "ended_at": "2026-10-11T13:25:53Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 35,
+  "pid": 25555,
+  "prompt_sha256": "4e1a3f2de76d06af974387295c3d66b042865aa7cad0c6b3926e57a0443a4510",
+  "provider": "claude_cli",
+  "result_text_sha256": "2fb2ccb5599da62ba0c80be2be2ae92d1fe12120232721ce0171678e7fabb703",
+  "role": "implementer",
+  "session_id": "6b5ba646-fb5a-4e78-949b-a695803df33d",
+  "session_id_requested": "6b5ba646-fb5a-4e78-949b-a695803df33d",
+  "started_at": "2026-10-11T13:19:37Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "9bd401ee585ac10dd1e3bde392da3dd89008ef3d684cc9f164986e5ffd4a058e"
+ }
+}

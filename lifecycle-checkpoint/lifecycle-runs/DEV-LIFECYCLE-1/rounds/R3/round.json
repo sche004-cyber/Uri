@@ -1,0 +1,254 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R3",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R3-01",
+  "R3-02",
+  "R3-03",
+  "R3-04"
+ ],
+ "candidate": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T01:12:34Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+   "head": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+   "impl_head": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+   "impl_status": [],
+   "refs": "2da5ee409b1283b14efc34aeff481bf78405386c067c45f74e7fa232f3db9403",
+   "status": []
+  },
+  "before": {
+   "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+   "head": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+   "impl_head": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+   "impl_status": [],
+   "refs": "2da5ee409b1283b14efc34aeff481bf78405386c067c45f74e7fa232f3db9403",
+   "status": []
+  },
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe /tmp/uri_review_R3/probe_restore.py: implementer writes 'ref: refs/heads/other' (then 'ref: refs/heads/canon', the main checkout's branch) into its own worktree git dir HEAD and edits a file. worktree_identity() still passes (gitfile untouched). do_repair: head != sha -> TAMPER reason -> _restore() -> `git reset --hard <sha>` updates the symbolic ref. Result: branch 'other' moved 1077e67 -> b097513 (candidate), its commit dropped; second run: 'canon' (checked out in main repo) moved a839efc -> c097ed5 and the main checkout shows 'D pkg/feature.py'. repair.json records restored=True while impl HEAD is refs/heads/other|canon, not the candidate branch. R2-03's class (revert not limited to the implementation worktree) persists via this sibling vector.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:800-807",
+     "scripts/dev_workflow/lifecycle.py:880-881",
+     "scripts/dev_workflow/lifecycle.py:899",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:45"
+    ],
+    "id": "R3-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Before resetting, require `git symbolic-ref HEAD` == refs/heads/<candidate.branch> (else TAMPER, no reset); restore with `update-ref refs/heads/<branch> <sha> <expected-old>` + `symbolic-ref HEAD refs/heads/<branch>` + `reset --hard` / `clean -fd`, and include the HEAD symref in the restored check and in the review integrity snapshot.",
+    "title": "Revert after a refused repair resets whatever branch the implementation worktree's HEAD names: a redirected HEAD makes the driver move another branch (incl. the main checkout's) to the candidate SHA"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "Probe /tmp/uri_review_R3/probe_cache.py (A): baseline-only transient hang -> run1 BLOCKED 'baseline gate slow: TIMED_OUT'; cause removed, owner unblock, run2 BLOCKED with the identical reason; state baseline_gates.slow.result.status == 'TIMED_OUT'. The cache is reused whenever key matches regardless of status; editing state.json to clear it is TAMPER. Same path for exit-75 GPU lease busy on the baseline (R2-05), contradicting 'provide the resource and re-run'.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:604-614",
+     "scripts/dev_workflow/lifecycle.py:1103-1105"
+    ],
+    "id": "R3-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Cache baseline results only when status == COMPLETED_WITH_RESULT (or re-run when the cached status is not), recording each attempt as a BASELINE_GATE event.",
+    "title": "A non-COMPLETED baseline gate result (TIMED_OUT, GPU lease busy, BLOCKED) is cached by SHA+cmd and permanently blocks qualification"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "Probe probe_cache.py (B): run to VERIFIED (BLOCKED OWNER_AUTHORIZATION), commit to the candidate branch outside the driver, then unblock+run three times: each run goes READY_TO_RESUME -> VERIFYING -> gates -> evidence_ok fails -> BLOCKED 'no independent ACCEPT on this exact commit' with resume_to VERIFYING again; rounds stays 1, verify() == []. The 'needs: re-audit' remedy is unreachable (L-AC14 liveness).",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:186-191",
+     "scripts/dev_workflow/lifecycle.py:1017-1022",
+     "scripts/dev_workflow/lifecycle.py:1130-1133"
+    ],
+    "id": "R3-03",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "When the candidate changed or the blocker is EVIDENCE (no accepted review for the current SHA), set resume_to=AUDITING; generally resume to AUDITING whenever accepted_review(current sha) is None.",
+    "title": "Candidate moved during VERIFYING/VERIFIED blocks with resume_to=VERIFYING, so every resume re-blocks and the new commit is never re-audited"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe /tmp/uri_review_R3/probe_config.py: candidate changes protected core/frozen.py; run1 -> WAITING_FOR_MODEL (reviewer unavailable). Config file edited between runs (authorized_protected_changes ['core/**'], gates []) - the file sits outside every integrity check, writable by implementer/reviewer/escaped child or coordinator. run2 -> COMPLETE, protected change pushed to the bare canonical remote; only a CONFIG_CHANGED event; verify() == []. Under the original config this stops BLOCKED (OWNER_DECISION) (L-AC11/L-AC12).",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:1003-1005",
+     "scripts/dev_workflow/lifecycle.py:100-125",
+     "scripts/dev_workflow/lifecycle.py:929"
+    ],
+    "id": "R3-04",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Bind the config hash in the PLAN event; on a changed config block (OWNER_DECISION/CONFIG) until `unblock --note` acknowledges it, and record the policy-relevant fields in the chain; consider keeping authorisation flags out of the agent-written config.",
+    "title": "Milestone policy (protected-path authorisation, gates, integration authorisation, reviewer) is re-read every run; a changed config is only logged, so any writer can relax policy mid-milestone"
+   },
+   {
+    "blocking": false,
+    "category": "documentation",
+    "evidence": "Unkeyed SHA-256 chain: appending a REVIEW_RECORDED event (independent true, ACCEPT, matching round_sha256) plus STAGE VERIFYING, with the same history/rounds entries in state.json and a rounds/R<n>/round.json, satisfies accepted_review() and verify() (code-read; no rewrite of existing events needed). Doc says 'whoever can rewrite the whole state directory', and \u00a76 says setsid children's 'later writes are caught by the clean-worktree checks', which is false for state_dir and config writes. Nothing anchors the chain on resume.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:632-662",
+     "scripts/dev_workflow/lifecycle.py:1226-1227",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:75"
+    ],
+    "id": "R3-05",
+    "owner_decision": true,
+    "severity": "LOW",
+    "suggested_fix": "State precisely that any process able to write state_dir can append a forged independent ACCEPT; owner decision on an external anchor (e.g. committed chain head checked on resume, or key/isolation outside the worker/coordinator's reach).",
+    "title": "Docs understate state-forging: an append-only forge suffices, and setsid-escaped worker writes outside the worktree are not caught"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-07",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-08",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R2-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-05",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow",
+    "result": "134 passed, 1 warning in 58.75s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -B /tmp/uri_review_R3/probe_restore.py (HEAD -> other, then -> canon)",
+    "result": "repair REFUSED TAMPER, restored=True; branch 'other' and main checkout branch 'canon' moved to candidate SHA by driver reset",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -B /tmp/uri_review_R3/probe_cache.py",
+    "result": "A: baseline TIMED_OUT cached, still BLOCKED after cause removed + unblock; B: moved candidate loops VERIFYING->BLOCKED, rounds stays 1",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -B /tmp/uri_review_R3/probe_config.py",
+    "result": "config relaxed between runs -> protected-path change reaches COMPLETE and is pushed; only CONFIG_CHANGED logged; verify() []",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Live claude_cli reviewer/implementer runs and their permission enforcement (prefix deny rules vs respelled commands such as git push to a remote, which the local ref check would not see) - not exercised",
+   "codex_cli provider - not installed",
+   "Flutter --machine gate parsing against a real flutter test run - code-read only",
+   "Real GPU lease behaviour (no GPU); exit-75 path code-read against gpu_lease.py:546-548",
+   "Append-only chain forge (R3-05) established by code reading, not executed"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 3,
+ "started_at": "2026-10-11T01:06:20Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "8f1c0300-05ca-41f6-9b52-4e5748134ff8",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.7921469000000003,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R3",
+  "ended_at": "2026-10-11T01:12:33Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 19,
+  "pid": 9411,
+  "prompt_sha256": "78287c422fbe44fc3bc037b8dd0c7e82077d4cd2af69313bb56cc5654d826d53",
+  "provider": "claude_cli",
+  "result_text_sha256": "74d93449666d8abe65c7a5e4bb68a048b338ed366f22cb885a913c2d41fb213b",
+  "role": "reviewer",
+  "session_id": "8f1c0300-05ca-41f6-9b52-4e5748134ff8",
+  "session_id_requested": "8f1c0300-05ca-41f6-9b52-4e5748134ff8",
+  "started_at": "2026-10-11T01:06:20Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "6f907847a2862706bcace417dd31cc24e5f4f62f47eb966a6055ee49ea37f8eb"
+ }
+}

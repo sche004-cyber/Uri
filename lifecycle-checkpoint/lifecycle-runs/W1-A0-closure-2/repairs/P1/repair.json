@@ -1,0 +1,110 @@
+{
+ "addresses": [
+  "R1-01",
+  "R1-02",
+  "R1-03",
+  "R1-04",
+  "R1-05",
+  "R1-06"
+ ],
+ "changed": [
+  "scripts/run_uri_integrated_worker.py",
+  "tests/assist/test_a0_r16_url_secret_regressions.py",
+  "tests/web/test_w1_r16_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/perception.py",
+  "uri_assist/redact.py",
+  "uri_web/bridge.py",
+  "uri_web/local_brain.py",
+  "uri_web/pipeline.py",
+  "uri_web/surface.py",
+  "uri_web/synthesize.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
+ "ended_at": "2026-10-11T09:30:57Z",
+ "pre": "67aff5042c0f166392281e072fb5f9db906779c5",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r16_url_secret_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/web/test_w1_r16_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 1,
+ "report": {},
+ "started_at": "2026-10-11T09:13:25Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "0f66f416-e612-4372-9c01-e7cb79c40bd3",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 99
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 5.539939300000001,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T09:30:48Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 58,
+  "pid": 16038,
+  "prompt_sha256": "068f7de2f2d65418a9d617182c8edd52151b6882fc197a236c31c0e17ecccbe4",
+  "provider": "claude_cli",
+  "result_text_sha256": "17f1445df3939d8f6a9afbb4c8afba8f9ff9a330c8b9c8435947e545ed9038dc",
+  "role": "implementer",
+  "session_id": "0f66f416-e612-4372-9c01-e7cb79c40bd3",
+  "session_id_requested": "0f66f416-e612-4372-9c01-e7cb79c40bd3",
+  "started_at": "2026-10-11T09:13:25Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "7e0d35677b0aeb2c83c445671a76de340de2ed12f126ddc8a4301e59f9c2f98d"
+ }
+}

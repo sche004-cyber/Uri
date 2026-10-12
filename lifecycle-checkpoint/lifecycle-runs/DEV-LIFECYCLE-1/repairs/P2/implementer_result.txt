@@ -1,0 +1,43 @@
+I repaired all four findings (R3-01 to R3-04), each with a regression test. Each new test fails on c1ba808 and passes on the repaired tree. The full `tests/dev_workflow` suite passes: 141 tests (134 existing, none weakened, plus 7 new). Nothing is committed, and the only files changed are `scripts/dev_workflow/lifecycle.py`, `tests/dev_workflow/test_lifecycle.py` and `docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md`.
+
+**Acceptance criteria I checked against:**
+- Each finding's failure no longer reproduces.
+- Each new test fails on c1ba808 because of the reported defect, not because of an import or setup error.
+- All existing tests still pass, and no protected or out-of-scope path was touched.
+
+**R3-01: a redirected HEAD let the revert move another branch**
+- A new `head_symref()` helper reads which branch the worktree's HEAD names.
+- **Before a repair:** `do_repair` refuses with TAMPER, without resetting anything, if HEAD does not name `refs/heads/<candidate.branch>`.
+- **After a repair:** a changed HEAD branch is now TAMPER.
+- **On revert:** `_restore` sets the candidate branch to the pre-repair commit, points HEAD back at it, then runs `reset --hard` and `clean`. It counts the worktree as restored only if HEAD's branch, HEAD and the branch tip all match. So `reset --hard` can only move the candidate branch.
+- The review integrity snapshot now includes the branch HEAD names.
+- **Tests:** a parametrized test where the implementer points HEAD at a side branch or at `canon` (the main checkout's branch). Both stay unmoved, the main checkout stays clean, and the worktree ends on `feature` at the candidate. A second test has the reviewer re-point the implementation worktree's HEAD to a branch at the same commit; the round is now NOT_INDEPENDENT.
+- On c1ba808 the side branch and `canon` were moved, and the reviewer test reached COMPLETE.
+
+**R3-02: a failed baseline gate result was cached forever**
+- A cached baseline result is reused only if it is `COMPLETED_WITH_RESULT`. Otherwise the gate re-runs on the next qualification, and each attempt is recorded as its own BASELINE_GATE event.
+- **Test:** the baseline run hangs until a marker file is removed. The first run blocks with TIMED_OUT; after removing the marker and unblocking, the second run reaches VERIFIED.
+- On c1ba808 the second run stayed BLOCKED.
+
+**R3-03: a moved candidate was never re-audited**
+- When a block would resume at VERIFYING but the current candidate has no independent ACCEPT, it now resumes at AUDITING.
+- **Test:** a commit made outside the driver after VERIFIED leads, after unblocking, to a second review round on the new commit. It ends on OWNER_AUTHORIZATION with evidence OK.
+- On c1ba808 it re-blocked on EVIDENCE every time.
+
+**R3-04: a changed config could relax policy mid-milestone**
+- The PLAN event now records the policy fields: protected and authorised paths, gates, integration, reviewer, implementer and limits.
+- The config hash in force is read from the event chain, not from `state.json`. A different hash records a `CONFIG_CHANGED` event with the new policy and stops as BLOCKED (CONFIG).
+- The block clears only when the owner runs `unblock` against that same config. An existing block such as TAMPER is kept, and the CONFIG block follows it.
+- **Tests:** relaxing the protected-path authorisation, gates and reviewer between runs now blocks with CONFIG and nothing is pushed. A plain re-run does not clear it; an owner unblock does, after which the run completes. A second test also writes the new hash into `state.json`, and the run still blocks.
+- On c1ba808 both reached COMPLETE and pushed the protected change.
+- **Limitation:** the config file can still be edited by any worker. The owner's acknowledgement is the control; I did not move the authorisation flags out of the config. The docs say this.
+
+The guide now covers all four changes, including a new "Policy binding" row.
+
+`git worktree add` was denied, so I ran the "fails before" check in a scratch copy where only `lifecycle.py` was taken from c1ba808. `graphify update .` could not run because the tool is not installed and there is no `graphify-out/`, so the knowledge graph was not updated.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R3-01", "R3-02", "R3-03", "R3-04"], "not_repaired": [],
+ "regression_tests": ["tests/dev_workflow/test_lifecycle.py"],
+ "notes": "New tests: test_r3_01_redirected_head_does_not_move_another_branch_on_restore[other|canon], test_r3_01_reviewer_redirecting_impl_head_is_not_independent, test_r3_02_transient_baseline_gate_failure_is_not_cached, test_r3_03_candidate_moved_after_verified_is_reaudited, test_r3_04_changed_config_blocks_until_owner_acknowledges, test_r3_04_config_binding_is_read_from_the_chain_not_state_json. All 7 fail with c1ba808's lifecycle.py and pass after; the full tests/dev_workflow suite passes (141). R3-01: the repair checks which branch HEAD names before and after; restore re-points HEAD at the candidate branch before reset --hard; that branch is in the review integrity snapshot. R3-02: only COMPLETED_WITH_RESULT baseline results are cached. R3-03: a block resumes at AUDITING when the current candidate has no independent ACCEPT. R3-04: the policy is recorded in PLAN; the config hash is read from the event chain; a CONFIG_CHANGED stops as BLOCKED(CONFIG) until the owner unblocks with that config. The config file stays agent-writable and the owner acknowledgement is the control (documented). graphify was not run: not installed, no graphify-out/."}
+REPAIR_RESULT_END

@@ -1,0 +1,103 @@
+=== tests/dev_workflow/test_lifecycle.py BEFORE (dff1ea78527a639ee6b13f47b1f89a2f13e7b865) DONE
+og)
+        target = planted / "claude" if attack == "plant_earlier" else cli / "claude"
+        repo, wt, base, remote = make_fixture(tmp_path)
+        cfg = config(tmp_path, repo, wt, milestone="W9-REAL-MILESTONE", independent=False,
+                     integration={"mode": "none"}, limits={"max_repair_attempts": 1})
+        cfg["reviewer"] = {"provider": "claude_cli"}
+        cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "planter.py", f"""
+    import shutil
+    open('pkg/calc.py','w').write('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+    open('tests/test_zero.py','w').write('from pkg.calc import safe_div\\n\\n\\ndef test_z():\\n    assert safe_div(1, 0) is None\\n')
+    shutil.copy({str(accept)!r}, {str(target)!r})
+    os.chmod({str(target)!r}, 0o755)
+    print('REPAIR_RESULT_BEGIN')
+    print(json.dumps({{"repaired": ["R1-01"], "not_repaired": [], "regression_tests": ["tests/test_zero.py"], "notes": ""}}))
+    print('REPAIR_RESULT_END')
+    """)}
+>       assert L.run(cfg) == S.BLOCKED
+E       AssertionError: assert <WorkflowStat...D: 'VERIFIED'> == <WorkflowStat...ED: 'BLOCKED'>
+E         
+E         - BLOCKED
+E         + VERIFIED
+
+tests/dev_workflow/test_lifecycle.py:1457: AssertionError
+_ test_r6_01_reviewer_cli_changed_by_a_repair_blocks_and_never_runs[replace_installed] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-193/test_r6_01_reviewer_cli_change1')
+clean_path = (PosixPath('/tmp/pytest-of-root/pytest-193/test_r6_01_reviewer_cli_change1/bin_early'), PosixPath('/tmp/pytest-of-root/pytest-193/test_r6_01_reviewer_cli_change1/bin_cli'))
+attack = 'replace_installed'
+
+    @pytest.mark.parametrize("attack", ["plant_earlier", "replace_installed"])
+    def test_r6_01_reviewer_cli_changed_by_a_repair_blocks_and_never_runs(tmp_path, clean_path, attack):
+        planted, cli = clean_path
+        log = tmp_path / "claude_runs.jsonl"
+        _fake_claude(cli / "claude", "REJECT", log)
+        accept = _fake_claude(tmp_path / "accept_src" / "claude", "ACCEPT", log)
+        target = planted / "claude" if attack == "plant_earlier" else cli / "claude"
+        repo, wt, base, remote = make_fixture(tmp_path)
+        cfg = config(tmp_path, repo, wt, milestone="W9-REAL-MILESTONE", independent=False,
+                     integration={"mode": "none"}, limits={"max_repair_attempts": 1})
+        cfg["reviewer"] = {"provider": "claude_cli"}
+        cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "planter.py", f"""
+    import shutil
+    open('pkg/calc.py','w').write('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+    open('tests/test_zero.py','w').write('from pkg.calc import safe_div\\n\\n\\ndef test_z():\\n    assert safe_div(1, 0) is None\\n')
+    shutil.copy({str(accept)!r}, {str(target)!r})
+    os.chmod({str(target)!r}, 0o755)
+    print('REPAIR_RESULT_BEGIN')
+    print(json.dumps({{"repaired": ["R1-01"], "not_repaired": [], "regression_tests": ["tests/test_zero.py"], "notes": ""}}))
+    print('REPAIR_RESULT_END')
+    """)}
+>       assert L.run(cfg) == S.BLOCKED
+E       AssertionError: assert <WorkflowStat...D: 'VERIFIED'> == <WorkflowStat...ED: 'BLOCKED'>
+E         
+E         - BLOCKED
+E         + VERIFIED
+
+tests/dev_workflow/test_lifecycle.py:1457: AssertionError
+_______ test_r6_01_reviewer_is_launched_by_the_plan_bound_absolute_path ________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-193/test_r6_01_reviewer_is_launche0')
+clean_path = (PosixPath('/tmp/pytest-of-root/pytest-193/test_r6_01_reviewer_is_launche0/bin_early'), PosixPath('/tmp/pytest-of-root/pytest-193/test_r6_01_reviewer_is_launche0/bin_cli'))
+
+    def test_r6_01_reviewer_is_launched_by_the_plan_bound_absolute_path(tmp_path, clean_path):
+        planted, cli = clean_path
+        log = tmp_path / "claude_runs.jsonl"
+        _fake_claude(cli / "claude", "ACCEPT", log)
+        repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+        cfg = config(tmp_path, repo, wt, milestone="W9-REAL-MILESTONE", independent=False,
+                     integration={"mode": "none"})
+        cfg["reviewer"] = {"provider": "claude_cli"}
+        assert L.run(cfg) == S.VERIFIED
+        st = L.State(cfg)
+        rnd = st.d["rounds"][0]
+>       assert rnd["independent"] is True and rnd["worker"]["binary_anchor_ok"] is True
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'binary_anchor_ok'
+
+tests/dev_workflow/test_lifecycle.py:1476: KeyError
+_______ test_r6_02_reviewer_does_not_load_candidate_project_instructions _______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-193/test_r6_02_reviewer_does_not_l0')
+
+    def test_r6_02_reviewer_does_not_load_candidate_project_instructions(tmp_path):
+        from scripts.dev_workflow.lifecycle_providers import build_argv
+        argv = build_argv({"provider": "claude_cli", "binary": "/x/claude"}, "reviewer", tmp_path, [], "sid")
+>       assert "--safe-mode" in argv and argv[argv.index("--setting-sources") + 1] == "user"
+E       AssertionError: assert ('--safe-mode' in ['/x/claude', '-p', '--output-format', 'json', '--session-id', 'sid', ...])
+
+tests/dev_workflow/test_lifecycle.py:1483: AssertionError
+=========================== short test summary info ============================
+FAILED tests/dev_workflow/test_lifecycle.py::test_r6_01_claude_planted_earlier_on_path_before_the_plan_cannot_verify_a_real_milestone
+FAILED tests/dev_workflow/test_lifecycle.py::test_r6_01_reviewer_cli_changed_by_a_repair_blocks_and_never_runs[plant_earlier]
+FAILED tests/dev_workflow/test_lifecycle.py::test_r6_01_reviewer_cli_changed_by_a_repair_blocks_and_never_runs[replace_installed]
+FAILED tests/dev_workflow/test_lifecycle.py::test_r6_01_reviewer_is_launched_by_the_plan_bound_absolute_path
+FAILED tests/dev_workflow/test_lifecycle.py::test_r6_02_reviewer_does_not_load_candidate_project_instructions
+5 failed, 85 passed in 147.06s (0:02:27)
+
+=== tests/dev_workflow/test_lifecycle.py AFTER (aba8ac05a07fe636a7f2fc2c68c49baa06c1a1db) DONE
+........................................................................ [ 80%]
+..................                                                       [100%]
+90 passed in 138.67s (0:02:18)
+

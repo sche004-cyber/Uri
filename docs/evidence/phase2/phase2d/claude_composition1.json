@@ -1,0 +1,210 @@
+{
+ "adversarial_checks": [],
+ "approval_source": "programmatic (this harness), not a human on the UI",
+ "base": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2d_claude_composition1_e1c28357",
+ "composition_report": [],
+ "direct_probe": {
+  "agent_text": null,
+  "auth_status": {
+   "analyticsDisabled": false,
+   "apiProvider": "firstParty",
+   "authMethod": "none",
+   "configDirectory": "C:\\Users\\cheta\\.claude",
+   "loggedIn": false,
+   "projectsDirectory": "C:\\Users\\cheta\\.claude\\projects"
+  },
+  "duration_s": 1.19,
+  "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\claude.CMD",
+  "executable_sha256": "7999fba95dbffe167d9e0a043f29057979a0518ebe89b60c4fcfc6401ea8c424",
+  "exit": 1,
+  "failures": null,
+  "forwarded_env_keys": [
+   "COMSPEC",
+   "HOME",
+   "PATH",
+   "PATHEXT",
+   "SHELL",
+   "SYSTEMDRIVE",
+   "SYSTEMROOT",
+   "TEMP",
+   "TERM",
+   "TMP",
+   "USERNAME",
+   "USERPROFILE",
+   "WINDIR"
+  ],
+  "ok": false,
+  "result": {
+   "is_error": true,
+   "num_turns": 1,
+   "result": "Failed to authenticate: OAuth session expired and could not be refreshed",
+   "subtype": "success"
+  },
+  "status": "AUTH_REQUIRED",
+  "stdout_sha256": "c467bfb31ce5643b64cbe3aa1cb40d82e8be3dee99ef4ddadab40dbdeb568de5",
+  "version": "2.1.287"
+ },
+ "finished": "2026-10-07T14:33:52",
+ "interpreter": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe",
+ "live_auth_status_probe": false,
+ "model": null,
+ "policy_rows": [
+  [
+   "client_external_harness",
+   "claude_code",
+   null
+  ],
+  [
+   "server_local_model",
+   "uri-deterministic",
+   null
+  ]
+ ],
+ "provider": "claude_code",
+ "qualification_decision": "NOT PERSISTED: direct probe failed or live auth status not ok -> USER INTERACTION REQUIRED (native login); the composition keeps the provider NATIVE_UNQUALIFIED",
+ "qualification_record": null,
+ "registry_discover": [
+  {
+   "auth_state": "AUTH_UNVERIFIED",
+   "harness_id": "claude_code",
+   "installed": true,
+   "qualification": "NATIVE_UNQUALIFIED",
+   "required_user_action": "Run `claude` in the URI client profile terminal and sign in with your subscription (native login).",
+   "usable": false,
+   "version": "2.1.287"
+  },
+  {
+   "auth_state": "AUTH_UNVERIFIED",
+   "harness_id": "codex_cli",
+   "installed": true,
+   "qualification": "NATIVE_UNQUALIFIED",
+   "required_user_action": "Run `codex login` in the URI client profile terminal (native login).",
+   "usable": false,
+   "version": "0.158.0"
+  },
+  {
+   "auth_state": "EXECUTE_REFUSED",
+   "harness_id": "antigravity",
+   "installed": true,
+   "qualification": "REFUSED",
+   "required_user_action": "Antigravity execution is refused until separately qualified.",
+   "usable": false,
+   "version": "1.2.16"
+  }
+ ],
+ "root": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent",
+ "run": {
+  "duration_s": 0.6,
+  "final_code": "SETTLED_FAILED",
+  "final_message": "The action failed; nothing was verified.",
+  "final_state": "failed",
+  "frames": [
+   {
+    "sent": {
+     "command": "turn_start",
+     "reasoning": {
+      "kind": "client_external_harness",
+      "model": null,
+      "provider": "claude_code"
+     },
+     "session_id": "e3919baf-5293-48ee-ba22-dfa8223e4b10",
+     "text": "use the harness to write the single word PONG into pong.txt"
+    }
+   },
+   {
+    "received": {
+     "approval_request": {
+      "approval_digest": "5b3bcb35689247f0fd585d523f1edb6185158bb5fe2183df3691c4eb3a6390e3",
+      "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+      "arguments": {
+       "action": "external_harness_task",
+       "inputs": {
+        "expected_file": "pong.txt",
+        "instruction": "write the single word PONG into pong.txt"
+       }
+      },
+      "capability_id": "external_harness_task",
+      "effect": "local_write",
+      "gate": {
+       "action_names": [
+        "external_harness_task"
+       ],
+       "capability_id": "external_harness_task",
+       "expected_type": null,
+       "missing_field": null,
+       "outcome": "APPROVAL_REQUIRED",
+       "overlap_candidates": [],
+       "reasons": [
+        "capability_or_action_requires_approval"
+       ],
+       "sub_results": []
+      },
+      "intent_digest": "7bdff78f7b54e9a0f94b480b46a7f1a3ccfc9b044bceb98fed3b062e76ddace8",
+      "rejected_proposal": null,
+      "replanned": false,
+      "reversible": true
+     },
+     "code": null,
+     "executor_kind": "client_external_harness",
+     "state": "approval_required",
+     "turn_id": "31d89a15-1039-492c-a247-f00ba6d46ba2"
+    }
+   },
+   {
+    "sent": {
+     "approval_digest": "5b3bcb35689247f0fd585d523f1edb6185158bb5fe2183df3691c4eb3a6390e3",
+     "approve": true,
+     "command": "turn_decide",
+     "turn_id": "31d89a15-1039-492c-a247-f00ba6d46ba2"
+    }
+   },
+   {
+    "received": {
+     "code": "SETTLED_FAILED",
+     "message": "The action failed; nothing was verified.",
+     "state": "failed",
+     "turn_id": "31d89a15-1039-492c-a247-f00ba6d46ba2"
+    }
+   }
+  ],
+  "ledger_task_count": 0,
+  "receipt_evidence": [],
+  "receipts_sent": [
+   {
+    "client_id": "1921e239-0602-4e0a-94a9-b2fa0e4febb2",
+    "evidence": [],
+    "failure_category": "NOT_STARTED:HARNESS_HARNESS_NOT_USABLE",
+    "implementation_digest": "1b7ac269056f8b04905e5762685d09af2095527597ef05c5f5f88dedea045813",
+    "operation_id": "44c9604d-ac68-4521-8c55-b45f5c482087",
+    "outcome": "failed",
+    "principal_id": "c6f7d632-0518-40df-bcf6-df93fdd4bd7e",
+    "run_id": "d0e6be91-fef1-4c1d-b4d9-f7c4f98ae4d2",
+    "schema_version": "uri.client.v1",
+    "server_id": "9ed8d61a-fdfc-4867-a2cf-11f8975af1ed",
+    "session_id": "e3919baf-5293-48ee-ba22-dfa8223e4b10",
+    "state_version": 1,
+    "ticket_digest": "5ec47cf45280a195a55a2ceafd7d49dcc5096990a054677915be8bce1551a51b",
+    "turn_id": "31d89a15-1039-492c-a247-f00ba6d46ba2",
+    "verifier_id": "uri.client.harness_output_check.v1"
+   }
+  ],
+  "result_files": [],
+  "server_calls": [
+   "/client/v1/turns",
+   "/client/v1/turns/31d89a15-1039-492c-a247-f00ba6d46ba2/approval",
+   "/client/v1/turns/31d89a15-1039-492c-a247-f00ba6d46ba2/claim",
+   "/client/v1/turns/31d89a15-1039-492c-a247-f00ba6d46ba2/settle"
+  ],
+  "server_turn_record": {
+   "dispatched": true,
+   "execution_closed": true,
+   "execution_outcome": "failed",
+   "execution_reported": null,
+   "operation_id": "44c9604d-ac68-4521-8c55-b45f5c482087",
+   "state": "failed"
+  },
+  "turn_id": "31d89a15-1039-492c-a247-f00ba6d46ba2"
+ },
+ "started": "2026-10-07T14:33:48",
+ "tag": "claude_composition1"
+}

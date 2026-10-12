@@ -1,0 +1,99 @@
+{
+ "addresses": [
+  "R42-01"
+ ],
+ "changed": [
+  "tests/assist/test_a0_r42_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/redact.py"
+ ],
+ "commit": "304bdf7039e33101e63045ffff03ab0258f535b3",
+ "ended_at": "2026-10-11T23:59:01Z",
+ "pre": "78006f9ccf8792fd5cd59830b532ea2a2392f652",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r42_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 13,
+ "report": {
+  "not_repaired": [],
+  "notes": "Root cause addressed: snapshot.js now groups inline-adjacent visible text nodes of one block (no <br>, block element or whitespace-only node between) into one run = one group id with no separator, masked as a whole, for page text (chunks + pieces), headings, label pieces and contenteditable value pieces (newRun/blockOf/isInline helpers). Defence in depth in both layers (redact.py _split_url_parts, snapshot.js splitUrlParts, same rule): secret-naming key with empty value ('k=' or 'k' '=') masks the next token's value; 'scheme://user:' followed within two tokens by '...@' loses the userinfo. Regression: Chromium page with the five R42-01 forms (no_selection, ctrl_a) asserting no secret in the Brain body or in snapshot pieces/text/headings, plus Python unit cases; checked against a git-archive export of 78006f9 (10 failed, 1 passed: the readability guard, which passes on both versions); after the change 11 passed. Full tests/assist: 2221 passed (that run started before the R42 file was added and does not include it). tests/web and Flutter tests were not run; a text search of tests/web found no source file referencing snapshot.js, redact_text or uri_assist. Known trade-offs: in prose, a word after a bare secret-sounding key followed by '=' is masked (e.g. 'password = hunter2', 'key = value'), and inline-adjacent nodes in headings, labels and values now join with no separator where they were space-joined before.",
+  "regression_tests": [
+   "tests/assist/test_a0_r42_review_regressions.py"
+  ],
+  "repaired": [
+   "R42-01"
+  ]
+ },
+ "started_at": "2026-10-11T23:54:28Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "f3042b42-f0cf-4c5a-ae4a-9f8f88041001",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 87
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.4070487999999999,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T23:58:50Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 23,
+  "pid": 20259,
+  "prompt_sha256": "7cc6653eb6d987bb46b1a6b56f31c97219aede997822c4b91937d955014dd255",
+  "provider": "claude_cli",
+  "result_text_sha256": "2d634d3dd2f179fbb924351d96bb0e7a11d98725d39fd1bc58bf3122b16e9a50",
+  "role": "implementer",
+  "session_id": "f3042b42-f0cf-4c5a-ae4a-9f8f88041001",
+  "session_id_requested": "f3042b42-f0cf-4c5a-ae4a-9f8f88041001",
+  "started_at": "2026-10-11T23:54:28Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "da4df5f51a67db3bdaf57b0ea0174a7b48a70265004be29ce7431732109ff40b"
+ }
+}

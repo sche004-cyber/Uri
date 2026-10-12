@@ -1,0 +1,26 @@
+I fixed R4-01. If `scripts/ws_frozen_check.py` in the main checkout is relaxed between runs, the run now stops BLOCKED (CONFIG), even when the config file hasn't changed by a single byte. Nothing is committed.
+
+**The fix** (`scripts/dev_workflow/lifecycle.py`):
+- A new `policy_sha256(cfg)` hashes the policy actually in effect when the run happens, including the protected list read from `ws_frozen_check`.
+- PLAN, CONFIG_CHANGED and OWNER_UNBLOCK events now record that hash next to the config file hash.
+- `config_binding()` reads the bound pair (config hash, policy hash) from the event chain only, never from `state.json`. The policy hash comes from the `policy` dict the event already records, so existing PLAN events need no migration.
+- `run()` records CONFIG_CHANGED and blocks if either hash differs. The block clears only after an owner unblock that recorded the same pair.
+
+**One wrong turn along the way:** my first version stored the policy hash once, when the config was loaded. That broke 15 existing tests, because they edit `cfg` in memory after loading it, so the stored hash went stale. Computing the hash live on each run fixed it, and it is also the more accurate check.
+
+**Tests:**
+- New test `test_r4_01_relaxed_ws_frozen_check_list_blocks_as_config_change` in `tests/dev_workflow/test_lifecycle.py`. It is based on the reviewer's probe script:
+  1. The first run, with the reviewer silent, stops WAITING_FOR_MODEL.
+  2. Only the main checkout's `ws_frozen_check.py` is changed, to `PROTECTED=("nothing/",)`, and the test checks the config file is unchanged.
+  3. The next run must stop BLOCKED (CONFIG), with a CONFIG_CHANGED event recording `protected_paths == ["nothing/"]` and only one reviewer run.
+  4. Running again doesn't clear it; after `unblock` the run reaches VERIFIED and `verify()` is clean.
+- On 43467152 the test fails: the second run returns VERIFIED instead of BLOCKED. With the fix it passes.
+- The full `tests/dev_workflow` suite passes: 142 tests.
+
+I also updated the "Policy binding" row in `docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md` and ran `graphify update .`.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R4-01"], "not_repaired": [],
+ "regression_tests": ["tests/dev_workflow/test_lifecycle.py"],
+ "notes": "The resolved policy is now bound in the event chain together with the config file hash. policy_sha256(cfg) = chash(policy(cfg)) is computed live on each run, so it includes the ws_frozen_check protected list re-read from the main checkout. PLAN, CONFIG_CHANGED and OWNER_UNBLOCK events record policy_sha256. config_binding() returns the bound pair (config_sha256, chash(recorded policy)) read from the chain only. run() records CONFIG_CHANGED and blocks with CONFIG if either hash differs; the block clears only after an OWNER_UNBLOCK with the same pair. A first version stored the hash at load time; it broke 15 existing tests that edit cfg in memory after loading, so the hash is computed live instead. New test test_r4_01_relaxed_ws_frozen_check_list_blocks_as_config_change fails on 43467152 (second run returns VERIFIED instead of BLOCKED) and passes after the fix. Full tests/dev_workflow suite: 142 passed. Updated the Policy binding row in docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md."}
+REPAIR_RESULT_END

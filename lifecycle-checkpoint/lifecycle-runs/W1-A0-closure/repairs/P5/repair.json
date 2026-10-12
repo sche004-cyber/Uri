@@ -1,0 +1,102 @@
+{
+ "addresses": [
+  "R5-01",
+  "R5-02"
+ ],
+ "changed": [
+  "tests/assist/test_a0_r5_review_regressions.py",
+  "tests/web/test_w1_r5_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/redact.py",
+  "uri_web/evaluate.py",
+  "uri_web/synthesize.py"
+ ],
+ "commit": "08a4569908d7b9db2e22366cada632e5ebe40639",
+ "ended_at": "2026-10-11T05:00:11Z",
+ "pre": "52e852dcce592e15fc2098bc1e169a7e009eb26a",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r5_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/web/test_w1_r5_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 5,
+ "report": {
+  "not_repaired": [],
+  "notes": "R5-01 root cause addressed per diagnosis: evaluate._NUMBER now captures the full numeral run (digits joined by , . or a space/NBSP/thin/narrow-NBSP before a 3-digit group) plus sign (-, U+2212, 'minus'); _read() accepts only western, Indian lakh/crore, space-grouped or plain forms, keeps multi-dot literals (dates/versions) exactly, splits space-joined runs that are not valid grouping (e.g. '2020 100'), and otherwise returns an UNREADABLE sentinel ('?'+span), never fragments. synthesize.verify drops any claim with an unreadable numeral (NUMBER_NOT_IN_CITED_SOURCE); find_conflicts skips subset suppression when either side is unreadable. Verified: 62 of 80 new web cases fail at 52e852d, all 80 pass after; the 18 that pass both ways are guards. tests/web 284 passed. Not done: numeric equality of 1,000.5 vs 1,000.50 (diagnosis extra), because the existing R1-01 test expects numbers('Rs.1,250.50') == {'1250.50'}; such a claim is dropped (fail-closed). R5-02: api_key rule extended in both layers (Stripe sk_/rk_/pk_ live|test, github_pat_, glpat-, npm_, hf_, SG.), new basic_auth text rule (needs a digit or + / = in a token of 12+ characters), field stems authoriz/twostep, whole-word tan/mtan/smstan/otc/2sv and 'two step'; redact.py docstring updated. 19 of 31 new assist tests fail at 52e852d, all 31 pass after, including the real-Chromium in-page test and the Brain-request test; tests/assist 2087 passed. docs/assist/A0_QUALIFICATION.md L-A0-2 left unchanged (redaction is still rule-based). graphify update not run: graphify command not installed in this environment.",
+  "regression_tests": [
+   "tests/web/test_w1_r5_review_regressions.py",
+   "tests/assist/test_a0_r5_review_regressions.py"
+  ],
+  "repaired": [
+   "R5-01",
+   "R5-02"
+  ]
+ },
+ "started_at": "2026-10-11T04:55:41Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "7b74a491-fab8-4a96-97bd-10f53ac4a678",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.2760903000000001,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T05:00:03Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 18,
+  "pid": 23915,
+  "prompt_sha256": "8f810cf129f148b55ed7f1c58b3165cd503639500d23c91e5e3be637ce868313",
+  "provider": "claude_cli",
+  "result_text_sha256": "eb2a7e115f91cce24ba8a3ff19ecfd411854b4ce3f2dfc166755546d8b3d7a73",
+  "role": "implementer",
+  "session_id": "7b74a491-fab8-4a96-97bd-10f53ac4a678",
+  "session_id_requested": "7b74a491-fab8-4a96-97bd-10f53ac4a678",
+  "started_at": "2026-10-11T04:55:41Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "1df4b8f9919055136e478c0990986d4186191460037ce88bcd6c09e60211502a"
+ }
+}

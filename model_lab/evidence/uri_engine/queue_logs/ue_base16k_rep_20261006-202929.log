@@ -1,0 +1,169 @@
+{
+ "fast/C": {
+  "n": 14,
+  "score": 1.0,
+  "ttft_p50": 0.406,
+  "ttfa_p50": 0.406,
+  "total_p50": 0.935,
+  "total_p95": 1.286,
+  "gen_tps_p50": 102.9,
+  "prefill_tps_p50": 566.0,
+  "gen_tokens_p50": 53,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 0
+ },
+ "fast/D": {
+  "n": 72,
+  "score": 0.861,
+  "ttft_p50": 0.989,
+  "ttfa_p50": 0.989,
+  "total_p50": 2.523,
+  "total_p95": 2.987,
+  "gen_tps_p50": 99.9,
+  "prefill_tps_p50": 2049.3,
+  "gen_tokens_p50": 154,
+  "errors": 0,
+  "truncated": 0,
+  "invalid": 0,
+  "golden_acc": 0.912,
+  "extra_acc": 0.667,
+  "categories": {
+   "correct": 62,
+   "missed_capability": 3,
+   "false_capability": 1,
+   "missed_continuation": 1,
+   "mismatch": 5
+  }
+ },
+ "fast/DG": {
+  "n": 72,
+  "score": 0.861,
+  "ttft_p50": 0.991,
+  "ttfa_p50": 0.991,
+  "total_p50": 2.532,
+  "total_p95": 2.97,
+  "gen_tps_p50": 100.0,
+  "prefill_tps_p50": 2031.2,
+  "gen_tokens_p50": 155,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/F": {
+  "n": 30,
+  "score": 1.0,
+  "ttft_p50": 0.37,
+  "ttfa_p50": 0.37,
+  "total_p50": 0.452,
+  "total_p95": 0.603,
+  "gen_tps_p50": 98.2,
+  "prefill_tps_p50": 156.1,
+  "gen_tokens_p50": 7,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/H": {
+  "n": 22,
+  "score": 1.0,
+  "ttft_p50": 0.377,
+  "ttfa_p50": 0.377,
+  "total_p50": 0.801,
+  "total_p95": 0.963,
+  "gen_tps_p50": 102.5,
+  "prefill_tps_p50": 184.1,
+  "gen_tokens_p50": 43,
+  "errors": 0,
+  "truncated": 0,
+  "over_escalation": 0,
+  "under_escalation": 0
+ },
+ "fast/L": {
+  "n": 2,
+  "score": 0.9,
+  "ttft_p50": 2.284,
+  "ttfa_p50": 2.284,
+  "total_p50": 3.388,
+  "total_p95": 7.436,
+  "gen_tps_p50": 94.6,
+  "prefill_tps_p50": 2249.4,
+  "gen_tokens_p50": 111,
+  "errors": 0,
+  "truncated": 0,
+  "by_size": {
+   "l_4k": {
+    "score": 0.8,
+    "prompt_tokens": 4658,
+    "total_s": 3.388,
+    "prefill_tps": 2336.7,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": false,
+     "entity_set": true
+    }
+   },
+   "l_12k": {
+    "score": 1.0,
+    "prompt_tokens": 13293,
+    "total_s": 7.436,
+    "prefill_tps": 2249.4,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": true,
+     "entity_set": true
+    }
+   }
+  }
+ },
+ "fast/O": {
+  "n": 4,
+  "score": 1.0,
+  "ttft_p50": 0.473,
+  "ttfa_p50": 0.473,
+  "total_p50": 1.993,
+  "total_p95": 2.447,
+  "gen_tps_p50": 103.1,
+  "prefill_tps_p50": 552.5,
+  "gen_tokens_p50": 154,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/P": {
+  "n": 12,
+  "score": 1.0,
+  "ttft_p50": null,
+  "ttfa_p50": null,
+  "total_p50": null,
+  "total_p95": null,
+  "gen_tps_p50": null,
+  "prefill_tps_p50": null,
+  "gen_tokens_p50": null,
+  "errors": 0,
+  "truncated": 0,
+  "proposer_invalid": 0,
+  "failed_ids": []
+ },
+ "fast/S": {
+  "n": 12,
+  "score": 1.0,
+  "ttft_p50": 0.462,
+  "ttfa_p50": 0.462,
+  "total_p50": 1.314,
+  "total_p95": 1.478,
+  "gen_tps_p50": 103.3,
+  "prefill_tps_p50": 1087.4,
+  "gen_tokens_p50": 91,
+  "errors": 0,
+  "truncated": 0,
+  "prompt_score": 1.0,
+  "prompt_valid": 6,
+  "prompt_hallucinated_fields": 0,
+  "grammar_score": 1.0,
+  "grammar_valid": 6,
+  "grammar_hallucinated_fields": 0
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\ue_base16k_rep\20261006-202932

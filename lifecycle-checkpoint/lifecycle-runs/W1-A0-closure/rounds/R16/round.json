@@ -1,0 +1,313 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure/audit_R16",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [],
+ "candidate": "67aff5042c0f166392281e072fb5f9db906779c5",
+ "effective_verdict": "ACCEPT WITH FINDINGS",
+ "ended_at": "2026-10-11T08:41:04Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "67aff5042c0f166392281e072fb5f9db906779c5",
+   "impl_head": "67aff5042c0f166392281e072fb5f9db906779c5",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "9e6d1227afdcc74b9fd9ff2e93c5610926b85a8dcf646282554de8f2de142174",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "67aff5042c0f166392281e072fb5f9db906779c5",
+   "impl_head": "67aff5042c0f166392281e072fb5f9db906779c5",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "9e6d1227afdcc74b9fd9ff2e93c5610926b85a8dcf646282554de8f2de142174",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "67aff5042c0f166392281e072fb5f9db906779c5",
+  "findings": [
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "Real Chromium via tests/assist/test_a0_r13_differential_render.run_chromium: <p style=\"unicode-bidi:bidi-override;direction:rtl\">BIDI-PAYLOAD read me backwards</p> is drawn as 'sdrawkcab em daer DAOLYAP-IDIB' but reaches the Brain as 'On-screen text (pixel-checked): BIDI-PAYLOAD read me backwards' (also in 'Selected text' with Ctrl+A, and as a contenteditable shown_value). Falls within the documented 'binds pixels to a unit, not to its reading' limit, which names only web-font glyph substitution.",
+    "files": [
+     "uri_assist/onscreen.py:215",
+     "uri_assist/browser_extension/probe.js:22",
+     "uri_assist/browser_extension/snapshot.js:385",
+     "docs/assist/03_PERMISSION_AND_DATA_FLOW.md:86"
+    ],
+    "id": "R16-01",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Report computed unicode-bidi (bidi-override/isolate-override, <bdo>) and mirroring transforms per unit in probe.js and drop such units like masked_glyphs, or document this explicitly as a residual limit.",
+    "title": "Visually reversed text (unicode-bidi:bidi-override; direction:rtl) passes the D10 render check; the Brain reads it in logical order while the user sees it mirrored (page text, selection and contenteditable values)"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "verify('Ibuprofen is safer than aspirin for patients with kidney disease [1].', ['...The drug aspirin is safer than ibuprofen for patients with kidney disease, the study found.']) -> claims=[('Ibuprofen is safer than aspirin ...', quoted=False)], dropped=[]; likewise 'Fitbit acquired Google' vs source 'Google acquired Fitbit'.",
+    "files": [
+     "uri_web/synthesize.py:121",
+     "uri_web/synthesize.py:177",
+     "docs/assist/W1_QUALIFICATION.md:49"
+    ],
+    "id": "R16-02",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Quote the source sentence verbatim when the claim's content-word order differs from the supporting sentence (or always quote), consistent with D7.",
+    "title": "Citation verifier keeps a claim with swapped subject/object or comparison direction in the Brain's own words (lexical check; documented L-W1-1)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R10-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R15-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers /tmp/claude-0/venv/bin/python -m pytest -q tests/assist tests/web",
+    "result": "2674 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "flutter test test/living (uri_ui)",
+    "result": "253 passed, all tests passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest /tmp/uri_review_R16/t/test_probe_r16.py (real Chromium: letter-spacing, scaleX/Y, 6px, bidi-override, overlapped, grey text)",
+    "result": "squashed/scaled text dropped (no_ink); bidi-override text kept in logical order (R16-01)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest /tmp/uri_review_R16/t/test_probe_ce.py (real Chromium: contenteditable with transparent, text-security, 1px, nested textarea, overflow-clipped spans)",
+    "result": "all hidden contenteditable payloads dropped; drawn values kept; nested textarea withheld",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python: uri_web.netpolicy check_address/check_url adversarial corpus (27 addresses, 9 URLs)",
+    "result": "all private/transition/ambiguous forms refused; public allowed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python: uri_web.synthesize.verify subject/comparison swap",
+    "result": "swapped claim kept unquoted (R16-02)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest tests/oi tests/a2ui",
+    "result": "181 errors (all ModuleNotFoundError: msvcrt, Windows-only); 20 failures not individually examined; tests/oi unchanged in range",
+    "status": "BLOCKED"
+   },
+   {
+    "command": "git diff --stat baseline..candidate -- <protected paths>",
+    "result": "no changes",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Real Windows UIA adapter and browser extension channel (not built; owner checklist #8)",
+   "ws_frozen_check zip part (Phase 1 checkpoint zip absent)",
+   "tests/oi on Windows (msvcrt)",
+   "Prior findings R1-01..R14-02 were confirmed via their passing regression tests and spot checks, not each re-reproduced by fresh probes this round"
+  ],
+  "verdict": "ACCEPT WITH FINDINGS"
+ },
+ "round": 16,
+ "started_at": "2026-10-11T08:33:54Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "50c89589-9b0b-41c4-bd9d-3242b8918df6",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 73
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.5261444,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure/audit_R16",
+  "ended_at": "2026-10-11T08:41:03Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 30,
+  "pid": 32487,
+  "prompt_sha256": "f65d307c50c9c619d73af910d7f0e7f035fb81d3cc535737c25adc4d7df52ed1",
+  "provider": "claude_cli",
+  "result_text_sha256": "3989a8406fedd50aac83cfc43c70d3bf50ef3c9ca887a38e2e95660a67f3ac27",
+  "role": "reviewer",
+  "session_id": "50c89589-9b0b-41c4-bd9d-3242b8918df6",
+  "session_id_requested": "50c89589-9b0b-41c4-bd9d-3242b8918df6",
+  "started_at": "2026-10-11T08:33:54Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "ff431ddfcb8729c6fda9fa78e042b9071d67c020e21bfb0ebd93fdc90e27f59e"
+ }
+}

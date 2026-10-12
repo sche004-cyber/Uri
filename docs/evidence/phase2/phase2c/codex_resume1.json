@@ -1,0 +1,552 @@
+{
+ "authority_checks": [
+  {
+   "check": "replay_same_ticket",
+   "expected": "execution_uncertain / DUPLICATE_OPERATION, no new attempt",
+   "observed": {
+    "attempts": [
+     2,
+     2
+    ],
+    "result": [
+     "execution_uncertain",
+     [],
+     "DUPLICATE_OPERATION"
+    ]
+   },
+   "pass": true
+  },
+  {
+   "check": "authority_closed_after_settlement",
+   "expected": "valid_until_us <= now, issued_by uri_supervisor_bridge",
+   "observed": {
+    "issued_by": "uri_supervisor_bridge",
+    "valid_from_us": 1791346763068336,
+    "valid_until_us": 1791346763068334
+   },
+   "pass": true
+  },
+  {
+   "check": "tampered_arguments",
+   "expected": "ARGUMENT_DIGEST_MISMATCH",
+   "observed": "ARGUMENT_DIGEST_MISMATCH",
+   "pass": true
+  },
+  {
+   "check": "other_confirmed_intent",
+   "expected": "APPROVAL_DIGEST_MISMATCH",
+   "observed": "APPROVAL_DIGEST_MISMATCH",
+   "pass": true
+  },
+  {
+   "check": "provider_change_at_ticket_level",
+   "expected": "ACCEPTED by verify_authority (ticket has no provider field); refused by SupervisedTurnRunner selection binding (see swap mode) and by registry/allowed_executors",
+   "observed": "ACCEPTED",
+   "pass": true
+  },
+  {
+   "check": "generation_change",
+   "expected": "TICKET_REFUSED",
+   "observed": "TICKET_REFUSED",
+   "pass": true
+  },
+  {
+   "check": "after_deadline",
+   "expected": "TICKET_REFUSED or TICKET_DEADLINE_PASSED",
+   "observed": "TICKET_REFUSED",
+   "pass": true
+  },
+  {
+   "check": "receipt_basis_is_ledger",
+   "expected": "basis uri_supervisor_postcondition_verified, supervisor_task == operation id",
+   "observed": [
+    {
+     "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+     "basis": "uri_supervisor_postcondition_verified",
+     "check": "harness_output_check",
+     "harness": "codex_cli",
+     "ledger_id": "b2ecd70e962f41ff80c32b9b44304b14",
+     "matched": true,
+     "output_bytes": 4,
+     "output_sha256": "95784973cc639977bff93619700168505cb8f7855e44fa643d34622a43706c87",
+     "supervisor_attempt": 2,
+     "supervisor_decision": 2,
+     "supervisor_task": "357c157c-9d18-44aa-96d1-d89c293139fb",
+     "verifier_id": "uri.client.harness_output_check.v1"
+    }
+   ],
+   "pass": true
+  },
+  {
+   "check": "restart_revives_nothing",
+   "expected": "same state, same attempt count, zero open authorizations",
+   "observed": {
+    "attempts": [
+     2,
+     2
+    ],
+    "open_auth": 0,
+    "startup_report": [],
+    "state": [
+     "COMPLETE",
+     "COMPLETE"
+    ]
+   },
+   "pass": true
+  }
+ ],
+ "base": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2c_codex_resume1",
+ "direct_cli_status": "OK",
+ "direct_probe": {
+  "agent_text": "OK",
+  "auth_status": null,
+  "duration_s": 12.04,
+  "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\codex.CMD",
+  "exit": 0,
+  "failures": [],
+  "forwarded_env_keys": [
+   "COMSPEC",
+   "HOME",
+   "PATH",
+   "PATHEXT",
+   "SHELL",
+   "SYSTEMDRIVE",
+   "SYSTEMROOT",
+   "TEMP",
+   "TERM",
+   "TMP",
+   "USERNAME",
+   "USERPROFILE",
+   "WINDIR"
+  ],
+  "ok": true,
+  "result": null,
+  "status": "OK",
+  "stdout_sha256": "1e5f011b438af3a92666df0a02aee2d011013bd8b2b25d551aed205a22a477e3",
+  "version": "0.158.0"
+ },
+ "finished": "2026-10-07T09:49:23",
+ "induced": "attempt 1 supervisor timeout 4.0s (interruption injected by the qualification harness)",
+ "interpreter": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe",
+ "mode": "run",
+ "model": "gpt-6-sol",
+ "provider": "codex_cli",
+ "registry_discover": [
+  {
+   "auth_state": "AUTH_UNVERIFIED",
+   "harness_id": "claude_code",
+   "installed": true,
+   "qualification": "NATIVE_UNQUALIFIED",
+   "required_user_action": "Run `claude` in the URI client profile terminal and sign in with your subscription (native login).",
+   "usable": false,
+   "version": "2.1.287"
+  },
+  {
+   "auth_state": "AUTHENTICATED",
+   "harness_id": "codex_cli",
+   "installed": true,
+   "qualification": "NATIVE_QUALIFIED",
+   "required_user_action": null,
+   "usable": true,
+   "version": "0.158.0"
+  },
+  {
+   "auth_state": "EXECUTE_REFUSED",
+   "harness_id": "antigravity",
+   "installed": true,
+   "qualification": "REFUSED",
+   "required_user_action": "Antigravity execution is refused until separately qualified.",
+   "usable": false,
+   "version": "1.2.16"
+  }
+ ],
+ "root": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent",
+ "run": {
+  "approval_requests_shown": [
+   {
+    "approval_digest": "af8f6bf3a24f91c4c948b485e509ba1d6549471a0afb3a918a3c00e950ee8b30",
+    "arguments": {
+     "action": "external_harness_task",
+     "inputs": {
+      "expected_file": "pong.txt",
+      "instruction": "write the single word PONG into pong.txt"
+     }
+    },
+    "capability_id": "external_harness_task",
+    "intent_digest": "fe4ad44ede6244c8197508105b02ac5cac65eff58ac75ae7280614c49765fb9e"
+   }
+  ],
+  "duration_s": 20.9,
+  "final_code": "SETTLED_VERIFIED",
+  "final_message": "Done. The result was independently verified by URI.",
+  "final_state": "reply",
+  "ledger": {
+   "admissions": [
+    {
+     "attempt_id": 1,
+     "auth_id": 1,
+     "registration_id": 1,
+     "round": 1
+    },
+    {
+     "attempt_id": 2,
+     "auth_id": 1,
+     "registration_id": 1,
+     "round": 2
+    }
+   ],
+   "attempts": [
+    {
+     "argv_sha256": "59e1b044aa2f65ec8d29c19bf1c9ec5250b78c03a8a374a73ba53145191f0779",
+     "attempt_id": 1,
+     "end_reason": "timeout_killed",
+     "ended_at_us": 1791346746815833,
+     "epoch": 1,
+     "executor_version": "0.158.0",
+     "exit_code": 1,
+     "job_name": "Local\\uri-sup-b2ecd70e962f-1-415f9de88a319cfd",
+     "pid": 17208,
+     "pid_create_time": 134358203427821195,
+     "resume_of": null,
+     "session_id": "01a11496-16c0-7221-9feb-371efbcdf0a1",
+     "spawned_at_us": 1791346742789288,
+     "status": "FENCED"
+    },
+    {
+     "argv_sha256": "d7ae3c5dc6fcd1fbe4fba72d5f70a9c8d332ebae782fa8ed9a455702a3ef4c35",
+     "attempt_id": 2,
+     "end_reason": "exited_after_terminal_success_claim",
+     "ended_at_us": 1791346763063970,
+     "epoch": 1,
+     "executor_version": "0.158.0",
+     "exit_code": 0,
+     "job_name": "Local\\uri-sup-b2ecd70e962f-2-f7f519e000dfa4d5",
+     "pid": 8404,
+     "pid_create_time": 134358203468238352,
+     "resume_of": 1,
+     "session_id": "01a11496-16c0-7221-9feb-371efbcdf0a1",
+     "spawned_at_us": 1791346746831563,
+     "status": "FENCED"
+    }
+   ],
+   "authorizations": [
+    {
+     "auth_id": 1,
+     "issued_by": "uri_core.execution_ticket",
+     "scope_json": "{\"allowed_executors\":[\"codex_cli\"],\"allowed_op_classes\":[\"read\",\"local_write\"],\"approval_digest\":\"af8f6bf3a24f91c4c948b485e509ba1d6549471a0afb3a918a3c00e950ee8b30\",\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"capability\":\"external_harness_task\",\"ticket_digest\":\"db35a2dc5d691a951ae6bc61fb07d154c67827dbb4f03bcd02e4ef2d9f350159\",\"workspace\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_resume1\\\\client\\\\workspace\\\\ecb5b59545a24400868c6cb9547b1bb2\"}",
+     "superseded_at_us": 1791346763068336,
+     "valid_from_us": 1791346742000000,
+     "valid_until_us": 1791347342000000
+    },
+    {
+     "auth_id": 2,
+     "issued_by": "uri_supervisor_bridge",
+     "scope_json": "{\"allowed_executors\":[\"codex_cli\"],\"allowed_op_classes\":[\"read\",\"local_write\"],\"approval_digest\":\"af8f6bf3a24f91c4c948b485e509ba1d6549471a0afb3a918a3c00e950ee8b30\",\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"capability\":\"external_harness_task\",\"ticket_digest\":\"db35a2dc5d691a951ae6bc61fb07d154c67827dbb4f03bcd02e4ef2d9f350159\",\"workspace\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_resume1\\\\client\\\\workspace\\\\ecb5b59545a24400868c6cb9547b1bb2\"}",
+     "superseded_at_us": null,
+     "valid_from_us": 1791346763068336,
+     "valid_until_us": 1791346763068334
+    }
+   ],
+   "completion_records": [
+    {
+     "attempt_id": 2,
+     "basis_json": "{\"effects\":[{\"intent_id\":2,\"op_class\":\"local_write\",\"reason\":\"LOCAL_WRITE_STATE_CHANGED_UNPROVEN\",\"safe\":false}],\"postconditions\":[{\"id\":1,\"kind\":\"file_regular_nonempty\",\"required\":true,\"status\":\"PASS\"}],\"process\":\"DEAD_CONFIRMED\",\"session\":\"01a11496-16c0-7221-9feb-371efbcdf0a1\",\"tail_incomplete\":false,\"terminal_claims\":[\"terminal_success_claim\"]}",
+     "completion_id": 1,
+     "kind": "verified",
+     "recorded_at_us": 1791346763067404,
+     "task_id": "357c157c-9d18-44aa-96d1-d89c293139fb"
+    }
+   ],
+   "decisions": [
+    {
+     "action": "RESUME_SESSION",
+     "attempt_id": 1,
+     "decision_id": 1,
+     "evidence_json": "{\"effects\":[{\"intent_id\":1,\"op_class\":\"local_write\",\"reason\":\"LOCAL_WRITE_ABSENCE_PROVEN\",\"safe\":true}],\"postconditions\":[{\"id\":1,\"kind\":\"file_regular_nonempty\",\"required\":true,\"status\":\"FAIL\"}],\"process\":\"DEAD_CONFIRMED\",\"session\":\"01a11496-16c0-7221-9feb-371efbcdf0a1\",\"tail_incomplete\":false,\"terminal_claims\":[]}",
+     "outcome": "RETRY_SAFE",
+     "reason_code": "EXECUTOR_INTERRUPTED_NO_TERMINAL_EVENT_RETRY_SAFE"
+    },
+    {
+     "action": "NONE",
+     "attempt_id": 2,
+     "decision_id": 2,
+     "evidence_json": "{\"effects\":[{\"intent_id\":2,\"op_class\":\"local_write\",\"reason\":\"LOCAL_WRITE_STATE_CHANGED_UNPROVEN\",\"safe\":false}],\"postconditions\":[{\"id\":1,\"kind\":\"file_regular_nonempty\",\"required\":true,\"status\":\"PASS\"}],\"process\":\"DEAD_CONFIRMED\",\"session\":\"01a11496-16c0-7221-9feb-371efbcdf0a1\",\"tail_incomplete\":false,\"terminal_claims\":[\"terminal_success_claim\"]}",
+     "outcome": "COMPLETE",
+     "reason_code": "POSTCONDITIONS_VERIFIED"
+    }
+   ],
+   "evidence": [
+    {
+     "attempt_id": 1,
+     "evidence_id": 1,
+     "kind": "session",
+     "payload": "{\"session_id\":\"01a11496-16c0-7221-9feb-371efbcdf0a1\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 1,
+     "evidence_id": 2,
+     "kind": "process_identity",
+     "payload": "{\"active\":0,\"attempt_status_at_recovery\":\"FENCED\",\"create_time\":134358203427821195,\"identity\":\"DEAD\",\"job\":\"Local\\\\uri-sup-b2ecd70e962f-1-415f9de88a319cfd\",\"job_exists\":false,\"pid\":17208,\"state\":\"DEAD_CONFIRMED\"}",
+     "source": "uri_observed"
+    },
+    {
+     "attempt_id": 1,
+     "evidence_id": 3,
+     "kind": "postcondition_check",
+     "payload": "{\"kind\":\"file_regular_nonempty\",\"observation\":{\"exists\":false,\"path\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_resume1\\\\client\\\\workspace\\\\ecb5b59545a24400868c6cb9547b1bb2\\\\pong.txt\",\"symlink\":false},\"status\":\"FAIL\"}",
+     "source": "uri_observed"
+    },
+    {
+     "attempt_id": 1,
+     "evidence_id": 4,
+     "kind": "effect_absent",
+     "payload": "{\"fingerprints_equal_to_pre_attempt\":true,\"paths\":[\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_resume1\\\\client\\\\workspace\\\\ecb5b59545a24400868c6cb9547b1bb2\"]}",
+     "source": "uri_verified"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 5,
+     "kind": "session",
+     "payload": "{\"session_id\":\"01a11496-16c0-7221-9feb-371efbcdf0a1\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 6,
+     "kind": "agent_message",
+     "payload": "{\"text\":\"I\u2019ll write `PONG` to `pong.txt` in the working directory and verify the file.\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 7,
+     "kind": "tool_result",
+     "payload": "{\"command\":\"\\\"C:\\\\\\\\WINDOWS\\\\\\\\System32\\\\\\\\WindowsPowerShell\\\\\\\\v1.0\\\\\\\\powershell.exe\\\" -Command \\\"Set-Content -LiteralPath 'pong.txt' -Value 'PONG' -NoNewline; Get-Content -LiteralPath 'pong.txt' -Raw\\\"\",\"exit_code\":0,\"status\":\"completed\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 8,
+     "kind": "agent_message",
+     "payload": "{\"text\":\"Wrote `PONG` to [pong.txt](C:/Users/cheta/.codex/worktrees/uri-phase2a/uri-agent/work/c1/p2c_codex_resume1/client/workspace/ecb5b59545a24400868c6cb9547b1bb2/pong.txt).\"}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 9,
+     "kind": "terminal_success_claim",
+     "payload": "{\"usage\":{\"cache_write_input_tokens\":0,\"cached_input_tokens\":28928,\"input_tokens\":43731,\"output_tokens\":226,\"reasoning_output_tokens\":7}}",
+     "source": "executor_report"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 10,
+     "kind": "process_identity",
+     "payload": "{\"active\":0,\"attempt_status_at_recovery\":\"FENCED\",\"create_time\":134358203468238352,\"identity\":\"DEAD\",\"job\":\"Local\\\\uri-sup-b2ecd70e962f-2-f7f519e000dfa4d5\",\"job_exists\":false,\"pid\":8404,\"state\":\"DEAD_CONFIRMED\"}",
+     "source": "uri_observed"
+    },
+    {
+     "attempt_id": 2,
+     "evidence_id": 11,
+     "kind": "postcondition_check",
+     "payload": "{\"kind\":\"file_regular_nonempty\",\"observation\":{\"bytes\":4,\"path\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_resume1\\\\client\\\\workspace\\\\ecb5b59545a24400868c6cb9547b1bb2\\\\pong.txt\"},\"status\":\"PASS\"}",
+     "source": "uri_verified"
+    }
+   ],
+   "postcondition_results": [
+    {
+     "attempt_id": 1,
+     "checked_at_us": 1791346746818517,
+     "evidence_id": 3,
+     "postcondition_id": 1,
+     "result_id": 1,
+     "status": "FAIL",
+     "task_id": "357c157c-9d18-44aa-96d1-d89c293139fb"
+    },
+    {
+     "attempt_id": 2,
+     "checked_at_us": 1791346763065958,
+     "evidence_id": 11,
+     "postcondition_id": 1,
+     "result_id": 2,
+     "status": "PASS",
+     "task_id": "357c157c-9d18-44aa-96d1-d89c293139fb"
+    }
+   ],
+   "stream": [
+    {
+     "attempt_id": 1,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 1,
+     "raw": "{\"type\":\"thread.started\",\"thread_id\":\"01a11496-16c0-7221-9feb-371efbcdf0a1\"}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 1,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 2,
+     "raw": "{\"type\":\"turn.started\"}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 1,
+     "raw": "{\"type\":\"thread.started\",\"thread_id\":\"01a11496-16c0-7221-9feb-371efbcdf0a1\"}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 2,
+     "raw": "{\"type\":\"turn.started\"}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 3,
+     "raw": "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"I\u2019ll write `PONG` to `pong.txt` in the working directory and verify the file.\"}}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 4,
+     "raw": "{\"type\":\"item.started\",\"item\":{\"id\":\"item_1\",\"type\":\"command_execution\",\"command\":\"\\\"C:\\\\\\\\WINDOWS\\\\\\\\System32\\\\\\\\WindowsPowerShell\\\\\\\\v1.0\\\\\\\\powershell.exe\\\" -Command \\\"Set-Content -LiteralPath 'pong.txt' -Value 'PONG' -NoNewline; Get-Content -LiteralPath 'pong.txt' -Raw\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 5,
+     "raw": "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"command_execution\",\"command\":\"\\\"C:\\\\\\\\WINDOWS\\\\\\\\System32\\\\\\\\WindowsPowerShell\\\\\\\\v1.0\\\\\\\\powershell.exe\\\" -Command \\\"Set-Content -LiteralPath 'pong.txt' -Value 'PONG' -NoNewline; Get-Content -LiteralPath 'pong.txt' -Raw\\\"\",\"aggregated_output\":\"PONG\\r\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 6,
+     "raw": "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"agent_message\",\"text\":\"Wrote `PONG` to [pong.txt](C:/Users/cheta/.codex/worktrees/uri-phase2a/uri-agent/work/c1/p2c_codex_resume1/client/workspace/ecb5b59545a24400868c6cb9547b1bb2/pong.txt).\"}}\n",
+     "stream": "stdout"
+    },
+    {
+     "attempt_id": 2,
+     "complete": 1,
+     "fence_current": 1,
+     "line_no": 7,
+     "raw": "{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":43731,\"cached_input_tokens\":28928,\"cache_write_input_tokens\":0,\"output_tokens\":226,\"reasoning_output_tokens\":7}}\n",
+     "stream": "stdout"
+    }
+   ],
+   "task": {
+    "attempt_count": 2,
+    "base_priority": 0,
+    "basis_kind": null,
+    "basis_ref": null,
+    "completion_ref": 1,
+    "created_at_us": 1791346742777191,
+    "current_fence": null,
+    "enqueue_round": 0,
+    "enter_decision_hwm": 0,
+    "enter_evidence_hwm": 11,
+    "max_attempts": 2,
+    "principal": "a73a2414-be54-4f84-81f7-3649512ef573",
+    "reason_code": "POSTCONDITIONS_VERIFIED",
+    "reason_detail": "",
+    "request_json": "{\"action\":\"external_harness_task\",\"approval_digest\":\"af8f6bf3a24f91c4c948b485e509ba1d6549471a0afb3a918a3c00e950ee8b30\",\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"capability_id\":\"external_harness_task\",\"expected_file\":\"pong.txt\",\"intent_digest\":\"fe4ad44ede6244c8197508105b02ac5cac65eff58ac75ae7280614c49765fb9e\",\"model\":\"gpt-6-sol\",\"operation_id\":\"357c157c-9d18-44aa-96d1-d89c293139fb\",\"provider\":\"codex_cli\",\"run_id\":\"ecb5b59545a24400868c6cb9547b1bb2\",\"session_id\":\"b994a372-e783-447f-ab34-fcdc03f6f5ce\",\"ticket_digest\":\"db35a2dc5d691a951ae6bc61fb07d154c67827dbb4f03bcd02e4ef2d9f350159\",\"turn_id\":\"816cdb2d-25d7-4c02-9fa0-c10c5439883a\"}",
+    "request_sha256": "95b5f1b38168257a6c8ceb162d50a5df4b30213801443330ee6decb95e5cddd8",
+    "requirements_json": "{\"capabilities\":[\"harness_task\"],\"effects\":[{\"context\":{},\"idempotency_key\":null,\"op_class\":\"local_write\",\"operation\":\"harness_task\",\"params\":{\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"expected_file\":\"pong.txt\"},\"paths\":[\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_resume1\\\\client\\\\workspace\\\\ecb5b59545a24400868c6cb9547b1bb2\"],\"target\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_resume1\\\\client\\\\workspace\\\\ecb5b59545a24400868c6cb9547b1bb2\"}],\"executors\":[\"codex_cli\"]}",
+    "state": "COMPLETE",
+    "state_changed_at_us": 1791346763067573,
+    "task_id": "357c157c-9d18-44aa-96d1-d89c293139fb",
+    "task_seq": 1,
+    "timezone": null
+   }
+  },
+  "receipt_evidence": [
+   {
+    "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+    "basis": "uri_supervisor_postcondition_verified",
+    "check": "harness_output_check",
+    "harness": "codex_cli",
+    "ledger_id": "b2ecd70e962f41ff80c32b9b44304b14",
+    "matched": true,
+    "output_bytes": 4,
+    "output_sha256": "95784973cc639977bff93619700168505cb8f7855e44fa643d34622a43706c87",
+    "supervisor_attempt": 2,
+    "supervisor_decision": 2,
+    "supervisor_task": "357c157c-9d18-44aa-96d1-d89c293139fb",
+    "verifier_id": "uri.client.harness_output_check.v1"
+   }
+  ],
+  "receipts_sent": [
+   {
+    "client_id": "e92f67c7-16da-4d62-a32f-01fd32b45966",
+    "evidence": [
+     {
+      "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+      "basis": "uri_supervisor_postcondition_verified",
+      "check": "harness_output_check",
+      "harness": "codex_cli",
+      "ledger_id": "b2ecd70e962f41ff80c32b9b44304b14",
+      "matched": true,
+      "output_bytes": 4,
+      "output_sha256": "95784973cc639977bff93619700168505cb8f7855e44fa643d34622a43706c87",
+      "supervisor_attempt": 2,
+      "supervisor_decision": 2,
+      "supervisor_task": "357c157c-9d18-44aa-96d1-d89c293139fb",
+      "verifier_id": "uri.client.harness_output_check.v1"
+     }
+    ],
+    "failure_category": null,
+    "implementation_digest": "1b7ac269056f8b04905e5762685d09af2095527597ef05c5f5f88dedea045813",
+    "operation_id": "357c157c-9d18-44aa-96d1-d89c293139fb",
+    "outcome": "verified",
+    "principal_id": "a73a2414-be54-4f84-81f7-3649512ef573",
+    "run_id": "862c817d-5561-4fbf-b131-93dd7f0a63f4",
+    "schema_version": "uri.client.v1",
+    "server_id": "09b1c494-c879-4077-89c3-3998be091a4e",
+    "session_id": "b994a372-e783-447f-ab34-fcdc03f6f5ce",
+    "state_version": 1,
+    "ticket_digest": "db35a2dc5d691a951ae6bc61fb07d154c67827dbb4f03bcd02e4ef2d9f350159",
+    "turn_id": "816cdb2d-25d7-4c02-9fa0-c10c5439883a",
+    "verifier_id": "uri.client.harness_output_check.v1"
+   }
+  ],
+  "result_files": [
+   {
+    "bytes": 4,
+    "content": "PONG",
+    "path": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2c_codex_resume1\\client\\workspace\\results\\ecb5b59545a24400868c6cb9547b1bb2\\pong.txt",
+    "sha256": "95784973cc639977bff93619700168505cb8f7855e44fa643d34622a43706c87"
+   }
+  ],
+  "server_calls": [
+   "/client/v1/turns",
+   "/client/v1/turns/816cdb2d-25d7-4c02-9fa0-c10c5439883a/approval",
+   "/client/v1/turns/816cdb2d-25d7-4c02-9fa0-c10c5439883a/claim",
+   "/client/v1/turns/816cdb2d-25d7-4c02-9fa0-c10c5439883a/settle"
+  ],
+  "server_turn_record": {
+   "dispatched": true,
+   "execution_closed": true,
+   "execution_outcome": "verified",
+   "execution_reported": null,
+   "operation_id": "357c157c-9d18-44aa-96d1-d89c293139fb",
+   "state": "reply"
+  },
+  "turn_id": "816cdb2d-25d7-4c02-9fa0-c10c5439883a"
+ },
+ "started": "2026-10-07T09:49:00",
+ "tag": "codex_resume1"
+}

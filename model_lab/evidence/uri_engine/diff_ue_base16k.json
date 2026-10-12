@@ -1,0 +1,80 @@
+{
+ "baseline": "model_lab/evidence/runs/ue_base/20261006-112534//results.jsonl",
+ "candidate": "model_lab/evidence/runs/ue_base16k/20261006-194816//results.jsonl",
+ "common_cases": 219,
+ "suites": {
+  "fast/C": {
+   "n": 14,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 14,
+   "lat_a_p50": 1.012,
+   "lat_b_p50": 1.149
+  },
+  "fast/D": {
+   "n": 72,
+   "score_a": 0.861,
+   "score_b": 0.861,
+   "identical_outputs": 72,
+   "lat_a_p50": 2.585,
+   "lat_b_p50": 2.723
+  },
+  "fast/DG": {
+   "n": 72,
+   "score_a": 0.861,
+   "score_b": 0.861,
+   "identical_outputs": 72,
+   "lat_a_p50": 2.498,
+   "lat_b_p50": 2.724
+  },
+  "fast/F": {
+   "n": 10,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 10,
+   "lat_a_p50": 0.422,
+   "lat_b_p50": 0.571
+  },
+  "fast/H": {
+   "n": 22,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 22,
+   "lat_a_p50": 0.776,
+   "lat_b_p50": 0.872
+  },
+  "fast/L": {
+   "n": 1,
+   "score_a": 0.8,
+   "score_b": 0.8,
+   "identical_outputs": 1,
+   "lat_a_p50": 3.391,
+   "lat_b_p50": 3.538
+  },
+  "fast/O": {
+   "n": 4,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 4,
+   "lat_a_p50": 1.875,
+   "lat_b_p50": 2.008
+  },
+  "fast/P": {
+   "n": 12,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 12,
+   "lat_a_p50": null,
+   "lat_b_p50": null
+  },
+  "fast/S": {
+   "n": 12,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 12,
+   "lat_a_p50": 1.289,
+   "lat_b_p50": 1.413
+  }
+ },
+ "differences": []
+}

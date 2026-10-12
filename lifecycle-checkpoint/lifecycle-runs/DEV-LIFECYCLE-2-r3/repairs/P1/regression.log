@@ -1,0 +1,95 @@
+=== tests/dev_workflow/test_lifecycle_dl2_r2_repair.py BEFORE (0ee6885a68ec14eabec7645b4501f87d17bde6f0) DONE
+O off\r\nREM %*\r\n"%~dp0prog/claude.exe"\r\n',                      # %* only in a comment
+        b'@ECHO off\r\nSET a=%*\r\n"%~dp0prog/claude.exe"\r\n',                    # %* not on the launch line
+        b'@ECHO off\r\nREM %*\r\n"%~dp0cmd.exe" /k\r\n',                         # cmd.exe, %* only in a comment
+    ])
+    def test_r1_02_launcher_running_an_interpreter_or_without_launch_line_args_is_refused(win, body):
+        (win / "claude.cmd").write_bytes(body)
+        r = P.resolve_cli(str(win / "claude.cmd"))
+>       assert "error" in r and "launch" not in r
+E       AssertionError: assert ('error' in {'realpath': '/tmp/pytest-of-root/pytest-43/test_r1_02_launcher_running_an7/npm/cmd.exe', 'sha256': 'acd51aefc990999f8...6b', 'interpreter': None, 'launch': ['/tmp/pytest-of-root/pytest-43/test_r1_02_launcher_running_an7/npm/cmd.exe'], ...})
+
+tests/dev_workflow/test_lifecycle_dl2_r2_repair.py:49: AssertionError
+____________ test_r2_01_worker_whose_communicate_fails_is_finished _____________
+
+fake_windows = <tests.dev_workflow.test_lifecycle_platform.FakeApi object at 0x7f7cc35e5be0>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-43/test_r2_01_worker_whose_commun0')
+
+    def test_r2_01_worker_whose_communicate_fails_is_finished(fake_windows, tmp_path):
+        api = fake_windows
+        rec = P.run_worker({"provider": "command", "argv": [sys.executable, "-c", "pass"]}, "reviewer", "prompt", tmp_path,
+                           tmp_path / "log", timeout_s=60)
+>       assert rec["status"] == "FAILED" and "communicate" in rec["detail"]
+E       AssertionError: assert ('FAILED' == 'FAILED'
+E         
+E           FAILED and 'communicate' in 'spawn: [Errno 22] Invalid argument')
+
+tests/dev_workflow/test_lifecycle_dl2_r2_repair.py:81: AssertionError
+____ test_r2_01_worker_left_running_after_communicate_failure_fails_closed _____
+
+fake_windows = <tests.dev_workflow.test_lifecycle_platform.FakeApi object at 0x7f7cc3541090>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-43/test_r2_01_worker_left_running0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f7cc40e2dd0>
+
+    def test_r2_01_worker_left_running_after_communicate_failure_fails_closed(fake_windows, tmp_path, monkeypatch):
+        """If termination fails, the job stays tracked and the next precheck is not contained."""
+        api = fake_windows
+        api.terminate_fails = True
+        rec = P.run_worker({"provider": "command", "argv": [sys.executable, "-c", "pass"]}, "reviewer", "prompt", tmp_path,
+                           tmp_path / "log", timeout_s=60)
+>       assert rec["status"] == "FAILED" and rec["contained"] is False
+                                             ^^^^^^^^^^^^^^^^
+E       KeyError: 'contained'
+
+tests/dev_workflow/test_lifecycle_dl2_r2_repair.py:94: KeyError
+_________ test_r2_01_gate_command_whose_communicate_fails_is_finished __________
+
+fake_windows = <tests.dev_workflow.test_lifecycle_platform.FakeApi object at 0x7f7cc35411d0>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-43/test_r2_01_gate_command_whose_0')
+
+    def test_r2_01_gate_command_whose_communicate_fails_is_finished(fake_windows, tmp_path):
+        api = fake_windows
+>       rc, out, err, state = L.run_cmd(["gate"], tmp_path, 60)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/dev_workflow/test_lifecycle_dl2_r2_repair.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/dev_workflow/lifecycle.py:675: in run_cmd
+    out, err = p.communicate(timeout=timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <dev_workflow.test_lifecycle_dl2_r2_repair.BrokenPipeProc object at 0x7f7cc3540f50>
+input = None, timeout = 60
+
+    def communicate(self, input=None, timeout=None):
+>       raise OSError(22, "Invalid argument")
+E       OSError: [Errno 22] Invalid argument
+
+tests/dev_workflow/test_lifecycle_dl2_r2_repair.py:62: OSError
+=========================== short test summary info ============================
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r1_02_launcher_running_an_interpreter_or_without_launch_line_args_is_refused[@ECHO off\r\n"%~dp0cmd.exe" /c "%~dp0real.bat" %*\r\n]
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r1_02_launcher_running_an_interpreter_or_without_launch_line_args_is_refused[@ECHO off\r\n"%~dp0cmd.exe" /c %*\r\n]
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r1_02_launcher_running_an_interpreter_or_without_launch_line_args_is_refused[@ECHO off\r\n"%~dp0pwsh.exe" -File "%~dp0claude.ps1" %*\r\n]
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r1_02_launcher_running_an_interpreter_or_without_launch_line_args_is_refused[@ECHO off\r\n"%~dp0powershell.exe" -NoProfile %*\r\n]
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r1_02_launcher_running_an_interpreter_or_without_launch_line_args_is_refused[@ECHO off\r\n"%~dp0node.exe" "%~dp0real.cmd" %*\r\n]
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r1_02_launcher_running_an_interpreter_or_without_launch_line_args_is_refused[@ECHO off\r\nREM %*\r\n"%~dp0prog/claude.exe"\r\n]
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r1_02_launcher_running_an_interpreter_or_without_launch_line_args_is_refused[@ECHO off\r\nSET a=%*\r\n"%~dp0prog/claude.exe"\r\n]
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r1_02_launcher_running_an_interpreter_or_without_launch_line_args_is_refused[@ECHO off\r\nREM %*\r\n"%~dp0cmd.exe" /k\r\n]
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r2_01_worker_whose_communicate_fails_is_finished
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r2_01_worker_left_running_after_communicate_failure_fails_closed
+FAILED tests/dev_workflow/test_lifecycle_dl2_r2_repair.py::test_r2_01_gate_command_whose_communicate_fails_is_finished
+11 failed in 0.46s
+
+=== tests/dev_workflow/test_lifecycle_dl2_r2_repair.py AFTER (cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35) DONE
+...........                                                              [100%]
+11 passed in 0.24s
+
+=== tests/dev_workflow/test_lifecycle_windows_cli.py BEFORE (0ee6885a68ec14eabec7645b4501f87d17bde6f0) DONE
+...........                                                              [100%]
+11 passed in 1.06s
+
+=== tests/dev_workflow/test_lifecycle_windows_cli.py AFTER (cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35) DONE
+...........                                                              [100%]
+11 passed in 1.05s
+

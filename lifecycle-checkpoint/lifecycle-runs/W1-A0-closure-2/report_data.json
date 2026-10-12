@@ -1,0 +1,1456 @@
+{
+ "findings": [
+  {
+   "blocking": true,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "HIGH",
+   "status": "repaired ca622bc",
+   "title": "Link/contact text from untrusted sources reaches the research surface; A2UI validator accepts it (W1-AC15/AC12)"
+  },
+  {
+   "blocking": true,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired ca622bc",
+   "title": "D7 (quantities quoted verbatim) bypassed by quantity words the detector misses (tenfold, decade, percentage points, couple)"
+  },
+  {
+   "blocking": true,
+   "id": "R1-03",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired ca622bc",
+   "title": "D10 pixel check passes text the user cannot read: white text covered by its own line-through bar reaches the Brain as 'pixel-checked'"
+  },
+  {
+   "blocking": true,
+   "id": "R1-04",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired ca622bc",
+   "title": "URL query/fragment secrets and userinfo are not masked in either layer and reach the Brain (A0-AC7)"
+  },
+  {
+   "blocking": true,
+   "id": "R1-05",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired ca622bc",
+   "title": "Brain slot not yielded to the user's turn; research cancel ignored during synthesis"
+  },
+  {
+   "blocking": true,
+   "id": "R1-06",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired ca622bc",
+   "title": "Verifier keeps citations to sources that do not support the sentence"
+  },
+  {
+   "blocking": false,
+   "id": "R1-07",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Assist answer/observation can be emitted after revoke"
+  },
+  {
+   "blocking": false,
+   "id": "R1-08",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Dart Assist controller applies stale poll replies (answer shown while paused; a stale reply cancels a new ask)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-09",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Expired grant still shown as ACTIVE (prior R1-09 not fixed)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-10",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Vision path: page-text secrets not blacked out in the image; capture runs before gate checks; debounce set on refused attempts (vision disabled by default)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-11",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Research budget/cancel not checked in the search and feed loops (prior R1-08 not fixed)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-12",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "NAT64 local-use prefix 64:ff9b:1::/48 judged only by its low 32 bits"
+  },
+  {
+   "blocking": false,
+   "id": "R1-13",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "IDN hosts can never be fetched (pinned host comparison uses httpx's decoded host)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-14",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "AssistController used after dispose when an ask reply is in flight"
+  },
+  {
+   "blocking": false,
+   "id": "R1-15",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Screenshot capture not bound to the granted target (prior R1-10 not fixed)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-16",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "D10: covering under one cell of a text node (1-2 characters) passes and can change the meaning"
+  },
+  {
+   "blocking": true,
+   "id": "R2-01",
+   "round": "R2",
+   "severity": "HIGH",
+   "status": "repaired f370064",
+   "title": "R1-01 repair incomplete: link forms with zero-width space, title-case TLD, IDN host, soft hyphen or U+3002 pass the detector, verify(), the extractive path and the research surface"
+  },
+  {
+   "blocking": true,
+   "id": "R2-02",
+   "round": "R2",
+   "severity": "MEDIUM",
+   "status": "repaired f370064",
+   "title": "R1-02 repair incomplete: _in_order is a subsequence test, so a claim cut from one sentence restates a quantity in the Brain's own words, and the quantity-word list still misses common forms"
+  },
+  {
+   "blocking": true,
+   "id": "R2-03",
+   "round": "R2",
+   "severity": "MEDIUM",
+   "status": "repaired f370064",
+   "title": "R1-03 not repaired: white text covered by its own line-through bar reaches the Brain as pixel-checked"
+  },
+  {
+   "blocking": false,
+   "id": "R2-04",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "URL masking still passes some secret-bearing forms: ;jsessionid path parameter, ticket=, hmac=, oauth_verifier="
+  },
+  {
+   "blocking": true,
+   "id": "R3-01",
+   "round": "R3",
+   "severity": "HIGH",
+   "status": "repaired 462be42",
+   "title": "R2-01 repair still incomplete: title-case or mixed-case real gTLDs missing from the hard-coded _TLDS list pass the link detector, verify(), the extractive path and the research surface"
+  },
+  {
+   "blocking": true,
+   "id": "R3-02",
+   "round": "R3",
+   "severity": "MEDIUM",
+   "status": "repaired 462be42",
+   "title": "R2-02 repair incomplete: _excerpt lets a claim drop a qualifier next to an undetected quantity word (doubling, halving, quintupled, biweekly), so a changed quantity is shown in the Brain's words"
+  },
+  {
+   "blocking": false,
+   "id": "R3-03",
+   "round": "R3",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "URL redaction ignores path matrix parameters and some token-bearing keys"
+  },
+  {
+   "blocking": true,
+   "id": "R4-01",
+   "round": "R4",
+   "severity": "HIGH",
+   "status": "repaired f5a5b8e",
+   "title": "R3-01 repair still incomplete: punycode (xn--) top-level domains are not links, so they pass has_link_or_contact, verify(), the extractive path and the research surface (W1-AC15/AC12)"
+  },
+  {
+   "blocking": true,
+   "id": "R4-02",
+   "round": "R4",
+   "severity": "MEDIUM",
+   "status": "repaired f5a5b8e",
+   "title": "R3-02 repair incomplete: _excerpt still lets a claim drop 'a <qualifier>' before an undetected quantity word (decennial, unanimous, quinquennial), so a changed quantity is shown unquoted in the Brain's words (D7)"
+  },
+  {
+   "blocking": false,
+   "id": "R4-03",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "A Chinese/Japanese host, then U+3002, then an IDN TLD not in _IDN_TLDS is not detected as a link (documented trade-off)"
+  },
+  {
+   "blocking": true,
+   "id": "R5-01",
+   "round": "R5",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 class still open: a link next to an underscore or hyphen ('_refunds-portal.com_', 'refunds-portal.com_', '-refunds-portal.com') passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator"
+  },
+  {
+   "blocking": true,
+   "id": "R5-02",
+   "round": "R5",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "D7 bypass at the sentence edge: _excerpt lets a claim drop a leading qualifier ('Less than', 'Fewer than', 'Well short of') before an undetected quantity word (plurality, quintet, quorum), so a changed quantity is shown unquoted in the Brain's words"
+  },
+  {
+   "blocking": true,
+   "id": "R6-01",
+   "round": "R6",
+   "severity": "HIGH",
+   "status": "repaired f604e7c",
+   "title": "R1-01 class still open: a one-sided spaced dot ('refunds-portal .com/claim') or a dot-like separator (U+00B7, U+30FB, U+2219, U+22C5, U+2027, '{.}', '<.>') passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12)"
+  },
+  {
+   "blocking": true,
+   "id": "R6-02",
+   "round": "R6",
+   "severity": "MEDIUM",
+   "status": "repaired f604e7c",
+   "title": "R5-02 repair incomplete: lead_ok/tail_ok treat a comma as a safe edge, so a claim drops a qualifier set off by commas ('that, at most, a quintet of firms...') before an undetected quantity word and is shown unquoted (D7)"
+  },
+  {
+   "blocking": true,
+   "id": "R7-01",
+   "round": "R7",
+   "severity": "HIGH",
+   "status": "repaired 474adb8",
+   "title": "R1-01 link class still open: a dot in a non-ASCII bracket/quote pair with spaces ('refunds-portal \u3010.\u3011 com/claim', '\u300c.\u300d', '\u3014.\u3015', '\u00ab.\u00bb', '\u27e8.\u27e9', '\".\"'), a spaced dot run ('refunds-portal . . com/claim') or a So-category bullet ('\u25e6' U+25E6, '\u25cf') passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, within D13 'any bracketed dot')"
+  },
+  {
+   "blocking": true,
+   "id": "R7-02",
+   "round": "R7",
+   "severity": "MEDIUM",
+   "status": "repaired 474adb8",
+   "title": "Verifier keeps a reversed-meaning claim in the Brain's words: an added or dropped determiner turns 'a little' into 'little' (and back), and the claim keeps its citation"
+  },
+  {
+   "blocking": true,
+   "id": "R8-01",
+   "round": "R8",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 link class still open: letter-category middle-dot look-alikes (U+A78F LATIN LETTER SINOLOGICAL DOT, U+1427 CANADIAN SYLLABICS FINAL MIDDLE DOT) and a spaced dot before a split top-level label ('refunds-portal . c om/claim', 'refunds-portal . c o m') pass has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, D13 'middle dots', 'mask any dot-joined word')"
+  },
+  {
+   "blocking": true,
+   "id": "R9-01",
+   "round": "R9",
+   "severity": "HIGH",
+   "status": "repaired 7b1252f",
+   "title": "R1-01 link class still open: spaced dot look-alikes U+2027 HYPHENATION POINT ('refunds-portal \u2027 shop'), U+0660/U+06F0 Arabic-Indic zero ('refunds-portal \u0660 com/claim') and U+4E36/U+2F02 dot stroke ('refunds-portal \u4e36 shop') pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D13 'with or without spaces')"
+  },
+  {
+   "blocking": true,
+   "id": "R11-01",
+   "round": "R11",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 link class still open under D16: a separator gap longer than 12 characters (the R10-01 form repeated), a spaced core domain after a long prose gap, 'co m' splits, a Latin dot look-alike letter (U+0298) and a spaced punycode ending pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15)"
+  },
+  {
+   "blocking": true,
+   "id": "R11-02",
+   "round": "R11",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "A host that netpolicy accepts but httpx rejects (InvalidURL) is not caught by SafeFetcher and turns the whole research job into FAILED INTERNAL_ERROR, discarding every good source"
+  },
+  {
+   "blocking": false,
+   "id": "R11-03",
+   "round": "R11",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "A screenshot is captured before the vision gates (qualification, debounce, busy Brain slot) run"
+  },
+  {
+   "blocking": false,
+   "id": "R11-04",
+   "round": "R11",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Race window: an assist.answer event with the full answer can be emitted after Stop (revoke)"
+  },
+  {
+   "blocking": false,
+   "id": "R11-05",
+   "round": "R11",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Path parameters such as ';jsessionid=' are not masked in the page URL (both layers mask only after '?' or '#')"
+  },
+  {
+   "blocking": false,
+   "id": "R11-06",
+   "round": "R11",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "IDN and trailing-dot hosts can never be fetched: the pin compares the Unicode or dotted host with the IDNA host (fails closed)"
+  },
+  {
+   "blocking": false,
+   "id": "R11-07",
+   "round": "R11",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "The NAT64 local-use prefix 64:ff9b:1::/48 is decoded from the last 32 bits, and is_global is skipped"
+  },
+  {
+   "blocking": true,
+   "id": "R12-01",
+   "round": "R12",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 link class still open under D16: a name in a different script from the ending (Cyrillic/Greek/Arabic name + core Latin domain, with a plain space or a path; Latin name + non-Latin listed TLD after a separator) passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15)"
+  },
+  {
+   "blocking": true,
+   "id": "R13-01",
+   "round": "R13",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R12-01 repair regressed R11-01 and left a same-script variant open: two distinct dot-shaped letters ('\u4e36\u4e3f', '\u318d\u11a2') or a doubled same-script look-alike ('\u0298\u0298') between name and a non-core TLD are read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16)"
+  },
+  {
+   "blocking": true,
+   "id": "R14-01",
+   "round": "R14",
+   "severity": "HIGH",
+   "status": "repaired fe77015",
+   "title": "R13-01 repair incomplete: two distinct CJK stroke/dot radicals between name and TLD ('\u4e28\u4e36', '\u4e00\u4e36', '\u4e36\u4e00', '\u4e59\u4e36', Kangxi '\u2f01\u2f02', '\u2f00\u2f02') are read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D17)"
+  },
+  {
+   "blocking": true,
+   "id": "R16-01",
+   "round": "R16",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 link class still open: a foreign-script separator word of three or more distinct dot/stroke-shaped letters ('\u4e36\u318d\u11a2', '\u4e36\u4e3f\u4e40', '\u4e28\u4e36\u4e3f', '\u318d\u11a2\u4e36') between name and a non-core TLD is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16)"
+  },
+  {
+   "blocking": true,
+   "id": "R16-02",
+   "round": "R16",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "netpolicy accepts 64:ff9b:1::/48 (RFC 8215 local-use NAT64) addresses embedding a private IPv4 at the /48, /56 or /64 offsets: _embedded_v4 always reads the last 32 bits and the NAT64 branch returns before the is_global check (W1-AC1)"
+  },
+  {
+   "blocking": false,
+   "id": "R16-03",
+   "round": "R16",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Split ending whose first piece is a common two-letter word is not joined even after a non-prose separator ('refunds-portal ~ go ld/claim', '~ he lp') - the disclosed, not owner-accepted, limitation is wider than needed"
+  },
+  {
+   "blocking": false,
+   "id": "R16-04",
+   "round": "R16",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "SearxngProvider does not catch httpx.InvalidURL: an owner-configured SearXNG URL with an invalid IDNA host turns the research job into FAILED INTERNAL_ERROR (R11-02 pattern in search)"
+  },
+  {
+   "blocking": false,
+   "id": "R16-05",
+   "round": "R16",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Assist answer stored and emitted after Stop: the ask thread re-checks the grant before, not under the lock with, storing and emitting the answer (A0-AC4 race)"
+  },
+  {
+   "blocking": false,
+   "id": "R16-06",
+   "round": "R16",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Vision path: screenshot captured before VisionGate refusals (not qualified, busy, debounced); 'screenshot for this question' toggle persists across asks, Stop and new grants; prepare_image does not check screenshot size against viewport x DPR before masking field rectangles"
+  },
+  {
+   "blocking": true,
+   "id": "R17-01",
+   "round": "R17",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R16-01/D19 repair incomplete: stroke- and dot-shaped letters missing from the hard-coded _STROKES list (Hangul \u3161/\u3163, katakana \u30ce, \u4e37, \u4e09) form a 3-letter separator word that is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D19)"
+  },
+  {
+   "blocking": true,
+   "id": "R18-01",
+   "round": "R18",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R17-01/D19 repair incomplete: stroke-shaped kana missing from _STROKES (katakana \u30cb/\u30cf/\u30c8 look the same as listed \u4e8c/\u516b/\u535c; full-size \u30cf/\u30d8/\u30ec while small \u31f5/\u31f8/\u31fe are listed; \u30d5, hiragana \u304f/\u3057/\u3078) form a separator word that is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D19)"
+  },
+  {
+   "blocking": true,
+   "id": "R19-01",
+   "round": "R19",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 link class still open: a run of three or more distinct combining dot marks on a space ('refunds-portal \u0323\u0307\u0308 shop') is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D13/D16)"
+  },
+  {
+   "blocking": true,
+   "id": "R19-02",
+   "round": "R19",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "D16 ending check ignores the skeleton: a core domain written in Cyrillic look-alikes after a plain space ('refunds-portal \u0441\u043e\u043c', 'refunds-portal \u0456\u043e') is not a link, although 'portal com' is (W1-AC12/AC15)"
+  },
+  {
+   "blocking": false,
+   "id": "R19-03",
+   "round": "R19",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Disclosed, not owner-accepted: a split ending whose first piece is in _COMMON2 is never joined ('refunds-portal \u4e36\u4e3f go ld', '... on line')"
+  },
+  {
+   "blocking": true,
+   "id": "R20-01",
+   "round": "R20",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R19-01 repair incomplete: a separator word plus a combining mark ('\u4e36\u4e3f\u0323', '\u119e\u11a2\u0323', '\u30cb\u30cf\u30c8\u0323', '\u0298\u0323') is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive() and the research surface (W1-AC12/AC15, D17/D19)"
+  },
+  {
+   "blocking": true,
+   "id": "R20-02",
+   "round": "R20",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R19-02 repair incomplete: a look-alike core domain spelt with spaces ('refunds-portal \u0441 \u043e \u043c', '\u0441\u043e \u043c') is not an ending, although Latin 'c o m' / 'co m' are links; with a path, masking still leaves 'refunds-portal \u0441 \u043e' on screen"
+  },
+  {
+   "blocking": true,
+   "id": "R21-01",
+   "round": "R21",
+   "severity": "HIGH",
+   "status": "repaired 57ccdd2",
+   "title": "R20-01 repair regressed R19-01: a run of three or more non-'COMBINING'-named marks on a space (Devanagari nukta/candrabindu/anusvara, Tibetan, Arabic, Thai, Telugu signs) between name and a non-core TLD is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D13/D16)"
+  },
+  {
+   "blocking": true,
+   "id": "R22-01",
+   "round": "R22",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 link class still open (R19-01/R20-01/R21-01 family): script marks on a carrier letter are not removed before separator classification, so 'refunds-portal \u0640\u0650\u065c\u0655 shop' (tatweel + 3 distinct Arabic marks) passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator; a separator letter/word plus one non-'COMBINING' mark ('x\u093c', '\u0298\u093c', '\u4e36\u4e3f\u093c') is detected but mask_links leaves 'refunds-portal [link removed] shop' on screen (W1-AC12/AC15, D13/D16/D17)"
+  },
+  {
+   "blocking": true,
+   "id": "R23-01",
+   "round": "R23",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R22-01 repair incomplete (R19/R20/R21/R22 family): a single foreign letter plus two or more marks of its own script ('\u0628\u0650\u065c', '\u0915\u093c\u0901\u0902', '\u0e01\u0e31\u0e48\u0e4c') between name and a non-core TLD is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D17)"
+  },
+  {
+   "blocking": true,
+   "id": "R24-01",
+   "round": "R24",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 link class still open (D16 ending side): a listed non-Latin top-level domain written with optional same-script vowel marks (Arabic harakat '\u0645\u0650\u0635\u0652\u0631', '\u0639\u064f\u0645\u0627\u0646', '\u0627\u0644\u0633\u064f\u0651\u0639\u064f\u0648\u062f\u0650\u064a\u064e\u0651\u0629', '\u0627\u06cc\u0631\u0627\u0646\u0652', '\u0634\u064e\u0628\u064e\u0643\u0629'; Hebrew niqqud '\u05e7\u05d5\u05b9\u05dd') is not an ending, so 'refunds-portal ~ \u0645\u0650\u0635\u0652\u0631' passes has_link_or_contact, mask_links, verify(), extractive() and the research surface (W1-AC12/AC15)"
+  },
+  {
+   "blocking": true,
+   "id": "R25-01",
+   "round": "R25",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R24-01 repair incomplete: Arabic vowel marks and Quranic marks missing from the hard-coded _VOWELS ranges (U+0618-061A ARABIC SMALL FATHA/DAMMA/KASRA, U+0610-0617 honorific signs, U+08D3-08FF Extended-A marks such as OPEN FATHATAN and CURLY FATHA) keep a listed Arabic top-level domain from matching, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15)"
+  },
+  {
+   "blocking": true,
+   "id": "R26-01",
+   "round": "R26",
+   "severity": "HIGH",
+   "status": "repaired be7cdec",
+   "title": "R24-01/R25-01 class still open: a listed top-level domain with a diacritic that NFKC composes into a precomposed letter ('c\u0301om' -> '\u0107om', 'o\u0300rg', 's\u0323hop' -> '\u1e63hop', 'sho\u0301p', 'ca\u0301sh', Cyrillic '\u0435\u0301\u0444') is not an ending, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16)"
+  },
+  {
+   "blocking": true,
+   "id": "R27-01",
+   "round": "R27",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 link class still open (D16 ending side, R19-02 class in Latin): a core or listed top-level domain written with Latin look-alike letters ('\u0261ov' U+0261 script g, small capitals '\u1d04\u1d0f\u1d0d', 'c\u00f8m', '\u023com', '\u0188om', 's\u0127op') is not an ending, so the link passes has_link_or_contact, mask_links, verify(), extractive() and the research surface (W1-AC12/AC15)"
+  },
+  {
+   "blocking": true,
+   "id": "R28-01",
+   "round": "R28",
+   "severity": "HIGH",
+   "status": "repaired 6c51965",
+   "title": "R27-01 repair incomplete: Latin look-alike letters whose Unicode name has no A-Z letter (U+0251 LATIN SMALL LETTER ALPHA '\u0251', U+0269 LATIN SMALL LETTER IOTA '\u0269', U+0196 '\u0196') are not folded, so 'refunds-portal b\u0269z/claim' (core domain, plain space), 'refunds-portal \u0269o/claim', 'refunds-portal ~ c\u0251sh', '~ \u0251pp' and '~ \u0269nfo' pass has_link_or_contact and mask_links; the probed '~ c\u0251sh', 'c\u0251sh/claim', '~ \u0269nfo', '~ \u0251pp' and '\u0251pp/claim' forms also pass verify(), extractive() and the research surface (W1-AC12/AC15, D16)"
+  },
+  {
+   "blocking": true,
+   "id": "R29-01",
+   "round": "R29",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R28-01 repair incomplete (R1-01/R19-02/R27-01 class): the skeleton fallback added for Latin letters uses the 58-character hand-made _CONFUSABLE table, which holds no Latin letters and misses common Cyrillic/Greek look-alikes, so endings spelt '\u0455\u04bb\u043e\u0440' (Cyrillic shha U+04BB), 'mi\u01c0' (U+01C0 dental click as l), 'co\u028d' (U+028D turned w read as 'w') or '\u03f2\u03bf\u039c' (U+03F2) are not links and pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16)"
+  },
+  {
+   "blocking": true,
+   "id": "R30-01",
+   "round": "R30",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R29-01 repair incomplete (R1-01/R19-02/R27-01 class): the confusables data keeps only ASCII prototypes, so Cyrillic look-alikes whose prototype is a non-ASCII Latin letter (\u045b~\u0127, \u04ab~\u00e7, \u04e9/\u0473~\u0275, \u04ce~\u0271) have no fold and endings '\u0455\u045b\u043e\u0440', '\u04ab\u043e\u043c', '\u0441\u04e9\u043c', '\u0441\u043e\u04ce', '\u0455\u04bb\u04e9\u0440' are not links; they pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16)"
+  },
+  {
+   "blocking": true,
+   "id": "R31-01",
+   "round": "R31",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 link class still open: ASCII look-alikes listed in the Unicode confusables data (digit 0 ~ O, 1/I/| ~ l) are not folded, so 'refunds-portal.c0m/claim' (real dot), '.g0v', '.0rg', '.mi1', '.b1z', 'refunds-portal . c0m', 'refunds-portal [.] c0m', 'refunds-portal c0m/claim', 'refunds-portal ~ g0v' and 'refunds-portal miI/claim' pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D13/D16/D29)"
+  },
+  {
+   "blocking": false,
+   "id": "R31-02",
+   "round": "R31",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "mask_links masks only the ending, not the name, for an ending spelt with a symbol inside ('refunds-portal c\u25cbm' -> 'refunds-portal [link removed]')"
+  },
+  {
+   "blocking": true,
+   "id": "R32-01",
+   "round": "R32",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R31-01 repair incomplete: _ascii_variant folds look-alikes only in runs with at least two letters, so two-character endings with one ASCII look-alike ('refunds-portal.i0/claim' = .io core domain, '.c0', '.t0', '.1y', '.m0', '.|y', 'refunds-portal i0/claim', '~ i0', ' . i0') pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D13/D16/D29)"
+  },
+  {
+   "blocking": true,
+   "id": "R33-01",
+   "round": "R33",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R31-01/R32-01 class still open: a leading capital 'I' look-alike of 'l' is never folded, so endings 'Iy', 'Ia', 'Ii', 'Iu', 'Iv', 'Ik', 'Iol', 'Iive', 'Iink', 'Iat', 'Iaw', 'Iand', 'Iife', 'Ioan' after a separator ('refunds-portal ~ Iy') pass has_link_or_contact, mask_links, verify(), extractive() and the research surface, while the 'l' spellings are links (W1-AC12/AC15, D16/D29)"
+  },
+  {
+   "blocking": true,
+   "id": "R34-01",
+   "round": "R34",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R33-01 repair incomplete (R31/R32/R33 class): capital 'I' as 'l' is not folded in upper-case runs, and the leading-I step makes the general fold turn the next 'I' into 'l', so 'IIVE', 'IINK', 'IOI', 'PI', 'II' and core 'MII/claim' pass has_link_or_contact, mask_links, verify(), extractive() and the research surface while 'lIVE', 'lINK', 'lOl', 'Pl', 'Il', 'MIl/claim' are links (W1-AC12/AC15, D16/D29)"
+  },
+  {
+   "blocking": true,
+   "id": "R35-01",
+   "round": "R35",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R33-01/R34-01 class still open: after '. ', ': ', '! ' or '? ' a leading capital 'I' look-alike of 'l' is never folded (sentence-start exemption), so 'refunds-portal. Iive', 'refunds-portal. Iy', 'refunds-portal: Iink/claim', 'refunds-portal? Iy/claim', 'refunds-portal! Ioan/claim' pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator, while the 'l' spellings are links (W1-AC12/AC15, D13/D16/D29)"
+  },
+  {
+   "blocking": true,
+   "id": "R36-01",
+   "round": "R36",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R31-01/D29 class still open: a top-level domain spelt only with ASCII look-alikes that include '|' ('refunds-portal.|0|/claim' = .lol, '.0||0' = .ollo) is never folded because _ascii_variant needs an alphabetic character in the run, so it passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15)"
+  },
+  {
+   "blocking": true,
+   "id": "R37-01",
+   "round": "R37",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01/R31-01 class still open: an ending mixing confusables-listed Cyrillic look-alikes with an ASCII look-alike ('\u04410\u043c', '\u04cf0\u04cf', '|\u043e\u0406', '\u0455|') is folded by neither the skeleton nor _ascii_variant, so it passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16/D29)"
+  },
+  {
+   "blocking": true,
+   "id": "R38-01",
+   "round": "R38",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01/R31-01 class still open: a spaced-out ending with an ASCII look-alike digit ('c 0 m', 'g 0 v', 'i 0', Cyrillic '\u0441 0 \u043c') is not a link, although 'c o m' is; it passes has_link_or_contact, mask_links, verify(), extractive() and the research surface (W1-AC12/AC15, D16/D29)"
+  },
+  {
+   "blocking": true,
+   "id": "R38-02",
+   "round": "R38",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R37-01 repair incomplete: a mixed Cyrillic/ASCII look-alike ending followed by an underscore ('refunds-portal ~ \u04410\u043c_') is not folded, so it passes has_link_or_contact, mask_links, verify(), extractive() and the research surface, while '\u04410\u043c', 'c0m_' and '\u0441\u043e\u043c_' are links (W1-AC12/AC15)"
+  },
+  {
+   "blocking": true,
+   "id": "R39-01",
+   "round": "R39",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R38-01 repair incomplete (R1-01/R31-01 class): _SPELT_SINGLES reads only single characters separated by single plain spaces, so partially spelt or differently spaced endings with an ASCII look-alike digit ('g0 v', 'g 0v', '0r g', '0 rg', 'c  0  m', '(c 0 m)', 'c\\t0\\tm', 'i  0') are not links, although the letter forms ('go v', 'g ov', 'or g', 'c  o  m', '(c o m)', 'c\\to\\tm', 'i  o') are; they pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16/D29)"
+  },
+  {
+   "blocking": true,
+   "id": "R40-01",
+   "round": "R40",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R39-01 repair incomplete (R1-01/R31-01 class): _digit_variant folds a look-alike digit only in a token with a letter or a one-character token, so a spelt ending whose last digit touches punctuation ('(refunds-portal i 0)', '~ i 0,', '~ i 0.', '~ i 0;', '~ i 0:', \"~ 't 0'\") is not a link while the letter forms are; it passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16/D29)"
+  },
+  {
+   "blocking": true,
+   "id": "R41-01",
+   "round": "R41",
+   "severity": "MEDIUM",
+   "status": "repaired 78006f9",
+   "title": "Answer derived before Pause/Stop is shown after it: the poll reply in flight is applied without an ask-id/epoch check; the worker can still emit assist.answer after revoke (A0-AC4/AC5, R9-05 contract)"
+  },
+  {
+   "blocking": true,
+   "id": "R41-02",
+   "round": "R41",
+   "severity": "MEDIUM",
+   "status": "repaired 78006f9",
+   "title": "Withheld field values (OTP, plain contenteditable) reach the Brain through 'Headings (pixel-checked)': headings have no in-field filter in snapshot.js or perception (A0-AC7, D8)"
+  },
+  {
+   "blocking": true,
+   "id": "R41-03",
+   "round": "R41",
+   "severity": "MEDIUM",
+   "status": "repaired 78006f9",
+   "title": "Secrets in URLs written in visible page text or a shared contenteditable (client_secret=, refresh_token=, otp=, pin=, session_id=, userinfo) are not masked and reach the Brain, although the same keys are masked in the Location line (A0-AC7)"
+  },
+  {
+   "blocking": true,
+   "id": "R41-04",
+   "round": "R41",
+   "severity": "MEDIUM",
+   "status": "repaired 78006f9",
+   "title": "Instruction-like page titles, search snippets and feed titles are not flagged; the title reaches the Brain unfiltered, and a trusted NO_ANSWER lets a source suppress a supported answer (W1-AC12)"
+  },
+  {
+   "blocking": false,
+   "id": "R41-05",
+   "round": "R41",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Sensitive fields inside shadow roots and iframes are never listed, so the vision screenshot does not black them out (latent: vision off by default, channel not built; undocumented)"
+  },
+  {
+   "blocking": false,
+   "id": "R41-06",
+   "round": "R41",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "In-page/Python parity: a contenteditable's name attribute and role=searchbox are judged differently, so the in-page layer lets a value leave the page (Python withholds it)"
+  },
+  {
+   "blocking": false,
+   "id": "R41-07",
+   "round": "R41",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Target labels and origins are returned unredacted by assist_targets, assist_status and assist_diagnostics (A0-AC7 wording; local UI only, never sent to the Brain)"
+  },
+  {
+   "blocking": false,
+   "id": "R41-08",
+   "round": "R41",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Citation label shows a second domain, e-mail, phone or IP held in the URL path (documented host/path design; the attacker can already be the cited host)"
+  },
+  {
+   "blocking": false,
+   "id": "R41-09",
+   "round": "R41",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Surface lists only sources[:10] and conflicts[:3] while Budget.clamp allows 12 pages: an answer can cite [11]/[12] that is not listed (latent: the worker uses the default 6)"
+  },
+  {
+   "blocking": false,
+   "id": "R41-10",
+   "round": "R41",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "The surface's own header line is link-masked ('1 [link removed]: extractive \u00b7 1.234 [link removed] ...') on every result"
+  },
+  {
+   "blocking": false,
+   "id": "R41-11",
+   "round": "R41",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Verifier ignores sentence punctuation: a cited statement can be turned into a question or put in scare quotes and is shown as supported Brain wording"
+  },
+  {
+   "blocking": false,
+   "id": "R41-12",
+   "round": "R41",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "SafeFetcher refuses every IDN host and every host with a trailing dot (PIN_HOST_MISMATCH reported as UNREACHABLE); bare IPv6 Host header lacks brackets (fail closed, not SSRF)"
+  },
+  {
+   "blocking": false,
+   "id": "R41-13",
+   "round": "R41",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Observation stamp does not bind the content hash; negative age (clock going back or future captured_at) passes check_fresh (A0-AC6 wording; not reachable with monotonic clock)"
+  },
+  {
+   "blocking": true,
+   "id": "R42-01",
+   "round": "R42",
+   "severity": "MEDIUM",
+   "status": "repaired 304bdf7",
+   "title": "R41-03 repair incomplete: URL secrets split across inline elements (e.g. ?client_secret=<b>VALUE</b>, highlighted <span>client_secret</span>=<span>VALUE</span>, https://user:<em>PW</em>@host) are not masked in page text or headings and reach the Brain, while the selection path masks the same URL (A0-AC7)"
+  },
+  {
+   "blocking": true,
+   "id": "R43-01",
+   "round": "R43",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01/R38-R40 link class still open: a spelt-out ending that starts with (or contains) a Cyrillic/Greek look-alike letter mixed with Latin letters ('refunds-portal ~ \u043e r g/claim', '~ \u0435 d u/claim', '~ \u0456 o/claim', '~ \u043e  r  g') is not a link and passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator; detected forms ('(refunds-portal i \u043e)', '~ g \u043e v/claim') are masked without the name (W1-AC12/AC15, D16/D29)"
+  },
+  {
+   "blocking": false,
+   "id": "R43-02",
+   "round": "R43",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "R42-01 residual: a URL secret split across two or more inline-block boxes reaches the Brain; the whitespace fail-closed rule masks only the next single token (A0-AC7)"
+  },
+  {
+   "blocking": false,
+   "id": "R45-01",
+   "round": "R45",
+   "severity": "MEDIUM",
+   "status": "non-blocking",
+   "title": "D31 acceptance stress test is fully blocked only for its fixed seeds (7, 11, 23); the same generator with other seeds yields disguised endings that pass has_link_or_contact, verify() and the research surface"
+  },
+  {
+   "blocking": false,
+   "id": "R45-02",
+   "round": "R45",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "In-page (snapshot.js) layer does not mask a URL secret whose key and value are in different layout blocks (flex item, inline-block, inline-flex, table cell, button); only the Python layer masks it (JS/Python parity)"
+  }
+ ],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "422159e9b0f3",
+   "failed": 178,
+   "gate": "python",
+   "new": 0,
+   "ok": true,
+   "passed": 6326,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  },
+  {
+   "changed_cause": 0,
+   "commit": "422159e9b0f3",
+   "failed": 1,
+   "gate": "flutter",
+   "new": 0,
+   "ok": true,
+   "passed": 537,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
+ "owner": [],
+ "repairs": [
+  {
+   "addresses": "R1-01, R1-02, R1-03, R1-04, R1-05, R1-06",
+   "commit": "ca622bc0354a",
+   "reason": "",
+   "repair": "P1",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R2-01, R2-02, R2-03",
+   "commit": "f370064354ba",
+   "reason": "",
+   "repair": "P2",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R3-01, R3-02",
+   "commit": "462be42c992c",
+   "reason": "",
+   "repair": "P3",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R4-01, R4-02",
+   "commit": "f5a5b8ecbb5c",
+   "reason": "",
+   "repair": "P4",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R6-01, R6-02",
+   "commit": "f604e7cd73ba",
+   "reason": "",
+   "repair": "P5",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R7-01, R7-02",
+   "commit": "474adb8440ff",
+   "reason": "",
+   "repair": "P6",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R9-01",
+   "commit": "7b1252f79efe",
+   "reason": "",
+   "repair": "P7",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R14-01",
+   "commit": "fe77015a8cd2",
+   "reason": "",
+   "repair": "P8",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R21-01",
+   "commit": "57ccdd225583",
+   "reason": "",
+   "repair": "P9",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R26-01",
+   "commit": "be7cdecfd503",
+   "reason": "",
+   "repair": "P10",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R28-01",
+   "commit": "6c51965f82ea",
+   "reason": "",
+   "repair": "P11",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R41-01, R41-02, R41-03, R41-04",
+   "commit": "78006f9ccf87",
+   "reason": "",
+   "repair": "P12",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R42-01",
+   "commit": "304bdf7039e3",
+   "reason": "",
+   "repair": "P13",
+   "status": "COMMITTED"
+  }
+ ],
+ "rounds": [
+  {
+   "blocking": 6,
+   "candidate": "67aff5042c0f",
+   "findings": 16,
+   "finished": "2026-10-11T09:13:24Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "20329ef7-e90c-4054-b1eb-ab5e87feda1d",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 3,
+   "candidate": "ca622bc0354a",
+   "findings": 4,
+   "finished": "2026-10-11T09:36:38Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R2",
+   "session": "100f4590-1645-4c04-b2db-d4e28e47940d",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "f370064354ba",
+   "findings": 3,
+   "finished": "2026-10-11T10:00:32Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R3",
+   "session": "c9556679-5432-4d0c-9e5d-806fdc2bba47",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "462be42c992c",
+   "findings": 3,
+   "finished": "2026-10-11T10:16:54Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R4",
+   "session": "7fb002ae-d084-4e18-b13d-6cbc18118a09",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "f5a5b8ecbb5c",
+   "findings": 2,
+   "finished": "2026-10-11T10:27:04Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R5",
+   "session": "6f65a79d-136c-41cb-9cce-3a488617959e",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "29771992f57f",
+   "findings": 2,
+   "finished": "2026-10-11T10:37:57Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R6",
+   "session": "40727e7b-2c06-4695-abd1-c53c5b1f749f",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "f604e7cd73ba",
+   "findings": 2,
+   "finished": "2026-10-11T11:15:44Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R7",
+   "session": "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "474adb8440ff",
+   "findings": 1,
+   "finished": "2026-10-11T11:28:24Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R8",
+   "session": "8375af4b-8468-4e67-ba85-0cfe741090e8",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "66a4765a3897",
+   "findings": 1,
+   "finished": "2026-10-11T11:41:06Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R9",
+   "session": "fedecee9-bc48-4b89-ad28-364dc5a28cdb",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "7b1252f79efe",
+   "findings": 0,
+   "finished": "2026-10-11T11:52:23Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R10",
+   "session": "58d9ffbb-47b7-4425-9982-0b347af11a44",
+   "status": "NO_RESULT",
+   "verdict": "none"
+  },
+  {
+   "blocking": 2,
+   "candidate": "6b07b467779c",
+   "findings": 7,
+   "finished": "2026-10-11T12:32:32Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R11",
+   "session": "955eed4d-c802-425c-81f7-babb9c2faa44",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "834c1c30956f",
+   "findings": 1,
+   "finished": "2026-10-11T12:55:29Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R12",
+   "session": "3914cd97-0c39-4039-aaaf-2ade06a404eb",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "eedbc6393bbe",
+   "findings": 1,
+   "finished": "2026-10-11T13:08:10Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R13",
+   "session": "40ed20e0-46c8-4727-a220-6e245ef92f34",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "da10d0b84cbd",
+   "findings": 1,
+   "finished": "2026-10-11T13:24:20Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R14",
+   "session": "6f4d33ba-2d75-437d-84e2-c483c35e37ce",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "fe77015a8cd2",
+   "findings": 0,
+   "finished": null,
+   "independent": null,
+   "reviewer": null,
+   "round": "R15",
+   "session": null,
+   "status": "running",
+   "verdict": "running"
+  },
+  {
+   "blocking": 2,
+   "candidate": "9b6b4f27fd6b",
+   "findings": 6,
+   "finished": "2026-10-11T13:53:00Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R16",
+   "session": "64de2d7c-e673-41ef-9f5a-6cdd70846398",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "101bf972942c",
+   "findings": 1,
+   "finished": "2026-10-11T14:02:59Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R17",
+   "session": "ab6049a3-a187-42cb-99fb-7341ad93b5ae",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "b7b93e7c43b3",
+   "findings": 1,
+   "finished": "2026-10-11T14:17:40Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R18",
+   "session": "6afee17c-97e6-442c-babf-adf6f8a27c87",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "0577aeb6004f",
+   "findings": 3,
+   "finished": "2026-10-11T14:29:33Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R19",
+   "session": "9353e27a-d9ff-4f6c-9003-d6c6c3f05d64",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "eb4d676de99d",
+   "findings": 2,
+   "finished": "2026-10-11T14:41:17Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R20",
+   "session": "586829f2-57de-4d4f-b19b-a70fbcf36aa4",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "68feb3e70e9e",
+   "findings": 1,
+   "finished": "2026-10-11T14:52:15Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R21",
+   "session": "52e01df5-01af-463d-b502-28d430e80cb3",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "57ccdd225583",
+   "findings": 1,
+   "finished": "2026-10-11T15:00:01Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R22",
+   "session": "0c531ba3-7aba-4e0c-a339-bc0c3a3ca91e",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "0e9a51ead3e1",
+   "findings": 1,
+   "finished": "2026-10-11T15:09:53Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R23",
+   "session": "4e0a4142-8a24-4c0d-882e-eaee893fe71b",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "d51207ead093",
+   "findings": 1,
+   "finished": "2026-10-11T15:22:31Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R24",
+   "session": "4472b5d0-e435-47c6-adf4-b6a8e2dd1826",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "0adc954149de",
+   "findings": 1,
+   "finished": "2026-10-11T15:32:29Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R25",
+   "session": "1835f9a4-c6bc-4d6c-aa81-78605b3632a4",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "749094581611",
+   "findings": 1,
+   "finished": "2026-10-11T15:44:51Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R26",
+   "session": "c980a987-2d05-499e-9ebc-d736519add01",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "be7cdecfd503",
+   "findings": 1,
+   "finished": "2026-10-11T15:54:11Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R27",
+   "session": "d4a299e6-c46f-4636-afb4-91f480470f6e",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "0fcc39d4bf06",
+   "findings": 1,
+   "finished": "2026-10-11T16:04:03Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R28",
+   "session": "cdeb0687-0b29-47e6-9bb9-e03aabc7f25c",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "6c51965f82ea",
+   "findings": 1,
+   "finished": "2026-10-11T16:12:29Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R29",
+   "session": "4cb82373-5b21-4f8b-9771-ad6129b6ca3f",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "c5fe635154da",
+   "findings": 1,
+   "finished": "2026-10-11T16:26:10Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R30",
+   "session": "1ffebf80-c1fb-4146-b4d2-15942217164b",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "87bd6aa7b68c",
+   "findings": 2,
+   "finished": "2026-10-11T16:36:42Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R31",
+   "session": "e3c4978f-615f-4701-974d-08c6484d9a8c",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "1525b10d4b09",
+   "findings": 1,
+   "finished": "2026-10-11T16:48:22Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R32",
+   "session": "1cc0493a-d4e1-4531-9bca-be1312499420",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "fc3d6f4257ac",
+   "findings": 1,
+   "finished": "2026-10-11T16:58:05Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R33",
+   "session": "6b3cd187-2794-4f44-82b8-15f39aa3863d",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "bdc82ef1ccfc",
+   "findings": 1,
+   "finished": "2026-10-11T17:09:55Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R34",
+   "session": "e7db5c4f-31fc-4720-9834-eca675374aee",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "dfad82d137b4",
+   "findings": 1,
+   "finished": "2026-10-11T17:21:58Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R35",
+   "session": "4a1fff61-95ce-45dc-bb39-0c99f6c6f971",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "9f7b9b2ab459",
+   "findings": 1,
+   "finished": "2026-10-11T20:29:01Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R36",
+   "session": "29117890-f818-4813-a9be-3a6035db6977",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "fc7bbf7b7d8d",
+   "findings": 1,
+   "finished": "2026-10-11T20:38:06Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R37",
+   "session": "d3112b37-e791-4fe1-ba73-f03e85d667cc",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "c8e48f431a52",
+   "findings": 2,
+   "finished": "2026-10-11T20:48:19Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R38",
+   "session": "f777f6b9-237b-4879-aace-fcb0c23b8ee8",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "2af8eeac109c",
+   "findings": 1,
+   "finished": "2026-10-11T20:58:02Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R39",
+   "session": "f64fb34f-194b-4616-9057-f2b18b61837f",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "df4fd0840cb5",
+   "findings": 1,
+   "finished": "2026-10-11T21:14:58Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R40",
+   "session": "c5386148-e758-4f5c-9101-e46c67363909",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 4,
+   "candidate": "c85bd832d384",
+   "findings": 13,
+   "finished": "2026-10-11T23:40:26Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R41",
+   "session": "8471dc3a-7ae0-436c-bc83-8fb6453c1d43",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "78006f9ccf87",
+   "findings": 1,
+   "finished": "2026-10-11T23:53:26Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R42",
+   "session": "815a4a1c-21d9-48ea-b1fb-4fed8457b2c1",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "304bdf7039e3",
+   "findings": 2,
+   "finished": "2026-10-12T00:09:34Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R43",
+   "session": "dae49e16-b1b5-4ca7-b666-0c5e64bc9de7",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "7253054209b3",
+   "findings": 0,
+   "finished": null,
+   "independent": null,
+   "reviewer": null,
+   "round": "R44",
+   "session": null,
+   "status": "running",
+   "verdict": "running"
+  },
+  {
+   "blocking": 0,
+   "candidate": "422159e9b0f3",
+   "findings": 2,
+   "finished": "2026-10-12T01:06:34Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R45",
+   "session": "78126100-d5e0-4650-b2b2-7ed55ac7529f",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "summary": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "422159e9b0f3cd57c020a76147665ff635b8ec38",
+  "evidence_ok": true,
+  "findings_repaired": 27,
+  "findings_total": 97,
+  "integration": "INTEGRATED",
+  "milestone": "W1-A0-closure",
+  "open_blocking": 0,
+  "owner_actions": 0,
+  "receipt_chain_ok": true,
+  "repairs_committed": 13,
+  "rounds": 45,
+  "stage": "COMPLETE",
+  "written_at": "2026-10-12T01:37:01Z"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "client_id": "670f131c-80a0-4865-b701-7099ea031abc",
+ "client_public_key": "f1d504a66546f1b72ecaa4d159915495d63102f7ab8db6421434a692b26a0064",
+ "evidence_file": "claude_code-e3293280c18c01a2.json",
+ "evidence_sha256": "e3293280c18c01a221b47e9c91ed4320f0afb08a1babc029db2917dc24386b40",
+ "executable": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe",
+ "executable_args": [
+  "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\tests\\phase2b\\helpers\\fake_harness.py"
+ ],
+ "executable_sha256": "72b29481593c5da37c99248c82777fbfb56217ea7809b771bc760d0a9ecb179b",
+ "expires_at": 2593000,
+ "level": "FIXTURE_ONLY",
+ "models": [
+  null
+ ],
+ "notes": "",
+ "pinned_files": {},
+ "provider": "claude_code",
+ "qualified_at": 1000,
+ "qualified_by": "independent round3 synthetic probe",
+ "record_sha256": "480343da3f50edbe32b2a5f2e18cd5d11f1c8495d7b3195d4789c88b9547c492",
+ "resolve_pins": {},
+ "schema": "uri.phase2d.qualification.v2",
+ "signature": "64e7d2d0c9748400c15ca4aef76ff594f8b8ffec787fdf0d4705a780a859795c6a0bce6aca46a514f71b8e8ef89777d3e8803d3d4ada1ac04e0dcb98ebeab304",
+ "spec_id": "generic_ndjson",
+ "version": "0.0.1"
+}

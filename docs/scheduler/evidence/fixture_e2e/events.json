@@ -1,0 +1,266 @@
+[
+ {
+  "seq": 1,
+  "at_us": 1791510980343971,
+  "kind": "scheduler.started",
+  "job_id": null,
+  "occ_id": null,
+  "payload_json": "{\"harness_revoked\":0,\"instance\":\"9760099a81e3403ba4ea15dbf5035e69\",\"recovered\":[]}",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "hash": "7cb276d1af8a755aa9f5a20a5fec07dca3a532e8f81b70eb71746f9c7bfcc54f",
+  "payload": {
+   "harness_revoked": 0,
+   "instance": "9760099a81e3403ba4ea15dbf5035e69",
+   "recovered": []
+  }
+ },
+ {
+  "seq": 2,
+  "at_us": 1791510980344618,
+  "kind": "calendar.loaded",
+  "job_id": null,
+  "occ_id": null,
+  "payload_json": "{\"calendar_id\":\"in_festivals\",\"digest\":\"ead14de445ac067922b95b3998940fc52578e5991a57693a9f60720cae524d40\",\"version\":\"2026-10-09.1\"}",
+  "prev_hash": "7cb276d1af8a755aa9f5a20a5fec07dca3a532e8f81b70eb71746f9c7bfcc54f",
+  "hash": "1a15d8f988eb9288914a4ee48e45c8716225e48752a9ad935bcd945244938dd7",
+  "payload": {
+   "calendar_id": "in_festivals",
+   "digest": "ead14de445ac067922b95b3998940fc52578e5991a57693a9f60720cae524d40",
+   "version": "2026-10-09.1"
+  }
+ },
+ {
+  "seq": 3,
+  "at_us": 1791510980429412,
+  "kind": "job.proposed",
+  "job_id": "job_a82d8be14980",
+  "occ_id": null,
+  "payload_json": "{\"interpretation\":\"Once at 2026-10-09 07:27:35 (Asia/Kolkata)\",\"owner\":\"owner\",\"proposal_sha256\":\"8cf2cde29774e8747643deba00a2f08fcede91f0626e42257cee5959cf27024c\"}",
+  "prev_hash": "1a15d8f988eb9288914a4ee48e45c8716225e48752a9ad935bcd945244938dd7",
+  "hash": "4f77ad251ca0c15d335c03a1bbcec8c5401943e7beb7d4e3af90349d1820b965",
+  "payload": {
+   "interpretation": "Once at 2026-10-09 07:27:35 (Asia/Kolkata)",
+   "owner": "owner",
+   "proposal_sha256": "8cf2cde29774e8747643deba00a2f08fcede91f0626e42257cee5959cf27024c"
+  }
+ },
+ {
+  "seq": 4,
+  "at_us": 1791510980456396,
+  "kind": "job.activated",
+  "job_id": "job_a82d8be14980",
+  "occ_id": null,
+  "payload_json": "{\"by\":\"owner\",\"proposal_sha256\":\"8cf2cde29774e8747643deba00a2f08fcede91f0626e42257cee5959cf27024c\"}",
+  "prev_hash": "4f77ad251ca0c15d335c03a1bbcec8c5401943e7beb7d4e3af90349d1820b965",
+  "hash": "4dd1770a19821926e36cae9eb30a0b38fed569d94a8dd28588fa084223ddb33b",
+  "payload": {
+   "by": "owner",
+   "proposal_sha256": "8cf2cde29774e8747643deba00a2f08fcede91f0626e42257cee5959cf27024c"
+  }
+ },
+ {
+  "seq": 5,
+  "at_us": 1791510980457531,
+  "kind": "occurrence.scheduled",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"due_local\":\"2026-10-09T07:27+05:30\",\"due_utc\":\"2026-10-09T01:57:35+00:00\",\"festival_date\":null,\"key\":\"once\",\"reason\":null}",
+  "prev_hash": "4dd1770a19821926e36cae9eb30a0b38fed569d94a8dd28588fa084223ddb33b",
+  "hash": "6032975bf1e7c52801b8a7755e4cb7f726cf5ad6e96e240c086cfe270d00a653",
+  "payload": {
+   "due_local": "2026-10-09T07:27+05:30",
+   "due_utc": "2026-10-09T01:57:35+00:00",
+   "festival_date": null,
+   "key": "once",
+   "reason": null
+  }
+ },
+ {
+  "seq": 6,
+  "at_us": 1791511055560084,
+  "kind": "occurrence.claimed",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"attempt_no\":1,\"instance\":\"9760099a81e3403ba4ea15dbf5035e69\",\"revision\":false}",
+  "prev_hash": "6032975bf1e7c52801b8a7755e4cb7f726cf5ad6e96e240c086cfe270d00a653",
+  "hash": "d1c43d1616e07dba83ae0b36fe303a407803a327b70867e9d51e7b0716bb6a84",
+  "payload": {
+   "attempt_no": 1,
+   "instance": "9760099a81e3403ba4ea15dbf5035e69",
+   "revision": false
+  }
+ },
+ {
+  "seq": 7,
+  "at_us": 1791511055560947,
+  "kind": "attempt.started",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"attempt_id\":1,\"executor\":\"claude_fixture\",\"kind\":\"generate\",\"mode\":\"FIXTURE\",\"qualification\":\"FIXTURE_ONLY\",\"workspace\":\"C:\\\\Users\\\\cheta\\\\Development\\\\uri-scheduler\\\\docs\\\\scheduler\\\\evidence\\\\fixture_e2e\\\\state\\\\work\\\\occ_1\\\\attempt_1\"}",
+  "prev_hash": "d1c43d1616e07dba83ae0b36fe303a407803a327b70867e9d51e7b0716bb6a84",
+  "hash": "12eb79d19961185495fcfab2e252c903372b81fe2d82a20ca922b6021603b4b9",
+  "payload": {
+   "attempt_id": 1,
+   "executor": "claude_fixture",
+   "kind": "generate",
+   "mode": "FIXTURE",
+   "qualification": "FIXTURE_ONLY",
+   "workspace": "C:\\Users\\cheta\\Development\\uri-scheduler\\docs\\scheduler\\evidence\\fixture_e2e\\state\\work\\occ_1\\attempt_1"
+  }
+ },
+ {
+  "seq": 8,
+  "at_us": 1791511059375218,
+  "kind": "artifact.created",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"artifact_id\":1,\"bytes\":1592267,\"kind\":\"generate\",\"mode\":\"FIXTURE\",\"parent\":null,\"quality\":{\"animated_gif\":true,\"loop_seam_mean_abs_diff\":4,\"loop_seamless\":true,\"text_legible\":true,\"within_size_budget\":true},\"sha256\":\"b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36\",\"version\":1}",
+  "prev_hash": "12eb79d19961185495fcfab2e252c903372b81fe2d82a20ca922b6021603b4b9",
+  "hash": "b069e6054649aebf7dc9b93381eb881a5c14ca4d3fdf9d479b3d112ebff027f3",
+  "payload": {
+   "artifact_id": 1,
+   "bytes": 1592267,
+   "kind": "generate",
+   "mode": "FIXTURE",
+   "parent": null,
+   "quality": {
+    "animated_gif": true,
+    "loop_seam_mean_abs_diff": 4,
+    "loop_seamless": true,
+    "text_legible": true,
+    "within_size_budget": true
+   },
+   "sha256": "b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36",
+   "version": 1
+  }
+ },
+ {
+  "seq": 9,
+  "at_us": 1791511059375804,
+  "kind": "attempt.ended",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"attempt_id\":1,\"mode\":\"FIXTURE\",\"next_state\":\"AWAITING_REVIEW\",\"outcome\":\"COMPLETED\",\"reason\":\"REVIEW_PENDING\"}",
+  "prev_hash": "b069e6054649aebf7dc9b93381eb881a5c14ca4d3fdf9d479b3d112ebff027f3",
+  "hash": "dec587fcb1ec481c276a0448445a271a6b5aac29fed2578fd722f679fc85007f",
+  "payload": {
+   "attempt_id": 1,
+   "mode": "FIXTURE",
+   "next_state": "AWAITING_REVIEW",
+   "outcome": "COMPLETED",
+   "reason": "REVIEW_PENDING"
+  }
+ },
+ {
+  "seq": 10,
+  "at_us": 1791511059928237,
+  "kind": "review.refine",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"artifact_id\":1,\"by\":\"owner\",\"instruction\":\"More floral energy\",\"published\":false,\"sha256\":\"b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36\",\"version\":1}",
+  "prev_hash": "dec587fcb1ec481c276a0448445a271a6b5aac29fed2578fd722f679fc85007f",
+  "hash": "46657d54853905a93517f36a89cc83c2fb485e2b36044ce2365be664569efc8a",
+  "payload": {
+   "artifact_id": 1,
+   "by": "owner",
+   "instruction": "More floral energy",
+   "published": false,
+   "sha256": "b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36",
+   "version": 1
+  }
+ },
+ {
+  "seq": 11,
+  "at_us": 1791511059929179,
+  "kind": "occurrence.claimed",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"attempt_no\":1,\"instance\":\"9760099a81e3403ba4ea15dbf5035e69\",\"revision\":true}",
+  "prev_hash": "46657d54853905a93517f36a89cc83c2fb485e2b36044ce2365be664569efc8a",
+  "hash": "f4ae8519a151ada756827ebe7a6f0c7bab00637d5fe42184e62ad7bb48ea1bf3",
+  "payload": {
+   "attempt_no": 1,
+   "instance": "9760099a81e3403ba4ea15dbf5035e69",
+   "revision": true
+  }
+ },
+ {
+  "seq": 12,
+  "at_us": 1791511059929962,
+  "kind": "attempt.started",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"attempt_id\":2,\"executor\":\"claude_fixture\",\"kind\":\"refine\",\"mode\":\"FIXTURE\",\"qualification\":\"FIXTURE_ONLY\",\"workspace\":\"C:\\\\Users\\\\cheta\\\\Development\\\\uri-scheduler\\\\docs\\\\scheduler\\\\evidence\\\\fixture_e2e\\\\state\\\\work\\\\occ_1\\\\attempt_2\"}",
+  "prev_hash": "f4ae8519a151ada756827ebe7a6f0c7bab00637d5fe42184e62ad7bb48ea1bf3",
+  "hash": "ccf55d8a18c976ce45322af7ee6cc23925be520d190c9ab433afb6f44d7b6082",
+  "payload": {
+   "attempt_id": 2,
+   "executor": "claude_fixture",
+   "kind": "refine",
+   "mode": "FIXTURE",
+   "qualification": "FIXTURE_ONLY",
+   "workspace": "C:\\Users\\cheta\\Development\\uri-scheduler\\docs\\scheduler\\evidence\\fixture_e2e\\state\\work\\occ_1\\attempt_2"
+  }
+ },
+ {
+  "seq": 13,
+  "at_us": 1791511063753077,
+  "kind": "artifact.created",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"artifact_id\":2,\"bytes\":1703230,\"kind\":\"refine\",\"mode\":\"FIXTURE\",\"parent\":1,\"quality\":{\"animated_gif\":true,\"loop_seam_mean_abs_diff\":6,\"loop_seamless\":true,\"text_legible\":true,\"within_size_budget\":true},\"sha256\":\"22c4ee0e6dd42e4901bd61cd4ed07cb49e6869633694ce6e939a0c1e900c07c6\",\"version\":2}",
+  "prev_hash": "ccf55d8a18c976ce45322af7ee6cc23925be520d190c9ab433afb6f44d7b6082",
+  "hash": "78434f12642aa238bc61a9dbf5460959b51f57618376cbfaf74823cff8fea550",
+  "payload": {
+   "artifact_id": 2,
+   "bytes": 1703230,
+   "kind": "refine",
+   "mode": "FIXTURE",
+   "parent": 1,
+   "quality": {
+    "animated_gif": true,
+    "loop_seam_mean_abs_diff": 6,
+    "loop_seamless": true,
+    "text_legible": true,
+    "within_size_budget": true
+   },
+   "sha256": "22c4ee0e6dd42e4901bd61cd4ed07cb49e6869633694ce6e939a0c1e900c07c6",
+   "version": 2
+  }
+ },
+ {
+  "seq": 14,
+  "at_us": 1791511063753590,
+  "kind": "attempt.ended",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"attempt_id\":2,\"mode\":\"FIXTURE\",\"next_state\":\"AWAITING_REVIEW\",\"outcome\":\"COMPLETED\",\"reason\":\"REVIEW_PENDING\"}",
+  "prev_hash": "78434f12642aa238bc61a9dbf5460959b51f57618376cbfaf74823cff8fea550",
+  "hash": "d63b91c2e04006b5847f7e1385f94002dd01185e1afc43970658eb9a670ca60a",
+  "payload": {
+   "attempt_id": 2,
+   "mode": "FIXTURE",
+   "next_state": "AWAITING_REVIEW",
+   "outcome": "COMPLETED",
+   "reason": "REVIEW_PENDING"
+  }
+ },
+ {
+  "seq": 15,
+  "at_us": 1791511064022256,
+  "kind": "review.approve",
+  "job_id": "job_a82d8be14980",
+  "occ_id": 1,
+  "payload_json": "{\"artifact_id\":2,\"by\":\"owner\",\"instruction\":null,\"published\":false,\"sha256\":\"22c4ee0e6dd42e4901bd61cd4ed07cb49e6869633694ce6e939a0c1e900c07c6\",\"version\":2}",
+  "prev_hash": "d63b91c2e04006b5847f7e1385f94002dd01185e1afc43970658eb9a670ca60a",
+  "hash": "f49c5f428c0490fd8e126b1ed8ab68589bfb63a55fdca9315f2c2588c44bd08f",
+  "payload": {
+   "artifact_id": 2,
+   "by": "owner",
+   "instruction": null,
+   "published": false,
+   "sha256": "22c4ee0e6dd42e4901bd61cd4ed07cb49e6869633694ce6e939a0c1e900c07c6",
+   "version": 2
+  }
+ }
+]

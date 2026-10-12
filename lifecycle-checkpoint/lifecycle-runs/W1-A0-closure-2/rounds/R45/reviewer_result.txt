@@ -1,0 +1,70 @@
+I recommend **ACCEPT WITH FINDINGS** for candidate `422159e9`. There is no HIGH finding and no blocking finding, and all 41 earlier blocking findings check out as fixed. I raise two new non-blocking items.
+
+**Checks**
+- **SHAs and protected paths:** both SHAs are confirmed, and nothing under the protected paths changed between baseline and candidate.
+- **Tests:**
+  - **Web and Assist suites:** 5909 passed.
+  - **Flutter `test/living`:** all 257 passed, including the R41 poll test.
+  - **Rest of the Python suite:** 176 failed and 246 errors on the candidate, against 177 failed and 246 errors on the baseline. The sampled failure is an environment problem (`ISOLATED_INTERPRETER_REQUIRED`), so there is no regression.
+  - **`test_m31_model_brain_ux.py`:** blocked, because the `google` module isn't installed. That file is unchanged since baseline.
+- **SSRF:** the network policy refuses every private, loopback and transition address I probed (mapped, NAT64, 6to4, IPv4-compatible, documentation ranges). The fetcher ignores proxy environment settings unless a proxy is set explicitly.
+- **R43-01:** every example in the finding is now detected and masked. So are spot checks from R31 through R40.
+- **R41-01:** the bridge re-checks the grant under the access lock before it stores or emits an answer. The Dart poll drops a reply if the ask id or epoch changed while it was in flight.
+- **R42-01:** I checked this with real Chromium. The secrets are masked before the Brain sees them, including when the key and the value sit in different layout blocks.
+
+**R45-01 (MEDIUM, not blocking).** The D31 stress test only passes on its three fixed seeds (7, 11, 23). I ran the same generator on seeds 1–40 (79,859 cases). Five disguised endings it builds from real domain endings pass `has_link_or_contact` and `verify()`, and appear unmasked on the research surface:
+- `refunds-portal ~ ၊ive` (Myanmar sign U+104A standing in for `l`, giving "live")
+- `refunds-portal . ၊oan/claim` ("loan")
+- `refunds-portal • ၊ivꬲ/claim`
+- `refunds-portal • 1 0` (`1` as `i`, giving "io")
+
+Two more misses use the word "claim", which isn't on the domain list, so they aren't real links.
+
+The cause is that a script's own punctuation counts as a word break, so `၊ive` passes as plain writing. That contradicts D31's own rule that every token must be ordinary writing. I marked it non-blocking only because owner decision D30 accepts further look-alike variants as residual risk. The test should cover many seeds, and a foreign-script punctuation mark inside a Latin word should count as not plain.
+
+**R45-02 (LOW).** The browser-side masking doesn't match the Python side when a URL secret's key and value are in separate layout blocks. Cases I tried: a flex `<p>`, an `inline-block` or `inline-flex` child, table cells, and a `<button>`. The raw value is still in the snapshot the page script sends out; the Python layer masks it before the Brain. Both layers should apply the cut-URL rule across neighbouring blocks.
+
+Two things I could not verify: Windows-only tests and the Phase 1 frozen-checkpoint zip (not present here). The browser channel itself isn't built (owner checklist #8), and nothing in the checkout claims otherwise.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "422159e9b0f3cd57c020a76147665ff635b8ec38", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [
+  {"id": "R45-01", "severity": "MEDIUM", "blocking": false, "category": "test", "owner_decision": false,
+   "title": "D31 acceptance stress test is fully blocked only for its fixed seeds (7, 11, 23); the same generator with other seeds yields disguised endings that pass has_link_or_contact, verify() and the research surface",
+   "files": ["tests/web/test_w1_closure_d31_plain_writing.py:51", "uri_web/untrusted.py:1011", "uri_web/untrusted.py:1019", "uri_web/untrusted.py:998"],
+   "evidence": "Running _generated(seed, 2000) for seeds 1..40 (79,859 cases) gives 5 misses outside the D16 comma residual whose ending is a real TLD: seed 1 'refunds-portal \u2022 \u104aiv\uab32/claim', seed 4 'refunds-portal . \u104aoan/claim' and 'refunds-portal ~ \u104aive', seed 6 'refunds-portal \u2022 1 0' (2 further misses use 'claim', which is not in _TLDS). For 'Claim your energy rebate refund at refunds-portal ~ \u104aive before the deadline.' has_link_or_contact is False, SY.verify(...[1]) keeps the claim, and surface.clean shows it unmasked. Cause: _is_punct treats U+104A MYANMAR SIGN LITTLE SECTION (a confusables-listed look-alike of 'l') as punctuation because its script is in _SCRIPTS, so '\u104aive' splits into '' + 'ive' and is judged plain writing, contrary to D31 'every token is ordinary writing'. Not blocking only because D30 makes further look-alike variants owner-accepted residual.",
+   "suggested_fix": "Run the D31 stress test over many seeds (or exhaustively over the look-alike table), and treat a script's punctuation inside a token of another script (e.g. Myanmar sign in a Latin word) as not plain."},
+  {"id": "R45-02", "severity": "LOW", "blocking": false, "category": "security", "owner_decision": false,
+   "title": "In-page (snapshot.js) layer does not mask a URL secret whose key and value are in different layout blocks (flex item, inline-block, inline-flex, table cell, button); only the Python layer masks it (JS/Python parity)",
+   "files": ["uri_assist/browser_extension/snapshot.js:349", "uri_assist/browser_extension/snapshot.js:56", "uri_assist/redact.py:184"],
+   "evidence": "Real-Chromium probe (/tmp/uri_review_R45/probe/test_probe_split.py) using the repo's run_chromium/ask harness: '<p style=\"display:flex\">https://api.example.com/cb?client_secret=<span>FLEXSECRET81</span></p>', the same with an inline-block span, an inline-flex code, '<td>...client_secret=</td><td>TABLESECRET84</td>', 'https://dave:<span style=inline-block>PWIBLOCK85</span>@db.example.com' and '?access_token=<button>BTNSECRET86</button>': all 6 values appear in the snapshot JSON (snap) leaving the page; the Brain request shows '[redacted]' for all (the Python _split_url_parts masks across newlines).",
+   "suggested_fix": "Apply splitUrlParts across adjacent chunks (or over the joined text) in snapshot.js, as redact.py does across newlines."}
+ ],
+ "prior_findings": [
+  {"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"},
+  {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"},
+  {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"},
+  {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"},
+  {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"},
+  {"id": "R11-01", "status": "FIXED"}, {"id": "R11-02", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"}, {"id": "R13-01", "status": "FIXED"},
+  {"id": "R14-01", "status": "FIXED"}, {"id": "R16-01", "status": "FIXED"}, {"id": "R16-02", "status": "FIXED"}, {"id": "R17-01", "status": "FIXED"},
+  {"id": "R18-01", "status": "FIXED"}, {"id": "R19-01", "status": "FIXED"}, {"id": "R19-02", "status": "FIXED"}, {"id": "R20-01", "status": "FIXED"},
+  {"id": "R20-02", "status": "FIXED"}, {"id": "R21-01", "status": "FIXED"}, {"id": "R22-01", "status": "FIXED"}, {"id": "R23-01", "status": "FIXED"},
+  {"id": "R24-01", "status": "FIXED"}, {"id": "R25-01", "status": "FIXED"}, {"id": "R26-01", "status": "FIXED"}, {"id": "R27-01", "status": "FIXED"},
+  {"id": "R28-01", "status": "FIXED"}, {"id": "R29-01", "status": "FIXED"}, {"id": "R30-01", "status": "FIXED"}, {"id": "R31-01", "status": "FIXED"},
+  {"id": "R32-01", "status": "FIXED"}, {"id": "R33-01", "status": "FIXED"}, {"id": "R34-01", "status": "FIXED"}, {"id": "R35-01", "status": "FIXED"},
+  {"id": "R36-01", "status": "FIXED"}, {"id": "R37-01", "status": "FIXED"}, {"id": "R38-01", "status": "FIXED"}, {"id": "R38-02", "status": "FIXED"},
+  {"id": "R39-01", "status": "FIXED"}, {"id": "R40-01", "status": "FIXED"}, {"id": "R41-01", "status": "FIXED"}, {"id": "R41-02", "status": "FIXED"},
+  {"id": "R41-03", "status": "FIXED"}, {"id": "R41-04", "status": "FIXED"}, {"id": "R42-01", "status": "FIXED"}, {"id": "R43-01", "status": "FIXED"}
+ ],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist", "result": "5909 passed in 123.51s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/flutter/bin/flutter test test/living/ (from uri_ui)", "result": "+257 All tests passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest -q tests --ignore=tests/web --ignore=tests/assist --ignore=tests/test_m31_model_brain_ux.py (candidate vs git-archive of baseline)", "result": "candidate 176 failed/1273 passed/246 errors; baseline 177 failed/1124 passed/246 errors; sampled cause ISOLATED_INTERPRETER_REQUIRED (environment); no regression", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/test_m31_model_brain_ux.py", "result": "collection error: No module named 'google' (file unchanged since baseline)", "status": "BLOCKED"},
+  {"command": "python -I /tmp/uri_review_R45/seeds.py (D31 generator, seeds 1..40)", "result": "79859 cases, 7 unexpected misses (5 real TLD endings)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest -s /tmp/uri_review_R45/probe/test_probe_split.py (real Chromium)", "result": "Brain request masked; 6 secrets present in in-page snapshot JSON", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "netpolicy.check_address probes (::7f00:1, 64:ff9b::a00:1, 2002:a00:1::, ::ffff:a00:1, fd00::1, 3fff::1, 192.0.0.9, ...)", "result": "all non-public refused", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Windows-only platform-gated tests (5)", "Phase 1 checkpoint zip (ws_frozen_check zip part BLOCKED)", "tests/test_m31_model_brain_ux.py (missing google module in venv)", "Older prior findings (R1-R30) were confirmed through the passing regression suites and spot probes, not re-probed exhaustively one by one"]}
+AUDIT_RESULT_END

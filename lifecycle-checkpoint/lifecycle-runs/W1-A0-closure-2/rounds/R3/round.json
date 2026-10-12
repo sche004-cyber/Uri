@@ -1,0 +1,256 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R3",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R3-01",
+  "R3-02"
+ ],
+ "candidate": "f370064354ba678ec5fed956a709cd0e7626c269",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T10:00:32Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "impl_head": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "7414a31e26c668e794620a83f4fdeb46ca4a06d271f20df27b1d03ba8025d88d",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "impl_head": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "7414a31e26c668e794620a83f4fdeb46ca4a06d271f20df27b1d03ba8025d88d",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "f370064354ba678ec5fed956a709cd0e7626c269",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "has_link_or_contact() is False and surface.clean() leaves the text unchanged for: 'refundsportal.Cash', 'refundsportal.Lol', 'refundsportal.CaSh', 'Refundsportal.Exchange', 'Refundsportal.Deals' (all real registrable gTLDs). With the source 'Claim your energy rebate refund at Refundsportal.Cash before the deadline.': extractive() picks the sentence; verify('... at Refundsportal.Cash before the deadline [1].', [src]) keeps it with dropped=[]; build_surface() output contains 'Refundsportal.Cash'. _is_domain only accepts an ASCII TLD that is all-lower, all-upper, on the ~200-entry _TLDS list, followed by '/', or on a host with a hyphen or digit. Also not detected: 'refundsportal [.] com', 'refundsportal dot com', and phone numbers ('1800 555 0199').",
+    "files": [
+     "uri_web/untrusted.py:98",
+     "uri_web/untrusted.py:101",
+     "uri_web/untrusted.py:55",
+     "uri_web/surface.py:42"
+    ],
+    "id": "R3-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Do not decide a host by a TLD allow-list: treat any label.label form with an alphabetic TLD of 2+ letters as a link unless the first letter after the dot is upper case AND the preceding character ends a sentence-like token with no other host signals (or use the full IANA TLD list, case-insensitive). Add spaced-defang forms and phone-number contacts, with regression cases.",
+    "title": "R2-01 repair still incomplete: title-case or mixed-case real gTLDs missing from the hard-coded _TLDS list pass the link detector, verify(), the extractive path and the research surface"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "states_quantity() is False for 'doubling', 'halving', 'tripling', 'quintupled', 'sextupled', 'biweekly', 'bimonthly', 'semiannual', 'triennial', 'multiplied', '\u2030', 'pct', 'ppm'. verify('Rents in the capital are doubling under the new rules [1].', ['Rents in the capital are nearly doubling under the new rules.']) keeps the claim unquoted (quoted=False). It is the same for 'possibly halving' -> 'halving', 'almost quintupled' -> 'quintupled', 'barely sextupled' -> 'sextupled' and 'roughly biweekly' -> 'biweekly'. The gap rule (MAX_GAP_WORDS=2) allows skipping the qualifier because the skipped word is not a quantity.",
+    "files": [
+     "uri_web/synthesize.py:72",
+     "uri_web/synthesize.py:138",
+     "uri_web/synthesize.py:154",
+     "uri_web/synthesize.py:244"
+    ],
+    "id": "R3-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Make D7 not depend on the word list: either allow no skipped content word at all (claim = contiguous run of source tokens apart from function words), or quote whenever any source word is skipped; add the listed forms and -ing/-ed forms of multiplicatives to _QUANTITY as the secondary check.",
+    "title": "R2-02 repair incomplete: _excerpt lets a claim drop a qualifier next to an undetected quantity word (doubling, halving, quintupled, biweekly), so a changed quantity is shown in the Brain's words"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "redact_url('https://x.example/;jsessionid=ABCDEF123456?x=1') leaves jsessionid unmasked (pairs are only rewritten after the first '?' or '#'). '?magic_link=abc123xyz&invite=abc123xyz', '?t=\u2026', '?k=secretval' are also kept.",
+    "files": [
+     "uri_assist/redact.py:144",
+     "uri_assist/browser_extension/snapshot.js:533"
+    ],
+    "id": "R3-03",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Also apply the pair rule to ';key=value' segments in the path, and add magic_link/invite/reset-style keys; keep Python and JS identical.",
+    "title": "URL redaction ignores path matrix parameters and some token-bearing keys"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest tests/web tests/assist -q -x (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers)",
+    "result": "2782 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "flutter test test/living/assist_mode_test.dart test/living/assist_r9_test.dart",
+    "result": "23 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R3/links.py, links2.py (link detector / verify / extractive / surface probes)",
+    "result": "R3-01 reproduced end to end",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R3/qty.py, qty2.py (D7 probes)",
+    "result": "R3-02 reproduced",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R3/t/test_deco_variants.py (real Chromium: emphasis, stroke, shadow, blend overlay, outline, negative underline)",
+    "result": "hidden variants dropped; stroke/shadow text kept and visually readable in the screenshot; R2-03 holds",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "netpolicy check_address/check_url corpus; redact_url probes; R1-06 citation probe",
+    "result": "all private forms refused; URL secrets masked except R3-03; unsupported citations removed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --name-only baseline..candidate vs protected paths",
+    "result": "no protected path changed",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Integrated worker dispatch (R1-05 BRAIN_TURNS path) not executed end to end; reviewed statically",
+   "Live streaming cancel against a real Runtime v1 Brain",
+   "ws/oi/a2ui gate suites and the full Flutter tree not re-run in this round (unchanged since earlier rounds)",
+   "Phase 1 checkpoint zip (ws_frozen_check zip part BLOCKED)",
+   "Real perception adapters, vision on GPU, Windows",
+   "Proxy egress mode under live resolution"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 3,
+ "started_at": "2026-10-11T09:55:22Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "c9556679-5432-4d0c-9e5d-806fdc2bba47",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 77
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.4437975000000003,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R3",
+  "ended_at": "2026-10-11T10:00:30Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 29,
+  "pid": 3261,
+  "prompt_sha256": "7a9e0fae68b99a7acae8fabaa43a9aba76ae6c15216e3cbce4528567dddd3cb9",
+  "provider": "claude_cli",
+  "result_text_sha256": "e28c003c02a5c78f5d7481d72fc7f96f7e32d0a2aa106cc7d062bf2b40af9f5b",
+  "role": "reviewer",
+  "session_id": "c9556679-5432-4d0c-9e5d-806fdc2bba47",
+  "session_id_requested": "c9556679-5432-4d0c-9e5d-806fdc2bba47",
+  "started_at": "2026-10-11T09:55:22Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "bb7260969f46421238e29dc1bb30c3b020b7afd705b003a071335e313af2c638"
+ }
+}

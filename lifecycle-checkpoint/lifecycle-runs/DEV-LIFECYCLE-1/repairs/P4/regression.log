@@ -1,0 +1,135 @@
+=== tests/dev_workflow/lifecycle_fixture/worker.py BEFORE (6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3) DONE
+
+==================================== ERRORS ====================================
+_______ ERROR collecting tests/dev_workflow/lifecycle_fixture/worker.py ________
+tests/dev_workflow/lifecycle_fixture/worker.py:14: in <module>
+    prompt = sys.stdin.read()
+             ^^^^^^^^^^^^^^^^
+../../../venv/lib/python3.13/site-packages/_pytest/capture.py:229: in read
+    raise OSError(
+E   OSError: pytest: reading from stdin while output is captured!  Consider using `-s`.
+=========================== short test summary info ============================
+ERROR tests/dev_workflow/lifecycle_fixture/worker.py - OSError: pytest: readi...
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.15s
+
+=== tests/dev_workflow/lifecycle_fixture/worker.py AFTER (0234b7c6b5dfac612c1d7a8d08c64d98693f0267) DONE
+
+==================================== ERRORS ====================================
+_______ ERROR collecting tests/dev_workflow/lifecycle_fixture/worker.py ________
+tests/dev_workflow/lifecycle_fixture/worker.py:14: in <module>
+    prompt = sys.stdin.read()
+             ^^^^^^^^^^^^^^^^
+../../../venv/lib/python3.13/site-packages/_pytest/capture.py:229: in read
+    raise OSError(
+E   OSError: pytest: reading from stdin while output is captured!  Consider using `-s`.
+=========================== short test summary info ============================
+ERROR tests/dev_workflow/lifecycle_fixture/worker.py - OSError: pytest: readi...
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.14s
+
+=== tests/dev_workflow/test_lifecycle.py BEFORE (6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3) DONE
+.............FFFFFF........................................              [100%]
+=================================== FAILURES ===================================
+_______ test_gate_repair_that_weakens_the_failing_test_is_refused[True] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-121/test_gate_repair_that_weakens_1')
+class_test = True
+
+    @pytest.mark.parametrize("class_test", [False, True])
+    def test_gate_repair_that_weakens_the_failing_test_is_refused(tmp_path, class_test):
+        # R5-01: a class-based gate test id must resolve to its file, so the weakened test has to fail before
+        repo, wt, base, remote = make_fixture(tmp_path, defect=False, break_other=True, class_test=class_test)
+        cfg = config(tmp_path, repo, wt, implementer="weaken_gate_test")
+>       assert L.run(cfg) == S.BLOCKED
+E       AssertionError: assert <WorkflowStat...E: 'COMPLETE'> == <WorkflowStat...ED: 'BLOCKED'>
+E         
+E         - BLOCKED
+E         + COMPLETE
+
+tests/dev_workflow/test_lifecycle.py:242: AssertionError
+_______ test_class_based_gate_failure_is_repaired_with_fail_before_proof _______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-121/test_class_based_gate_failure_0')
+
+    def test_class_based_gate_failure_is_repaired_with_fail_before_proof(tmp_path):
+        repo, wt, base, remote = make_fixture(tmp_path, defect=False, break_other=True, class_test=True)
+        cfg = config(tmp_path, repo, wt, implementer="break_gate_fix")
+>       assert L.run(cfg) == S.COMPLETE
+E       AssertionError: assert <WorkflowStat...ED: 'BLOCKED'> == <WorkflowStat...E: 'COMPLETE'>
+E         
+E         - COMPLETE
+E         + BLOCKED
+
+tests/dev_workflow/test_lifecycle.py:253: AssertionError
+________________________ test_gate_test_file_resolution ________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-121/test_gate_test_file_resolution0')
+
+    def test_gate_test_file_resolution(tmp_path):
+        (tmp_path / "tests/pkg").mkdir(parents=True)
+        (tmp_path / "tests/pkg/test_k.py").write_text("")
+        (tmp_path / "uri_ui/test").mkdir(parents=True)
+        (tmp_path / "uri_ui/test/x_test.dart").write_text("")
+        assert L._test_file("tests.pkg.test_k::test_a", tmp_path) == "tests/pkg/test_k.py"
+>       assert L._test_file("tests.pkg.test_k.TestK::test_a", tmp_path) == "tests/pkg/test_k.py"
+E       AssertionError: assert 'tests.pkg.test_k.TestK' == 'tests/pkg/test_k.py'
+E         
+E         - tests/pkg/test_k.py
+E         + tests.pkg.test_k.TestK
+
+tests/dev_workflow/test_lifecycle.py:264: AssertionError
+________________ test_unresolvable_gate_test_refuses_the_repair ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-121/test_unresolvable_gate_test_re0')
+
+    def test_unresolvable_gate_test_refuses_the_repair(tmp_path):
+        repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+        cfg = config(tmp_path, repo, wt)
+        sha = g(wt, "rev-parse", "HEAD")
+        (wt / "tests/test_extra.py").write_text("def test_x():\n    assert True\n")
+        f = {"id": "GATE-unit-1", "category": "test", "test_id": "tests.gone::t", "gate_test": None, "files": []}
+        rec = {"addresses": ["GATE-unit-1"]}
+        why = L._commit_and_prove(cfg, wt, sha, 1, rec, [f], ["tests/test_extra.py"], tmp_path / "r")
+>       assert why and "cannot resolve the test file" in why and "commit" not in rec
+E       assert (None)
+
+tests/dev_workflow/test_lifecycle.py:278: AssertionError
+_______________ test_causes_are_stable_across_runs_and_worktrees _______________
+
+    def test_causes_are_stable_across_runs_and_worktrees():
+        # R5-02: bare asserts carry run-specific values; load failures carry the worktree path
+>       assert L._cause("assert 21013 == 1") == L._cause("assert 4242 == 1") == "AssertionError"
+E       AssertionError: assert 'assert 21013 == 1' == 'assert 4242 == 1'
+E         
+E         - assert 4242 == 1
+E         ?        - ^^
+E         + assert 21013 == 1
+E         ?         ^^^^
+
+tests/dev_workflow/test_lifecycle.py:283: AssertionError
+___________ test_flutter_load_failure_is_historical_across_worktrees ___________
+
+    def test_flutter_load_failure_is_historical_across_worktrees():
+        a = L.parse_flutter_machine(_flutter_load_failure("/tmp/work/qualify"))
+        b = L.parse_flutter_machine(_flutter_load_failure("/tmp/work/baseline"))
+>       assert list(a["failures"]) == ["test/broken_test.dart::loading test/broken_test.dart"]
+E       AssertionError: assert ['::loading /...en_test.dart'] == ['test/broken...en_test.dart']
+E         
+E         At index 0 diff: '::loading /tmp/work/qualify/uri_ui/test/broken_test.dart' != 'test/broken_test.dart::loading test/broken_test.dart'
+E         Use -v to get more diff
+
+tests/dev_workflow/test_lifecycle.py:306: AssertionError
+=========================== short test summary info ============================
+FAILED tests/dev_workflow/test_lifecycle.py::test_gate_repair_that_weakens_the_failing_test_is_refused[True]
+FAILED tests/dev_workflow/test_lifecycle.py::test_class_based_gate_failure_is_repaired_with_fail_before_proof
+FAILED tests/dev_workflow/test_lifecycle.py::test_gate_test_file_resolution
+FAILED tests/dev_workflow/test_lifecycle.py::test_unresolvable_gate_test_refuses_the_repair
+FAILED tests/dev_workflow/test_lifecycle.py::test_causes_are_stable_across_runs_and_worktrees
+FAILED tests/dev_workflow/test_lifecycle.py::test_flutter_load_failure_is_historical_across_worktrees
+6 failed, 53 passed in 83.83s (0:01:23)
+
+=== tests/dev_workflow/test_lifecycle.py AFTER (0234b7c6b5dfac612c1d7a8d08c64d98693f0267) DONE
+...........................................................              [100%]
+59 passed in 83.82s (0:01:23)
+

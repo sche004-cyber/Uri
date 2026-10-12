@@ -1,0 +1,92 @@
+{
+ "schema": "uri-dev-lifecycle/1",
+ "milestone": "SSRF-1",
+ "stage": "BLOCKED",
+ "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded",
+ "candidate": "b4d896c152671101ec604a3efbf1e83963578c78",
+ "rounds": 2,
+ "reviewers": [
+  {
+   "round": 1,
+   "provider": "claude_cli",
+   "session_id": "f6fd90f9-d34a-4b11-97a2-534e8115e22a",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 2,
+   "provider": "claude_cli",
+   "session_id": "0b084aad-70a2-4cab-bb89-0897f34c0f59",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "a5a31435035c88ab5c3a868796f96232bc036759",
+   "verdict": "ACCEPT WITH FINDINGS",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "repairs": [
+  {
+   "repair": 1,
+   "status": "REFUSED",
+   "commit": null,
+   "addresses": [
+    "R1-01"
+   ],
+   "reason": "no change made"
+  },
+  {
+   "repair": 2,
+   "status": "COMMITTED",
+   "commit": "a5a31435035c88ab5c3a868796f96232bc036759",
+   "addresses": [
+    "R1-01"
+   ],
+   "reason": null
+  }
+ ],
+ "open_findings": [
+  {
+   "id": "R2-01",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "fetch_url can no longer fetch internationalised (IDN) host names: SafeFetcher's pin check compares httpx's Unicode host with netpolicy's punycode host"
+  },
+  {
+   "id": "R2-02",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "fetch_url now sends W1's Accept / Accept-Encoding: identity; a server that gzips anyway gets a misleading 'unsupported, unknown content type'"
+  }
+ ],
+ "gates": {
+  "b4d896c15267": {
+   "ok": true,
+   "blocked": null,
+   "new_failures": {
+    "flutter": [],
+    "python": []
+   }
+  }
+ },
+ "integration": null,
+ "blocker": {
+  "at": "2026-10-12T02:41:22Z",
+  "kind": "EVIDENCE",
+  "needs": "re-audit",
+  "reason": "no independent ACCEPT on this exact commit",
+  "stage": "VERIFYING"
+ },
+ "events": 26,
+ "evidence_ok_for_candidate": false
+}

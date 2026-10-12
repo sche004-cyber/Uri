@@ -1,0 +1,130 @@
+{
+ "rules": [
+  [
+   "uri_v1.turn.rar_contracts",
+   "uri_core.reference_binding.rar_contracts"
+  ],
+  [
+   "uri_v1.turn.rar_clarification_contract",
+   "uri_core.reference_binding.rar_clarification_contract"
+  ],
+  [
+   "uri_v1.turn.rar_deterministic",
+   "uri_core.reference_binding.rar_deterministic"
+  ],
+  [
+   "uri_v1.reference_clarification.fingerprints",
+   "uri_core.reference_binding.fingerprints"
+  ]
+ ],
+ "files": [
+  {
+   "donor_path": "uri_v1/turn/rar_contracts.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "83f98d94af4041bd9c04736eb19434ce549c8c96",
+   "donor_sha256": "4cc9aa43726a870ca2e9ab1b19f6bf9d72dcb74c8a2818856776af95195b6819",
+   "ported_path": "uri_core/reference_binding/rar_contracts.py",
+   "ported_sha256": "4cc9aa43726a870ca2e9ab1b19f6bf9d72dcb74c8a2818856776af95195b6819",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/turn/rar_deterministic.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "44b92af4170ec039d8e7aa9da26847f73bbe3d00",
+   "donor_sha256": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95",
+   "ported_path": "uri_core/reference_binding/rar_deterministic.py",
+   "ported_sha256": "0ad3e4d3bbf0b4ea90822ce29d3980d4173a3bf538f6e021cee91e6beae841a5",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/turn/rar_clarification_contract.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "e04016340a93aa99e84112d70b6095276adcf41c",
+   "donor_sha256": "114c6b735823ed93cd958eea7b081ca845c9fa601dff880623a46a586bf49e11",
+   "ported_path": "uri_core/reference_binding/rar_clarification_contract.py",
+   "ported_sha256": "e12a752128b3d0bc55372d24f405683a0677cbe27829847ea3aa480f33e4dc21",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/reference_clarification/attribute_narrowing.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "6231fd650248c7dc00d12342cb498e202a9e2073",
+   "donor_sha256": "dfaad7006769fcd2db19454e8716f116ce972fdef831583d75b95c92596d0022",
+   "ported_path": "uri_core/reference_binding/attribute_narrowing.py",
+   "ported_sha256": "024efc1501d265aef970b41a545f095c66bad469f70a9092a78ccdd0cd58de0f",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/reference_clarification/authority.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "b4346fa58e25bbff35b1bda82ec8402cf56903da",
+   "donor_sha256": "607cc4703da2cb5117fdd0286a82eac650e82ae78fe7a22f3041ef4f3d6381af",
+   "ported_path": "uri_core/reference_binding/authority.py",
+   "ported_sha256": "74595ec3cdc5f7a22558338b9ded726ce04abed664fd7155d9025ce2d9aacbdc",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/reference_clarification/binding.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "67a7d6cc669ff53cdb4bdd50955e61de8d3df3d2",
+   "donor_sha256": "cba395d282c03ef3006203519f151021d3c91642a86c08ded5dcbd1ea5f8a655",
+   "ported_path": "uri_core/reference_binding/binding.py",
+   "ported_sha256": "dd5cad10d94533c633552991d109461019e85bc36ad9b3d9451b45a3d1831ef0",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/reference_clarification/builder.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "d900121c6a96851a6b03d0f9d496b809912b6983",
+   "donor_sha256": "d564fbb2227fd21b6eeed68e574ed3eebd8aeddd1e5b4eb07047a68192478f59",
+   "ported_path": "uri_core/reference_binding/builder.py",
+   "ported_sha256": "437a82eaeaeb85b47283784332d483c8dfa729ee03690898e2276d5059986f7d",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/reference_clarification/facts.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "cdfb95466749d53fddbb07b6c9dcfde083e217b6",
+   "donor_sha256": "d9cb0bd9f3a2d34ce149bcca71eac7cf24f6acc34a29f1872cf16d03e67708e9",
+   "ported_path": "uri_core/reference_binding/facts.py",
+   "ported_sha256": "6ecc7d57f10ffeac4799b332ec2158fd6f5e841507547e126e791824b29edf07",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/reference_clarification/fingerprints.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "68d5ab26b2572969db6483a66127f38da6cb768e",
+   "donor_sha256": "27a582290d0b41e504c688d842512c90b8b49a643141eb349ea8ac195cd5911b",
+   "ported_path": "uri_core/reference_binding/fingerprints.py",
+   "ported_sha256": "9897e281dd2aeb2d5245fa4a19ce2cb7aa519870011fe261e8ab95a5908396b6",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/reference_clarification/safeguards.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "f469f939337affd2371cdc58cbc6e4f90c992e62",
+   "donor_sha256": "5a4e66494303160304ddb1707f9c7b125471134cf8cbbbb2218cbb77fb9ff88c",
+   "ported_path": "uri_core/reference_binding/safeguards.py",
+   "ported_sha256": "5a4e66494303160304ddb1707f9c7b125471134cf8cbbbb2218cbb77fb9ff88c",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/reference_clarification/session_adjunct.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "d3ce91294cca311305356c4799b5329c8acff236",
+   "donor_sha256": "ff59a5a6025011478006dd57657d5156b0a9810223f31e3833f29433ec9b7955",
+   "ported_path": "uri_core/reference_binding/session_adjunct.py",
+   "ported_sha256": "ff59a5a6025011478006dd57657d5156b0a9810223f31e3833f29433ec9b7955",
+   "transform": "import-path rewrite only"
+  },
+  {
+   "donor_path": "uri_v1/reference_clarification/store.py",
+   "donor_commit": "eb73693",
+   "donor_blob": "377996c0e9bc29706c47a493e1654ae4d003a6f9",
+   "donor_sha256": "928a972a6ef71e9dabe1e7bbf9980d2caa8f25a1753dd00509e0fe3f804ccf43",
+   "ported_path": "uri_core/reference_binding/store.py",
+   "ported_sha256": "0449bb2ddf3427d480109cc0f14f64dea910d06329441b9020c94a884a54e2ac",
+   "transform": "import-path rewrite only"
+  }
+ ]
+}

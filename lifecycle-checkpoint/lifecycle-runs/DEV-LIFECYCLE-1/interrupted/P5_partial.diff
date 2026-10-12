@@ -1,0 +1,362 @@
+diff --git a/docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md b/docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md
+index 55057a8..5dd1eae 100644
+--- a/docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md
++++ b/docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md
+@@ -43,9 +43,9 @@ BLOCKED --(owner: unblock --note)--> READY_TO_RESUME -> resumes at the blocked s
+ | Reviewer independence | separate OS process, fresh `--session-id`, prompt built from config + earlier findings only, clean detached worktree at the candidate SHA, edit tools and git-writing commands denied. For a real milestone the executable must be the installed `claude`/`codex` CLI (path and SHA-256 recorded; a `binary` override is refused). After the run the driver kills the worker's process group, then checks: audit checkout status and HEAD, implementation worktree status and HEAD, the milestone's refs (candidate branch, baseline ref, integration target), every `refs/replace/*` ref, the repository's hooks, config and `info/` files, and that both worktrees' `.git` still lead to their own git dir. Any change ⇒ the round is NOT_INDEPENDENT. Every driver git command runs with hooks disabled and replace objects ignored (`--no-replace-objects`, `GIT_NO_REPLACE_OBJECTS=1`); diffs use `--no-renames`. Other branches are not checked: other sessions move them legitimately |
+ | No false ACCEPT | VERIFIED needs an independent round with ACCEPT/ACCEPT WITH FINDINGS on the **exact** candidate SHA, passing gates and a clean `verify`; providers other than `claude_cli`/`codex_cli` count only for milestones whose id starts with `DEVTEST`/`TOOLING_TEST`; relayed (`import-review`) and non-independent rounds may route a REJECT to repair but never count as ACCEPT |
+ | Verdict integrity | effective verdict recomputed from findings (HIGH or unknown severity blocks; MEDIUM blocks unless `blocking: false`; LOW only if `blocking: true`; labels case-normalised). Raw output, round, repair, qualification and baseline-gate records are hashed into `events.jsonl`; `verify` recomputes the chain and checks every state.json round, repair, gate result, baseline cache and the stage against it: round and repair numbers must be exactly 1..n in order (no duplicates), each recorded round/repair in state.json must equal its hashed `round.json`/`repair.json`, and `resume_to` and `blocker` must equal the values recorded in the last wait/block stage event. The independent ACCEPT used for VERIFIED is read from the hash-bound `REVIEW_RECORDED` events and `round.json` files, never from state.json. `run` calls `verify` first and blocks (TAMPER) on any mismatch; evidence checks call it too. This is tamper-**evident**: whoever can rewrite the whole state directory can rebuild a consistent chain, so commit the receipts to anchor them |
+-| Repair discipline | the worker never commits; the driver checks HEAD, milestone refs, hooks/config, protected and permitted paths, then commits exactly the checked files with hooks disabled, re-checks the committed file set, and proves regression tests in two fresh worktrees (pre-repair with the new tests copied in, and the repair commit): every test passes after; at least one fails before when a code/security defect is addressed; gate tests named by gate findings must each fail before. A repair that deletes an existing test file is refused; any error after the driver's commit refuses the repair. Any refusal resets the implementation worktree to the pre-repair commit and verifies it is clean — but only after checking that the worktree's `.git` still leads to its own git dir (a redirected gitfile is TAMPER and nothing is reset); the reset moves only the candidate branch: the driver sets `refs/heads/<branch>` to the pre-repair commit, re-points the worktree's HEAD at it (`symbolic-ref`), then runs `reset --hard` + `clean`, and checks HEAD's symref, HEAD and the branch tip. A HEAD redirected to another branch during a repair is TAMPER (and is part of the review integrity snapshot), so no other branch, including the main checkout's, is moved; a hook/config/replace-ref change or a failed reset stops the run (TAMPER) |
++| Repair discipline | the worker never commits; the driver checks HEAD, milestone refs, hooks/config, protected and permitted paths, then commits exactly the checked files with hooks disabled, re-checks the committed file set, and proves regression tests in two fresh worktrees (pre-repair with the new tests copied in, and the repair commit): every test passes after; at least one fails before when a code/security defect is addressed; gate tests named by gate findings must each fail before, in their repaired form (so a repair that weakens the failing test is refused); the test file is resolved from the gate's test id (pytest classnames with class segments stripped, Flutter ids relative to the gate `cwd`) and a gate finding whose file cannot be resolved, or whose file has no configured runner, refuses the repair; a run-level `<gate>::__run__` failure needs a regression test that fails before (R5-01). A repair that deletes an existing test file is refused; any error after the driver's commit refuses the repair. Any refusal resets the implementation worktree to the pre-repair commit and verifies it is clean — but only after checking that the worktree's `.git` still leads to its own git dir (a redirected gitfile is TAMPER and nothing is reset); the reset moves only the candidate branch: the driver sets `refs/heads/<branch>` to the pre-repair commit, re-points the worktree's HEAD at it (`symbolic-ref`), then runs `reset --hard` + `clean`, and checks HEAD's symref, HEAD and the branch tip. A HEAD redirected to another branch during a repair is TAMPER (and is part of the review integrity snapshot), so no other branch, including the main checkout's, is moved; a hook/config/replace-ref change or a failed reset stops the run (TAMPER) |
+ | Bounded loop | `max_repair_attempts` per defect (reviewer's `prior_findings` NOT_FIXED or same file+title fingerprint), `max_rounds` overall, driver step limit; every external command has a timeout and runs in its own process group, which is killed afterwards |
+-| Baseline-aware gates | gates run in a fresh detached worktree at the exact SHA (never in the implementation worktree); pytest via junit, Flutter via `--machine`; a crashed run, a missing report or a failing exit without failures is the failure `<gate>::__run__`; failures compared with the baseline by id and cause; tests that passed on the baseline and disappeared count as failures; `allowed_flaky` globs; baseline results are cached by baseline SHA + command only when COMPLETED_WITH_RESULT (a timed-out, lease-busy or BLOCKED baseline run is retried on the next run, each attempt a `BASELINE_GATE` event); protected-path diff against the baseline; a GPU gate whose lease is not granted (`gpu_lease run` exit 75 with a `refused` report) is BLOCKED (RESOURCE), never a test failure |
++| Baseline-aware gates | gates run in a fresh detached worktree at the exact SHA (never in the implementation worktree); pytest via junit, Flutter via `--machine`; a crashed run, a missing report or a failing exit without failures is the failure `<gate>::__run__`; failures compared with the baseline by id and cause (cause = exception type, a bare `assert` is `AssertionError`, otherwise the first line without worktree paths, absolute paths, addresses and numbers; Flutter ids and load-failure names are relative to the gate `cwd`, so candidate and baseline worktrees give the same keys; R5-02); tests that passed on the baseline and disappeared count as failures; `allowed_flaky` globs; baseline results are cached by baseline SHA + command only when COMPLETED_WITH_RESULT (a timed-out, lease-busy or BLOCKED baseline run is retried on the next run, each attempt a `BASELINE_GATE` event); protected-path diff against the baseline; a GPU gate whose lease is not granted (`gpu_lease run` exit 75 with a `refused` report) is BLOCKED (RESOURCE), never a test failure |
+ | Resume | `state.json` + evidence bound to SHAs and to the event chain; a commit made outside the driver after audit ⇒ BLOCKED (EVIDENCE) and, after `unblock`, re-audit (resume target AUDITING); a forged stage or edited record ⇒ BLOCKED (TAMPER) |
+ | Policy binding | the config hash and its policy fields (protected/authorised paths, gates, integration, reviewer, implementer, limits, ...) are recorded in the PLAN event. A run whose config hash or resolved-policy hash (the in-effect policy, including the `ws_frozen_check` protected list re-read from the main checkout each run; R4-01) differs from the pair bound in the event chain (never from state.json) records `CONFIG_CHANGED` with the new policy and stops BLOCKED (CONFIG) until the owner runs `unblock --note` with that config and policy; an existing block (e.g. TAMPER) is kept and CONFIG follows it. The config file itself stays agent-writable: the owner's acknowledgement is the control |
+ | Integration | re-reads the target tip from the remote, refuses a moved target or a non-fast-forward, `merge` mode re-runs all gates on the merge commit; without `authorized: true` stops with the exact push command |
+diff --git a/scripts/dev_workflow/lifecycle.py b/scripts/dev_workflow/lifecycle.py
+index ff8462b..7414e81 100644
+--- a/scripts/dev_workflow/lifecycle.py
++++ b/scripts/dev_workflow/lifecycle.py
+@@ -450,13 +450,36 @@ def _expand(cmd, cfg, wt) -> list[str]:
+     return [c.replace("{python}", py).replace("{worktree}", str(wt)).replace("{repo}", cfg["repo"]) for c in cmd]
+ 
+ 
+-def _cause(msg: str) -> str:
+-    msg = (msg or "").strip().splitlines()[0] if (msg or "").strip() else ""
++def _roots(*paths) -> list[str]:
++    """Worktree paths as they may appear in test output (as given and resolved), longest first."""
++    out = {str(x).replace("\\", "/").rstrip("/") for p in paths if p for x in (Path(p), Path(p).resolve())}
++    return sorted(out, key=len, reverse=True)
++
++
++def _strip_roots(text: str, roots) -> str:
++    text = (text or "").replace("\\", "/")
++    for r in roots:
++        text = text.replace("file://" + r + "/", "").replace(r + "/", "").replace(r, "")
++    return text
++
++
++def _cause(msg: str, roots=()) -> str:
++    """Comparison key of a failure: the exception type (a bare ``assert`` is AssertionError), otherwise the first line
++    without worktree paths, absolute paths, addresses or numbers, so the same failure run in two worktrees or two
++    processes gets the same key (DEV-LIFECYCLE-1 R5-02)."""
++    msg = _strip_roots(msg, roots).strip()
++    msg = msg.splitlines()[0] if msg else ""
+     m = re.match(r"^\s*(?:E\s+)?([A-Za-z_][\w.]*(?:Error|Exception|Exit|Interrupt|Failed|Failure))\b", msg)
+-    return m.group(1) if m else msg[:80]
++    if m:
++        return m.group(1)
++    if re.match(r"^\s*(?:E\s+)?assert\b", msg):
++        return "AssertionError"
++    msg = re.sub(r"(?<![\w.])(?:[A-Za-z]:)?/(?:[^\s'\"()<>:/]+/)+([^\s'\"()<>:/]+)", r"\1", msg)
++    msg = re.sub(r"\d+", "N", re.sub(r"0x[0-9a-fA-F]+", "0x?", msg))
++    return msg[:80]
+ 
+ 
+-def parse_junit(path: Path) -> dict:
++def parse_junit(path: Path, roots=()) -> dict:
+     res = {"failures": {}, "passed": 0, "skipped": 0, "ids": [], "parsed": False}
+     if not path.is_file():
+         return res
+@@ -470,7 +493,7 @@ def parse_junit(path: Path) -> dict:
+         res["ids"].append(tid)
+         bad = tc.find("failure") if tc.find("failure") is not None else tc.find("error")
+         if bad is not None:
+-            res["failures"][tid] = _cause(bad.get("message") or bad.text or "")
++            res["failures"][tid] = _cause(bad.get("message") or bad.text or "", roots)
+         elif tc.find("skipped") is not None:
+             res["skipped"] += 1
+         else:
+@@ -478,8 +501,21 @@ def parse_junit(path: Path) -> dict:
+     return res
+ 
+ 
+-def parse_flutter_machine(text: str) -> dict:
+-    names, res, errs = {}, {"failures": {}, "passed": 0, "skipped": 0, "ids": [], "parsed": False}, {}
++def _flutter_rel(src: str, roots) -> str:
++    """A Flutter test location relative to the gate cwd: ``<root>/test/x_test.dart`` -> ``test/x_test.dart``."""
++    src = (src or "").replace("\\", "/")
++    for r in roots:
++        for pre in ("file://" + r + "/", r + "/"):
++            if src.startswith(pre):
++                return src[len(pre):]
++    i = src.rfind("/test/")  # file:///<any checkout>/uri_ui/test/x_test.dart -> test/x_test.dart
++    return src[i + 1:] if i >= 0 else src
++
++
++def parse_flutter_machine(text: str, root=None) -> dict:
++    """``root``: the gate cwd. Ids and causes never contain it, so two worktrees give the same keys (R5-02)."""
++    roots = _roots(root)
++    names, res, errs, suites = {}, {"failures": {}, "passed": 0, "skipped": 0, "ids": [], "parsed": False}, {}, {}
+     for line in text.splitlines():
+         try:
+             ev = json.loads(line)
+@@ -488,13 +524,20 @@ def parse_flutter_machine(text: str) -> dict:
+         if not isinstance(ev, dict):
+             continue
+         t = ev.get("type")
+-        if t == "testStart":
++        if t == "suite":
++            suite = ev.get("suite") or {}
++            suites[suite.get("id")] = suite.get("path") or ""
++        elif t == "testStart":
+             tst = ev.get("test") or {}
+-            src = tst.get("root_url") or tst.get("url") or ""
+-            i = src.rfind("/test/")  # file:///<any checkout>/uri_ui/test/x_test.dart -> test/x_test.dart
+-            names[tst.get("id")] = f"{src[i + 1:] if i >= 0 else src}::{tst.get('name')}"
++            src = tst.get("root_url") or tst.get("url") or suites.get(tst.get("suiteID")) or ""
++            name = str(tst.get("name"))
++            if name.startswith("loading "):  # a load failure is named after the absolute suite path
++                name = "loading " + _flutter_rel(name[len("loading "):], roots)
++            names[tst.get("id")] = f"{_flutter_rel(src, roots)}::{_strip_roots(name, roots)}"
+         elif t == "error":
+-            errs.setdefault(ev.get("testID"), _cause(ev.get("error") or ""))
++            cause = _cause(ev.get("error") or "", roots)
++            errs.setdefault(ev.get("testID"), "TestFailure" if ev.get("isFailure") and not cause.endswith(
++                ("Error", "Exception", "Exit", "Interrupt", "Failed", "Failure")) else cause)
+         elif t == "done":
+             res["parsed"] = True
+         elif t == "testDone":
+@@ -511,6 +554,7 @@ def parse_flutter_machine(text: str) -> dict:
+ 
+ 
+ NOBYTECODE = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
++GATE_PARSER_VERSION = 2  # part of the baseline cache key: results cached under older failure keys are re-run (R5-02)
+ GPU_LEASE_BUSY = 75  # uri_operational_intelligence.gpu_lease `run` exit code on GpuBusy
+ 
+ 
+@@ -572,7 +616,8 @@ def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
+     out["exit_code"] = rc
+     run_id = f"{gate['id']}::__run__"
+     if kind in ("pytest", "flutter"):
+-        out.update(parse_junit(junit) if kind == "pytest" else parse_flutter_machine(stdout))
++        out.update(parse_junit(junit, _roots(wt)) if kind == "pytest"
++                   else parse_flutter_machine(stdout, wt / gate.get("cwd", ".")))
+         normal = (0, 1)
+         # A crashed run, an unusable report or a failing exit with no recorded failure is itself a failure.
+         if not out["parsed"]:
+@@ -598,12 +643,23 @@ def compare(cand: dict, base: dict | None, flaky) -> dict:
+             "ok": not new and not changed and not vanished}
+ 
+ 
+-def _test_file(test_id: str, wt: Path) -> str:
+-    head = test_id.split("::")[0]
+-    for cand in (head, head.replace(".", "/") + ".py"):
+-        if (wt / cand).is_file():
+-            return cand
+-    return head
++def _test_file(test_id: str, wt: Path, cwd: str = ".") -> str | None:
++    """The repo-relative file of a gate test id, or None (a run-level ``::__run__`` failure or an unresolvable id).
++    Flutter ids are relative to the gate cwd; a pytest junit classname is ``pkg.test_mod[.Class...]``, so trailing
++    class segments are stripped until a ``.py`` file exists; a collection error is ``::pkg.test_mod``
++    (DEV-LIFECYCLE-1 R5-01)."""
++    head, _, name = test_id.partition("::")
++    head = head or name
++    if name == "__run__" or not head:
++        return None
++    parts = head.split(".")
++    cands = [head] + ["/".join(parts[:k]) + ".py" for k in range(len(parts), 0, -1)]
++    for base in dict.fromkeys((cwd, ".")):
++        for c in cands:
++            p = Path(base) / c
++            if (wt / p).is_file():
++                return p.as_posix()
++    return None
+ 
+ 
+ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
+@@ -626,7 +682,7 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
+                 entry["ok"] = False
+                 res["blocked"] = res["blocked"] or f"gate {g['id']}: {r.get('status')} {r.get('detail', '')}"
+             else:
+-                key = chash([st.d["baseline"], g["cmd"], g.get("kind"), g.get("cwd", ".")])
++                key = chash([st.d["baseline"], g["cmd"], g.get("kind"), g.get("cwd", "."), GATE_PARSER_VERSION])
+                 cached = st.d["baseline_gates"].get(g["id"])
+                 # Only a completed baseline run is reused: a timeout, busy GPU lease or other BLOCKED result is
+                 # re-tried on the next qualification, each attempt its own BASELINE_GATE event (R3-02).
+@@ -821,6 +877,7 @@ def regression_proof(cfg, pre_sha: str, post_sha: str, tests: list[str], log_dir
+     reasons = [f"{t} does not pass after the repair ({r['after_state']}, exit {r['after_exit']})"
+                for t, r in per.items() if r["after_exit"] != 0]
+     reasons += [f"gate test {t} did not fail before the repair" for t in must_fail if per.get(t, {}).get("before_exit") == 0]
++    reasons += [f"gate test {t} has no configured runner" for t in sorted(must_fail) if t not in per]
+     if need_fail_before and not any(r["before_exit"] != 0 for r in per.values()):
+         reasons.append("no regression test fails on the pre-repair commit")
+     return {"ok": not reasons, "tests": per, "need_fail_before": need_fail_before, "reason": "; ".join(reasons)}
+@@ -863,11 +920,25 @@ def _commit_and_prove(cfg, wt: Path, sha: str, n: int, rec: dict, findings: list
+         return f"COMMIT_MISMATCH: committed {committed} != checked {changed}"
+     present = set(git(cfg["repo"], "ls-tree", "-r", "--name-only", new, "--", *committed).splitlines())
+     tests = {p for p in committed if match_any(p, cfg["test_globs"]) and p in present}
+-    # A gate finding names an existing test that fails on the candidate: it is its own regression test.
+-    gate_tests = {str(x).split(":")[0] for f in findings if str(f.get("id", "")).startswith("GATE-")
+-                  for x in f.get("files") or [] if (wt / str(x).split(":")[0]).is_file()}
++    # A gate finding names an existing test that fails on the candidate: it is its own regression test and must fail
++    # on the pre-repair commit in its repaired form. One whose file cannot be resolved is refused, never treated as
++    # coverage-only; a run-level gate failure needs a regression test that fails before (DEV-LIFECYCLE-1 R5-01).
++    gate_tests, unresolved, run_level = set(), [], False
++    for f in findings:
++        if not str(f.get("id", "")).startswith("GATE-"):
++            continue
++        if f.get("gate_run_level"):
++            run_level = True
++            continue
++        tf = f["gate_test"] if "gate_test" in f else str((f.get("files") or [""])[0]).split(":")[0]
++        if tf and (wt / tf).is_file():
++            gate_tests.add(tf)
++        else:
++            unresolved.append(str(f.get("id")))
++    if unresolved:
++        return "REGRESSION: test file of gate finding(s) " + ", ".join(unresolved) + " cannot be resolved"
+     kinds = {f.get("category") or "code" for f in findings}
+-    defect = bool(kinds - {"documentation", "test"}) or bool(gate_tests)
++    defect = bool(kinds - {"documentation", "test"}) or bool(gate_tests) or run_level
+     if kinds != {"documentation"}:
+         proof = regression_proof(cfg, sha, new, sorted(tests | gate_tests), rdir, need_fail_before=defect,
+                                  must_fail=gate_tests)
+@@ -1186,12 +1257,15 @@ def run(cfg, max_steps: int = 50) -> S:
+                 continue
+             if not q["ok"]:
+                 findings = []
++                gate_cwd = {gc["id"]: gc.get("cwd", ".") for gc in cfg["gates"]}
+                 for gid, e in q["gates"].items():
+                     c = e.get("comparison") or {}
+                     for t in (c.get("new_failures") or []) + (c.get("changed_cause") or []):
++                        tf = _test_file(t, wt, gate_cwd.get(gid, "."))
+                         findings.append({"id": f"GATE-{gid}-{len(findings) + 1}", "severity": "HIGH", "blocking": True,
+                                          "category": "test", "title": f"gate {gid}: new failure {t}",
+-                                         "files": [_test_file(t, wt)],
++                                         "files": [tf or t], "gate_test": tf,
++                                         "gate_run_level": t.endswith("::__run__"),
+                                          "evidence": e["candidate"].get("failures", {}).get(t, "")})
+                 over = []
+                 for f in findings:
+diff --git a/tests/dev_workflow/test_lifecycle.py b/tests/dev_workflow/test_lifecycle.py
+index bdcbd09..20ed034 100644
+--- a/tests/dev_workflow/test_lifecycle.py
++++ b/tests/dev_workflow/test_lifecycle.py
+@@ -19,11 +19,14 @@ WORKER = Path(__file__).parent / "lifecycle_fixture" / "worker.py"
+ PY = sys.executable
+ 
+ 
++OTHER_CLASS_TEST = "from pkg.other import VALUE\n\n\nclass TestOther:\n    def test_value(self):\n        assert {check}\n"
++
++
+ def g(cwd, *a):
+     return subprocess.run(["git", "-C", str(cwd), *a], check=True, capture_output=True, text=True).stdout.strip()
+ 
+ 
+-def make_fixture(tmp: Path, defect=True, break_other=False):
++def make_fixture(tmp: Path, defect=True, break_other=False, class_test=False):
+     repo = tmp / "repo"
+     repo.mkdir()
+     g(repo, "init", "-q", "-b", "canon")
+@@ -40,6 +43,8 @@ def make_fixture(tmp: Path, defect=True, break_other=False):
+                                              "    assert safe_div(4, 2) == 2\n")
+     (repo / "tests/test_other.py").write_text("from pkg.other import VALUE\n\n\ndef test_value():\n"
+                                               "    assert VALUE == 2\n")
++    if class_test:
++        (repo / "tests/test_other.py").write_text(OTHER_CLASS_TEST.format(check="VALUE == 2"))
+     (repo / ".gitignore").write_text("__pycache__/\n.pytest_cache/\n")
+     g(repo, "add", "-A")
+     g(repo, "commit", "-qm", "baseline")
+@@ -881,3 +886,100 @@ def test_r3_04_config_binding_is_read_from_the_chain_not_state_json(tmp_path):
+     sp.write_text(json.dumps(d))
+     assert L.run(cfg) == S.BLOCKED
+     assert L.status(cfg)["blocker"]["kind"] == "CONFIG" and remote_tip(remote) == base
++
++
++# ---------------------------------------------------------------- DEV-LIFECYCLE-1 R5 regressions
++
++def test_r5_01_gate_test_ids_resolve_to_files(tmp_path):
++    (tmp_path / "tests/pkg").mkdir(parents=True)
++    (tmp_path / "tests/pkg/test_k.py").write_text("")
++    (tmp_path / "uri_ui/test").mkdir(parents=True)
++    (tmp_path / "uri_ui/test/x_test.dart").write_text("")
++    assert L._test_file("tests.pkg.test_k.TestK::test_a", tmp_path) == "tests/pkg/test_k.py"
++    assert L._test_file("tests.pkg.test_k.TestK.TestInner::test_a", tmp_path) == "tests/pkg/test_k.py"
++    assert L._test_file("tests.pkg.test_k::test_a", tmp_path) == "tests/pkg/test_k.py"
++    assert L._test_file("::tests.pkg.test_k", tmp_path) == "tests/pkg/test_k.py"  # collection error
++    assert L._test_file("test/x_test.dart::renders", tmp_path, "uri_ui") == "uri_ui/test/x_test.dart"
++    assert L._test_file("tests.pkg.missing::t", tmp_path) is None and L._test_file("unit::__run__", tmp_path) is None
++
++
++def test_r5_01_gate_test_without_runner_is_not_proof(tmp_path):
++    repo, wt, base, remote = make_fixture(tmp_path)
++    cfg = config(tmp_path, repo, wt)
++    L.init(cfg, L.State(cfg))
++    sha = g(wt, "rev-parse", "HEAD")
++    (wt / "tests/test_zero.py").write_text("from pkg.calc import safe_div\n\n\ndef test_z():\n    assert safe_div(4, 2) == 2\n")
++    (wt / "ui_test.dart").write_text("")
++    g(wt, "add", "-A")
++    g(wt, "commit", "-qm", "x")
++    p = L.regression_proof(cfg, sha, g(wt, "rev-parse", "HEAD"), ["tests/test_zero.py", "ui_test.dart"], tmp_path / "p",
++                           need_fail_before=False, must_fail={"ui_test.dart"})
++    assert not p["ok"] and "gate test ui_test.dart has no configured runner" in p["reason"]
++
++
++def test_r5_01_weakened_class_gate_test_is_refused(tmp_path):
++    repo, wt, base, remote = make_fixture(tmp_path, defect=False, break_other=True, class_test=True)
++    cand = g(wt, "rev-parse", "HEAD")
++    cfg = config(tmp_path, repo, wt, limits={"max_rounds": 6, "max_repair_attempts": 1})
++    cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "weaken.py", f"""
++from pathlib import Path
++Path('tests/test_other.py').write_text({OTHER_CLASS_TEST.format(check="VALUE in (2, 3)")!r})
++""")}
++    assert L.run(cfg) == S.BLOCKED
++    s = L.status(cfg)
++    assert s["repairs"] and all(r["status"] == "REFUSED" for r in s["repairs"])
++    assert "gate test tests/test_other.py did not fail before" in s["repairs"][0]["reason"]
++    assert s["candidate"] == cand and remote_tip(remote) == base
++
++
++def test_r5_01_real_fix_of_class_gate_test_is_proven_by_it(tmp_path):
++    repo, wt, base, remote = make_fixture(tmp_path, defect=False, break_other=True, class_test=True)
++    cfg = config(tmp_path, repo, wt, implementer="break_gate_fix")
++    assert L.run(cfg) == S.COMPLETE
++    proof = json.loads((tmp_path / "state/repairs/P1/repair.json").read_text())["regression"]
++    assert proof["ok"] and proof["tests"]["tests/test_other.py"]["before_exit"] != 0
++
++
++def test_r5_02_causes_are_run_independent():
++    assert L._cause("assert 21013 == 1") == L._cause("assert 4242 == 1") == "AssertionError"
++    assert L._cause("assert <object object at 0x7f0eb3781760> is None") == "AssertionError"
++    assert L._cause("AssertionError: assert 3 == 2") == "AssertionError"
++    a = L._cause("failed on setup with fixture 'x' at /tmp/A/tests/test_a.py line 12 (0x7f01)", L._roots("/tmp/A"))
++    b = L._cause("failed on setup with fixture 'x' at /tmp/B/tests/test_a.py line 31 (0x7f99)", L._roots("/tmp/B"))
++    assert a == b and "/tmp" not in a
++
++
++def _flutter_load_failure(root):
++    path = f"{root}/test/broken_test.dart"
++    ev = [{"type": "suite", "suite": {"id": 0, "platform": "vm", "path": path}},
++          {"type": "testStart", "test": {"id": 1, "name": f"loading {path}", "suiteID": 0, "url": None}},
++          {"type": "error", "testID": 1, "isFailure": False,
++           "error": f'Failed to load "{path}":\nCompilation failed for testPath={path}: test/broken_test.dart:2:36: Error'},
++          {"type": "testDone", "testID": 1, "result": "error", "hidden": False},
++          {"type": "testStart", "test": {"id": 2, "name": "renders", "suiteID": 0, "url": f"file://{root}/test/w_test.dart"}},
++          {"type": "error", "testID": 2, "isFailure": True, "error": "Expected: <2>\n  Actual: <3>\n"},
++          {"type": "testDone", "testID": 2, "result": "failure", "hidden": False},
++          {"type": "done", "success": False}]
++    return "\n".join(json.dumps(e) for e in ev)
++
++
++def test_r5_02_flutter_ids_do_not_depend_on_the_worktree(tmp_path):
++    a = L.parse_flutter_machine(_flutter_load_failure(tmp_path / "A/uri_ui"), tmp_path / "A/uri_ui")
++    b = L.parse_flutter_machine(_flutter_load_failure(tmp_path / "B/uri_ui"), tmp_path / "B/uri_ui")
++    assert a["failures"] == b["failures"] and str(tmp_path) not in json.dumps(a)
++    assert a["failures"]["test/w_test.dart::renders"] == "TestFailure"
++    assert "test/broken_test.dart::loading test/broken_test.dart" in a["failures"]
++    c = L.compare(a, b, [])
++    assert c["ok"] and len(c["historical_failures"]) == 2
++
++
++def test_r5_02_historical_bare_assert_failure_is_not_new_in_another_worktree(tmp_path):
++    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
++    (wt / "tests/test_pid.py").write_text("import os\n\n\ndef test_pid():\n    assert os.getpid() == 1\n")
++    g(wt, "add", "-A")
++    g(wt, "commit", "-qm", "historical failure")
++    cfg = config(tmp_path, repo, wt)
++    gate = cfg["gates"][0]
++    runs = [L.run_gate(cfg, gate, wt, tmp_path / f"log{i}") for i in range(2)]
++    assert runs[0]["failures"]["tests.test_pid::test_pid"] == "AssertionError"
++    assert L.compare(runs[0], runs[1], [])["ok"]

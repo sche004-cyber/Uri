@@ -1,0 +1,355 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R11",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R11-01",
+  "R11-02"
+ ],
+ "candidate": "6b07b467779cbe3d2562b1623620c10ceae47d55",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T12:32:32Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "6b07b467779cbe3d2562b1623620c10ceae47d55",
+   "impl_head": "6b07b467779cbe3d2562b1623620c10ceae47d55",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "073f585270202cab38d8472690a8cb7f9a1957c7c10b4d6302e5bcd68f9f1b0f",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "6b07b467779cbe3d2562b1623620c10ceae47d55",
+   "impl_head": "6b07b467779cbe3d2562b1623620c10ceae47d55",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "073f585270202cab38d8472690a8cb7f9a1957c7c10b4d6302e5bcd68f9f1b0f",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "6b07b467779cbe3d2562b1623620c10ceae47d55",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_ending_spans skips when len(gap) > _MAX_GAP (12), and _lone() does not fire for repeated separator tokens, because each neighbour shares the separator's script. has_link_or_contact: 'Visit refunds-portal \u0660 \u0660 \u0660 \u0660 \u0660 com now.' -> True (gap 11), but 'Visit refunds-portal \u0660 \u0660 \u0660 \u0660 \u0660 \u0660 com now.' -> False (gap 13). Also False for: 'refunds-portal \u4e36 \u4e36 \u4e36 \u4e36 \u4e36 \u4e36 shop', 'refunds-portal ~ ~ ~ ~ ~ ~ ~ cash', 'refunds-portal , , , , , , , com' (while 'refunds-portal, com' -> True), 'refunds-portal ; ; ; ; ; ; ; com', 'refunds-portal -- -- -- -- -- com', 'refunds-portal co m/claim', 'refunds-portal sh op', 'refunds-portal \u0298 com/claim', 'refunds-portal xn--p1ai'. End to end (/tmp/uri_review_R11/probe_e2e.py and test_r11_gap.py, 5/5 failing): SY.verify keeps 'Claim your energy rebate refund at refunds-portal \u0660 \u0660 \u0660 \u0660 \u0660 \u0660 com/claim before the deadline [1]' with its citation, SY.extractive selects it, and build_surface + require_valid accept a surface containing 'refunds-portal'. D16 states 'a name, then anything at all, then a real top-level domain' and joins spelt-out letters; none of these forms is in the accepted residual list.",
+    "files": [
+     "uri_web/untrusted.py:441",
+     "uri_web/untrusted.py:497",
+     "uri_web/untrusted.py:474",
+     "uri_web/untrusted.py:491",
+     "uri_web/synthesize.py:252",
+     "uri_web/synthesize.py:347",
+     "uri_web/surface.py:38"
+    ],
+    "id": "R11-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Remove the fixed gap cap. Bound the work instead (scan back over any non-letter characters to the nearest same-family word, limited to N words). Treat a gap made only of repeated non-word tokens as a separator whatever its length. Join any split of a TLD at spaces (for example 'co m'). Map ACE labels ('xn--...') to the TLD list, or treat them as links.",
+    "title": "R1-01 link class still open under D16: a separator gap longer than 12 characters (the R10-01 form repeated), a spaced core domain after a long prose gap, 'co m' splits, a Latin dot look-alike letter (U+0298) and a spaced punycode ending pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15)"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "httpx.InvalidURL is not an httpx.HTTPError, so the handler '(httpx.HTTPError, OSError, ValueError)' does not catch it. Probe /tmp/uri_review_R11/agent/p3_redirect_crash.py: search hit '\u2603.com' -> job FAILED INTERNAL_ERROR, sources: 0; user URL with fullwidth digits ('\uff10x5d.184.215.14') -> FAILED INTERNAL_ERROR, sources: 0. Search hits are vetted only by NP.check_url (search.py:68-73).",
+    "files": [
+     "uri_web/safe_fetch.py:383",
+     "uri_web/safe_fetch.py:411",
+     "uri_web/netpolicy.py:118"
+    ],
+    "id": "R11-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Catch httpx.InvalidURL per fetch and record the source as UNREACHABLE or REFUSED. Make check_url refuse hosts that do not survive IDNA and httpx URL parsing. Add a regression test with a bad host among good sources.",
+    "title": "A host that netpolicy accepts but httpx rejects (InvalidURL) is not caught by SafeFetcher and turns the whole research job into FAILED INTERNAL_ERROR, discarding every good source"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "p5_assist_bridge.py: VISION_NOT_QUALIFIED with screenshot calls = 1; BRAIN_BUSY with calls = 1; VISION_DEBOUNCED with calls = 2. The image is not sent; latent because no real adapter exists.",
+    "files": [
+     "uri_assist/bridge.py:229",
+     "uri_assist/bridge.py:233"
+    ],
+    "id": "R11-03",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Run the vision gates before adapter.screenshot().",
+    "title": "A screenshot is captured before the vision gates (qualification, debounce, busy Brain slot) run"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "p6_revoke_race.py: state OFF, emitted assist.answer {'status': 'COMPLETE', 'answer': 'SECRET-DERIVED ANSWER'}; assist_ask_status then returns CANCELLED with an empty answer.",
+    "files": [
+     "uri_assist/bridge.py:274",
+     "uri_assist/bridge.py:282"
+    ],
+    "id": "R11-04",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Under one lock, re-check the token and grant generation and emit.",
+    "title": "Race window: an assist.answer event with the full answer can be emitted after Stop (revoke)"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "redact_url('https://x.example/p;jsessionid=ABCDEF123456?a=1') -> unchanged. 'ticket=ST-1234', 'hmac' and 'magic_link' query values are also kept.",
+    "files": [
+     "uri_assist/redact.py:171",
+     "uri_assist/browser_extension/snapshot.js:533"
+    ],
+    "id": "R11-05",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Apply the key=value secret rule to ';' path parameters, and add jsessionid, ticket, hmac and login-link keys.",
+    "title": "Path parameters such as ';jsessionid=' are not masked in the page URL (both layers mask only after '?' or '#')"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "p2_pin.py: http://b\u00fccher.de/, http://xn--bcher-kva.de/ and http://example.com./ all end UNREACHABLE.",
+    "files": [
+     "uri_web/safe_fetch.py:65"
+    ],
+    "id": "R11-06",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Compare normalised hosts in _Pinned.",
+    "title": "IDN and trailing-dot hosts can never be fetched: the pin compares the Unicode or dotted host with the IDNA host (fails closed)"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "p1_netpolicy.py: 64:ff9b:1:a00:0:100:808:808 ALLOWED (embeds 10.0.0.1 under RFC 6052 with a /48 translator).",
+    "files": [
+     "uri_web/netpolicy.py:51",
+     "uri_web/netpolicy.py:74"
+    ],
+    "id": "R11-07",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Refuse 64:ff9b:1::/48, or decode it per RFC 6052 and then apply is_global.",
+    "title": "The NAT64 local-use prefix 64:ff9b:1::/48 is decoded from the last 32 bits, and is_global is skipped"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers python -m pytest tests/web tests/assist tests/a2ui -q -x",
+    "result": "3472 passed in 102.78s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "flutter test test/living/assist_mode_test.dart test/living/assist_r9_test.dart (uri_ui)",
+    "result": "23 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -m pytest tests/phase2a/test_frozen_core.py",
+    "result": "4 passed, 3 skipped, 1 failed (base-commit check: HEAD is not the Phase 2A base; checkpoint zip absent; not a candidate defect)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --name-only ffdf534..6b07b467 filtered by the protected-path list",
+    "result": "no protected path changed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R11/probe_links.py, probe_e2e.py, test_r11_gap.py",
+    "result": "R11-01 reproduced end to end (5/5 failing); R4-01..R9-01 strings now detected",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R11/agent/p1..p8 (SSRF corpus, pinning, redirects, byte cap, assist gating, revoke race, Brain-slot yield)",
+    "result": "no private-address bypass; pin, Host header and SNI correct; trust_env=False; R11-02..R11-07 reproduced; user turn cancels research synthesis",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Phase 1 checkpoint zip byte check (zip absent)",
+   "Live Windows adapters, Runtime v1 vision path, GPU/VRAM",
+   "Integrated worker run live (dispatch read and probed in isolation only)",
+   "Live search providers and social APIs",
+   "snapshot.js URL masking parity in Chromium for the R11-05 path-parameter case (Python layer probed only)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 11,
+ "started_at": "2026-10-11T12:13:20Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "955eed4d-c802-425c-81f7-babb9c2faa44",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 73
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 4.018884999999999,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R11",
+  "ended_at": "2026-10-11T12:32:31Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 1,
+  "pid": 8449,
+  "prompt_sha256": "21b69182d9563e11111963a26ba8b890f0a0904f329c254abd778756070a0705",
+  "provider": "claude_cli",
+  "result_text_sha256": "4e04d74e728593a1b69ab7e629a6390d662486d5159d33600573b25bd315eb1f",
+  "role": "reviewer",
+  "session_id": "955eed4d-c802-425c-81f7-babb9c2faa44",
+  "session_id_requested": "955eed4d-c802-425c-81f7-babb9c2faa44",
+  "started_at": "2026-10-11T12:13:20Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "6caea112837d585c539f70b4033ecd8cf51f8723e6703a90bc8204faa62e6cf4"
+ }
+}

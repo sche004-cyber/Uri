@@ -1,0 +1,54 @@
+{
+ "audio_level_events": 0,
+ "events": [
+  {
+   "t_ms": 0,
+   "kind": "run.start",
+   "scenarios": [
+    "none"
+   ],
+   "manifest_set": true
+  },
+  {
+   "t_ms": 8673,
+   "kind": "voice.status",
+   "state": "ready",
+   "engine": "faster-whisper-base.en-int8",
+   "inputs": [
+    "Microphone (Sennheiser Profile)"
+   ],
+   "privacy": "allowed",
+   "problem": null,
+   "model_load_ms": 499,
+   "ready_after_ms": 0
+  },
+  {
+   "t_ms": 24004,
+   "kind": "brain.status",
+   "brain": {
+    "artifacts": null,
+    "checked_at": 1791558952.3879936,
+    "detail": null,
+    "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+    "owned": false,
+    "pid": null,
+    "selected": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "STOPPED",
+    "url": "http://127.0.0.1:18470"
+   }
+  },
+  {
+   "t_ms": 24049,
+   "kind": "screenshot",
+   "name": "00_ready"
+  },
+  {
+   "t_ms": 24050,
+   "kind": "run.end"
+  }
+ ]
+}

@@ -1,0 +1,54 @@
+{
+  "identity_verified": true,
+  "listener": {
+    "pid": 6504,
+    "create_time": 1791146715.6053216,
+    "generation": "0e59955d-519a-4fa0-b298-f9dd4dbf614f",
+    "server_id": "c1963031-676d-4e04-8f80-224fb5588314",
+    "manifest_digest": "75378e0273b352d9c58a9a0cbd13e6c9646ef255893d24b5a0f395fb05c578ae",
+    "port": 8031
+  },
+  "public_identity": {
+    "server_id": "c1963031-676d-4e04-8f80-224fb5588314",
+    "composition_id": "c1-isolated-compatibility",
+    "contract_version": "uri-runtime/1",
+    "source_checkpoint": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+    "build_manifest_digest": "75378e0273b352d9c58a9a0cbd13e6c9646ef255893d24b5a0f395fb05c578ae",
+    "generation": "0e59955d-519a-4fa0-b298-f9dd4dbf614f"
+  },
+  "anonymous_status": 401,
+  "authenticated_status": 200,
+  "status": {
+    "identity": {
+      "server_id": "c1963031-676d-4e04-8f80-224fb5588314",
+      "composition_id": "c1-isolated-compatibility",
+      "contract_version": "uri-runtime/1",
+      "source_checkpoint": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+      "build_manifest_digest": "75378e0273b352d9c58a9a0cbd13e6c9646ef255893d24b5a0f395fb05c578ae",
+      "generation": "0e59955d-519a-4fa0-b298-f9dd4dbf614f"
+    },
+    "readiness": {
+      "http": "READY",
+      "public_catalogue": "READY",
+      "legacy_synthetic_state": "READY",
+      "main_brain": "NOT_SELECTED",
+      "edge": "NOT_SELECTED",
+      "paired_clients": "NOT_IMPLEMENTED_C1",
+      "harnesses": "NOT_IMPLEMENTED_C1",
+      "isolation": "SYNTHETIC_FIXTURE_ONLY"
+    },
+    "startup_controls": {
+      "blocked_external_reads": 0,
+      "blocked_external_writes": 0,
+      "blocked_startup_connections": 4,
+      "blocked_startup_subprocesses": 0
+    }
+  },
+  "private_files_checked": 4571,
+  "private_files_changed": 0,
+  "existing_8021_pid": 16188,
+  "model_listeners": {
+    "11434": null,
+    "1234": null
+  }
+}

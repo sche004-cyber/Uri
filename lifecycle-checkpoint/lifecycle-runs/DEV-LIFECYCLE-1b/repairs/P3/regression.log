@@ -1,0 +1,85 @@
+=== tests/dev_workflow/test_lifecycle.py BEFORE (475533a28021ca7795f2cb495fb131c9c45e20c7) DONE
+n\tattributesFile = {attrs}\n")
+        d0 = L.git_control_digest(repo)
+        inc.write_text('[url "/tmp/fake.git"]\n\tinsteadOf = /tmp/real.git\n')  # the included file, not ~/.gitconfig
+        d1 = L.git_control_digest(repo)
+>       assert d1 != d0
+E       AssertionError: assert 'b1a7d8a6ace398ce1cda2f9052a194ef59fc9399628474baf82337b2cdc227e0' != 'b1a7d8a6ace398ce1cda2f9052a194ef59fc9399628474baf82337b2cdc227e0'
+
+tests/dev_workflow/test_lifecycle.py:1292: AssertionError
+_ test_r4_01_worker_written_global_insteadof_blocks_and_push_is_not_redirected _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-171/test_r4_01_worker_written_glob0')
+user_home = PosixPath('/tmp/pytest-of-root/pytest-171/test_r4_01_worker_written_glob0/home')
+
+    def test_r4_01_worker_written_global_insteadof_blocks_and_push_is_not_redirected(tmp_path, user_home):
+        repo, wt, base, remote = make_fixture(tmp_path)
+        fake = tmp_path / "fake.git"
+        subprocess.run(["git", "clone", "-q", "--bare", str(remote), str(fake)], check=True)
+        body = f"""
+    from pathlib import Path
+    with open(os.path.join(os.environ['HOME'], '.gitconfig'), 'a') as fh:  # plain file write, not `git config`
+        fh.write('[url "{fake}"]\\n\\tinsteadOf = {remote}\\n')
+    Path('pkg/calc.py').write_text('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+    Path('tests/test_zero.py').write_text('from pkg.calc import safe_div\\n\\n\\ndef test_zero():\\n    assert safe_div(1, 0) is None\\n')
+    print('REPAIR_RESULT_BEGIN'); print(json.dumps({{'repaired': ['R1-01']}})); print('REPAIR_RESULT_END')
+    """
+        config(tmp_path, repo, wt)
+        c = json.loads((tmp_path / "cfg.json").read_text())
+        c["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "evil_impl.py", body)}
+        (tmp_path / "cfg.json").write_text(json.dumps(c))
+        cfg = L.load_config(tmp_path / "cfg.json")
+>       assert L.run(cfg) == "BLOCKED"
+E       AssertionError: assert <WorkflowStat...E: 'COMPLETE'> == 'BLOCKED'
+E         
+E         - BLOCKED
+E         + COMPLETE
+
+tests/dev_workflow/test_lifecycle.py:1314: AssertionError
+_ test_r4_01_worker_written_global_smudge_filter_blocks_before_checkouts_differ _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-171/test_r4_01_worker_written_glob1')
+user_home = PosixPath('/tmp/pytest-of-root/pytest-171/test_r4_01_worker_written_glob1/home')
+
+    def test_r4_01_worker_written_global_smudge_filter_blocks_before_checkouts_differ(tmp_path, user_home):
+        repo, wt, base, remote = make_fixture(tmp_path)
+        # committed blobs stay as they are; the smudge filter would show reviewer/gate checkouts other content
+        body = """
+    from pathlib import Path
+    with open(os.path.join(os.environ['HOME'], '.gitconfig'), 'a') as fh:
+        fh.write('[filter "x"]\\n\\tsmudge = sed s/2/3/\\n\\tclean = cat\\n')
+    Path('.gitattributes').write_text('pkg/other.py filter=x\\n')
+    print('REPAIR_RESULT_BEGIN'); print(json.dumps({'repaired': ['R1-01']})); print('REPAIR_RESULT_END')
+    """
+        config(tmp_path, repo, wt)
+        c = json.loads((tmp_path / "cfg.json").read_text())
+        c["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "evil_impl.py", body)}
+        c["permitted_paths"].append(".gitattributes")
+        (tmp_path / "cfg.json").write_text(json.dumps(c))
+        cfg = L.load_config(tmp_path / "cfg.json")
+        assert L.run(cfg) == "BLOCKED"
+        assert '[filter "x"]' in (user_home / ".gitconfig").read_text()
+        st = json.loads((tmp_path / "state/state.json").read_text())
+>       assert "TAMPER" in json.dumps(st["repairs"])
+E       assert 'TAMPER' in '[{"addresses": ["R1-01"], "changed": [".gitattributes"], "ended_at": "2026-10-11T03:16:25Z", "pre": "2508c224aba2b2ef...16:25Z", "status": "COMPLETED", "stdout_sha256": "499b049d4b7c2a0a4bc497288c195533974cf71e6ad1aa7f1a54b75eda6675ba"}}]'
+E        +  where '[{"addresses": ["R1-01"], "changed": [".gitattributes"], "ended_at": "2026-10-11T03:16:25Z", "pre": "2508c224aba2b2ef...16:25Z", "status": "COMPLETED", "stdout_sha256": "499b049d4b7c2a0a4bc497288c195533974cf71e6ad1aa7f1a54b75eda6675ba"}}]' = <function dumps at 0x7f1c2c8d49a0>([{'addresses': ['R1-01'], 'changed': ['.gitattributes'], 'ended_at': '2026-10-11T03:16:25Z', 'pre': '2508c224aba2b2ef5...nged': ['.gitattributes'], 'ended_at': '2026-10-11T03:16:26Z', 'pre': '2508c224aba2b2ef5bef3f9a3c8f9bfe8823e6df', ...}])
+E        +    where <function dumps at 0x7f1c2c8d49a0> = json.dumps
+
+tests/dev_workflow/test_lifecycle.py:1341: AssertionError
+=========================== short test summary info ============================
+FAILED tests/dev_workflow/test_lifecycle.py::test_r4_01_user_level_git_control_files_are_bound[.gitconfig-[url "/tmp/fake.git"]\n\tinsteadOf = /tmp/real.git\n]
+FAILED tests/dev_workflow/test_lifecycle.py::test_r4_01_user_level_git_control_files_are_bound[.gitconfig-[filter "x"]\n\tsmudge = sed s/True/False/\n\tclean = cat\n]
+FAILED tests/dev_workflow/test_lifecycle.py::test_r4_01_user_level_git_control_files_are_bound[.gitconfig-[include]\n\tpath = ~/elsewhere.cfg\n]
+FAILED tests/dev_workflow/test_lifecycle.py::test_r4_01_user_level_git_control_files_are_bound[.config/git/config-[url "/tmp/fake.git"]\n\tinsteadOf = /tmp/real.git\n]
+FAILED tests/dev_workflow/test_lifecycle.py::test_r4_01_user_level_git_control_files_are_bound[.config/git/attributes-*.py filter=x\n]
+FAILED tests/dev_workflow/test_lifecycle.py::test_r4_01_user_level_git_control_files_are_bound[.config/git/ignore-pkg/\n]
+FAILED tests/dev_workflow/test_lifecycle.py::test_r4_01_included_global_config_and_custom_attributes_file_are_bound
+FAILED tests/dev_workflow/test_lifecycle.py::test_r4_01_worker_written_global_insteadof_blocks_and_push_is_not_redirected
+FAILED tests/dev_workflow/test_lifecycle.py::test_r4_01_worker_written_global_smudge_filter_blocks_before_checkouts_differ
+9 failed, 75 passed in 116.43s (0:01:56)
+
+=== tests/dev_workflow/test_lifecycle.py AFTER (6784424d48df221bedd271707ff2b687c0719e4e) DONE
+........................................................................ [ 85%]
+............                                                             [100%]
+84 passed in 138.86s (0:02:18)
+

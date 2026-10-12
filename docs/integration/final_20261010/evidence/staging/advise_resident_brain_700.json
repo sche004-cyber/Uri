@@ -1,0 +1,24 @@
+{
+ "expected_mib": 700,
+ "lease": "HELD",
+ "holder": {
+  "pid": 5380,
+  "purpose": "runtime_v1_brain",
+  "label": "WS Brain host"
+ },
+ "own_lease": false,
+ "other_large": [],
+ "free_mib": 533.0,
+ "margin_mib": -167.0,
+ "brain": [
+  {
+   "pid": 9464,
+   "name": "llama-server.exe",
+   "dedicated_mib": 14946.2
+  }
+ ],
+ "verdict": "WILL_DEGRADE_BRAIN",
+ "reason": "MARGIN_BELOW_WINDOW",
+ "explain": "The Brain (llama-server.exe, pid 9464) is resident and only 533 MB of GPU memory is free; a 700 MB window will probably slow it until it restarts. Open windows before the Brain starts, or use Restart Brain afterwards.",
+ "t": 1791640089.233
+}

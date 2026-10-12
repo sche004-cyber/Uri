@@ -1,0 +1,106 @@
+{
+ "addresses": [
+  "R6-01",
+  "R6-02"
+ ],
+ "changed": [
+  "tests/web/test_w1_closure_r7_review_regressions.py",
+  "uri_web/evaluate.py",
+  "uri_web/synthesize.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+ "ended_at": "2026-10-11T11:12:24Z",
+ "pre": "806dcd12816b3944f78324f06aaf3aa366cec96a",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/web/test_w1_closure_r7_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 5,
+ "report": {
+  "not_repaired": [
+   {
+    "id": "R6-02",
+    "reason": "Already repaired at 806dcd12 by D14 (lead_ok/tail_ok require sentence start/end). All four reviewer probes return the full source sentence with quoted=True at HEAD, so no code change is justified and no regression test can fail on 806dcd12; existing tests/web/test_w1_closure_r6_review_regressions.py already covers them and passes."
+   }
+  ],
+  "notes": "R6-01 root cause (enumerated _DOTCH) replaced by a category-based separator built from the Unicode database: any P*/S* mark run with no space in it except word joiners (Pd, apostrophes, '/', '_'); dot-named marks with spaces on either side; other marks with a space before only unless opening; spelled dot/d0t in any wrapper; split one-letter TLD ('portal.c om'). The caseless-script punctuation exception generalises the old CJK '\u3002' rule. Atomic separator group plus a 10-label host cap prevent backtracking blowup ('a.'*3000 now ~2 s, similar to HEAD). Splitter fix: evaluate.sentences and synthesize._split_answer re-join pieces a link runs across (untrusted.merge_split_links/joins_link); verify/extractive drop adjacent claims that join into a link. New regression file: 34 fail on 806dcd12, 61/61 pass after; tests/web+assist+a2ui 3187 passed. tests/phase2a/test_frozen_core.py::test_base_commit fails because HEAD is not the frozen base e8e3b65 (environment, not this change). Still not caught: 'portal, com'/'portal: com', a dash between labels, unlisted caseless-script IDN TLD after non-'.' punctuation. New over-masking (readability only): 'T&Cs', 'fact... it', 'Wait\u2026what', 'File:line'. Governance ledger is outside the permitted paths, so these limits are recorded only in code comments.",
+  "regression_tests": [
+   "tests/web/test_w1_closure_r7_review_regressions.py"
+  ],
+  "repaired": [
+   "R6-01"
+  ]
+ },
+ "started_at": "2026-10-11T10:48:06Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "c1cf43b6-87f4-4f67-bc0e-bf2b3b3ce5e3",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 298
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 4.455037699999999,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T11:12:03Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 61,
+  "pid": 11015,
+  "prompt_sha256": "fff8c25bbc534fdf32d530761bc6a527b500494accf90bec71c8e21f473a7618",
+  "provider": "claude_cli",
+  "result_text_sha256": "cf9e427a24eed8d59594737c60f83d938fdd2dbdbc5ccd0f2125acd87670fd7a",
+  "role": "implementer",
+  "session_id": "c1cf43b6-87f4-4f67-bc0e-bf2b3b3ce5e3",
+  "session_id_requested": "c1cf43b6-87f4-4f67-bc0e-bf2b3b3ce5e3",
+  "started_at": "2026-10-11T10:48:06Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "a143805fbabb86813ca9af12089a2690739490aab9012de5164b5af44b65f82a"
+ }
+}

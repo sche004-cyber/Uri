@@ -1,0 +1,98 @@
+== prod: dc1_stream_rep0_condition=24d00b247413/188t cache_n=0, dc2_nonstream=24d00b247413/188t cache_n=4075, dc3_nonstream=24d00b247413/188t cache_n=4075, dc4_nonstream_rep1_condition=24d00b247413/188t cache_n=0, dc5_nonstream=24d00b247413/188t cache_n=4075
+== nocache: dc1_stream_rep0_condition=24d00b247413/188t cache_n=0, dc2_nonstream=24d00b247413/188t cache_n=4075, dc3_nonstream=24d00b247413/188t cache_n=4075, dc4_nonstream_rep1_condition=24d00b247413/188t cache_n=0, dc5_nonstream=24d00b247413/188t cache_n=4075
+== nockpt: dc1_stream_rep0_condition=6e3b63a840ae/198t cache_n=0, dc2_nonstream=6e3b63a840ae/198t cache_n=0, dc3_nonstream=6e3b63a840ae/198t cache_n=0, dc4_nonstream_rep1_condition=6e3b63a840ae/198t cache_n=0, dc5_nonstream=6e3b63a840ae/198t cache_n=0
+{
+ "prod": {
+  "distinct": [
+   "24d00b247413"
+  ],
+  "divergence": {
+   "dc1_stream_rep0_condition vs dc2_nonstream": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 188,
+    "len_b": 188
+   },
+   "dc1_stream_rep0_condition vs dc3_nonstream": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 188,
+    "len_b": 188
+   },
+   "dc1_stream_rep0_condition vs dc4_nonstream_rep1_condition": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 188,
+    "len_b": 188
+   },
+   "dc1_stream_rep0_condition vs dc5_nonstream": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 188,
+    "len_b": 188
+   }
+  }
+ },
+ "nocache": {
+  "distinct": [
+   "24d00b247413"
+  ],
+  "divergence": {
+   "dc1_stream_rep0_condition vs dc2_nonstream": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 188,
+    "len_b": 188
+   },
+   "dc1_stream_rep0_condition vs dc3_nonstream": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 188,
+    "len_b": 188
+   },
+   "dc1_stream_rep0_condition vs dc4_nonstream_rep1_condition": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 188,
+    "len_b": 188
+   },
+   "dc1_stream_rep0_condition vs dc5_nonstream": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 188,
+    "len_b": 188
+   }
+  }
+ },
+ "nockpt": {
+  "distinct": [
+   "6e3b63a840ae"
+  ],
+  "divergence": {
+   "dc1_stream_rep0_condition vs dc2_nonstream": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 198,
+    "len_b": 198
+   },
+   "dc1_stream_rep0_condition vs dc3_nonstream": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 198,
+    "len_b": 198
+   },
+   "dc1_stream_rep0_condition vs dc4_nonstream_rep1_condition": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 198,
+    "len_b": 198
+   },
+   "dc1_stream_rep0_condition vs dc5_nonstream": {
+    "token_index": null,
+    "note": "no token-level difference within the shorter output",
+    "len_a": 198,
+    "len_b": 198
+   }
+  }
+ }
+}

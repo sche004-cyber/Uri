@@ -1,0 +1,164 @@
+{
+ "base": "C:\\Users\\cheta\\Development\\uri-canonical-evidence\\oqgate\\uri-agent\\work\\c1\\p2ops_ui_f94fbc0914e94f68aff38e2fcc4258e3",
+ "port": 18260,
+ "client_manifest": "C:\\Users\\cheta\\Development\\uri-canonical-evidence\\oqgate\\uri-agent\\work\\c1\\p2ops_ui_f94fbc0914e94f68aff38e2fcc4258e3\\c\\client-manifest.json",
+ "started": "2026-10-08T15:55:31",
+ "exit": 0,
+ "duration_s": 9.1,
+ "stdout_tail": "Resolving dependencies...\nDownloading packages...\n  android_file_picker 1.1.1 (2.0.1 available)\n  cross_file 0.3.5+5 (0.4.0 available)\n  cupertino_icons 1.0.9 (2.0.0 available)\n  dbus 0.7.15 (0.8.0 available)\n  file_picker 12.2.0 (13.1.0 available)\n  file_picker_darwin 1.1.0 (2.1.2 available)\n  file_picker_linux 1.1.0 (2.0.2 available)\n  file_picker_platform_interface 3.3.0 (4.0.0 available)\n  file_picker_web 3.1.0 (4.0.1 available)\n  material_color_utilities 0.13.0 (0.13.1 available)\n  meta 1.18.3 (1.19.0 available)\n  petitparser 7.0.2 (7.1.0 available)\n  shared_preferences 2.5.5 (2.5.6 available)\n  test_api 0.7.12 (0.7.14 available)\n  url_launcher 6.3.2 (6.3.3 available)\n  vector_math 2.4.0 (2.4.3 available)\n  windows_file_picker 1.2.0 (2.0.1 available)\n  xml 7.0.1 (7.1.0 available)\nGot dependencies!\n18 packages have newer versions incompatible with dependency constraints.\nTry `flutter pub outdated` for more information.\n00:00 +0: loading C:/Users/cheta/Development/uri-canonical-evidence/oqgate/uri-agent/uri_ui/test/supervised_runtime_live_test.dart\n00:00 +0: Dart runtime drives the REAL supervised worker: lifecycle, mid-run cancel, reconnect\n00:04 +1: All tests passed!\n",
+ "stderr_tail": "",
+ "execution_records": [
+  {
+   "approving_at": 1791455139.6136048,
+   "bridge_outcome": "execution_uncertain",
+   "cancel_requested": true,
+   "cancel_requested_at": 1791455139.9911325,
+   "code": "SETTLED_EXECUTION_UNCERTAIN",
+   "decision": "approve",
+   "ended_at": 1791455140.1684852,
+   "evidence": [],
+   "execution_id": "4ae7a4ccf68148a981d877f787714274",
+   "failure_category": "CANCELLED_AFTER_DISPATCH:EXECUTOR_INTERRUPTED_NO_TERMINAL_EVENT_RETRY_SAFE",
+   "message": "The outcome is uncertain. URI will not repeat it automatically; check the result before retrying.",
+   "operation_id": "2fe63d24-33e0-485b-9112-6fa909ba54e5",
+   "operation_owner": "4ae7a4ccf68148a981d877f787714274",
+   "proposal": {
+    "action": "external_harness_task",
+    "approval_digest": "3b7041d8beec67ea3cdb480392433635ad522471774a59e8ba7f66adae956edc",
+    "argument_digest": "5c596780ef44a23e7161f89064d53b3dfbc114cf816c7746a5f59b9bb5125d1f",
+    "arguments": {
+     "action": "external_harness_task",
+     "inputs": {
+      "expected_file": "out.txt",
+      "instruction": "write a greeting into out.txt (fake scenario: hang)"
+     }
+    },
+    "capability_id": "external_harness_task",
+    "client_id": "1da652bc-746a-47ad-b0a9-a4834c57dc31",
+    "effect": "local_write",
+    "expected_file": "out.txt",
+    "harness": {
+     "auth_state": "AUTHENTICATED",
+     "qualification": "FIXTURE_ONLY",
+     "reason": null,
+     "required_user_action": null,
+     "usable": true
+    },
+    "instruction": "write a greeting into out.txt (fake scenario: hang)",
+    "kind": "client_external_harness",
+    "model": null,
+    "proposal_digest": "1903b771ed6fdaf504ed9f271c082b1b2b63018bda8b151f58c55aefb4858813",
+    "provider": "claude_code",
+    "qualification": {
+     "executable_sha256": "72b29481593c5da37c99248c82777fbfb56217ea7809b771bc760d0a9ecb179b",
+     "expires_at": 1794047131,
+     "level": "FIXTURE_ONLY",
+     "models": [
+      null
+     ],
+     "qualified_at": 1791455131,
+     "reason": null,
+     "status": "QUALIFIED",
+     "version": "0.0.1"
+    },
+    "reversible": true,
+    "session_id": "33333333-3333-4333-8333-333333333333",
+    "turn_id": "b196b0ca-c4b5-4d96-9626-2eabb4d75c25"
+   },
+   "queued_at": 1791455139.6100907,
+   "reason": "CANCELLED_AFTER_DISPATCH",
+   "request_text": "use the harness to write a greeting into out.txt (fake scenario: hang)",
+   "running_at": 1791455139.6726902,
+   "schema": "uri.phase2ops.execution.v1",
+   "server_state": "execution_uncertain",
+   "session_id": "33333333-3333-4333-8333-333333333333",
+   "starting_at": 1791455139.6480887,
+   "state": "uncertain",
+   "task_id": "2fe63d24-33e0-485b-9112-6fa909ba54e5",
+   "turn_id": "b196b0ca-c4b5-4d96-9626-2eabb4d75c25",
+   "updated_at": 1791455140.1701765,
+   "worker_pid": 3016
+  },
+  {
+   "approving_at": 1791455138.4638774,
+   "bridge_outcome": "verified",
+   "cancel_requested": false,
+   "code": "SETTLED_VERIFIED",
+   "decision": "approve",
+   "ended_at": 1791455139.057074,
+   "evidence": [
+    {
+     "basis": "uri_supervisor_postcondition_verified",
+     "check": "harness_output_check",
+     "harness": "claude_code",
+     "matched": true,
+     "output_bytes": 25,
+     "output_sha256": "b4800fe0bee9d9572d3605c028996f98ac947a4a84da25fc7614155cdc726366",
+     "supervisor_attempt": 1,
+     "supervisor_task": "e092512b-fcbe-48d8-bff0-c7a5987e75e1"
+    }
+   ],
+   "execution_id": "4c23a8d6e578467f801e4ecf351ea1ea",
+   "failure_category": null,
+   "message": "Done. The result was independently verified by URI.",
+   "operation_id": "e092512b-fcbe-48d8-bff0-c7a5987e75e1",
+   "operation_owner": "4c23a8d6e578467f801e4ecf351ea1ea",
+   "proposal": {
+    "action": "external_harness_task",
+    "approval_digest": "457ee9ecb731c0a1170a05594a51c55f6c388645d5bdb2d416b4d0d205769993",
+    "argument_digest": "b586174e0c23ea49e3959aa9519b9c2f5a2cc4477a3fea45ae4f9fcce933fee2",
+    "arguments": {
+     "action": "external_harness_task",
+     "inputs": {
+      "expected_file": "out.txt",
+      "instruction": "write a greeting into out.txt"
+     }
+    },
+    "capability_id": "external_harness_task",
+    "client_id": "1da652bc-746a-47ad-b0a9-a4834c57dc31",
+    "effect": "local_write",
+    "expected_file": "out.txt",
+    "harness": {
+     "auth_state": "AUTHENTICATED",
+     "qualification": "FIXTURE_ONLY",
+     "reason": null,
+     "required_user_action": null,
+     "usable": true
+    },
+    "instruction": "write a greeting into out.txt",
+    "kind": "client_external_harness",
+    "model": null,
+    "proposal_digest": "138383362cef69eb6a572a9d3cb76fc75bcea474e18e58a7151789cc575a9e39",
+    "provider": "claude_code",
+    "qualification": {
+     "executable_sha256": "72b29481593c5da37c99248c82777fbfb56217ea7809b771bc760d0a9ecb179b",
+     "expires_at": 1794047131,
+     "level": "FIXTURE_ONLY",
+     "models": [
+      null
+     ],
+     "qualified_at": 1791455131,
+     "reason": null,
+     "status": "QUALIFIED",
+     "version": "0.0.1"
+    },
+    "reversible": true,
+    "session_id": "22222222-2222-4222-8222-222222222222",
+    "turn_id": "bf0df2ee-6dcb-48dd-ba33-68d243da9278"
+   },
+   "queued_at": 1791455138.4611242,
+   "reason": null,
+   "request_text": "use the harness to write a greeting into out.txt",
+   "running_at": 1791455138.5284715,
+   "schema": "uri.phase2ops.execution.v1",
+   "server_state": "reply",
+   "session_id": "22222222-2222-4222-8222-222222222222",
+   "starting_at": 1791455138.5023775,
+   "state": "completed",
+   "task_id": "e092512b-fcbe-48d8-bff0-c7a5987e75e1",
+   "turn_id": "bf0df2ee-6dcb-48dd-ba33-68d243da9278",
+   "updated_at": 1791455139.0576794,
+   "worker_pid": 3016
+  }
+ ]
+}

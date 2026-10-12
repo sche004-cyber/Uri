@@ -1,0 +1,189 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R3",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R3-01"
+ ],
+ "candidate": "39ed499bd6a6b836a317ac422ad2a180330e67f1",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T02:55:56Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "39ed499bd6a6b836a317ac422ad2a180330e67f1",
+   "impl_head": "39ed499bd6a6b836a317ac422ad2a180330e67f1",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "c6bbf0734047a4343780ce5b75ab031e136b72c57c5a60ac5ada82a61f2763e9",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "39ed499bd6a6b836a317ac422ad2a180330e67f1",
+   "impl_head": "39ed499bd6a6b836a317ac422ad2a180330e67f1",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "c6bbf0734047a4343780ce5b75ab031e136b72c57c5a60ac5ada82a61f2763e9",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "39ed499bd6a6b836a317ac422ad2a180330e67f1",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_ROUTINE_CONFIG excludes remote.<r>.fetch/prune/mirror and branch.* from git_control_digest. integrate() runs `git fetch -q <remote> <target>`, and git updates the configured remote-tracking destination for the fetched ref. Probe /tmp/uri_review_R3/probe_fetch.py on the test fixture: the implementer worker runs `git -C <repo> config --add remote.origin.fetch +refs/heads/canon:refs/heads/session-b` and makes the real fix. Result at 39ed499: run() == COMPLETE, integration INTEGRATED, verify() == [], and refs/heads/session-b (another session's branch, with its own commit 3ee1d50) is force-moved to the baseline 16d4165. The same probe at 1f720ed (probe_fetch_old.py) stops BLOCKED with TAMPER 'git hooks or config changed during the repair', and session-b is untouched. The anchored control state (R1-04) and do_repair's ctl0 check both miss the change now. remote.<r>.mirror is also excluded; it makes the integration push fail (DoS only).",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:325",
+     "scripts/dev_workflow/lifecycle.py:1181",
+     "scripts/dev_workflow/lifecycle.py:1143"
+    ],
+    "id": "R3-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Remove remote.*.fetch (and mirror/prune/tagopt) from _ROUTINE_CONFIG, or at least run integrate's fetch with `--refmap=` (no opportunistic ref updates) and an explicit no-destination refspec, and add a regression test in which a worker-written fetch refspec is either TAMPER or provably cannot move any local ref. Keep the doc in sync.",
+    "title": "Config allowlist added in 39ed499 hides worker-written remote.*.fetch refspecs, which the driver's integration fetch then uses to force-overwrite other local branches of the main repository"
+   },
+   {
+    "blocking": false,
+    "category": "documentation",
+    "evidence": "The Reviewer independence row says 'the repository's hooks, config and info/ files ... Any change => the round is NOT_INDEPENDENT ... any drift from the PLAN state => BLOCKED (TAMPER)'. The allowlist is described only in LIFECYCLE_QUALIFICATION.md:130.",
+    "files": [
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"
+    ],
+    "id": "R3-02",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Document the exact ignored keys and why each is safe for the driver's own git commands.",
+    "title": "URI_DEVELOPMENT_LIFECYCLE.md still states that any hooks/config/info change is tamper, but 39ed499 ignores branch.* and remote fetch/prune/mirror keys"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -p no:cacheprovider -x",
+    "result": "163 passed, 1 warning in 118.77s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -I /tmp/uri_review_R3/probe_fetch.py (candidate 39ed499)",
+    "result": "COMPLETE/INTEGRATED, verify clean, other branch session-b overwritten by driver fetch",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -I /tmp/uri_review_R3/probe_fetch_old.py (code of 1f720ed via git archive)",
+    "result": "BLOCKED TAMPER, session-b unchanged (regression confirmed)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "_test_file probe for junit classnames, nested classes, Flutter ids with gate cwd",
+    "result": "all resolved to repository files",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git push with remote.origin.mirror=true and explicit refspec (/tmp/uri_review_R3/mirror1)",
+    "result": "fatal: --mirror can't be combined with refspecs (push fails, no ref damage)",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Live runs with real claude/codex reviewer processes were not repeated in this round (scripted workers only); the finding does not depend on them.",
+   "Windows behaviour of the exact-byte writes (R2-02) was checked by code reading and the unit test only, not on Windows.",
+   "Flutter gates were not run (no change under uri_ui in the review range)."
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 3,
+ "started_at": "2026-10-11T02:51:09Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "07c44e72-6eb8-4c64-b60e-dd7741883221",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 2.0057238,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R3",
+  "ended_at": "2026-10-11T02:55:55Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 27,
+  "pid": 2848,
+  "prompt_sha256": "6e1f4a620a73e1c6a93ac438cfe9fb5c85231617b3d382fe2bb3acc473ea90da",
+  "provider": "claude_cli",
+  "result_text_sha256": "55a78cfd4d98f271d0823be70090650dd8ef9f22612ac33e5b3fbe385dcd2ff8",
+  "role": "reviewer",
+  "session_id": "07c44e72-6eb8-4c64-b60e-dd7741883221",
+  "session_id_requested": "07c44e72-6eb8-4c64-b60e-dd7741883221",
+  "started_at": "2026-10-11T02:51:09Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "010996ad6999b9ed3eb5cfec07b9a2004732584c76c2a299185b03685c2d9d1a"
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "model": {
+  "path": "D:/uri-model-lab/models/unsloth__Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "expected": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+  "actual": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+  "match": true,
+  "secs": 90.8
+ },
+ "mmproj": {
+  "path": "D:/uri-model-lab/models/unsloth__Qwen3.6-35B-A3B-GGUF/mmproj-F16.gguf",
+  "expected": "8971ee4f331ff0a4c609374f32984b3d4e6dc086c0aa35f1d637fad1829e887f",
+  "actual": "8971ee4f331ff0a4c609374f32984b3d4e6dc086c0aa35f1d637fad1829e887f",
+  "match": true,
+  "secs": 6.4
+ },
+ "mtp": {
+  "path": "D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+  "expected": "40ca608fee5134ae13921007bbf5549acd5da5577852975491453983ccc08768",
+  "actual": "40ca608fee5134ae13921007bbf5549acd5da5577852975491453983ccc08768",
+  "match": true,
+  "secs": 8.4
+ },
+ "llama_server": {
+  "path": "D:/uri-model-lab/runtime/llama-b11425-bin-win-vulkan-x64/llama-server.exe",
+  "expected": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+  "actual": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+  "match": true,
+  "secs": 0.0
+ },
+ "ggml_vulkan": {
+  "path": "D:/uri-model-lab/runtime/llama-b11425-bin-win-vulkan-x64/ggml-vulkan.dll",
+  "expected": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+  "actual": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+  "match": true,
+  "secs": 0.4
+ },
+ "checked_at": "2026-10-08T15:07:22"
+}

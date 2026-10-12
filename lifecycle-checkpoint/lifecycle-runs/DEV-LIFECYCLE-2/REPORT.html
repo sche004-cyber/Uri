@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>DEV-LIFECYCLE-2 report</title>
+<style>
+:root{--bg:#f7f8fa;--panel:#fff;--fg:#1d232b;--muted:#5d6774;--line:#dde1e7;--good:#1f7a4d;--bad:#b3261e;--warn:#9a6200;
+--goodf:#2e9e66;--badf:#d0453b;--mutedf:#a9b1bc;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14171b;--panel:#1c2026;--fg:#e6e9ee;--muted:#9aa4b1;
+--line:#2d333b;--good:#5fd19a;--bad:#ff8a80;--warn:#f2b84b;--goodf:#3fb37d;--badf:#e5675d;--mutedf:#59626e;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#14171b;--panel:#1c2026;--fg:#e6e9ee;--muted:#9aa4b1;--line:#2d333b;--good:#5fd19a;--bad:#ff8a80;
+--warn:#f2b84b;--goodf:#3fb37d;--badf:#e5675d;--mutedf:#59626e;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;
+padding-block:24px;padding-inline:16px}
+.wrap{max-width:1100px;margin-inline:auto;display:grid;gap:20px}
+h1{font:400 1.8rem/1.2 Georgia,"Times New Roman",serif;margin:0;text-wrap:balance}h2{font-size:1.05rem;margin:0}
+.sub,.note{color:var(--muted);margin:0}.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr))}
+.card,.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;display:grid;gap:8px;align-content:start}
+.tile .n{font:400 1.9rem/1.1 Georgia,serif;font-variant-numeric:tabular-nums}.tile .l{color:var(--muted);font-size:.85rem}
+.tile.bad .n{color:var(--bad)}.tile.warn .n{color:var(--warn)}.tile.good .n{color:var(--good)}
+.grid2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr))}
+.tbl{overflow:auto;max-height:28rem}table{border-collapse:collapse;width:100%;font-size:.85rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{position:sticky;top:0;background:var(--panel);color:var(--muted);font-weight:600}
+.pill{display:inline-block;padding:0 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.pill.good{color:var(--good);border-color:currentColor}.pill.bad{color:var(--bad);border-color:currentColor}
+.pill.warn{color:var(--warn);border-color:currentColor}.stage{font-size:.95rem;padding:2px 12px}
+svg .grid{stroke:var(--line)}svg .tick{fill:var(--muted);font-size:11px}svg .bar.good{fill:var(--goodf)}
+svg .bar.bad{fill:var(--badf)}svg .bar.muted{fill:var(--mutedf)}svg .bar.light{opacity:.35}
+code{font-size:.85em;word-break:break-all}
+</style></head><body><div class="wrap">
+<header><h1>DEV-LIFECYCLE-2</h1>
+<p class="sub"><span class="pill stage bad">BLOCKED</span> Stopped: needs a decision or a resource before it can continue.
+Independent ACCEPT and passing gates are recorded on this exact commit. Receipt chain verified.</p>
+<p class="note">Baseline <code>ce1a90c046d2e9566a86d8dccf25df0e2bc98c80</code> · candidate <code>f3706e03402f496ae91a08a69db515df4bf89245</code> ·
+integration AWAITING_OWNER_AUTHORIZATION · written 2026-10-11T12:24:37Z</p></header>
+<section class="tiles"><div class="tile "><span class="l">Review rounds</span><span class="n">1</span></div><div class="tile good"><span class="l">Findings repaired</span><span class="n">0 / 4</span></div><div class="tile good"><span class="l">Open blocking findings</span><span class="n">0</span></div><div class="tile "><span class="l">Repairs committed</span><span class="n">0</span></div><div class="tile warn"><span class="l">Needs you</span><span class="n">1</span></div></section>
+<section class="card"><h2>Needs you</h2><div class="tbl"><table><thead><tr><th>What</th><th>Why</th><th>What to do</th></tr></thead><tbody><tr><td>OWNER_AUTHORIZATION</td><td>integration into integration/git-sync-20261008 needs owner authorisation</td><td>git push origin f3706e03402f496ae91a08a69db515df4bf89245:refs/heads/integration/git-sync-20261008</td></tr></tbody></table></div></section>
+<div class="grid2">
+<section class="card"><h2>Review rounds</h2><p class="note">Findings per round, darker part blocking; red rejected,
+green accepted. Each round is a separate reviewer process.</p><svg viewBox="0 0 640 200" width="100%" role="img" aria-label="Findings per review round"><line x1="30" x2="632" y1="172.0" y2="172.0" class="grid"/><text x="24" y="176.0" text-anchor="end" class="tick">0</text><line x1="30" x2="632" y1="131.0" y2="131.0" class="grid"/><text x="24" y="135.0" text-anchor="end" class="tick">1</text><line x1="30" x2="632" y1="90.0" y2="90.0" class="grid"/><text x="24" y="94.0" text-anchor="end" class="tick">2</text><line x1="30" x2="632" y1="49.0" y2="49.0" class="grid"/><text x="24" y="53.0" text-anchor="end" class="tick">3</text><line x1="30" x2="632" y1="8.0" y2="8.0" class="grid"/><text x="24" y="12.0" text-anchor="end" class="tick">4</text><g><title>R1 f3706e03402f: ACCEPT WITH FINDINGS, 0 blocking of 4</title><rect x="303.0" width="56.0" y="8.0" height="164.0" rx="4" class="bar good light"/><rect x="303.0" width="56.0" y="172.0" height="0.0" rx="4" class="bar good"/></g><text x="331.0" y="190" text-anchor="middle" class="tick">R1</text></svg></section>
+<section class="card"><h2>Qualification gates</h2><div class="tbl"><table><thead><tr><th>Commit</th><th>Gate</th><th>OK</th><th>Passed</th><th>Failed</th><th>New</th><th>Vanished</th></tr></thead><tbody><tr><td>f3706e03402f</td><td>dev_workflow</td><td><span class="pill good">True</span></td><td>212</td><td>0</td><td>0</td><td>0</td></tr></tbody></table></div></section>
+</div>
+<section class="card"><h2>Reviewer log</h2><div class="tbl"><table><thead><tr><th>Round</th><th>Commit</th><th>Reviewer</th><th>Session</th><th>Verdict</th><th>Blocking</th><th>Findings</th><th>Independent</th><th>Finished</th></tr></thead><tbody><tr><td>R1</td><td>f3706e03402f</td><td>claude_cli</td><td>05f0e696-6862-478c-831a-08e4c1e1c323</td><td><span class="pill good">ACCEPT WITH FINDINGS</span></td><td>0</td><td>4</td><td><span class="pill good">True</span></td><td>2026-10-11T12:18:33Z</td></tr></tbody></table></div></section>
+<section class="card"><h2>Findings</h2><div class="tbl"><table><thead><tr><th>Round</th><th>Id</th><th>Severity</th><th>Status</th><th>Finding</th></tr></thead><tbody><tr><td>R1</td><td>R1-01</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>Windows: a job whose termination/accounting query fails (or a command that ran without a job) is never re-checked by precheck(), so the next worker can be reported contained</td></tr><tr><td>R1</td><td>R1-02</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>canonical_remote() checks only the fetch URL; the integration push uses pushurl/pushInsteadOf, which may point at another repository</td></tr><tr><td>R1</td><td>R1-03</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>_norm_url treats a bare relative path &#x27;github.com/owner/Uri&#x27; as the canonical URL, and resolves a relative canonical_url against the driver&#x27;s working directory</td></tr><tr><td>R1</td><td>R1-04</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>The old baseline.ref form &#x27;&lt;remote&gt;/&lt;branch&gt;&#x27; is still accepted for real milestones and resolved by remote name, not checked against canonical_url</td></tr></tbody></table></div></section>
+<section class="card"><h2>Repairs</h2><p class="note">None.</p></section>
+<p class="note">Generated by scripts/dev_workflow/lifecycle_report.py from the milestone's recorded state.</p>
+</div></body></html>

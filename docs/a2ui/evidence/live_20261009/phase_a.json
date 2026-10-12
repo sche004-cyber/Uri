@@ -1,0 +1,90 @@
+{
+ "phase": "a",
+ "steps": [
+  {
+   "t": "2026-10-09T13:00:32.513231Z",
+   "step": "proposal_rendered",
+   "surface": "sched-f96790827beb",
+   "digest": "7305d7634905e1cd6260562df7184b6e837bfdcf35c493db86381209ba14b9ea"
+  },
+  {
+   "t": "2026-10-09T13:00:39.618842Z",
+   "step": "draft_confirm_refused",
+   "error": "You changed the choices. Press \"Update proposal\" first, then confirm the new proposal."
+  },
+  {
+   "t": "2026-10-09T13:00:40.045731Z",
+   "step": "revised",
+   "revision": 2,
+   "digest": "3de26539d2f8b4cc5c11cf2408da367ca0b9a91bf191db758c63b010b1cb08a7",
+   "proposal_sha256": "226fefae97ad8cfac5f8eeb998bf4bd0ebbac168357db1bc20aec3b276af9722"
+  },
+  {
+   "t": "2026-10-09T13:00:40.287861Z",
+   "step": "review_image_verified",
+   "bytes": 1592267,
+   "wrong_hash_refused": true
+  },
+  {
+   "t": "2026-10-09T13:00:40.287861Z",
+   "step": "review_rendered",
+   "surface": "review-1",
+   "artifact_sha256": "b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36"
+  },
+  {
+   "t": "2026-10-09T13:00:40.689999Z",
+   "step": "artifact_approved",
+   "surface": "review-1"
+  },
+  {
+   "t": "2026-10-09T13:00:41.568310Z",
+   "step": "calendar_disputed",
+   "record": "karva_chauth:2026"
+  }
+ ],
+ "surface": "sched-f96790827beb",
+ "stale_digest": "7305d7634905e1cd6260562df7184b6e837bfdcf35c493db86381209ba14b9ea",
+ "timings": [
+  {
+   "what": "handoff->surface",
+   "ms": 34.483
+  },
+  {
+   "what": "apply",
+   "ms": 11.782
+  },
+  {
+   "what": "action:scheduler.revise_proposal",
+   "ms": 11.702
+  },
+  {
+   "what": "apply",
+   "ms": 1.329
+  },
+  {
+   "what": "apply",
+   "ms": 5.35
+  },
+  {
+   "what": "action:scheduler.review_artifact",
+   "ms": 7.11
+  },
+  {
+   "what": "apply",
+   "ms": 0.187
+  },
+  {
+   "what": "apply",
+   "ms": 1.22
+  },
+  {
+   "what": "action:calendar.correct_record",
+   "ms": 15.99
+  },
+  {
+   "what": "apply",
+   "ms": 0.788
+  }
+ ],
+ "notices": []
+}

@@ -1,0 +1,92 @@
+{
+ "addresses": [
+  "R3-01"
+ ],
+ "changed": [
+  "docs/assist/A0_QUALIFICATION.md",
+  "tests/assist/fixtures/tricky_fields.html",
+  "tests/assist/test_a0_r3_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/redact.py"
+ ],
+ "commit": "16155129b72685f25eca48a65252f6cd51fa47e4",
+ "ended_at": "2026-10-11T04:13:29Z",
+ "pre": "627f6b93d3f3a3de0ba60b1d0c58b9fe5729fede",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r3_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 3,
+ "report": {
+  "not_repaired": [],
+  "notes": "Root cause fixed: both layers now find secret stems anywhere inside a word (_STEMS on _tokens(), which splits at separators and camelCase but not digits), replacing reliance on word boundaries and a fixed prefix list, and treat a 3-8 digit value as a code when a name/label/placeholder/aria label ends in code|pin (punctuation removed), with postal/zip/pincode/country/area/promo/coupon/voucher/referral/barcode/sortcode/ifsc/swift excluded ('gift' left off on purpose). snapshot.js patterns are string-identical; parity test covers STEMS, CODE_END, CODE_EXCLUDE, SENSITIVE_WORDS, RUN_TOGETHER and SHORT_CODE. Tests use 1,442 generated names plus readable controls, checked in Python, PE.normalise and real Chromium (pages of up to 190 fields because of MAX_FIELDS=200); on 627f6b9 the new file gives 774 failures (including all 32 reported-name cases), and after the change all 1625 tests in tests/assist pass. tricky_fields.html gains 14 name-only reported names (s1-s14). A0_QUALIFICATION.md AC7 row corrected, with the earlier claim kept as a recorded correction. Known: Python's second layer reports smspin/cardcode as not sensitive because the page has already emptied the value (no value leaks); the extended exclusions also make 4-8 digit 'Country code'/'Promo code' values readable, which were hidden before. /tmp/uri_review_R3/e2e_leak.py was not available to re-run; the diagnosis's probe.py/e2e.py show 0 leaks. graphify not installed, so the graph update was not run.",
+  "regression_tests": [
+   "tests/assist/test_a0_r3_review_regressions.py"
+  ],
+  "repaired": [
+   "R3-01"
+  ]
+ },
+ "started_at": "2026-10-11T04:07:04Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "8fd65eb0-5abf-400d-bed8-3779d9e401f8",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.1865946000000003,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T04:12:38Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 21,
+  "pid": 31674,
+  "prompt_sha256": "623381de0a8d019da743c5d41880cd2f8b8eb222eda3d630bb39748b7dc9c73e",
+  "provider": "claude_cli",
+  "result_text_sha256": "f464c537075bd41c091e54acff80ce6e1a5e54c2beff0e5205b8c543dd1a012a",
+  "role": "implementer",
+  "session_id": "8fd65eb0-5abf-400d-bed8-3779d9e401f8",
+  "session_id_requested": "8fd65eb0-5abf-400d-bed8-3779d9e401f8",
+  "started_at": "2026-10-11T04:07:04Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "006fc1d6f8b2087acdd7055e410fd036a3b4cb9a99a08c8f626e53e34e959fcc"
+ }
+}

@@ -1,0 +1,7 @@
+The full character scan has finished and doesn't change the verdict: **REJECT**, with one blocking finding, R10-01.
+
+The scan tried every Unicode character in four positions between "refunds-portal" and "shop". It turned up no new dot-like separator that gets through:
+- **ASCII punctuation:** the misses are comma, colon, brackets, quotes and similar. None is a dot, and a comma or colon followed by a space is a limit already recorded in the code.
+- **Accented letters:** the misses are ordinary letters such as `ȯ`, `å` and `ċ`. Reading those as a dot would count as rebuilding an address from ordinary characters, which the owner accepted as residual risk.
+
+That leaves R10-01 as the only blocking defect. Repeating an R9-01 look-alike dot with a space (`refunds-portal ٠ ٠ com/claim`, `refunds-portal 丶 丶 shop`), or writing two different Arabic zeros together (`refunds-portal ٠۰ shop`), still gets past every check. The verdict JSON in my previous message stands unchanged.

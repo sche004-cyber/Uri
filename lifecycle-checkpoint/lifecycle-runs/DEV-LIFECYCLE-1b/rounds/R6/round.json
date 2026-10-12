@@ -1,0 +1,217 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R6",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R6-01",
+  "R6-02"
+ ],
+ "candidate": "dff1ea78527a639ee6b13f47b1f89a2f13e7b865",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T03:39:03Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "dff1ea78527a639ee6b13f47b1f89a2f13e7b865",
+   "impl_head": "dff1ea78527a639ee6b13f47b1f89a2f13e7b865",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "381fff63070aba5b0b23d2e6ddfb84de6b7e5082ddf4c62342f5a0dae3b76116",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "dff1ea78527a639ee6b13f47b1f89a2f13e7b865",
+   "impl_head": "dff1ea78527a639ee6b13f47b1f89a2f13e7b865",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "381fff63070aba5b0b23d2e6ddfb84de6b7e5082ddf4c62342f5a0dae3b76116",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "dff1ea78527a639ee6b13f47b1f89a2f13e7b865",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "binary_is_default compares realpath(which(argv[0])) with realpath(which('claude')), and argv[0] is which('claude') itself, so it is True for whatever 'claude' is first on PATH. binary_sha256 is recorded but never compared with a PLAN-anchored value, and control_state/control_drift cover only git files. Here PATH has /root/.local/bin before /opt/node22/bin. Probe 1 (/tmp/uri_review_R6/probe1): milestone W9-REAL-MILESTONE, reviewer {provider: claude_cli}, a fake 'claude' script printing an ACCEPT JSON first on PATH -> stage VERIFIED, round independent=True ('separate process, fresh session, clean checkout, integrity verified'), evidence_ok (True, []), verify() []. Probe 2 (/tmp/uri_review_R6/probe2): the real-position reviewer REJECTs R1; the command implementer repairs and copies an always-ACCEPT 'claude' into the earlier PATH dir; the driver commits the repair; R2 runs the planted binary (binary_realpath and binary_sha256 differ from R1, binary_is_default still True) -> ACCEPT -> VERIFIED, no TAMPER block, verify() []. The docs say the executable 'must be the installed claude/codex CLI (path and SHA-256 recorded)'; recording is not enforcement.",
+    "files": [
+     "scripts/dev_workflow/lifecycle_providers.py:86",
+     "scripts/dev_workflow/lifecycle_providers.py:120",
+     "scripts/dev_workflow/lifecycle_providers.py:125",
+     "scripts/dev_workflow/lifecycle.py:312",
+     "scripts/dev_workflow/lifecycle.py:404",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:33"
+    ],
+    "id": "R6-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Resolve the reviewer executable once at PLAN to an absolute realpath plus SHA-256 (from a configured, owner-acknowledged path or a trusted install dir, not the first match on PATH) and bind it in the PLAN control state. Launch that absolute path and before every round refuse the review (TAMPER) if the realpath or hash differs from the anchor. Treat a changed CLI as a control-state change that needs owner unblock. Add a regression test with a PATH-planted fake.",
+    "title": "Reviewer executable identity is not anchored: any 'claude' earlier on PATH (e.g. planted in ~/.local/bin by an implementer or gate test) counts as the installed CLI and its scripted ACCEPT makes a real milestone VERIFIED"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "build_argv runs 'claude -p' with cwd = the audit worktree at the candidate SHA and passes nothing that limits project setting or memory sources. In this R6 review the candidate's CLAUDE.md (changed in the review range) was injected into the reviewer's system context as project instructions that 'OVERRIDE any default behavior and you MUST follow them exactly', and the candidate's .claude/skills/uri-development-lifecycle was offered to the reviewer as a skill. An implementer repair (permitted_paths '**') can edit CLAUDE.md or add .claude/settings.json hooks such as Stop or SessionStart to steer later reviewers, for example by declaring a defect an 'accepted documented limitation', which the prompt itself makes non-blocking. Plan decision 3 says the reviewer prompt is built only from the config and earlier findings.",
+    "files": [
+     "scripts/dev_workflow/lifecycle_providers.py:82",
+     "scripts/dev_workflow/lifecycle_providers.py:135",
+     "scripts/dev_workflow/lifecycle.py:863",
+     "docs/dev_workflow/LIFECYCLE_PLAN_AND_ACCEPTANCE.md:30"
+    ],
+    "id": "R6-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Start the reviewer with project and local setting sources disabled (e.g. --setting-sources user, or an empty settings override) and without auto-loaded project memory where the CLI allows it. Otherwise refuse or flag a candidate that changes CLAUDE.md or .claude/ unless the owner authorises it (add them to protected_paths for repairs). State the residual channel in the plan.",
+    "title": "The independent reviewer starts in the candidate checkout and loads the candidate's CLAUDE.md, .claude settings and skills as authoritative project instructions, so implementer-authored text reaches the reviewer outside the driver-built prompt"
+   },
+   {
+    "blocking": false,
+    "category": "documentation",
+    "evidence": "git() and the integration fetch, ls-remote and push call subprocess.run with no timeout, and GIT_TERMINAL_PROMPT is not set, so an unattended run can hang on the network or a credential prompt. The \u00a73 Continuation row says 'every external command has a timeout and its own process group'. \u00a76 says 'max_rounds is the hard bound', but load_config raises on limits.max_rounds; the cap is continuation.budget.max_rounds.",
+    "files": [
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:36",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:79",
+     "scripts/dev_workflow/lifecycle.py:82",
+     "scripts/dev_workflow/lifecycle.py:1205",
+     "scripts/dev_workflow/lifecycle.py:1273"
+    ],
+    "id": "R6-03",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Add timeouts (and GIT_TERMINAL_PROMPT=0) to the driver's git network calls, or narrow the doc claim. Update the \u00a76 wording to continuation.budget.max_rounds.",
+    "title": "Docs claim every external command has a timeout and that max_rounds is the hard bound; driver git network commands have no timeout and limits.max_rounds is now refused"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow",
+    "result": "175 passed, 1 warning in 136s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R6/probe1/probe.py (non-DEVTEST milestone, fake 'claude' first on PATH)",
+    "result": "stage VERIFIED, independent=True, evidence_ok True, verify [] -> R6-01 reproduced",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R6/probe2/probe.py (implementer plants an ACCEPT 'claude' in an earlier PATH dir during repair)",
+    "result": "R1 REJECT (install_bin/claude), R2 ACCEPT (home_local_bin/claude, different sha256, binary_is_default True), stage VERIFIED, no TAMPER, verify [] -> R6-01 reproduced",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "R6-02 was not reproduced with a real 'claude -p' run. The evidence is the code (no setting-source restriction, cwd = candidate checkout) and the injection seen in this reviewer's own context. Whether CLI flags can fully suppress CLAUDE.md loading was not checked; this affects only the suggested fix, not the finding.",
+   "R5-01: the fix closes the reported path (drift check before and after the push). A gate child that calls setsid() and survives the process-group kill could still change ~/.gitconfig only during the push window; this race was not exercised. It is the documented setsid limitation, not counted as a finding.",
+   "Flutter gate parsing and live Flutter runs were not executed; parse_flutter_machine was checked by reading the code only.",
+   "No real remote push or GPU lease was exercised; integration was assessed from code and the existing local-bare-remote tests.",
+   "Rebuilding a whole consistent state directory (a worker that kills the driver and writes a new chain) is a documented tamper-evident-not-proof limitation and was not counted."
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 6,
+ "started_at": "2026-10-11T03:33:41Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "6cad1c6b-941b-42f2-87b7-42334a912238",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.7848903999999999,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R6",
+  "ended_at": "2026-10-11T03:39:02Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 18,
+  "pid": 2184,
+  "prompt_sha256": "9c2391eebdd4a0323142e62d36563110ca2a419a56930c0f22640a9bc4cc3793",
+  "provider": "claude_cli",
+  "result_text_sha256": "d496c9c80fe8b6500764ce9ea4001c0755b961df51a2bf570a6f2c99b73718ac",
+  "role": "reviewer",
+  "session_id": "6cad1c6b-941b-42f2-87b7-42334a912238",
+  "session_id_requested": "6cad1c6b-941b-42f2-87b7-42334a912238",
+  "started_at": "2026-10-11T03:33:41Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "4d2a750c0f45533baa2edf0c144177e23bd511bf543660e6642682469cafcf1e"
+ }
+}

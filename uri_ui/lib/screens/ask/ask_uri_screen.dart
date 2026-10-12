@@ -9,6 +9,7 @@ import '../../services/uri_client.dart' show Attachment, ProviderEntry;
 import '../../theme/uri_theme.dart';
 import '../../widgets/app_shell.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/supervised_handoff_action.dart';
 import '../../widgets/turn_card.dart';
 import '../activity/activity_screen.dart';
 import '../history/history_screen.dart';
@@ -95,10 +96,15 @@ class UriConversationPane extends StatefulWidget {
     super.key,
     this.attachmentOpener,
     this.compact = false,
+    this.supervisedHandoff,
   });
 
   final AttachmentOpenerFn? attachmentOpener;
   final bool compact;
+
+  /// Tests override the supervised-profile opt-in probe of the Chat handoff
+  /// action; null = production probe (URI_CLIENT_MANIFEST + opt-in file).
+  final bool? supervisedHandoff;
 
   @override
   State<UriConversationPane> createState() => _UriConversationPaneState();
@@ -226,7 +232,7 @@ class _UriConversationPaneState extends State<UriConversationPane> {
                 separatorBuilder: (_, _) => const SizedBox(height: UriSpace.md),
                 itemBuilder: (context, index) {
                   final turn = state.conversation[index];
-                  return TurnCard(
+                  final card = TurnCard(
                     turn: turn,
                     onApprove: () => state.approve(turn.id),
                     onCancel: () => state.cancel(turn.id),
@@ -234,6 +240,18 @@ class _UriConversationPaneState extends State<UriConversationPane> {
                     onOpenAttachment: (attachment) =>
                         _openAttachment(state, attachment),
                     compact: widget.compact,
+                  );
+                  // C6 Option B: the user's own words may become an unsent
+                  // supervised-task draft (opt-in installations only).
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      card,
+                      SupervisedHandoffAction(
+                        turn: turn,
+                        configured: widget.supervisedHandoff,
+                      ),
+                    ],
                   );
                 },
               ),

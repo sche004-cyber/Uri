@@ -1,0 +1,82 @@
+[
+ {
+  "donor_path": "uri_v1/turn/rar_adversarial_fixtures.py",
+  "donor_commit": "eb73693",
+  "donor_blob": "4adf6ceef45a4637e4504298fc920d1f84114cb0",
+  "ported_path": "tests/reference_binding/rar_adversarial_fixtures.py",
+  "ported_sha256": "8d842af32e2e0e9e98af8b3e1c0a81c5cb305478c3aab8e86454abf5bdd72c52",
+  "removed": [],
+  "transform": "import-path rewrite"
+ },
+ {
+  "donor_path": "uri_v1/turn/rar_fixtures.py",
+  "donor_commit": "eb73693",
+  "donor_blob": "64b0162593533155c1ecfbaab8c9aef1bf2bec50",
+  "ported_path": "tests/reference_binding/rar_fixtures.py",
+  "ported_sha256": "e3f0d1e4c83ff9401b550495a6929189f320ce9723600a9244620a411b73bbd7",
+  "removed": [],
+  "transform": "import-path rewrite"
+ },
+ {
+  "donor_path": "test_m35_uriv1_a2_5_rar_adversarial_safety.py",
+  "donor_commit": "eb73693",
+  "donor_blob": "908250fe629a5ed920071c8456a902a96a205e44",
+  "ported_path": "tests/reference_binding/test_rar_adversarial_safety.py",
+  "ported_sha256": "e6b6095281fab2160d38bd550a7c27740999f3db21c28b5f5ed981521c669043",
+  "removed": [],
+  "transform": "import-path rewrite"
+ },
+ {
+  "donor_path": "test_m35_uriv1_a2_5_rar_stage4_refinements.py",
+  "donor_commit": "eb73693",
+  "donor_blob": "9f8857bf58d39fa7578ea878ddf0e032915a9af9",
+  "ported_path": "tests/reference_binding/test_rar_stage4_refinements.py",
+  "ported_sha256": "4e1840dec8a7ea8791fc722a8120bb10af72fefc324b81ef1bd1063af0c91c7b",
+  "removed": [],
+  "transform": "import-path rewrite"
+ },
+ {
+  "donor_path": "test_m35_uriv1_a2_5_deterministic_rar.py",
+  "donor_commit": "eb73693",
+  "donor_blob": "16e2f028df4ebd1c4ce639336e4028e54cb685ba",
+  "ported_path": "tests/reference_binding/test_rar_deterministic.py",
+  "ported_sha256": "e8a6ca36d875dc09994329d12c58c2b7202174b87d31692a59bcb0648dd7245b",
+  "removed": [],
+  "transform": "import-path rewrite"
+ },
+ {
+  "donor_path": "test_m35_uriv1_a2_5_rar_contracts.py",
+  "donor_commit": "eb73693",
+  "donor_blob": "edb61c7aea36efc8751d0571366517b688db701b",
+  "ported_path": "tests/reference_binding/test_rar_contracts.py",
+  "ported_sha256": "3de6f317dda402d3193ef9d7825dff42fe5e86c1ef509985fd4f41e8654a2f87",
+  "removed": [],
+  "transform": "import-path rewrite"
+ },
+ {
+  "donor_path": "tests/test_m33_3_s1_core.py",
+  "donor_commit": "eb73693",
+  "donor_blob": "df1f336c7d483933ec4587d616cfe532d4abeb73",
+  "ported_path": "tests/reference_binding/test_s1_core.py",
+  "ported_sha256": "995c99c3b94cb7c91d20d3b63e43bd15b7e0f03e136794d4fc2e0d8c925864d5",
+  "removed": [
+   "import uri_core.reference_binding.render_contracts",
+   "import uri_core.reference_binding.render_validator",
+   "import uri_core.reference_binding.template_renderer",
+   "test_renderer_validates_and_rejects_identity_swap"
+  ],
+  "transform": "import-path rewrite; removed tests for non-ported render/bundle modules"
+ },
+ {
+  "donor_path": "tests/test_m33_3_s1_binding_and_bundle.py",
+  "donor_commit": "eb73693",
+  "donor_blob": "a8325cd07f44b190dae5fd9c82b184219205d2c3",
+  "ported_path": "tests/reference_binding/test_s1_binding.py",
+  "ported_sha256": "65353d182ff9d8ce293409bb7a879edcc7824224c7b5e021b553439bee51343d",
+  "removed": [
+   "import uri_core.reference_binding.bundle",
+   "test_bundle_dependencies_and_cycle"
+  ],
+  "transform": "import-path rewrite; removed tests for non-ported render/bundle modules"
+ }
+]

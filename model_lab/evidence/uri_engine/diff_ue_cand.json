@@ -1,0 +1,216 @@
+{
+ "baseline": "model_lab/evidence/runs/ue_base/20261006-112534//results.jsonl",
+ "candidate": "model_lab/evidence/runs/ue_cand/20261006-221702//results.jsonl",
+ "common_cases": 219,
+ "suites": {
+  "fast/C": {
+   "n": 14,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 14,
+   "lat_a_p50": 1.012,
+   "lat_b_p50": 1.046
+  },
+  "fast/D": {
+   "n": 72,
+   "score_a": 0.861,
+   "score_b": 0.861,
+   "identical_outputs": 65,
+   "lat_a_p50": 2.585,
+   "lat_b_p50": 2.546
+  },
+  "fast/DG": {
+   "n": 72,
+   "score_a": 0.861,
+   "score_b": 0.861,
+   "identical_outputs": 65,
+   "lat_a_p50": 2.498,
+   "lat_b_p50": 2.543
+  },
+  "fast/F": {
+   "n": 10,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 10,
+   "lat_a_p50": 0.422,
+   "lat_b_p50": 0.423
+  },
+  "fast/H": {
+   "n": 22,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 22,
+   "lat_a_p50": 0.776,
+   "lat_b_p50": 0.83
+  },
+  "fast/L": {
+   "n": 1,
+   "score_a": 0.8,
+   "score_b": 0.8,
+   "identical_outputs": 0,
+   "lat_a_p50": 3.391,
+   "lat_b_p50": 3.43
+  },
+  "fast/O": {
+   "n": 4,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 4,
+   "lat_a_p50": 1.875,
+   "lat_b_p50": 1.852
+  },
+  "fast/P": {
+   "n": 12,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 12,
+   "lat_a_p50": null,
+   "lat_b_p50": null
+  },
+  "fast/S": {
+   "n": 12,
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical_outputs": 12,
+   "lat_a_p50": 1.289,
+   "lat_b_p50": 1.265
+  }
+ },
+ "differences": [
+  {
+   "id": "boundary_answer_email_choice",
+   "suite": "D",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Select a specific unread email (the SBI one) to read as part of checking unread email.\",\n  \"mode\": \"workflow_continuation\",\n  \"capability\": \"Gmail\"",
+   "b": "{\n  \"goal\": \"Select a specific unread email (the SBI one) to read as part of checking unread email.\",\n  \"mode\": \"workflow_continuation\",\n  \"capability\": \"Gmail\""
+  },
+  {
+   "id": "boundary_cancel_roll_number",
+   "suite": "D",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Cancel the previous request to find the student.\",\n  \"mode\": \"conversation\",\n  \"capability\": null,\n  \"actions\": [],\n  \"clarification\": null,\n  \"uns",
+   "b": "{\n  \"goal\": \"Cancel the previous request to find the student.\",\n  \"mode\": \"conversation\",\n  \"capability\": null,\n  \"actions\": [],\n  \"clarification\": null,\n  \"uns"
+  },
+  {
+   "id": "d_new_intent_gmail_from_roll_pending",
+   "suite": "D",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Check unread emails\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n      \"name\": \"search_messages\",\n      \"inputs\": {\n ",
+   "b": "{\n  \"goal\": \"Check unread emails\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n      \"name\": \"search_messages\",\n      \"inputs\": {\n "
+  },
+  {
+   "id": "gmail_attachment_chain",
+   "suite": "D",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Inspect the attachment of the email message previously read by URI.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n    ",
+   "b": "{\n  \"goal\": \"Inspect the attachment of the email message previously read by URI.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n    "
+  },
+  {
+   "id": "gmail_labels_only",
+   "suite": "D",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"List the user's Gmail labels.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n      \"name\": \"list_labels\",\n      \"inputs",
+   "b": "{\n  \"goal\": \"List the user's Gmail labels.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n      \"name\": \"list_labels\",\n      \"inputs"
+  },
+  {
+   "id": "system_perf",
+   "suite": "D",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Report current CPU and memory usage of the user's computer\",\n  \"mode\": \"single_action\",\n  \"capability\": \"system_performance\",\n  \"actions\": [\n    {\n",
+   "b": "{\n  \"goal\": \"Report current CPU and memory usage of the user's computer\",\n  \"mode\": \"single_action\",\n  \"capability\": \"system_performance\",\n  \"actions\": [\n    {\n"
+  },
+  {
+   "id": "x06_recall",
+   "suite": "D",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Retrieve the user's office extension number from memory.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"recall_memory\",\n  \"actions\": [\n    {\n      \"",
+   "b": "{\n  \"goal\": \"Retrieve the user's office extension number from memory.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"recall_memory\",\n  \"actions\": [\n    {\n      \""
+  },
+  {
+   "id": "boundary_answer_email_choice",
+   "suite": "DG",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Select a specific unread email (the SBI one) to read as part of checking unread email.\",\n  \"mode\": \"workflow_continuation\",\n  \"capability\": \"Gmail\"",
+   "b": "{\n  \"goal\": \"Select a specific unread email (the SBI one) to read as part of checking unread email.\",\n  \"mode\": \"workflow_continuation\",\n  \"capability\": \"Gmail\""
+  },
+  {
+   "id": "boundary_cancel_roll_number",
+   "suite": "DG",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Cancel the previous request to find the student.\",\n  \"mode\": \"conversation\",\n  \"capability\": null,\n  \"actions\": [],\n  \"clarification\": null,\n  \"uns",
+   "b": "{\n  \"goal\": \"Cancel the previous request to find the student.\",\n  \"mode\": \"conversation\",\n  \"capability\": null,\n  \"actions\": [],\n  \"clarification\": null,\n  \"uns"
+  },
+  {
+   "id": "d_new_intent_gmail_from_roll_pending",
+   "suite": "DG",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Check unread emails\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n      \"name\": \"search_messages\",\n      \"inputs\": {\n ",
+   "b": "{\n  \"goal\": \"Check unread emails\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n      \"name\": \"search_messages\",\n      \"inputs\": {\n "
+  },
+  {
+   "id": "gmail_attachment_chain",
+   "suite": "DG",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Inspect the attachment of the email message previously read by URI.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n    ",
+   "b": "{\n  \"goal\": \"Inspect the attachment of the email message previously read by URI.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n    "
+  },
+  {
+   "id": "gmail_labels_only",
+   "suite": "DG",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"List the user's Gmail labels.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n      \"name\": \"list_labels\",\n      \"inputs",
+   "b": "{\n  \"goal\": \"List the user's Gmail labels.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"Gmail\",\n  \"actions\": [\n    {\n      \"name\": \"list_labels\",\n      \"inputs"
+  },
+  {
+   "id": "system_perf",
+   "suite": "DG",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Report current CPU and memory usage of the user's computer\",\n  \"mode\": \"single_action\",\n  \"capability\": \"system_performance\",\n  \"actions\": [\n    {\n",
+   "b": "{\n  \"goal\": \"Report current CPU and memory usage of the user's computer\",\n  \"mode\": \"single_action\",\n  \"capability\": \"system_performance\",\n  \"actions\": [\n    {\n"
+  },
+  {
+   "id": "x06_recall",
+   "suite": "DG",
+   "score_a": 1.0,
+   "score_b": 1.0,
+   "identical": false,
+   "a": "{\n  \"goal\": \"Retrieve the user's office extension number from memory.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"recall_memory\",\n  \"actions\": [\n    {\n      \"",
+   "b": "{\n  \"goal\": \"Retrieve the user's office extension number from memory.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"recall_memory\",\n  \"actions\": [\n    {\n      \""
+  },
+  {
+   "id": "l_4k",
+   "suite": "L",
+   "score_a": 0.8,
+   "score_b": 0.8,
+   "identical": false,
+   "a": "{\n  \"convocation_date\": \"2026-12-21\",\n  \"second_registrar_circular_topic\": \"submission of hostel occupancy data by wardens\",\n  \"hostel_change_students\": [\n    \"",
+   "b": "{\n  \"convocation_date\": \"2026-12-21\",\n  \"second_registrar_circular_topic\": \"submission of hostel occupancy data by wardens\",\n  \"hostel_change_students\": [\n    \""
+  }
+ ]
+}

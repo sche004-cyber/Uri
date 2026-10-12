@@ -1,0 +1,109 @@
+{
+ "at": "2026-10-10T17:28:37Z",
+ "egress": "proxy (cloud container; direct pinned mode not exercised live)",
+ "fetch": [
+  {
+   "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+   "status": "UNREACHABLE",
+   "code": null,
+   "http": null,
+   "bytes": 0,
+   "robots": "UNAVAILABLE",
+   "s": 0.647
+  },
+  {
+   "url": "http://127.0.0.1:18470/v1/models",
+   "status": "REFUSED",
+   "code": "PORT_REFUSED",
+   "http": null,
+   "bytes": 0,
+   "robots": "NOT_CHECKED",
+   "s": 0.0
+  },
+  {
+   "url": "http://169.254.169.254/latest/meta-data/",
+   "status": "REFUSED",
+   "code": "ADDRESS_NOT_PUBLIC",
+   "http": null,
+   "bytes": 0,
+   "robots": "NOT_CHECKED",
+   "s": 0.0
+  }
+ ],
+ "providers": [
+  {
+   "p": "tavily",
+   "available": false
+  },
+  {
+   "p": "brave",
+   "available": false
+  },
+  {
+   "p": "searxng",
+   "available": false
+  }
+ ],
+ "research": {
+  "status": "NO_RESULT",
+  "elapsed_s": 1.211,
+  "sources": [],
+  "answer": [],
+  "providers": [
+   {
+    "provider": "tavily",
+    "status": "UNAVAILABLE",
+    "error_code": "NOT_CONFIGURED",
+    "hits": 0
+   },
+   {
+    "provider": "brave",
+    "status": "UNAVAILABLE",
+    "error_code": "NOT_CONFIGURED",
+    "hits": 0
+   },
+   {
+    "provider": "searxng",
+    "status": "UNAVAILABLE",
+    "error_code": "NOT_CONFIGURED",
+    "hits": 0
+   }
+  ],
+  "attempts": [
+   [
+    "https://www.rfc-editor.org/rfc/rfc9110.html",
+    "UNREACHABLE"
+   ],
+   [
+    "https://developer.mozilla.org/en-US/docs/Glossary/Idempotent",
+    "UNREACHABLE"
+   ]
+  ],
+  "method": "none"
+ },
+ "a2ui_digest": "0cea5ac04e683925dbbf54a1b5a92d5a26bb970b1145c0a9f5fe08d121e61a1f",
+ "feed": {
+  "status": "NO_RESULT",
+  "items": 0,
+  "first": [],
+  "attempts": [
+   [
+    "https://www.python.org/blogs/feeds/blog.atom",
+    "UNREACHABLE",
+    null
+   ]
+  ]
+ },
+ "bluesky": {
+  "status": "FAILED",
+  "posts": 0,
+  "code": "UNREACHABLE",
+  "http": null
+ },
+ "mastodon": {
+  "status": "FAILED",
+  "posts": 0,
+  "code": "UNREACHABLE",
+  "http": null
+ }
+}

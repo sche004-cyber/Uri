@@ -1,0 +1,52 @@
+I'm rejecting candidate `6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3` on two new blocking MEDIUM findings. All 21 earlier blocking findings (R1-01 through R4-01) are fixed. I checked both SHAs myself and the checkout is clean.
+
+**Earlier findings.** I checked each fix in the code and the regression tests cover them. For R4-01 specifically: the driver now hashes the in-effect policy, including the `ws_frozen_check` protected list, records it at plan time, and blocks (CONFIG) when it changes. Only an owner `unblock` recorded against that same config and policy pair clears it.
+
+**R5-01 (MEDIUM, blocking): a repair for a failing gate can water down the failing test, and the driver commits and integrates it.**
+- The docs promise that a test named by a gate failure must fail on the pre-repair commit. The code only enforces this when it can find the test file from the gate's test id, and it often can't.
+- It can't for class-based pytest tests: the id `tests.pkg.test_k.TestK::test_a` becomes `tests/pkg/test_k/TestK.py`. It also can't for any Flutter test, whose id `test/x_test.dart` is relative to `uri_ui/`, not the repo root.
+- When the file isn't found, the "must fail before" check is skipped. The repair then only has to pass afterwards.
+- I reproduced this end to end. With a function-based test, a repair that loosens the failing assertion is refused three times. With the same test inside a class, the loosening is committed and pushed to the fixture's canonical remote. Only the reviewer's judgement stands between that and a weakened test.
+
+**R5-02 (MEDIUM, blocking): comparing gate failures with the baseline is not stable.**
+- For a plain pytest `assert`, the recorded "cause" is the whole assertion text, which includes values like process ids and object addresses. An old failure then shows up as a "changed cause", which counts as a new failure.
+- A Flutter test file that fails to load gets an id containing the absolute worktree path, with an empty file part. The baseline and candidate run in different worktrees, so a failure present on both is counted as new on the candidate. I confirmed this with real `flutter test --machine` output.
+- Neither problem lets a bad change through. But a pre-existing failure gets sent to repair, loops until the retry limit, and blocks. The only workaround is `allowed_flaky`, which switches off comparison for that test entirely.
+
+**Not counted against the candidate:** the driver records the reviewer executable's SHA-256 but never compares it. Because workers run as root in the container, an implementer could swap the installed `claude` binary. That is covered by the documented containment limit, so I list it as unverified rather than as a finding.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R5-01", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "Gate-finding repairs skip the fail-before proof for class-based pytest tests and every Flutter test: a repair that weakens the failing test is committed and integrated",
+   "files": ["scripts/dev_workflow/lifecycle.py:601-606", "scripts/dev_workflow/lifecycle.py:867-873", "scripts/dev_workflow/lifecycle.py:1192-1194", "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"],
+   "evidence": "_test_file maps a junit id to head.replace('.', '/') + '.py' relative to the repo root. A class-based id 'tests.pkg.test_k.TestK::test_a' becomes 'tests/pkg/test_k/TestK.py', which does not exist. A Flutter id 'test/x_test.dart::x' is relative to the gate cwd uri_ui, not the root (probe: is_file False for both). _commit_and_prove keeps only gate tests where (wt/path).is_file(), so gate_tests is empty. GATE findings have category 'test', so defect=False, need_fail_before=False and must_fail is empty: the repair only has to pass afterwards. End-to-end probe (/tmp/uri_review_R5/p1/probe_weaken.py) uses the fixture with a broken pkg/other.py and an implementer that changes 'assert VALUE == 2' to 'assert VALUE in (2, 3)'. With a function test the repair is REFUSED 3x ('gate test tests/test_other.py did not fail before'). With the same test inside a class: COMMITTED, stage COMPLETE, remote canon == candidate, and the repair commit touches only tests/test_other.py. The docs claim 'gate tests named by gate findings must each fail before'.",
+   "suggested_fix": "Resolve gate tests from the gate's own report: junit 'file' attribute, or strip trailing class segments until a .py file exists, and use the gate cwd for Flutter ids. If a GATE finding's test file cannot be resolved, refuse the repair rather than treating it as coverage-only. Also refuse repairs that modify (not just delete) a test named by a gate finding unless the modified test still fails on the pre-repair commit."},
+  {"id": "R5-02", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "Baseline comparison keys are non-deterministic: plain-assert causes include run-specific values and Flutter load-failure ids include the absolute worktree path, so historical failures count as new",
+   "files": ["scripts/dev_workflow/lifecycle.py:453-456", "scripts/dev_workflow/lifecycle.py:491-497", "scripts/dev_workflow/lifecycle.py:589-598"],
+   "evidence": "pytest junit messages for bare asserts carry no exception type ('assert 21013 == 1', 'assert <object object at 0x7f0eb3781760> is None'), so _cause returns the assertion text including pids and addresses, and compare() reports changed_cause, i.e. a new failure. Real 'flutter test --machine' runs of the same broken test file in two directories gave failures {'::loading /tmp/uri_review_R5/fl/A/test/broken_test.dart'} vs {'::loading /tmp/uri_review_R5/fl/B/test/broken_test.dart'}. compare() => new_failures=[A id], ok=False. Candidate (work_dir/qualify) and baseline (work_dir/baseline) always run in different worktrees, so a historical load failure always blocks qualification and is routed to FIXING until RETRY_LIMIT. The plan's decision 6 specifies cause = exception type.",
+   "suggested_fix": "Normalise causes (AssertionError for bare asserts, or strip numbers, hex addresses and paths). For Flutter, derive the id from the test's url or the suite path made relative to the worktree, and strip the worktree prefix from 'loading <path>' names and error text. Add tests with two different worktree paths."}
+ ],
+ "prior_findings": [
+  {"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"},
+  {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R1-07", "status": "FIXED"}, {"id": "R1-08", "status": "FIXED"},
+  {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R2-04", "status": "FIXED"},
+  {"id": "R2-05", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R3-03", "status": "FIXED"},
+  {"id": "R3-04", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}
+ ],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -p no:cacheprovider", "result": "142 passed, 1 warning in 71s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -I /tmp/uri_review_R5/p1/probe_weaken.py (end-to-end gate-repair test weakening, function vs class test)", "result": "function: 3x REFUSED, BLOCKED; class-based: COMMITTED, COMPLETE, weakened test pushed to fixture remote", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest --junitxml on assert/raise probes + lifecycle.parse_junit", "result": "causes 'assert 21013 == 1', 'assert <object ... at 0x...> is None', 'ValueError'", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "flutter test --machine in two copies of uri_ui with a non-compiling test + parse_flutter_machine/compare", "result": "ids differ by absolute path; compare ok=False with the historical failure as new", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "_test_file probe on class-based junit id and Flutter id", "result": "both unresolved (is_file False)", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": [
+  "No live claude_cli/codex_cli reviewer or implementer run was exercised in this round; independence checks were verified by code reading and the scripted-process tests only.",
+  "Real gpu_lease contention and a real remote push/permission failure were not exercised (no GPU; fixture bare remote only).",
+  "ws_frozen_check zip part is BLOCKED (Phase 1 checkpoint zip absent); protected-path list was read from source only.",
+  "Root-in-container containment (e.g. an implementer replacing the installed claude binary; binary_sha256 is recorded but never compared) is a documented limitation and was not counted as a finding."
+ ]}
+AUDIT_RESULT_END

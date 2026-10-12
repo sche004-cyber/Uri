@@ -1,0 +1,269 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R7",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R7-01",
+  "R7-02"
+ ],
+ "candidate": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T11:15:44Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "impl_head": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "84da64fb1e90f59fd6016ccdd99a3ddef2048e1b3244d007b8c0a1c3fe080a86",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "impl_head": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "84da64fb1e90f59fd6016ccdd99a3ddef2048e1b3244d007b8c0a1c3fe080a86",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe /tmp/uri_review_R7/p3.py, with SENT='Claim your energy rebate refund at {} before the deadline.' and link='refunds-portal \u3010.\u3011 com/claim': U.has_link_or_contact(src) is False; SY.verify(SENT[:-1]+' [1].',[src]) keeps the claim 'Claim your energy rebate refund at refunds-portal \u3010.\u3011 com/claim before the deadline .'; SY.extractive('energy rebate refund deadline',[src]) returns the same sentence; build_surface plus require_valid accept it and the surface JSON contains 'refunds-portal'. Same for '\u300c.\u300d', '\u3014.\u3015', '\u00ab.\u00bb', '\u27e8.\u27e9', '\".\"', \"'.'\", ' . . ', '\u25e6', '\u25cf', '(d o t)'. ASCII '[ . ]' and fullwidth '\uff3b.\uff3d' are caught. Cause: the bracket alternative at :163 accepts only [({< and ])}>; the spaced alternative at :165 excludes a run that begins with _OPENING (Ps/Pi); _DOTLIKE+ at :162 allows no space between dots; _is_dotlike (:134) excludes category So, so U+25E6 WHITE BULLET is not dot-like despite its name. The R7 regression test file only generates tight, doubled or left-spaced single marks. Comments also self-declare 'portal, com'/'portal: com' as residual limits, which the owner ledger (D13) does not record; 'refunds-portal; com/claim' and 'refunds-portal! com/claim' also pass.",
+    "files": [
+     "uri_web/untrusted.py:134",
+     "uri_web/untrusted.py:162",
+     "uri_web/untrusted.py:163",
+     "uri_web/untrusted.py:165",
+     "uri_web/synthesize.py:255",
+     "uri_web/surface.py:37"
+    ],
+    "id": "R7-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Treat any Ps/Pi..Pe/Pf pair (Unicode bracket and quote pairs) around a dot-like mark or 'dot' as a separator, with optional spaces; allow spaces inside a dot-like run ('. . .'); widen _is_dotlike to name-matched So characters (BULLET, DOT, CIRCLE OPERATOR/SPOT as decided). Add generated tests for '<space><open><dot><close><space>' over all bracket/quote pairs and for spaced dot runs, end to end through verify/extractive/surface.",
+    "title": "R1-01 link class still open: a dot in a non-ASCII bracket/quote pair with spaces ('refunds-portal \u3010.\u3011 com/claim', '\u300c.\u300d', '\u3014.\u3015', '\u00ab.\u00bb', '\u27e8.\u27e9', '\".\"'), a spaced dot run ('refunds-portal . . com/claim') or a So-category bullet ('\u25e6' U+25E6, '\u25cf') passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, within D13 'any bracketed dot')"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "Probe /tmp/uri_review_R7/p4.py: SY.verify('Little progress was made on the energy rebate bill this session [1].', ['A little progress was made on the energy rebate bill this session.']) keeps the claim unquoted (quoted=False) citing [1]; the reverse also passes, as do 'Lawmakers expect little support ...' against 'expect a little support ...' and 'found a little evidence of fraud' against 'found little evidence of fraud'. _excerpt lets the claim add a determiner (synthesize.py:209) and lets the source drop leading or mid-sentence determiners (lead_ok :196, gap_ok :171); 'little' is not in _QUANTITY and not in _NEG/_ANTONYMS. Scarcity versus presence is reversed, while the citation says the source states it (R1-06 / D7 class).",
+    "files": [
+     "uri_web/synthesize.py:171",
+     "uri_web/synthesize.py:196",
+     "uri_web/synthesize.py:209",
+     "uri_web/synthesize.py:72"
+    ],
+    "id": "R7-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Do not let an added or skipped determiner sit directly before a quantifier (little, few, bit, lot, number, deal, ...), or add 'little' (and similar determiner-sensitive quantifiers) to _QUANTITY so such claims are quoted; more generally, require the claim's determiners to equal the source's in place.",
+    "title": "Verifier keeps a reversed-meaning claim in the Brain's words: an added or dropped determiner turns 'a little' into 'little' (and back), and the claim keeps its citation"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist tests/a2ui",
+    "result": "3187 passed in 84.79s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R7/p1.py, p2.py (link detector probes)",
+    "result": "spaced non-ASCII bracketed dots, spaced dot runs, So bullets, 'portal; com/claim' not detected",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R7/p3.py (verify/extractive/surface/A2UI end to end)",
+    "result": "10 of 11 forms reach the surface with 'refunds-portal'",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R7/p4.py (D7/D14 determiner probes)",
+    "result": "'a little' <-> 'little' claims kept unquoted with citation",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R7/p6.py (netpolicy.check_url adversarial URLs)",
+    "result": "all private/ambiguous/userinfo/port forms refused; normalised hosts go through the resolver, and every answer is checked",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "flutter test --no-pub test/living/assist_mode_test.dart test/living/assist_r9_test.dart",
+    "result": "needs flutter pub get, which would write into the read-only checkout",
+    "status": "BLOCKED"
+   }
+  ],
+  "unverified": [
+   "Flutter Assist controller lifecycle tests (pub get would write into the checkout)",
+   "Live Windows/GPU vision, live Tavily search, browser channel on real hardware",
+   "ws_frozen_check zip part (Phase 1 checkpoint zip absent)",
+   "Vision gating, permissions (access.py/bridge.py), integrated worker dispatch and snapshot.js parity were re-checked only through the passing test suite this round, without new adversarial probes"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 7,
+ "started_at": "2026-10-11T11:12:26Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 72
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.2588155999999997,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R7",
+  "ended_at": "2026-10-11T11:15:43Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 24,
+  "pid": 23841,
+  "prompt_sha256": "af7ab95f23191bae8674f80b2699c8d07cb9563102e969b31f66968db4430bad",
+  "provider": "claude_cli",
+  "result_text_sha256": "9a7e43a0f1485771b6a66819ebdf1126405640dce282ca6bdf464edaa38a2b16",
+  "role": "reviewer",
+  "session_id": "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+  "session_id_requested": "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+  "started_at": "2026-10-11T11:12:26Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "7c188478732d88a03eba3baa2c25842799a44b88131ddd3553fd83c03af29e6f"
+ }
+}

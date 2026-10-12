@@ -1,0 +1,225 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/SSRF-1/audit_R1",
+ "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded",
+ "blocking_ids": [
+  "R1-01"
+ ],
+ "candidate": "f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-12T02:12:00Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7",
+   "impl_head": "f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/ssrf-1-20261012",
+   "refs": "a5e85f199c74549043349d9fcc8736b7df7e3bc5f3e64d5b66666adeffc34c9d",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7",
+   "impl_head": "f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/ssrf-1-20261012",
+   "refs": "a5e85f199c74549043349d9fcc8736b7df7e3bc5f3e64d5b66666adeffc34c9d",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded",
+  "candidate": "f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "fetch_url maps rec.fetch_status == REFUSED to the fixed message 'URI will not fetch that address (private or local network).' SafeFetcher also uses REFUSED for DNS_FAILED, DNS_EMPTY, PORT_REFUSED, URL_INVALID and HOST_INVALID. Probe with a resolver raising socket.gaierror for 'http://typo-domain-xyz.com/' returned {'status':'unavailable','message':'URI will not fetch that address (private or local network).','refusal_code':'DNS_FAILED'}. The production tool gives the same for a host of 5x63-char labels (DNS_FAILED), and 'https://example.com:8443/x' gives PORT_REFUSED with the same message. The baseline reported an unresolvable host as 'URI could not reach that URL.' The module docstring promises to report the real reason; a typo'd or offline domain is now told to the user as a private-network address.",
+    "files": [
+     "uri_core/tools/fetch_url.py:147",
+     "uri_web/safe_fetch.py:259"
+    ],
+    "id": "R1-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Use the private/local message only for address-class codes (ADDRESS_NOT_PUBLIC, ADDRESS_TRANSITION_REFUSED, HOST_LOCAL_NAME, HOST_NUMERIC_AMBIGUOUS, USERINFO_REFUSED). Map DNS_FAILED and DNS_EMPTY to 'URI could not reach that URL.', and PORT_REFUSED, SCHEME_REFUSED and URL_INVALID to accurate wording. Keep refusal_code and do not add the address. Add tests for DNS failure and port refusal messages.",
+    "title": "Every REFUSED status, including DNS failure, port refusal and invalid URL, is reported as a 'private or local network' address"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "Mock 200 text/html with content-encoding: gzip returns {'status':'unsupported','message':\"URI has no reader for content type 'unknown'.\",'content_type':''}. The baseline (requests) decompressed it transparently and returned the text. Accept-Encoding: identity makes this rare.",
+    "files": [
+     "uri_web/safe_fetch.py:400",
+     "uri_core/tools/fetch_url.py:177"
+    ],
+    "id": "R1-02",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Report the real reason (unsupported content encoding) or keep the content type, so an HTML page is not called 'unknown'.",
+    "title": "Content-Encoding gzip response is reported as unsupported content type 'unknown'"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "Mock text/html (no charset, no meta) with Latin-1 body b'<p>caf\\xe9</p>' gives text 'caf\\ufffd'. The baseline used requests' response.encoding (ISO-8859-1 for text/*) and gave 'caf\u00e9'. The reverse case (UTF-8 bytes without a charset) improves. This is a small output change under S-AC5 'public HTML unchanged'.",
+    "files": [
+     "uri_web/safe_fetch.py:427",
+     "uri_core/tools/fetch_url.py:199"
+    ],
+    "id": "R1-03",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Accept and record the change in the plan, or fall back to latin-1 when UTF-8 decoding fails.",
+    "title": "HTML without a charset is now decoded as UTF-8 instead of ISO-8859-1"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "kind = extra or TEXT_TYPES.get(mime). With fetch_url's map, text/plain becomes 'document', so _robots_allows (res.kind == 'text') would never parse robots.txt if robots were enabled on that fetcher. Not reachable today because fetch_url passes robots=False.",
+    "files": [
+     "uri_web/safe_fetch.py:354",
+     "uri_web/safe_fetch.py:282"
+    ],
+    "id": "R1-04",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Document that extra_types must not be used with robots, or keep robots.txt fetches on TEXT_TYPES only.",
+    "title": "extra_types overrides TEXT_TYPES, which silently changes robots.txt handling for such a fetcher"
+   }
+  ],
+  "prior_findings": [],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/ssrf",
+    "result": "55 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/ssrf on git archive of 03f0bf2c with the test file copied in",
+    "result": "53 failed, 2 passed (matches the claim)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/web",
+    "result": "3677 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest test_m19_office_readiness.py test_m20_research_recovery.py test_orchestrator_evidence_transport.py",
+    "result": "collection error: ModuleNotFoundError google",
+    "status": "BLOCKED"
+   },
+   {
+    "command": "same 3 files via /tmp/uri_review_R1/run_stub.py (google*, google_auth* modules stubbed)",
+    "result": "58 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "PYTHONPATH=. python /tmp/uri_review_R1/probe1.py (30 adversarial URL forms, DNS failure, port, long host)",
+    "result": "all internal forms refused with no wire request; DNS failure and port refusal misreported as private network (R1-01)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "PYTHONPATH=. python /tmp/uri_review_R1/probe2.py (gzip, charset, 302 without location, json)",
+    "result": "R1-02 and R1-03 reproduced; 302 and json behave as before",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Live public fetch through the production direct transport (cloud egress requires a proxy; S-AC10)",
+   "The 3 legacy test files with the real google libraries installed (run here only with stubbed modules)",
+   "Frozen-file integrity check script: not run; checked by diff only (only uri_core/tools/fetch_url.py changes among protected paths)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 1,
+ "started_at": "2026-10-12T02:07:58Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "f6fd90f9-d34a-4b11-97a2-534e8115e22a",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.9013705,
+  "cwd": "/tmp/claude-0/lc-work/SSRF-1/audit_R1",
+  "ended_at": "2026-10-12T02:11:59Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 17,
+  "pid": 6512,
+  "prompt_sha256": "c70c95e9ad340f615bbd8d51ff7dcfd440e1e9967371a7905a18f4eeb1599945",
+  "provider": "claude_cli",
+  "result_text_sha256": "1b7cd849dd85f662059e007330e6fd2213821ad12a74283d8f6a9486d971ab62",
+  "role": "reviewer",
+  "session_id": "f6fd90f9-d34a-4b11-97a2-534e8115e22a",
+  "session_id_requested": "f6fd90f9-d34a-4b11-97a2-534e8115e22a",
+  "started_at": "2026-10-12T02:07:58Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "05e5cf78e11db6c539c9c03dab7e01b5cdbb84cd7247525a2c41dcbb1aa48725"
+ }
+}

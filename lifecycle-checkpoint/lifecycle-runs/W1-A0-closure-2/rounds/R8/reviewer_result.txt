@@ -1,0 +1,37 @@
+I'm rejecting R8. The R7-02 determiner repair holds, but the R1-01 link class is still open: two new link forms get through the whole pipeline.
+
+**What I checked**
+- **SHAs:** HEAD is `474adb8440ffcf946384edd23c15245c3061eee5` and the baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` exists.
+- **Protected paths:** none changed between the baseline and the candidate.
+- **R7 repair scope:** the R7 repair (`f604e7cd..474adb84`) touches only `uri_web/untrusted.py`, `uri_web/synthesize.py` and one new test file.
+- **Tests:** `pytest tests/web tests/assist` gives 3188 passed.
+- **R7-01:** every form the R7 reviewer listed is now caught.
+- **R7-02:** verified, including forms the repair's tests do not cover ('a few' vs 'few', 'quite a few', 'not all', 'not many', 'hardly any', 'no evidence', 'never'). Each is either quoted verbatim or dropped.
+
+**New blocking finding: R8-01, HIGH**
+
+The dot detector only counts punctuation and symbols as dots. Characters that look like a middle dot but are classed as letters are missed. So is a spaced dot followed by a spaced-out top-level label. These all pass `has_link_or_contact`, `verify()`, `extractive()`, the research surface and the A2UI validator unmasked (probe `/tmp/uri_review_R8/p3.py`):
+- `refunds-portalꞏcom/claim` (U+A78F LATIN LETTER SINOLOGICAL DOT, looks like `·`)
+- `refunds-portal ꞏ com`
+- `refunds-portalᐧcom/claim` (U+1427 CANADIAN SYLLABICS FINAL MIDDLE DOT)
+- `refunds-portal . c om/claim` and `refunds-portal . c o m`, while the tight form `refunds-portal.c om` is caught
+
+**Other gaps, folded into R8-01 rather than filed separately:** U+A4F8, U+02D1 and U+0660 in the dot position are also not detected. A dot between dashes (`refunds-portal -.- com`) is missed too. It is close to the recorded "dash between labels" limit, so it may count as accepted.
+
+**Not re-verified this round:** the R1-03, R1-04 and R1-05 repairs got only the passing test suite, not fresh adversarial probing. SSRF, vision, permissions, worker and Flutter UI are unchanged since R7, so I did not re-probe them, and I did not run the Flutter tests.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "474adb8440ffcf946384edd23c15245c3061eee5", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [{"id": "R8-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R1-01 link class still open: letter-category middle-dot look-alikes (U+A78F LATIN LETTER SINOLOGICAL DOT, U+1427 CANADIAN SYLLABICS FINAL MIDDLE DOT) and a spaced dot before a split top-level label ('refunds-portal . c om/claim', 'refunds-portal . c o m') pass has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, D13 'middle dots', 'mask any dot-joined word')",
+   "files": ["uri_web/untrusted.py:129", "uri_web/untrusted.py:133", "uri_web/untrusted.py:186", "uri_web/untrusted.py:192", "uri_web/synthesize.py", "uri_web/surface.py"],
+   "evidence": "/tmp/uri_review_R8/p3.py, built like test_r7_01_reviewer_links_end_to_end: for link in ['refunds-portal\\ua78fcom/claim', 'refunds-portal \\ua78f com', 'refunds-portal\\u1427com/claim', 'refunds-portal . c om/claim', 'refunds-portal . c o m'], U.has_link_or_contact(src) is False, SY.verify and SY.extractive keep the claim with 'refunds-portalꞏcom/claim' etc. verbatim, and build_surface + require_valid output contains 'portal'. _is_mark/_is_dotlike only consider P*/S* categories, so a Lo/Lm dot (renders identically to U+00B7, which D13 covers) becomes part of the host label. _SPLIT_TLD (R7-01) handles a split TLD only after a tight dot ('refunds-portal.c om' is detected), not after the spaced dot D13 allows ('refunds-portal . c om' is not). Related, not filed separately: U+A4F8, U+02D1 and U+0660 as separators, and 'refunds-portal -.- com' (dash-wrapped dot), also pass.",
+   "suggested_fix": "Treat as dot-like any code point whose Unicode name contains DOT/MIDDLE DOT/FULL STOP regardless of category (excluding 'WITH DOT' letters), including Lo/Lm, both as a separator inside a label run and spaced; apply the split-top-level-label rule after every _DOT separator, not just tight ones; add the forms above to the end-to-end regression test."}],
+ "prior_findings": [{"id": "R1-01", "status": "NOT_FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}],
+ "tests_run": [{"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist", "result": "3188 passed in 89.64s", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R8/p1.py; p2.py (link detector probes)", "result": "R7-01 listed forms detected; new misses: U+A78F, U+1427, U+A4F8, U+02D1, U+0660 separators, 'refunds-portal . c o m', dash-wrapped dot", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R8/p3.py (end-to-end verify/extractive/surface/A2UI)", "result": "5/5 bypass forms reach the validated surface unmasked", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R8/p4.py (R7-02 sibling probes)", "result": "all determiner/negation variants quoted verbatim or dropped", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "git diff --name-only ffdf534..474adb8 | grep protected paths", "result": "no protected path changed", "status": "COMPLETED_WITH_RESULT"}],
+ "unverified": ["Flutter widget tests (uri_ui) not run this round", "SSRF/safe_fetch, vision gating, access/bridge permissions, integrated worker dispatch and snapshot.js not re-probed adversarially this round (unchanged since R7; covered by passing test suite only)", "R1-03/R1-04/R1-05 status rests on earlier rounds and the passing suite, not new adversarial probes", "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)", "Windows/GPU live verification not possible"]}
+AUDIT_RESULT_END

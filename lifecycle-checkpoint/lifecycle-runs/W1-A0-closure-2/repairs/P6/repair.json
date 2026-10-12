@@ -1,0 +1,101 @@
+{
+ "addresses": [
+  "R7-01",
+  "R7-02"
+ ],
+ "changed": [
+  "tests/web/test_w1_closure_r8_review_regressions.py",
+  "uri_web/synthesize.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "474adb8440ffcf946384edd23c15245c3061eee5",
+ "ended_at": "2026-10-11T11:24:55Z",
+ "pre": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/web/test_w1_closure_r8_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 6,
+ "report": {
+  "not_repaired": [],
+  "notes": "R7-01 (uri_web/untrusted.py): any bracket or quote mark from any script (Ps/Pi/Pe/Pf, ASCII quotes, other non-dot marks) on BOTH sides of a dot or 'dot', with optional spaces, is a separator; dot runs may contain spaces ('. .'); 'd o t' is spelt-out dot; symbols named BULLET/DOT/CIRCLE/SPOT/RING OPERATOR (including category So: U+25E6, U+25CF) count as dots; a mark then a space before a common domain ending (com|net|org|gov|edu|mil|int|info|biz|arpa|io|xyz, any case) or before any known ending followed by '/path' is a link (new _SPACED_MARK), so 'portal, com', 'portal: com', 'portal; com/claim', 'portal! com/claim' are caught. Remaining gap for the owner ledger: another domain ending after a comma or colon and a space with no path ('portal, shop'), alongside D13's 'portal. Com'. Cost: some ordinary text is now flagged ('profits, net of tax'); prose link checks are about 1.7x slower, still linear. R7-02 (uri_web/synthesize.py): new _DETERMINER_SENSITIVE list (little, few, bit, lot, number, deal, most, other, ...); _excerpt no longer lets a claim add, or the source drop, a determiner directly before these words (in match, gap_ok and lead_ok), so such claims are quoted word for word. Verified: the new test file fails on f604e7cd (R7-01 and R7-02 cases) and all 108 pass after; tests/web + tests/assist: 3188 passed. tests/phase2a/test_frozen_core.py::test_base_commit_is_the_one_the_checkpoint_was_built_on fails both before and after (it expects the checked-out commit to start with e8e3b65; about which commit is checked out, not this code). Existing slowdown not addressed (not in scope): mask_links('a '+'('*50000) takes about 55 s both before and after the change. graphify not run, as instructed.",
+  "regression_tests": [
+   "tests/web/test_w1_closure_r8_review_regressions.py"
+  ],
+  "repaired": [
+   "R7-01",
+   "R7-02"
+  ]
+ },
+ "started_at": "2026-10-11T11:15:44Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "d0bd7d2a-2908-40b0-bd23-9274da5c43fc",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 146
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.2665978000000002,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T11:24:47Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 21,
+  "pid": 27039,
+  "prompt_sha256": "de201008ad0e4938af0e0ae74840127e4b785684e1ad58457a7e5d9297951069",
+  "provider": "claude_cli",
+  "result_text_sha256": "e1629f9cddfef08a1fe14d5d7326776009405c27d07bcd9515202e64addb0abe",
+  "role": "implementer",
+  "session_id": "d0bd7d2a-2908-40b0-bd23-9274da5c43fc",
+  "session_id_requested": "d0bd7d2a-2908-40b0-bd23-9274da5c43fc",
+  "started_at": "2026-10-11T11:15:44Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "ba656783e55d58917dea9f10d7bebe5b38ff60851c9fe28fbe27202344675747"
+ }
+}

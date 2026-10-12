@@ -1,0 +1,187 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-2-r3/audit_R2",
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocking_ids": [],
+ "candidate": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+ "effective_verdict": "ACCEPT WITH FINDINGS",
+ "ended_at": "2026-10-11T13:31:26Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "812b04c1a571a7ca20baeaecb91c2b7d8f2ff62cae7e5a058debd7dcc9a8145d",
+   "head": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+   "impl_head": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-2-20261011",
+   "refs": "df9dfc97ba9e56c711020c1e54789bc8a013437c918afbfbaa50346142353e12",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "812b04c1a571a7ca20baeaecb91c2b7d8f2ff62cae7e5a058debd7dcc9a8145d",
+   "head": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+   "impl_head": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-2-20261011",
+   "refs": "df9dfc97ba9e56c711020c1e54789bc8a013437c918afbfbaa50346142353e12",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+  "candidate": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+  "findings": [
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "run_cmd/_run catch only TimeoutExpired and OSError around communicate(); text=True without an encoding makes undecodable output raise UnicodeDecodeError on POSIX (reproduced for real: run_cmd on a child writing b'\\xff\\xfe' raises before finish()), and on Windows the reader thread dies so communicate raises IndexError (from reading CPython). The regression proof runs run_cmd on implementer-written tests inside _commit_and_prove, whose except Exception (lifecycle.py:1222) turns the error into REFUSED and the driver loop continues. Probe /tmp/uri_review_R2/cand/tests/dev_workflow/test_probe_decode.py (fake kernel32, communicate raises IndexError): run_cmd and run_worker raise, api.jobs[1] == {'active': 1, 'terminated': False}, _OPEN_JOBS == [], _TAINTED == [], and C.precheck()['contained'] is True; all 3 probe tests pass on the candidate. Linux is still covered by the next orphan sweep; on Windows nothing ends the job until the driver exits (KILL_ON_JOB_CLOSE). The lifecycle doc says every spawned worker or command goes through finish() 'also when its communicate() fails', which is broader than the code.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:675",
+     "scripts/dev_workflow/lifecycle_providers.py:598",
+     "scripts/dev_workflow/lifecycle.py:1222",
+     "scripts/dev_workflow/containment.py:300",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"
+    ],
+    "id": "R2-01",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Call containment.finish() from a try/finally (or catch Exception, record it, then finish and re-raise), or decode with errors='replace'; add a regression test with a communicate() that raises an exception other than OSError.",
+    "title": "R2-01 repair covers only OSError: any other exception from communicate() (e.g. UnicodeDecodeError / Windows reader-thread IndexError on undecodable output) skips containment.finish(); the job stays unterminated and untracked and the next precheck() reports contained=True"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "r2.R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "r2.R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "r2.R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "r2.R2-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -p no:cacheprovider -rs (candidate)",
+    "result": "238 passed, 5 skipped; the 5 are windows_only tests reported by name as PLATFORM-GATED",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest test_lifecycle_dl2_r2_repair.py + test_lifecycle_windows_cli.py on a git-archive export of pre-repair 0ee6885 with the candidate files copied in",
+    "result": "11 failed (all 8 R1-02 cases and 3 R2-01 tests, each for its own reason), 11 passed (unchanged or modified W-2 tests)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest test_lifecycle_windows_cli.py on a git-archive export of baseline ce1a90c with the candidate file copied in",
+    "result": "11 failed, 0 passed (KeyError path/launch/sha256/realpath/ambiguous, missing resolve_cli, wrong separator, WAITING_FOR_MODEL instead of BLOCKED)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest /tmp/uri_review_R2/cand/tests/dev_workflow/test_probe_decode.py (adversarial probe)",
+    "result": "3 passed, confirming the gap: the job is left unterminated and untracked and precheck() reports contained=True; real UnicodeDecodeError escapes run_cmd on Linux",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Real Windows Job Object behaviour and the 5 windows_only tests (platform-gated; owner's PC)",
+   "CPython-on-Windows communicate() raising IndexError on a decode failure in the reader thread (from reading the code, not run)",
+   "F3 canonical_remote, W-1 and W-3 re-checked only through the passing tests and the diff this round, not re-probed in depth",
+   "Diagnosis worker (implementer settings, role reviewer, no bound identity): a launcher that cannot be bound is launched as found, which on Windows means through cmd.exe; not on the reviewer verdict path, not assessed further"
+  ],
+  "verdict": "ACCEPT WITH FINDINGS"
+ },
+ "round": 2,
+ "started_at": "2026-10-11T13:26:08Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "e5872d00-ff46-43ed-afe1-343fff3ccfd1",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 163
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.2892175999999997,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-2-r3/audit_R2",
+  "ended_at": "2026-10-11T13:31:25Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 22,
+  "pid": 21902,
+  "prompt_sha256": "7edb52759d032d00866e64ab4983f0eced884fbb6e36fb4e069b34603d4b3e13",
+  "provider": "claude_cli",
+  "result_text_sha256": "9706c96e10b9fe8b4ef2312e829e7a948fe3bee45205d43cfcacce0874b39421",
+  "role": "reviewer",
+  "session_id": "e5872d00-ff46-43ed-afe1-343fff3ccfd1",
+  "session_id_requested": "e5872d00-ff46-43ed-afe1-343fff3ccfd1",
+  "started_at": "2026-10-11T13:26:08Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "af78b205395a2890aeafe017107ec0921e34a6f768a32c56b5d33fdde7962858"
+ }
+}

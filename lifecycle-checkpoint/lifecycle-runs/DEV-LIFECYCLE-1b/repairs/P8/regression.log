@@ -1,0 +1,99 @@
+=== tests/dev_workflow/test_lifecycle.py BEFORE (2d419f6922380f16cf1486c7380f4c8619d66b00) DONE
+........................................................................ [ 70%]
+...........................FFF                                           [100%]
+=================================== FAILURES ===================================
+_ test_r10_01_timed_out_command_with_setsid_child_holding_stdout_returns_and_is_swept _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-286/test_r10_01_timed_out_command_0')
+holder = (['/tmp/claude-0/venv/bin/python', '/tmp/pytest-of-root/pytest-286/test_r10_01_timed_out_command_0/holder.py', '/tmp/p...med_out_command_0/holder.pid'], PosixPath('/tmp/pytest-of-root/pytest-286/test_r10_01_timed_out_command_0/holder.pid'))
+
+    @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="setsid/child-subreaper are Linux-only")
+    def test_r10_01_timed_out_command_with_setsid_child_holding_stdout_returns_and_is_swept(tmp_path, holder):
+        argv, pidfile = holder
+        L.sweep_orphans()  # the driver becomes the child subreaper at startup (run()), before any command
+>       rc, out, err, state = _bounded(lambda: L.run_cmd(argv, tmp_path, 2), 20)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/dev_workflow/test_lifecycle.py:1848: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fn = <function test_r10_01_timed_out_command_with_setsid_child_holding_stdout_returns_and_is_swept.<locals>.<lambda> at 0x7f009d588a40>
+limit = 20
+
+    def _bounded(fn, limit):
+        """Run fn in a thread; a call that blocks on a held pipe fails the test instead of hanging the suite."""
+        import threading
+        box = {}
+        t = threading.Thread(target=lambda: box.setdefault("r", fn()), daemon=True)
+        t.start()
+        t.join(limit)
+>       assert not t.is_alive(), f"did not return within {limit}s of a timeout (R10-01)"
+E       AssertionError: did not return within 20s of a timeout (R10-01)
+E       assert not True
+E        +  where True = is_alive()
+E        +    where is_alive = <Thread(Thread-16 (<lambda>), started daemon 139640609871552)>.is_alive
+
+tests/dev_workflow/test_lifecycle.py:1830: AssertionError
+_ test_r10_01_timed_out_worker_with_setsid_child_holding_stdout_returns_and_is_swept _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-286/test_r10_01_timed_out_worker_w0')
+holder = (['/tmp/claude-0/venv/bin/python', '/tmp/pytest-of-root/pytest-286/test_r10_01_timed_out_worker_w0/holder.py', '/tmp/p...med_out_worker_w0/holder.pid'], PosixPath('/tmp/pytest-of-root/pytest-286/test_r10_01_timed_out_worker_w0/holder.pid'))
+
+    @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="setsid/child-subreaper are Linux-only")
+    def test_r10_01_timed_out_worker_with_setsid_child_holding_stdout_returns_and_is_swept(tmp_path, holder):
+        from scripts.dev_workflow.lifecycle_providers import run_worker
+        argv, pidfile = holder
+>       w = _bounded(lambda: run_worker({"provider": "command", "argv": argv}, "implementer", "p", tmp_path,
+                                        tmp_path / "logs", timeout_s=2), 20)
+
+tests/dev_workflow/test_lifecycle.py:1857: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fn = <function test_r10_01_timed_out_worker_with_setsid_child_holding_stdout_returns_and_is_swept.<locals>.<lambda> at 0x7f009d55f560>
+limit = 20
+
+    def _bounded(fn, limit):
+        """Run fn in a thread; a call that blocks on a held pipe fails the test instead of hanging the suite."""
+        import threading
+        box = {}
+        t = threading.Thread(target=lambda: box.setdefault("r", fn()), daemon=True)
+        t.start()
+        t.join(limit)
+>       assert not t.is_alive(), f"did not return within {limit}s of a timeout (R10-01)"
+E       AssertionError: did not return within 20s of a timeout (R10-01)
+E       assert not True
+E        +  where True = is_alive()
+E        +    where is_alive = <Thread(Thread-17 (<lambda>), started daemon 139640526862016)>.is_alive
+
+tests/dev_workflow/test_lifecycle.py:1830: AssertionError
+____ test_r10_01_pipe_holder_outside_the_swept_tree_cannot_block_the_driver ____
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-286/test_r10_01_pipe_holder_outsid0')
+holder = (['/tmp/claude-0/venv/bin/python', '/tmp/pytest-of-root/pytest-286/test_r10_01_pipe_holder_outsid0/holder.py', '/tmp/p...pe_holder_outsid0/holder.pid'], PosixPath('/tmp/pytest-of-root/pytest-286/test_r10_01_pipe_holder_outsid0/holder.pid'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f009d562660>
+
+    @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="setsid is Linux-only here")
+    def test_r10_01_pipe_holder_outside_the_swept_tree_cannot_block_the_driver(tmp_path, holder, monkeypatch):
+        """Without a working sweep (a holder outside the driver's tree), the read after the timeout is still bounded."""
+        from scripts.dev_workflow import lifecycle_providers as P
+        monkeypatch.setattr(P, "sweep_orphans", lambda *a, **k: {"contained": False, "killed": 0, "reason": "test"})
+        argv, pidfile = holder
+        rc, out, err, state = _bounded(lambda: L.run_cmd(argv, tmp_path, 2), 25)
+>       assert state == "TIMED_OUT" and rc is None
+E       AssertionError: assert ('DONE' == 'TIMED_OUT'
+E         
+E         - TIMED_OUT
+E         + DONE)
+
+tests/dev_workflow/test_lifecycle.py:1870: AssertionError
+=========================== short test summary info ============================
+FAILED tests/dev_workflow/test_lifecycle.py::test_r10_01_timed_out_command_with_setsid_child_holding_stdout_returns_and_is_swept
+FAILED tests/dev_workflow/test_lifecycle.py::test_r10_01_timed_out_worker_with_setsid_child_holding_stdout_returns_and_is_swept
+FAILED tests/dev_workflow/test_lifecycle.py::test_r10_01_pipe_holder_outside_the_swept_tree_cannot_block_the_driver
+3 failed, 99 passed in 194.37s (0:03:14)
+
+=== tests/dev_workflow/test_lifecycle.py AFTER (1f4aeddf50d4eb2d024af7132b443b5dc57591df) DONE
+........................................................................ [ 70%]
+..............................                                           [100%]
+102 passed in 167.48s (0:02:47)
+

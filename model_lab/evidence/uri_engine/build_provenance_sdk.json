@@ -1,0 +1,33 @@
+{
+ "recorded_at": "2026-10-06T21:52:00+05:30",
+ "purpose": "make the stock and seven-line checkpoint-patch builds performance-comparable to the official release build (cooperative-matrix / integer-dot / bf16 Vulkan shaders)",
+ "vulkan_sdk": {
+  "distribution": "LunarG Vulkan SDK for Windows (official)",
+  "version": "1.4.363.0",
+  "source_url": "https://sdk.lunarg.com/sdk/download/1.4.363.0/windows/vulkansdk-windows-X64-1.4.363.0.exe",
+  "version_discovery": "https://vulkan.lunarg.com/sdk/latest/windows.txt -> 1.4.363.0",
+  "installer_sha256_published": "94a82d378f7a5e3e54c9db7d2fb7016af136e14ac0a18dbf0f2f67a36352d141 (https://vulkan.lunarg.com/sdk/sha/1.4.363.0/windows/vulkansdk-windows-X64-1.4.363.0.exe.txt)",
+  "installer_sha256_measured": "94a82d378f7a5e3e54c9db7d2fb7016af136e14ac0a18dbf0f2f67a36352d141",
+  "installer_size_bytes": 303082720,
+  "installer_path": "D:/uri-model-lab/vk/sdk/vulkansdk-windows-X64-1.4.363.0.exe",
+  "installation_method": "NOT installed. The Qt-IFW installer refuses unattended installation without elevation ('Cannot elevate access rights while running from command line') because its core component writes machine-scope registry/environment entries. The SDK payload (10 embedded 7z archives: Bin, Lib, Include, Config, Helpers, share, Source, Templates, cmake, README) was carved out of the installer by 7z signature + exact header length (model_lab/uri_engine/carve_vulkan_sdk.py) into D:/uri-model-lab/vk/VulkanSDK-1.4.363.0; per-archive offsets, sizes and sha256 in D:/uri-model-lab/vk/VulkanSDK-1.4.363.0/CARVE_RECORD.json",
+  "installed_components": "SDK core payload only (Bin incl. glslc/glslang/spirv-tools/dxc, Lib incl. vulkan-1.lib and cmake configs for SPIRV-Headers/SPIRV-Tools/glslang, Include, Config, share, Source, Templates, Helpers). Helpers/VC_redist and VulkanRT were NOT run.",
+  "system_changes": "none: no registry key, no PATH or VULKAN_SDK environment variable, no runtime installed; the toolchain is referenced by absolute path from the build script only",
+  "glslc_version": "shaderc v2026.4 v2026.4 / spirv-tools v2026.4 v2022.4-1347-gef96ed76 / glslang 11.1.0-1566-ge1b562a8 (Target: SPIR-V 1.0)",
+  "previous_toolchain": "Android NDK 28.2.13676358 glslc (shaderc v2022.3 ndk-r27-beta1): GL_KHR_cooperative_matrix, GL_NV_cooperative_matrix2, GL_EXT_integer_dot_product, GL_EXT_bfloat16, GL_EXT_float_e2m1/e4m3 all 'not supported by glslc'"
+ },
+ "builds": {
+  "script": "D:/uri-model-lab/build/rebuild2.sh",
+  "compiler": "MSVC 19.51.36260.0 (Visual Studio 18 Community), Ninja, Release, GGML_VULKAN=ON, GGML_NATIVE=OFF, AVX2/FMA/F16C",
+  "cmake_flags": "-DVulkan_INCLUDE_DIR=<SDK>/Include -DVulkan_LIBRARY=<SDK>/Lib/vulkan-1.lib -DVulkan_GLSLC_EXECUTABLE=<SDK>/Bin/glslc.exe -DCMAKE_PREFIX_PATH=<SDK> -DLLAMA_CURL=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_TOOLS=ON",
+  "capabilities_detected_both_trees": ["GL_KHR_cooperative_matrix", "GL_NV_cooperative_matrix2", "GL_NV_cooperative_matrix_decode_vector", "GL_EXT_integer_dot_product", "GL_EXT_bfloat16", "GL_EXT_float_e2m1", "GL_EXT_float_e4m3"],
+  "stock2": {"source": "D:/uri-model-lab/strata_research/llamacpp-b11425 @ e117148 (clean)", "bin": "D:/uri-model-lab/build/stock2/bin",
+             "llama-server.exe_sha256": "0cf998e007e16e353cb7d655787ba429ad4d4ab7d200b68754172cb33c98acf8", "ggml-vulkan.dll_sha256": "7a466d502c12d571e8715bfd22e657b8564fcd5f266f1015136caa5469c732e8",
+             "ggml-vulkan.dll_bytes": 45303296, "version": "0.5.0-dev (build 1, commit e117148), MSVC 19.51.36260.0"},
+  "rsseq2": {"source": "D:/uri-model-lab/strata_research/llamacpp-rsseq @ e117148 + model_lab/uri_engine/patches/uri-ext-b11425.diff (common/common.h n_rs_seq for n-gram drafters; tools/server/server-context.cpp fine_ckpt)", "bin": "D:/uri-model-lab/build/rsseq2/bin",
+             "llama-server.exe_sha256": "d986102e0ba047fd855a62a6cf2adb69c204022ba3cab477f7993ae8912e5534", "ggml-vulkan.dll_sha256": "48b648fb2a3ba43145e7702bfc8192ef67144efb538ecce136fef22a3bad098b",
+             "version": "0.5.0-dev (build 1, commit e117148), MSVC 19.51.36260.0"},
+  "previous_builds_superseded": {"stock": "D:/uri-model-lab/build/stock (ggml-vulkan.dll 28,336,128 bytes, no coopmat) - timing evidence invalid, kept as history", "rsseq": "D:/uri-model-lab/build/rsseq - same"}
+ },
+ "release_reference": {"archive_sha256": "a3287ac487ab5d128aefddc507db31c087f2a41c6e03b01f37fbe0bc45e8717d", "llama-server.exe_sha256": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306", "ggml-vulkan.dll_sha256": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210"}
+}

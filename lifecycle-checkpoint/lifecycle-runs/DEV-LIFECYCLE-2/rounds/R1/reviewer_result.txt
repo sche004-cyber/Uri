@@ -1,0 +1,69 @@
+I verified both SHAs: the candidate is `f3706e0`, and its direct parent is the baseline `ce1a90c`. My verdict is **ACCEPT WITH FINDINGS**: nothing is HIGH or blocking, and there are four LOW findings.
+
+**F1 (POSIX-only calls on the worker and gate routes).** All three kill paths (`lifecycle.run_cmd`/`_killpg` and `lifecycle_providers._killpg`/`drain_after_timeout`) now go through `containment.kill_pid_tree`. That function checks that `os.killpg` and `signal.SIGKILL` exist before using them and falls back to `taskkill` on Windows. `start_new_session` is only used on non-Windows. In `sweep_orphans`, the Windows branch returns before `enable_containment()`, so `os.getsid` and `/proc` are never reached there. I found no other POSIX-only call on these routes.
+
+**F2 (Windows Job Objects).** I could only read this code; there is no Windows here.
+- **Structures and declarations:** the limit, I/O, accounting and thread-entry structures match the Windows headers, and so do the constants. The argument and return types are right, including the error-value checks for invalid handles and `ResumeThread`.
+- **Start order:** the child is created suspended, assigned to the job, and only then resumed. If it cannot be resumed it is killed, its job is terminated, and an error is raised.
+- **Flags:** the job gets only `KILL_ON_JOB_CLOSE`, with no breakaway flag.
+- **Containment check:** `contained=True` is set only after `TerminateJobObject` and an `ActiveProcesses == 0` reading.
+- **Failures:** if the job cannot be created, cannot be assigned, or kernel32 is unavailable, the result is `contained=False`.
+
+The one gap is R1-01 below.
+
+**F3 (canonical remote by URL).**
+- **Matching:** I probed `_norm_url` with 20 forms. HTTPS, SSH, scp-style, `.git`, trailing `/`, case and credentials are all handled correctly. `insteadOf` is applied, because the URL comes from `git remote get-url`.
+- **BLOCKED paths:** no remote, several remotes, a differing `integration.remote`, an empty baseline lookup and an empty integration target all stop as BLOCKED, and tests cover each one.
+
+There are two narrow leftovers, R1-03 and R1-04.
+
+**Linux behaviour** is unchanged: the subreaper sweep is the same, and the extra `proc.kill()` on timeout is harmless. The full `tests/dev_workflow` suite gives 212 passed and 5 skipped. The 5 are the Windows-only tests, and the summary lists each one by name as PLATFORM-GATED rather than skipping them silently.
+
+**Regression proof on `ce1a90c`.**
+- **`test_lifecycle_remote.py`:** all 11 tests fail on the baseline, each for its own reason. The one partial exception is the integration-remote test. On the baseline it fails because its fixture remote does not exist (a `LifecycleError`), not because of the missing canonical-remote check.
+- **`test_lifecycle_platform.py`:** it fails on the baseline at collection, because `containment.py` does not exist there. The file's docstring says so.
+
+**Docs** are accurate. Windows is marked NOT VERIFIED in the capability ledger and in the qualification doc. The containment limits are disclosed, and the scope rule ("URI runtime office or document tasks" excluded, URI Office development in scope) is applied. No protected path, `.gitignore` or new dependency changed.
+
+**Findings (all LOW, non-blocking):**
+- **R1-01 – an unverified job is not checked again.** In `containment.finish`, if a containment call fails after the job was created, the job is never added to the open-job list. The next `precheck` then reports `contained=True` while that job's processes may still be running. I reproduced this with a fake kernel32. A gate that ran with no job at all is also invisible to `precheck`. The trigger is unlikely: a call failing on a valid handle, or a failure that hits a gate but not the next worker.
+- **R1-02 – push URL not checked.** `canonical_remote` checks only the fetch URL. A `pushurl` or `pushInsteadOf` setting could send the candidate commit to another repository. The ls-remote check after the push still prevents a false INTEGRATED.
+- **R1-03 – loose local-path matching.** A bare `github.com/owner/Uri` is a relative local path to git, but it matches the canonical URL. A relative `canonical_url` is resolved against the driver's working directory, not the repository.
+- **R1-04 – old baseline form still accepted.** A `baseline.ref` like `origin/<branch>` is still resolved by remote name, with no check against `canonical_url`. It is no longer in the template, and the `expect` SHA guards against a wrong baseline.
+
+Not verified: the real job behaviour on Windows, i.e. the 5 platform-gated tests and one real DEVTEST round on the owner's PC.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "f3706e03402f496ae91a08a69db515df4bf89245", "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [
+  {"id": "R1-01", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Windows: a job whose termination/accounting query fails (or a command that ran without a job) is never re-checked by precheck(), so the next worker can be reported contained",
+   "files": ["scripts/dev_workflow/containment.py:275-280", "scripts/dev_workflow/containment.py:296-312", "scripts/dev_workflow/lifecycle.py:681"],
+   "evidence": "finish(): on OSError from terminate/_wait_empty it returns contained=False without appending the job to _OPEN_JOBS (and without closing it, so KILL_ON_JOB_CLOSE does not fire); precheck() iterates only _OPEN_JOBS. run_cmd discards finish()'s result. Probe /tmp/uri_review_R1/probe_precheck.py with a fake API (query fails once, job still has 2 active): 'gate finish: contained False ... job not verified' then 'job 1 still has 2 active; next worker precheck: {contained: True, killed: 0}'. A gate whose job could not be created or assigned is likewise invisible to precheck, unlike the Linux sweep, which catches any orphan. Needs a kernel32 failure on a valid handle, or a per-command job failure, so the trigger is unlikely.",
+   "suggested_fix": "Keep every created job in _OPEN_JOBS whatever finish() does, and keep a sticky 'uncontained since last precheck' flag (set by any finish() or spawn() with contained=False) that makes the next precheck() return contained=False."},
+  {"id": "R1-02", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "canonical_remote() checks only the fetch URL; the integration push uses pushurl/pushInsteadOf, which may point at another repository",
+   "files": ["scripts/dev_workflow/lifecycle.py:1255", "scripts/dev_workflow/lifecycle.py:1349"],
+   "evidence": "`git remote get-url <name>` returns the fetch URL; `git push <remote>` uses remote.<name>.pushurl / url.*.pushInsteadOf if set. The post-push ls-remote (fetch URL) stops a false INTEGRATED, but the candidate is pushed to the other repository.",
+   "suggested_fix": "Also require `git remote get-url --push --all <name>` to normalise to canonical_url, else BLOCKED REMOTE."},
+  {"id": "R1-03", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "_norm_url treats a bare relative path 'github.com/owner/Uri' as the canonical URL, and resolves a relative canonical_url against the driver's working directory",
+   "files": ["scripts/dev_workflow/lifecycle.py:1228-1241"],
+   "evidence": "Probe /tmp/uri_review_R1/norm.py: _norm_url('github.com/sche004-cyber/Uri') == _norm_url('https://github.com/sche004-cyber/Uri') -> True, although git treats that remote URL as a local relative directory. './x' resolves to os.getcwd()/x, not relative to the repository.",
+   "suggested_fix": "Only apply the host/path regex to URLs with a scheme or scp form (user@host:path); treat everything else as a local path resolved against cfg['repo']."},
+  {"id": "R1-04", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "The old baseline.ref form '<remote>/<branch>' is still accepted for real milestones and resolved by remote name, not checked against canonical_url",
+   "files": ["scripts/dev_workflow/lifecycle.py:1386-1388"],
+   "evidence": "init(): without baseline.remote_branch it runs `rev-parse --verify <ref>`, e.g. 'origin/integration/git-sync-20261008' (the pre-DL2 TEMPLATE form), reading a remote-tracking ref by name. load_config does not reject it. Mitigated by the 'expect' SHA and by rev-parse failing when the ref is missing (an error, not 'no baseline').",
+   "suggested_fix": "For non-DEVTEST milestones, require baseline.remote_branch, or refuse a baseline.ref under refs/remotes/ that does not belong to the canonical remote."}
+ ],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow (candidate f3706e0)", "result": "212 passed, 5 skipped; summary lists 5 PLATFORM-GATED windows_only tests by name (test_win_kill_tree_on_exited_pid_and_on_a_live_tree, test_win_grandchild_is_gone_after_the_sweep, test_win_breakaway_is_refused, test_win_active_processes_rule_on_a_real_job, test_win_job_creation_failure_is_not_contained)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git archive ce1a90c into /tmp/uri_review_R1/base + new test_lifecycle_remote.py; pytest tests/dev_workflow/test_lifecycle_remote.py", "result": "11 failed (F1: AttributeError os.killpg; source-grep finds os.killpg; F3: no canonical_remote / KeyError 'ref' / INTEGRATION instead of REMOTE / LifecycleError for missing remote)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "same baseline tree + test_lifecycle_platform.py", "result": "collection error on baseline (no scripts.dev_workflow.containment module); every test in the file fails for that shared reason", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R1/norm.py (20 URL forms)", "result": "https/ssh/scp/.git/case/credentials/port normalise as intended; bare relative 'github.com/owner/Uri' also matches (R1-03)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R1/probe_precheck.py (fake kernel32)", "result": "an unverified job is dropped; the next precheck reports contained True with 2 active processes (R1-01)", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Real Windows Job Object behaviour (ctypes declarations, suspended->assign->resume, breakaway refusal, ActiveProcesses==0, grandchild kill): reviewed by reading only; the 5 windows_only tests are PLATFORM-GATED here and must run on the owner's PC", "One real DEVTEST lifecycle round on Windows showing contained: true and is_independent true", "L2 note in the older uri-development skill (not present in this repository; applied on the PC per the plan)"]}
+AUDIT_RESULT_END

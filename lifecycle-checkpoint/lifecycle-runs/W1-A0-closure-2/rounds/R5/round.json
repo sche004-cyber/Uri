@@ -1,0 +1,249 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R5",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R5-01",
+  "R5-02"
+ ],
+ "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T10:27:04Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "impl_head": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "8257454a9cb30569b466b8904187d01dea6a4ef963f1dc4591e2be2c3384b2be",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "impl_head": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "8257454a9cb30569b466b8904187d01dea6a4ef963f1dc4591e2be2c3384b2be",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_BARE needs a non-[\\w-] character on both sides of the domain ('(?<![\\w-])' before it, '(?![\\w-])' after the top-level label), and '_' is \\w; the first host label also cannot start with '_'. Probe /tmp/uri_review_R5/p1.py: has_link_or_contact returns False and mask_links leaves the text unchanged for 'Claim at _refunds-portal.com_ today.', 'refunds-portal.com_', '_refunds-portal.com', '-refunds-portal.com', '__refunds.cash__', 'refunds.com-'. Probe p2.py with source 'Claim your energy rebate refund at _refunds-portal.com_ before the deadline.': verify() keeps the Brain sentence, extractive() picks it, build_surface shows the domain and require_valid accepts the surface. The same happens for '_refundsportal.xn--p1ai_'. Markdown italics/emphasis is a realistic form in retrieved web text.",
+    "files": [
+     "uri_web/untrusted.py:67",
+     "uri_web/untrusted.py:164",
+     "uri_web/untrusted.py:171",
+     "uri_web/synthesize.py:225",
+     "uri_web/synthesize.py:305",
+     "uri_web/surface.py:38"
+    ],
+    "id": "R5-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Do not treat '_' or a trailing/leading '-' as part of the word around the domain: drop '_' and '-' from the boundary lookarounds (e.g. use (?<![^\\W_]) and (?![^\\W_])), or strip '_'/'-' runs at token edges before matching, and also check every token after removing edge punctuation and underscores. Add regression cases for _x.com_, x.com_, -x.com, __x.cash__ in has_link_or_contact, verify, extractive and the surface.",
+    "title": "R1-01 class still open: a link next to an underscore or hyphen ('_refunds-portal.com_', 'refunds-portal.com_', '-refunds-portal.com') passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "match(0,-1) checks gaps only when prev >= 0, so the words before the first matched word are never checked and a claim can be any trailing run of the source sentence. Probe /tmp/uri_review_R5/p4.py: verify('A plurality of voters backed the measure [1].', ['Less than a plurality of voters backed the measure.']) keeps the claim with quoted=False; the same for 'A quorum of members attended the vote' from 'Well short of a quorum of members attended the vote.' and (p3.py) 'A quintet of firms control the national market' from 'Fewer than a quintet of firms control the national market.'. states_quantity is False for these claims, so nothing else forces a quote.",
+    "files": [
+     "uri_web/synthesize.py:155",
+     "uri_web/synthesize.py:185",
+     "uri_web/synthesize.py:193",
+     "uri_web/synthesize.py:263"
+    ],
+    "id": "R5-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Apply the same fail-closed rule to the words left out at both ends: the claim must start at the start of the source sentence or of a clause (after a clause mark or clause word), and end at its end or at a clause boundary, with only determiners or _PLAIN_MODIFIERS dropped at the edges; otherwise quote the source sentence. Add regression cases with leading and trailing qualifiers around unlisted quantity words.",
+    "title": "D7 bypass at the sentence edge: _excerpt lets a claim drop a leading qualifier ('Less than', 'Fewer than', 'Well short of') before an undetected quantity word (plurality, quintet, quorum), so a changed quantity is shown unquoted in the Brain's words"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist",
+    "result": "2897 passed in 65.56s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R5/p1.py and p2.py (link detector, verify, extractive, surface, A2UI validator)",
+    "result": "underscore- and hyphen-adjacent domains not detected; they reach verify, extractive and a valid surface",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R5/p3.py and p4.py (_excerpt / D7)",
+    "result": "a dropped leading qualifier is shown unquoted; the R4-02 interior gap now quotes",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R5/p5.py (netpolicy check_address/check_url)",
+    "result": "all private, mapped, NAT64, 6to4, Teredo, integer and octal IPv4, userinfo, port and scheme cases refused; public addresses allowed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --name-only ffdf534..f5a5b8ec filtered by the protected-path list",
+    "result": "no protected path changed",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "R1-03..R1-06 and R2-03 marked FIXED on the strength of their passing regression tests in tests/web and tests/assist; I did not probe them adversarially in R5",
+   "Flutter Assist controller lifecycle tests (uri_ui) not run in this round",
+   "Playwright/Chromium tests for snapshot.js redaction and Python/JS parity not separately probed beyond the tests/assist suite",
+   "safe_fetch redirect, DNS pinning and proxy behaviour only covered by the existing suite; this round's own probes covered netpolicy address and URL checks only",
+   "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip not present)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 5,
+ "started_at": "2026-10-11T10:22:30Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "6f65a79d-136c-41cb-9cce-3a488617959e",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 149
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.8555411999999999,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R5",
+  "ended_at": "2026-10-11T10:27:02Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 15,
+  "pid": 23551,
+  "prompt_sha256": "4751785d1bab6f0d6efd4c36ff46dc82068ebfd28daffd5ba74072789dac9e2d",
+  "provider": "claude_cli",
+  "result_text_sha256": "136991ddadfb55b8587be491beb2c1d288f0d5e0c86cf24716cbdc8e33f18bba",
+  "role": "reviewer",
+  "session_id": "6f65a79d-136c-41cb-9cce-3a488617959e",
+  "session_id_requested": "6f65a79d-136c-41cb-9cce-3a488617959e",
+  "started_at": "2026-10-11T10:22:30Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "90cd234ee87474ebbc1ae9be86ead3020484187be7993a78a2be7b29e7ee54c1"
+ }
+}

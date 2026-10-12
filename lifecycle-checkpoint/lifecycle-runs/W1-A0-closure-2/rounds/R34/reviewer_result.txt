@@ -1,0 +1,56 @@
+**Verdict: REJECT.** One new HIGH finding, R34-01. The R33-01 repair works for the forms that were reported, but it is still incomplete when the ending is written in capital letters.
+
+**What I checked**
+- Both SHAs are as stated: HEAD is `bdc82ef1…`, and baseline `ffdf534…` exists.
+- No protected path changed in the review range.
+- `uri_core/tools/fetch_url.py` was not touched, as the owner decided.
+
+**Tests**
+- `tests/web` and `tests/assist`: 5437 passed.
+- `tests/a2ui`: 107 passed.
+- `tests/oi`: 20 failed and 161 errors. All 179 tracebacks I counted are `ModuleNotFoundError: msvcrt`, a Windows-only module. The milestone does not change `tests/oi`, so I count it as blocked by the environment, not as a defect in this candidate.
+
+**The new finding, R34-01**
+
+The fold for capital `I` (read as `l`) only happens when the word also has a lower-case letter. In an all-capitals word, the repair's leading-`I` step makes things worse:
+- It turns `IIVE` into `lIVE`.
+- Because the word now has a lower-case letter, the general fold then turns the second `I` into `l` too, giving `llVE`.
+- `llVE` is not a domain, so nothing is detected.
+
+Each pair below looks the same in a sans-serif font; the left side is detected and the right side is not:
+
+| Detected (link) | Not detected |
+|---|---|
+| `refunds-portal ~ lIVE` | `refunds-portal ~ IIVE` |
+| `refunds-portal ~ lINK` | `refunds-portal ~ IINK` |
+| `refunds-portal ~ lOl` | `refunds-portal ~ IOI` |
+| `refunds-portal ~ Pl` | `refunds-portal ~ PI` |
+| `refunds-portal ~ Il` | `refunds-portal ~ II` |
+| `refunds-portal MIl/claim` | `refunds-portal MII/claim` (core domain `.mil`, plain space) |
+
+Every right-hand form gets through all of these:
+- `has_link_or_contact` returns False.
+- `mask_links` leaves the text on screen.
+- `verify()` keeps the cited claim.
+- `extractive()` keeps it.
+- `surface.clean()` leaves the text unmasked.
+
+The A2UI validator also accepts it, but that check is only a string-hygiene check. I probed the other separators the R33 code handles (`. `, `[.]`, a real dot, `:`, brackets, quotes); there the `I` and `l` spellings are treated the same, so those are not gaps.
+
+The probe scripts are in `/tmp/uri_review_R34/` (p1–p4).
+
+AUDIT_RESULT_BEGIN
+{"candidate": "bdc82ef1ccfced0ff28001531807d1d18dad8f65", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [{"id": "R34-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R33-01 repair incomplete (R31/R32/R33 class): capital 'I' as 'l' is not folded in upper-case runs, and the leading-I step makes the general fold turn the next 'I' into 'l', so 'IIVE', 'IINK', 'IOI', 'PI', 'II' and core 'MII/claim' pass has_link_or_contact, mask_links, verify(), extractive() and the research surface while 'lIVE', 'lINK', 'lOl', 'Pl', 'Il', 'MIl/claim' are links (W1-AC12/AC15, D16/D29)",
+   "files": ["uri_web/untrusted.py:800", "uri_web/untrusted.py:806", "uri_web/untrusted.py:808", "uri_web/untrusted.py:811", "uri_web/untrusted.py:822", "uri_web/surface.py:38"],
+   "evidence": "SENT='Claim your energy rebate refund at {} before the deadline.' has_link_or_contact: '~ lIVE' True vs '~ IIVE' False; '~ lINK' True vs '~ IINK' False; '~ lOl' True vs '~ IOI' False; '~ Pl' True vs '~ PI' False; '~ Il' True vs '~ II' False; 'refunds-portal MIl/claim' True vs 'refunds-portal MII/claim' False. For each False case: mask_links leaves the text unchanged, verify(claim [1], [src]) keeps the claim, extractive() keeps the deadline sentence, and surface.clean('Claim your refund at refunds-portal MII/claim today.') returns it unmasked. Cause: in _ascii_variant, 'I' folds only when `lower and i > 0`, so an all-capitals run never folds. For 'IIVE' the R33 step sets run='lIVE'; that makes lower True, so the comprehension also folds the second 'I' and gives 'llVE', which is not a domain. Probes: /tmp/uri_review_R34/p3.py, p4.py.",
+   "suggested_fix": "Try the candidate readings of each run: every 'I' and '|' read as 'l' or kept, with 0/1 folded, case-insensitive. Mark the run as an ending if any reading is a listed domain (still excluding words that are listed as they stand). Do not apply the 'I'-as-'l' fold one character at a time after rewriting the leading 'I'. Add regression cases for IIVE, IINK, IOI, PI, II and 'MII/claim'."}],
+ "prior_findings": [{"id": "R1-01", "status": "NOT_FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"}, {"id": "R11-01", "status": "FIXED"}, {"id": "R11-02", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"}, {"id": "R13-01", "status": "FIXED"}, {"id": "R14-01", "status": "FIXED"}, {"id": "R16-01", "status": "FIXED"}, {"id": "R16-02", "status": "FIXED"}, {"id": "R17-01", "status": "FIXED"}, {"id": "R18-01", "status": "FIXED"}, {"id": "R19-01", "status": "FIXED"}, {"id": "R19-02", "status": "FIXED"}, {"id": "R20-01", "status": "FIXED"}, {"id": "R20-02", "status": "FIXED"}, {"id": "R21-01", "status": "FIXED"}, {"id": "R22-01", "status": "FIXED"}, {"id": "R23-01", "status": "FIXED"}, {"id": "R24-01", "status": "FIXED"}, {"id": "R25-01", "status": "FIXED"}, {"id": "R26-01", "status": "FIXED"}, {"id": "R27-01", "status": "FIXED"}, {"id": "R28-01", "status": "FIXED"}, {"id": "R29-01", "status": "FIXED"}, {"id": "R30-01", "status": "FIXED"}, {"id": "R31-01", "status": "FIXED"}, {"id": "R32-01", "status": "FIXED"}, {"id": "R33-01", "status": "FIXED"}],
+ "tests_run": [{"command": "/tmp/claude-0/venv/bin/python -m pytest -q -x tests/web tests/assist", "result": "5437 passed", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/a2ui", "result": "107 passed", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/a2ui tests/oi", "result": "tests/oi: 20 failed, 161 errors; all 179 tracebacks counted are ModuleNotFoundError: msvcrt (Windows-only); tests/oi unchanged in range", "status": "BLOCKED"},
+   {"command": "PYTHONPATH=. python /tmp/uri_review_R34/p1.py..p4.py (link-detector probes)", "result": "R33 listed forms detected; upper-case I/l parity gaps found (R34-01)", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "netpolicy.check_address probes (NAT64 local-use /48, 6to4, Teredo, v4-mapped, CGNAT, site-local)", "result": "all refused", "status": "COMPLETED_WITH_RESULT"}],
+ "unverified": ["Flutter tests not run this round", "Playwright browser_extension tests not run this round beyond the tests/assist suite", "ws_frozen_check zip part (checkpoint zip absent)", "Fixed status of rounds R1-R32 is based on the full test suite passing plus spot probes, not on re-running each original reproduction", "R1-01 is marked NOT_FIXED because R34-01 is still a live member of that link class"]}
+AUDIT_RESULT_END

@@ -1,0 +1,16 @@
+I fixed R10-01: selected hidden text and `<script>` or `<style>` source no longer end up in "Selected text". The new regression test fails on 20a646f and passes after the fix, and the full `tests/assist` and `tests/web` suites pass (2629 tests).
+
+**What was wrong:** the selection code (`selectionOf()` in `snapshot.js`) copied every text node inside the selected range. Unlike the page-text code, it didn't check whether the text was actually visible.
+
+**The fix** (`uri_assist/browser_extension/snapshot.js`): I added a small check, `shownText(n)`, that the selection code runs on each text node before copying it. It uses the same visibility test (`visible()`) and the same cache as the page-text code. Any text inside a hidden element or inside `script`/`style`/`noscript`/`template` is skipped and counted under `hidden_text`. The check also covers a selection that sits entirely inside one text node. The existing R9 behaviour for selections inside form fields is unchanged. I made no change on the Python side (`perception.py` / `bridge.py`): it can't tell whether text was visible on the page, so the filtering has to happen in the page script.
+
+**Regression test:** `tests/assist/test_a0_r10_review_regressions.py`. It contains its own page and Playwright runner, written to `tmp_path` at run time. The page has visible text before and after hidden content: `display:none` (the injected instruction), aria-hidden, 1px font, opacity:0, off-screen, a `<script>` holding the e-mail and CSRF token, a `<style>` and a `<noscript>`.
+- **Selection test:** in real Chromium, a real Ctrl+A, a real mouse drag and a whole-body range each give a selection of "Welcome back … You have 3 new messages." with no payload, and `hidden_text` is counted. A range over only the hidden div gives an empty selection.
+- **Brain request test:** the Ctrl+A snapshot goes through `assist_ask` with an observe-only grant and the test client. The request contains "Selected text: Welcome back" and none of the payloads.
+- **Before the fix**, both tests fail: the selection contains "SYSTEM: ignore…", the e-mail and the CSRF token.
+
+`graphify update .` didn't run because the `graphify` command isn't installed here (exit 127), so the knowledge graph wasn't refreshed. Nothing is committed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R10-01"], "not_repaired": [], "regression_tests": ["tests/assist/test_a0_r10_review_regressions.py"], "notes": "snapshot.js selectionOf() now runs each text node through shownText(), which applies the page-text visibility rule (visible(), shared cache) to the parent element and counts hidden_text; this also covers script/style/noscript/template, and a selection inside a single text node is checked too. The regression test embeds its page and Playwright runner, written to tmp_path at run time, and uses real Ctrl+A, a real mouse drag and a programmatic range in real Chromium, then checks the Brain request body via FakeClient. Verified: 2 failed on 20a646f's snapshot.js, 2 passed after the fix; tests/assist + tests/web: 2629 passed. graphify CLI not installed (exit 127), so the graph was not updated. Python layer unchanged: it cannot judge page visibility."}
+REPAIR_RESULT_END

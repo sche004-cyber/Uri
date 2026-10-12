@@ -1,0 +1,98 @@
+{
+ "addresses": [
+  "R26-01"
+ ],
+ "changed": [
+  "tests/web/test_w1_closure_r26_review_regressions.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "be7cdecfd503ed5b1862c6f0bbf35856774f62b2",
+ "ended_at": "2026-10-11T15:50:23Z",
+ "pre": "74909458161186edead2642957332ce50655f558",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/web/test_w1_closure_r26_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 10,
+ "report": {
+  "not_repaired": [],
+  "notes": "_tld_match now strips Mn/Me from the NFD form of the ending and recomposes with NFC before the list lookup, so endings that NFKC composed into a precomposed letter (\u0107om, \u00f2rg, \u1e63hop, sh\u00f3p, c\u00e1sh, \u0450\u044e) match again. The suggested skeleton pass of _ending_spans was not added: it was not needed for any reported case and could start flagging look-alike letters in other-script text. The Cyrillic example '\u0435\u0301\u0444' is outside this class: '\u0435\u0444' is not a listed TLD, and the unaccented form is not flagged before or after the fix. Cyrillic composition is covered with '\u0450\u044e' (\u0435\u044e is listed). Regression file: 21 of 32 cases fail on 74909458; the 11 that pass there are 7 ordinary-text cases plus 4 link cases ('~ \u00f2rg', '* sh\u00f6p/claim', two tests each) the old code already caught by other means. All 32 pass after the fix. tests/web + tests/assist: 5270 passed. Ordinary accented French, Spanish, Vietnamese, Russian and Greek text is still not flagged.",
+  "regression_tests": [
+   "tests/web/test_w1_closure_r26_review_regressions.py"
+  ],
+  "repaired": [
+   "R26-01"
+  ]
+ },
+ "started_at": "2026-10-11T15:44:51Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "a278d6cc-0eed-4c41-a58b-939396788e38",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 148
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.717388,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T15:50:18Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 24,
+  "pid": 15140,
+  "prompt_sha256": "19667454acb89ece4a23e687205e222fe4142fc5cae4c72b3a1102ed6e6c34e3",
+  "provider": "claude_cli",
+  "result_text_sha256": "973572c10493e60ee64cee221310c753f774345cb8f962a6a70a81210a91088d",
+  "role": "implementer",
+  "session_id": "a278d6cc-0eed-4c41-a58b-939396788e38",
+  "session_id_requested": "a278d6cc-0eed-4c41-a58b-939396788e38",
+  "started_at": "2026-10-11T15:44:51Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "696e931c6228524c017c432e9787a03e0122c222e972ef323c2f2b793ede16c3"
+ }
+}

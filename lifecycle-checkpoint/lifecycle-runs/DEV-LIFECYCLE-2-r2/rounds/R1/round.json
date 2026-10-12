@@ -1,0 +1,242 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-2-r2/audit_R1",
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocking_ids": [
+  "R1-01"
+ ],
+ "candidate": "73bdbef1e34e0b0a9456ee13e8b7b3f9c0e51f47",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T13:02:29Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "812b04c1a571a7ca20baeaecb91c2b7d8f2ff62cae7e5a058debd7dcc9a8145d",
+   "head": "73bdbef1e34e0b0a9456ee13e8b7b3f9c0e51f47",
+   "impl_head": "73bdbef1e34e0b0a9456ee13e8b7b3f9c0e51f47",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-2-20261011",
+   "refs": "bf31e03a0c7a93081b2956a074de1d9f86b8ad15447f3d3972c5f53da0b960c3",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "812b04c1a571a7ca20baeaecb91c2b7d8f2ff62cae7e5a058debd7dcc9a8145d",
+   "head": "73bdbef1e34e0b0a9456ee13e8b7b3f9c0e51f47",
+   "impl_head": "73bdbef1e34e0b0a9456ee13e8b7b3f9c0e51f47",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-2-20261011",
+   "refs": "bf31e03a0c7a93081b2956a074de1d9f86b8ad15447f3d3972c5f53da0b960c3",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+  "candidate": "73bdbef1e34e0b0a9456ee13e8b7b3f9c0e51f47",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "finish() returns contained=False when job is None (create/assign failed; process resumed outside any job) or when api.terminate/_wait_empty raises, but records nothing: _OPEN_JOBS is appended only on the success path, and the leaked job handle is never closed, so KILL_ON_JOB_CLOSE never fires. precheck() only iterates _OPEN_JOBS, so it returns contained=True. Probe /tmp/uri_review_R1/test_probe_r201.py using the repo's FakeApi: assign_fails -> finish {'contained': False} -> precheck {'contained': True, 'killed': 0}; terminate raising OSError -> finish {'contained': False, 'reason': 'job not verified: ...'} -> precheck {'contained': True, 'killed': 0}. run_cmd discards finish()'s result, so a gate's leftover process (taskkill /T is best effort and misses re-parented orphans) can run alongside the next reviewer, whose containment_pre is True. URI_DEVELOPMENT_LIFECYCLE.md claims every earlier job is re-checked.",
+    "files": [
+     "scripts/dev_workflow/containment.py:272",
+     "scripts/dev_workflow/containment.py:279",
+     "scripts/dev_workflow/containment.py:287",
+     "scripts/dev_workflow/lifecycle.py:681"
+    ],
+    "id": "R1-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Keep a module-level 'tainted' record: any spawn without a job, any finish() failure (terminate/query error, n>0) must make every later precheck() return contained=False until the owner clears it (or keep the failed job in _OPEN_JOBS and close it on terminate failure). Add fake-kernel32 tests for assign_fails/create_fails/terminate-raises followed by precheck().",
+    "title": "Windows precheck() reports contained=True after an earlier worker/gate ran without a job or whose TerminateJobObject/empty-wait failed (R2-01 not fixed)"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "Probe /tmp/uri_review_R1/test_probe_w2.py: launcher '\"%~dp0cmd.exe\" /c \"%~dp0real.bat\" %*' gives realpath real.bat, interpreter cmd.exe, no error/unlaunchable. Any non-.exe/.com quoted file, including .bat/.cmd, counts as the 'script', and '%*' is accepted anywhere in the text (e.g. in a REM line). The reviewer then runs through cmd.exe, without /c, so stdin (the prompt) could be read as commands. This contradicts the plan's 'never through cmd.exe'. It needs a launcher already trusted at PLAN.",
+    "files": [
+     "scripts/dev_workflow/lifecycle_providers.py:288",
+     "scripts/dev_workflow/lifecycle_providers.py:297"
+    ],
+    "id": "R1-02",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Refuse a bound program whose basename is cmd.exe/powershell.exe/pwsh.exe, and refuse scripts with .bat/.cmd/.ps1 extensions; require %* on the line that names the program.",
+    "title": "A .cmd launcher naming cmd.exe and a .bat is bound and launched as [cmd.exe, x.bat]"
+   },
+   {
+    "blocking": false,
+    "category": "test",
+    "evidence": "Run at ce1a90c with only the new test files copied: test_w2_launcher_that_cannot_be_bound_is_unlaunchable (3 params) and test_w2_ps1_only_is_not_a_reviewer_cli PASS, because shutil.which finds no claude.cmd on Linux and the assertion `ident.get('unlaunchable') or ident.get('error')` also accepts {'error': 'not found'}. The plan and LIFECYCLE_QUALIFICATION claim all 10 fail on ce1a90c (DL2-AC11). test_lifecycle_platform.py fails on the baseline only at collection (ImportError), not per test.",
+    "files": [
+     "tests/dev_workflow/test_lifecycle_windows_cli.py:106",
+     "tests/dev_workflow/test_lifecycle_windows_cli.py:116"
+    ],
+    "id": "R1-03",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Assert the 'unlaunchable' key (or the exact launcher error), not 'error: not found'; assert that the launcher was found.",
+    "title": "Four new W-2 tests pass on baseline ce1a90c on Linux (vacuous 'not found' acceptance)"
+   },
+   {
+    "blocking": false,
+    "category": "documentation",
+    "evidence": "Focus 6 and DL2-AC9 require Windows to stay NOT VERIFIED until the PC qualification run; the ledger row says 'TESTED on the PC (Job Objects ...)'. The URI_DEVELOPMENT_LIFECYCLE reviewer-independence row still describes the identity as 'realpath, SHA-256 and a script's interpreter', with no launcher/launch binding, and claims every earlier job is re-checked (see R1-01).",
+    "files": [
+     "docs/dev_workflow/CAPABILITY_LEDGER.md:12",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md"
+    ],
+    "id": "R1-04",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Mark Windows containment NOT VERIFIED (logic tested with a fake kernel32; real-job tests reported by the owner), document the launch/launcher identity, and correct the re-check claim.",
+    "title": "CAPABILITY_LEDGER claims Windows containment 'TESTED on the PC'; lifecycle doc omits the W-2 reviewer identity and overstates the earlier-job re-check"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "_norm_url('../canon') resolves against os.getcwd(), not cfg['repo'], so a relative remote may mismatch or, in an edge case, match the wrong path. init() still accepts baseline.ref such as 'origin/integration/...' (resolved from local tracking refs), so a config can still choose the baseline by remote name; only remote_branch goes through canonical_remote().",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:1228",
+     "scripts/dev_workflow/lifecycle.py:1373"
+    ],
+    "id": "R1-05",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Resolve relative local URLs against the repo; require remote_branch (or refuse a baseline.ref under refs/remotes/) for real milestones.",
+    "title": "Relative local remote URLs resolved against the driver cwd; legacy baseline.ref still selects the baseline by remote name"
+   }
+  ],
+  "prior_findings": [],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow -rs (candidate 73bdbef)",
+    "result": "222 passed, 5 skipped (all 5 listed by name under PLATFORM-GATED: 5 test(s) NOT VERIFIED on linux)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "baseline ce1a90c (git archive) + new test files: pytest tests/dev_workflow/test_lifecycle_remote.py",
+    "result": "11 failed (all new tests fail)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "baseline ce1a90c + new test files: pytest tests/dev_workflow/test_lifecycle_windows_cli.py",
+    "result": "6 failed, 4 passed (unlaunchable x3 and ps1_only pass on baseline)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "baseline ce1a90c + new test files: pytest tests/dev_workflow/test_lifecycle_platform.py",
+    "result": "collection error (no containment module)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest /tmp/uri_review_R1/test_probe_r201.py (fake kernel32: assign failure / terminate failure, then precheck)",
+    "result": "2 failed: precheck returns {'contained': True, 'killed': 0} in both cases",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest /tmp/uri_review_R1/test_probe_w2.py (cmd.exe launcher)",
+    "result": "bound as launch [cmd.exe, real.bat], no error",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -c _norm_url probes (https/ssh/scp/.git/case/userinfo/lookalike hosts/local paths)",
+    "result": "canonical forms equal; lookalike hosts differ; relative paths resolve against cwd",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Real Windows Job Object behaviour (windows_only tests: test_win_kill_tree_on_exited_pid_and_on_a_live_tree, test_win_grandchild_is_gone_after_the_sweep, test_win_breakaway_is_refused, test_win_active_processes_rule_on_a_real_job, test_win_job_creation_failure_is_not_contained): PLATFORM-GATED, reviewed by reading only",
+   "ctypes structure layouts and signatures checked against the Windows headers by reading, not executed",
+   "Windows behaviour of the W-3 portability changes and of real npm claude.cmd resolution (owner's PC)",
+   "Owner-PC gate counts reported in LIFECYCLE_QUALIFICATION.md"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 1,
+ "started_at": "2026-10-11T12:57:00Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "4ea43b42-633b-46ea-8a8a-09ef2c55de7f",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 169
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.5429026999999997,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-2-r2/audit_R1",
+  "ended_at": "2026-10-11T13:02:28Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 22,
+  "pid": 17925,
+  "prompt_sha256": "a7b843147b305c446fa4ff2c115cd1a51ab938748ddb8c299a8242117ed35d6f",
+  "provider": "claude_cli",
+  "result_text_sha256": "1890de17af36227ed37b819ea741dcb1568cd5c88a61f2d6bbea6f4c076ef112",
+  "role": "reviewer",
+  "session_id": "4ea43b42-633b-46ea-8a8a-09ef2c55de7f",
+  "session_id_requested": "4ea43b42-633b-46ea-8a8a-09ef2c55de7f",
+  "started_at": "2026-10-11T12:57:00Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "bce7836a7fa4bc78d9afc68d9b4761af24ba97dda348c13522e572322e83d8b3"
+ }
+}

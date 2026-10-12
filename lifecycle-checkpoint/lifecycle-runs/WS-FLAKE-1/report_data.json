@@ -1,0 +1,68 @@
+{
+ "findings": [
+  {
+   "blocking": false,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Request replay guard is in-memory only: a new host instance re-accepts an already-consumed request within REQUEST_MAX_AGE_S (pre-existing, unchanged by this diff)"
+  }
+ ],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "57411e8d177f",
+   "failed": 178,
+   "gate": "python",
+   "new": 0,
+   "ok": true,
+   "passed": 6339,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  },
+  {
+   "changed_cause": 0,
+   "commit": "57411e8d177f",
+   "failed": 1,
+   "gate": "flutter",
+   "new": 0,
+   "ok": true,
+   "passed": 537,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
+ "owner": [],
+ "repairs": [],
+ "rounds": [
+  {
+   "blocking": 0,
+   "candidate": "57411e8d177f",
+   "findings": 1,
+   "finished": "2026-10-12T02:07:22Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "2b52382d-9ae5-405f-a1ab-70633faf4057",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "summary": {
+  "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded",
+  "candidate": "57411e8d177f565344ac4ee48333e6444312f8a7",
+  "evidence_ok": true,
+  "findings_repaired": 0,
+  "findings_total": 1,
+  "integration": "INTEGRATED",
+  "milestone": "WS-FLAKE-1",
+  "open_blocking": 0,
+  "owner_actions": 0,
+  "receipt_chain_ok": true,
+  "repairs_committed": 0,
+  "rounds": 1,
+  "stage": "COMPLETE",
+  "written_at": "2026-10-12T02:27:07Z"
+ }
+}

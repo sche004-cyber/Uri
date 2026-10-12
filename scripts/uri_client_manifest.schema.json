@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "client_id",
+    "principal_id",
+    "source_root",
+    "source_checkpoint",
+    "source_digest",
+    "interpreter",
+    "interpreter_sha256",
+    "process_image",
+    "process_image_sha256",
+    "worker_entrypoint",
+    "client_root",
+    "server_id",
+    "server_url",
+    "server_public_key",
+    "contract_version",
+    "client_public_key",
+    "server_manifest_digest",
+    "schema_version",
+    "ui_binary",
+    "ui_sha256",
+    "dependency_digest"
+  ],
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "principal_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source_root": {
+      "type": "string"
+    },
+    "source_checkpoint": {
+      "type": "string"
+    },
+    "source_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "interpreter": {
+      "type": "string"
+    },
+    "interpreter_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "process_image": {
+      "type": "string"
+    },
+    "process_image_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "worker_entrypoint": {
+      "type": "string"
+    },
+    "client_root": {
+      "type": "string"
+    },
+    "server_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "server_url": {
+      "type": "string"
+    },
+    "server_public_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "contract_version": {
+      "type": "string"
+    },
+    "client_public_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "server_manifest_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "schema_version": {
+      "const": "uri.client.v1"
+    },
+    "ui_binary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ui_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "dependency_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

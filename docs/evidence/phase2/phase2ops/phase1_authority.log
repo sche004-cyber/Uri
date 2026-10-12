@@ -1,0 +1,138 @@
+C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Scripts\python.exe -I -m pytest -c C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\scripts\phase2d_pytest.ini --rootdir C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent -q -rfEs --ignore=work --ignore=evidence --ignore=uri_workspace --ignore=temp_evidence --ignore=reports --ignore=research_notes --ignore=graphify-out --ignore=uri_ui --ignore=.venv test_c5_loop.py test_c2_uncertain_adversarial.py test_c5_intent_adversarial.py test_c4_harness.py test_phase1_fail_closed.py test_intent_discovery_unit.py test_c5_intent_discovery.py test_c7_rollback_boundary.py
+.............................EE......................................... [ 53%]
+..............................................................           [100%]
+=================================== ERRORS ====================================
+_ ERROR at setup of test_bare_negation_while_confirming_asks_instead_of_guessing _
+
+    @pytest.fixture
+    def s():
+>       stack = Stack(18245)
+                ^^^^^^^^^^^^
+
+test_c5_intent_adversarial.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_c5_intent_discovery.py:37: in __init__
+    self.cm = ClientManifest(provision_client(self.server_manifest, base / "client", uid(), ["remember_fact"]))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_core\client_runtime\manifest.py:85: in provision_client
+    server = RuntimeManifest(server_manifest)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_core\core\runtime_identity.py:296: in __init__
+    self.validate()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <uri_core.core.runtime_identity.RuntimeManifest object at 0x0000014C647EA7B0>
+
+    def validate(self):
+        m=self.data
+        # Exact schema prevents unnoticed ambient/default configuration.
+        required=set(("schema_version server_id composition_id contract_version source_root source_checkpoint "
+            "source_files source_manifest_digest entrypoint interpreter interpreter_sha256 process_image "
+            "process_image_sha256 dependency_manifest_digest state_root control_root catalogue_root host port "
+            "model_policy log_policy public_key public_key_fingerprint").split())
+        if not isinstance(m,dict) or set(m)!=required:
+            raise RuntimeIdentityError("MANIFEST_SCHEMA_INVALID")
+        try: uuid.UUID(m["server_id"])
+        except (ValueError,TypeError,AttributeError): raise RuntimeIdentityError("SERVER_ID_INVALID") from None
+        if type(m["schema_version"]) is not int or m["schema_version"]!=1 or m["composition_id"] not in (COMPOSITION, PAIRED_COMPOSITION) or m["contract_version"]!=CONTRACT or m["source_checkpoint"]!=BASELINE:
+            raise RuntimeIdentityError("MANIFEST_CONTRACT_MISMATCH")
+        if m["host"]!="127.0.0.1" or type(m["port"]) is not int or not 1024<=m["port"]<=65535 or m["port"] in (8000,8018,8021,11434,1234):
+            raise RuntimeIdentityError("NONPRODUCTION_LOOPBACK_REQUIRED")
+        root=absolute(m["source_root"]); state=absolute(m["state_root"])
+        if root!=Path(__file__).resolve().parents[2]:
+            raise RuntimeIdentityError("SOURCE_ROOT_MISMATCH")
+        if self.path!=state/"manifest.json" or not state.is_relative_to(root/"work/c1") or state==root/"work/c1":
+            raise RuntimeIdentityError("SYNTHETIC_ROOT_REQUIRED")
+        if absolute(m["control_root"])!=state/"control" or absolute(m["catalogue_root"])!=state/"catalogue":
+            raise RuntimeIdentityError("STATE_ROOT_MISMATCH")
+        if absolute(m["entrypoint"])!=root/"scripts/run_uri_isolated_server.py" or absolute(m["interpreter"])!=root/".venv/Scripts/python.exe":
+            raise RuntimeIdentityError("ENTRYPOINT_OR_INTERPRETER_MISMATCH")
+        if absolute(sys.executable)!=absolute(m["interpreter"]):
+            raise RuntimeIdentityError("LAUNCHER_INTERPRETER_MISMATCH")
+        if m["model_policy"]!="lazy-not-selected" or m["log_policy"]!="fixture-local":
+            raise RuntimeIdentityError("COMPOSITION_POLICY_MISMATCH")
+        fixture=json.loads((state/"synthetic-fixture.json").read_text())
+        if fixture!={"server_id":m["server_id"],"composition_id":m["composition_id"]}:
+            raise RuntimeIdentityError("FIXTURE_IDENTITY_MISMATCH")
+        head=subprocess.check_output(["git","-C",str(root),"rev-parse","HEAD"], text=True).strip()
+        if head!=m["source_checkpoint"]:
+            raise RuntimeIdentityError("SOURCE_CHECKPOINT_MISMATCH")
+        observed=source_files(root)
+        if m["source_files"]!=observed or m["source_manifest_digest"]!=hashlib.sha256(canonical(observed)).hexdigest():
+>           raise RuntimeIdentityError("SOURCE_MANIFEST_MISMATCH")
+E           uri_core.core.runtime_identity.RuntimeIdentityError: SOURCE_MANIFEST_MISMATCH
+
+uri_core\core\runtime_identity.py:335: RuntimeIdentityError
+_ ERROR at setup of test_ambiguous_correction_asks_which_detail_and_changes_nothing _
+
+    @pytest.fixture
+    def s():
+>       stack = Stack(18245)
+                ^^^^^^^^^^^^
+
+test_c5_intent_adversarial.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_c5_intent_discovery.py:37: in __init__
+    self.cm = ClientManifest(provision_client(self.server_manifest, base / "client", uid(), ["remember_fact"]))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_core\client_runtime\manifest.py:85: in provision_client
+    server = RuntimeManifest(server_manifest)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_core\core\runtime_identity.py:296: in __init__
+    self.validate()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <uri_core.core.runtime_identity.RuntimeManifest object at 0x0000014C654FA2D0>
+
+    def validate(self):
+        m=self.data
+        # Exact schema prevents unnoticed ambient/default configuration.
+        required=set(("schema_version server_id composition_id contract_version source_root source_checkpoint "
+            "source_files source_manifest_digest entrypoint interpreter interpreter_sha256 process_image "
+            "process_image_sha256 dependency_manifest_digest state_root control_root catalogue_root host port "
+            "model_policy log_policy public_key public_key_fingerprint").split())
+        if not isinstance(m,dict) or set(m)!=required:
+            raise RuntimeIdentityError("MANIFEST_SCHEMA_INVALID")
+        try: uuid.UUID(m["server_id"])
+        except (ValueError,TypeError,AttributeError): raise RuntimeIdentityError("SERVER_ID_INVALID") from None
+        if type(m["schema_version"]) is not int or m["schema_version"]!=1 or m["composition_id"] not in (COMPOSITION, PAIRED_COMPOSITION) or m["contract_version"]!=CONTRACT or m["source_checkpoint"]!=BASELINE:
+            raise RuntimeIdentityError("MANIFEST_CONTRACT_MISMATCH")
+        if m["host"]!="127.0.0.1" or type(m["port"]) is not int or not 1024<=m["port"]<=65535 or m["port"] in (8000,8018,8021,11434,1234):
+            raise RuntimeIdentityError("NONPRODUCTION_LOOPBACK_REQUIRED")
+        root=absolute(m["source_root"]); state=absolute(m["state_root"])
+        if root!=Path(__file__).resolve().parents[2]:
+            raise RuntimeIdentityError("SOURCE_ROOT_MISMATCH")
+        if self.path!=state/"manifest.json" or not state.is_relative_to(root/"work/c1") or state==root/"work/c1":
+            raise RuntimeIdentityError("SYNTHETIC_ROOT_REQUIRED")
+        if absolute(m["control_root"])!=state/"control" or absolute(m["catalogue_root"])!=state/"catalogue":
+            raise RuntimeIdentityError("STATE_ROOT_MISMATCH")
+        if absolute(m["entrypoint"])!=root/"scripts/run_uri_isolated_server.py" or absolute(m["interpreter"])!=root/".venv/Scripts/python.exe":
+            raise RuntimeIdentityError("ENTRYPOINT_OR_INTERPRETER_MISMATCH")
+        if absolute(sys.executable)!=absolute(m["interpreter"]):
+            raise RuntimeIdentityError("LAUNCHER_INTERPRETER_MISMATCH")
+        if m["model_policy"]!="lazy-not-selected" or m["log_policy"]!="fixture-local":
+            raise RuntimeIdentityError("COMPOSITION_POLICY_MISMATCH")
+        fixture=json.loads((state/"synthetic-fixture.json").read_text())
+        if fixture!={"server_id":m["server_id"],"composition_id":m["composition_id"]}:
+            raise RuntimeIdentityError("FIXTURE_IDENTITY_MISMATCH")
+        head=subprocess.check_output(["git","-C",str(root),"rev-parse","HEAD"], text=True).strip()
+        if head!=m["source_checkpoint"]:
+            raise RuntimeIdentityError("SOURCE_CHECKPOINT_MISMATCH")
+        observed=source_files(root)
+        if m["source_files"]!=observed or m["source_manifest_digest"]!=hashlib.sha256(canonical(observed)).hexdigest():
+>           raise RuntimeIdentityError("SOURCE_MANIFEST_MISMATCH")
+E           uri_core.core.runtime_identity.RuntimeIdentityError: SOURCE_MANIFEST_MISMATCH
+
+uri_core\core\runtime_identity.py:335: RuntimeIdentityError
+============================== warnings summary ===============================
+.venv\Lib\site-packages\starlette\testclient.py:53
+  C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR test_c5_intent_adversarial.py::test_bare_negation_while_confirming_asks_instead_of_guessing
+ERROR test_c5_intent_adversarial.py::test_ambiguous_correction_asks_which_detail_and_changes_nothing
+132 passed, 1 warning, 2 errors in 202.61s (0:03:22)
+
+EXIT=1 DURATION_S=203.3

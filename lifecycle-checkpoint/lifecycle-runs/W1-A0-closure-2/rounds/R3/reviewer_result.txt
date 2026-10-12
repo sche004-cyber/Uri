@@ -1,0 +1,42 @@
+**Verdict: REJECT.** I checked both SHAs myself: the candidate is `f370064354ba678ec5fed956a709cd0e7626c269` and the baseline is `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9`. The review range changes no protected path, and the working tree is still clean.
+
+There are two blocking findings, and both are the same defects as earlier rounds:
+
+- **R2-01 (HIGH) is not fixed.** The link detector treats a capitalised top-level domain as a link only when it is on a hard-coded list. Real domain endings missing from that list get through: `refundsportal.Cash`, `Refundsportal.Deals`, `Refundsportal.Exchange`, `refundsportal.Lol` and the mixed-case `refundsportal.CaSh`. Such a sentence survives the citation check, the extractive answer and the research surface without being masked. I reproduced this end to end.
+- **R2-02 (MEDIUM) is not fixed.** The excerpt check still lets the model's own sentence drop up to two words, so a qualifier next to a quantity can be removed. The quantity detector also misses common forms: doubling, halving, tripling, quintupled, sextupled, biweekly, semiannual, triennial and ‰. For example, the source "Rents … are nearly doubling" is shown unquoted as "Rents … are doubling".
+
+**R2-03 is fixed.** The R2-03 regression test passes in real Chromium. My own variants were handled correctly too:
+- text under emphasis marks, outlines, blend-mode overlays and negatively offset underlines was dropped;
+- text with a stroke or shadow was kept, and a screenshot confirms it is genuinely readable.
+
+R1-03, R1-04, R1-05 and R1-06 are also fixed. I mark R1-01 and R1-02 as not fixed, because their remaining bypasses are R2-01 and R2-02.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "f370064354ba678ec5fed956a709cd0e7626c269", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+ {"id": "R3-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false, "title": "R2-01 repair still incomplete: title-case or mixed-case real gTLDs missing from the hard-coded _TLDS list pass the link detector, verify(), the extractive path and the research surface", "files": ["uri_web/untrusted.py:98", "uri_web/untrusted.py:101", "uri_web/untrusted.py:55", "uri_web/surface.py:42"], "evidence": "has_link_or_contact() is False and surface.clean() leaves the text unchanged for: 'refundsportal.Cash', 'refundsportal.Lol', 'refundsportal.CaSh', 'Refundsportal.Exchange', 'Refundsportal.Deals' (all real registrable gTLDs). With the source 'Claim your energy rebate refund at Refundsportal.Cash before the deadline.': extractive() picks the sentence; verify('... at Refundsportal.Cash before the deadline [1].', [src]) keeps it with dropped=[]; build_surface() output contains 'Refundsportal.Cash'. _is_domain only accepts an ASCII TLD that is all-lower, all-upper, on the ~200-entry _TLDS list, followed by '/', or on a host with a hyphen or digit. Also not detected: 'refundsportal [.] com', 'refundsportal dot com', and phone numbers ('1800 555 0199').", "suggested_fix": "Do not decide a host by a TLD allow-list: treat any label.label form with an alphabetic TLD of 2+ letters as a link unless the first letter after the dot is upper case AND the preceding character ends a sentence-like token with no other host signals (or use the full IANA TLD list, case-insensitive). Add spaced-defang forms and phone-number contacts, with regression cases."},
+ {"id": "R3-02", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false, "title": "R2-02 repair incomplete: _excerpt lets a claim drop a qualifier next to an undetected quantity word (doubling, halving, quintupled, biweekly), so a changed quantity is shown in the Brain's words", "files": ["uri_web/synthesize.py:72", "uri_web/synthesize.py:138", "uri_web/synthesize.py:154", "uri_web/synthesize.py:244"], "evidence": "states_quantity() is False for 'doubling', 'halving', 'tripling', 'quintupled', 'sextupled', 'biweekly', 'bimonthly', 'semiannual', 'triennial', 'multiplied', '‰', 'pct', 'ppm'. verify('Rents in the capital are doubling under the new rules [1].', ['Rents in the capital are nearly doubling under the new rules.']) keeps the claim unquoted (quoted=False). It is the same for 'possibly halving' -> 'halving', 'almost quintupled' -> 'quintupled', 'barely sextupled' -> 'sextupled' and 'roughly biweekly' -> 'biweekly'. The gap rule (MAX_GAP_WORDS=2) allows skipping the qualifier because the skipped word is not a quantity.", "suggested_fix": "Make D7 not depend on the word list: either allow no skipped content word at all (claim = contiguous run of source tokens apart from function words), or quote whenever any source word is skipped; add the listed forms and -ing/-ed forms of multiplicatives to _QUANTITY as the secondary check."},
+ {"id": "R3-03", "severity": "LOW", "blocking": false, "category": "security", "owner_decision": false, "title": "URL redaction ignores path matrix parameters and some token-bearing keys", "files": ["uri_assist/redact.py:144", "uri_assist/browser_extension/snapshot.js:533"], "evidence": "redact_url('https://x.example/;jsessionid=ABCDEF123456?x=1') leaves jsessionid unmasked (pairs are only rewritten after the first '?' or '#'). '?magic_link=abc123xyz&invite=abc123xyz', '?t=…', '?k=secretval' are also kept.", "suggested_fix": "Also apply the pair rule to ';key=value' segments in the path, and add magic_link/invite/reset-style keys; keep Python and JS identical."}
+ ],
+ "prior_findings": [
+ {"id": "R1-01", "status": "NOT_FIXED"},
+ {"id": "R1-02", "status": "NOT_FIXED"},
+ {"id": "R1-03", "status": "FIXED"},
+ {"id": "R1-04", "status": "FIXED"},
+ {"id": "R1-05", "status": "FIXED"},
+ {"id": "R1-06", "status": "FIXED"},
+ {"id": "R2-01", "status": "NOT_FIXED"},
+ {"id": "R2-02", "status": "NOT_FIXED"},
+ {"id": "R2-03", "status": "FIXED"}
+ ],
+ "tests_run": [
+ {"command": "/tmp/claude-0/venv/bin/python -m pytest tests/web tests/assist -q -x (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers)", "result": "2782 passed", "status": "COMPLETED_WITH_RESULT"},
+ {"command": "flutter test test/living/assist_mode_test.dart test/living/assist_r9_test.dart", "result": "23 passed", "status": "COMPLETED_WITH_RESULT"},
+ {"command": "/tmp/uri_review_R3/links.py, links2.py (link detector / verify / extractive / surface probes)", "result": "R3-01 reproduced end to end", "status": "COMPLETED_WITH_RESULT"},
+ {"command": "/tmp/uri_review_R3/qty.py, qty2.py (D7 probes)", "result": "R3-02 reproduced", "status": "COMPLETED_WITH_RESULT"},
+ {"command": "/tmp/uri_review_R3/t/test_deco_variants.py (real Chromium: emphasis, stroke, shadow, blend overlay, outline, negative underline)", "result": "hidden variants dropped; stroke/shadow text kept and visually readable in the screenshot; R2-03 holds", "status": "COMPLETED_WITH_RESULT"},
+ {"command": "netpolicy check_address/check_url corpus; redact_url probes; R1-06 citation probe", "result": "all private forms refused; URL secrets masked except R3-03; unsupported citations removed", "status": "COMPLETED_WITH_RESULT"},
+ {"command": "git diff --name-only baseline..candidate vs protected paths", "result": "no protected path changed", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Integrated worker dispatch (R1-05 BRAIN_TURNS path) not executed end to end; reviewed statically", "Live streaming cancel against a real Runtime v1 Brain", "ws/oi/a2ui gate suites and the full Flutter tree not re-run in this round (unchanged since earlier rounds)", "Phase 1 checkpoint zip (ws_frozen_check zip part BLOCKED)", "Real perception adapters, vision on GPU, Windows", "Proxy egress mode under live resolution"]}
+AUDIT_RESULT_END

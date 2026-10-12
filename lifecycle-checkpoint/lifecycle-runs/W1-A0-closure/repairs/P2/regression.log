@@ -1,0 +1,91 @@
+=== tests/assist/test_a0_r1_review_regressions.py BEFORE (16f75d8e2e5f537749b32b1d754c347cbebdfc36) DONE
+e[verifycode] ____________
+
+name = 'verifycode'
+
+    @pytest.mark.parametrize("name", R2_SENSITIVE_NAMES)
+    def test_r2_01_run_together_names_are_sensitive(name):
+>       assert RD.field_is_sensitive({"type": "text", "name": name, "value": "482913"})
+E       AssertionError: assert False
+E        +  where False = <function field_is_sensitive at 0x7f11c85ea520>({'type': 'text', 'name': 'verifycode', 'value': '482913'})
+E        +    where <function field_is_sensitive at 0x7f11c85ea520> = RD.field_is_sensitive
+
+tests/assist/test_a0_r1_review_regressions.py:108: AssertionError
+_______________ test_r2_01_values_never_reach_the_brain_request ________________
+
+    def test_r2_01_values_never_reach_the_brain_request():
+        fields = [{"type": "text", "name": n, "label": "x", "value": f"82{i:04d}", "rect": {"x": 1, "y": 1, "w": 2, "h": 2}}
+                  for i, n in enumerate(R2_SENSITIVE_NAMES, 1)]
+        obs = PE.normalise(dom_snapshot(fields=fields), AC.Stamp("g", 1, "t", "dom", 0.0))
+        raw = json.dumps(list(obs.fields))
+        for i in range(1, len(R2_SENSITIVE_NAMES) + 1):
+>           assert f"82{i:04d}" not in raw
+E           assert '820001' not in '[{"id": "",...: "820020"}]'
+E             
+E             '820001' is contained here:
+E               "value": "820001"}, {"id": "", "tag": "", "type": "text", "name": "smsotpcode", "label": "x", "autocomplete": "", "placeholder": "", "required": false, "readonly": false, "visible": true, "rect": {"x": 1, "y": 1, "w": 2, "h": 2}, "sensitive": false, "value": "820002"}, {"id": "", "tag": "", "type": "text", "name": "otpvalue", "label": "x", "autocomplete": "", "placeholder": "", "required": false, "readonly": false, "visible": true, "rect": {"x": 1, "y": 1, "w": 2, "h": 2}, "sensitive": false, "value": "820003"}, {"id": "", "tag": "", "type": "text", "name": "ot...
+E             
+E             ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests/assist/test_a0_r1_review_regressions.py:122: AssertionError
+_______________ test_r2_01_in_page_pattern_is_the_python_pattern _______________
+
+    def test_r2_01_in_page_pattern_is_the_python_pattern():
+        import re
+        js = (ROOT / "uri_assist/browser_extension/snapshot.js").read_text()
+        m = re.search(r"const RUN_TOGETHER = /(.*)/;", js)
+>       assert m and m.group(1) == RD._RUN_TOGETHER.pattern
+E       assert (None)
+
+tests/assist/test_a0_r1_review_regressions.py:130: AssertionError
+_____ test_r2_01_in_page_layer_hides_run_together_names_and_matches_python _____
+
+    def test_r2_01_in_page_layer_hides_run_together_names_and_matches_python():
+        s = _chromium("tricky_fields.html")["snapshot"]
+        raw = json.dumps(s)
+        for i in range(1, len(R2_SENSITIVE_NAMES) + 1):
+            assert f'"82{i:04d}"' not in raw, R2_SENSITIVE_NAMES[i - 1]
+        js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f["sensitive"]}
+>       assert {f"r{i}" for i in range(1, len(R2_SENSITIVE_NAMES) + 1)} <= js_sensitive
+E       AssertionError: assert {'r1', 'r10',...', 'r14', ...} <= {'a', 'b', 'c...'d', 'e', ...}
+E         
+E         Extra items in the left set:
+E         'r12'
+E         'r2'
+E         'r9'
+E         'r15'
+E         'r10'...
+E         
+E         ...Full output truncated (15 lines hidden), use '-vv' to show
+
+tests/assist/test_a0_r1_review_regressions.py:139: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[otpcode]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[smsotpcode]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[otpvalue]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[otpnumber]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[cvvcode]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[cvvnumber]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[cardcvv]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[cardcvc]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[userpassword]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[newpassword]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[confirmpassword]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[loginpassword]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[txnpassword]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[upipin]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[atmpin]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[cardpin]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[securitypin]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[loginpwd]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[userpass]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_run_together_names_are_sensitive[verifycode]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_values_never_reach_the_brain_request
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_in_page_pattern_is_the_python_pattern
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r2_01_in_page_layer_hides_run_together_names_and_matches_python
+23 failed, 48 passed in 2.41s
+
+=== tests/assist/test_a0_r1_review_regressions.py AFTER (627f6b93d3f3a3de0ba60b1d0c58b9fe5729fede) DONE
+.......................................................................  [100%]
+71 passed in 2.23s
+

@@ -1,0 +1,88 @@
+{
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocker": {
+  "at": "2026-10-11T13:37:54Z",
+  "kind": "OWNER_AUTHORIZATION",
+  "needs": "git push origin cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35:refs/heads/integration/git-sync-20261008",
+  "reason": "integration into integration/git-sync-20261008 needs owner authorisation",
+  "stage": "VERIFIED"
+ },
+ "candidate": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+ "config_sha256": "e7c36dd5f8abac78a0234fbad93149df0ea35621862e1549b35e4aa4508e992d",
+ "events": 16,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "cbdf3f2ceb5e": {
+   "blocked": null,
+   "new_failures": {
+    "dev_workflow": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-11T13:37:54Z",
+  "candidate": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+  "command": "git push origin cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35:refs/heads/integration/git-sync-20261008",
+  "mode": "fast-forward",
+  "remote": "origin",
+  "status": "AWAITING_OWNER_AUTHORIZATION",
+  "target_ref": "integration/git-sync-20261008",
+  "target_tip_before": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80"
+ },
+ "milestone": "DEV-LIFECYCLE-2",
+ "open_findings": [
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "severity": "LOW",
+   "title": "R2-01 repair covers only OSError: any other exception from communicate() (e.g. UnicodeDecodeError / Windows reader-thread IndexError on undecodable output) skips containment.finish(); the job stays unterminated and untracked and the next precheck() reports contained=True"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": [
+    "r2.R1-02",
+    "r2.R1-03",
+    "r2.R1-04",
+    "r2.R2-01"
+   ],
+   "commit": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+   "reason": null,
+   "repair": 1,
+   "status": "COMMITTED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+   "independent": false,
+   "models": null,
+   "provider": "relay",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "owner-decision-2026-10-11",
+   "status": "IMPORTED",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "round": 2,
+   "session_id": "e5872d00-ff46-43ed-afe1-343fff3ccfd1",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "rounds": 2,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "BLOCKED",
+ "verify_errors": [],
+ "written_at": "2026-10-11T13:37:54Z"
+}

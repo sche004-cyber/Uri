@@ -1,0 +1,36 @@
+I'm rejecting R24. There is one new HIGH finding: an Arabic or Hebrew top-level domain written with its optional vowel marks is not recognised as a link. All earlier blocking findings, including R23-01, are fixed.
+
+**Checks:**
+- Both SHAs are confirmed: HEAD is `d51207ea`, and the baseline commit `ffdf5343` exists.
+- No protected path changed in the review range.
+- The R23-01 repair works on its own forms and on 34 variants I tried: Arabic, Devanagari, Thai, Tibetan, Hebrew, Syriac, Thaana, Khmer, Myanmar, tatweel and ZWJ.
+- The wider bracket check added in this commit doesn't open a new hole. To be skipped, a separator word has to sit inside brackets placed between the name and the ending, and the owner has already accepted that case as residual.
+- `pytest tests/web tests/assist tests/a2ui`: 5305 passed.
+
+**R24-01 (HIGH):** `_tld_match` in `uri_web/untrusted.py` ignores generic combining marks, so `c̣om` still counts as `com`. But `_bare` keeps marks that belong to the letter's own script. Arabic harakat (fatha, kasra, damma, sukun) and Hebrew niqqud are written optionally, and a reader drops them when typing the address. Because they are kept, the vocalised form of a listed domain doesn't match the list.
+
+| Input | Detected? |
+|---|---|
+| `refunds-portal ~ مصر` | yes |
+| `refunds-portal ~ مِصْر` | no |
+| `refunds-portal ~ עُمان`, `السُّعُودِيَّة`, `مُوريتانيا`, `ایرانْ`, `عَرَب`, `شَبَكة`, `مَوقِع`, `קוֹם` | no |
+| `بنك ~ مِصْر`, `refunds-portal/claim * شَبَكَة` | no |
+
+For each of these, `has_link_or_contact` returns False, `mask_links` leaves the text unchanged, `verify()` keeps the sentence with its citation, `extractive()` returns it, and `build_surface` shows `refunds-portal` on screen. That fails W1-AC12/AC15 under D16 ("a name, then anything at all, then a real top-level domain"). None of the owner's accepted residual classes cover it.
+
+**Not run:** Flutter tests, the integrated-worker and UI lifecycle tests, Playwright browser tests, and the zip part of `ws_frozen_check` (the checkpoint zip isn't present). Review focus areas 1 and 3 to 6 got no new probing this round, and I didn't re-run each earlier round's regression tests against its pre-repair commit.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "d51207ead093905e94052f1c7290b005c851d8b5", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [{"id": "R24-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R1-01 link class still open (D16 ending side): a listed non-Latin top-level domain written with optional same-script vowel marks (Arabic harakat 'مِصْر', 'عُمان', 'السُّعُودِيَّة', 'ایرانْ', 'شَبَكة'; Hebrew niqqud 'קוֹם') is not an ending, so 'refunds-portal ~ مِصْر' passes has_link_or_contact, mask_links, verify(), extractive() and the research surface (W1-AC12/AC15)",
+   "files": ["uri_web/untrusted.py:486", "uri_web/untrusted.py:492", "uri_web/untrusted.py:470", "uri_web/untrusted.py:571", "uri_web/surface.py:38"],
+   "evidence": "_tld_match compares _bare(text) with the TLD list; _bare drops only generic 'COMBINING' marks and keeps marks of the letter's own script, so optional Arabic vowel marks / Hebrew points (written in vocalised text and omitted when typing an address) stop a listed TLD from matching, although Latin 'c\\u0323om' matches. Probe /tmp/uri_review_R24/p3.py,p4.py,p5.py: 'Claim your energy rebate refund at refunds-portal ~ مصر before the deadline.' -> has_link_or_contact True, masked; the same with 'مِصْر' (also 'مَصر', 'عُمان', 'السُّعُودِيَّة', 'مُوريتانيا', 'ایرانْ', 'عَرَب', 'شَبَكة', 'مَوقِع', Hebrew 'קוֹم'→'קוֹם', and Arabic-name 'بنك ~ مِصْر', 'refunds-portal/claim * شَبَكَة') -> has_link_or_contact False, mask_links unchanged; SY.verify(sentence + ' [1].', [src]) keeps the claim with citation [1]; SY.extractive('energy rebate refund deadline', [src]) returns the sentence; surface.build_surface with that answer contains 'refunds-portal'.",
+   "suggested_fix": "When matching an ending, also compare the word with every mark removed (all Mn/Me, or at least the optional vocalisation ranges U+064B-065F, U+0670, U+06D6-06ED, U+0591-05C7) against the TLD list, keeping the existing match; add regression cases through has_link_or_contact, mask_links, verify, extractive and build_surface."}],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"}, {"id": "R11-01", "status": "FIXED"}, {"id": "R11-02", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"}, {"id": "R13-01", "status": "FIXED"}, {"id": "R14-01", "status": "FIXED"}, {"id": "R16-01", "status": "FIXED"}, {"id": "R16-02", "status": "FIXED"}, {"id": "R17-01", "status": "FIXED"}, {"id": "R18-01", "status": "FIXED"}, {"id": "R19-01", "status": "FIXED"}, {"id": "R19-02", "status": "FIXED"}, {"id": "R20-01", "status": "FIXED"}, {"id": "R20-02", "status": "FIXED"}, {"id": "R21-01", "status": "FIXED"}, {"id": "R22-01", "status": "FIXED"}, {"id": "R23-01", "status": "FIXED"}],
+ "tests_run": [{"command": "/tmp/claude-0/venv/bin/python -m pytest -q -x tests/web tests/assist tests/a2ui -p no:cacheprovider", "result": "5305 passed in 104.81s", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "git diff --stat ffdf5343..d51207ea -- <protected paths>", "result": "empty (no protected path changed)", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R24/p1.py (R23-01 variants: one foreign letter + own-script marks, tatweel, ZWJ, virama, Khmer/Myanmar stacking, brackets)", "result": "all two-or-fewer-distinct-letter forms detected and masked; 3+ distinct-letter words are names per D17", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R24/p3.py, p4.py, p5.py (vocalised non-Latin TLDs)", "result": "R24-01 reproduced through has_link_or_contact, mask_links, verify, extractive, build_surface", "status": "COMPLETED_WITH_RESULT"}],
+ "unverified": ["Flutter widget tests (uri_ui) not run this round", "Playwright/Chromium browser_extension tests not run this round", "ws_frozen_check zip part BLOCKED (checkpoint zip absent)", "Integrated worker / Assist controller lifecycle, vision gating and SSRF areas were covered by the passing test suite only; no new adversarial probing this round", "Prior-round regression tests were not re-run against their pre-repair commits"]}
+AUDIT_RESULT_END

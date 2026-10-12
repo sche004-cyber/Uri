@@ -1,0 +1,3 @@
+trivial {"new_client": {"wall_p50_s": 0.3095, "server_p50_ms": 71.8, "client_overhead_p50_ms": 237.7}, "persistent": {"wall_p50_s": 0.0737, "server_p50_ms": 71.2, "client_overhead_p50_ms": 2.5}, "raw_socket": {"wall_p50_s": 0.0872, "server_p50_ms": 71.6, "client_overhead_p50_ms": 15.1}}
+decision_cached {"new_client": {"wall_p50_s": 2.1684, "server_p50_ms": 1932.5, "client_overhead_p50_ms": 234.1}, "persistent": {"wall_p50_s": 1.9451, "server_p50_ms": 1934.6, "client_overhead_p50_ms": 10.6}, "raw_socket": {"wall_p50_s": 1.9548, "server_p50_ms": 1931.2, "client_overhead_p50_ms": 16.9}}
+restart_reconnect {"error_while_down": "ConnectError", "first_call_after_restart_s": 0.628, "ok": true, "reload_seconds": 101.46}

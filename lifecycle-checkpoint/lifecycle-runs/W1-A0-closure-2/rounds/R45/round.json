@@ -1,0 +1,444 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R45",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [],
+ "candidate": "422159e9b0f3cd57c020a76147665ff635b8ec38",
+ "effective_verdict": "ACCEPT WITH FINDINGS",
+ "ended_at": "2026-10-12T01:06:34Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "422159e9b0f3cd57c020a76147665ff635b8ec38",
+   "impl_head": "422159e9b0f3cd57c020a76147665ff635b8ec38",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "63cc1c24217a709ed740b7e8178511b077dc1a89709a147510a876cc18c1a6d1",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "422159e9b0f3cd57c020a76147665ff635b8ec38",
+   "impl_head": "422159e9b0f3cd57c020a76147665ff635b8ec38",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "63cc1c24217a709ed740b7e8178511b077dc1a89709a147510a876cc18c1a6d1",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "422159e9b0f3cd57c020a76147665ff635b8ec38",
+  "findings": [
+   {
+    "blocking": false,
+    "category": "test",
+    "evidence": "Running _generated(seed, 2000) for seeds 1..40 (79,859 cases) gives 5 misses outside the D16 comma residual whose ending is a real TLD: seed 1 'refunds-portal \u2022 \u104aiv\uab32/claim', seed 4 'refunds-portal . \u104aoan/claim' and 'refunds-portal ~ \u104aive', seed 6 'refunds-portal \u2022 1 0' (2 further misses use 'claim', which is not in _TLDS). For 'Claim your energy rebate refund at refunds-portal ~ \u104aive before the deadline.' has_link_or_contact is False, SY.verify(...[1]) keeps the claim, and surface.clean shows it unmasked. Cause: _is_punct treats U+104A MYANMAR SIGN LITTLE SECTION (a confusables-listed look-alike of 'l') as punctuation because its script is in _SCRIPTS, so '\u104aive' splits into '' + 'ive' and is judged plain writing, contrary to D31 'every token is ordinary writing'. Not blocking only because D30 makes further look-alike variants owner-accepted residual.",
+    "files": [
+     "tests/web/test_w1_closure_d31_plain_writing.py:51",
+     "uri_web/untrusted.py:1011",
+     "uri_web/untrusted.py:1019",
+     "uri_web/untrusted.py:998"
+    ],
+    "id": "R45-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Run the D31 stress test over many seeds (or exhaustively over the look-alike table), and treat a script's punctuation inside a token of another script (e.g. Myanmar sign in a Latin word) as not plain.",
+    "title": "D31 acceptance stress test is fully blocked only for its fixed seeds (7, 11, 23); the same generator with other seeds yields disguised endings that pass has_link_or_contact, verify() and the research surface"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "Real-Chromium probe (/tmp/uri_review_R45/probe/test_probe_split.py) using the repo's run_chromium/ask harness: '<p style=\"display:flex\">https://api.example.com/cb?client_secret=<span>FLEXSECRET81</span></p>', the same with an inline-block span, an inline-flex code, '<td>...client_secret=</td><td>TABLESECRET84</td>', 'https://dave:<span style=inline-block>PWIBLOCK85</span>@db.example.com' and '?access_token=<button>BTNSECRET86</button>': all 6 values appear in the snapshot JSON (snap) leaving the page; the Brain request shows '[redacted]' for all (the Python _split_url_parts masks across newlines).",
+    "files": [
+     "uri_assist/browser_extension/snapshot.js:349",
+     "uri_assist/browser_extension/snapshot.js:56",
+     "uri_assist/redact.py:184"
+    ],
+    "id": "R45-02",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Apply splitUrlParts across adjacent chunks (or over the joined text) in snapshot.js, as redact.py does across newlines.",
+    "title": "In-page (snapshot.js) layer does not mask a URL secret whose key and value are in different layout blocks (flex item, inline-block, inline-flex, table cell, button); only the Python layer masks it (JS/Python parity)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R28-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R29-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R30-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R31-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R32-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R33-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R34-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R35-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R36-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R37-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R38-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R38-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R39-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R40-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R42-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R43-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist",
+    "result": "5909 passed in 123.51s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/flutter/bin/flutter test test/living/ (from uri_ui)",
+    "result": "+257 All tests passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -q tests --ignore=tests/web --ignore=tests/assist --ignore=tests/test_m31_model_brain_ux.py (candidate vs git-archive of baseline)",
+    "result": "candidate 176 failed/1273 passed/246 errors; baseline 177 failed/1124 passed/246 errors; sampled cause ISOLATED_INTERPRETER_REQUIRED (environment); no regression",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest tests/test_m31_model_brain_ux.py",
+    "result": "collection error: No module named 'google' (file unchanged since baseline)",
+    "status": "BLOCKED"
+   },
+   {
+    "command": "python -I /tmp/uri_review_R45/seeds.py (D31 generator, seeds 1..40)",
+    "result": "79859 cases, 7 unexpected misses (5 real TLD endings)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -s /tmp/uri_review_R45/probe/test_probe_split.py (real Chromium)",
+    "result": "Brain request masked; 6 secrets present in in-page snapshot JSON",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "netpolicy.check_address probes (::7f00:1, 64:ff9b::a00:1, 2002:a00:1::, ::ffff:a00:1, fd00::1, 3fff::1, 192.0.0.9, ...)",
+    "result": "all non-public refused",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Windows-only platform-gated tests (5)",
+   "Phase 1 checkpoint zip (ws_frozen_check zip part BLOCKED)",
+   "tests/test_m31_model_brain_ux.py (missing google module in venv)",
+   "Older prior findings (R1-R30) were confirmed through the passing regression suites and spot probes, not re-probed exhaustively one by one"
+  ],
+  "verdict": "ACCEPT WITH FINDINGS"
+ },
+ "round": 45,
+ "started_at": "2026-10-12T00:49:49Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "78126100-d5e0-4650-b2b2-7ed55ac7529f",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 242
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.5621814,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R45",
+  "ended_at": "2026-10-12T01:06:33Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 32,
+  "pid": 8025,
+  "prompt_sha256": "33753b2e2cc6cf39888793046ac07c668137901259a1d0579d229153569baafb",
+  "provider": "claude_cli",
+  "result_text_sha256": "2d2ce569c97f4933f8beab7cfa5fe4e40ad474669e5e5929f794e0d891f468f6",
+  "role": "reviewer",
+  "session_id": "78126100-d5e0-4650-b2b2-7ed55ac7529f",
+  "session_id_requested": "78126100-d5e0-4650-b2b2-7ed55ac7529f",
+  "started_at": "2026-10-12T00:49:49Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "dafd7d5441e0d3623d8f1dfafc14bf6062c4e1e3d87ee56cf7be5883a1577fed"
+ }
+}

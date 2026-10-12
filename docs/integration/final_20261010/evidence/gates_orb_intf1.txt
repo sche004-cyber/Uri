@@ -1,0 +1,12 @@
+# Gates for orb + INT-F1 (working tree on 9fdefe378d0ad928830d7f0ba65da4cf7f5bf86f)
+2026-10-10T14:03:21Z
+$ python -m pytest tests/ws tests/oi tests/a2ui
+596 passed, 22 skipped, 1 warning in 162.53s (0:02:42)
+exit=0
+$ python -m pytest tests/scheduler (base)
+71 passed in 84.45s (0:01:24)
+$ flutter test (full)
+00:27 +506 ~5: All tests passed!
+$ ws_frozen_check
+ "ok": true
+}

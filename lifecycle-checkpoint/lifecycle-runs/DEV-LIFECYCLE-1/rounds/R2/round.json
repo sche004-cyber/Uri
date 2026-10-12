@@ -1,0 +1,284 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R2",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R2-01",
+  "R2-02",
+  "R2-03",
+  "R2-04",
+  "R2-05"
+ ],
+ "candidate": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T00:56:50Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+   "head": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+   "impl_head": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+   "impl_status": [],
+   "refs": "90f97a70f48f5d6c7246f52ba407350a49939d65858054c49afcaee68518c511",
+   "status": []
+  },
+  "before": {
+   "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+   "head": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+   "impl_head": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+   "impl_status": [],
+   "refs": "90f97a70f48f5d6c7246f52ba407350a49939d65858054c49afcaee68518c511",
+   "status": []
+  },
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe /tmp/uri_review_R2/forge.py: milestone 'W1-REAL', command reviewer printing ACCEPT -> R1 NOT_INDEPENDENT -> WAITING_FOR_MODEL. In state.json, inserted a copy of round 1 with independent=true/effective_verdict=ACCEPT/status=COMPLETED_WITH_RESULT BEFORE the genuine record and set resume_to='VERIFYING'. verify() -> []. run() -> READY_TO_RESUME -> VERIFYING -> VERIFIED, evidence_ok_for_candidate=True, verify() still []. verify builds rounds={r['round']: r}, so the last (genuine) duplicate is compared and the forged one is never checked; accepted_review iterates every list entry. resume_to and blocker are not covered by verify at all. The docs say verify checks every state.json round.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:1135",
+     "scripts/dev_workflow/lifecycle.py:1174-1176",
+     "scripts/dev_workflow/lifecycle.py:589-593",
+     "scripts/dev_workflow/lifecycle.py:936-940",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"
+    ],
+    "id": "R2-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Have verify reject duplicate or unsequenced round/repair numbers (the list must equal exactly the recorded REVIEW_RECORDED/REPAIR_* events, in order). Derive accepted_review and resume targets from round.json files and events whose hashes check out, not from state.json fields. Record resume_to in the BLOCK/WAITING stage event and check it.",
+    "title": "Forged duplicate round record plus edited resume_to brings a real milestone to VERIFIED; verify() reports no error"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe /tmp/uri_review_R2/replace_probe.py + evil_impl.py (DEVTEST fixture, protected 'core/'): the implementer edits and stages core/frozen.py, builds commits with that tree and the original parents, and runs `git replace` for HEAD and origin/canon, then fixes pkg/calc.py and adds a test. Result: repair COMMITTED, run COMPLETE, verify []. `git --git-dir canonical.git show canon:core/frozen.py` -> 'PATCHED_BY_WORKER = True'. worktree_changes, changed_paths and qualify's protected check all resolve the substituted trees. refs_digest and git_control_digest do not cover refs/replace, and git replace is not in GIT_WRITE_DENY.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:71",
+     "scripts/dev_workflow/lifecycle.py:245-265",
+     "scripts/dev_workflow/lifecycle.py:762-790",
+     "scripts/dev_workflow/lifecycle.py:547"
+    ],
+    "id": "R2-02",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Run every driver git command with GIT_NO_REPLACE_OBJECTS=1 (and --no-replace-objects). Include refs/replace/* (or all non-branch refs) in the integrity snapshot and treat any change as TAMPER. Compute scope and protected checks from explicit tree objects (ls-tree/diff-tree of the commit's real tree).",
+    "title": "Worker-created git replace refs hide a protected-path change from every driver check; it is committed and pushed to canonical"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe /tmp/uri_review_R2/gitfile_probe.py + evil_impl2.py: the implementer rewrites impl/.git to 'gitdir: <common dir>'. The driver reports 'TAMPER: implementer moved HEAD...', but _restore then runs `git -C impl reset --hard <candidate>` against the MAIN gitdir. The main repo's refs/heads/canon moved 5f427cc -> a0ec99a (the candidate) and its index was reset; `git status` in main shows 'D pkg/feature.py'. The run blocks TAMPER after the damage is done.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:729-733",
+     "scripts/dev_workflow/lifecycle.py:762-769",
+     "scripts/dev_workflow/lifecycle.py:806"
+    ],
+    "id": "R2-03",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Before any git command in the implementation worktree, check that `git -C wt rev-parse --git-dir` equals the recorded worktree gitdir and --show-toplevel equals wt. Otherwise refuse with TAMPER and do not reset. Alternatively pass explicit --git-dir/--work-tree.",
+    "title": "Revert after a refused repair is not limited to the implementation worktree: a rewritten .git gitfile makes reset --hard move the main checkout's branch"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "Probe /tmp/uri_review_R2/del_probe.py: the implementer deletes tests/test_calc.py and edits pkg/calc.py. tests = committed paths matching test_globs, which includes the deleted file. shutil.copy2(post/t, pre/t) raises FileNotFoundError, which propagates out of run(). The impl worktree keeps commit c7bf80a 'fix(DEVTEST-LC): repair R1-01 (lifecycle P1)', which has no regression proof; state.json has repairs=[] (record lost). The next run() logs CANDIDATE_MOVED and sets candidate=c7bf80a. R1-08 (timeout) is fixed, but the general uncaught-exception path is not.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:705-707",
+     "scripts/dev_workflow/lifecycle.py:791",
+     "scripts/dev_workflow/lifecycle.py:914-917"
+    ],
+    "id": "R2-04",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Exclude deleted paths from regression tests (refuse a repair that deletes an existing test), and wrap the post-commit section of do_repair in try/except that records REFUSED and restores the worktree to the pre-repair SHA.",
+    "title": "Repair that deletes a test file crashes regression_proof; the unproven repair commit stays and is adopted as the candidate"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "gpu_lease `status` always returns 0, so the pre-check passes even when the GPU is held. `gpu_lease run --wait N` returns 75 on GpuBusy. run_gate treats that rc as a normal result: a command gate gets failure 'exit 75'; a pytest gate has no junit, so 'no test report'. qualify reports a new failure, and run() creates GATE-* findings and moves to FIXING, asking the implementer to fix a contention event. This contradicts L-AC17 (lease unavailable => BLOCKED RESOURCE). Code evidence only; not executed (no GPU).",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:488-495",
+     "scripts/dev_workflow/lifecycle.py:499-516",
+     "uri_operational_intelligence/gpu_lease.py:533-548"
+    ],
+    "id": "R2-05",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "For gpu gates, map exit 75 (and the {'refused': ...} stderr) to status BLOCKED with the lease detail. Add a unit test with a fake lease module returning 75.",
+    "title": "GPU lease busy (gpu_lease run exit 75) is classified as a gate failure and routed to repair, not BLOCKED (RESOURCE)"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "parse_junit adds skipped tests to ids; compare's 'vanished' is base_passed - cand_ids, so a test turned to pytest.mark.skip counts as present and passes the gate. Only the re-audit would catch it.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:405-415",
+     "scripts/dev_workflow/lifecycle.py:525-530"
+    ],
+    "id": "R2-06",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Record skipped ids separately and treat baseline-passed -> candidate-skipped as vanished unless listed in allowed_flaky.",
+    "title": "A baseline-passing test that is skipped on the candidate is not detected by the gate comparison"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "With mode e.g. 'rebase' the is-ancestor check (mode == 'fast-forward') and the merge branch are both skipped, and the push of sha:refs/heads/target runs. The remote's non-fast-forward rejection is the only guard.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:812-863"
+    ],
+    "id": "R2-07",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Validate integration.mode in load_config against {none, fast-forward, merge}.",
+    "title": "Unknown integration mode is not rejected and pushes the candidate without the fast-forward check"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "These subprocess.run calls use plain 'git', so pre-merge-commit/commit-msg/pre-push hooks in the shared repo run during integration, unlike every other driver git command (GIT = core.hooksPath=/dev/null).",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:827",
+     "scripts/dev_workflow/lifecycle.py:845",
+     "scripts/dev_workflow/lifecycle.py:863"
+    ],
+    "id": "R2-08",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Use the GIT prefix for these calls too.",
+    "title": "Integration merge/merge-base/push bypass the hooks-disabled git wrapper"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-07",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-08",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "PYTHONDONTWRITEBYTECODE=1 /tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow",
+    "result": "126 passed, 1 warning",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R2/forge.py",
+    "result": "non-DEVTEST milestone reached VERIFIED with forged duplicate round; verify() []",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R2/replace_probe.py",
+    "result": "COMPLETE; canonical canon:core/frozen.py = PATCHED_BY_WORKER",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R2/gitfile_probe.py",
+    "result": "main repo refs/heads/canon moved to candidate SHA by _restore; run BLOCKED TAMPER",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R2/del_probe.py",
+    "result": "FileNotFoundError crash in regression_proof; unproven repair commit adopted as candidate on rerun",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Live claude_cli reviewer/implementer runs were not executed in this review; independence checks were verified from code and scripted-provider probes only",
+   "Flutter --machine gate parsing was not executed against a real flutter test run (code review only)",
+   "GPU lease behaviour (R2-05) is from code; no GPU or lease holder available",
+   "codex_cli provider not installed; not exercised",
+   "The committed demo evidence (docs/dev_workflow/evidence/lifecycle_demo_*) was not re-verified with verify()"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 2,
+ "started_at": "2026-10-11T00:51:49Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "1d6fc831-f799-429b-a496-c8b5591fff47",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.4238988,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R2",
+  "ended_at": "2026-10-11T00:56:49Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 18,
+  "pid": 12912,
+  "prompt_sha256": "bc652d4eaebd543b7f49ef11d45605633c9660aafb3ad1a8b790044de65e44cd",
+  "provider": "claude_cli",
+  "result_text_sha256": "bcd8dea1ee64dac69412c0bbd7c62a2bf5bd581de31e0cdd0b1b17f97bd0d5fa",
+  "role": "reviewer",
+  "session_id": "1d6fc831-f799-429b-a496-c8b5591fff47",
+  "session_id_requested": "1d6fc831-f799-429b-a496-c8b5591fff47",
+  "started_at": "2026-10-11T00:51:49Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "fa7e8ee40b7dce3458c8ebb84ba97b81dff8c679fa1557efd6270972298e1938"
+ }
+}

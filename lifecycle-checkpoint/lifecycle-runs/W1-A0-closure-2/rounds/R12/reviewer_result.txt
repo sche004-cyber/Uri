@@ -1,0 +1,37 @@
+**Verdict: REJECT.** One new HIGH finding, R12-01: the R1-01 link class is still open under D16.
+
+Both SHAs check out. HEAD is `834c1c3`, the baseline `ffdf534` exists, and the range changes no protected path. The full Python suite passes (3439 tests), and so do the R11 regression tests.
+
+**R12-01 (HIGH).** In `_ending_spans` (`uri_web/untrusted.py:521-530`), the name before an ending only counts if it is in the same script family as the ending. A different-script name is treated as "foreign letters between", and since it has more than 2 distinct letters the check gives up. So a Cyrillic, Greek or Arabic name followed by a Latin core domain is not a link, with a plain space or with a path. A Latin name followed by a non-Latin domain from the complete list (`рф`, `онлайн`) gets through the same way. D16 makes no exception for this: "a name, then anything at all, then a real top-level domain".
+
+Confirmed end to end. For each of these, `has_link_or_contact` returns False, `verify()` and `extractive()` keep the sentence, and the research surface shows it with the A2UI validator accepting it:
+- `пример com/claim` (a real form: .com takes Cyrillic names)
+- `возврат-портал org/claim`
+- `ελληνικά com/claim`
+- `استرداد com/claim`
+- `возврат ~ ~ ~ ~ ~ ~ com`
+- `refunds-portal ~ рф`
+- `refunds-portal ~ онлайн`
+
+A related gap: `refunds-portal ~ ком/claim` is detected, but `mask_links` covers only the ending, so `refunds-portal ~` stays visible.
+
+A self-contained regression test is at `/tmp/uri_review_R12/tests/test_w1_closure_r12_review_regressions.py`. All 24 of its cases fail on the candidate.
+
+**Other checks:**
+- **R11-02 (FIXED):** a host httpx rejects now fails only that source. Malformed redirect targets (`http://[::1/`, `http://[evil.example]/`, bad ports) also fail just that source; the job finishes with COMPLETED_WITH_RESULT.
+- **Not re-checked by hand this round:** SSRF / DNS pinning, vision gating, access/bridge permissions, Assist lifecycle, `snapshot.js` parity and the Flutter tests. Their Python tests pass. I did not run the Flutter tests.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "834c1c30956fd5aa7af4c2914f1f785902ab4ed3", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [{"id": "R12-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R1-01 link class still open under D16: a name in a different script from the ending (Cyrillic/Greek/Arabic name + core Latin domain, with a plain space or a path; Latin name + non-Latin listed TLD after a separator) passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15)",
+   "files": ["uri_web/untrusted.py:521", "uri_web/untrusted.py:523", "uri_web/untrusted.py:529", "uri_web/untrusted.py:550", "uri_web/untrusted.py:589", "uri_web/synthesize.py", "uri_web/surface.py"],
+   "evidence": "_ending_spans walks back from the ending while words[a][3] != fam or _single(words[a]), treating a name in another script family as 'foreign letters between'; with more than _MAX_FOREIGN (2) distinct letters it breaks and the span is skipped (line 529 'continue'). Reproduced on 834c1c3 with SENT='Claim your energy rebate refund at {} before the deadline.': for 'пример com/claim', 'пример com', 'возврат-портал org/claim', 'ελληνικά com/claim', 'استرداد com/claim', 'возврат ~ ~ ~ ~ ~ ~ com', 'refunds-portal ~ рф', 'refunds-portal ~ онлайн': has_link_or_contact False; SY.verify('<sentence> [1].', [src]) keeps the claim; SY.extractive keeps it; build_surface + require_valid passes and the link text appears in the surface JSON. D16 (plan line 84-88): 'A name, then anything at all, then a real top-level domain ... is a link'; core domains count 'also after a plain space'. None of these forms is in the owner-accepted residual list (non-core after prose punctuation, words for letters, post-snapshot TLDs, 'x. com'). Cyrillic second-level names under .com are real registrable IDNs. Also: 'refunds-portal ~ ком/claim' is detected but mask_links masks only the ending, leaving 'refunds-portal ~' visible. Regression test /tmp/uri_review_R12/tests/test_w1_closure_r12_review_regressions.py: 24 failed on the candidate.",
+   "suggested_fix": "Do not require the name to share the ending's script family: treat any multi-letter word of any listed script before the ending as the name (stop the foreign walk at the first word with more than _MAX_FOREIGN distinct letters and use it as the name instead of skipping), and make mask_links cover the name and the ending as one span. Add the forms above as regression cases."}],
+ "prior_findings": [{"id": "R1-01", "status": "NOT_FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"}, {"id": "R11-01", "status": "FIXED"}, {"id": "R11-02", "status": "FIXED"}],
+ "tests_run": [{"command": "/tmp/claude-0/venv/bin/python -m pytest tests/web tests/assist -q -x -p no:cacheprovider", "result": "3439 passed in 97.15s", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python -m pytest -q /tmp/uri_review_R12/tests/test_w1_closure_r12_review_regressions.py", "result": "24 failed (R12-01 reproduced on the candidate)", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R12/p2.py (verify/extractive/surface probe)", "result": "the six D16 bypass forms tested were kept by verify() and extractive() and shown on an A2UI-valid surface; a seventh (refunds-portal ~ ком/claim) was dropped but only partly masked", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R12/p3.py (malformed redirect Location probe)", "result": "all COMPLETED_WITH_RESULT, no INTERNAL_ERROR", "status": "COMPLETED_WITH_RESULT"}],
+ "unverified": ["Flutter widget tests (not run this round)", "Manual adversarial re-check of SSRF/DNS pinning, vision gating, access/bridge permissions, Assist controller lifecycle and snapshot.js parity this round (relied on the passing suite)", "ws_frozen_check zip part (Phase 1 checkpoint zip absent); protected-path check done by git diff --stat only"]}
+AUDIT_RESULT_END

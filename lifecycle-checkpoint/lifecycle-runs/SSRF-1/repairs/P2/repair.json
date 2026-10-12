@@ -1,0 +1,98 @@
+{
+ "addresses": [
+  "R1-01"
+ ],
+ "changed": [
+  "tests/ssrf/test_ssrf_1_refusal_messages.py",
+  "uri_core/tools/fetch_url.py"
+ ],
+ "commit": "a5a31435035c88ab5c3a868796f96232bc036759",
+ "ended_at": "2026-10-12T02:14:22Z",
+ "pre": "f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/ssrf/test_ssrf_1_refusal_messages.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 2,
+ "report": {
+  "not_repaired": [],
+  "notes": "fetch_url.py now chooses the refused-fetch message by refusal_code. Only the address-class codes (ADDRESS_NOT_PUBLIC, ADDRESS_TRANSITION_REFUSED, HOST_LOCAL_NAME, HOST_NUMERIC_AMBIGUOUS, HOST_SINGLE_LABEL) say 'private or local network'. DNS_FAILED and DNS_EMPTY say 'URI could not reach that URL.'. PORT_REFUSED, SCHEME_REFUSED, USERINFO_REFUSED and the invalid-URL codes each get accurate wording, and unknown codes get a neutral fallback. refusal_code is kept and no address appears in any message. USERINFO_REFUSED has its own message rather than the private one the reviewer suggested; moving it back is a one-line change. uri_web/safe_fetch.py is unchanged because its codes already distinguish the cases. The new test file had 5 failures and 5 passes against the f44f70a fetch_url.py (loaded from the scratchpad under the same module name, because stash and overwriting the file were not permitted). After the repair, tests/ssrf plus tests/web/test_w1_pipeline_citations_injection.py pass (85 passed). The production-tool case with a long-label host was not tested because it would need real DNS.",
+  "regression_tests": [
+   "tests/ssrf/test_ssrf_1_refusal_messages.py"
+  ],
+  "repaired": [
+   "R1-01"
+  ]
+ },
+ "started_at": "2026-10-12T02:12:58Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "4488096b-e370-442f-955a-fe84f0efe879",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.473226,
+  "cwd": "/home/user/uri-wt/ssrf",
+  "ended_at": "2026-10-12T02:14:16Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 12,
+  "pid": 11298,
+  "prompt_sha256": "ee93ec6c2b11a82049501ac3a7f31ecdc796019f687ee321a1dfec925ba81d82",
+  "provider": "claude_cli",
+  "result_text_sha256": "29d582baf33cf7cb118497095020b2a124d22a342ab01a8638118e24440b89e9",
+  "role": "implementer",
+  "session_id": "4488096b-e370-442f-955a-fe84f0efe879",
+  "session_id_requested": "4488096b-e370-442f-955a-fe84f0efe879",
+  "started_at": "2026-10-12T02:12:58Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "809c9a940ad53d193615fb67a9ff2ba765e61a3ec6f844c06a9ad32fc1788ede"
+ }
+}

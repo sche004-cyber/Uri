@@ -1,0 +1,3090 @@
+{
+ "created": "2026-10-06T14:07:43",
+ "note": "post-crash queue (2026-10-06); see crash_recovery_20261006.json",
+ "entries": [
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "freeze_start",
+   "group": "safety",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/verify_freeze.py"
+   ],
+   "timeout_s": 300,
+   "stdout_to": "model_lab/evidence/uri_engine/freeze_check_recovery_start.json",
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/freeze_check_recovery_start.json"
+   ],
+   "start": "2026-10-06T14:07:49",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\freeze_start_20261006-140749.log",
+   "host_before": {
+    "free_ram_mib": 13980,
+    "vram_mib": 458.4
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": null,
+   "end": "2026-10-06T14:07:53",
+   "exit_code": 0,
+   "elapsed_s": 2.2,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/freeze_check_recovery_start.json",
+     "file": "model_lab\\evidence\\uri_engine\\freeze_check_recovery_start.json",
+     "size": 174,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 13938,
+    "vram_mib": 458.4
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "determinism_probe",
+   "group": "correctness",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/determinism_probe.py"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/determinism_probe.json"
+   ],
+   "start": "2026-10-06T14:07:55",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\determinism_probe_20261006-140755.log",
+   "host_before": {
+    "free_ram_mib": 13919,
+    "vram_mib": 458.4
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T14:11:46",
+   "exit_code": 0,
+   "elapsed_s": 227.8,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/determinism_probe.json",
+     "file": "model_lab\\evidence\\uri_engine\\determinism_probe.json",
+     "size": 69973,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 15753,
+    "vram_mib": 458.4
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_control",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_control",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 0 --ctx-checkpoints 0",
+    "--layout",
+    "single"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_control_*.json"
+   ],
+   "start": "2026-10-06T14:11:48",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_control_20261006-141148.log",
+   "host_before": {
+    "free_ram_mib": 15746,
+    "vram_mib": 458.4
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T14:19:54",
+   "exit_code": 0,
+   "elapsed_s": 484.1,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_control_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_control_20261006-141151.json",
+     "size": 52723,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 15661,
+    "vram_mib": 458.4
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_prod",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_prod",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024",
+    "--layout",
+    "single"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_prod_*.json"
+   ],
+   "start": "2026-10-06T14:19:56",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_prod_20261006-141956.log",
+   "host_before": {
+    "free_ram_mib": 15657,
+    "vram_mib": 458.4
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T14:24:44",
+   "exit_code": 0,
+   "elapsed_s": 285.5,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_prod_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_prod_20261006-141959.json",
+     "size": 52923,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 16340,
+    "vram_mib": 458.4
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 2,
+   "id": "ctx_prod_split",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_prod_split",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024",
+    "--layout",
+    "split"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_prod_split_*.json"
+   ],
+   "start": "2026-10-06T18:35:14",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_prod_split_20261006-183514.log",
+   "host_before": {
+    "free_ram_mib": 11078,
+    "vram_mib": 900.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "events": [],
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_prod_split_20261006-183514.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "end": "2026-10-06T18:42:07",
+   "exit_code": 0,
+   "elapsed_s": 410.4,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_prod_split_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_prod_split_20261006-183518.json",
+     "size": 50910,
+     "ok": true
+    }
+   ],
+   "host_after": {
+    "free_ram_mib": 11047,
+    "vram_mib": 888.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15553.2,
+    "min_free_ram_mib": 9033.0,
+    "samples": 56
+   },
+   "last_telemetry": {
+    "samples": 56,
+    "last": {
+     "time": "2026-10-06T18:42:01",
+     "free_ram_mib": "9033",
+     "vram_dedicated_mib": "888.1",
+     "gpu_util_pct": "0.8",
+     "server_rss_mib": "1798",
+     "server_cpu_pct": "1.1",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_ckpt1024",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_ckpt1024",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024 --checkpoint-min-step 1024 --ctx-checkpoints 16",
+    "--layout",
+    "single"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_ckpt1024_*.json"
+   ],
+   "start": "2026-10-06T18:42:09",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_ckpt1024_20261006-184209.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_ckpt1024_20261006-184209.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11026,
+    "vram_mib": 888.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T18:48:26",
+   "exit_code": 0,
+   "elapsed_s": 374.0,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_ckpt1024_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_ckpt1024_20261006-184213.json",
+     "size": 53054,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11352,
+    "vram_mib": 910.6
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15573.4,
+    "min_free_ram_mib": 9526.0,
+    "samples": 51
+   },
+   "last_telemetry": {
+    "samples": 51,
+    "last": {
+     "time": "2026-10-06T18:48:19",
+     "free_ram_mib": "11252",
+     "vram_dedicated_mib": "910.6",
+     "gpu_util_pct": "0.8",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_cache4096",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_cache4096",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 4096",
+    "--layout",
+    "single"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_cache4096_*.json"
+   ],
+   "start": "2026-10-06T18:48:28",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_cache4096_20261006-184828.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_cache4096_20261006-184828.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11347,
+    "vram_mib": 910.6
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T18:54:00",
+   "exit_code": 0,
+   "elapsed_s": 329.9,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_cache4096_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_cache4096_20261006-184831.json",
+     "size": 52762,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10998,
+    "vram_mib": 917.6
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15573.4,
+    "min_free_ram_mib": 7625.0,
+    "samples": 45
+   },
+   "last_telemetry": {
+    "samples": 45,
+    "last": {
+     "time": "2026-10-06T18:53:53",
+     "free_ram_mib": "7625",
+     "vram_dedicated_mib": "911.4",
+     "gpu_util_pct": "0.8",
+     "server_rss_mib": "3297",
+     "server_cpu_pct": "1.3",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_prod_multi",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_prod_multi",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024",
+    "--layout",
+    "multi"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_prod_multi_*.json"
+   ],
+   "start": "2026-10-06T20:09:30",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_prod_multi_20261006-200930.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_prod_multi_20261006-200930.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 9786,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T20:15:36",
+   "exit_code": 0,
+   "elapsed_s": 363.6,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_prod_multi_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_prod_multi_20261006-200933.json",
+     "size": 50496,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10076,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15754.8,
+    "min_free_ram_mib": 7696.0,
+    "samples": 120
+   },
+   "last_telemetry": {
+    "samples": 120,
+    "last": {
+     "time": "2026-10-06T20:15:31",
+     "free_ram_mib": "7696",
+     "vram_dedicated_mib": "15754.8",
+     "gpu_util_pct": "34.0",
+     "server_rss_mib": "1922",
+     "server_cpu_pct": "0.9",
+     "n_llama_procs": "1"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_prod_multi_ms512",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_prod_multi_ms512",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 4096 --slot-prompt-similarity 0 --checkpoint-min-step 512 --ctx-checkpoints 32",
+    "--layout",
+    "multi"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_prod_multi_ms512_*.json"
+   ],
+   "start": "2026-10-06T20:59:34",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_prod_multi_ms512_20261006-205934.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_prod_multi_ms512_20261006-205934.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11179,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T21:04:03",
+   "exit_code": 0,
+   "elapsed_s": 266.2,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_prod_multi_ms512_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_prod_multi_ms512_20261006-205937.json",
+     "size": 50577,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11184,
+    "vram_mib": 1095.8
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15752.6,
+    "min_free_ram_mib": 5801.0,
+    "samples": 88
+   },
+   "last_telemetry": {
+    "samples": 88,
+    "last": {
+     "time": "2026-10-06T21:03:59",
+     "free_ram_mib": "7586",
+     "vram_dedicated_mib": "15752.6",
+     "gpu_util_pct": "0.0",
+     "server_rss_mib": "3357",
+     "server_cpu_pct": "0.7",
+     "n_llama_procs": "1"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_sim0_cache4096",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_sim0_cache4096",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 4096 --slot-prompt-similarity 0",
+    "--layout",
+    "single"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_sim0_cache4096_*.json"
+   ],
+   "start": "2026-10-06T20:15:38",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_sim0_cache4096_20261006-201538.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_sim0_cache4096_20261006-201538.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10081,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T20:20:21",
+   "exit_code": 0,
+   "elapsed_s": 280.8,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_sim0_cache4096_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_sim0_cache4096_20261006-201541.json",
+     "size": 52539,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11113,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15754.6,
+    "min_free_ram_mib": 5926.0,
+    "samples": 93
+   },
+   "last_telemetry": {
+    "samples": 93,
+    "last": {
+     "time": "2026-10-06T20:20:17",
+     "free_ram_mib": "11002",
+     "vram_dedicated_mib": "15754.6",
+     "gpu_util_pct": "0.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_ux_best_split",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_ux_best_split",
+    "--extra",
+    "-b 1024 -ub 1024 --cache-ram 4096 --slot-prompt-similarity 0 --checkpoint-min-step 1024 --ctx-checkpoints 32",
+    "--layout",
+    "split",
+    "--binary",
+    "D:/uri-model-lab/build/rsseq/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/rsseq/bin/llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_ux_best_split_*.json"
+   ],
+   "start": "2026-10-06T20:20:23",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_ux_best_split_20261006-202023.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_ux_best_split_20261006-202023.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11103,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "3b3be9f242abdf7f5a04dbd6ec32b9c49f295a0dbf00c69377fdbe63c41f3c00",
+    "llama-server-impl.dll": "c31f53a36ef2e63f99cfa6c895d75f61559b70036a235e27ea0197b344ae4813",
+    "llama.dll": "18a04aa04cf3dd38fb70587c1c48cc31c800d6a780fe47834c3cf3dccbd40765",
+    "ggml-vulkan.dll": "283cfaa9eb8f69ca00dc5e83259620fdccdb61a6fcae4486af35712e7dc4d00e",
+    "ggml-base.dll": "36e9eca2516595404dbbc127a4226addcc6e4d2a9c5c91c1941dc470a1268090"
+   },
+   "end": "2026-10-06T20:29:27",
+   "exit_code": 0,
+   "elapsed_s": 541.6,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_ux_best_split_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_ux_best_split_20261006-202026.json",
+     "size": 50831,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10841,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15785.9,
+    "min_free_ram_mib": 5526.0,
+    "samples": 180
+   },
+   "last_telemetry": {
+    "samples": 180,
+    "last": {
+     "time": "2026-10-06T20:29:25",
+     "free_ram_mib": "10758",
+     "vram_dedicated_mib": "15785.9",
+     "gpu_util_pct": "55.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_ux_best2_split",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_ux_best2_split",
+    "--extra",
+    "-b 2048 -ub 2048 --cache-ram 4096 --slot-prompt-similarity 0 --checkpoint-min-step 1024 --ctx-checkpoints 32",
+    "--layout",
+    "split",
+    "--binary",
+    "D:/uri-model-lab/build/rsseq/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/rsseq/bin/llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_ux_best2_split_*.json"
+   ],
+   "start": "2026-10-06T21:04:05",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_ux_best2_split_20261006-210405.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_ux_best2_split_20261006-210405.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11176,
+    "vram_mib": 1095.8
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "3b3be9f242abdf7f5a04dbd6ec32b9c49f295a0dbf00c69377fdbe63c41f3c00",
+    "llama-server-impl.dll": "c31f53a36ef2e63f99cfa6c895d75f61559b70036a235e27ea0197b344ae4813",
+    "llama.dll": "18a04aa04cf3dd38fb70587c1c48cc31c800d6a780fe47834c3cf3dccbd40765",
+    "ggml-vulkan.dll": "283cfaa9eb8f69ca00dc5e83259620fdccdb61a6fcae4486af35712e7dc4d00e",
+    "ggml-base.dll": "36e9eca2516595404dbbc127a4226addcc6e4d2a9c5c91c1941dc470a1268090"
+   },
+   "end": "2026-10-06T21:12:08",
+   "exit_code": 0,
+   "elapsed_s": 480.6,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_ux_best2_split_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_ux_best2_split_20261006-210408.json",
+     "size": 50681,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 9932,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15152.0,
+    "min_free_ram_mib": 3836.0,
+    "samples": 159
+   },
+   "last_telemetry": {
+    "samples": 159,
+    "last": {
+     "time": "2026-10-06T21:12:05",
+     "free_ram_mib": "9778",
+     "vram_dedicated_mib": "15150.3",
+     "gpu_util_pct": "57.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_sb_prod",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_sb_prod",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024",
+    "--layout",
+    "single",
+    "--binary",
+    "D:/uri-model-lab/build/stock/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/stock/bin/llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_sb_prod_*.json"
+   ],
+   "start": "2026-10-06T18:54:02",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_sb_prod_20261006-185402.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_sb_prod_20261006-185402.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10995,
+    "vram_mib": 911.4
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "a14b922c136880371fa5038489c2a55c078edaed4987648e58e225ea3965c6ff",
+    "llama-server-impl.dll": "181b07ff49e7f191e0c66b8fdb4403cfb7a6145a17a46010ef75946ac012c221",
+    "llama.dll": "399c0d7b08d6dbe6372342aff5c22b357b1cc5fb1631e46e816012fec3a828b7",
+    "ggml-vulkan.dll": "c1a7fd3f2fb10ad512babd5149ef83309dae5dfdd09153db3753e4730570d718",
+    "ggml-base.dll": "75f8c38f0f6784cba759adfe8c7247bd3751371b4a13ac57cf6453044fbfce9f"
+   },
+   "end": "2026-10-06T19:07:53",
+   "exit_code": 0,
+   "elapsed_s": 828.9,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_sb_prod_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_sb_prod_20261006-185406.json",
+     "size": 52911,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10165,
+    "vram_mib": 943.5
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15661.3,
+    "min_free_ram_mib": 7983.0,
+    "samples": 113
+   },
+   "last_telemetry": {
+    "samples": 113,
+    "last": {
+     "time": "2026-10-06T19:07:47",
+     "free_ram_mib": "10077",
+     "vram_dedicated_mib": "943.5",
+     "gpu_util_pct": "0.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_ux_fine1024",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_ux_fine1024",
+    "--extra",
+    "-b 1024 -ub 1024 --cache-ram 1024 --checkpoint-min-step 512 --ctx-checkpoints 8",
+    "--layout",
+    "single",
+    "--binary",
+    "D:/uri-model-lab/build/rsseq/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/rsseq/bin/llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_ux_fine1024_*.json"
+   ],
+   "start": "2026-10-06T19:07:55",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_ux_fine1024_20261006-190755.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_ux_fine1024_20261006-190755.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10171,
+    "vram_mib": 943.5
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "3b3be9f242abdf7f5a04dbd6ec32b9c49f295a0dbf00c69377fdbe63c41f3c00",
+    "llama-server-impl.dll": "c31f53a36ef2e63f99cfa6c895d75f61559b70036a235e27ea0197b344ae4813",
+    "llama.dll": "18a04aa04cf3dd38fb70587c1c48cc31c800d6a780fe47834c3cf3dccbd40765",
+    "ggml-vulkan.dll": "283cfaa9eb8f69ca00dc5e83259620fdccdb61a6fcae4486af35712e7dc4d00e",
+    "ggml-base.dll": "36e9eca2516595404dbbc127a4226addcc6e4d2a9c5c91c1941dc470a1268090"
+   },
+   "end": "2026-10-06T19:21:58",
+   "exit_code": 0,
+   "elapsed_s": 839.7,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_ux_fine1024_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_ux_fine1024_20261006-190759.json",
+     "size": 52878,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10077,
+    "vram_mib": 1149.0
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 16078.5,
+    "min_free_ram_mib": 6878.0,
+    "samples": 114
+   },
+   "last_telemetry": {
+    "samples": 114,
+    "last": {
+     "time": "2026-10-06T19:21:49",
+     "free_ram_mib": "7575",
+     "vram_dedicated_mib": "15850.6",
+     "gpu_util_pct": "1.0",
+     "server_rss_mib": "2277",
+     "server_cpu_pct": "0.9",
+     "n_llama_procs": "1"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_ux_fine512",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_ux_fine512",
+    "--extra",
+    "-b 512 -ub 512 --cache-ram 1024 --checkpoint-min-step 256 --ctx-checkpoints 16",
+    "--layout",
+    "single",
+    "--binary",
+    "D:/uri-model-lab/build/rsseq/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/rsseq/bin/llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_ux_fine512_*.json"
+   ],
+   "start": "2026-10-06T19:22:00",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_ux_fine512_20261006-192200.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_ux_fine512_20261006-192200.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10075,
+    "vram_mib": 1149.0
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "3b3be9f242abdf7f5a04dbd6ec32b9c49f295a0dbf00c69377fdbe63c41f3c00",
+    "llama-server-impl.dll": "c31f53a36ef2e63f99cfa6c895d75f61559b70036a235e27ea0197b344ae4813",
+    "llama.dll": "18a04aa04cf3dd38fb70587c1c48cc31c800d6a780fe47834c3cf3dccbd40765",
+    "ggml-vulkan.dll": "283cfaa9eb8f69ca00dc5e83259620fdccdb61a6fcae4486af35712e7dc4d00e",
+    "ggml-base.dll": "36e9eca2516595404dbbc127a4226addcc6e4d2a9c5c91c1941dc470a1268090"
+   },
+   "end": "2026-10-06T19:33:59",
+   "exit_code": 0,
+   "elapsed_s": 717.5,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_ux_fine512_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_ux_fine512_20261006-192203.json",
+     "size": 52644,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 9928,
+    "vram_mib": 1140.2
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15736.2,
+    "min_free_ram_mib": 7953.0,
+    "samples": 97
+   },
+   "last_telemetry": {
+    "samples": 97,
+    "last": {
+     "time": "2026-10-06T19:33:53",
+     "free_ram_mib": "9856",
+     "vram_dedicated_mib": "1140.2",
+     "gpu_util_pct": "0.9",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "determinism_probe2",
+   "group": "correctness",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/determinism_probe2.py"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/determinism_probe2.json"
+   ],
+   "start": "2026-10-06T19:34:02",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\determinism_probe2_20261006-193402.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_determinism_probe2_20261006-193402.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 9943,
+    "vram_mib": 1140.2
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T19:41:58",
+   "exit_code": 0,
+   "elapsed_s": 474.3,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/determinism_probe2.json",
+     "file": "model_lab\\evidence\\uri_engine\\determinism_probe2.json",
+     "size": 98756,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11066,
+    "vram_mib": 1098.0
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15718.8,
+    "min_free_ram_mib": 8740.0,
+    "samples": 64
+   },
+   "last_telemetry": {
+    "samples": 64,
+    "last": {
+     "time": "2026-10-06T19:41:52",
+     "free_ram_mib": "8981",
+     "vram_dedicated_mib": "1098.0",
+     "gpu_util_pct": "0.9",
+     "server_rss_mib": "1876",
+     "server_cpu_pct": "1.4",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "uri_base_16k",
+   "group": "bench_uri",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_uri.py",
+    "--name",
+    "uri_base_16k",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024",
+    "--ctx",
+    "16384",
+    "--skip",
+    "long,vision"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/runs/uri_base_16k_*.json"
+   ],
+   "start": "2026-10-06T19:42:00",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\uri_base_16k_20261006-194200.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_uri_base_16k_20261006-194200.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11039,
+    "vram_mib": 1111.7
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T19:45:07",
+   "exit_code": 0,
+   "elapsed_s": 184.8,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/runs/uri_base_16k_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\runs\\uri_base_16k_20261006-194205.json",
+     "size": 14144,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10984,
+    "vram_mib": 1098.0
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15515.2,
+    "min_free_ram_mib": 8929.0,
+    "samples": 25
+   },
+   "last_telemetry": {
+    "samples": 25,
+    "last": {
+     "time": "2026-10-06T19:45:01",
+     "free_ram_mib": "9120",
+     "vram_dedicated_mib": "1111.7",
+     "gpu_util_pct": "0.6",
+     "server_rss_mib": "1626",
+     "server_cpu_pct": "1.9",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "uri_mtp3_16k",
+   "group": "bench_uri",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_uri.py",
+    "--name",
+    "uri_mtp3_16k",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 3 -otd token_embd.weight=CPU",
+    "--ctx",
+    "16384",
+    "--skip",
+    "long,vision"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/runs/uri_mtp3_16k_*.json"
+   ],
+   "start": "2026-10-06T19:45:09",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\uri_mtp3_16k_20261006-194509.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_uri_mtp3_16k_20261006-194509.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10978,
+    "vram_mib": 1098.0
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T19:48:11",
+   "exit_code": 0,
+   "elapsed_s": 179.5,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/runs/uri_mtp3_16k_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\runs\\uri_mtp3_16k_20261006-194513.json",
+     "size": 14322,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10823,
+    "vram_mib": 1124.7
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15953.2,
+    "min_free_ram_mib": 7461.0,
+    "samples": 24
+   },
+   "last_telemetry": {
+    "samples": 24,
+    "last": {
+     "time": "2026-10-06T19:48:02",
+     "free_ram_mib": "7461",
+     "vram_dedicated_mib": "15933.4",
+     "gpu_util_pct": "0.5",
+     "server_rss_mib": "3144",
+     "server_cpu_pct": "2.2",
+     "n_llama_procs": "1"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ue_base16k",
+   "group": "correctness",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/run_bench.py",
+    "--name",
+    "ue_base16k",
+    "--model",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+    "--mmproj",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+    "--family",
+    "qwen",
+    "--ctx",
+    "16384",
+    "--ngl",
+    "999",
+    "--paths",
+    "fast",
+    "--suites",
+    "F,D,DG,C,H,S,O,L,P",
+    "--l-sizes",
+    "4000,12000",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024",
+    "--port",
+    "18481"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 3600,
+   "required_outputs": [
+    "model_lab/evidence/runs/ue_base16k/*/summary.json"
+   ],
+   "start": "2026-10-06T19:48:13",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ue_base16k_20261006-194813.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ue_base16k_20261006-194813.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10814,
+    "vram_mib": 1111.0
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T19:59:24",
+   "exit_code": 0,
+   "elapsed_s": 669.0,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/runs/ue_base16k/*/summary.json",
+     "file": "model_lab\\evidence\\runs\\ue_base16k\\20261006-194816\\summary.json",
+     "size": 7396,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 8547,
+    "vram_mib": 1117.7
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15566.2,
+    "min_free_ram_mib": 6757.0,
+    "samples": 90
+   },
+   "last_telemetry": {
+    "samples": 90,
+    "last": {
+     "time": "2026-10-06T19:59:18",
+     "free_ram_mib": "6827",
+     "vram_dedicated_mib": "15552.5",
+     "gpu_util_pct": "0.8",
+     "server_rss_mib": "1518",
+     "server_cpu_pct": "2.2",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ue_mtp3_16k",
+   "group": "correctness",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/run_bench.py",
+    "--name",
+    "ue_mtp3_16k",
+    "--model",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+    "--mmproj",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+    "--family",
+    "qwen",
+    "--ctx",
+    "16384",
+    "--ngl",
+    "999",
+    "--paths",
+    "fast",
+    "--suites",
+    "F,D,DG,C,H,S,O,L,P",
+    "--l-sizes",
+    "4000,12000",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 3 -otd token_embd.weight=CPU",
+    "--port",
+    "18481"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 3600,
+   "required_outputs": [
+    "model_lab/evidence/runs/ue_mtp3_16k/*/summary.json"
+   ],
+   "start": "2026-10-06T19:59:27",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ue_mtp3_16k_20261006-195927.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ue_mtp3_16k_20261006-195927.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 8543,
+    "vram_mib": 1131.5
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T20:08:59",
+   "exit_code": 0,
+   "elapsed_s": 570.1,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/runs/ue_mtp3_16k/*/summary.json",
+     "file": "model_lab\\evidence\\runs\\ue_mtp3_16k\\20261006-195930\\summary.json",
+     "size": 7716,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10186,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 16176.4,
+    "min_free_ram_mib": 5066.0,
+    "samples": 77
+   },
+   "last_telemetry": {
+    "samples": 77,
+    "last": {
+     "time": "2026-10-06T20:08:52",
+     "free_ram_mib": "10160",
+     "vram_dedicated_mib": "1098.1",
+     "gpu_util_pct": "0.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ue_base16k_rep",
+   "group": "correctness",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/run_bench.py",
+    "--name",
+    "ue_base16k_rep",
+    "--model",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+    "--mmproj",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+    "--family",
+    "qwen",
+    "--ctx",
+    "16384",
+    "--ngl",
+    "999",
+    "--paths",
+    "fast",
+    "--suites",
+    "F,D,DG,C,H,S,O,L,P",
+    "--l-sizes",
+    "4000,12000",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024",
+    "--port",
+    "18481"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 3600,
+   "required_outputs": [
+    "model_lab/evidence/runs/ue_base16k_rep/*/summary.json"
+   ],
+   "start": "2026-10-06T20:29:29",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ue_base16k_rep_20261006-202929.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ue_base16k_rep_20261006-202929.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10834,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T20:39:52",
+   "exit_code": 0,
+   "elapsed_s": 620.6,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/runs/ue_base16k_rep/*/summary.json",
+     "file": "model_lab\\evidence\\runs\\ue_base16k_rep\\20261006-202932\\summary.json",
+     "size": 7411,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10477,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15533.3,
+    "min_free_ram_mib": 8517.0,
+    "samples": 206
+   },
+   "last_telemetry": {
+    "samples": 206,
+    "last": {
+     "time": "2026-10-06T20:39:48",
+     "free_ram_mib": "10316",
+     "vram_dedicated_mib": "15533.3",
+     "gpu_util_pct": "0.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "mtp2_32k_vision",
+   "group": "bench_spec",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_spec.py",
+    "--name",
+    "mtp2_32k_vision",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 2 -otd token_embd.weight=CPU",
+    "--ctx",
+    "32768",
+    "--repeats",
+    "1"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/spec/mtp2_32k_vision.json"
+   ],
+   "start": "2026-10-06T20:39:54",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\mtp2_32k_vision_20261006-203954.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_mtp2_32k_vision_20261006-203954.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10473,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T20:41:55",
+   "exit_code": 0,
+   "elapsed_s": 119.3,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/spec/mtp2_32k_vision.json",
+     "file": "model_lab\\evidence\\uri_engine\\spec\\mtp2_32k_vision.json",
+     "size": 9410,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11077,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15859.5,
+    "min_free_ram_mib": 7241.0,
+    "samples": 39
+   },
+   "last_telemetry": {
+    "samples": 39,
+    "last": {
+     "time": "2026-10-06T20:41:50",
+     "free_ram_mib": "7329",
+     "vram_dedicated_mib": "15859.5",
+     "gpu_util_pct": "98.0",
+     "server_rss_mib": "3398",
+     "server_cpu_pct": "1.1",
+     "n_llama_procs": "1"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "mtp3_24k_vision",
+   "group": "bench_spec",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_spec.py",
+    "--name",
+    "mtp3_24k_vision",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 3 -otd token_embd.weight=CPU",
+    "--ctx",
+    "24576",
+    "--repeats",
+    "1"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/spec/mtp3_24k_vision.json"
+   ],
+   "start": "2026-10-06T20:41:57",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\mtp3_24k_vision_20261006-204157.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_mtp3_24k_vision_20261006-204157.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11200,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T20:43:57",
+   "exit_code": 0,
+   "elapsed_s": 117.7,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/spec/mtp3_24k_vision.json",
+     "file": "model_lab\\evidence\\uri_engine\\spec\\mtp3_24k_vision.json",
+     "size": 9408,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11455,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15787.4,
+    "min_free_ram_mib": 7702.0,
+    "samples": 39
+   },
+   "last_telemetry": {
+    "samples": 39,
+    "last": {
+     "time": "2026-10-06T20:43:54",
+     "free_ram_mib": "11306",
+     "vram_dedicated_mib": "15787.4",
+     "gpu_util_pct": "79.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "mtp2_16k_vision",
+   "group": "bench_spec",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_spec.py",
+    "--name",
+    "mtp2_16k_vision",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 2 -otd token_embd.weight=CPU",
+    "--ctx",
+    "16384",
+    "--repeats",
+    "1"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/spec/mtp2_16k_vision.json"
+   ],
+   "start": "2026-10-06T20:43:59",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\mtp2_16k_vision_20261006-204359.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_mtp2_16k_vision_20261006-204359.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11449,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T20:46:00",
+   "exit_code": 0,
+   "elapsed_s": 119.3,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/spec/mtp2_16k_vision.json",
+     "file": "model_lab\\evidence\\uri_engine\\spec\\mtp2_16k_vision.json",
+     "size": 9416,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11316,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15856.7,
+    "min_free_ram_mib": 7814.0,
+    "samples": 39
+   },
+   "last_telemetry": {
+    "samples": 39,
+    "last": {
+     "time": "2026-10-06T20:45:56",
+     "free_ram_mib": "7944",
+     "vram_dedicated_mib": "15856.7",
+     "gpu_util_pct": "97.0",
+     "server_rss_mib": "3083",
+     "server_cpu_pct": "1.0",
+     "n_llama_procs": "1"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "mtp4_16k_vision",
+   "group": "bench_spec",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_spec.py",
+    "--name",
+    "mtp4_16k_vision",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 4 -otd token_embd.weight=CPU",
+    "--ctx",
+    "16384",
+    "--repeats",
+    "1"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/spec/mtp4_16k_vision.json"
+   ],
+   "start": "2026-10-06T20:46:03",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\mtp4_16k_vision_20261006-204603.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_mtp4_16k_vision_20261006-204603.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11314,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T20:48:04",
+   "exit_code": 0,
+   "elapsed_s": 119.2,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/spec/mtp4_16k_vision.json",
+     "file": "model_lab\\evidence\\uri_engine\\spec\\mtp4_16k_vision.json",
+     "size": 9404,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11451,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15764.9,
+    "min_free_ram_mib": 7703.0,
+    "samples": 39
+   },
+   "last_telemetry": {
+    "samples": 39,
+    "last": {
+     "time": "2026-10-06T20:47:59",
+     "free_ram_mib": "7799",
+     "vram_dedicated_mib": "15764.9",
+     "gpu_util_pct": "100.0",
+     "server_rss_mib": "3365",
+     "server_cpu_pct": "0.8",
+     "n_llama_procs": "1"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "stream_overhead",
+   "group": "overhead",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/stream_overhead.py"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 900,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/stream_overhead.json"
+   ],
+   "start": "2026-10-06T20:48:06",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\stream_overhead_20261006-204806.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_stream_overhead_20261006-204806.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11445,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T20:49:44",
+   "exit_code": 0,
+   "elapsed_s": 96.2,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/stream_overhead.json",
+     "file": "model_lab\\evidence\\uri_engine\\stream_overhead.json",
+     "size": 2903,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11382,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15642.8,
+    "min_free_ram_mib": 9977.0,
+    "samples": 32
+   },
+   "last_telemetry": {
+    "samples": 32,
+    "last": {
+     "time": "2026-10-06T20:49:42",
+     "free_ram_mib": "11296",
+     "vram_dedicated_mib": "15642.8",
+     "gpu_util_pct": "18.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "stream_probe2",
+   "group": "overhead",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/stream_probe2.py"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 900,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/stream_probe2.json"
+   ],
+   "start": "2026-10-06T21:12:10",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\stream_probe2_20261006-211210.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_stream_probe2_20261006-211210.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 9921,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T21:13:51",
+   "exit_code": 0,
+   "elapsed_s": 99.6,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/stream_probe2.json",
+     "file": "model_lab\\evidence\\uri_engine\\stream_probe2.json",
+     "size": 3870,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10488,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15635.6,
+    "min_free_ram_mib": 8509.0,
+    "samples": 33
+   },
+   "last_telemetry": {
+    "samples": 33,
+    "last": {
+     "time": "2026-10-06T21:13:48",
+     "free_ram_mib": "10360",
+     "vram_dedicated_mib": "15635.6",
+     "gpu_util_pct": "0.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "sb_prod_canon",
+   "group": "bench_uri",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_uri.py",
+    "--name",
+    "sb_prod_canon",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024",
+    "--serial",
+    "canonical",
+    "--skip",
+    "long,vision,decode",
+    "--binary",
+    "D:/uri-model-lab/build/stock/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/stock/bin/llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/runs/sb_prod_canon_*.json"
+   ],
+   "start": "2026-10-06T20:49:46",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\sb_prod_canon_20261006-204946.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_sb_prod_canon_20261006-204946.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11370,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "a14b922c136880371fa5038489c2a55c078edaed4987648e58e225ea3965c6ff",
+    "llama-server-impl.dll": "181b07ff49e7f191e0c66b8fdb4403cfb7a6145a17a46010ef75946ac012c221",
+    "llama.dll": "399c0d7b08d6dbe6372342aff5c22b357b1cc5fb1631e46e816012fec3a828b7",
+    "ggml-vulkan.dll": "c1a7fd3f2fb10ad512babd5149ef83309dae5dfdd09153db3753e4730570d718",
+    "ggml-base.dll": "75f8c38f0f6784cba759adfe8c7247bd3751371b4a13ac57cf6453044fbfce9f"
+   },
+   "end": "2026-10-06T20:52:48",
+   "exit_code": 0,
+   "elapsed_s": 179.0,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/runs/sb_prod_canon_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\runs\\sb_prod_canon_20261006-204951.json",
+     "size": 14105,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11194,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15736.4,
+    "min_free_ram_mib": 9013.0,
+    "samples": 59
+   },
+   "last_telemetry": {
+    "samples": 59,
+    "last": {
+     "time": "2026-10-06T20:52:43",
+     "free_ram_mib": "9660",
+     "vram_dedicated_mib": "15734.6",
+     "gpu_util_pct": "44.0",
+     "server_rss_mib": "1294",
+     "server_cpu_pct": "0.4",
+     "n_llama_procs": "1"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ux_prod_canon",
+   "group": "bench_uri",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_uri.py",
+    "--name",
+    "ux_prod_canon",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024",
+    "--serial",
+    "canonical",
+    "--skip",
+    "long,vision,decode",
+    "--binary",
+    "D:/uri-model-lab/build/rsseq/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/rsseq/bin/llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/runs/ux_prod_canon_*.json"
+   ],
+   "start": "2026-10-06T20:52:50",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ux_prod_canon_20261006-205250.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ux_prod_canon_20261006-205250.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11190,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "3b3be9f242abdf7f5a04dbd6ec32b9c49f295a0dbf00c69377fdbe63c41f3c00",
+    "llama-server-impl.dll": "c31f53a36ef2e63f99cfa6c895d75f61559b70036a235e27ea0197b344ae4813",
+    "llama.dll": "18a04aa04cf3dd38fb70587c1c48cc31c800d6a780fe47834c3cf3dccbd40765",
+    "ggml-vulkan.dll": "283cfaa9eb8f69ca00dc5e83259620fdccdb61a6fcae4486af35712e7dc4d00e",
+    "ggml-base.dll": "36e9eca2516595404dbbc127a4226addcc6e4d2a9c5c91c1941dc470a1268090"
+   },
+   "end": "2026-10-06T20:55:49",
+   "exit_code": 0,
+   "elapsed_s": 177.1,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/runs/ux_prod_canon_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\runs\\ux_prod_canon_20261006-205253.json",
+     "size": 14104,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11097,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15734.6,
+    "min_free_ram_mib": 8925.0,
+    "samples": 59
+   },
+   "last_telemetry": {
+    "samples": 59,
+    "last": {
+     "time": "2026-10-06T20:55:47",
+     "free_ram_mib": "10963",
+     "vram_dedicated_mib": "15734.6",
+     "gpu_util_pct": "32.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "uri_ngram_simple",
+   "group": "bench_uri",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_uri.py",
+    "--name",
+    "uri_ngram_simple",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024 --spec-type ngram-simple --spec-ngram-simple-size-n 12 --spec-ngram-simple-size-m 8 --spec-draft-n-max 8",
+    "--skip",
+    "long,vision"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/runs/uri_ngram_simple_*.json"
+   ],
+   "start": "2026-10-06T20:55:51",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\uri_ngram_simple_20261006-205551.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_uri_ngram_simple_20261006-205551.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11080,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T20:58:46",
+   "exit_code": 0,
+   "elapsed_s": 173.0,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/runs/uri_ngram_simple_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\runs\\uri_ngram_simple_20261006-205555.json",
+     "size": 14303,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11291,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15704.1,
+    "min_free_ram_mib": 9088.0,
+    "samples": 57
+   },
+   "last_telemetry": {
+    "samples": 57,
+    "last": {
+     "time": "2026-10-06T20:58:42",
+     "free_ram_mib": "9899",
+     "vram_dedicated_mib": "15704.1",
+     "gpu_util_pct": "19.0",
+     "server_rss_mib": "1161",
+     "server_cpu_pct": "0.5",
+     "n_llama_procs": "1"
+    }
+   }
+  },
+  {
+   "status": "rejected_superseded",
+   "attempts": 0,
+   "id": "uri_ngram_mod16",
+   "group": "bench_uri",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_uri.py",
+    "--name",
+    "uri_ngram_mod16",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024 --spec-type ngram-mod --spec-ngram-mod-n-match 16 --spec-ngram-mod-n-min 8 --spec-ngram-mod-n-max 16",
+    "--skip",
+    "long,vision"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/runs/uri_ngram_mod16_*.json"
+   ],
+   "block_reason": "identical settings to the run in progress at the crash (stock ngram-mod on a hybrid model); needs user decision",
+   "status_history": [
+    {
+     "t": "2026-10-07T00:22:22",
+     "from": "blocked",
+     "to": "rejected_superseded"
+    }
+   ],
+   "resolution": "Resolved from existing evidence without GPU time (user ruling 2026-10-07: closure, not optimization hunting). ngram-mod first-sight speed on URI-shaped tasks = baseline (0.98-1.01x, spec/ngram_mod.json rep0); repeat-sight gains come from answer memorisation; the stock ngram-mod server hung for 18 min (hang_ngram_mod_stock_b11425.log) and the n_max 16 attempt was in progress at the CAUSE UNKNOWN freeze; ngram-simple produced 0 drafts on 42 URI requests (uri_ngram_simple). MTP draft-mtp n_max 2 is the accepted, score-equivalent generation gain. No material first-sight, task-relevant improvement exists that would change the selected runtime.",
+   "resolved_at": "2026-10-07T00:22:22"
+  },
+  {
+   "status": "rejected_superseded",
+   "attempts": 0,
+   "id": "ux_ngram_mod8",
+   "group": "bench_spec",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_spec.py",
+    "--name",
+    "ux_ngram_mod8",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024 --spec-type ngram-mod --spec-ngram-mod-n-match 16 --spec-ngram-mod-n-min 4 --spec-ngram-mod-n-max 8 --spec-draft-n-max 8",
+    "--binary",
+    "D:/uri-model-lab/build/rsseq/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/rsseq/bin/llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/spec/ux_ngram_mod8.json"
+   ],
+   "block_reason": "n-gram speculation on the hybrid model (patched rs-seq path); crash-adjacent class, needs user decision",
+   "status_history": [
+    {
+     "t": "2026-10-07T00:22:22",
+     "from": "blocked",
+     "to": "rejected_superseded"
+    }
+   ],
+   "resolution": "Resolved from existing evidence without GPU time. The patched rs-seq path only changes how n-gram drafts roll back recurrent state; it cannot create drafts where none exist (ngram-simple 0 drafts on URI prompts; ngram-mod first-sight 0.98-1.01x). The n_rs_seq research patch is retained as historical evidence only (patches/uri-ext-b11425.diff); Runtime v1 is stock (patch REJECTED).",
+   "resolved_at": "2026-10-07T00:22:22"
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "freeze_end",
+   "group": "safety",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/verify_freeze.py"
+   ],
+   "timeout_s": 300,
+   "stdout_to": "model_lab/evidence/uri_engine/freeze_check_recovery_end.json",
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/freeze_check_recovery_end.json"
+   ],
+   "start": "2026-10-06T20:58:48",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\freeze_end_20261006-205848.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_freeze_end_20261006-205848.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11291,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": null,
+   "end": "2026-10-06T20:58:53",
+   "exit_code": 0,
+   "elapsed_s": 2.7,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/freeze_check_recovery_end.json",
+     "file": "model_lab\\evidence\\uri_engine\\freeze_check_recovery_end.json",
+     "size": 174,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11235,
+    "vram_mib": 1100.3
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": null,
+    "min_free_ram_mib": 11268.0,
+    "samples": 1
+   },
+   "last_telemetry": {
+    "samples": 1,
+    "last": {
+     "time": "2026-10-06T20:58:50",
+     "free_ram_mib": "11268",
+     "vram_dedicated_mib": "",
+     "gpu_util_pct": "",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 2,
+   "id": "ctx_sb2_prod",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_sb2_prod",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 1024",
+    "--layout",
+    "single",
+    "--binary",
+    "D:/uri-model-lab/build/stock2/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/stock2/bin/llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_sb2_prod_*.json"
+   ],
+   "start": "2026-10-07T00:15:30",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_sb2_prod_20261007-001530.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_sb2_prod_20261007-001530.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 9862,
+    "vram_mib": 1065.3
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "0cf998e007e16e353cb7d655787ba429ad4d4ab7d200b68754172cb33c98acf8",
+    "llama-server-impl.dll": "9d9e72e221d92c70adae2a4a1837e2e72343764f745c2a39250773dac3f1bc01",
+    "llama.dll": "a1b258f18d68b6fdb2a2997b0c5b782a33272804d58b207ea2665dfda141ca3e",
+    "ggml-vulkan.dll": "7a466d502c12d571e8715bfd22e657b8564fcd5f266f1015136caa5469c732e8",
+    "ggml-base.dll": "78c5e1e5d5baaaa40aed2e286601cd1b0555c902830051081f48c0fa94daf81b"
+   },
+   "events": [],
+   "end": "2026-10-07T00:21:41",
+   "exit_code": 0,
+   "elapsed_s": 368.5,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_sb2_prod_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_sb2_prod_20261007-001533.json",
+     "size": 57690,
+     "ok": true
+    }
+   ],
+   "host_after": {
+    "free_ram_mib": 10156,
+    "vram_mib": 1063.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15733.3,
+    "min_free_ram_mib": 8086.0,
+    "samples": 122
+   },
+   "last_telemetry": {
+    "samples": 122,
+    "last": {
+     "time": "2026-10-07T00:21:37",
+     "free_ram_mib": "9979",
+     "vram_dedicated_mib": "15719.6",
+     "gpu_util_pct": "29.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   },
+   "note": "attempt 1 (21:50) failed with KeyError: 'S' (harness defect: the final layout had just gained scenario S); attempt 2 (00:15, started by a parallel session after the soak) completed; it is a duplicate of ctx_sb2_final's binary-equivalence evidence and is not used for any decision."
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_rel_final",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_rel_final",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 2048 --slot-prompt-similarity 0 --checkpoint-min-step 512 --ctx-checkpoints 16",
+    "--layout",
+    "final"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_rel_final_*.json"
+   ],
+   "start": "2026-10-06T21:52:14",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_rel_final_20261006-215214.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_rel_final_20261006-215214.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10876,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T21:57:54",
+   "exit_code": 0,
+   "elapsed_s": 338.0,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_rel_final_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_rel_final_20261006-215217.json",
+     "size": 60512,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10787,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15754.8,
+    "min_free_ram_mib": 7349.0,
+    "samples": 112
+   },
+   "last_telemetry": {
+    "samples": 112,
+    "last": {
+     "time": "2026-10-06T21:57:50",
+     "free_ram_mib": "10605",
+     "vram_dedicated_mib": "15754.8",
+     "gpu_util_pct": "17.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_sb2_final",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_sb2_final",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 2048 --slot-prompt-similarity 0 --checkpoint-min-step 512 --ctx-checkpoints 16",
+    "--layout",
+    "final",
+    "--binary",
+    "D:/uri-model-lab/build/stock2/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/stock2/bin/llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_sb2_final_*.json"
+   ],
+   "start": "2026-10-06T21:57:56",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_sb2_final_20261006-215756.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_sb2_final_20261006-215756.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10779,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "0cf998e007e16e353cb7d655787ba429ad4d4ab7d200b68754172cb33c98acf8",
+    "llama-server-impl.dll": "9d9e72e221d92c70adae2a4a1837e2e72343764f745c2a39250773dac3f1bc01",
+    "llama.dll": "a1b258f18d68b6fdb2a2997b0c5b782a33272804d58b207ea2665dfda141ca3e",
+    "ggml-vulkan.dll": "7a466d502c12d571e8715bfd22e657b8564fcd5f266f1015136caa5469c732e8",
+    "ggml-base.dll": "78c5e1e5d5baaaa40aed2e286601cd1b0555c902830051081f48c0fa94daf81b"
+   },
+   "end": "2026-10-06T22:03:12",
+   "exit_code": 0,
+   "elapsed_s": 314.0,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_sb2_final_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_sb2_final_20261006-215759.json",
+     "size": 60424,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10799,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15754.8,
+    "min_free_ram_mib": 7461.0,
+    "samples": 104
+   },
+   "last_telemetry": {
+    "samples": 104,
+    "last": {
+     "time": "2026-10-06T22:03:09",
+     "free_ram_mib": "10683",
+     "vram_dedicated_mib": "15754.8",
+     "gpu_util_pct": "37.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_ux2_final",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_ux2_final",
+    "--extra",
+    "-b 2048 -ub 2048 --cache-ram 2048 --slot-prompt-similarity 0 --checkpoint-min-step 1024 --ctx-checkpoints 16",
+    "--layout",
+    "final",
+    "--binary",
+    "D:/uri-model-lab/build/rsseq2/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/rsseq2/bin/llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_ux2_final_*.json"
+   ],
+   "start": "2026-10-06T22:03:14",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_ux2_final_20261006-220314.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_ux2_final_20261006-220314.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10800,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "d986102e0ba047fd855a62a6cf2adb69c204022ba3cab477f7993ae8912e5534",
+    "llama-server-impl.dll": "8a028e86e95548ba027c3dbe168f0803a429333a3f16ba44b2333d282ba66a5f",
+    "llama.dll": "37a8aa088a708ae4d83280595abc2ae6be645fa8da4009dc06f54e43aa2ccc24",
+    "ggml-vulkan.dll": "48b648fb2a3ba43145e7702bfc8192ef67144efb538ecce136fef22a3bad098b",
+    "ggml-base.dll": "462ce6a446b0cc6d70b1ce63b7e61005bfd73c13dba132e1ce6b748f6c0494be"
+   },
+   "end": "2026-10-06T22:09:55",
+   "exit_code": 0,
+   "elapsed_s": 398.5,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_ux2_final_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_ux2_final_20261006-220318.json",
+     "size": 60865,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10396,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15124.5,
+    "min_free_ram_mib": 5974.0,
+    "samples": 132
+   },
+   "last_telemetry": {
+    "samples": 132,
+    "last": {
+     "time": "2026-10-06T22:09:51",
+     "free_ram_mib": "10206",
+     "vram_dedicated_mib": "15124.5",
+     "gpu_util_pct": "0.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ctx_ux2_final_ub1024",
+   "group": "context_reuse",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_context_reuse.py",
+    "--name",
+    "ctx_ux2_final_ub1024",
+    "--extra",
+    "-b 1024 -ub 1024 --cache-ram 2048 --slot-prompt-similarity 0 --checkpoint-min-step 512 --ctx-checkpoints 32",
+    "--layout",
+    "final",
+    "--binary",
+    "D:/uri-model-lab/build/rsseq2/bin/llama-server.exe"
+   ],
+   "binary": "D:/uri-model-lab/build/rsseq2/bin/llama-server.exe",
+   "timeout_s": 2400,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/context_reuse/ctx_ux2_final_ub1024_*.json"
+   ],
+   "start": "2026-10-06T22:09:58",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ctx_ux2_final_ub1024_20261006-220958.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ctx_ux2_final_ub1024_20261006-220958.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10394,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "d986102e0ba047fd855a62a6cf2adb69c204022ba3cab477f7993ae8912e5534",
+    "llama-server-impl.dll": "8a028e86e95548ba027c3dbe168f0803a429333a3f16ba44b2333d282ba66a5f",
+    "llama.dll": "37a8aa088a708ae4d83280595abc2ae6be645fa8da4009dc06f54e43aa2ccc24",
+    "ggml-vulkan.dll": "48b648fb2a3ba43145e7702bfc8192ef67144efb538ecce136fef22a3bad098b",
+    "ggml-base.dll": "462ce6a446b0cc6d70b1ce63b7e61005bfd73c13dba132e1ce6b748f6c0494be"
+   },
+   "end": "2026-10-06T22:16:57",
+   "exit_code": 0,
+   "elapsed_s": 417.0,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/context_reuse/ctx_ux2_final_ub1024_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\context_reuse\\ctx_ux2_final_ub1024_20261006-221001.json",
+     "size": 60720,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10672,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15756.1,
+    "min_free_ram_mib": 6073.0,
+    "samples": 138
+   },
+   "last_telemetry": {
+    "samples": 138,
+    "last": {
+     "time": "2026-10-06T22:16:52",
+     "free_ram_mib": "7488",
+     "vram_dedicated_mib": "15754.8",
+     "gpu_util_pct": "96.0",
+     "server_rss_mib": "2728",
+     "server_cpu_pct": "0.6",
+     "n_llama_procs": "1"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ue_cand",
+   "group": "correctness",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/run_bench.py",
+    "--name",
+    "ue_cand",
+    "--model",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+    "--mmproj",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+    "--family",
+    "qwen",
+    "--ctx",
+    "32768",
+    "--ngl",
+    "999",
+    "--paths",
+    "fast",
+    "--suites",
+    "F,D,DG,C,H,S,O,R,RH,L,P,V",
+    "--l-sizes",
+    "4000,12000,28000",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 2048 --slot-prompt-similarity 0 --checkpoint-min-step 512 --ctx-checkpoints 16",
+    "--port",
+    "18481"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 3600,
+   "required_outputs": [
+    "model_lab/evidence/runs/ue_cand/*/summary.json"
+   ],
+   "start": "2026-10-06T22:16:59",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ue_cand_20261006-221659.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ue_cand_20261006-221659.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10674,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T22:30:55",
+   "exit_code": 0,
+   "elapsed_s": 834.3,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/runs/ue_cand/*/summary.json",
+     "file": "model_lab\\evidence\\runs\\ue_cand\\20261006-221702\\summary.json",
+     "size": 8747,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10763,
+    "vram_mib": 1098.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15758.8,
+    "min_free_ram_mib": 7539.0,
+    "samples": 277
+   },
+   "last_telemetry": {
+    "samples": 277,
+    "last": {
+     "time": "2026-10-06T22:30:52",
+     "free_ram_mib": "10609",
+     "vram_dedicated_mib": "15758.8",
+     "gpu_util_pct": "19.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ue_cand_mtp2",
+   "group": "correctness",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/run_bench.py",
+    "--name",
+    "ue_cand_mtp2",
+    "--model",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+    "--mmproj",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+    "--family",
+    "qwen",
+    "--ctx",
+    "32768",
+    "--ngl",
+    "999",
+    "--paths",
+    "fast",
+    "--suites",
+    "F,D,DG,C,H,S,O,R,RH,L,P,V",
+    "--l-sizes",
+    "4000,12000,28000",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 2048 --slot-prompt-similarity 0 --checkpoint-min-step 512 --ctx-checkpoints 16 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 2 -otd token_embd.weight=CPU",
+    "--port",
+    "18481"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 3600,
+   "required_outputs": [
+    "model_lab/evidence/runs/ue_cand_mtp2/*/summary.json"
+   ],
+   "start": "2026-10-06T22:30:57",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ue_cand_mtp2_20261006-223057.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ue_cand_mtp2_20261006-223057.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10760,
+    "vram_mib": 1098.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T22:43:14",
+   "exit_code": 0,
+   "elapsed_s": 734.7,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/runs/ue_cand_mtp2/*/summary.json",
+     "file": "model_lab\\evidence\\runs\\ue_cand_mtp2\\20261006-223100\\summary.json",
+     "size": 9069,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11139,
+    "vram_mib": 1076.8
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15907.0,
+    "min_free_ram_mib": 5601.0,
+    "samples": 244
+   },
+   "last_telemetry": {
+    "samples": 244,
+    "last": {
+     "time": "2026-10-06T22:43:11",
+     "free_ram_mib": "10981",
+     "vram_dedicated_mib": "15894.0",
+     "gpu_util_pct": "63.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ue_cand_normal",
+   "group": "correctness",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/run_bench.py",
+    "--name",
+    "ue_cand_normal",
+    "--model",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+    "--mmproj",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+    "--family",
+    "qwen",
+    "--ctx",
+    "32768",
+    "--ngl",
+    "999",
+    "--paths",
+    "normal",
+    "--suites",
+    "R,RH",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 2048 --slot-prompt-similarity 0 --checkpoint-min-step 512 --ctx-checkpoints 16",
+    "--port",
+    "18481"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 3600,
+   "required_outputs": [
+    "model_lab/evidence/runs/ue_cand_normal/*/summary.json"
+   ],
+   "start": "2026-10-06T22:43:16",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ue_cand_normal_20261006-224316.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ue_cand_normal_20261006-224316.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11142,
+    "vram_mib": 1076.8
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T22:49:07",
+   "exit_code": 0,
+   "elapsed_s": 349.1,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/runs/ue_cand_normal/*/summary.json",
+     "file": "model_lab\\evidence\\runs\\ue_cand_normal\\20261006-224319\\summary.json",
+     "size": 4614,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10768,
+    "vram_mib": 1076.8
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15651.8,
+    "min_free_ram_mib": 7575.0,
+    "samples": 116
+   },
+   "last_telemetry": {
+    "samples": 116,
+    "last": {
+     "time": "2026-10-06T22:49:05",
+     "free_ram_mib": "10657",
+     "vram_dedicated_mib": "15651.8",
+     "gpu_util_pct": "91.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "ue_cand_mtp2_normal",
+   "group": "correctness",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/run_bench.py",
+    "--name",
+    "ue_cand_mtp2_normal",
+    "--model",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+    "--mmproj",
+    "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+    "--family",
+    "qwen",
+    "--ctx",
+    "32768",
+    "--ngl",
+    "999",
+    "--paths",
+    "normal",
+    "--suites",
+    "R,RH",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 2048 --slot-prompt-similarity 0 --checkpoint-min-step 512 --ctx-checkpoints 16 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 2 -otd token_embd.weight=CPU",
+    "--port",
+    "18481"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 3600,
+   "required_outputs": [
+    "model_lab/evidence/runs/ue_cand_mtp2_normal/*/summary.json"
+   ],
+   "start": "2026-10-06T22:49:10",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\ue_cand_mtp2_normal_20261006-224910.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_ue_cand_mtp2_normal_20261006-224910.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10784,
+    "vram_mib": 1076.8
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T22:54:10",
+   "exit_code": 0,
+   "elapsed_s": 297.9,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/runs/ue_cand_mtp2_normal/*/summary.json",
+     "file": "model_lab\\evidence\\runs\\ue_cand_mtp2_normal\\20261006-224913\\summary.json",
+     "size": 4933,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11041,
+    "vram_mib": 1063.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15796.7,
+    "min_free_ram_mib": 6174.0,
+    "samples": 99
+   },
+   "last_telemetry": {
+    "samples": 99,
+    "last": {
+     "time": "2026-10-06T22:54:07",
+     "free_ram_mib": "10937",
+     "vram_dedicated_mib": "15796.7",
+     "gpu_util_pct": "46.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "uri_cand_mtp2",
+   "group": "bench_uri",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/bench_uri.py",
+    "--name",
+    "uri_cand_mtp2",
+    "--extra",
+    "-b 2048 -ub 1024 --cache-ram 2048 --slot-prompt-similarity 0 --checkpoint-min-step 512 --ctx-checkpoints 16 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 2 -otd token_embd.weight=CPU",
+    "--skip",
+    "long"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 1500,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/runs/uri_cand_mtp2_*.json"
+   ],
+   "start": "2026-10-06T22:54:12",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\uri_cand_mtp2_20261006-225412.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_uri_cand_mtp2_20261006-225412.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11040,
+    "vram_mib": 1063.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-06T22:57:09",
+   "exit_code": 0,
+   "elapsed_s": 175.4,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/runs/uri_cand_mtp2_*.json",
+     "file": "model_lab\\evidence\\uri_engine\\runs\\uri_cand_mtp2_20261006-225415.json",
+     "size": 14443,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 11028,
+    "vram_mib": 1063.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15827.8,
+    "min_free_ram_mib": 5949.0,
+    "samples": 58
+   },
+   "last_telemetry": {
+    "samples": 58,
+    "last": {
+     "time": "2026-10-06T22:57:05",
+     "free_ram_mib": "10817",
+     "vram_dedicated_mib": "15827.8",
+     "gpu_util_pct": "0.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "soak_final",
+   "group": "stability",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/uri_engine/soak_final.py",
+    "--minutes",
+    "75"
+   ],
+   "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+   "timeout_s": 7200,
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/soak_final.json"
+   ],
+   "start": "2026-10-06T22:57:11",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\soak_final_20261006-225711.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_soak_final_20261006-225711.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 11027,
+    "vram_mib": 1063.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": {
+    "llama-server.exe": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "llama-server-impl.dll": "5dd98fffabe0dd84a94cf5cc8dcfaefb3f0c8c154eff1b30ac5b807a89724cdd",
+    "llama.dll": "e9e8ec4c7320d68a4ac147ed37720894c0709c506c1d7703d1357e8674c2e0f3",
+    "ggml-vulkan.dll": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+    "ggml-base.dll": "40425a2cad9359aee1b174e694a267fa6f8f0211904e19e10a4de89bd2c364d9"
+   },
+   "end": "2026-10-07T00:14:33",
+   "exit_code": 0,
+   "elapsed_s": 4639.8,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/soak_final.json",
+     "file": "model_lab\\evidence\\uri_engine\\soak_final.json",
+     "size": 502689,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10297,
+    "vram_mib": 1063.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": 15865.5,
+    "min_free_ram_mib": 4883.0,
+    "samples": 1541
+   },
+   "last_telemetry": {
+    "samples": 1541,
+    "last": {
+     "time": "2026-10-07T00:14:30",
+     "free_ram_mib": "10181",
+     "vram_dedicated_mib": "15851.2",
+     "gpu_util_pct": "0.0",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  },
+  {
+   "status": "done",
+   "attempts": 1,
+   "id": "freeze_final_v1",
+   "group": "safety",
+   "cmd": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\.venv\\Scripts\\python.exe",
+    "model_lab/verify_freeze.py"
+   ],
+   "timeout_s": 300,
+   "stdout_to": "model_lab/evidence/uri_engine/freeze_check_runtime_v1.json",
+   "required_outputs": [
+    "model_lab/evidence/uri_engine/freeze_check_runtime_v1.json"
+   ],
+   "start": "2026-10-07T00:14:35",
+   "log": "model_lab\\evidence\\uri_engine\\queue_logs\\freeze_final_v1_20261007-001435.log",
+   "telemetry": "model_lab\\evidence\\uri_engine\\queue_logs\\telemetry_freeze_final_v1_20261007-001435.csv",
+   "boot_time": "2026-10-06T18:18:12",
+   "host_before": {
+    "free_ram_mib": 10297,
+    "vram_mib": 1063.1
+   },
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "binary_sha256": null,
+   "end": "2026-10-07T00:14:40",
+   "exit_code": 0,
+   "elapsed_s": 2.5,
+   "outputs": [
+    {
+     "pattern": "model_lab/evidence/uri_engine/freeze_check_runtime_v1.json",
+     "file": "model_lab\\evidence\\uri_engine\\freeze_check_runtime_v1.json",
+     "size": 174,
+     "ok": true
+    }
+   ],
+   "events": [],
+   "host_after": {
+    "free_ram_mib": 10253,
+    "vram_mib": 1063.1
+   },
+   "telemetry_summary": {
+    "peak_vram_mib": null,
+    "min_free_ram_mib": 10255.0,
+    "samples": 1
+   },
+   "last_telemetry": {
+    "samples": 1,
+    "last": {
+     "time": "2026-10-07T00:14:37",
+     "free_ram_mib": "10255",
+     "vram_dedicated_mib": "",
+     "gpu_util_pct": "",
+     "server_rss_mib": "",
+     "server_cpu_pct": "",
+     "n_llama_procs": "0"
+    }
+   }
+  }
+ ],
+ "closed": {
+  "t": "2026-10-07T00:22:22",
+  "verdict": "URI Resident Intelligence Runtime v1 - FROZEN",
+  "note": "every entry terminal: 43 done, 2 rejected_superseded; no pending, running, blocked or interrupted entries remain"
+ }
+}

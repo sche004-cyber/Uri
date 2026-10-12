@@ -1,0 +1,318 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R22",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R22-01"
+ ],
+ "candidate": "57ccdd225583ca09495174d112d1428ddc4dd022",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T15:00:01Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "57ccdd225583ca09495174d112d1428ddc4dd022",
+   "impl_head": "57ccdd225583ca09495174d112d1428ddc4dd022",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "87c21b4173b5b144cdeecdbf62b3ac8880764f958ff2c3935d1602caa5bfd233",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "57ccdd225583ca09495174d112d1428ddc4dd022",
+   "impl_head": "57ccdd225583ca09495174d112d1428ddc4dd022",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "87c21b4173b5b144cdeecdbf62b3ac8880764f958ff2c3935d1602caa5bfd233",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "57ccdd225583ca09495174d112d1428ddc4dd022",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "PYTHONPATH=. venv python /tmp/uri_review_R22/p2.py and p3.py with SENT='Claim your energy rebate refund at {} before the deadline.': link 'refunds-portal \\u0640\\u0650\\u065c\\u0655 shop' -> has_link_or_contact False; mask_links unchanged; SY.verify(...[1].) -> Verified(claims=[Claim(text='Claim your energy rebate refund at refunds-portal \u0640\u0650\u065c\u0655 shop before the deadline .', citations=[1])], dropped=[]); SY.extractive returns that sentence; build_surface(...) dump contains it and require_valid accepts. The same holds for '...\\u0640\\u0656\\u065c\\u0655 cash', '...\\u0640\\u0650\\u065c\\u0655\\u0640 shop' and '...\\u0640\\u0650\\u0640\\u065c\\u0640\\u0655 shop'. Controls: '\\u0640', '\\u0640\\u065c', '\\u0640\\u0640' are detected. Cause: tatweel is Lm (a letter in _words), so the R21-01 lstrip of leading marks does nothing; _bare keeps the 'ARABIC ...' marks; len(set(base))=4 > _MAX_FOREIGN, so the word is taken as the name and the non-core 'shop' after a prose gap is skipped. Second form: 'refunds-portal x\\u093c shop', '\\u0298\\u093c', '\\u4e36\\u4e3f\\u093c', '\\u4e36\\u093c\\u0901\\u0902', '\\u0298\\u0e31\\u0e34', 'o\\u0f37', '\\u30cb\\u30cf\\u30c8\\u093c' -> has_link_or_contact True, but mask_links gives 'Claim your energy rebate refund at refunds-portal [X] shop before the deadline.' and the surface shows 'refunds-portal [link removed] shop'. This breaks the contract asserted by the R12/R21 regression tests (the name must not appear in the masked text).",
+    "files": [
+     "uri_web/untrusted.py:583",
+     "uri_web/untrusted.py:470",
+     "uri_web/untrusted.py:590",
+     "uri_web/untrusted.py:597",
+     "uri_web/untrusted.py:620",
+     "uri_web/synthesize.py:252",
+     "uri_web/synthesize.py:327",
+     "uri_web/surface.py:38"
+    ],
+    "id": "R22-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "In _separator_word, classify the word with every category-M character removed (not only leading or 'COMBINING'-named ones), and treat tatweel U+0640 and other non-spacing fillers as non-letters in _letter/_words. Add regression tests for tatweel+marks and for single-letter/stroke-word + script mark, including mask_links leaving no 'refunds-portal'.",
+    "title": "R1-01 link class still open (R19-01/R20-01/R21-01 family): script marks on a carrier letter are not removed before separator classification, so 'refunds-portal \u0640\u0650\u065c\u0655 shop' (tatweel + 3 distinct Arabic marks) passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator; a separator letter/word plus one non-'COMBINING' mark ('x\u093c', '\u0298\u093c', '\u4e36\u4e3f\u093c') is detected but mask_links leaves 'refunds-portal [link removed] shop' on screen (W1-AC12/AC15, D13/D16/D17)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist",
+    "result": "5152 passed in 93.68s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "PYTHONPATH=. python /tmp/uri_review_R22/p1.py, p2.py, p3.py (link-detector, verify, extractive, surface + A2UI validator probes)",
+    "result": "tatweel+3 Arabic marks bypasses detection end to end; separator+script mark only partly masked",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "PYTHONPATH=. python /tmp/uri_review_R22/p4.py (netpolicy NAT64/6to4/mapped/link-local/CGNAT)",
+    "result": "all non-public addresses refused; 64:ff9b::8.8.8.8 allowed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat baseline..candidate -- <protected paths>",
+    "result": "no changes",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter tests (uri_ui) not run this round",
+   "Playwright/browser_extension snapshot.js parity not re-probed this round",
+   "uri_assist vision/access/bridge permission paths not re-probed beyond the passing tests/assist suite",
+   "R1-02..R1-06 and R11-02 FIXED status relies on the passing suite and their regression tests; not re-probed adversarially this round",
+   "Pre-repair commit regression proof for R21-01 not executed by me",
+   "ws_frozen_check zip part BLOCKED (checkpoint zip absent)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 22,
+ "started_at": "2026-10-11T14:56:16Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "0c531ba3-7aba-4e0c-a339-bc0c3a3ca91e",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 74
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7292178,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R22",
+  "ended_at": "2026-10-11T15:00:00Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 17,
+  "pid": 10724,
+  "prompt_sha256": "4466819b2bd1f83b402f22efbf7e37de091d83e9482e064f650f93c6daf58f70",
+  "provider": "claude_cli",
+  "result_text_sha256": "9197b6c6da02c1caaf484823e98de51b6c5fa6f4fcb9469466c37655bce37ed9",
+  "role": "reviewer",
+  "session_id": "0c531ba3-7aba-4e0c-a339-bc0c3a3ca91e",
+  "session_id_requested": "0c531ba3-7aba-4e0c-a339-bc0c3a3ca91e",
+  "started_at": "2026-10-11T14:56:16Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "013ef48913f58760b01bfec0ce336c95f0a4a4f946127d74ea8e6808573a36e0"
+ }
+}

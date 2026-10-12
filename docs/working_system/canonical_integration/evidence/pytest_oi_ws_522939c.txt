@@ -1,0 +1,30 @@
+........................................................................ [ 29%]
+............ssssssss.................................................... [ 58%]
+........................................................................ [ 87%]
+..................ssssssssssss                                           [100%]
+============================== warnings summary ===============================
+..\uri-ws-final\.venv\Lib\site-packages\starlette\testclient.py:53
+  C:\Users\cheta\Development\uri-ws-final\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\oi\test_oi_core_live.py:56: opt-in: URI_OI_LIVE=1
+SKIPPED [1] tests\oi\test_oi_core_live.py:74: opt-in: URI_OI_LIVE=1
+SKIPPED [4] tests\oi\test_oi_core_live.py:88: opt-in: URI_OI_LIVE=1
+SKIPPED [1] tests\oi\test_oi_core_live.py:108: opt-in: URI_OI_LIVE=1
+SKIPPED [1] tests\oi\test_oi_core_live.py:127: opt-in: URI_OI_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:98: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:109: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:125: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:137: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:180: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:188: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:196: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:209: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:234: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:246: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:265: opt-in: URI_WS_LIVE=1
+SKIPPED [1] tests\ws\test_ws_worker_live.py:290: opt-in: URI_WS_RESTART=1 (reloads the Brain)
+226 passed, 20 skipped, 1 warning in 121.20s (0:02:01)
+PYEXIT=0

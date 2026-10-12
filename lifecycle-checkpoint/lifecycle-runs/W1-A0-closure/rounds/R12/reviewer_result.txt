@@ -1,0 +1,47 @@
+**Verdict: REJECT.** One blocking MEDIUM finding (R12-01): the R11-01 fix doesn't close its class of defect.
+
+I checked out candidate `d5a9b41` and confirmed the baseline commit `ffdf534` exists. The diff touches none of the protected paths, and the checkout is still clean.
+
+**R12-01: hidden text still reaches the Brain request.** The in-page filter in `snapshot.js` now catches the cases from R11 (screen-reader-only, overflow-clipped, text-indent, covered text). It still lets through many other ways of making text fully invisible. I tested in real Chromium with Ctrl+A selection, then sent the snapshot through the real bridge with a fake Brain client. Each of these payloads appeared twice in the request, once as "Visible text" and once as "Selected text":
+- `filter:opacity(0)`
+- `-webkit-text-fill-color:transparent`
+- `clip-path` shapes the code doesn't recognise: `inset(0 0 100% 0)`, `inset(0 100% 0 0)`, `inset(60%)`, `circle(0)` and an empty `polygon(...)`. The check at `snapshot.js:63` and `snapshot.js:87` only matches `inset(50%)` or `inset(100%)` as the first value.
+- a transparent `mask-image`
+- the body of a closed `<details>` element
+
+A screenshot confirms these are invisible on the page. `opacity:0.01` and text colour with alpha 0.01 also get through; they render as a faint smudge.
+
+None of these are in the "Not covered" list in `docs/assist/03_PERMISSION_AND_DATA_FLOW.md:77`, which names only low contrast, fonts of 2px or more, occlusion outside the viewport and `pointer-events:none` overlays. The same doc row says "opacity", "transparent text colour" and "clip-path inset" are handled, so it overstates what the code does. That leaves the injection protection A0 relies on incomplete.
+
+**Prior findings.**
+- **R11-01: NOT_FIXED** (class not closed, as above).
+- **All other listed findings: FIXED.** The regression tests for each pass, and my spot probes came out right:
+  - `Rs.500`, `$5m`, lakh grouping and ISO dates all parse as values.
+  - Field names `cvd`, `otp code`, `apiKey` and `recoveryCodes` are redacted.
+  - `cv2` isn't matched by name, but the fail-closed default (owner decision D8) still withholds its value as "not shared". So I count R8-01 as fixed through that route.
+
+**Tests run**
+- `pytest tests/assist tests/web`: 2631 passed.
+- `flutter test test/living/`: 253 passed.
+
+**Not verified**
+- I did not freshly re-audit the areas the last commit didn't touch (safe_fetch/netpolicy SSRF, vision gating, access/bridge permissions, the worker dispatch, the Dart controller). That evidence rests on the passing suites and earlier rounds.
+- The `ws_frozen_check` zip part is blocked: the Phase 1 checkpoint zip isn't present.
+- Nothing ran on Windows or with a real browser extension.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [{"id": "R12-01", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "In-page hidden-text filter still misses fully invisible text (filter:opacity(0), -webkit-text-fill-color:transparent, non-leading/other clip-path insets and shapes, transparent mask-image, closed <details> content, near-zero opacity); injected instructions reach the Brain request as 'Visible text' and 'Selected text' (R11-01 class not closed)",
+   "files": ["uri_assist/browser_extension/snapshot.js:57", "uri_assist/browser_extension/snapshot.js:63", "uri_assist/browser_extension/snapshot.js:87", "uri_assist/browser_extension/snapshot.js:126", "uri_assist/browser_extension/snapshot.js:120", "uri_assist/bridge.py:61", "docs/assist/03_PERMISSION_AND_DATA_FLOW.md:77"],
+   "evidence": "Real Chromium (Playwright, viewport 1000x900, Ctrl+A), page with <div style='filter:opacity(0)'>FILTEROPACITY-PAYLOAD-B</div>, <div style='-webkit-text-fill-color:transparent'>TEXTFILL-PAYLOAD-C</div>, <div style='clip-path:inset(0 0 100% 0)'>…D</div>, clip-path:circle(0) …E, mask-image:linear-gradient(transparent,transparent) …H, clip-path:polygon(0 0,0 0,0 0) …I, clip-path:inset(0 100% 0 0) …Q, clip-path:inset(60%) …R, <details><summary>Sum</summary>DETAILS-PAYLOAD-S</details>. A screenshot shows none of them rendered, yet snapshot.text and snapshot.selection contain all of them (hidden_text count 8 covers only other cases). Feeding that snapshot through tests.assist.test_a0_access_perception mk()/grant(observe)/ask_and_wait gives status COMPLETE and each payload occurs twice in FakeClient.bodies. Root cause: visible() relies on checkVisibility(opacityProperty) which only catches opacity:0 (not filter/mask/near-zero opacity); the clip-path regex /inset\\(\\s*(50%|100%)/ only matches a leading 50%/100% inset; textVisible checks only alpha(color), not -webkit-text-fill-color; closed-details slot content returns client rects. None of these are in the documented 'Not covered' list, and docs/assist/03 row claims opacity, transparent text colour and clip-path inset are covered.",
+   "suggested_fix": "Treat effective opacity (product of ancestor opacity and filter:opacity) below a small threshold as hidden; treat -webkit-text-fill-color alpha 0 like transparent colour; for clip-path parse every inset side (and treat circle/ellipse/polygon with zero area, or any non-inset shape conservatively) and check mask-image/-webkit-mask; exclude text inside a closed <details> other than its <summary>; add these cases to a self-contained Chromium regression test and make the docs/03 coverage claims match the code exactly."}],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R4-03", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R6-03", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R8-02", "status": "FIXED"}, {"id": "R8-03", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"}, {"id": "R9-02", "status": "FIXED"}, {"id": "R9-03", "status": "FIXED"}, {"id": "R9-04", "status": "FIXED"}, {"id": "R9-05", "status": "FIXED"}, {"id": "R9-06", "status": "FIXED"}, {"id": "R10-01", "status": "FIXED"}, {"id": "R11-01", "status": "NOT_FIXED"}],
+ "tests_run": [{"command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/assist tests/web", "result": "2631 passed in 33.14s", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "flutter test test/living/ (from uri_ui)", "result": "253 passed, All tests passed", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "node /tmp/uri_review_R12/run.cjs snapshot.js /tmp/uri_review_R12/page.html (real Chromium, Ctrl+A)", "result": "9 fully invisible payloads present in snapshot text and selection", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "Python bridge probe with real Chromium snapshot (FakeClient, observe grant, ask)", "result": "COMPLETE; each payload appears 2x in Brain request body", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "git diff --stat ffdf534..d5a9b41 -- <protected paths>", "result": "empty (no protected path changed)", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "ws_frozen_check zip part", "result": "Phase 1 checkpoint zip not present", "status": "BLOCKED"}],
+ "unverified": ["Fresh adversarial re-audit of areas not touched since R11 (safe_fetch/netpolicy SSRF, vision gating, access/bridge permissions, worker dispatch, Dart controller lifecycle) beyond the passing test suites and spot probes", "ws_frozen_check zip part (checkpoint zip absent)", "Real Windows/UIA adapters and a real browser extension channel (owner checklist #8, not built)"]}
+AUDIT_RESULT_END

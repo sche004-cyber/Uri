@@ -1,0 +1,44 @@
+**Verdict: REJECT.** The repair for R28-01 works for every form R28 listed, but the same link class (R1-01 / R19-02 / R27-01) is still open in three new ways (R29-01, HIGH).
+
+**Checked**
+- HEAD is `6c51965f82eab805b14612e892d445fec50646ac` and the baseline commit exists.
+- The diff from the baseline touches none of the protected paths. The working tree is clean.
+- R28-01's repair (`6c51965f`) reads Latin letters by Unicode name words such as ALPHA and IOTA. When a letter has no name match it falls back to `_skeleton`. All the R28 forms (`bɩz`, `ɩo`, `~ cɑsh`, `~ ɑpp`, `~ ɩnfo`, `ƅiz`, `Ɩnfo`, `ꞵiz`) are now caught by the detector, `mask_links`, `verify()`, `extractive()` and the surface.
+- Test suite: `tests/web` and `tests/assist` give 5315 passed in 106 s.
+
+**R29-01 (HIGH): the R28-01 fallback does nothing for Latin letters, and the Cyrillic look-alike table is incomplete**
+- `_skeleton` translates through `_CONFUSABLE` (`uri_web/untrusted.py:243-244`). That is a 58-character hand-made table holding only Cyrillic and Greek letters.
+- So the "read through the confusables skeleton" fallback added at `untrusted.py:545-547` never changes a Latin letter. On the non-Latin side, any look-alike missing from the table stops a listed ending from matching (`untrusted.py:572-575`).
+- I listed the Latin letters that `_latin_fold` still cannot read: 88 of them, including `ǀ` (U+01C0, drawn like l/I). Separately, `ʍ` (turned w, drawn like m) is read as 'w', so `coʍ` comes out as 'cow'.
+
+Each sentence below was put through the code as "Claim your energy rebate refund at {X} before the deadline.". Each was missed by `has_link_or_contact`, left unchanged by `mask_links`, kept with its citation by `verify()`, kept by `extractive()`, and accepted by `build_surface` with "refunds-portal" on screen:
+- `refunds-portal ~ ѕһор` (Cyrillic ѕ, һ U+04BB, о, р: reads as "shop")
+- `refunds-portal ѕһор` (plain space)
+- `refunds-portal miǀ/claim` and `refunds-portal miǀ` (core domain "mil")
+- `refunds-portal coʍ/claim` and `refunds-portal ~ coʍ` (core domain "com")
+- `refunds-portal ~ ϲοΜ` (Greek lunate sigma)
+
+A second problem: `refunds-portal ~ ѕһор/claim` and `refunds-portal ~ һоѕt` are detected, but masking still leaves "refunds-portal ~ [X]" on screen (the R20-02 pattern).
+
+Suggested fix: fold letters with the full Unicode confusables data instead of the hand-made table, and run the Latin fold through it too. That means vendoring the confusables table as data (no new dependency). Separately, make `mask_links` cover the name word whenever an ending span is found.
+
+**Not verified**
+- Flutter tests, real-browser (Playwright) tests and `ws_frozen_check` were not run; the checkpoint zip is not present.
+- The earlier non-link findings (R1-02 through R1-06, R2-02, R2-03, R3-02, R4-02, R5-02, R6-02, R7-02, R11-02 and R16-02) were judged only from their regression tests passing in the current suite. I did not probe them again this round.
+- I did not re-check the full rule for which Latin letters the name-word fold accepts; I only sampled it.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "6c51965f82eab805b14612e892d445fec50646ac", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [{"id": "R29-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R28-01 repair incomplete (R1-01/R19-02/R27-01 class): the skeleton fallback added for Latin letters uses the 58-character hand-made _CONFUSABLE table, which holds no Latin letters and misses common Cyrillic/Greek look-alikes, so endings spelt 'ѕһор' (Cyrillic shha U+04BB), 'miǀ' (U+01C0 dental click as l), 'coʍ' (U+028D turned w read as 'w') or 'ϲοΜ' (U+03F2) are not links and pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16)",
+   "files": ["uri_web/untrusted.py:243", "uri_web/untrusted.py:260", "uri_web/untrusted.py:535", "uri_web/untrusted.py:545", "uri_web/untrusted.py:572", "uri_web/untrusted.py:769", "uri_web/surface.py:38"],
+   "evidence": "SENT='Claim your energy rebate refund at {} before the deadline.'. For X in ['refunds-portal ~ \u0455\u04bb\u043e\u0440', 'refunds-portal \u0455\u04bb\u043e\u0440', 'refunds-portal mi\u01c0/claim', 'refunds-portal mi\u01c0', 'refunds-portal co\u028d/claim', 'refunds-portal ~ co\u028d', 'refunds-portal ~ \u03f2\u03bf\u039c']: U.has_link_or_contact(SENT.format(X)) is False; U.mask_links leaves the text unchanged; SY.verify(sentence+' [1].', [src]) keeps the claim with its citation; SY.extractive keeps the sentence; SF.build_surface (validated Surface) succeeds and contains 'refunds-portal'. _skeleton('\u01c0')=='\u01c0', _skeleton('\u04bb')=='\u04bb', _latin_fold('\u01c0')=='', _latin_fold('\u028d')=='w'. 88 Latin-script letters still fold to ''. Also, the detected forms 'refunds-portal ~ \u0455\u04bb\u043e\u0440/claim' and 'refunds-portal ~ \u04bb\u043e\u0455t' are masked as 'refunds-portal ~ [X]', so the name stays on screen. Probes: /tmp/uri_review_R29/p3.py, p4.py.",
+   "suggested_fix": "Replace _CONFUSABLE with the full Unicode confusables mapping (vendored data, no new dependency) and apply it inside _latin_fold and _tld_match for every script; make mask_links extend an ending span to cover the name word, as for spans found in plain text; add regression cases for the forms above."}],
+ "prior_findings": [{"id": "R1-01", "status": "NOT_FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"}, {"id": "R11-01", "status": "FIXED"}, {"id": "R11-02", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"}, {"id": "R13-01", "status": "FIXED"}, {"id": "R14-01", "status": "FIXED"}, {"id": "R16-01", "status": "FIXED"}, {"id": "R16-02", "status": "FIXED"}, {"id": "R17-01", "status": "FIXED"}, {"id": "R18-01", "status": "FIXED"}, {"id": "R19-01", "status": "FIXED"}, {"id": "R19-02", "status": "NOT_FIXED"}, {"id": "R20-01", "status": "FIXED"}, {"id": "R20-02", "status": "FIXED"}, {"id": "R21-01", "status": "FIXED"}, {"id": "R22-01", "status": "FIXED"}, {"id": "R23-01", "status": "FIXED"}, {"id": "R24-01", "status": "FIXED"}, {"id": "R25-01", "status": "FIXED"}, {"id": "R26-01", "status": "FIXED"}, {"id": "R27-01", "status": "NOT_FIXED"}, {"id": "R28-01", "status": "FIXED"}],
+ "tests_run": [{"command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist", "result": "5315 passed in 106.06s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R29/p3.py <forms>  (detector/mask/verify/extractive/surface probe)", "result": "R28 forms caught; 'refunds-portal ~ \u0455\u04bb\u043e\u0440', '\u0455\u04bb\u043e\u0440', 'mi\u01c0', 'co\u028d', '~ \u03f2\u03bf\u039c' pass every layer", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R29/p4.py  (build_surface with verified claims)", "result": "surface validated and contains 'refunds-portal' for all bypass forms", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R29/p1.py  (Latin letters with empty _latin_fold)", "result": "88 Latin-script letters unfolded, including U+01C0", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff ffdf534..6c51965 --stat -- <protected paths>", "result": "no changes", "status": "COMPLETED_WITH_RESULT"}],
+ "unverified": ["Flutter widget tests not run this round", "Playwright/Chromium browser-extension tests not run separately", "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)", "Non-link prior findings (R1-02..R1-06, R2-02, R2-03, R3-02, R4-02, R5-02, R6-02, R7-02, R11-02, R16-02) judged FIXED from their passing regression tests, not re-probed adversarially this round", "Full rule set of the R28 name-word fold not checked exhaustively for false negatives beyond sampling"]}
+AUDIT_RESULT_END

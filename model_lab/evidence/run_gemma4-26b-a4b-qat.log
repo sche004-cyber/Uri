@@ -1,0 +1,174 @@
+{
+ "fast/P": {
+  "n": 12,
+  "score": 0.833,
+  "ttft_p50": null,
+  "ttfa_p50": null,
+  "total_p50": null,
+  "total_p95": null,
+  "gen_tps_p50": null,
+  "prefill_tps_p50": null,
+  "gen_tokens_p50": null,
+  "errors": 1,
+  "truncated": 0,
+  "proposer_invalid": 0,
+  "failed_ids": [
+   "p05_conversation",
+   "p11_preference_statement"
+  ]
+ },
+ "fast/RH": {
+  "n": 8,
+  "score": 0.625,
+  "ttft_p50": 0.396,
+  "ttfa_p50": 0.396,
+  "total_p50": 10.877,
+  "total_p95": 29.954,
+  "gen_tps_p50": 106.5,
+  "prefill_tps_p50": 1032.5,
+  "gen_tokens_p50": 1111,
+  "errors": 0,
+  "truncated": 1
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\gemma4-26b-a4b-qat\20261006-070132
+{
+ "normal/C": {
+  "n": 14,
+  "score": 0.986,
+  "ttft_p50": 0.501,
+  "ttfa_p50": 5.395,
+  "total_p50": 6.073,
+  "total_p95": 8.289,
+  "gen_tps_p50": 105.9,
+  "prefill_tps_p50": 624.0,
+  "gen_tokens_p50": 591,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 0
+ },
+ "normal/D": {
+  "n": 72,
+  "score": 0.792,
+  "ttft_p50": 2.041,
+  "ttfa_p50": 9.927,
+  "total_p50": 11.396,
+  "total_p95": 12.037,
+  "gen_tps_p50": 96.1,
+  "prefill_tps_p50": 931.7,
+  "gen_tokens_p50": 905,
+  "errors": 0,
+  "truncated": 0,
+  "invalid": 0,
+  "golden_acc": 0.825,
+  "extra_acc": 0.667,
+  "categories": {
+   "correct": 57,
+   "false_clarification": 6,
+   "false_capability": 1,
+   "under_tooling": 2,
+   "missed_continuation": 1,
+   "mismatch": 5
+  }
+ },
+ "normal/H": {
+  "n": 22,
+  "score": 1.0,
+  "ttft_p50": 0.385,
+  "ttfa_p50": 2.0,
+  "total_p50": 2.336,
+  "total_p95": 7.592,
+  "gen_tps_p50": 107.3,
+  "prefill_tps_p50": 198.9,
+  "gen_tokens_p50": 215,
+  "errors": 0,
+  "truncated": 0,
+  "over_escalation": 0,
+  "under_escalation": 0
+ },
+ "normal/R": {
+  "n": 12,
+  "score": 0.833,
+  "ttft_p50": 0.421,
+  "ttfa_p50": 7.557,
+  "total_p50": 11.049,
+  "total_p95": 14.86,
+  "gen_tps_p50": 106.5,
+  "prefill_tps_p50": 886.8,
+  "gen_tokens_p50": 1120,
+  "errors": 0,
+  "truncated": 1
+ },
+ "normal/RH": {
+  "n": 8,
+  "score": 0.625,
+  "ttft_p50": 0.448,
+  "ttfa_p50": 7.59,
+  "total_p50": 16.066,
+  "total_p95": 60.607,
+  "gen_tps_p50": 105.6,
+  "prefill_tps_p50": 1004.9,
+  "gen_tokens_p50": 1644,
+  "errors": 0,
+  "truncated": 1
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\gemma4-26b-a4b-qat\20261006-070453
+{
+ "deep/C": {
+  "n": 14,
+  "score": 0.986,
+  "ttft_p50": 0.475,
+  "ttfa_p50": 5.215,
+  "total_p50": 5.704,
+  "total_p95": 9.365,
+  "gen_tps_p50": 105.8,
+  "prefill_tps_p50": 675.5,
+  "gen_tokens_p50": 554,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 0
+ },
+ "deep/H": {
+  "n": 22,
+  "score": 1.0,
+  "ttft_p50": 0.385,
+  "ttfa_p50": 1.974,
+  "total_p50": 2.31,
+  "total_p95": 6.389,
+  "gen_tps_p50": 107.3,
+  "prefill_tps_p50": 205.3,
+  "gen_tokens_p50": 215,
+  "errors": 0,
+  "truncated": 0,
+  "over_escalation": 0,
+  "under_escalation": 0
+ },
+ "deep/R": {
+  "n": 12,
+  "score": 0.333,
+  "ttft_p50": 0.455,
+  "ttfa_p50": 17.38,
+  "total_p50": 125.376,
+  "total_p95": 125.671,
+  "gen_tps_p50": 96.0,
+  "prefill_tps_p50": 897.4,
+  "gen_tokens_p50": 12000,
+  "errors": 0,
+  "truncated": 8
+ },
+ "deep/RH": {
+  "n": 8,
+  "score": 0.0,
+  "ttft_p50": 0.468,
+  "ttfa_p50": null,
+  "total_p50": 125.624,
+  "total_p95": 126.057,
+  "gen_tps_p50": 95.9,
+  "prefill_tps_p50": 934.7,
+  "gen_tokens_p50": 12000,
+  "errors": 0,
+  "truncated": 8
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\gemma4-26b-a4b-qat\20261006-072535

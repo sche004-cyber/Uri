@@ -1,0 +1,35 @@
+I'm recording **ACCEPT** for candidate `1f4aedd`, with no new findings. R10-01 is fixed, and the regression tests for all 11 blocking findings from earlier rounds pass. Apart from R10-01, I relied on those tests rather than re-attacking each earlier finding by hand.
+
+**SHAs and scope**
+- HEAD is `1f4aeddf50d4eb2d024af7132b443b5dc57591df` and the baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` exists.
+- No protected path changed anywhere in the range.
+- The checkout was still clean after all test runs.
+
+**R10-01 (the R10 repair)**
+- Before the fix, a timed-out worker or command made the driver wait forever on an unbounded `communicate()`. That call is now `drain_after_timeout` in `lifecycle_providers.py:130`. It kills the process group, waits for the process (with a time limit), sweeps orphans, then reads what is left for at most 5 seconds and closes the pipes.
+- Both callers use it: `lifecycle.py:666` and `lifecycle_providers.py:453`.
+- The three new R10 tests pass on the candidate. With those tests copied onto the pre-repair code (`2d419f6`), all three fail.
+- My own probe was harder: a process outside the driver's tree that holds the worker's stdout (passed to it over a Unix socket), so the sweep can't reach it.
+  - A timed-out command or worker returned `TIMED_OUT` in about 7 seconds (2s timeout plus the 5s grace).
+  - A worker that exited normally while that holder kept its stdout open was recorded as `TIMED_OUT` after timeout plus grace, which is a failure state, not a pass.
+- A timed-out reviewer is never treated as independent, because `is_independent` requires the status to be `COMPLETED` (`lifecycle.py:307`).
+
+**R10-02** was fixed in documentation only. It now says that processes left behind by a driver that was itself killed, and processes started outside its tree, are not contained. That matches the code.
+
+**Limits on this review**
+- Real-reviewer cases with a live `claude` binary were not run. The unit tests stand in for them.
+- Codex wasn't tested because it isn't installed.
+- A worker that exits normally while an outside holder keeps its stdout open only returns after the full timeout. That outcome is a safe failure, the docs don't claim otherwise, and I'm not counting it as a finding.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "1f4aeddf50d4eb2d024af7132b443b5dc57591df", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "ACCEPT",
+ "findings": [],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R10-01", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -x -p no:cacheprovider", "result": "192 passed, 1 warning in 166.50s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git archive 2d419f6 (pre-repair) + candidate test_lifecycle.py; pytest -k r10_01", "result": "3 failed (regression tests fail on the pre-repair code)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/uri_review_R11/p1/probe.py: pipe holder outside the driver tree (SCM_RIGHTS) for run_cmd and run_worker", "result": "timeout case TIMED_OUT in 7.0s; exit-0 case TIMED_OUT in 9.0s (rc None); worker TIMED_OUT in 7.0s: no hang, no positive status", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --name-only ffdf534..HEAD | grep protected prefixes", "result": "no protected path changed", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Prior findings R1-01..R8-01 were confirmed by their named regression tests passing (all 192 pass) and code inspection of is_independent, not by a new hand-built attack against each", "No live claude reviewer run in this round (unit tests only)", "codex_cli paths not exercised (codex not installed)", "Windows/macOS behaviour not tested; the docs say real reviews there do not count", "Flutter/GPU gates not exercised; this round only changed the timeout drain"]}
+AUDIT_RESULT_END

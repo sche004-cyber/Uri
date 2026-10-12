@@ -1,0 +1,13 @@
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+592 passed, 22 skipped, 1 warning in 168.51s (0:02:48)
+.......................................................................  [100%]
+71 passed in 81.83s (0:01:21)
+{
+ "tree": ".",
+ "phase1_frozen": {
+  "checked": 121,
+  "drift": []
+ },
+ "protected_changed_vs_baseline": [],
+ "ok": true
+}

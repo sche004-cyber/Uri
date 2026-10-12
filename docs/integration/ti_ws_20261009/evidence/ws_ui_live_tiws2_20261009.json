@@ -1,0 +1,277 @@
+{
+ "journeys": [
+  {
+   "journey": "normal_response",
+   "route": "answer",
+   "tier": "FAST",
+   "answer_status": "COMPLETE",
+   "core_code": null,
+   "finished": "ok",
+   "error": null,
+   "text_chars": 198,
+   "text_head": "VRAM (Video Random Access Memory) is a specialized type of memory used by a computer's graphics processing unit (GPU) to store image data, textures, and frame b",
+   "metrics": {
+    "cache_n": 0,
+    "draft_n": 32,
+    "draft_n_accepted": 26,
+    "first_answer_s": 0.7143,
+    "predicted_n": 43,
+    "predicted_per_second": 130.709190723382,
+    "prompt_n": 222,
+    "prompt_per_second": 580.066106632873,
+    "reasoning_chars": 0,
+    "retried": false,
+    "total_s": 1.0356,
+    "ttft_s": 0.7143
+   },
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "reasoning",
+   "route": "answer",
+   "tier": "NORMAL",
+   "answer_status": "COMPLETE",
+   "core_code": null,
+   "finished": "ok",
+   "error": null,
+   "text_chars": 1196,
+   "text_head": "**Paper Records**\n**Pros:**\n- **No technology required:** Accessible anytime without needing computers, power, or software.\n- **Physical security:** Immune to c",
+   "metrics": {
+    "cache_n": 264,
+    "draft_n": 810,
+    "draft_n_accepted": 600,
+    "first_answer_s": 6.3269,
+    "predicted_n": 1006,
+    "predicted_per_second": 132.63100049700333,
+    "prompt_n": 30,
+    "prompt_per_second": 140.76312381524372,
+    "reasoning_chars": 3431,
+    "retried": false,
+    "total_s": 7.8637,
+    "ttft_s": 0.2858
+   },
+   "thinking_chars": 3274,
+   "brain": "READY",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "cancellation",
+   "route": "answer",
+   "tier": "FAST",
+   "answer_status": "CANCELLED",
+   "core_code": null,
+   "finished": "cancelled",
+   "error": null,
+   "text_chars": 111,
+   "text_head": "The salt spray had long since ceased to be a nuisance for Elias Thorne; it had become his second skin, a gritty",
+   "metrics": {
+    "cache_n": null,
+    "draft_n": null,
+    "draft_n_accepted": null,
+    "first_answer_s": 0.4677,
+    "predicted_n": null,
+    "predicted_per_second": null,
+    "prompt_n": null,
+    "prompt_per_second": null,
+    "reasoning_chars": 0,
+    "retried": false,
+    "total_s": 0.6899,
+    "ttft_s": 0.4677
+   },
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "supervised_action_approved",
+   "route": "core",
+   "tier": "FAST",
+   "answer_status": null,
+   "core_code": "SETTLED_VERIFIED",
+   "finished": "ok",
+   "error": null,
+   "text_chars": 0,
+   "text_head": "",
+   "metrics": {},
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1",
+   "memory_before": 3,
+   "memory_after": 4
+  },
+  {
+   "journey": "supervised_action_denied",
+   "route": "core",
+   "tier": "FAST",
+   "answer_status": null,
+   "core_code": "APPROVAL_DENIED",
+   "finished": "not_verified",
+   "error": null,
+   "text_chars": 0,
+   "text_head": "",
+   "metrics": {},
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "refusal_no_execution",
+   "route": "core",
+   "tier": "FAST",
+   "answer_status": null,
+   "core_code": "INTENT_CONFIRMED_NOT_EXECUTED",
+   "finished": "needs_user",
+   "error": null,
+   "text_chars": 0,
+   "text_head": "",
+   "metrics": {},
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "presentation_command_local",
+   "mode_reached": "dashboard"
+  },
+  {
+   "journey": "health",
+   "state": "READY",
+   "tps": 146.7,
+   "source": "speed check at start",
+   "reasons": [],
+   "gpu": {
+    "consumers": [
+     {
+      "dedicated_mib": 432.3,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1784,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib_at_start": 15600.5,
+    "lease": {
+     "acquired_at": 1791555846.194,
+     "held": true,
+     "recovered_from": null
+    },
+    "measured": true,
+    "others_mib": 767.5,
+    "release": null,
+    "sampled_t": 1791555928.015,
+    "server_dedicated_mib": 15555.7,
+    "server_non_local_mib": 1120.6,
+    "verdict_at_start": "AT_RISK",
+    "verdict_now": "AT_RISK"
+   }
+  },
+  {
+   "journey": "dashboard_brain_card_real",
+   "speed_line": "147 tok/s · speed check at start",
+   "gpu_line": "GPU: AT_RISK · Brain 15.2 GB in VRAM · 1.1 GB in system memory · others 0.7 GB"
+  },
+  {
+   "journey": "markdown_rendered",
+   "route": "answer",
+   "tier": "FAST",
+   "answer_status": "COMPLETE",
+   "core_code": null,
+   "finished": "ok",
+   "error": null,
+   "text_chars": 589,
+   "text_head": "- **Data Recovery**: Regular backups ensure that critical files can be restored quickly after hardware failures, accidental deletions, or software corruption, m",
+   "metrics": {
+    "cache_n": 533,
+    "draft_n": 94,
+    "draft_n_accepted": 58,
+    "first_answer_s": 0.3933,
+    "predicted_n": 105,
+    "predicted_per_second": 120.19897553488543,
+    "prompt_n": 101,
+    "prompt_per_second": 369.2843196759073,
+    "reasoning_chars": 0,
+    "retried": false,
+    "total_s": 1.2587,
+    "ttft_s": 0.3933
+   },
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1",
+   "source_has_markers": true,
+   "blocks": [
+    "listItem",
+    "listItem",
+    "listItem"
+   ]
+  },
+  {
+   "journey": "worker_exit_restart_uri",
+   "route": "answer",
+   "tier": "FAST",
+   "answer_status": "COMPLETE",
+   "core_code": null,
+   "finished": "ok",
+   "error": null,
+   "text_chars": 80,
+   "text_head": "A backup is a copy of data created to restore the original in case of data loss.",
+   "metrics": {
+    "cache_n": 201,
+    "draft_n": 20,
+    "draft_n_accepted": 8,
+    "first_answer_s": 0.536,
+    "predicted_n": 19,
+    "predicted_per_second": 97.17805719468544,
+    "prompt_n": 22,
+    "prompt_per_second": 130.73837468429653,
+    "reasoning_chars": 0,
+    "retried": false,
+    "total_s": 0.7214,
+    "ttft_s": 0.536
+   },
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1",
+   "old_pid": 9188,
+   "new_pid": 3152,
+   "system_messages": [
+    "The open approval was withdrawn by the restart; nothing was approved."
+   ]
+  },
+  {
+   "journey": "restart",
+   "memory_preserved": 4,
+   "brain": "READY"
+  }
+ ],
+ "brain_status_start": {
+  "artifacts": "MATCH",
+  "checked_at": 1791555953.3836648,
+  "detail": null,
+  "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+  "owned": false,
+  "pid": 13604,
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  },
+  "state": "READY",
+  "url": "http://127.0.0.1:18470"
+ },
+ "catalog_selected": "runtime-v1",
+ "cancel_probe": {
+  "busy": true,
+  "text_chars": 102,
+  "finished": null,
+  "route": "answer",
+  "stop_buttons": 1
+ },
+ "memory_end": [
+  "the science lab is closed on Friday",
+  "the science lab is closed on Friday",
+  "the science lab is closed on Friday",
+  "the science lab is closed on Friday"
+ ]
+}

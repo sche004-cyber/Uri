@@ -1,0 +1,76 @@
+{
+ "findings": [
+  {
+   "blocking": false,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "httpx-rejected redirect refusal is counted under the redirecting site, not the refused target (per-site count R1-02 inexact)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Percent escapes decoding to non-letters (invalid UTF-8, zero-width, NBSP) are reported as 'non-English letters' and the user is told to open them in a browser"
+  }
+ ],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "6a33c1b5dbfe",
+   "failed": 178,
+   "gate": "python",
+   "new": 0,
+   "ok": true,
+   "passed": 6469,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  },
+  {
+   "changed_cause": 0,
+   "commit": "6a33c1b5dbfe",
+   "failed": 1,
+   "gate": "flutter",
+   "new": 0,
+   "ok": true,
+   "passed": 537,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
+ "owner": [],
+ "repairs": [],
+ "rounds": [
+  {
+   "blocking": 0,
+   "candidate": "6a33c1b5dbfe",
+   "findings": 2,
+   "finished": "2026-10-12T05:19:10Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "36d356e3-082d-42da-8116-3885de253193",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "summary": {
+  "baseline": "368188b74fa8cd68ef18d2df1c3c955fc63ad2c8",
+  "candidate": "6a33c1b5dbfe0c3694963416310945db8ee06b9d",
+  "evidence_ok": true,
+  "findings_repaired": 0,
+  "findings_total": 2,
+  "integration": "INTEGRATED",
+  "milestone": "IDN-1b",
+  "open_blocking": 0,
+  "owner_actions": 0,
+  "receipt_chain_ok": true,
+  "repairs_committed": 0,
+  "rounds": 1,
+  "stage": "COMPLETE",
+  "written_at": "2026-10-12T05:38:20Z"
+ }
+}

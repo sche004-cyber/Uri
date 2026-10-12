@@ -1,0 +1,28 @@
+A background watcher I started was stopped at its time limit. It doesn't change anything: it was only waiting for the WS baseline comparison, which had already finished and shows the same 17 failures on baseline and candidate. Most likely its `pgrep` pattern matched its own command line, so it never exited. The verdict and findings stand as reported.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "b4d896c152671101ec604a3efbf1e83963578c78", "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [
+  {"id": "R3-01", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "A public page sent with Content-Encoding gzip is now reported as 'unsupported, content type unknown'; requests used to decompress it",
+   "files": ["uri_web/safe_fetch.py:366", "uri_core/tools/fetch_url.py:198"],
+   "evidence": "Probe with an injected MockTransport returning 200, text/html and content-encoding gzip: FetchUrlTool returns {'status': 'unsupported', 'message': \"URI has no reader for content type 'unknown'.\", 'content_type': ''}. SafeFetcher asks for Accept-Encoding: identity and sets UNSUPPORTED_CONTENT_TYPE without recording the content type. The old requests path decompressed transparently. Smaller related changes on public fetches: the Accept header no longer lists PDF/DOCX/XLSX (requests sent */*); the User-Agent changed; HTML without a header charset now defaults to UTF-8 (or the meta charset), not ISO-8859-1, so a Latin-1 'café' becomes 'caf\ufffd'.",
+   "suggested_fix": "In fetch_url, report a content-encoding refusal as 'could not read that page (compressed response)', or record content_type before returning. Optionally add */* or the document MIME types to the Accept header used for fetch_url."},
+  {"id": "R3-02", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "HOST_NUMERIC_AMBIGUOUS (and proxy-only HOST_SINGLE_LABEL) are worded 'private or local network' even when the address is public",
+   "files": ["uri_core/tools/fetch_url.py:75"],
+   "evidence": "_REFUSAL_MESSAGES maps HOST_NUMERIC_AMBIGUOUS to _PRIVATE_MESSAGE. A public obfuscated form such as http://0x5db8d70e/ (93.184.215.14) is refused as 'URI will not fetch that address (private or local network).' This is the same kind of wrong-reason wording as R1-01, in a narrower case.",
+   "suggested_fix": "Map HOST_NUMERIC_AMBIGUOUS to e.g. 'URI only fetches host names or standard dotted IP addresses.'"}
+ ],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/ssrf", "result": "65 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/ssrf tests/web tests/ws", "result": "17 failed, 4065 passed, 16 skipped; all 17 failures are in tests/ws/test_ws_hardening.py", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest -q tests/ws on candidate vs git-archive of baseline 03f0bf2c", "result": "the same 17 failures on both (17 failed / 310 passed on baseline vs 17 failed / 323 passed on candidate); no new failures", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "tests/ssrf/test_ssrf_1_refusal_messages.py copied into a git-archive of pre-repair f44f70a5", "result": "5 failed, 5 passed (the R1-01 tests fail before the repair and pass after)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/uri_review_R3/probe.py: production FetchUrlTool with real httpx transport, socket.getaddrinfo patched, local HTTP servers on 127.0.0.1:80/443", "result": "27 hostile URLs (literal, mapped, 6to4, NAT64 and numeric forms, IDNA digits, userinfo tricks, local names, rebinding DNS answers) all refused; 0 hits on the local servers; no body leaked", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/uri_review_R3/probe2.py: redirects, DNS rebinding and public-fetch behaviour via the fetcher seam", "result": "redirects to internal targets, a name resolving internally and port 22 were refused at the hop; rebinding refused and the connection pinned to the checked IP; HTML, truncation, empty, CSV, TXT, 204/302/500, json/octet unsupported and >10MB outputs match the old code; gzip regression (R3-01)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q test_m19_office_readiness.py test_m20_research_recovery.py test_orchestrator_evidence_transport.py", "result": "collection error: ModuleNotFoundError google (environment)", "status": "BLOCKED"}
+ ],
+ "unverified": ["Live public fetch over real direct egress (S-AC10)", "test_m19/test_m20/test_orchestrator_evidence_transport full runs (google module missing); their fetch_url cases (no URL, ftp) were checked by reading the code", "Real PDF/DOCX/XLSX extraction end to end (CSV/TXT document path was checked)", "Frozen-file integrity script and the D1 integration receipt"]}
+AUDIT_RESULT_END

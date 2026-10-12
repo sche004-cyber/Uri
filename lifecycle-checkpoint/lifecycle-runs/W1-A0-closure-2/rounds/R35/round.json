@@ -1,0 +1,367 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R35",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R35-01"
+ ],
+ "candidate": "dfad82d137b410aa5effa596a478046552b548e2",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T17:21:58Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "dfad82d137b410aa5effa596a478046552b548e2",
+   "impl_head": "dfad82d137b410aa5effa596a478046552b548e2",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "e00065769930c8072d4af5b5f203f20314527f53e9560383185ba7eb3af4a2d8",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "dfad82d137b410aa5effa596a478046552b548e2",
+   "impl_head": "dfad82d137b410aa5effa596a478046552b548e2",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "e00065769930c8072d4af5b5f203f20314527f53e9560383185ba7eb3af4a2d8",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "dfad82d137b410aa5effa596a478046552b548e2",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_ascii_variant sets starts=True when the text before the run ends in one of . ! ? : \" ' \u201c \u2018 ( and then offers no 'l' reading for a first 'I'. Probe /tmp/uri_review_R35/p3.py: 'refunds-portal' + '. ' + {Iy, Iive, Iink, Iol, Iat, Iaw, Iand, Iife, Ioan, Ia, Iu, Iv, Ik, Ii, Ilc, Itd, Ipl, Iondon, Iove, Iuxury, ...} (37 endings) -> has_link_or_contact False, mask_links unchanged; the 'l' forms -> True. The same holds after ': ', '! ' and '? ' with '/claim' (33 more cases). Probe p4.py with SENT 'Claim your energy rebate refund at {} before the deadline.': for 'refunds-portal. Iive', verify kept ['Iive before the deadline .'], extractive kept ['Claim your energy rebate refund at refunds-portal.', ...], surface.clean showed it unmasked, and validate._URLISH did not match. For 'refunds-portal: Iink/claim', verify and extractive kept the whole sentence. Controls 'refunds-portal. live', 'refunds-portal: link/claim', 'refunds-portal? ly/claim' were masked as [link removed] and dropped by verify and extractive.",
+    "files": [
+     "uri_web/untrusted.py:805",
+     "uri_web/untrusted.py:806",
+     "uri_web/untrusted.py:810",
+     "uri_web/untrusted.py:829",
+     "uri_web/untrusted.py:871",
+     "uri_web/surface.py:38",
+     "uri_a2ui/validate.py:19"
+    ],
+    "id": "R35-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Do not apply the sentence-start exemption when a reading of the run spells a listed TLD and the run is not an ordinary capitalised English word (e.g. only exempt runs whose as-is lower form is a dictionary word such as 'it', 'in', 'is', 'if', or the word 'I'), or when the preceding token is a name joined by a dot/separator. Add regressions for '. ', ': ', '! ', '? ' separators with Iy/Iive/Iink/Ioan.",
+    "title": "R33-01/R34-01 class still open: after '. ', ': ', '! ' or '? ' a leading capital 'I' look-alike of 'l' is never folded (sentence-start exemption), so 'refunds-portal. Iive', 'refunds-portal. Iy', 'refunds-portal: Iink/claim', 'refunds-portal? Iy/claim', 'refunds-portal! Ioan/claim' pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator, while the 'l' spellings are links (W1-AC12/AC15, D13/D16/D29)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R28-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R29-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R30-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R31-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R32-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R33-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R34-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "PYTHONPATH=. /tmp/claude-0/venv/bin/python -m pytest -q -x tests/web tests/assist tests/a2ui",
+    "result": "5569 passed in 107.74s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "PYTHONPATH=. python /tmp/uri_review_R35/p3.py (I vs l endings after separators)",
+    "result": "70 'I' forms after '. ', '! ', '? ', ': ' not detected while 'l' forms are",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "PYTHONPATH=. python /tmp/uri_review_R35/p4.py (verify/extractive/surface/A2UI)",
+    "result": "R35-01 forms kept by verify, extractive and the surface; 'l' controls masked",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git rev-parse HEAD; git diff --stat ffdf534..HEAD -- <protected paths>",
+    "result": "HEAD = dfad82d1...; no protected path changed",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Prior findings other than R1-01/R33-01/R34-01 marked FIXED on the strength of their committed regression tests passing in this checkout plus the R34 probes; I did not re-probe each one adversarially this round",
+   "Flutter uri_ui tests not run this round",
+   "Playwright browser_extension tests beyond those in tests/assist not run separately",
+   "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip not present)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 35,
+ "started_at": "2026-10-11T17:18:20Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "4a1fff61-95ce-45dc-bb39-0c99f6c6f971",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 74
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.6600516,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R35",
+  "ended_at": "2026-10-11T17:21:56Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 14,
+  "pid": 14989,
+  "prompt_sha256": "18e3bf699039fc32096ab84aff75f8b02214a27eec94a9a670bce78ff62c3fe8",
+  "provider": "claude_cli",
+  "result_text_sha256": "830b0419628b11a7a4ea4397b3490f63cdeebb847473e93ca3f33db7adce1fff",
+  "role": "reviewer",
+  "session_id": "4a1fff61-95ce-45dc-bb39-0c99f6c6f971",
+  "session_id_requested": "4a1fff61-95ce-45dc-bb39-0c99f6c6f971",
+  "started_at": "2026-10-11T17:18:20Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "efa7fdfb6cfe9cd8aae00b3fd00628a8144c396b1ea591cf2a07f1ff205c5cfc"
+ }
+}

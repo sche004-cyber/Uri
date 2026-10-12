@@ -1,0 +1,85 @@
+{
+ "schema": "uri-dev-lifecycle/1",
+ "milestone": "DEV-LIFECYCLE-1",
+ "stage": "VERIFIED",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "candidate": "1f720ed6a1b7540fdeb181de4455a835265c2afa",
+ "rounds": 2,
+ "reviewers": [
+  {
+   "round": 1,
+   "provider": "claude_cli",
+   "session_id": "91871433-89e7-479f-80e2-e1e97327c314",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "fbac43727f89b6e43188a8dee5772cf4b49ee65c",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 2,
+   "provider": "claude_cli",
+   "session_id": "8900cfe1-e72c-4080-8460-a93c7f0eaa3e",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "1f720ed6a1b7540fdeb181de4455a835265c2afa",
+   "verdict": "ACCEPT WITH FINDINGS",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "repairs": [
+  {
+   "repair": 1,
+   "status": "COMMITTED",
+   "commit": "1f720ed6a1b7540fdeb181de4455a835265c2afa",
+   "addresses": [
+    "R1-01",
+    "R1-02",
+    "R1-03",
+    "R1-04"
+   ],
+   "reason": null
+  }
+ ],
+ "open_findings": [
+  {
+   "id": "R2-01",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "title": "PLAN-anchored GIT_CONTROL digest hashes the whole shared .git/config, so routine branch/tracking writes by other sessions block the milestone as TAMPER"
+  },
+  {
+   "id": "R2-02",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Hashes compare text-mode writes with bytes read back: on Windows every round fails verify (fails closed)"
+  }
+ ],
+ "gates": {
+  "1f720ed6a1b7": {
+   "ok": true,
+   "blocked": null,
+   "new_failures": {
+    "dev_workflow": []
+   }
+  }
+ },
+ "integration": {
+  "at": "2026-10-11T02:42:51Z",
+  "candidate": "1f720ed6a1b7540fdeb181de4455a835265c2afa",
+  "mode": "none",
+  "status": "NOT_INTEGRATED_BY_POLICY"
+ },
+ "blocker": null,
+ "events": 18,
+ "evidence_ok_for_candidate": true
+}
+exit 0

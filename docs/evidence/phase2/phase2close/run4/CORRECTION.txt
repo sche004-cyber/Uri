@@ -1,0 +1,1 @@
+Chain run4 recorded CHAIN_FAILED only because the native gate's parser read the report JSON instead of the script's summary line; the native run itself ended lifecycle completed/SETTLED_VERIFIED and mid_run_cancel uncertain/CANCELLED_AFTER_DISPATCH, pid DEAD (native_codex_stdout.txt). Parser repaired 2026-10-08; native gate rerun in run4b. Every other run4 gate PASS.

@@ -1,0 +1,182 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/WS-FLAKE-1/audit_R1",
+ "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded",
+ "blocking_ids": [],
+ "candidate": "57411e8d177f565344ac4ee48333e6444312f8a7",
+ "effective_verdict": "ACCEPT WITH FINDINGS",
+ "ended_at": "2026-10-12T02:07:22Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "57411e8d177f565344ac4ee48333e6444312f8a7",
+   "impl_head": "57411e8d177f565344ac4ee48333e6444312f8a7",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/ws-flake-1-20261012",
+   "refs": "0f474bbdc08e3ae689f4c87af1b7a6b0d308cdef2e6aec8077db35494e17caae",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "57411e8d177f565344ac4ee48333e6444312f8a7",
+   "impl_head": "57411e8d177f565344ac4ee48333e6444312f8a7",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/ws-flake-1-20261012",
+   "refs": "0f474bbdc08e3ae689f4c87af1b7a6b0d308cdef2e6aec8077db35494e17caae",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded",
+  "candidate": "57411e8d177f565344ac4ee48333e6444312f8a7",
+  "findings": [
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "last_request_id is initialised to None in Host.__init__ and never loaded from the persisted report; the request file is never removed after use. Probe /tmp/uri_review_R1/test_replay_probe.py: host 1 takes a 'stop' request (ACCEPTED); a second Host built on the same dirs then returns 'stop' again with last_request ACCEPTED, same id. take_request has identical code on 03f0bf2c, so this is not a regression from WS-FLAKE-1.",
+    "files": [
+     "scripts/ws_brain_host.py:81",
+     "scripts/ws_brain_host.py:135",
+     "scripts/ws_brain_host.py:139"
+    ],
+    "id": "R1-01",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "In a follow-up, seed last_request_id (or a consumed-id set) from the persisted report's 'requests'/'last_request', or delete/rename the request file once consumed.",
+    "title": "Request replay guard is in-memory only: a new host instance re-accepts an already-consumed request within REQUEST_MAX_AGE_S (pre-existing, unchanged by this diff)"
+   }
+  ],
+  "prior_findings": [],
+  "tests_run": [
+   {
+    "command": "pytest tests/ws/test_ws_flake_1_request_stamp.py (candidate)",
+    "result": "13 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest tests/ws/test_ws_flake_1_request_stamp.py copied into git archive of 03f0bf2c",
+    "result": "9 failed, 4 passed (AC1/AC2 fail for clocks .0006, .9999, .4567891; the .0005 clock and AC3 pass on baseline)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest tests/ws/test_ws_flake_1_request_stamp.py tests/ws/test_ws_hardening.py (candidate)",
+    "result": "51 passed, 17 failed, 2 skipped; all 17 failures are lease/advise/process tests that need the Windows-only msvcrt module or real processes, unrelated to the request stamp",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "50x pytest test_ws_hardening.py -k 'restart_request_during_load_is_kept_for_later or requests_are_marked_done_with_the_state_they_left or host_requests_are_explicit_fresh_and_used_once' (candidate)",
+    "result": "50/50 pass (3 tests each run)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "30x same selection on baseline 03f0bf2c",
+    "result": "10 pass / 20 fail",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -I /tmp/uri_review_R1/probe.py, probe2.py (property check of stamp after JSON round-trip)",
+    "result": "0 negative ages in 8M samples; floor alone exceeded now 1218/2M times (min() guard is needed and present); one >1ms gap only at an epoch around the year 6300",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest /tmp/uri_review_R1/test_replay_probe.py",
+    "result": "second Host re-accepts consumed 'stop' request (R1-01)",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Behaviour on Windows (the msvcrt-dependent hardening tests could not run here)",
+   "Wall-clock steps backwards (NTP) between write and take can still give a negative age; not addressed by this change and not tested",
+   "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)"
+  ],
+  "verdict": "ACCEPT WITH FINDINGS"
+ },
+ "round": 1,
+ "started_at": "2026-10-12T02:01:25Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "2b52382d-9ae5-405f-a1ab-70633faf4057",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.5028114,
+  "cwd": "/tmp/claude-0/lc-work/WS-FLAKE-1/audit_R1",
+  "ended_at": "2026-10-12T02:07:20Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 16,
+  "pid": 1757,
+  "prompt_sha256": "6abafaaa93d556cffef5d5cebc4a72a104a15ef9efa37d9bfb908991a88d28dd",
+  "provider": "claude_cli",
+  "result_text_sha256": "4f775dc8b67d58fbc3c859dda558efba4b1bd91917c5510880c624a44cfe20c9",
+  "role": "reviewer",
+  "session_id": "2b52382d-9ae5-405f-a1ab-70633faf4057",
+  "session_id_requested": "2b52382d-9ae5-405f-a1ab-70633faf4057",
+  "started_at": "2026-10-12T02:01:25Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "8f201f2e5e765d097e43bd0112fc0f42ac029d4a9d443c9fdd8cf9ebe73b3282"
+ }
+}

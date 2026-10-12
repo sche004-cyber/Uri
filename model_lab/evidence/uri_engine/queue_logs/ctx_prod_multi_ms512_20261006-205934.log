@@ -1,0 +1,281 @@
+  4000 r0 A_fresh                n=  4701 new=     0 prompt_n=4701 cache_n=0 prompt_ms=2175.434 ttft=2.475 total=2.947 excess=4701 0e54de5aa3a0 err=None
+  4000 r0 B_repeat               n=  4701 new=     0 prompt_n=4 cache_n=4697 prompt_ms=59.876 ttft=0.447 total=0.922 excess=4 0e54de5aa3a0 err=None
+  4000 r0 C_new_turn             n=  4698 new=    26 prompt_n=50 cache_n=4648 prompt_ms=162.411 ttft=0.41 total=0.877 excess=24 553099a5d264 err=None
+  4000 r0 A_reprime              n=  4701 new=     0 prompt_n=4 cache_n=4697 prompt_ms=55.888 ttft=0.474 total=0.943 excess=4 0e54de5aa3a0 err=None
+  4000 r0 D_evidence_changed     n=  4704 new=   142 prompt_n=374 cache_n=4330 prompt_ms=362.767 ttft=0.706 total=1.174 excess=232 0e54de5aa3a0 err=None
+  4000 r0 A_reprime2             n=  4701 new=     0 prompt_n=4 cache_n=4697 prompt_ms=52.788 ttft=0.456 total=0.932 excess=4 0e54de5aa3a0 err=None
+  4000 r0 E_permission_changed   n=  4701 new=   663 prompt_n=1028 cache_n=3673 prompt_ms=758.093 ttft=1.102 total=1.566 excess=365 6c650e372d66 err=None
+  4000 r0 A_after_E              n=  4701 new=     0 prompt_n=4 cache_n=4697 prompt_ms=51.031 ttft=0.449 total=0.913 excess=4 0e54de5aa3a0 err=None
+  4000 r1 A_fresh                n=  4740 new=     0 prompt_n=410 cache_n=4330 prompt_ms=366.658 ttft=0.691 total=1.145 excess=410 5c2be0b6f69f err=None
+  4000 r1 B_repeat               n=  4740 new=     0 prompt_n=4 cache_n=4736 prompt_ms=49.425 ttft=0.469 total=0.93 excess=4 5c2be0b6f69f err=None
+  4000 r1 C_new_turn             n=  4737 new=    26 prompt_n=50 cache_n=4687 prompt_ms=149.936 ttft=0.396 total=0.862 excess=24 890d931a99f7 err=None
+  4000 r1 A_reprime              n=  4740 new=     0 prompt_n=4 cache_n=4736 prompt_ms=53.765 ttft=0.48 total=0.935 excess=4 5c2be0b6f69f err=None
+  4000 r1 D_evidence_changed     n=  4710 new=   114 prompt_n=380 cache_n=4330 prompt_ms=366.8 ttft=0.718 total=1.185 excess=266 dd0ab063409c err=None
+  4000 r1 A_reprime2             n=  4740 new=     0 prompt_n=4 cache_n=4736 prompt_ms=54.003 ttft=0.452 total=0.919 excess=4 5c2be0b6f69f err=None
+  4000 r1 E_permission_changed   n=  4740 new=   702 prompt_n=410 cache_n=4330 prompt_ms=387.622 ttft=0.787 total=1.25 excess=-292 e6e4a9837b80 err=None
+  4000 r1 A_after_E              n=  4740 new=     0 prompt_n=4 cache_n=4736 prompt_ms=56.136 ttft=0.434 total=0.897 excess=4 5c2be0b6f69f err=None
+ 16000 r0 A_fresh                n= 16046 new=     0 prompt_n=11917 cache_n=4129 prompt_ms=5916.846 ttft=6.26 total=6.763 excess=11917 0e54de5aa3a0 err=None
+ 16000 r0 B_repeat               n= 16046 new=     0 prompt_n=4 cache_n=16042 prompt_ms=60.12 ttft=0.544 total=1.044 excess=4 0e54de5aa3a0 err=None
+ 16000 r0 C_new_turn             n= 16043 new=    26 prompt_n=50 cache_n=15993 prompt_ms=160.382 ttft=0.408 total=0.902 excess=24 61aaaa978ae6 err=None
+ 16000 r0 A_reprime              n= 16046 new=     0 prompt_n=4 cache_n=16042 prompt_ms=57.244 ttft=0.631 total=1.125 excess=4 0e54de5aa3a0 err=None
+ 16000 r0 D_evidence_changed     n= 16077 new=  3186 prompt_n=5959 cache_n=10118 prompt_ms=3211.159 ttft=3.667 total=4.172 excess=2773 35356f0654a6 err=None
+ 16000 r0 A_reprime2             n= 16046 new=     0 prompt_n=4 cache_n=16042 prompt_ms=60.409 ttft=0.605 total=1.116 excess=4 0e54de5aa3a0 err=None
+ 16000 r0 E_permission_changed   n= 16046 new= 12008 prompt_n=12373 cache_n=3673 prompt_ms=6158.268 ttft=6.604 total=7.112 excess=365 35356f0654a6 err=None
+ 16000 r0 A_after_E              n= 16046 new=     0 prompt_n=4 cache_n=16042 prompt_ms=57.8 ttft=0.569 total=1.077 excess=4 0e54de5aa3a0 err=None
+ 16000 r1 A_fresh                n= 16105 new=     0 prompt_n=11976 cache_n=4129 prompt_ms=5877.333 ttft=6.285 total=6.753 excess=11976 9b4ee4b95c3a err=None
+ 16000 r1 B_repeat               n= 16105 new=     0 prompt_n=4 cache_n=16101 prompt_ms=56.632 ttft=0.512 total=0.987 excess=4 9b4ee4b95c3a err=None
+ 16000 r1 C_new_turn             n= 16102 new=    26 prompt_n=50 cache_n=16052 prompt_ms=164.075 ttft=0.449 total=0.95 excess=24 d3b66edfc1dd err=None
+ 16000 r1 A_reprime              n= 16105 new=     0 prompt_n=4 cache_n=16101 prompt_ms=61.028 ttft=0.609 total=1.073 excess=4 9b4ee4b95c3a err=None
+ 16000 r1 D_evidence_changed     n= 16056 new=  3388 prompt_n=6176 cache_n=9880 prompt_ms=3324.418 ttft=3.734 total=4.235 excess=2788 3cc4d6e0fc84 err=None
+ 16000 r1 A_reprime2             n= 16105 new=     0 prompt_n=4 cache_n=16101 prompt_ms=53.848 ttft=0.536 total=1.0 excess=4 9b4ee4b95c3a err=None
+ 16000 r1 E_permission_changed   n= 16105 new= 12067 prompt_n=12432 cache_n=3673 prompt_ms=6153.8 ttft=6.607 total=7.115 excess=365 3cc4d6e0fc84 err=None
+ 16000 r1 A_after_E              n= 16105 new=     0 prompt_n=4 cache_n=16101 prompt_ms=54.649 ttft=0.471 total=0.929 excess=4 9b4ee4b95c3a err=None
+ 30000 r0 A_fresh                n= 29687 new=     0 prompt_n=25558 cache_n=4129 prompt_ms=14258.32 ttft=14.707 total=15.238 excess=25558 35356f0654a6 err=None
+ 30000 r0 B_repeat               n= 29687 new=     0 prompt_n=4 cache_n=29683 prompt_ms=59.118 ttft=0.512 total=1.039 excess=4 8a6ab6135d73 err=None
+ 30000 r0 C_new_turn             n= 29684 new=    26 prompt_n=50 cache_n=29634 prompt_ms=167.975 ttft=0.665 total=1.19 excess=24 66d32102b8aa err=None
+ 30000 r0 A_reprime              n= 29687 new=     0 prompt_n=4 cache_n=29683 prompt_ms=61.008 ttft=0.603 total=1.123 excess=4 8a6ab6135d73 err=None
+ 30000 r0 D_evidence_changed     n= 29734 new=  6616 prompt_n=12840 cache_n=16894 prompt_ms=8032.118 ttft=8.298 total=8.792 excess=6224 a370453af86a err=None
+ 30000 r0 A_reprime2             n= 29687 new=     0 prompt_n=4 cache_n=29683 prompt_ms=60.843 ttft=0.577 total=1.106 excess=4 8a6ab6135d73 err=None
+ 30000 r0 E_permission_changed   n= 29687 new= 25649 prompt_n=26014 cache_n=3673 prompt_ms=14301.332 ttft=14.808 total=15.34 excess=365 e65758ebbb37 err=None
+ 30000 r0 A_after_E              n= 29687 new=     0 prompt_n=4 cache_n=29683 prompt_ms=64.29 ttft=0.602 total=1.127 excess=4 8a6ab6135d73 err=None
+ 30000 r1 A_fresh                n= 30131 new=     0 prompt_n=26002 cache_n=4129 prompt_ms=14363.251 ttft=14.809 total=15.339 excess=26002 cd474e832da1 err=None
+ 30000 r1 B_repeat               n= 30131 new=     0 prompt_n=4 cache_n=30127 prompt_ms=54.851 ttft=0.534 total=1.058 excess=4 cd474e832da1 err=None
+ 30000 r1 C_new_turn             n= 30128 new=    26 prompt_n=50 cache_n=30078 prompt_ms=167.793 ttft=0.454 total=0.973 excess=24 46eed3cd842f err=None
+ 30000 r1 A_reprime              n= 30131 new=     0 prompt_n=4 cache_n=30127 prompt_ms=57.71 ttft=0.615 total=1.135 excess=4 cd474e832da1 err=None
+ 30000 r1 D_evidence_changed     n= 30137 new=  6730 prompt_n=13158 cache_n=16979 prompt_ms=8266.746 ttft=8.71 total=9.245 excess=6428 b7d7f2724ea5 err=None
+ 30000 r1 A_reprime2             n= 30131 new=     0 prompt_n=4 cache_n=30127 prompt_ms=58.104 ttft=0.617 total=1.139 excess=4 cd474e832da1 err=None
+ 30000 r1 E_permission_changed   n= 30131 new= 26093 prompt_n=26458 cache_n=3673 prompt_ms=14666.016 ttft=15.093 total=15.624 excess=365 6f16c99fd3a5 err=None
+ 30000 r1 A_after_E              n= 30131 new=     0 prompt_n=4 cache_n=30127 prompt_ms=56.408 ttft=0.587 total=1.109 excess=4 cd474e832da1 err=None
+{
+ "name": "ctx_prod_multi_ms512",
+ "load_seconds": 83.58,
+ "resources": {
+  "load_seconds": 83.58,
+  "vram_dedicated_before_load_mib": 1098.1,
+  "vram_dedicated_now_mib": 15752.6,
+  "server_rss_now_mib": 3868.4,
+  "system_available_ram_mib": 7052.2,
+  "peak_server_rss_mib": 5307.3,
+  "peak_vram_dedicated_mib": 15752.6,
+  "min_system_available_ram_mib": 5626.2,
+  "mean_server_cpu_pct_of_machine": 0.9
+ },
+ "agg": {
+  "4000:A_fresh": {
+   "n": 2,
+   "prompt_n": 2555.5,
+   "logical_new": 0.0,
+   "excess": 2555.5,
+   "prompt_ms": 1271.0,
+   "ttft_s": 1.583,
+   "total_s": 2.0460000000000003
+  },
+  "16000:A_fresh": {
+   "n": 2,
+   "prompt_n": 11946.5,
+   "logical_new": 0.0,
+   "excess": 11946.5,
+   "prompt_ms": 5897.1,
+   "ttft_s": 6.2725,
+   "total_s": 6.758
+  },
+  "30000:A_fresh": {
+   "n": 2,
+   "prompt_n": 25780.0,
+   "logical_new": 0.0,
+   "excess": 25780.0,
+   "prompt_ms": 14310.8,
+   "ttft_s": 14.758,
+   "total_s": 15.288499999999999
+  },
+  "4000:B_repeat": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 54.7,
+   "ttft_s": 0.45799999999999996,
+   "total_s": 0.926
+  },
+  "16000:B_repeat": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 58.4,
+   "ttft_s": 0.528,
+   "total_s": 1.0155
+  },
+  "30000:B_repeat": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 57.0,
+   "ttft_s": 0.523,
+   "total_s": 1.0485
+  },
+  "4000:C_new_turn": {
+   "n": 2,
+   "prompt_n": 50.0,
+   "logical_new": 26.0,
+   "excess": 24.0,
+   "prompt_ms": 156.2,
+   "ttft_s": 0.403,
+   "total_s": 0.8694999999999999
+  },
+  "16000:C_new_turn": {
+   "n": 2,
+   "prompt_n": 50.0,
+   "logical_new": 26.0,
+   "excess": 24.0,
+   "prompt_ms": 162.2,
+   "ttft_s": 0.4285,
+   "total_s": 0.9259999999999999
+  },
+  "30000:C_new_turn": {
+   "n": 2,
+   "prompt_n": 50.0,
+   "logical_new": 26.0,
+   "excess": 24.0,
+   "prompt_ms": 167.9,
+   "ttft_s": 0.5595,
+   "total_s": 1.0815
+  },
+  "4000:A_reprime": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 54.8,
+   "ttft_s": 0.477,
+   "total_s": 0.9390000000000001
+  },
+  "16000:A_reprime": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 59.1,
+   "ttft_s": 0.62,
+   "total_s": 1.099
+  },
+  "30000:A_reprime": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 59.4,
+   "ttft_s": 0.609,
+   "total_s": 1.129
+  },
+  "4000:D_evidence_changed": {
+   "n": 2,
+   "prompt_n": 377.0,
+   "logical_new": 128.0,
+   "excess": 249.0,
+   "prompt_ms": 364.8,
+   "ttft_s": 0.712,
+   "total_s": 1.1795
+  },
+  "16000:D_evidence_changed": {
+   "n": 2,
+   "prompt_n": 6067.5,
+   "logical_new": 3287.0,
+   "excess": 2780.5,
+   "prompt_ms": 3267.8,
+   "ttft_s": 3.7005,
+   "total_s": 4.2035
+  },
+  "30000:D_evidence_changed": {
+   "n": 2,
+   "prompt_n": 12999.0,
+   "logical_new": 6673.0,
+   "excess": 6326.0,
+   "prompt_ms": 8149.4,
+   "ttft_s": 8.504000000000001,
+   "total_s": 9.0185
+  },
+  "4000:A_reprime2": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 53.4,
+   "ttft_s": 0.454,
+   "total_s": 0.9255
+  },
+  "16000:A_reprime2": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 57.1,
+   "ttft_s": 0.5705,
+   "total_s": 1.058
+  },
+  "30000:A_reprime2": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 59.5,
+   "ttft_s": 0.597,
+   "total_s": 1.1225
+  },
+  "4000:E_permission_changed": {
+   "n": 2,
+   "prompt_n": 719.0,
+   "logical_new": 682.5,
+   "excess": 36.5,
+   "prompt_ms": 572.9,
+   "ttft_s": 0.9445000000000001,
+   "total_s": 1.408
+  },
+  "16000:E_permission_changed": {
+   "n": 2,
+   "prompt_n": 12402.5,
+   "logical_new": 12037.5,
+   "excess": 365.0,
+   "prompt_ms": 6156.0,
+   "ttft_s": 6.6055,
+   "total_s": 7.1135
+  },
+  "30000:E_permission_changed": {
+   "n": 2,
+   "prompt_n": 26236.0,
+   "logical_new": 25871.0,
+   "excess": 365.0,
+   "prompt_ms": 14483.7,
+   "ttft_s": 14.9505,
+   "total_s": 15.482
+  },
+  "4000:A_after_E": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 53.6,
+   "ttft_s": 0.4415,
+   "total_s": 0.905
+  },
+  "16000:A_after_E": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 56.2,
+   "ttft_s": 0.52,
+   "total_s": 1.0030000000000001
+  },
+  "30000:A_after_E": {
+   "n": 2,
+   "prompt_n": 4.0,
+   "logical_new": 0.0,
+   "excess": 4.0,
+   "prompt_ms": 60.3,
+   "ttft_s": 0.5945,
+   "total_s": 1.1179999999999999
+  }
+ }
+}

@@ -1,0 +1,98 @@
+{
+ "addresses": [
+  "R14-01"
+ ],
+ "changed": [
+  "tests/web/test_w1_closure_r14_review_regressions.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "fe77015a8cd20a09b0cd0d6b5115d3edc79df5cb",
+ "ended_at": "2026-10-11T13:30:54Z",
+ "pre": "da10d0b84cbd80f60be930295a01baed47b31110",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/web/test_w1_closure_r14_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 8,
+ "report": {
+  "not_repaired": [],
+  "notes": "Root cause fixed: _STROKES is now built in canonical form (normalise() applied to every member, only single letters kept, module-level assert that every member is NFKC-stable and a letter). Members: one-stroke radicals \u4e00\u4e28\u4e36\u4e3f\u4e59\u4e85 (incl. Kangxi U+2F00-2F05), stroke variants \u4e40\u4e41\u4e5a\u4e5b, stroke-and-dot radicals \u4e8c\u4ea0, Hangul araea \u119e\u11a2 (\u318d normalises to \u119e), \u3006. Dropped the dead CJK Strokes range U+31C0-31E3 and the non-letters \u30fb/\u3007, which already act as gap. Unlike the diagnosis, not all 214 Kangxi radicals were added: their normalised forms include real words (\u4eba, \u53e3, \u5c71), so '\u5c71\u53e3 is' would become a false-positive link, against D17's owner rule that real short foreign words are names. Kangxi-spelled real-word radicals are identical to ordinary text once normalised, so they fall under that already-accepted residual. The test checks all 400 two-letter stroke pairs (ordinary and Kangxi forms) via has_link_or_contact and mask_links, and the reviewer's forms plus \u4e8c\u4e36 and \u4ea0\u4e36 through verify, extractive, build_surface and require_valid, with readable controls and the owner residuals. On da10d0b8: 289 failed, 141 passed (pairs already caught and controls). After the fix: 430 passed. tests/web and tests/assist: 3941 passed.",
+  "regression_tests": [
+   "tests/web/test_w1_closure_r14_review_regressions.py"
+  ],
+  "repaired": [
+   "R14-01"
+  ]
+ },
+ "started_at": "2026-10-11T13:25:39Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "681db249-9520-42a2-b3d9-0ed2ae49f63f",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 149
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.5328879000000001,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T13:30:44Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 11,
+  "pid": 14451,
+  "prompt_sha256": "f6ca476ead3d4f393fa63bac9182460f294165f2a83d758908fdb34f41af05fc",
+  "provider": "claude_cli",
+  "result_text_sha256": "79589e0ca7206201e57dae87b1f80a9c851a35f36dd03ba11d97c838f20787ab",
+  "role": "implementer",
+  "session_id": "681db249-9520-42a2-b3d9-0ed2ae49f63f",
+  "session_id_requested": "681db249-9520-42a2-b3d9-0ed2ae49f63f",
+  "started_at": "2026-10-11T13:25:40Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "1c48e7a94d9b2fded200db66c641a94a6acdf3724af43378720f0943dee943bc"
+ }
+}

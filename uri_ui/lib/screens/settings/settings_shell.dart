@@ -10,6 +10,7 @@ import 'capabilities_settings_screen.dart';
 import 'diagnostics_settings_screen.dart';
 import 'memory_context_settings_screen.dart';
 import 'memory_settings_screen.dart';
+import 'paired_runtime_screen.dart';
 import 'preferences_settings_screen.dart';
 import 'profile_settings_screen.dart';
 import 'uri_server_settings_screen.dart';
@@ -81,6 +82,13 @@ final _categories = <_SettingsCategory>[
     subtitle: 'Which backend this device talks to.',
     icon: Icons.dns_outlined,
     builder: (_) => const UriServerSettingsScreen(),
+  ),
+  _SettingsCategory(
+    group: _SettingsGroup.system,
+    label: 'Paired runtime',
+    subtitle: 'Choose who executes a task, see provider state, approve actions.',
+    icon: Icons.hub_outlined,
+    builder: (_) => const PairedRuntimeScreen(),
   ),
   _SettingsCategory(
     group: _SettingsGroup.system,

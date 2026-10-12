@@ -1,0 +1,91 @@
+{
+ "candidate": "d029f606ec84f32fd39c2276c34e1a4fd281eec1",
+ "clean": true,
+ "cost_usd": 0.5386769,
+ "diagnosis": 6,
+ "recurring": [
+  "R11-01"
+ ],
+ "result": {
+  "evidence": [
+   "uri_assist/browser_extension/snapshot.js:226 covered(): `if (!e || e === p || p.contains(e) || e.contains(p)) return false;` keeps text painted under its ancestor's opaque background (negative z-index)",
+   "uri_assist/browser_extension/snapshot.js:240 paint alpha uses only `cs.webkitTextFillColor || cs.color`; SVG text paint (fill, fill-opacity) is never read",
+   "uri_assist/browser_extension/snapshot.js:105 masked() reads only `cs.maskImage || cs.webkitMaskImage`; -webkit-mask-box-image / mask-border are ignored",
+   "uri_assist/browser_extension/snapshot.js:71-74 and docs/assist/03_PERMISSION_AND_DATA_FLOW.md:77 'Not covered' list omits z-index under ancestor background, SVG fill, mask-box-image, blur, 3D rotation, while the row claims 'hidden text dropped in page'",
+   "uri_assist/bridge.py:61-66 sends obs.selection as 'Selected text:' and obs.text under 'Visible text:'",
+   "Probe at HEAD (Chromium, 1000x900, Ctrl+A; files page.html, run.cjs, snap.json, shot.png in /tmp/claude-0/-tmp-claude-0-lc-work-W1-A0-closure-diagnose-D6/e0bab49c-98ef-40a3-a6b6-bb04b89069d7/scratchpad): ZNEG-PAYLOAD-A, SVGFILL-PAYLOAD-B, SVGFO-PAYLOAD-C, SVGNONE-PAYLOAD-D, MASKBOX-PAYLOAD-E (plus BLUR-PAYLOAD-M, TINY-PAYLOAD-K at 2px, and the documented WHITE/PEN/BLEND) appear in both snap.text and snap.selection with redactions {'hidden_text': 6}; the screenshot shows none of A-E",
+   "git show d5a9b41 / d029f60: each diff adds handling and test fixtures only for the reviewer-listed patterns (test_a0_r12_review_regressions.py HIDDEN_PAGE = R12 list verbatim) and widens the doc row's coverage claim",
+   "uri_assist/browser_extension/manifest.json:6 already grants activeTab (enough for captureVisibleTab), and popup.js:7 runs snapshot.js through executeScript, so a pixel check in the popup is feasible"
+  ],
+  "needs_owner": true,
+  "proposed_fix": "1) Close the R13 mechanisms. In covered(), when the hit element is an ancestor of p, walk from p up to that hit element; treat the text as hidden if a node on that path has a negative z-index (or creates a stacking context below the hit element's background) and the hit element is opaque(). Also check elementsFromPoint ordering. For SVG text (p.closest('svg') / SVGElement), use computed fill (none/transparent = 0) times fill-opacity, plus stroke/stroke-opacity/stroke-width, in the paint-alpha check. Treat any webkitMaskBoxImage/maskBorderSource other than 'none' as masked unless it is a gradient with an inked stop. 2) Stop relying on enumeration as the security boundary. snapshot.js returns, for each text chunk and selection piece, its viewport client rects. popup.js calls chrome.tabs.captureVisibleTab (activeTab is already granted) and keeps a chunk only if its rect area contains pixels that differ measurably from the local background. Chunks outside the viewport, which cannot be verified, are dropped (fail closed) or sent under a separate label marked unverified. The Playwright test emulates this with page.screenshot. 3) Rename the bridge.py label from 'Visible text' to match the guarantee, and rewrite docs/assist/03:77 to state the actual guarantee (pixel-verified on-screen text) rather than a technique list. 4) Add a self-contained Chromium regression test embedding the R11/R12/R13 pages plus extra variants (blur, rotateX, pointer-events:none overlay, white-on-white). It asserts that no payload appears in snap.text, snap.selection, headings or the FakeClient body (via mk/grant(observe)/ask_and_wait from test_a0_access_perception), and that visible control text is kept.",
+  "root_cause": "snapshot.js decides whether text is hidden with a blocklist of CSS hiding techniques (visible() + clipBoxOf() + covered() + the text-fill alpha check). CSS has an unbounded number of ways to make text unpainted, so the list can never be complete. The three R13 bypasses are: (1) covered() returns false whenever the hit element contains the text node (snapshot.js:226 `e.contains(p)`), so text with a negative z-index under its own ancestor's opaque background is kept; (2) the paint-alpha check reads only webkitTextFillColor/color (snapshot.js:240), never SVG fill/fill-opacity, so <text fill=transparent|none> or fill-opacity=0 passes; (3) masked() reads only maskImage/webkitMaskImage (snapshot.js:105), never webkitMaskBoxImage or mask-border. The leaked text then reaches the Brain labelled 'Visible text' and 'Selected text' (bridge.py:61-66), while docs/assist/03:77 claims hidden text is dropped in page and lists a 'Not covered' set that omits these cases.",
+  "why_earlier_repairs_failed": "Each repair patched only the literal patterns from the latest reviewer's evidence and tested only those patterns. 2de591e (R10) made the selection reuse the same visible() check without changing what it detects. d5a9b41 (R11) added per-text-node clip boxes, legacy clip, ancestor overflow, text-indent and elementFromPoint occlusion (exactly the R11 list) and expanded the doc's covered list. d029f60 (R12) added effective opacity/filter:opacity, -webkit-text-fill-color, clip-path geometry, mask-image and closed <details> (exactly the R12 list), and again extended the doc's covered claims while the 'Not covered' list only gained already-known gaps. The regression tests (test_a0_r11/r12_review_regressions.py) embed only the reviewer's patterns, so they pass while the class stays open. No repair added a ground-truth check (is the text actually painted?), even though the extension already has activeTab, the permission chrome.tabs.captureVisibleTab needs. So every round a new reviewer finds another unlisted paint path."
+ },
+ "tamper": null,
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "e0bab49c-98ef-40a3-a6b6-bb04b89069d7",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 2
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.5386769,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure/diagnose_D6",
+  "ended_at": "2026-10-11T07:02:55Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 8,
+  "pid": 3550,
+  "prompt_sha256": "1e0bc4352e9a5c9d849cfd98f5d2f258c28fbd505bfb5edf1d13165905f99f9c",
+  "provider": "claude_cli",
+  "result_text_sha256": "b6e48a68e0216e22dbd9fafd5bd4d34fb050a3bf6b878e901e7e1dc8bbc84fb7",
+  "role": "reviewer",
+  "session_id": "e0bab49c-98ef-40a3-a6b6-bb04b89069d7",
+  "session_id_requested": "e0bab49c-98ef-40a3-a6b6-bb04b89069d7",
+  "started_at": "2026-10-11T07:01:28Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "ac6125a923fb13cfda4a8ae6e80ee9ec2e94b5cde6b1a31824c2c9baab1c7f56"
+ }
+}

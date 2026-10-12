@@ -1,0 +1,11 @@
+# Gates at commit 698a6db3f57caed07e3918cf15e497b9489918a5 (clean tracked tree: 0 modified tracked files besides the heartbeat log)
+2026-10-10T14:18:51Z
+$ pytest tests/ws tests/oi tests/a2ui
+596 passed, 22 skipped, 1 warning in 163.34s (0:02:43)
+$ pytest tests/scheduler (base)
+71 passed in 84.63s (0:01:24)
+$ flutter test (full)
+00:21 +509 ~5: All tests passed!
+$ ws_frozen_check
+ "ok": true
+}

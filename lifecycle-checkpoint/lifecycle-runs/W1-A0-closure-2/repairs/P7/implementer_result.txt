@@ -1,0 +1,27 @@
+I fixed R9-01 in `uri_web/untrusted.py` and added a regression test. Every spaced form the reviewer probed is now detected and masked, and the full web and assist suites pass.
+
+**What was wrong:**
+1. U+2027 HYPHENATION POINT has no dot word in its name, so it wasn't treated as dot-like.
+2. A lone foreign letter or digit (Arabic-Indic zero ٠, Devanagari zero ०, dot stroke 丶) was allowed through because each script is on the allow-list on its own.
+
+**The repair:**
+- **Dot-shaped marks (`_DOT_NAME`):** marks named POINT, DOTTED, THEREFORE, BECAUSE, PROPORTION or DEGREE SIGN now count as dots. That covers HYPHENATION POINT, CARET INSERTION POINT, DOTTED CROSS, ∴ and °. Spaced forms like `portal ‧ shop` are now caught by the existing separator rule.
+- **Lone foreign characters (new `_lone()`, used by `_unusual_spans`):** a token made of one repeated non-Latin character is now treated as a separator when the words on both sides contain none of its script. The span then covers the word on each side, as already happens for tokens with no allowed letter. This catches `refunds-portal ٠ com`, `… 丶 shop`, `… ं shop` and `… ٠٠ shop`.
+- **What it costs:** the rule never fires for Latin tokens, so `Vitamin C and` is untouched. A single foreign letter quoted inside prose of another script will now be masked (for example `the letter ж is`). That is lost precision only, never a missed link.
+
+**Verification:**
+- The reviewer's probes `p1.py`, `p2.py` and `p5.py` now all show the text detected, masked, dropped by `verify()` and `extractive()`, and kept out of the surface, which still passes `require_valid`.
+- New test file `tests/web/test_w1_closure_r9_review_regressions.py`:
+  - 19 link forms, each checked three ways: detect and mask, `verify()`/`extractive()`, and surface plus A2UI validation.
+  - 9 ordinary-text checks, including Korean with a lone 中 and `Vitamin C and vitamin D`, which must stay unmasked.
+- On my change: 66 passed. On a clean export of 66a4765 with only this test file copied in: 57 failed (all the link cases) and 9 passed (the ordinary-text checks, which should pass on both).
+- Full `tests/web` and `tests/assist`: 3304 passed.
+
+**Left as it was:** `refunds-portal٠ com` still shows ` com` after the mask. `portal` is masked and detection is True; this is the no-space form already repaired in R8, not part of this finding.
+
+Nothing was committed, no protected paths were touched, and graphify was not run.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R9-01"], "not_repaired": [],
+ "regression_tests": ["tests/web/test_w1_closure_r9_review_regressions.py"], "notes": "uri_web/untrusted.py only. (a) _DOT_NAME extended with POINT|DOTTED|THEREFORE|BECAUSE|PROPORTION|DEGREE SIGN, so U+2027, U+2041, U+205C, U+2234 etc. are _DOTLIKE and the spaced-both-sides separator matches. (b) New _lone(): a whitespace token whose non-COMMON characters are one distinct non-Latin character (repeats allowed), between two tokens that each hold a script family and neither holds its family, spans both neighbours, the same way tokens with no allowed letter already did. Precision cost only: a lone foreign letter between words of another script is masked. Latin lone tokens are excluded (D15 spelt-letter residual unchanged). Regression file: 57 of 66 cases fail on a clean export of 66a4765 (the 9 passing ones are ordinary-text precision checks, expected to pass both ways); 66/66 pass after the repair. Full tests/web + tests/assist: 3304 passed. Reviewer probes p1/p2/p5 all detected, masked and dropped. Pre-existing no-space form 'refunds-portal\u0660 com' (R8 repair) masks the host but leaves ' com'; detection is True; not changed."}
+REPAIR_RESULT_END

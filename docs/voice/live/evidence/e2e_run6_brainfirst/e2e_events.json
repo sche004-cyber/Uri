@@ -1,0 +1,1274 @@
+{
+ "audio_level_events": 5414,
+ "events": [
+  {
+   "t_ms": 0,
+   "kind": "run.start",
+   "scenarios": [
+    "deterministic",
+    "brain"
+   ],
+   "manifest_set": true
+  },
+  {
+   "t_ms": 2527,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2527,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 22970,
+   "kind": "voice.status",
+   "state": "ready",
+   "engine": "faster-whisper-base.en-int8",
+   "inputs": [
+    "Microphone (Sennheiser Profile)"
+   ],
+   "privacy": "allowed",
+   "problem": null,
+   "model_load_ms": null,
+   "ready_after_ms": 20443
+  },
+  {
+   "t_ms": 23654,
+   "kind": "brain.status",
+   "brain": {
+    "artifacts": "MATCH",
+    "checked_at": 1791554200.9562325,
+    "detail": null,
+    "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+    "owned": false,
+    "pid": 7408,
+    "selected": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "READY",
+    "url": "http://127.0.0.1:18470"
+   }
+  },
+  {
+   "t_ms": 23715,
+   "kind": "screenshot",
+   "name": "00_ready"
+  },
+  {
+   "t_ms": 23715,
+   "kind": "brain.wait"
+  },
+  {
+   "t_ms": 23948,
+   "kind": "brain.ready",
+   "brain": {
+    "artifacts": "MATCH",
+    "checked_at": 1791554200.9562325,
+    "detail": null,
+    "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+    "owned": false,
+    "pid": 7408,
+    "selected": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "READY",
+    "url": "http://127.0.0.1:18470"
+   },
+   "health": {
+    "backend": {
+     "context": 32768,
+     "engine": "llama.cpp b11425 (Vulkan, win x64)",
+     "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+     "model_repo": "unsloth/Qwen3.6-35B-A3B-GGUF",
+     "provider": "Runtime v1 (local)",
+     "speculative": "MTP draft",
+     "thinking_tiers": [
+      "deep",
+      "fast",
+      "normal"
+     ],
+     "vision": true
+    },
+    "busy": false,
+    "checked_at": 1791554201.7,
+    "explain": "Brain ready (160 tok/s).",
+    "gpu": {
+     "consumers": [
+      {
+       "dedicated_mib": 441.1,
+       "name": "dwm.exe",
+       "parent": "winlogon.exe",
+       "pid": 1784,
+       "role": "desktop compositor"
+      }
+     ],
+     "free_mib_at_start": 14904.5,
+     "lease": {
+      "acquired_at": 1791553766.573,
+      "held": true,
+      "recovered_from": {
+       "acquired_at": 1791550802.78,
+       "heartbeat_at": 1791550802.78,
+       "label": "WS Brain host",
+       "pid": 336,
+       "purpose": "runtime_v1_brain"
+      }
+     },
+     "measured": true,
+     "others_mib": 776.5,
+     "release": null,
+     "sampled_t": 1791554136.145,
+     "server_dedicated_mib": 15555.7,
+     "server_non_local_mib": 1120.6,
+     "verdict_at_start": "CONTENDED",
+     "verdict_now": "AT_RISK"
+    },
+    "host": {
+     "explain": "Brain ready (160 tok/s).",
+     "override": {
+      "at": 1791553766.553,
+      "by": "--override-contention"
+     },
+     "running": true,
+     "state": "READY",
+     "updated_age_s": 252.3
+    },
+    "performance": {
+     "calibration_error": null,
+     "calibration_t": 1791553944.831,
+     "calibration_tps": 160.0,
+     "decode_samples": 0,
+     "decode_tps_median": null,
+     "evidence": "calibration",
+     "threshold_source": "decode below 60 tok/s: healthy instances measured 96-157 tok/s (freeze record) and 110-131 (WS runs); demoted instances 24-42 tok/s (Adaptive Runtime R1, OI-PERF-1, WS PERF-W1)",
+     "threshold_tps": 60.0
+    },
+    "readiness": "READY",
+    "reasons": [],
+    "recovery_options": [],
+    "selected": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "READY"
+   }
+  },
+  {
+   "t_ms": 23998,
+   "kind": "screenshot",
+   "name": "01_brain_ready"
+  },
+  {
+   "t_ms": 23998,
+   "kind": "scenario",
+   "id": "D1 presentation command"
+  },
+  {
+   "t_ms": 24015,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 24032,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 24032,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 24286,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "Listening",
+   "source": "VoiceSession.listening"
+  },
+  {
+   "t_ms": 24286,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 24451,
+   "kind": "talker.start",
+   "text": "URI, dashboard."
+  },
+  {
+   "t_ms": 26076,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "You are speaking",
+   "source": "VoiceSession.userSpeaking"
+  },
+  {
+   "t_ms": 26076,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 26831,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "You are a",
+   "final": false
+  },
+  {
+   "t_ms": 27913,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "URI Dashboard",
+   "final": false
+  },
+  {
+   "t_ms": 28291,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 28717,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": "Transcribing",
+   "source": "VoiceInteraction.transcribing"
+  },
+  {
+   "t_ms": 28717,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 28719,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 28745,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 29611,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 29611,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 29611,
+   "kind": "final",
+   "text": "URI Dashboard",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 4380,
+   "transcribe_ms": 613,
+   "uncertain": [
+    "URI"
+   ]
+  },
+  {
+   "t_ms": 29759,
+   "kind": "result",
+   "id": "D1",
+   "mode": "dashboard",
+   "final": "URI Dashboard",
+   "sent_as_turn": false
+  },
+  {
+   "t_ms": 29804,
+   "kind": "screenshot",
+   "name": "D1_dashboard"
+  },
+  {
+   "t_ms": 30939,
+   "kind": "scenario",
+   "id": "D2 silence"
+  },
+  {
+   "t_ms": 30942,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 30943,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 31003,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "Listening",
+   "source": "VoiceSession.listening"
+  },
+  {
+   "t_ms": 31003,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 32491,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": "Transcribing",
+   "source": "VoiceInteraction.transcribing"
+  },
+  {
+   "t_ms": 32491,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 32524,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 32524,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 32524,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 32525,
+   "kind": "final",
+   "text": "",
+   "reason": "no_speech",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 1500,
+   "transcribe_ms": 0,
+   "uncertain": []
+  },
+  {
+   "t_ms": 32565,
+   "kind": "result",
+   "id": "D2",
+   "notice": "NO_SPEECH",
+   "final": "no_speech"
+  },
+  {
+   "t_ms": 32609,
+   "kind": "screenshot",
+   "name": "D2_no_speech"
+  },
+  {
+   "t_ms": 32609,
+   "kind": "scenario",
+   "id": "D3 cancel"
+  },
+  {
+   "t_ms": 32611,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": "No speech was heard."
+  },
+  {
+   "t_ms": 32612,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 32612,
+   "kind": "talker.start",
+   "text": "Send the monthly report to the director."
+  },
+  {
+   "t_ms": 32651,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "Listening",
+   "source": "VoiceSession.listening"
+  },
+  {
+   "t_ms": 32651,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 34051,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "You are speaking",
+   "source": "VoiceSession.userSpeaking"
+  },
+  {
+   "t_ms": 34051,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 34179,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 34187,
+   "kind": "esc"
+  },
+  {
+   "t_ms": 34190,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 34190,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "cancelled"
+  },
+  {
+   "t_ms": 36590,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 39612,
+   "kind": "result",
+   "id": "D3",
+   "stage": "idle",
+   "new_messages": 0
+  },
+  {
+   "t_ms": 39612,
+   "kind": "scenario",
+   "id": "D4 approval by voice is refused"
+  },
+  {
+   "t_ms": 39613,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 39614,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 39614,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 39634,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "Listening",
+   "source": "VoiceSession.listening"
+  },
+  {
+   "t_ms": 39634,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 40032,
+   "kind": "talker.start",
+   "text": "Remember that the laboratory is closed on Friday afternoon."
+  },
+  {
+   "t_ms": 41253,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "You are speaking",
+   "source": "VoiceSession.userSpeaking"
+  },
+  {
+   "t_ms": 41253,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 42250,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Remember that.",
+   "final": false
+  },
+  {
+   "t_ms": 43355,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Remember that the laboratory is cl-",
+   "final": false
+  },
+  {
+   "t_ms": 44441,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Remember that the laboratory is closed on Friday after the",
+   "final": false
+  },
+  {
+   "t_ms": 45190,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 45526,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Remember that the laboratory is closed on Friday afternoon.",
+   "final": false
+  },
+  {
+   "t_ms": 45650,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": "Transcribing",
+   "source": "VoiceInteraction.transcribing"
+  },
+  {
+   "t_ms": 45650,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 45650,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 45666,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 46114,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 46114,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 46115,
+   "kind": "final",
+   "text": "Remember that the laboratory is closed on Friday afternoon.",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 5980,
+   "transcribe_ms": 456,
+   "uncertain": []
+  },
+  {
+   "t_ms": 46120,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 51680,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 51680,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 52007,
+   "kind": "companion",
+   "state": "speaking",
+   "detail": "URI is speaking",
+   "source": "VoiceSession.uriSpeaking"
+  },
+  {
+   "t_ms": 52007,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "I could not build this request from your own words, so I did not proceed."
+  },
+  {
+   "t_ms": 57414,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 57414,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 57414,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 58513,
+   "kind": "screenshot",
+   "name": "D4_approval_card"
+  },
+  {
+   "t_ms": 58513,
+   "kind": "result",
+   "id": "D4a",
+   "approval_capability": null,
+   "approval_args": null
+  },
+  {
+   "t_ms": 58514,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 58515,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 58515,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 58533,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "Listening",
+   "source": "VoiceSession.listening"
+  },
+  {
+   "t_ms": 58533,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 58927,
+   "kind": "talker.start",
+   "text": "Yes, approve it."
+  },
+  {
+   "t_ms": 60252,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "You are speaking",
+   "source": "VoiceSession.userSpeaking"
+  },
+  {
+   "t_ms": 60252,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 61020,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Yes.",
+   "final": false
+  },
+  {
+   "t_ms": 62113,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Yes, approve it.",
+   "final": false
+  },
+  {
+   "t_ms": 62244,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 62667,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": "Transcribing",
+   "source": "VoiceInteraction.transcribing"
+  },
+  {
+   "t_ms": 62667,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 62667,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 62685,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 63130,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 63130,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 63130,
+   "kind": "final",
+   "text": "Yes, approve it.",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 4100,
+   "transcribe_ms": 455,
+   "uncertain": []
+  },
+  {
+   "t_ms": 63131,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 67232,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 67232,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 67289,
+   "kind": "companion",
+   "state": "speaking",
+   "detail": "URI is speaking",
+   "source": "VoiceSession.uriSpeaking"
+  },
+  {
+   "t_ms": 67289,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "I cannot safely act on that request."
+  },
+  {
+   "t_ms": 70620,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 70620,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 70620,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 70642,
+   "kind": "result",
+   "id": "D4b",
+   "approval_still_pending_or_not_executed": false,
+   "settled_by_voice": false
+  },
+  {
+   "t_ms": 70695,
+   "kind": "screenshot",
+   "name": "D4_after_spoken_yes"
+  },
+  {
+   "t_ms": 71704,
+   "kind": "scenario",
+   "id": "B1 conversation"
+  },
+  {
+   "t_ms": 71705,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 71705,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 71705,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 71724,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "Listening",
+   "source": "VoiceSession.listening"
+  },
+  {
+   "t_ms": 71724,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 72120,
+   "kind": "talker.start",
+   "text": "What is the capital of Sikkim, and what is it known for?"
+  },
+  {
+   "t_ms": 73364,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "You are speaking",
+   "source": "VoiceSession.userSpeaking"
+  },
+  {
+   "t_ms": 73364,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 74194,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "What is the",
+   "final": false
+  },
+  {
+   "t_ms": 75279,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "What is the capital of Sikkim?",
+   "final": false
+  },
+  {
+   "t_ms": 76377,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "What is the capital of Sikkim and what is it known?",
+   "final": false
+  },
+  {
+   "t_ms": 77036,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 77097,
+   "kind": "screenshot",
+   "name": "B1_listening"
+  },
+  {
+   "t_ms": 77477,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "What is the capital of Sikkim? And what is it known for?",
+   "final": false
+  },
+  {
+   "t_ms": 77503,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": "Transcribing",
+   "source": "VoiceInteraction.transcribing"
+  },
+  {
+   "t_ms": 77503,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 77504,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 77520,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 78004,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 78004,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 78004,
+   "kind": "final",
+   "text": "What is the capital of Sikkim and what is it known for?",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 5760,
+   "transcribe_ms": 489,
+   "uncertain": []
+  },
+  {
+   "t_ms": 78072,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 78733,
+   "kind": "companion",
+   "state": "speaking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 78900,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 78968,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "The capital of Sikkim is Gangtok."
+  },
+  {
+   "t_ms": 79001,
+   "kind": "screenshot",
+   "name": "B1_speaking"
+  },
+  {
+   "t_ms": 82016,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "It is known for several key features:"
+  },
+  {
+   "t_ms": 82490,
+   "kind": "companion",
+   "state": "speaking",
+   "detail": "URI is speaking",
+   "source": "VoiceSession.uriSpeaking"
+  },
+  {
+   "t_ms": 85154,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "Scenic Beauty: Gangtok is situated at an altitude of about 5,400 feet and offers breathtaking views of the Himalayas, including Kanchenjunga, the third-highest mountain in the world."
+  },
+  {
+   "t_ms": 98290,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "Buddhist Culture: The city is a hub for Buddhist culture, featuring numerous monasteries (gompas) such as Tsuglagang, Enchey Monastery, and Rumtek Monastery (located nearby in Rumtek)."
+  },
+  {
+   "t_ms": 112169,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "Eco-Tourism and Cleanliness: Gangtok is often cited as one of the cleanest cities in India."
+  },
+  {
+   "t_ms": 118899,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "It promotes eco-tourism and sustainable living."
+  },
+  {
+   "t_ms": 122631,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "Gateway to Natural Attractions: It serves as a base for visiting nearby attractions like the Nathu La Pass (a historic mountain pass on the Indo-China border), Kanchenjunga Falls, and the Ban Jhakri Falls."
+  },
+  {
+   "t_ms": 136676,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "The rest of the answer is on screen."
+  },
+  {
+   "t_ms": 139721,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 139721,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 139721,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 139780,
+   "kind": "turn.done",
+   "label": "B1",
+   "last_message": "The capital of Sikkim is **Gangtok**.\n\nIt is known for several key features:\n\n1.  **Scenic Beauty**: Gangtok is situated at an altitude of about 5,400 feet and offers breathtaking views of the Himalayas, including Kanchenjunga, the third-highest mountain in the world.\n2.  **Buddhist Culture**: The city is a hub for Buddhist culture, featuring numerous monasteries (gompas) such as Tsuglagang, Enchey Monastery, and Rumtek Monastery (located nearby in Rumtek).\n3.  **Eco-Tourism and Cleanliness**: Gangtok is often cited as one of the cleanest cities in India. It promotes eco-tourism and sustainable living.\n4.  **Gateway to Natural Attractions**: It serves as a base for visiting nearby attractions like the Nathu La Pass (a historic mountain pass on the Indo-China border), Kanchenjunga Falls, and the Ban Jhakri Falls.\n5.  **Festivals**: The city celebrates vibrant festivals like Losong (a traditional Sikkimese festival) and Tihar (Diwali), showcasing the unique cultural blend of Lepcha, Bhutia, and Nepali communities.",
+   "core_code": null,
+   "metrics": {
+    "cache_n": 216,
+    "draft_n": 238,
+    "draft_n_accepted": 146,
+    "first_answer_s": 0.4355,
+    "predicted_n": 266,
+    "predicted_per_second": 70.55898424883837,
+    "prompt_n": 37,
+    "prompt_per_second": 110.88567686714997,
+    "reasoning_chars": 0,
+    "retried": false,
+    "total_s": 4.1916,
+    "ttft_s": 0.4355
+   },
+   "timings": {
+    "final_to_first_reply_audio_ms": 964
+   }
+  },
+  {
+   "t_ms": 139780,
+   "kind": "scenario",
+   "id": "B2 barge-in"
+  },
+  {
+   "t_ms": 139781,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 139782,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 139782,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 139800,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "Listening",
+   "source": "VoiceSession.listening"
+  },
+  {
+   "t_ms": 139800,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 140195,
+   "kind": "talker.start",
+   "text": "Tell me five ways to reduce paper use in a government office."
+  },
+  {
+   "t_ms": 141560,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "You are speaking",
+   "source": "VoiceSession.userSpeaking"
+  },
+  {
+   "t_ms": 141560,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 142273,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Tell me",
+   "final": false
+  },
+  {
+   "t_ms": 143352,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Tell me five ways to reduce",
+   "final": false
+  },
+  {
+   "t_ms": 144446,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Tell me five ways to reduce paper use in a government",
+   "final": false
+  },
+  {
+   "t_ms": 145458,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 145560,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Tell me five ways to reduce paper use in a government office.",
+   "final": false
+  },
+  {
+   "t_ms": 145870,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": "Transcribing",
+   "source": "VoiceInteraction.transcribing"
+  },
+  {
+   "t_ms": 145870,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 145870,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 145884,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 146350,
+   "kind": "companion",
+   "state": "idle",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 146350,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 146350,
+   "kind": "final",
+   "text": "Tell me five ways to reduce paper use in a government office.",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 6040,
+   "transcribe_ms": 470,
+   "uncertain": []
+  },
+  {
+   "t_ms": 146351,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 146940,
+   "kind": "companion",
+   "state": "speaking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 147102,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 147161,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "Here are five practical ways to reduce paper use in a government office:"
+  },
+  {
+   "t_ms": 149634,
+   "kind": "bargein.press"
+  },
+  {
+   "t_ms": 150245,
+   "kind": "bargein.release"
+  },
+  {
+   "t_ms": 150599,
+   "kind": "companion",
+   "state": "speaking",
+   "detail": "URI is speaking",
+   "source": "VoiceSession.uriSpeaking"
+  },
+  {
+   "t_ms": 152290,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "Implement Digital Document Management Systems (DMS):."
+  },
+  {
+   "t_ms": 157178,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "Transition to cloud-based or on-premise digital archives for storing, sharing, and retrieving documents."
+  },
+  {
+   "t_ms": 160264,
+   "kind": "timeout",
+   "waiting_for": "B2 stopped"
+  },
+  {
+   "t_ms": 160266,
+   "kind": "run.end"
+  }
+ ]
+}

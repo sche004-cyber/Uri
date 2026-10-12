@@ -1,0 +1,130 @@
+{
+ "milestone": "W1-A0-closure",
+ "repo": "/home/user/Uri",
+ "baseline": {
+  "ref": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "expect": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9"
+ },
+ "candidate": {
+  "branch": "milestone/a0-assist-foundation-20261010",
+  "worktree": "/home/user/uri-wt/a0"
+ },
+ "state_dir": "/home/user/uri-wt/lifecycle-runs/W1-A0-closure-2",
+ "work_dir": "/tmp/claude-0/lc-work/W1-A0-closure-2",
+ "acceptance_criteria_file": "docs/assist/00_PLAN_AND_ACCEPTANCE_CRITERIA.md",
+ "review_focus": [
+  "Security / SSRF in uri_web (safe_fetch, netpolicy): any URL, redirect, DNS answer sequence or proxy setting that connects to a non-public address or to an address other than the validated one.",
+  "Prompt injection and citation integrity in uri_web (untrusted, synthesize, evaluate, extract, search, local_brain).",
+  "Browser connectivity: browser_extension/snapshot.js redaction, hidden-text handling and Python/JS parity; the browser channel itself is not built (owner checklist #8) - confirm nothing claims otherwise.",
+  "Multimodal vision: uri_assist/vision.py gating (OBSERVE, freshness, busy slot, loopback-only endpoint, size bounds, debounce, never automatic).",
+  "Permissions: uri_assist/access.py and bridge.py - observe/suggest without a current grant, stale observations, permission implication, entire-screen confirmation, restart, Insert/Act paths, derived data after revoke.",
+  "Integration: scripts/run_uri_integrated_worker.py dispatch, uri_ui Assist controller lifecycle (timers, ask state after stop/re-grant), OiConversation diversion.",
+  "Verify the R1 findings (docs/assist/closure/R1_reviewer_result.txt) and the repairs made since.",
+  "The frozen uri_core/tools/fetch_url.py SSRF-1 is a known pre-existing defect outside this milestone and must NOT be repaired here (owner decision)."
+ ],
+ "protected_paths": "ws_frozen_check",
+ "permitted_paths": [
+  "uri_web/**",
+  "uri_assist/**",
+  "tests/web/**",
+  "tests/assist/**",
+  "uri_ui/lib/living/**",
+  "uri_ui/test/living/**",
+  "docs/assist/**",
+  "scripts/run_uri_integrated_worker.py"
+ ],
+ "test_globs": [
+  "tests/**",
+  "uri_ui/test/**"
+ ],
+ "allowed_flaky": [
+  "tests.ws.test_ws_hardening::test_requests_are_marked_done_with_the_state_they_left",
+  "tests.ws.test_ws_hardening::test_host_requests_are_explicit_fresh_and_used_once"
+ ],
+ "gates": [
+  {
+   "id": "python",
+   "kind": "pytest",
+   "cmd": [
+    "bash",
+    "-c",
+    "dirs=\"\"; for x in tests/ws tests/oi tests/a2ui tests/web tests/assist; do [ -e \"$x\" ] && dirs=\"$dirs $x\"; done; exec {python} -m pytest -c scripts/phase2d_pytest.ini --rootdir=. -q $dirs \"$@\"",
+    "python-gate"
+   ],
+   "timeout_s": 2400
+  },
+  {
+   "id": "flutter",
+   "kind": "flutter",
+   "cwd": "uri_ui",
+   "cmd": [
+    "/tmp/claude-0/flutter/bin/flutter",
+    "test"
+   ],
+   "timeout_s": 2400
+  }
+ ],
+ "python": "/tmp/claude-0/venv/bin/python",
+ "regression_runner": [
+  "{python}",
+  "-m",
+  "pytest",
+  "-q",
+  "-p",
+  "no:cacheprovider"
+ ],
+ "regression_runners": [
+  {
+   "suffix": "_test.dart",
+   "cwd": "uri_ui",
+   "cmd": [
+    "/tmp/claude-0/flutter/bin/flutter",
+    "test"
+   ]
+  }
+ ],
+ "repair_nonblocking_severities": [
+  "MEDIUM"
+ ],
+ "reviewer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 7200
+ },
+ "implementer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 7200
+ },
+ "limits": {
+  "max_repair_attempts": 3
+ },
+ "integration": {
+  "mode": "merge",
+  "remote": "origin",
+  "target_ref": "integration/git-sync-20261008",
+  "authorized": true,
+  "expected_target_tip": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35"
+ },
+ "commit_trailers": [
+  "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+  "Claude-Session: https://claude.ai/code/session_01P2p3uVP5b87uL5UMyWApaJ"
+ ],
+ "environment_notes": [
+  "Python with pytest and the repo requirements: /tmp/claude-0/venv/bin/python (use it for tests; do not pip install)",
+  "Flutter SDK: /tmp/claude-0/flutter/bin/flutter (Flutter tests run from uri_ui/)",
+  "Real Chromium for Playwright tests is preinstalled (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers)",
+  "No GPU, no Windows; the Phase 1 checkpoint zip is not present (ws_frozen_check zip part BLOCKED)",
+  "Regression proof: the driver copies ONLY the files you list in regression_tests into a clean checkout of the pre-repair commit and runs them there; new fixture/helper files are NOT copied. Make each regression test self-contained (embed fixture HTML/JS in the test file and write it to tmp_path at run time). A test that is skipped on the pre-repair commit counts as NOT failing, so it must not skip for a missing fixture.",
+  "graphify: do NOT run `graphify update` (or any graphify command that writes) in this working tree, and do not delete or edit anything under graphify-out/: those files are tracked and outside the permitted paths, so the change would be refused. The repository rule 'run graphify update after modifying code' is satisfied by the coordinator, who rebuilds the graph outside the repository. For code navigation use read-only queries: `graphify query \"...\" --graph /home/user/uri-wt/graphs/W1-A0/graphify-out/graph.json` (also `path`, `explain`)."
+ ],
+ "continuation": {
+  "stall_rounds": 2,
+  "diagnose_after": 2,
+  "budget": {
+   "max_rounds": 50,
+   "max_cost_usd": 400,
+   "max_hours": 36
+  }
+ }
+}

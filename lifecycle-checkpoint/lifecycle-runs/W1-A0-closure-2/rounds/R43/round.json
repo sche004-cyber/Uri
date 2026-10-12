@@ -1,0 +1,451 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R43",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R43-01"
+ ],
+ "candidate": "304bdf7039e33101e63045ffff03ab0258f535b3",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-12T00:09:34Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "304bdf7039e33101e63045ffff03ab0258f535b3",
+   "impl_head": "304bdf7039e33101e63045ffff03ab0258f535b3",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "c870efcd3f62aea923f5d3bfb30b67811db0d74c82e941b0b61e8384acb62fa0",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "304bdf7039e33101e63045ffff03ab0258f535b3",
+   "impl_head": "304bdf7039e33101e63045ffff03ab0258f535b3",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "c870efcd3f62aea923f5d3bfb30b67811db0d74c82e941b0b61e8384acb62fa0",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "304bdf7039e33101e63045ffff03ab0258f535b3",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "SENT='Claim your energy rebate refund at {} before the deadline.'. has_link_or_contact: 'refunds-portal ~ o r g/claim' True vs 'refunds-portal ~ \\u043e r g/claim' False; '~ e d u/claim' True vs '~ \\u0435 d u/claim' False; '~ i o/claim' True vs '~ \\u0456 o/claim' False; '~ \\u043e  r  g' False. For the False forms SY.verify(sentence+' [1].',[src]) keeps 1 claim, SY.extractive keeps the 'deadline' sentence, surface.clean shows the text unchanged, validate._no_urls gives 0 errors. mask_links('(refunds-portal i \\u043e)') -> '(refunds-portal [X] the deadline.' while '(refunds-portal i o)' -> '([X])'; '~ g \\u043e v/claim' -> 'refunds-portal ~ [X]'. Differential sweep (probe /tmp/uri_review_R43/p2.py, p3.py): 84 distinct (look-alike, separator, ending) combinations where the Latin spelling is a link and the look-alike spelling is not. Root cause: _SPELT_SINGLES/_spelt_fold only fold runs of single characters joined by single plain spaces; _mixed_fold only folds a contiguous group, so a spaced mixed-script ending is folded by neither, and the skeleton path needs a single script.",
+    "files": [
+     "uri_web/untrusted.py:842",
+     "uri_web/untrusted.py:845",
+     "uri_web/untrusted.py:907",
+     "uri_web/untrusted.py:922",
+     "uri_web/untrusted.py:960",
+     "uri_web/surface.py:38",
+     "uri_a2ui/validate.py:150"
+    ],
+    "id": "R43-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Fold spelt endings on a whitespace-normalised view with the full per-character look-alike sets (Unicode skeleton + ASCII look-alikes) for any spacing, then map the span back so mask_links covers the name; add a differential test that every listed ending spelt with any single confusable letter substitution and any spacing/punctuation edge is a link whenever the Latin spelling is.",
+    "title": "R1-01/R38-R40 link class still open: a spelt-out ending that starts with (or contains) a Cyrillic/Greek look-alike letter mixed with Latin letters ('refunds-portal ~ \u043e r g/claim', '~ \u0435 d u/claim', '~ \u0456 o/claim', '~ \u043e  r  g') is not a link and passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator; detected forms ('(refunds-portal i \u043e)', '~ g \u043e v/claim') are masked without the name (W1-AC12/AC15, D16/D29)"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "Real Chromium via tests/assist/test_a0_r13_differential_render run_chromium/ask (probe /tmp/uri_review_R43/e2e/test_probe_r43.py): '?client_secret=<code style=display:inline-block>QQBB</code><code style=display:inline-block>QQBBTWO</code>' -> Brain text 'client_secret=\\n[redacted]\\nQQBBTWO'; 'https://dave:<span ib>QQCC</span><span ib>QQCCTWO</span>@db.example.com' -> 'https://dave:\\nQQCC\\nQQCCTWO\\n@db.example.com' (user and password sent). redact_text('https://alice:\\nP\\nW\\n@host') is unchanged.",
+    "files": [
+     "uri_assist/redact.py:184",
+     "uri_assist/redact.py:203",
+     "uri_assist/browser_extension/snapshot.js:55",
+     "uri_assist/browser_extension/snapshot.js:358"
+    ],
+    "id": "R43-02",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Treat inline-block/inline-flex neighbours on one line box as the same run, or have the fail-closed rule mask every following token up to a URL terminator (whitespace-separated value continuation up to '&', '#', or a userinfo '@').",
+    "title": "R42-01 residual: a URL secret split across two or more inline-block boxes reaches the Brain; the whitespace fail-closed rule masks only the next single token (A0-AC7)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R28-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R29-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R30-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R31-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R32-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R33-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R34-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R35-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R36-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R37-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R38-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R38-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R39-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R40-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R42-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "pytest -c scripts/phase2d_pytest.ini tests/web tests/assist tests/a2ui -q",
+    "result": "5723 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -c scripts/phase2d_pytest.ini tests/oi -q",
+    "result": "20 failed, 141 passed, 8 skipped, 161 errors; ModuleNotFoundError msvcrt (Windows-only, no oi/ws changes in range)",
+    "status": "BLOCKED"
+   },
+   {
+    "command": "pytest -c scripts/phase2d_pytest.ini tests/ws -q",
+    "result": "failures from msvcrt/powershell absence (Windows-only)",
+    "status": "BLOCKED"
+   },
+   {
+    "command": "pytest tests/assist/test_a0_r42_review_regressions.py tests/web/test_w1_closure_r40_review_regressions.py",
+    "result": "27 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R43/p2.py, p3.py, p4.py, p5.py (link detector differential and end-to-end probes)",
+    "result": "84 failing look-alike/spacing combinations; verify/extractive/surface/A2UI accept '~ \u043e r g/claim'",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest /tmp/uri_review_R43/e2e/test_probe_r43.py (real Chromium snapshot -> Brain prompt)",
+    "result": "inline-block split secrets leak (QQBBTWO, QQCC, QQCCTWO, dave)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R43/p1.py (redact_text split-URL probes)",
+    "result": "multi-token value/userinfo splits not masked",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat baseline..candidate -- <protected paths>",
+    "result": "no changes",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter tests (uri_ui) not run this round",
+   "ws_frozen_check zip part BLOCKED (checkpoint zip absent)",
+   "Prior findings other than R1-01, R38-R40 and R42-01 marked FIXED on the basis of their passing regression tests, not re-probed individually",
+   "safe_fetch/netpolicy SSRF, vision gating, access/bridge permissions and Assist controller lifecycle not freshly probed this round"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 43,
+ "started_at": "2026-10-11T23:59:03Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "dae49e16-b1b5-4ca7-b666-0c5e64bc9de7",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 169
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.8057418999999995,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R43",
+  "ended_at": "2026-10-12T00:09:32Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 33,
+  "pid": 23507,
+  "prompt_sha256": "7286f1fa55df9f88b5f5deec46459d718818db5ccd88f2d141e364e48358256f",
+  "provider": "claude_cli",
+  "result_text_sha256": "c28da9f2273b9d6f6b2aa7d180a5ccdb796d1a2fd17a8aa9fd8fb1db90d15907",
+  "role": "reviewer",
+  "session_id": "dae49e16-b1b5-4ca7-b666-0c5e64bc9de7",
+  "session_id_requested": "dae49e16-b1b5-4ca7-b666-0c5e64bc9de7",
+  "started_at": "2026-10-11T23:59:03Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "93a2dc1434f21dd6a2d2ce912b95e1e9a9c40b511f73a55e26627cd7912c8944"
+ }
+}

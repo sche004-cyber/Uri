@@ -1,0 +1,372 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R16",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R16-01",
+  "R16-02"
+ ],
+ "candidate": "9b6b4f27fd6b54b5b92cf1fa36c086c9aa49b126",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T13:53:00Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "9b6b4f27fd6b54b5b92cf1fa36c086c9aa49b126",
+   "impl_head": "9b6b4f27fd6b54b5b92cf1fa36c086c9aa49b126",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "330788830bedb25b18f0b3101622c062017dc719f0c4e4fdfb30c9931dbae736",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "9b6b4f27fd6b54b5b92cf1fa36c086c9aa49b126",
+   "impl_head": "9b6b4f27fd6b54b5b92cf1fa36c086c9aa49b126",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "330788830bedb25b18f0b3101622c062017dc719f0c4e4fdfb30c9931dbae736",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "9b6b4f27fd6b54b5b92cf1fa36c086c9aa49b126",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "SENT='Claim your energy rebate refund at {} before the deadline.'; U.has_link_or_contact(SENT.format('refunds-portal \u4e36\u318d\u11a2 shop/claim')) -> False (also for '\u4e36\u4e3f\u4e40 shop/claim', '\u4e28\u4e36\u4e3f shop', '\u318d\u11a2\u4e36 cash/claim', '\u4e36\u4e3f\u4e40\u4e41 shop/claim', '\u4e36\u318d\u11a2 online'); mask_links leaves it unchanged; SY.verify(SENT.format(link)[:-1]+' [1].',[src]) keeps the claim with no drop; SY.extractive('energy rebate refund deadline',[src]) returns the sentence; build_surface(...) output contains 'refunds-portal \u4e36\u119e\u11a2 shop/claim' and require_valid passes. Cause: _separator_word returns len(set(word)) <= _MAX_FOREIGN (2), so a 3-distinct-letter foreign word becomes the 'name', the gap before 'shop' is a plain space (prose), and 'shop' is not in _CORE. Not listed among the owner-accepted residuals (only the bracketed separator is); D16 states 'a name, then anything at all, then a real TLD is a link'. Probes: /tmp/uri_review_R16/probe_links.py, probe_r16_01.py.",
+    "files": [
+     "uri_web/untrusted.py:543",
+     "uri_web/untrusted.py:424",
+     "uri_web/untrusted.py:554",
+     "uri_web/untrusted.py:565",
+     "uri_web/synthesize.py:238",
+     "uri_web/synthesize.py:341",
+     "uri_web/surface.py:37"
+    ],
+    "id": "R16-01",
+    "owner_decision": true,
+    "severity": "HIGH",
+    "suggested_fix": "Treat any unbracketed word of a script different from both the name's and the ending's (or of the ending's script made of non-alphabet letters) as a separator regardless of its distinct-letter count, or bound by script-membership rather than letter count; owner to confirm the precision cost (e.g. 'Tokyo \u6771\u4eac\u90fd is big' masked). Add a parametrised regression over 3- and 4-letter combinations of stroke/dot letters.",
+    "title": "R1-01 link class still open: a foreign-script separator word of three or more distinct dot/stroke-shaped letters ('\u4e36\u318d\u11a2', '\u4e36\u4e3f\u4e40', '\u4e28\u4e36\u4e3f', '\u318d\u11a2\u4e36') between name and a non-core TLD is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16)"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "N.check_url('http://[64:ff9b:1:7f00:0:100:808:808]/') -> Target(...) accepted (127.0.0.1 in RFC 6052 /48 layout); 'http://[64:ff9b:1:a9fe:a9:fe00:808:808]/' (169.254.169.254 /48) accepted; /64 form 64:ff9b:1:0:7f:0:100:0 accepted via DNS answer and connected (helper probe /tmp/uri_review_R16/ssrf/p2_nat64.py, p4_fetch.py). ipaddress reports these as not global. 64:ff9b::/96 forms are correctly refused.",
+    "files": [
+     "uri_web/netpolicy.py:51",
+     "uri_web/netpolicy.py:53",
+     "uri_web/netpolicy.py:74",
+     "uri_web/netpolicy.py:75"
+    ],
+    "id": "R16-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Refuse 64:ff9b:1::/48 outright (local-use, not needed for public fetches), or check the embedded IPv4 at every RFC 6052 offset (/32,/40,/48,/56,/64,/96) and refuse if any is non-public; never return before the is_global check for the local-use prefix.",
+    "title": "netpolicy accepts 64:ff9b:1::/48 (RFC 8215 local-use NAT64) addresses embedding a private IPv4 at the /48, /56 or /64 offsets: _embedded_v4 always reads the last 32 bits and the NAT64 branch returns before the is_global check (W1-AC1)"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "has_link_or_contact(SENT.format('refunds-portal ~ go ld/claim')) -> False; verify() keeps it, extractive() returns it, surface shows it. _endings rejects 'go'+'ld' via _COMMON2 regardless of the gap before the name.",
+    "files": [
+     "uri_web/untrusted.py:483",
+     "uri_web/untrusted.py:486"
+    ],
+    "id": "R16-03",
+    "owner_decision": true,
+    "severity": "LOW",
+    "suggested_fix": "Apply the _COMMON2 exclusion only when the gap between name and ending is ordinary prose; join the split when the gap holds a non-prose character.",
+    "title": "Split ending whose first piece is a common two-letter word is not joined even after a non-prose separator ('refunds-portal ~ go ld/claim', '~ he lp') - the disclosed, not owner-accepted, limitation is wider than needed"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "ResearchJob(..., providers=[SearxngProvider(base_url='http://\\u2603.example')]).run() -> FAILED INTERNAL_ERROR (helper probe /tmp/uri_review_R16/ssrf/p9_searxng_job.py). Config-only trigger; not reachable from page content.",
+    "files": [
+     "uri_web/search.py:99",
+     "uri_web/search.py:181"
+    ],
+    "id": "R16-04",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Catch httpx.InvalidURL (or httpx.InvalidURL plus ValueError) in the provider call and return FAILED/UNAVAILABLE for that provider.",
+    "title": "SearxngProvider does not catch httpx.InvalidURL: an owner-configured SearXNG URL with an invalid IDNA host turns the research job into FAILED INTERNAL_ERROR (R11-02 pattern in search)"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "Helper probe /tmp/uri_review_R16/assist/p_toctou.py revokes between check_unchanged and the store: output 'access state: OFF / EMITTED after revoke: assist.answer COMPLETE ...' and the text stays in _answers; assist_ask_status blanks it on read; the UI's _early buffer keeps unknown-id events and _discardDerived does not clear it (code reading).",
+    "files": [
+     "uri_assist/bridge.py:268",
+     "uri_assist/bridge.py:278",
+     "uri_assist/bridge.py:282",
+     "uri_ui/lib/living/assist/assist_controller.dart:307"
+    ],
+    "id": "R16-05",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Re-check the stamp under the access lock at store/emit time and blank the result if changed; clear _early in _discardDerived.",
+    "title": "Assist answer stored and emitted after Stop: the ask thread re-checks the grant before, not under the lock with, storing and emitting the answer (A0-AC4 race)"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "p_vision.py: REFUSED VISION_NOT_QUALIFIED/BRAIN_BUSY with screenshots captured=1; dart probe: second ask under a new grant sends use_screenshot: true; p_visionrects.py: 2000x1800 screenshot for a 1000x900@1x snapshot leaves 12586 unmasked field pixels. No image is sent on refusal; the user still presses Ask.",
+    "files": [
+     "uri_assist/bridge.py:462",
+     "uri_assist/vision.py:103",
+     "uri_assist/vision.py:43",
+     "uri_ui/lib/living/assist/assist_mode_view.dart:32"
+    ],
+    "id": "R16-06",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Run VisionGate pre-checks before capture; reset the toggle after each ask and on stop/grant; refuse when screenshot dimensions do not match viewport x devicePixelRatio.",
+    "title": "Vision path: screenshot captured before VisionGate refusals (not qualified, busy, debounced); 'screenshot for this question' toggle persists across asks, Stop and new grants; prepare_image does not check screenshot size against viewport x DPR before masking field rectangles"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -p no:cacheprovider tests/web tests/assist -q",
+    "result": "3943 passed in 100.05s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web -k 'safe_fetch or netpolicy or ssrf' (helper agent)",
+    "result": "87 passed, 1650 deselected",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "flutter test test/living/assist_mode_test.dart test/living/assist_r9_test.dart (helper agent, from uri_ui/)",
+    "result": "23 passed; git status clean before/after",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R16/probe_links.py and probe_r16_01.py",
+    "result": "R14-01 forms detected; 3-distinct-letter separators and '~ go ld' missed through all exits",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "SSRF probes /tmp/uri_review_R16/ssrf/p1..p10 (helper agent)",
+    "result": "Only NAT64 64:ff9b:1::/48 offset gap; rebinding, redirects, proxy env, TLS pinning, odd hosts, R11-02 OK",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "Assist probes /tmp/uri_review_R16/assist/* incl. real-Chromium redaction parity and pixel-check variants (helper agent)",
+    "result": "No blocking issue; LOW items R16-05, R16-06",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf534..9b6b4f27 -- <protected paths>",
+    "result": "no changes",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "ws_frozen_check zip part (Phase 1 checkpoint zip not present)",
+   "Live Windows/GPU Runtime v1 vision and real browser/UIA adapters (not available in cloud)",
+   "Live Tavily/Brave/SearXNG search",
+   "::target-text pixel-check variant (headless Chromium does not activate text fragments)",
+   "Full repository Python/Flutter gate beyond tests/web, tests/assist and Assist Flutter tests"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 16,
+ "started_at": "2026-10-11T13:41:26Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "64de2d7c-e673-41ef-9f5a-6cdd70846398",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 278
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 5.2303384,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R16",
+  "ended_at": "2026-10-11T13:52:59Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 4,
+  "pid": 27708,
+  "prompt_sha256": "cb2468756e9814958f77d833eb3c8f785a3032a69a1391e140cc946508c3d9b4",
+  "provider": "claude_cli",
+  "result_text_sha256": "587225601f41d22096229f313736b4df340ec670a3ab21b339d8b543c8447ac9",
+  "role": "reviewer",
+  "session_id": "64de2d7c-e673-41ef-9f5a-6cdd70846398",
+  "session_id_requested": "64de2d7c-e673-41ef-9f5a-6cdd70846398",
+  "started_at": "2026-10-11T13:41:26Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "0153a1dbc27a040fc5ab538fe333f029fefd08d25d19a134918de157d72f6506"
+ }
+}

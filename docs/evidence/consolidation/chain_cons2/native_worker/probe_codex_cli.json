@@ -1,0 +1,40 @@
+{
+ "agent_text": "OK",
+ "argv": [
+  "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+  "exec",
+  "--json",
+  "--ephemeral",
+  "--sandbox",
+  "read-only",
+  "--skip-git-repo-check",
+  "-C",
+  "C:\\Users\\cheta\\Development\\uri-canonical-evidence\\oqgate\\evidence\\phase2oq\\chain_cons2\\native_worker\\probe\\probe_codex_cli",
+  "Reply with exactly the word OK and nothing else."
+ ],
+ "duration_s": 1.35,
+ "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+ "executable_sha256": "af02050cc0c95f5aeb714af2c1077e635c58e9896c13c89d75099cf5b96477be",
+ "exit": 0,
+ "failures": [],
+ "forwarded_env_keys": [
+  "CODEX_HOME",
+  "COMSPEC",
+  "HOME",
+  "PATH",
+  "PATHEXT",
+  "SYSTEMROOT",
+  "TEMP",
+  "TMP",
+  "USERPROFILE",
+  "WINDIR"
+ ],
+ "model": null,
+ "ok": true,
+ "provider": "codex_cli",
+ "status": "OK",
+ "stdout_lines": 5,
+ "stdout_sha256": "998f295d53add776bc6092129e46be80e4e1749f1f32b19613a3a102035a5d4b",
+ "terminal_completed": true,
+ "version": "0.158.0"
+}

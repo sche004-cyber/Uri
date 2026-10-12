@@ -1,0 +1,348 @@
+{
+ "schema": "uri-dev-lifecycle/1",
+ "milestone": "W1-A0-closure",
+ "stage": "BLOCKED",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "candidate": "fcfb465ad34fd450107908b18ef2d9d3af15ec82",
+ "rounds": 13,
+ "reviewers": [
+  {
+   "round": 1,
+   "provider": "ccr_session",
+   "session_id": "session_017GFBkin32NjEb6jYwvN6vS",
+   "models": null,
+   "candidate": "8019d41b77bae91598fa45b5ea827ab54d1cf64c",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": false,
+   "status": "IMPORTED"
+  },
+  {
+   "round": 2,
+   "provider": "claude_cli",
+   "session_id": "12b38140-caae-4bc9-af6f-f280844a5a0e",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 3,
+   "provider": "claude_cli",
+   "session_id": "dc854df5-6539-4d67-a07b-d78745165ebc",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "627f6b93d3f3a3de0ba60b1d0c58b9fe5729fede",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 4,
+   "provider": "claude_cli",
+   "session_id": "5874814d-5471-4904-911b-6b967b71f305",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "16155129b72685f25eca48a65252f6cd51fa47e4",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 5,
+   "provider": "claude_cli",
+   "session_id": "789f4eaf-8aee-442f-a567-e36ebb0a4464",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "52e852dcce592e15fc2098bc1e169a7e009eb26a",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 6,
+   "provider": "claude_cli",
+   "session_id": "79002ead-1ff3-4b60-857c-38e2cf67ca44",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "08a4569908d7b9db2e22366cada632e5ebe40639",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 7,
+   "provider": null,
+   "session_id": null,
+   "models": null,
+   "candidate": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
+   "verdict": null,
+   "reviewer_label": null,
+   "independent": null,
+   "status": null
+  },
+  {
+   "round": 8,
+   "provider": "claude_cli",
+   "session_id": "ea66c95f-0132-47b0-b8ec-ad4326276010",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 9,
+   "provider": "claude_cli",
+   "session_id": "ce6ea834-ed6e-4ef5-91f8-9fdc31f027f8",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "3dd9cde91818cfcf2db48067e8d4b56a1bda62f4",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 10,
+   "provider": "claude_cli",
+   "session_id": "4f8c44cf-8eb5-407d-bf7a-6b574b4d1502",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 11,
+   "provider": "claude_cli",
+   "session_id": "321bb07d-f7cd-4846-abc9-f440a293cac5",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 12,
+   "provider": "claude_cli",
+   "session_id": "e5e6f379-17f2-4b11-b603-5cf22ec39580",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 13,
+   "provider": "claude_cli",
+   "session_id": "4fb1cdc4-5625-457d-afe5-2ee1c4450a41",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "d029f606ec84f32fd39c2276c34e1a4fd281eec1",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "repairs": [
+  {
+   "repair": 1,
+   "status": "COMMITTED",
+   "commit": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+   "addresses": [
+    "R1-01",
+    "R1-02",
+    "R1-03",
+    "R1-04"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 2,
+   "status": "COMMITTED",
+   "commit": "627f6b93d3f3a3de0ba60b1d0c58b9fe5729fede",
+   "addresses": [
+    "R2-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 3,
+   "status": "COMMITTED",
+   "commit": "16155129b72685f25eca48a65252f6cd51fa47e4",
+   "addresses": [
+    "R3-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 4,
+   "status": "COMMITTED",
+   "commit": "52e852dcce592e15fc2098bc1e169a7e009eb26a",
+   "addresses": [
+    "R4-01",
+    "R4-02",
+    "R4-03"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 5,
+   "status": "COMMITTED",
+   "commit": "08a4569908d7b9db2e22366cada632e5ebe40639",
+   "addresses": [
+    "R5-01",
+    "R5-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 6,
+   "status": "COMMITTED",
+   "commit": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
+   "addresses": [
+    "R6-01",
+    "R6-02",
+    "R6-03"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 7,
+   "status": "COMMITTED",
+   "commit": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
+   "addresses": [
+    "R9-01",
+    "R9-02",
+    "R9-03",
+    "R9-04",
+    "R9-05",
+    "R9-06",
+    "R9-07",
+    "R9-08"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 8,
+   "status": "REFUSED",
+   "commit": null,
+   "addresses": [
+    "R10-01"
+   ],
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit"
+  },
+  {
+   "repair": 9,
+   "status": "REFUSED",
+   "commit": null,
+   "addresses": [
+    "R10-01"
+   ],
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit"
+  },
+  {
+   "repair": 10,
+   "status": "REFUSED",
+   "commit": null,
+   "addresses": [
+    "R10-01"
+   ],
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit"
+  },
+  {
+   "repair": 11,
+   "status": "COMMITTED",
+   "commit": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+   "addresses": [
+    "R10-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 12,
+   "status": "COMMITTED",
+   "commit": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+   "addresses": [
+    "R11-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 13,
+   "status": "COMMITTED",
+   "commit": "d029f606ec84f32fd39c2276c34e1a4fd281eec1",
+   "addresses": [
+    "R12-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 14,
+   "status": "REFUSED",
+   "commit": null,
+   "addresses": [
+    "R13-01"
+   ],
+   "reason": "OUT_OF_SCOPE: graphify-out/.graphify_detect.json, graphify-out/.graphify_python, graphify-out/.graphify_root"
+  }
+ ],
+ "open_findings": [
+  {
+   "id": "R13-01",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "In-page hidden-text filter still misses fully invisible text: negative z-index under an ancestor background, SVG <text> with fill transparent/none or fill-opacity 0, and -webkit-mask-box-image; injected instructions reach the Brain request as 'Visible text' and 'Selected text' (R12-01 class not closed)"
+  }
+ ],
+ "gates": {},
+ "integration": null,
+ "blocker": {
+  "at": "2026-10-11T07:35:40Z",
+  "kind": "OWNER_DECISION",
+  "needs": "owner decision",
+  "reason": "OUT_OF_SCOPE: graphify-out/.graphify_detect.json, graphify-out/.graphify_python, graphify-out/.graphify_root",
+  "stage": "FIXING"
+ },
+ "events": 111,
+ "evidence_ok_for_candidate": false
+}

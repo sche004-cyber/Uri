@@ -1,0 +1,46 @@
+I recommend **ACCEPT WITH FINDINGS** for candidate `67aff50…`. The R15-01 repair holds against both its own payloads and new variants I wrote. All 25 earlier blocking findings are fixed. I found two LOW, non-blocking issues, and both fall within limitations the project already documents.
+
+- **SHAs and protected paths:** HEAD is `67aff5042c0f166392281e072fb5f9db906779c5` and the baseline commit exists. Nothing under the protected paths changed in the range.
+- **The R15-01 repair:**
+  - Input, textarea and select values are no longer sent to the Brain.
+  - A contenteditable's value is now sent only as pieces that pass the same on-screen render check as page text.
+  - Checkbox and radio state goes out only as a fixed word.
+
+  I ran my own pages in real Chromium, with and without Ctrl+A. Text inside a contenteditable that was transparent, drawn as dots, 1 px, clipped by overflow, or inside a nested textarea did not reach the Brain. Text that was actually drawn did.
+- **Other checks:**
+  - Text squashed with negative letter-spacing or `scaleX`/`scaleY` is dropped by the render check.
+  - The SSRF address and URL checks refused every private address and every ambiguous numeric host I tried.
+- **Earlier findings:** I re-checked R15-01 with new probes. For the others I relied on their regression tests, which all pass, plus spot checks of the SSRF and render-check areas. I did not freshly reproduce every one from R1 to R14.
+- **Not covered:** `tests/oi` cannot run here (181 errors, all `No module named 'msvcrt'`, plus 20 failures I did not look into), and nothing in `tests/oi` changed in the range. Windows desktop-window capture, the browser-extension channel and the frozen-file zip check could not be verified either.
+
+### Findings
+- **R16-01 (LOW):** Text reversed on screen with `unicode-bidi: bidi-override; direction: rtl` passes the render check. The Brain gets the text in normal reading order, but the user sees it backwards. This also applies to contenteditable values. It falls under the documented limit that the check ties pixels to text, not to how it reads, but it can be fixed cheaply by dropping such text.
+- **R16-02 (LOW):** The research answer checker accepts a claim with subject and object swapped, shown in the Brain's own words. For example, "Ibuprofen is safer than aspirin…" passes against a source saying "aspirin is safer than ibuprofen". This is the documented limitation L-W1-1: the check compares words, not meaning.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "67aff5042c0f166392281e072fb5f9db906779c5", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [
+  {"id": "R16-01", "severity": "LOW", "blocking": false, "category": "security", "owner_decision": false,
+   "title": "Visually reversed text (unicode-bidi:bidi-override; direction:rtl) passes the D10 render check; the Brain reads it in logical order while the user sees it mirrored (page text, selection and contenteditable values)",
+   "files": ["uri_assist/onscreen.py:215", "uri_assist/browser_extension/probe.js:22", "uri_assist/browser_extension/snapshot.js:385", "docs/assist/03_PERMISSION_AND_DATA_FLOW.md:86"],
+   "evidence": "Real Chromium via tests/assist/test_a0_r13_differential_render.run_chromium: <p style=\"unicode-bidi:bidi-override;direction:rtl\">BIDI-PAYLOAD read me backwards</p> is drawn as 'sdrawkcab em daer DAOLYAP-IDIB' but reaches the Brain as 'On-screen text (pixel-checked): BIDI-PAYLOAD read me backwards' (also in 'Selected text' with Ctrl+A, and as a contenteditable shown_value). Falls within the documented 'binds pixels to a unit, not to its reading' limit, which names only web-font glyph substitution.",
+   "suggested_fix": "Report computed unicode-bidi (bidi-override/isolate-override, <bdo>) and mirroring transforms per unit in probe.js and drop such units like masked_glyphs, or document this explicitly as a residual limit."},
+  {"id": "R16-02", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Citation verifier keeps a claim with swapped subject/object or comparison direction in the Brain's own words (lexical check; documented L-W1-1)",
+   "files": ["uri_web/synthesize.py:121", "uri_web/synthesize.py:177", "docs/assist/W1_QUALIFICATION.md:49"],
+   "evidence": "verify('Ibuprofen is safer than aspirin for patients with kidney disease [1].', ['...The drug aspirin is safer than ibuprofen for patients with kidney disease, the study found.']) -> claims=[('Ibuprofen is safer than aspirin ...', quoted=False)], dropped=[]; likewise 'Fitbit acquired Google' vs source 'Google acquired Fitbit'.",
+   "suggested_fix": "Quote the source sentence verbatim when the claim's content-word order differs from the supporting sentence (or always quote), consistent with D7."}
+ ],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R4-03", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R6-03", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R8-02", "status": "FIXED"}, {"id": "R8-03", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"}, {"id": "R9-02", "status": "FIXED"}, {"id": "R9-03", "status": "FIXED"}, {"id": "R9-04", "status": "FIXED"}, {"id": "R9-05", "status": "FIXED"}, {"id": "R9-06", "status": "FIXED"}, {"id": "R10-01", "status": "FIXED"}, {"id": "R11-01", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"}, {"id": "R13-01", "status": "FIXED"}, {"id": "R14-01", "status": "FIXED"}, {"id": "R14-02", "status": "FIXED"}, {"id": "R15-01", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers /tmp/claude-0/venv/bin/python -m pytest -q tests/assist tests/web", "result": "2674 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "flutter test test/living (uri_ui)", "result": "253 passed, all tests passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest /tmp/uri_review_R16/t/test_probe_r16.py (real Chromium: letter-spacing, scaleX/Y, 6px, bidi-override, overlapped, grey text)", "result": "squashed/scaled text dropped (no_ink); bidi-override text kept in logical order (R16-01)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest /tmp/uri_review_R16/t/test_probe_ce.py (real Chromium: contenteditable with transparent, text-security, 1px, nested textarea, overflow-clipped spans)", "result": "all hidden contenteditable payloads dropped; drawn values kept; nested textarea withheld", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python: uri_web.netpolicy check_address/check_url adversarial corpus (27 addresses, 9 URLs)", "result": "all private/transition/ambiguous forms refused; public allowed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python: uri_web.synthesize.verify subject/comparison swap", "result": "swapped claim kept unquoted (R16-02)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/oi tests/a2ui", "result": "181 errors (all ModuleNotFoundError: msvcrt, Windows-only); 20 failures not individually examined; tests/oi unchanged in range", "status": "BLOCKED"},
+  {"command": "git diff --stat baseline..candidate -- <protected paths>", "result": "no changes", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Real Windows UIA adapter and browser extension channel (not built; owner checklist #8)", "ws_frozen_check zip part (Phase 1 checkpoint zip absent)", "tests/oi on Windows (msvcrt)", "Prior findings R1-01..R14-02 were confirmed via their passing regression tests and spot checks, not each re-reproduced by fresh probes this round"]}
+AUDIT_RESULT_END

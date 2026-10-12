@@ -1,0 +1,695 @@
+{
+ "journeys": [
+  {
+   "journey": "question",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482292.198,
+     "data": {
+      "depth": "auto",
+      "text_chars": 30
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482292.198,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482294.57,
+     "data": {
+      "route": "answer",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "simple_language_task",
+       "selected_by": "policy",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 0,
+       "kind": "QUESTION",
+       "reasons": [
+        "default_conversation"
+       ]
+      }
+     }
+    },
+    {
+     "type": "error",
+     "seq": 4,
+     "t": 1791482294.57,
+     "data": {
+      "code": "BRAIN_UNAVAILABLE",
+      "message": "The local Brain is not ready (STOPPED).",
+      "recoverable": true,
+      "recovery_options": [
+       "start_brain",
+       "retry",
+       "choose_other_source"
+      ]
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 5,
+     "t": 1791482294.57,
+     "data": {
+      "route": "answer",
+      "status": "error",
+      "total_s": 2.3724
+     }
+    }
+   ],
+   "brain": "STOPPED",
+   "reply_s": 0.001
+  },
+  {
+   "journey": "action_approved",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482304.151,
+     "data": {
+      "depth": "auto",
+      "text_chars": 49
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482304.151,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482304.151,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "remember_or_forget"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791482304.973,
+     "data": {
+      "code": "APPROVAL_REQUIRED",
+      "intent": {
+       "capability": "remember_fact",
+       "corrections": [],
+       "digest": "bc84e68a110e61982f96241a9b9e3c8a4d85412d77683a83a346a177f6819d3e",
+       "intent_id": "3a07711cf6594cbe8d0fe549d41c6dbc",
+       "questions_asked": 0,
+       "references": {},
+       "request": "remember that the science lab is closed on Friday",
+       "revision": 1,
+       "sources": {
+        "statement": "user_request"
+       },
+       "status": "CONFIRMED",
+       "superseded": [],
+       "values": {
+        "statement": "the science lab is closed on Friday"
+       }
+      },
+      "message": null,
+      "needs": "approval",
+      "state": "approval_required"
+     }
+    },
+    {
+     "type": "approval.required",
+     "seq": 5,
+     "t": 1791482304.973,
+     "data": {
+      "approval_digest": "8bdf3b9b84f8ddb4d52a4053810908e6065fcdae0df6ef3fd540c246ea03b3de",
+      "arguments": {
+       "action": "remember_fact",
+       "inputs": {
+        "request_text": "remember that the science lab is closed on Friday"
+       }
+      },
+      "capability_id": "remember_fact",
+      "core_turn_id": "bebbc335-d1ad-46e2-9fed-1d8170cd1e0d",
+      "effect": "local_write",
+      "reversible": true
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 6,
+     "t": 1791482304.973,
+     "data": {
+      "route": "core",
+      "status": "needs_user",
+      "total_s": 0.822
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 7,
+     "t": 1791482304.973,
+     "data": {
+      "state": "waiting_user"
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 1,
+     "t": 1791482305.011,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 2,
+     "t": 1791482305.606,
+     "data": {
+      "code": "SETTLED_VERIFIED",
+      "core_turn_id": "bebbc335-d1ad-46e2-9fed-1d8170cd1e0d",
+      "message": "Done. The result was independently verified by URI.",
+      "needs": "none",
+      "state": "reply"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 3,
+     "t": 1791482305.606,
+     "data": {
+      "route": "core",
+      "status": "ok",
+      "total_s": 0
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791482305.606,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "selected": "deterministic",
+   "memory_before": 0,
+   "memory_after": 1
+  },
+  {
+   "journey": "action_denied",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482308.125,
+     "data": {
+      "depth": "auto",
+      "text_chars": 45
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482308.125,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482308.125,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "remember_or_forget"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791482308.204,
+     "data": {
+      "code": "APPROVAL_REQUIRED",
+      "intent": {
+       "capability": "remember_fact",
+       "corrections": [],
+       "digest": "9c24352e0ccd0afd14233a874b67ccf9e3228535f79582de0dc659cb9c44f407",
+       "intent_id": "289e01b035f748b1b91ab8bae6a08f7b",
+       "questions_asked": 0,
+       "references": {},
+       "request": "remember that the staff meeting moved to 4 pm",
+       "revision": 1,
+       "sources": {
+        "statement": "user_request"
+       },
+       "status": "CONFIRMED",
+       "superseded": [],
+       "values": {
+        "statement": "the staff meeting moved to 4 pm"
+       }
+      },
+      "message": null,
+      "needs": "approval",
+      "state": "approval_required"
+     }
+    },
+    {
+     "type": "approval.required",
+     "seq": 5,
+     "t": 1791482308.204,
+     "data": {
+      "approval_digest": "0d69c2c5ea04b36324af0bd6d2d2fbe0d5f1cb2579fabbba80fb06d06235dbcd",
+      "arguments": {
+       "action": "remember_fact",
+       "inputs": {
+        "request_text": "remember that the staff meeting moved to 4 pm"
+       }
+      },
+      "capability_id": "remember_fact",
+      "core_turn_id": "a781f9b1-c63f-429a-b151-7ae18f95d01a",
+      "effect": "local_write",
+      "reversible": true
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 6,
+     "t": 1791482308.204,
+     "data": {
+      "route": "core",
+      "status": "needs_user",
+      "total_s": 0.0797
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 7,
+     "t": 1791482308.205,
+     "data": {
+      "state": "waiting_user"
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 1,
+     "t": 1791482308.253,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 2,
+     "t": 1791482308.466,
+     "data": {
+      "code": "APPROVAL_DENIED",
+      "core_turn_id": "a781f9b1-c63f-429a-b151-7ae18f95d01a",
+      "message": "You declined; nothing was changed.",
+      "needs": "none",
+      "state": "cancelled"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 3,
+     "t": 1791482308.466,
+     "data": {
+      "route": "core",
+      "status": "not_verified",
+      "total_s": 0
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791482308.466,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "selected": "deterministic"
+  },
+  {
+   "journey": "refusal",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482308.51,
+     "data": {
+      "depth": "auto",
+      "text_chars": 41
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482308.51,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482308.51,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "imperative_action_verb"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791482308.833,
+     "data": {
+      "code": "REFUSED_UNSUPPORTED",
+      "message": "That is not something URI can do.",
+      "needs": "none",
+      "state": "reply"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 5,
+     "t": 1791482308.833,
+     "data": {
+      "route": "core",
+      "status": "refused",
+      "total_s": 0.3232
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 6,
+     "t": 1791482308.833,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "finished": "refused"
+  },
+  {
+   "journey": "forged_digest",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482308.835,
+     "data": {
+      "depth": "auto",
+      "text_chars": 33
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482308.835,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482308.836,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "remember_or_forget"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791482308.915,
+     "data": {
+      "code": "APPROVAL_REQUIRED",
+      "intent": {
+       "capability": "remember_fact",
+       "corrections": [],
+       "digest": "3e93211d642fe86694e4ec48017d0d861bd025bbbcc48a56660b90892fbcee0f",
+       "intent_id": "704773815e924436aa64efd84b793ace",
+       "questions_asked": 0,
+       "references": {},
+       "request": "remember that the bus leaves at 7",
+       "revision": 1,
+       "sources": {
+        "statement": "user_request"
+       },
+       "status": "CONFIRMED",
+       "superseded": [],
+       "values": {
+        "statement": "the bus leaves at 7"
+       }
+      },
+      "message": null,
+      "needs": "approval",
+      "state": "approval_required"
+     }
+    },
+    {
+     "type": "approval.required",
+     "seq": 5,
+     "t": 1791482308.915,
+     "data": {
+      "approval_digest": "8afc5aa0e8e811e010e014ba741778f2e1fd2eafdd0de388d6894d8a52fbfa43",
+      "arguments": {
+       "action": "remember_fact",
+       "inputs": {
+        "request_text": "remember that the bus leaves at 7"
+       }
+      },
+      "capability_id": "remember_fact",
+      "core_turn_id": "231272c3-d1dd-48ec-8c06-c9b7e0c4dfb5",
+      "effect": "local_write",
+      "reversible": true
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 6,
+     "t": 1791482308.915,
+     "data": {
+      "route": "core",
+      "status": "needs_user",
+      "total_s": 0.0793
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 7,
+     "t": 1791482308.915,
+     "data": {
+      "state": "waiting_user"
+     }
+    }
+   ],
+   "reply": {
+    "code": "APPROVAL_DIGEST_MISMATCH",
+    "result": "REFUSED"
+   }
+  }
+ ],
+ "installation": {
+  "name": "final",
+  "port": 18300,
+  "provisioned": "2026-10-08T23:27:29"
+ },
+ "preflight": {
+  "worker_profile": "ws-integrated",
+  "production_cutover": false,
+  "oi_commands": [
+   "brain_catalog",
+   "brain_select",
+   "brain_status",
+   "cloud_policy",
+   "memory_list",
+   "oi_abandon",
+   "oi_cancel",
+   "oi_confirm",
+   "oi_decide",
+   "oi_turn"
+  ]
+ },
+ "catalog": {
+  "fallback": "none",
+  "rows": [
+   {
+    "answers_questions": true,
+    "available": false,
+    "default": true,
+    "display": "Runtime v1 (local)",
+    "id": "runtime-v1",
+    "qualification": "Runtime v1 freeze 2026-10-07 (stock llama.cpp b11425 + MTP)",
+    "qualified": true,
+    "selectable": true,
+    "selected": true,
+    "selection": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "STOPPED",
+    "why_not": "Runtime v1 is STOPPED"
+   },
+   {
+    "answers_questions": false,
+    "available": true,
+    "default": false,
+    "display": "No Brain (deterministic rules)",
+    "id": "deterministic",
+    "note": "Core acts on recognised commands only; open questions are not answered.",
+    "qualification": "Core deterministic source",
+    "qualified": true,
+    "selectable": true,
+    "selected": false,
+    "selection": {
+     "kind": "server_local_model",
+     "model": null,
+     "provider": "uri-deterministic"
+    },
+    "state": "READY",
+    "why_not": null
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "Other local models",
+    "id": "other-local",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "NOT_QUALIFIED",
+    "why_not": "No qualification record. A model must pass the model_lab qualification before it can be offered."
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "Anthropic Claude (cloud)",
+    "id": "cloud-anthropic",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "DISABLED",
+    "why_not": "Cloud activation is disabled (no credentials, $5.00/month policy)."
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "OpenAI (cloud)",
+    "id": "cloud-openai",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "DISABLED",
+    "why_not": "Cloud activation is disabled (no credentials, $5.00/month policy)."
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "Google Gemini (cloud)",
+    "id": "cloud-google",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "DISABLED",
+    "why_not": "Cloud activation is disabled (no credentials, $5.00/month policy)."
+   }
+  ],
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  }
+ },
+ "brain_status_start": {
+  "artifacts": null,
+  "checked_at": 1791482292.1956973,
+  "detail": null,
+  "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+  "owned": false,
+  "pid": null,
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  },
+  "state": "STOPPED",
+  "url": "http://127.0.0.1:18470"
+ },
+ "worker_exit": 0
+}

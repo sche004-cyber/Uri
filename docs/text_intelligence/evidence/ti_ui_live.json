@@ -1,0 +1,134 @@
+{
+ "steps": [
+  {
+   "step": "1_create",
+   "route": "draft",
+   "finished": "ok",
+   "error": null,
+   "chat_line": "Letter (version 1 of 1): A formal letter to the Warden reporting that seven students left the hostel on Monday without permission. Missing: [City], [Hostel Name], [Institution Name], [Your Designation], [Your Name], Sender's name. Nothing has been sent or saved.",
+   "version_label": "Version 1 of 1",
+   "source_label": "Typed",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without permission\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. I am submitting this report for your information and necessary action.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "changed": [
+    "b1",
+    "b2",
+    "b3",
+    "b4",
+    "b5",
+    "b6"
+   ],
+   "flags": [
+    "DETAIL_DROPPED/info"
+   ],
+   "can_undo": false,
+   "can_redo": false
+  },
+  {
+   "step": "2_revise_allegation",
+   "route": "draft",
+   "finished": "ok",
+   "error": null,
+   "chat_line": "Letter (version 2 of 2): Updated the subject and body to specify that students left without recording their departure in the hostel register instead of leaving without permission. Missing: [City], [Hostel Name], [Institution Name], [Your Designation], [Your Name]. Nothing has been sent or saved.",
+   "version_label": "Version 2 of 2",
+   "source_label": "Typed",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without recording their departure in the hostel register\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. I am submitting this report for your information and necessary action.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "changed": [
+    "b2",
+    "b4"
+   ],
+   "flags": [],
+   "can_undo": true,
+   "can_redo": false
+  },
+  {
+   "step": "3_diplomatic",
+   "route": "draft",
+   "finished": "ok",
+   "error": null,
+   "chat_line": "Letter (version 3 of 3): Shortened the second paragraph and adopted a more diplomatic tone by removing the direct request for 'necessary action' and replacing it with a polite request for attention. Missing: [City], [Hostel Name], [Institution Name], [Your Designation], [Your Name]. Nothing has been sent or saved.",
+   "version_label": "Version 3 of 3",
+   "source_label": "Typed",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without recording their departure in the hostel register\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. We request your kind attention to this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "changed": [
+    "b4"
+   ],
+   "flags": [],
+   "can_undo": true,
+   "can_redo": false
+  },
+  {
+   "step": "4_undo_typed",
+   "route": "draft",
+   "finished": "ok",
+   "error": null,
+   "chat_line": "Undone. Showing version 2 of 3 (Updated the subject and body to specify that students left without recording their departure in the hostel register instead of leaving without permission.).",
+   "version_label": "Version 2 of 3",
+   "source_label": "Typed",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without recording their departure in the hostel register\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. I am submitting this report for your information and necessary action.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "changed": [
+    "b2",
+    "b4"
+   ],
+   "flags": [],
+   "can_undo": true,
+   "can_redo": true
+  },
+  {
+   "step": "5_redo_button",
+   "route": "draft",
+   "finished": "ok",
+   "error": null,
+   "chat_line": "Undone. Showing version 2 of 3 (Updated the subject and body to specify that students left without recording their departure in the hostel register instead of leaving without permission.).",
+   "version_label": "Version 3 of 3",
+   "source_label": "Typed",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without recording their departure in the hostel register\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. We request your kind attention to this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "changed": [
+    "b4"
+   ],
+   "flags": [],
+   "can_undo": true,
+   "can_redo": false
+  },
+  {
+   "step": "6_undo_button",
+   "route": "draft",
+   "finished": "ok",
+   "error": null,
+   "chat_line": "Undone. Showing version 2 of 3 (Updated the subject and body to specify that students left without recording their departure in the hostel register instead of leaving without permission.).",
+   "version_label": "Version 2 of 3",
+   "source_label": "Typed",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without recording their departure in the hostel register\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. I am submitting this report for your information and necessary action.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "changed": [
+    "b2",
+    "b4"
+   ],
+   "flags": [],
+   "can_undo": true,
+   "can_redo": true
+  },
+  {
+   "step": "7_simulated_transcript",
+   "route": "draft",
+   "finished": "ok",
+   "error": null,
+   "chat_line": "Letter (version 1 of 1): A formal letter to the warden reporting that students left the hostel on the 6th. Missing: [City], [Hostel Name], [Institution Name], [Your Designation], [Your Name], Sender's name. Nothing has been sent or saved.",
+   "version_label": "Version 1 of 1",
+   "source_label": "Simulated transcript",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report on students leaving the hostel on the 6th\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that several students were observed leaving the hostel on the 6th. I am writing to inform you of this occurrence for your necessary records and further action.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "changed": [
+    "b1",
+    "b2",
+    "b3",
+    "b4",
+    "b5",
+    "b6"
+   ],
+   "flags": [
+    "DETAIL_DROPPED/info"
+   ],
+   "can_undo": false,
+   "can_redo": false
+  }
+ ],
+ "brain_status": "READY"
+}

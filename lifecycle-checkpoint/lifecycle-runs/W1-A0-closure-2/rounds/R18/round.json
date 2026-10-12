@@ -1,0 +1,289 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R18",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R18-01"
+ ],
+ "candidate": "b7b93e7c43b34885995891776d0aa8104a79fbb3",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T14:17:40Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "b7b93e7c43b34885995891776d0aa8104a79fbb3",
+   "impl_head": "b7b93e7c43b34885995891776d0aa8104a79fbb3",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "a256499e30253b81b9a2f19046624f0935c47413059e414f1183c6e0903b3ca8",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "b7b93e7c43b34885995891776d0aa8104a79fbb3",
+   "impl_head": "b7b93e7c43b34885995891776d0aa8104a79fbb3",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "a256499e30253b81b9a2f19046624f0935c47413059e414f1183c6e0903b3ca8",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "b7b93e7c43b34885995891776d0aa8104a79fbb3",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "At b7b93e7c: has_link_or_contact('refunds-portal \u4e8c\u516b\u535c shop/claim') is True (masked), but 'refunds-portal \u30cb\u30cf\u30c8 shop/claim' gives False and mask_links leaves it unchanged. The same holds for '\u30d8\u30ec\u30d5', '\u304f\u3057\u3078', '\u4e36\u30cb\u4e3f' and '\u4e36\u30d8\u4e3f', while '\u31f5\u31f8\u31fe' (small katakana) is True. With src='Claim your energy rebate refund at refunds-portal <word> shop/claim before the deadline.', SY.verify(src[:-1]+' [1].',[src]).claims keeps the sentence with its link, and SY.extractive('energy rebate refund deadline',[src]).claims returns it. surface.clean returns the text unmasked, and the A2UI _no_urls check reports no error. Cause: _STROKE_SOURCE adds only \u30ce\u30fd\u30fe\u309d\u309e\u30fc\u3005 plus U+31F0-31FF from the kana, and none of \u30cb\u30cf\u30c8\u30d8\u30ec\u30d5\u304f\u3057\u3078 is in _STROKES. A word of 3 or more distinct letters then fails both the D19 test and the D17 two-letter test in _separator_word.",
+    "files": [
+     "uri_web/untrusted.py:521",
+     "uri_web/untrusted.py:526",
+     "uri_web/untrusted.py:556",
+     "uri_web/untrusted.py:562",
+     "uri_web/surface.py:38",
+     "uri_a2ui/validate.py:19"
+    ],
+    "id": "R18-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Add the stroke-shaped kana to D19: at least every full-size katakana or hiragana twin of a listed small katakana or a listed ideograph (\u30cb \u30cf \u30c8 \u30d8 \u30ec \u30d5 \u30a4 \u30a8 \u30ed \u30ab, \u3078 \u304f \u3057 \u3064 \u3053 \u3044 \u308a). Better, map kana that look like CJK strokes onto their ideograph before the D19 check, or treat any unbracketed run of 3 or more caseless letters made of the low-stroke kana as a separator. Add a self-contained regression test with 'refunds-portal \u30cb\u30cf\u30c8 shop/claim', '\u30d8\u30ec\u30d5', '\u304f\u3057\u3078' and '\u4e36\u30cb\u4e3f' through has_link_or_contact, mask_links, verify and extractive.",
+    "title": "R17-01/D19 repair incomplete: stroke-shaped kana missing from _STROKES (katakana \u30cb/\u30cf/\u30c8 look the same as listed \u4e8c/\u516b/\u535c; full-size \u30cf/\u30d8/\u30ec while small \u31f5/\u31f8/\u31fe are listed; \u30d5, hiragana \u304f/\u3057/\u3078) form a separator word that is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D19)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "NOT_FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist",
+    "result": "5018 passed in 101.99s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R18/p1.py, p2.py (stroke-word probes: has_link_or_contact, mask_links, verify, extractive, surface.clean, A2UI _no_urls)",
+    "result": "\u30cb\u30cf\u30c8, \u30d8\u30ec\u30d5, \u304f\u3057\u3078, \u4e36\u30cb\u4e3f, \u4e36\u30d8\u4e3f not masked; \u4e8c\u516b\u535c, \u31f5\u31f8\u31fe, \u3161\u3163\u30ce masked",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "netpolicy.check_address probes for 64:ff9b:1::/48 and 64:ff9b::/96",
+    "result": "every local-use NAT64 address refused; /96 with private v4 refused, with 8.8.8.8 allowed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf5343..b7b93e7c -- <protected paths>",
+    "result": "no changes",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter tests (uri_ui) not run this round",
+   "Windows gate and ws_frozen_check zip part BLOCKED (no Windows, checkpoint zip absent)",
+   "No fresh adversarial pass on vision, access/bridge and integrated worker this round beyond the passing test suite"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 18,
+ "started_at": "2026-10-11T14:13:56Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "6afee17c-97e6-442c-babf-adf6f8a27c87",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 72
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7142981,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R18",
+  "ended_at": "2026-10-11T14:17:38Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 13,
+  "pid": 12433,
+  "prompt_sha256": "69b69fd5a1e9bcba69ccdc89c26fa532bd71005d4a56f961a88a3ccb295b9d1e",
+  "provider": "claude_cli",
+  "result_text_sha256": "4438c11a89841a29509a1ec2c26991c67ae2e27c036ec1e99dd7e91f83d29246",
+  "role": "reviewer",
+  "session_id": "6afee17c-97e6-442c-babf-adf6f8a27c87",
+  "session_id_requested": "6afee17c-97e6-442c-babf-adf6f8a27c87",
+  "started_at": "2026-10-11T14:13:56Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "1e6a07b67814a4261c0cdee1e5534b8ec282a83693a47d252b862eb490c0826b"
+ }
+}

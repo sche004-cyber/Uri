@@ -1,0 +1,11 @@
+# Gates at commit 2e2367435acca43472f85bd11454ed50afa18bc0
+2026-10-10T14:25:42Z
+$ pytest tests/ws tests/oi tests/a2ui
+596 passed, 22 skipped, 1 warning in 163.03s (0:02:43)
+$ pytest tests/scheduler (base)
+71 passed in 84.63s (0:01:24)
+$ flutter test (full)
+00:24 +510 ~5: All tests passed!
+$ ws_frozen_check
+ "ok": true
+}

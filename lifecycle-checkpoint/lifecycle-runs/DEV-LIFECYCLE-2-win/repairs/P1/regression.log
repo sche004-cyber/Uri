@@ -1,0 +1,115 @@
+=== tests/dev_workflow/test_lifecycle.py BEFORE (f3706e03402f496ae91a08a69db515df4bf89245) DONE
+........................................................................ [ 70%]
+..............................                                           [100%]
+=============================== warnings summary ===============================
+tests/dev_workflow/test_lifecycle.py:1061
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1061: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.parametrize("contained", [False, pytest.param(True, marks=pytest.mark.linux_only)])
+
+tests/dev_workflow/test_lifecycle.py:1782
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1782: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.linux_only
+
+tests/dev_workflow/test_lifecycle.py:1833
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1833: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.linux_only
+
+tests/dev_workflow/test_lifecycle.py:1883
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1883: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.linux_only
+
+tests/dev_workflow/test_lifecycle.py:1892
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1892: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.linux_only
+
+tests/dev_workflow/test_lifecycle.py:1902
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1902: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.linux_only
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+102 passed, 6 warnings in 177.08s (0:02:57)
+
+=== tests/dev_workflow/test_lifecycle.py AFTER (fcc0ebdde656ff4a4db2f4cb82d9b50faf9a07ef) DONE
+........................................................................ [ 70%]
+..............................                                           [100%]
+102 passed in 171.00s (0:02:51)
+
+=== tests/dev_workflow/test_lifecycle_dl2_repairs.py BEFORE (f3706e03402f496ae91a08a69db515df4bf89245) DONE
+m)}, "implementer", "p", tmp_path, tmp_path / "l")
+>       assert w["status"] == "REFUSED" and "cannot bind" in w["detail"] and "pid" not in w and not marker.exists()
+E       AssertionError: assert ('FAILED' == 'REFUSED'
+E         
+E         - REFUSED
+E         + FAILED)
+
+tests/dev_workflow/test_lifecycle_dl2_repairs.py:123: AssertionError
+_________ test_w2_driver_blocks_for_the_owner_on_an_unresolvable_shim __________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-12/test_w2_driver_blocks_for_the_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fbad0155220>
+
+    def test_w2_driver_blocks_for_the_owner_on_an_unresolvable_shim(tmp_path, monkeypatch):
+        from scripts.dev_workflow.state_machine import WorkflowState as S
+        from .test_lifecycle import config, make_fixture
+        shim, exe = _npm_install(tmp_path, NPM_CMD_NODE)
+        marker = tmp_path / "ran"
+        exe.write_text(f"#!{PY}\nopen({str(marker)!r}, 'w').write('x')\n")
+        repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+        cfg = config(tmp_path, repo, wt, integration={"mode": "none"})
+        cfg["reviewer"] = {"provider": "claude_cli", "binary": str(shim)}  # what PATH lookup returns on Windows
+>       assert L.run(cfg) == S.BLOCKED
+E       AssertionError: assert <WorkflowStat...NG_FOR_MODEL'> == <WorkflowStat...ED: 'BLOCKED'>
+E         
+E         - BLOCKED
+E         + WAITING_FOR_MODEL
+
+tests/dev_workflow/test_lifecycle_dl2_repairs.py:135: AssertionError
+____ test_w3_platform_only_tests_are_reported_by_name_not_skipped_silently _____
+
+    def test_w3_platform_only_tests_are_reported_by_name_not_skipped_silently():
+        conftest = (HERE / "conftest.py").read_text()
+>       assert "linux_only" in conftest and "windows_only" in conftest
+E       assert ('linux_only' in '"""Platform-gated tests (DEV-LIFECYCLE-2): a test marked ``windows_only`` runs only on Windows. On any other platform...        f"{sys.platform}")\n        for n in _GATED:\n            terminalreporter.write_line(f"PLATFORM-GATED {n}")\n')
+
+tests/dev_workflow/test_lifecycle_dl2_repairs.py:145: AssertionError
+=============================== warnings summary ===============================
+tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_driver_blocks_for_the_owner_on_an_unresolvable_shim
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1061: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.parametrize("contained", [False, pytest.param(True, marks=pytest.mark.linux_only)])
+
+tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_driver_blocks_for_the_owner_on_an_unresolvable_shim
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1782: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.linux_only
+
+tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_driver_blocks_for_the_owner_on_an_unresolvable_shim
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1833: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.linux_only
+
+tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_driver_blocks_for_the_owner_on_an_unresolvable_shim
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1883: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.linux_only
+
+tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_driver_blocks_for_the_owner_on_an_unresolvable_shim
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1892: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.linux_only
+
+tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_driver_blocks_for_the_owner_on_an_unresolvable_shim
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-win/pre_repair/tests/dev_workflow/test_lifecycle.py:1902: PytestUnknownMarkWarning: Unknown pytest.mark.linux_only - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.linux_only
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w1_gate_test_file_uses_posix_separators_whatever_the_os
+FAILED tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_npm_cmd_shim_binds_the_executable_it_runs_not_the_shim
+FAILED tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_npm_ps1_shim_resolves_to_the_same_executable
+FAILED tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_unresolvable_shims_are_refused
+FAILED tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_reviewer_is_launched_as_the_resolved_executable_never_the_shim
+FAILED tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_unresolvable_shim_is_refused_before_any_launch
+FAILED tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w2_driver_blocks_for_the_owner_on_an_unresolvable_shim
+FAILED tests/dev_workflow/test_lifecycle_dl2_repairs.py::test_w3_platform_only_tests_are_reported_by_name_not_skipped_silently
+8 failed, 6 warnings in 3.57s
+
+=== tests/dev_workflow/test_lifecycle_dl2_repairs.py AFTER (fcc0ebdde656ff4a4db2f4cb82d9b50faf9a07ef) DONE
+........                                                                 [100%]
+8 passed in 3.40s
+

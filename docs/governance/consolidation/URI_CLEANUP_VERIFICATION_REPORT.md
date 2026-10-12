@@ -1,0 +1,307 @@
+# URI Cleanup Verification Report — 2026-10-08
+
+Verifier: consolidation session (Claude). Evidence folder: `C:\Users\cheta\Development\uri-canonical-evidence\`
+(gate logs in `gates_runtime\`, live checker reports `live_report_*.json`, ACL backups `acl\`).
+Only `COMPLETED_WITH_RESULT` runs are used as evidence below.
+
+## Verdict
+
+**CLEAN WITH LIMITATIONS for the repository; NOT CLEAN for the live PC runtime.**
+
+- Repository: one canonical candidate line exists. It is reproducible from a fresh GitHub clone, its runtime
+  checkout passes every accepted regression gate (differences fully explained below), and its tooling detects every
+  obsolete-runtime activation attempt tried.
+- Live PC: the active URI server is still the legacy dirty master started by scheduled task `\URIServer`. Every UI
+  build binds to it through a shared preferences file. It is fully accounted for and the authoritative start gate
+  refuses to run beside it, but removing it from the execution path needs owner approval (CONS-1..CONS-3).
+
+## 1. Gates on the materialized runtime candidate
+
+Checkout `C:\Users\cheta\Development\uri-canonical-runtime-candidate` (fresh clone; `HEAD = e8e3b65`; overlay from
+`2325ad7`). Byte checks before testing: 121/121 frozen Phase 1 files identical to zip `31a34dcb…`; 134/137 Phase 2
+closure files identical to zip `fcd0d72e…`, the other 3 being the documented post-acceptance documents (A9).
+Interpreter: copy of the accepted Phase 1 `.venv` (Python 3.13.15). Run at below-normal CPU priority.
+
+| Gate | Accepted baseline (closure run9) | Candidate result | Comparison |
+|---|---|---|---|
+| Phase 2 suites (`phase2d_regression.py phase2`) | 452 passed, 2 skipped | **452 passed, 2 skipped** (exit 0) | identical |
+| Phase 1 authority suites | 134 passed | **134 passed** (exit 0) | identical |
+| Phase 1 full repository suite | 11 failed, 2675 passed, 12 skipped | 18 failed, 2675 passed, 5 skipped | 11 baseline failure IDs present, none fixed or changed; 7 differences explained in §1.1 |
+| Flutter `uri_ui` | 195 passed, 2 skipped | **195 passed, 2 skipped** (exit 0) | identical |
+| Live UI bridge ×10, native Codex | run9 PASS | **not run** | needs a provisioned server/client and a live Codex login; owner-environment gate, not re-run here |
+
+### 1.1 The seven Phase 1 differences
+
+| Test | Cause | Code regression? |
+|---|---|---|
+| 6 live Ollama tests (`test_ollama_provider_live` ×2, `test_ollama_reasoning_adapter_live` ×3, `test_m21_context_window_live` ×1) | During run9 Ollama was not running, so they skipped. During this run Ollama was running (started outside URI, shared tool) without the configured model: `ModelNotFoundError: Model 'qwen3:14b' was not found`. The 7 extra skips in the baseline are exactly these environment-gated tests | No. The tested source files are byte-identical to the accepted checkpoints |
+| `test_phase1_offline_components::test_offline_checkpoint_restore_hashes_and_no_application_start` | Reads git-ignored provisional checkpoints from `work/c1/checkpoints/`, which exist only in the Phase 1 integration worktree. After copying that folder (11 MB, read-only source) into the runtime candidate: **1 passed** | No. **Reproducibility gap R-2:** these checkpoints are not on GitHub |
+
+### 1.2 Committed-branch run (diagnostic)
+
+Running the same suites directly on the committed branch checkout (`uri-canonical-candidate`) fails 85 Phase 2
+and 70 authority tests with `SOURCE_CHECKPOINT_MISMATCH` plus 2 frozen-core base checks. This is the designed
+behaviour of frozen `runtime_identity.py` (`HEAD` must equal `e8e3b65`), and it is why the runtime is materialized
+(`URI_CANONICAL_BRANCH_DECISION.md` §3, TODO CONS-7). That run overlapped the Phase 2 session's chain and was
+stopped by me; its results are used only for this diagnosis.
+
+## 2. Runtime authority and adversarial tests
+
+`tests/consolidation/test_runtime_authority_check.py`: **66 passed** (25 original + 41 added or updated across Codex rounds 1-13). Attempts covered, each confirmed CONTAMINATED
+or refused:
+- the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
+  each run as URI;
+- a legacy entrypoint run from inside the authoritative root;
+- a copy of the legacy checkout elsewhere, a lookalike root `_V1-evil`, and a lookalike `…-runtime-candidate-copy`;
+- a scheduled task or startup shortcut pointing at a donor;
+- an unknown listener on a URI port;
+- the UI bound to a port with no accounted listener, or to a donor server;
+- the authorized binary started with a quarantined model;
+- the authorized launcher pointed at a legacy state root (no laundering through an authorized prefix);
+- anything launched from the canonical development checkout other than the three consolidation tools;
+- manifests with conflicting or unknown classifications, which are rejected with exit code 2;
+- the bypass attempts from Codex rounds 1–13 (§2a–§2m).
+
+Not flagged: shared Ollama; test runners that run outside every manifest root; and a genuine system shell carrying
+the agent marker that launches nothing from a root and no URI-named program. Test runs of donor code inside a donor
+root **are** counted (§2g).
+
+Live checks on this PC at 10:18 IST, before the Codex rounds (later live results are in §2a–§2m):
+
+| Check | Result |
+|---|---|
+| Live checker, normal mode | NO_UNAUTHORIZED_RUNTIME: 8 TRANSITIONAL_LEGACY findings (task, 2 shortcuts, 3 legacy server processes, listener, UI binding), of which 6 are active or auto-starting (the two shortcuts are not startup items); Ollama shared; 0 unaccounted |
+| Live checker, `--strict` | CONTAMINATED (6 active transitional findings) — expected until CONS-1..3 |
+| Live end-to-end attack: dummy listener on 127.0.0.1:8077 with a `_V1\scripts\run_uri_server.py` command line | Detected as DONOR_ONLY process + listener, exit 1; clean again after it stopped |
+| Start gate `scripts\uri_authorized_start.ps1 -Action validate` | **REFUSED** (strict checker found the legacy runtime); the frozen launcher was never invoked |
+| Frozen C1 refusals (legacy ports 8000/8018/8021/11434/1234, foreign listener, generic health) | covered by the Phase 1 authority/full suites above (passing) |
+
+## 2a. Independent adversarial review (Codex CLI, gpt-6-sol, read-only)
+
+Round 1 (2026-10-08): **REJECT.** Findings, each confirmed by me against the code before repair:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| X-1 | High | A shared-dependency name anywhere in the command (`--label "LM Studio"`) hid a URI server | Shared dependencies match only the launch target, and never a URI-looking command |
+| X-2 | High | An authorized path given as an argument laundered an unknown executable; a legacy path given as an argument made a donor transitional | Classification now uses the parsed launch target (script for interpreters, `-File` for PowerShell, inner command for `cmd /c`, module for `-m`). Any donor or quarantined root referenced anywhere outranks an authorized or transitional target |
+| X-3 | High | `pythonw -m uvicorn` on an off-range port or `0.0.0.0`, and `-EncodedCommand` autostarts, were not reported | Every interpreter/uvicorn-owned listener on any port is evaluated. Interpreter-launched and encoded autostarts are evaluated, and encoded commands are decoded |
+| X-4 | Med | The UI binding matched by port only | The listener address must serve the URL host (or be a wildcard) |
+| X-5 | Med | The start gate can be bypassed by invoking the frozen launcher directly | **Accepted limitation:** the frozen launcher cannot be changed. The frozen launcher still enforces its own identity, port and source checks. Containment makes the gate the only shortcut/task path at cutover |
+| X-6 | Med | Restore re-enabled a task that was already disabled; task lookup ignored the task path | Restore honours the recorded previous state; all task calls use task path `\` |
+| X-7 | Med | Task, Run-key and shortcut text was stored verbatim (possible secrets) | Secret-looking argument values are redacted in snapshots and findings |
+| X-8 | Low | The report said 6 transitional findings where the live report had 8 | Corrected above (8 findings, 6 active) |
+
+Repairs are covered by 9 new tests (34 total, all passing). A negative control ran the new tests against the
+pre-repair checker: 8 failed there, which proves they test the repaired behaviour. The ninth test, for the
+`cmd /c`-wrapped legacy task, guards against regression. Round 2 result: see §2b.
+
+## 2b. Codex review round 2: REJECT, then repaired
+
+Round 2 confirmed X-1, X-3, X-4, X-6 and X-8 repaired and X-5 accepted as a limitation. It reported these new gaps,
+each confirmed before repair:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| Y-1 | High | `cmd /c A & B` (also `&&`, `||`, `|`, `;`) classified only A, so an authorized or legacy first command hid a second server | Every chained command is parsed and classified. The most severe result wins (QUARANTINED > DONOR > UNACCOUNTED > TRANSITIONAL > SHARED > AUTHORIZED). Redirections such as `2>&1` are not treated as separators |
+| Y-2 | Med | `Authorization: Bearer x` and secrets inside `-EncodedCommand` payloads survived redaction | Bearer/Basic values are redacted. Encoded payloads are replaced by their decoded, redacted text |
+| Y-3 | Med | Shared dependencies matched by substring (`C:\Tools\LM Studio Evil\server.exe`) | Shared dependencies are exact install directories with path-boundary matching |
+| Y-4 | Med | PowerShell `-Command "& 'script'"` and its encoded form were not recognised as the authorized launcher | `-Command` content and decoded payloads are parsed as commands (call operator `&` handled) |
+| Y-5 | Low | Relative targets with `[wd=...]` and `\\?\` paths misclassified (fail-closed) | Resolved against the working directory; `\\?\` stripped. UNC admin-share and 8.3 short-name forms remain fail-closed (reported UNACCOUNTED), which is safe but can over-report |
+
+7 new tests (41 total, all passing). Negative control: 6 of them fail on the round-1 checker. The seventh, a
+redirection guard, passes on both. Live run after the repair matched the earlier live run: normal mode found 0
+contamination, and strict mode found 6 active transitional findings. Round 3 result: see §2c.
+
+## 2c. Codex review round 3: REJECT, then repaired
+
+Round 3 confirmed Y-2..Y-5 repaired, and confirmed the live legacy server and the authorized launcher are still
+classified correctly. It found:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| Z-1 (Y-1 residual) | High | `1& cmd` was not split, because a digit before `&` was treated as a redirection | Only `>&` and `<&` are redirections; every other `&` separates commands |
+| Z-2 | High | `..` traversal (`…/LM Studio/../../URI-preservation/server.exe`, `…/Ollama/../../…/uri-model-lab-nvme/…`) laundered donor or quarantined binaries through a shared or authorized prefix | Path normalization collapses `.` and `..` before any prefix or root test |
+| Z-3 | Low | `redact` raised on non-string input | Bytes are decoded; other types become strings |
+
+3 new tests (44 total, all passing). Negative control: all 3 fail on the round-2 checker. Live run: unchanged (0
+contamination in normal mode; 6 active transitional findings in strict mode). Round 4 result: see §2d.
+
+## 2d. Codex review round 4: REJECT, then repaired
+
+Round 4 confirmed Z-1..Z-3 repaired. It confirmed no regression: the live legacy task and processes stay
+TRANSITIONAL_LEGACY, and the authorized `-File`, `-Command`, encoded and relative forms stay AUTHORIZED. A `..`
+traversal out of the authorized root classifies QUARANTINED. One new finding:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| W-1 | High | An executable inside a donor root with no URI-looking name (`D:/URI-preservation/server.exe --port 9100`) was filtered out before classification, in tasks, Run keys, startup shortcuts, processes and off-range listeners | Anything that launches from or mentions any manifest root is always evaluated. Listeners are evaluated on owner command line and image path. A process is reported when it owns an evaluated listener |
+
+1 new test (45 total, all passing); it fails on the round-3 checker (negative control). Live run unchanged. Round 5
+result: see §2e.
+
+## 2e. Codex review round 5: REJECT, then repaired
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| W-1 residual | High | A running donor or quarantined program with no listener (`D:/URI-preservation/worker.exe --work`) was not reported, and the live probe dropped such processes | Every process launched from a donor or quarantined root is evaluated and kept by the probe. Test runners of donor code (`pytest`, regression/chain scripts) are reported as `DEV_TEST_ACTIVITY` but not counted; servers or workers they spawn are evaluated on their own |
+
+2 new tests (47 total, all passing); both fail on the round-4 checker. Live run unchanged. Consequence for
+operators: while the Phase 2 session runs bridge/server tests, the checker correctly reports those donor servers.
+Run it when development is idle, or read the findings. Round 6 result: see §2f.
+
+## 2f. Codex review round 6: REJECT, then repaired
+
+Round 6 confirmed the round-5 finding repaired, and confirmed no regression on the live snapshot or the authorized
+launcher forms. It found:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| V-1 | High | The test-runner exemption matched anywhere in the command (`\tests\`, `test_*.py`, `_chain.py`, an incidental `-m pytest`), so a donor worker could hide | Exempt only when every launch is an interpreter running `-m pytest`, `-m unittest`, or an allow-listed dev regression script (`phase2d_regression.py`, `phase2close_chain.py`). A non-interpreter executable is never exempt |
+| V-2 | High | The agent-shell marker anywhere in the arguments skipped a process; the probe also dropped any process mentioning the checker's name | Only a process whose executable is itself a shell AND that carries the agent marker is skipped. The probe drops only its own PowerShell and the checker script itself |
+
+3 new tests (50 total, all passing); all 3 fail on the round-5 checker. Live run unchanged, and the saved snapshot
+contains no agent-shell command lines. Round 7 result: see §2g.
+
+## 2g. Codex review round 7: REJECT, then repaired by removing exemptions
+
+Round 7 bypassed both narrowed exemptions again. An allow-listed script name in a donor root got through, and so
+did a `python-*.exe` donor binary running `-m pytest`. A real PowerShell running a donor script with the agent marker
+got through, as did a donor binary named `cmd.exe`, and a chain that ended in the checker's own name. Each round of
+name-based exemption was bypassable, so the repair removes the exemptions instead of narrowing them again:
+
+| ID | Repair |
+|---|---|
+| U-1 | No test-runner exemption. Every process launched from a donor or quarantined root counts, including development test runs. The outer executable, the image path and every parsed target are checked |
+| U-2 | A shell is skipped only when its executable is a genuine system shell at a trusted absolute path (Git bash, System32 `cmd`/`powershell`, PowerShell 7), it carries the agent marker, and nothing it launches is in any manifest root |
+| U-3 | The live probe excludes only its own process IDs (the checker and its PowerShell child), never by name |
+
+4 new/updated tests (52 total, all passing); all 4 fail on the round-6 checker. **Operational consequence, by
+design:** the live run at 10:43 IST reported 8 DONOR_ONLY processes. These were the Phase 2 session's running
+regression chain (`phase2close_chain.py`, `phase2d_regression.py`, pytest, fake executors). Donor code executing
+counts as contamination until that work is promoted or idle. Legacy findings are unchanged. Round 8 result: see §2h.
+
+## 2h. Codex review round 8: REJECT, then repaired
+
+Round 8 confirmed the round-7 repairs. It confirmed no regression on the live snapshot, where the Phase 2 dev
+processes count by design. It found:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| T-1 | High | A URI-named program outside every manifest root (`D:\rogue\uri_server.exe` on `0.0.0.0:9100`, `uri_worker.exe --serve`) was never selected for evaluation | Processes and listeners whose executable or launched target has a URI-looking name or path are always evaluated (arguments alone do not trigger) |
+| T-2 | Note | `bash -c "..."` content and PowerShell dot-sourcing were not parsed (shell-skip root check could miss them) | Both are parsed as launches |
+
+2 new tests (54 total, all passing); both fail on the round-7 checker. The live run at 10:52 IST showed no new false
+positives from the wider selection. Its findings: 8 transitional (unchanged), 6 DONOR_ONLY Phase 2 dev processes
+(the other session's running chain), and Ollama shared. Round 9 result: see §2i.
+
+## 2i. Codex review round 9: REJECT, then repaired
+
+Round 8 repairs were confirmed, and no false positives were added on the live snapshot. Findings:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| S-1 | High | A non-entrypoint program running inside the *authoritative* root without a listener was not selected | Every process launched from ANY manifest root is classified. An active root admits only its listed entrypoints. The development checkout lists only the three consolidation tools |
+| S-2 | High | The agent-shell skip ran before URI-name selection (a trusted shell launching `uri_worker.exe` was skipped) | A shell that launches a URI-named program is never skipped |
+| S-3 | High | A URI-named image with a neutral command line (`worker --serve`) passed the probe but was not evaluated | The image path is included in selection and classification |
+
+4 new tests (58 total, all passing); 3 fail on the round-8 checker. The fourth confirms the tools are allowed. Two live
+observations during this round:
+- **Real catch:** the repaired checker found an orphaned `tests\phase2a\helpers\fake_executor.py` from my own
+  first (stopped) gate run on the committed candidate, still running since 09:50:39 in the authoritative development
+  root. I verified it was mine and stopped it. Stopping a pytest parent can leave helper children running (compare
+  Phase 2 finding SUP-1).
+- The Windows venv `python.exe` is a redirector whose child runs the checker, so the redirector parent was reported.
+  The probe now excludes its direct parent only when that parent runs the same checker script.
+Live run afterwards: 8 TRANSITIONAL_LEGACY, 8 DONOR_ONLY (the Phase 2 session's running chain), Ollama shared, 0
+unaccounted. Round 10 result: see §2j.
+
+## 2j. Codex review round 10: REJECT, then repaired
+
+S-1..S-3 were confirmed repaired, with no regression. Findings:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| R-a | High | The parent self-exclusion compared only the script basename, so a donor `…/uri_runtime_authority_check.py` parent could hide | Self-exclusion now walks the true ancestor chain (at most 4 levels). It excludes an ancestor only when it is the venv redirector running THIS checker file (full path and interpreter match), or a system shell running `uri_authorized_start.ps1` (the gate that invoked it). Children of excluded processes are still evaluated |
+| R-b | High | Consolidation-tool names outside the development checkout were not selected | The three tool names are runtime hints, so they are always classified; only the exact development-checkout paths are entrypoints |
+| R-c | High | An authorized command line could mask a rogue process image | A non-interpreter, non-shell image is classified as its own program, and the more severe result wins |
+
+2 new tests (60 total, all passing); both fail on the round-9 checker. Live checks:
+- `uri_authorized_start.ps1 -Action validate` refuses (exit 3) and no longer reports itself.
+- Normal mode reports only the legacy items (transitional), the Phase 2 session's running `chain4` (7 DONOR_ONLY
+  processes, counted by design) and Ollama (shared).
+
+Round 11 result: see §2k.
+
+## 2k. Codex review round 11: REJECT, then repaired
+
+R-b was confirmed repaired. R-a and R-c were partial, and one new item was found:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| Q-1 (R-a residual) | High | The gate exception accepted any `uri_authorized_start.ps1` (for example under `D:/rogue`) | The ancestor must run the exact gate file next to this checker (full path) and its real image must be a trusted system shell |
+| Q-2 (R-c residual) | High | The agent-shell skip ignored the real image, so a rogue image claiming a shell command line was skipped | The skip requires the real image to be a trusted shell as well |
+| Q-3 | High | An interpreter-image listener with a neutral command line on an off-range port was missed | Listener selection includes any interpreter image |
+
+3 new tests (63 total, all passing); all 3 fail on the round-10 checker. An older test was corrected to give its
+shell sample a real shell image. Live: the gate refuses (exit 3) with 6 transitional findings and 6 DONOR_ONLY
+findings from the Phase 2 session's running chain, and no self-report. Round 12 result: see §2l.
+
+## 2l. Codex review round 12: REJECT, then repaired
+
+Q-1 and Q-3 were confirmed repaired. One end-to-end gap remained:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| P-1 (Q-2 residual) | High | The live probe's privacy filter called the shell skip without the real image, so a rogue image claiming a trusted shell command line was dropped before `evaluate()` saw it | The filter is now `keep_process()`, which applies exactly `evaluate()`'s selection tests (shell skip with real image, runtime/URI names, relevant listener ownership, any root). Listener command lines are kept exactly when `evaluate()` would select that listener |
+
+2 new tests (65 total, all passing); both fail on the round-11 checker. Live: the snapshot keeps 10 processes (the
+legacy server tree, Ollama, the Phase 2 session's chain) and 2 of 25 listener command lines. The gate refuses with
+no self-report. Round 13 result: see §2m.
+
+## 2m. Codex review round 13: ACCEPT WITH FINDINGS, then the finding repaired
+
+Codex confirmed P-1 repaired and found **no further High-impact false negative** within the stated scope. One Medium:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| O-1 | Medium | The live listener filter used a narrower root test than `evaluate()`: a donor command parsed through `bash -c` on an off-range port lost its command line in the snapshot. The verdict was still CONTAMINATED through the owning process | A single module-level `listener_selected()` rule is used by both `evaluate()` and the live filter |
+
+1 new test (66 total, all passing). Live (11:00 IST): 8 transitional findings, 6 DONOR_ONLY (the Phase 2 session's
+running chain), and Ollama shared (process and listener). The gate refuses with no self-report.
+
+## 2n. Codex confirmation round 14: ACCEPT WITH FINDINGS (documentation only)
+
+Codex confirmed O-1 repaired. It confirmed that `evaluate()` selects and classifies the same records as before the
+refactor, and found no High-impact regression. It reconciled the 66 collected tests: 59 test functions, plus
+parameterized cases. It found two documentation inaccuracies, both corrected in this version:
+- a dangling reference to a missing section;
+- the §2 summary still said test runners are never flagged; it now says donor-root test runs count.
+
+**Independent review outcome:** after 14 rounds the checker stands at ACCEPT WITH FINDINGS, with no open High or
+Medium finding, under the accepted limitations listed in §2a (X-5) and §4.
+
+## 3. Integrity and recoverability
+
+| Item | Result |
+|---|---|
+| Frozen Phase 1 zip | `31a34dcb…f7` re-hashed: match |
+| Phase 2 ops r6 / closure -f zips | `9a0be52c…0a` / `fcd0d72e…98`: match |
+| Runtime v1 `llama-server.exe` | `4fdc1a67…0306`: matches freeze record |
+| Fresh GitHub clone reproducibility | Clone of `uri-repo integration/git-sync-20261008` (`f8de153`) → candidate; materialized runtime byte-matches all accepted checkpoints; gates as §1. Gap R-2: `work/c1/checkpoints` needed by one test is not on GitHub |
+| Secrets in Git | Full-history search for session/key/account/identity/secret files: none. All new consolidation files scanned: 0 findings |
+| Secret exposure on PC | 33 files were readable by `CodexSandboxUsers`; now 0 (ACL backups saved). Live legacy server health still `ok` after the change |
+| Frozen Core | No frozen file modified; candidate commits add documents, the manifest, a checker, two PowerShell scripts and a test only |
+| Active Phase 2 session | Its worktree, processes and evidence were only read. My gate run overlapped its `chain2` at below-normal priority; tests use random IDs for named mutexes (checked); no shared fixed ports found |
+
+## 4. Remaining limitations (honest list)
+
+| ID | Limitation | Effect |
+|---|---|---|
+| L-1 | Legacy server, its logon task and both `URI.lnk` shortcuts are still active | Live runtime is not the authoritative one; owner approval needed (CONS-1..3) |
+| L-2 | All `uri_ui` builds share one preferences file with session tokens | Any UI build follows port 8000; fix is per-installation client storage (CONS-5) |
+| L-3 | Canonical branch is not directly runnable by the frozen launcher | Materialization procedure required (CONS-7) |
+| R-2 | Phase 1 provisional checkpoints (`work/c1/checkpoints`) exist only on this PC | One regression test needs them; preserve them on GitHub with owner approval |
+| L-4 | Live UI-bridge and native Codex gates not re-run | Require provisioned server/client and owner login |
+| L-5 | Canonical Core lacks desktop-line features (Google/Gmail/Drive/PPT, M36 memory, M37 Edge, M39 Office, dynamic planning, dictation, harness console, voice) | Cutover before C6 parity would regress the owner's daily desktop; donors preserved and tagged |
+| R-3 | Longest committed path is 151 characters (`docs/evidence/phase2/phase2d_review/round3/probe_state/...`). A clone into a long base directory fails checkout on Windows (`Filename too long`); observed in a scratch clone | Clone with `git -c core.longpaths=true clone ...` or into a short directory. With longpaths, the fresh clone of `canonical/candidate-20261008` checked out cleanly and its 25 consolidation tests passed |
+| L-6 | Encrypted vault restore not re-tested | Vault predates Phase 1 freeze; GitHub backup is the tested recovery path |

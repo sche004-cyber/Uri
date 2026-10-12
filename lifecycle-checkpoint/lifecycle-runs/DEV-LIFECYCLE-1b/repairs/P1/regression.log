@@ -1,0 +1,112 @@
+=== tests/dev_workflow/test_lifecycle.py BEFORE (fbac43727f89b6e43188a8dee5772cf4b49ee65c) DONE
+ / "tests/test_cls.py").write_text("from pkg.other import VALUE\n\n\nclass TestOther:\n"
+                                              "    def test_value(self):\n        assert VALUE == 2\n")
+        g(wt, "add", "-A")
+        g(wt, "commit", "-qm", "class-based test")
+        cfg = config(tmp_path, repo, wt, implementer="break_gate_fix")
+        assert L.run(cfg) == S.COMPLETE
+        proof = json.loads((tmp_path / "state/repairs/P1/repair.json").read_text())["regression"]
+>       t = proof["tests"]["tests/test_cls.py"]  # junit id tests.test_cls.TestOther::test_value
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'tests/test_cls.py'
+
+tests/dev_workflow/test_lifecycle.py:1098: KeyError
+____________ test_r1r2_03_unresolvable_gate_test_refuses_the_repair ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-152/test_r1r2_03_unresolvable_gate0')
+
+    def test_r1r2_03_unresolvable_gate_test_refuses_the_repair(tmp_path):
+        repo, wt, base, remote = make_fixture(tmp_path)
+        cfg = config(tmp_path, repo, wt)
+        st = L.State(cfg)
+        L.init(cfg, st)
+        sha = g(wt, "rev-parse", "HEAD")
+        (wt / "tests/test_new.py").write_text("def test_ok():\n    assert True\n")
+        finding = {"id": "GATE-ui-1", "category": "test", "files": ["test/widget_test.dart"], "title": "gate ui: x"}
+        rec = {"addresses": ["GATE-ui-1"]}
+        reason = L._commit_and_prove(cfg, wt, sha, 1, rec, [finding], ["tests/test_new.py"], tmp_path / "p1")
+>       assert reason and "cannot be resolved" in reason and "test/widget_test.dart" in reason and "commit" not in rec
+E       assert (None)
+
+tests/dev_workflow/test_lifecycle.py:1112: AssertionError
+______ test_r1r2_04_reviewer_changing_git_info_blocks_as_tamper_not_wait _______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-152/test_r1r2_04_reviewer_changing0')
+
+    def test_r1r2_04_reviewer_changing_git_info_blocks_as_tamper_not_wait(tmp_path):
+        repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+        cfg = config(tmp_path, repo, wt)
+        info = _git_dir(repo) / "info" / "attributes"
+        cfg["reviewer"]["argv"] = _script_worker(tmp_path, "info_writer.py", f"""
+    if not os.path.exists({str(info)!r}):
+        open({str(info)!r}, 'w').write('*.py -diff\\n')
+    h = subprocess.run(['git','rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()
+    print('AUDIT_RESULT_BEGIN'); print(json.dumps({{'candidate': h, 'verdict': 'ACCEPT', 'findings': []}})); print('AUDIT_RESULT_END')
+    """)
+>       assert L.run(cfg) == S.BLOCKED
+E       AssertionError: assert <WorkflowStat...NG_FOR_MODEL'> == <WorkflowStat...ED: 'BLOCKED'>
+E         
+E         - BLOCKED
+E         + WAITING_FOR_MODEL
+
+tests/dev_workflow/test_lifecycle.py:1129: AssertionError
+________ test_r1r2_04_drift_between_runs_blocks_before_the_next_worker _________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-152/test_r1r2_04_drift_between_run0')
+
+    def test_r1r2_04_drift_between_runs_blocks_before_the_next_worker(tmp_path):
+        repo, wt, base, remote = make_fixture(tmp_path)
+        cfg = config(tmp_path, repo, wt, reviewer="quota")
+        assert L.run(cfg) == S.WAITING_FOR_MODEL
+        with (_git_dir(repo) / "config").open("a") as f:
+            f.write("[core]\n\tfsmonitor = true\n")
+>       assert L.run(cfg) == S.BLOCKED
+E       AssertionError: assert <WorkflowStat...NG_FOR_MODEL'> == <WorkflowStat...ED: 'BLOCKED'>
+E         
+E         - BLOCKED
+E         + WAITING_FOR_MODEL
+
+tests/dev_workflow/test_lifecycle.py:1143: AssertionError
+______________ test_r1r2_04_diagnosis_worker_is_integrity_checked ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-152/test_r1r2_04_diagnosis_worker_0')
+
+    def test_r1r2_04_diagnosis_worker_is_integrity_checked(tmp_path):
+        repo, wt, base, remote = make_fixture(tmp_path)
+        cfg = config(tmp_path, repo, wt, reviewer="always_reject", continuation={"stall_rounds": 99})
+        info = _git_dir(repo) / "info" / "diag_was_here"
+        f = tmp_path / "diag_tamper.py"
+        f.write_text(f"""import subprocess, sys
+    prompt = sys.stdin.read()
+    if 'DIAGNOSING a recurring defect' in prompt:
+        open({str(info)!r}, 'w').write('x')
+    sys.exit(subprocess.run([sys.executable, {str(WORKER)!r}, 'implementer', 'marker'], input=prompt, text=True).returncode)
+    """)
+        cfg["implementer"]["argv"] = [PY, str(f)]
+        assert L.run(cfg) == S.BLOCKED
+        s = L.status(cfg)
+>       assert info.exists() and s["blocker"]["kind"] == "TAMPER" and "diagnosis worker" in s["blocker"]["reason"]
+E       AssertionError: assert (True and 'RETRY_LIMIT' == 'TAMPER'
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-root/pytest-152/test_r1r2_04_diagnosis_worker_0/repo/.git/info/diag_was_here').exists
+E         
+E         - TAMPER
+E         + RETRY_LIMIT)
+
+tests/dev_workflow/test_lifecycle.py:1162: AssertionError
+=========================== short test summary info ============================
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_01_lingering_child_cannot_turn_reject_into_accept
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_01_verify_rederives_the_result_from_the_raw_output
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_02_malformed_findings_are_never_accept
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_03_gate_test_ids_resolve_to_files
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_03_class_based_gate_test_is_its_own_regression_proof
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_03_unresolvable_gate_test_refuses_the_repair
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_04_reviewer_changing_git_info_blocks_as_tamper_not_wait
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_04_drift_between_runs_blocks_before_the_next_worker
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_04_diagnosis_worker_is_integrity_checked
+9 failed, 62 passed in 110.38s (0:01:50)
+
+=== tests/dev_workflow/test_lifecycle.py AFTER (1f720ed6a1b7540fdeb181de4455a835265c2afa) DONE
+.......................................................................  [100%]
+71 passed in 106.64s (0:01:46)
+

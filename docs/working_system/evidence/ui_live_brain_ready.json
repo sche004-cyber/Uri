@@ -1,0 +1,175 @@
+{
+ "journeys": [
+  {
+   "journey": "normal_response",
+   "route": "answer",
+   "tier": "FAST",
+   "answer_status": "COMPLETE",
+   "core_code": null,
+   "finished": "ok",
+   "error": null,
+   "text_chars": 198,
+   "text_head": "VRAM (Video Random Access Memory) is a specialized type of memory used by a computer's graphics processing unit (GPU) to store image data, textures, and frame b",
+   "metrics": {
+    "cache_n": 0,
+    "draft_n": 32,
+    "draft_n_accepted": 26,
+    "first_answer_s": 0.7877,
+    "predicted_n": 43,
+    "predicted_per_second": 127.74693939624365,
+    "prompt_n": 222,
+    "prompt_per_second": 530.8515624252742,
+    "reasoning_chars": 0,
+    "retried": false,
+    "total_s": 1.1022,
+    "ttft_s": 0.7877
+   },
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "reasoning",
+   "route": "answer",
+   "tier": "NORMAL",
+   "answer_status": "COMPLETE",
+   "core_code": null,
+   "finished": "ok",
+   "error": null,
+   "text_chars": 1187,
+   "text_head": "**Paper Records**\n**Pros:**\n- **No technology required:** Accessible anytime without needing computers, power, or software.\n- **Physical security:** Immune to c",
+   "metrics": {
+    "cache_n": 264,
+    "draft_n": 808,
+    "draft_n_accepted": 599,
+    "first_answer_s": 6.5014,
+    "predicted_n": 1004,
+    "predicted_per_second": 127.75899888914634,
+    "prompt_n": 30,
+    "prompt_per_second": 145.07822134100638,
+    "reasoning_chars": 3431,
+    "retried": false,
+    "total_s": 8.1208,
+    "ttft_s": 0.2693
+   },
+   "thinking_chars": 3274,
+   "brain": "READY",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "cancellation",
+   "route": "answer",
+   "tier": "FAST",
+   "answer_status": "CANCELLED",
+   "core_code": null,
+   "finished": "cancelled",
+   "error": null,
+   "text_chars": 78,
+   "text_head": "The salt spray had long since ceased to be a nuisance for Elias Thorne; it had",
+   "metrics": {
+    "cache_n": null,
+    "draft_n": null,
+    "draft_n_accepted": null,
+    "first_answer_s": 0.5307,
+    "predicted_n": null,
+    "predicted_per_second": null,
+    "prompt_n": null,
+    "prompt_per_second": null,
+    "reasoning_chars": 0,
+    "retried": false,
+    "total_s": 0.6983,
+    "ttft_s": 0.5307
+   },
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "supervised_action_approved",
+   "route": "core",
+   "tier": "FAST",
+   "answer_status": null,
+   "core_code": "SETTLED_VERIFIED",
+   "finished": "ok",
+   "error": null,
+   "text_chars": 0,
+   "text_head": "",
+   "metrics": {},
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1",
+   "memory_before": 5,
+   "memory_after": 6
+  },
+  {
+   "journey": "supervised_action_denied",
+   "route": "core",
+   "tier": "FAST",
+   "answer_status": null,
+   "core_code": "APPROVAL_DENIED",
+   "finished": "not_verified",
+   "error": null,
+   "text_chars": 0,
+   "text_head": "",
+   "metrics": {},
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "refusal_no_execution",
+   "route": "core",
+   "tier": "FAST",
+   "answer_status": null,
+   "core_code": "INTENT_CONFIRMED_NOT_EXECUTED",
+   "finished": "needs_user",
+   "error": null,
+   "text_chars": 0,
+   "text_head": "",
+   "metrics": {},
+   "thinking_chars": 0,
+   "brain": "READY",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "presentation_command_local",
+   "mode_reached": "dashboard"
+  },
+  {
+   "journey": "restart",
+   "memory_preserved": 6,
+   "brain": "READY"
+  }
+ ],
+ "brain_status_start": {
+  "artifacts": "MATCH",
+  "checked_at": 1791484087.6725101,
+  "detail": null,
+  "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+  "owned": false,
+  "pid": 13452,
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  },
+  "state": "READY",
+  "url": "http://127.0.0.1:18470"
+ },
+ "catalog_selected": "runtime-v1",
+ "cancel_probe": {
+  "busy": true,
+  "text_chars": 70,
+  "finished": null,
+  "route": "answer",
+  "stop_buttons": 1
+ },
+ "memory_end": [
+  "the science lab is closed on Friday",
+  "the science lab is closed on Friday",
+  "the science lab is closed on Friday",
+  "the science lab is closed on Friday",
+  "the library opens at 9 on Monday",
+  "the science lab is closed on Friday"
+ ]
+}

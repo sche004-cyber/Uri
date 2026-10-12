@@ -1,0 +1,284 @@
+{
+  "date": "2026-10-05",
+  "status": "PROVISIONAL \u2014 AWAITING INDEPENDENT REVIEW",
+  "independent_audit": "WAITING_FOR_MODEL",
+  "checkpoint": {
+    "base": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+    "archive": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\work\\c1\\checkpoints\\c4-c7-provisional-source-r2.zip",
+    "sha256": "03fb18e38511f0f9a160542627f68e25ca56a192b6cbc195892ad6b1aaaaca4e",
+    "source_files": 51,
+    "files": [
+      ".gitignore",
+      "PROJECT_MEMORY.md",
+      "URI_MILESTONE_TRACKER.md",
+      "docs/architecture/C2_FROZEN_IMPLEMENTATION_BASELINE.md",
+      "docs/architecture/C2_STORE_METHOD_CONTRACT.json",
+      "docs/governance/URI_ACTIVE_MILESTONE.md",
+      "docs/plans/C1_IMPLEMENTATION_EVIDENCE.md",
+      "docs/plans/C2_IMPLEMENTATION_EVIDENCE.md",
+      "docs/plans/C3_FROZEN_IMPLEMENTATION_BASELINE.md",
+      "docs/plans/C3_IMPLEMENTATION_EVIDENCE.md",
+      "docs/plans/C4_C7_COMPONENT_EVIDENCE.md",
+      "docs/plans/PHASE1_C1_C7_REVIEW_PACKAGE.md",
+      "scripts/phase1_offline_rollback.py",
+      "scripts/provision_uri_client.py",
+      "scripts/provision_uri_server.py",
+      "scripts/run_uri_client_worker.py",
+      "scripts/run_uri_isolated_server.py",
+      "scripts/uri_client.ps1",
+      "scripts/uri_client_launcher.py",
+      "scripts/uri_client_manifest.schema.json",
+      "scripts/uri_server.ps1",
+      "scripts/uri_server_launcher.py",
+      "scripts/uri_server_manifest.schema.json",
+      "scripts/validate_c1_regression.py",
+      "scripts/validate_c3_live.py",
+      "test_c1_runtime_identity.py",
+      "test_c2_client_state.py",
+      "test_c3_client_worker.py",
+      "test_c4_windows_process_tree.py",
+      "test_phase1_offline_components.py",
+      "uri_core/app/client_routes.py",
+      "uri_core/app/paired_server.py",
+      "uri_core/app/route_classification.py",
+      "uri_core/app/runtime_routes.py",
+      "uri_core/app/server.py",
+      "uri_core/client_contracts.py",
+      "uri_core/client_runtime/__init__.py",
+      "uri_core/client_runtime/execution_journal.py",
+      "uri_core/client_runtime/frames.py",
+      "uri_core/client_runtime/manifest.py",
+      "uri_core/client_runtime/persistence.py",
+      "uri_core/client_runtime/process_tree.py",
+      "uri_core/client_runtime/readiness.py",
+      "uri_core/client_runtime/transport.py",
+      "uri_core/core/client_execution_control.py",
+      "uri_core/core/client_pairing.py",
+      "uri_core/core/client_service.py",
+      "uri_core/core/client_state_ports.py",
+      "uri_core/core/paired_reasoning.py",
+      "uri_core/core/runtime_identity.py",
+      "uri_core/execution_contracts.py"
+    ],
+    "status": "PROVISIONAL \u2014 AWAITING INDEPENDENT REVIEW",
+    "scope": "Uncommitted source overlay before final consolidated handoff update; excludes ignored runtime/client state, credentials and environment",
+    "revision": "r2: archive bounds before decompression, focused rollback revalidation"
+  },
+  "tests": {
+    "focused": {
+      "tests": 102.0,
+      "failures": 0.0,
+      "errors": 0.0,
+      "skipped": 0.0,
+      "time": 88.722
+    },
+    "core_regression": {
+      "tests": 332.0,
+      "failures": 0.0,
+      "errors": 0.0,
+      "skipped": 0.0,
+      "time": 63.856
+    },
+    "final_affected_rollback": {
+      "tests": 8.0,
+      "failures": 0.0,
+      "errors": 0.0,
+      "skipped": 0.0,
+      "time": 1.71
+    }
+  },
+  "live": {
+    "schema_version": "uri.client.v1",
+    "server": {
+      "result": "STARTED",
+      "pid": 18048,
+      "create_time": 1791167458.1578946,
+      "generation": "c8aec438-dd56-4d2d-8572-143d2941f93c",
+      "server_id": "7f4357da-b5e8-4f38-b714-52938f1fd767",
+      "manifest_digest": "5e54e8bee040841245089ab6b10ef98a1ebf5e6510e897fc52610ae98df3bc36",
+      "port": 18036
+    },
+    "repeat": {
+      "result": "ALREADY_RUNNING",
+      "pid": 18048,
+      "create_time": 1791167458.1578946,
+      "generation": "c8aec438-dd56-4d2d-8572-143d2941f93c",
+      "server_id": "7f4357da-b5e8-4f38-b714-52938f1fd767",
+      "manifest_digest": "5e54e8bee040841245089ab6b10ef98a1ebf5e6510e897fc52610ae98df3bc36",
+      "port": 18036
+    },
+    "clients": [
+      {
+        "client_id": "902754ea-36f5-4946-b93f-810bb98dfb89",
+        "create_time": 1791167459.4088073,
+        "generation": "880bcf44-e10f-40b2-9579-27386ee0b550",
+        "manifest_digest": "f70144fe0ab29d7cf06d9d2a89129e7c5a4a76168704b4950c6b6fa67c33231e",
+        "nonce": "f0bd41d92cf92d1a09ba4a60888d6bf07d8b5c75ae7d4bc959749573be3cf629",
+        "pid": 18240,
+        "server_id": "7f4357da-b5e8-4f38-b714-52938f1fd767"
+      },
+      {
+        "client_id": "b769b365-1e8b-40a7-b77a-3ab64d7927d8",
+        "create_time": 1791167460.236539,
+        "generation": "673b4378-c3f1-4ca2-bc46-b4aebb8ff953",
+        "manifest_digest": "a297503ef47be8485e70cde5e8e580f032e5957ec15bcbe715ee823f13fac590",
+        "nonce": "fefe68b0bb340338f4c39af491fc3b99ff28a1fe1e5e84b95506ec4049f3eee7",
+        "pid": 2208,
+        "server_id": "7f4357da-b5e8-4f38-b714-52938f1fd767"
+      }
+    ],
+    "two_clients_same_principal": true,
+    "client_private_roots_distinct": true,
+    "client_b_memory_empty_after_client_a_commit": true,
+    "identical_commit_replay": true,
+    "pinned_server_session_handshake": true,
+    "server_private_stores": false,
+    "models_loaded_or_required": false,
+    "ui_started": false,
+    "production_cutover": false,
+    "worker_preflight_live": "VALIDATED_WITH_UI_PARITY_PENDING",
+    "test_owned_workers_and_server_cleaned": true
+  },
+  "process_tree_component": {
+    "donor": "uri-m37-m39-integration/uri_v1/execution/proctree.py",
+    "donor_sha256": "525ece290a9c0baccc4d4e07e853fa9ab8d5ff606b06f074ae3e2fe64db60ba4",
+    "adaptation": "Windows-only spawn, hidden window, reject shell/containment option overrides; refuse unowned job cleanup without PID signaling",
+    "status": "LOCAL_SYNTHETIC_WINDOWS_COMPONENT_GATES_PASSED \u2014 PROVISIONAL",
+    "adapted_sha256": "dde411fb3da30257b86e227a9304d10137303eb354ce8a0f6594fc160eb6728a"
+  },
+  "c4_native_prerequisites": {
+    "native_profiles": "fresh-client-only",
+    "inherited_provider_or_harness_credentials": false,
+    "source_base": "e8e3b65",
+    "adapters": {
+      "claude_code": {
+        "version": "2.1.287",
+        "executable_sha256": "6d5be51f0edfe3429cd1a9885950db31c1e59eb9a2c9a30a47e64179d2ff98b4",
+        "auth_status": "NOT_AUTHENTICATED",
+        "exit_code": 1
+      },
+      "codex_cli": {
+        "version": "0.158.0",
+        "executable_sha256": "af02050cc0c95f5aeb714af2c1077e635c58e9896c13c89d75099cf5b96477be",
+        "auth_status": "NOT_AUTHENTICATED",
+        "exit_code": 1
+      }
+    }
+  },
+  "preservation": {
+    "files_checked": 4571,
+    "changed_hashes": 3,
+    "missing_files": 0
+  },
+  "preservation_changes": [
+    {
+      "owner": "URI legacy installation",
+      "file_type": ".log",
+      "size": 154344,
+      "configuration": false,
+      "sqlite": false
+    },
+    {
+      "owner": "Codex development account",
+      "file_type": ".toml",
+      "size": 4648,
+      "configuration": true,
+      "sqlite": false
+    },
+    {
+      "owner": "Claude development account",
+      "file_type": ".json",
+      "size": 72147,
+      "configuration": false,
+      "sqlite": false
+    }
+  ],
+  "scheduled_task_xml_unchanged": true,
+  "observed_production_and_model_listeners": [],
+  "offline_recovery": [
+    {
+      "checkpoint": "c1-provisional-source.zip",
+      "schema_version": 1,
+      "status": "OFFLINE_SOURCE_OVERLAY_RECOVERY_PASSED",
+      "archive_sha256": "6af55603b8feb9b3dfa8f96f4c745994a46a4560ae8c5034bdf13390ce5e460d",
+      "source_files": 16,
+      "base_source_files": 260,
+      "base_checkpoint": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+      "restored_files": 274,
+      "restored_digest": "6d2803ccc71602ffad05213eda6eea08b8fc0e6f6db704db80946dd58bdd31bb",
+      "fresh_destination": true,
+      "production_cutover": false,
+      "private_data_restored": false,
+      "application_started": false,
+      "limitation": "Accepted runtime code plus source overlay, not full installation, dependencies or client state; private state needs separate journal/DPAPI recovery."
+    },
+    {
+      "checkpoint": "c2-provisional-source.zip",
+      "schema_version": 1,
+      "status": "OFFLINE_SOURCE_OVERLAY_RECOVERY_PASSED",
+      "archive_sha256": "b5f5a470d7e35db27a6f4b417e8e8ee81a6b7591fd11f9a0deb445db77fa024d",
+      "source_files": 25,
+      "base_source_files": 260,
+      "base_checkpoint": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+      "restored_files": 283,
+      "restored_digest": "33dbd6a4c37b7aa5174204f6e96bd5e70d51b2417303979e78e3ec8c418342d3",
+      "fresh_destination": true,
+      "production_cutover": false,
+      "private_data_restored": false,
+      "application_started": false,
+      "limitation": "Accepted runtime code plus source overlay, not full installation, dependencies or client state; private state needs separate journal/DPAPI recovery."
+    },
+    {
+      "checkpoint": "c3-provisional-source.zip",
+      "schema_version": 1,
+      "status": "OFFLINE_SOURCE_OVERLAY_RECOVERY_PASSED",
+      "archive_sha256": "7b2a7a563ae7a58bb7273eee98fbd19a3f21f0dec75c65a3e900b066b6fc4c2f",
+      "source_files": 39,
+      "base_source_files": 260,
+      "base_checkpoint": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+      "restored_files": 297,
+      "restored_digest": "6d5af411e5376ccfc081ff7c771c76c812370ff0b8026be567f99eaaede26224",
+      "fresh_destination": true,
+      "production_cutover": false,
+      "private_data_restored": false,
+      "application_started": false,
+      "limitation": "Accepted runtime code plus source overlay, not full installation, dependencies or client state; private state needs separate journal/DPAPI recovery."
+    },
+    {
+      "checkpoint": "c4-c7-provisional-source.zip",
+      "schema_version": 1,
+      "status": "OFFLINE_SOURCE_OVERLAY_RECOVERY_PASSED",
+      "archive_sha256": "8b641759946579346da486a7fede31153ba4bcc4dba31f47cef14ddc74c8c01d",
+      "source_files": 51,
+      "base_source_files": 260,
+      "base_checkpoint": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+      "restored_files": 309,
+      "restored_digest": "f0dd9abaf67ebd69d043a8daf3d00dce16e5f1456046451f10081e334147c86f",
+      "fresh_destination": true,
+      "production_cutover": false,
+      "private_data_restored": false,
+      "application_started": false,
+      "limitation": "Accepted runtime code plus source overlay, not full installation, dependencies or client state; private state needs separate journal/DPAPI recovery."
+    },
+    {
+      "checkpoint": "c4-c7-provisional-source-r2.zip",
+      "schema_version": 1,
+      "status": "OFFLINE_SOURCE_OVERLAY_RECOVERY_PASSED",
+      "archive_sha256": "03fb18e38511f0f9a160542627f68e25ca56a192b6cbc195892ad6b1aaaaca4e",
+      "source_files": 51,
+      "base_source_files": 260,
+      "base_checkpoint": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+      "restored_files": 309,
+      "restored_digest": "89d8f56d26548c9834d366310ceeb4aec1896cce755bf67ed7824a2cacd77e3f",
+      "fresh_destination": true,
+      "production_cutover": false,
+      "private_data_restored": false,
+      "application_started": false,
+      "limitation": "Accepted runtime code plus source overlay, not full installation, dependencies or client state; private state needs separate journal/DPAPI recovery."
+    }
+  ],
+  "production_cutover": false,
+  "complete_c4_c6_milestones": false,
+  "limitations": "Unmounted execution/canonical components; native provider, full feedback loop and UI qualification pending.",
+  "test_scope_note": "102-test broad run followed by 8 affected rollback tests after bounded source-recovery repair; production runtime code unchanged by final repair."
+}

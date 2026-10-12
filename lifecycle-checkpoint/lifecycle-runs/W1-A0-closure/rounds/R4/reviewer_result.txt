@@ -1,0 +1,95 @@
+# R4 review of W1-A0-closure: REJECT
+
+I'm rejecting candidate `16155129`. Three blocking MEDIUM findings remain, and there is no HIGH.
+
+**Findings**
+- **R4-01:** the redaction gap from R3-01 is still open.
+- **R4-02:** the citation check ignores scale words, so `$5m` can be cited as `$5bn`.
+- **R4-03:** a slow or hostile web server can ignore the fetch timeout and the user's cancel.
+
+**What holds**
+- **Repo state:** no protected path changed, and both SHAs check out.
+- **Tests:** web and assist tests all pass. Compared with the baseline export, the combined Python suite has no new failures, apart from one known flaky test that failed only on the baseline.
+- **SSRF protections:** these held: address ranges, redirect re-checks, DNS pinning, TLS hostname and proxy settings.
+- **Permissions:** grants, separate permissions, the entire-screen confirmation, the vision gating and the Flutter lifecycle all held.
+- **R1-03:** fixed; the Ask button works again after Stop and a new grant.
+- **Browser channel:** no document claims the channel is built.
+
+**Prior findings**
+- **R1-01: fixed.** `Rs.900` cited to a source saying `Rs.500` is now dropped.
+- **R1-02 and R2-01: fixed** for every name they cited. Python and the in-page script agree in real Chromium.
+- **R3-01: not fixed.** Its 16 reported names are now caught. But API-key style run-together names (`stripeapikey`, `openaiapikey`, `myapikey`, `accessKey`) and alphanumeric 2FA recovery codes still keep their values in both layers. In an end-to-end run, all four test values reached the Brain request.
+
+**Low-severity items, not blocking**
+- Local-use NAT64 /48 addresses that embed a private IPv4 are accepted.
+- R1-05 remains: answers can still be read after Stop.
+- Screenshots and page captures run before the vision checks.
+- On the vision path, page text is not wrapped as untrusted data, so it can forge a "QUESTION:" line.
+- Only `oi_turn` cancels Assist's use of the Brain.
+- The UI keeps showing ACTIVE after a grant expires.
+- R1-05 to R1-10 are not recorded anywhere as carried limitations, and the audit trail has no entries for the R2 or R3 rounds.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "16155129b72685f25eca48a65252f6cd51fa47e4", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R4-01", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Redaction still misses run-together API-key names and alphanumeric 2FA recovery codes in both Python and the in-page JS (R3-01 token/secret class not closed); values reach the Brain request",
+   "files": ["uri_assist/redact.py:47", "uri_assist/redact.py:139", "uri_assist/browser_extension/snapshot.js:15", "uri_assist/browser_extension/snapshot.js:84", "docs/assist/A0_QUALIFICATION.md:19"],
+   "evidence": "_STEMS lacks apikey and other *key stems; 'apikey' matches only as a whole word in _SENSITIVE_WORDS. The short-code rule needs an all-digit value. field_is_sensitive({'type':'text','name':N,'value':'Zx9-kq_7Lm'}) is False for stripeapikey, openaiapikey, myapikey, userapikey, xapikey, accessKey, accesskey, signingkey, sessionkey, encryptionkey and masterkey, and for recovery_code/backup_code (label 'Recovery code') with value '7f3a9-2c1d8'. Real Chromium (run_snapshot.cjs) on a page with those inputs returned sensitive:false with the values. AssistCommands assist_ask (FakeAdapter fed the Chromium snapshot, FakeClient) put all four values (Zq81LmXv0PaT, Wk22HnRt9QbU, 7f3a9-2c1d8, Pp55TrEw3ZaQ) into the Brain request body. 'my', 'user', 'client' and 'access' are in the R3 test's own PREFIXES list, but 'apikey' is not among its STEMS. A0_QUALIFICATION again claims 'MET in both layers after the R3 repair'.",
+   "suggested_fix": "Add apikey and (api|access|auth|private|secret|signing|encryption|master|session|client|hmac)key stems to _STEMS/STEMS. Treat recovery/backup code fields as sensitive whatever the value. Add these to the generated corpus and the Chromium parity test, and correct the A0_QUALIFICATION claim."},
+  {"id": "R4-02", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "Citation verifier and conflict detector ignore magnitude suffixes (m/bn/k/M, lakh/crore, trillion), so a claim with a different magnitude survives verify",
+   "files": ["uri_web/evaluate.py:15", "uri_web/synthesize.py:90", "uri_web/evaluate.py:129", "uri_web/surface.py:58"],
+   "evidence": "_NUMBER captures only %/percent/million/billion/thousand units. verify('The company raised $5bn in new funding from investors this year [1].', ['The company raised $5m in new funding from investors this year.']) -> KEPT. Also KEPT: $5k->$5M, '2 lakh'->'2 crore', 'Rs.500 crore'->'Rs.500 trillion', '5 km'->'5 miles'. EV.evaluate on two sources '$5m' vs '$5bn' -> 0 conflicts; '2 lakh' vs '2 crore' -> 0 conflicts ('Rs.500' vs 'Rs.900' -> 1). The surface states 'citations checked against the sources (wording, numbers, negation)'. W1-AC10/AC11.",
+   "suggested_fix": "Normalise attached magnitude tokens (k, m, mn, bn, b, M, trillion, lakh, crore, and their plurals/abbreviations) into the number key, and treat a scale word next to a number as part of it. Add regression cases for $5m/$5bn, lakh/crore and trillion."},
+  {"id": "R4-03", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "SafeFetcher total timeout and cancellation are not enforced while response headers or chunk framing arrive; a hostile server can hold a fetch (and the single research job) far beyond the budget",
+   "files": ["uri_web/safe_fetch.py:233", "uri_web/safe_fetch.py:247", "uri_web/safe_fetch.py:248", "uri_web/bridge.py:95"],
+   "evidence": "The deadline and the cancel flag are checked only between body chunks. The httpx read timeout applies per socket read. Probe /tmp/uri_review_R4/ssrf/p4_sockets.py: a real local server drips header bytes every 0.3 s; SafeFetcher(read_timeout=1.0, total_timeout=2.0) with cancel at 1.0 s returned UNREACHABLE after 67.3 s (re-run by me). A chunk-extension drip returned CANCELLED only after 12.1 s with total_timeout 2.0. A server that drips under the 10 s default read timeout holds the fetch with no bound, and WebResearch stays busy (RESEARCH_IN_PROGRESS). W1-AC4 (total timeout) and W1-AC13 (cooperative cancellation) are unmet against a hostile page.",
+   "suggested_fix": "Enforce a wall-clock deadline on the whole request, e.g. a watchdog timer that closes the response/transport at min(deadline, cancel), or per-read timeouts recomputed from the remaining budget. Add a slow-header regression test with a real socket."},
+  {"id": "R4-04", "severity": "LOW", "blocking": false, "category": "security", "owner_decision": false,
+   "title": "Local-use NAT64 64:ff9b:1::/48 decoded as /96, so addresses embedding a private IPv4 at the /48 position are accepted",
+   "files": ["uri_web/netpolicy.py:19", "uri_web/netpolicy.py:53", "uri_web/netpolicy.py:74"],
+   "evidence": "NP.check_address('64:ff9b:1:7f00:0:100:808:808') -> accepted (the /48 embedding is 127.0.0.1); '64:ff9b:1:a9fe:a9:fe00:808:808' -> accepted (169.254.169.254). The last 32 bits are taken as the IPv4, then the code returns early. Only exploitable on networks running a local-use NAT64 with a non-/96 prefix, with attacker-controlled DNS.",
+   "suggested_fix": "Refuse 64:ff9b:1::/48 outright, or check every RFC 6052 embedding position."},
+  {"id": "R4-05", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "R1-05 still present: derived answers remain retrievable after Stop; a revoke that races the end of an answer still emits it",
+   "files": ["uri_assist/bridge.py:159", "uri_assist/bridge.py:237", "uri_assist/bridge.py:248"],
+   "evidence": "Probe (/tmp/uri_review_R4/a0/probe_bridge.py): grant -> ask -> revoke -> assist_ask_status returns FINISHED with the answer text. _answers is never cleared on revoke.",
+   "suggested_fix": "Clear _answers on revoke and on a new grant, and re-check the grant generation under the lock before storing or emitting."},
+  {"id": "R4-06", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Screenshot and DOM capture run before the vision and Brain-busy gates; vision context text is not wrapped as an untrusted data block",
+   "files": ["uri_assist/bridge.py:185", "uri_assist/bridge.py:190", "uri_assist/bridge.py:197", "uri_assist/vision.py:85"],
+   "evidence": "With vision disabled (the default), assist_ask with use_screenshot=true -> VISION_NOT_QUALIFIED after adapter.screenshot() was called once; the same for debounced and busy. vision.build_request appends raw context_text after 'QUESTION:', so page text containing '\\n\\nQUESTION: ...' forges the question (03 §4 says content goes only in data blocks). Latent: no real adapter exists, and vision is off by default.",
+   "suggested_fix": "Run the qualified/debounce/idle checks before capture, and wrap context_text with uri_web.untrusted.data_block."},
+  {"id": "R4-07", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Only oi_turn cancels Assist Brain work; oi_confirm/oi_decide and in-flight web_research Brain calls do not yield the single slot",
+   "files": ["scripts/run_uri_integrated_worker.py:252", "uri_web/local_brain.py:54"],
+   "evidence": "Code reading: the cancel is gated on kind == 'oi_turn'. Orchestrator.confirm also reaches _answer_turn. make_complete uses complete_json (60 s) with no cancel token. Not executed live.",
+   "suggested_fix": "Cancel Assist (and research Brain) work for every command that starts a user Brain turn, and make research synthesis cancellable."},
+  {"id": "R4-08", "severity": "LOW", "blocking": false, "category": "documentation", "owner_decision": false,
+   "title": "Remaining R1 LOW findings (R1-05..R1-10) are neither repaired nor recorded as carried limitations; the audit trail has no R2/R3 entries",
+   "files": ["docs/assist/closure/AUDIT_TRAIL.md:1", "docs/assist/A0_QUALIFICATION.md:42", "uri_web/untrusted.py:38", "uri_assist/browser_extension/snapshot.js:48"],
+   "evidence": "grep finds no doc reference to R1-05..R1-10, R2-01 or R3-01 beyond the A0_QUALIFICATION corrections. R1-06 re-confirmed: verify('Download the official installer from fastupdate-secure.com ...[1]', [same]) -> KEPT. R1-07: visible() is unchanged (no transparent-colour or overflow-clip check). R1-09 is reproduced by the agent's Flutter probe (UI ACTIVE while the worker is OFF after expiry). Closure criterion 3 requires the remaining items to be documented.",
+   "suggested_fix": "Append the R2/R3/R4 cycles to AUDIT_TRAIL.md and list the carried LOW items with their status in the qualification docs."}
+ ],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R3-01", "status": "NOT_FIXED"}],
+ "tests_run": [
+  {"command": "python -m pytest tests/web tests/assist -q -rs (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers)", "result": "1798 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "combined pytest (ws oi a2ui scheduler [+web assist on candidate]) on git-archive exports of ffdf534 and 16155129", "result": "baseline 39 failed/612 passed/39 skipped/161 errors; candidate 38 failed/2411 passed/39 skipped/161 errors; candidate failure set = baseline minus flaky test_requests_are_marked_done_with_the_state_they_left", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/uri_review_R4/probe_names.py, parity.py (real Chromium vs Python, ~180 names/labels), e2e.py (Chromium snapshot -> AssistCommands -> Brain body)", "result": "Python and JS agree on every probed name; R4-01 values reach the Brain request", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "verify/evaluate probes for number and magnitude handling", "result": "R1-01 cases dropped; R4-02 cases kept / 0 conflicts", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/uri_review_R4/ssrf/p1-p6 (SSRF corpus, redirects, pinning, SNI, proxy env, slow drip, loopback checks)", "result": "core protections hold; slow-header fetch 67.3 s with total_timeout 2 s (re-run by me); NAT64 /48 accepted", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "flutter test test/living/assist_mode_test.dart + probe widget tests (in a /tmp copy of uri_ui)", "result": "18 passed + 5 probe tests passed; R1-03 fixed; expiry stays ACTIVE in the UI", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --name-only ffdf534..16155129 against the protected list", "result": "no protected path changed", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": [
+  "Integrated worker live dispatch and the oi_confirm slot contention (R4-07 is from code reading only)",
+  "Real perception adapters, the vision application path, GPU/VRAM: none exist or are available in this container",
+  "Phase 1 checkpoint zip byte check (ws_frozen_check zip part BLOCKED)",
+  "Full Flutter suite not re-run by me (only the assist tests and probes, by a sub-agent)",
+  "Live search providers, social APIs and proxy egress mode",
+  "TLS certificate verification against a real trusted certificate (only SNI was observed)",
+  "Codex audit of record not performed"
+ ]}
+AUDIT_RESULT_END

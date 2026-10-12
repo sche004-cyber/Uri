@@ -1,0 +1,38 @@
+I repaired both findings, R5-01 and R5-02, in `scripts/dev_workflow/lifecycle.py`. Nothing is committed. The full `tests/dev_workflow` suite passes (149 tests). I ran the new tests against the original `lifecycle.py` from 6bcfd1d, and all of them fail there except one control case, explained below.
+
+**R5-01 — a repair could weaken the failing test of a class-based or Flutter gate failure:**
+- **Finding the test file:** `_test_file` now drops trailing class segments from a pytest id until a `.py` file exists, so `tests.pkg.test_k.TestK::t` maps to `tests/pkg/test_k.py`. Flutter ids are now read relative to the gate's `cwd`, so `test/x_test.dart` becomes `uri_ui/test/x_test.dart`. If nothing matches it returns `None` instead of a made-up path.
+- **What gate findings now record:** the original test id and the resolved file.
+- **Refusing unproven repairs:** `_commit_and_prove` now refuses a repair when a gate finding's test file can't be found, instead of treating it as coverage-only.
+- **Weakened tests:** these are refused by the existing rule that every gate test must fail before the repair. The repaired test file is copied onto the pre-repair commit, so a weakened test that passes there is refused. With the file now found, that rule applies to class-based and Flutter tests too.
+- **Docs:** updated the lifecycle doc to match.
+
+**R5-02 — historical failures counted as new:**
+- **Assertion causes:** a bare pytest assert now gives the cause `AssertionError`. For other messages without an exception type, paths are cut to their last component and numbers and hex addresses are masked.
+- **Flutter ids:** `parse_flutter_machine` now uses the suite path for tests that have no url, such as load failures. It rewrites `loading <absolute path>` to `loading test/...`, so the same failure gets the same id in any worktree.
+- **Docs:** updated the lifecycle doc to match.
+
+**Regression tests** (in `tests/dev_workflow/test_lifecycle.py`, plus a new `weaken_gate_test` mode in the fixture worker):
+
+| Test | On 6bcfd1d | Now |
+|---|---|---|
+| Weakening repair of a class-based test is refused | fails (the repair was committed) | passes |
+| Same, plain-function test | passes | passes |
+| Class-based gate failure repaired with a test that fails before the repair | fails | passes |
+| Finding the test file for pytest class ids, nested classes and Flutter ids | fails | passes |
+| Unresolvable gate test refuses the repair | fails | passes |
+| Causes stay the same across runs and worktrees | fails | passes |
+| Flutter load failure parsed in two worktree paths is historical, not new | fails | passes |
+
+The plain-function case is the control: it already worked before and still does.
+
+**Not done:**
+- Your `graphify update .` step could not run because `graphify` is not installed here, and `graphify-out/` is outside the paths I may change.
+- Creating a temporary git worktree for the fail-before run was denied. I ran the new tests against the original files exported with `git archive` into my scratch folder instead.
+- Whole-gate failures (`<gate>::__run__`) name no test file, so their repairs still only have to pass afterwards, as before. The reviewer did not raise this; it is a possible follow-up.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R5-01", "R5-02"], "not_repaired": [],
+ "regression_tests": ["tests/dev_workflow/test_lifecycle.py", "tests/dev_workflow/lifecycle_fixture/worker.py"],
+ "notes": "R5-01: _test_file strips trailing class segments until a .py exists and resolves Flutter ids against the gate cwd (returns None if unresolved); gate findings carry test_id/gate_test; _commit_and_prove refuses a repair whose GATE finding test file cannot be resolved (except <gate>::__run__ whole-gate failures, unchanged), so resolved gate tests go through must_fail, and the post-repair test copied onto the pre-repair commit must fail, which refuses weakening. R5-02: _cause returns AssertionError for bare asserts and otherwise masks paths (to last component), hex addresses and digits; parse_flutter_machine uses suite paths for url-less tests and relativises 'loading <path>' names. New tests fail on 6bcfd1d (verified with git archive export; the plain-function weaken case is a control that passed before too) and pass now; full tests/dev_workflow: 149 passed. Docs updated. graphify CLI is not installed, so 'graphify update .' was not run."}
+REPAIR_RESULT_END

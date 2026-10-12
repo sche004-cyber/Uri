@@ -1,0 +1,347 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R30",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R30-01"
+ ],
+ "candidate": "c5fe635154daec2f6866c5f8478b5856c645f3d4",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T16:26:10Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "c5fe635154daec2f6866c5f8478b5856c645f3d4",
+   "impl_head": "c5fe635154daec2f6866c5f8478b5856c645f3d4",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "1c982b87c740fd08c601fa832d8102947d422ba0022eac51efc5dd0e703052de",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "c5fe635154daec2f6866c5f8478b5856c645f3d4",
+   "impl_head": "c5fe635154daec2f6866c5f8478b5856c645f3d4",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "1c982b87c740fd08c601fa832d8102947d422ba0022eac51efc5dd0e703052de",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "c5fe635154daec2f6866c5f8478b5856c645f3d4",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "On c5fe6351: _ascii_options returns () for U+045B \u045b, U+04AB \u04ab, U+04E9 \u04e9, U+0473 \u0473, U+0481 \u0481, U+04CE \u04ce (CONFUSABLE_ASCII.get is None), while their Latin counterparts fold: _ascii_options('\u0127')=('h',), ('\u00e7')=('c',), ('\u0275')=('o',), ('\u0271')=('m',). _tld_match('\u0455\u045b\u043e\u0440','CYRILLIC')=='' but _tld_match('\u0455\u04bb\u043e\u0440','CYRILLIC')=='~shop'. With S='Claim your energy rebate refund at {} before the deadline.': for 'refunds-portal ~ \u0455\u045b\u043e\u0440', '~ \u04ab\u043e\u043c', '~ \u0441\u04e9\u043c', '~ \u0441\u043e\u04ce', '~ \u0455\u04bb\u04e9\u0440', has_link_or_contact is False, mask_links returns the text unchanged, verify(S[:-1]+' [1].',[S+' Energy rebate refunds take two weeks.']) keeps the claim, extractive keeps the 'deadline' sentence, and build_surface passes require_valid with 'refunds-portal' in the dump. 'refunds-portal \u04ab\u043e\u043c/claim' and '~ \u0455\u045b\u043e\u0440/claim' are detected only as a mixed-script token: mask_links gives 'refunds-portal [X]' / 'refunds-portal ~ [X]', so the name stays on screen and in the surface title. Probe: /tmp/uri_review_R30/p2.py.",
+    "files": [
+     "uri_web/confusables_ascii.py:1",
+     "uri_web/untrusted.py:553",
+     "uri_web/untrusted.py:572",
+     "uri_web/untrusted.py:585",
+     "uri_web/untrusted.py:620",
+     "uri_web/surface.py:38"
+    ],
+    "id": "R30-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "When generating the data, keep confusables entries whose prototype is a non-ASCII Latin letter. Then fold that prototype through NFD mark removal or _latin_base (e.g. \u045b\u2192\u0127\u2192h, \u04ab\u2192\u00e7\u2192c, \u04e9\u2192\u0275\u2192o, \u04ce\u2192\u0271\u2192m), or apply _ascii_options to the prototype recursively. Add the listed forms (and their '/claim' variants, asserting the name is masked) to the regression tests.",
+    "title": "R29-01 repair incomplete (R1-01/R19-02/R27-01 class): the confusables data keeps only ASCII prototypes, so Cyrillic look-alikes whose prototype is a non-ASCII Latin letter (\u045b~\u0127, \u04ab~\u00e7, \u04e9/\u0473~\u0275, \u04ce~\u0271) have no fold and endings '\u0455\u045b\u043e\u0440', '\u04ab\u043e\u043c', '\u0441\u04e9\u043c', '\u0441\u043e\u04ce', '\u0455\u04bb\u04e9\u0440' are not links; they pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R28-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R29-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist",
+    "result": "5341 passed in 101.05s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R30/p1.py (look-alike ending probe corpus)",
+    "result": "pure-Cyrillic endings with \u045b/\u04ab/\u04e9/\u0473/\u0481/\u04ce undetected; '/claim' forms leave the name unmasked",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R30/p2.py (end-to-end detect/mask/verify/extractive/surface+require_valid)",
+    "result": "R30-01 reproduced on all six paths",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --name-only ffdf534..c5fe635 | protected-path filter",
+    "result": "no protected path changed",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Earlier findings other than R1-01 and R29-01 were not re-probed one by one this round; marked FIXED because their regression tests pass on the candidate",
+   "Flutter widget tests (uri_ui) were not run this round",
+   "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)",
+   "SSRF/netpolicy, vision, permissions and worker-dispatch areas were not re-audited beyond the passing test suite",
+   "Latin look-alike non-core endings after a plain space (e.g. 'refunds-portal \u0256ev/claim', '\ua731hop/claim') are undetected but fall in the owner-accepted 'non-core domain after ordinary prose' residual; not reported"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 30,
+ "started_at": "2026-10-11T16:22:17Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "1ffebf80-c1fb-4146-b4d2-15942217164b",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 75
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7530176,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R30",
+  "ended_at": "2026-10-11T16:26:08Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 12,
+  "pid": 10254,
+  "prompt_sha256": "5cb6ba5a7f355b4f44dc66dd8691566ad30d05616018e302a5aeeaf7bdb80209",
+  "provider": "claude_cli",
+  "result_text_sha256": "304715f1e260f8818635dd5eac775a1f1fab7ae05b1825459314ea38af99c19d",
+  "role": "reviewer",
+  "session_id": "1ffebf80-c1fb-4146-b4d2-15942217164b",
+  "session_id_requested": "1ffebf80-c1fb-4146-b4d2-15942217164b",
+  "started_at": "2026-10-11T16:22:17Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "eb57c9949f32b54d6c811f5721b360118f9ad8b74a4da69f471b31234f13f592"
+ }
+}

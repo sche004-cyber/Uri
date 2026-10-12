@@ -1,0 +1,5 @@
+2026-10-07T09:54:46.001653Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in C:\Users\cheta\.codex\worktrees\uri-phase2a\evidence\phase2d_review\CODEX_REVIEW_round1.md:
+The qualification boundary is weaker than its own stated contract. The record digest is a plain recomputable hash. `probe_qualification.py` built a valid record for `model_a`, changed it to `model_b`, recomputed `record_sha256`, and both `validate_shape` and `revalidate` accepted it. `revalidate` never reopens or checks the evidence file or its claimed digest. `compose_client` then promotes the record into the Phase 1 registry.
+2026-10-07T09:55:14.328659Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in C:\Users\cheta\.codex\worktrees\uri-phase2a\evidence\phase2d_review\CODEX_REVIEW_round1.md:
+The candidate's evidence entries hash to `MANIFEST.json` (section 1).
+EXIT=0

@@ -1,0 +1,322 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R24",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R24-01"
+ ],
+ "candidate": "d51207ead093905e94052f1c7290b005c851d8b5",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T15:22:31Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "d51207ead093905e94052f1c7290b005c851d8b5",
+   "impl_head": "d51207ead093905e94052f1c7290b005c851d8b5",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "23ef16dae4596c04a19abc0fc19c47c7b434ca648dd6cd004da91f041560e350",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "d51207ead093905e94052f1c7290b005c851d8b5",
+   "impl_head": "d51207ead093905e94052f1c7290b005c851d8b5",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "23ef16dae4596c04a19abc0fc19c47c7b434ca648dd6cd004da91f041560e350",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "d51207ead093905e94052f1c7290b005c851d8b5",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_tld_match compares _bare(text) with the TLD list; _bare drops only generic 'COMBINING' marks and keeps marks of the letter's own script, so optional Arabic vowel marks / Hebrew points (written in vocalised text and omitted when typing an address) stop a listed TLD from matching, although Latin 'c\\u0323om' matches. Probe /tmp/uri_review_R24/p3.py,p4.py,p5.py: 'Claim your energy rebate refund at refunds-portal ~ \u0645\u0635\u0631 before the deadline.' -> has_link_or_contact True, masked; the same with '\u0645\u0650\u0635\u0652\u0631' (also '\u0645\u064e\u0635\u0631', '\u0639\u064f\u0645\u0627\u0646', '\u0627\u0644\u0633\u064f\u0651\u0639\u064f\u0648\u062f\u0650\u064a\u064e\u0651\u0629', '\u0645\u064f\u0648\u0631\u064a\u062a\u0627\u0646\u064a\u0627', '\u0627\u06cc\u0631\u0627\u0646\u0652', '\u0639\u064e\u0631\u064e\u0628', '\u0634\u064e\u0628\u064e\u0643\u0629', '\u0645\u064e\u0648\u0642\u0650\u0639', Hebrew '\u05e7\u05d5\u05b9\u0645'\u2192'\u05e7\u05d5\u05b9\u05dd', and Arabic-name '\u0628\u0646\u0643 ~ \u0645\u0650\u0635\u0652\u0631', 'refunds-portal/claim * \u0634\u064e\u0628\u064e\u0643\u064e\u0629') -> has_link_or_contact False, mask_links unchanged; SY.verify(sentence + ' [1].', [src]) keeps the claim with citation [1]; SY.extractive('energy rebate refund deadline', [src]) returns the sentence; surface.build_surface with that answer contains 'refunds-portal'.",
+    "files": [
+     "uri_web/untrusted.py:486",
+     "uri_web/untrusted.py:492",
+     "uri_web/untrusted.py:470",
+     "uri_web/untrusted.py:571",
+     "uri_web/surface.py:38"
+    ],
+    "id": "R24-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "When matching an ending, also compare the word with every mark removed (all Mn/Me, or at least the optional vocalisation ranges U+064B-065F, U+0670, U+06D6-06ED, U+0591-05C7) against the TLD list, keeping the existing match; add regression cases through has_link_or_contact, mask_links, verify, extractive and build_surface.",
+    "title": "R1-01 link class still open (D16 ending side): a listed non-Latin top-level domain written with optional same-script vowel marks (Arabic harakat '\u0645\u0650\u0635\u0652\u0631', '\u0639\u064f\u0645\u0627\u0646', '\u0627\u0644\u0633\u064f\u0651\u0639\u064f\u0648\u062f\u0650\u064a\u064e\u0651\u0629', '\u0627\u06cc\u0631\u0627\u0646\u0652', '\u0634\u064e\u0628\u064e\u0643\u0629'; Hebrew niqqud '\u05e7\u05d5\u05b9\u05dd') is not an ending, so 'refunds-portal ~ \u0645\u0650\u0635\u0652\u0631' passes has_link_or_contact, mask_links, verify(), extractive() and the research surface (W1-AC12/AC15)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x tests/web tests/assist tests/a2ui -p no:cacheprovider",
+    "result": "5305 passed in 104.81s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf5343..d51207ea -- <protected paths>",
+    "result": "empty (no protected path changed)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R24/p1.py (R23-01 variants: one foreign letter + own-script marks, tatweel, ZWJ, virama, Khmer/Myanmar stacking, brackets)",
+    "result": "all two-or-fewer-distinct-letter forms detected and masked; 3+ distinct-letter words are names per D17",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R24/p3.py, p4.py, p5.py (vocalised non-Latin TLDs)",
+    "result": "R24-01 reproduced through has_link_or_contact, mask_links, verify, extractive, build_surface",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter widget tests (uri_ui) not run this round",
+   "Playwright/Chromium browser_extension tests not run this round",
+   "ws_frozen_check zip part BLOCKED (checkpoint zip absent)",
+   "Integrated worker / Assist controller lifecycle, vision gating and SSRF areas were covered by the passing test suite only; no new adversarial probing this round",
+   "Prior-round regression tests were not re-run against their pre-repair commits"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 24,
+ "started_at": "2026-10-11T15:17:18Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "4472b5d0-e435-47c6-adf4-b6a8e2dd1826",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 73
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.9813042,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R24",
+  "ended_at": "2026-10-11T15:22:30Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 16,
+  "pid": 25310,
+  "prompt_sha256": "87d2951f6f9bbfb4392460f7ece6dc9522ff877a2c3359d8a69668b626157d95",
+  "provider": "claude_cli",
+  "result_text_sha256": "6ab53c81bb2db98b7774b6580e2236d485019e304c9d273ce45f5e15e88500b6",
+  "role": "reviewer",
+  "session_id": "4472b5d0-e435-47c6-adf4-b6a8e2dd1826",
+  "session_id_requested": "4472b5d0-e435-47c6-adf4-b6a8e2dd1826",
+  "started_at": "2026-10-11T15:17:18Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "111b6bbfcdc600157ccbf4d8383a1cde458d1797790c93fc883aeed506845b10"
+ }
+}

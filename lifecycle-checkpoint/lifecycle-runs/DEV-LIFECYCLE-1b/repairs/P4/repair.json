@@ -1,0 +1,89 @@
+{
+ "addresses": [
+  "R5-01"
+ ],
+ "changed": [
+  "scripts/dev_workflow/lifecycle.py",
+  "tests/dev_workflow/test_lifecycle.py"
+ ],
+ "commit": "dff1ea78527a639ee6b13f47b1f89a2f13e7b865",
+ "ended_at": "2026-10-11T03:33:39Z",
+ "pre": "6784424d48df221bedd271707ff2b687c0719e4e",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 4,
+ "report": {
+  "not_repaired": [],
+  "notes": "integrate(): in merge mode, control_drift is re-run after the combined-gate qualify and before the push; drift gives status REFUSED_TAMPER plus a TAMPER block, with no push. control_drift also runs after the push and ls-remote in every mode; drift gives UNVERIFIED_TAMPER plus a TAMPER block, never COMPLETE. New test test_r5_01_combined_gate_writing_global_insteadof_cannot_fake_a_merge_integration fails on 6784424 (reaches COMPLETE and pushes to the fake remote) and passes after the change; tests/dev_workflow: 175 passed. The user_home fixture now also sets HOME in L.NOBYTECODE, because gate commands use that import-time copy of os.environ; without it the test wrote to the real ~/.gitconfig. My early runs left two inert insteadOf entries in /root/.gitconfig (lines 23-26, temporary pytest paths); removing them was denied, so they still need manual deletion. Lines 21-22 are an older similar entry from a test_merge_combined_gates_redi0 run (pytest-174), not the R5-01 test written here; left untouched. graphify is not installed, so the graph was not updated. Not adopted: pushing with GIT_CONFIG_GLOBAL=/dev/null, which would drop credential helpers real pushes may need; the drift check before the push is the guard instead.",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle.py"
+  ],
+  "repaired": [
+   "R5-01"
+  ]
+ },
+ "started_at": "2026-10-11T03:25:02Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "70316c87-cbe5-4cdd-95fe-ffe09622f955",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 0.9567707,
+  "cwd": "/home/user/uri-wt/lifecycle",
+  "ended_at": "2026-10-11T03:29:10Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 2,
+  "pid": 29545,
+  "prompt_sha256": "6780dcf52fe3fc7c4ef960c7ce753cb07d6e8f28b96dbc6d59414c3dd2b7e8f7",
+  "provider": "claude_cli",
+  "result_text_sha256": "911e46473bac61ff4e6457bdce4375d8b2fac11f997bc59adf7563ea2cf43188",
+  "role": "implementer",
+  "session_id": "70316c87-cbe5-4cdd-95fe-ffe09622f955",
+  "session_id_requested": "70316c87-cbe5-4cdd-95fe-ffe09622f955",
+  "started_at": "2026-10-11T03:25:02Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "799aed0c3f34fc98b84c50051a9dc240e30b69ec4d6754eb1fa1d8fd70aead9e"
+ }
+}

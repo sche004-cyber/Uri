@@ -1,0 +1,63 @@
+=== tests/web/test_w1_closure_r7_review_regressions.py BEFORE (806dcd12816b3944f78324f06aaf3aa366cec96a) DONE
+ink", SPLIT)
+    def test_r7_01_a_split_link_is_never_kept_in_halves(link):
+        src = SENT.format(link) + " Energy rebate refunds take two weeks."
+>       assert U.has_link_or_contact(src), link
+E       AssertionError: refunds-portal … Com/claim
+E       assert False
+E        +  where False = <function has_link_or_contact at 0x7f52265994e0>('Claim your energy rebate refund at refunds-portal … Com/claim before the deadline. Energy rebate refunds take two weeks.')
+E        +    where <function has_link_or_contact at 0x7f52265994e0> = U.has_link_or_contact
+
+tests/web/test_w1_closure_r7_review_regressions.py:151: AssertionError
+_______ test_r7_01_neighbouring_claims_that_join_into_a_link_are_dropped _______
+
+    def test_r7_01_neighbouring_claims_that_join_into_a_link_are_dropped():
+        src = "Visit refunds-portal . Com/claim now for the energy rebate."
+        v = SY.verify("Visit refunds-portal . [1] Com/claim now for the energy rebate [1].", [src])
+>       assert not any("portal" in c.text for c in v.claims) and not any("Com/" in c.text for c in v.claims), v
+E       AssertionError: Verified(claims=[Claim(text='Visit refunds-portal .', citations=[1], quoted=False), Claim(text='Com/claim now for the energy rebate .', citations=[1], quoted=False)], dropped=[], no_answer=False)
+E       assert (not True)
+E        +  where True = any(<generator object test_r7_01_neighbouring_claims_that_join_into_a_link_are_dropped.<locals>.<genexpr> at 0x7f5226375a40>)
+
+tests/web/test_w1_closure_r7_review_regressions.py:167: AssertionError
+=========================== short test summary info ============================
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_every_mark_between_two_labels_is_a_link
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_every_doubled_mark_is_a_link
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_every_mark_is_a_link_inside_a_sentence_and_is_masked
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_a_mark_with_a_space_before_it_is_a_link
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\u060ccom]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds..com/claim]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds\u2026com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\u0964com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\u0589com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\u06d4com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\u2e31com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\u0701com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\u16ebcom]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\u1362com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\u0f0bcom]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\ua789com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\u02d9com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal,com/claim]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal:com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal d0t com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal_dot_com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal-dot-com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal.c om]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal D0T com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal ,com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal :com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal ..com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_reported_forms_never_reach_the_user[refunds-portal\xa8com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_generated_marks_through_verify_extractive_and_the_surface
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_a_split_link_is_never_kept_in_halves[refunds-portal . Com/claim]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_a_split_link_is_never_kept_in_halves[refunds-portal. Com/claim]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_a_split_link_is_never_kept_in_halves[refunds-portal . Com]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_a_split_link_is_never_kept_in_halves[refunds-portal \u2026 Com/claim]
+FAILED tests/web/test_w1_closure_r7_review_regressions.py::test_r7_01_neighbouring_claims_that_join_into_a_link_are_dropped
+34 failed, 27 passed in 4.09s
+
+=== tests/web/test_w1_closure_r7_review_regressions.py AFTER (f604e7cd73ba15a567b31e9b4360e2a4ef7de892) DONE
+.............................................................            [100%]
+61 passed in 12.17s
+

@@ -1,0 +1,59 @@
+**Verdict: REJECT.** All five earlier blocking findings are fixed. One new blocking MEDIUM finding remains: git config outside the repository is not checked, and I reproduced two failures that come from it.
+
+**Earlier findings, all FIXED (checked by reading the code, by the new tests, and by my own probes):**
+- **R1-01:** the verdict now comes from the worker's in-memory output, and `verify` re-checks it against the hashed raw output.
+- **R1-02:** findings that are not a list of objects (a dict, strings, a number, `None`, or a list mixing objects and strings) now give no verdict at all, never an ACCEPT.
+- **R1-03:** class-based pytest ids and Flutter ids now resolve to their test files; a gate test that can't be resolved makes the repair be refused instead of relaxed.
+- **R1-04:** the tamper baseline is read from the event chain, and the diagnosis worker gets the same before/after check.
+- **R3-01:** fetch refspec, `mirror`, `tagopt` and `pruneTags` changes now count as tamper. The integration fetch, run against a hostile refspec, moved no other branch.
+
+**New finding R4-01 (MEDIUM, blocking): user-level git config is not checked.** `git_control_digest` only hashes the repository's own `config`, `hooks/` and `info/`. A worker runs as the same user and can append to `~/.gitconfig` with plain shell. The `Bash(git config*)` deny rule doesn't stop that, and `control_state` doesn't change. I reproduced two effects:
+- **False "INTEGRATED":** a `url.<fake>.insteadOf=<origin>` entry sends both the driver's `push` and its `ls-remote` check to a substitute remote. The push exits 0, the check matches, and the real remote is never updated. The run would end COMPLETE.
+- **Reviewer and gates see different code than the commit:** a global smudge filter plus a committed `.gitattributes` made the audit checkout show `DEFECT = False` while the committed file says `DEFECT = True`. The worktree still read as clean to the integrity check.
+
+The fix is to include the global/system config and the default attributes file in the control digest, or run the driver's git with `GIT_CONFIG_GLOBAL`/`GIT_CONFIG_NOSYSTEM`. The second would also drop any credential helper set in the global config, so pushing may need its own handling.
+
+**Non-blocking (LOW):**
+- **R4-02:** a REJECT whose finding has a non-string title crashes the run with an uncaught `AttributeError` in `_fingerprint`. It never becomes an ACCEPT; the stage stays AUDITING and the next run starts a fresh review.
+- **R4-03:** `URI_DEVELOPMENT_LIFECYCLE.md:85` still calls `max_rounds` "the hard bound". The code now refuses `limits.max_rounds`; the cap is `continuation.budget.max_rounds`.
+
+**Tests:** `pytest tests/dev_workflow` gave 165 passed. No protected path changed in the range, and the checkout is still clean at `475533a`.
+
+**Not checked:** live `claude` worker runs, Flutter gates, a real GPU lease, pushing to a real hosted remote, and Windows. Separately, a worker child that detaches from its process group (`setsid`) can rewrite the whole state directory into a consistent chain. The docs already state this as a limitation.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "475533a28021ca7795f2cb495fb131c9c45e20c7", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R4-01", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Git control-state tamper check covers only the repository config; worker-written user-level git config (~/.gitconfig) silently redirects the driver's push and its push verification, and smudge filters make reviewer/gate checkouts differ from the candidate commit",
+   "files": ["scripts/dev_workflow/lifecycle.py:342", "scripts/dev_workflow/lifecycle.py:372", "scripts/dev_workflow/lifecycle.py:79", "scripts/dev_workflow/lifecycle.py:1232", "scripts/dev_workflow/lifecycle.py:1234", "scripts/dev_workflow/lifecycle.py:421", "scripts/dev_workflow/lifecycle_providers.py:131"],
+   "evidence": "Probe /tmp/uri_review_R4/p1/probe.py (HOME set to a temp dir): after appending to $HOME/.gitconfig only, L.git_control_digest(repo) and L.control_state(...) are unchanged (True True). (a) A [url \"<fake.git>\"] insteadOf=<origin> entry: driver-style push `[*GIT, -C, repo, push, origin, sha:refs/heads/main]` exits 0 and `git(repo, 'ls-remote', 'origin', ...)` returns the pushed sha, so integrate() would record INTEGRATED and reach COMPLETE, but the real origin main was never updated (printed: real origin main: False). (b) A global [filter \"x\"] smudge/clean plus a committed `.gitattributes` (a.py filter=x): blob in commit is 'DEFECT = True', the file in the driver's add_worktree() checkout reads 'DEFECT = False', and worktree_changes() reports the checkout clean, so the reviewer reads and the gates test content that is not the candidate tree, and the integrity check passes. Workers inherit HOME (lifecycle_providers.py:131) and can write ~/.gitconfig with plain shell (the Bash(git config*) prefix denial does not cover `cat >> ~/.gitconfig`). Same class as R1-04/R3-01 (worker-written config steering driver git commands), outside the monitored set.",
+   "suggested_fix": "Include the effective global/system config files (git config --show-origin --list --global/--system, or GIT_CONFIG_GLOBAL / XDG paths) and the default core.attributesFile ($XDG_CONFIG_HOME/git/attributes) in control_state/git_control_digest, or run driver git with GIT_CONFIG_GLOBAL/GIT_CONFIG_NOSYSTEM isolation (plus a separately pinned credential/push configuration). Verify pushes against the remote URL recorded at PLAN (e.g. `git remote get-url` resolved without insteadOf, bound in the chain). Add regression tests for the insteadOf and smudge-filter cases."},
+  {"id": "R4-02", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "A REJECT result with a non-string finding title crashes the driver (uncaught AttributeError) instead of routing to repair",
+   "files": ["scripts/dev_workflow/lifecycle.py:866", "scripts/dev_workflow/lifecycle.py:1388"],
+   "evidence": "effective_verdict({'verdict':'ACCEPT','findings':[{'id':'R1-01','severity':'HIGH','title':123}]}) -> REJECT, then _fingerprint() raises AttributeError: 'int' object has no attribute 'lower' (assess_progress/count_attempts). run() does not catch it; the stage stays AUDITING with no receipt. Fail-safe (never ACCEPT), but the round is lost and the next run re-reviews.",
+   "suggested_fix": "Coerce title/id/files with str() in _fingerprint/count_attempts, or reject non-string fields in result_problem as unparseable."},
+  {"id": "R4-03", "severity": "LOW", "blocking": false, "category": "documentation", "owner_decision": false,
+   "title": "Limits section still calls max_rounds the hard bound although L-AC22 replaced it",
+   "files": ["docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:85"],
+   "evidence": "Doc line 85-86: '`max_rounds` is the hard bound.' The code refuses limits.max_rounds (lifecycle.py:121) and uses continuation.budget.max_rounds as a safety cap plus stall/recurrence rules.",
+   "suggested_fix": "Reword to reference continuation.budget.max_rounds and the stall/RETRY_LIMIT rules."}
+ ],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -p no:cacheprovider -x", "result": "165 passed, 1 warning in 118.38s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -I /tmp/uri_review_R4/p1/probe.py (user-level git config: insteadOf push redirect, smudge filter)", "result": "control state unchanged; push+ls-remote verified against fake remote, real origin not updated; audit checkout content differs from committed blob while worktree reported clean", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -I /tmp/uri_review_R4/p2/probe.py (R1-02 malformed findings, R3-01 refspec tamper + integration_fetch, R1-03 test id resolution)", "result": "malformed findings -> no verdict; refspec change detected as tamper; mirror/tagopt/pruneTags not routine; integration fetch moved no local ref; class-based and Flutter ids resolved to files", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -I -c (non-string finding title)", "result": "REJECT then AttributeError in _fingerprint", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --name-only ffdf534..475533a filtered by protected paths", "result": "no protected path changed", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": [
+  "Live runs with real claude_cli reviewer/implementer processes were not executed in this review (only the DEVTEST unit suite and probes).",
+  "Flutter --machine gate parsing was checked by reading the code only; no Flutter gate was run.",
+  "GPU lease behaviour was not exercised (no GPU).",
+  "Integration push against a real hosted remote with credentials was not exercised; local bare remotes only.",
+  "Windows behaviour (exact-byte writes, killpg/start_new_session semantics) not verified (no Windows).",
+  "Full state-directory rewrite by a setsid-detached worker child (documented tamper-evident-not-proof limitation) was not re-probed; it does not change this verdict because the documentation states it."
+ ]}
+AUDIT_RESULT_END

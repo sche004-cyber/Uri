@@ -1,0 +1,253 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R4",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R4-01",
+  "R4-02"
+ ],
+ "candidate": "462be42c992c273155e83801b32dc01580a897ef",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T10:16:54Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "462be42c992c273155e83801b32dc01580a897ef",
+   "impl_head": "462be42c992c273155e83801b32dc01580a897ef",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "244efffa61406a5f57baf442906f2742b4c40a39d708b9c39cff2cb35480d5da",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "462be42c992c273155e83801b32dc01580a897ef",
+   "impl_head": "462be42c992c273155e83801b32dc01580a897ef",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "244efffa61406a5f57baf442906f2742b4c40a39d708b9c39cff2cb35480d5da",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "462be42c992c273155e83801b32dc01580a897ef",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_BARE requires the TLD group to be [^\\W\\d_]{2,24} followed by (?![\\w-]), so a TLD with digits/hyphens never matches; there is no xn-- handling anywhere in uri_web or tests/web. Probe: U.has_link_or_contact('Claim at refunds.xn--p1ai now') -> False (also 'Refunds-Portal.XN--P1AI', 'refunds-portal.xn--90ais', 'bank.xn--vermgensberatung-pwb'). SY.verify('Claim your energy rebate refund at refundsportal.xn--p1ai before the deadline [1].', [src]) keeps the claim; SY.extractive('energy rebate refund deadline', [src]) picks it; build_surface(...) passes require_valid and the dumped messages contain 'refundsportal.xn--p1ai'. xn--p1ai is the ASCII (punycode) form of the delegated ccTLD .\u0440\u0444, which browsers resolve. The implementer's comment says the detector now fails closed for ANY label<dot>label.",
+    "files": [
+     "uri_web/untrusted.py:63",
+     "uri_web/untrusted.py:120",
+     "uri_web/synthesize.py:214",
+     "uri_web/synthesize.py:294",
+     "uri_web/surface.py:38"
+    ],
+    "id": "R4-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Let the top-level label be (?:xn--[a-z0-9-]{1,59}|[^\\W\\d_]{2,63}) case-insensitively (or, failing closed, any [^\\W_][\\w-]* label containing a letter), and treat any label starting with xn-- as a link. Add a self-contained regression test parametrised over 'refundsportal.xn--p1ai', 'Refunds-Portal.XN--P1AI' and 'bank.xn--vermgensberatung-pwb' through has_link_or_contact, verify, extractive and build_surface.",
+    "title": "R3-01 repair still incomplete: punycode (xn--) top-level domains are not links, so they pass has_link_or_contact, verify(), the extractive path and the research surface (W1-AC15/AC12)"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "gap_ok allows skipping one determiner plus up to MAX_GAP_WORDS=2 non-function words, and those words can be adverbs or qualifiers. states_quantity misses decennial, centennial, septennial, quinquennial, unanimous, fraction, trio, midnight, noon, gross. Probes: verify('The national census is held on decennial cycle [1].', ['The national census is held on a roughly decennial cycle.']) -> claim kept with quoted=False; the same happens for 'a near unanimous decision' -> 'unanimous decision' and 'a roughly quinquennial schedule' -> 'quinquennial schedule'. So the docstring's claim that the check 'no longer depends on recognising the quantity word' does not hold.",
+    "files": [
+     "uri_web/synthesize.py:158",
+     "uri_web/synthesize.py:169",
+     "uri_web/synthesize.py:73",
+     "uri_web/synthesize.py:244"
+    ],
+    "id": "R4-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Allow a gap to drop determiners only (no modifiers), or allow only modifiers that are on a short closed list of non-qualifying adjectives; anything else quotes the source sentence. Regression test: the three source/claim pairs above must come out quoted=True or be dropped.",
+    "title": "R3-02 repair incomplete: _excerpt still lets a claim drop 'a <qualifier>' before an undetected quantity word (decennial, unanimous, quinquennial), so a changed quantity is shown unquoted in the Brain's words (D7)"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "has_link_or_contact('go \u9000\u6b3e\u3002\u6e38\u620f now') -> False; verify() keeps it, extractive() picks it and the surface shows it. \u6e38\u620f is a delegated IDN TLD and browsers map U+3002 to '.'. The implementer documents this limitation in a code comment.",
+    "files": [
+     "uri_web/untrusted.py:133"
+    ],
+    "id": "R4-03",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Extend _IDN_TLDS from the IANA root zone list, or treat a short CJK run directly after U+3002 with no following CJK sentence text as a possible link.",
+    "title": "A Chinese/Japanese host, then U+3002, then an IDN TLD not in _IDN_TLDS is not detected as a link (documented trade-off)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "NOT_FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers /tmp/claude-0/venv/bin/python -m pytest -q -q -p no:cacheprovider tests/web tests/assist -x",
+    "result": "exit 0; the double -q suppressed the summary line, so no count is available; the progress output shows dots only (no F/E/s), so all collected tests passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R4/p1.py (link detector corpus)",
+    "result": "xn-- TLDs, '\u9000\u6b3e\u3002\u6e38\u620f', '{.}', '<.>', 'd0t' and vanity numbers like 1-800-FLOWERS are not detected",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R4/p2.py (verify/extractive/surface end to end)",
+    "result": "refundsportal.xn--p1ai is kept by verify and extractive and reaches a valid A2UI surface",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R4/p4.py (excerpt qualifier drop)",
+    "result": "'a roughly decennial cycle' -> 'decennial cycle' and 'a near unanimous decision' -> 'unanimous decision' are kept unquoted; doubling/nearly cases are quoted",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf534..462be42 -- <protected paths>",
+    "result": "no protected path changed",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "SSRF in safe_fetch/netpolicy, vision gating, access/bridge permissions, the worker dispatch and the Flutter Assist lifecycle were not re-probed by me this round; only the passing test suite covers them",
+   "R1-03/R2-03 pixel check: I read the repair diff and rely on the passing Playwright-backed tests, with no reproduction of my own",
+   "R1-04, R1-05 and R1-06: marked FIXED from the passing tests only, with no reproduction of my own",
+   "Flutter tests and the full Python gate suite were not run",
+   "The ws_frozen_check zip part is BLOCKED because the checkpoint zip is absent"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 4,
+ "started_at": "2026-10-11T10:13:16Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "7fb002ae-d084-4e18-b13d-6cbc18118a09",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 73
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.1100886,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R4",
+  "ended_at": "2026-10-11T10:16:53Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 3,
+  "pid": 15435,
+  "prompt_sha256": "8ce45a65a08618d0c2983043acca117386a748b726f933d9bddad8eb7a690d80",
+  "provider": "claude_cli",
+  "result_text_sha256": "193813c7a69b93d15fcac4e2a6b6b4692489f93f636d0c6e2a9fafda2c948974",
+  "role": "reviewer",
+  "session_id": "7fb002ae-d084-4e18-b13d-6cbc18118a09",
+  "session_id_requested": "7fb002ae-d084-4e18-b13d-6cbc18118a09",
+  "started_at": "2026-10-11T10:13:16Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "20cdf165d76778cd1e75a947bcad0cc84862c50b6a6e80780e96e568d8268536"
+ }
+}

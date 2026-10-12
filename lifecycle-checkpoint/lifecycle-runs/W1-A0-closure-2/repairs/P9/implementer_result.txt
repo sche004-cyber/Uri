@@ -1,0 +1,20 @@
+I fixed R21-01 at its root cause in `uri_web/untrusted.py`. The new regression tests pass, and all 5154 tests in `tests/web` and `tests/assist` pass after the change.
+
+**What caused it:** `_words` turns a run of marks with no base letter into a "word". The R20-01 repair then cleaned that word with `_bare`, which only removes marks whose Unicode name starts with "COMBINING". Script marks (Devanagari, Tibetan, Arabic, Thai, Telugu signs) stayed in, so three of them were read as the name of the link.
+
+**The fix** (`_separator_word`, `uri_web/untrusted.py:580-585`): before `_bare` runs, any marks at the start of a word with no letter before them are now removed, whatever their name. A word made only of marks therefore comes out empty and counts as a separator again (the R19-01 rule), and the R20-01 handling of words that do have a base letter is unchanged.
+
+I chose this over the suggested "skip marks inside `_words`" approach because that one would reopen the hole. The marks would become part of the gap between name and ending, which is then filtered down to plain prose. Since `shop` is not a core domain, the match would still be dropped.
+
+**Tests:** new file `tests/web/test_w1_closure_r21_review_regressions.py`, with all non-ASCII characters written as `\u` escapes and no fixture files.
+- It covers the five reviewer cases plus `\u093c\u0901\u0902\u0903 cash`.
+- For each, it checks that `has_link_or_contact` returns True, `mask_links` removes "refunds-portal", `verify` drops the claim as `LINK_OR_CONTACT`, and `extractive` does not keep the sentence.
+- It also checks that three pieces of ordinary text (Hindi + "shop", English, Thai + "shop") are not flagged as links.
+
+**Pre-repair check:** I wasn't allowed to use git stash or create a worktree, so I loaded the 68feb3e7 version of `untrusted.py` directly and ran the six link cases through it. All six return False there and True after the fix, so the link tests should fail on the old commit. The three ordinary-text tests pass on both versions, as intended. I dropped one extra case I had added (`...\u0902x shop`) because the old code already caught it.
+
+I didn't run graphify, as instructed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R21-01"], "not_repaired": [], "regression_tests": ["tests/web/test_w1_closure_r21_review_regressions.py"], "notes": "Root cause: _words makes a word out of marks with no base letter, and since R20-01 _separator_word cleaned it with _bare, which removes only marks named 'COMBINING ...', so script marks stayed and were read as the name. Fix in _separator_word: marks at the start of a word with no letter before them are now removed whatever their name, then _bare runs; a mark-only word comes out empty and is a separator (R19-01 restored without its name restriction), and R20-01 handling of words with a base letter is unchanged. Not done in _words, because marks moved into the gap would be filtered to a plain-prose gap and the match dropped (shop is not core). Pre-repair check: the 6 link cases return False with the 68feb3e7 untrusted.py (loaded directly, since stash and worktree were denied) and True after. The 3 ordinary-text tests pass on both. R19/R20 tests pass; tests/web + tests/assist: 5154 passed."}
+REPAIR_RESULT_END

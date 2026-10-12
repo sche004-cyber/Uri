@@ -1,0 +1,8 @@
+# test_task_ctl rollback test on canonical 1587449 alone, same interpreter as the integration gate
+# interpreter: C:/Users/cheta/Development/uri-voice-rt/.venv/Scripts/python.exe (venv; pyvenv.cfg home = Python313)
+>           assert code == 0 and f"would stop scheduler service pid {svc.pid}" in out and svc.poll() is None
+E           AssertionError: assert (0 == 0 and 'would stop scheduler service pid 11992' in 'DRY RUN: would stop and unregister URIScheduler only (exists: False); state and artifacts are kept.\nDRY RUN: would stop scheduler service pid 13560\n')
+tests\scheduler\test_task_ctl.py:127: AssertionError
+1 failed, 4 deselected in 5.01s
+# launcher check: a child started with this python.exe and its parent
+Popen.pid 7028 child os.getpid() 4008 child parent 7028

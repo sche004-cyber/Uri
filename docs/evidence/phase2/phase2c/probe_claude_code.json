@@ -1,0 +1,59 @@
+{
+ "argv": [
+  "C:\\Users\\cheta\\AppData\\Roaming\\npm\\claude.CMD",
+  "-p",
+  "--output-format",
+  "stream-json",
+  "--verbose",
+  "--no-session-persistence",
+  "--setting-sources",
+  "",
+  "--permission-mode",
+  "dontAsk",
+  "--tools",
+  "",
+  "--strict-mcp-config",
+  "--max-budget-usd",
+  "0.5"
+ ],
+ "auth_status": {
+  "analyticsDisabled": false,
+  "apiProvider": "firstParty",
+  "authMethod": "none",
+  "configDirectory": "C:\\Users\\cheta\\.claude",
+  "loggedIn": false,
+  "projectsDirectory": "C:\\Users\\cheta\\.claude\\projects"
+ },
+ "auth_status_exit": 1,
+ "duration_s": 1.19,
+ "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\claude.CMD",
+ "exit": 1,
+ "forwarded_env_keys": [
+  "COMSPEC",
+  "HOME",
+  "PATH",
+  "PATHEXT",
+  "SHELL",
+  "SYSTEMDRIVE",
+  "SYSTEMROOT",
+  "TEMP",
+  "TERM",
+  "TMP",
+  "USERNAME",
+  "USERPROFILE",
+  "WINDIR"
+ ],
+ "model": null,
+ "ok": false,
+ "provider": "claude_code",
+ "result": {
+  "is_error": true,
+  "num_turns": 1,
+  "result": "Failed to authenticate: OAuth session expired and could not be refreshed",
+  "subtype": "success"
+ },
+ "status": "AUTH_REQUIRED",
+ "stdout_lines": 3,
+ "stdout_sha256": "52bd92a259c8f4ba45defc14bf4e4d89b286c5fc599535d0e052f73d14ebadcc",
+ "version": "2.1.287"
+}

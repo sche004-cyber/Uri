@@ -1,0 +1,494 @@
+{
+ "job": [
+  {
+   "job_id": "job_20007016d3a6",
+   "owner": "owner",
+   "title": "A2UI live check: Diwali GIF",
+   "template_id": "festival_gif.v1",
+   "params_json": "{\"festival\":{\"date\":\"2026-11-08\",\"key\":\"diwali\",\"name\":\"Diwali (Deepavali)\"}}",
+   "schedule_json": "{\"at\":\"2026-10-10T19:07:28\",\"kind\":\"once\",\"tz\":\"Asia/Kolkata\"}",
+   "timezone": "Asia/Kolkata",
+   "authority_json": "{\"harness\":\"claude_code\",\"network\":false,\"paid_services\":false,\"publish\":false,\"tools\":[\"Read\",\"Edit\",\"Write\",\"Glob\",\"Grep\"],\"writes\":\"attempt_workspace_only\"}",
+   "policy_json": "{\"execution_time\":\"09:00\",\"grace_s\":600,\"harness_recheck_s\":1800,\"max_attempts\":3,\"missed\":\"run_late\",\"quota_default_wait_s\":3600,\"retry_backoff_s\":[300,1800]}",
+   "state": "ACTIVE",
+   "proposal_sha256": "ab0ad4e873ee2292f4a1feca914485741d5ada63ae0348668019d5aaba837182",
+   "confirmed_by": "owner",
+   "confirmed_at_us": 1791639445451345,
+   "proposed_dates_json": "{\"once\":null}",
+   "confirmed_dates_json": "{\"once\":null}",
+   "created_at_us": 1791639445449067,
+   "updated_at_us": 1791639445451345
+  },
+  {
+   "job_id": "job_c6b698679d9a",
+   "owner": "owner",
+   "title": "Festival greeting GIF, 2 day(s) before each selected festival",
+   "template_id": "festival_gif.v1",
+   "params_json": "{}",
+   "schedule_json": "{\"calendar\":\"in_festivals\",\"kind\":\"calendar_relative\",\"offset_days\":-2,\"selection\":[\"buddha_purnima\",\"christmas\",\"diwali\",\"dussehra\",\"eid_ul_fitr\",\"eid_ul_zuha\",\"guru_nanak_jayanti\",\"holi\",\"janmashtami\",\"mahavir_jayanti\",\"milad_un_nabi\",\"ram_navami\"],\"time\":\"09:00\",\"tz\":\"Asia/Kolkata\"}",
+   "timezone": "Asia/Kolkata",
+   "authority_json": "{\"harness\":\"claude_code\",\"network\":false,\"paid_services\":false,\"publish\":false,\"tools\":[\"Read\",\"Edit\",\"Write\",\"Glob\",\"Grep\"],\"writes\":\"attempt_workspace_only\"}",
+   "policy_json": "{\"execution_time\":\"09:00\",\"grace_s\":600,\"harness_recheck_s\":1800,\"max_attempts\":3,\"missed\":\"run_late\",\"quota_default_wait_s\":3600,\"retry_backoff_s\":[300,1800]}",
+   "state": "CANCELLED",
+   "proposal_sha256": "c071ef29c9fad4057c74febc2245b3e86cb99551c98b06e63ef8a04b16784731",
+   "confirmed_by": null,
+   "confirmed_at_us": null,
+   "proposed_dates_json": "{\"buddha_purnima:2027\":\"2027-05-20\",\"christmas:2026\":\"2026-12-25\",\"diwali:2026\":\"2026-11-08\",\"diwali:2027\":\"2027-10-29\",\"dussehra:2026\":\"2026-10-20\",\"dussehra:2027\":\"2027-10-09\",\"eid_ul_fitr:2027\":\"2027-03-10\",\"eid_ul_zuha:2027\":\"2027-05-17\",\"guru_nanak_jayanti:2026\":\"2026-11-24\",\"guru_nanak_jayanti:2027\":\"2027-11-14\",\"holi:2027\":\"2027-03-23\",\"janmashtami:2027\":\"2027-08-25\",\"mahavir_jayanti:2027\":\"2027-04-19\",\"milad_un_nabi:2027\":\"2027-08-15\",\"ram_navami:2027\":\"2027-04-15\"}",
+   "confirmed_dates_json": "{}",
+   "created_at_us": 1791639465139536,
+   "updated_at_us": 1791639472452897
+  },
+  {
+   "job_id": "job_6c5cebb36468",
+   "owner": "owner",
+   "title": "Festival greeting GIF, 2 day(s) before each selected festival",
+   "template_id": "festival_gif.v1",
+   "params_json": "{}",
+   "schedule_json": "{\"calendar\":\"in_festivals\",\"kind\":\"calendar_relative\",\"offset_days\":-2,\"selection\":[\"diwali\",\"holi\"],\"time\":\"08:30\",\"tz\":\"Asia/Kolkata\"}",
+   "timezone": "Asia/Kolkata",
+   "authority_json": "{\"harness\":\"claude_code\",\"network\":false,\"paid_services\":false,\"publish\":false,\"tools\":[\"Read\",\"Edit\",\"Write\",\"Glob\",\"Grep\"],\"writes\":\"attempt_workspace_only\"}",
+   "policy_json": "{\"execution_time\":\"09:00\",\"grace_s\":600,\"harness_recheck_s\":1800,\"max_attempts\":3,\"missed\":\"run_late\",\"quota_default_wait_s\":3600,\"retry_backoff_s\":[300,1800]}",
+   "state": "ACTIVE",
+   "proposal_sha256": "50a9cfdd5b8cb6db7282a8a5154c28c3972992a26e868e83bc46db0187f6d50c",
+   "confirmed_by": "owner",
+   "confirmed_at_us": 1791639480352839,
+   "proposed_dates_json": "{\"diwali:2026\":\"2026-11-08\",\"diwali:2027\":\"2027-10-29\",\"holi:2027\":\"2027-03-23\"}",
+   "confirmed_dates_json": "{\"diwali:2026\":\"2026-11-08\",\"diwali:2027\":\"2027-10-29\",\"holi:2027\":\"2027-03-23\"}",
+   "created_at_us": 1791639472450193,
+   "updated_at_us": 1791639480352839
+  }
+ ],
+ "occurrence": [
+  {
+   "occ_id": 1,
+   "job_id": "job_20007016d3a6",
+   "occurrence_key": "once",
+   "due_at_us": 1791639448000000,
+   "deadline_us": null,
+   "state": "APPROVED",
+   "reason": "APPROVED_V1",
+   "attempts": 1,
+   "retry_at_us": null,
+   "late": 0,
+   "meta_json": "{\"local\":\"2026-10-10T19:07:28\",\"tz\":\"Asia/Kolkata\"}",
+   "request_json": null,
+   "lease_owner": null,
+   "lease_until_us": null,
+   "created_at_us": 1791639445451800,
+   "updated_at_us": 1791639473130948
+  },
+  {
+   "occ_id": 2,
+   "job_id": "job_6c5cebb36468",
+   "occurrence_key": "diwali:2026",
+   "due_at_us": 1793934000000000,
+   "deadline_us": 1794076200000000,
+   "state": "SCHEDULED",
+   "reason": null,
+   "attempts": 0,
+   "retry_at_us": null,
+   "late": 0,
+   "meta_json": "{\"calendar_record\":\"in_festivals/diwali/2026\",\"calendar_version\":\"2026-10-09.verified+owner.1\",\"due_local\":\"2026-11-06T08:30\",\"festival\":\"Diwali (Deepavali)\",\"festival_date\":\"2026-11-08\",\"festival_key\":\"diwali\",\"tz\":\"Asia/Kolkata\"}",
+   "request_json": null,
+   "lease_owner": null,
+   "lease_until_us": null,
+   "created_at_us": 1791639480353560,
+   "updated_at_us": 1791639480353561
+  },
+  {
+   "occ_id": 3,
+   "job_id": "job_6c5cebb36468",
+   "occurrence_key": "holi:2027",
+   "due_at_us": 1805598000000000,
+   "deadline_us": 1805740200000000,
+   "state": "SCHEDULED",
+   "reason": null,
+   "attempts": 0,
+   "retry_at_us": null,
+   "late": 0,
+   "meta_json": "{\"calendar_record\":\"in_festivals/holi/2027\",\"calendar_version\":\"2026-10-09.verified+owner.1\",\"due_local\":\"2027-03-21T08:30\",\"festival\":\"Holi\",\"festival_date\":\"2027-03-23\",\"festival_key\":\"holi\",\"tz\":\"Asia/Kolkata\"}",
+   "request_json": null,
+   "lease_owner": null,
+   "lease_until_us": null,
+   "created_at_us": 1791639480353697,
+   "updated_at_us": 1791639480353697
+  },
+  {
+   "occ_id": 4,
+   "job_id": "job_6c5cebb36468",
+   "occurrence_key": "diwali:2027",
+   "due_at_us": 1824606000000000,
+   "deadline_us": 1824748200000000,
+   "state": "SCHEDULED",
+   "reason": null,
+   "attempts": 0,
+   "retry_at_us": null,
+   "late": 0,
+   "meta_json": "{\"calendar_record\":\"in_festivals/diwali/2027\",\"calendar_version\":\"2026-10-09.verified+owner.1\",\"due_local\":\"2027-10-27T08:30\",\"festival\":\"Diwali (Deepavali)\",\"festival_date\":\"2027-10-29\",\"festival_key\":\"diwali\",\"tz\":\"Asia/Kolkata\"}",
+   "request_json": null,
+   "lease_owner": null,
+   "lease_until_us": null,
+   "created_at_us": 1791639480353755,
+   "updated_at_us": 1791639480353756
+  }
+ ],
+ "attempt": [
+  {
+   "attempt_id": 1,
+   "occ_id": 1,
+   "kind": "generate",
+   "mode": "FIXTURE",
+   "harness": "claude_fixture",
+   "started_at_us": 1791639448487843,
+   "ended_at_us": 1791639452495258,
+   "outcome": "COMPLETED",
+   "reason": "REVIEW_PENDING",
+   "workspace": "C:\\Users\\cheta\\AppData\\Local\\Temp\\a2ui_live_state_d_3gt79a\\work\\occ_1\\attempt_1",
+   "supervisor_task_id": "07aef8e4-c48f-5052-a316-c919e240eece"
+  }
+ ],
+ "artifact": [
+  {
+   "artifact_id": 1,
+   "occ_id": 1,
+   "attempt_id": 1,
+   "version": 1,
+   "parent_artifact_id": null,
+   "kind": "gif",
+   "path": "C:\\Users\\cheta\\AppData\\Local\\Temp\\a2ui_live_state_d_3gt79a\\outputs\\occ_1\\diwali_once_v1.gif",
+   "sha256": "b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36",
+   "bytes": 1592267,
+   "info_json": "{\"gif_checks\":{\"distinct_sampled_frames\":6,\"format\":\"GIF\",\"is_animated\":true,\"loop\":0,\"n_frames\":30,\"ok\":true,\"signature\":\"GIF89a\",\"signature_ok\":true,\"size\":[320,320],\"total_duration_ms\":3000},\"mode\":\"FIXTURE\",\"poster\":\"C:\\\\Users\\\\cheta\\\\AppData\\\\Local\\\\Temp\\\\a2ui_live_state_d_3gt79a\\\\outputs\\\\occ_1\\\\diwali_once_v1.poster.png\",\"quality\":{\"animated_gif\":true,\"loop_seam_mean_abs_diff\":4,\"loop_seamless\":true,\"text_legible\":true,\"within_size_budget\":true},\"render\":{\"bytes\":1592267,\"dither\":true,\"duration_s\":3.0,\"fps\":10.0,\"frames\":30,\"height\":320,\"legibility\":[{\"fill_vs_background\":4.7,\"fill_vs_stroke\":13.41,\"glyph_pixels\":6899,\"legible\":true,\"on_canvas_fraction\":1.0,\"px\":38,\"text\":\"Happy Diwali\"},{\"fill_vs_background\":5.88,\"fill_vs_stroke\":13.79,\"glyph_pixels\":1462,\"legible\":true,\"on_canvas_fraction\":1.0,\"px\":16,\"text\":\"May light lead the way\"}],\"loop_seam_mean_abs_diff\":4,\"palette_colors\":192,\"poster\":\"C:\\\\Users\\\\cheta\\\\AppData\\\\Local\\\\Temp\\\\a2ui_live_state_d_3gt79a\\\\outputs\\\\occ_1\\\\diwali_once_v1.poster.png\",\"size_budget\":5242880,\"width\":320,\"within_size_budget\":true},\"research\":\"# Diwali (Deepavali)\\n\\nSYNTHETIC FIXTURE TEXT - not research. Placeholder written by the test stand-in so the pipeline can be exercised without a model.\\n\",\"scene\":{\"background\":{\"cx\":0.5,\"cy\":0.72,\"stops\":[[\"#ffb347\",0],[\"#7a1f3d\",0.45],[\"#1b0b2e\",1]],\"type\":\"radial\"},\"canvas\":{\"duration_s\":3,\"fps\":10,\"height\":320,\"width\":320},\"festival_key\":\"diwali\",\"layers\":[{\"colors\":[\"#ffcc66\",\"#ff7f50\",\"#ffe29a\"],\"count\":14,\"seed\":4,\"type\":\"bokeh\"},{\"color\":\"#ffd27a\",\"count\":16,\"length\":0.75,\"opacity\":0.18,\"turns_per_loop\":1,\"type\":\"rays\",\"width_deg\":5,\"x\":0.5,\"y\":0.66},{\"breathe\":0.03,\"colors\":[\"#e84a5f\",\"#ff9f43\",\"#feca57\",\"#fff3d6\"],\"petals\":16,\"radius\":0.2,\"rings\":3,\"turns_per_loop\":1,\"type\":\"mandala\",\"x\":0.5,\"y\":0.86},{\"color\":\"#ffb347\",\"opacity\":0.55,\"pulse\":{\"amp\":0.08,\"period_s\":2},\"radius\":0.22,\"type\":\"glow\",\"x\":0.5,\"y\":0.62},{\"phase\":0.0,\"scale\":0.11,\"type\":\"diya\",\"x\":0.3,\"y\":0.7},{\"phase\":1.3,\"scale\":0.14,\"type\":\"diya\",\"x\":0.5,\"y\":0.66},{\"phase\":2.1,\"scale\":0.11,\"type\":\"diya\",\"x\":0.7,\"y\":0.7},{\"color\":\"#e8452c\",\"scale\":0.09,\"sway_deg\":7,\"type\":\"lantern\",\"x\":0.15,\"y\":0.0},{\"color\":\"#f39c12\",\"phase\":1.5,\"scale\":0.09,\"sway_deg\":6,\"type\":\"lantern\",\"x\":0.85,\"y\":0.0},{\"colors\":[\"#ff9f1a\",\"#ffb400\",\"#e84a5f\"],\"count\":26,\"direction\":\"down\",\"kind\":\"marigold\",\"seed\":11,\"size\":[3,6],\"speed\":[0.2,0.5],\"type\":\"particles\"},{\"colors\":[\"#ffd27a\",\"#ff8c42\"],\"count\":40,\"direction\":\"up\",\"kind\":\"embers\",\"seed\":5,\"size\":[1.5,3],\"speed\":[0.25,0.75],\"type\":\"particles\"},{\"colors\":[\"#fff6d5\"],\"count\":18,\"direction\":\"up\",\"kind\":\"sparkles\",\"seed\":9,\"size\":[2,4],\"speed\":[0.25,0.25],\"type\":\"particles\"},{\"color\":\"#fff3d6\",\"font\":\"serif\",\"glow\":\"#ffb347\",\"shimmer\":0.3,\"size\":0.12,\"stroke\":\"#4a1230\",\"text\":\"Happy Diwali\",\"type\":\"text\",\"x\":0.5,\"y\":0.2},{\"color\":\"#ffe9b8\",\"font\":\"elegant\",\"size\":0.05,\"stroke\":\"#3a0f26\",\"text\":\"May light lead the way\",\"type\":\"text\",\"x\":0.5,\"y\":0.31}],\"schema\":\"uri.scene.v1\",\"title\":\"Rows of light\"},\"scene_sha256\":\"81f1e71e819930aa3b6d8b6e0826e5badaa7c313a14765a4766d8ddeb1731e77\"}",
+   "concept": "# Rows of light\n\nRows of diyas glow over a slowly turning rangoli while marigold petals fall and embers rise.\n",
+   "status": "APPROVED",
+   "created_at_us": 1791639452494796
+  }
+ ],
+ "review": [
+  {
+   "review_id": 1,
+   "artifact_id": 1,
+   "principal": "owner",
+   "action": "approve",
+   "instruction": null,
+   "artifact_sha256": "b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36",
+   "at_us": 1791639473130823
+  }
+ ],
+ "a2ui_surface": [
+  {
+   "surface_id": "sched-acf7d840dc2d",
+   "owner": "owner",
+   "kind": "schedule_proposal",
+   "state": "OPEN",
+   "record_json": "{\"actions\":[\"surface.dismiss\"],\"bound\":{\"job_id\":\"job_6c5cebb36468\"},\"components\":[{\"children\":[\"title\",\"state\",\"interp\",\"next\",\"harness\",\"dismiss\"],\"component\":\"Column\",\"gap\":\"medium\",\"id\":\"root\"},{\"component\":\"Text\",\"id\":\"title\",\"text\":\"Festival GIF schedule is active\",\"variant\":\"title\"},{\"component\":\"Badge\",\"id\":\"state\",\"text\":\"Active\",\"tone\":\"success\"},{\"component\":\"Text\",\"id\":\"interp\",\"text\":\"2 calendar days before each selected festival at 08:30 (Asia/Kolkata): Diwali (Deepavali), Holi\",\"variant\":\"body\"},{\"component\":\"Text\",\"id\":\"next\",\"text\":\"\u2022 diwali:2026: 2026-11-06 08:30 IST (scheduled)\\n\u2022 holi:2027: 2027-03-21 08:30 IST (scheduled)\\n\u2022 diwali:2027: 2027-10-27 08:30 IST (scheduled)\",\"variant\":\"body\"},{\"component\":\"Badge\",\"id\":\"harness\",\"text\":\"Claude status not checked yet: see the Scheduler view; runs never use another provider\",\"tone\":\"warning\"},{\"action\":{\"event\":{\"context\":{},\"name\":\"surface.dismiss\"}},\"component\":\"Button\",\"id\":\"dismiss\",\"label\":\"Done\",\"variant\":\"secondary\"}],\"data\":{},\"kind\":\"schedule_status\",\"placement\":\"companion\",\"revision\":3,\"surface_id\":\"sched-acf7d840dc2d\",\"title\":\"Festival GIF schedule\"}",
+   "created_at_us": 1791639465143520,
+   "updated_at_us": 1791639480355586
+  },
+  {
+   "surface_id": "review-1",
+   "owner": "owner",
+   "kind": "artifact_review",
+   "state": "CLOSED",
+   "record_json": "{\"actions\":[\"scheduler.review_artifact\",\"scheduler.refine_artifact\"],\"bound\":{\"artifact_id\":1,\"artifact_sha256\":\"b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36\",\"occ_id\":1},\"components\":[{\"children\":[\"title\",\"mode\",\"image\",\"concept\",\"instr\",\"safety\",\"buttons\"],\"component\":\"Column\",\"gap\":\"medium\",\"id\":\"root\"},{\"component\":\"Text\",\"id\":\"title\",\"text\":\"Review: Diwali (Deepavali) GIF, version 1\",\"variant\":\"title\"},{\"component\":\"Badge\",\"id\":\"mode\",\"text\":\"Synthetic fixture output\",\"tone\":\"warning\"},{\"artifactId\":1,\"caption\":\"1592267 bytes, SHA-256 b10655348883\u2026\",\"component\":\"ArtifactImage\",\"id\":\"image\",\"sha256\":\"b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36\"},{\"component\":\"Text\",\"id\":\"concept\",\"text\":\"# Rows of light\\n\\nRows of diyas glow over a slowly turning rangoli while marigold petals fall and embers rise.\\n\",\"variant\":\"body\"},{\"component\":\"TextField\",\"id\":\"instr\",\"label\":\"What should change? (for Refine)\",\"maxLength\":1000,\"multiline\":true,\"value\":{\"path\":\"/draft/instruction\"}},{\"component\":\"Text\",\"id\":\"safety\",\"text\":\"Approving keeps the GIF for you; it is never posted or sent.\",\"variant\":\"caption\"},{\"action\":{\"event\":{\"context\":{\"artifact_sha256\":{\"path\":\"/bound/artifact_sha256\"},\"decision\":\"approve\"},\"name\":\"scheduler.review_artifact\"}},\"component\":\"Button\",\"id\":\"approve\",\"label\":\"Approve\",\"variant\":\"primary\"},{\"action\":{\"event\":{\"context\":{\"artifact_sha256\":{\"path\":\"/bound/artifact_sha256\"},\"instruction\":{\"path\":\"/draft/instruction\"}},\"name\":\"scheduler.refine_artifact\"}},\"component\":\"Button\",\"id\":\"refine\",\"label\":\"Refine\",\"variant\":\"secondary\"},{\"action\":{\"event\":{\"context\":{\"artifact_sha256\":{\"path\":\"/bound/artifact_sha256\"},\"decision\":\"regenerate\"},\"name\":\"scheduler.review_artifact\"}},\"component\":\"Button\",\"id\":\"regenerate\",\"label\":\"Regenerate\",\"variant\":\"secondary\"},{\"action\":{\"event\":{\"context\":{\"artifact_sha256\":{\"path\":\"/bound/artifact_sha256\"},\"decision\":\"reject\"},\"name\":\"scheduler.review_artifact\"}},\"component\":\"Button\",\"id\":\"reject\",\"label\":\"Reject\",\"variant\":\"danger\"},{\"children\":[\"approve\",\"refine\",\"regenerate\",\"reject\"],\"component\":\"Row\",\"gap\":\"small\",\"id\":\"buttons\"}],\"data\":{\"draft\":{\"instruction\":\"\"}},\"kind\":\"artifact_review\",\"placement\":\"workspace\",\"revision\":1,\"surface_id\":\"review-1\",\"title\":\"Diwali (Deepavali) GIF v1\"}",
+   "created_at_us": 1791639472874833,
+   "updated_at_us": 1791639473131539
+  },
+  {
+   "surface_id": "calendar-review",
+   "owner": "owner",
+   "kind": "calendar_review",
+   "state": "OPEN",
+   "record_json": "{\"actions\":[\"calendar.correct_record\"],\"bound\":{\"calendar_version\":\"2026-10-09.verified+owner.1\"},\"components\":[{\"children\":[\"title\",\"about\",\"record\",\"start\",\"note\",\"safety\",\"buttons\"],\"component\":\"Column\",\"gap\":\"medium\",\"id\":\"root\"},{\"component\":\"Text\",\"id\":\"title\",\"text\":\"Festival calendar: review and correct\",\"variant\":\"title\"},{\"component\":\"Text\",\"id\":\"about\",\"text\":\"Calendar 2026-10-09.verified+owner.1. Every date was read from a government notification; the source of each record is shown in the list.\",\"variant\":\"caption\"},{\"component\":\"ChoicePicker\",\"id\":\"record\",\"label\":\"Record\",\"multiple\":false,\"options\":[{\"label\":\"2026-10-19 \u00b7 Durga Puja (Dasain), Sikkim \u00b7 published \u00b7 official_gazette_read\",\"value\":\"dasain_sikkim:2026\"},{\"label\":\"2026-10-20 \u00b7 Dussehra (Vijaya Dashami) \u00b7 published \u00b7 om_document_read\",\"value\":\"dussehra:2026\"},{\"label\":\"2026-10-29 \u00b7 Karva Chauth \u00b7 unverified \u00b7 om_document_read\",\"value\":\"karva_chauth:2026\"},{\"label\":\"2026-11-01 \u00b7 Lhabab Duechen \u00b7 published \u00b7 official_gazette_read\",\"value\":\"lhabab_duechen:2026\"},{\"label\":\"2026-11-08 \u00b7 Diwali (Deepavali) \u00b7 published \u00b7 om_document_read\",\"value\":\"diwali:2026\"},{\"label\":\"2026-11-09 \u00b7 Govardhan Puja \u00b7 published \u00b7 om_document_read\",\"value\":\"govardhan_puja:2026\"},{\"label\":\"2026-11-09 \u00b7 Laxmi Puja (Deepawali / Tihar), Sikkim \u00b7 published \u00b7 official_gazette_read\",\"value\":\"tihar_sikkim:2026\"},{\"label\":\"2026-11-11 \u00b7 Bhai Dooj \u00b7 published \u00b7 om_document_read\",\"value\":\"bhai_dooj:2026\"},{\"label\":\"2026-11-15 \u00b7 Chhath Puja \u00b7 published \u00b7 om_document_read\",\"value\":\"chhath_puja:2026\"},{\"label\":\"2026-11-24 \u00b7 Guru Nanak Jayanti \u00b7 published \u00b7 om_document_read\",\"value\":\"guru_nanak_jayanti:2026\"},{\"label\":\"2026-11-30 \u00b7 Sakewa \u00b7 published \u00b7 official_gazette_read\",\"value\":\"sakewa:2026\"},{\"label\":\"2026-12-07 \u00b7 Kagyed Dance \u00b7 published \u00b7 official_gazette_read\",\"value\":\"kagyed_dance:2026\"},{\"label\":\"2026-12-09 \u00b7 Losoong / Namsoong \u00b7 published \u00b7 official_gazette_read\",\"value\":\"losoong_namsoong:2026\"},{\"label\":\"2026-12-15 \u00b7 Chasok Tongnam \u00b7 published \u00b7 official_gazette_read\",\"value\":\"chasok_tongnam:2026\"},{\"label\":\"2026-12-25 \u00b7 Christmas \u00b7 published \u00b7 om_document_read\",\"value\":\"christmas:2026\"},{\"label\":\"2026-12-28 \u00b7 Barahimijong \u00b7 published \u00b7 official_gazette_read\",\"value\":\"barahimijong:2026\"},{\"label\":\"2026-12-30 \u00b7 Tamu Lochar \u00b7 published \u00b7 official_gazette_read\",\"value\":\"tamu_lochar:2026\"},{\"label\":\"2027-01-14 \u00b7 Makar Sankranti \u00b7 published \u00b7 om_document_read\",\"value\":\"makar_sankranti:2027\"},{\"label\":\"2027-01-15 \u00b7 Pongal \u00b7 published \u00b7 om_document_read\",\"value\":\"pongal:2027\"},{\"label\":\"2027-01-26 \u00b7 Republic Day \u00b7 published \u00b7 om_document_read\",\"value\":\"republic_day:2027\"},{\"label\":\"2027-02-11 \u00b7 Basant Panchami \u00b7 published \u00b7 om_document_read\",\"value\":\"basant_panchami:2027\"},{\"label\":\"2027-03-06 \u00b7 Maha Shivratri \u00b7 published \u00b7 om_document_read\",\"value\":\"maha_shivratri:2027\"},{\"label\":\"2027-03-10 \u00b7 Id-ul-Fitr \u00b7 published \u00b7 om_document_read\",\"value\":\"eid_ul_fitr:2027\"},{\"label\":\"2027-03-23 \u00b7 Holi \u00b7 published \u00b7 om_document_read\",\"value\":\"holi:2027\"},{\"label\":\"2027-03-26 \u00b7 Good Friday \u00b7 published \u00b7 om_document_read\",\"value\":\"good_friday:2027\"},{\"label\":\"2027-04-07 \u00b7 Ugadi / Gudi Padwa \u00b7 published \u00b7 om_document_read\",\"value\":\"ugadi_gudi_padwa:2027\"},{\"label\":\"2027-04-14 \u00b7 Vaisakhi \u00b7 published \u00b7 om_document_read\",\"value\":\"vaisakhi:2027\"},{\"label\":\"2027-04-15 \u00b7 Ram Navami \u00b7 published \u00b7 om_document_read\",\"value\":\"ram_navami:2027\"},{\"label\":\"2027-04-19 \u00b7 Mahavir Jayanti \u00b7 published \u00b7 om_document_read\",\"value\":\"mahavir_jayanti:2027\"},{\"label\":\"2027-05-17 \u00b7 Id-ul-Zuha (Bakrid) \u00b7 published \u00b7 om_document_read\",\"value\":\"eid_ul_zuha:2027\"},{\"label\":\"2027-05-20 \u00b7 Buddha Purnima \u00b7 published \u00b7 om_document_read\",\"value\":\"buddha_purnima:2027\"},{\"label\":\"2027-06-16 \u00b7 Muharram \u00b7 published \u00b7 om_document_read\",\"value\":\"muharram:2027\"},{\"label\":\"2027-07-05 \u00b7 Rath Yatra \u00b7 published \u00b7 om_document_read\",\"value\":\"rath_yatra:2027\"},{\"label\":\"2027-08-15 \u00b7 Independence Day \u00b7 published \u00b7 om_document_read\",\"value\":\"independence_day:2027\"},{\"label\":\"2027-08-15 \u00b7 Milad-un-Nabi (Id-e-Milad) \u00b7 published \u00b7 om_document_read\",\"value\":\"milad_un_nabi:2027\"},{\"label\":\"2027-08-17 \u00b7 Raksha Bandhan \u00b7 published \u00b7 om_document_read\",\"value\":\"raksha_bandhan:2027\"},{\"label\":\"2027-08-25 \u00b7 Janmashtami \u00b7 published \u00b7 om_document_read\",\"value\":\"janmashtami:2027\"},{\"label\":\"2027-09-04 \u00b7 Ganesh Chaturthi \u00b7 published \u00b7 om_document_read\",\"value\":\"ganesh_chaturthi:2027\"},{\"label\":\"2027-09-12 \u00b7 Onam \u00b7 published \u00b7 om_document_read\",\"value\":\"onam:2027\"},{\"label\":\"2027-10-02 \u00b7 Gandhi Jayanti \u00b7 published \u00b7 om_document_read\",\"value\":\"gandhi_jayanti:2027\"},{\"label\":\"2027-10-09 \u00b7 Dussehra (Vijaya Dashami) \u00b7 published \u00b7 om_document_read\",\"value\":\"dussehra:2027\"},{\"label\":\"2027-10-18 \u00b7 Karva Chauth \u00b7 published \u00b7 om_document_read\",\"value\":\"karva_chauth:2027\"},{\"label\":\"2027-10-29 \u00b7 Diwali (Deepavali) \u00b7 published \u00b7 om_document_read\",\"value\":\"diwali:2027\"},{\"label\":\"2027-10-30 \u00b7 Govardhan Puja \u00b7 published \u00b7 om_document_read\",\"value\":\"govardhan_puja:2027\"},{\"label\":\"2027-10-31 \u00b7 Bhai Dooj \u00b7 published \u00b7 om_document_read\",\"value\":\"bhai_dooj:2027\"},{\"label\":\"2027-11-04 \u00b7 Chhath Puja \u00b7 published \u00b7 om_document_read\",\"value\":\"chhath_puja:2027\"},{\"label\":\"2027-11-14 \u00b7 Guru Nanak Jayanti \u00b7 published \u00b7 om_document_read\",\"value\":\"guru_nanak_jayanti:2027\"},{\"label\":\"2027-12-25 \u00b7 Christmas \u00b7 published \u00b7 om_document_read\",\"value\":\"christmas:2027\"}],\"value\":{\"path\":\"/draft/record\"}},{\"component\":\"DateTimeInput\",\"id\":\"start\",\"label\":\"Correct date (for Correct date)\",\"mode\":\"date\",\"value\":{\"path\":\"/draft/start\"}},{\"component\":\"TextField\",\"id\":\"note\",\"label\":\"Note\",\"maxLength\":300,\"value\":{\"path\":\"/draft/note\"}},{\"component\":\"Text\",\"id\":\"safety\",\"text\":\"A corrected or restored date never runs before you confirm it in the schedule.\",\"variant\":\"caption\"},{\"action\":{\"event\":{\"context\":{\"correction\":\"set_date\",\"note\":{\"path\":\"/draft/note\"},\"record\":{\"path\":\"/draft/record\"},\"start\":{\"path\":\"/draft/start\"}},\"name\":\"calendar.correct_record\"}},\"component\":\"Button\",\"id\":\"set_date\",\"label\":\"Correct date\",\"variant\":\"primary\"},{\"action\":{\"event\":{\"context\":{\"correction\":\"dispute\",\"note\":{\"path\":\"/draft/note\"},\"record\":{\"path\":\"/draft/record\"}},\"name\":\"calendar.correct_record\"}},\"component\":\"Button\",\"id\":\"dispute\",\"label\":\"Mark disputed\",\"variant\":\"danger\"},{\"action\":{\"event\":{\"context\":{\"correction\":\"accept\",\"note\":{\"path\":\"/draft/note\"},\"record\":{\"path\":\"/draft/record\"}},\"name\":\"calendar.correct_record\"}},\"component\":\"Button\",\"id\":\"accept\",\"label\":\"Accept\",\"variant\":\"secondary\"},{\"children\":[\"set_date\",\"dispute\",\"accept\"],\"component\":\"Row\",\"gap\":\"small\",\"id\":\"buttons\"}],\"data\":{\"draft\":{\"note\":\"\",\"record\":\"dasain_sikkim:2026\",\"start\":\"\"}},\"kind\":\"calendar_review\",\"placement\":\"workspace\",\"revision\":2,\"surface_id\":\"calendar-review\",\"title\":\"Festival calendar\"}",
+   "created_at_us": 1791639473523988,
+   "updated_at_us": 1791639473934501
+  }
+ ],
+ "calendar_correction": [
+  {
+   "correction_id": 1,
+   "calendar_id": "in_festivals",
+   "festival_key": "karva_chauth",
+   "year": 2026,
+   "action": "dispute",
+   "start": null,
+   "end": null,
+   "note": "live check: disputed",
+   "principal": "owner",
+   "base_version": "2026-10-09.verified",
+   "at_us": 1791639473928685
+  }
+ ],
+ "event": [
+  {
+   "seq": 1,
+   "at_us": 1791639445393059,
+   "kind": "scheduler.started",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"harness_revoked\":0,\"instance\":\"80e8572d24cf413f95b7030f72ca7a97\",\"recovered\":[]}",
+   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+   "hash": "a9660a454b35fb609a72d25a1e5d8ef465a43d7d3ff701bd718817ed8a05e232"
+  },
+  {
+   "seq": 2,
+   "at_us": 1791639445393789,
+   "kind": "calendar.loaded",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"calendar_id\":\"in_festivals\",\"digest\":\"4dedd1d46fe789ebda6a4c02ce6e3b9513ab71f60d8305e1416122fb85fd6567\",\"version\":\"2026-10-09.verified\"}",
+   "prev_hash": "a9660a454b35fb609a72d25a1e5d8ef465a43d7d3ff701bd718817ed8a05e232",
+   "hash": "1ef494689b9dd01f1cf256e4b1c7442145f61c4fd32683821df847e4997a7a03"
+  },
+  {
+   "seq": 3,
+   "at_us": 1791639445449210,
+   "kind": "job.proposed",
+   "job_id": "job_20007016d3a6",
+   "occ_id": null,
+   "payload_json": "{\"interpretation\":\"Once at 2026-10-10 19:07:28 (Asia/Kolkata)\",\"owner\":\"owner\",\"proposal_sha256\":\"ab0ad4e873ee2292f4a1feca914485741d5ada63ae0348668019d5aaba837182\"}",
+   "prev_hash": "1ef494689b9dd01f1cf256e4b1c7442145f61c4fd32683821df847e4997a7a03",
+   "hash": "10718cad57af469520298006f52067c13b09abd1ffade474cf4566207271df9b"
+  },
+  {
+   "seq": 4,
+   "at_us": 1791639445451398,
+   "kind": "job.activated",
+   "job_id": "job_20007016d3a6",
+   "occ_id": null,
+   "payload_json": "{\"by\":\"owner\",\"proposal_sha256\":\"ab0ad4e873ee2292f4a1feca914485741d5ada63ae0348668019d5aaba837182\"}",
+   "prev_hash": "10718cad57af469520298006f52067c13b09abd1ffade474cf4566207271df9b",
+   "hash": "913f0b3b216477222850aea63450e0c77c9ad5ce1024d156cc1fcf85faba42b2"
+  },
+  {
+   "seq": 5,
+   "at_us": 1791639445451853,
+   "kind": "occurrence.scheduled",
+   "job_id": "job_20007016d3a6",
+   "occ_id": 1,
+   "payload_json": "{\"due_local\":\"2026-10-10T19:07+05:30\",\"due_utc\":\"2026-10-10T13:37:28+00:00\",\"festival_date\":null,\"key\":\"once\",\"reason\":null}",
+   "prev_hash": "913f0b3b216477222850aea63450e0c77c9ad5ce1024d156cc1fcf85faba42b2",
+   "hash": "2be31146b73ce1f27208dfab6227acab2fbb99214bdc34aeb21f464e3b0304f8"
+  },
+  {
+   "seq": 6,
+   "at_us": 1791639448487055,
+   "kind": "occurrence.claimed",
+   "job_id": "job_20007016d3a6",
+   "occ_id": 1,
+   "payload_json": "{\"attempt_no\":1,\"instance\":\"80e8572d24cf413f95b7030f72ca7a97\",\"revision\":false}",
+   "prev_hash": "2be31146b73ce1f27208dfab6227acab2fbb99214bdc34aeb21f464e3b0304f8",
+   "hash": "681b20855014f85fe32e4a259b65716c771ac5846992fac185f4cb9585a50ac6"
+  },
+  {
+   "seq": 7,
+   "at_us": 1791639448487926,
+   "kind": "attempt.started",
+   "job_id": "job_20007016d3a6",
+   "occ_id": 1,
+   "payload_json": "{\"attempt_id\":1,\"executor\":\"claude_fixture\",\"kind\":\"generate\",\"mode\":\"FIXTURE\",\"qualification\":\"FIXTURE_ONLY\",\"workspace\":\"C:\\\\Users\\\\cheta\\\\AppData\\\\Local\\\\Temp\\\\a2ui_live_state_d_3gt79a\\\\work\\\\occ_1\\\\attempt_1\"}",
+   "prev_hash": "681b20855014f85fe32e4a259b65716c771ac5846992fac185f4cb9585a50ac6",
+   "hash": "5a6dcb655a63d15b00c23f5d258fd27644a641b3eaf84c6e7b6e12b2bb401bd8"
+  },
+  {
+   "seq": 8,
+   "at_us": 1791639452494884,
+   "kind": "artifact.created",
+   "job_id": "job_20007016d3a6",
+   "occ_id": 1,
+   "payload_json": "{\"artifact_id\":1,\"bytes\":1592267,\"kind\":\"generate\",\"mode\":\"FIXTURE\",\"parent\":null,\"quality\":{\"animated_gif\":true,\"loop_seam_mean_abs_diff\":4,\"loop_seamless\":true,\"text_legible\":true,\"within_size_budget\":true},\"sha256\":\"b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36\",\"version\":1}",
+   "prev_hash": "5a6dcb655a63d15b00c23f5d258fd27644a641b3eaf84c6e7b6e12b2bb401bd8",
+   "hash": "c6e12e6dec2e5c4b080ead821a41290d38e8a65445c1f020497be94b1e1aa2ab"
+  },
+  {
+   "seq": 9,
+   "at_us": 1791639452495371,
+   "kind": "attempt.ended",
+   "job_id": "job_20007016d3a6",
+   "occ_id": 1,
+   "payload_json": "{\"attempt_id\":1,\"mode\":\"FIXTURE\",\"next_state\":\"AWAITING_REVIEW\",\"outcome\":\"COMPLETED\",\"reason\":\"REVIEW_PENDING\"}",
+   "prev_hash": "c6e12e6dec2e5c4b080ead821a41290d38e8a65445c1f020497be94b1e1aa2ab",
+   "hash": "f88ada170ffeb67b180daa3d57f5633d4cf8a00101a3f5c52d417407f271fab6"
+  },
+  {
+   "seq": 10,
+   "at_us": 1791639465139709,
+   "kind": "job.proposed",
+   "job_id": "job_c6b698679d9a",
+   "occ_id": null,
+   "payload_json": "{\"interpretation\":\"2 calendar days before each selected event in 'in_festivals' at 09:00 (Asia/Kolkata): buddha_purnima, christmas, diwali, dussehra, eid_ul_fitr, eid_ul_zuha, guru_nanak_jayanti, holi, janmashtami, mahavir_jayanti, milad_un_nabi, ram_navami\",\"owner\":\"owner\",\"proposal_sha256\":\"c071ef29c9fad4057c74febc2245b3e86cb99551c98b06e63ef8a04b16784731\"}",
+   "prev_hash": "f88ada170ffeb67b180daa3d57f5633d4cf8a00101a3f5c52d417407f271fab6",
+   "hash": "4ec8c247e3d8f2c97a4399726a610947b25614a842dfa7b499d6b9beb536bccb"
+  },
+  {
+   "seq": 11,
+   "at_us": 1791639472089239,
+   "kind": "a2ui.action",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"component\":\"confirm\",\"digest\":\"979fada4ae6485359f6984efc30f0d77fa6b5d962a086c7142a061e644a4fc7d\",\"kind\":\"schedule_proposal\",\"name\":\"scheduler.confirm_proposal\",\"result\":\"DRAFT_CHANGED\",\"revision\":1,\"surface_id\":\"sched-acf7d840dc2d\"}",
+   "prev_hash": "4ec8c247e3d8f2c97a4399726a610947b25614a842dfa7b499d6b9beb536bccb",
+   "hash": "799bd6771a62799b3a047014de446ba775119f0b0bb6d10b27ad9d78cb30c21c"
+  },
+  {
+   "seq": 12,
+   "at_us": 1791639472450272,
+   "kind": "job.proposed",
+   "job_id": "job_6c5cebb36468",
+   "occ_id": null,
+   "payload_json": "{\"interpretation\":\"2 calendar days before each selected event in 'in_festivals' at 08:30 (Asia/Kolkata): diwali, holi\",\"owner\":\"owner\",\"proposal_sha256\":\"50a9cfdd5b8cb6db7282a8a5154c28c3972992a26e868e83bc46db0187f6d50c\"}",
+   "prev_hash": "799bd6771a62799b3a047014de446ba775119f0b0bb6d10b27ad9d78cb30c21c",
+   "hash": "5d181b0437ef83fab63797b8b97b93132ba8b33d7c981a641ca1c5f7d6050309"
+  },
+  {
+   "seq": 13,
+   "at_us": 1791639472452973,
+   "kind": "job.cancelled",
+   "job_id": "job_c6b698679d9a",
+   "occ_id": null,
+   "payload_json": "{\"by\":\"owner\",\"from\":\"PROPOSED\"}",
+   "prev_hash": "5d181b0437ef83fab63797b8b97b93132ba8b33d7c981a641ca1c5f7d6050309",
+   "hash": "cb9dc4f6c2edda89aa4f98a025e173aa47961b83d0af197e6bb01b111ba0e2c2"
+  },
+  {
+   "seq": 14,
+   "at_us": 1791639472453654,
+   "kind": "a2ui.action",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"component\":\"revise\",\"digest\":\"979fada4ae6485359f6984efc30f0d77fa6b5d962a086c7142a061e644a4fc7d\",\"kind\":\"schedule_proposal\",\"name\":\"scheduler.revise_proposal\",\"result\":\"OK\",\"revision\":1,\"surface_id\":\"sched-acf7d840dc2d\"}",
+   "prev_hash": "cb9dc4f6c2edda89aa4f98a025e173aa47961b83d0af197e6bb01b111ba0e2c2",
+   "hash": "defd96f9f151034c6f4cb898884a2e645f4bf5ee25b58ef4991284cc30be6e0e"
+  },
+  {
+   "seq": 15,
+   "at_us": 1791639473130975,
+   "kind": "review.approve",
+   "job_id": "job_20007016d3a6",
+   "occ_id": 1,
+   "payload_json": "{\"artifact_id\":1,\"by\":\"owner\",\"instruction\":null,\"published\":false,\"sha256\":\"b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36\",\"version\":1}",
+   "prev_hash": "defd96f9f151034c6f4cb898884a2e645f4bf5ee25b58ef4991284cc30be6e0e",
+   "hash": "80dedeb1f9e48836783c3b81d920951c57ba5685384561952825c1da70f79ea3"
+  },
+  {
+   "seq": 16,
+   "at_us": 1791639473131925,
+   "kind": "a2ui.action",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"component\":\"approve\",\"digest\":\"363c47b0fbb87381c30a71d28136e00c0a2de8a7a90fe55a9b0cf96a6745159c\",\"kind\":\"artifact_review\",\"name\":\"scheduler.review_artifact\",\"result\":\"OK\",\"revision\":1,\"surface_id\":\"review-1\"}",
+   "prev_hash": "80dedeb1f9e48836783c3b81d920951c57ba5685384561952825c1da70f79ea3",
+   "hash": "36d28f27f1937bda4068d18e362429186b45c2905d93d8018016bfee8dfe7c80"
+  },
+  {
+   "seq": 17,
+   "at_us": 1791639473928735,
+   "kind": "calendar.corrected",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"action\":\"dispute\",\"calendar_id\":\"in_festivals\",\"correction_id\":1,\"end\":null,\"festival_key\":\"karva_chauth\",\"note\":\"live check: disputed\",\"principal\":\"owner\",\"start\":null,\"year\":2026}",
+   "prev_hash": "36d28f27f1937bda4068d18e362429186b45c2905d93d8018016bfee8dfe7c80",
+   "hash": "effc158a4179f37b928ed7ad9d7bb9bd1aad7911044ef84dd4e50b336cf7b63d"
+  },
+  {
+   "seq": 18,
+   "at_us": 1791639473930674,
+   "kind": "calendar.loaded",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"calendar_id\":\"in_festivals\",\"digest\":\"5b6d2a9a478d9e60e198153ca4210790ba66884766c3884c5e63f56115170357\",\"version\":\"2026-10-09.verified+owner.1\"}",
+   "prev_hash": "effc158a4179f37b928ed7ad9d7bb9bd1aad7911044ef84dd4e50b336cf7b63d",
+   "hash": "d4d6bf22cd9c2cd0f79f61ecee0f1d70d0f10891ee015c80bf80f0efa1f5ebf1"
+  },
+  {
+   "seq": 19,
+   "at_us": 1791639473931131,
+   "kind": "calendar.refreshed",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"calendar_id\":\"in_festivals\",\"diff\":{\"added\":[],\"moved\":[],\"withdrawn\":[[\"karva_chauth\",2026]]},\"version\":\"2026-10-09.verified+owner.1\"}",
+   "prev_hash": "d4d6bf22cd9c2cd0f79f61ecee0f1d70d0f10891ee015c80bf80f0efa1f5ebf1",
+   "hash": "b292a7e7b4a4e83eb231444f7e46c4bdaea29e1f3d75e4efe663c1d66e5e0066"
+  },
+  {
+   "seq": 20,
+   "at_us": 1791639473935215,
+   "kind": "a2ui.action",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"component\":\"dispute\",\"digest\":\"e033ac136489cf26916626ab435b404cd4724a1a5b21f7c5f7f1b23c95af5248\",\"kind\":\"calendar_review\",\"name\":\"calendar.correct_record\",\"result\":\"OK\",\"revision\":1,\"surface_id\":\"calendar-review\"}",
+   "prev_hash": "b292a7e7b4a4e83eb231444f7e46c4bdaea29e1f3d75e4efe663c1d66e5e0066",
+   "hash": "6d88e2ae0eb3ed3c87ebf40de218bb9a67ff8765a4b8c661042cbe0e0e574b9b"
+  },
+  {
+   "seq": 21,
+   "at_us": 1791639475253973,
+   "kind": "scheduler.started",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"harness_revoked\":0,\"instance\":\"cc35a6d80c6548e494a43918a13a92a4\",\"recovered\":[]}",
+   "prev_hash": "6d88e2ae0eb3ed3c87ebf40de218bb9a67ff8765a4b8c661042cbe0e0e574b9b",
+   "hash": "31b7f6841a58aacbc3c24239cb6d729fbb4de977caa1a416ef5d6a9fd9ba888c"
+  },
+  {
+   "seq": 22,
+   "at_us": 1791639480334178,
+   "kind": "a2ui.action",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"component\":\"confirm\",\"digest\":\"17a2440b6c1cedf6e158d6d4608512a76fa87b798b78743da6ca43223172eca8\",\"kind\":\"schedule_proposal\",\"name\":\"scheduler.confirm_proposal\",\"result\":\"STALE_SURFACE\",\"revision\":2,\"surface_id\":\"sched-acf7d840dc2d\"}",
+   "prev_hash": "31b7f6841a58aacbc3c24239cb6d729fbb4de977caa1a416ef5d6a9fd9ba888c",
+   "hash": "d456b9f3539cb364c51c2b9b856dacddcaf27fe6ca7a3a9d19d5b3236c9c91c4"
+  },
+  {
+   "seq": 23,
+   "at_us": 1791639480352936,
+   "kind": "job.activated",
+   "job_id": "job_6c5cebb36468",
+   "occ_id": null,
+   "payload_json": "{\"by\":\"owner\",\"proposal_sha256\":\"50a9cfdd5b8cb6db7282a8a5154c28c3972992a26e868e83bc46db0187f6d50c\"}",
+   "prev_hash": "d456b9f3539cb364c51c2b9b856dacddcaf27fe6ca7a3a9d19d5b3236c9c91c4",
+   "hash": "edc2eb2761023d9d3f7f33dc17f8e6f99f220730243ea13ec407f68b99e98c4a"
+  },
+  {
+   "seq": 24,
+   "at_us": 1791639480353622,
+   "kind": "occurrence.scheduled",
+   "job_id": "job_6c5cebb36468",
+   "occ_id": 2,
+   "payload_json": "{\"due_local\":\"2026-11-06T08:30+05:30\",\"due_utc\":\"2026-11-06T03:00:00+00:00\",\"festival_date\":\"2026-11-08\",\"key\":\"diwali:2026\",\"reason\":null}",
+   "prev_hash": "edc2eb2761023d9d3f7f33dc17f8e6f99f220730243ea13ec407f68b99e98c4a",
+   "hash": "7a9d711b984e9cc5929e191873b062014e588114d1156e2a30f4e6c21380b270"
+  },
+  {
+   "seq": 25,
+   "at_us": 1791639480353722,
+   "kind": "occurrence.scheduled",
+   "job_id": "job_6c5cebb36468",
+   "occ_id": 3,
+   "payload_json": "{\"due_local\":\"2027-03-21T08:30+05:30\",\"due_utc\":\"2027-03-21T03:00:00+00:00\",\"festival_date\":\"2027-03-23\",\"key\":\"holi:2027\",\"reason\":null}",
+   "prev_hash": "7a9d711b984e9cc5929e191873b062014e588114d1156e2a30f4e6c21380b270",
+   "hash": "3bdf5c21ba27527674a072ea35ad58ad976709c4fb73583645886c51f38b233f"
+  },
+  {
+   "seq": 26,
+   "at_us": 1791639480353775,
+   "kind": "occurrence.scheduled",
+   "job_id": "job_6c5cebb36468",
+   "occ_id": 4,
+   "payload_json": "{\"due_local\":\"2027-10-27T08:30+05:30\",\"due_utc\":\"2027-10-27T03:00:00+00:00\",\"festival_date\":\"2027-10-29\",\"key\":\"diwali:2027\",\"reason\":null}",
+   "prev_hash": "3bdf5c21ba27527674a072ea35ad58ad976709c4fb73583645886c51f38b233f",
+   "hash": "33f41d20d473eb33066978274bbaeceac8d1dc2db9ad139ac59c0d93ff5b3805"
+  },
+  {
+   "seq": 27,
+   "at_us": 1791639480356121,
+   "kind": "a2ui.action",
+   "job_id": null,
+   "occ_id": null,
+   "payload_json": "{\"component\":\"confirm\",\"digest\":\"17a2440b6c1cedf6e158d6d4608512a76fa87b798b78743da6ca43223172eca8\",\"kind\":\"schedule_proposal\",\"name\":\"scheduler.confirm_proposal\",\"result\":\"OK\",\"revision\":2,\"surface_id\":\"sched-acf7d840dc2d\"}",
+   "prev_hash": "33f41d20d473eb33066978274bbaeceac8d1dc2db9ad139ac59c0d93ff5b3805",
+   "hash": "4faf7b18a14b3c8c9e710491f1af9f1b3edf4b7c230fd81544fbf93d4bbdb5dc"
+  }
+ ]
+}

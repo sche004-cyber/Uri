@@ -1,0 +1,6 @@
+phase2 {"exit": 0, "passed": 477, "failed": 0, "skipped": 2, "errors": 0, "line": "477 passed, 2 skipped, 1 warning in 465.90s (0:07:45)", "PASS": true}
+authority {"exit": 0, "passed": 134, "failed": 0, "skipped": 0, "errors": 0, "line": "134 passed, 1 warning in 161.14s (0:02:41)", "PASS": true}
+phase1-full {"exit": 1, "passed": 2676, "failed": 11, "skipped": 11, "errors": 0, "line": "11 failed, 2676 passed, 11 skipped, 3 warnings, 88 subtests passed in 672.94s (0:11:12)", "failed_ids": ["step3_test.py::test_drive", "step4_test.py::test_download", "test_capability_directory.py::PrivacyTests::test_no_credentials_tokens_or_secrets_appear_in_serialized_output", "test_m20_feasibility_validation.py::Unava
+phase1-scope {"changed_vs_closure": ["docs/plans/PHASE2CLOSE_C6_CHAT_INTEGRATION.md", "docs/plans/PHASE2CLOSE_C7_READINESS.md", "docs/plans/PHASE2CLOSE_CLOSURE_CHECKLIST.md", "docs/plans/PHASE2CLOSE_PHYSICAL_ACCEPTANCE_RUNBOOK.md", "docs/plans/PHASE2CLOSE_REPORT.md", "docs/plans/URI_DEVELOPMENT_TODO.md", "scripts/phase2c_native_qualification.py", "scripts/phase2close_acceptance.py", "scripts/phase2close_chain.
+residue {"removed": [], "PASS": true}
+flutter {"exit": 0, "passed": 205, "skipped": 2, "failed": 0, "verdict": "All tests passed!", "PASS": true}

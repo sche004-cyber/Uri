@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Frame-timing evidence for UI_TEST_EVIDENCE.md.
+# Runs the living preview in a PROFILE build (flutter run --profile) for
+# ~70 s per scenario with URI_LIVING_PERF=1, which makes lib/living/perf_logger.dart
+# print one "[perf] ..." summary every 5 s; the logs land in docs/ui_phase/perf/.
+# "q" is piped to flutter run after the sampling window so it exits cleanly.
+set -u
+HERE="$(cd "$(dirname "$0")" && pwd)"
+UI="$HERE/../../../uri_ui"
+OUT="$HERE/../perf"
+mkdir -p "$OUT"
+cd "$UI"
+
+run_scenario() {
+  local name="$1"; shift
+  if [ -n "$ONLY" ] && [ "$name" != "$ONLY" ]; then return; fi
+  echo "=== $name"
+  (sleep "${SAMPLE_SECONDS:-70}"; echo q) | env "$@" URI_LIVING_PERF=1 URI_LIVING_SKIP_ONBOARDING=1 \
+    flutter run --profile -d windows -t lib/main_living.dart 2>&1 \
+    | grep -E "\[perf\]|Impeller|rror|Exception" > "$OUT/$name.log"
+  tail -n 12 "$OUT/$name.log"
+}
+
+# The first scenario includes the profile compile; give it longer.
+SAMPLE_SECONDS=${SAMPLE_SECONDS:-70}
+ONLY=${ONLY:-}
+run_scenario style_plasma_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=nebula
+run_scenario style_particles_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=swarm
+run_scenario style_filaments_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=mesh
+run_scenario style_electric_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=energy
+run_scenario style_holographic_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=glass
+run_scenario style_aurora_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=halo
+run_scenario style_sun_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=flow
+run_scenario dashboard_plasma_profile URI_LIVING_START_MODE=dashboard
+run_scenario reduced_plasma_profile URI_LIVING_START_MODE=companion URI_LIVING_REDUCED_EFFECTS=1
+# Active animation (Codex round 5 MINOR): keep one working-state sample.
+run_scenario style_plasma_working_profile URI_LIVING_START_MODE=companion URI_LIVING_DEMO_STATE=working
+echo DONE

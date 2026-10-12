@@ -1,0 +1,50 @@
+I recommend **REJECT** for f604e7cd. One HIGH and one MEDIUM finding are still open. The suite passes (3187 tests) and no protected paths changed.
+
+I checked both SHAs myself (HEAD is f604e7cd…, the baseline commit exists). The checkout is unmodified, and my probes are in `/tmp/uri_review_R7/`.
+
+**R7-01 (HIGH): the R1-01 link class is still open.** A dot inside a non-ASCII bracket or quote pair, with spaces around it, is not treated as a link. A spaced run of dots and some bullet symbols also get through. Owner decision D13 says "any bracketed dot" counts as a link, and its only accepted exceptions are 'portal. Com' and 'x. com', so these are not covered by an accepted limit.
+- Missed forms: `refunds-portal 【.】 com/claim`, `「.」`, `〔.〕`, `«.»`, `⟨.⟩`, `"."`, `'.'`, `refunds-portal . . com/claim`, `◦` (U+25E6 WHITE BULLET), `●`, `(d o t)`.
+- Each one gets past the link check, `verify()`, `extractive()`, the research surface and the A2UI validator: the full sentence with "refunds-portal" reaches the user.
+- Cause:
+  - The bracket rule at `uri_web/untrusted.py:163` only knows `[({<` and `])}>`.
+  - The spaced rule at `:165` excludes a mark run that starts with an opening bracket.
+  - The spaced-dot rule at `:162` does not allow spaces between dots.
+  - `_is_dotlike` (`:134`) drops symbol-category bullets such as U+25E6, even though its name contains BULLET.
+- The new regression tests are generated from the Unicode database, but they only cover a single mark with no spaces, a doubled mark, or a space on the left. Spaced brackets and spaced dot runs are never tested.
+- The code comments also list 'portal, com' and 'portal: com' as accepted residual limits. Those are the implementer's own, not owner decisions. `refunds-portal; com/claim` and `! com/claim` pass too.
+
+**R7-02 (MEDIUM): the verifier keeps a claim whose meaning is reversed.** It lets a Brain-worded claim add or drop a determiner, so "Little progress was made…" passes against a source saying "A little progress was made…", and the reverse. Both are kept unquoted with the citation. "Little" is not in the quantity word list, and the quantity check and the polarity check both miss it.
+
+**Earlier findings:** every specific form reported in R1 to R6 is fixed, so all 18 are marked FIXED. For R1-01, R2-01 and R6-01 that covers only their reported forms: the wider class is still open through R7-01. The SSRF spot checks (numeric shorthand forms, IPv6 transition addresses, NAT64, userinfo, ports) were all refused, and every DNS answer is checked before the address is pinned.
+
+**Not verified:**
+- The Flutter Assist tests are BLOCKED: they need `flutter pub get`, which would write into the checkout.
+- Live Windows, GPU and Tavily checks aren't possible here.
+- The checkpoint zip isn't present.
+- Re-checks of vision, permissions, worker and controller relied on passing tests, not new adversarial probing.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R7-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R1-01 link class still open: a dot in a non-ASCII bracket/quote pair with spaces ('refunds-portal 【.】 com/claim', '「.」', '〔.〕', '«.»', '⟨.⟩', '\".\"'), a spaced dot run ('refunds-portal . . com/claim') or a So-category bullet ('◦' U+25E6, '●') passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, within D13 'any bracketed dot')",
+   "files": ["uri_web/untrusted.py:134", "uri_web/untrusted.py:162", "uri_web/untrusted.py:163", "uri_web/untrusted.py:165", "uri_web/synthesize.py:255", "uri_web/surface.py:37"],
+   "evidence": "Probe /tmp/uri_review_R7/p3.py, with SENT='Claim your energy rebate refund at {} before the deadline.' and link='refunds-portal 【.】 com/claim': U.has_link_or_contact(src) is False; SY.verify(SENT[:-1]+' [1].',[src]) keeps the claim 'Claim your energy rebate refund at refunds-portal 【.】 com/claim before the deadline .'; SY.extractive('energy rebate refund deadline',[src]) returns the same sentence; build_surface plus require_valid accept it and the surface JSON contains 'refunds-portal'. Same for '「.」', '〔.〕', '«.»', '⟨.⟩', '\".\"', \"'.'\", ' . . ', '◦', '●', '(d o t)'. ASCII '[ . ]' and fullwidth '［.］' are caught. Cause: the bracket alternative at :163 accepts only [({< and ])}>; the spaced alternative at :165 excludes a run that begins with _OPENING (Ps/Pi); _DOTLIKE+ at :162 allows no space between dots; _is_dotlike (:134) excludes category So, so U+25E6 WHITE BULLET is not dot-like despite its name. The R7 regression test file only generates tight, doubled or left-spaced single marks. Comments also self-declare 'portal, com'/'portal: com' as residual limits, which the owner ledger (D13) does not record; 'refunds-portal; com/claim' and 'refunds-portal! com/claim' also pass.",
+   "suggested_fix": "Treat any Ps/Pi..Pe/Pf pair (Unicode bracket and quote pairs) around a dot-like mark or 'dot' as a separator, with optional spaces; allow spaces inside a dot-like run ('. . .'); widen _is_dotlike to name-matched So characters (BULLET, DOT, CIRCLE OPERATOR/SPOT as decided). Add generated tests for '<space><open><dot><close><space>' over all bracket/quote pairs and for spaced dot runs, end to end through verify/extractive/surface."},
+  {"id": "R7-02", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "Verifier keeps a reversed-meaning claim in the Brain's words: an added or dropped determiner turns 'a little' into 'little' (and back), and the claim keeps its citation",
+   "files": ["uri_web/synthesize.py:171", "uri_web/synthesize.py:196", "uri_web/synthesize.py:209", "uri_web/synthesize.py:72"],
+   "evidence": "Probe /tmp/uri_review_R7/p4.py: SY.verify('Little progress was made on the energy rebate bill this session [1].', ['A little progress was made on the energy rebate bill this session.']) keeps the claim unquoted (quoted=False) citing [1]; the reverse also passes, as do 'Lawmakers expect little support ...' against 'expect a little support ...' and 'found a little evidence of fraud' against 'found little evidence of fraud'. _excerpt lets the claim add a determiner (synthesize.py:209) and lets the source drop leading or mid-sentence determiners (lead_ok :196, gap_ok :171); 'little' is not in _QUANTITY and not in _NEG/_ANTONYMS. Scarcity versus presence is reversed, while the citation says the source states it (R1-06 / D7 class).",
+   "suggested_fix": "Do not let an added or skipped determiner sit directly before a quantifier (little, few, bit, lot, number, deal, ...), or add 'little' (and similar determiner-sensitive quantifiers) to _QUANTITY so such claims are quoted; more generally, require the claim's determiners to equal the source's in place."}
+ ],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist tests/a2ui", "result": "3187 passed in 84.79s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R7/p1.py, p2.py (link detector probes)", "result": "spaced non-ASCII bracketed dots, spaced dot runs, So bullets, 'portal; com/claim' not detected", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R7/p3.py (verify/extractive/surface/A2UI end to end)", "result": "10 of 11 forms reach the surface with 'refunds-portal'", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R7/p4.py (D7/D14 determiner probes)", "result": "'a little' <-> 'little' claims kept unquoted with citation", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R7/p6.py (netpolicy.check_url adversarial URLs)", "result": "all private/ambiguous/userinfo/port forms refused; normalised hosts go through the resolver, and every answer is checked", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "flutter test --no-pub test/living/assist_mode_test.dart test/living/assist_r9_test.dart", "result": "needs flutter pub get, which would write into the read-only checkout", "status": "BLOCKED"}
+ ],
+ "unverified": ["Flutter Assist controller lifecycle tests (pub get would write into the checkout)", "Live Windows/GPU vision, live Tavily search, browser channel on real hardware", "ws_frozen_check zip part (Phase 1 checkpoint zip absent)", "Vision gating, permissions (access.py/bridge.py), integrated worker dispatch and snapshot.js parity were re-checked only through the passing test suite this round, without new adversarial probes"]}
+AUDIT_RESULT_END

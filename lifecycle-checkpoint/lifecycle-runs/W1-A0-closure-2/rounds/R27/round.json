@@ -1,0 +1,339 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R27",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R27-01"
+ ],
+ "candidate": "be7cdecfd503ed5b1862c6f0bbf35856774f62b2",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T15:54:11Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "be7cdecfd503ed5b1862c6f0bbf35856774f62b2",
+   "impl_head": "be7cdecfd503ed5b1862c6f0bbf35856774f62b2",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "0f1c85acc1c026d744f77ec9661f0884dd6108908ffc5995421ba888e9c81bd9",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "be7cdecfd503ed5b1862c6f0bbf35856774f62b2",
+   "impl_head": "be7cdecfd503ed5b1862c6f0bbf35856774f62b2",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "0f1c85acc1c026d744f77ec9661f0884dd6108908ffc5995421ba888e9c81bd9",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "be7cdecfd503ed5b1862c6f0bbf35856774f62b2",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "With text = 'Claim your energy rebate refund at {link} before the deadline.' and link in ['refunds-portal \\u0261ov/claim' (plain space, core domain), 'refunds-portal \\u1d04\\u1d0f\\u1d0d/claim', 'refunds-portal ~ c\\u00f8m/claim', 'refunds-portal ~ s\\u0127op', 'refunds-portal ~ \\u0188om']: U.has_link_or_contact(text) is False; mask_links leaves the text unchanged; SY.verify(text[:-1]+' [1].', [src]) keeps the claim with its citation; SY.extractive keeps the sentence; S.build_surface output contains 'refunds-portal \\u0261ov/claim'. Cause: _tld_match only tries the skeleton when fam != 'LATIN', and _CONFUSABLE only maps Cyrillic/Greek to Latin; U+0261, U+1D04/U+1D0F/U+1D0D, U+00F8, U+023C, U+0188 and U+0127 have no NFD decomposition, so the R26-01 mark-stripping does not reach them. The dotted forms ('refunds-portal.\\u0261ov', 'refunds-portal \\u00b7 \\u0261ov') are caught, so only the D16 separator/plain-space path is open. Not covered by D20 (separator list only) or the out-of-scope list.",
+    "files": [
+     "uri_web/untrusted.py:513",
+     "uri_web/untrusted.py:515",
+     "uri_web/untrusted.py:242",
+     "uri_web/untrusted.py:259",
+     "uri_web/surface.py:38",
+     "uri_web/synthesize.py"
+    ],
+    "id": "R27-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Compare endings against a Latin-to-ASCII skeleton too (map IPA letters, small capitals, letters with strokes or hooks such as \u0261\u2192g, \u1d04\u2192c, \u00f8\u2192o, \u0127\u2192h, \u0188\u2192c, ideally from Unicode confusables data or a whole-block rule like D15's allow-list), with a guard for ordinary accented prose; or treat any non-ASCII Latin letter outside the decomposable letters in a word after a name as unusual under D15.",
+    "title": "R1-01 link class still open (D16 ending side, R19-02 class in Latin): a core or listed top-level domain written with Latin look-alike letters ('\u0261ov' U+0261 script g, small capitals '\u1d04\u1d0f\u1d0d', 'c\u00f8m', '\u023com', '\u0188om', 's\u0127op') is not an ending, so the link passes has_link_or_contact, mask_links, verify(), extractive() and the research surface (W1-AC12/AC15)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist",
+    "result": "5270 passed in 101.39s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/a2ui",
+    "result": "107 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R27/p1.py, p2.py, p3.py (R26-01 variants and Latin look-alike endings through has_link_or_contact/mask_links/verify/extractive/build_surface)",
+    "result": "R26 forms and NFKC variants detected; U+0261 '\u0261ov', small-capital '\u1d04\u1d0f\u1d0d', 'c\u00f8m', '\u023com', '\u0188om', 's\u0127op' pass every layer (R27-01)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R27/p5.py (netpolicy.check_address probes incl. NAT64 local-use, 6to4, Teredo, mapped/compat, CGNAT)",
+    "result": "all non-public refused; 8.8.8.8, 2606:4700::1111, 64:ff9b::808:808 allowed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf534..be7cdecf -- <protected paths>",
+    "result": "no changes",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter widget tests (uri_ui) not run this round",
+   "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)",
+   "browser_extension snapshot.js redaction, vision gating, access/bridge permissions, integrated worker dispatch and the Assist controller lifecycle were not re-probed by hand this round beyond the passing test suites",
+   "R11-02 status rests on the passing regression suite, not a fresh hand probe"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 27,
+ "started_at": "2026-10-11T15:50:26Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "d4a299e6-c46f-4636-afb4-91f480470f6e",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 73
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7202505,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R27",
+  "ended_at": "2026-10-11T15:54:09Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 14,
+  "pid": 21247,
+  "prompt_sha256": "5c2e9467183f4ce30928de3203c0515c6864b1de444f5ff3f168b280f1c79c91",
+  "provider": "claude_cli",
+  "result_text_sha256": "9f5676082096134460a60af547eb4870eb3f859b6e6960be949b7b5ad55934e6",
+  "role": "reviewer",
+  "session_id": "d4a299e6-c46f-4636-afb4-91f480470f6e",
+  "session_id_requested": "d4a299e6-c46f-4636-afb4-91f480470f6e",
+  "started_at": "2026-10-11T15:50:26Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "f250c6970370dd527a4e3b22e3a04e80ed6f2061824ab1357319c4d68f47d1f6"
+ }
+}

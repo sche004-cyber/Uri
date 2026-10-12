@@ -1,0 +1,73 @@
+=== tests/web/test_w1_closure_r28_review_regressions.py BEFORE (0fcc39d4bf06655b0c45b05b65be46b70a07248a) DONE
+claims
+
+tests/web/test_w1_closure_r28_review_regressions.py:33: AssertionError
+_ test_r28_01_verify_and_extractive_never_keep_it[refunds-portal \u0185iz/claim] _
+
+link = 'refunds-portal ƅiz/claim'
+
+    @pytest.mark.parametrize("link", LINKS)
+    def test_r28_01_verify_and_extractive_never_keep_it(link):
+        src = SENT.format(link) + " Energy rebate refunds take two weeks."
+        v = SY.verify(SENT.format(link)[:-1] + " [1].", [src])
+>       assert not v.claims and v.dropped[0]["reason"] == "LINK_OR_CONTACT", link
+E       AssertionError: refunds-portal ƅiz/claim
+E       assert (not [Claim(text='Claim your energy rebate refund at refunds-portal ƅiz/claim before the deadline .', citations=[1], quoted=False)])
+E        +  where [Claim(text='Claim your energy rebate refund at refunds-portal ƅiz/claim before the deadline .', citations=[1], quoted=False)] = Verified(claims=[Claim(text='Claim your energy rebate refund at refunds-portal ƅiz/claim before the deadline .', citations=[1], quoted=False)], dropped=[], no_answer=False).claims
+
+tests/web/test_w1_closure_r28_review_regressions.py:33: AssertionError
+_ test_r28_01_verify_and_extractive_never_keep_it[refunds-portal ~ \u0196nfo] __
+
+link = 'refunds-portal ~ Ɩnfo'
+
+    @pytest.mark.parametrize("link", LINKS)
+    def test_r28_01_verify_and_extractive_never_keep_it(link):
+        src = SENT.format(link) + " Energy rebate refunds take two weeks."
+        v = SY.verify(SENT.format(link)[:-1] + " [1].", [src])
+>       assert not v.claims and v.dropped[0]["reason"] == "LINK_OR_CONTACT", link
+E       AssertionError: refunds-portal ~ Ɩnfo
+E       assert (not [Claim(text='Claim your energy rebate refund at refunds-portal ~ Ɩnfo before the deadline .', citations=[1], quoted=False)])
+E        +  where [Claim(text='Claim your energy rebate refund at refunds-portal ~ Ɩnfo before the deadline .', citations=[1], quoted=False)] = Verified(claims=[Claim(text='Claim your energy rebate refund at refunds-portal ~ Ɩnfo before the deadline .', citations=[1], quoted=False)], dropped=[], no_answer=False).claims
+
+tests/web/test_w1_closure_r28_review_regressions.py:33: AssertionError
+__ test_r28_01_verify_and_extractive_never_keep_it[refunds-portal ~ \ua7b5iz] __
+
+link = 'refunds-portal ~ ꞵiz'
+
+    @pytest.mark.parametrize("link", LINKS)
+    def test_r28_01_verify_and_extractive_never_keep_it(link):
+        src = SENT.format(link) + " Energy rebate refunds take two weeks."
+        v = SY.verify(SENT.format(link)[:-1] + " [1].", [src])
+>       assert not v.claims and v.dropped[0]["reason"] == "LINK_OR_CONTACT", link
+E       AssertionError: refunds-portal ~ ꞵiz
+E       assert (not [Claim(text='Claim your energy rebate refund at refunds-portal ~ ꞵiz before the deadline .', citations=[1], quoted=False)])
+E        +  where [Claim(text='Claim your energy rebate refund at refunds-portal ~ ꞵiz before the deadline .', citations=[1], quoted=False)] = Verified(claims=[Claim(text='Claim your energy rebate refund at refunds-portal ~ ꞵiz before the deadline .', citations=[1], quoted=False)], dropped=[], no_answer=False).claims
+
+tests/web/test_w1_closure_r28_review_regressions.py:33: AssertionError
+=========================== short test summary info ============================
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_is_a_link_and_the_name_is_masked[refunds-portal b\u0269z/claim]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_is_a_link_and_the_name_is_masked[refunds-portal \u0269o/claim]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_is_a_link_and_the_name_is_masked[refunds-portal ~ c\u0251sh]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_is_a_link_and_the_name_is_masked[refunds-portal ~ \u0251pp]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_is_a_link_and_the_name_is_masked[refunds-portal ~ \u0269nfo]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_is_a_link_and_the_name_is_masked[refunds-portal ~ c\u0251sh/claim]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_is_a_link_and_the_name_is_masked[refunds-portal ~ \u0251pp/claim]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_is_a_link_and_the_name_is_masked[refunds-portal \u0185iz/claim]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_is_a_link_and_the_name_is_masked[refunds-portal ~ \u0196nfo]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_is_a_link_and_the_name_is_masked[refunds-portal ~ \ua7b5iz]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_verify_and_extractive_never_keep_it[refunds-portal b\u0269z/claim]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_verify_and_extractive_never_keep_it[refunds-portal \u0269o/claim]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_verify_and_extractive_never_keep_it[refunds-portal ~ c\u0251sh]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_verify_and_extractive_never_keep_it[refunds-portal ~ \u0251pp]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_verify_and_extractive_never_keep_it[refunds-portal ~ \u0269nfo]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_verify_and_extractive_never_keep_it[refunds-portal ~ c\u0251sh/claim]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_verify_and_extractive_never_keep_it[refunds-portal ~ \u0251pp/claim]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_verify_and_extractive_never_keep_it[refunds-portal \u0185iz/claim]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_verify_and_extractive_never_keep_it[refunds-portal ~ \u0196nfo]
+FAILED tests/web/test_w1_closure_r28_review_regressions.py::test_r28_01_verify_and_extractive_never_keep_it[refunds-portal ~ \ua7b5iz]
+20 failed, 6 passed in 0.97s
+
+=== tests/web/test_w1_closure_r28_review_regressions.py AFTER (6c51965f82eab805b14612e892d445fec50646ac) DONE
+..........................                                               [100%]
+26 passed in 1.02s
+

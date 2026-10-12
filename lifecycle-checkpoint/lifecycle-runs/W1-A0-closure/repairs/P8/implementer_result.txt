@@ -1,0 +1,19 @@
+R10-01 is fixed. The new regression test fails on the base commit and passes with the fix.
+
+**The fix** (`uri_assist/browser_extension/snapshot.js`): when the snapshot rebuilds the selected text, it now checks each piece of text with the same `visible()` rule the page-text reader already uses, sharing its cache. Text that is hidden, aria-hidden, in a tiny font, transparent, off-screen, or inside `script`, `style`, `noscript` or `template` is left out. Each skipped piece is counted as `hidden_text`, and a space takes its place so the words on either side don't run together. The existing guard against text selected inside form fields is unchanged.
+
+**The regression test** (`tests/assist/test_a0_r10_review_regressions.py`) runs in real Chromium. It uses a new page, `hidden_selection_page.html`, which puts the reviewer's hidden instruction, the `__STATE__` script with the e-mail and CSRF token, and aria-hidden, 1px-font, transparent, off-screen, style, noscript and template content between "Welcome back" and "You have 3 new messages." A new script, `run_hidden_selection.cjs`, selects across them three ways: a real Ctrl+A, a real mouse drag from the heading to the last paragraph, and a programmatic range.
+- **Snapshot check:** for each of the three ways, the selection must be exactly `Welcome back You have 3 new messages.`, contain none of the 13 payload strings, and record some `hidden_text`.
+- **Brain request check:** the Ctrl+A snapshot goes through the assist flow (FakeClient, observe-only grant, `assist_ask`). The request must include the visible selected text and none of the payloads.
+
+**Results:**
+- On 20a646f's snapshot.js: all 4 tests fail. The selection holds every payload except the template text, matching what the reviewer found.
+- With the fix: 4 pass.
+- Whole `tests/assist` suite with the fix: 2148 passed. No existing tests were changed.
+
+I didn't run `graphify update .` because it writes to `graphify-out/`, which is outside the paths I'm allowed to change.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R10-01"], "not_repaired": [],
+ "regression_tests": ["tests/assist/test_a0_r10_review_regressions.py"], "notes": "snapshot.js selectionOf() now runs each selected text node's parent through the page walker's visible() check, sharing its cache. It skips hidden, aria-hidden, tiny, transparent, off-screen and script/style/noscript/template text, counts it as hidden_text and puts a space in its place. New fixtures: tests/assist/fixtures/hidden_selection_page.html and run_hidden_selection.cjs, which select in real Chromium by Ctrl+A, mouse drag and a range. On 20a646f all 4 new tests fail (the selection contains the hidden instruction, the e-mail and the CSRF token); with the fix they pass, and all 2148 tests in tests/assist pass. If a selection contains only hidden text that String(getSelection()) still reports (e.g. opacity:0), the selection is empty and selection_withheld is set to true, which fails closed. graphify update was not run because graphify-out/ is outside the permitted paths."}
+REPAIR_RESULT_END

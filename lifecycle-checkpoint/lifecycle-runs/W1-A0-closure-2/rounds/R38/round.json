@@ -1,0 +1,395 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R38",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R38-01",
+  "R38-02"
+ ],
+ "candidate": "c8e48f431a52db221d3d996aa8c17c3e629563c0",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T20:48:19Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "c8e48f431a52db221d3d996aa8c17c3e629563c0",
+   "impl_head": "c8e48f431a52db221d3d996aa8c17c3e629563c0",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "57041d74b14b343544cc3deb3ee2c8e1fe207be639a50f3eff61c307d9672e3d",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "c8e48f431a52db221d3d996aa8c17c3e629563c0",
+   "impl_head": "c8e48f431a52db221d3d996aa8c17c3e629563c0",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "57041d74b14b343544cc3deb3ee2c8e1fe207be639a50f3eff61c307d9672e3d",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "c8e48f431a52db221d3d996aa8c17c3e629563c0",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Sentence 'Claim your energy rebate refund at {} before the deadline.' For 'refunds-portal ~ c 0 m', 'refunds-portal . c 0 m', 'refunds-portal c 0 m/claim', 'refunds-portal ~ g 0 v' and 'refunds-portal ~ i 0': has_link_or_contact=False, mask_links leaves 'refunds-portal' visible, SY.verify keeps the claim, SY.extractive keeps the sentence (except for '. 0 r g'), and surface.clean returns the text unchanged. Controls 'refunds-portal ~ c o m' and '. c o m' are links. 'refunds-portal \u0441 0 \u043c/claim' is detected, but mask_links/clean give 'refunds-portal \u0441 0 [link removed]'. _ascii_variant and _mixed_fold fold only one contiguous [A-Za-z0-9|] or [\\w|] run, so a '0'/'1'/'|' alone in a spelt ending (a run with no letters) is never read as a letter when the spelt-ending logic joins the pieces.",
+    "files": [
+     "uri_web/untrusted.py:808",
+     "uri_web/untrusted.py:837",
+     "uri_web/untrusted.py:871",
+     "uri_web/untrusted.py:915",
+     "uri_web/surface.py:38"
+    ],
+    "id": "R38-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Apply the look-alike readings ('0'->o, '1'/'|'->l, 'I'->i/l, and the Unicode single-letter readings) to every candidate spelt ending in _ending_spans, after joining the single-character pieces, rather than per contiguous run. Then mask from the name to the end of the spelt ending.",
+    "title": "R1-01/R31-01 class still open: a spaced-out ending with an ASCII look-alike digit ('c 0 m', 'g 0 v', 'i 0', Cyrillic '\u0441 0 \u043c') is not a link, although 'c o m' is; it passes has_link_or_contact, mask_links, verify(), extractive() and the research surface (W1-AC12/AC15, D16/D29)"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_MIXED = [\\w|]+ makes the group include '_'. _mixed_fold returns the run unchanged for an ASCII character that is not 'I', '|', a key of _ASCII_ONE or a letter ('else: return run'). So '\u04410\u043c_' is never read as 'com_', and the skeleton keeps '0'. Probe: has_link_or_contact=False, mask/surface leave 'refunds-portal ~ \u04410\u043c_', verify keeps the claim, extractive keeps the sentence. Controls 'refunds-portal ~ \u04410\u043c', '~ c0m_' and '~ \u0441\u043e\u043c_' are links.",
+    "files": [
+     "uri_web/untrusted.py:837",
+     "uri_web/untrusted.py:840",
+     "uri_web/untrusted.py:849",
+     "uri_web/untrusted.py:857",
+     "uri_web/surface.py:38"
+    ],
+    "id": "R38-02",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Split the mixed group on '_' and on characters that are not look-alikes, and fold each piece, as the pure-ASCII and pure-Unicode paths already do. Do not give up on the whole group.",
+    "title": "R37-01 repair incomplete: a mixed Cyrillic/ASCII look-alike ending followed by an underscore ('refunds-portal ~ \u04410\u043c_') is not folded, so it passes has_link_or_contact, mask_links, verify(), extractive() and the research surface, while '\u04410\u043c', 'c0m_' and '\u0441\u043e\u043c_' are links (W1-AC12/AC15)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R28-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R29-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R30-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R31-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R32-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R33-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R34-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R35-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R36-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R37-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x tests/web",
+    "result": "3313 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/assist tests/a2ui",
+    "result": "2313 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R38/p1.py [variants]",
+    "result": "R37 listed forms OK; spelt forms with 0 and '\u04410\u043c_' FAIL (see R38-01/R38-02)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat baseline..candidate -- <protected paths>",
+    "result": "no changes",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "The plan document was not re-read in full this round, and the vision, permission, integration and SSRF areas were not re-probed beyond their test suites",
+   "Flutter tests not run",
+   "ws_frozen_check zip part BLOCKED (checkpoint zip absent)",
+   "FIXED for earlier link findings means the named forms are covered by passing regression tests; R1-01 remains open as a class"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 38,
+ "started_at": "2026-10-11T20:44:34Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "f777f6b9-237b-4879-aace-fcb0c23b8ee8",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 74
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.6466238,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R38",
+  "ended_at": "2026-10-11T20:48:18Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 10,
+  "pid": 18229,
+  "prompt_sha256": "4524358f4e30c62e0789f85d461ae7b2e5cbc6e2bf3b4782b35e1cd1b4f29dc2",
+  "provider": "claude_cli",
+  "result_text_sha256": "172c109895518f4b9910e6cacba90d4c9a48b807e8e4278f548d4f25ad7e3436",
+  "role": "reviewer",
+  "session_id": "f777f6b9-237b-4879-aace-fcb0c23b8ee8",
+  "session_id_requested": "f777f6b9-237b-4879-aace-fcb0c23b8ee8",
+  "started_at": "2026-10-11T20:44:34Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "30e2bf95ee14ad48cf6333c01069604dd437a9a5283de1a264e1f7445264b0ee"
+ }
+}

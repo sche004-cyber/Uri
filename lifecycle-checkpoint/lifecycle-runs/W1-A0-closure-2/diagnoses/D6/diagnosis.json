@@ -1,0 +1,91 @@
+{
+ "candidate": "da10d0b84cbd80f60be930295a01baed47b31110",
+ "clean": true,
+ "cost_usd": 0.404175,
+ "diagnosis": 6,
+ "recurring": [
+  "R13-01"
+ ],
+ "result": {
+  "evidence": [
+   "uri_web/untrusted.py:255 normalise() applies unicodedata.normalize('NFKC') before any check",
+   "uri_web/untrusted.py:516-517 _STROKES includes range(0x2F00,0x2FD6) (all 214 NFKC-unstable; normalised forms such as \u4e00\u4e28\u4e59\u4e8c\u4ea0\u4eba missing) and range(0x31C0,0x31E4) (category So, never in a word); probe: 263 entries, 47 NFKC-stable, 36 of those non-letters",
+   "uri_web/untrusted.py:549 return (len(letters) == 1 or letters <= _STROKES) and not _bracketed(...) -> False for '\u4e28\u4e36' (probe: _separator_word list [False, False, False, False] for words refunds/portal/\u4e28\u4e36/shop)",
+   "uri_web/untrusted.py:562 walk stops at the non-separator foreign word and takes it as the name",
+   "uri_web/untrusted.py:573 prose gap + non-core 'shop' -> continue (match dropped)",
+   "probe /tmp/d6/p.py at da10d0b8: has_link_or_contact False for 'refunds-portal \u4e28\u4e36 shop/claim', '\u4e00\u4e36', '\u2f01\u2f02', '\u2f00\u2f02', '\u4e36\u4e00', '\u4e59\u4e36', '\u4e8c\u4e36', '\u4ea0\u4e36'; True for R13 forms \u4e36\u4e3f, \u318d\u11a2, \u0298\u0298, '~ \u0298\u0298', '\u043f\u0440\u0438\u043c\u0435\u0440 \u0298\u0298' and for \u4e00\u4e00, \u4e36\u4e36",
+   "tests/web/test_w1_closure_r13_review_regressions.py:22 LINKS only lists reviewer literals; 31 passed at da10d0b8",
+   "git show da10d0b8 -- uri_web/untrusted.py: replaced `len(set(w[2].casefold())) <= _MAX_FOREIGN` with the _STROKES allow-list"
+  ],
+  "needs_owner": false,
+  "proposed_fix": "Build _STROKES in canonical form: frozenset(normalise(ch) for ch in <listed chars> + Kangxi U+2F00-U+2FD5 + CJK Radicals Supplement U+2E80-U+2EF3), keeping only single-letter results (and the '\u119e' NFKC target of '\u318d'). Explicitly add the unified single- and few-stroke radicals \u4e00 U+4E00, \u4e28 U+4E28, \u4e59 U+4E59, \u4e85 U+4E85, \u4e5a, \u4e8c U+4E8C, \u4ea0 U+4EA0. Drop the non-letter U+31C0 range (it already acts as non-letter gap). Add a module-level assertion or test that every member satisfies normalise(c)==c and _letter(c). Add a self-contained regression test that checks every 2-letter combination of the stroke set (incl. Kangxi spellings) through has_link_or_contact, mask_links, SY.verify, SY.extractive, build_surface + require_valid, with controls '\u4e2d\u56fd' (owner-accepted residual) and 'Tokyo \u6771\u4eac is big' (must stay readable).",
+  "root_cause": "The D17 'stroke and dot-shaped letters' allow-list _STROKES (uri_web/untrusted.py:516-517) is built from raw code points that never occur in the text it is checked against. normalise() applies NFKC first (untrusted.py:255), which maps every Kangxi radical U+2F00-U+2FD5 to its unified ideograph (U+2F00->U+4E00, U+2F01->U+4E28, ...). So the Kangxi range in _STROKES can never match: all 214 code points are NFKC-unstable and 211 of their normalised forms are absent from the set. The CJK Strokes range U+31C0-U+31E3 is category So, not a letter, so it never forms part of a word either. Only about 11 entries can match (\u4e36\u4e3f\u4e40\u4e41\u4e5a\u4e85\u119e\u11a2\u30fb\uff65\u3006\u3007), and the basic single-stroke radicals \u4e00 U+4E00, \u4e28 U+4E28, \u4e59 U+4E59 (and \u4e8c, \u4ea0, ...) are missing. _separator_word (line 549: len(letters)==1 or letters <= _STROKES) therefore returns False for '\u4e28\u4e36', '\u4e00\u4e36', '\u4e36\u4e00', '\u4e59\u4e36', '\u2f01\u2f02', '\u2f00\u2f02'. The walk at line 562 stops there and takes the word as the name; the gap is plain prose and 'shop' is not core, so the match is dropped at line 573, and the link passes has_link_or_contact, mask_links, verify, extractive, the surface and the A2UI validator.",
+  "why_earlier_repairs_failed": "Repairs 1-7 (ca622bc0..7b1252f7) date from rounds R1-R9 and never touch _separator_word or _STROKES. The R13 repairs were coordinator commits. 842ad64d used the rule 'foreign word with <= _MAX_FOREIGN (2) distinct letters is a separator', which would have caught '\u4e28\u4e36'. da10d0b8 (owner loosening) replaced it with the _STROKES allow-list, written as raw Unicode block ranges without accounting for the NFKC/letter-category canonicalisation applied by normalise()/_words(). Its regression test (tests/web/test_w1_closure_r13_review_regressions.py LINKS) only replays the reviewer's literal strings (\u4e36\u4e3f, \u318d\u11a2, \u0298\u0298, \u01c3\u01c3), whose characters happen to be among the ~11 live members, so the 31 tests pass while the class stays open. The same pattern as R11->R12->R13: each patch matched the reviewer's specific strings instead of the rule."
+ },
+ "tamper": null,
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "c13b4d47-f16f-4bf7-bdf3-b2c0a61e112a",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.404175,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/diagnose_D6",
+  "ended_at": "2026-10-11T13:25:38Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 9,
+  "pid": 14235,
+  "prompt_sha256": "0e269e92d41d59bfa3127d014fd77278e7d873cc75d05e9dd14a86fd2f03fd7b",
+  "provider": "claude_cli",
+  "result_text_sha256": "de207584b8b57e438dbabef2f6ff682e3a2edc8b77992c7f1471b1c439555560",
+  "role": "reviewer",
+  "session_id": "c13b4d47-f16f-4bf7-bdf3-b2c0a61e112a",
+  "session_id_requested": "c13b4d47-f16f-4bf7-bdf3-b2c0a61e112a",
+  "started_at": "2026-10-11T13:24:22Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "5ec9ab96bef7cbd200b9811eca653b6a516a40d69a70a5e24377ff03ea561700"
+ }
+}

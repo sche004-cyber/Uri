@@ -1,0 +1,115 @@
+{
+ "findings": [
+  {
+   "blocking": true,
+   "id": "r2.R1-02",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "repaired cbdf3f2",
+   "title": "A .cmd launcher naming cmd.exe and a .bat is bound and launched as [cmd.exe, x.bat] (DEV-LIFECYCLE-2-r2 R1-02, LOW, routed to repair by owner decision)"
+  },
+  {
+   "blocking": true,
+   "id": "r2.R1-03",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "repaired cbdf3f2",
+   "title": "Four new W-2 tests pass on baseline ce1a90c on Linux (vacuous 'not found' acceptance) (DEV-LIFECYCLE-2-r2 R1-03, LOW, routed to repair by owner decision)"
+  },
+  {
+   "blocking": true,
+   "id": "r2.R1-04",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "repaired cbdf3f2",
+   "title": "CAPABILITY_LEDGER claims Windows containment 'TESTED on the PC'; lifecycle doc omits the W-2 reviewer identity and overstates the earlier-job re-check (DEV-LIFECYCLE-2-r2 R1-04, LOW, routed to repair by owner decision)"
+  },
+  {
+   "blocking": true,
+   "id": "r2.R2-01",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "repaired cbdf3f2",
+   "title": "Windows: a worker whose communicate() raises OSError after spawn is never finished; its job stays unterminated and untracked, and the next precheck() reports contained=True (DEV-LIFECYCLE-2-r2 R2-01, LOW, routed to repair by owner decision)"
+  },
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "R2-01 repair covers only OSError: any other exception from communicate() (e.g. UnicodeDecodeError / Windows reader-thread IndexError on undecodable output) skips containment.finish(); the job stays unterminated and untracked and the next precheck() reports contained=True"
+  }
+ ],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "cbdf3f2ceb5e",
+   "failed": 0,
+   "gate": "dev_workflow",
+   "new": 0,
+   "ok": true,
+   "passed": 238,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
+ "owner": [
+  {
+   "kind": "OWNER_AUTHORIZATION",
+   "needs": "git push origin cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35:refs/heads/integration/git-sync-20261008",
+   "reason": "integration into integration/git-sync-20261008 needs owner authorisation"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": "r2.R1-02, r2.R1-03, r2.R1-04, r2.R2-01",
+   "commit": "cbdf3f2ceb5e",
+   "reason": "",
+   "repair": "P1",
+   "status": "COMMITTED"
+  }
+ ],
+ "rounds": [
+  {
+   "blocking": 4,
+   "candidate": "0ee6885a68ec",
+   "findings": 4,
+   "finished": "2026-10-11T13:19:36Z",
+   "independent": false,
+   "reviewer": "relay",
+   "round": "R1",
+   "session": "owner-decision-2026-10-11",
+   "status": "IMPORTED",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "cbdf3f2ceb5e",
+   "findings": 1,
+   "finished": "2026-10-11T13:31:26Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R2",
+   "session": "e5872d00-ff46-43ed-afe1-343fff3ccfd1",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "summary": {
+  "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+  "candidate": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35",
+  "evidence_ok": true,
+  "findings_repaired": 4,
+  "findings_total": 5,
+  "integration": "AWAITING_OWNER_AUTHORIZATION",
+  "milestone": "DEV-LIFECYCLE-2",
+  "open_blocking": 0,
+  "owner_actions": 1,
+  "receipt_chain_ok": true,
+  "repairs_committed": 1,
+  "rounds": 2,
+  "stage": "BLOCKED",
+  "written_at": "2026-10-11T13:37:54Z"
+ }
+}

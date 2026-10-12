@@ -1,0 +1,99 @@
+{
+ "addresses": [
+  "R2-01",
+  "R2-02",
+  "R2-03",
+  "R2-04",
+  "R2-05"
+ ],
+ "changed": [
+  "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+  "scripts/dev_workflow/lifecycle.py",
+  "scripts/dev_workflow/lifecycle_providers.py",
+  "tests/dev_workflow/test_lifecycle.py"
+ ],
+ "commit": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+ "ended_at": "2026-10-11T01:06:18Z",
+ "pre": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 1,
+ "report": {
+  "not_repaired": [],
+  "notes": "New tests (all fail on d5fccdf, all pass now): test_r2_01_forged_duplicate_round_and_resume_to_cannot_verify, test_r2_01_edited_resume_to_alone_is_detected, test_r2_02_replace_refs_cannot_hide_a_protected_change, test_r2_02_driver_git_ignores_replace_refs, test_r2_03_redirected_gitfile_does_not_reset_the_main_checkout, test_r2_04_repair_deleting_a_test_is_refused_and_restored, test_r2_04_error_after_the_repair_commit_is_refused_and_restored, test_r2_05_gpu_lease_busy_is_blocked_not_a_gate_failure. Full tests/dev_workflow: 134 passed. R2-05 tested with a fake gpu_lease module (no GPU). A renamed test file now counts as a deleted test and is refused. Older event logs lack resume_to/blocker in stage events, so verify would flag an archived run that ended BLOCKED or waiting; archived evidence was not re-verified. graphify is not installed, so the graph was not updated. Also: info/ files in the git control digest, --no-renames in changed_paths, git replace added to GIT_WRITE_DENY.",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle.py"
+  ],
+  "repaired": [
+   "R2-01",
+   "R2-02",
+   "R2-03",
+   "R2-04",
+   "R2-05"
+  ]
+ },
+ "started_at": "2026-10-11T00:56:50Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "ee5990e4-0093-4bee-ad02-b707b86f727e",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 2.3820336,
+  "cwd": "/home/user/uri-wt/lifecycle",
+  "ended_at": "2026-10-11T01:04:20Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 43,
+  "pid": 17816,
+  "prompt_sha256": "d5594f5a1e55f00248e02b8b6e8a970a0184f6ddc4e51c0f63dbb44f31962ecb",
+  "provider": "claude_cli",
+  "result_text_sha256": "5a4ea1013d0c5a33913320c5b54b47e44a9054b6bf60a849d5106d7631ea09f3",
+  "role": "implementer",
+  "session_id": "ee5990e4-0093-4bee-ad02-b707b86f727e",
+  "session_id_requested": "ee5990e4-0093-4bee-ad02-b707b86f727e",
+  "started_at": "2026-10-11T00:56:50Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "0177f04e3370a81c25e6a9214e5c6d7a728e548630505f958f4213c7e24ba632"
+ }
+}

@@ -1,0 +1,393 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R39",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R39-01"
+ ],
+ "candidate": "2af8eeac109c75fa13c8772efed3573f7df492ef",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T20:58:02Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "2af8eeac109c75fa13c8772efed3573f7df492ef",
+   "impl_head": "2af8eeac109c75fa13c8772efed3573f7df492ef",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "24bb387d9608c12525c6378d973251d6a036984aed02427187729b48f902e253",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "2af8eeac109c75fa13c8772efed3573f7df492ef",
+   "impl_head": "2af8eeac109c75fa13c8772efed3573f7df492ef",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "24bb387d9608c12525c6378d973251d6a036984aed02427187729b48f902e253",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "2af8eeac109c75fa13c8772efed3573f7df492ef",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe /tmp/uri_review_R39/p2.py and p3.py with SENT='Claim your energy rebate refund at {} before the deadline.': has_link_or_contact('... refunds-portal ~ g ov ...')=True but '... ~ g 0v ...'=False; '~ go v' True vs '~ g0 v' False; 'refunds-portal go v/claim' True vs 'g0 v/claim' False; '~ or g' True vs '~ 0r g' False; '~ o rg' True vs '~ 0 rg' False; '~ c  o  m' True vs '~ c  0  m' False; '(c o m)/claim' True vs '(c 0 m)/claim' False; '~ c\\to\\tm' True vs '~ c\\t0\\tm' False; '~ i  o' True vs '~ i  0' False. For each False form, SY.verify(text[:-1]+' [1].',[src]) keeps the claim with its citation, SY.extractive('energy rebate refund deadline',[src]) keeps the sentence, and surface.clean() returns it unmasked. Also, the detected forms '~ \u04410 \u043c' and '~ sh 0p' mask to '[link removed] \u043c' and '[link removed] 0p', leaving part of the ending on screen.",
+    "files": [
+     "uri_web/untrusted.py:839",
+     "uri_web/untrusted.py:842",
+     "uri_web/untrusted.py:834",
+     "uri_web/untrusted.py:903",
+     "uri_web/surface.py:38",
+     "uri_web/synthesize.py:238",
+     "uri_web/synthesize.py:341",
+     "uri_a2ui/validate.py:150"
+    ],
+    "id": "R39-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Do not special-case one spacing pattern. Fold look-alikes per character (0->o, 1/I/|->l or i, Unicode skeleton) over the whole normalised text before running the same spaced-ending detection that already catches 'go v', 'c  o  m', '(c o m)' and tabs, so the digit and letter forms are handled by one path; and extend the mask span to cover the whole folded ending. Add regression tests for the forms above.",
+    "title": "R38-01 repair incomplete (R1-01/R31-01 class): _SPELT_SINGLES reads only single characters separated by single plain spaces, so partially spelt or differently spaced endings with an ASCII look-alike digit ('g0 v', 'g 0v', '0r g', '0 rg', 'c  0  m', '(c 0 m)', 'c\\t0\\tm', 'i  0') are not links, although the letter forms ('go v', 'g ov', 'or g', 'c  o  m', '(c o m)', 'c\\to\\tm', 'i  o') are; they pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16/D29)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R28-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R29-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R30-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R31-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R32-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R33-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R34-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R35-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R36-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R37-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R38-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R38-02",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x tests/web tests/assist -p no:cacheprovider",
+    "result": "5538 passed in 99.93s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/a2ui -p no:cacheprovider",
+    "result": "107 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R39/p1.py p2.py p3.py (link-detector probes)",
+    "result": "R39-01 reproduced: 'g0 v','g 0v','0r g','0 rg','c  0  m','(c 0 m)','c\\t0\\tm','i  0' not detected; verify/extractive keep them; surface leaves them unmasked",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R39/p5.py (netpolicy address probes)",
+    "result": "NAT64 local-use with private v4, 6to4, Teredo, mapped/compat, link-local and 100.64/10 refused; public allowed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf534..HEAD -- <protected paths>",
+    "result": "no changes to protected paths",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter tests not run this round",
+   "Playwright/browser_extension tests not re-run this round",
+   "Prior findings other than R1-01/R38-01/R38-02/R16-02 marked FIXED based on passing regression suites and absence of a counter-example in this round's probes, not by individual re-derivation",
+   "ws_frozen_check zip part BLOCKED (checkpoint zip absent)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 39,
+ "started_at": "2026-10-11T20:54:50Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "f64fb34f-194b-4616-9057-f2b18b61837f",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 74
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.5969878000000001,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R39",
+  "ended_at": "2026-10-11T20:58:01Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 14,
+  "pid": 25283,
+  "prompt_sha256": "2955857b51553615591f2108b2399bd0ed09d7c2beafba76a547cbabf2786583",
+  "provider": "claude_cli",
+  "result_text_sha256": "db63757cc508d490faaff59ae4343a49e55c1f97aada6f7e652c7b3042e1256d",
+  "role": "reviewer",
+  "session_id": "f64fb34f-194b-4616-9057-f2b18b61837f",
+  "session_id_requested": "f64fb34f-194b-4616-9057-f2b18b61837f",
+  "started_at": "2026-10-11T20:54:50Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "1438250ca79a815ed84731eca2e5d01eb18f12dbeecf401f18191dbf0d0ae078"
+ }
+}

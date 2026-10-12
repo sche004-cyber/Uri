@@ -1,0 +1,34 @@
+I repaired all three findings in the working tree. Nothing is committed. All of `tests/web` and `tests/assist` pass: **2556 passed** (the 2371 that passed at 08a4569, plus 185 new). Exporting 08a4569 with only the two new test files gives **135 failed, 50 passed**. Every finding has failing tests there, and I confirmed the real-Chromium one fails on an actual assertion, not a setup error. The 50 that pass on the old code are deliberate controls: "same value written differently" cases, ordinary fields that must stay readable, and field names the old rules already caught.
+
+**R6-01 (dates and other multi-part numbers): fixed at the root cause, not by patching another regex.** The old checker turned every number into an unordered set of digit groups, so `2026-11-10` and `2026-10-11` looked identical. Now any run of numbers joined by `-`, `/`, `:`, an en/em dash, ` - ` or ` to ` becomes one value that keeps its written order:
+- **Dates:** ISO and day/month/year dates are normalised, and `11/10/2026` keeps its written order (never sorted).
+- **Month-name dates:** `10 November 2026` is one value and matches `2026-11-10`.
+- **What a value still supports:** a date also supports its year and its day-and-month on their own. A two-number range also supports each endpoint. A day or month number alone is never supported.
+
+The citation check and the conflict detector use the same subset test as before, so swapped values now fail it automatically. The new tests cover every separator with swapped and reversed values, in both directions, for both the citation check and the conflict detector. They also check that the same value written differently is still kept and is not reported as a conflict.
+
+**R6-03 (raw page text on the research surface): fixed.**
+- The conflict detector now skips sentences that look like instructions or contain a link, e-mail or IP address.
+- On the surface itself, links, e-mail addresses and IP addresses in web-derived text are replaced with `[link removed]`. A title that looks like an instruction is replaced with a notice.
+- The `host/path` label under each source is kept.
+- Tests cover the full pipeline through the surface, including a real conflict that sits next to injected text and is still shown.
+
+**R6-02 (redaction): fixed in Python and in the in-page script, which still match each other exactly.**
+- A code value can now be written in up to four space-separated groups (3–32 characters in total), so `482 913` in a field labelled `Code` or `SMS code` is hidden.
+- Field names `cvd`, `csv`, `cid` and `cav2` are now treated as card security codes.
+- Tests check Python, real Chromium and the actual request body sent to the Brain.
+
+Things you should know:
+- **I edited one existing test.** In `tests/web/test_w1_r5_review_regressions.py`, the exact-match expectation for `"COVID-19 cases in 2019-2020"` now also includes the ordered range value `2019-2020`. It is still an exact comparison; it records the new behaviour rather than loosening the check.
+- **Not fixed, now documented as limitation L-W1-6:** a number is not tied to what it describes. A source saying `5% in 2025 and 10% in 2026` still "supports" a claim of `10% in 2025`. Also, `between 10 and 20` is not read as a range.
+- **Behaviour that is now stricter on purpose:** a claim that writes a date in a different notation from the source (such as `11.10.2026` vs `11/10/2026`) is now dropped.
+- **The redaction rules now hide some ordinary fields:** fields named `csv` or `cid` are hidden even when they aren't card codes.
+- **Still open in redaction:** six one-digit OTP boxes labelled `Digit 1`…`Digit 6` each still send their digit, because the boxes themselves give no secret signal. This is recorded under L-A0-2.
+- **Docs:** I added recorded corrections (keeping the earlier history) to W1-AC10, AC11 and AC15 in `docs/assist/W1_QUALIFICATION.md`, and to A0-AC7 and L-A0-2 in `docs/assist/A0_QUALIFICATION.md`.
+- **Two things I did not do:**
+  - `tests/phase2a/test_frozen_core.py::test_base_commit_is_the_one_the_checkpoint_was_built_on` fails, but it fails the same way on the 08a4569 export, so these changes didn't cause it.
+  - I did not run `graphify update .` because `graphify-out/` is outside the paths I'm allowed to change.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R6-01", "R6-02", "R6-03"], "not_repaired": [], "regression_tests": ["tests/web/test_w1_r6_review_regressions.py", "tests/assist/test_a0_r6_review_regressions.py"], "notes": "R6-01: root cause (flat unordered numeral sets) replaced: numerals chained by -, /, :, en/em dash, ' - ' or ' to ' become one ordered compound token (ISO/D-M-Y dates canonicalised, written D/M order kept, month-name dates one value; dates also yield year and month-day, two-value ranges also their endpoints); class-level swap regressions for verify and find_conflicts over every separator. Existing exact-set test tests/web/test_w1_r5_review_regressions.py ('COVID-19 cases in 2019-2020') updated to include the new ordered token '2019-2020' (still exact equality). Number-to-referent binding not fixed; documented as L-W1-6. R6-03: find_conflicts skips instruction-like and link/contact sentences; surface.clean masks links/e-mail/IP in web-derived text (host/path citation label kept); instruction-like titles and conflict pairs hidden. R6-02: short-code value accepts up to 4 space-separated groups (3-32 chars total); cvd/csv/cid/cav2 added in Python and snapshot.js (patterns string-identical); single-digit 'Digit n' OTP boxes remain a documented residual (L-A0-2). Docs: recorded corrections for W1-AC10/AC11/AC15 and A0-AC7. Gates: tests/web + tests/assist 2556 passed; baseline 08a4569 export with new tests: 135 failed / 50 passed (the passing ones are controls). tests/phase2a/test_frozen_core.py base-commit check fails the same way on the 08a4569 export (not caused here). graphify update not run (graphify-out outside permitted paths)."}
+REPAIR_RESULT_END

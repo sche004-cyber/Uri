@@ -1,0 +1,36 @@
+I repaired R7-01. The reviewer no longer reads the Claude config that workers can write. On the base commit this attack let a real milestone reach VERIFIED. After the fix it no longer can. The full `tests/dev_workflow` suite passes (185 tests). Nothing is committed.
+
+**What I found while checking the fix with the real `claude` 2.1.296**
+- The reviewer's repro works on the base commit: with a settings file in the shared HOME, the CLI sent its requests to a fake local server.
+- Turning off all setting sources (`--setting-sources ""`) stops `settings.json`. But the `env` in `~/.claude.json` still redirects the CLI. So the reviewer needs its own config directory; changing the flag alone is not enough.
+
+**Fix**
+- **Own config directory:** for each review, the driver makes a fresh `CLAUDE_CONFIG_DIR` (in `lifecycle_providers.py`). It copies in only the credentials file and a short list of account fields from `~/.claude.json`. No settings, `env`, hooks, plugins or MCP config get through. The directory is deleted after the run.
+- **Setting sources:** the reviewer now runs with `--setting-sources ""`. A settings file written into the fresh directory during the run is ignored too.
+- **After-run check:** if a settings file or an `env` entry turns up in that directory after the run, the record gets `config_isolated=false`. For a real milestone, `is_independent()` now requires `config_isolated` to be true.
+- **Codex:** a `codex` reviewer gets a fresh `CODEX_HOME` with only `auth.json`, because `~/.codex/config.toml` can redirect it the same way. Codex isn't installed here, so this part is untested.
+- **System-wide policy:** I also closed a gap the reviewer didn't list. Claude Code always loads the system-wide policy files under `/etc/claude-code` (and the macOS, Windows and `/etc/codex` equivalents), whatever the flags say, and a root worker can write them. Their hashes are now recorded at the plan as `reviewer_policy`; any change blocks the milestone as TAMPER. A run planned before this change records the new value once, at its next step, and keeps everything it already recorded.
+- **Docs:** both "Reviewer independence" sections are updated.
+
+**Tests**
+- I changed one existing assertion in `test_r6_02`: it expected `--setting-sources user` and now expects `""`, which is the stricter setting.
+- There are five new test cases in `tests/dev_workflow/test_lifecycle.py`. I ran them all against the base commit's code in a scratch copy:
+  - A fake `claude` that loads config the way the real one does. A worker plants the redirect in `~/.claude/settings.json`, `settings.local.json` or `~/.claude.json`. On the base commit all three variants reach VERIFIED; now none does.
+  - A worker launch test: only credentials reach the reviewer, the directory is removed after the run, and a planted settings file makes the round not independent. It fails on the base commit.
+  - A worker writes a system-wide policy file. Now this blocks as TAMPER before any review; on the base commit the test fails because the check doesn't exist.
+
+**Checked end to end with the real CLI:** the repaired launch sent 0 requests to the fake server; it only tried the driver's own base URL. The base commit's arguments in the same HOME sent 5.
+
+**Not verified**
+- A successful, signed-in review with the fresh directory. There are no usable stored credentials here; this environment signs in through environment variables, which still pass through. If an owner's login exists only in the macOS keychain, the reviewer may fail to sign in. The run would then wait for the model; it would not accept anything.
+- The codex part.
+- The path that records `reviewer_policy` for a run planned before this change has no test.
+- I didn't run `graphify update .`, because it writes to `graphify-out/`, which is outside the paths I'm allowed to change.
+
+**Remaining risk (not fully fixable here):** a lingering worker process could write `env` into the fresh `.claude.json` during the run and delete it again before the check. Any process running as the same user as the driver can interfere with the reviewer in other ways too.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R7-01"], "not_repaired": [],
+ "regression_tests": ["tests/dev_workflow/test_lifecycle.py"],
+ "notes": "Reviewer claude now runs with a fresh driver-made CLAUDE_CONFIG_DIR (credentials file plus allowlisted ~/.claude.json account keys only, deleted after the run) and --setting-sources \"\". Real claude 2.1.296 honors the env in ~/.claude.json even with --setting-sources \"\", so the separate config dir is required. is_independent requires config_isolated=True for real milestones. A codex reviewer gets a fresh CODEX_HOME with only auth.json (untested: codex not installed). Managed policy dirs (/etc/claude-code, macOS/Windows equivalents, /etc/codex) are bound as control_state.reviewer_policy, and a change is TAMPER; a run planned earlier records only this new key at its next step (that path has no test). New tests: test_r7_01_worker_written_user_claude_settings_cannot_verify_a_real_milestone[3 params], test_r7_01_reviewer_gets_a_driver_made_config_dir_with_credentials_only, test_r7_01_managed_policy_written_by_a_worker_is_tamper; all fail on aba8ac05 (the base commit reaches VERIFIED in all 3 variants) and pass now. The test_r6_02 assertion was changed from 'user' to '' (stricter). Full tests/dev_workflow: 185 passed. Real-CLI check: the repaired run_worker sent 0 requests to the scripted endpoint; the base-commit argv in the same HOME sent 5. Not verified: a successful signed-in real review with the fresh dir (no stored credentials here); a macOS-keychain-only login may fail to sign in, which fails closed to waiting for the model. Remaining risk: a lingering same-user process could write and then remove env in the fresh .claude.json during the run. graphify update was not run (graphify-out/ is outside the permitted paths)."}
+REPAIR_RESULT_END

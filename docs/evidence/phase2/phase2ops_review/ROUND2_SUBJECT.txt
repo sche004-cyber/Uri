@@ -1,0 +1,4 @@
+candidate=C:\Users\cheta\.codex\worktrees\uri-phase2a\evidence\phase2ops-candidate-20261007-r1.zip
+sha256=bffa742ac9f8b4e6aadebde8bb91aa6c22638be6b4feeca6a5cfb7a0a1aa8ec7
+files=110 evidence_files=32
+note=post-repair logs in evidence\phase2ops_r1\: phase2_all_final.log (411 passed 2 skipped, run on the exact candidate tree), phase2_all.log (earlier run), phase1_authority.log 134 passed, phase1_full.log 2675/12/11 baseline, flutter_all.log 191 passed 2 skipped, ui_bridge_live.json, codex_cli_lifecycle_195130.json. The implementer hardened corroboration (LEDGER_REQUEST_MISMATCH) after phase2_all.log started; phase2_all_final.log is the run on the exact candidate tree.

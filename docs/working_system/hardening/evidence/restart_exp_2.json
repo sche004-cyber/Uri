@@ -1,0 +1,175 @@
+{
+ "schema": "uri.ws.restart_experiment.v1",
+ "started": "2026-10-09T07:57:43",
+ "runs": [
+  {
+   "label": "cold",
+   "t_start": 1791512869.98,
+   "load_s": 96.2,
+   "pid": 6664,
+   "calibration_tps": [
+    31.7,
+    32.4
+   ],
+   "residency": {
+    "dedicated_mib": 14636.4,
+    "non_local_mib": 2039.8,
+    "adapter_mib": 15423.1,
+    "unattributed_mib": 0.0
+   },
+   "stop": {
+    "t_stop": 1791512980.43,
+    "release_s": null,
+    "waited": false
+   }
+  },
+  {
+   "label": "immediate_restart_1",
+   "t_start": 1791512980.43,
+   "load_s": 93.5,
+   "pid": 14832,
+   "calibration_tps": [
+    154.0,
+    155.7
+   ],
+   "residency": {
+    "dedicated_mib": 15555.7,
+    "non_local_mib": 1120.6,
+    "adapter_mib": 15956.8,
+    "unattributed_mib": 0.0
+   },
+   "stop": {
+    "t_stop": 1791513079.87,
+    "release_s": 1.8,
+    "curve": [
+     [
+      -1.2,
+      15957
+     ],
+     [
+      -0.2,
+      15957
+     ],
+     [
+      0.8,
+      15957
+     ],
+     [
+      1.8,
+      401
+     ]
+    ]
+   }
+  },
+  {
+   "label": "restart_after_release_1",
+   "t_start": 1791513085.08,
+   "load_s": 95.7,
+   "pid": 12604,
+   "calibration_tps": [
+    154.8,
+    158.1
+   ],
+   "residency": {
+    "dedicated_mib": 15555.7,
+    "non_local_mib": 1120.6,
+    "adapter_mib": 15956.8,
+    "unattributed_mib": 0.0
+   },
+   "stop": {
+    "t_stop": 1791513186.82,
+    "release_s": null,
+    "waited": false
+   }
+  },
+  {
+   "label": "immediate_restart_2",
+   "t_start": 1791513186.82,
+   "load_s": 95.3,
+   "pid": 9436,
+   "calibration_tps": [
+    151.4,
+    152.6
+   ],
+   "residency": {
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1,
+    "adapter_mib": 15347.3,
+    "unattributed_mib": 0.0
+   },
+   "stop": {
+    "t_stop": 1791513288.32,
+    "release_s": 1.9,
+    "curve": [
+     [
+      -1.2,
+      15347
+     ],
+     [
+      -0.2,
+      15347
+     ],
+     [
+      0.8,
+      15347
+     ],
+     [
+      1.9,
+      401
+     ]
+    ]
+   }
+  },
+  {
+   "label": "restart_after_release_2",
+   "t_start": 1791513293.9,
+   "load_s": 96.1,
+   "pid": 10660,
+   "calibration_tps": [
+    150.6,
+    152.1
+   ],
+   "residency": {
+    "dedicated_mib": 15555.7,
+    "non_local_mib": 1120.6,
+    "adapter_mib": 15956.8,
+    "unattributed_mib": 0.0
+   },
+   "stop": {
+    "t_stop": 1791513396.37,
+    "release_s": 1.5,
+    "curve": [
+     [
+      -1.5,
+      15957
+     ],
+     [
+      -0.5,
+      15957
+     ],
+     [
+      0.5,
+      15957
+     ],
+     [
+      1.5,
+      401
+     ]
+    ]
+   }
+  }
+ ],
+ "baseline_adapter_mib": 401,
+ "lease": "restart_experiment",
+ "pre_restart_census": [
+  {
+   "unattributed_mib": 0.0,
+   "since_stop_s": 5.2
+  },
+  {
+   "unattributed_mib": 0.0,
+   "since_stop_s": 5.6
+  }
+ ],
+ "finished": "2026-10-09T08:06:38"
+}

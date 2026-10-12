@@ -1,0 +1,134 @@
+diff --git a/docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md b/docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md
+index 7c5b8ce..a3bb57c 100644
+--- a/docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md
++++ b/docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md
+@@ -41,7 +41,7 @@ BLOCKED --(owner: unblock --note)--> READY_TO_RESUME -> resumes at the blocked s
+ 
+ | Guarantee | Mechanism |
+ |---|---|
+-| Reviewer independence | separate OS process, fresh `--session-id`, prompt built from config + earlier findings only, clean detached worktree at the candidate SHA, edit tools and git-writing commands denied. For a real milestone the executable must be the installed `claude`/`codex` CLI: it is resolved once at PLAN (absolute path, realpath, SHA-256 and a script's interpreter, bound as `reviewer_exec` in the PLAN control state), launched by that absolute path, and refused unless it still matches before every step and at launch; any change (a replaced CLI, or another `claude` planted earlier on PATH) is BLOCKED (TAMPER) until the owner unblocks, and several different executables of that name on PATH at the plan are BLOCKED (REVIEWER_EXEC) until the owner leaves one (R6-01; a `binary` override is refused). On Windows `claude` resolves to the npm shim `claude.cmd`/`claude.ps1`: the shim is resolved to the one `.exe` it names, and that executable is bound (its path, realpath and SHA-256, plus the shim's path and SHA-256) and launched directly, never through cmd.exe, so a replaced `claude.exe` behind the shim is TAMPER; a shim naming anything else (several programs, `node` running `cli.js`, a missing file) is BLOCKED (REVIEWER_EXEC) and never launched (DEV-LIFECYCLE-2 W-2). The reviewer does not load the candidate's CLAUDE.md, `.claude/` settings, hooks, skills, agents or MCP servers (`--safe-mode --setting-sources "" --strict-mcp-config`; codex: `-c project_doc_max_bytes=0`) (R6-02). Nor does it load the user's CLI config, which workers can write because they share the driver's HOME: a `claude` reviewer runs with `CLAUDE_CONFIG_DIR` set to a fresh driver-made directory holding only the credentials file and an allowlist of `~/.claude.json` account keys (no settings, `env`, hooks, plugins or MCP config), a `codex` reviewer with a fresh `CODEX_HOME` holding only `auth.json`; the directory is removed after the run; it is watched for the whole run (not only its end state: R8-01), a settings file or `env`/`apiKeyHelper` seen in it at any moment, even if removed again before the run ends, makes `config_isolated` false, and a real milestone's round counts only with `config_isolated` true. Orphan containment (R8-01, Linux): the driver makes itself the child subreaper, so a worker, gate or test child that calls `setsid()` and leaves the killed process group is re-parented to the driver instead of init; after every worker and every command, and before every worker starts, the driver kills all such adopted processes until none is left (`containment_pre`/`containment_post`, `contained`). A real milestone's round counts only with `contained` true; on Windows (DEV-LIFECYCLE-2) every worker and command runs in its own Job Object through stdlib `ctypes` (`scripts/dev_workflow/containment.py`): created suspended, assigned to the job, then resumed; `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`, no breakaway; afterwards the job is terminated and `contained` is true only when it reports `ActiveProcesses == 0`, and every earlier job is re-checked before the next worker starts; a job that cannot be created or assigned gives `contained` false. Elsewhere (macOS) `contained` is false and a real milestone's review does not count (WAITING_FOR_MODEL with the reason). Not covered on any platform: processes started by other routes (Windows: Task Scheduler, WMI, services, COM out-of-process servers; Linux: systemd-run, cron/at, D-Bus activation, a daemon acting on a worker's request). Claude Code loads the `env` of `~/.claude.json` whatever `--setting-sources` says (probed on 2.1.296), hence the separate directory. The system-wide managed policy directories (`/etc/claude-code`, macOS/Windows equivalents, `/etc/codex`) are bound as `reviewer_policy` in the PLAN control state; a change is TAMPER (R7-01). After the run the driver kills the worker's process group, then checks: audit checkout status and HEAD, implementation worktree status and HEAD, the milestone's refs (candidate branch, baseline ref, integration target), every `refs/replace/*` ref, the repository's hooks, config and `info/` files, and that both worktrees' `.git` still lead to their own git dir. Any change ⇒ the round is NOT_INDEPENDENT. The hooks/config/`info/` digest and the `refs/replace/*` set are bound at PLAN (`control` in the PLAN event) and checked before every step (so before every reviewer, implementer and diagnosis worker), after every review and in the evidence check; any drift from the PLAN state ⇒ BLOCKED (TAMPER, owner), never WAITING_FOR_MODEL. Only `unblock` of that block re-binds it to the then-current state. The read-only diagnosis worker gets the same before/after snapshot (refs, control state, implementation worktree); a change ⇒ BLOCKED (TAMPER). Every driver git command runs with hooks disabled and replace objects ignored (`--no-replace-objects`, `GIT_NO_REPLACE_OBJECTS=1`) and `core.fsmonitor=false`; diffs use `--no-renames`. Other branches are not checked: other sessions move them legitimately |
++| Reviewer independence | separate OS process, fresh `--session-id`, prompt built from config + earlier findings only, clean detached worktree at the candidate SHA, edit tools and git-writing commands denied. For a real milestone the executable must be the installed `claude`/`codex` CLI: it is resolved once at PLAN (absolute path, realpath, SHA-256 and a script's interpreter, bound as `reviewer_exec` in the PLAN control state), launched by that absolute path, and refused unless it still matches before every step and at launch; any change (a replaced CLI, or another `claude` planted earlier on PATH) is BLOCKED (TAMPER) until the owner unblocks, and several different executables of that name on PATH at the plan are BLOCKED (REVIEWER_EXEC) until the owner leaves one (R6-01; a `binary` override is refused). On Windows `claude` resolves to the npm shim `claude.cmd`/`claude.ps1`: the shim is resolved to the one `.exe` it names, and that executable is bound (its path, realpath and SHA-256, plus the shim's path and SHA-256) and launched directly, never through cmd.exe, so a replaced `claude.exe` behind the shim is TAMPER; a shim naming anything else (several programs, `node` running `cli.js`, a missing file) is BLOCKED (REVIEWER_EXEC) and never launched (DEV-LIFECYCLE-2 W-2). The reviewer does not load the candidate's CLAUDE.md, `.claude/` settings, hooks, skills, agents or MCP servers (`--safe-mode --setting-sources "" --strict-mcp-config`; codex: `-c project_doc_max_bytes=0`) (R6-02). Nor does it load the user's CLI config, which workers can write because they share the driver's HOME: a `claude` reviewer runs with `CLAUDE_CONFIG_DIR` set to a fresh driver-made directory holding only the credentials file and an allowlist of `~/.claude.json` account keys (no settings, `env`, hooks, plugins or MCP config), a `codex` reviewer with a fresh `CODEX_HOME` holding only `auth.json`; the directory is removed after the run; it is watched for the whole run (not only its end state: R8-01), a settings file or `env`/`apiKeyHelper` seen in it at any moment, even if removed again before the run ends, makes `config_isolated` false, and a real milestone's round counts only with `config_isolated` true. Orphan containment (R8-01, Linux): the driver makes itself the child subreaper, so a worker, gate or test child that calls `setsid()` and leaves the killed process group is re-parented to the driver instead of init; after every worker and every command, and before every worker starts, the driver kills all such adopted processes until none is left (`containment_pre`/`containment_post`, `contained`). A real milestone's round counts only with `contained` true; on Windows (DEV-LIFECYCLE-2) every worker and command runs in its own Job Object through stdlib `ctypes` (`scripts/dev_workflow/containment.py`): created suspended, assigned to the job, then resumed; `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`, no breakaway; afterwards the job is terminated and `contained` is true only when it reports `ActiveProcesses == 0`, and every earlier job is re-checked before the next worker starts, including a job whose termination or check failed (it is kept and re-terminated); a job that cannot be created or assigned gives `contained` false, and because nothing can confirm afterwards that such a worker or command left nothing running, every later `containment_pre` in that driver run is `contained` false too (R2-01). Elsewhere (macOS) `contained` is false and a real milestone's review does not count (WAITING_FOR_MODEL with the reason). Not covered on any platform: processes started by other routes (Windows: Task Scheduler, WMI, services, COM out-of-process servers; Linux: systemd-run, cron/at, D-Bus activation, a daemon acting on a worker's request). Claude Code loads the `env` of `~/.claude.json` whatever `--setting-sources` says (probed on 2.1.296), hence the separate directory. The system-wide managed policy directories (`/etc/claude-code`, macOS/Windows equivalents, `/etc/codex`) are bound as `reviewer_policy` in the PLAN control state; a change is TAMPER (R7-01). After the run the driver kills the worker's process group, then checks: audit checkout status and HEAD, implementation worktree status and HEAD, the milestone's refs (candidate branch, baseline ref, integration target), every `refs/replace/*` ref, the repository's hooks, config and `info/` files, and that both worktrees' `.git` still lead to their own git dir. Any change ⇒ the round is NOT_INDEPENDENT. The hooks/config/`info/` digest and the `refs/replace/*` set are bound at PLAN (`control` in the PLAN event) and checked before every step (so before every reviewer, implementer and diagnosis worker), after every review and in the evidence check; any drift from the PLAN state ⇒ BLOCKED (TAMPER, owner), never WAITING_FOR_MODEL. Only `unblock` of that block re-binds it to the then-current state. The read-only diagnosis worker gets the same before/after snapshot (refs, control state, implementation worktree); a change ⇒ BLOCKED (TAMPER). Every driver git command runs with hooks disabled and replace objects ignored (`--no-replace-objects`, `GIT_NO_REPLACE_OBJECTS=1`) and `core.fsmonitor=false`; diffs use `--no-renames`. Other branches are not checked: other sessions move them legitimately |
+ | No false ACCEPT | VERIFIED needs an independent round with ACCEPT/ACCEPT WITH FINDINGS on the **exact** candidate SHA, passing gates and a clean `verify`; providers other than `claude_cli`/`codex_cli` count only for milestones whose id starts with `DEVTEST`/`TOOLING_TEST`; relayed (`import-review`) and non-independent rounds may route a REJECT to repair but never count as ACCEPT |
+ | Verdict integrity | effective verdict recomputed from findings (HIGH or unknown severity blocks; MEDIUM blocks unless `blocking: false`; LOW only if `blocking: true`; labels case-normalised). A result whose `findings` (or `prior_findings`) is not a list of objects is unparseable (NO_RESULT ⇒ WAITING_FOR_MODEL), never filtered down to an ACCEPT. The verdict is parsed from the text the worker process returned in memory (its hash is `result_sha256`), never from `reviewer_result.txt`; `verify` re-derives each round's result from the hashed raw stdout and checks `reviewer_result.txt` against `result_sha256`. Raw output, round, repair, qualification and baseline-gate records are hashed into `events.jsonl`; `verify` recomputes the chain and checks every state.json round, repair, gate result, baseline cache and the stage against it: round and repair numbers must be exactly 1..n in order (no duplicates), each recorded round/repair in state.json must equal its hashed `round.json`/`repair.json`, and `resume_to` and `blocker` must equal the values recorded in the last wait/block stage event. The independent ACCEPT used for VERIFIED is read from the hash-bound `REVIEW_RECORDED` events and `round.json` files, never from state.json. `run` calls `verify` first and blocks (TAMPER) on any mismatch; evidence checks call it too. This is tamper-**evident**: whoever can rewrite the whole state directory can rebuild a consistent chain, so commit the receipts to anchor them |
+ | Repair discipline | the worker never commits; the driver checks HEAD, milestone refs, hooks/config, protected and permitted paths, then commits exactly the checked files with hooks disabled, re-checks the committed file set, and proves regression tests in two fresh worktrees (pre-repair with the new tests copied in, and the repair commit): every test passes after; at least one fails before when a code/security defect is addressed; gate tests named by gate findings must each fail before (a gate test id — junit classname with trailing class components, or a Flutter path relative to the gate's `cwd` — is resolved to its repository file; a gate repair whose named test cannot be resolved to a file with a configured regression runner is refused, not relaxed). A repair that deletes an existing test file is refused; any error after the driver's commit refuses the repair. Any refusal resets the implementation worktree to the pre-repair commit and verifies it is clean — but only after checking that the worktree's `.git` still leads to its own git dir (a redirected gitfile is TAMPER and nothing is reset); the reset moves only the candidate branch: the driver sets `refs/heads/<branch>` to the pre-repair commit, re-points the worktree's HEAD at it (`symbolic-ref`), then runs `reset --hard` + `clean`, and checks HEAD's symref, HEAD and the branch tip. A HEAD redirected to another branch during a repair is TAMPER (and is part of the review integrity snapshot), so no other branch, including the main checkout's, is moved; a hook/config/replace-ref change or a failed reset stops the run (TAMPER) |
+diff --git a/scripts/dev_workflow/containment.py b/scripts/dev_workflow/containment.py
+index 07e49dd..85f3d1b 100644
+--- a/scripts/dev_workflow/containment.py
++++ b/scripts/dev_workflow/containment.py
+@@ -10,7 +10,10 @@ running. Anything else is ``contained=False`` (fail closed): a real milestone re
+   assigned to the job and only then resumed, so it cannot start a process outside the job. The job has
+   ``JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`` and no breakaway flag, so a ``CREATE_BREAKAWAY_FROM_JOB`` request fails. After
+   the worker or command the job is terminated and must report ``ActiveProcesses == 0``; the job handle is kept until
+-  the next ``precheck()`` has confirmed again that it is empty.
++  the next ``precheck()`` has confirmed again that it is empty. A job whose termination or check failed stays in that
++  list, so ``precheck()`` re-checks it (R2-01). A worker or command that ran without a job (not created or not
++  assigned) cannot be checked afterwards: it taints the driver process, and every later ``precheck()`` in it returns
++  ``contained=False`` (R2-01).
+ * Elsewhere: no containment (``contained=False``).
+ 
+ Not covered on any platform (disclosed, see DEV_LIFECYCLE_2_PLAN_AND_ACCEPTANCE.md): processes started by other routes
+@@ -169,6 +172,7 @@ class WinJobApi:
+ 
+ _API = None
+ _OPEN_JOBS: list = []   # Windows jobs terminated by finish(), kept until precheck() has confirmed them empty again
++_TAINTED: list = []     # Windows: why an earlier worker or command ran unverifiably (no job); precheck() fails closed
+ 
+ 
+ def win_api():
+@@ -271,14 +275,18 @@ def finish(proc, sweep=None, wait_s: float = EMPTY_WAIT_S) -> dict:
+     api = win_api()
+     if job is None or api is None:
+         kill_pid_tree(proc.pid)
+-        return {"contained": False, "reason": getattr(proc, "_uri_job_error", None) or "no job object"}
++        reason = getattr(proc, "_uri_job_error", None) or "no job object"
++        # taskkill /T misses a detached grandchild whose parent exited: nothing can confirm it is gone (R2-01)
++        _TAINTED.append(f"pid {proc.pid} ran without a job: {reason}")
++        return {"contained": False, "reason": reason}
++    # Kept even when the termination or its check fails, so precheck() re-checks this job (R2-01).
++    _OPEN_JOBS.append(job)
++    proc._uri_job = None
+     try:
+         api.terminate(job)
+         n = _wait_empty(api, job, wait_s)
+     except OSError as e:
+         return {"contained": False, "reason": f"job not verified: {e}"}
+-    _OPEN_JOBS.append(job)
+-    proc._uri_job = None
+     if n:
+         return {"contained": False, "reason": f"{n} process(es) still active in the job after termination"}
+     return {"contained": True, "killed": "job terminated", "active_processes": 0}
+@@ -292,6 +300,9 @@ def precheck(sweep=None, wait_s: float = EMPTY_WAIT_S) -> dict:
+     api = win_api()
+     if api is None:
+         return {"contained": False, "killed": 0, "reason": "job objects unavailable"}
++    if _TAINTED:
++        return {"contained": False, "killed": 0,
++                "reason": f"an earlier worker or command ran outside any job ({_TAINTED[0]}); not verifiable"}
+     left, killed = [], 0
+     for job in list(_OPEN_JOBS):
+         try:
+diff --git a/tests/dev_workflow/test_lifecycle_platform.py b/tests/dev_workflow/test_lifecycle_platform.py
+index e77238b..e1ecf30 100644
+--- a/tests/dev_workflow/test_lifecycle_platform.py
++++ b/tests/dev_workflow/test_lifecycle_platform.py
+@@ -80,6 +80,7 @@ def fake_windows(monkeypatch):
+         monkeypatch.setattr(C, "WINDOWS", True)
+         monkeypatch.setattr(C, "_API", api)
+         monkeypatch.setattr(C, "_OPEN_JOBS", [])
++        monkeypatch.setattr(C, "_TAINTED", [], raising=False)   # R2-01 (absent before the repair)
+         monkeypatch.setattr(C.subprocess, "Popen", FakeProc)
+         monkeypatch.setattr(C.subprocess, "run", lambda *a, **k: None)
+         return api
+@@ -135,6 +136,52 @@ def test_f2_precheck_confirms_earlier_jobs_are_empty(fake_windows, monkeypatch):
+     assert r["contained"] is False and "earlier" in r["reason"]
+ 
+ 
++@pytest.mark.parametrize("failure", ["create_fails", "assign_fails"])
++def test_r2_01_uncontained_worker_makes_later_precheck_fail_closed(fake_windows, failure):
++    """R2-01: an implementer or gate that ran without a job may have left a detached grandchild that taskkill /T
++    cannot see; the next reviewer's precheck must not report contained=True."""
++    api = fake_windows(**{failure: True})
++    assert C.finish(C.spawn(["implementer"]))["contained"] is False
++    setattr(api, failure, False)                 # the failure was transient: the reviewer gets a job
++    pre = C.precheck()
++    assert pre["contained"] is False and "outside any job" in pre["reason"]
++    C.finish(C.spawn(["reviewer"]))
++    assert C.precheck()["contained"] is False    # stays fail closed for the rest of the driver process
++
++
++def test_r2_01_failed_termination_keeps_the_job_for_precheck(fake_windows):
++    """R2-01: a job whose TerminateJobObject failed is still re-checked (and terminated) by the next precheck."""
++    api = fake_windows()
++    p = C.spawn(["implementer"])
++    real_terminate, fails = api.terminate, [1]
++
++    def terminate_once_failing(job):
++        if fails:
++            fails.pop()
++            api.calls.append(("terminate-failed", job))
++            raise OSError(5, "TerminateJobObject failed")
++        real_terminate(job)
++    api.terminate = terminate_once_failing
++    r = C.finish(p)
++    assert r["contained"] is False and api.jobs[1]["active"] == 1
++    assert C._OPEN_JOBS == [1]                   # kept: the next precheck must see it
++    pre = C.precheck(wait_s=0.1)
++    assert pre["contained"] is True and pre["killed"] == 1 and api.jobs[1]["active"] == 0
++    assert ("terminate", 1) in api.calls and ("close", 1) in api.calls and C._OPEN_JOBS == []
++
++
++def test_r2_01_failed_termination_that_keeps_failing_is_not_contained(fake_windows):
++    api = fake_windows()
++    p = C.spawn(["implementer"])
++
++    def terminate_fails(job):
++        raise OSError(5, "TerminateJobObject failed")
++    api.terminate = terminate_fails
++    assert C.finish(p)["contained"] is False
++    pre = C.precheck(wait_s=0.1)
++    assert pre["contained"] is False and "earlier job" in pre["reason"]
++
++
+ def test_f2_no_kernel32_is_not_contained(monkeypatch):
+     monkeypatch.setattr(C, "WINDOWS", True)
+     monkeypatch.setattr(C, "_API", False)

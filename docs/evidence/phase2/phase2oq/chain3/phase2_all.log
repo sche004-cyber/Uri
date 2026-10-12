@@ -1,0 +1,154 @@
+C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Scripts\python.exe -I scripts/phase2d_regression.py phase2
+RUN C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Scripts\python.exe -I -m pytest -c C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\scripts\phase2d_pytest.ini --rootdir C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent -q -rfEs --ignore=work --ignore=evidence --ignore=uri_workspace --ignore=temp_evidence --ignore=reports --ignore=research_notes --ignore=graphify-out --ignore=uri_ui --ignore=.venv tests/phase2a tests/phase2b tests/phase2c tests/phase2d tests/phase2ops tests/phase2close tests/phase2oq
+........................................................................ [ 15%]
+.................ss..................................................... [ 30%]
+........................................................................ [ 45%]
+........................................................................ [ 60%]
+........................................................................ [ 75%]
+..........F........FF................................................... [ 91%]
+..........................................                               [100%]
+================================== FAILURES ===================================
+________ test_worker_profile_refuses_fixture_records_without_the_flag _________
+
+procs = {'server': <Popen: returncode: None args: ['C:\\Users\\cheta\\.codex\\worktrees\\uri-ph...>, 'worker': <Popen: returnc...0002D131D35470>, 'server_manifest': <uri_core.core.runtime_identity.RuntimeManifest object at 0x000002D132F8D970>, ...}
+
+    def test_worker_profile_refuses_fixture_records_without_the_flag(procs):
+        """Same client root, a second worker started WITHOUT --allow-fixture-qualification: the record is INVALIDATED and
+        the harness is not usable; the first worker must be gone first (single instance)."""
+        wp, client = procs["worker"], procs["client"]
+        cmd = frames(wp)
+        assert cmd({"command": "close"})["result"] == "CLOSED"
+        wp.stdin.close()
+        wp.wait(15)
+        m = client.data
+        strict = subprocess.Popen([m["interpreter"], "-B", "-I", WORKER, "--manifest", str(client.path)], cwd=m["client_root"],
+                                  env=child_environment(Path(m["client_root"]), Path(m["interpreter"])),
+                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            c2 = frames(strict)
+            found = c2({"command": "harness_discover"})
+            assert found["result"] == "OK"
+            assert all(not h["usable"] for h in found["value"]["harnesses"])
+            assert found["value"]["qualification"][0]["status"] == "INVALIDATED" and found["value"]["qualification"][0]["reason"] == "LEVEL_NOT_ALLOWED"
+            turn = c2({"command": "turn_start", "session_id": uid(), "text": TEXT, "reasoning": CLAUDE})
+            assert turn["value"]["state"] == "approval_required"
+            done = c2({"command": "turn_decide", "turn_id": turn["value"]["turn_id"], "approve": True})
+>           assert done["result"] == "OK" and done["value"]["code"] == "SETTLED_FAILED"
+E           AssertionError: assert ('REFUSED' == 'OK'
+E             
+E             - OK
+E             + REFUSED)
+
+tests\phase2d\test_worker_process.py:145: AssertionError
+_______ test_model_outside_the_qualified_set_is_refused_before_any_task _______
+
+stack = <phase2d.conftest.Stack object at 0x000002D131CF33F0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002D134575A90>
+
+    def test_model_outside_the_qualified_set_is_refused_before_any_task(stack, monkeypatch):
+        """Policy offers (codex_cli, gpt-6-sol) and (codex_cli, None); the fixture record qualifies both, claude_code only
+        (None). A selection the server offers but the client never qualified for that model stops at the bridge."""
+        monkeypatch.setenv("URI_FAKE_SCENARIO", "honest")
+        turn = stack.start(TEXT, reasoning={**CODEX, "model": "gpt-6-sol"})
+        assert stack.decide(turn, True)["code"] == "SETTLED_VERIFIED"
+        # now shrink the qualified models of codex_cli to gpt-6-sol only and rebuild the composition
+        from phase2d.conftest import fixture_record, signed_record, trust_for
+        from uri_supervisor_bridge.qualification import compose_client
+        fixture_record(stack.client_root, "codex_cli", ("gpt-6-sol",))
+        comp = compose_client(stack.client_root, trust=trust_for(stack.client_root), allow_fixture=True)
+        stack.bridge.executors = comp.executors
+        stack.bridge._ensure_registrations()
+        turn = stack.start(TEXT, reasoning=CODEX)                 # model None: offered by policy, not qualified any more
+>       final = stack.decide(turn, True)
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\phase2d\test_worker_service.py:140: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\phase2d\conftest.py:164: in decide
+    return (service or self.service).handle("turn_decide", cmd)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_supervisor_bridge\worker_service.py:143: in handle
+    self._refuse_unusable_harness(command["turn_id"])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <uri_supervisor_bridge.worker_service.SupervisedWorkerService object at 0x000002D132DFCEF0>
+turn_id = 'd10e09fc-9876-4858-ba64-5c9403ee11ba'
+
+    def _refuse_unusable_harness(self, turn_id):
+        """OQ-1 on the blocking `turn_decide approve=true` path too (operational-qualification review round 1, OQ-R1-2):
+        an approval for an executor that cannot run NOW never leaves the worker. The pending turn is dropped and released
+        on the server (CAP-1 route); nothing is approved. Declining is never gated."""
+        entry = self.pending.get(turn_id)
+        if entry is None or self.executions is None:
+            return
+        _, _, reasoning, _ = entry
+        reasoning = reasoning if isinstance(reasoning, dict) else {}
+        state = self.executions.harness_state(reasoning.get("provider"), reasoning.get("kind"))
+        if state is not None and not state["usable"]:
+            self.pending.pop(turn_id, None)
+            self.release_turn(entry, "HARNESS_NOT_USABLE")
+>           raise TurnError("HARNESS_NOT_USABLE")
+E           uri_core.client_runtime.turn_runner.TurnError: HARNESS_NOT_USABLE
+
+uri_supervisor_bridge\worker_service.py:94: TurnError
+_ test_unqualified_provider_offered_by_policy_fails_closed_with_zero_execution _
+
+tmp_path = WindowsPath('C:/Users/cheta/AppData/Local/Temp/pytest-of-cheta/pytest-742/test_unqualified_provider_offe0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002D132DF8440>
+
+    def test_unqualified_provider_offered_by_policy_fails_closed_with_zero_execution(tmp_path, monkeypatch):
+        """Claude Code's situation on this machine, modelled: the server offers the row, the client holds no valid
+        record -> registry NOT usable -> NOT_STARTED, turn closed, nothing spawned."""
+        from phase2d.conftest import ROOT, Stack
+        s = Stack(ROOT / "work/c1" / ("p2d_unq_" + uid().replace("-", "")), records=(("codex_cli", (None,)),))
+        try:
+            monkeypatch.setenv("URI_FAKE_SCENARIO", "honest")
+            turn = s.start(TEXT, reasoning=CLAUDE)
+            assert turn["state"] == "approval_required"
+>           final = s.decide(turn, True, digest=turn["approval_request"]["approval_digest"])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\phase2d\test_worker_service.py:154: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\phase2d\conftest.py:164: in decide
+    return (service or self.service).handle("turn_decide", cmd)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_supervisor_bridge\worker_service.py:143: in handle
+    self._refuse_unusable_harness(command["turn_id"])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <uri_supervisor_bridge.worker_service.SupervisedWorkerService object at 0x000002D133031D90>
+turn_id = '82431473-5bd1-443a-bb86-02b156999d94'
+
+    def _refuse_unusable_harness(self, turn_id):
+        """OQ-1 on the blocking `turn_decide approve=true` path too (operational-qualification review round 1, OQ-R1-2):
+        an approval for an executor that cannot run NOW never leaves the worker. The pending turn is dropped and released
+        on the server (CAP-1 route); nothing is approved. Declining is never gated."""
+        entry = self.pending.get(turn_id)
+        if entry is None or self.executions is None:
+            return
+        _, _, reasoning, _ = entry
+        reasoning = reasoning if isinstance(reasoning, dict) else {}
+        state = self.executions.harness_state(reasoning.get("provider"), reasoning.get("kind"))
+        if state is not None and not state["usable"]:
+            self.pending.pop(turn_id, None)
+            self.release_turn(entry, "HARNESS_NOT_USABLE")
+>           raise TurnError("HARNESS_NOT_USABLE")
+E           uri_core.client_runtime.turn_runner.TurnError: HARNESS_NOT_USABLE
+
+uri_supervisor_bridge\worker_service.py:94: TurnError
+============================== warnings summary ===============================
+tests/phase2b/test_bridge_e2e.py::test_full_chain_verified_once_with_supervisor_evidence
+  C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/phase2d/test_worker_process.py::test_worker_profile_refuses_fixture_records_without_the_flag
+FAILED tests/phase2d/test_worker_service.py::test_model_outside_the_qualified_set_is_refused_before_any_task
+FAILED tests/phase2d/test_worker_service.py::test_unqualified_provider_offered_by_policy_fails_closed_with_zero_execution
+SKIPPED [2] tests\phase2a\test_live_executors.py:36: live executors are opt-in (URI_PHASE2A_LIVE=1)
+3 failed, 469 passed, 2 skipped, 1 warning in 484.49s (0:08:04)
+EXIT=1 DURATION_S=485.3
+
+EXIT=1 DURATION_S=485.4

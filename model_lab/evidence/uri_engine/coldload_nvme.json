@@ -1,0 +1,45 @@
+{
+ "label": "nvme",
+ "model": "C:/uri-model-lab-nvme/models/Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+ "mmproj": "C:/uri-model-lab-nvme/models/mmproj-F16.gguf",
+ "evict": {
+  "evicted_gib": 30.02,
+  "seconds": 186.9,
+  "files": "D:\\uri-model-lab\\models\\unsloth__Qwen3.8-27B-GGUF\\Qwen3.8-27B-UD-IQ4_XS.gguf"
+ },
+ "hash_cold": {
+  "sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+  "seconds": 17.05
+ },
+ "evict2": {
+  "evicted_gib": 30.02,
+  "seconds": 187.0,
+  "files": "D:\\uri-model-lab\\models\\unsloth__Qwen3.8-27B-GGUF\\Qwen3.8-27B-UD-IQ4_XS.gguf"
+ },
+ "load_cold": {
+  "load_seconds": 15.96,
+  "vram_dedicated_before_load_mib": 958.4,
+  "vram_dedicated_now_mib": 15474.2,
+  "server_rss_now_mib": 731.8,
+  "system_available_ram_mib": 15718.9,
+  "peak_server_rss_mib": 928.8,
+  "peak_vram_dedicated_mib": 15225.4,
+  "min_system_available_ram_mib": 15355.5,
+  "mean_server_cpu_pct_of_machine": 1.3
+ },
+ "load_warm": {
+  "load_seconds": 6.44,
+  "vram_dedicated_before_load_mib": 958.4,
+  "vram_dedicated_now_mib": 15474.2,
+  "server_rss_now_mib": 731.9,
+  "system_available_ram_mib": 15725.7,
+  "peak_server_rss_mib": 821.4,
+  "peak_vram_dedicated_mib": 15225.4,
+  "min_system_available_ram_mib": 15649.1,
+  "mean_server_cpu_pct_of_machine": 1.8
+ },
+ "hash_warm": {
+  "sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+  "seconds": 9.88
+ }
+}

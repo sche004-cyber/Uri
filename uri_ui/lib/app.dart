@@ -18,6 +18,7 @@ import 'screens/home/home_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/onboarding/brain_onboarding_screen.dart';
 import 'screens/settings/settings_shell.dart';
+import 'screens/tasks/supervised_execution_screen.dart';
 import 'screens/tasks/tasks_screen.dart';
 import 'services/app_state.dart';
 import 'services/app_state_scope.dart';
@@ -341,7 +342,11 @@ class _UriHomeState extends State<UriHome> {
   }
 
   static Widget _buildHome(BuildContext context) => const HomeScreen();
-  static Widget _buildTasks(BuildContext context) => const TasksScreen();
+  // Phase 2 UI/operations: the supervised execution entry sits on Tasks and
+  // renders nothing unless the paired installation opted in (no cutover).
+  static Widget _buildTasks(BuildContext context) => const Column(
+        children: [SupervisedExecutionEntry(), Expanded(child: TasksScreen())],
+      );
   static Widget _buildConnections(BuildContext context) =>
       const ConnectionsProvidersScreen();
   static Widget _buildSettings(BuildContext context) => const SettingsShell();

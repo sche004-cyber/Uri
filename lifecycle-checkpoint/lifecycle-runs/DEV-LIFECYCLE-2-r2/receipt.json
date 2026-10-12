@@ -1,0 +1,88 @@
+{
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocker": {
+  "at": "2026-10-11T13:19:15Z",
+  "kind": "OWNER_AUTHORIZATION",
+  "needs": "git push origin 0ee6885a68ec14eabec7645b4501f87d17bde6f0:refs/heads/integration/git-sync-20261008",
+  "reason": "integration into integration/git-sync-20261008 needs owner authorisation",
+  "stage": "VERIFIED"
+ },
+ "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+ "config_sha256": "6a80c4299fbe286ab142d6f329eaf547cb13aa5f1cc7e8a3611d17240c74ad37",
+ "events": 19,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "0ee6885a68ec": {
+   "blocked": null,
+   "new_failures": {
+    "dev_workflow": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-11T13:19:15Z",
+  "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+  "command": "git push origin 0ee6885a68ec14eabec7645b4501f87d17bde6f0:refs/heads/integration/git-sync-20261008",
+  "mode": "fast-forward",
+  "remote": "origin",
+  "status": "AWAITING_OWNER_AUTHORIZATION",
+  "target_ref": "integration/git-sync-20261008",
+  "target_tip_before": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80"
+ },
+ "milestone": "DEV-LIFECYCLE-2",
+ "open_findings": [
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "severity": "LOW",
+   "title": "Windows: a worker whose communicate() raises OSError after spawn is never finished; its job stays unterminated and untracked, and the next precheck() reports contained=True"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": [
+    "R1-01"
+   ],
+   "commit": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+   "reason": null,
+   "repair": 1,
+   "status": "COMMITTED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "73bdbef1e34e0b0a9456ee13e8b7b3f9c0e51f47",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "4ea43b42-633b-46ea-8a8a-09ef2c55de7f",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "round": 2,
+   "session_id": "76c2b25e-9190-46b6-9cc1-c393ca7c8a8a",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "rounds": 2,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "BLOCKED",
+ "verify_errors": [],
+ "written_at": "2026-10-11T13:19:15Z"
+}

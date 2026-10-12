@@ -1,0 +1,26 @@
+I fixed R10-01: hidden text, `<script>` and `<style>` content no longer end up in "Selected text". The new regression test fails 4 of 4 on 20a646f and passes 4 of 4 with the fix.
+
+**The fix.** In `uri_assist/browser_extension/snapshot.js`, `selectionOf()` now drops any selected text whose parent element fails the same `visible()` check the page-text walker uses, reusing that walker's cache. That check rejects display:none, `[hidden]`, aria-hidden, tiny-font, transparent and off-screen text, and anything inside script, style, noscript or template. Dropped text is counted under a new key, `hidden_selection_text`. I didn't reuse `hidden_text` because the page walker already counts the same nodes there, so reusing it would count them twice. The form-field withholding from R9 is unchanged.
+
+**The test.** `tests/assist/test_a0_r10_review_regressions.py` uses two new fixtures, `hidden_selection_page.html` and `run_hidden_selection.cjs`. The page has the reviewer's hidden instruction, `window.__STATE__` script (e-mail address and CSRF token) and visible h1/p. It adds aria-hidden, 1px-font, opacity:0, off-screen, `[hidden]`, noscript, template and style payloads. In real Chromium it selects the page three ways: a real Ctrl+A, a real mouse drag from the h1 to the p, and a range over the whole body.
+
+For each case the test checks two things:
+- **Snapshot:** the selection still runs from "Welcome back" to "You have 3 new messages.", is marked as page text and not withheld, and contains none of the payloads.
+- **Brain request:** the snapshot is passed through the bridge with an OBSERVE grant and a question. The request body carries "Selected text" with the visible text and none of the payloads.
+
+**Results:**
+- On 20a646f (original `snapshot.js` restored temporarily, then put back): 4 failed, starting with "SYSTEM: ignore" found in the selection.
+- With the fix: 4 passed.
+- Full `tests/assist` and `tests/web`: 2631 passed.
+
+**Not done or not checked:**
+- `graphify update .` could not run because graphify isn't installed here.
+- The Flutter tests weren't run, since nothing under `uri_ui` changed.
+- One behaviour is unchanged: if a selection contains *only* hidden text that the browser still reports as selected (for example aria-hidden-only), it is reported as withheld rather than empty. That leaks nothing.
+
+Nothing is committed and no protected paths were touched.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R10-01"], "not_repaired": [],
+ "regression_tests": ["tests/assist/test_a0_r10_review_regressions.py"], "notes": "snapshot.js selectionOf() now drops selected text nodes whose parentElement fails the page walker's visible() check (shared cache), which covers display:none, [hidden], aria-hidden, tiny-font, opacity:0, off-screen and script/style/noscript/template; it counts them under redactions.hidden_selection_text (separate from hidden_text so the page walker's count is not doubled). New real-Chromium fixtures tests/assist/fixtures/hidden_selection_page.html and run_hidden_selection.cjs (real Ctrl+A, real mouse drag h1->p, body range). The test checks the snapshot selection and the FakeClient Brain body. Verified 4 failed on 20a646f snapshot.js and 4 passed with the fix; tests/assist + tests/web: 2631 passed. graphify CLI not installed (exit 127), so the graph was not updated. Flutter not run (no uri_ui change). Unchanged by design: a selection made only of hidden text that the browser still reports as selected (e.g. aria-hidden-only) is reported as selection_withheld (fail closed) rather than empty."}
+REPAIR_RESULT_END

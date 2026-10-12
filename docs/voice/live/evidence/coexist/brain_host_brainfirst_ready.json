@@ -1,0 +1,127 @@
+{
+ "calibration": {
+  "decode_tps": 160.0,
+  "predicted_n": 160,
+  "prompt_ms": 186.285,
+  "reason": "START",
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 441.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1784,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 15555.7,
+   "non_local_mib": 1120.6,
+   "others_mib": 776.5,
+   "t": 1791553946.261,
+   "verdict_now": "AT_RISK"
+  },
+  "server_create_time": 1791553879.804418,
+  "server_pid": 7408,
+  "t": 1791553944.831,
+  "threshold_tps": 60.0,
+  "tokens": 160
+ },
+ "detail": null,
+ "explain": "Brain ready (160 tok/s).",
+ "gpu": {
+  "census_s": 3.33,
+  "census_t": 1791553766.575,
+  "explain": "The Brain needs 15.3 GB of GPU memory but only 14.6 GB is free. In use by: chrome.exe from chrome.exe (0.6 GB), dwm.exe (desktop compositor, 0.5 GB). Close those or wait; URI will not stop them.",
+  "fit": {
+   "card_mib": 16368,
+   "consumers": [
+    {
+     "dedicated_mib": 611.8,
+     "name": "chrome.exe",
+     "parent": "chrome.exe",
+     "pid": 9824,
+     "role": null
+    },
+    {
+     "dedicated_mib": 500.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1784,
+     "role": "desktop compositor"
+    }
+   ],
+   "free_mib": 14904.5,
+   "margin_mib": -721.5,
+   "others_mib": 1463.5,
+   "owner_mib": 0,
+   "required_mib": 15626,
+   "unattributed_mib": 0.0,
+   "verdict": "CONTENDED"
+  }
+ },
+ "heartbeat_at": 1791553961.697,
+ "history": [
+  {
+   "detail": null,
+   "state": "STARTING",
+   "t": 1791553769.905
+  },
+  {
+   "detail": null,
+   "state": "LOADING",
+   "t": 1791553882.807
+  },
+  {
+   "detail": null,
+   "state": "CALIBRATING",
+   "t": 1791553944.828
+  },
+  {
+   "detail": null,
+   "state": "READY",
+   "t": 1791553949.397
+  }
+ ],
+ "host_pid": 7888,
+ "host_started": 1791553766.553,
+ "lease": {
+  "acquired_at": 1791553766.573,
+  "held": true,
+  "recovered_from": {
+   "acquired_at": 1791550802.78,
+   "heartbeat_at": 1791550802.78,
+   "label": "WS Brain host",
+   "pid": 336,
+   "purpose": "runtime_v1_brain"
+  }
+ },
+ "override": {
+  "at": 1791553766.553,
+  "by": "--override-contention"
+ },
+ "residency": {
+  "consumers": [
+   {
+    "dedicated_mib": 441.1,
+    "name": "dwm.exe",
+    "parent": "winlogon.exe",
+    "pid": 1784,
+    "role": "desktop compositor"
+   }
+  ],
+  "dedicated_mib": 15555.7,
+  "non_local_mib": 1120.6,
+  "others_mib": 776.5,
+  "t": 1791553946.261,
+  "verdict_now": "AT_RISK"
+ },
+ "schema": "uri.ws.brain_host.v1",
+ "server": {
+  "load_seconds": 65.0,
+  "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+  "owned": true,
+  "pid": 7408
+ },
+ "state": "READY",
+ "updated_at": 1791553949.397
+}

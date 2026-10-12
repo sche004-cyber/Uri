@@ -1,0 +1,37 @@
+I fixed R42-01 at the cause named in the diagnosis, not with another per-token rule on top. A secret in a URL that is split across inline elements (`<b>`, `<span>`, `<em>`, `<a>`, `<i>`) is now masked in page text and headings, the same way the selection already masked it.
+
+**In-page layer (`uri_assist/browser_extension/snapshot.js`)**
+- **New grouping rule:** text nodes in the same block that sit next to each other inside inline elements now count as one "run". The new `newRun()` helper starts a new run only at:
+  - a different block container,
+  - a `<br>`,
+  - a visible element that is not inline,
+  - a whitespace-only text node between the two nodes.
+- **Same group, no separator:** each run gets a single group id, so `finish()` and the Python `onscreen.join` join its pieces with nothing in between. A secret that crosses nodes is therefore masked as one token.
+- **Where it applies:** page text (each run is masked as one chunk instead of node by node), headings (`visibleTextOf`), label pieces and contenteditable value pieces.
+
+**Backstop in both layers** (`_split_url_parts` in `uri_assist/redact.py`, `splitUrlParts` in `snapshot.js`, the same rule in each)
+- This runs after the existing per-token pass and errs on the side of masking when a URL has been cut by whitespace:
+  - **Key with no value:** a secret-naming key with an empty value (`client_secret=`, or `client_secret` then `=`) masks the value in the next token.
+  - **Split userinfo:** `scheme://user:` followed within two tokens by `…@` loses that userinfo.
+- This covers the separators Python adds itself: `\n` between page-text groups and a space between heading groups.
+
+**Tests**
+- New file `tests/assist/test_a0_r42_review_regressions.py`, self-contained (it only imports helpers that already exist at 78006f9):
+  - a real-Chromium page with all five forms the reviewer used, run for `no_selection` and `ctrl_a`;
+  - Python unit cases for the newline- and space-split forms;
+  - a guard that ordinary text stays as it was.
+- **On 78006f9:** I ran it in a clean `git archive` export of the old code with the new test file added. 10 tests fail and 1 passes; the one that passes is the readability guard, which is meant to pass on both versions.
+- **After the change:** all 11 pass.
+- **Full `tests/assist` suite:** 2221 passed. That run started before I added the new file, so the 2221 does not include it; I ran the new file separately (11 passed).
+- I did not run `tests/web` or the Flutter tests. A text search of `tests/web` found no source file that references `snapshot.js`, `redact_text` or `uri_assist`.
+
+**Trade-offs worth a look**
+- **Over-masking in prose:** the backstop masks the next word after a bare secret-sounding key. `password = hunter2` becomes `password = [redacted]`, and so does `key = value`. I judged that acceptable.
+- **Userinfo check catches some odd prose:** text like `https://example.com: … @home` can have the part up to the `@` removed.
+- **Separate nodes in one block:** for page text this already happened, so the only visible effect is that they now join with no newline. Headings, labels and values used to join with a space; now inline-adjacent nodes join with nothing, so `<span>Save</span><span>All</span>` would read "SaveAll". In practice there's usually whitespace or a non-inline element between such nodes, and either one still starts a new run.
+
+I did not commit, and I did not run graphify.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R42-01"], "not_repaired": [], "regression_tests": ["tests/assist/test_a0_r42_review_regressions.py"], "notes": "Root cause addressed: snapshot.js now groups inline-adjacent visible text nodes of one block (no <br>, block element or whitespace-only node between) into one run = one group id with no separator, masked as a whole, for page text (chunks + pieces), headings, label pieces and contenteditable value pieces (newRun/blockOf/isInline helpers). Defence in depth in both layers (redact.py _split_url_parts, snapshot.js splitUrlParts, same rule): secret-naming key with empty value ('k=' or 'k' '=') masks the next token's value; 'scheme://user:' followed within two tokens by '...@' loses the userinfo. Regression: Chromium page with the five R42-01 forms (no_selection, ctrl_a) asserting no secret in the Brain body or in snapshot pieces/text/headings, plus Python unit cases; checked against a git-archive export of 78006f9 (10 failed, 1 passed: the readability guard, which passes on both versions); after the change 11 passed. Full tests/assist: 2221 passed (that run started before the R42 file was added and does not include it). tests/web and Flutter tests were not run; a text search of tests/web found no source file referencing snapshot.js, redact_text or uri_assist. Known trade-offs: in prose, a word after a bare secret-sounding key followed by '=' is masked (e.g. 'password = hunter2', 'key = value'), and inline-adjacent nodes in headings, labels and values now join with no separator where they were space-joined before."}
+REPAIR_RESULT_END

@@ -1,0 +1,28 @@
+I fixed R14-01 by addressing the root cause, not just the reviewer's strings. I did not include all 214 Kangxi radicals, as the separate diagnosis proposed; the reason is below.
+
+**Root cause (confirmed in the source).** `normalise()` converts all text to a canonical form (NFKC) before any check, at `uri_web/untrusted.py:255`. That turns the Kangxi radical forms into ordinary characters (`⼁`→`丨`, `⼀`→`一`). But the allow-list of stroke and dot letters, `_STROKES`, was written using the Kangxi forms, which never appear in checked text. The ordinary forms of the one-stroke radicals (`一 丨 乙`) were also missing. As a result, `丨丶`, `一丶`, `乙丶` and similar were read as the name. Most of the old list could never match. The CJK Strokes range U+31C0–31E3 was dead too, because those characters are symbols, not letters, and so never form part of a word.
+
+**The fix (`uri_web/untrusted.py`, `_STROKES`).**
+- The set is now built by passing each character through `normalise()`, so it is in the same form as the checked text.
+- It keeps only results that are a single letter, and a module-level assertion checks that every member is unchanged by `normalise()` and is a letter.
+- Members: the one-stroke radicals (`一丨丶丿乙亅`, including their Kangxi forms U+2F00–2F05), the stroke variants `乀乁乚乛`, the stroke-and-dot radicals `二 亠`, the Hangul araea `ᆞ ᆢ` (with `ㆍ`, which normalises to `ᆞ`), and `〆`.
+- The dead CJK Strokes range and the non-letters (`・`, `〇`) are removed. They already count as plain gap between words, so nothing is lost.
+
+**Why not all 214 radicals.** Their normalised forms include real words such as `人`, `口`, `山`. Adding them would make ordinary text like "Yamaguchi 山口 is in Japan" read as a link. That breaks D17's rule that real short foreign words are names, and the case is now a control in the new test. The leftover risk: a pair of radicals that are real words, written in Kangxi form, is identical to ordinary text once normalised. It therefore falls under the residual the owner already accepted ("a real short foreign word is the name"). Nothing new is opened.
+
+**Regression test: `tests/web/test_w1_closure_r14_review_regressions.py`** (self-contained, no fixtures).
+- It checks the rule itself, not only the reviewer's strings:
+  - The allow-list is in canonical form and covers the normalised Kangxi one-stroke radicals.
+  - Every two-letter combination of the stroke set, ordinary and Kangxi forms included (400 pairs), is caught by `has_link_or_contact` and removed by `mask_links`.
+- The reviewer's forms plus `二丶` and `亠丶` are also checked through `verify`, `extractive`, `build_surface` and `require_valid`.
+- Controls that must stay readable: `東京 is`, `(東京)`, `山口 is`, `서울 is`. Two owner-accepted residuals are confirmed as unchanged: `中国`, and a stroke pair in brackets (`(丨丶)`).
+
+**Results**
+- With the fix: the new file has 430 passed.
+- On da10d0b8: 289 failed and 141 passed. I ran this by temporarily putting back the pre-repair `untrusted.py`, then restoring the fix (git diff confirms only my change remains). The 141 are the pairs that were already caught (doubled letters, and pairs made only of the few old entries that did match, like `丶丿`) plus the controls.
+- Full suites `tests/web` and `tests/assist`: 3941 passed.
+- Nothing is committed. I did not run graphify.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R14-01"], "not_repaired": [], "regression_tests": ["tests/web/test_w1_closure_r14_review_regressions.py"], "notes": "Root cause fixed: _STROKES is now built in canonical form (normalise() applied to every member, only single letters kept, module-level assert that every member is NFKC-stable and a letter). Members: one-stroke radicals 一丨丶丿乙亅 (incl. Kangxi U+2F00-2F05), stroke variants 乀乁乚乛, stroke-and-dot radicals 二亠, Hangul araea ᆞᆢ (ㆍ normalises to ᆞ), 〆. Dropped the dead CJK Strokes range U+31C0-31E3 and the non-letters ・/〇, which already act as gap. Unlike the diagnosis, not all 214 Kangxi radicals were added: their normalised forms include real words (人, 口, 山), so '山口 is' would become a false-positive link, against D17's owner rule that real short foreign words are names. Kangxi-spelled real-word radicals are identical to ordinary text once normalised, so they fall under that already-accepted residual. The test checks all 400 two-letter stroke pairs (ordinary and Kangxi forms) via has_link_or_contact and mask_links, and the reviewer's forms plus 二丶 and 亠丶 through verify, extractive, build_surface and require_valid, with readable controls and the owner residuals. On da10d0b8: 289 failed, 141 passed (pairs already caught and controls). After the fix: 430 passed. tests/web and tests/assist: 3941 passed."}
+REPAIR_RESULT_END

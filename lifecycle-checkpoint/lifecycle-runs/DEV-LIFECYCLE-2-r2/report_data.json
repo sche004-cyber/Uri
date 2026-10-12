@@ -1,0 +1,123 @@
+{
+ "findings": [
+  {
+   "blocking": true,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "HIGH",
+   "status": "repaired 0ee6885",
+   "title": "Windows precheck() reports contained=True after an earlier worker/gate ran without a job or whose TerminateJobObject/empty-wait failed (R2-01 not fixed)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "A .cmd launcher naming cmd.exe and a .bat is bound and launched as [cmd.exe, x.bat]"
+  },
+  {
+   "blocking": false,
+   "id": "R1-03",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Four new W-2 tests pass on baseline ce1a90c on Linux (vacuous 'not found' acceptance)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-04",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "CAPABILITY_LEDGER claims Windows containment 'TESTED on the PC'; lifecycle doc omits the W-2 reviewer identity and overstates the earlier-job re-check"
+  },
+  {
+   "blocking": false,
+   "id": "R1-05",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Relative local remote URLs resolved against the driver cwd; legacy baseline.ref still selects the baseline by remote name"
+  },
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Windows: a worker whose communicate() raises OSError after spawn is never finished; its job stays unterminated and untracked, and the next precheck() reports contained=True"
+  }
+ ],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "0ee6885a68ec",
+   "failed": 0,
+   "gate": "dev_workflow",
+   "new": 0,
+   "ok": true,
+   "passed": 226,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
+ "owner": [
+  {
+   "kind": "OWNER_AUTHORIZATION",
+   "needs": "git push origin 0ee6885a68ec14eabec7645b4501f87d17bde6f0:refs/heads/integration/git-sync-20261008",
+   "reason": "integration into integration/git-sync-20261008 needs owner authorisation"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": "R1-01",
+   "commit": "0ee6885a68ec",
+   "reason": "",
+   "repair": "P1",
+   "status": "COMMITTED"
+  }
+ ],
+ "rounds": [
+  {
+   "blocking": 1,
+   "candidate": "73bdbef1e34e",
+   "findings": 5,
+   "finished": "2026-10-11T13:02:29Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "4ea43b42-633b-46ea-8a8a-09ef2c55de7f",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "0ee6885a68ec",
+   "findings": 1,
+   "finished": "2026-10-11T13:12:24Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R2",
+   "session": "76c2b25e-9190-46b6-9cc1-c393ca7c8a8a",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "summary": {
+  "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+  "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+  "evidence_ok": true,
+  "findings_repaired": 1,
+  "findings_total": 6,
+  "integration": "AWAITING_OWNER_AUTHORIZATION",
+  "milestone": "DEV-LIFECYCLE-2",
+  "open_blocking": 0,
+  "owner_actions": 1,
+  "receipt_chain_ok": true,
+  "repairs_committed": 1,
+  "rounds": 2,
+  "stage": "BLOCKED",
+  "written_at": "2026-10-11T13:19:15Z"
+ }
+}

@@ -1,0 +1,99 @@
+{
+ "milestone": "DEV-LIFECYCLE-1",
+ "repo": "/home/user/Uri",
+ "baseline": {
+  "ref": "origin/integration/git-sync-20261008",
+  "expect": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9"
+ },
+ "candidate": {
+  "branch": "milestone/dev-lifecycle-20261011",
+  "worktree": "/home/user/uri-wt/lifecycle"
+ },
+ "state_dir": "/home/user/uri-wt/lifecycle-runs/DEV-LIFECYCLE-1b",
+ "work_dir": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b",
+ "acceptance_criteria_file": "docs/dev_workflow/LIFECYCLE_PLAN_AND_ACCEPTANCE.md",
+ "review_focus": [
+  "Independence: can any path make a real (non-DEVTEST) milestone VERIFIED or COMPLETE without an independent reviewer ACCEPT on the exact candidate SHA (forged state, relayed import, scripted provider, reviewer that edits the checkout or refs, wrong candidate in the result, missing reviewer)?",
+  "Repair discipline: can a worker change land a protected or out-of-scope path, move HEAD, or be committed without the regression proof? Is the revert after a refused repair complete and limited to the implementation worktree?",
+  "Gates: baseline comparison by id and cause, junit and flutter --machine parsing, allowed_flaky, GPU lease, BLOCKED vs failure.",
+  "Integration: target re-validation, fast-forward and merge modes, owner authorisation, push verification.",
+  "Bounded loops, resume semantics, hash-chained receipts and verify().",
+  "Safety of subprocess use (argument handling, environment, timeouts, process cleanup) and of git commands run by the driver against the main repository (worktree add/remove/prune, checkout --force, clean).",
+  "Whether the documentation (SKILL.md, URI_DEVELOPMENT_LIFECYCLE.md, plan) claims anything the code does not do."
+ ],
+ "protected_paths": "ws_frozen_check",
+ "permitted_paths": [
+  "scripts/dev_workflow/lifecycle*.py",
+  "tests/dev_workflow/**",
+  "docs/dev_workflow/**",
+  ".claude/skills/**",
+  ".agents/skills/**",
+  "CLAUDE.md",
+  "AGENTS.md",
+  "SKILL.md"
+ ],
+ "gates": [
+  {
+   "id": "dev_workflow",
+   "kind": "pytest",
+   "cmd": [
+    "{python}",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/dev_workflow"
+   ]
+  }
+ ],
+ "regression_runner": [
+  "{python}",
+  "-m",
+  "pytest",
+  "-q",
+  "-p",
+  "no:cacheprovider"
+ ],
+ "python": "/tmp/claude-0/venv/bin/python",
+ "repair_nonblocking_severities": [
+  "MEDIUM"
+ ],
+ "reviewer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 5400
+ },
+ "implementer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 5400
+ },
+ "limits": {
+  "max_repair_attempts": 3
+ },
+ "integration": {
+  "mode": "merge",
+  "remote": "origin",
+  "target_ref": "integration/git-sync-20261008",
+  "authorized": true,
+  "expected_target_tip": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9"
+ },
+ "commit_trailers": [
+  "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+  "Claude-Session: https://claude.ai/code/session_01P2p3uVP5b87uL5UMyWApaJ"
+ ],
+ "environment_notes": [
+  "Python with pytest and the repo requirements: /tmp/claude-0/venv/bin/python (use it for tests; do not pip install)",
+  "Flutter SDK: /tmp/claude-0/flutter/bin/flutter (Flutter tests run from uri_ui/)",
+  "Real Chromium for Playwright tests is preinstalled (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers)",
+  "No GPU, no Windows; the Phase 1 checkpoint zip is not present (ws_frozen_check zip part BLOCKED)"
+ ],
+ "continuation": {
+  "stall_rounds": 2,
+  "diagnose_after": 2,
+  "budget": {
+   "max_rounds": 30,
+   "max_cost_usd": 400,
+   "max_hours": 36
+  }
+ }
+}

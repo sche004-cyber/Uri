@@ -1,0 +1,57 @@
+I recommend **REJECT** for R13: one new HIGH blocking finding, R13-01. The R12-01 repair caught the link forms that round listed, but it reopened forms R11 had closed and left a same-script variant open.
+
+**R13-01 (HIGH, blocking):** link text still gets through to what the Brain and the user see.
+- **Where:** `uri_web/untrusted.py:525-536`, the backward walk in `_ending_spans`.
+- **What the R12 repair changed:** a word from another script now counts as the site's *name* whenever it has more than one distinct letter. Before, it counted as part of the separator if it had at most two distinct letters.
+- **The resulting gap:** a separator made of two different dot-shaped letters is now read as the name. The text between it and the ending is plain prose, and `shop` is not a core domain, so nothing is flagged.
+- **Same-script variant:** a doubled Latin dot look-alike (`ʘʘ`) is also read as the name, because only single letters count as separator. R11-01 had named `ʘ` itself; the single form is caught, the doubled one is not.
+
+Results with the sentence "Claim your energy rebate refund at {link} before the deadline.":
+
+| Link text | Now (eedbc639) | Before (834c1c30) |
+|---|---|---|
+| `refunds-portal 丶丿 shop/claim` | passes | caught |
+| `refunds-portal ㆍᆢ shop/claim` | passes | caught |
+| `refunds-portal ʘʘ shop/claim` | passes | passes |
+| `refunds-portal ~ ʘʘ shop` | passes | passes |
+| `refunds-portal 丶丶 shop` (one letter repeated) | caught | — |
+| `refunds-portal ʘ shop` (single letter) | caught | — |
+
+The "Before" column comes from a `git archive` export of 834c1c30. "—" means not tested there.
+
+For each passing form:
+- `has_link_or_contact` returns False and `mask_links` leaves it unchanged.
+- `verify()` keeps the claim with its citation.
+- `extractive()` keeps the sentence.
+- The research surface shows it and the A2UI validator accepts it.
+
+None of these forms falls in the owner's residual-risk list, since each separator is a dot-shaped letter rather than ordinary punctuation. The plan document itself still says up to two distinct letters may stand between the two words, and `丶丿` has exactly two.
+
+**Everything else checked out:**
+- **Tests:** `pytest tests/web tests/assist` gave 3480 passed, none skipped.
+- **Protected paths:** no diff between the two SHAs.
+- **R11-02 is fixed:** hosts that netpolicy accepts but httpx rejects now end as UNREACHABLE for that one source instead of failing the whole job.
+- **SSRF:** a corpus of private and ambiguous addresses was all refused by netpolicy (loopback, RFC1918, the 100.64/10 range, metadata, mapped/NAT64/6to4/Teredo forms, numeric host forms, userinfo, bad ports).
+
+**Not verified:**
+- Flutter tests, because running them writes build files into the checkout.
+- The phase-1 checkpoint zip part of `ws_frozen_check`, because the zip is missing.
+- A live connection test of the pinned transport against a real rebinding DNS server.
+- I did not re-audit the vision, permissions, snapshot redaction or worker integration areas by hand beyond the passing tests.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "eedbc6393bbe837b67807e995a052e8ecbf3d8e0", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [{"id": "R13-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R12-01 repair regressed R11-01 and left a same-script variant open: two distinct dot-shaped letters ('丶丿', 'ㆍᆢ') or a doubled same-script look-alike ('ʘʘ') between name and a non-core TLD are read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16)",
+   "files": ["uri_web/untrusted.py:525", "uri_web/untrusted.py:529", "uri_web/untrusted.py:542", "uri_web/untrusted.py:544", "uri_web/synthesize.py:252", "uri_web/synthesize.py:327", "uri_web/surface.py:38"],
+   "evidence": "With SENT='Claim your energy rebate refund at {} before the deadline.': U.has_link_or_contact is False and mask_links leaves the text unchanged for 'refunds-portal 丶丿 shop/claim', 'refunds-portal ㆍᆢ shop/claim', 'refunds-portal ʘʘ shop/claim', 'refunds-portal ~ ʘʘ shop' and 'пример ʘʘ shop'. SY.verify(SENT[:-1]+' [1].', [src]) keeps the claim with its citation. SY.extractive('energy rebate refund deadline', [src]) returns the sentence. build_surface plus require_valid accept it with the link text present. On 834c1c30 (git archive export), '丶丿' and 'ㆍᆢ' forms returned True: R12 changed the walk so a foreign word with more than one distinct letter breaks as the NAME (line 529 `len(set(...)) > 1`), which contradicts the plan's own rule ('words of another script ... may stand between ... when they hold at most two distinct letters'). Same-script non-single words ('ʘʘ', the doubled form of the R11-01 'ʘ' look-alike) are always taken as the name (line 525 condition). The prose gap then applies and 'shop' is not core, so the match is dropped (line 544). Controls 'refunds-portal 丶丶 shop' and 'refunds-portal ʘ shop' are detected.",
+   "suggested_fix": "Restore the R11 rule that a word of at most _MAX_FOREIGN distinct letters from another script is separator, and handle the R12 name case another way (for example, a foreign word with 3 or more distinct letters, or one that is not composed of dot or stroke-like letters, is the name). Treat short same-script words made of non-ASCII letters (or of letters that are not ordinary alphabet letters, such as U+0298) as separator too. Add self-contained regression tests for the forms above through has_link_or_contact, verify, extractive and surface."}],
+ "prior_findings": [{"id": "R1-01", "status": "NOT_FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"}, {"id": "R11-01", "status": "NOT_FIXED"}, {"id": "R11-02", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"}],
+ "tests_run": [{"command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist", "result": "3480 passed in 96.65s", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "git diff --stat ffdf534..eedbc639 -- <all protected paths>", "result": "empty (no protected path changed)", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "python /tmp/uri_review_R13/p1.py (link-detector probes, candidate and 834c1c30 export)", "result": "'丶丿'/'ㆍᆢ' forms pass on candidate and were caught on 834c1c30; 'ʘʘ' forms pass on both", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "python /tmp/uri_review_R13/p2.py (verify/extractive/surface/A2UI)", "result": "all 4 bypass forms kept by verify and extractive, accepted by the surface validator", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "python /tmp/uri_review_R13/p3.py (R11-02 InvalidURL hosts through SafeFetcher)", "result": "UNREACHABLE per source, no exception", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "python /tmp/uri_review_R13/p4.py (netpolicy SSRF corpus)", "result": "all private, transition and ambiguous forms refused", "status": "COMPLETED_WITH_RESULT"}],
+ "unverified": ["Flutter widget tests (not run, to keep the checkout untouched by build output)", "ws_frozen_check zip part (Phase 1 checkpoint zip absent)", "Live DNS-rebinding test of the pinned transport against a real resolver", "No new manual audit of vision, access/bridge, snapshot.js and worker integration beyond the passing test suites"]}
+AUDIT_RESULT_END

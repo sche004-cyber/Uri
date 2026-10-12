@@ -97,6 +97,18 @@ class ToolDispatcher:
 
             tool_info = tools[tool_name]
 
+            # Phase 1: a paired-client capability (external_harness_task) is catalogued so the paired
+            # composition can describe it, but the server runtime never executes it. Refuse before any
+            # import, so catalogue presence cannot load or run client code in the server process.
+            if tool_info.get("execution_surface") == "paired_client":
+                return {
+                    "status": "error",
+                    "message": f"{tool_name} runs only on a paired client, never on the server runtime.",
+                    "error_type": ERROR_CAPABILITY_UNREGISTERED,
+                    "capability": tool_name,
+                    "component": None,
+                }
+
             # Convert file path to a Python module path (e.g., uri_core/tools/xyz.py -> uri_core.tools.xyz)
             module_path = tool_info["file_path"].replace("/", ".").replace("\\", ".").replace(".py", "")
             class_name = tool_info["class_name"]

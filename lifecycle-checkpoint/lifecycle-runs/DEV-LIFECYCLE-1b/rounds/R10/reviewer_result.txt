@@ -1,0 +1,40 @@
+I'm rejecting candidate `2d419f6`. All earlier blocking findings are fixed and the test suite passes, but I found one new blocking bug: a gate or worker can hang the driver forever, ignoring its timeout.
+
+**R10-01 (MEDIUM, blocking): the driver can hang forever.** This happens when a gate command or worker leaves behind a child that has started its own session (`setsid`) and still holds the output pipe. The first `communicate(timeout=...)` times out, then the group is killed, then `communicate()` is called again with no timeout. That second call waits until the orphan closes the pipe, so the R8-01 orphan sweep that comes right after it never runs. The code is in `scripts/dev_workflow/lifecycle.py:663-669` and `scripts/dev_workflow/lifecycle_providers.py:426-442`. I reproduced it twice:
+- `run_cmd` with a 3 s timeout, running a command that starts `setsid sleep 30`, had not returned after 15 s.
+- `run_worker` with `timeout_s=3`, running `setsid sleep 40 &`, had not returned after 20 s.
+
+This leads into R10-02: the only way out of the hang is to kill the driver. The orphan then survives outside the driver's process tree, and the next run records `contained=true`.
+
+**R10-02 (MEDIUM, not blocking because the docs already list it): `contained=true` ignores survivors of an earlier driver.** I killed a driver while its worker was running. The worker kept running under init, and a new driver's pre-sweep reported `{'contained': True, 'killed': 0}` (`scripts/dev_workflow/lifecycle_providers.py:402,443`). Recording each worker's session id and checking for them when a run starts would close this.
+
+The suite passes (189 tests) and no protected path changed. I relied on the existing tests and code reading for R1–R7 and checked R8-01 directly: the sweep did kill a lingering `setsid` child.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "2d419f6922380f16cf1486c7380f4c8619d66b00", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R10-01", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "Timeout path calls communicate() without a timeout before the R8-01 orphan sweep: a setsid descendant holding stdout hangs the driver indefinitely and the sweep is never reached",
+   "files": ["scripts/dev_workflow/lifecycle.py:663", "scripts/dev_workflow/lifecycle.py:665", "scripts/dev_workflow/lifecycle.py:669", "scripts/dev_workflow/lifecycle_providers.py:426", "scripts/dev_workflow/lifecycle_providers.py:430", "scripts/dev_workflow/lifecycle_providers.py:442"],
+   "evidence": "run_cmd and _run call communicate(timeout), then on TimeoutExpired call killpg and communicate() with no timeout. killpg does not reach a child that called setsid(), and the sweep_orphans() that would kill it comes only after communicate returns. Probe /tmp/uri_review_R10/hang.py: run_cmd([python,-c,'Popen([\"setsid\",\"sleep\",\"30\"])'], '.', 3) had not returned after 15 s. Probe /tmp/uri_review_R10/worker.py: run_worker(command 'setsid sleep 40 & echo done', timeout_s=3) had not returned after 20 s. Any gate, test or worker child can keep the driver blocked indefinitely (a malicious implementer can also open its CLI's stdout through /proc/$PPID/fd/1). The only recovery is killing the driver, which moves the orphan outside the subreaper tree (see R10-02).",
+   "suggested_fix": "After TimeoutExpired (and before any blocking second communicate), killpg then sweep_orphans() first, and bound the second communicate with a timeout (or close the pipes and kill). Do the same in _run. Add tests where a setsid child keeps stdout open."},
+  {"id": "R10-02", "severity": "MEDIUM", "blocking": false, "category": "security", "owner_decision": false,
+   "title": "contained=true is recorded although workers or orphans of an earlier, killed driver process are still running (outside the subreaper tree); documented limitation, but realistic and reachable through R10-01",
+   "files": ["scripts/dev_workflow/lifecycle_providers.py:402", "scripts/dev_workflow/lifecycle_providers.py:443", "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:79"],
+   "evidence": "Probe: a driver running run_worker(sleep 300) was killed with SIGKILL. The worker kept running (ppid 1, its own session), and a new driver's sweep_orphans() returned {'contained': True, 'killed': 0}. Workers run with start_new_session, so a launcher timeout that kills the driver (or R10-01 forcing one) leaves them alive while the resumed run records contained=true.",
+   "suggested_fix": "Record each worker's/command's session id (pid) in state before launch. At run start, scan /proc for live processes in those sessions and kill them, or refuse contained=true until none is left."}
+ ],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -p no:cacheprovider -x", "result": "189 passed, 1 warning in 159.59s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R10/hang.py (run_cmd timeout with setsid child holding stdout)", "result": "run_cmd not returned after 15s with timeout=3 (defect R10-01)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R10/worker.py", "result": "setsid child with redirected stdio swept (contained True, killed 1, process gone); setsid child holding stdout: run_worker not returned after 20s with timeout_s=3", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R10/killdrv.py + SIGKILL driver + fresh sweep_orphans()", "result": "worker survives under init; new sweep reports contained True killed 0 (R10-02)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --name-only ffdf534..2d419f6 | protected-path filter", "result": "no protected paths changed", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": [
+  "R1-R7 FIXED status rests on the passing regression tests and reading the code, not on new adversarial probes this round. Does not change the verdict (it rests on R10-01).",
+  "No real claude CLI review run in this round, so the ConfigWatch 10 ms poll window (a documented residual) was not tested against the real CLI's read timing.",
+  "Flutter gates, GPU lease and real push/integration were not run end to end (no GPU; integration covered only by unit tests in the suite)."
+ ]}
+AUDIT_RESULT_END

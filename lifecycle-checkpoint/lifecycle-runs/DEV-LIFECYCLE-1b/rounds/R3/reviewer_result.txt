@@ -1,0 +1,46 @@
+**Verdict: REJECT.** The candidate adds one new blocking defect (R3-01), even though all four earlier blocking findings are fixed.
+
+I confirmed both SHAs: HEAD is `39ed499…` and the baseline commit `ffdf534…` exists. No protected path changes in the review range, and my probes left the checkout clean.
+
+**Earlier findings, all FIXED:**
+- **R1-01:** the verdict now comes from the worker's result held in memory, and `verify` re-derives it from the hashed stdout. The lingering-forger test passes.
+- **R1-02:** findings that aren't a list of objects now give NO_RESULT, never ACCEPT.
+- **R1-03:** class-based pytest ids and Flutter ids that sit under the gate's working directory now resolve to the right file (I checked this with a probe). A gate test that can't be resolved now refuses the repair.
+- **R1-04:** the hooks/config/`info` state is fixed at PLAN and checked before every step, after every review, in the evidence check and around the diagnosis worker.
+
+**New finding R3-01 (MEDIUM, blocking):** the latest commit `39ed499` treats some git config keys as routine bookkeeping that other sessions write: `branch.*` and `remote.*.fetch`, `tagopt`, `prune`, `prunetags`, `mirror` and `skipdefaultupdate`. Changes to these no longer count as tampering. But the driver's own `git fetch` during integration uses `remote.<r>.fetch` to decide which local refs it updates. So a worker can write a fetch rule into the shared config, nothing flags it, and the driver then force-overwrites another session's branch in the main repository.
+
+I reproduced this end to end, with the implementer worker adding `+refs/heads/canon:refs/heads/session-b`:
+- **At `39ed499`:** the run finished COMPLETE and INTEGRATED, `verify` reported no errors, and the driver's fetch moved `session-b` from its own commit back to the baseline commit.
+- **At the previous commit `1f720ed`:** the same probe stopped BLOCKED (TAMPER: "git hooks or config changed during the repair"), and `session-b` was untouched.
+
+So this is a regression from `1f720ed`, not an old gap.
+
+**R3-02 (LOW, documentation):** `URI_DEVELOPMENT_LIFECYCLE.md` still says any change to hooks/config/`info` is tampering, which is no longer true after the allowlist.
+
+The `tests/dev_workflow` suite passed in full (163 tests).
+
+AUDIT_RESULT_BEGIN
+{"candidate": "39ed499bd6a6b836a317ac422ad2a180330e67f1", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R3-01", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Config allowlist added in 39ed499 hides worker-written remote.*.fetch refspecs, which the driver's integration fetch then uses to force-overwrite other local branches of the main repository",
+   "files": ["scripts/dev_workflow/lifecycle.py:325", "scripts/dev_workflow/lifecycle.py:1181", "scripts/dev_workflow/lifecycle.py:1143"],
+   "evidence": "_ROUTINE_CONFIG excludes remote.<r>.fetch/prune/mirror and branch.* from git_control_digest. integrate() runs `git fetch -q <remote> <target>`, and git updates the configured remote-tracking destination for the fetched ref. Probe /tmp/uri_review_R3/probe_fetch.py on the test fixture: the implementer worker runs `git -C <repo> config --add remote.origin.fetch +refs/heads/canon:refs/heads/session-b` and makes the real fix. Result at 39ed499: run() == COMPLETE, integration INTEGRATED, verify() == [], and refs/heads/session-b (another session's branch, with its own commit 3ee1d50) is force-moved to the baseline 16d4165. The same probe at 1f720ed (probe_fetch_old.py) stops BLOCKED with TAMPER 'git hooks or config changed during the repair', and session-b is untouched. The anchored control state (R1-04) and do_repair's ctl0 check both miss the change now. remote.<r>.mirror is also excluded; it makes the integration push fail (DoS only).",
+   "suggested_fix": "Remove remote.*.fetch (and mirror/prune/tagopt) from _ROUTINE_CONFIG, or at least run integrate's fetch with `--refmap=` (no opportunistic ref updates) and an explicit no-destination refspec, and add a regression test in which a worker-written fetch refspec is either TAMPER or provably cannot move any local ref. Keep the doc in sync."},
+  {"id": "R3-02", "severity": "LOW", "blocking": false, "category": "documentation", "owner_decision": false,
+   "title": "URI_DEVELOPMENT_LIFECYCLE.md still states that any hooks/config/info change is tamper, but 39ed499 ignores branch.* and remote fetch/prune/mirror keys",
+   "files": ["docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"],
+   "evidence": "The Reviewer independence row says 'the repository's hooks, config and info/ files ... Any change => the round is NOT_INDEPENDENT ... any drift from the PLAN state => BLOCKED (TAMPER)'. The allowlist is described only in LIFECYCLE_QUALIFICATION.md:130.",
+   "suggested_fix": "Document the exact ignored keys and why each is safe for the driver's own git commands."}
+ ],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -p no:cacheprovider -x", "result": "163 passed, 1 warning in 118.77s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -I /tmp/uri_review_R3/probe_fetch.py (candidate 39ed499)", "result": "COMPLETE/INTEGRATED, verify clean, other branch session-b overwritten by driver fetch", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -I /tmp/uri_review_R3/probe_fetch_old.py (code of 1f720ed via git archive)", "result": "BLOCKED TAMPER, session-b unchanged (regression confirmed)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "_test_file probe for junit classnames, nested classes, Flutter ids with gate cwd", "result": "all resolved to repository files", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git push with remote.origin.mirror=true and explicit refspec (/tmp/uri_review_R3/mirror1)", "result": "fatal: --mirror can't be combined with refspecs (push fails, no ref damage)", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Live runs with real claude/codex reviewer processes were not repeated in this round (scripted workers only); the finding does not depend on them.", "Windows behaviour of the exact-byte writes (R2-02) was checked by code reading and the unit test only, not on Windows.", "Flutter gates were not run (no change under uri_ui in the review range)."]}
+AUDIT_RESULT_END

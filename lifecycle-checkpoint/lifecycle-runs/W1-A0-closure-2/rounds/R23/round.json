@@ -1,0 +1,326 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R23",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R23-01"
+ ],
+ "candidate": "0e9a51ead3e1271a6e082b6db8f6bc7a7eb1a5bf",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T15:09:53Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "0e9a51ead3e1271a6e082b6db8f6bc7a7eb1a5bf",
+   "impl_head": "0e9a51ead3e1271a6e082b6db8f6bc7a7eb1a5bf",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "767e7671c3826f986d4f4516861341d820df0fb5056fc05bc44cd50e7c7899c0",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "0e9a51ead3e1271a6e082b6db8f6bc7a7eb1a5bf",
+   "impl_head": "0e9a51ead3e1271a6e082b6db8f6bc7a7eb1a5bf",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "767e7671c3826f986d4f4516861341d820df0fb5056fc05bc44cd50e7c7899c0",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "0e9a51ead3e1271a6e082b6db8f6bc7a7eb1a5bf",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "On 0e9a51ea: has_link_or_contact('refunds-portal \\u0628\\u0650\\u065c shop') == False (also '\\u0628\\u0650\\u065c\\u0655 shop', '\\u0621\\u0650\\u065c\\u0655 shop', '\\u0915\\u093c\\u0901\\u0902 shop', '\\u0915\\u0901\\u0902 shop', '\\u0e01\\u0e31\\u0e48\\u0e4c shop', '\\u0628\\u0650\\u065c\\u0655 cash'), and mask_links returns the text unchanged; the bare letter ('refunds-portal \\u0628 shop', '\\u0915 shop') and one letter + one mark ('\\u0628\\u0650') are detected. With SENT='Claim your energy rebate refund at {} before the deadline.': SY.verify(claim [1], [src]) keeps the claim with its citation, SY.extractive('energy rebate refund deadline',[src]) keeps the sentence, surface.clean leaves it unmasked and validate._URLISH does not match. Cause: _bare keeps a mark whose script matches its base letter, and _separator_word counts base characters (marks included) as distinct letters: len(base)==1 fails and len(set(base))=3 > _MAX_FOREIGN, so a one-letter word (a D17 separator) becomes the name. D17 says 'at most two distinct letters'; marks are not letters. Probe: /tmp/uri_review_R23/p1.py, p2.py.",
+    "files": [
+     "uri_web/untrusted.py:475",
+     "uri_web/untrusted.py:602",
+     "uri_web/untrusted.py:603",
+     "uri_web/untrusted.py:610",
+     "uri_web/synthesize.py:252",
+     "uri_web/synthesize.py:347",
+     "uri_web/surface.py:38",
+     "uri_a2ui/validate.py:19"
+    ],
+    "id": "R23-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "In _separator_word, apply the single-letter and _MAX_FOREIGN tests to the letters only (characters whose category is not M) after _bare, e.g. letters = [c for c in base if unicodedata.category(c)[0] != 'M']; keep base only for the stroke test. Add regression cases for an Arabic, Devanagari and Thai letter plus 2-3 own-script marks before 'shop'/'cash', together with ordinary-text controls ('Cairo (\\u0627\\u0644\\u0642\\u0627\\u0647\\u0631\\u0629) is old.').",
+    "title": "R22-01 repair incomplete (R19/R20/R21/R22 family): a single foreign letter plus two or more marks of its own script ('\u0628\u0650\u065c', '\u0915\u093c\u0901\u0902', '\u0e01\u0e31\u0e48\u0e4c') between name and a non-core TLD is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D17)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist",
+    "result": "5179 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/a2ui",
+    "result": "107 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R23/p1.py; python /tmp/uri_review_R23/p2.py",
+    "result": "R23-01 reproduced: a single foreign letter + >=2 own-script marks bypasses detection, masking, verify, extractive, surface and the A2UI check",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "netpolicy.check_address probes (64:ff9b:1::/48 with private v4 at several offsets, 6to4, mapped loopback)",
+    "result": "all private forms refused; public NAT64 allowed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf534..HEAD -- <protected paths>",
+    "result": "no changes to protected paths",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter tests for the uri_ui Assist controller were not run this round",
+   "Browser extension snapshot.js / Playwright parity and vision.py gating were not re-probed this round beyond the passing tests/assist suite",
+   "Earlier findings marked FIXED (other than R16-02, R19-01, R19-02, R20-02, R21-01 and R22-01, which were re-probed directly) rely on the passing regression suites rather than new adversarial probes",
+   "R1-01 and R20-01 are marked NOT_FIXED because R23-01 is an open variant of the same class",
+   "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 23,
+ "started_at": "2026-10-11T15:06:34Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "4e0a4142-8a24-4c0d-882e-eaee893fe71b",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 70
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.6332251,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R23",
+  "ended_at": "2026-10-11T15:09:52Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 13,
+  "pid": 17618,
+  "prompt_sha256": "e4821b59321f8ed87a98f41b0b8bd7c52daf463538fcbd7777d1371e44b89e3b",
+  "provider": "claude_cli",
+  "result_text_sha256": "2a969d1eb8c6e6383fc6cda07d0f10b3a0f3c032e5f88d3c9abab8d73f36da5f",
+  "role": "reviewer",
+  "session_id": "4e0a4142-8a24-4c0d-882e-eaee893fe71b",
+  "session_id_requested": "4e0a4142-8a24-4c0d-882e-eaee893fe71b",
+  "started_at": "2026-10-11T15:06:34Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "1bdce29b5b597d473f69c2586456825dafa30517f91c1404a996d6c173a705dc"
+ }
+}

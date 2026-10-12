@@ -1,0 +1,97 @@
+{
+ "addresses": [
+  "R1-01",
+  "R1-02",
+  "R1-03",
+  "R1-04"
+ ],
+ "changed": [
+  "docs/dev_workflow/LIFECYCLE_QUALIFICATION.md",
+  "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+  "scripts/dev_workflow/lifecycle.py",
+  "tests/dev_workflow/test_lifecycle.py"
+ ],
+ "commit": "1f720ed6a1b7540fdeb181de4455a835265c2afa",
+ "ended_at": "2026-10-11T02:34:21Z",
+ "pre": "fbac43727f89b6e43188a8dee5772cf4b49ee65c",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 1,
+ "report": {
+  "not_repaired": [],
+  "notes": "9 new tests (test_r1r2_*) in tests/dev_workflow/test_lifecycle.py: all 9 fail on fbac437 (checked via git archive copy, since git worktree add was declined) and pass after; full tests/dev_workflow suite 161 passed. R1-01: verdict parsed from in-memory result_text (result_sha256 = its hash); round.json hash taken from the written bytes; verify() re-derives each round's result from the hashed stdout (claude_cli JSON 'result' extraction mirrored) and checks reviewer_result.txt against result_sha256; \u00a76 limitation text corrected and the correction recorded in LIFECYCLE_QUALIFICATION.md. R1-02: result_problem() makes a non-list or non-dict findings/prior_findings result unparseable (NO_RESULT -> WAITING_FOR_MODEL; effective_verdict returns None), also for import-review. Missing finding id is not required, because the existing test_r1_09 uses id-less findings and missing severity is already blocking. R1-03: _test_file maps junit classnames (strips trailing class components) and resolves paths against the gate cwd then the repo root; _commit_and_prove refuses a gate repair whose named test is not a file with a configured runner; regression_proof reports must_fail tests that were not run; __run__ gate findings carry no file. R1-04: control_state (hooks/config/info digest + refs/replace set) is bound in the PLAN event (CONTROL_ANCHORED for legacy runs) and checked before every step, after every review and in evidence_ok; any drift -> BLOCKED TAMPER with GIT_CONTROL marker, and only unblock of that block re-anchors; the diagnosis worker gets a before/after snapshot (refs, control, impl worktree) and tamper -> BLOCKED TAMPER; GIT adds -c core.fsmonitor=false. Not done: milestone refs are not anchored to PLAN because they move legitimately (still checked per step); a filter driver planted via config+attributes could still run during the post-review git status before drift is detected (detected right after, not prevented; not verified); graphify update not run because graphify-out/ is outside the permitted paths.",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle.py"
+  ],
+  "repaired": [
+   "R1-01",
+   "R1-02",
+   "R1-03",
+   "R1-04"
+  ]
+ },
+ "started_at": "2026-10-11T02:19:10Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "4a1e0638-61e1-4435-ad0f-dfbbbc3888a6",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 2.792493200000001,
+  "cwd": "/home/user/uri-wt/lifecycle",
+  "ended_at": "2026-10-11T02:30:38Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 55,
+  "pid": 4195,
+  "prompt_sha256": "db7a55342a7f230e4d7fd57c55a5d488a04396fcc7f4b607f6f32bcdfd91cc0c",
+  "provider": "claude_cli",
+  "result_text_sha256": "606d13b749847d03cc22aa70487427de4e122e831d57531e771154ffd6b13b82",
+  "role": "implementer",
+  "session_id": "4a1e0638-61e1-4435-ad0f-dfbbbc3888a6",
+  "session_id_requested": "4a1e0638-61e1-4435-ad0f-dfbbbc3888a6",
+  "started_at": "2026-10-11T02:19:10Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "857c0f2f3e5193eca2384d882e7d050ce3c712f138fb28058205438d7a9088fd"
+ }
+}

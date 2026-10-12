@@ -1,0 +1,104 @@
+{
+ "fast/C": {
+  "n": 14,
+  "score": 0.964,
+  "ttft_p50": 0.285,
+  "ttfa_p50": 0.285,
+  "total_p50": 0.614,
+  "total_p95": 0.75,
+  "gen_tps_p50": 209.8,
+  "prefill_tps_p50": 1834.2,
+  "gen_tokens_p50": 69,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 1
+ },
+ "fast/D": {
+  "n": 72,
+  "score": 0.306,
+  "ttft_p50": 0.505,
+  "ttfa_p50": 0.505,
+  "total_p50": 1.161,
+  "total_p95": 1.736,
+  "gen_tps_p50": 203.6,
+  "prefill_tps_p50": 5701.0,
+  "gen_tokens_p50": 130,
+  "errors": 0,
+  "truncated": 0,
+  "invalid": 1,
+  "golden_acc": 0.281,
+  "extra_acc": 0.4,
+  "categories": {
+   "correct": 22,
+   "missed_clarification": 3,
+   "missed_continuation": 10,
+   "missed_unsupported": 3,
+   "under_tooling": 10,
+   "false_capability": 13,
+   "invalid": 1,
+   "false_unsupported": 1,
+   "mismatch": 9
+  }
+ },
+ "fast/DG": {
+  "n": 72,
+  "score": 0.319,
+  "ttft_p50": 0.511,
+  "ttfa_p50": 0.511,
+  "total_p50": 1.16,
+  "total_p95": 1.748,
+  "gen_tps_p50": 204.0,
+  "prefill_tps_p50": 5686.3,
+  "gen_tokens_p50": 130,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/F": {
+  "n": 30,
+  "score": 0.9,
+  "ttft_p50": 0.282,
+  "ttfa_p50": 0.282,
+  "total_p50": 0.313,
+  "total_p95": 0.419,
+  "gen_tps_p50": 205.1,
+  "prefill_tps_p50": 424.2,
+  "gen_tokens_p50": 9,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/H": {
+  "n": 22,
+  "score": 0.545,
+  "ttft_p50": 0.289,
+  "ttfa_p50": 0.289,
+  "total_p50": 0.46,
+  "total_p95": 0.543,
+  "gen_tps_p50": 209.3,
+  "prefill_tps_p50": 497.6,
+  "gen_tokens_p50": 36,
+  "errors": 0,
+  "truncated": 0,
+  "over_escalation": 4,
+  "under_escalation": 0
+ },
+ "fast/P": {
+  "n": 12,
+  "score": 0.75,
+  "ttft_p50": null,
+  "ttfa_p50": null,
+  "total_p50": null,
+  "total_p95": null,
+  "gen_tps_p50": null,
+  "prefill_tps_p50": null,
+  "gen_tokens_p50": null,
+  "errors": 2,
+  "truncated": 0,
+  "proposer_invalid": 0,
+  "failed_ids": [
+   "p04_implicit_fact",
+   "p05_conversation",
+   "p11_preference_statement"
+  ]
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\qwen35-2b\20261006-024842

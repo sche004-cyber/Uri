@@ -1,0 +1,30 @@
+I've repaired R11-01. Text hidden by the patterns the reviewer listed no longer appears in the page text, the headings, "Selected text" or the Brain request. The new regression test fails on 2de591e and passes after the change, and the full `tests/assist` and `tests/web` suites pass (2631 passed).
+
+**What changed in `uri_assist/browser_extension/snapshot.js`:**
+- **Per-text-node check:** visibility is now decided for each text node, not each element. The existing element checks still run first. Then the text node's own on-screen boxes must survive every clip that applies to it:
+  - overflow clipping by ancestors that actually contain it, so an absolutely or fixed positioned child can still escape a plain `overflow:hidden` parent;
+  - the legacy `clip` property, so `clip:rect(0,0,0,0)` is treated as hidden;
+  - `clip-path: inset(50%|100%)` on any ancestor.
+- **Size and position:** what is left after clipping must be at least 2px in each direction and inside the document, which catches `text-indent:-9999px` and negative offsets. Text whose colour is fully transparent is dropped.
+- **Covered text:** if the text is in the viewport and the element at its centre is unrelated and has a solid background (or is an image, video, iframe and similar), the text counts as covered.
+- **Everywhere:** page text, the selection and the headings all use this one rule. Headings are now built from their visible text nodes instead of `innerText`.
+
+**The test:** `tests/assist/test_a0_r11_review_regressions.py` embeds its page and Playwright runner. It tries the sr-only clip pattern (on its own and inside an `<h1>`), `height:0` and `max-height:0` overflow, `text-indent`, transparent text colour and an opaque overlay. It checks that none of that text reaches the page text, headings, selection or the Brain request body. It also checks that ordinary visible text is still kept: a card under a transparent stretched link, an absolutely positioned child escaping a clipped parent, and text below the fold. It runs with both Ctrl+A and a programmatic select-all. It fails rather than skips if node or Playwright is missing.
+
+**The doc:** in `docs/assist/03_PERMISSION_AND_DATA_FLOW.md`, I replaced the general claim "hidden text dropped in page" with the exact list of what the filter covers and what it doesn't.
+
+**Still not filtered** (now stated in the doc; the only protection left is that page content goes to the Brain inside data blocks):
+- low-contrast text, such as white on white;
+- fonts of 2px or more;
+- covered text that is outside the viewport;
+- overlays set to `pointer-events:none`.
+
+**Trade-off:** text in the viewport that a solid sticky or fixed header currently covers is now dropped. I chose that deliberately to fail safe.
+
+**How I proved fail-before:** creating a separate git worktree of 2de591e was denied, so I temporarily put the 2de591e `snapshot.js` back in this tree. Both new tests failed, then I restored the repaired file.
+
+`graphify update .` produced no tracked changes. Nothing is committed or pushed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R11-01"], "not_repaired": [], "regression_tests": ["tests/assist/test_a0_r11_review_regressions.py"], "notes": "snapshot.js now decides visibility per text node for page text, headings and selection. A node is kept only if its client rects survive ancestor overflow clipping along its containing-block chain, the legacy clip property and clip-path inset, keep at least 2px in each direction, stay inside the document (catches text-indent and negative offsets), have a non-transparent text colour, and are not under an opaque element at the rect centre when that point is in the viewport. Not covered, now stated in docs/assist/03: low-contrast colour, fonts of 2px or more, occlusion outside the viewport, overlays with pointer-events:none. Text in the viewport currently covered by a solid sticky header is also dropped, deliberately failing safe. Fail-before was proven by temporarily restoring the 2de591e snapshot.js in this tree (2 failed), then the repaired file (2 passed), because creating a separate worktree was denied. Full tests/assist and tests/web: 2631 passed."}
+REPAIR_RESULT_END

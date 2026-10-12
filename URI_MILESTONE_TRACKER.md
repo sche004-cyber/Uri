@@ -201,3 +201,21 @@ promoted; no B.3 code has been implemented.
 3. Run them directly with the repo's venv (tests use stdlib `unittest`, not pytest — pytest is not installed in `.venv`):
    `.venv/Scripts/python.exe -m unittest <test_module_1> <test_module_2> ... -v`
 4. Record the pass count and date in the Verification column. Do not mark a milestone "verified" from commit-message claims alone.
+
+## C1 isolated implementation handoff — 2026-10-05
+
+The User explicitly authorized C1 Runtime Identity and Launcher Authority in the isolated integration worktree based on `e8e3b65`. Implementation and focused validation are complete; independent review remains pending. This is not VERIFIED, closed or released. No commit/push or production installation change was performed. C2 and the production launcher are outside the authorization; stop after the C1 handoff.
+
+Evidence: [C1 implementation and validation](docs/plans/C1_IMPLEMENTATION_EVIDENCE.md). Existing historical milestone records and UI initiative roles remain intact.
+
+## Phase 1 C2–C7 authorized continuation — 2026-10-05
+
+The latest User authorization supersedes the historical C1-only stop for this isolated integration worktree. C2 implementation contracts and C3 worker/persistence baseline are frozen at implementation level; local gates passed. Both remain PROVISIONAL — AWAITING INDEPENDENT REVIEW, without release commit or push. C4 is WAITING_FOR_CLIENT_AUTHENTICATION / PREREQUISITE_NOT_AVAILABLE: fresh native harness profiles are unauthenticated and Windows live containment qualification is unavailable. C5–C7 have not started; no dependency bypass, production migration or cutover. Existing UI roles and governing architecture remain unchanged.
+
+Evidence: [consolidated C1–C7 review package](docs/plans/PHASE1_C1_C7_REVIEW_PACKAGE.md).
+
+## Dependency-independent Phase 1 continuation — 2026-10-05
+
+The User authorized continuing independently implementable C4–C7 components while Claude is quota-unavailable. Independent audit/release is durably WAITING_FOR_MODEL; Codex does not substitute for Claude. C4 ticket/claim/journal and synthetic Windows job controls, C5 canonical preparation/selection/quota checkpoint, C6 worker preflight and C7 offline source recovery are implemented and locally validated. Native authentication/adapter tool containment, full C5 feedback/persistence loop, live UI parity and historical owner/key lineage remain gates. All slices remain PROVISIONAL — AWAITING INDEPENDENT REVIEW; partial components are not completed milestones. Production cutover/migration, merge, commit and push remain unperformed.
+
+Updated evidence: [consolidated review package](docs/plans/PHASE1_C1_C7_REVIEW_PACKAGE.md).

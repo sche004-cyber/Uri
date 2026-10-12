@@ -1,0 +1,339 @@
+{
+  "subject": {
+    "sha256": "a914d086eda82b3d4e6fd45d7430a08099354a4cb3c2d4e512fc10743552ea3f",
+    "entries": 401,
+    "manifest": 401,
+    "member_delta": [],
+    "payload_bad": [],
+    "tree_files": 154,
+    "evidence_files": 247,
+    "live_bad": []
+  },
+  "previous": {
+    "sha256": "822c49be4e9841cacfe824d91d4a64fbb4c8da7f92f350dc27933cb9dedd0b8b",
+    "entries": 361,
+    "manifest": 361,
+    "member_delta": [],
+    "payload_bad": [],
+    "tree_files": 154,
+    "evidence_files": 207,
+    "live_bad": [
+      "docs/plans/PHASE2OQ_REPORT.md",
+      "scripts/phase2close_chain.py",
+      "tests/phase2oq/test_chain_equivalence.py"
+    ]
+  },
+  "added": [
+    "evidence/phase2oq/chain8/chain_summary.json",
+    "evidence/phase2oq/chain8/flutter_all.log",
+    "evidence/phase2oq/chain8/native/codex_cli_lifecycle_133338.json",
+    "evidence/phase2oq/chain8/native/probe_codex_cli.json",
+    "evidence/phase2oq/chain8/native/probe_codex_cli/stderr.txt",
+    "evidence/phase2oq/chain8/native/probe_codex_cli/stdout.ndjson",
+    "evidence/phase2oq/chain8/native_codex_stdout.txt",
+    "evidence/phase2oq/chain8/native_worker/lifecycle_child.json",
+    "evidence/phase2oq/chain8/native_worker/native_worker_133448.json",
+    "evidence/phase2oq/chain8/native_worker/probe/probe_codex_cli/stderr.txt",
+    "evidence/phase2oq/chain8/native_worker/probe/probe_codex_cli/stdout.ndjson",
+    "evidence/phase2oq/chain8/native_worker/probe_codex_cli.json",
+    "evidence/phase2oq/chain8/native_worker/probe_codex_cli_shim_negative_control.json",
+    "evidence/phase2oq/chain8/native_worker_stdout.txt",
+    "evidence/phase2oq/chain8/phase1_authority.log",
+    "evidence/phase2oq/chain8/phase1_full.log",
+    "evidence/phase2oq/chain8/phase1_full.xml",
+    "evidence/phase2oq/chain8/phase2_all.log",
+    "evidence/phase2oq/chain8/refusals.txt",
+    "evidence/phase2oq/chain8/ui_bridge_live_1.json",
+    "evidence/phase2oq/chain8/ui_bridge_live_10.json",
+    "evidence/phase2oq/chain8/ui_bridge_live_2.json",
+    "evidence/phase2oq/chain8/ui_bridge_live_3.json",
+    "evidence/phase2oq/chain8/ui_bridge_live_4.json",
+    "evidence/phase2oq/chain8/ui_bridge_live_5.json",
+    "evidence/phase2oq/chain8/ui_bridge_live_6.json",
+    "evidence/phase2oq/chain8/ui_bridge_live_7.json",
+    "evidence/phase2oq/chain8/ui_bridge_live_8.json",
+    "evidence/phase2oq/chain8/ui_bridge_live_9.json",
+    "evidence/phase2oq/chain8/ui_bridge_stdout_1.txt",
+    "evidence/phase2oq/chain8/ui_bridge_stdout_10.txt",
+    "evidence/phase2oq/chain8/ui_bridge_stdout_2.txt",
+    "evidence/phase2oq/chain8/ui_bridge_stdout_3.txt",
+    "evidence/phase2oq/chain8/ui_bridge_stdout_4.txt",
+    "evidence/phase2oq/chain8/ui_bridge_stdout_5.txt",
+    "evidence/phase2oq/chain8/ui_bridge_stdout_6.txt",
+    "evidence/phase2oq/chain8/ui_bridge_stdout_7.txt",
+    "evidence/phase2oq/chain8/ui_bridge_stdout_8.txt",
+    "evidence/phase2oq/chain8/ui_bridge_stdout_9.txt",
+    "evidence/phase2oq/chain8_stdout.txt"
+  ],
+  "removed": [],
+  "changed": [
+    "docs/plans/PHASE2OQ_REPORT.md",
+    "scripts/phase2close_chain.py",
+    "tests/phase2oq/test_chain_equivalence.py"
+  ],
+  "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "frozen": {
+    "hash": "31a34dcbb37ee48e1b06a1bcd60418a2e52ff9a0c65fd8cc7f3c59defeb98cf7",
+    "entries": 121,
+    "live_bad": []
+  },
+  "closure_hash": "fcd0d72e0cd91412c361edec9114e2edaebbf70ede052046b808f3c4fc571298",
+  "round7_hash": "9a0be52c1ae5e59bf9ae16617e283c5a9f58ba098a1c2ae1d9649e184affb50a",
+  "baseline": {
+    "integrity": {
+      "testcases": 2698,
+      "unique_ids": 2698,
+      "duplicate_ids": [],
+      "summary_total": 2698,
+      "ok": true
+    },
+    "outcomes_match_json": true,
+    "records": 2698
+  },
+  "chain_xml": {
+    "integrity": {
+      "testcases": 2698,
+      "unique_ids": 2698,
+      "duplicate_ids": [],
+      "summary_total": 2698,
+      "ok": true
+    },
+    "outcomes_match_json": true,
+    "records": 2698
+  },
+  "chain_identity": [
+    true,
+    {
+      "ids": 2698,
+      "baseline_ids": 2698,
+      "missing": [],
+      "added": [],
+      "outcome_changed": [],
+      "outcome_counts": {
+        "passed": 2676,
+        "failed": 11,
+        "skipped": 11,
+        "error": 0,
+        "conflict": 0
+      }
+    }
+  ],
+  "baseline_runner_hash": true,
+  "baseline_argv": [
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe",
+    "-I",
+    "-m",
+    "pytest",
+    "-c",
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\scripts\\phase2d_pytest.ini",
+    "--rootdir",
+    "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent",
+    "-q",
+    "-rfEs",
+    "--ignore=work",
+    "--ignore=evidence",
+    "--ignore=uri_workspace",
+    "--ignore=temp_evidence",
+    "--ignore=reports",
+    "--ignore=research_notes",
+    "--ignore=graphify-out",
+    "--ignore=uri_ui",
+    "--ignore=.venv",
+    ".",
+    "--ignore=tests/phase2a",
+    "--ignore=tests/phase2b",
+    "--ignore=tests/phase2c",
+    "--ignore=tests/phase2d",
+    "--ignore=tests/phase2ops",
+    "--ignore=tests/phase2close",
+    "--ignore=tests/phase2oq",
+    "-rfEsp",
+    "--junitxml",
+    "..\\evidence\\phase2oq\\outcome_baseline\\phase1_baseline.xml"
+  ],
+  "current_runner_argv_match": true,
+  "ini_match": true,
+  "scope": {
+    "changed_vs_closure": [
+      "docs/plans/PHASE2CLOSE_C6_CHAT_INTEGRATION.md",
+      "docs/plans/PHASE2CLOSE_C7_READINESS.md",
+      "docs/plans/PHASE2CLOSE_CLOSURE_CHECKLIST.md",
+      "docs/plans/PHASE2CLOSE_PHYSICAL_ACCEPTANCE_RUNBOOK.md",
+      "docs/plans/PHASE2CLOSE_REPORT.md",
+      "docs/plans/URI_DEVELOPMENT_TODO.md",
+      "scripts/phase2c_native_qualification.py",
+      "scripts/phase2close_acceptance.py",
+      "scripts/phase2close_chain.py",
+      "scripts/phase2close_powerloss_harness.py",
+      "scripts/phase2d_regression.py",
+      "scripts/run_uri_supervised_worker.py",
+      "tests/phase2a/test_frozen_core.py",
+      "tests/phase2close/test_acceptance_tooling.py",
+      "tests/phase2close/test_powerloss_harness.py",
+      "tests/phase2d/test_worker_process.py",
+      "tests/phase2d/test_worker_service.py",
+      "tests/phase2ops/test_lifecycle.py",
+      "uri_supervisor/supervisor.py",
+      "uri_supervisor/winproc.py",
+      "uri_supervisor_bridge/composition.py",
+      "uri_supervisor_bridge/execution.py",
+      "uri_supervisor_bridge/qualification.py",
+      "uri_supervisor_bridge/worker_service.py",
+      "uri_ui/lib/screens/tasks/supervised_execution_screen.dart",
+      "uri_ui/lib/services/supervised_runtime.dart",
+      "uri_ui/lib/services/task_handoff.dart",
+      "uri_ui/test/supervised_execution_screen_test.dart"
+    ],
+    "new_untracked": 124,
+    "modified_vs_head_outside_closure": [
+      ".gitignore",
+      "PROJECT_MEMORY.md",
+      "URI_MILESTONE_TRACKER.md",
+      "docs/governance/URI_ACTIVE_MILESTONE.md",
+      "uri_core/app/route_classification.py",
+      "uri_core/app/server.py",
+      "uri_core/capabilities/registry.py",
+      "uri_core/core/dispatcher.py",
+      "uri_core/core/turn_state.py",
+      "uri_ui/lib/screens/ask/ask_uri_screen.dart",
+      "uri_ui/lib/screens/settings/settings_shell.dart",
+      "uri_workspace/capabilities_registry.json"
+    ],
+    "frozen_phase1_byte_identical": 98,
+    "outside_phase2_scope": [],
+    "runner_argv_equals_accepted_plus_phase2oq_ignore": true,
+    "phase1_scope_importers_of_phase2": []
+  },
+  "chain_gates": {
+    "phase2": {
+      "PASS": true,
+      "exit": 0
+    },
+    "authority": {
+      "PASS": true,
+      "exit": 0
+    },
+    "phase1-full": {
+      "PASS": true,
+      "exit": 1
+    },
+    "phase1-scope": {
+      "PASS": true,
+      "exit": null
+    },
+    "residue": {
+      "PASS": true,
+      "exit": null
+    },
+    "flutter": {
+      "PASS": true,
+      "exit": 0
+    },
+    "bridge": {
+      "PASS": true,
+      "exit": null
+    },
+    "native": {
+      "PASS": true,
+      "exit": 0
+    },
+    "native-worker": {
+      "PASS": true,
+      "exit": 0
+    }
+  },
+  "chain_all_pass": true,
+  "probes": {
+    "duplicate_same": {
+      "records": [
+        [
+          "a::p",
+          "passed"
+        ],
+        [
+          "a::p",
+          "passed"
+        ],
+        [
+          "b::q",
+          "skipped"
+        ]
+      ],
+      "outcomes": {
+        "a::p": "conflict",
+        "b::q": "skipped"
+      },
+      "integrity": {
+        "testcases": 3,
+        "unique_ids": 2,
+        "duplicate_ids": [
+          "a::p"
+        ],
+        "summary_total": 3,
+        "ok": false
+      },
+      "identity": false
+    },
+    "count_mismatch": {
+      "testcases": 3,
+      "unique_ids": 2,
+      "duplicate_ids": [
+        "a::p"
+      ],
+      "summary_total": 2,
+      "ok": false
+    },
+    "outcome_count_mismatch": {
+      "integrity": {
+        "testcases": 2,
+        "unique_ids": 2,
+        "duplicate_ids": [],
+        "summary_total": 2,
+        "ok": true
+      },
+      "identity": true
+    },
+    "full_gate_changed_skip_count": {
+      "junit_integrity": {
+        "testcases": 2698,
+        "unique_ids": 2698,
+        "duplicate_ids": [],
+        "summary_total": 2698,
+        "ok": true
+      },
+      "outcome_identity": true,
+      "same_failure_ids": true
+    },
+    "baseline_json_xml_binding": {
+      "gate_checks_mapping_equality": false,
+      "stored_mapping_equals_xml_now": true
+    },
+    "missing": false,
+    "added": false,
+    "swapped": false,
+    "malformed_exception": "ParseError",
+    "real_collision": {
+      "exit": 0,
+      "records": [
+        [
+          "a.b.test_same::test_same",
+          "passed"
+        ],
+        [
+          "a.b.test_same::test_same",
+          "passed"
+        ]
+      ],
+      "integrity": {
+        "testcases": 2,
+        "unique_ids": 1,
+        "duplicate_ids": [
+          "a.b.test_same::test_same"
+        ],
+        "summary_total": 2,
+        "ok": false
+      },
+      "identity": false
+    }
+  }
+}

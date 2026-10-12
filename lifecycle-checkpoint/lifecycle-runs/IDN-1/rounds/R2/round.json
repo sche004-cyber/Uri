@@ -1,0 +1,197 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/IDN-1/audit_R2",
+ "baseline": "e761ce8f30b4aa21ed90da0a3dfbca52c4172a03",
+ "blocking_ids": [],
+ "candidate": "af73c76d8edb853cb6224016de314f5bf2f61a89",
+ "effective_verdict": "ACCEPT WITH FINDINGS",
+ "ended_at": "2026-10-12T04:49:34Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "af73c76d8edb853cb6224016de314f5bf2f61a89",
+   "impl_head": "af73c76d8edb853cb6224016de314f5bf2f61a89",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/idn-1-20261012",
+   "refs": "127fae5cdea1964249287ce5fcf447d9c7a99320e0c1e3700e7385468827a66a",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "af73c76d8edb853cb6224016de314f5bf2f61a89",
+   "impl_head": "af73c76d8edb853cb6224016de314f5bf2f61a89",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/idn-1-20261012",
+   "refs": "127fae5cdea1964249287ce5fcf447d9c7a99320e0c1e3700e7385468827a66a",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "e761ce8f30b4aa21ed90da0a3dfbca52c4172a03",
+  "candidate": "af73c76d8edb853cb6224016de314f5bf2f61a89",
+  "findings": [
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "check_url('http://%D1%80aypal.com/') -> HOST_INVALID (a WHATWG browser decodes it to '\u0440\u0430\u0443\u0440\u0430l.com'), on user URLs, search hits and redirects. A redirect with Location 'http://\uff50\uff41\uff59\uff50\uff41\uff4c.com/' (UTF-8) gives fetch_status UNREACHABLE with refusal_code None, because httpx raises RemoteProtocolError 'Invalid IDNA hostname' while reading the response, before check_url runs. In both cases the host is never contacted (verified with MockTransport), but blocked_non_english stays 0 and the D21 note is missing.",
+    "files": [
+     "uri_web/netpolicy.py:149",
+     "uri_web/netpolicy.py:173",
+     "uri_web/safe_fetch.py:348",
+     "uri_web/safe_fetch.py:394"
+    ],
+    "id": "R2-01",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "In check_url, when the host contains '%', percent-decode it and refuse with HOST_NON_ENGLISH if the result is non-ASCII. In safe_fetch, read the raw Location header (or catch the httpx redirect URL error) so the target goes through check_url.",
+    "title": "Percent-encoded or httpx-rejected non-English hosts are refused without HOST_NON_ENGLISH, so they are not counted and no reason is shown"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "pytest tests/web/test_idn_1.py tests/web/test_idn_1_r1.py (candidate)",
+    "result": "37 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest tests/web tests/ssrf (candidate)",
+    "result": "3779 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest test_idn_1.py + test_idn_1_r1.py on e761ce8f (git archive)",
+    "result": "26 failed, 11 passed; test_idn_1: 16 failed / 11 guards passed; failures are DID NOT RAISE, missing attributes, wrong counts, missing note, Hebrew masked",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest test_idn_1_r1.py on pre-repair 21ad9409",
+    "result": "9 failed (Kelvin host not refused or contacted; counts 2 != 1), 1 guard passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "check_url probe: 45 hostile and ASCII URLs on baseline vs candidate",
+    "result": "every non-English host the baseline accepted is now HOST_NON_ENGLISH; ASCII, IP and numeric refusals unchanged; percent-encoded host is HOST_INVALID (R2-01)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "end-to-end pipeline probe: redirects (scheme-relative, Kelvin UTF-8, Latin-1, U+3002, upper-case XN-- with trailing dot, full-width)",
+    "result": "no non-English host contacted; blocked count correct (3 and 2 distinct sites); one note shown; full-width redirect gives UNREACHABLE (R2-01)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "O2 differential: 30240 generated strings, has_link_or_contact with vs without SHIN/SIN dots; 684 link probes baseline vs candidate",
+    "result": "0 cases caught without the dots but missed with them; identical results on baseline and candidate",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest root fetch_url-related tests (test_m32..., test_m19..., test_orchestrator_evidence_transport, test_m20_*)",
+    "result": "3 collection errors on both commits (Google client libraries not installed)",
+    "status": "BLOCKED"
+   }
+  ],
+  "unverified": [
+   "Flutter rendering of the note (only A2UI validation via require_valid was run)",
+   "Root fetch_url test files beyond tests/ssrf (collection blocked by missing Google libraries)",
+   "Live proxy egress mode and real DNS behaviour"
+  ],
+  "verdict": "ACCEPT WITH FINDINGS"
+ },
+ "round": 2,
+ "started_at": "2026-10-12T04:43:18Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "670d8b5a-4ee0-4017-a63c-9df3cff3fce0",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.7272191999999997,
+  "cwd": "/tmp/claude-0/lc-work/IDN-1/audit_R2",
+  "ended_at": "2026-10-12T04:49:32Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 41,
+  "pid": 8991,
+  "prompt_sha256": "49d7ca51b6fc35c7d87eac5ebc1b8b93c39b1136a0fe6fad30a1690fddcf458b",
+  "provider": "claude_cli",
+  "result_text_sha256": "3ec833dd78aef60aa9f2cbcc3a9a943f4c6a7ef0bd9e06b13ef3114b49ec2863",
+  "role": "reviewer",
+  "session_id": "670d8b5a-4ee0-4017-a63c-9df3cff3fce0",
+  "session_id_requested": "670d8b5a-4ee0-4017-a63c-9df3cff3fce0",
+  "started_at": "2026-10-12T04:43:18Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "f68524d96ab21bb1faea7e4fb9e668ed689acfed3aed91f9038277a0483e6d70"
+ }
+}
