@@ -35,6 +35,8 @@ def write(dest: Path, sheets: list) -> dict:
     cells = formulas = 0
     for name, data in sheets:
         ws = wb.create_sheet(title=name)
+        if ws.title != name:
+            raise OfficeError("NEW_FILE_SHEET_NAME", f"the written sheet name differs from {name[:40]}")
         for ref, a in sorted(data.items(), key=lambda kv: (refs.parse_cell(kv[0])[1], refs.parse_cell(kv[0])[0])):
             c = ws[ref]
             if a.get("f"):

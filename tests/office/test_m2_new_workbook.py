@@ -12,7 +12,8 @@ from uri_office import draft as D
 from uri_office import grants
 from uri_office import ops as O
 from uri_office import xlsx_model
-from uri_office.brain import OfficeBrain
+from uri_office import xlsx_new
+from uri_office.brain import OfficeBrain, SYSTEM_NEW, schema_for
 from uri_office.errors import OfficeError
 from uri_office.service import Office, serve
 from uri_a2ui.surface import canonical
@@ -143,6 +144,7 @@ def test_source_cells_go_to_the_brain_only_as_untrusted_data(tmp_path, office):
     assert r["proposed"] == []
     system, user = client.bodies[0]["messages"][0]["content"], client.bodies[0]["messages"][1]["content"]
     assert "NEW workbook" in system and "ignore previous instructions" not in system
+    assert "rename_sheet" not in system
     head, _, data = user.partition("reference files")
     assert "Make a summary" in head and "ignore previous instructions" not in head
     assert "ignore previous instructions" in data
@@ -155,15 +157,15 @@ def test_new_workbook_ops_in_order_build_sheets_and_copy_values(tmp_path, office
         op(op="add_sheet", name="Summary"),
         op(op="copy_range", source="S1", from_sheet="Data", from_range="A1:C4", sheet="Summary", cell="B2"),
         op(op="set_formula", sheet="Summary", cell="C7", formula="=SUM(C3:C5)"),
-        op(op="rename_sheet", sheet="Sheet1", name="Notes"),
+        op(op="add_sheet", name="Notes"),
         op(op="set_values", sheet="Notes", range="A1", values=[["from a.xlsx"]]),
     ]})
     v = o.open_new([str(a)])
     as_reference(o, v)
     r = o.instruct(v["workbook_id"], {"text": "Summarise"})
     assert r["refused"] == []
-    # The grid lists sheets with URI's changes first (both have some here, so draft order); the file keeps draft order.
-    assert [s["name"] for s in r["workbook"]["sheets"]] == ["Notes", "Summary"]
+    # The grid shows populated sheets first and still shows the empty start sheet; the file omits that empty sheet.
+    assert [s["name"] for s in r["workbook"]["sheets"]] == ["Summary", "Notes", "Sheet1"]
     assert r["notes"] == {"uncalculated": 1, "not_copied": 0}
     ch = {(c["sheet"], c["cell"]): c for c in r["draft"]["changes"] if c["kind"] == "cell"}
     assert ch[("Summary", "B2")]["after"] == {"v": "Region"}
@@ -188,6 +190,8 @@ def test_new_workbook_ops_in_order_build_sheets_and_copy_values(tmp_path, office
     (op(op="set_formula", sheet="Sheet1", cell="A1", formula='=WEBSERVICE("x")'), "FORMULA_REFUSED"),
     (op(op="insert_rows", sheet="Sheet1", at=1, count=1), "OP_NOT_SUPPORTED_LOCALLY"),
     (op(op="add_sheet", name="Sheet1"), "BAD_SHEET_NAME"),
+    (op(op="add_sheet", name="sheet1"), "BAD_SHEET_NAME"),
+    (op(op="rename_sheet", sheet="Sheet1", name="Notes"), "OP_NOT_SUPPORTED_LOCALLY"),
 ])
 def test_invalid_new_workbook_ops_are_reported_not_guessed(tmp_path, office, bad, code):
     a = make_source(tmp_path / "a.xlsx")
@@ -718,33 +722,36 @@ def test_r2_04_one_excerpt_budget_for_the_workbook_and_the_references(tmp_path, 
 
 
 # ---- Codex re-review of a4838589 (R3-01..R3-03) ---------------------------------------------------------------------
-def test_r3_01_rename_keeps_undo_and_redo():
+def test_r3_01_add_sheet_keeps_undo_and_redo():
     d = D.Draft("w", "new", {"sheets": [{"name": "Sheet1", "cells": {}}]})
     d.propose([{"sheet": "Sheet1", "cell": "A1", "value": "before"}])
-    d.propose([{"op": "rename_sheet", "sheet": "Sheet1", "name": "Summary"}])
-    assert d.snapshot()["can_undo"] and d.sheets() == ["Summary"]
-    assert {c["sheet"] for c in d.changes if c["kind"] == "cell"} == {"Summary"}
+    d.propose([{"op": "add_sheet", "name": "Summary"}])
+    assert d.snapshot()["can_undo"] and d.sheets() == ["Sheet1", "Summary"]
+    assert {c["sheet"] for c in d.changes if c["kind"] == "cell"} == {"Sheet1"}
     d.undo()
     assert d.sheets() == ["Sheet1"] and [c["sheet"] for c in d.changes if c["kind"] == "cell"] == ["Sheet1"]
     d.undo()
     assert d.changes == [] and d.sheets() == ["Sheet1"]
     d.redo()
     d.redo()
-    assert d.sheets() == ["Summary"] and [c["sheet"] for c in d.changes if c["kind"] == "cell"] == ["Summary"]
+    assert d.sheets() == ["Sheet1", "Summary"] and [c["sheet"] for c in d.changes if c["kind"] == "cell"] == ["Sheet1"]
 
 
-def test_r3_02_overlap_rule_follows_a_rename_in_the_same_answer(tmp_path, office):
+def test_r3_02_overlap_rule_survives_a_refused_rename_in_the_same_answer(tmp_path, office):
     a = make_source(tmp_path / "a.xlsx")
     o, _ = office({"message": "x", "ops": [
         op(op="set_values", sheet="Sheet1", range="A1", values=[["first"]]),
         op(op="rename_sheet", sheet="Sheet1", name="Summary"),
-        op(op="set_values", sheet="Summary", range="A1", values=[["second"]])]})
+        op(op="set_values", sheet="Sheet1", range="A1", values=[["second"]]),
+        op(op="set_values", sheet="Sheet1", range="A2", values=[["later"]])]})
     v = o.open_new([str(a)])
     as_reference(o, v)
     r = o.instruct(v["workbook_id"], {"text": "go"})
-    assert [(x["index"], x["code"]) for x in r["refused"]] == [(2, "OVERLAPS_EARLIER_OP")]
+    assert [(x["index"], x["code"]) for x in r["refused"]] == [
+        (1, "OP_NOT_SUPPORTED_LOCALLY"), (2, "OVERLAPS_EARLIER_OP")]
     cells = [c for c in r["draft"]["changes"] if c["kind"] == "cell"]
-    assert [(c["sheet"], c["cell"], c["after"]) for c in cells] == [("Summary", "A1", {"v": "first"})]
+    assert [(c["sheet"], c["cell"], c["after"]) for c in cells] == [
+        ("Sheet1", "A1", {"v": "first"}), ("Sheet1", "A2", {"v": "later"})]
 
 
 @pytest.mark.parametrize("bad", [{"bad": 1}, "text", 5, None])
@@ -855,7 +862,7 @@ def test_r6_01_snapshot_keeps_all_accepted_and_user_marks_with_bounded_history()
     ("My Sheet", "='mY sHeEt'!A1", "accepted"),
     ("O'Brien", "='o''bRiEn'!A1", "user"),
 ])
-def test_r6_02_live_formula_refuses_rename_without_changing_draft(sheet, formula, state):
+def test_r6_02_new_workbook_rename_is_refused_with_live_formulas_unchanged(sheet, formula, state):
     d = D.Draft("w", "new", {"sheets": [{"name": sheet, "cells": {}}]})
     edit = {"sheet": sheet, "cell": "B1", "formula": formula}
     if state == "user":
@@ -867,20 +874,22 @@ def test_r6_02_live_formula_refuses_rename_without_changing_draft(sheet, formula
     before = copy.deepcopy((d.base, d.locked, d.changes, d._undo, d._redo, d.version))
     with pytest.raises(OfficeError) as e:
         d.propose([{"op": "rename_sheet", "sheet": sheet, "name": "Summary"}])
-    assert e.value.code == "RENAME_BREAKS_FORMULAS" and sheet in e.value.detail
+    assert e.value.code == "OP_NOT_SUPPORTED_LOCALLY"
     assert (d.base, d.locked, d.changes, d._undo, d._redo, d.version) == before
 
 
-def test_r6_02_rename_with_no_reference_still_works():
+def test_r6_02_new_workbook_rename_is_refused_without_formula_references_too():
     d = D.Draft("w", "new", {"sheets": [{"name": "Sheet1", "cells": {}}]})
     d.propose([{"sheet": "Sheet1", "cell": "A1", "formula": "=OtherSheet1!A1"},
                {"sheet": "Sheet1", "cell": "A2", "formula": '="Sheet1!A1"'}])
-    d.propose([{"op": "rename_sheet", "sheet": "Sheet1", "name": "Summary"}])
-    assert d.sheets() == ["Summary"]
-    assert [c["sheet"] for c in d.changes if c["kind"] == "cell"] == ["Summary", "Summary"]
+    before = copy.deepcopy((d.base, d.changes, d.version))
+    with pytest.raises(OfficeError) as e:
+        d.propose([{"op": "rename_sheet", "sheet": "Sheet1", "name": "Summary"}])
+    assert e.value.code == "OP_NOT_SUPPORTED_LOCALLY"
+    assert (d.base, d.changes, d.version) == before
 
 
-def test_r6_02_brain_answer_refuses_formula_then_rename(tmp_path, office):
+def test_r6_02_brain_answer_refuses_rename_but_keeps_other_ops(tmp_path, office):
     a = make_source(tmp_path / "a.xlsx")
     o, _ = office({"message": "x", "ops": [
         op(op="set_formula", sheet="Sheet1", cell="B1", formula="=Sheet1!A1"),
@@ -889,7 +898,7 @@ def test_r6_02_brain_answer_refuses_formula_then_rename(tmp_path, office):
     v = o.open_new([str(a)])
     as_reference(o, v)
     r = o.instruct(v["workbook_id"], {"text": "set a formula, rename, then add a value"})
-    assert [(x["index"], x["code"]) for x in r["refused"]] == [(1, "RENAME_BREAKS_FORMULAS")]
+    assert [(x["index"], x["code"]) for x in r["refused"]] == [(1, "OP_NOT_SUPPORTED_LOCALLY")]
     assert [(c["sheet"], c["cell"], c["after"]) for c in r["draft"]["changes"]] == [
         ("Sheet1", "B1", {"f": "=Sheet1!A1"}),
         ("Sheet1", "A2", {"v": "still here"}),
@@ -898,7 +907,7 @@ def test_r6_02_brain_answer_refuses_formula_then_rename(tmp_path, office):
 
 
 @pytest.mark.parametrize("origin", ["accepted", "user"])
-def test_r6_02_prior_formula_refuses_rename_in_later_brain_answer(tmp_path, office, origin):
+def test_r6_02_prior_formula_survives_refused_rename_in_later_brain_answer(tmp_path, office, origin):
     a = make_source(tmp_path / "a.xlsx")
     answers = [{"message": "rename", "ops": [op(op="rename_sheet", sheet="Sheet1", name="Summary"),
                                                op(op="set_values", sheet="Sheet1", range="A2", values=[["later"]])]}]
@@ -915,9 +924,42 @@ def test_r6_02_prior_formula_refuses_rename_in_later_brain_answer(tmp_path, offi
     else:
         o.edit(v["workbook_id"], {"sheet": "Sheet1", "cell": "B1", "formula": "=Sheet1!A1"})
     r = o.instruct(v["workbook_id"], {"text": "rename and add a value"})
-    assert [(x["index"], x["code"]) for x in r["refused"]] == [(0, "RENAME_BREAKS_FORMULAS")]
+    assert [(x["index"], x["code"]) for x in r["refused"]] == [(0, "OP_NOT_SUPPORTED_LOCALLY")]
     assert [(c["sheet"], c["cell"], c["after"]) for c in r["draft"]["changes"] if c["kind"] == "cell"] == [
         ("Sheet1", "B1", {"f": "=Sheet1!A1"}),
         ("Sheet1", "A2", {"v": "later"}),
     ]
     assert [s["name"] for s in r["workbook"]["sheets"]] == ["Sheet1"]
+
+
+def test_r7_03_draft_rejects_case_only_duplicate_add_sheet():
+    d = D.Draft("w", "new", {"sheets": [{"name": "Sheet1", "cells": {}}]})
+    before = copy.deepcopy((d.base, d.changes, d._undo, d.version))
+    with pytest.raises(OfficeError) as e:
+        d.propose([{"op": "add_sheet", "name": "sheet1"}])
+    assert e.value.code == "BAD_SHEET_NAME"
+    assert (d.base, d.changes, d._undo, d.version) == before
+
+
+def test_r7_03_ops_reject_case_only_duplicate_add_sheet():
+    with pytest.raises(OfficeError) as e:
+        O.to_cell_edits({"op": "add_sheet", "name": "sheet1"}, engine="new", sheets=["Sheet1"])
+    assert e.value.code == "BAD_SHEET_NAME"
+
+
+def test_r7_01_new_workbook_prompt_and_schema_do_not_offer_rename():
+    assert "rename_sheet" not in SYSTEM_NEW
+    for sources in (None, []):
+        choices = schema_for("new", sources)["properties"]["ops"]["items"]["properties"]["op"]["enum"]
+        assert "rename_sheet" not in choices and "add_sheet" in choices
+    google = schema_for("google", None)["properties"]["ops"]["items"]["properties"]["op"]["enum"]
+    assert "rename_sheet" in google
+
+
+def test_r7_03_writer_refuses_title_that_openpyxl_changes_before_publication(tmp_path):
+    dest = tmp_path / "new.xlsx"
+    with pytest.raises(OfficeError) as e:
+        xlsx_new.write(dest, [("Sheet1", {"A1": {"v": 1}}), ("sheet1", {"A1": {"v": 2}})])
+    assert e.value.code == "NEW_FILE_SHEET_NAME"
+    assert not dest.exists()
+    assert list(tmp_path.glob(".~uri-*.xlsx")) == []

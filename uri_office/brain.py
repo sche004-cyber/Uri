@@ -18,7 +18,6 @@ from uri_operational_intelligence.reasoning_policy import FAST, tier_params
 from . import ops as O
 from . import refs
 from . import sources as SRC
-from .draft import formula_references_sheet
 from .errors import OfficeError
 from .untrusted import SYSTEM_RULE, data_block
 
@@ -58,8 +57,8 @@ def system_for(engine: str, task: str) -> str:
     """The system prompt when the owner added files with roles (M2-D10/D11)."""
     if engine == "new":
         head = ("You are URI's spreadsheet assistant. You build a NEW workbook from the owner's reference files, only "
-                "by returning ops in the required JSON schema. Allowed ops: add_sheet (name), rename_sheet (sheet, "
-                "name), set_values (sheet, range like A1:C3, values as rows), set_formula (sheet, cell, formula "
+                "by returning ops in the required JSON schema. Allowed ops: add_sheet (name), set_values (sheet, "
+                "range like A1:C3, values as rows), set_formula (sheet, cell, formula "
                 "starting with '='), and ")
         tail = ("Ops run in order, so add a sheet before writing to it. Formulas may refer only to sheets of the new "
                 "workbook. ")
@@ -120,10 +119,14 @@ def excerpt_all(sheets: list) -> dict:
 def schema_for(engine: str, source_view: list | None, task: str = "build") -> dict:
     """The strict output schema. For a new workbook the source id and source sheet fields are limited to the sources
     that exist, so the decoder cannot put a file id where a sheet name belongs (seen on the PC, 2026-10-12)."""
-    if source_view is None:
+    if source_view is None and engine != "new":
         return O.BRAIN_SCHEMA
     sch = copy.deepcopy(O.BRAIN_SCHEMA)
     props = sch["properties"]["ops"]["items"]["properties"]
+    if engine == "new":
+        props["op"]["enum"].remove("rename_sheet")
+    if source_view is None:
+        return sch
     ids = [x["source"] for x in source_view or []]
     names = sorted({sh["name"] for x in source_view or [] for sh in x["sheets"]})
     props["source"] = {"type": ["string", "null"], "enum": ids + [None]}
@@ -223,14 +226,6 @@ class OfficeBrain:
                     notes["not_copied"] += skipped
                 else:
                     got = O.to_cell_edits(op, engine=engine, sheets=names, locked=locked)
-                for e in got:
-                    if e.get("op") == "rename_sheet":
-                        old = e["sheet"]
-                        current_formulas = (c.get("f") for sh in sheets for c in sh["cells"].values())
-                        earlier_formulas = (prior.get("formula") for prior in edits)
-                        if any(formula_references_sheet(f, old) for f in current_formulas) or \
-                                any(formula_references_sheet(f, old) for f in earlier_formulas):
-                            raise OfficeError("RENAME_BREAKS_FORMULAS", f"formulas refer to {old[:40]}")
                 # An op that would overwrite a cell an earlier op of the same answer wrote is a planning slip (for example
                 # a total placed on a copied row): it is refused and reported, never merged or moved.
                 hit = next((e for e in got if "cell" in e and (e["sheet"], e["cell"]) in written), None)
@@ -243,9 +238,8 @@ class OfficeBrain:
                 for e in got:            # later ops in the same answer see the sheets earlier ops made (M2-D4)
                     if e.get("op") == "add_sheet":
                         names.append(e["name"])
-                    elif e.get("op") == "rename_sheet":
+                    elif e.get("op") == "rename_sheet":  # Google retains its structural op path (M1).
                         names = [e["name"] if n == e["sheet"] else n for n in names]
-                        # Cells earlier ops wrote follow the rename, so the overlap rule still sees them (Codex R3-02).
                         written = {(e["name"] if sh == e["sheet"] else sh, c) for sh, c in written}
             except OfficeError as exc:
                 refused.append({"index": i, "code": exc.code, "detail": exc.detail})

@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import copy
 import hashlib
-import re
 import uuid
 
 from uri_a2ui.surface import canonical
@@ -30,16 +29,6 @@ LIVE = ("proposed", "accepted", "user")
 def change_sha256(ch: dict) -> str:
     body = {k: ch.get(k) for k in ("cid", "by", "kind", "sheet", "cell", "before", "after", "op")}
     return hashlib.sha256(canonical(body)).hexdigest()
-
-
-def formula_references_sheet(formula: str | None, sheet: str) -> bool:
-    """Whether a formula refers to a sheet, ignoring quoted string literals."""
-    if not isinstance(formula, str):
-        return False
-    plain, quoted = re.escape(sheet), re.escape(sheet.replace("'", "''"))
-    reference = re.compile(rf"(?<![\w.])(?:{plain}|'{quoted}')!", re.IGNORECASE)
-    formula = re.sub(r'"(?:[^"]|"")*"', lambda m: " " * len(m.group()), formula)
-    return reference.search(formula) is not None
 
 
 class Draft:
@@ -131,8 +120,8 @@ class Draft:
 
     def propose(self, edits: list) -> list:
         """URI's validated edits (from `ops.to_cell_edits`) become proposed, marked changes. Returns the new changes.
-        In a new workbook (engine "new", M2-D4) add_sheet and rename_sheet take effect at once and are recorded as
-        accepted structural changes. All or nothing: a refusal part way (draft cap, unknown sheet, locked cell)
+        In a new workbook (engine "new", M2-D4/D12) add_sheet takes effect at once and is recorded as an
+        accepted structural change. All or nothing: a refusal part way (draft cap, unknown sheet, locked cell)
         leaves the draft exactly as it was (Codex C-03)."""
         if len(self.changes) + len(edits) > MAX_CHANGES:
             raise OfficeError("DRAFT_TOO_LARGE", "save or discard before making more changes")
@@ -162,27 +151,13 @@ class Draft:
         return new
 
     def _sheet_op(self, op: dict):
-        """New workbook only: add or rename a sheet now. Undo and redo restore the sheets with the changes."""
+        """New workbook only: add a sheet now. Undo and redo restore the sheets with the changes."""
         if op["op"] == "add_sheet":
-            if op["name"] in self.base:
-                raise OfficeError("BAD_SHEET_NAME", op["name"][:40])
+            name = op["name"]
+            if not isinstance(name, str) or any(name.casefold() == sheet.casefold() for sheet in self.base):
+                raise OfficeError("BAD_SHEET_NAME", str(name)[:40])
             self.base[op["name"]] = {}
             self.locked[op["name"]] = set()
-        elif op["op"] == "rename_sheet":
-            old, name = op["sheet"], op["name"]
-            if old not in self.base or name in self.base:
-                raise OfficeError("BAD_SHEET_NAME", str(name)[:40])
-            for c in self.changes:
-                if c["kind"] != "cell" or c["state"] not in LIVE or "f" not in c["after"]:
-                    continue
-                if formula_references_sheet(c["after"]["f"], old):
-                    raise OfficeError("RENAME_BREAKS_FORMULAS", f"formulas refer to {old[:40]}")
-            self.base = {(name if k == old else k): v for k, v in self.base.items()}
-            self.locked = {(name if k == old else k): v for k, v in self.locked.items()}
-            for c in self.changes:
-                if c["sheet"] == old:
-                    c["sheet"] = name
-            # Undo and redo keep working: each saved version holds its own sheets and changes (Codex R3-01).
         else:
             raise OfficeError("OP_NOT_SUPPORTED_LOCALLY", op["op"])
 

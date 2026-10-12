@@ -4,7 +4,7 @@
   set_formula  {"op", "sheet", "cell": "D4", "formula": "=SUM(A1:A3)"}      local + Google
   insert_rows  {"op", "sheet", "at": 5, "count": 2}                          Google only
   delete_rows  {"op", "sheet", "at": 5, "count": 2}                          Google only
-  add_sheet    {"op", "name": "Summary"}                                     Google only
+  add_sheet    {"op", "name": "Summary"}                                     new + Google
   rename_sheet {"op", "sheet": "Old", "name": "New"}                         Google only
 
 Formulas that reach the network or other programs (IMPORTXML, WEBSERVICE, HYPERLINK, IMAGE, STOCKHISTORY, CUBE*, ...,
@@ -20,7 +20,6 @@ from .errors import OfficeError
 
 CELL_OPS = ("set_values", "set_formula")
 STRUCT_OPS = ("insert_rows", "delete_rows", "add_sheet", "rename_sheet")
-SHEET_OPS = ("add_sheet", "rename_sheet")
 SOURCE_OPS = ("copy_range",)          # M2: a new workbook built from source files
 MAX_CELLS_PER_OP = 5000
 MAX_TEXT = 32767
@@ -125,11 +124,11 @@ def _sheet(op, sheets):
 def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
     """Validate one op. Cell ops -> [{"sheet", "cell", "value"|"formula"}]; Google structural ops -> [op] unchanged
     after validation. `locked` maps sheet -> set of refs that must not be edited (local only). A new workbook (engine
-    "new", M2) also takes add_sheet and rename_sheet; copy_range is expanded by `copy_edits`, not here."""
+    "new", M2) also takes add_sheet; copy_range is expanded by `copy_edits`, not here."""
     if not isinstance(op, dict) or op.get("op") not in CELL_OPS + STRUCT_OPS:
         raise OfficeError("UNKNOWN_OP", str(op.get("op") if isinstance(op, dict) else op)[:32])
     kind = op["op"]
-    if kind in STRUCT_OPS and engine != "google" and not (engine == "new" and kind in SHEET_OPS):
+    if kind in STRUCT_OPS and engine != "google" and not (engine == "new" and kind == "add_sheet"):
         raise OfficeError("OP_NOT_SUPPORTED_LOCALLY", f"{kind} is available for Google Sheets only in this version")
     locked = locked or {}
     out = []
@@ -157,7 +156,8 @@ def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
         out.append({k: op[k] for k in ("op", "sheet", "at", "count")})
     elif kind == "add_sheet":
         name = op.get("name")
-        if not isinstance(name, str) or not _SHEET_NAME.match(name) or name in sheets:
+        if not isinstance(name, str) or not _SHEET_NAME.match(name) or \
+                (any(name.casefold() == sheet.casefold() for sheet in sheets) if engine == "new" else name in sheets):
             raise OfficeError("BAD_SHEET_NAME", str(name)[:40])
         out.append({"op": kind, "name": name})
     elif kind == "rename_sheet":
