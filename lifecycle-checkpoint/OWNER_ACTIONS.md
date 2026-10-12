@@ -27,11 +27,23 @@ here the same day, and removed only when it is done, with the date. Newest chang
 | # | Question | Current default | Blocks |
 |---|---|---|---|
 | Q5 | Office thread: OFF-O1 to OFF-O5 (ask the Office thread to list them for you). | Not approved. | Office milestones |
+| Q7 | SETTINGS-1 split: do 1a now (Settings > Security for search and scam-check keys, Windows-protected store, one-time `.env` import; no new frozen file) and plan 1b with frozen exceptions (Connections: Ollama, Tesseract, model paths, Google folder; one saved key-store password per install)? See "Known limitations" below. | SETTINGS-1 waits. | SETTINGS-1 (both parts) |
 
 ## 4. Optional: ordinary text that is hidden by mistake
 
 All answered 2026-10-11: O1, O3, O4, O5 stay as they are; O2 (Hebrew points) will be fixed in IDN-1. Nothing waiting.
 
+
+## 5. Known limitations (found 2026-10-12, waiting for your review)
+
+| # | Limitation | Effect today | Fix proposed |
+|---|---|---|---|
+| L1 | The app's backend clears its environment at start, so settings in environment variables (Ollama address and model, Tesseract path, model paths, Google folder) never reach it; they are read only inside frozen code. | Those features use their built-in defaults on the working system. | SETTINGS-1b (frozen exceptions, Q7). |
+| L2 | The backend picks a new random password for its encrypted key store on every start. | Model keys or connection passwords saved through it cannot be read after a restart. | SETTINGS-1b: one saved, Windows-protected password per install (Q7). |
+| L3 | Web search keys reach the app only from a hand-placed `search_keys.json` or the source folder's `.env`; there is no screen to enter them. | Keys must be placed by hand. | SETTINGS-1a (Q7). |
+| L4 | The old fixed default key-store password is still in the legacy launcher (`run_uri_server.py`, `server.py`). | Low: the app refuses the legacy server. | SETTINGS-1b or remove with the legacy path. |
+| L5 | The chat's web search tool (`uri_core/tools/web_search.py`, frozen) reads `.env` from its working folder. | It likely finds no key on the working system. | SETTINGS-1b. |
+| L6 | IDN-1b leftovers (LOW): a refused redirect target is counted under the redirecting site; percent escapes that decode to invisible characters get the "non-English letters" wording. | Count or wording slightly off; the site is still blocked. | Small optional follow-up IDN-1c. |
 
 ## Log
 | Date | Change |
@@ -45,3 +57,4 @@ All answered 2026-10-11: O1, O3, O4, O5 stay as they are; O2 (Hebrew points) wil
 | 2026-10-11 | D28: all settings move into the app (SETTINGS-1); `.env` can be deleted after its one-time import. Nothing to do yet. |
 | 2026-10-12 | Added Q6 (frozen-file exception for the IDN-1 message in the chat fetch tool). |
 | 2026-10-12 | Q6 answered: yes. The chat fetch tool and the research note will say the site was not opened in URI for security reasons and can be opened in an external browser (IDN-1b, frozen exception D33). |
+| 2026-10-12 | Added Q7 (SETTINGS-1 split) and section 5, Known limitations L1-L6 (owner: review on return). |
