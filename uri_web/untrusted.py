@@ -928,17 +928,16 @@ def _digit_variant(norm: str) -> str:
 # else is masked and the sentence is never used as support. The link checks above stay as a second layer.
 _EDGE_OPEN = "([{\"'\u201c\u2018\u00ab\u2039<*_"
 _EDGE_CLOSE = ")]}\"'\u201d\u2019\u00bb\u203a>.,;:!?\u2026*_"
-_REAL_LATIN = re.compile(r"LATIN (?:SMALL|CAPITAL) LETTER (?:[A-Z]{1,2}|SHARP S|ETH|THORN|DOTLESS I|ENG|OE|AE)"
-                         r"(?: WITH [A-Z ]+)?$")
-_NUMBER = re.compile(r"[+\-\u2212~#\u00a7\u2116\u00b1]?[$\u20ac\u00a3\u00a5\u20b9]?\d+(?:[.,:/\-\u2013\u00d7x]\d+)*"
-                     r"(?:%|'s|\u2019s|[a-zA-Z]{1,3})?$")
-_UNITS = frozenset("st nd rd th am pm km kg cm mm ml mg mb gb kb tb hz x k m b g s h d y w l lb ft in mi sq yr yrs "
+# Latin letters of real alphabets, IPA included ('\u025b', '\u014b', '\u0259'); not small capitals or click letters.
+_REAL_LATIN = re.compile(r"LATIN (?:SMALL|CAPITAL) LETTER (?!SMALL CAPITAL)")
+_UNITS = frozenset("st nd rd th s am pm km kg cm mm ml mg mb gb kb tb hz x k m b g h d y w l lb ft in mi sq yr yrs "
                    "mo hr hrs min sec ms ns gw mw kw kwh v a cr bn mn xx".split())
 # Codes and versions: 'B12', 'MP3', '4G', 'H1N1', 'v1', 'v1.0', 'M30.8', 'M30.7C'; short hex ids ('e8e3b65').
-_CODE = re.compile(r"(?:[A-Z]+\d+[A-Z\d]*|\d+[A-Z]+[A-Z\d]*|[A-Za-z]{1,3}\d+(?:\.\d+)*[A-Za-z]?|(?=[0-9a-f]*\d)[0-9a-f]{7,40}|[A-Z]{1,4}\.\d+(?:\.\d+)*)$")
+_CODE = re.compile(r"(?:[A-Z]+\d+[A-Z\d]*|\d+[A-Z]+[A-Z\d]*|[A-Za-z]{1,3}\d+[A-Z]?|(?=[0-9a-f]*\d)[0-9a-f]{7,40})$")
 _SYMBOLS = frozenset("& - \u2013 \u2014 / % + = | \u2022 \u00b7 \u2026 \u00bb \u203a > < \u2190 \u2192 * x \u00d7 \u00f7 ~ :".split())
 _COMMON_SHORT = frozenset("a i an as at be by do go he if in is it me my no of on or so to up us we am ok vs id tv uk eu "
                           "un pm mr ms dr st jr rs oh ah eh hi".split())
+_NO_SPACE_SCRIPTS = frozenset("EASTASIA THAI LAO KHMER MYANMAR TIBETAN".split())
 
 
 def _real_letter(ch: str, fam) -> bool:
@@ -950,46 +949,97 @@ def _real_letter(ch: str, fam) -> bool:
     return True
 
 
-def _plain_word(core: str) -> bool:
-    """Letters of one script (accents and the script's own vowel signs allowed), groups joined by '-' or an apostrophe."""
-    fam = None
-    for group in re.split(r"[-\u2010\u2011'\u2019]", core):
-        if not group:
-            return False
-        prev = None
-        for ch in group:
-            if unicodedata.category(ch)[0] == "M":
-                if prev is None:
-                    return False
-                continue
-            f = _char_script(ch)
-            fam = fam or f
-            if not _real_letter(ch, fam):
+def _plain_word(piece: str) -> bool:
+    """Letters of one script (accents and the script's own vowel signs allowed)."""
+    fam, prev, digits, inner = None, None, False, False
+    for ch in piece:
+        cat = unicodedata.category(ch)
+        if cat[0] == "M":
+            if prev is None:
                 return False
-            prev = ch
-    return fam is not None
+            continue
+        if cat[0] == "N":
+            digits = True
+            prev = None
+            continue
+        inner = inner or digits                 # a letter after a digit: the digit sits inside the word
+        f = _char_script(ch)
+        fam = fam or f
+        if not _real_letter(ch, fam):
+            return False
+        prev = ch
+    if fam is None:
+        return False
+    # Digits inside a word only in scripts written without spaces ('\u6771\u4eac\u306f100\u5186'); elsewhere only at the end
+    # of a non-Latin word ('\u041c\u043e\u0441\u043a\u0432\u04302020'), never inside one ('\u04410\u043c', 'c0m').
+    return not digits or fam in _NO_SPACE_SCRIPTS or (fam != "LATIN" and not inner)
+
+
+def _plain_number(piece: str) -> bool:
+    """'2020', '5,00,000', '4.5%', '\u00a33\u00bd', '1/2', '3:1', '10am', '1990s', '1024\u00d7682', '#1', '\u00a73'."""
+    body = piece.lstrip("+-\u2212~#\u00a7\u2116\u00b1$\u20ac\u00a3\u00a5\u20b9")
+    unit = re.search(r"[A-Za-z]+$", body)
+    if unit:
+        if unit.group(0).lower() not in _UNITS:
+            return False
+        body = body[:unit.start()]
+    body = body.rstrip("%")
+    if len({unicodedata.name(ch, "").split(" ", 1)[0] for ch in body if unicodedata.category(ch) == "Nd"}) > 1:
+        return False                           # digits of two scripts in one number ('1\u0d66')
+    return bool(body) and unicodedata.category(body[0])[0] == "N" and \
+        all(unicodedata.category(ch)[0] == "N" or ch in ".,:/-\u2013\u00d7x\u2044" for ch in body)
+
+
+def _plain_piece(piece: str) -> bool:
+    return (not piece or _plain_word(piece) or _plain_number(piece) or bool(_CODE.match(piece))
+            or (len(piece) == 1 and unicodedata.category(piece)[0] == "L"))
 
 
 def _plain_token(core: str) -> bool:
-    if not core or core in _SYMBOLS or all(unicodedata.category(ch)[0] in "SP" for ch in core):
-        return True                            # punctuation and symbols alone ('—', '✅', '§', '©')
-    if "/" in core.strip("/"):                 # 'and/or', 'commit/push', 'log in/out', '24/7'
-        return all(_plain_token(p) for p in core.split("/"))
-    if _plain_word(core):
+    if not core or core in _SYMBOLS or all(unicodedata.category(ch)[0] in "SP" and ch not in _CONFUSABLE_ASCII
+                                           for ch in core):
+        return True                            # punctuation and symbols alone ('\u2014', '\u2705', '\u00a7', '\u00a9')
+    if _plain_piece(core):
         return True
-    m = _NUMBER.match(core)
-    if m:
-        unit = re.search(r"[a-zA-Z]+$", core)
-        return unit is None or unit.group(0).lower() in _UNITS
-    if _CODE.match(core) or re.fullmatch(r"[A-Za-z](?:\.[A-Za-z]){1,3}", core):
-        return True                            # 'e.g', 'i.e', 'a.m', 'U.S' (the link checks still see 'c.o.m')
-    parts = re.split(r"[-\u2013]", core)          # 'COVID-19', 'X-12b', 'mid-2020'
-    return len(parts) > 1 and all(p and (_plain_word(p) or _NUMBER.match(p) or _CODE.match(p)) for p in parts)
+    # Joined pieces: 'well-known', "rock'n'roll", 'snake_case', 'and/or', 'U.S.-based', 'Q&A', 'Paris\u2013London',
+    # 'rose.The', '\u6771\u4eac\u306f\u5927\u304d\u3044\u3002\u6b21', '\u0f60\u0f56\u0fb2\u0f66\u0f0b\u0f63'. Each piece must be ordinary
+    # by itself; the link checks still judge how pieces are joined ('portal.com').
+    pieces = _split_punct(core)
+    return all(_plain_piece(p) for p in pieces) and any(pieces)
+
+
+def _is_punct(ch: str) -> bool:
+    """Punctuation, except characters the Unicode confusables data lists as a letter look-alike ('\u00a1' ~ 'i')."""
+    if unicodedata.category(ch)[0] != "P":
+        return False
+    # A script's own marks stay punctuation ('\u0964' DEVANAGARI DANDA); script-neutral look-alikes do not ('\u00a1').
+    return ch not in _CONFUSABLE_ASCII or unicodedata.name(ch, "").split(" ", 1)[0] in _SCRIPTS
+
+
+def _split_punct(core: str) -> list:
+    """`core` cut at every punctuation character (any script; '_' too). Symbols stay inside their piece."""
+    pieces, cur = [], []
+    for ch in core:
+        if _is_punct(ch):
+            pieces.append("".join(cur))
+            cur = []
+        else:
+            cur.append(ch)
+    pieces.append("".join(cur))
+    return pieces
 
 
 def _core(tok: str) -> str:
-    core = tok.lstrip(_EDGE_OPEN).rstrip(_EDGE_CLOSE + "-/")
-    return re.sub(r"['\u2019]s$", "", core) or core     # possessive: "B.1's", "Scenario 2's"
+    """The token without punctuation and symbols at its edges (any script: '\u0964', '\u060c', '\u3002'), and without a
+    possessive ("B.1's")."""
+    i, j = 0, len(tok)
+    # Punctuation only: a symbol stuck to a word stays part of it, so '|o' and '$ite' are judged as written.
+    while i < j and _is_punct(tok[i]) and tok[i] not in "#\u00a7+-~\u2212":
+        i += 1
+    while j > i and _is_punct(tok[j - 1]):
+        j -= 1
+    core = tok[i:j]
+    return re.sub(r"['\u2019]s$", "", core) or core
 
 
 def _unplain_spans(norm: str) -> list:
@@ -1004,15 +1054,44 @@ def _unplain_spans(norm: str) -> list:
         if not _plain_token(core):
             a = toks[i - 1].start() if i else m.start()
             out.append((a, m.end()))
+        raw = m.group(0).strip(".,;:!?()[]{}\"'")    # the piece as written, symbols kept ('|', '$')
+        if core and len(_split_punct(core)) > 1 and _split_punct(core)[0]:
+            core = raw = _head(m.group(0))             # the ending before a path ('o/claim' -> 'o')
         letters = sum(ch.isalnum() for ch in core)
-        odd_short = 0 < letters <= 2 and core.lower() not in _COMMON_SHORT and not (core.isdigit() and not short)
-        if odd_short and not (len(core) == 1 and core.isupper() and core.isalpha()):
+        latin = all(ch.isascii() or _char_script(ch) == "LATIN" for ch in core)
+        odd_short = ((latin and 0 < letters <= 2 and core.lower() not in _COMMON_SHORT
+                      and not (core.isdigit() and not short and core not in ("0", "1"))
+                      and not (len(core) == 1 and core.isupper()))
+                     or (len(core) == 1 and core.isdigit() and not core.isascii())
+                     or (len(raw) == 1 and raw.lower() not in _COMMON_SHORT
+                         and (_letter_like(raw) or raw == "|" or (raw.isdigit() and not raw.isascii()))))
+        # 'a'/'i' inside a run of single letters is part of it ('o a n'), not the English word.
+        if not odd_short and short and len(raw) == 1 and raw.lower() in ("a", "i"):
+            odd_short = True
+        if odd_short:
             short.append(i)
             continue
         _close_run(toks, short, out)
         short = []
+        # A single letter-like piece glued to the end of a word starts a run ('refunds-portal.1 o').
+        pieces = _split_punct(_core(m.group(0))) if _core(m.group(0)) else []
+        if (len(pieces) > 1 and len(pieces[-1]) == 1 and _letter_like(pieces[-1])
+                and not re.fullmatch(r"[A-Za-z](?:\.[A-Za-z])+", _core(m.group(0)))):
+            short.append(i)
     _close_run(toks, short, out)
     return out
+
+
+def _head(tok: str) -> str:
+    """The piece of a token a spelt ending ends with: its core, cut before a path or punctuation ('o/claim' -> 'o')."""
+    core = _core(tok)
+    pieces = _split_punct(core) if core else [tok]
+    return (pieces[0] if pieces and pieces[0] else core) or tok
+
+
+def _letter_like(c: str) -> bool:
+    """A letter, or a character that can pass for one: '0', '1', 'I' (not '|' or math signs such as '\u00d7')."""
+    return c.isalpha() or c in ("0", "1") or (c in _CONFUSABLE_ASCII and unicodedata.category(c)[0] in "LNP")
 
 
 def _close_run(toks, short, out) -> None:
@@ -1020,11 +1099,20 @@ def _close_run(toks, short, out) -> None:
     in alphabet order ('a, b, c', 'x y z')."""
     if len(short) < 2:
         return
-    cores = [_core(toks[k].group(0)).lower() for k in short]
-    if all(c.isdigit() for c in cores) or not any(len(c) == 1 for c in cores):
+    cores = [_head(toks[k].group(0)).lower() for k in short]
+    first = _split_punct(_core(toks[short[0]].group(0)) or toks[short[0]].group(0))
+    if len(first) > 1 and len(first[-1]) == 1:
+        cores[0] = first[-1].lower()           # the glued last piece ('refunds-portal.1' -> '1')
+    if not any(len(c) == 1 and _letter_like(c) and c not in _COMMON_SHORT for c in cores):
+        return                                 # no single letter-like character: '1 0 2', '10 | 20', '\u00a7 3', 'D1, D2'
+    if all(c.isdigit() and c.isascii() for c in cores) or not any(len(c) == 1 for c in cores):
         return                                 # '1 0 2'; 'D1, D2, D3' (no single character in the run)
-    if all(len(c) == 1 and c.isalpha() for c in cores) and all(ord(y) - ord(x) == 1 for x, y in zip(cores, cores[1:])):
-        return
+    fams = {_char_script(c[0]) for c in cores}
+    if len(fams) == 1 and next(iter(fams)) not in ("LATIN", "COMMON", None) and all(c.isalpha() for c in cores):
+        return                                 # short words of one other script ('\u044f \u0438 \u0441': Russian)
+    if (all(len(c) == 1 and c.isalpha() for c in cores) and all(ord(y) - ord(x) == 1 for x, y in zip(cores, cores[1:]))
+            and all(toks[k].group(0).endswith(",") for k in short[:-1])):
+        return                                 # a list 'a, b, c' (commas), not 'x y z' spelt out
     a = toks[short[0] - 1].start() if short[0] else toks[short[0]].start()
     out.append((a, toks[short[-1]].end()))
 
