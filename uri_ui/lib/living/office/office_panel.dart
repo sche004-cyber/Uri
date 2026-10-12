@@ -168,6 +168,18 @@ class _OfficeRegionState extends State<OfficeRegion> {
           icon: const Icon(Icons.folder_open_rounded),
           label: const Text('Open file'),
         ),
+        if (env.pickSourcePaths != null)
+          OutlinedButton.icon(
+            key: const ValueKey('office-new-from-files'),
+            onPressed: c.busy
+                ? null
+                : () async {
+                    final paths = await env.pickSourcePaths!();
+                    if (paths.isNotEmpty) await c.openNew(paths);
+                  },
+            icon: const Icon(Icons.note_add_outlined),
+            label: const Text('New from files...'),
+          ),
         SizedBox(
           width: 320,
           child: TextField(
@@ -220,6 +232,7 @@ class _OfficeRegionState extends State<OfficeRegion> {
                 if (!open)
                   Text('Open a workbook, then tell URI what to change. URI suggests; you accept, reject and save.',
                       style: TextStyle(color: colors.inkSoft)),
+                if (c.isNew) _sources(context, c, env),
                 for (final (i, t) in c.conversation.indexed) _turn(context, t, i),
                 if (c.busy)
                   Padding(
@@ -230,7 +243,21 @@ class _OfficeRegionState extends State<OfficeRegion> {
                   const SizedBox(height: 10),
                   Text('URI\'s suggested changes (${c.proposed.length})', style: const TextStyle(fontWeight: FontWeight.w600)),
                 ],
-                for (final ch in c.proposed)
+                // M2-D2: one request can propose thousands of cells; decide them all at once, bound to what is shown.
+                if (c.proposed.length > 1)
+                  Wrap(spacing: 6, children: [
+                    FilledButton.tonal(
+                      key: const ValueKey('office-accept-all'),
+                      onPressed: c.busy ? null : () => c.decideAll('accept'),
+                      child: Text('Accept all ${c.proposed.length}'),
+                    ),
+                    TextButton(
+                      key: const ValueKey('office-reject-all'),
+                      onPressed: c.busy ? null : () => c.decideAll('reject'),
+                      child: Text('Reject all ${c.proposed.length}'),
+                    ),
+                  ]),
+                for (final ch in c.proposed.take(maxCards))
                   Container(
                     key: ValueKey('office-change-${ch['cid']}'),
                     margin: const EdgeInsets.only(top: 6),
@@ -255,6 +282,13 @@ class _OfficeRegionState extends State<OfficeRegion> {
                       ],
                     ),
                   ),
+                if (c.proposed.length > maxCards)
+                  Padding(
+                    key: const ValueKey('office-more-changes'),
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text('and ${c.proposed.length - maxCards} more, marked in the sheet',
+                        style: TextStyle(color: colors.inkSoft)),
+                  ),
                 for (final s in c.hub.placed('workspace'))
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
@@ -265,12 +299,24 @@ class _OfficeRegionState extends State<OfficeRegion> {
                   Wrap(spacing: 6, runSpacing: 6, children: [
                     OutlinedButton(onPressed: c.busy || c.draft['can_undo'] != true ? null : c.undo, child: const Text('Undo')),
                     OutlinedButton(onPressed: c.busy || c.draft['can_redo'] != true ? null : c.redo, child: const Text('Redo')),
-                    FilledButton(
-                      key: const ValueKey('office-save'),
-                      onPressed: c.busy ? null : () => c.proposeSave(),
-                      child: Text(google ? 'Apply to Google Sheet' : 'Save to file'),
-                    ),
-                    if (!google)
+                    if (c.isNew)
+                      FilledButton(
+                        key: const ValueKey('office-save-new'),
+                        onPressed: c.busy
+                            ? null
+                            : () async {
+                                final p = await env.pickSavePath('New workbook');
+                                if (p != null) await c.proposeSave(saveAsPath: p);
+                              },
+                        child: const Text('Save as new file...'),
+                      )
+                    else
+                      FilledButton(
+                        key: const ValueKey('office-save'),
+                        onPressed: c.busy ? null : () => c.proposeSave(),
+                        child: Text(google ? 'Apply to Google Sheet' : 'Save to file'),
+                      ),
+                    if (!google && !c.isNew)
                       OutlinedButton(
                         onPressed: c.busy
                             ? null
@@ -280,10 +326,12 @@ class _OfficeRegionState extends State<OfficeRegion> {
                               },
                         child: const Text('Save as...'),
                       ),
-                    if (!google) OutlinedButton(onPressed: c.busy ? null : c.proposeShare, child: const Text('Share via Google')),
+                    if (!google && !c.isNew)
+                      OutlinedButton(onPressed: c.busy ? null : c.proposeShare, child: const Text('Share via Google')),
                     if (google && c.view?['writable'] != true)
                       OutlinedButton(onPressed: c.busy ? null : c.editCopy, child: const Text('Edit a copy')),
                   ]),
+                  if (!c.isNew)
                   SwitchListTile(
                     key: const ValueKey('office-history-consent'),
                     dense: true,
@@ -324,6 +372,46 @@ class _OfficeRegionState extends State<OfficeRegion> {
             ]),
         ],
       ),
+    );
+  }
+
+  /// At most this many change cards; the rest are marked in the sheet (M2-AC8).
+  static const int maxCards = 50;
+
+  /// M2: the read-only source files of a new workbook, and "Add file".
+  Widget _sources(BuildContext context, OfficeController c, OfficeEnvironment env) {
+    final colors = UriColors.of(context);
+    return Container(
+      key: const ValueKey('office-sources'),
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(border: Border.all(color: colors.inkFaint), borderRadius: BorderRadius.circular(6)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Working from (read-only)', style: TextStyle(color: colors.inkSoft, fontSize: 12)),
+        const SizedBox(height: 4),
+        Wrap(spacing: 6, runSpacing: 4, children: [
+          for (final s in c.sources)
+            Chip(
+              key: ValueKey('office-source-${s['id']}'),
+              visualDensity: VisualDensity.compact,
+              avatar: const Icon(Icons.description_outlined, size: 16),
+              label: Text('${s['id']} ${s['label']}'),
+            ),
+          if (env.pickSourcePaths != null)
+            ActionChip(
+              key: const ValueKey('office-add-source'),
+              visualDensity: VisualDensity.compact,
+              avatar: const Icon(Icons.add, size: 16),
+              label: const Text('Add file'),
+              onPressed: c.busy
+                  ? null
+                  : () async {
+                      final paths = await env.pickSourcePaths!();
+                      if (paths.isNotEmpty) await c.addSources(paths);
+                    },
+            ),
+        ]),
+      ]),
     );
   }
 

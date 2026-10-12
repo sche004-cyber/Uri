@@ -151,11 +151,26 @@ class Approvals:
     def _surface(self, sid, target, body, sha) -> Surface:
         google = target.get("kind") == "google"
         upload = target.get("kind") == "google_upload"
+        new_file = target.get("kind") == "new_file"
         # The card shows the whole change set the hash binds (every edit with its full before/after, every structural
         # op, the full destination). A set too large for one card is refused, never shortened.
         lines = [f"{e['sheet']}!{e['cell']}: {_shown(e['before'])} -> {_shown(e['after'])}" for e in body["edits"]]
         lines += [" ".join(f"{k}={json.dumps(op[k], ensure_ascii=False)}" for k in sorted(op))
                   for op in body["struct_ops"]]
+        if new_file:
+            # M2-D1: a new file changes no existing data and can hold far more cells than a card can show, so the card
+            # summarises it; the hash still binds every cell, and a later draft change makes this approval stale.
+            per_sheet: dict = {}
+            for e in body["edits"]:
+                n = per_sheet.setdefault(e["sheet"], [0, 0])
+                if e["after"].get("f") or e["after"].get("v") not in (None, ""):
+                    n[0] += 1
+                    n[1] += 1 if e["after"].get("f") else 0
+            lines = ["A new file will be created. No existing file is changed."]
+            lines += [f"Sheet {_quoted(name)}: {per_sheet[name][0]} cells, "
+                      f"{per_sheet[name][1]} formulas" for name in target.get("sheets", []) if per_sheet.get(name, [0])[0]]
+            if target.get("sources"):
+                lines.append("Built from: " + ", ".join(_quoted(x) for x in target["sources"]))
         if upload:
             lines = ["The saved file as it is on disk now (unsaved draft changes are not included) will be copied to "
                      "Google Drive. Only you can see it until you share it in Google."]
@@ -169,7 +184,8 @@ class Approvals:
         comps = [
             {"id": "title", "component": "Text", "variant": "title",
              "text": ("Upload a copy of this file to your Google Drive as a Google Sheet?" if upload else
-                      "Apply these changes to the Google Sheet?" if google else "Save these changes to the file?")},
+                      "Apply these changes to the Google Sheet?" if google else
+                      "Create this new file?" if new_file else "Save these changes to the file?")},
             {"id": "target", "component": "Text", "variant": "caption", "text": label},
         ]
         kids = ["title", "target"]
@@ -179,7 +195,8 @@ class Approvals:
         bind = {"change_sha256": {"path": "/bound/change_sha256"}}
         comps += [
             {"id": "apply", "component": "Button", "variant": "primary",
-             "label": "Upload to Google Drive" if upload else "Apply to Google Sheet" if google else "Save to file",
+             "label": "Upload to Google Drive" if upload else "Apply to Google Sheet" if google else
+                      "Create file" if new_file else "Save to file",
              "action": {"event": {"name": "office.apply_change", "context": bind}}},
             {"id": "reject", "component": "Button", "variant": "secondary", "label": "Not now",
              "action": {"event": {"name": "office.reject_change", "context": bind}}},

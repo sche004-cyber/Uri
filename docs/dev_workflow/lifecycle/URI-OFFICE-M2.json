@@ -1,0 +1,139 @@
+{
+ "milestone": "URI-OFFICE-M2",
+ "_note": "URI Office M2 (owner request 2026-10-12): a new workbook built from one or more source .xlsx files. Baseline is the M1 commit it branched from (phase/uri-office 6348b1b1, M1 with the M1-c2 repairs), so the review covers the M2 diff only; M1 is reviewed separately. Run in a Linux cloud clone of github.com/sche004-cyber/Uri with a fresh claude_cli reviewer at the exact candidate commit; Windows PC results are gate evidence (docs/office/M2_PLAN_AND_ACCEPTANCE_CRITERIA.md section 8), not the review. Integration is none.",
+ "repo": "../../..",
+ "baseline": {
+  "ref": "6348b1b11eeefbea9299fabf06c5f3815475cd76",
+  "expect": "6348b1b11eeefbea9299fabf06c5f3815475cd76"
+ },
+ "candidate": {
+  "branch": "phase/uri-office-m2",
+  "worktree": "../../../../uri-wt/office-m2-impl"
+ },
+ "state_dir": "../uri-wt/lifecycle-runs/URI-OFFICE-M2",
+ "acceptance_criteria_file": "docs/office/M2_PLAN_AND_ACCEPTANCE_CRITERIA.md",
+ "review_focus": [
+  "M2-AC1..AC3 sources: uri_office/sources.py and Office.open_new/add_sources reuse the M1 path rule (grants.grant_open), copy in, refuse a file changing during copy, all or nothing, at most 10, never write a source, never show a path; grants released on close and after the new file is created",
+  "M2-AC4 untrusted data: source excerpts reach the Brain only inside data blocks (uri_office/brain.py SYSTEM_NEW, build_body)",
+  "M2-AC5/AC6 ops: ops.copy_edits (values only, caps, unknown source/sheet/range refused, text starting with '=' never copied as a formula); add_sheet/rename_sheet only for engine new (Draft._sheet_op); copy_range and sheet ops refused for existing files",
+  "M2-AC7 decide_all (Draft.decide_all, proposed_set_sha256; Dart OfficeController.proposedSetSha256 must match the Python hash): bound to draft version and set hash, all or nothing",
+  "M2-AC9/AC10 new file: approval card summary (decision M2-D1, owner may overrule) still binds the full content; uri_office/xlsx_new.py never replaces an existing file (temporary file + no-overwrite link or O_EXCL), the session becomes an ordinary local M1 session",
+  "M2-AC8 pane: sources, Add file, Accept all / Reject all, at most 50 cards, Save as new file only (uri_ui/lib/living/office/office_panel.dart, office_controller.dart)",
+  "M1 behaviour unchanged for existing files and Google (M2-AC11)"
+ ],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": [
+  "uri_office/**",
+  "tests/office/**",
+  "docs/office/**",
+  "docs/dev_workflow/lifecycle/URI-OFFICE-M1.json",
+  "docs/dev_workflow/lifecycle/URI-OFFICE-M2.json",
+  "research/uri_office_spikes/**",
+  "uri_a2ui/actions.py",
+  "uri_ui/lib/living/office/**",
+  "uri_ui/lib/living/webview_host/**",
+  "uri_ui/lib/office_security_probe.dart",
+  "uri_ui/lib/services/platform_office_environment.dart",
+  "uri_ui/lib/living/a2ui/a2ui_contract.dart",
+  "uri_ui/lib/living/living_scope.dart",
+  "uri_ui/lib/living/presentation/presentation_controller.dart",
+  "uri_ui/lib/living/screens/workspace_mode_view.dart",
+  "uri_ui/lib/main.dart",
+  "uri_ui/office_web/**",
+  "uri_ui/packages/webview_flutter_windows/**",
+  "uri_ui/test/office/**",
+  "uri_ui/pubspec.yaml",
+  "uri_ui/pubspec.lock",
+  "uri_ui/analysis_options.yaml",
+  "uri_ui/windows/flutter/**",
+  "uri_ui/lib/living/widgets/living_composer.dart",
+  "uri_ui/lib/living/voice/voice_interaction.dart",
+  "uri_ui/test/living/live_voice_test.dart",
+  "uri_ui/lib/office_live_check.dart"
+ ],
+ "test_globs": [
+  "tests/**",
+  "**/test/**"
+ ],
+ "allowed_flaky": [],
+ "gates": [
+  {
+   "id": "python-office",
+   "kind": "pytest",
+   "cmd": [
+    "{python}",
+    "-m",
+    "pytest",
+    "-c",
+    "scripts/phase2d_pytest.ini",
+    "--rootdir=.",
+    "-q",
+    "tests/office"
+   ]
+  },
+  {
+   "id": "python-a2ui",
+   "kind": "pytest",
+   "cmd": [
+    "{python}",
+    "-m",
+    "pytest",
+    "-c",
+    "scripts/phase2d_pytest.ini",
+    "--rootdir=.",
+    "-q",
+    "tests/a2ui"
+   ]
+  }
+ ],
+ "regression_runner": [
+  "{python}",
+  "-m",
+  "pytest",
+  "-q",
+  "-p",
+  "no:cacheprovider"
+ ],
+ "regression_runners": [],
+ "test_setup": [
+  {
+   "cmd": [
+    "npm",
+    "ci",
+    "--no-audit",
+    "--no-fund"
+   ],
+   "cwd": "uri_ui/office_web",
+   "timeout_s": 1800
+  }
+ ],
+ "_test_setup_note": "Owner approval 2026-10-11: fresh test worktrees (regression proof, qualify, baseline) install the page's npm dependencies first; without them the real-engine tests in tests/office/test_page.py skip and no repair can show fail-before (run 1, P2-P4). The driver change (scripts/dev_workflow/lifecycle.py test_setup) is tooling, not part of the office milestone.",
+ "repair_nonblocking_severities": [],
+ "reviewer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 5400
+ },
+ "implementer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 5400
+ },
+ "limits": {
+  "max_repair_attempts": 3
+ },
+ "continuation": {
+  "stall_rounds": 2,
+  "diagnose_after": 2,
+  "budget": {
+   "max_rounds": 12,
+   "max_cost_usd": 200,
+   "max_hours": 12
+  }
+ },
+ "integration": {
+  "mode": "none"
+ },
+ "commit_trailers": []
+}

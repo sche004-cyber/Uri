@@ -33,6 +33,14 @@ OfficeEnvironment platformOfficeEnvironment() => OfficeEnvironment(
         }
         return null;
       },
+      pickSourcePaths: () async {
+        final files = await FilePicker.pickFiles(
+          dialogTitle: 'Choose one or more Excel files for URI to work from',
+          type: FileType.custom,
+          allowedExtensions: const ['xlsx'],
+        );
+        return [for (final f in files) ?f.path];
+      },
       openExternalLink: (url) async {
         // Only Google Sheets links reach here (the service builds them from a validated sheet id).
         if (url.scheme == 'https' && url.host == 'docs.google.com' && url.path.startsWith('/spreadsheets/d/')) {

@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
 import '../a2ui/a2ui_hub.dart';
+import '../a2ui/sha256.dart';
 import '../integration/scheduler_client.dart' show SchedulerApiError;
 import 'office_bridge.dart';
 import 'office_client.dart';
@@ -43,6 +45,19 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
   List<Map<String, dynamic>> get changes =>
       [for (final c in (draft['changes'] as List? ?? const [])) (c as Map).cast<String, dynamic>()];
   List<Map<String, dynamic>> get proposed => [for (final c in changes) if (c['state'] == 'proposed') c];
+
+  /// M2: a new workbook built from source files (no file yet).
+  bool get isNew => view?['engine'] == 'new';
+  List<Map<String, dynamic>> get sources =>
+      [for (final s in (view?['sources'] as List? ?? const [])) (s as Map).cast<String, dynamic>()];
+
+  /// M2-D2: SHA-256 over the sorted (change id, change hash) pairs of every proposed change, as the service computes
+  /// it (`Draft.proposed_set_sha256`, canonical JSON).
+  String proposedSetSha256() {
+    final pairs = [for (final c in proposed) [c['cid'] as String, c['change_sha256'] as String]]
+      ..sort((a, b) => a[0].compareTo(b[0]));
+    return sha256Hex(Uint8List.fromList(utf8.encode(jsonEncode(pairs))));
+  }
 
   /// Marks the page shows: the latest live change per cell.
   List<Map<String, dynamic>> marks() {
@@ -227,6 +242,31 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
   Future<void> openLocal(String path) => _guard(() async => _apply(await client.openLocal(path)));
   Future<void> openGoogle(String url) => _guard(() async => _apply(await client.openGoogle(url)));
 
+  /// M2: a fresh workbook with the picked files as read-only sources.
+  Future<void> openNew(List<String> paths) => _guard(() async {
+        if (paths.isEmpty) return;
+        await _apply(await client.openNew(paths));
+        _say(OfficeSpeaker.notice, 'New workbook from ${sources.map((s) => s['label']).join(', ')}. '
+            'Tell URI what to build; nothing is written until you create the file.');
+      });
+
+  /// M2: more source files for the open new workbook.
+  Future<void> addSources(List<String> paths) => _guard(() async {
+        final wid = workbookId;
+        if (wid == null || paths.isEmpty) return;
+        final before = sources.length;
+        final v = await client.addSources(wid, paths);
+        view = {...view!, 'sources': v['sources']};
+        _say(OfficeSpeaker.notice, 'Added ${sources.skip(before).map((s) => s['label']).join(', ')}.');
+      });
+
+  /// M2-D2: accept or reject every proposed change shown, all or nothing.
+  Future<void> decideAll(String decision) => _guard(() async {
+        final wid = workbookId;
+        if (wid == null || proposed.isEmpty) return;
+        await _refreshDraft(await client.decideAll(wid, decision, draft['version'] as int, proposedSetSha256()));
+      });
+
   @override
   bool get acceptsRequests => workbookId != null;
 
@@ -265,6 +305,15 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       brainMessage = r['message'] as String?;
       final refused = (r['refused'] as List?) ?? const [];
       if (refused.isNotEmpty) notice = '${refused.length} suggested change(s) were refused as unsafe or invalid.';
+      final notes = (r['notes'] as Map?) ?? const {};
+      final unc = notes['uncalculated'] as int? ?? 0;
+      final skipped = notes['not_copied'] as int? ?? 0;
+      if (unc > 0 || skipped > 0) {
+        copyNote = [
+          if (unc > 0) '$unc source formula cell(s) had no calculated value and were copied as empty',
+          if (skipped > 0) '$skipped value(s) could not be copied as values and were left empty',
+        ].join('; ');
+      }
       await _refreshDraft(r);
     });
     final reply = brainMessage;
@@ -277,8 +326,14 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       _say(OfficeSpeaker.uri, 'No change was suggested.');
     }
     if (notice != null) _say(OfficeSpeaker.notice, notice!);
+    final note = copyNote;
+    if (note != null) _say(OfficeSpeaker.notice, '$note.');
+    copyNote = null;
     notifyListeners();
   }
+
+  /// M2-D3: what a copy from the sources could not carry over, said once after the request.
+  String? copyNote;
 
   Future<void> decide(Map<String, dynamic> change, String decision, {String reason = ''}) => _guard(() async {
         final wid = workbookId;
@@ -312,8 +367,17 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
     final result = (r['result'] as Map).cast<String, dynamic>();
     await _refreshDraft(result);
     notice = result['status'] == 'applied'
-        ? (result['saved_to'] != null ? 'Saved to ${result['saved_to']}.' : 'Applied.')
+        ? (result['created'] == true
+            ? 'Created ${result['saved_to']}.'
+            : result['saved_to'] != null
+                ? 'Saved to ${result['saved_to']}.'
+                : 'Applied.')
         : 'Nothing was changed.';
+    final wid = workbookId;
+    if (result['created'] == true && wid != null) {
+      view = await client.view(wid);       // engine is now local; sources are released
+      await _sendLoad();
+    }
     if (result['layout_reloaded'] == false || result['reload_required'] == true) {
       await _reloadView();               // the grid still shows the old rows: never let the owner edit it as is
     }

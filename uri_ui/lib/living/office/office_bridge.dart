@@ -42,6 +42,7 @@ class OfficeEnvironment {
     required this.pickWorkbookPath,
     required this.pickSavePath,
     required this.openExternalLink,
+    this.pickSourcePaths,
   });
 
   final OfficeSurface Function() surfaceFactory;
@@ -54,6 +55,10 @@ class OfficeEnvironment {
 
   /// Opens a Google Sheets link in the owner's browser (outside URI).
   final Future<void> Function(Uri url) openExternalLink;
+
+  /// M2: file picker for one or more .xlsx source files; returns their absolute paths (empty when cancelled).
+  /// Null where the platform cannot pick several files; "New from files" is then not offered.
+  final Future<List<String>> Function()? pickSourcePaths;
 }
 
 final RegExp _cellRef = RegExp(r'^[A-Z]{1,3}[1-9][0-9]{0,6}$');

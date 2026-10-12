@@ -34,7 +34,8 @@ from urllib.parse import parse_qs, urlparse
 
 from . import draft as D
 from . import google as G
-from . import refs, xlsx_model, xlsx_patch
+from . import refs, xlsx_model, xlsx_new, xlsx_patch
+from . import sources as SRC
 from .approvals import Approvals
 from .errors import OfficeError
 from .grants import Grants
@@ -48,7 +49,7 @@ MAX_SESSIONS = 16
 @dataclass
 class Session:
     workbook_id: str
-    engine: str                     # "local" | "google"
+    engine: str                     # "local" | "google" | "new" (M2: a new workbook built from sources)
     label: str
     workbook: dict
     draft: D.Draft
@@ -59,6 +60,7 @@ class Session:
     file_id: str | None = None      # google
     stale_ops: list = field(default_factory=list)   # google: applied structural ops not yet re-read
     layout_version: int = 0         # google: bumped by every re-read after a layout change; grids carry it
+    sources: list = field(default_factory=list)     # new: read-only source workbooks (sources.Source)
     lock: threading.RLock = field(default_factory=threading.RLock)
 
 
@@ -102,6 +104,8 @@ class Office:
         with s.lock:                                     # read-only (AC6): a pending re-read is done by reload()
             out = {"workbook_id": s.workbook_id, "engine": s.engine, "label": s.label, "workbook": s.workbook,
                    "draft": s.draft.snapshot(), "history_on": self.history.consented(s.key)}
+            if s.engine == "new":
+                out["sources"] = SRC.listing(s.sources)
             if s.engine == "google":
                 out["open_url"] = G.open_url(s.file_id)
                 out["writable"] = self.google.writable(s.file_id)
@@ -145,11 +149,48 @@ class Office:
                     workbook_key("google", fid), file_id=fid)
         return self._add(s)
 
+    @staticmethod
+    def _empty_sheet(name: str, index: int) -> dict:
+        return {"name": name, "index": index, "max_row": 0, "max_col": 0, "truncated": False, "cells": {},
+                "locked": [], "merges": [], "col_widths": {}, "row_heights": {}}
+
+    def open_new(self, raw_paths) -> dict:
+        """M2-AC1: a new, empty workbook with read-only source files (copied in; the originals are only read)."""
+        wid = uuid.uuid4().hex[:16]
+        work = self.state / "work" / wid
+        work.mkdir(parents=True)
+        try:
+            srcs = SRC.add(self.grants, work, [], raw_paths)
+            wb = {"sheets": [self._empty_sheet("Sheet1", 0)], "styles": {},
+                  "kept_not_shown": {"charts": 0, "images": 0, "pivot_tables": 0}}
+            s = Session(wid, "new", "New workbook", wb, D.Draft(wid, "new", wb), workbook_key("new", wid), sources=srcs)
+            return self._add(s)
+        except Exception:
+            if wid not in self.sessions:
+                shutil.rmtree(work, ignore_errors=True)
+            raise
+
+    def add_sources(self, wid, body) -> dict:
+        """M2-AC2: more source files for an open new workbook."""
+        s = self._session(wid)
+        if s.engine != "new":
+            raise OfficeError("NOT_A_NEW_WORKBOOK", "sources can be added to a new workbook only")
+        with s.lock:
+            s.sources = SRC.add(self.grants, self.state / "work" / wid, s.sources, body.get("paths"))
+            self.approvals.audit("office.sources_added", {"workbook_id": wid, "sources": len(s.sources)})
+            return self.view(wid)
+
+    def _sync_new_sheets(self, s):
+        """New workbook: the session's sheet list follows the draft (sheets added or renamed by URI, M2-D4)."""
+        s.workbook = {**s.workbook, "sheets": [self._empty_sheet(n, i) for i, n in enumerate(s.draft.sheets())]}
+
     def close(self, wid):
         s = self._session(wid)
         with self.lock:
             self.sessions.pop(wid, None)
         self.approvals.close_workbook(wid)
+        for src in s.sources:
+            self.grants.revoke(src.grant_id)
         if s.grant_id:
             self.grants.revoke(s.grant_id)
         shutil.rmtree(self.state / "work" / wid, ignore_errors=True)
@@ -262,6 +303,16 @@ class Office:
                 self.history.record(s.key, s.draft.version, ev, body.get("reason", ""))
             return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
 
+    def decide_all(self, wid, body) -> dict:
+        """M2-AC7: accept or reject every proposed change, bound to the draft version and the set hash shown."""
+        s = self._session(wid)
+        with s.lock:
+            refreshed = self._refresh(s)
+            events = s.draft.decide_all(body.get("decision"), body.get("draft_version"), body.get("set_sha256"))
+            for ev in events:
+                self.history.record(s.key, s.draft.version, ev, body.get("reason", ""))
+            return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
+
     def undo(self, wid, redo=False) -> dict:
         s = self._session(wid)
         with s.lock:
@@ -276,10 +327,17 @@ class Office:
         with s.lock:                                     # the draft is locked for the whole turn; user edits queue
             refreshed = self._refresh(s)
             res = self.brain.plan(body.get("text"), sheets=self._current_sheets(s), active=body.get("active_sheet"),
-                                  engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key))
+                                  engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key),
+                                  **({"sources": s.sources} if s.engine == "new" else {}))
             new = s.draft.propose(res["edits"]) if res["edits"] else []
-            return {"message": res["message"], "proposed": [c["cid"] for c in new], "refused": res["refused"],
-                    "metrics": res["metrics"], "draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
+            out = {"message": res["message"], "proposed": [c["cid"] for c in new if c["state"] == "proposed"],
+                   "refused": res["refused"], "metrics": res["metrics"], "draft": s.draft.snapshot(),
+                   **self._reloaded(s, refreshed)}
+            if s.engine == "new":
+                self._sync_new_sheets(s)
+                out["workbook"] = s.workbook             # the grid reloads: sheets may have been added or renamed
+                out["notes"] = res.get("notes", {})
+            return out
 
     # ---- approvals -----------------------------------------------------------------------------------------------
     def propose_save(self, wid, body) -> dict:
@@ -297,6 +355,17 @@ class Office:
                 target = {"kind": "local", "label": str(dest.path if dest else s.path),
                           "grant_id": dest.grant_id if dest else s.grant_id, "save_as": bool(dest),
                           "source_sha256": s.open_sha, "draft_version": s.draft.version}
+            elif s.engine == "new":
+                if not body.get("save_as_path"):
+                    raise OfficeError("SAVE_AS_REQUIRED", "choose where to create the new file")
+                g = self.grants.grant_save_as(body["save_as_path"])
+                if g.path.exists():
+                    raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
+                if not xlsx_new.content(s.draft.sheets(), pending["edits"]):
+                    raise OfficeError("NOTHING_TO_SAVE", "the new workbook has no cells")
+                target = {"kind": "new_file", "label": str(g.path), "grant_id": g.grant_id,
+                          "draft_version": s.draft.version, "sheets": s.draft.sheets(),
+                          "sources": [src.label for src in s.sources]}
             else:
                 target = {"kind": "google", "label": s.label, "file_id": s.file_id, "draft_version": s.draft.version}
             surface = self.approvals.propose(wid, target, pending)
@@ -328,6 +397,8 @@ class Office:
                 raise OfficeError("STALE_CHANGE", "the draft changed after this approval was shown; review the save "
                                                   "again", 409)
             pending = {"edits": body["edits"], "struct_ops": body["struct_ops"]}
+            if t["kind"] == "new_file":
+                return self._create_new_file(s, t, pending)
             if t["kind"] == "google":
                 r = self.google.apply(t["file_id"], body)
                 return {**r, **self._committed(s, pending)}
@@ -354,6 +425,26 @@ class Office:
                 self._committed(s, pending)
                 s.open_sha = xlsx_model.file_sha256(dest)
             return {"changed_parts": res["changed_parts"], "saved_to": dest.name}
+
+    def _create_new_file(self, s, t, pending) -> dict:
+        """M2-AC9/AC10: write the new file (never over an existing one), then continue as an ordinary local session on
+        it, so later saves use the M1 cell patch. The sources are released."""
+        dest = self.grants.get(t["grant_id"], "save_as").path
+        if dest.exists():
+            raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
+        res = xlsx_new.write(dest, xlsx_new.content(t["sheets"], pending["edits"]))
+        g = self.grants.grant_open(str(dest))
+        copy = self.state / "work" / s.workbook_id / "opened.xlsx"
+        shutil.copy2(dest, copy)
+        wb = xlsx_model.read(copy)
+        for src in s.sources:
+            self.grants.revoke(src.grant_id)
+        s.engine, s.label, s.workbook = "local", dest.name, wb
+        s.draft = D.Draft(s.workbook_id, "local", wb)
+        s.key = workbook_key("local", str(dest).lower())
+        s.grant_id, s.path, s.open_sha, s.sources = g.grant_id, dest, xlsx_model.file_sha256(dest), []
+        self.approvals.audit("office.new_file_created", {"workbook_id": s.workbook_id, **res})
+        return {"saved_to": dest.name, "created": True, **res}
 
     def action(self, msg) -> dict:
         # Lock order everywhere: workbook lock, then approvals lock (propose_save/propose_share take them that way).
@@ -494,6 +585,8 @@ def make_handler(office: Office, token: str):
                     return office.open_local(b.get("path"))
                 if parts == ["open", "google"]:
                     return office.open_google(b.get("url"))
+                if parts == ["open", "new"]:
+                    return office.open_new(b.get("paths"))
                 if parts == ["a2ui", "action"]:
                     return office.action(b.get("action"))
                 if len(parts) == 3 and parts[0] == "workbook":
@@ -504,7 +597,9 @@ def make_handler(office: Office, token: str):
                              "propose_save": lambda: office.propose_save(wid, b),
                              "propose_share": lambda: office.propose_share(wid), "reload": lambda: office.reload(wid),
                              "edit_copy": lambda: office.edit_copy(wid), "export": lambda: office.export(wid, b),
-                             "history": lambda: office.history_op(wid, b), "close": lambda: office.close(wid)}
+                             "history": lambda: office.history_op(wid, b), "close": lambda: office.close(wid),
+                             "sources": lambda: office.add_sources(wid, b),
+                             "decide_all": lambda: office.decide_all(wid, b)}
                     if verb in table:
                         return table[verb]()
                 raise OfficeError("NOT_FOUND", "", 404)

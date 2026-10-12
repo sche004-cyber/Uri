@@ -20,6 +20,8 @@ from .errors import OfficeError
 
 CELL_OPS = ("set_values", "set_formula")
 STRUCT_OPS = ("insert_rows", "delete_rows", "add_sheet", "rename_sheet")
+SHEET_OPS = ("add_sheet", "rename_sheet")
+SOURCE_OPS = ("copy_range",)          # M2: a new workbook built from source files
 MAX_CELLS_PER_OP = 5000
 MAX_TEXT = 32767
 # Characters XML 1.0 cannot carry (C0 controls other than tab/LF/CR, U+FFFE/U+FFFF, lone surrogates). A cell holding one
@@ -46,9 +48,12 @@ BRAIN_SCHEMA = {
         "message": {"type": "string"},
         "ops": {"type": "array", "maxItems": 20, "items": {
             "type": "object", "additionalProperties": False,
-            "required": ["op", "sheet", "range", "values", "cell", "formula", "at", "count", "name"],
+            "required": ["op", "sheet", "range", "values", "cell", "formula", "at", "count", "name", "source",
+                         "from_sheet", "from_range"],
             "properties": {
-                "op": {"type": "string", "enum": list(CELL_OPS + STRUCT_OPS)},
+                "op": {"type": "string", "enum": list(CELL_OPS + STRUCT_OPS + SOURCE_OPS)},
+                "source": {"type": ["string", "null"]}, "from_sheet": {"type": ["string", "null"]},
+                "from_range": {"type": ["string", "null"]},
                 "sheet": {"type": ["string", "null"]}, "range": {"type": ["string", "null"]},
                 "values": {"type": ["array", "null"], "items": {"type": "array", "items": _SCALAR}},
                 "cell": {"type": ["string", "null"]}, "formula": {"type": ["string", "null"]},
@@ -119,11 +124,12 @@ def _sheet(op, sheets):
 
 def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
     """Validate one op. Cell ops -> [{"sheet", "cell", "value"|"formula"}]; Google structural ops -> [op] unchanged
-    after validation. `locked` maps sheet -> set of refs that must not be edited (local only)."""
+    after validation. `locked` maps sheet -> set of refs that must not be edited (local only). A new workbook (engine
+    "new", M2) also takes add_sheet and rename_sheet; copy_range is expanded by `copy_edits`, not here."""
     if not isinstance(op, dict) or op.get("op") not in CELL_OPS + STRUCT_OPS:
         raise OfficeError("UNKNOWN_OP", str(op.get("op") if isinstance(op, dict) else op)[:32])
     kind = op["op"]
-    if kind in STRUCT_OPS and engine != "google":
+    if kind in STRUCT_OPS and engine != "google" and not (engine == "new" and kind in SHEET_OPS):
         raise OfficeError("OP_NOT_SUPPORTED_LOCALLY", f"{kind} is available for Google Sheets only in this version")
     locked = locked or {}
     out = []
@@ -164,3 +170,37 @@ def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
         if "cell" in e and e["cell"] in set(locked.get(e["sheet"], ())):
             raise OfficeError("CELL_NOT_EDITABLE", f"{e['sheet']}!{e['cell']} is part of a shared formula or merged range")
     return out
+
+
+def copy_edits(op, *, sources: dict, sheets) -> tuple:
+    """M2 `copy_range`: copy a range's **values** from a source workbook into the new workbook (M2-D3). `sources`
+    maps source id -> workbook model (`xlsx_model.read`). Formula cells copy their cached result; one without a cached
+    result is copied as empty and counted, and so is a value a workbook cannot store as a value. Returns
+    (edits, uncalculated_count, skipped_count)."""
+    src = sources.get(op.get("source")) if isinstance(op.get("source"), str) else None
+    if src is None:
+        raise OfficeError("UNKNOWN_SOURCE", str(op.get("source"))[:16])
+    sheet = next((sh for sh in src["sheets"] if sh["name"] == op.get("from_sheet")), None)
+    if sheet is None:
+        raise OfficeError("UNKNOWN_SOURCE_SHEET", str(op.get("from_sheet"))[:64])
+    c1, r1, c2, r2 = refs.parse_range(op.get("from_range"))
+    if (r2 - r1 + 1) * (c2 - c1 + 1) > MAX_CELLS_PER_OP:
+        raise OfficeError("OP_TOO_LARGE", f"more than {MAX_CELLS_PER_OP} cells")
+    to = _sheet(op, sheets)
+    tc, tr = refs.parse_cell(refs.canonical_cell(op.get("cell")))
+    if tc + (c2 - c1) > refs.MAX_COL or tr + (r2 - r1) > refs.MAX_ROW:
+        raise OfficeError("BAD_RANGE", "the copy does not fit in the sheet")
+    out, uncalculated, skipped = [], 0, 0
+    for dr in range(r2 - r1 + 1):
+        for dc in range(c2 - c1 + 1):
+            cell = sheet["cells"].get(refs.cell_ref(c1 + dc, r1 + dr), {})
+            v = cell.get("v")
+            if v is None and cell.get("f"):
+                uncalculated += 1
+            try:
+                v = check_value(v)
+            except OfficeError:
+                v = None                          # e.g. text starting with "=": copied as empty, never as a formula
+                skipped += 1
+            out.append({"sheet": to, "cell": refs.cell_ref(tc + dc, tr + dr), "value": v})
+    return out, uncalculated, skipped

@@ -101,11 +101,16 @@ class Draft:
         return cell
 
     def propose(self, edits: list) -> list:
-        """URI's validated edits (from `ops.to_cell_edits`) become proposed, marked changes. Returns the new changes."""
+        """URI's validated edits (from `ops.to_cell_edits`) become proposed, marked changes. Returns the new changes.
+        In a new workbook (engine "new", M2-D4) add_sheet and rename_sheet take effect at once and are recorded as
+        accepted structural changes."""
         self._push()
         new = []
         for e in edits:
-            if "op" in e:
+            if "op" in e and self.engine == "new":
+                self._sheet_op(e)
+                ch = self._new("uri", "struct", "accepted", op=e, sheet=e.get("sheet") or e.get("name"))
+            elif "op" in e:
                 ch = self._new("uri", "struct", "proposed", op=e, sheet=e.get("sheet"))
             else:
                 cell = self._check_cell(e["sheet"], e["cell"])
@@ -114,6 +119,57 @@ class Draft:
             self.changes.append(ch)
             new.append(ch)
         return new
+
+    def _sheet_op(self, op: dict):
+        """New workbook only: add or rename a sheet now. A rename clears undo and redo (earlier versions name the old
+        sheet), like a save."""
+        if op["op"] == "add_sheet":
+            if op["name"] in self.base:
+                raise OfficeError("BAD_SHEET_NAME", op["name"][:40])
+            self.base[op["name"]] = {}
+            self.locked[op["name"]] = set()
+        elif op["op"] == "rename_sheet":
+            old, name = op["sheet"], op["name"]
+            if old not in self.base or name in self.base:
+                raise OfficeError("BAD_SHEET_NAME", str(name)[:40])
+            self.base = {(name if k == old else k): v for k, v in self.base.items()}
+            self.locked = {(name if k == old else k): v for k, v in self.locked.items()}
+            for c in self.changes:
+                if c["sheet"] == old:
+                    c["sheet"] = name
+            self._undo.clear()
+            self._redo.clear()
+        else:
+            raise OfficeError("OP_NOT_SUPPORTED_LOCALLY", op["op"])
+
+    def proposed_set_sha256(self) -> str:
+        """M2-D2: the hash of every change still proposed, as (change id, change hash) pairs in id order."""
+        pairs = sorted((c["cid"], change_sha256(c)) for c in self.changes if c["state"] == "proposed")
+        return hashlib.sha256(canonical(pairs)).hexdigest()
+
+    def decide_all(self, decision: str, version, set_sha: str) -> list:
+        """Accept or reject every proposed change at once, only if the draft is still at `version` and the proposed set
+        still hashes to `set_sha` (what the owner saw). All or nothing. Returns correction events for rejections."""
+        if decision not in ("accept", "reject"):
+            raise OfficeError("BAD_DECISION")
+        if version != self.version or set_sha != self.proposed_set_sha256():
+            raise OfficeError("STALE_CHANGE", "the suggested changes differ from what was shown; review them again")
+        todo = [c for c in self.changes if c["state"] == "proposed"]
+        if not todo:
+            raise OfficeError("NOTHING_PROPOSED")
+        for c in todo:
+            if c["kind"] == "cell" and c["before"] != self.before(c["sheet"], c["cell"]):
+                raise OfficeError("STALE_CHANGE", "a cell changed after URI proposed this; review it again")
+        self._push()
+        events = []
+        for c in self.changes:
+            if c["state"] != "proposed":
+                continue
+            c["state"] = "accepted" if decision == "accept" else "rejected"
+            if decision == "reject":
+                events.append({"kind": "uri_change_rejected", "change_id": c["cid"], "sheet": c["sheet"],
+                               "cell": c["cell"]})
+        return events
 
     def user_edit(self, edit: dict) -> list:
         """The owner typed in the panel. Returns correction events (for the consented history)."""
