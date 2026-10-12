@@ -1,0 +1,104 @@
+{
+ "findings": [
+  {
+   "blocking": true,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired 6c62281",
+   "title": "conftest placeholders leak into other tests in the same run (server and uri_core.services stay bound to MagicMock Google modules; credential secret persists)"
+  },
+  {
+   "blocking": true,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired 6c62281",
+   "title": "Lookups edit the view's shared records without a lock: concurrent lookups and the capability refresh raise KeyError/RuntimeError"
+  },
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Non-memory skill: records in every user's view still come from the install-wide legacy SkillMemory, not the user's own per-user SkillMemory"
+  }
+ ],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "6c62281fb6b3",
+   "failed": 178,
+   "gate": "python",
+   "new": 0,
+   "ok": true,
+   "passed": 6419,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  },
+  {
+   "changed_cause": 0,
+   "commit": "6c62281fb6b3",
+   "failed": 1,
+   "gate": "flutter",
+   "new": 0,
+   "ok": true,
+   "passed": 537,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
+ "owner": [],
+ "repairs": [
+  {
+   "addresses": "R1-01, R1-02",
+   "commit": "6c62281fb6b3",
+   "reason": "",
+   "repair": "P1",
+   "status": "COMMITTED"
+  }
+ ],
+ "rounds": [
+  {
+   "blocking": 2,
+   "candidate": "9ae7c60cd02b",
+   "findings": 2,
+   "finished": "2026-10-12T03:37:25Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "448f4a86-b6f5-4297-a120-8d8035683fc4",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "6c62281fb6b3",
+   "findings": 1,
+   "finished": "2026-10-12T04:07:18Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R2",
+   "session": "5e013633-7abd-423f-b930-ecaa60d755d0",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "summary": {
+  "baseline": "e07b71c68ea44096020ca8865ae228b550b48e16",
+  "candidate": "6c62281fb6b37acfc486fa29468e66824912e151",
+  "evidence_ok": true,
+  "findings_repaired": 2,
+  "findings_total": 3,
+  "integration": "INTEGRATED",
+  "milestone": "GRAPHIFY-LEAK-1",
+  "open_blocking": 0,
+  "owner_actions": 0,
+  "receipt_chain_ok": true,
+  "repairs_committed": 1,
+  "rounds": 2,
+  "stage": "COMPLETE",
+  "written_at": "2026-10-12T04:26:33Z"
+ }
+}
