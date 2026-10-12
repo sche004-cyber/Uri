@@ -374,10 +374,23 @@ def _char_script(ch: str):
     return None
 
 
+# O2 (owner, 2026-10-11, in IDN-1): the Hebrew points SHIN DOT and SIN DOT are part of ordinary pointed Hebrew
+# ('\u05e9\u05c1\u05b8\u05dc\u05d5\u05b9\u05dd'), so they are allowed on a Hebrew letter (other Hebrew points may sit
+# between). Standing alone or on a letter of another script they are still unusual ('portal \u05c1 com', 'c\u05c1om').
+_HEBREW_LETTER_DOTS = frozenset("\u05c1\u05c2")
+
+
+def _on_hebrew_letter(token: str, i: int) -> bool:
+    j = i - 1
+    while j >= 0 and 0x0591 <= ord(token[j]) <= 0x05C7 and unicodedata.category(token[j]) == "Mn":
+        j -= 1
+    return j >= 0 and 0x05D0 <= ord(token[j]) <= 0x05EA
+
+
 def _unusual(token: str) -> bool:
     fams = set()
-    for ch in token:
-        f = _char_script(ch)
+    for i, ch in enumerate(token):
+        f = "HEBREW" if ch in _HEBREW_LETTER_DOTS and _on_hebrew_letter(token, i) else _char_script(ch)
         if f is None:
             return True
         if f != "COMMON":

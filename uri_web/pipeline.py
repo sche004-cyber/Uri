@@ -24,6 +24,7 @@ from typing import Callable, Optional
 
 from . import evaluate as EV
 from . import feeds as FD
+from . import netpolicy as NP
 from . import records as R
 from . import search as S
 from . import synthesize as SY
@@ -93,6 +94,7 @@ class ResearchResult:
     feed_items: list = field(default_factory=list)
     providers: list = field(default_factory=list)        # {"provider", "status", "error_code", "hits"}
     attempts: list = field(default_factory=list)         # SourceRecord dicts of failed/refused retrievals
+    blocked_non_english: int = 0                         # IDN-1: sites refused because the address uses non-English letters
     synthesis_method: str = "none"
     brain_status: Optional[str] = None
     started_at: str = ""
@@ -116,6 +118,7 @@ class ResearchJob:
         self.brain_yield = CancelFlag()     # R1-05: the user's turn takes the Brain; the job goes on without it
         self.clock = clock
         self.job_id = str(uuid.uuid4())
+        self._blocked_sites = set()          # R1-02: sites refused for non-English letters (NP.site_key)
 
     def cancel(self):
         self.cancel_flag.cancel()
@@ -147,9 +150,16 @@ class ResearchJob:
             self._run(res, t0)
         except Exception:
             res.status, res.error_code = FAILED, "INTERNAL_ERROR"
+        # R1-02: one count per site, across search providers, user URLs, feeds and redirects.
+        res.blocked_non_english = len(self._blocked_sites)
         res.finished_at, res.elapsed_s = R.utc_now(), round(self.clock() - t0, 3)
         self._p("finished", status=res.status)
         return res
+
+    def _note_blocked(self, fr):
+        if fr.record.refusal_code == NP.HOST_NON_ENGLISH:
+            url = getattr(fr, "refused_url", None) or fr.record.requested_url
+            self._blocked_sites.add(NP.site_key(url) or url)
 
     def _expired(self, t0):
         return self.clock() - t0 > self.req.budget.deadline_s
@@ -173,6 +183,7 @@ class ResearchJob:
                 sr = p.search(res.query, max_results=b.max_results_per_provider)
                 res.providers.append({"provider": p.name, "status": sr.status, "error_code": sr.error_code,
                                       "hits": len(sr.hits)})
+                self._blocked_sites.update(getattr(sr, "blocked_sites", None) or ())
                 if sr.status in (S.OK, S.NO_RESULTS):
                     any_provider_ok = True
                 for h in sr.hits:
@@ -184,6 +195,7 @@ class ResearchJob:
         for fu in self.req.feeds[:MAX_FEEDS]:
             fr = self.fetcher.fetch(fu, cancel=self.cancel_flag)
             if not fr.ok or fr.kind not in ("feed", "html"):
+                self._note_blocked(fr)
                 res.attempts.append(fr.record.to_dict())
                 continue
             try:
@@ -225,6 +237,7 @@ class ResearchJob:
                 res.status = CANCELLED
                 return
             if not fr.ok or fr.kind not in ("html", "text"):
+                self._note_blocked(fr)
                 res.attempts.append(rec.to_dict())
                 sn = snippets.get(key)
                 if sn and sn[1]:

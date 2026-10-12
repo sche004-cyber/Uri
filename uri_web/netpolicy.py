@@ -9,12 +9,17 @@ from __future__ import annotations
 
 import ipaddress
 from dataclasses import dataclass
+from typing import Optional
 from urllib.parse import urlsplit
 
 ALLOWED_SCHEMES = ("http", "https")
 DEFAULT_PORTS = {"http": 80, "https": 443}
 ALLOWED_PORTS = frozenset({80, 443})
 MAX_URL_LENGTH = 2048
+HOST_NON_ENGLISH = "HOST_NON_ENGLISH"
+# IDN-1 (D21, D18): what the user is told when a site is refused with HOST_NON_ENGLISH.
+NON_ENGLISH_MESSAGE = ("Blocked: this site's address uses non-English letters. Scam sites use them to copy real sites."
+                       " If you trust it, open it yourself in your browser.")
 
 _NAT64 = (ipaddress.ip_network("64:ff9b::/96"),)
 # R16-02: the RFC 8215 local-use NAT64 prefix may embed IPv4 at any RFC 6052 offset; it is never needed for public
@@ -88,6 +93,21 @@ def check_address(address) -> None:
         raise EgressRefused("ADDRESS_NOT_PUBLIC", "flags")
 
 
+def site_key(url) -> Optional[str]:
+    """R1-02: one name per site for counting blocked sites ('b\u00fccher.de' and 'xn--bcher-kva.de' are one site);
+    None when the URL has no host."""
+    try:
+        host = (urlsplit(url).hostname or "").rstrip(".")
+    except (ValueError, TypeError, AttributeError):
+        return None
+    if not host:
+        return None
+    try:
+        return host.encode("idna").decode("ascii").lower()
+    except UnicodeError:
+        return host.lower()
+
+
 def check_url(url: str, *, allowed_ports=ALLOWED_PORTS) -> Target:
     """Parse and check a URL. Returns the connection target. Refuses anything but plain public http(s)."""
     if not isinstance(url, str) or not url or len(url) > MAX_URL_LENGTH:
@@ -124,10 +144,13 @@ def check_url(url: str, *, allowed_ports=ALLOWED_PORTS) -> Target:
             labels = host.split(".")
             if all(lab.isdigit() or lab.lower().startswith("0x") for lab in labels if lab):
                 raise EgressRefused("HOST_NUMERIC_AMBIGUOUS")
+        # R1-01: tested on the raw authority, because urlsplit lower-cases the host and KELVIN SIGN (U+212A)
+        # lower-cases to ASCII 'k'.
+        non_ascii = not host.isascii() or not parts.netloc.isascii()
         try:
             host = host.encode("idna").decode("ascii").lower()
         except UnicodeError:
-            raise EgressRefused("HOST_INVALID") from None
+            raise EgressRefused(HOST_NON_ENGLISH if non_ascii else "HOST_INVALID") from None
         # R11-02: IDNA maps full-width digits and dots to ASCII ('\uff10x5d.184.215.14' -> '0x5d.184.215.14'), so the
         # numeric checks run again on the ASCII host; a host that becomes an IP literal is checked as one.
         try:
@@ -139,6 +162,12 @@ def check_url(url: str, *, allowed_ports=ALLOWED_PORTS) -> Target:
         if all(ch in "0123456789abcdefx." for ch in host) and any(ch.isdigit() for ch in host):
             if all(lab.isdigit() or lab.startswith("0x") for lab in host.split(".") if lab):
                 raise EgressRefused("HOST_NUMERIC_AMBIGUOUS")
+        # IDN-1 (owner decision D21, 2026-10-11): a host name with any character outside ASCII, or an IDNA label
+        # ('xn--...', the same name in its ASCII form), is refused before DNS on every route (user URLs, search hits,
+        # redirects). Look-alike letters let a scam site copy a real one ('\u0440\u0430\u0443\u0440\u0430l.com'). Full-width digits that
+        # spell an IP address keep HOST_NUMERIC_AMBIGUOUS (checked above).
+        if non_ascii or any(lab.startswith("xn--") for lab in host.split(".")):
+            raise EgressRefused(HOST_NON_ENGLISH)
         # After IDNA only letters, digits, hyphens and dots may remain (no '%', '_' or anything a proxy might
         # decode into a different host), labels 1-63 characters (interim review F6).
         if not _LDH.match(host) or any(not 0 < len(lab) <= 63 for lab in host.split(".")):

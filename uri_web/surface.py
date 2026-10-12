@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 
 from uri_a2ui.surface import Surface
 
+from . import netpolicy as NP
 from . import pipeline as P
 from . import untrusted as U
 
@@ -48,6 +49,14 @@ def cite_label(url: str) -> str:
         return clean((p.hostname or "") + (p.path if p.path not in ("", "/") else ""), 120, links=False)
     except ValueError:
         return "source"
+
+
+def blocked_note(n: int) -> str:
+    """IDN-1 (D21, D18): why sites were blocked, in plain words. The addresses are not shown."""
+    if n == 1:
+        return NP.NON_ENGLISH_MESSAGE
+    return (f"Blocked {n} sites: their addresses use non-English letters. Scam sites use them to copy real sites."
+            " If you trust one, open it yourself in your browser.")
 
 
 def build_surface(result: dict) -> Surface:
@@ -115,8 +124,10 @@ def build_surface(result: dict) -> Surface:
         order.append(add({"id": "s_card", "component": "Card", "child": "s_col", "tone": "neutral"}))
 
     unavailable = [p for p in result.get("providers") or [] if p.get("status") not in ("OK", "NO_RESULTS")]
-    if unavailable or result.get("dropped_claims"):
-        notes = [f"{p['provider']}: {p['status']} ({p.get('error_code') or '-'})" for p in unavailable]
+    blocked = int(result.get("blocked_non_english") or 0)
+    if unavailable or result.get("dropped_claims") or blocked:
+        notes = [blocked_note(blocked)] if blocked else []
+        notes += [f"{p['provider']}: {p['status']} ({p.get('error_code') or '-'})" for p in unavailable]
         if result.get("dropped_claims"):
             notes.append(f"{len(result['dropped_claims'])} unsupported sentence(s) removed by citation check")
         ids = [text(f"n{i}", n, "caption") for i, n in enumerate(notes[:6])]
