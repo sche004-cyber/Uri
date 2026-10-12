@@ -98,6 +98,7 @@ class LivingApp extends StatefulWidget {
     this.attachmentOpener,
     this.initialTheme = UriThemeChoice.obsidianCyan,
     this.skipOnboarding = false,
+    this.configureServices,
   });
 
   final AppState appState;
@@ -110,6 +111,7 @@ class LivingApp extends StatefulWidget {
 
   /// Tests and the `--no-onboarding` demo path.
   final bool skipOnboarding;
+  final void Function(LivingServices)? configureServices;
 
   @override
   State<LivingApp> createState() => _LivingAppState();
@@ -122,7 +124,9 @@ class LivingApp extends StatefulWidget {
     // A2UI in the preview: only when a local scheduler service is configured (`URI_SCHEDULER_STATE`); it then
     // shows the scheduler's open surfaces (no worker, so no new handoffs).
     final scheduler = SchedulerClient.fromEnvironment();
-    final a2ui = scheduler == null ? null : (A2uiHub(scheduler: scheduler)..refresh());
+    final a2ui = scheduler == null
+        ? null
+        : (A2uiHub(scheduler: scheduler)..refresh());
     return LivingServices(
       presentation: UiPresentationController(),
       companion: CompositeCompanionSource([
@@ -148,23 +152,36 @@ class LivingApp extends StatefulWidget {
     final hub = A2uiHub(
       scheduler: SchedulerClient.fromEnvironment(),
       handoffs: oi.a2uiHandoffs,
-      onHandoffFailed: (h) => oi.handoffProducedNothing(h['turn_id'] as String?),
+      onHandoffFailed: (h) =>
+          oi.handoffProducedNothing(h['turn_id'] as String?),
     );
     hub.refresh();
     return hub;
   }
 
-  static LivingServices buildIntegratedServices(OiConversation oi) {
+  static LivingServices buildIntegratedServices(
+    OiConversation oi, {
+    bool visualV2 = false,
+  }) {
     final demo = MockCompanionSource();
-    final work = MockWorkSimulator();
+    final work = MockWorkSimulator(seed: !visualV2);
     return LivingServices(
-      presentation: UiPresentationController(),
-      companion: CompositeCompanionSource([OiCompanionSource(oi), work.companion, demo]),
+      presentation: UiPresentationController(
+        initialMode: visualV2
+            ? UiPresentationMode.dashboard
+            : UiPresentationMode.companion,
+      ),
+      companion: CompositeCompanionSource([
+        OiCompanionSource(oi),
+        work.companion,
+        demo,
+      ]),
       work: work,
       readiness: OiReadinessSource(oi),
       effects: EffectsSettings(),
       demo: demo,
       appDataIsMock: true,
+      visualV2: visualV2,
       oi: oi,
       a2ui: _a2uiHub(oi),
       // Assist always talks to the CURRENT worker (a restart replaces it and
@@ -187,6 +204,7 @@ class _LivingAppState extends State<LivingApp> {
   @override
   void initState() {
     super.initState();
+    widget.configureServices?.call(_services);
     _loadPrefs();
   }
 
@@ -218,6 +236,7 @@ class _LivingAppState extends State<LivingApp> {
 
   Future<void> setTheme(UriThemeChoice choice) async {
     setState(() => _theme = choice);
+    await _services.companionPrefs.setInterfaceTheme(choice);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(LivingPrefs.themeChoice, choice.name);
   }
@@ -267,9 +286,8 @@ class _LivingAppState extends State<LivingApp> {
                   builder: (context, _) {
                     // The selected companion decides the theme; the free theme
                     // choice applies only to the classic orb.
-                    final theme = CompanionPreferences.themeFor(
-                      prefs.choice,
-                      _theme,
+                    final theme = prefs.effectiveTheme(
+                      _services.visualV2 ? UriThemeChoice.graphite : _theme,
                     );
                     final palette = resolveUriColors(theme, platformBrightness);
                     return LivingThemeController(

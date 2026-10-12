@@ -11,8 +11,13 @@ import 'oi_markdown.dart';
 /// from answer text.
 
 class OiConversationPane extends StatefulWidget {
-  const OiConversationPane({super.key, required this.conversation});
+  const OiConversationPane({
+    super.key,
+    required this.conversation,
+    this.compact = false,
+  });
   final OiConversation conversation;
+  final bool compact;
 
   @override
   State<OiConversationPane> createState() => _OiConversationPaneState();
@@ -41,6 +46,33 @@ class _OiConversationPaneState extends State<OiConversationPane> {
       builder: (context, _) {
         final conv = widget.conversation;
         _follow();
+        if (widget.compact) {
+          return ListView(
+            controller: _scroll,
+            key: const ValueKey('oi-compact-messages'),
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            children: [
+              OiWorkerBanner(conversation: conv),
+              OiHealthBanner(conversation: conv),
+              if (conv.messages.isEmpty)
+                Text(
+                  conv.brainReady
+                      ? 'Ask URI anything to begin.'
+                      : 'The local Brain is not ready.',
+                  style: TextStyle(color: c.inkSoft),
+                ),
+              for (final message in conv.messages)
+                _MessageTile(message: message),
+              if (conv.busy)
+                TextButton.icon(
+                  key: const ValueKey('oi-cancel'),
+                  onPressed: conv.cancel,
+                  icon: const Icon(Icons.stop_rounded, size: 16),
+                  label: const Text('Stop'),
+                ),
+            ],
+          );
+        }
         return Column(
           children: [
             OiBrainBar(conversation: conv),
@@ -61,11 +93,14 @@ class _OiConversationPaneState extends State<OiConversationPane> {
                       controller: _scroll,
                       padding: const EdgeInsets.all(UriSpace.md),
                       itemCount: conv.messages.length,
-                      itemBuilder: (context, i) => _MessageTile(message: conv.messages[i]),
+                      itemBuilder: (context, i) =>
+                          _MessageTile(message: conv.messages[i]),
                     ),
             ),
-            if (conv.pendingConfirmation != null) OiConfirmationCard(conversation: conv),
-            if (conv.pendingApproval != null) OiApprovalCard(conversation: conv),
+            if (conv.pendingConfirmation != null)
+              OiConfirmationCard(conversation: conv),
+            if (conv.pendingApproval != null)
+              OiApprovalCard(conversation: conv),
             if (conv.busy)
               Padding(
                 padding: const EdgeInsets.only(bottom: UriSpace.sm),
@@ -98,13 +133,20 @@ class _MessageTile extends StatelessWidget {
           margin: const EdgeInsets.symmetric(vertical: 4),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           constraints: const BoxConstraints(maxWidth: 560),
-          decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(UriRadius.sm)),
+          decoration: BoxDecoration(
+            color: c.accentSoft,
+            borderRadius: BorderRadius.circular(UriRadius.sm),
+          ),
           child: m.inputLabel == null
               ? Text(m.text, style: TextStyle(color: c.ink))
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _Chip(m.inputLabel!, key: const ValueKey('oi-input-label'), tone: c.warning),
+                    _Chip(
+                      m.inputLabel!,
+                      key: const ValueKey('oi-input-label'),
+                      tone: c.warning,
+                    ),
                     const SizedBox(height: 4),
                     Text(m.text, style: TextStyle(color: c.ink)),
                   ],
@@ -119,12 +161,20 @@ class _MessageTile extends StatelessWidget {
       );
     }
     final chips = <Widget>[
-      if (m.tier != null) _Chip(m.tier == 'NORMAL' ? 'Thinking' : 'Fast', key: const ValueKey('oi-tier')),
+      if (m.tier != null)
+        _Chip(
+          m.tier == 'NORMAL' ? 'Thinking' : 'Fast',
+          key: const ValueKey('oi-tier'),
+        ),
       if (m.route != null && m.route != 'answer') _Chip(_routeLabel(m.route!)),
-      if (m.streaming && m.thinkingChars > 0 && m.text.isEmpty) _Chip('Reasoning… ${m.thinkingChars} chars'),
-      if (m.streaming && m.draftChars > 0 && m.text.isEmpty) _Chip('Writing… ${m.draftChars} chars'),
-      if (m.coreCode != null) _Chip(_coreLabel(m.coreCode!), tone: _coreTone(c, m.coreCode!)),
-      if (m.answerStatus != null && m.answerStatus != 'COMPLETE') _Chip(m.answerStatus!, tone: c.warning),
+      if (m.streaming && m.thinkingChars > 0 && m.text.isEmpty)
+        _Chip('Reasoning… ${m.thinkingChars} chars'),
+      if (m.streaming && m.draftChars > 0 && m.text.isEmpty)
+        _Chip('Writing… ${m.draftChars} chars'),
+      if (m.coreCode != null)
+        _Chip(_coreLabel(m.coreCode!), tone: _coreTone(c, m.coreCode!)),
+      if (m.answerStatus != null && m.answerStatus != 'COMPLETE')
+        _Chip(m.answerStatus!, tone: c.warning),
       if (m.unverifiedClaim) _Chip('Not an action receipt', tone: c.danger),
     ];
     final metrics = _metricsLine(m.metrics);
@@ -136,7 +186,8 @@ class _MessageTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (chips.isNotEmpty) Wrap(spacing: 6, runSpacing: 4, children: chips),
+            if (chips.isNotEmpty)
+              Wrap(spacing: 6, runSpacing: 4, children: chips),
             if (m.text.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
@@ -159,13 +210,20 @@ class _MessageTile extends StatelessWidget {
             if (m.errorCode != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text('${m.errorMessage ?? m.errorCode} (${m.errorCode})',
-                    key: const ValueKey('oi-error'), style: TextStyle(color: c.danger, fontSize: 12)),
+                child: Text(
+                  '${m.errorMessage ?? m.errorCode} (${m.errorCode})',
+                  key: const ValueKey('oi-error'),
+                  style: TextStyle(color: c.danger, fontSize: 12),
+                ),
               ),
             if (metrics != null)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Text(metrics, key: const ValueKey('oi-metrics'), style: TextStyle(color: c.inkFaint, fontSize: 11)),
+                child: Text(
+                  metrics,
+                  key: const ValueKey('oi-metrics'),
+                  style: TextStyle(color: c.inkFaint, fontSize: 11),
+                ),
               ),
           ],
         ),
@@ -174,27 +232,31 @@ class _MessageTile extends StatelessWidget {
   }
 
   static String _routeLabel(String r) => switch (r) {
-        'core' => 'URI Core',
-        'core+answer' => 'Core → answer',
-        'plan' => 'Plan',
-        'draft' => 'Writing desk',
-        'harness_choice' => 'Needs a tool choice',
-        'escalation_offer' => 'Needs a stronger tool',
-        _ => r,
-      };
+    'core' => 'URI Core',
+    'core+answer' => 'Core → answer',
+    'plan' => 'Plan',
+    'draft' => 'Writing desk',
+    'harness_choice' => 'Needs a tool choice',
+    'escalation_offer' => 'Needs a stronger tool',
+    _ => r,
+  };
 
   static String _coreLabel(String code) => switch (code) {
-        'SETTLED_VERIFIED' => 'Done · verified',
-        'APPROVAL_REQUIRED' => 'Approval needed',
-        'APPROVAL_DENIED' => 'Denied · nothing changed',
-        'INTENT_CONFIRMATION_REQUIRED' => 'Please confirm',
-        'CONVERSATION' => 'No action',
-        _ => code,
-      };
+    'SETTLED_VERIFIED' => 'Done · verified',
+    'APPROVAL_REQUIRED' => 'Approval needed',
+    'APPROVAL_DENIED' => 'Denied · nothing changed',
+    'INTENT_CONFIRMATION_REQUIRED' => 'Please confirm',
+    'CONVERSATION' => 'No action',
+    _ => code,
+  };
 
   static Color _coreTone(UriColors c, String code) => code == 'SETTLED_VERIFIED'
       ? c.success
-      : (code.startsWith('REFUSED') || code.contains('UNAVAILABLE') || code.contains('UNCERTAIN') ? c.danger : c.inkSoft);
+      : (code.startsWith('REFUSED') ||
+                code.contains('UNAVAILABLE') ||
+                code.contains('UNCERTAIN')
+            ? c.danger
+            : c.inkSoft);
 
   static String? _metricsLine(Map<String, dynamic> m) {
     if (m.isEmpty) return null;
@@ -202,6 +264,7 @@ class _MessageTile extends StatelessWidget {
       final v = m[k];
       return v is num ? '${v.toStringAsFixed(digits)}$unit' : null;
     }
+
     final parts = [
       if (f('ttft_s', ' s') case final x?) 'first token $x',
       ?f('predicted_per_second', ' tok/s'),
@@ -241,28 +304,43 @@ class OiApprovalCard extends StatelessWidget {
     final a = conversation.pendingApproval!;
     final inputs = (a.arguments['inputs'] as Map?) ?? a.arguments;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: UriSpace.md, vertical: UriSpace.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: UriSpace.md,
+        vertical: UriSpace.sm,
+      ),
       child: GlassPanel(
         key: const ValueKey('oi-approval-card'),
         glowBorder: true,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('URI wants to: ${a.capabilityId}', style: TextStyle(color: c.ink, fontWeight: FontWeight.w600)),
+            Text(
+              'URI wants to: ${a.capabilityId}',
+              style: TextStyle(color: c.ink, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 6),
             for (final e in inputs.entries)
-              Text('${e.key}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
+              Text(
+                '${e.key}: ${e.value}',
+                style: TextStyle(color: c.inkSoft, fontSize: 13),
+              ),
             if (a.effect != null || a.reversible != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  [if (a.effect != null) 'Effect: ${a.effect}', if (a.reversible != null) a.reversible! ? 'Reversible' : 'Not reversible']
-                      .join(' · '),
+                  [
+                    if (a.effect != null) 'Effect: ${a.effect}',
+                    if (a.reversible != null)
+                      a.reversible! ? 'Reversible' : 'Not reversible',
+                  ].join(' · '),
                   style: TextStyle(color: c.inkFaint, fontSize: 12),
                 ),
               ),
             const SizedBox(height: 4),
-            Text('Only these buttons approve. Typed text never does.', style: TextStyle(color: c.inkFaint, fontSize: 11)),
+            Text(
+              'Only these buttons approve. Typed text never does.',
+              style: TextStyle(color: c.inkFaint, fontSize: 11),
+            ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -296,20 +374,37 @@ class OiConfirmationCard extends StatelessWidget {
     final p = conversation.pendingConfirmation!;
     final args = (p.data['arguments'] as Map?) ?? const {};
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: UriSpace.md, vertical: UriSpace.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: UriSpace.md,
+        vertical: UriSpace.sm,
+      ),
       child: GlassPanel(
         key: const ValueKey('oi-confirmation-card'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(p.message ?? 'Is this what you meant?', style: TextStyle(color: c.ink)),
-            for (final e in args.entries) Text('${e.key}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
+            Text(
+              p.message ?? 'Is this what you meant?',
+              style: TextStyle(color: c.ink),
+            ),
+            for (final e in args.entries)
+              Text(
+                '${e.key}: ${e.value}',
+                style: TextStyle(color: c.inkSoft, fontSize: 13),
+              ),
             const SizedBox(height: 8),
             Row(
               children: [
-                FilledButton(key: const ValueKey('oi-confirm'), onPressed: conversation.confirm, child: const Text('Yes, continue')),
+                FilledButton(
+                  key: const ValueKey('oi-confirm'),
+                  onPressed: conversation.confirm,
+                  child: const Text('Yes, continue'),
+                ),
                 const SizedBox(width: 8),
-                OutlinedButton(onPressed: conversation.abandon, child: const Text('No')),
+                OutlinedButton(
+                  onPressed: conversation.abandon,
+                  child: const Text('No'),
+                ),
               ],
             ),
           ],
@@ -331,19 +426,36 @@ class OiBrainBar extends StatelessWidget {
     final conv = conversation;
     final state = conv.brainStatus['state'] as String? ?? 'checking';
     final health = conv.healthState;
-    final rows = [for (final r in (conv.catalog['rows'] as List? ?? const [])) if (r is Map) r];
-    final selectable = [for (final r in rows) if (r['selectable'] == true) r];
+    final rows = [
+      for (final r in (conv.catalog['rows'] as List? ?? const []))
+        if (r is Map) r,
+    ];
+    final selectable = [
+      for (final r in rows)
+        if (r['selectable'] == true) r,
+    ];
     final ready = state == 'READY';
     return Padding(
-      padding: const EdgeInsets.fromLTRB(UriSpace.md, UriSpace.sm, UriSpace.md, 0),
+      padding: const EdgeInsets.fromLTRB(
+        UriSpace.md,
+        UriSpace.sm,
+        UriSpace.md,
+        0,
+      ),
       child: Wrap(
         spacing: 8,
         runSpacing: 6,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Icon(Icons.circle,
-              size: 10,
-              color: health != null ? healthColor(c, health) : (ready ? c.success : (state == 'checking' ? c.inkFaint : c.warning))),
+          Icon(
+            Icons.circle,
+            size: 10,
+            color: health != null
+                ? healthColor(c, health)
+                : (ready
+                      ? c.success
+                      : (state == 'checking' ? c.inkFaint : c.warning)),
+          ),
           Text(
             'Brain: ${conv.brainStatus['model_id'] ?? 'Runtime v1'} · $state',
             key: const ValueKey('oi-brain-state'),
@@ -359,9 +471,14 @@ class OiBrainBar extends StatelessWidget {
               style: TextStyle(color: c.ink, fontSize: 12),
               items: [
                 for (final r in selectable)
-                  DropdownMenuItem(value: r['id'] as String, child: Text('${r['display']}')),
+                  DropdownMenuItem(
+                    value: r['id'] as String,
+                    child: Text('${r['display']}'),
+                  ),
               ],
-              onChanged: conv.busy ? null : (v) => v == null ? null : conv.selectBrain(v),
+              onChanged: conv.busy
+                  ? null
+                  : (v) => v == null ? null : conv.selectBrain(v),
             ),
           DropdownButton<OiDepth>(
             key: const ValueKey('oi-depth'),
@@ -372,8 +489,14 @@ class OiBrainBar extends StatelessWidget {
             items: const [
               DropdownMenuItem(value: OiDepth.auto, child: Text('Depth: auto')),
               DropdownMenuItem(value: OiDepth.fast, child: Text('Depth: fast')),
-              DropdownMenuItem(value: OiDepth.normal, child: Text('Depth: thinking')),
-              DropdownMenuItem(value: OiDepth.deep, child: Text('Depth: deep (offer a stronger tool)')),
+              DropdownMenuItem(
+                value: OiDepth.normal,
+                child: Text('Depth: thinking'),
+              ),
+              DropdownMenuItem(
+                value: OiDepth.deep,
+                child: Text('Depth: deep (offer a stronger tool)'),
+              ),
             ],
             onChanged: (v) => v == null ? null : conv.setDepth(v),
           ),

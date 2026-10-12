@@ -1,0 +1,99 @@
+{
+  "method": "Equal-weight regional luminance SSIM, sigma 1.5, 11px window",
+  "reference": "evidence\\reference\\owner-current.jpg",
+  "candidate": "evidence\\final\\dashboard-snowArchive-1440.png",
+  "reference_size": [
+    1280,
+    889
+  ],
+  "comparison_size": [
+    1440,
+    1000
+  ],
+  "reference_sha256": "200afc4e46749ae530d064fe8116d177a082139583d08c2ab6a6f34a114130fc",
+  "candidate_sha256": "7d06583a74aef128bdef4b2a16f59c8f762f7b128f800cdb15bd1557cd4309d0",
+  "regions": {
+    "navigation": {
+      "bounds": [
+        0,
+        0,
+        208,
+        1000
+      ],
+      "ssim": 0.9700903031937599
+    },
+    "heading_and_review": {
+      "bounds": [
+        208,
+        0,
+        1440,
+        250
+      ],
+      "ssim": 0.9449799689022775
+    },
+    "left_function_regions": {
+      "bounds": [
+        244,
+        336,
+        568,
+        696
+      ],
+      "ssim": 0.9353243301238935
+    },
+    "right_function_regions": {
+      "bounds": [
+        1080,
+        336,
+        1404,
+        696
+      ],
+      "ssim": 0.9309406253586913
+    },
+    "actual_solar_renderer": {
+      "bounds": [
+        638,
+        264,
+        1010,
+        638
+      ],
+      "ssim": 0.96369012244163
+    },
+    "state_and_details": {
+      "bounds": [
+        624,
+        638,
+        1024,
+        760
+      ],
+      "ssim": 0.9418719069663634
+    },
+    "composer": {
+      "bounds": [
+        244,
+        780,
+        1208,
+        968
+      ],
+      "ssim": 0.8473972207521967
+    },
+    "puppy_engraving": {
+      "bounds": [
+        1240,
+        722,
+        1404,
+        968
+      ],
+      "ssim": 0.4938113355914779
+    }
+  },
+  "mean_ssim": 0.8785132266662863,
+  "checkpoint": 0.8,
+  "meets_screenshot_checkpoint": true,
+  "limits": [
+    "Not a literal percentage of design accuracy or owner acceptance.",
+    "Luminance-only: theme token contrast is tested separately.",
+    "Actual Solar phase, filaments and halo differ from the reference.",
+    "Fixture audio level is injected, not recorded user audio.",
+    "Native compositor, runtime, devices and performance not verified."
+  ]
+}

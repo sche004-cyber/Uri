@@ -34,7 +34,11 @@ const wsShellPref = 'uri.ws.shell';
 bool isLegacyServerAddress(String baseUrl) {
   final u = Uri.tryParse(baseUrl);
   if (u == null) return false;
-  final local = u.host == 'localhost' || u.host == '127.0.0.1' || u.host == '::1' || u.host == '[::1]';
+  final local =
+      u.host == 'localhost' ||
+      u.host == '127.0.0.1' ||
+      u.host == '::1' ||
+      u.host == '[::1]';
   return local && u.port == 8000;
 }
 
@@ -49,6 +53,7 @@ class WorkingSystemRoot extends StatefulWidget {
     this.healthInterval = const Duration(seconds: 5),
     this.skipOnboarding = false,
     this.configureServices,
+    this.visualV2 = false,
   });
 
   /// Called once for each set of living services the root builds (after a
@@ -69,6 +74,9 @@ class WorkingSystemRoot extends StatefulWidget {
   /// Health polling and liveness monitor period (WS hardening).
   final Duration healthInterval;
   final bool skipOnboarding;
+
+  /// Candidate composition only; worker authority and lifecycle stay unchanged.
+  final bool visualV2;
 
   @override
   State<WorkingSystemRoot> createState() => _WorkingSystemRootState();
@@ -106,17 +114,30 @@ class _WorkingSystemRootState extends State<WorkingSystemRoot> {
     });
     try {
       final rt = await widget.connect();
-      if (rt == null) throw IntegratedRuntimeException('INTEGRATED_PROFILE_NOT_CONFIGURED');
+      if (rt == null) {
+        throw IntegratedRuntimeException('INTEGRATED_PROFILE_NOT_CONFIGURED');
+      }
       // Restart URI (R-BUSY) starts a fresh worker through the same connect path.
       final conv = OiConversation(rt, respawn: widget.connect);
       _runtime = rt;
       _conv = conv;
-      _appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
-      _services = LivingApp.buildIntegratedServices(conv);
+      _appState = AppState(
+        MockUriClient(),
+        preferencesStore: LivingPreferencesStore(),
+      );
+      _services = LivingApp.buildIntegratedServices(
+        conv,
+        visualV2: widget.visualV2,
+      );
       widget.configureServices?.call(_services!);
       await conv.refreshStatus();
-      unawaited(_services!.readiness.refresh()); // harness discovery for the readiness views (read-only)
-      _status = Timer.periodic(widget.statusInterval, (_) => conv.refreshStatus());
+      unawaited(
+        _services!.readiness.refresh(),
+      ); // harness discovery for the readiness views (read-only)
+      _status = Timer.periodic(
+        widget.statusInterval,
+        (_) => conv.refreshStatus(),
+      );
       conv.startMonitor(widget.healthInterval);
     } on IntegratedRuntimeException catch (e) {
       _error = e.code;
@@ -129,7 +150,8 @@ class _WorkingSystemRootState extends State<WorkingSystemRoot> {
   Future<void> _disconnect() async {
     _status?.cancel();
     _status = null;
-    final rt = _conv?.runtime ?? _runtime; // a restarted worker replaces the first one
+    final rt =
+        _conv?.runtime ?? _runtime; // a restarted worker replaces the first one
     _runtime = null;
     _services?.dispose();
     _services = null;
@@ -180,7 +202,12 @@ class _WorkingSystemRootState extends State<WorkingSystemRoot> {
 }
 
 class _StatusApp extends StatelessWidget {
-  const _StatusApp({required this.connecting, required this.error, required this.onRetry, required this.onClassic});
+  const _StatusApp({
+    required this.connecting,
+    required this.error,
+    required this.onRetry,
+    required this.onClassic,
+  });
   final bool connecting;
   final String? error;
   final VoidCallback onRetry;
@@ -188,7 +215,10 @@ class _StatusApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = resolveUriColors(UriThemeChoice.obsidianCyan, Brightness.dark);
+    final palette = resolveUriColors(
+      UriThemeChoice.obsidianCyan,
+      Brightness.dark,
+    );
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: buildUriTheme(palette),
@@ -199,12 +229,19 @@ class _StatusApp extends StatelessWidget {
             children: [
               if (connecting) const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              Text(connecting ? 'Starting URI…' : 'URI could not start: ${error ?? 'unknown'}',
-                  key: const ValueKey('ws-status')),
+              Text(
+                connecting
+                    ? 'Starting URI…'
+                    : 'URI could not start: ${error ?? 'unknown'}',
+                key: const ValueKey('ws-status'),
+              ),
               if (!connecting) ...[
                 const SizedBox(height: 16),
                 FilledButton(onPressed: onRetry, child: const Text('Retry')),
-                TextButton(onPressed: onClassic, child: const Text('Open the classic interface')),
+                TextButton(
+                  onPressed: onClassic,
+                  child: const Text('Open the classic interface'),
+                ),
               ],
             ],
           ),
@@ -217,13 +254,20 @@ class _StatusApp extends StatelessWidget {
 /// Shown instead of the classic interface when its saved server address is
 /// the legacy instance. The working system never contacts it.
 class LegacyServerBlocked extends StatelessWidget {
-  const LegacyServerBlocked({super.key, required this.baseUrl, required this.back});
+  const LegacyServerBlocked({
+    super.key,
+    required this.baseUrl,
+    required this.back,
+  });
   final String baseUrl;
   final VoidCallback back;
 
   @override
   Widget build(BuildContext context) {
-    final palette = resolveUriColors(UriThemeChoice.obsidianCyan, Brightness.dark);
+    final palette = resolveUriColors(
+      UriThemeChoice.obsidianCyan,
+      Brightness.dark,
+    );
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: buildUriTheme(palette),
@@ -241,7 +285,10 @@ class LegacyServerBlocked extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                FilledButton(onPressed: back, child: const Text('Back to Living Companion')),
+                FilledButton(
+                  onPressed: back,
+                  child: const Text('Back to Living Companion'),
+                ),
               ],
             ),
           ),

@@ -117,6 +117,17 @@ const a2uiActions = <String, Map<String, String>>{
   'surface.dismiss': {},
 };
 
+/// Trusted host policy. Runtime messages cannot select or extend this policy.
+/// The default remains the exact Python-mirrored runtime catalog.
+class A2uiPolicy {
+  const A2uiPolicy({
+    this.catalogId = a2uiCatalogId,
+    this.actions = a2uiActions,
+  });
+  final String catalogId;
+  final Map<String, Map<String, String>> actions;
+}
+
 class A2uiError {
   const A2uiError(this.code, this.path, [this.message = '']);
   final String code;
@@ -176,6 +187,7 @@ List<A2uiError> checkValue(
   Object? v,
   String path, [
   Set<String>? allowedActions,
+  A2uiPolicy policy = const A2uiPolicy(),
 ]) {
   A2uiError e(String c, [String m = '']) => A2uiError(c, path, m);
   if (kind == 'text') {
@@ -245,11 +257,18 @@ List<A2uiError> checkValue(
     if (values.length != v.length) errs.add(e('DUPLICATE_OPTION'));
     return errs;
   }
-  if (kind == 'action') return _checkActionDecl(v, path, allowedActions);
+  if (kind == 'action') {
+    return _checkActionDecl(v, path, allowedActions, policy);
+  }
   return [e('UNKNOWN_KIND', kind)];
 }
 
-List<A2uiError> _checkActionDecl(Object? v, String path, Set<String>? allowed) {
+List<A2uiError> _checkActionDecl(
+  Object? v,
+  String path,
+  Set<String>? allowed,
+  A2uiPolicy policy,
+) {
   final ev = v is Map && v.length == 1 ? v['event'] : null;
   if (ev is! Map ||
       !ev.containsKey('name') ||
@@ -260,7 +279,7 @@ List<A2uiError> _checkActionDecl(Object? v, String path, Set<String>? allowed) {
   }
   final name = ev['name'];
   final ctx = ev['context'] ?? <String, dynamic>{};
-  if (name is! String || !a2uiActions.containsKey(name)) {
+  if (name is! String || !policy.actions.containsKey(name)) {
     return [A2uiError('UNKNOWN_ACTION', path)];
   }
   if (allowed != null && !allowed.contains(name)) {
@@ -269,7 +288,7 @@ List<A2uiError> _checkActionDecl(Object? v, String path, Set<String>? allowed) {
   if (ctx is! Map || ctx.length > a2uiMaxContextKeys) {
     return [A2uiError('BAD_CONTEXT', path)];
   }
-  final schema = a2uiActions[name]!;
+  final schema = policy.actions[name]!;
   final errs = <A2uiError>[];
   ctx.forEach((k, val) {
     if (!schema.containsKey(k)) {
@@ -315,6 +334,7 @@ List<A2uiError> validateComponents(
   Object? components, [
   Set<String>? allowedActions,
   String path = '/components',
+  A2uiPolicy policy = const A2uiPolicy(),
 ]) {
   final errs = <A2uiError>[];
   if (components is! List || components.isEmpty) {
@@ -355,7 +375,7 @@ List<A2uiError> validateComponents(
         errs.add(A2uiError('UNKNOWN_PROPERTY', '$p/$k', '$type.$k'));
         return;
       }
-      errs.addAll(checkValue(spec[k]!, v, '$p/$k', allowedActions));
+      errs.addAll(checkValue(spec[k]!, v, '$p/$k', allowedActions, policy));
     });
     for (final k in a2uiRequired[type] ?? const <String>[]) {
       if (!comp.containsKey(k)) {
@@ -494,6 +514,7 @@ List<A2uiError> validateMessage(
   Object? msg,
   String Function(Object?) encode, [
   Set<String>? allowedActions,
+  A2uiPolicy policy = const A2uiPolicy(),
 ]) {
   if (!nestingOk(msg)) {
     return [
@@ -518,7 +539,7 @@ List<A2uiError> validateMessage(
   if (extra.isNotEmpty) return [A2uiError('UNKNOWN_FIELD', '/$kind')];
   if (kind == 'createSurface') {
     final errs = <A2uiError>[];
-    if (body['catalogId'] != a2uiCatalogId) {
+    if (body['catalogId'] != policy.catalogId) {
       errs.add(A2uiError('UNKNOWN_CATALOG', '/$kind/catalogId'));
     }
     final theme = body['theme'] ?? <String, dynamic>{};
@@ -543,6 +564,7 @@ List<A2uiError> validateMessage(
       body['components'],
       allowedActions,
       '/$kind/components',
+      policy,
     );
   }
   if (kind == 'updateDataModel') {

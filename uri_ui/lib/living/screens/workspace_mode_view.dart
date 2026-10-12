@@ -49,6 +49,8 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      final services = LivingScope.of(context);
+      if (services.visualV2 && services.oi != null) return;
       final s = AppStateScope.of(context);
       s.loadTasks();
       if (s.activeBrain == null) s.loadActiveBrain();
@@ -405,7 +407,13 @@ class _OiWithDraft extends StatelessWidget {
                 const SizedBox(width: UriSpace.sm),
                 SizedBox(
                   width: (box.maxWidth * 0.45).clamp(360.0, 560.0),
-                  child: Padding(padding: const EdgeInsets.only(top: UriSpace.sm, bottom: UriSpace.sm), child: panel),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      top: UriSpace.sm,
+                      bottom: UriSpace.sm,
+                    ),
+                    child: panel,
+                  ),
                 ),
               ],
             );
@@ -413,7 +421,10 @@ class _OiWithDraft extends StatelessWidget {
           return Column(
             children: [
               Expanded(child: pane),
-              ConstrainedBox(constraints: BoxConstraints(maxHeight: box.maxHeight * 0.55), child: panel),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: box.maxHeight * 0.55),
+                child: panel,
+              ),
             ],
           );
         },
@@ -458,6 +469,21 @@ class TasksRegion extends StatelessWidget {
             UriSpace.lg,
           ),
           children: [
+            if (services.visualV2 &&
+                services.oi == null &&
+                appState.isLoadingTasks)
+              const Text('Loading pending decisions…'),
+            if (services.visualV2 &&
+                services.oi == null &&
+                appState.tasksError != null)
+              ListTile(
+                title: const Text('Pending decisions unavailable'),
+                subtitle: Text(appState.tasksError!),
+                trailing: TextButton(
+                  onPressed: appState.loadTasks,
+                  child: const Text('Retry'),
+                ),
+              ),
             if (services.a2ui != null)
               A2uiDock(
                 hub: services.a2ui!,
@@ -468,13 +494,23 @@ class TasksRegion extends StatelessWidget {
             Eyebrow(
               'Needs your decision',
               trailing: Text(
-                '${waiting.length + pending.length}',
+                '${waiting.length + pending.length + (services.visualV2 && services.oi?.pendingApproval != null ? 1 : 0) + (services.visualV2 && services.oi?.pendingConfirmation != null ? 1 : 0)}',
                 style: TextStyle(fontSize: 11, color: c.inkFaint),
               ),
             ),
             const SizedBox(height: 8),
-            if (waiting.isEmpty && pending.isEmpty)
+            if (waiting.isEmpty &&
+                pending.isEmpty &&
+                (!services.visualV2 ||
+                    (services.oi?.pendingApproval == null &&
+                        services.oi?.pendingConfirmation == null)) &&
+                (!services.visualV2 ||
+                    (!appState.isLoadingTasks && appState.tasksError == null)))
               _EmptyLine('Nothing is waiting for you.'),
+            if (services.visualV2 && services.oi?.pendingConfirmation != null)
+              OiConfirmationCard(conversation: services.oi!),
+            if (services.visualV2 && services.oi?.pendingApproval != null)
+              OiApprovalCard(conversation: services.oi!),
             for (final w in waiting) _WorkApprovalCard(item: w),
             for (final t in pending) _PendingTaskCard(task: t),
             const SizedBox(height: UriSpace.lg),
@@ -793,6 +829,13 @@ class DocumentsRegion extends StatelessWidget {
                     icon: icon,
                     label: label,
                     onTap: () {
+                      if (services.visualV2 && !services.appDataIsMock) {
+                        AppStateScope.of(context).ask(title);
+                        services.presentation.setFocus(
+                          WorkspaceFocus.conversation,
+                        );
+                        return;
+                      }
                       services.work.create(title: title, kind: kind);
                       services.presentation.setFocus(WorkspaceFocus.tasks);
                     },
@@ -961,6 +1004,20 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
             if (services.oi != null) ...[
               WorkingSystemSettingsSection(conversation: services.oi!),
             ],
+            if (services.classicInterfaceBuilder != null)
+              ListTile(
+                title: const Text('All settings and diagnostics'),
+                subtitle: const Text(
+                  'Open existing authentication, devices, connections and operational screens',
+                ),
+                trailing: const Icon(Icons.open_in_new),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: services.classicInterfaceBuilder!,
+                  ),
+                ),
+              ),
+            if (services.visualV2) const CompanionSettingsSection(),
             Eyebrow(
               'Harness',
               trailing: services.readiness.isSimulated
@@ -1053,7 +1110,7 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
             const SizedBox(height: UriSpace.lg),
             // Companion, appearance, performance and voice: one section, in
             // the selected companion's own theme.
-            const CompanionSettingsSection(),
+            if (!services.visualV2) const CompanionSettingsSection(),
           ],
         );
       },
@@ -1324,11 +1381,24 @@ class _ContextPanel extends StatelessWidget {
               _KeyValue('Harness', harness?.displayName ?? 'None selected'),
               // Working system: the real Brain selection and state from the integrated worker.
               if (oi != null) ...[
-                _KeyValue('Brain', oi.selectedRowId == 'runtime-v1' ? 'Runtime v1 (local)' : (oi.selectedRowId == 'deterministic' ? 'No Brain (deterministic rules)' : oi.selectedRowId)),
-                _KeyValue('Model', '${oi.brainStatus['model_id'] ?? '—'} · ${oi.brainStatus['state'] ?? '…'}'),
+                _KeyValue(
+                  'Brain',
+                  oi.selectedRowId == 'runtime-v1'
+                      ? 'Runtime v1 (local)'
+                      : (oi.selectedRowId == 'deterministic'
+                            ? 'No Brain (deterministic rules)'
+                            : oi.selectedRowId),
+                ),
+                _KeyValue(
+                  'Model',
+                  '${oi.brainStatus['model_id'] ?? '—'} · ${oi.brainStatus['state'] ?? '…'}',
+                ),
                 _KeyValue('Reasoning', 'Depth ${oi.depth.name}'),
                 // Core requires an explicit approval for every action; nothing here is a preference.
-                _KeyValue('Approvals', 'Every action needs your approval (Core)'),
+                _KeyValue(
+                  'Approvals',
+                  'Every action needs your approval (Core)',
+                ),
               ] else ...[
                 _KeyValue(
                   'Brain',
@@ -1342,7 +1412,8 @@ class _ContextPanel extends StatelessWidget {
               if (oi == null)
                 _KeyValue(
                   'Approvals',
-                  appState.preferences.autonomyLevel == AutonomyLevel.askEveryTime
+                  appState.preferences.autonomyLevel ==
+                          AutonomyLevel.askEveryTime
                       ? 'Ask every time'
                       : 'Routine auto-approve',
                 ),

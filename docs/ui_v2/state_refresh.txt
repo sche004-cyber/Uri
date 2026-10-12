@@ -1,0 +1,20 @@
+{
+  "baseline": "1b5423bc15fd7e5da9161c862cf839925da9f2eb",
+  "branch": "ui/companion-v2-visual-qualification",
+  "candidate_committed": true,
+  "candidate_commit": "See git HEAD and external lifecycle receipt; local snapshot only",
+  "flutter_tests": {
+    "passed": 566,
+    "skipped": 5,
+    "success": true
+  },
+  "native_orbit_animation": "IMPLEMENTED candidate: existing paced clock, 180s orbit; proximity/focus/chat/reduced-motion pause; native behavior NOT VERIFIED",
+  "chat_design": "OWNER APPROVED 2026-10-13: Detached chat, reference evidence/reference/companion-approved.jpg",
+  "wake_phrase": "UNSUPPORTED by inspected accepted voice baseline",
+  "independent_review": "Fresh exact-commit lifecycle review pending; unavailable reviewer must not imply acceptance",
+  "integration": "NONE",
+  "deployment": "NONE",
+  "test_log": "regression_matched.jsonl",
+  "artwork": "Background-removed derivative, faded unframed steel engraving at bottom right",
+  "visual_reference_comparison": "dashboard-review.html; see VISUAL_QUALIFICATION.md for scope and discrepancies"
+}

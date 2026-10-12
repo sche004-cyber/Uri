@@ -1,0 +1,106 @@
+00:00 +0: loading C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart
+00:00 +0: every accepted design is represented once with original renderer and theme
+00:00 +1: all design/theme combinations preserve renderer identity; original follows
+00:00 +2: restart persistence, legacy Classic migration and unknown reference fallback
+00:00 +3: Ivory Foundry: text, focus and status contrast
+00:00 +4: Snow Archive: text, focus and status contrast
+00:00 +5: Ash & Limestone: text, focus and status contrast
+00:00 +6: single click acknowledges once; detached Chat sends through shared service
+00:01 +7: double click suppresses single click and preserves shared draft
+00:01 +8: gallery Cancel isolates identity, theme and active conversation; Apply persists
+00:02 +9: dashboard responsive 1440.0x1000.0
+00:02 +10: dashboard responsive 1920.0x1080.0
+00:03 +11: dashboard responsive 1024.0x768.0
+00:03 +12: dashboard responsive 390.0x844.0
+00:03 +13: dashboard responsive 360.0x560.0
+00:03 +14: floating controls fit both sizes without covering the Companion
+00:03 +15: text-sized controls keep click targets and separate at 200% text
+00:03 +16: full orbit preserves circular clearance and detached panel separation
+00:03 +17: detached chat at 200 percent text Size(360.0, 560.0)
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 118 pixels on the bottom.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:435:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart line 435
+The test description was:
+  detached chat at 200 percent text Size(360.0, 560.0)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:03 +17 -1: detached chat at 200 percent text Size(360.0, 560.0) [E]
+  Test failed. See exception logs above.
+  The test description was: detached chat at 200 percent text Size(360.0, 560.0)
+  
+00:03 +17 -1: detached chat at 200 percent text Size(440.0, 680.0)
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 19 pixels on the bottom.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:435:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart line 435
+The test description was:
+  detached chat at 200 percent text Size(440.0, 680.0)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:03 +17 -2: detached chat at 200 percent text Size(440.0, 680.0) [E]
+  Test failed. See exception logs above.
+  The test description was: detached chat at 200 percent text Size(440.0, 680.0)
+  
+00:03 +17 -2: orbit stops for nearby pointer, open chat and reduced motion
+00:04 +18 -2: viewer exposes every existing design and state with one isolated renderer
+00:07 +19 -2: 200 percent text keeps dashboard navigation and chat reachable
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 21 pixels on the bottom.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:562:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart line 562
+The test description was:
+  200 percent text keeps dashboard navigation and chat reachable
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:07 +19 -3: 200 percent text keeps dashboard navigation and chat reachable [E]
+  Test failed. See exception logs above.
+  The test description was: 200 percent text keeps dashboard navigation and chat reachable
+  
+00:07 +19 -3: local A2UI catalog is isolated from runtime authority
+00:07 +20 -3: floating controls omit unavailable actions and preserve shared draft
+00:07 +21 -3: existing voice visual follows listening, user speech and URI speech
+00:07 +22 -3: generated voice actions require a click and start or cancel once
+00:07 +23 -3: login guards duplicate submits, obscures password and shows real errors
+00:08 +24 -3: Some tests failed.
+
+Failing tests:
+  C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart: 200 percent text keeps dashboard navigation and chat reachable
+  C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart: detached chat at 200 percent text Size(360.0, 560.0)
+  C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart: detached chat at 200 percent text Size(440.0, 680.0)
