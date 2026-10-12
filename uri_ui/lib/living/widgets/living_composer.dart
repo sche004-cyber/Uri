@@ -95,11 +95,11 @@ class _LivingComposerState extends State<LivingComposer> {
       appState.clearComposerDraft();
       return;
     }
-    final office = services.activeOfficeTarget();
+    final office = services.officeInFocus();
     if (office != null) {
-      // Office focus with a workbook open: the request is about the sheet. It only asks URI to suggest changes;
-      // accepting and saving stay buttons in the Office pane.
-      if (office.busy) return;
+      // Office focus: the request is about the sheet. It only asks URI to suggest changes; accepting and saving stay
+      // buttons in the Office pane. With no workbook open nothing is sent (the text stays here).
+      if (office.busy || !office.acceptsRequests) return;
       _controller.clear();
       appState.clearComposerDraft();
       await office.instruct(text);
@@ -143,7 +143,7 @@ class _LivingComposerState extends State<LivingComposer> {
         services.presentation,
       ]),
       builder: (context, _) {
-        final office = services.activeOfficeTarget();
+        final office = services.officeInFocus();
         final sending = office != null
             ? office.busy
             : oi != null
@@ -217,7 +217,7 @@ class _LivingComposerState extends State<LivingComposer> {
                         style: TextStyle(color: c.ink, fontSize: 14),
                         decoration: InputDecoration(
                           hintText: office != null
-                              ? 'Ask URI to change this sheet'
+                              ? (office.acceptsRequests ? 'Ask URI to change this sheet' : 'Open a workbook first')
                               : oi != null && oi.dictationMode
                               ? 'Dictation — written as draft text, never carried out'
                               : oi != null && oi.transcriptMode

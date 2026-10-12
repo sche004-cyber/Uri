@@ -76,7 +76,9 @@ class _OfficeRegionState extends State<OfficeRegion> {
       return;
     }
     final surface = env.surfaceFactory();
-    final c = OfficeController(client: client, surface: surface);
+    // Read without registering a dependency: this runs from initState.
+    final keep = context.getInheritedWidgetOfExactType<LivingScope>()?.services.officeKeep;
+    final c = OfficeController(client: client, surface: surface, keep: keep);
     try {
       await surface.start();
     } catch (e) {
@@ -90,6 +92,7 @@ class _OfficeRegionState extends State<OfficeRegion> {
     }
     setState(() => _c = c);
     _claim();
+    await c.resume();                    // the workbook kept while the owner was away from Office (R1-02)
   }
 
   @override

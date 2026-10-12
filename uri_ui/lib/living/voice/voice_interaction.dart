@@ -78,8 +78,9 @@ class VoiceInteractionController extends CompanionStateSource {
   /// could not be sent), so spoken words are never silently lost.
   final void Function(String text)? keepInComposer;
 
-  /// The open Office workbook when the owner is working in it (else null). A finished transcript then goes to it
-  /// like typed text in the Office pane: it only asks URI to suggest changes; accepting and saving stay buttons.
+  /// The Office region's target while the owner is in it (else null). A finished transcript then goes to the open
+  /// workbook like typed text in the Office pane: it only asks URI to suggest changes; accepting and saving stay
+  /// buttons. With no workbook open it is kept in the composer and nothing is sent.
   final OfficeRequestTarget? Function()? officeTarget;
 
   /// Replies longer than this are cut at a sentence end; the rest stays on
@@ -253,6 +254,15 @@ class VoiceInteractionController extends CompanionStateSource {
     }
     final office = officeTarget?.call();
     if (office != null) {
+      if (!office.acceptsRequests) {
+        keepInComposer?.call(text);
+        _setStage(VoiceStage.idle);
+        _setNotice(
+          'NO_WORKBOOK',
+          'Open a workbook first. Your words are in the composer; nothing was sent.',
+        );
+        return;
+      }
       if (office.busy) {
         keepInComposer?.call(text);
         _setStage(VoiceStage.idle);

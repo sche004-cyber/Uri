@@ -65,6 +65,8 @@ class OfficeClient {
   Future<Map<String, dynamic>> openLocal(String path) => _post('/open/local', {'path': path});
   Future<Map<String, dynamic>> openGoogle(String url) => _post('/open/google', {'url': url});
   Future<Map<String, dynamic>> view(String wid) => _get('/workbook/$wid');
+  /// The workbook's open approval cards (A2UI messages), to show them again after the panel is rebuilt.
+  Future<Map<String, dynamic>> surfaces(String wid) => _get('/a2ui/surfaces?workbook=${Uri.encodeQueryComponent(wid)}');
   Future<Map<String, dynamic>> reload(String wid) => _post('/workbook/$wid/reload');
   Future<Map<String, dynamic>> edit(String wid, Map<String, dynamic> edit) => _post('/workbook/$wid/edit', edit);
   Future<Map<String, dynamic>> decide(String wid, String changeId, String decision, String sha, {String reason = ''}) =>

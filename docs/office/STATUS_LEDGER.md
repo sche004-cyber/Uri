@@ -129,3 +129,14 @@ Receipt `docs/office/review-c/` (candidate `e6a4dcd5`, baseline `ce1a90c`, 1 rou
 | R1-06 shared files converted LF->CRLF | `analysis_options.yaml`, `living_scope.dart`, `presentation_controller.dart`, `workspace_mode_view.dart`, `main.dart`, `pubspec.yaml` restored to LF; their diffs vs `ce1a90c` are now 2/23/1/5/5/3 added lines instead of whole-file rewrites | `tests/office/test_review_c_repairs.py` |
 
 PC gates after the repair: `tests/office` 247 passed / 3 skipped; `flutter test` 534 passed / 5 skipped; `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok.
+
+## 2026-10-12, review URI-OFFICE-M1-c2 VERIFIED (R1 ACCEPT WITH FINDINGS) and owner-approved repairs
+
+Receipt `docs/office/review-c2/` (candidate `0dbb7bda`, baseline `ce1a90c`, 1 round, no repairs, 4 LOW non-blocking findings; the M1-c R1-01 and R1-06 repairs are no longer findings). Owner: "Approved recommendations" (fix R1-01 and R1-02; R1-03 and R1-04 stay open, to be handled at the merge step).
+
+| Finding | Repair | Tests |
+|---|---|---|
+| R1-01 before a workbook is open, the Office composer invites sheet requests and sends them to the hidden ordinary conversation | `LivingServices.officeInFocus()`: in Office focus the composer and push-to-talk belong to Office. With no workbook open the hint says "Open a workbook first", nothing is sent, typed text stays in the composer and spoken text is put there with notice `NO_WORKBOOK` | `office_companion_test.dart` (inside the living UI), `live_voice_test.dart` (NO_WORKBOOK) |
+| R1-02 leaving Office focus closes the workbook and drops accepted but unsaved changes without warning | Leaving no longer closes the workbook: `LivingServices.officeKeep` remembers the workbook id and conversation; on return `OfficeController.resume()` reloads the view, draft and open approval cards from the service and says "Your unsaved changes to <name> are still here." If the service no longer has it (restart), the keep is cleared and the owner is told. Opening another workbook closes the replaced one in the service | `office_companion_test.dart` (leave and return keeps the accepted change and conversation; unknown workbook reported; replaced workbook closed) |
+
+PC gates: `flutter test` 536 passed / 5 skipped; `flutter analyze` 2 pre-existing infos. Fail-before for these tests: they do not compile against the unrepaired code (the new `officeKeep` / `officeInFocus` API), so they cannot pass there; the behaviour checks are the assertions listed. Not verified on the PC with the real Brain and WebView2: leave-and-return (no GPU override was requested for it).

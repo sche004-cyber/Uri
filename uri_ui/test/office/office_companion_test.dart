@@ -47,7 +47,8 @@ final _uriChange = {
 };
 
 /// A fake Office service: records each request; `instruct` proposes one change with a reply.
-(OfficeClient, Map<String, List<Map<String, dynamic>>>) _service({String message = 'I will write it in C2.'}) {
+(OfficeClient, Map<String, List<Map<String, dynamic>>>) _service(
+    {String message = 'I will write it in C2.', bool gone = false}) {
   final calls = <String, List<Map<String, dynamic>>>{};
   final mock = MockClient((req) async {
     final body = req.body.isEmpty ? <String, dynamic>{} : jsonDecode(req.body) as Map<String, dynamic>;
@@ -59,6 +60,14 @@ final _uriChange = {
       case '/workbook/w1/instruct':
         return http.Response(jsonEncode({'message': message, 'proposed': [_uriChange], 'refused': [], 'metrics': {},
           'draft': _draft([_uriChange])}), 200);
+      case '/workbook/w1/decide':
+        return http.Response(jsonEncode({'draft': _draft([{..._uriChange, 'state': 'accepted'}])}), 200);
+      case '/workbook/w1':        // GET view: the service still holds the workbook with the accepted change
+        if (gone) return http.Response(jsonEncode({'error': 'UNKNOWN_WORKBOOK'}), 404);
+        return http.Response(jsonEncode({'workbook_id': 'w1', 'engine': 'local', 'label': 'book.xlsx',
+          'workbook': _workbook, 'draft': _draft([{..._uriChange, 'state': 'accepted'}]), 'history_on': false}), 200);
+      case '/a2ui/surfaces':
+        return http.Response(jsonEncode({'messages': []}), 200);
     }
     return http.Response(jsonEncode({'error': 'NOT_FOUND'}), 404);
   });
@@ -163,7 +172,9 @@ void main() {
     // R1-01 (review URI-OFFICE-M1-c): the conversation and approval card of the previous workbook stayed in the pane.
     test('opening another workbook clears the previous conversation and approval card', () async {
       var opened = 0;
+      final closed = <String>[];
       final mock = MockClient((req) async {
+        if (req.url.path.endsWith('/close')) closed.add(req.url.path);
         switch (req.url.path) {
           case '/open/local':
             final id = 'w${++opened}';
@@ -198,6 +209,8 @@ void main() {
       expect(c.conversation, isEmpty);
       expect(c.brainMessage, isNull);
       expect(c.hub.surfaces, isEmpty);
+      await Future<void>.delayed(Duration.zero);
+      expect(closed, ['/workbook/w1/close'], reason: 'the replaced workbook is closed in the service');
     });
 
     test('the conversation is capped', () async {
@@ -254,6 +267,16 @@ void main() {
       expect(find.byKey(const ValueKey('office-ask')), findsNothing);
       expect(services.officeTarget.value, isA<OfficeController>(), reason: 'the region registers its workbook');
       expect(services.activeOfficeTarget(), isNull, reason: 'nothing is open yet');
+      // R1-01 (review M1-c2): before a workbook is open the pane's composer does not invite sheet requests and sends
+      // nothing, not even to the hidden ordinary conversation (sending would clear the field).
+      expect(find.text('Open a workbook first'), findsOneWidget);
+      await tester.enterText(find.byKey(const ValueKey('living-composer-field')), 'Sum column B');
+      await tester.tap(find.byKey(const ValueKey('living-composer-send')));
+      await tester.pumpAndSettle();
+      expect(find.text('Sum column B'), findsOneWidget, reason: 'the text stays in the composer');
+      expect(appState.isSendingAsk, isFalse);
+      expect(calls.keys.where((k) => k.contains('instruct')), isEmpty);
+      await tester.enterText(find.byKey(const ValueKey('living-composer-field')), '');
 
       surface.ctl.add({'type': 'ready'});
       await tester.tap(find.byKey(const ValueKey('office-open-file')));
@@ -272,10 +295,44 @@ void main() {
       expect(find.byKey(const ValueKey('office-change-c1')), findsOneWidget);
       expect(calls['/workbook/w1/decide'], isNull, reason: 'a request never accepts a change');
 
-      // Leaving the region releases the workbook: requests go back to the ordinary conversation.
+      await tester.tap(find.text('Accept'));
+      await tester.pumpAndSettle();
+
+      // Leaving the region releases the target: requests go back to the ordinary conversation. R1-02 (review M1-c2):
+      // the workbook is not closed, so the accepted but unsaved change survives.
       await tester.pumpWidget(_scoped(appState, services, const SizedBox()));
       await tester.pumpAndSettle();
       expect(services.officeTarget.value, isNull);
+      expect(calls['/workbook/w1/close'], isNull);
+      expect(services.officeKeep.workbookId, 'w1');
+
+      // Coming back shows the same workbook, its change and the conversation.
+      await tester.pumpWidget(_scoped(appState, services,
+          OfficeRegion(environment: _env(FakeSurface()), clientFactory: () => client)));
+      await tester.pumpAndSettle();
+      final back = services.officeTarget.value as OfficeController;
+      expect(back.workbookId, 'w1');
+      expect(back.changes.single['state'], 'accepted');
+      expect(find.text('URI: I will write it in C2.'), findsOneWidget);
+      expect(find.textContaining('unsaved changes to book.xlsx are still here'), findsOneWidget);
+      expect(calls['/workbook/w1/close'], isNull);
+    });
+
+    testWidgets('a kept workbook the service no longer has is reported, not guessed', (tester) async {
+      final appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
+      final services = _services();
+      addTearDown(services.dispose);
+      services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.office);
+      services.officeKeep
+        ..workbookId = 'w1'
+        ..conversation = const [OfficeTurn(OfficeSpeaker.owner, 'old request')];
+      final (client, _) = _service(gone: true);
+      await tester.pumpWidget(_scoped(appState, services,
+          OfficeRegion(environment: _env(FakeSurface()), clientFactory: () => client)));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('no longer open in URI Office'), findsOneWidget);
+      expect(services.officeKeep.workbookId, isNull);
+      expect(find.text('old request'), findsNothing);
     });
 
     testWidgets('outside Office focus the composer keeps the ordinary conversation', (tester) async {

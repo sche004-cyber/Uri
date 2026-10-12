@@ -134,13 +134,24 @@ class LivingServices {
   /// The workbook open in the Office region, while that region is shown. The Office region sets and clears it.
   final ValueNotifier<OfficeRequestTarget?> officeTarget = ValueNotifier<OfficeRequestTarget?>(null);
 
-  /// Where the companion's requests go now: the open workbook when the owner is in the Office region with a
-  /// workbook open, otherwise null (the ordinary conversation).
-  OfficeRequestTarget? activeOfficeTarget() {
+  /// The workbook kept open while the owner is away from the Office region (R1-02, review URI-OFFICE-M1-c2).
+  final OfficeKeep officeKeep = OfficeKeep();
+
+  /// The Office region's target while the owner is in it (Workspace mode, Office focus), open workbook or not.
+  /// Requests typed or spoken there belong to Office: with no workbook open they are refused, never sent to the
+  /// hidden ordinary conversation (R1-01, review URI-OFFICE-M1-c2).
+  OfficeRequestTarget? officeInFocus() {
     final t = officeTarget.value;
-    if (t == null || !t.acceptsRequests) return null;
+    if (t == null) return null;
     if (presentation.mode != UiPresentationMode.workspace || presentation.focus != WorkspaceFocus.office) return null;
     return t;
+  }
+
+  /// Where the companion's requests go now: the open workbook when the owner is in the Office region with a
+  /// workbook open, otherwise null.
+  OfficeRequestTarget? activeOfficeTarget() {
+    final t = officeInFocus();
+    return t != null && t.acceptsRequests ? t : null;
   }
 
   /// The adapter currently feeding [voice], if any.
@@ -180,7 +191,7 @@ class LivingServices {
       oi: oi,
       dictation: dictation,
       keepInComposer: (text) => composerInsert.value = text,
-      officeTarget: activeOfficeTarget,
+      officeTarget: officeInFocus,
     );
     voiceInteraction = controller;
     companion.addSource(controller);

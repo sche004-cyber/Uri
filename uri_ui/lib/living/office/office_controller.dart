@@ -10,23 +10,18 @@ import 'office_client.dart';
 /// State of the Office panel: one open workbook, its draft (from the service, the authority), the page surface,
 /// and an A2UI hub that renders the service's approval card. Every change goes through the service; the page
 /// only shows the workbook and reports the owner's typing.
-enum OfficeSpeaker { owner, uri, notice }
-
-/// One line of the Office conversation.
-class OfficeTurn {
-  const OfficeTurn(this.speaker, this.text);
-  final OfficeSpeaker speaker;
-  final String text;
-}
-
 class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
-  OfficeController({required this.client, required this.surface}) {
+  OfficeController({required this.client, required this.surface, this.keep}) {
     hub.registry['office.apply_change'] = _approvalAction;
     hub.registry['office.reject_change'] = _approvalAction;
     _sub = surface.messages.listen(_onPage);
   }
 
   final OfficeClient client;
+
+  /// Where the open workbook and its conversation are kept when the panel is left (R1-02). Null: closing the panel
+  /// closes the workbook in the service.
+  final OfficeKeep? keep;
   final OfficeSurface surface;
   final A2uiHub hub = A2uiHub();
   StreamSubscription<Map<String, dynamic>>? _sub;
@@ -97,7 +92,12 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       };
 
   Future<void> _apply(Map<String, dynamic> v) async {
-    if (v['workbook_id'] != workbookId) _forgetWorkbook();
+    final previous = workbookId;
+    if (v['workbook_id'] != previous) {
+      _forgetWorkbook();
+      // The owner opened another workbook: the previous one is closed in the service (it was replaced on purpose).
+      if (previous != null) unawaited(client.close(previous).then((_) {}, onError: (_) {}));
+    }
     view = v;
     await _sendLoad();
   }
@@ -198,6 +198,30 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       notice = 'The save was applied, but the sheet could not be read again. Reopen it before editing.';
     }
   }
+
+  /// Shows the kept workbook again after the panel was left and reopened (R1-02): the service still holds it with
+  /// its draft and any open approval card. If the service no longer has it (restarted), the keep is cleared and the
+  /// owner is told; nothing is guessed.
+  Future<void> resume() => _guard(() async {
+        final k = keep;
+        final wid = k?.workbookId;
+        if (k == null || wid == null) return;
+        try {
+          final v = await client.view(wid);
+          await _apply(v);
+          conversation
+            ..clear()
+            ..addAll(k.conversation);
+          final open = await client.surfaces(wid);
+          hub.apply((open['messages'] as List?) ?? const []);
+          final kept = changes.where((c) => c['state'] == 'accepted' || c['state'] == 'user').length;
+          if (kept > 0) notice = 'Your unsaved changes to ${v['label'] ?? 'the workbook'} are still here.';
+        } on SchedulerApiError catch (e) {
+          k.clear();
+          if (e.code != 'UNKNOWN_WORKBOOK') rethrow;
+          notice = 'The workbook you had open is no longer open in URI Office (the service restarted). Open it again.';
+        }
+      });
 
   // ---- owner actions -----------------------------------------------------------------------------------------
   Future<void> openLocal(String path) => _guard(() async => _apply(await client.openLocal(path)));
@@ -303,7 +327,13 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
     unawaited(surface.dispose());
     hub.dispose();
     final wid = workbookId;
-    if (wid != null) unawaited(client.close(wid).then((_) {}, onError: (_) {}));
+    final k = keep;
+    if (k != null && wid != null) {
+      k.workbookId = wid;                  // left, not closed: the draft stays in the service (R1-02)
+      k.conversation = List.unmodifiable(conversation);
+    } else if (wid != null) {
+      unawaited(client.close(wid).then((_) {}, onError: (_) {}));
+    }
     super.dispose();
   }
 }

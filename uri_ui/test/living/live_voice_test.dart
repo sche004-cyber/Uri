@@ -651,6 +651,26 @@ void main() {
       c2.dispose();
     });
 
+    test('in Office focus with no workbook open, speech is kept and nothing is sent (R1-01, M1-c2)', () async {
+      final office = _FakeOffice()..acceptsRequests = false;
+      final c2 = VoiceInteractionController(
+        service: svc,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi,
+        keepInComposer: kept.add,
+        officeTarget: () => office,
+      );
+      await c2.pressTalk();
+      c2.releaseTalk();
+      await finalText('Sum column B');
+      expect(office.asks, isEmpty);
+      expect(kept, ['Sum column B']);
+      expect(c2.noticeCode, 'NO_WORKBOOK');
+      expect(rt.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
+      c2.dispose();
+    });
+
     test('with no Office target the spoken request is an ordinary turn', () async {
       final c2 = VoiceInteractionController(
         service: svc,

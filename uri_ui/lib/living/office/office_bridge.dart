@@ -112,3 +112,25 @@ abstract interface class OfficeRequestTarget implements Listenable {
   /// Asks URI to change the open workbook. The reply and the suggested changes appear in the Office conversation.
   Future<void> instruct(String text, {String? activeSheet});
 }
+
+enum OfficeSpeaker { owner, uri, notice }
+
+/// One line of the Office conversation.
+class OfficeTurn {
+  const OfficeTurn(this.speaker, this.text);
+  final OfficeSpeaker speaker;
+  final String text;
+}
+
+/// What survives leaving the Office region (R1-02, review URI-OFFICE-M1-c2): the open workbook stays open in the
+/// Office service with its draft, so accepted but unsaved changes are not lost, and the conversation comes back when
+/// the owner returns. Owned by the living scope; the Office region reads and writes it.
+class OfficeKeep {
+  String? workbookId;
+  List<OfficeTurn> conversation = const [];
+
+  void clear() {
+    workbookId = null;
+    conversation = const [];
+  }
+}
