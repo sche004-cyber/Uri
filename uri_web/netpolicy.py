@@ -10,16 +10,16 @@ from __future__ import annotations
 import ipaddress
 from dataclasses import dataclass
 from typing import Optional
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 ALLOWED_SCHEMES = ("http", "https")
 DEFAULT_PORTS = {"http": 80, "https": 443}
 ALLOWED_PORTS = frozenset({80, 443})
 MAX_URL_LENGTH = 2048
 HOST_NON_ENGLISH = "HOST_NON_ENGLISH"
-# IDN-1 (D21, D18): what the user is told when a site is refused with HOST_NON_ENGLISH.
-NON_ENGLISH_MESSAGE = ("Blocked: this site's address uses non-English letters. Scam sites use them to copy real sites."
-                       " If you trust it, open it yourself in your browser.")
+# IDN-1 (D21, D18; wording D33): what the user is told when a site is refused with HOST_NON_ENGLISH.
+NON_ENGLISH_MESSAGE = ("For security reasons, URI did not open this site. Its address uses non-English letters,"
+                       " a trick scam sites use. You can open it in your web browser instead.")
 
 _NAT64 = (ipaddress.ip_network("64:ff9b::/96"),)
 # R16-02: the RFC 8215 local-use NAT64 prefix may embed IPv4 at any RFC 6052 offset; it is never needed for public
@@ -147,6 +147,10 @@ def check_url(url: str, *, allowed_ports=ALLOWED_PORTS) -> Target:
         # R1-01: tested on the raw authority, because urlsplit lower-cases the host and KELVIN SIGN (U+212A)
         # lower-cases to ASCII 'k'.
         non_ascii = not host.isascii() or not parts.netloc.isascii()
+        # IDN-1b (R1-03/R2-01): browsers decode '%' in a host ('%D1%80aypal.com' is '\u0440aypal.com'), so a host
+        # that decodes to non-ASCII is refused with the reason; any other '%' stays HOST_INVALID below.
+        if "%" in host and not unquote(host).isascii():
+            raise EgressRefused(HOST_NON_ENGLISH)
         try:
             host = host.encode("idna").decode("ascii").lower()
         except UnicodeError:

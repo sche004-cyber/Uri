@@ -52,11 +52,11 @@ def cite_label(url: str) -> str:
 
 
 def blocked_note(n: int) -> str:
-    """IDN-1 (D21, D18): why sites were blocked, in plain words. The addresses are not shown."""
+    """IDN-1 (D21, D18; wording D33): why sites were blocked, in plain words. The addresses are not shown."""
     if n == 1:
         return NP.NON_ENGLISH_MESSAGE
-    return (f"Blocked {n} sites: their addresses use non-English letters. Scam sites use them to copy real sites."
-            " If you trust one, open it yourself in your browser.")
+    return (f"For security reasons, URI did not open {n} sites. Their addresses use non-English letters, a trick scam"
+            " sites use. You can open them in your web browser instead.")
 
 
 def build_surface(result: dict) -> Surface:
