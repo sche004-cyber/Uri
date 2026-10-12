@@ -111,3 +111,16 @@ Model quality note: the local Brain still makes planning slips; every op is vali
 | `uri_ui/test/office` | 28 passed (2 new role/findings tests) |
 
 The PC live check (M2-AC12, run 4) predates the roles: it is evidence for building a new workbook, not for the role flow. The harness now sets both files as references first; a PC run of the role flow needs the Brain (owner's GPU permission) and is NOT VERIFIED until then.
+
+### 2026-10-12, PC live check of the role flow (owner allowed the GPU override; NOT the owner's own check)
+
+Brain READY 159 tok/s with `--override-contention`; `advise --window` GO before each window. Evidence `evidence/m2_roles_live_check_20261012/`.
+
+| Mode | Result |
+|---|---|
+| Check (`budget.xlsx` = Check, `rates.xlsx` = Reference) | COMPLETED_WITH_RESULT. A request before the roles was not sent ("First say what each file is for..."). After the roles, `budget.xlsx` was the working file (shown in the sheet view, "Working file: budget.xlsx"). URI (3.1 s) found "Food amount is 300 but should be 350 according to the rates file" and proposed `Budget!B3 = 350`; Accept all; the M1 save card; saved in place with a backup. `rates.xlsx` unchanged. **Missed:** the wrong total (`Total` 1500, rows add up to 1470 after the fix); the local Brain did not report it. |
+| Build (both files = Reference) | COMPLETED_WITH_RESULT. The new file holds exactly `Region/Amount, North 120, North-East 95, Hills 143, South 88, Coast 61, Total =SUM(B2:B6)`; the sheet view listed `Summary` first; both references unchanged. |
+
+The check run used a build made before the opening notice was reworded ("Added ... Say what each file is for"); the build run used the reworded one. Brain and service stopped; GPU lease FREE.
+
+Limitation (model, not mechanism): the local Brain's checks are not exhaustive (it missed an arithmetic error). Findings are suggestions; the owner remains the reviewer.

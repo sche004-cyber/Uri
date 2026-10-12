@@ -42,6 +42,7 @@ import 'theme/uri_theme.dart';
 
 const instruction = 'Add a sheet named Summary. Copy the Region and Amount table with its header from S1 sheet Data '
     'to Summary A1, then copy the rows below the header from S2 sheet Data directly under it.';
+const checkInstruction = 'Check my budget against the rates file and fix anything that is wrong.';
 const instruction2 = 'In Summary, in the first empty row under the regions write Total, and next to it a SUM formula '
     'of all the amounts above it.';
 
@@ -146,6 +147,39 @@ class _LiveState extends State<_Live> {
     setState(() => step = name);
   }
 
+  /// Check mode (M2-D10/D11): S1 is the working file to check, S2 a reference. URI lists findings and suggests fixes;
+  /// the fixes are accepted and saved in place through the hash-bound card.
+  Future<void> _check(OfficeController ctl) async {
+    await ctl.openNew(sources);
+    _record('2_files_added', {'sources': ctl.sources, 'roles_needed': ctl.rolesNeeded});
+    await _snap('2_files_added');
+    await ctl.instruct(checkInstruction);                // refused locally: no roles yet
+    _record('2a_request_before_roles', {'sent': false, 'last': ctl.conversation.last.text});
+    await ctl.setRole('S1', 'check');
+    await ctl.setRole('S2', 'reference');
+    _record('2b_roles', {'roles': {for (final x in ctl.sources) x['id']: x['role']}, 'working': ctl.working,
+      'task': ctl.task, 'label': ctl.view?['label'], 'engine': ctl.view?['engine']});
+    await _snap('2b_roles');
+    final target = services.activeOfficeTarget();
+    if (target == null) throw StateError('the companion is not routed to the working file');
+    final sw = Stopwatch()..start();
+    await target.instruct(checkInstruction);
+    _record('3_checked', {'seconds': sw.elapsedMilliseconds / 1000, 'notice': ctl.notice,
+      'proposed': [for (final c in ctl.proposed) '${c['sheet']}!${c['cell']}=${c['after']}'],
+      'conversation': [for (final t in ctl.conversation) {'speaker': t.speaker.name, 'text': t.text}]});
+    await _snap('3_checked');
+    if (ctl.proposed.isNotEmpty) await ctl.decideAll('accept');
+    _record('4_accepted_fixes', {'accepted': ctl.changes.where((c) => c['state'] == 'accepted').length});
+    await ctl.proposeSave();
+    final surfaces = ctl.hub.surfaces;
+    _record('5_approval_card', {'notice': ctl.notice,
+      'card_text': [for (final s in surfaces) for (final x in s.components) if (x['component'] == 'Text') x['text']]});
+    await _snap('5_approval_card');
+    if (surfaces.isNotEmpty) await ctl.hub.act(surfaces.first.id, 'apply');
+    _record('6_saved', {'notice': ctl.notice, 'hub_errors': ctl.hub.errors});
+    await _snap('6_saved');
+  }
+
   Future<void> _run() async {
     final report = <String, dynamic>{'started': DateTime.now().toUtc().toIso8601String(), 'instruction': instruction,
       'instruction2': instruction2,
@@ -166,6 +200,16 @@ class _LiveState extends State<_Live> {
       _record('1_page_ready', {'page_ready': ctl.pageReady});
       await _snap('1_page_ready');
 
+      if (Platform.environment['URI_OFFICE_M2_MODE'] == 'check') {
+        await _check(ctl);
+        report['security_report'] = await surface?.securityReport();
+        report['result'] = 'COMPLETED_WITH_RESULT';
+        report['mode'] = 'check';
+        report['steps'] = log;
+        report['finished'] = DateTime.now().toUtc().toIso8601String();
+        File('$outDir\\result.json').writeAsStringSync(const JsonEncoder.withIndent('  ').convert(report));
+        exit(0);
+      }
       await ctl.openNew(sources);
       _record('2_new_from_files', {'workbook_id': ctl.workbookId, 'engine': ctl.view?['engine'],
         'sources': ctl.sources, 'notice': ctl.notice,

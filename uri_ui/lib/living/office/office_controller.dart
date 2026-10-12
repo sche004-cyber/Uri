@@ -282,8 +282,9 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
   Future<void> openNew(List<String> paths) => _guard(() async {
         if (paths.isEmpty) return;
         await _apply(await client.openNew(paths));
-        _say(OfficeSpeaker.notice, 'New workbook from ${sources.map((s) => s['label']).join(', ')}. '
-            'Tell URI what to build; nothing is written until you create the file.');
+        _say(OfficeSpeaker.notice, 'Added ${sources.map((s) => s['label']).join(', ')}. Say what each file is for: '
+            'the working file (check or edit) or a reference. With only references, URI builds a new workbook. '
+            'Nothing is saved until you approve it.');
       });
 
   /// M2: more source files for the open new workbook.

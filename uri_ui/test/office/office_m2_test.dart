@@ -103,12 +103,12 @@ OfficeEnvironment _env(FakeSurface surface, {List<String> picked = const [r'C:\U
 
 Widget _app(Widget child) => MaterialApp(
       theme: ThemeData(extensions: const [UriColors.graphite]),
-      home: Scaffold(body: SizedBox(width: 1400, height: 900, child: child)),
+      home: Scaffold(body: SizedBox(width: 1400, height: 1600, child: child)),
     );
 
 void main() {
   testWidgets('New from files: sources shown, add a file, save only as a new file', (tester) async {
-    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.physicalSize = const Size(1400, 1700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -124,7 +124,7 @@ void main() {
     expect(svc.calls['/open/new']!.single, {'paths': [r'C:\Users\me\north.xlsx', r'C:\Users\me\south.xlsx']});
     expect(find.byKey(const ValueKey('office-source-S1')), findsOneWidget);
     expect(find.text('S2 south.xlsx'), findsOneWidget);
-    expect(find.textContaining('New workbook from north.xlsx, south.xlsx'), findsOneWidget);
+    expect(find.textContaining('Added north.xlsx, south.xlsx. Say what each file is for'), findsOneWidget);
     // A new workbook is saved only as a new file; no history (M2-D6), no share, no save-in-place.
     expect(find.byKey(const ValueKey('office-save-new')), findsOneWidget);
     expect(find.byKey(const ValueKey('office-save')), findsNothing);
@@ -158,7 +158,7 @@ void main() {
   });
 
   testWidgets('many proposed changes: at most 50 cards, Accept all and Reject all', (tester) async {
-    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.physicalSize = const Size(1400, 1700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -176,6 +176,8 @@ void main() {
     expect(find.byKey(const ValueKey('office-change-c51'), skipOffstage: false), findsNothing);
     await tester.scrollUntilVisible(find.byKey(const ValueKey('office-reject-all')), -300,
         scrollable: find.descendant(of: find.byKey(const ValueKey('office-conversation')), matching: find.byType(Scrollable)));
+    await tester.ensureVisible(find.byKey(const ValueKey('office-reject-all')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('office-reject-all')));
     await tester.pumpAndSettle();
     expect(svc.calls['/workbook/w1/decide_all']!.single['decision'], 'reject');
@@ -210,7 +212,7 @@ void main() {
   });
 
   testWidgets('every added file needs a role: working file (check or edit) or reference', (tester) async {
-    tester.view.physicalSize = const Size(1400, 1100);
+    tester.view.physicalSize = const Size(1400, 1700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
