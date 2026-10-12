@@ -1,4 +1,5 @@
 """M2: a new workbook built from one or more source files (docs/office/M2_PLAN_AND_ACCEPTANCE_CRITERIA.md)."""
+import copy
 import hashlib
 import json
 import threading
@@ -820,3 +821,103 @@ def test_r5_02_deleted_new_target_refuses_role_switch_without_state_change(tmp_p
     assert e.value.code == "TARGET_CHANGED" and e.value.status == 409
     assert json.dumps(o.view(wid), sort_keys=True) == before
     assert o.view(wid)["engine"] == "new" and o.view(wid)["working"] is None
+
+
+# ---- Codex re-review of f9ea1f3c (R6-01..R6-02) ---------------------------------------------------------------------
+def test_r6_01_snapshot_keeps_all_accepted_and_user_marks_with_bounded_history():
+    d = D.Draft("w", "new", {"sheets": [{"name": "S", "cells": {}}]})
+    d.user_edit({"sheet": "S", "cell": "Z1", "value": "typed first"})
+    d.propose([{"sheet": "S", "cell": f"A{i}", "value": i} for i in range(1, 502)])
+    d.decide_all("accept", d.version, d.proposed_set_sha256())
+    d.propose([{"sheet": "S", "cell": f"B{i}", "value": i} for i in range(1, 502)])
+    d.decide_all("reject", d.version, d.proposed_set_sha256())
+    d.propose([{"sheet": "S", "cell": "C1", "value": "suggested"}])
+    d.user_edit({"sheet": "S", "cell": "C1", "value": "typed instead"})
+
+    snap = d.snapshot()                       # the panel builds its marks from these changes
+    live = [c for c in snap["changes"] if c["state"] in D.LIVE]
+    history = [c for c in snap["changes"] if c["state"] in ("rejected", "edited_by_user")]
+    expected_history = [c for c in d.changes if c["state"] in ("rejected", "edited_by_user")][-500:]
+    history_ids = {c["cid"] for c in expected_history}
+    assert [c["cid"] for c in snap["changes"]] == [c["cid"] for c in d.changes
+                                                     if c["state"] in D.LIVE or c["cid"] in history_ids]
+    assert (len(live), len(history)) == (503, 500)
+    assert {c["cell"] for c in live if c["state"] == "accepted"} == {f"A{i}" for i in range(1, 502)}
+    assert {c["cell"] for c in live if c["state"] == "user"} == {"Z1", "C1"}
+    assert {c["cell"] for c in live} == {e["cell"] for e in d.pending()["edits"]}
+    assert [c["cid"] for c in history] == [c["cid"] for c in expected_history]
+    assert snap["proposed_count"] == 0 and snap["proposed_set_sha256"] == d.proposed_set_sha256()
+    assert all(c["change_sha256"] == D.change_sha256(c) for c in snap["changes"])
+
+
+@pytest.mark.parametrize("sheet, formula, state", [
+    ("Sheet1", "=sHeEt1!A1", "proposed"),
+    ("My Sheet", "='mY sHeEt'!A1", "accepted"),
+    ("O'Brien", "='o''bRiEn'!A1", "user"),
+])
+def test_r6_02_live_formula_refuses_rename_without_changing_draft(sheet, formula, state):
+    d = D.Draft("w", "new", {"sheets": [{"name": sheet, "cells": {}}]})
+    edit = {"sheet": sheet, "cell": "B1", "formula": formula}
+    if state == "user":
+        d.user_edit(edit)
+    else:
+        d.propose([edit])
+        if state == "accepted":
+            d.decide_all("accept", d.version, d.proposed_set_sha256())
+    before = copy.deepcopy((d.base, d.locked, d.changes, d._undo, d._redo, d.version))
+    with pytest.raises(OfficeError) as e:
+        d.propose([{"op": "rename_sheet", "sheet": sheet, "name": "Summary"}])
+    assert e.value.code == "RENAME_BREAKS_FORMULAS" and sheet in e.value.detail
+    assert (d.base, d.locked, d.changes, d._undo, d._redo, d.version) == before
+
+
+def test_r6_02_rename_with_no_reference_still_works():
+    d = D.Draft("w", "new", {"sheets": [{"name": "Sheet1", "cells": {}}]})
+    d.propose([{"sheet": "Sheet1", "cell": "A1", "formula": "=OtherSheet1!A1"},
+               {"sheet": "Sheet1", "cell": "A2", "formula": '="Sheet1!A1"'}])
+    d.propose([{"op": "rename_sheet", "sheet": "Sheet1", "name": "Summary"}])
+    assert d.sheets() == ["Summary"]
+    assert [c["sheet"] for c in d.changes if c["kind"] == "cell"] == ["Summary", "Summary"]
+
+
+def test_r6_02_brain_answer_refuses_formula_then_rename(tmp_path, office):
+    a = make_source(tmp_path / "a.xlsx")
+    o, _ = office({"message": "x", "ops": [
+        op(op="set_formula", sheet="Sheet1", cell="B1", formula="=Sheet1!A1"),
+        op(op="rename_sheet", sheet="Sheet1", name="Summary"),
+        op(op="set_values", sheet="Sheet1", range="A2", values=[["still here"]])]})
+    v = o.open_new([str(a)])
+    as_reference(o, v)
+    r = o.instruct(v["workbook_id"], {"text": "set a formula, rename, then add a value"})
+    assert [(x["index"], x["code"]) for x in r["refused"]] == [(1, "RENAME_BREAKS_FORMULAS")]
+    assert [(c["sheet"], c["cell"], c["after"]) for c in r["draft"]["changes"]] == [
+        ("Sheet1", "B1", {"f": "=Sheet1!A1"}),
+        ("Sheet1", "A2", {"v": "still here"}),
+    ]
+    assert [s["name"] for s in r["workbook"]["sheets"]] == ["Sheet1"]
+
+
+@pytest.mark.parametrize("origin", ["accepted", "user"])
+def test_r6_02_prior_formula_refuses_rename_in_later_brain_answer(tmp_path, office, origin):
+    a = make_source(tmp_path / "a.xlsx")
+    answers = [{"message": "rename", "ops": [op(op="rename_sheet", sheet="Sheet1", name="Summary"),
+                                               op(op="set_values", sheet="Sheet1", range="A2", values=[["later"]])]}]
+    if origin == "accepted":
+        answers.insert(0, {"message": "formula", "ops": [
+            op(op="set_formula", sheet="Sheet1", cell="B1", formula="=Sheet1!A1")]})
+    o, _ = office(*answers)
+    v = o.open_new([str(a)])
+    as_reference(o, v)
+    if origin == "accepted":
+        first = o.instruct(v["workbook_id"], {"text": "set a formula"})
+        o.decide_all(v["workbook_id"], {"decision": "accept", "draft_version": first["draft"]["version"],
+                                         "set_sha256": first["draft"]["proposed_set_sha256"]})
+    else:
+        o.edit(v["workbook_id"], {"sheet": "Sheet1", "cell": "B1", "formula": "=Sheet1!A1"})
+    r = o.instruct(v["workbook_id"], {"text": "rename and add a value"})
+    assert [(x["index"], x["code"]) for x in r["refused"]] == [(0, "RENAME_BREAKS_FORMULAS")]
+    assert [(c["sheet"], c["cell"], c["after"]) for c in r["draft"]["changes"] if c["kind"] == "cell"] == [
+        ("Sheet1", "B1", {"f": "=Sheet1!A1"}),
+        ("Sheet1", "A2", {"v": "later"}),
+    ]
+    assert [s["name"] for s in r["workbook"]["sheets"]] == ["Sheet1"]

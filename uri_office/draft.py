@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import re
 import uuid
 
 from uri_a2ui.surface import canonical
@@ -29,6 +30,16 @@ LIVE = ("proposed", "accepted", "user")
 def change_sha256(ch: dict) -> str:
     body = {k: ch.get(k) for k in ("cid", "by", "kind", "sheet", "cell", "before", "after", "op")}
     return hashlib.sha256(canonical(body)).hexdigest()
+
+
+def formula_references_sheet(formula: str | None, sheet: str) -> bool:
+    """Whether a formula refers to a sheet, ignoring quoted string literals."""
+    if not isinstance(formula, str):
+        return False
+    plain, quoted = re.escape(sheet), re.escape(sheet.replace("'", "''"))
+    reference = re.compile(rf"(?<![\w.])(?:{plain}|'{quoted}')!", re.IGNORECASE)
+    formula = re.sub(r'"(?:[^"]|"")*"', lambda m: " " * len(m.group()), formula)
+    return reference.search(formula) is not None
 
 
 class Draft:
@@ -54,16 +65,15 @@ class Draft:
         return cur
 
     def snapshot(self) -> dict:
-        """Every proposed change (the panel decides them, also all at once with the set hash, Codex C-01) plus the
-        latest 500 others, in draft order."""
+        """Every live change plus the latest 500 historical changes, in draft order."""
         shown = [ch for ch in self.changes if ch["state"] in LIVE or ch["state"] in ("rejected", "edited_by_user")]
-        others = {id(ch) for ch in [c for c in shown if c["state"] != "proposed"][-500:]}
+        history = {id(ch) for ch in [c for c in shown if c["state"] in ("rejected", "edited_by_user")][-500:]}
         return {"workbook_id": self.workbook_id, "engine": self.engine, "version": self.version,
                 "can_undo": bool(self._undo), "can_redo": bool(self._redo),
                 "proposed_count": sum(1 for c in self.changes if c["state"] == "proposed"),
                 "proposed_set_sha256": self.proposed_set_sha256(),
                 "changes": [dict(ch, change_sha256=change_sha256(ch)) for ch in shown
-                            if ch["state"] == "proposed" or id(ch) in others]}
+                            if ch["state"] in LIVE or id(ch) in history]}
 
     # ---- versioning ----------------------------------------------------------------------------------------------
     def _state(self):
@@ -162,6 +172,11 @@ class Draft:
             old, name = op["sheet"], op["name"]
             if old not in self.base or name in self.base:
                 raise OfficeError("BAD_SHEET_NAME", str(name)[:40])
+            for c in self.changes:
+                if c["kind"] != "cell" or c["state"] not in LIVE or "f" not in c["after"]:
+                    continue
+                if formula_references_sheet(c["after"]["f"], old):
+                    raise OfficeError("RENAME_BREAKS_FORMULAS", f"formulas refer to {old[:40]}")
             self.base = {(name if k == old else k): v for k, v in self.base.items()}
             self.locked = {(name if k == old else k): v for k, v in self.locked.items()}
             for c in self.changes:

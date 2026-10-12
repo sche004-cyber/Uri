@@ -60,6 +60,7 @@ The sources are never written. Nothing leaves the PC.
 - A generated new file larger than 50 MB is refused before it is written.
 - The Brain sees bounded excerpts only (up to 600 cells in total across the new workbook and sources). `copy_range` lets URI move data it has not seen cell by cell, within 5,000 cells per op and the draft's 20,000-change cap.
 - No styles, charts or pivot tables in new files; no Google targets for new files (use "Share via Google" after creating it).
+- Renaming a sheet that formulas refer to is refused.
 
 ## 6. Out of scope
 
@@ -189,3 +190,16 @@ Repair performed by Codex on the owner's instruction "Use codex for audit and re
 
 Verified by Claude before commit: the changes are limited to the size check before linking (`xlsx_new.write`), closing the approval on that refusal, and OSError translated to `TARGET_CHANGED` in `_switch_target`; no sandbox workaround is in the tests (the only monkeypatch lowers the size cap). The 3 new tests fail on 4acacb91 and pass after. Codex's leftover sandbox temp folders were deleted. PC gates are recorded in the line below.
 PC gates after round 5: Python 900 passed / 27 skipped; flutter test 543 passed / 5 skipped; ws_frozen_check ok.
+
+### 2026-10-12, Codex re-review of f9ea1f3c (round 6)
+
+Repair performed by Codex on the owner's instruction. R6-01 also affected M1 opened files with more than 500 accepted or typed changes; this repair fixes it on the M2 branch only.
+
+| Finding | Repair | Tests |
+|---|---|---|
+| R6-01 HIGH (blocking): accepted and user changes beyond the snapshot's 500-other-change window disappeared from panel marks | Keep every live change in draft order; bound only rejected and edited-by-user history to the latest 500 | `test_r6_01_snapshot_keeps_all_accepted_and_user_marks_with_bounded_history` |
+| R6-02 MEDIUM (blocking): renaming a sheet left live formulas referring to the old name | Refuse only the rename op when the current view or an earlier op's formula names the old sheet, with Draft retaining its safeguard. | `test_r6_02_live_formula_refuses_rename_without_changing_draft`, `test_r6_02_rename_with_no_reference_still_works`, `test_r6_02_brain_answer_refuses_formula_then_rename`, `test_r6_02_prior_formula_refuses_rename_in_later_brain_answer` |
+
+Codex's local rerun: 62 passed, 4 HTTP-fixture setup errors (`ACL_FAILED` in the Windows sandbox); independent review and full gate verification remain pending.
+
+Verified by Claude before commit: changes limited to `Draft.snapshot` (all live changes; history bounded), `formula_references_sheet` with the draft backstop, and the per-op refusal in `OfficeBrain.plan` (before the op's edits are added); no sandbox workaround in the tests. 7 of the 8 round-6 tests fail on f9ea1f3c and pass after (the rename-without-reference test guards against over-refusal). Codex's sandbox temp folders were deleted. PC gates: Python 908 passed / 27 skipped; `flutter test` 543 passed / 5 skipped; `ws_frozen_check` ok.

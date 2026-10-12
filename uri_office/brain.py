@@ -18,6 +18,7 @@ from uri_operational_intelligence.reasoning_policy import FAST, tier_params
 from . import ops as O
 from . import refs
 from . import sources as SRC
+from .draft import formula_references_sheet
 from .errors import OfficeError
 from .untrusted import SYSTEM_RULE, data_block
 
@@ -222,6 +223,14 @@ class OfficeBrain:
                     notes["not_copied"] += skipped
                 else:
                     got = O.to_cell_edits(op, engine=engine, sheets=names, locked=locked)
+                for e in got:
+                    if e.get("op") == "rename_sheet":
+                        old = e["sheet"]
+                        current_formulas = (c.get("f") for sh in sheets for c in sh["cells"].values())
+                        earlier_formulas = (prior.get("formula") for prior in edits)
+                        if any(formula_references_sheet(f, old) for f in current_formulas) or \
+                                any(formula_references_sheet(f, old) for f in earlier_formulas):
+                            raise OfficeError("RENAME_BREAKS_FORMULAS", f"formulas refer to {old[:40]}")
                 # An op that would overwrite a cell an earlier op of the same answer wrote is a planning slip (for example
                 # a total placed on a copied row): it is refused and reported, never merged or moved.
                 hit = next((e for e in got if "cell" in e and (e["sheet"], e["cell"]) in written), None)
