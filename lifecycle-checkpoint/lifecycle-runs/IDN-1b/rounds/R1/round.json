@@ -1,0 +1,185 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/IDN-1b/audit_R1",
+ "baseline": "368188b74fa8cd68ef18d2df1c3c955fc63ad2c8",
+ "blocking_ids": [],
+ "candidate": "6a33c1b5dbfe0c3694963416310945db8ee06b9d",
+ "effective_verdict": "ACCEPT WITH FINDINGS",
+ "ended_at": "2026-10-12T05:19:10Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "6a33c1b5dbfe0c3694963416310945db8ee06b9d",
+   "impl_head": "6a33c1b5dbfe0c3694963416310945db8ee06b9d",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/idn-1b-20261012",
+   "refs": "de054d63883db4cd18a58ac8f4a011b169c1acd376f1fdef1a55931746d0a734",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "6a33c1b5dbfe0c3694963416310945db8ee06b9d",
+   "impl_head": "6a33c1b5dbfe0c3694963416310945db8ee06b9d",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/idn-1b-20261012",
+   "refs": "de054d63883db4cd18a58ac8f4a011b169c1acd376f1fdef1a55931746d0a734",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "368188b74fa8cd68ef18d2df1c3c955fc63ad2c8",
+  "candidate": "6a33c1b5dbfe0c3694963416310945db8ee06b9d",
+  "findings": [
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "The _LocationTap branch sets rec.refusal_code=HOST_NON_ENGLISH, but _get returns FetchResult(rec) with no refused_url, so ResearchJob._note_blocked keys the site on record.requested_url. Probe: ResearchJob with urls a.example and b.example, both 302 -> http://\uff50\uff41\uff59\uff50\uff41\uff4c.com/, gives blocked_non_english=2; the same job with Location http://%D1%80aypal.com/ (refused via check_url at the next hop, refused_url set) gives 1. The note then says 'did not open 2 sites' for one site.",
+    "files": [
+     "uri_web/safe_fetch.py:426",
+     "uri_web/safe_fetch.py:351",
+     "uri_web/pipeline.py:159"
+    ],
+    "id": "R1-01",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Carry the joined raw Location to FetchResult.refused_url (e.g. store it on rec or return it from _exchange) when the tap check refuses it.",
+    "title": "httpx-rejected redirect refusal is counted under the redirecting site, not the refused target (per-site count R1-02 inexact)"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "unquote(host) uses errors='replace', so http://%FF.com/ and http://a%E2%80%8B.com/ change from HOST_INVALID to HOST_NON_ENGLISH (differential fuzz: all 30,842 differences were HOST_INVALID->HOST_NON_ENGLISH, none newly allowed). The D33 text then calls them non-English letters and suggests opening them in a browser, which cannot open them either. Still refused, so cosmetic only.",
+    "files": [
+     "uri_web/netpolicy.py:152"
+    ],
+    "id": "R1-02",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Return HOST_NON_ENGLISH only when the decoded host is valid UTF-8 containing letters (e.g. unquote(host, errors='strict') plus a str.isalpha check on the non-ASCII characters); otherwise keep HOST_INVALID.",
+    "title": "Percent escapes decoding to non-letters (invalid UTF-8, zero-width, NBSP) are reported as 'non-English letters' and the user is told to open them in a browser"
+   }
+  ],
+  "prior_findings": [],
+  "tests_run": [
+   {
+    "command": "pytest tests/web/test_idn_1b.py (candidate test file copied into a git-archive export of baseline 368188b7)",
+    "result": "9 failed (wording, KeyError HOST_NON_ENGLISH, HOST_INVALID instead of HOST_NON_ENGLISH, UNREACHABLE instead of REFUSED, count 0), 4 passed (guards)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest tests/web tests/ssrf (candidate)",
+    "result": "3792 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest test_m19_office_readiness.py test_m20_research_recovery.py test_orchestrator_evidence_transport.py test_m20_skill_discovery_boundary.py test_m32_capability_effect_classification.py (Google client modules stubbed via sitecustomize), candidate and baseline",
+    "result": "68 passed on both",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe p1.py: 200k fuzz of check_url(urljoin(base, raw Location)); 200k baseline-vs-candidate check_url differential; redirect count probe",
+    "result": "0 uncaught exceptions; only HOST_INVALID->HOST_NON_ENGLISH differences, nothing newly allowed; full-width target via 2 redirectors counted 2 vs 1 for percent form",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe p2.py: real local HTTP server, pinned and proxy egress, plain/redirect/full-width redirect/byte cap/slow timeout/cancel/PIN_HOST_MISMATCH, candidate vs baseline",
+    "result": "identical behaviour except full-width redirect: REFUSED HOST_NON_ENGLISH (candidate) vs UNREACHABLE (baseline); target never contacted; same fd count",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Root fetch_url tests ran with stubbed Google client libraries (not installed); real Google client behaviour not exercised",
+   "Flutter/UI rendering of the new message not checked (no Dart files changed)",
+   "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip not present)"
+  ],
+  "verdict": "ACCEPT WITH FINDINGS"
+ },
+ "round": 1,
+ "started_at": "2026-10-12T05:14:26Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "36d356e3-082d-42da-8116-3885de253193",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.9367767,
+  "cwd": "/tmp/claude-0/lc-work/IDN-1b/audit_R1",
+  "ended_at": "2026-10-12T05:19:09Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 24,
+  "pid": 25807,
+  "prompt_sha256": "f937b4c818d9bb1ed5f34449ba38005a3efa86f2535d6acc4047a1ed522ca31b",
+  "provider": "claude_cli",
+  "result_text_sha256": "2a506ad1abebd7f3e79e56d48a03e01af578ef5af9f95f7d5c4085b458aca47c",
+  "role": "reviewer",
+  "session_id": "36d356e3-082d-42da-8116-3885de253193",
+  "session_id_requested": "36d356e3-082d-42da-8116-3885de253193",
+  "started_at": "2026-10-12T05:14:26Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "2b172c95e821b0c7bf22b7fef84132ce724e1a03b2c595a323eba4b883e0dc2f"
+ }
+}

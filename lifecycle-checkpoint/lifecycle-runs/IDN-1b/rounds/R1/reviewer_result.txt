@@ -1,0 +1,40 @@
+I recommend accepting candidate `6a33c1b5` with two minor, non-blocking findings. The changes do what the IDN-1b acceptance criteria ask, and none of the five review points shows a defect that should block it.
+
+**SHAs:** HEAD is `6a33c1b5dbfe0c3694963416310945db8ee06b9d`. The baseline `368188b7…` is a commit, and the range holds one commit that changes 8 files.
+
+1. **Frozen file `uri_core/tools/fetch_url.py`:** it changes by three lines: the `netpolicy` import, the `HOST_NON_ENGLISH` message entry, and a one-line comment above that entry. The comment changes no behaviour, so I treat it as part of the entry. No other protected path changes. The import adds no cycle, because `netpolicy` imports only the standard library. It adds no start-up cost either, because `safe_fetch`, which `fetch_url` already imports, loads `netpolicy` anyway.
+2. **Message:** the research note and the chat fetch tool now show the same text. It says URI did not open the site for security reasons and that it can be opened in the user's web browser. Sentences are short, no address is shown, and the several-sites form ("did not open N sites… open them") is correct. The note only appears when at least one site was blocked.
+3. **`_LocationTap`:** I ran the same probe against both versions with a real local server, using real sockets and the pinned and proxy routes. It covered a plain fetch, a normal redirect, the byte cap, a timeout (2.0 s), cancellation (0.5 s), proxy egress and `PIN_HOST_MISMATCH`. Every result matched the baseline, and file-descriptor counts were the same. A redirect to a full-width host is now `REFUSED` with `HOST_NON_ENGLISH` on both routes, where the baseline gave `UNREACHABLE`. The target was never contacted. Fuzzing the raw-Location check with 200,000 inputs found no exception that escapes the code that catches it.
+4. **Percent-decoding:** I compared baseline and candidate `check_url` on 200,000 generated hosts. The only difference is `HOST_INVALID` becoming `HOST_NON_ENGLISH` (30,842 cases). No host that was refused before is now allowed.
+5. **Tests:** on the baseline, 9 of the 13 new tests fail for the expected reasons and the 4 guards pass. The `test_idn_1.py` edit only changes the wording. `tests/web` and `tests/ssrf` gave 3792 passed. The root fetch_url tests gave 68 passed on both versions. Three of those files need Google client libraries that aren't installed, so I ran them with placeholder modules for those libraries.
+
+**Findings (both low):**
+- **R1-01, site count:** when a redirect lands on a host that httpx rejects, the blocked site is counted under the site that redirected, not the target. Two redirectors pointing at the same full-width host count as 2, so the note says "did not open 2 sites" when there is only one. The same probe with a percent-encoded target counts 1.
+- **R1-02, wording for non-letters:** percent escapes that decode to non-letters (such as `%FF`, a zero-width space or a non-breaking space) now get the "non-English letters… open it in your web browser" message. A browser could not open such an address either. Nothing is newly allowed; only the reason shown changes.
+
+Not verified: the Flutter and UI side (no Dart file changed) and real Google client behaviour in the root tests.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "6a33c1b5dbfe0c3694963416310945db8ee06b9d", "baseline": "368188b74fa8cd68ef18d2df1c3c955fc63ad2c8", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [
+  {"id": "R1-01", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "httpx-rejected redirect refusal is counted under the redirecting site, not the refused target (per-site count R1-02 inexact)",
+   "files": ["uri_web/safe_fetch.py:426", "uri_web/safe_fetch.py:351", "uri_web/pipeline.py:159"],
+   "evidence": "The _LocationTap branch sets rec.refusal_code=HOST_NON_ENGLISH, but _get returns FetchResult(rec) with no refused_url, so ResearchJob._note_blocked keys the site on record.requested_url. Probe: ResearchJob with urls a.example and b.example, both 302 -> http://ｐａｙｐａｌ.com/, gives blocked_non_english=2; the same job with Location http://%D1%80aypal.com/ (refused via check_url at the next hop, refused_url set) gives 1. The note then says 'did not open 2 sites' for one site.",
+   "suggested_fix": "Carry the joined raw Location to FetchResult.refused_url (e.g. store it on rec or return it from _exchange) when the tap check refuses it."},
+  {"id": "R1-02", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Percent escapes decoding to non-letters (invalid UTF-8, zero-width, NBSP) are reported as 'non-English letters' and the user is told to open them in a browser",
+   "files": ["uri_web/netpolicy.py:152"],
+   "evidence": "unquote(host) uses errors='replace', so http://%FF.com/ and http://a%E2%80%8B.com/ change from HOST_INVALID to HOST_NON_ENGLISH (differential fuzz: all 30,842 differences were HOST_INVALID->HOST_NON_ENGLISH, none newly allowed). The D33 text then calls them non-English letters and suggests opening them in a browser, which cannot open them either. Still refused, so cosmetic only.",
+   "suggested_fix": "Return HOST_NON_ENGLISH only when the decoded host is valid UTF-8 containing letters (e.g. unquote(host, errors='strict') plus a str.isalpha check on the non-ASCII characters); otherwise keep HOST_INVALID."}
+ ],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "pytest tests/web/test_idn_1b.py (candidate test file copied into a git-archive export of baseline 368188b7)", "result": "9 failed (wording, KeyError HOST_NON_ENGLISH, HOST_INVALID instead of HOST_NON_ENGLISH, UNREACHABLE instead of REFUSED, count 0), 4 passed (guards)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/web tests/ssrf (candidate)", "result": "3792 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest test_m19_office_readiness.py test_m20_research_recovery.py test_orchestrator_evidence_transport.py test_m20_skill_discovery_boundary.py test_m32_capability_effect_classification.py (Google client modules stubbed via sitecustomize), candidate and baseline", "result": "68 passed on both", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "probe p1.py: 200k fuzz of check_url(urljoin(base, raw Location)); 200k baseline-vs-candidate check_url differential; redirect count probe", "result": "0 uncaught exceptions; only HOST_INVALID->HOST_NON_ENGLISH differences, nothing newly allowed; full-width target via 2 redirectors counted 2 vs 1 for percent form", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "probe p2.py: real local HTTP server, pinned and proxy egress, plain/redirect/full-width redirect/byte cap/slow timeout/cancel/PIN_HOST_MISMATCH, candidate vs baseline", "result": "identical behaviour except full-width redirect: REFUSED HOST_NON_ENGLISH (candidate) vs UNREACHABLE (baseline); target never contacted; same fd count", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Root fetch_url tests ran with stubbed Google client libraries (not installed); real Google client behaviour not exercised", "Flutter/UI rendering of the new message not checked (no Dart files changed)", "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip not present)"]}
+AUDIT_RESULT_END
