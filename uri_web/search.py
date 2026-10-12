@@ -48,6 +48,7 @@ class SearchResult:
     hits: list = field(default_factory=list)
     error_code: Optional[str] = None
     http_status: Optional[int] = None
+    blocked_non_english: int = 0        # IDN-1: hits dropped because the site's address uses non-English letters
 
 
 class SearchProvider(Protocol):
@@ -65,12 +66,17 @@ def _clean_query(q):
     return q[:MAX_QUERY] if q else None
 
 
-def _public_hit_url(url) -> bool:
+def _hit_refusal(url) -> Optional[str]:
+    """None when the hit's URL passes the egress policy, else the refusal code."""
     try:
         NP.check_url(url)
-        return True
-    except NP.EgressRefused:
-        return False
+        return None
+    except NP.EgressRefused as exc:
+        return exc.code
+
+
+def _public_hit_url(url) -> bool:
+    return _hit_refusal(url) is None
 
 
 class _HttpProvider:
@@ -108,11 +114,18 @@ class _HttpProvider:
             data = resp.json()
         except ValueError:
             return SearchResult(self.name, q, FAILED, error_code="BAD_RESPONSE", http_status=resp.status_code)
-        hits = self._hits(data)
-        hits = [h for h in hits if _public_hit_url(h.url)][:MAX_HITS]
+        kept, blocked = [], 0
+        for h in self._hits(data):
+            code = _hit_refusal(h.url)
+            if code is None:
+                kept.append(h)
+            elif code == NP.HOST_NON_ENGLISH:
+                blocked += 1
+        hits = kept[:MAX_HITS]
         for i, h in enumerate(hits, 1):
             h.rank = i
-        return SearchResult(self.name, q, OK if hits else NO_RESULTS, hits=hits, http_status=resp.status_code)
+        return SearchResult(self.name, q, OK if hits else NO_RESULTS, hits=hits, http_status=resp.status_code,
+                            blocked_non_english=blocked)
 
     def _hits(self, data) -> list:
         raise NotImplementedError

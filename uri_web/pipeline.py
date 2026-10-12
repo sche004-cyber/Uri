@@ -24,6 +24,7 @@ from typing import Callable, Optional
 
 from . import evaluate as EV
 from . import feeds as FD
+from . import netpolicy as NP
 from . import records as R
 from . import search as S
 from . import synthesize as SY
@@ -93,6 +94,7 @@ class ResearchResult:
     feed_items: list = field(default_factory=list)
     providers: list = field(default_factory=list)        # {"provider", "status", "error_code", "hits"}
     attempts: list = field(default_factory=list)         # SourceRecord dicts of failed/refused retrievals
+    blocked_non_english: int = 0                         # IDN-1: sites refused because the address uses non-English letters
     synthesis_method: str = "none"
     brain_status: Optional[str] = None
     started_at: str = ""
@@ -147,6 +149,7 @@ class ResearchJob:
             self._run(res, t0)
         except Exception:
             res.status, res.error_code = FAILED, "INTERNAL_ERROR"
+        res.blocked_non_english += sum(1 for a in res.attempts if a.get("refusal_code") == NP.HOST_NON_ENGLISH)
         res.finished_at, res.elapsed_s = R.utc_now(), round(self.clock() - t0, 3)
         self._p("finished", status=res.status)
         return res
@@ -173,6 +176,7 @@ class ResearchJob:
                 sr = p.search(res.query, max_results=b.max_results_per_provider)
                 res.providers.append({"provider": p.name, "status": sr.status, "error_code": sr.error_code,
                                       "hits": len(sr.hits)})
+                res.blocked_non_english += getattr(sr, "blocked_non_english", 0) or 0
                 if sr.status in (S.OK, S.NO_RESULTS):
                     any_provider_ok = True
                 for h in sr.hits:
