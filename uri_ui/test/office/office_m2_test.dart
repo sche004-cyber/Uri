@@ -34,8 +34,10 @@ List<Map<String, dynamic>> _sources(List<String> labels, Map<String, String?> ro
     ];
 
 class _Service {
-  _Service({this.proposed = const [], String? role = 'reference'}) : roles = {'S1': role, 'S2': role, 'S3': role};
+  _Service({this.proposed = const [], this.reopenNeeded = false, String? role = 'reference'})
+      : roles = {'S1': role, 'S2': role, 'S3': role};
   List<Map<String, dynamic>> proposed;
+  final bool reopenNeeded;
   Map<String, String?> roles;
   String? get working => roles.entries.where((e) => e.value == 'check' || e.value == 'edit').map((e) => e.key).firstOrNull;
   dynamic findings;
@@ -86,7 +88,9 @@ class _Service {
           case '/a2ui/action':
             created = true;
             return http.Response(jsonEncode({'status': 'applied', 'workbook_id': 'w1', 'created': true,
-              'saved_to': 'summary.xlsx', 'draft': _draft([], engine: 'local'), 'workbook': _wb(['Summary'])}), 200);
+              'saved_to': 'summary.xlsx', 'reopen_needed': reopenNeeded,
+              'draft': reopenNeeded ? _draft(proposed) : _draft([], engine: 'local'),
+              'workbook': _wb(['Summary'])}), 200);
         }
         return http.Response(jsonEncode({'error': 'NOT_FOUND'}), 404);
       }));
@@ -197,6 +201,20 @@ void main() {
     expect(c.sources, isEmpty);
     expect(c.view!['label'], 'summary.xlsx');
     expect(c.notice, 'Created summary.xlsx.');
+  });
+
+  test('created file that cannot be opened keeps the new workbook and explains how to open it', () async {
+    final svc = _Service(reopenNeeded: true, proposed: [_change('c1', 'A1', 'a' * 64)]);
+    final c = OfficeController(client: svc.client(), surface: FakeSurface());
+    addTearDown(c.dispose);
+    await c.openNew([r'C:\Users\me\north.xlsx']);
+    await c.proposeSave(saveAsPath: r'C:\Users\me\out\summary.xlsx');
+    await c.hub.registry['office.apply_change']!({'name': 'office.apply_change', 'surfaceId': 'new-w1'});
+    expect(c.notice, 'Created summary.xlsx. It could not be opened here; open it with Open file.');
+    expect(c.isNew, isTrue);
+    expect(c.proposed, hasLength(1));
+    expect(c.sources, hasLength(2));
+    expect(svc.calls['/workbook/w1'], isNull);
   });
 
   test('refused ops and copy notes are explained to the owner', () async {

@@ -360,6 +360,52 @@ def test_two_sources_to_a_new_file_end_to_end(tmp_path, http_office):
     assert load_workbook(dest)["Summary"]["C1"].value == "Checked"
 
 
+def test_r11_01_read_failure_after_publication_reports_created_and_keeps_new_draft(tmp_path, http_office,
+                                                                                     monkeypatch):
+    o, port, token = http_office
+    a = make_source(tmp_path / "north.xlsx")
+    b = make_source(tmp_path / "south.xlsx")
+    st, v, _ = call(port, token, "POST", "/open/new", {"paths": [str(a), str(b)]})
+    assert st == 200, v
+    wid = v["workbook_id"]
+    as_reference(o, v)
+    st, r, _ = call(port, token, "POST", f"/workbook/{wid}/instruct", {"text": "build"})
+    assert st == 200 and r["refused"] == [], r
+    d = o.sessions[wid].draft
+    st, _, _ = call(port, token, "POST", f"/workbook/{wid}/decide_all",
+                    {"decision": "accept", "draft_version": d.version, "set_sha256": d.proposed_set_sha256()})
+    assert st == 200
+    before = d.snapshot()
+    dest = tmp_path / "summary.xlsx"
+    st, p, _ = call(port, token, "POST", f"/workbook/{wid}/propose_save", {"save_as_path": str(dest)})
+    assert st == 200, p
+
+    def cannot_read(copy):
+        assert dest.exists() and copy.name == "opened.xlsx"
+        raise OSError("copy cannot be read")
+
+    monkeypatch.setattr(xlsx_model, "read", cannot_read)
+    st, done, _ = call(port, token, "POST", "/a2ui/action",
+                       {"action": action_for(p["messages"], "apply", "office.apply_change")})
+    assert st == 200 and done["status"] == "applied", done
+    assert {k: done[k] for k in ("saved_to", "created", "reopen_needed", "sheets", "cells", "formulas")} == {
+        "saved_to": "summary.xlsx", "created": True, "reopen_needed": True,
+        "sheets": 1, "cells": 15, "formulas": 1}
+    wb = load_workbook(dest)
+    assert wb.sheetnames == ["Summary"]
+    assert wb["Summary"]["A1"].value == "Region"
+    assert wb["Summary"]["A2"].value == "North"
+    assert wb["Summary"]["B8"].value == "=SUM(B2:B7)"
+    assert o.sessions[wid].engine == "new" and o.sessions[wid].draft is d
+    assert o.sessions[wid].draft.snapshot() == before
+    assert done["draft"] == before
+    assert len(o.sessions[wid].sources) == 2
+    event = o.approvals.db.execute("SELECT payload_json FROM event WHERE kind='office.new_file_created' "
+                                   "ORDER BY seq DESC LIMIT 1").fetchone()
+    payload = json.loads(event[0])
+    assert payload["reopen_needed"] is True and payload["cells"] == 15
+
+
 def test_new_file_never_replaces_an_existing_file(tmp_path, http_office):
     o, port, token = http_office
     a = make_source(tmp_path / "north.xlsx")

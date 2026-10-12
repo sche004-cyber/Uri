@@ -518,8 +518,7 @@ class Office:
             return {"changed_parts": res["changed_parts"], "saved_to": dest.name}
 
     def _create_new_file(self, s, t, pending) -> dict:
-        """M2-AC9/AC10: write the new file (never over an existing one), then continue as an ordinary local session on
-        it, so later saves use the M1 cell patch. The sources are released."""
+        """M2-AC9/AC10: publish the new file, then open it as a local session when possible."""
         dest = self.grants.get(t["grant_id"], "save_as").path
         if dest.exists():
             raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
@@ -529,18 +528,31 @@ class Office:
             if exc.code == "NEW_FILE_TOO_LARGE":
                 self.approvals.close_workbook(s.workbook_id)
             raise
-        g = self.grants.grant_open(str(dest))
-        copy = self.state / "work" / s.workbook_id / "opened.xlsx"
-        shutil.copy2(dest, copy)
-        wb = xlsx_model.read(copy)
-        for src in s.sources:
-            self.grants.revoke(src.grant_id)
-        s.engine, s.label, s.workbook = "local", dest.name, wb
-        s.draft = D.Draft(s.workbook_id, "local", wb)
-        s.key = workbook_key("local", str(dest).lower())
-        s.grant_id, s.path, s.open_sha, s.sources = g.grant_id, dest, xlsx_model.file_sha256(dest), []
-        self.approvals.audit("office.new_file_created", {"workbook_id": s.workbook_id, **res})
-        return {"saved_to": dest.name, "created": True, **res}
+        sources = s.sources
+        previous = (s.engine, s.label, s.workbook, s.draft, s.key, s.grant_id, s.path, s.open_sha, sources)
+        g = None
+        try:
+            g = self.grants.grant_open(str(dest))
+            copy = self.state / "work" / s.workbook_id / "opened.xlsx"
+            shutil.copy2(dest, copy)
+            wb = xlsx_model.read(copy)
+            draft = D.Draft(s.workbook_id, "local", wb)
+            key = workbook_key("local", str(dest).lower())
+            sha = xlsx_model.file_sha256(dest)
+            s.engine, s.label, s.workbook, s.draft, s.key = "local", dest.name, wb, draft, key
+            s.grant_id, s.path, s.open_sha, s.sources = g.grant_id, dest, sha, []
+        except Exception:  # noqa: BLE001 - publication already succeeded; report the file honestly
+            (s.engine, s.label, s.workbook, s.draft, s.key, s.grant_id, s.path, s.open_sha, s.sources) = previous
+            if g is not None:
+                self.grants.revoke(g.grant_id)
+            reopen_needed = True
+        else:
+            for src in sources:
+                self.grants.revoke(src.grant_id)
+            reopen_needed = False
+        self.approvals.audit("office.new_file_created", {"workbook_id": s.workbook_id, **res,
+                                                         "reopen_needed": reopen_needed})
+        return {"saved_to": dest.name, "created": True, "reopen_needed": reopen_needed, **res}
 
     def action(self, msg) -> dict:
         # Lock order everywhere: workbook lock, then approvals lock (propose_save/propose_share take them that way).

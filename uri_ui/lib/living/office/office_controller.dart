@@ -445,13 +445,15 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
     await _refreshDraft(result);
     notice = result['status'] == 'applied'
         ? (result['created'] == true
-            ? 'Created ${result['saved_to']}.'
+            ? result['reopen_needed'] == true
+                ? 'Created ${result['saved_to']}. It could not be opened here; open it with Open file.'
+                : 'Created ${result['saved_to']}.'
             : result['saved_to'] != null
                 ? 'Saved to ${result['saved_to']}.'
                 : 'Applied.')
         : 'Nothing was changed.';
     final wid = workbookId;
-    if (result['created'] == true && wid != null) {
+    if (result['created'] == true && result['reopen_needed'] != true && wid != null) {
       view = await client.view(wid);       // engine is now local; sources are released
       await _sendLoad();
     }
