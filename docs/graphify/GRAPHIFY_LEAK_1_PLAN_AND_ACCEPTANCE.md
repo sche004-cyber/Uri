@@ -44,3 +44,28 @@ are not installed, and sets a throwaway credential secret only if none is set.
   package staging: 3 + 2 failures, identical on baseline and candidate (run with the placeholders). Not in the gates.
 - Cost: each lookup re-reads the user's memory file (`MemoryStore.list_all` reads JSON). Small files; one read per
   Brain turn.
+
+## Review round 1 repairs (findings R1-01, R1-02)
+
+Corrections to the text above, kept for history:
+
+- R1-02 (the "Change" section is superseded): the memory scope was rebuilt with `refresh(scope="memory")`, which
+  deletes and re-adds keys of the view's `records` in place on every lookup. One view serves concurrent `/ask`
+  requests (thread pool), so lookups and the capability refresh raced (KeyError, "dictionary changed size during
+  iteration", an emptied hint). Now `_sync_memory` builds the memory pointers with `build_index(memory_store=...)`,
+  merges them with the non-memory records in a new dict and assigns `records` once; each lookup holds the view's
+  `lock` (RLock) for sync plus read, and `refresh_user_external_lifecycle` holds the same lock while it refreshes the
+  view's capability/service records. `_sync_memory` never raises (on failure the view keeps its last records).
+- R1-01 (the conftest sentence in "Tests" is superseded): the placeholders were installed at collection and the
+  server stayed imported with placeholder bindings, so later tests in the same run (e.g. `pytest tests/graphify
+  tests/test_m31_model_brain_ux.py`) imported a server bound to MagicMock modules; the credential secret stayed set.
+  Now the module-scoped `graphify_server` fixture installs the placeholders and the secret only while a
+  tests/graphify module runs; on teardown it removes every module imported in that window that is a placeholder,
+  part of `uri_core`, or bound a placeholder (also from its parent package).
+
+- AC9 Concurrent lookups and the capability refresh never break a running lookup; a lookup never raises.
+- AC10 Nothing from the tests/graphify placeholders (modules, bindings, secret) reaches a later test in the run.
+
+Regression tests: `tests/graphify/test_graphify_leak_1_repair.py` (4 tests, all fail on 9ae7c60c, pass after). The
+races are made deterministic by a record whose summary read starts the competing call in another thread and waits
+until it has finished or is waiting for the view's lock.

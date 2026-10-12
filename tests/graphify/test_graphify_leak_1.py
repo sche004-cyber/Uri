@@ -6,13 +6,21 @@ Drives the real server startup loader and _build_user_context with temporary pat
 """
 import pytest
 
-from uri_core.app import server
 from uri_core.core.graphify_index import GraphifyIndex
 from uri_core.core.user_memory import MemoryStore
 
 USER_B = "2b8f6a1e-4c3d-4e5f-9a7b-1c2d3e4f5a6b"
 USER_C = "7c1d2e3f-5a6b-4c7d-8e9f-0a1b2c3d4e5f"
 PRIMARY_TEXT = "primary user's private preference text"
+server = None   # uri_core.app.server, bound for this module's tests by the conftest fixture
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _server(graphify_server):
+    global server
+    server = graphify_server
+    yield
+    server = None
 
 
 @pytest.fixture
