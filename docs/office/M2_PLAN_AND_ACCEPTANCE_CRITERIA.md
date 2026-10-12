@@ -282,3 +282,15 @@ Verified by Claude before commit: after publication a failure restores the sessi
 The three round-12 test bodies passed when invoked directly. Pytest could not run them in this Windows sandbox: its temporary-directory setup failed with `PermissionError: [WinError 5]` while scanning `.codex_tmp/pytest-r12-before`. A clean pytest gate and independent re-review remain pending.
 
 Verified by Claude before commit: only `xlsx_new.write` changed (original errors win over cleanup errors before publication; after publication a cleanup failure is recorded as `temp_left`). The 3 new tests fail on 314e9bb7 and pass after. PC gates: Python 925 passed / 27 skipped; `flutter test` 545 passed / 5 skipped; `ws_frozen_check` ok.
+
+### 2026-10-12, Codex review of f50ae1e3 (round 13): ACCEPT
+
+`codex exec`, `gpt-6-sol`, high, read-only, 195 s, COMPLETED_WITH_RESULT. **Verdict: ACCEPT, no findings.** R12-01 confirmed repaired. Reviewed candidate: **f50ae1e3** (this ledger entry is a documentation-only commit on top of it).
+
+Summary of the Codex audit-and-repair loop (owner: "Send the review to codex", then "Use codex for audit and repair"): 13 audit rounds, each a fresh read-only Codex session; repairs from round 4 on written by separate Codex sessions; every repair verified by Claude (diff scope, tests failing before and passing after, PC gates) before commit. Rounds 1-7 and 9 REJECT; 8, 10, 11, 12 ACCEPT WITH FINDINGS (all findings repaired under the owner's limitation-vs-repair rule); 13 ACCEPT.
+
+Codex could not run pytest or Flutter in its sandbox in any round; all test evidence is from the PC. Final PC gates at f50ae1e3: Python 925 passed / 27 skipped; `flutter test` 545 passed / 5 skipped; `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok.
+
+**Not verified at f50ae1e3:** the PC scripted live checks (build, check and role flows) ran at earlier commits (03342aac era and 99bd8116); later repairs changed the snapshot, sheet ops (no rename), writer and role switching. A live re-run at the final commit needs the Brain (owner's GPU permission). Also NOT VERIFIED: the owner's own check (OFF-O5 analogue for M2).
+
+**Note for M1:** R6-01 (the draft snapshot dropping live changes beyond 500) also exists on `phase/uri-office` (M1); it is fixed only on this branch. Merging M1 alone keeps that defect; merging M2 on top of M1 fixes it.
