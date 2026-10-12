@@ -11,6 +11,7 @@ here the same day, and removed only when it is done, with the date. Newest chang
 | A2 | Make sure Tesseract OCR is installed on your PC. | W2 reads scanned PDFs with it. Not checkable from the cloud. | W2 scanned PDFs only |
 | A3 | Remove the three leftover `url.insteadOf` test lines from `~/.gitconfig` (cloud container). | Left from earlier testing; I'm not allowed to change them. | Nothing (tidy-up) |
 | A4 | Send the OFF-O6 approval text to the Office thread, if you haven't yet. | Lets the Office thread start the WebView2 work. | Office OFF-O6 |
+| A5 | Let the cloud environment run Codex: in the environment settings (environment menu in the session title bar → Edit) add `npm install -g @openai/codex` to the Setup script, and add your OpenAI key as the environment variable `OPENAI_API_KEY` (Network secrets / API credentials if offered). Never paste the key in chat. Then start a new session or tell me. | You asked to use Codex as much as possible (D32). Codex is not installed here and I may not install it myself. | Codex reviewer/implementer; until then milestones keep using Claude |
 
 ## 2. Things to run on your Windows PC
 
