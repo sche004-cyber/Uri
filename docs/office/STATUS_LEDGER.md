@@ -92,3 +92,29 @@ The cloud lifecycle run continued after round 2 and reached VERIFIED at `25fce88
 
 Windows gate fix on top (this commit): node wrappers force `--test-reporter=tap`; the two lints fixed. After it: `tests/office` 246 passed / 3 POSIX-only skips; analyze back to the 2 pre-existing infos; Office widget tests 11/11.
 A local manual repair of round 2 (`wip/office-manual-r2-repair`, 9f5f14ad) overlapped the run's own repairs and was NOT pushed; its extra low-severity hardening (R2-03 Dart-args ignored, R2-04 install_ok, R2-06 card characters, R2-08 page-folder links) is available as a follow-up if wanted.
+
+## 2026-10-12, Windows-fix re-review did not run (baseline moved)
+
+The cloud re-review of `f0f95feb` (`URI-OFFICE-M1-w`) did not start: the lifecycle driver refused because `origin/integration/git-sync-20261008` moved from `ce1a90c` to `cbdf3f2c` (DEV-LIFECYCLE-2), and the config expects `ce1a90c`. Nothing was reviewed, committed or pushed by that session. Status of `f0f95feb`: **NOT VERIFIED** by an independent review. The next review (below) pins the baseline to the commit `ce1a90c046d2e9566a86d8dccf25df0e2bc98c80` itself, the base this candidate was built on; rebasing onto `cbdf3f2c` stays a later step (after W1/A0, owner-gated).
+
+## 2026-10-12, scripted live check on the PC (owner choice 2b; NOT the owner's own check)
+
+First run (before the companion pane), Brain started with `--override-contention` on the owner's instruction ("Override start"; dwm.exe held 1.1 GB): Brain READY 159 tok/s; page loaded; workbook opened; URI proposed `Sales!C2 = "Checked by URI"` in 2.1 s; accepted; approval card shown; saved. Evidence `evidence/live_check_20261012/`.
+
+## 2026-10-12, AC19: URI companion in the Office pane (owner request, added to M1)
+
+Owner: "On the right side pane Uri companion should be available to deal with user request, if this is inside uri" -> "Add to M1 now".
+
+- The Office region's right pane is now the URI companion: requests, URI replies, suggested-change cards (Accept/Reject, hash-bound as before), the approval card, undo/redo/save tools, the history switch, and the companion's own composer (with push-to-talk) at the bottom.
+- Routing is UI-side only: `LivingServices.officeTarget` is set by the Office region while it shows a controller; `activeOfficeTarget()` returns it only in Workspace mode, Office focus, with a workbook open. The composer and `VoiceInteractionController` send to it then; otherwise nothing changes. The worker, its commands and its sandbox are unchanged.
+- A request only asks URI to suggest changes. Accept, reject and save remain buttons; spoken words never approve.
+
+| Check (PC, Windows) | Result |
+|---|---|
+| `flutter analyze` | 2 issues, both pre-existing infos (unchanged) |
+| `flutter test` | 532 passed, 5 skipped (522 before + 10 new) |
+| New tests | `uri_ui/test/office/office_companion_test.dart` (8), `uri_ui/test/living/live_voice_test.dart` (+3) |
+| Scripted live check, run 1 | COMPLETED_WITH_RESULT, but the harness build's icon font was stale (1 KB, tree-shaken in the morning build with no icons), so icons were blank in screenshots; also found: an empty Brain message left no URI line in the pane. Fixed: the pane says "I suggested N change(s). Review below." (test added); harness rebuilt with `--no-tree-shake-icons` |
+| Scripted live check, run 2 | COMPLETED_WITH_RESULT. Brain READY 161 tok/s with the owner-approved override (owner answered "Yes, override start" for this check); `gpu_lease advise --window` GO; the app's `OfficeRegion` inside `LivingScope`, Office focus; companion routed to the workbook only after it opened; URI proposed C2 in 1.5 s; accepted; approval card; saved. File check: only `xl/worksheets/sheet1.xml` changed, only `Sales!C2` (None -> "Checked by URI"). Brain and service stopped; GPU lease FREE. Evidence `evidence/live_check_20261012_companion/` |
+
+Not verified: typing in the real composer and push-to-talk on the PC (the harness calls the same `activeOfficeTarget().instruct` the composer and voice use; both paths are covered by widget and unit tests only); the owner's own live check (OFF-O5).

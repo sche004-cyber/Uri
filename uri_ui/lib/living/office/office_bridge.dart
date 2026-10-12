@@ -98,3 +98,17 @@ Map<String, dynamic>? parsePageMessage(Object? raw) {
   }
   return null;
 }
+
+/// The open Office workbook as a target for the companion's requests. While the owner works in Office focus with a
+/// workbook open, the companion's composer and push-to-talk send requests here instead of to the conversation turn.
+/// A request only asks URI to suggest changes: nothing here accepts, rejects or saves anything (those stay buttons).
+abstract interface class OfficeRequestTarget implements Listenable {
+  /// True while a workbook is open and requests can be taken.
+  bool get acceptsRequests;
+
+  /// True while URI is working on the previous request.
+  bool get busy;
+
+  /// Asks URI to change the open workbook. The reply and the suggested changes appear in the Office conversation.
+  Future<void> instruct(String text, {String? activeSheet});
+}

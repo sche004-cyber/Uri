@@ -131,6 +131,18 @@ class LivingServices {
   /// Windows entry point installs them.
   OfficeEnvironment? office;
 
+  /// The workbook open in the Office region, while that region is shown. The Office region sets and clears it.
+  final ValueNotifier<OfficeRequestTarget?> officeTarget = ValueNotifier<OfficeRequestTarget?>(null);
+
+  /// Where the companion's requests go now: the open workbook when the owner is in the Office region with a
+  /// workbook open, otherwise null (the ordinary conversation).
+  OfficeRequestTarget? activeOfficeTarget() {
+    final t = officeTarget.value;
+    if (t == null || !t.acceptsRequests) return null;
+    if (presentation.mode != UiPresentationMode.workspace || presentation.focus != WorkspaceFocus.office) return null;
+    return t;
+  }
+
   /// The adapter currently feeding [voice], if any.
   VoiceServiceAdapter? get voiceAdapter => _voiceBinding?.adapter;
 
@@ -168,6 +180,7 @@ class LivingServices {
       oi: oi,
       dictation: dictation,
       keepInComposer: (text) => composerInsert.value = text,
+      officeTarget: activeOfficeTarget,
     );
     voiceInteraction = controller;
     companion.addSource(controller);
@@ -191,6 +204,7 @@ class LivingServices {
     voiceInteraction?.dispose();
     liveVoice?.dispose();
     composerInsert.dispose();
+    officeTarget.dispose();
     voice.dispose();
     frameGovernor.dispose();
     frameClock.dispose();
@@ -202,6 +216,10 @@ class LivingScope extends InheritedWidget {
   const LivingScope({super.key, required this.services, required super.child});
 
   final LivingServices services;
+
+  /// The services, or null when there is no living scope above (a region shown on its own, as in tests).
+  static LivingServices? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<LivingScope>()?.services;
 
   static LivingServices of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<LivingScope>();

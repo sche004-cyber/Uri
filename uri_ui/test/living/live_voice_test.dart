@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:uri_ui/living/companion/companion_preferences.dart';
 import 'package:uri_ui/living/companion/companion_state.dart';
 import 'package:uri_ui/living/integration/oi_conversation.dart';
+import 'package:uri_ui/living/office/office_bridge.dart';
 import 'package:uri_ui/living/presentation/presentation_controller.dart';
 import 'package:uri_ui/living/voice/voice_controls.dart';
 import 'package:uri_ui/living/voice/voice_interaction.dart';
@@ -609,6 +610,62 @@ void main() {
       },
     );
 
+    // Office companion (owner request 2026-10-12): in Office focus with a workbook open, a spoken request goes to
+    // the workbook like typed text in the Office pane. It only asks URI to suggest changes.
+    test('in Office focus a spoken request goes to the open workbook, not the conversation', () async {
+      final office = _FakeOffice();
+      final c2 = VoiceInteractionController(
+        service: svc,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi,
+        keepInComposer: kept.add,
+        officeTarget: () => office,
+      );
+      await c2.pressTalk();
+      c2.releaseTalk();
+      await finalText('Put checked by URI in C2');
+      expect(office.asks, ['Put checked by URI in C2']);
+      expect(rt.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
+      expect(c2.stage, VoiceStage.idle);
+      c2.dispose();
+    });
+
+    test('a busy workbook keeps the spoken request in the composer', () async {
+      final office = _FakeOffice()..busy = true;
+      final c2 = VoiceInteractionController(
+        service: svc,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi,
+        keepInComposer: kept.add,
+        officeTarget: () => office,
+      );
+      await c2.pressTalk();
+      c2.releaseTalk();
+      await finalText('Sum column B');
+      expect(office.asks, isEmpty);
+      expect(kept, ['Sum column B']);
+      expect(c2.noticeCode, 'BUSY');
+      expect(rt.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
+      c2.dispose();
+    });
+
+    test('with no Office target the spoken request is an ordinary turn', () async {
+      final c2 = VoiceInteractionController(
+        service: svc,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi,
+        officeTarget: () => null,
+      );
+      await c2.pressTalk();
+      c2.releaseTalk();
+      await finalText('What is the capital of Sikkim?');
+      expect(rt.commands.where((c) => c['command'] == 'oi_turn'), hasLength(1));
+      c2.dispose();
+    });
+
     test('talking while URI speaks interrupts the reply (barge-in)', () async {
       await ctl.pressTalk();
       ctl.releaseTalk();
@@ -1058,4 +1115,14 @@ void main() {
       expect(b.map((e) => e.$2), ['Three without end']);
     });
   });
+}
+
+class _FakeOffice extends ChangeNotifier implements OfficeRequestTarget {
+  final asks = <String>[];
+  @override
+  bool acceptsRequests = true;
+  @override
+  bool busy = false;
+  @override
+  Future<void> instruct(String text, {String? activeSheet}) async => asks.add(text);
 }

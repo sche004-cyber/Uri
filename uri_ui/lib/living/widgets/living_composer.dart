@@ -95,6 +95,16 @@ class _LivingComposerState extends State<LivingComposer> {
       appState.clearComposerDraft();
       return;
     }
+    final office = services.activeOfficeTarget();
+    if (office != null) {
+      // Office focus with a workbook open: the request is about the sheet. It only asks URI to suggest changes;
+      // accepting and saving stay buttons in the Office pane.
+      if (office.busy) return;
+      _controller.clear();
+      appState.clearComposerDraft();
+      await office.instruct(text);
+      return;
+    }
     final oi = services.oi;
     if (oi != null ? oi.busy : appState.isSendingAsk) return;
     _controller.clear();
@@ -121,12 +131,24 @@ class _LivingComposerState extends State<LivingComposer> {
     final appState = AppStateScope.of(context);
     final c = UriColors.of(context);
     final glass = UriGlass.of(context);
-    final OiConversation? oi = LivingScope.of(context).oi;
-    final voice = LivingScope.of(context).voiceInteraction;
+    final services = LivingScope.of(context);
+    final OiConversation? oi = services.oi;
+    final voice = services.voiceInteraction;
     return ListenableBuilder(
-      listenable: oi == null ? appState : Listenable.merge([appState, oi]),
+      listenable: Listenable.merge([
+        appState,
+        ?oi,
+        services.officeTarget,
+        ?services.officeTarget.value,
+        services.presentation,
+      ]),
       builder: (context, _) {
-        final sending = oi != null ? oi.busy : appState.isSendingAsk;
+        final office = services.activeOfficeTarget();
+        final sending = office != null
+            ? office.busy
+            : oi != null
+                ? oi.busy
+                : appState.isSendingAsk;
         return GlassPanel(
           strong: true,
           blur: true,
@@ -154,7 +176,7 @@ class _LivingComposerState extends State<LivingComposer> {
                         );
                       },
                     ),
-                  if (oi != null)
+                  if (oi != null && office == null)
                     IconButton(
                       key: const ValueKey('living-composer-transcript'),
                       tooltip: oi.transcriptMode
@@ -166,7 +188,7 @@ class _LivingComposerState extends State<LivingComposer> {
                       color: c.inkSoft,
                       onPressed: () => oi.setTranscriptMode(!oi.transcriptMode),
                     ),
-                  if (oi != null)
+                  if (oi != null && office == null)
                     IconButton(
                       key: const ValueKey('living-composer-dictation'),
                       tooltip: oi.dictationMode
@@ -194,7 +216,9 @@ class _LivingComposerState extends State<LivingComposer> {
                         onChanged: appState.setComposerDraft,
                         style: TextStyle(color: c.ink, fontSize: 14),
                         decoration: InputDecoration(
-                          hintText: oi != null && oi.dictationMode
+                          hintText: office != null
+                              ? 'Ask URI to change this sheet'
+                              : oi != null && oi.dictationMode
                               ? 'Dictation — written as draft text, never carried out'
                               : oi != null && oi.transcriptMode
                                   ? 'Type what was said — sent as a SIMULATED transcript'

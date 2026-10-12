@@ -10,7 +10,16 @@ import 'office_client.dart';
 /// State of the Office panel: one open workbook, its draft (from the service, the authority), the page surface,
 /// and an A2UI hub that renders the service's approval card. Every change goes through the service; the page
 /// only shows the workbook and reports the owner's typing.
-class OfficeController extends ChangeNotifier {
+enum OfficeSpeaker { owner, uri, notice }
+
+/// One line of the Office conversation.
+class OfficeTurn {
+  const OfficeTurn(this.speaker, this.text);
+  final OfficeSpeaker speaker;
+  final String text;
+}
+
+class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
   OfficeController({required this.client, required this.surface}) {
     hub.registry['office.apply_change'] = _approvalAction;
     hub.registry['office.reject_change'] = _approvalAction;
@@ -24,6 +33,7 @@ class OfficeController extends ChangeNotifier {
 
   Map<String, dynamic>? view;      // service view: workbook, draft, engine, label, history_on
   bool pageReady = false;
+  @override
   bool busy = false;
   String? notice;                  // last message for the owner (never cell values from the service)
   String? brainMessage;
@@ -192,15 +202,47 @@ class OfficeController extends ChangeNotifier {
   Future<void> openLocal(String path) => _guard(() async => _apply(await client.openLocal(path)));
   Future<void> openGoogle(String url) => _guard(() async => _apply(await client.openGoogle(url)));
 
-  Future<void> instruct(String text, {String? activeSheet}) => _guard(() async {
-        final wid = workbookId;
-        if (wid == null) return;
-        final r = await client.instruct(wid, text, activeSheet: activeSheet);
-        brainMessage = r['message'] as String?;
-        final refused = (r['refused'] as List?) ?? const [];
-        if (refused.isNotEmpty) notice = '${refused.length} suggested change(s) were refused as unsafe or invalid.';
-        await _refreshDraft(r);
-      });
+  @override
+  bool get acceptsRequests => workbookId != null;
+
+  /// The owner's requests and URI's replies for this workbook, shown in the companion pane. Text only: the
+  /// suggested changes themselves are the change cards, never copied into this list.
+  final List<OfficeTurn> conversation = [];
+  static const int conversationCap = 100;
+
+  void _say(OfficeSpeaker who, String text) {
+    conversation.add(OfficeTurn(who, text));
+    if (conversation.length > conversationCap) conversation.removeRange(0, conversation.length - conversationCap);
+  }
+
+  @override
+  Future<void> instruct(String text, {String? activeSheet}) async {
+    final t = text.trim();
+    if (busy || t.isEmpty || workbookId == null) return;
+    _say(OfficeSpeaker.owner, t);
+    brainMessage = null;
+    final before = proposed.length;
+    await _guard(() async {
+      final wid = workbookId;
+      if (wid == null) return;
+      final r = await client.instruct(wid, t, activeSheet: activeSheet);
+      brainMessage = r['message'] as String?;
+      final refused = (r['refused'] as List?) ?? const [];
+      if (refused.isNotEmpty) notice = '${refused.length} suggested change(s) were refused as unsafe or invalid.';
+      await _refreshDraft(r);
+    });
+    final reply = brainMessage;
+    final added = proposed.length - before;
+    if (reply != null && reply.trim().isNotEmpty) {
+      _say(OfficeSpeaker.uri, reply.trim());
+    } else if (added > 0) {
+      _say(OfficeSpeaker.uri, 'I suggested $added change${added == 1 ? '' : 's'}. Review below.');
+    } else if (notice == null) {
+      _say(OfficeSpeaker.uri, 'No change was suggested.');
+    }
+    if (notice != null) _say(OfficeSpeaker.notice, notice!);
+    notifyListeners();
+  }
 
   Future<void> decide(Map<String, dynamic> change, String decision, {String reason = ''}) => _guard(() async {
         final wid = workbookId;

@@ -6,6 +6,7 @@ import '../companion/companion_preferences.dart';
 import '../companion/companion_sources.dart';
 import '../companion/companion_state.dart';
 import '../integration/oi_conversation.dart';
+import '../office/office_bridge.dart';
 import '../presentation/presentation_controller.dart';
 import 'voice_session.dart';
 
@@ -56,6 +57,7 @@ class VoiceInteractionController extends CompanionStateSource {
     this.oi,
     this.dictation,
     this.keepInComposer,
+    this.officeTarget,
     this.maxSpokenChars = 600,
     this.noticeHold = const Duration(seconds: 6),
   }) {
@@ -75,6 +77,10 @@ class VoiceInteractionController extends CompanionStateSource {
   /// Puts text back in the composer (drafting without a desk, or a turn that
   /// could not be sent), so spoken words are never silently lost.
   final void Function(String text)? keepInComposer;
+
+  /// The open Office workbook when the owner is working in it (else null). A finished transcript then goes to it
+  /// like typed text in the Office pane: it only asks URI to suggest changes; accepting and saving stay buttons.
+  final OfficeRequestTarget? Function()? officeTarget;
 
   /// Replies longer than this are cut at a sentence end; the rest stays on
   /// screen and URI says so.
@@ -243,6 +249,23 @@ class VoiceInteractionController extends CompanionStateSource {
     if (command != null) {
       presentation.apply(command);
       _setStage(VoiceStage.idle);
+      return;
+    }
+    final office = officeTarget?.call();
+    if (office != null) {
+      if (office.busy) {
+        keepInComposer?.call(text);
+        _setStage(VoiceStage.idle);
+        _setNotice(
+          'BUSY',
+          'URI is still working on the sheet. Your words are in the composer; nothing was sent.',
+        );
+        return;
+      }
+      _setStage(VoiceStage.waiting);
+      await office.instruct(text);
+      if (_disposed) return;
+      _setStage(VoiceStage.idle);   // the reply and the suggested changes are shown in the Office pane
       return;
     }
     final conv = oi;
