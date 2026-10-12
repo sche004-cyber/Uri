@@ -24,6 +24,18 @@ Bounded and safe: a strict http(s)-only scheme check, a content-length
 cap enforced on real bytes received (never a client-declared header),
 a short timeout, and no redirect to a non-http(s) scheme. Never
 invents content when a fetch fails - reports the real reason.
+
+SSRF-1 (owner decision D2): the network hop goes through W1's
+uri_web.safe_fetch.SafeFetcher instead of `requests`. Every hop is
+checked by uri_web.netpolicy (public http(s) only: no loopback,
+private, link-local/metadata, CGNAT, multicast or reserved address, no
+userinfo, allowed ports only), the name is resolved once and refused if
+ANY answer is non-public, the connection is pinned to the checked
+address (no DNS rebinding), at most 5 redirects are followed and each
+is re-checked, and environment proxies, cookies and credentials are
+never used. A refused target returns "unavailable" with a refusal code
+and nothing about the internal address. robots.txt is not applied: this
+is one user-directed read, not a crawler (as before).
 """
 
 import os
@@ -32,9 +44,9 @@ import tempfile
 from html.parser import HTMLParser
 from typing import Optional
 
-import requests
-
 from uri_core.services.file_extraction import extract_file_text
+from uri_web import records as R
+from uri_web.safe_fetch import SafeFetcher
 
 _URL_RE = re.compile(r"https?://[^\s<>\"']+", re.IGNORECASE)
 
@@ -96,9 +108,16 @@ class FetchUrlTool:
     never decides what a page means, never drafts an answer from it,
     and never invents content when a fetch fails."""
 
-    def __init__(self, session=None, timeout: int = _TIMEOUT_SECONDS):
-        self._session = session or requests
+    def __init__(self, fetcher: Optional[SafeFetcher] = None, timeout: int = _TIMEOUT_SECONDS):
+        # `fetcher` is a test seam (an injected SafeFetcher with a fake resolver/transport); production builds its own.
         self._timeout = timeout
+        self._fetcher = fetcher
+
+    def _new_fetcher(self) -> SafeFetcher:
+        types = {mime: "document" for mime in _EXTENSION_BY_CONTENT_TYPE}
+        types.update({"": "html"})          # no Content-Type: read as HTML, as before
+        return SafeFetcher(honour_robots=False, max_bytes=_MAX_BYTES, total_timeout=float(self._timeout),
+                           extra_types=types)
 
     def execute(self, **kwargs) -> dict:
         request_text = kwargs.get("request_text", "") or ""
@@ -121,54 +140,67 @@ class FetchUrlTool:
                 "url": url,
             }
 
-        try:
-            response = self._session.get(
-                url,
-                timeout=self._timeout,
-                headers={"User-Agent": "URI/1.0 (institutional research assistant)"},
-                stream=True,
-            )
-        except requests.RequestException as error:
+        fetcher = self._fetcher or self._new_fetcher()
+        result = fetcher.fetch(url, robots=False)
+        rec = result.record
+
+        if rec.fetch_status == R.REFUSED:
+            return {
+                "status": "unavailable",
+                "message": "URI will not fetch that address (private or local network).",
+                "refusal_code": rec.refusal_code,
+                "url": url,
+            }
+
+        if rec.fetch_status == R.HTTP_ERROR:
+            return {
+                "status": "unavailable",
+                "message": f"The page returned HTTP {rec.http_status}.",
+                "url": url,
+            }
+
+        if rec.fetch_status == R.TOO_LARGE:
+            return {
+                "status": "unavailable",
+                "message": (
+                    f"The page exceeded the {_MAX_BYTES // (1024 * 1024)} MB "
+                    "fetch limit."
+                ),
+                "url": url,
+            }
+
+        content_type = (rec.content_type or "").lower()
+
+        if rec.fetch_status == R.UNSUPPORTED_CONTENT_TYPE:
+            return {
+                "status": "unsupported",
+                "message": (
+                    f"URI has no reader for content type '{content_type or 'unknown'}'."
+                ),
+                "url": url,
+                "content_type": content_type,
+            }
+
+        if rec.fetch_status != R.OK:
             return {
                 "status": "unavailable",
                 "message": "URI could not reach that URL.",
-                "error": str(error),
+                "error": rec.fetch_status,
                 "url": url,
             }
 
-        if response.status_code != 200:
+        if rec.http_status != 200:
             return {
                 "status": "unavailable",
-                "message": f"The page returned HTTP {response.status_code}.",
+                "message": f"The page returned HTTP {rec.http_status}.",
                 "url": url,
             }
 
-        content_type = (response.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+        content = result.body
 
-        content = bytearray()
-        try:
-            for chunk in response.iter_content(chunk_size=65536):
-                content.extend(chunk)
-                if len(content) > _MAX_BYTES:
-                    return {
-                        "status": "unavailable",
-                        "message": (
-                            f"The page exceeded the {_MAX_BYTES // (1024 * 1024)} MB "
-                            "fetch limit."
-                        ),
-                        "url": url,
-                    }
-        finally:
-            response.close()
-
-        if content_type in ("text/html", "application/xhtml+xml") or not content_type:
-            try:
-                html_text = bytes(content).decode(response.encoding or "utf-8", errors="replace")
-            except (LookupError, TypeError):
-                html_text = bytes(content).decode("utf-8", errors="replace")
-
+        if result.kind == "html":
             parser = _TextExtractingHTMLParser()
-            parser.feed(html_text)
+            parser.feed(result.text)
             text = parser.text().strip()
 
             if not text:
