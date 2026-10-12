@@ -678,3 +678,43 @@ def test_r2_04_one_excerpt_budget_for_the_workbook_and_the_references(tmp_path, 
     n_work = sum(len(sh["cells"]) for sh in work["sheets"])
     n_refs = sum(len(sh["first_rows"]) for x in refs_ for sh in x["sheets"])
     assert n_work == B.MAX_EXCERPT_CELLS and n_refs == 0
+
+
+# ---- Codex re-review of a4838589 (R3-01..R3-03) ---------------------------------------------------------------------
+def test_r3_01_rename_keeps_undo_and_redo():
+    d = D.Draft("w", "new", {"sheets": [{"name": "Sheet1", "cells": {}}]})
+    d.propose([{"sheet": "Sheet1", "cell": "A1", "value": "before"}])
+    d.propose([{"op": "rename_sheet", "sheet": "Sheet1", "name": "Summary"}])
+    assert d.snapshot()["can_undo"] and d.sheets() == ["Summary"]
+    assert {c["sheet"] for c in d.changes if c["kind"] == "cell"} == {"Summary"}
+    d.undo()
+    assert d.sheets() == ["Sheet1"] and [c["sheet"] for c in d.changes if c["kind"] == "cell"] == ["Sheet1"]
+    d.undo()
+    assert d.changes == [] and d.sheets() == ["Sheet1"]
+    d.redo()
+    d.redo()
+    assert d.sheets() == ["Summary"] and [c["sheet"] for c in d.changes if c["kind"] == "cell"] == ["Summary"]
+
+
+def test_r3_02_overlap_rule_follows_a_rename_in_the_same_answer(tmp_path, office):
+    a = make_source(tmp_path / "a.xlsx")
+    o, _ = office({"message": "x", "ops": [
+        op(op="set_values", sheet="Sheet1", range="A1", values=[["first"]]),
+        op(op="rename_sheet", sheet="Sheet1", name="Summary"),
+        op(op="set_values", sheet="Summary", range="A1", values=[["second"]])]})
+    v = o.open_new([str(a)])
+    as_reference(o, v)
+    r = o.instruct(v["workbook_id"], {"text": "go"})
+    assert [(x["index"], x["code"]) for x in r["refused"]] == [(2, "OVERLAPS_EARLIER_OP")]
+    cells = [c for c in r["draft"]["changes"] if c["kind"] == "cell"]
+    assert [(c["sheet"], c["cell"], c["after"]) for c in cells] == [("Summary", "A1", {"v": "first"})]
+
+
+@pytest.mark.parametrize("bad", [{"bad": 1}, "text", 5, None])
+def test_r3_03_malformed_check_findings_are_ignored_not_a_crash(tmp_path, office, bad):
+    a, b = make_source(tmp_path / "a.xlsx"), make_source(tmp_path / "b.xlsx")
+    o, _ = office({"message": "ok", "ops": [], "findings": bad})
+    v = o.open_new([str(a), str(b)])
+    o.set_roles(v["workbook_id"], {"roles": {"S1": "check", "S2": "reference"}})
+    r = o.instruct(v["workbook_id"], {"text": "check"})
+    assert r["findings"] == [] and r["refused"] == []

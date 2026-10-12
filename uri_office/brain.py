@@ -236,13 +236,16 @@ class OfficeBrain:
                         names.append(e["name"])
                     elif e.get("op") == "rename_sheet":
                         names = [e["name"] if n == e["sheet"] else n for n in names]
+                        # Cells earlier ops wrote follow the rename, so the overlap rule still sees them (Codex R3-02).
+                        written = {(e["name"] if sh == e["sheet"] else sh, c) for sh, c in written}
             except OfficeError as exc:
                 refused.append({"index": i, "code": exc.code, "detail": exc.detail})
         msg = data.get("message") if isinstance(data.get("message"), str) else ""
         out_findings = None
         if task == "check":
             out_findings = []
-            for f in (data.get("findings") or [])[:MAX_FINDINGS]:
+            raw = data.get("findings")
+            for f in (raw if isinstance(raw, list) else [])[:MAX_FINDINGS]:          # Codex R3-03
                 if not isinstance(f, dict) or not isinstance(f.get("issue"), str) or not f["issue"].strip():
                     continue
                 sheet = f.get("sheet") if f.get("sheet") in names else None

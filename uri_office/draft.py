@@ -152,8 +152,7 @@ class Draft:
         return new
 
     def _sheet_op(self, op: dict):
-        """New workbook only: add or rename a sheet now. A rename clears undo and redo (earlier versions name the old
-        sheet), like a save."""
+        """New workbook only: add or rename a sheet now. Undo and redo restore the sheets with the changes."""
         if op["op"] == "add_sheet":
             if op["name"] in self.base:
                 raise OfficeError("BAD_SHEET_NAME", op["name"][:40])
@@ -168,8 +167,7 @@ class Draft:
             for c in self.changes:
                 if c["sheet"] == old:
                     c["sheet"] = name
-            self._undo.clear()
-            self._redo.clear()
+            # Undo and redo keep working: each saved version holds its own sheets and changes (Codex R3-01).
         else:
             raise OfficeError("OP_NOT_SUPPORTED_LOCALLY", op["op"])
 

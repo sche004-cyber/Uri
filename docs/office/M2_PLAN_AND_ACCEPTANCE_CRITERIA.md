@@ -153,3 +153,16 @@ PC gates after the Codex repairs: Python `tests/office tests/a2ui tests/ws tests
 
 M2 limit added: a sheet larger than 50,000 cells can be shown and checked in part only; it cannot be a copy source.
 PC gates after round 2: Python 888 passed / 27 skipped; flutter test 543 passed / 5 skipped; ws_frozen_check ok.
+
+### 2026-10-12, Codex re-review of a4838589 (round 3)
+
+`gpt-6-sol`, high, read-only, 199 s, COMPLETED_WITH_RESULT. **Verdict: REJECT.** C-02, R2-01, R2-02, R2-04 REPAIRED; R2-03 PARTIAL (R3-01).
+
+| Finding | Repair | Test (fails on a4838589, passes after) |
+|---|---|---|
+| R3-01 MEDIUM: `rename_sheet` cleared undo and redo | no longer cleared: every saved version holds its own sheets and changes | `test_r3_01_...` |
+| R3-02 HIGH: within one answer, a rename hid earlier writes from the overlap rule, so a later op could silently replace an earlier op's value | the cells written earlier follow the rename | `test_r3_02_...` |
+| R3-03 MEDIUM (non-blocking): a malformed `findings` field (not a list) crashed the check | ignored unless it is a list | `test_r3_03_...` (dict and number cases failed before) |
+
+Known edge (not a finding): a bare-column target on a sheet renamed earlier in the same answer counts only cells written in that answer, not cells accepted before under the old name; the copy is then proposed over those cells as ordinary change cards showing before and after, never applied without the owner.
+PC gates after round 3: Python 894 passed / 27 skipped; flutter test 543 passed / 5 skipped; ws_frozen_check ok.
