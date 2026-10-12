@@ -96,8 +96,9 @@ def test_ac3_ac4_the_user_is_told_why(blocked, sources):
     texts = [c.get("text", "") for c in s.components]
     note = [t for t in texts if "non-English letters" in t]
     assert len(note) == 1, texts
-    assert "Scam sites use them to copy real sites." in note[0] and "open it yourself in your browser" in note[0]
-    assert ("Blocked: this site's address" in note[0]) if blocked == 1 else note[0].startswith(f"Blocked {blocked} sites")
+    # Wording D33 (IDN-1b): security reason, not opened in URI, can be opened in the user's own browser.
+    assert note[0].startswith("For security reasons, URI did not open") and "web browser instead" in note[0]
+    assert ("open this site" in note[0]) if blocked == 1 else (f"open {blocked} sites" in note[0])
     # D18: short sentences, plain words; no address in the note.
     assert all(len(x.split()) <= 12 for x in note[0].split(". ")), note[0]
     assert "://" not in json.dumps(s.messages(), ensure_ascii=False) and "xn--" not in note[0]

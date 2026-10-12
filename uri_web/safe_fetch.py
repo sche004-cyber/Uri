@@ -380,12 +380,14 @@ class SafeFetcher:
     def _exchange(self, url, transport, deadline, cancel, rec, max_bytes):
         headers = {"User-Agent": USER_AGENT, "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,"
                    "text/plain;q=0.8,application/json;q=0.5", "Accept-Encoding": "identity"}
+        tap = None
         try:
             # A connect cannot be cut by the watchdog (no socket yet), so it gets at most the remaining budget.
             remaining = max(0.01, deadline - self.clock())
             timeout = httpx.Timeout(connect=min(self.timeout.connect, remaining), read=self.timeout.read,
                                     write=self.timeout.write, pool=min(self.timeout.pool, remaining))
-            with httpx.Client(transport=transport, timeout=timeout, follow_redirects=False, trust_env=False,
+            tap = _LocationTap(transport)
+            with httpx.Client(transport=tap, timeout=timeout, follow_redirects=False, trust_env=False,
                               cookies=None) as client:
                 with client.stream("GET", url, headers=headers) as resp:
                     status = resp.status_code
@@ -419,7 +421,33 @@ class SafeFetcher:
             # R11-02: InvalidURL (a host that netpolicy accepts but httpx does not, '\u2603.com') is not an HTTPError;
             # uncaught, it ended the whole research job as INTERNAL_ERROR. It fails this one source only.
             rec.fetch_status = R.UNREACHABLE
+            # IDN-1b (R2-01): httpx rejects some redirect targets (a full-width host) before we see the Location; the
+            # raw header is checked here so a refused target keeps its reason (e.g. HOST_NON_ENGLISH).
+            if tap is not None and tap.location:
+                try:
+                    NP.check_url(urljoin(url, tap.location), allowed_ports=self.allowed_ports)
+                except NP.EgressRefused as exc:
+                    rec.fetch_status, rec.refusal_code = R.REFUSED, exc.code
+                except ValueError:
+                    pass
         return None
+
+
+class _LocationTap(httpx.BaseTransport):
+    """Passes requests through and keeps the raw Location of a redirect response (IDN-1b), so a target that httpx
+    itself rejects can still be checked by netpolicy."""
+
+    def __init__(self, inner):
+        self._inner, self.location = inner, None
+
+    def handle_request(self, request):
+        resp = self._inner.handle_request(request)
+        if resp.status_code in REDIRECT_CODES:
+            self.location = resp.headers.get("location")
+        return resp
+
+    def close(self):
+        self._inner.close()
 
 
 def _raw_chunks(resp):

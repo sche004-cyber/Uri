@@ -45,6 +45,7 @@ from html.parser import HTMLParser
 from typing import Optional
 
 from uri_core.services.file_extraction import extract_file_text
+from uri_web import netpolicy as NP
 from uri_web import records as R
 from uri_web.safe_fetch import SafeFetcher
 
@@ -83,6 +84,8 @@ _REFUSAL_MESSAGES = {
     "HOST_INVALID": "That URL is not valid.",
     "HOST_MISSING": "That URL is not valid.",
     "ADDRESS_INVALID": "That URL is not valid.",
+    # IDN-1b (owner decision D33): say why, and that the user's own browser can open it.
+    NP.HOST_NON_ENGLISH: NP.NON_ENGLISH_MESSAGE,
 }
 _REFUSAL_FALLBACK = "URI refused to fetch that URL."
 
