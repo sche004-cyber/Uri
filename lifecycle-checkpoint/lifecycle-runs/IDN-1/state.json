@@ -1,0 +1,64 @@
+{
+ "attempts": {},
+ "baseline": "e761ce8f30b4aa21ed90da0a3dfbca52c4172a03",
+ "baseline_gates": {},
+ "blocker": null,
+ "candidate": "21ad94099cbaaec5dbd82b80847be1b8c6c983b2",
+ "config_path": "/home/user/uri-wt/lifecycle-runs/IDN-1.json",
+ "config_sha256": "618469347068e2113ba822ca8b230d9fb744c7b98f856e21a564b078a8c29621",
+ "gates": {},
+ "history": [
+  {
+   "hash": "5d7bebdf6ecb61eb13f4581e4071440b4bbe7eee84aa8f95e3c8c527e65c0f81",
+   "kind": "PLAN",
+   "seq": 1,
+   "ts": "2026-10-12T04:33:42Z"
+  },
+  {
+   "hash": "bbe9d83910b6243d84aa4dcca76383c890b1861edf12a57eab14218f094ce93d",
+   "kind": "STAGE",
+   "seq": 2,
+   "ts": "2026-10-12T04:33:42Z"
+  },
+  {
+   "hash": "031cbaa168b827caef1a4c899c1f3496e029e59e351c8abf9451e69472e66444",
+   "kind": "STAGE",
+   "seq": 3,
+   "ts": "2026-10-12T04:33:42Z"
+  },
+  {
+   "hash": "41bebfc8a37f970bf41aa5603bdf7f3187aaca9d0fd5d1841460d0f9dbfd2abf",
+   "kind": "IMPLEMENTATION_RECORDED",
+   "seq": 4,
+   "ts": "2026-10-12T04:33:42Z"
+  },
+  {
+   "hash": "66bbce44d572f2f72795768c22eff5d8af8fd999490fc8bb1b689abbe98df1e4",
+   "kind": "STAGE",
+   "seq": 5,
+   "ts": "2026-10-12T04:33:42Z"
+  },
+  {
+   "hash": "f2f957fe9929ed8e87279e974b7c182063cd8c7c8eea049c32982ae53affe6b6",
+   "kind": "REVIEW_STARTED",
+   "seq": 6,
+   "ts": "2026-10-12T04:33:44Z"
+  }
+ ],
+ "integration": null,
+ "milestone": "IDN-1",
+ "repairs": [],
+ "rounds": [
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/IDN-1/audit_R1",
+   "baseline": "e761ce8f30b4aa21ed90da0a3dfbca52c4172a03",
+   "candidate": "21ad94099cbaaec5dbd82b80847be1b8c6c983b2",
+   "round": 1,
+   "started_at": "2026-10-12T04:33:44Z"
+  }
+ ],
+ "schema": "uri-dev-lifecycle/1",
+ "spent_usd": 0,
+ "stage": "AUDITING",
+ "started_at": "2026-10-12T04:33:42Z"
+}

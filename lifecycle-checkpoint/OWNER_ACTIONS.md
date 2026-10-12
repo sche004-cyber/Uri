@@ -27,6 +27,7 @@ here the same day, and removed only when it is done, with the date. Newest chang
 | # | Question | Current default | Blocks |
 |---|---|---|---|
 | Q5 | Office thread: OFF-O1 to OFF-O5 (ask the Office thread to list them for you). | Not approved. | Office milestones |
+| Q6 | When the chat's fetch tool refuses a site because its address uses non-English letters, should it say why (one added line in `uri_core/tools/fetch_url.py`, a frozen file)? The research result already says why (IDN-1). | No: it says only "URI refused to fetch that URL." | Nothing (clearer message only) |
 
 ## 4. Optional: ordinary text that is hidden by mistake
 
@@ -43,3 +44,4 @@ All answered 2026-10-11: O1, O3, O4, O5 stay as they are; O2 (Hebrew points) wil
 | 2026-10-11 | D26: a Security tab in settings for the key (frozen exception: settings_shell.dart tab entry only). A1 now means pasting the key there. |
 | 2026-10-11 | D27: Tavily key slot added to the planned Security tab. Nothing new for you to do: your current `.env` Tavily key keeps working. |
 | 2026-10-11 | D28: all settings move into the app (SETTINGS-1); `.env` can be deleted after its one-time import. Nothing to do yet. |
+| 2026-10-12 | Added Q6 (frozen-file exception for the IDN-1 message in the chat fetch tool). |
