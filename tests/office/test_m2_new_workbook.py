@@ -8,6 +8,7 @@ import pytest
 from openpyxl import Workbook, load_workbook
 
 from uri_office import draft as D
+from uri_office import grants
 from uri_office import ops as O
 from uri_office import xlsx_model
 from uri_office.brain import OfficeBrain
@@ -348,6 +349,42 @@ def test_new_file_never_replaces_an_existing_file(tmp_path, http_office):
     assert e["error"] == "DESTINATION_EXISTS"
     assert dest.read_bytes() == b"someone else's file"
     assert not list(tmp_path.glob(".~uri-*"))
+
+
+def test_r5_01_oversized_new_file_is_refused_before_publication_and_can_be_retried(tmp_path, http_office,
+                                                                                      monkeypatch):
+    o, port, token = http_office
+    a = make_source(tmp_path / "north.xlsx")
+    b = make_source(tmp_path / "south.xlsx")
+    _, v, _ = call(port, token, "POST", "/open/new", {"paths": [str(a), str(b)]})
+    wid = v["workbook_id"]
+    as_reference(o, v)
+    st, r, _ = call(port, token, "POST", f"/workbook/{wid}/instruct", {"text": "build"})
+    assert st == 200 and r["refused"] == [], r
+    d = o.sessions[wid].draft
+    st, _, _ = call(port, token, "POST", f"/workbook/{wid}/decide_all",
+                    {"decision": "accept", "draft_version": d.version, "set_sha256": d.proposed_set_sha256()})
+    assert st == 200
+    dest = tmp_path / "new.xlsx"
+    cap = grants.MAX_BYTES
+    monkeypatch.setattr(grants, "MAX_BYTES", 1024)
+    st, p, _ = call(port, token, "POST", f"/workbook/{wid}/propose_save", {"save_as_path": str(dest)})
+    assert st == 200, p
+    st, e, _ = call(port, token, "POST", "/a2ui/action",
+                    {"action": action_for(p["messages"], "apply", "office.apply_change")})
+    assert (st, e["error"]) == (413, "NEW_FILE_TOO_LARGE"), e
+    assert not dest.exists() and not list(tmp_path.glob(".~uri-*"))
+    assert o.view(wid)["engine"] == "new"
+    assert o.approvals.db.execute("SELECT state FROM surface WHERE surface_id=?", (p["surface_id"],)).fetchone()[0] \
+        == "CLOSED"
+
+    monkeypatch.setattr(grants, "MAX_BYTES", cap)
+    st, p, _ = call(port, token, "POST", f"/workbook/{wid}/propose_save", {"save_as_path": str(dest)})
+    assert st == 200, p
+    st, done, _ = call(port, token, "POST", "/a2ui/action",
+                       {"action": action_for(p["messages"], "apply", "office.apply_change")})
+    assert st == 200 and done["status"] == "applied" and dest.exists(), done
+    assert o.view(wid)["engine"] == "local"
 
 
 def test_a_draft_change_after_the_card_makes_it_stale(tmp_path, http_office):
@@ -753,3 +790,33 @@ def test_r4_01_switch_after_in_place_save_uses_current_hash(tmp_path, office):
     v = o.set_roles(wid, {"roles": {"S1": "reference", "S2": "edit"}})
     assert v["engine"] == "local" and v["working"] == "S2"
     assert v["sources"][0]["role"] == "reference"
+
+
+def test_r5_02_deleted_working_file_refuses_role_switch_without_state_change(tmp_path, office):
+    o, _ = office()
+    a, b = make_source(tmp_path / "a.xlsx"), make_source(tmp_path / "b.xlsx")
+    v = o.open_new([str(a), str(b)])
+    wid = v["workbook_id"]
+    o.set_roles(wid, {"roles": {"S1": "edit", "S2": "reference"}})
+    before = json.dumps(o.view(wid), sort_keys=True)
+    a.unlink()
+    with pytest.raises(OfficeError) as e:
+        o.set_roles(wid, {"roles": {"S1": "reference", "S2": "edit"}})
+    assert e.value.code == "TARGET_CHANGED" and e.value.status == 409
+    assert json.dumps(o.view(wid), sort_keys=True) == before
+    assert o.view(wid)["working"] == "S1"
+
+
+def test_r5_02_deleted_new_target_refuses_role_switch_without_state_change(tmp_path, office):
+    o, _ = office()
+    a, b = make_source(tmp_path / "a.xlsx"), make_source(tmp_path / "b.xlsx")
+    v = o.open_new([str(a), str(b)])
+    wid = v["workbook_id"]
+    o.set_roles(wid, {"roles": {"S1": "reference", "S2": "reference"}})
+    before = json.dumps(o.view(wid), sort_keys=True)
+    b.unlink()
+    with pytest.raises(OfficeError) as e:
+        o.set_roles(wid, {"roles": {"S2": "edit"}})
+    assert e.value.code == "TARGET_CHANGED" and e.value.status == 409
+    assert json.dumps(o.view(wid), sort_keys=True) == before
+    assert o.view(wid)["engine"] == "new" and o.view(wid)["working"] is None

@@ -216,13 +216,21 @@ class Office:
         None, a new empty workbook."""
         if SRC.working(s.sources) is not None:
             old_path = self.grants.get(s.grant_id, "open").path
-            if xlsx_model.file_sha256(old_path) != s.open_sha:
+            try:
+                old_hash = xlsx_model.file_sha256(old_path)
+            except OSError:
+                raise OfficeError("TARGET_CHANGED", "the working file is missing or unreadable; add it again", 409) from None
+            if old_hash != s.open_sha:
                 raise OfficeError("TARGET_CHANGED", "the working file changed on disk since it was opened; add it "
                                                     "again", 409)
         path = None
         if src is not None:
             path = self.grants.get(src.grant_id, "open").path
-            if xlsx_model.file_sha256(path) != src.sha256:
+            try:
+                new_hash = xlsx_model.file_sha256(path)
+            except OSError:
+                raise OfficeError("TARGET_CHANGED", "the file is missing or unreadable; add it again", 409) from None
+            if new_hash != src.sha256:
                 raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was added; add it again", 409)
         self.approvals.close_workbook(s.workbook_id)       # an open approval was for the previous target
         if src is None:
@@ -514,7 +522,12 @@ class Office:
         dest = self.grants.get(t["grant_id"], "save_as").path
         if dest.exists():
             raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
-        res = xlsx_new.write(dest, xlsx_new.content(t["sheets"], pending["edits"]))
+        try:
+            res = xlsx_new.write(dest, xlsx_new.content(t["sheets"], pending["edits"]))
+        except OfficeError as exc:
+            if exc.code == "NEW_FILE_TOO_LARGE":
+                self.approvals.close_workbook(s.workbook_id)
+            raise
         g = self.grants.grant_open(str(dest))
         copy = self.state / "work" / s.workbook_id / "opened.xlsx"
         shutil.copy2(dest, copy)

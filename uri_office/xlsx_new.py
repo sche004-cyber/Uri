@@ -13,7 +13,7 @@ from pathlib import Path
 
 from openpyxl import Workbook
 
-from . import refs
+from . import grants, refs
 from .errors import OfficeError
 
 
@@ -49,6 +49,8 @@ def write(dest: Path, sheets: list) -> dict:
     tmp = dest.parent / f".~uri-{uuid.uuid4().hex[:12]}.xlsx"
     try:
         wb.save(tmp)
+        if tmp.stat().st_size > grants.MAX_BYTES:
+            raise OfficeError("NEW_FILE_TOO_LARGE", "the new workbook exceeds the 50 MB file limit", 413)
         _link_no_replace(tmp, dest)
     finally:
         tmp.unlink(missing_ok=True)

@@ -57,6 +57,7 @@ The sources are never written. Nothing leaves the PC.
 ## 5. Limits (M2)
 
 - At most 10 sources per new workbook; each at most 50 MB; each sheet read up to 50,000 cells (M1 reader cap, reported as truncated).
+- A generated new file larger than 50 MB is refused before it is written.
 - The Brain sees bounded excerpts only (up to 600 cells in total across the new workbook and sources). `copy_range` lets URI move data it has not seen cell by cell, within 5,000 cells per op and the draft's 20,000-change cap.
 - No styles, charts or pivot tables in new files; no Google targets for new files (use "Share via Google" after creating it).
 
@@ -176,3 +177,15 @@ Repair performed by Codex on the owner's instruction "Use codex for audit and re
 | R4-01 MEDIUM (blocking): an outside change to the current working file could be demoted into a stale reference | Check the current working file's on-disk SHA-256 against the session hash before changing roles, target, draft, or approvals; retain the new-target check | `test_r4_01_changed_working_file_cannot_be_demoted` (both another working file and all references), `test_r4_01_switch_after_in_place_save_uses_current_hash`; the existing C-02 test now expects refusal on demotion after an outside change |
 
 Verified by Claude before commit: the repair is limited to `_switch_target` (both checks run before any change; approvals are closed only after them); the two demotion tests fail on 77cd9bfe and pass after; the in-place-save test passes on both (it guards against a false refusal). Codex's 3 HTTP-test errors came from its sandbox (Windows ACLs cannot be set there); on the PC the file passes 55/55. PC gates: Python 897 passed / 27 skipped; `flutter test` 543 passed / 5 skipped; `ws_frozen_check` ok.
+
+### 2026-10-12, Codex re-review of 4acacb91 (round 5)
+
+Repair performed by Codex on the owner's instruction "Use codex for audit and repair".
+
+| Finding | Repair | Tests |
+|---|---|---|
+| R5-01 MEDIUM (blocking): a generated file over 50 MB was published before the input cap refused it | Check the temporary workbook against the shared 50 MB cap before publication; refuse with `NEW_FILE_TOO_LARGE`, remove the temporary file, and close the approval | `test_r5_01_oversized_new_file_is_refused_before_publication_and_can_be_retried` |
+| R5-02 LOW: a missing or unreadable working or new target raised an unhandled `OSError` during role switching | Return `TARGET_CHANGED` (409) before changing session state | `test_r5_02_deleted_working_file_refuses_role_switch_without_state_change`, `test_r5_02_deleted_new_target_refuses_role_switch_without_state_change` |
+
+Verified by Claude before commit: the changes are limited to the size check before linking (`xlsx_new.write`), closing the approval on that refusal, and OSError translated to `TARGET_CHANGED` in `_switch_target`; no sandbox workaround is in the tests (the only monkeypatch lowers the size cap). The 3 new tests fail on 4acacb91 and pass after. Codex's leftover sandbox temp folders were deleted. PC gates are recorded in the line below.
+PC gates after round 5: Python 900 passed / 27 skipped; flutter test 543 passed / 5 skipped; ws_frozen_check ok.
