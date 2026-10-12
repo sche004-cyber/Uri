@@ -36,7 +36,7 @@ site or a copy of a real address is never offered it.
 
 ## Added 2026-10-12 (owner, D35): buttons below the warning
 Owner: "Also A2UI buttons to close (recommended) or proceed below the warning".
-Proposed (awaiting owner ok): below the block note, two A2UI buttons: **Close (recommended)** (primary, existing
+Adopted (owner "Ok", 2026-10-12): below the block note, two A2UI buttons: **Close (recommended)** (primary, existing
 `surface.dismiss`) and **Proceed** (secondary, new action, starts the restricted-mode flow for that one site).
 "Proceed" appears only when the IDN-2 checks pass (scam check ran and not listed, not a copy of an English address);
 otherwise only "Close" with the reason. Built in IDN-2 (needs LINK-REP-1); IDN-1b is not changed (already in review).
