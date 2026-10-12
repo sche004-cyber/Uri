@@ -160,6 +160,46 @@ void main() {
       expect(c.conversation.last.text, 'I suggested 1 change. Review below.');
     });
 
+    // R1-01 (review URI-OFFICE-M1-c): the conversation and approval card of the previous workbook stayed in the pane.
+    test('opening another workbook clears the previous conversation and approval card', () async {
+      var opened = 0;
+      final mock = MockClient((req) async {
+        switch (req.url.path) {
+          case '/open/local':
+            final id = 'w${++opened}';
+            return http.Response(jsonEncode({'workbook_id': id, 'engine': 'local', 'label': '$id.xlsx',
+              'workbook': _workbook, 'draft': {..._draft([]), 'workbook_id': id}, 'history_on': false}), 200);
+          case '/workbook/w1/instruct':
+            return http.Response(jsonEncode({'message': 'Done.', 'proposed': [], 'refused': [], 'metrics': {},
+              'draft': _draft([])}), 200);
+          case '/workbook/w1/propose_save':
+            return http.Response(jsonEncode({'messages': [
+              {'version': 'v0.9', 'createSurface': {'surfaceId': 'save-w1', 'catalogId': 'uri:a2ui/catalog/v1',
+                'theme': {'agentDisplayName': 'URI', 'placement': 'workspace'}}},
+              {'version': 'v0.9', 'updateComponents': {'surfaceId': 'save-w1', 'components': [
+                {'id': 'root', 'component': 'Column', 'children': ['t']},
+                {'id': 't', 'component': 'Text', 'text': 'Save these changes to the file?'},
+              ]}},
+            ]}), 200);
+        }
+        return http.Response(jsonEncode({'error': 'NOT_FOUND'}), 404);
+      });
+      final c = OfficeController(
+          client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:18530'), 'tok', mock), surface: FakeSurface());
+      addTearDown(c.dispose);
+      await c.openLocal(r'C:\Users\me\one.xlsx');
+      await c.instruct('Mark row 2');
+      await c.proposeSave();
+      expect(c.conversation, hasLength(2));
+      expect(c.hub.surfaces.map((s) => s.id), ['save-w1']);
+
+      await c.openLocal(r'C:\Users\me\two.xlsx');
+      expect(c.workbookId, 'w2');
+      expect(c.conversation, isEmpty);
+      expect(c.brainMessage, isNull);
+      expect(c.hub.surfaces, isEmpty);
+    });
+
     test('the conversation is capped', () async {
       final (client, _) = _service();
       final c = OfficeController(client: client, surface: FakeSurface());

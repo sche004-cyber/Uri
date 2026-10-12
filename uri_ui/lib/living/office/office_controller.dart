@@ -97,6 +97,7 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       };
 
   Future<void> _apply(Map<String, dynamic> v) async {
+    if (v['workbook_id'] != workbookId) _forgetWorkbook();
     view = v;
     await _sendLoad();
   }
@@ -209,6 +210,17 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
   /// suggested changes themselves are the change cards, never copied into this list.
   final List<OfficeTurn> conversation = [];
   static const int conversationCap = 100;
+
+  /// Another workbook is now open (R1-01): the conversation, URI's last reply and any approval card belong to the
+  /// previous one, so they are removed instead of shown next to the new workbook.
+  void _forgetWorkbook() {
+    conversation.clear();
+    brainMessage = null;
+    final old = [for (final s in hub.surfaces) s.id];
+    if (old.isNotEmpty) {
+      hub.apply([for (final id in old) {'version': 'v0.9', 'deleteSurface': {'surfaceId': id}}]);
+    }
+  }
 
   void _say(OfficeSpeaker who, String text) {
     conversation.add(OfficeTurn(who, text));

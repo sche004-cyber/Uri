@@ -118,3 +118,14 @@ Owner: "On the right side pane Uri companion should be available to deal with us
 | Scripted live check, run 2 | COMPLETED_WITH_RESULT. Brain READY 161 tok/s with the owner-approved override (owner answered "Yes, override start" for this check); `gpu_lease advise --window` GO; the app's `OfficeRegion` inside `LivingScope`, Office focus; companion routed to the workbook only after it opened; URI proposed C2 in 1.5 s; accepted; approval card; saved. File check: only `xl/worksheets/sheet1.xml` changed, only `Sales!C2` (None -> "Checked by URI"). Brain and service stopped; GPU lease FREE. Evidence `evidence/live_check_20261012_companion/` |
 
 Not verified: typing in the real composer and push-to-talk on the PC (the harness calls the same `activeOfficeTarget().instruct` the composer and voice use; both paths are covered by widget and unit tests only); the owner's own live check (OFF-O5).
+
+## 2026-10-12, review URI-OFFICE-M1-c VERIFIED (R1 ACCEPT WITH FINDINGS) and owner-requested repairs
+
+Receipt `docs/office/review-c/` (candidate `e6a4dcd5`, baseline `ce1a90c`, 1 round, no repairs, 7 LOW non-blocking findings). Owner: "Fix" (R1-01 and R1-06, as recommended; R1-02..R1-05 and R1-07 stay open as known LOW limitations).
+
+| Finding | Repair | Regression test (fails before, passes after) |
+|---|---|---|
+| R1-01 companion conversation kept when another workbook opens | `OfficeController._apply` clears the conversation, URI's last reply and the previous workbook's approval cards when the workbook id changes | `office_companion_test.dart` "opening another workbook clears..." (checked failing on the unrepaired controller) |
+| R1-06 shared files converted LF->CRLF | `analysis_options.yaml`, `living_scope.dart`, `presentation_controller.dart`, `workspace_mode_view.dart`, `main.dart`, `pubspec.yaml` restored to LF; their diffs vs `ce1a90c` are now 2/23/1/5/5/3 added lines instead of whole-file rewrites | `tests/office/test_review_c_repairs.py` |
+
+PC gates after the repair: `tests/office` 247 passed / 3 skipped; `flutter test` 534 passed / 5 skipped; `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok.
