@@ -125,6 +125,7 @@ from uri_core.external.evidence_adapter import complete_operation_feedback
 from uri_core.core.graph_store import GraphStore
 from uri_core.core.graphify_index import (
     DEFAULT_INDEX_PATH, GraphifyIndex, build_index, load_index, save_index,
+    refresh as _graphify_refresh,
 )
 from uri_core.core.startup_services import run_startup_services
 from uri_core.core.graph_engine import (
@@ -227,6 +228,43 @@ _orchestrator.graph_store = _graph_store
 # populates this beyond empty, which is always a safe, valid state.
 _graphify_index = GraphifyIndex()
 _orchestrator.graphify_index = _graphify_index
+
+
+class _MemoryScopedGraphifyView(GraphifyIndex):
+    """A Graphify view whose `memory:` pointers come only from one memory
+    store, read again on every lookup (GRAPHIFY-LEAK-1). The shared
+    index's memory pointers belong to whichever store it was built from
+    (the install's primary user); a copy of it handed to another user
+    told that user's Brain about memories that are not theirs. Every
+    other scope (capabilities, skills, workflows, services) is copied
+    unchanged. `memory_store_source` is a callable so the legacy view
+    follows `_memory_store` when it is replaced."""
+
+    def __init__(self, records, memory_store_source) -> None:
+        super().__init__(records={
+            key: value for key, value in dict(records).items() if not key.startswith("memory:")
+        })
+        self._memory_store_source = memory_store_source
+        self._sync_memory()
+
+    def _sync_memory(self) -> None:
+        try:
+            store = self._memory_store_source()
+        except Exception:
+            store = None
+        _graphify_refresh(self, memory_store=store, scope="memory")
+
+    def get(self, entry_id):
+        self._sync_memory()
+        return super().get(entry_id)
+
+    def list_all(self):
+        self._sync_memory()
+        return super().list_all()
+
+    def relevant_subset(self, goal_text, limit=5):
+        self._sync_memory()
+        return super().relevant_subset(goal_text, limit=limit)
 
 # Growth ledger: see growth_ledger.py. Every event is recorded only as
 # a side effect of a real, already-succeeded user-driven write below
@@ -554,7 +592,10 @@ def _build_user_context(user_id: str) -> _UserContext:
     # This is a derived, per-user view.  Never mutate the process-global
     # Graphify index with a user's installed capability/service state: doing
     # so would leak that state to another user's context.
-    orchestrator.graphify_index = GraphifyIndex(records=dict(_graphify_index.records))
+    # Memory pointers come from this user's own memory store only.
+    orchestrator.graphify_index = _MemoryScopedGraphifyView(
+        _graphify_index.records, lambda: memory_store
+    )
     orchestrator.multi_action_dispatch.audit_sink = (
         lambda entry: audit_trail.record(
             event_type="multi_action_capability_execution",
@@ -907,7 +948,9 @@ class _GraphifyIndexLoader:
             save_index(index, DEFAULT_INDEX_PATH)
 
         _graphify_index = index
-        _orchestrator.graphify_index = index
+        _orchestrator.graphify_index = _MemoryScopedGraphifyView(
+            index.records, lambda: _memory_store
+        )
 
 
 @asynccontextmanager
