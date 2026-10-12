@@ -22,6 +22,7 @@ no authentication beyond this file's own login endpoints.
 """
 
 import asyncio
+import contextlib
 import json
 import os
 import tempfile
@@ -227,6 +228,62 @@ _orchestrator.graph_store = _graph_store
 # populates this beyond empty, which is always a safe, valid state.
 _graphify_index = GraphifyIndex()
 _orchestrator.graphify_index = _graphify_index
+
+
+class _MemoryScopedGraphifyView(GraphifyIndex):
+    """A Graphify view whose `memory:` pointers come only from one memory
+    store, read again on every lookup (GRAPHIFY-LEAK-1). The shared
+    index's memory pointers belong to whichever store it was built from
+    (the install's primary user); a copy of it handed to another user
+    told that user's Brain about memories that are not theirs. Every
+    other scope (capabilities, skills, workflows, services) is copied
+    unchanged. `memory_store_source` is a callable so the legacy view
+    follows `_memory_store` when it is replaced.
+
+    One view is shared by every request of its user and /ask runs in a
+    thread pool, so each lookup holds `lock` while it reads, and the
+    memory pointers are swapped in by one assignment of `records`, never
+    by editing it in place. Anything else that edits `records` (the
+    capability/service refresh in refresh_user_external_lifecycle) takes
+    the same lock."""
+
+    def __init__(self, records, memory_store_source) -> None:
+        super().__init__(records={
+            key: value for key, value in dict(records).items() if not key.startswith("memory:")
+        })
+        self.lock = threading.RLock()
+        self._memory_store_source = memory_store_source
+        self._sync_memory()
+
+    def _sync_memory(self) -> None:
+        """Never raises: on any failure the view keeps its last records."""
+        try:
+            try:
+                store = self._memory_store_source()
+            except Exception:
+                store = None
+            memory = build_index(memory_store=store).records
+            with self.lock:
+                merged = {key: value for key, value in self.records.items() if not key.startswith("memory:")}
+                merged.update({key: value for key, value in memory.items() if key.startswith("memory:")})
+                self.records = merged
+        except Exception:
+            pass
+
+    def get(self, entry_id):
+        with self.lock:
+            self._sync_memory()
+            return super().get(entry_id)
+
+    def list_all(self):
+        with self.lock:
+            self._sync_memory()
+            return super().list_all()
+
+    def relevant_subset(self, goal_text, limit=5):
+        with self.lock:
+            self._sync_memory()
+            return super().relevant_subset(goal_text, limit=limit)
 
 # Growth ledger: see growth_ledger.py. Every event is recorded only as
 # a side effect of a real, already-succeeded user-driven write below
@@ -554,7 +611,10 @@ def _build_user_context(user_id: str) -> _UserContext:
     # This is a derived, per-user view.  Never mutate the process-global
     # Graphify index with a user's installed capability/service state: doing
     # so would leak that state to another user's context.
-    orchestrator.graphify_index = GraphifyIndex(records=dict(_graphify_index.records))
+    # Memory pointers come from this user's own memory store only.
+    orchestrator.graphify_index = _MemoryScopedGraphifyView(
+        _graphify_index.records, lambda: memory_store
+    )
     orchestrator.multi_action_dispatch.audit_sink = (
         lambda entry: audit_trail.record(
             event_type="multi_action_capability_execution",
@@ -621,14 +681,16 @@ def refresh_user_external_lifecycle(
             from uri_core.core.graphify_index import refresh as graphify_refresh
 
             cap_dir = CapabilityDirectory(multi_action_registry=res.registry)
-            graphify_refresh(graphify, capability_directory=cap_dir, scope="capabilities")
-            if context.connected_service_store is not None:
-                graphify_refresh(
-                    graphify,
-                    connected_service_store=context.connected_service_store,
-                    user_id=user_id,
-                    scope="services",
-                )
+            # The view's lookups read records under its lock (GRAPHIFY-LEAK-1).
+            with getattr(graphify, "lock", None) or contextlib.nullcontext():
+                graphify_refresh(graphify, capability_directory=cap_dir, scope="capabilities")
+                if context.connected_service_store is not None:
+                    graphify_refresh(
+                        graphify,
+                        connected_service_store=context.connected_service_store,
+                        user_id=user_id,
+                        scope="services",
+                    )
         # One attribute replacement publishes a complete coherent generation:
         # registry, discovery engine, permission resolver, selected-session
         # state, and cached executors can never be mixed across generations.
@@ -907,7 +969,9 @@ class _GraphifyIndexLoader:
             save_index(index, DEFAULT_INDEX_PATH)
 
         _graphify_index = index
-        _orchestrator.graphify_index = index
+        _orchestrator.graphify_index = _MemoryScopedGraphifyView(
+            index.records, lambda: _memory_store
+        )
 
 
 @asynccontextmanager
