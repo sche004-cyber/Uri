@@ -923,8 +923,116 @@ def _digit_variant(norm: str) -> str:
     return _TOKEN.sub(fold, norm)
 
 
+# D31 (owner, 2026-10-12): "only plain writing can be quoted". Instead of recognising every way to disguise a link,
+# a source sentence is usable (quoted, shown, or used as evidence) only if every token is ordinary writing; anything
+# else is masked and the sentence is never used as support. The link checks above stay as a second layer.
+_EDGE_OPEN = "([{\"'\u201c\u2018\u00ab\u2039<*_"
+_EDGE_CLOSE = ")]}\"'\u201d\u2019\u00bb\u203a>.,;:!?\u2026*_"
+_REAL_LATIN = re.compile(r"LATIN (?:SMALL|CAPITAL) LETTER (?:[A-Z]{1,2}|SHARP S|ETH|THORN|DOTLESS I|ENG|OE|AE)"
+                         r"(?: WITH [A-Z ]+)?$")
+_NUMBER = re.compile(r"[+\-\u2212~#\u00a7\u2116\u00b1]?[$\u20ac\u00a3\u00a5\u20b9]?\d+(?:[.,:/\-\u2013\u00d7x]\d+)*"
+                     r"(?:%|'s|\u2019s|[a-zA-Z]{1,3})?$")
+_UNITS = frozenset("st nd rd th am pm km kg cm mm ml mg mb gb kb tb hz x k m b g s h d y w l lb ft in mi sq yr yrs "
+                   "mo hr hrs min sec ms ns gw mw kw kwh v a cr bn mn xx".split())
+# Codes and versions: 'B12', 'MP3', '4G', 'H1N1', 'v1', 'v1.0', 'M30.8', 'M30.7C'; short hex ids ('e8e3b65').
+_CODE = re.compile(r"(?:[A-Z]+\d+[A-Z\d]*|\d+[A-Z]+[A-Z\d]*|[A-Za-z]{1,3}\d+(?:\.\d+)*[A-Za-z]?|(?=[0-9a-f]*\d)[0-9a-f]{7,40}|[A-Z]{1,4}\.\d+(?:\.\d+)*)$")
+_SYMBOLS = frozenset("& - \u2013 \u2014 / % + = | \u2022 \u00b7 \u2026 \u00bb \u203a > < \u2190 \u2192 * x \u00d7 \u00f7 ~ :".split())
+_COMMON_SHORT = frozenset("a i an as at be by do go he if in is it me my no of on or so to up us we am ok vs id tv uk eu "
+                          "un pm mr ms dr st jr rs oh ah eh hi".split())
+
+
+def _real_letter(ch: str, fam) -> bool:
+    f = _char_script(ch)
+    if f in (None, "COMMON") or f != fam:
+        return False
+    if f == "LATIN" and not ch.isascii():
+        return bool(_REAL_LATIN.match(unicodedata.name(ch, "")))
+    return True
+
+
+def _plain_word(core: str) -> bool:
+    """Letters of one script (accents and the script's own vowel signs allowed), groups joined by '-' or an apostrophe."""
+    fam = None
+    for group in re.split(r"[-\u2010\u2011'\u2019]", core):
+        if not group:
+            return False
+        prev = None
+        for ch in group:
+            if unicodedata.category(ch)[0] == "M":
+                if prev is None:
+                    return False
+                continue
+            f = _char_script(ch)
+            fam = fam or f
+            if not _real_letter(ch, fam):
+                return False
+            prev = ch
+    return fam is not None
+
+
+def _plain_token(core: str) -> bool:
+    if not core or core in _SYMBOLS or all(unicodedata.category(ch)[0] in "SP" for ch in core):
+        return True                            # punctuation and symbols alone ('—', '✅', '§', '©')
+    if "/" in core.strip("/"):                 # 'and/or', 'commit/push', 'log in/out', '24/7'
+        return all(_plain_token(p) for p in core.split("/"))
+    if _plain_word(core):
+        return True
+    m = _NUMBER.match(core)
+    if m:
+        unit = re.search(r"[a-zA-Z]+$", core)
+        return unit is None or unit.group(0).lower() in _UNITS
+    if _CODE.match(core) or re.fullmatch(r"[A-Za-z](?:\.[A-Za-z]){1,3}", core):
+        return True                            # 'e.g', 'i.e', 'a.m', 'U.S' (the link checks still see 'c.o.m')
+    parts = re.split(r"[-\u2013]", core)          # 'COVID-19', 'X-12b', 'mid-2020'
+    return len(parts) > 1 and all(p and (_plain_word(p) or _NUMBER.match(p) or _CODE.match(p)) for p in parts)
+
+
+def _core(tok: str) -> str:
+    core = tok.lstrip(_EDGE_OPEN).rstrip(_EDGE_CLOSE + "-/")
+    return re.sub(r"['\u2019]s$", "", core) or core     # possessive: "B.1's", "Scenario 2's"
+
+
+def _unplain_spans(norm: str) -> list:
+    """D31: spans of tokens that are not ordinary writing, and of runs of two or more very short pieces that are not
+    ordinary short words ('c o m', 'co m', 'i 0', '\u0441 0 \u043c'). Each span also covers the token before it, the
+    name a disguised link would follow."""
+    toks = list(_TOKEN.finditer(norm))
+    out = []
+    short = []
+    for i, m in enumerate(toks):
+        core = _core(m.group(0))
+        if not _plain_token(core):
+            a = toks[i - 1].start() if i else m.start()
+            out.append((a, m.end()))
+        letters = sum(ch.isalnum() for ch in core)
+        odd_short = 0 < letters <= 2 and core.lower() not in _COMMON_SHORT and not (core.isdigit() and not short)
+        if odd_short and not (len(core) == 1 and core.isupper() and core.isalpha()):
+            short.append(i)
+            continue
+        _close_run(toks, short, out)
+        short = []
+    _close_run(toks, short, out)
+    return out
+
+
+def _close_run(toks, short, out) -> None:
+    """A run of two or more odd short pieces is unusual, unless it holds no letter ('1 0 2') or is a list of letters
+    in alphabet order ('a, b, c', 'x y z')."""
+    if len(short) < 2:
+        return
+    cores = [_core(toks[k].group(0)).lower() for k in short]
+    if all(c.isdigit() for c in cores) or not any(len(c) == 1 for c in cores):
+        return                                 # '1 0 2'; 'D1, D2, D3' (no single character in the run)
+    if all(len(c) == 1 and c.isalpha() for c in cores) and all(ord(y) - ord(x) == 1 for x, y in zip(cores, cores[1:])):
+        return
+    a = toks[short[0] - 1].start() if short[0] else toks[short[0]].start()
+    out.append((a, toks[short[-1]].end()))
+
+
 def has_link_or_contact(text: str) -> bool:
     norm = normalise(text)
+    if _unplain_spans(norm):
+        return True
     alt = _ascii_variant(norm)
     dig = _digit_variant(alt)
     return (_links(norm) or _links(_skeleton(text)) or bool(_unusual_spans(norm))
@@ -942,7 +1050,7 @@ def _all_spans(norm: str) -> list:
     if dig != alt:
         extra += _ending_spans(dig)
     return (_spans(norm) + [(idx[a], idx[b - 1] + 1) for a, b in _spans(skel) if b > a] + _unusual_spans(norm)
-            + _ending_spans(norm) + extra)
+            + _ending_spans(norm) + extra + _unplain_spans(norm))
 
 
 def joins_link(a: str, b: str) -> bool:
