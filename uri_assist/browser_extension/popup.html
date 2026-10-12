@@ -1,0 +1,16 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>URI Assist</title>
+<style>
+  :root { color-scheme: light dark; font: 13px system-ui, sans-serif; }
+  body { width: 300px; margin: 12px; }
+  button { width: 100%; padding: 8px; }
+  .muted { opacity: .7; font-size: 12px; }
+  #out { margin-top: 8px; white-space: pre-wrap; }
+</style>
+<p><b>Share this tab with URI</b><br><span class="muted">Read-only. Only this tab, only now. Passwords, one-time codes,
+card numbers and hidden fields are removed in the page before anything is read.</span></p>
+<button id="share">Read this tab</button>
+<div id="out" class="muted"></div>
+<p class="muted">Sending to URI is not connected yet (A0). Nothing leaves your browser.</p>
+<script src="popup.js"></script>

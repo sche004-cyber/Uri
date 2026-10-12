@@ -1,0 +1,108 @@
+{
+ "at": "2026-10-10T18:06:35Z",
+ "egress": "direct (pinned); TLS verified against the container CA because the container network re-terminates TLS",
+ "resolver": [
+  "151.101.192.223",
+  "151.101.0.223",
+  "151.101.128.223",
+  "151.101.64.223"
+ ],
+ "fetch": [
+  {
+   "url": "https://pypi.org/project/httpx/",
+   "status": "OK",
+   "http": 200,
+   "type": "text/html",
+   "bytes": 3038,
+   "sha256": "32ed63159c77e21e",
+   "pinned": "151.101.192.223",
+   "robots": "ALLOWED",
+   "chain": [],
+   "s": 0.124
+  },
+  {
+   "url": "https://pypi.org/rss/project/httpx/releases.xml",
+   "status": "OK",
+   "http": 200,
+   "type": "text/xml",
+   "bytes": 10854,
+   "sha256": "c5ae7c3ec566140f",
+   "pinned": "151.101.192.223",
+   "robots": "ALLOWED",
+   "chain": [],
+   "s": 0.053
+  },
+  {
+   "url": "https://pypi.org/nonexistent-xyz/",
+   "status": "HTTP_ERROR",
+   "http": 404,
+   "type": null,
+   "bytes": 0,
+   "sha256": "",
+   "pinned": "151.101.192.223",
+   "robots": "ALLOWED",
+   "chain": [],
+   "s": 0.155
+  }
+ ],
+ "pins": [
+  [
+   "pypi.org",
+   "151.101.192.223"
+  ],
+  [
+   "pypi.org",
+   "151.101.192.223"
+  ],
+  [
+   "pypi.org",
+   "151.101.192.223"
+  ],
+  [
+   "pypi.org",
+   "151.101.192.223"
+  ]
+ ],
+ "research": {
+  "status": "NO_RESULT",
+  "elapsed_s": 0.102,
+  "method": "extractive",
+  "sources": [
+   [
+    1,
+    "https://pypi.org/project/httpx/",
+    "full_text",
+    "Client Challenge",
+    3038,
+    []
+   ]
+  ],
+  "answer": []
+ },
+ "feed": {
+  "status": "COMPLETED_WITH_RESULT",
+  "items": 20,
+  "first": [
+   {
+    "feed": "PyPI recent updates for httpx",
+    "title": "1.0.dev6",
+    "url": "https://pypi.org/project/httpx/1.0.dev6/",
+    "published_at": "2026-08-31T17:59:54Z",
+    "summary": "HTTP, for Python.",
+    "injection_flags": []
+   },
+   {
+    "feed": "PyPI recent updates for httpx",
+    "title": "1.0.dev5",
+    "url": "https://pypi.org/project/httpx/1.0.dev5/",
+    "published_at": "2026-08-21T10:59:57Z",
+    "summary": "HTTP, for Python.",
+    "injection_flags": []
+   }
+  ]
+ },
+ "a2ui": {
+  "digest": "bd32583ad79de07deb559b18446be191cbd98309e2e02674380f3a85cac468da",
+  "components": 11
+ }
+}

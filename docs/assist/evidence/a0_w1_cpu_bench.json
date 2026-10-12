@@ -1,0 +1,71 @@
+{
+ "host": "Linux-6.18.44-fc-v114-x86_64-with-glibc2.39",
+ "python": "3.13.16",
+ "cpu_count": 4,
+ "at": "2026-10-10T17:44:36Z",
+ "extract_html_20_paragraphs": {
+  "n": 30,
+  "p50_ms": 0.27,
+  "p95_ms": 0.347,
+  "max_ms": 0.442
+ },
+ "extract_html_3000_paragraphs_310KB": {
+  "n": 10,
+  "p50_ms": 33.634,
+  "p95_ms": 35.412,
+  "max_ms": 40.107
+ },
+ "verify_6_claims_6_sources": {
+  "n": 30,
+  "p50_ms": 1.525,
+  "p95_ms": 1.793,
+  "max_ms": 2.536
+ },
+ "extractive_6_sources": {
+  "n": 30,
+  "p50_ms": 8.984,
+  "p95_ms": 10.765,
+  "max_ms": 14.642
+ },
+ "pipeline_6_pages_mock_network_no_brain": {
+  "n": 15,
+  "p50_ms": 9.932,
+  "p95_ms": 10.976,
+  "max_ms": 13.664
+ },
+ "a2ui_surface_build_and_validate": {
+  "n": 30,
+  "p50_ms": 0.899,
+  "p95_ms": 0.998,
+  "max_ms": 1.648
+ },
+ "chromium_launch_load_snapshot_screenshot_total_ms_p50": 734.2,
+ "dom_snapshot_in_page_eval_roundtrip": {
+  "p50_ms": 5,
+  "max_ms": 23
+ },
+ "normalise_redact_real_snapshot": {
+  "n": 30,
+  "p50_ms": 0.463,
+  "p95_ms": 0.708,
+  "max_ms": 1.658
+ },
+ "live_assist_findings": {
+  "n": 30,
+  "p50_ms": 0.055,
+  "p95_ms": 0.155,
+  "max_ms": 0.77
+ },
+ "screenshot_mask_downscale_1000x900": {
+  "n": 15,
+  "p50_ms": 68.028,
+  "p95_ms": 87.487,
+  "max_ms": 87.501
+ },
+ "NOT_MEASURED_HERE": [
+  "Brain VRAM / GPU contention / vision inference latency (no GPU, no Runtime v1)",
+  "Flutter UI GPU overhead (no display)",
+  "Windows UI Automation responsiveness (not Windows)",
+  "live search-provider latency (no API keys; egress policy)"
+ ]
+}

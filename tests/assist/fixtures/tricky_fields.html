@@ -1,0 +1,79 @@
+<!doctype html><html><head><title>Account security</title></head><body>
+<h1>Verify your sign-in</h1>
+<p>Support ticket link: https://help.example/t?token=abcdef123456&lang=en</p>
+<p>Debug key tvly-ABCDEFGH12345678 and hash 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</p>
+<p>Aadhaar on file: 2345 6789 0123</p>
+<form>
+  <label for="a">Authenticator</label><input id="a" name="totp" value="123456">
+  <label for="b">SMS</label><input id="b" name="smsOtp" value="654321">
+  <label for="c">User</label><input id="c" name="userPin" value="9876">
+  <label for="d">Verification code</label><input id="d" name="vc" value="246810">
+  <label for="e">2FA code</label><input id="e" name="second" value="135790">
+  <label for="f">Password</label><input id="f" name="pw" value="Tr0ub4dor&3">
+  <label for="g">CVN</label><input id="g" name="cvn" value="737">
+  <label for="h">Card</label><input id="h" name="cardnum" value="4111.1111.1111.1111">
+  <label for="i">Notes</label><div id="i" contenteditable="">secret note eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJlLXZhbHVl</div>
+  <label for="j">Plain</label><div id="j" contenteditable="plaintext-only">card 4111 1111 1111 1111</div>
+  <label for="k">Postal PIN code</label><input id="k" name="pincode" value="411001">
+  <label for="l">Spinner speed</label><input id="l" name="spinner" value="12">
+  <input type="hidden" name="csrf" value="tok_abcdefabcdef">
+  <!-- R1-02: acronym->Word and letter<->digit names -->
+  <label for="m1">Code</label><input id="m1" name="OTPCode" value="710001">
+  <label for="m2">SMS</label><input id="m2" name="SMSOTP" value="710002">
+  <label for="m3">Card check</label><input id="m3" name="cvv2" value="713">
+  <label for="m4">Card check</label><input id="m4" name="CVC2" value="714">
+  <label for="m5">Card check</label><input id="m5" name="ccv" value="715">
+  <label for="m6">Mobile</label><input id="m6" name="MPIN" value="7106">
+  <label for="m7">Txn</label><input id="m7" name="tpin" value="7107">
+  <label for="m8">Account</label><input id="m8" name="acctNumber" value="71000008">
+  <label for="m9">Account</label><input id="m9" name="acct_no" value="71000009">
+  <label for="m10">Expiry</label><input id="m10" name="cardExpiry" value="07/31">
+  <label for="m11">Entry</label><input id="m11" name="passcode2" value="pc71011">
+  <label for="m12">Entry</label><input id="m12" name="pwd1" value="pw71012">
+  <!-- R2-01: lowercase run-together names -->
+  <label for="r1">Entry</label><input id="r1" name="otpcode" value="820001">
+  <label for="r2">Entry</label><input id="r2" name="smsotpcode" value="820002">
+  <label for="r3">Entry</label><input id="r3" name="otpvalue" value="820003">
+  <label for="r4">Entry</label><input id="r4" name="otpnumber" value="820004">
+  <label for="r5">Entry</label><input id="r5" name="cvvcode" value="820005">
+  <label for="r6">Entry</label><input id="r6" name="cvvnumber" value="820006">
+  <label for="r7">Entry</label><input id="r7" name="cardcvv" value="820007">
+  <label for="r8">Entry</label><input id="r8" name="cardcvc" value="820008">
+  <label for="r9">Entry</label><input id="r9" name="userpassword" value="820009">
+  <label for="r10">Entry</label><input id="r10" name="newpassword" value="820010">
+  <label for="r11">Entry</label><input id="r11" name="confirmpassword" value="820011">
+  <label for="r12">Entry</label><input id="r12" name="loginpassword" value="820012">
+  <label for="r13">Entry</label><input id="r13" name="txnpassword" value="820013">
+  <label for="r14">Entry</label><input id="r14" name="upipin" value="820014">
+  <label for="r15">Entry</label><input id="r15" name="atmpin" value="820015">
+  <label for="r16">Entry</label><input id="r16" name="cardpin" value="820016">
+  <label for="r17">Entry</label><input id="r17" name="securitypin" value="820017">
+  <label for="r18">Entry</label><input id="r18" name="loginpwd" value="820018">
+  <label for="r19">Entry</label><input id="r19" name="userpass" value="820019">
+  <label for="r20">Entry</label><input id="r20" name="verifycode" value="820020">
+  <label for="q1">Info</label><input id="q1" name="hotpot" value="ok1">
+  <label for="q2">Info</label><input id="q2" name="footpath" value="ok2">
+  <label for="q3">Info</label><input id="q3" name="hotplate" value="ok3">
+  <label for="q4">Info</label><input id="q4" name="camping" value="ok4">
+  <label for="q5">Info</label><input id="q5" name="compass" value="ok5">
+  <label for="q6">Info</label><input id="q6" name="bypass" value="ok6">
+  <label for="q7">Info</label><input id="q7" name="passenger" value="ok7">
+  <label for="q8">Info</label><input id="q8" name="zipcode" value="ok8">
+  <label for="q9">Info</label><input id="q9" name="spinach" value="ok9">
+  <label for="q10">Info</label><input id="q10" name="opinion" value="ok10">
+  <!-- R3-01: secret stems after any prefix -->
+  <label for="s1">Entry</label><input id="s1" name="emailverificationcode" value="930001">
+  <label for="s2">Entry</label><input id="s2" name="mfacode" value="930002">
+  <label for="s3">Entry</label><input id="s3" name="onetimecode" value="930003">
+  <label for="s4">Entry</label><input id="s4" name="twofactorcode" value="930004">
+  <label for="s5">Entry</label><input id="s5" name="2facode" value="930005">
+  <label for="s6">Entry</label><input id="s6" name="tfacode" value="930006">
+  <label for="s7">Entry</label><input id="s7" name="authenticatorcode" value="930007">
+  <label for="s8">Entry</label><input id="s8" name="authenticationcode" value="930008">
+  <label for="s9">Entry</label><input id="s9" name="onetimepin" value="930009">
+  <label for="s10">Entry</label><input id="s10" name="cardverificationcode" value="930010">
+  <label for="s11">Entry</label><input id="s11" name="authtoken" value="930011">
+  <label for="s12">Entry</label><input id="s12" name="accesstoken" value="930012">
+  <label for="s13">Entry</label><input id="s13" name="clientsecret" value="930013">
+  <label for="s14">Entry</label><input id="s14" name="secretkey" value="930014">
+</form></body></html>

@@ -139,6 +139,14 @@ class OiConversation extends ChangeNotifier {
   /// `a2ui.handoff` events (A2UI slice): an interpreted request for a domain
   /// authority to propose a surface. Carries no authority itself.
   Stream<Map<String, dynamic>> get a2uiHandoffs => _a2uiHandoffs.stream;
+
+  /// Frames of the Web Intelligence / Assist commands (schema
+  /// `uri.assist.event.v1`, docs/assist). They share the worker's event
+  /// stream but are not OI turn events: they are handed to the Assist view
+  /// and never touch turn, stall or companion state here.
+  static const assistEventSchema = 'uri.assist.event.v1';
+  final _assistEvents = StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get assistEvents => _assistEvents.stream;
   final Map<String, OiMessage> _byTurn = {};
 
   /// Events for a turn id this model has not registered yet (defensive: the
@@ -640,6 +648,11 @@ class OiConversation extends ChangeNotifier {
   // ---- events -----------------------------------------------------------
 
   void _onEvent(Map<String, dynamic> ev) {
+    if (ev['schema'] == assistEventSchema) {
+      // A research job's progress must not make a silent OI turn look alive.
+      if (!_assistEvents.isClosed) _assistEvents.add(ev);
+      return;
+    }
     final type = ev['type'];
     _lastFrame = DateTime.now();
     if (workerUnresponsive || turnStalled) {
@@ -783,6 +796,7 @@ class OiConversation extends ChangeNotifier {
     _monitor?.cancel();
     _sub.cancel();
     _a2uiHandoffs.close();
+    _assistEvents.close();
     super.dispose();
   }
 }

@@ -18,6 +18,7 @@ import '../services/file_picker_service.dart';
 import '../services/preferences_store.dart';
 import '../theme/uri_theme.dart';
 import 'a2ui/a2ui_hub.dart';
+import 'assist/assist_controller.dart';
 import 'companion/companion_preferences.dart';
 import 'companion/companion_sources.dart';
 import 'companion/effects_settings.dart';
@@ -166,6 +167,13 @@ class LivingApp extends StatefulWidget {
       appDataIsMock: true,
       oi: oi,
       a2ui: _a2uiHub(oi),
+      // Assist always talks to the CURRENT worker (a restart replaces it and
+      // the new worker starts with Assist OFF: grants never survive it).
+      assist: AssistController(
+        runtime: () => oi.workerExited ? null : oi.runtime,
+        events: oi.assistEvents,
+        workerChanges: oi,
+      ),
     );
   }
 }

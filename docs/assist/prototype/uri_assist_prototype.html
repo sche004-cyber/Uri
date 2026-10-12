@@ -1,0 +1,209 @@
+<title>URI Assist Prototype</title>
+<style>
+/* Layout: the Living shell's Assist form — orb top-left, header with scope controls, tabs, body, permission strip.
+   Tokens are URI's own: Obsidian Cyan (dark, the Living default) and Light Professional (uri_theme.dart). */
+:root {
+  --canvas: #070A0F; --surface: #0E131A; --sunken: #141B24; --border: #1E2A36;
+  --ink: #E6EEF5; --ink-soft: #9FB0C0; --ink-faint: #70849A;
+  --accent: #38D1E8; --accent-soft: #0F2A33; --accent-ink: #8AE6F3;
+  --success: #4FD6A6; --success-soft: #0E2F26; --warning: #E8B44F; --warning-soft: #332810;
+  --danger: #FF7A7A; --danger-soft: #3A1C1C;
+  --font-ui: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "Cascadia Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --canvas: #F6F7F8; --surface: #FFFFFF; --sunken: #EEF0F2; --border: #DDE1E5;
+  --ink: #1C2024; --ink-soft: #5D6064; --ink-faint: #949699;
+  --accent: #3B5A78; --accent-soft: #E7EBEF; --accent-ink: #324C66;
+  --success: #1C7A4C; --success-soft: #E2F3EA; --warning: #93650F; --warning-soft: #FBF0DC;
+  --danger: #C23B3B; --danger-soft: #FBE9E9; color-scheme: light; } }
+:root[data-theme="light"] {
+  --canvas: #F6F7F8; --surface: #FFFFFF; --sunken: #EEF0F2; --border: #DDE1E5;
+  --ink: #1C2024; --ink-soft: #5D6064; --ink-faint: #949699;
+  --accent: #3B5A78; --accent-soft: #E7EBEF; --accent-ink: #324C66;
+  --success: #1C7A4C; --success-soft: #E2F3EA; --warning: #93650F; --warning-soft: #FBF0DC;
+  --danger: #C23B3B; --danger-soft: #FBE9E9; color-scheme: light; }
+body { background: var(--canvas); color: var(--ink); font: 14px/1.5 var(--font-ui); padding-inline: 16px; padding-block: 20px; }
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 16px; }
+.intro { color: var(--ink-soft); max-width: 70ch; }
+.intro b { color: var(--ink); }
+.shell { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.modes { display: flex; gap: 8px; flex-wrap: wrap; }
+.mode { border: 1px solid var(--border); background: var(--sunken); color: var(--ink-soft); border-radius: 999px; padding: 4px 12px; font: inherit; cursor: pointer; }
+.mode[aria-pressed="true"] { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-soft); }
+.head { display: grid; grid-template-columns: 84px 1fr auto; gap: 14px; align-items: start; }
+.orb { width: 84px; height: 84px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--accent-ink), var(--accent) 38%, var(--accent-soft) 72%, transparent 74%);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--accent) 35%, transparent); animation: breathe 5s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .orb { animation: none; } }
+h1 { font-size: 20px; margin: 0; text-wrap: balance; }
+.sub { color: var(--ink-soft); margin: 4px 0 0; font-size: 13px; }
+.scope { display: flex; align-items: center; gap: 6px; font-size: 13px; flex-wrap: wrap; justify-content: flex-end; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--success); }
+.dot.paused { background: var(--ink-faint); }
+.icon-btn { border: 1px solid var(--border); background: var(--sunken); color: var(--ink); border-radius: 8px; padding: 4px 10px; cursor: pointer; font: inherit; }
+.icon-btn.stop { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, var(--border)); }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab { border: 1px solid var(--border); background: transparent; color: var(--ink-soft); border-radius: 8px; padding: 4px 10px; cursor: pointer; font: inherit; }
+.tab[aria-selected="true"] { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent); }
+.body { min-height: 230px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card { background: var(--sunken); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: grid; gap: 6px; min-width: 0; }
+.card.warn { border-color: color-mix(in srgb, var(--warning) 55%, var(--border)); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row .grow { flex: 1; min-width: 0; }
+.muted { color: var(--ink-faint); font-size: 12px; }
+.btn { background: var(--accent); color: var(--canvas); border: 0; border-radius: 8px; padding: 6px 12px; font: inherit; font-weight: 600; cursor: pointer; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--accent-ink); border: 1px solid var(--border); }
+.target { text-align: left; width: 100%; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 10px; cursor: pointer; font: inherit; }
+.finding { display: grid; grid-template-columns: 18px 1fr; gap: 8px; }
+.finding::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--warning); margin-top: 7px; }
+.perms { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--ink-faint); border-top: 1px solid var(--border); padding-top: 10px; }
+.perms .on { color: var(--success); }
+.code { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); }
+.cite { color: var(--accent-ink); font-family: var(--font-mono); font-size: 12px; }
+label.check { display: flex; gap: 8px; align-items: flex-start; }
+input[type="text"] { width: 100%; box-sizing: border-box; background: var(--surface); color: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+@media (max-width: 560px) { .head { grid-template-columns: 56px 1fr; } .orb { width: 56px; height: 56px; } .scope { grid-column: 1 / -1; justify-content: flex-start; } }
+</style>
+
+<div class="wrap">
+  <p class="intro"><b>URI Assist — interaction prototype (A0).</b> Click through it: opening Assist shares nothing;
+  you choose one tab, window or the whole screen; seeing and suggesting are separate; Stop is one tap. The scope list,
+  findings and answers are example data. Teach URI and Smart Fill are shown as not yet available (A1).</p>
+
+  <section class="shell" aria-label="URI Living shell, Assist form">
+    <div class="modes" role="group" aria-label="Forms">
+      <button class="mode" id="m-companion" aria-pressed="false">Companion</button>
+      <button class="mode" id="m-workspace" aria-pressed="false">Workspace</button>
+      <button class="mode" id="m-dashboard" aria-pressed="false">Dashboard</button>
+      <button class="mode" id="m-assist" aria-pressed="true">Assist</button>
+      <span class="muted" style="align-self:center">Ctrl+4</span>
+    </div>
+    <div class="head">
+      <div class="orb" aria-hidden="true"></div>
+      <div><h1>Assist</h1><p class="sub" id="subtitle"></p></div>
+      <div class="scope" id="scope"></div>
+    </div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="body" id="body"></div>
+    <div class="perms" id="perms" aria-label="Permissions"></div>
+  </section>
+
+  <div class="legend">
+    <div class="card"><b>Opening is free</b><span class="muted">Assist reads only its own status. No adapter is called until you choose a scope.</span></div>
+    <div class="card"><b>Five permissions</b><span class="muted">See and Suggest can be granted in A0. Remember and Insert come with A1. Act is never granted by Assist.</span></div>
+    <div class="card"><b>Stale never counts</b><span class="muted">Pause, Stop or a changed tab makes every earlier view unusable.</span></div>
+  </div>
+</div>
+
+<script>
+const S = { state: "OFF", choosing: null, confirmScreen: false, suggest: false, scope: null, tab: "live", findings: null, answer: null, research: null };
+const TARGETS = {
+  browser_tab: [{ id: "tab-7", label: "Fee payment – School portal", origin: "portal.school.example" }],
+  desktop_window: [{ id: "w-12", label: "Admissions register.xlsx – Excel" }],
+  entire_screen: [{ id: "screen-0", label: "Display 1 (2560 × 1440)" }],
+};
+const KIND = { browser_tab: "Browser tab", desktop_window: "Desktop window", entire_screen: "Entire screen" };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function grant(kind, t) {
+  S.state = "ACTIVE"; S.scope = { kind, ...t }; S.choosing = null; S.confirmScreen = false; S.findings = null; S.answer = null;
+  render();
+}
+function stop() { Object.assign(S, { state: "OFF", scope: null, findings: null, answer: null, choosing: null }); render(); }
+
+function render() {
+  $("subtitle").textContent = S.state === "OFF"
+    ? "URI can't see anything. Choose one tab, window or screen to share — read-only."
+    : S.state === "PAUSED" ? "Paused. URI sees nothing until you resume."
+    : `URI can see ${KIND[S.scope.kind].toLowerCase()} "${S.scope.label}" only, when you ask. Nothing is changed.`;
+  $("scope").innerHTML = S.state === "OFF" ? "" :
+    `<span class="dot ${S.state === "PAUSED" ? "paused" : ""}"></span><span>${esc(S.scope.label)}</span>
+     <button class="icon-btn" id="pp">${S.state === "PAUSED" ? "Resume" : "Pause"}</button>
+     <button class="icon-btn stop" id="stop">Stop</button>`;
+  if (S.state !== "OFF") {
+    $("pp").onclick = () => { S.state = S.state === "PAUSED" ? "ACTIVE" : "PAUSED"; S.findings = null; S.answer = null; render(); };
+    $("stop").onclick = stop;
+  }
+  const tabs = [["live", "Live Assist"], ["ask", "Ask URI"], ["research", "Research"], ["teach", "Teach URI"], ["fill", "Smart Fill"]];
+  $("tabs").innerHTML = tabs.map(([k, l]) => `<button class="tab" role="tab" id="t-${k}" aria-selected="${S.tab === k}">${l}</button>`).join("");
+  tabs.forEach(([k]) => ($(`t-${k}`).onclick = () => { S.tab = k; render(); }));
+  $("body").innerHTML = body();
+  wire();
+  const P = { See: S.state !== "OFF", Suggest: S.state !== "OFF" && S.suggest, Remember: false, Insert: false, Act: false };
+  $("perms").innerHTML = "Permissions: " + Object.entries(P).map(([k, v]) => `<span class="${v ? "on" : ""}">${k} ${v ? "✓" : "–"}</span>`).join("");
+}
+
+function body() {
+  if (S.tab === "teach") return `<div class="card"><b>Teach URI — coming in A1</b><span class="muted">Show URI a task once; review, correct and approve the steps it learned. Nothing is recorded today.</span></div>`;
+  if (S.tab === "fill") return `<div class="card"><b>Smart Fill — coming in A1</b><span class="muted">Preview suggested values and fill only the ones you pick. URI never submits.</span></div>`;
+  if (S.tab === "research") return research();
+  if (S.state === "OFF") return picker();
+  if (S.tab === "live") return live();
+  return ask();
+}
+
+function picker() {
+  if (S.confirmScreen) return `<div class="card warn"><b>Share your entire screen?</b>
+    <span class="muted">URI will see everything on your screen when you ask, including notifications and other windows. Private fields are blacked out where URI can find them; if it can't, no screenshot is used.</span>
+    <div class="row"><button class="btn" id="allow">Allow entire screen</button><button class="btn ghost" id="cancel">Cancel</button></div></div>`;
+  return `<b>Choose what URI can see</b>` + Object.keys(KIND).map((k) => `
+    <div class="card"><div class="row"><span class="grow">${KIND[k]}</span><button class="btn ghost" id="c-${k}">Choose${k === "entire_screen" ? "…" : ""}</button></div>
+    ${S.choosing === k ? TARGETS[k].map((t) => `<button class="target" id="g-${t.id}">${esc(t.label)}${t.origin ? ` <span class="muted">${t.origin}</span>` : ""}</button>`).join("") : ""}</div>`).join("") +
+    `<label class="check"><input type="checkbox" id="sug" ${S.suggest ? "checked" : ""}><span>Also let URI point out possible mistakes (Suggest)<br><span class="muted">Separate from seeing. URI never changes anything.</span></span></label>`;
+}
+
+function live() {
+  const can = S.state === "ACTIVE" && S.suggest;
+  let out = `<div class="row"><button class="btn" id="check" ${can ? "" : "disabled"}>Check this now</button>
+    <span class="muted grow">${S.suggest ? "Reads one fresh view and lists possible mistakes. Nothing is changed." : "Suggestions are off for this scope. Stop and choose again to allow them."}</span></div>`;
+  if (S.findings) out += `<span class="muted">Read "Fee payment – School portal" · 12 fields · 4 private (hidden)</span>` + S.findings.map(([f, m]) =>
+    `<div class="finding"><div><b>${f}</b><br><span class="muted">${m}</span></div></div>`).join("");
+  return out;
+}
+
+function ask() {
+  return `<input type="text" id="q" placeholder="Ask about what you shared" value="What does 'Roll number' refer to here?">
+    <label class="check"><input type="checkbox" id="shot"><span>Include a screenshot for this question<br><span class="muted">Only now, only this scope. Private fields are blacked out first. (Not available until the PC qualification.)</span></span></label>
+    <div class="row"><button class="btn" id="askb" ${S.state === "ACTIVE" ? "" : "disabled"}>Ask</button></div>
+    ${S.answer ? `<div class="card">${S.answer}</div>` : ""}`;
+}
+
+function research() {
+  let out = `<span class="muted">Searches public sources and answers with citations. It never looks at your screen.</span>
+    <div class="row"><input class="grow" type="text" id="rq" value="CBSE fee regulation changes 2027"><button class="btn" id="rgo">Research</button></div>`;
+  if (S.research === "running") out += `<span class="muted">Working: retrieve 3 of 6…</span>`;
+  if (S.research === "done") out += `<div class="card"><b>Answer with sources</b>
+    <div>The board approved a fee increase of 4.5% for the 2027 academic year <span class="cite">[1]</span>.</div>
+    <div>Parents can appeal through the school office until 15 November 2026 <span class="cite">[2]</span>.</div></div>
+    <div class="card warn"><b>Sources disagree</b><span class="muted">[1] …a fee increase of 4.5%… · [3] …a fee increase of 6%…</span></div>
+    <div class="card"><b>Sources</b>
+      <span class="code">[1] District News · news.example/fees-2027 · retrieved 2026-10-10T17:20Z · published 2026-09-30</span>
+      <span class="code">[2] School circular · school.example/circular/112 · retrieved 2026-10-10T17:20Z</span>
+      <span class="code">[3] Forum post · forum.example/t/88 · contains instruction-like text (ignored)</span></div>`;
+  return out;
+}
+
+function wire() {
+  const on = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
+  Object.keys(KIND).forEach((k) => on(`c-${k}`, () => { S.choosing = k; render(); }));
+  Object.entries(TARGETS).forEach(([k, ts]) => ts.forEach((t) => on(`g-${t.id}`, () => {
+    if (k === "entire_screen") { S.confirmScreen = true; S.pending = t; render(); } else grant(k, t);
+  })));
+  on("allow", () => grant("entire_screen", S.pending));
+  on("cancel", () => { S.confirmScreen = false; render(); });
+  const sug = $("sug"); if (sug) sug.onchange = () => { S.suggest = sug.checked; render(); };
+  on("check", () => { S.findings = [["Parent e-mail", "This doesn't look like a complete e-mail address."], ["Date of birth", "This isn't a valid date (31/02/2015)."], ["Confirm e-mail", "This doesn't match \"Parent e-mail\"."], ["Roll number", "This required field is empty."]]; render(); });
+  on("askb", () => { S.answer = "“Roll number” is the student's number in the class register. The field is empty and required. (Answer from the shared tab only; private fields were hidden.)"; render(); });
+  on("rgo", () => { S.research = "running"; render(); setTimeout(() => { S.research = "done"; render(); }, 900); });
+  ["companion", "workspace", "dashboard"].forEach((m) => on(`m-${m}`, () => alertMode(m)));
+}
+function alertMode(m) { $("subtitle").textContent = `(${m[0].toUpperCase() + m.slice(1)} is unchanged by Assist; this prototype shows only the Assist form.)`; }
+render();
+</script>
