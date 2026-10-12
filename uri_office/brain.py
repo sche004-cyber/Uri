@@ -219,11 +219,10 @@ class OfficeBrain:
             if isinstance(op, dict):
                 op = {k: v for k, v in op.items() if v is not None}
             try:
+                unc = skipped = 0
                 if with_files and isinstance(op, dict) and op.get("op") in O.SOURCE_OPS:
                     got, unc, skipped = O.copy_edits(op, sources=src, sheets=names, locked=locked,
                                                      next_free_row=lambda sh, a, b: _next_row(sheets, written, sh, a, b))
-                    notes["uncalculated"] += unc
-                    notes["not_copied"] += skipped
                 else:
                     got = O.to_cell_edits(op, engine=engine, sheets=names, locked=locked)
                 # An op that would overwrite a cell an earlier op of the same answer wrote is a planning slip (for example
@@ -241,6 +240,8 @@ class OfficeBrain:
                     elif e.get("op") == "rename_sheet":  # Google retains its structural op path (M1).
                         names = [e["name"] if n == e["sheet"] else n for n in names]
                         written = {(e["name"] if sh == e["sheet"] else sh, c) for sh, c in written}
+                notes["uncalculated"] += unc
+                notes["not_copied"] += skipped
             except OfficeError as exc:
                 refused.append({"index": i, "code": exc.code, "detail": exc.detail})
         msg = data.get("message") if isinstance(data.get("message"), str) else ""

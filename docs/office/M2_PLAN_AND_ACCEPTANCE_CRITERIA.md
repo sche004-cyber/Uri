@@ -218,3 +218,17 @@ Repair by Codex on the owner's instruction, under coordinator decision M2-D12. T
 Codex ran the requested `python -m pytest -c scripts/phase2d_pytest.ini --rootdir=. -q tests/office`: **132 passed, 5 skipped, 183 setup errors, 2 failed**. This sandbox denies access to pytest's default Windows temporary directories (`WinError 5`), so that run does not qualify as a clean gate. A separate diagnostic run with temp-directory creation made accessible, without changing the tests, yielded **292 passed, 5 skipped, 20 errors, 5 failed**; the M2 file alone yielded **68 passed, 4 errors**. The four M2 errors are the HTTP fixture's `ACL_FAILED` while restricting the state directory; the broader run's remaining failures are page/security-environment checks. Two existing Google rename tests passed in isolation. Independent review and a clean full gate remain pending.
 
 Verified by Claude before commit: new-workbook rename removed at every layer (ops, draft, Brain prompt and schema enum); Google rename unchanged; case-insensitive add_sheet check in ops and draft; the writer checks exact titles before publication. 10 of the round-7 tests fail on 74f3970c and pass after (the others pass on both: undo of add_sheet, prompt text, writer guard). Codex's test-run failures were its sandbox (temp folder and Windows ACLs); on the PC `tests/office` passes 317 / 5 skipped. Codex's temp folders were deleted. PC gates: Python 914 passed / 27 skipped; `flutter test` 543 passed / 5 skipped; `ws_frozen_check` ok.
+
+### 2026-10-12, Codex review of 581cde5d (round 8)
+
+**Verdict: ACCEPT WITH FINDINGS.** The coordinator classified both non-blocking findings as plan violations, so Codex repaired them on the owner's instruction under the owner's limitation-vs-repair rule.
+
+| Finding | Classification | Repair | Tests |
+|---|---|---|---|
+| R8-01 MEDIUM: `add_sheet` accepted XML-invalid control characters, leaving an approved new workbook unwritable | Violates M2-AC5: invalid ops must be reported | Reject such names with `BAD_SHEET_NAME` during op validation and in `Draft._sheet_op`; the writer's exact-title guard remains | `test_r8_01_xml_invalid_add_sheet_name_is_refused_at_ops_and_draft` and `test_r8_01_brain_refuses_invalid_sheet_name_and_keeps_later_op` cover NUL and BEL, with later Brain ops proceeding |
+| R8-02 LOW: a refused `copy_range` could still report source cells as copied empty | Violates M2-D3 reporting | Add `uncalculated` and `not_copied` counts only after the op's edits enter the Brain answer | `test_r8_02_refused_copy_does_not_report_uncalculated_cells` covers zero notes on overlap refusal and both counts on an accepted copy |
+
+Codex's focused round-8 tests: **5 passed**. The requested full-file pytest command ran with `TMP`/`TEMP` in `.codex_tmp`: **23 passed, 54 setup errors**. The setup errors are `PermissionError: [WinError 5]` when pytest scans its temporary directory in this Windows sandbox; this is not a clean gate. The repair is uncommitted and awaits independent review and a clean PC gate.
+
+Verified by Claude before commit: changes limited to the sheet-name check (ops and draft backstop) and moving the copy counts after the op is accepted; the 5 round-8 tests fail on 581cde5d and pass after; Codex's sandbox temp folders deleted. PC gates are in the next line.
+PC gates after round 8: Python 919 passed / 27 skipped; flutter test 543 passed / 5 skipped; ws_frozen_check ok.

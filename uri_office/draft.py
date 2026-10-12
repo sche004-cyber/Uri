@@ -20,6 +20,7 @@ from uri_a2ui.surface import canonical
 
 from . import refs
 from .errors import OfficeError
+from .ops import _XML_INVALID
 
 MAX_VERSIONS = 50
 MAX_CHANGES = 20_000
@@ -154,7 +155,8 @@ class Draft:
         """New workbook only: add a sheet now. Undo and redo restore the sheets with the changes."""
         if op["op"] == "add_sheet":
             name = op["name"]
-            if not isinstance(name, str) or any(name.casefold() == sheet.casefold() for sheet in self.base):
+            if not isinstance(name, str) or _XML_INVALID.search(name) or \
+                    any(name.casefold() == sheet.casefold() for sheet in self.base):
                 raise OfficeError("BAD_SHEET_NAME", str(name)[:40])
             self.base[op["name"]] = {}
             self.locked[op["name"]] = set()

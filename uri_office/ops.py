@@ -156,7 +156,7 @@ def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
         out.append({k: op[k] for k in ("op", "sheet", "at", "count")})
     elif kind == "add_sheet":
         name = op.get("name")
-        if not isinstance(name, str) or not _SHEET_NAME.match(name) or \
+        if not isinstance(name, str) or not _SHEET_NAME.match(name) or _XML_INVALID.search(name) or \
                 (any(name.casefold() == sheet.casefold() for sheet in sheets) if engine == "new" else name in sheets):
             raise OfficeError("BAD_SHEET_NAME", str(name)[:40])
         out.append({"op": kind, "name": name})

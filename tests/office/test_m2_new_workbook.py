@@ -203,6 +203,33 @@ def test_invalid_new_workbook_ops_are_reported_not_guessed(tmp_path, office, bad
     assert [c for c in r["draft"]["changes"] if c["kind"] == "cell"] == []
 
 
+@pytest.mark.parametrize("control", ["\x00", "\x07"])
+def test_r8_01_xml_invalid_add_sheet_name_is_refused_at_ops_and_draft(control):
+    name = f"Bad{control}Sheet"
+    with pytest.raises(OfficeError) as e:
+        O.to_cell_edits({"op": "add_sheet", "name": name}, engine="new", sheets=["Sheet1"])
+    assert e.value.code == "BAD_SHEET_NAME"
+
+    d = D.Draft("w", "new", {"sheets": [{"name": "Sheet1", "cells": {}}]})
+    before = copy.deepcopy((d.base, d.changes, d._undo, d.version))
+    with pytest.raises(OfficeError) as e:
+        d.propose([{"op": "add_sheet", "name": name}])
+    assert e.value.code == "BAD_SHEET_NAME"
+    assert (d.base, d.changes, d._undo, d.version) == before
+
+
+@pytest.mark.parametrize("control", ["\x00", "\x07"])
+def test_r8_01_brain_refuses_invalid_sheet_name_and_keeps_later_op(control):
+    brain = OfficeBrain(FakeClient({"message": "ok", "ops": [
+        op(op="add_sheet", name=f"Bad{control}Sheet"),
+        op(op="set_values", sheet="Sheet1", range="A1", values=[["kept"]]),
+    ]}))
+    r = brain.plan("go", sheets=[{"name": "Sheet1", "cells": {}, "max_row": 0, "max_col": 0}],
+                   active="Sheet1", engine="new", locked={}, history_rows=[])
+    assert [(x["index"], x["code"]) for x in r["refused"]] == [(0, "BAD_SHEET_NAME")]
+    assert r["edits"] == [{"sheet": "Sheet1", "cell": "A1", "value": "kept"}]
+
+
 def test_copy_range_and_sheet_ops_stay_refused_for_existing_files(tmp_path, office):
     a = make_source(tmp_path / "a.xlsx")
     o, _ = office({"message": "x", "ops": [
@@ -450,6 +477,35 @@ def test_a_later_op_may_not_overwrite_what_an_earlier_op_wrote(tmp_path, office)
     assert [(x["index"], x["code"]) for x in r["refused"]] == [(1, "OVERLAPS_EARLIER_OP")]
     cells = {c["cell"]: c["after"] for c in r["draft"]["changes"] if c["kind"] == "cell"}
     assert cells["A4"] == {"v": "East"} and cells["B5"] == {"f": "=SUM(B2:B4)"}   # an empty placeholder may be filled
+
+
+def test_r8_02_refused_copy_does_not_report_uncalculated_cells():
+    brain = OfficeBrain(FakeClient(
+        {"message": "first", "ops": [
+            op(op="set_values", sheet="Sheet1", range="A1", values=[["kept"]]),
+            op(op="copy_range", source="S1", from_sheet="Data", from_range="C2:D2", sheet="Sheet1", cell="A1"),
+        ]},
+        {"message": "second", "ops": [
+            op(op="copy_range", source="S1", from_sheet="Data", from_range="C2:D2", sheet="Sheet1", cell="B1"),
+        ]},
+    ))
+    sheets = [{"name": "Sheet1", "cells": {}, "max_row": 0, "max_col": 0}]
+    source = SimpleNamespace(sid="S1", label="a.xlsx", workbook={"sheets": [
+        {"name": "Data", "cells": {"C2": {"v": None, "f": "=B2*2"}, "D2": {"v": "=text"}},
+         "max_row": 2, "max_col": 4},
+    ]})
+    args = {"sheets": sheets, "active": "Sheet1", "engine": "new", "locked": {}, "history_rows": [],
+            "sources": [source]}
+    refused = brain.plan("first", **args)
+    assert [(x["index"], x["code"]) for x in refused["refused"]] == [(1, "OVERLAPS_EARLIER_OP")]
+    assert refused["notes"] == {"uncalculated": 0, "not_copied": 0}
+    assert refused["edits"] == [{"sheet": "Sheet1", "cell": "A1", "value": "kept"}]
+
+    accepted = brain.plan("second", **args)
+    assert accepted["refused"] == []
+    assert accepted["notes"] == {"uncalculated": 1, "not_copied": 1}
+    assert accepted["edits"] == [{"sheet": "Sheet1", "cell": "B1", "value": None},
+                                 {"sheet": "Sheet1", "cell": "C1", "value": None}]
 
 
 def test_brain_schema_limits_source_fields_to_real_sources(tmp_path, office):
