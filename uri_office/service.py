@@ -214,6 +214,16 @@ class Office:
     def _switch_target(self, s, src):
         """Make `src` the working file (a local workbook on the original, saved through the M1 cell patch), or, with
         None, a new empty workbook."""
+        if SRC.working(s.sources) is not None:
+            old_path = self.grants.get(s.grant_id, "open").path
+            if xlsx_model.file_sha256(old_path) != s.open_sha:
+                raise OfficeError("TARGET_CHANGED", "the working file changed on disk since it was opened; add it "
+                                                    "again", 409)
+        path = None
+        if src is not None:
+            path = self.grants.get(src.grant_id, "open").path
+            if xlsx_model.file_sha256(path) != src.sha256:
+                raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was added; add it again", 409)
         self.approvals.close_workbook(s.workbook_id)       # an open approval was for the previous target
         if src is None:
             wb = {"sheets": [self._empty_sheet("Sheet1", 0)], "styles": {},
@@ -223,9 +233,6 @@ class Office:
             s.key = workbook_key("new", s.workbook_id)
             s.grant_id = s.path = s.open_sha = None
             return
-        path = self.grants.get(src.grant_id, "open").path
-        if xlsx_model.file_sha256(path) != src.sha256:
-            raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was added; add it again", 409)
         s.engine, s.label, s.workbook = "local", src.label, src.workbook
         s.draft = D.Draft(s.workbook_id, "local", src.workbook)
         s.key = workbook_key("local", str(path).lower())

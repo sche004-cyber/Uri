@@ -598,9 +598,8 @@ def test_c02_saving_the_working_file_keeps_its_record_current(tmp_path, office):
     v = o.set_roles(wid, {"roles": {"S1": "edit", "S2": "reference"}})         # no false TARGET_CHANGED
     assert v["working"] == "S1"
     make_source(a, rows=(("changed outside",),))                               # a real outside change is still caught
-    o.set_roles(wid, {"roles": {"S1": "reference", "S2": "reference"}})
     with pytest.raises(OfficeError) as e:
-        o.set_roles(wid, {"roles": {"S1": "edit"}})
+        o.set_roles(wid, {"roles": {"S1": "reference", "S2": "reference"}})
     assert e.value.code == "TARGET_CHANGED"
 
 
@@ -718,3 +717,39 @@ def test_r3_03_malformed_check_findings_are_ignored_not_a_crash(tmp_path, office
     o.set_roles(v["workbook_id"], {"roles": {"S1": "check", "S2": "reference"}})
     r = o.instruct(v["workbook_id"], {"text": "check"})
     assert r["findings"] == [] and r["refused"] == []
+
+
+# ---- Codex re-review of 77cd9bfe (R4-01) ---------------------------------------------------------------------------
+@pytest.mark.parametrize("roles", [
+    {"S1": "reference", "S2": "edit"},
+    {"S1": "reference", "S2": "reference"},
+])
+def test_r4_01_changed_working_file_cannot_be_demoted(tmp_path, office, roles):
+    o, _ = office()
+    a, b = make_source(tmp_path / "a.xlsx"), make_source(tmp_path / "b.xlsx")
+    v = o.open_new([str(a), str(b)])
+    wid = v["workbook_id"]
+    o.set_roles(wid, {"roles": {"S1": "edit", "S2": "reference"}})
+    approval = o.propose_share(wid)["surface_id"]
+    make_source(a, rows=(("changed outside",),))
+    before = json.dumps(o.view(wid), sort_keys=True)
+    with pytest.raises(OfficeError) as e:
+        o.set_roles(wid, {"roles": roles})
+    assert e.value.code == "TARGET_CHANGED" and e.value.status == 409
+    assert json.dumps(o.view(wid), sort_keys=True) == before
+    assert o.view(wid)["engine"] == "local" and o.view(wid)["working"] == "S1"
+    assert o.approvals.db.execute("SELECT state FROM surface WHERE surface_id=?", (approval,)).fetchone()[0] == "OPEN"
+
+
+def test_r4_01_switch_after_in_place_save_uses_current_hash(tmp_path, office):
+    o, _ = office()
+    a, b = make_source(tmp_path / "a.xlsx"), make_source(tmp_path / "b.xlsx")
+    v = o.open_new([str(a), str(b)])
+    wid = v["workbook_id"]
+    o.set_roles(wid, {"roles": {"S1": "edit", "S2": "reference"}})
+    o.edit(wid, {"sheet": "Data", "cell": "C1", "value": "saved by URI"})
+    p = o.propose_save(wid, {})
+    o.action(action_for(p["messages"], "apply", "office.apply_change"))
+    v = o.set_roles(wid, {"roles": {"S1": "reference", "S2": "edit"}})
+    assert v["engine"] == "local" and v["working"] == "S2"
+    assert v["sources"][0]["role"] == "reference"

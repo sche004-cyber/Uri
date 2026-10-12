@@ -166,3 +166,13 @@ PC gates after round 2: Python 888 passed / 27 skipped; flutter test 543 passed 
 
 Known edge (not a finding): a bare-column target on a sheet renamed earlier in the same answer counts only cells written in that answer, not cells accepted before under the old name; the copy is then proposed over those cells as ordinary change cards showing before and after, never applied without the owner.
 PC gates after round 3: Python 894 passed / 27 skipped; flutter test 543 passed / 5 skipped; ws_frozen_check ok.
+
+### 2026-10-12, Codex re-review of 77cd9bfe (round 4)
+
+Repair performed by Codex on the owner's instruction "Use codex for audit and repair".
+
+| Finding | Repair | Tests |
+|---|---|---|
+| R4-01 MEDIUM (blocking): an outside change to the current working file could be demoted into a stale reference | Check the current working file's on-disk SHA-256 against the session hash before changing roles, target, draft, or approvals; retain the new-target check | `test_r4_01_changed_working_file_cannot_be_demoted` (both another working file and all references), `test_r4_01_switch_after_in_place_save_uses_current_hash`; the existing C-02 test now expects refusal on demotion after an outside change |
+
+Verified by Claude before commit: the repair is limited to `_switch_target` (both checks run before any change; approvals are closed only after them); the two demotion tests fail on 77cd9bfe and pass after; the in-place-save test passes on both (it guards against a false refusal). Codex's 3 HTTP-test errors came from its sandbox (Windows ACLs cannot be set there); on the PC the file passes 55/55. PC gates: Python 897 passed / 27 skipped; `flutter test` 543 passed / 5 skipped; `ws_frozen_check` ok.
