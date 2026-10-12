@@ -35,3 +35,25 @@ after IDN-1 and before LINK-REP-1 (LINK-REP-1 then only adds the URLhaus check b
 | S-AC4 | The fixed default store password is gone; a store encrypted with it is re-encrypted with the per-install secret; a copied store file cannot be decrypted on another machine or Windows user (DPAPI test on the PC: NOT VERIFIED until run there). |
 | S-AC5 | Removing a slot clears it; Test reports a plain result; status lines use plain words (D18). |
 | S-AC6 | Only the approved frozen line changes (driver protected-path check). Each new test fails on the pre-change commit. |
+
+## Recon 2026-10-12 (verified at canonical 1b5423bc) and proposed split
+- The working system (launch_uri_working_system.ps1:183) runs `run_uri_integrated_server.py` (paired_server, not
+  server.py) and the Flutter app spawns `run_uri_integrated_worker.py`. Both clear the environment
+  (`runtime_identity.child_environment`, frozen): only files reach them, so env settings (Ollama, Tesseract, model
+  paths, Google dir) are already dropped there.
+- Web search keys reach the worker only from `<client_root>/control/web/search_keys.json` (written by nobody; placed
+  by hand) merged with `.env` files from the source checkout (worker:220-231). Not frozen.
+- The fixed default store password exists only on the legacy path (run_uri_server.py:47-48, server.py:38); the client
+  refuses the legacy server (main.dart LegacyServerBlocked). The working-system server sets a NEW RANDOM secret on
+  every start (run_uri_integrated_server.py:83-84), so anything ProviderKeyStore/ExternalCredentialStore encrypt there
+  cannot be read after a restart. paired_server has no key endpoints.
+- Non-secret settings (Ollama, Tesseract, model paths, Google dir) are read only in frozen `uri_core/`.
+
+**SETTINGS-1a (no new frozen exception; D26 tab entry only):** Settings > Security in the app for Tavily, Brave,
+SearXNG address and the URLhaus slot. New encrypted store under the client root, its key protected by Windows DPAPI
+(ctypes, no new dependency; user-only file elsewhere). New worker bridge commands: status (saved yes/no only), save,
+remove, test. Worker reads keys from the store; one-time import from search_keys.json and `.env` with a one-line
+notice; afterwards `.env` is not read.
+**SETTINGS-1b (needs owner-approved frozen exceptions):** Connections section (Ollama, Tesseract, model paths,
+Google folder) and a persistent secret for the working-system server's key stores: changes in uri_core/ (model
+provider config, edge adapters, google_auth_common, runtime_identity) and run_uri_integrated_server.py.
