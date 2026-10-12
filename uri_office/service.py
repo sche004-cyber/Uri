@@ -418,10 +418,11 @@ class Office:
                    **self._reloaded(s, refreshed)}
             if res.get("findings") is not None:
                 out["findings"] = res["findings"]
+            if s.sources:
+                out["notes"] = res.get("notes", {})
             if s.engine == "new":
                 self._sync_new_sheets(s)
                 out["workbook"] = s.workbook             # the grid reloads: sheets may have been added or renamed
-                out["notes"] = res.get("notes", {})
             return out
 
     # ---- approvals -----------------------------------------------------------------------------------------------

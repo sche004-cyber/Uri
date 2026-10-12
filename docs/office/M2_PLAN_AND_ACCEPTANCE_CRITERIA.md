@@ -232,3 +232,16 @@ Codex's focused round-8 tests: **5 passed**. The requested full-file pytest comm
 
 Verified by Claude before commit: changes limited to the sheet-name check (ops and draft backstop) and moving the copy counts after the op is accepted; the 5 round-8 tests fail on 581cde5d and pass after; Codex's sandbox temp folders deleted. PC gates are in the next line.
 PC gates after round 8: Python 919 passed / 27 skipped; flutter test 543 passed / 5 skipped; ws_frozen_check ok.
+
+### 2026-10-12, Codex review of e656f68e (round 9)
+
+**Verdict: REJECT.** R8-01 and R8-02 were confirmed repaired. Repair by Codex on the owner's instruction; this repair is uncommitted and awaits independent re-review.
+
+| Finding | Repair | Test |
+|---|---|---|
+| R9-01 MEDIUM (blocking): `Office.instruct` returned `copy_range` notes only for a new workbook, so an Edit working file did not tell the owner when an uncalculated source formula was copied as empty, contrary to M2-D3 | Return `notes` for every session with added files; retain the new-workbook-only `workbook` response | `test_r9_01_edit_copy_reports_uncalculated_source_cell`: an Edit working file copies an uncalculated formula from a reference; the response reports `{"uncalculated": 1, "not_copied": 0}` |
+
+Codex attempted the new pytest test before and after repair with `TMP`/`TEMP` and `--basetemp` under `.codex_tmp`: **0 passed, 1 setup error** each time. Pytest could not scan its temporary directory (`PermissionError: [WinError 5]`), so the regression test did not execute in this sandbox. The existing R8-02 Brain-count test passed (**1 passed**). A direct service-response probe after repair passed 3 assertions (notes, proposed change, and no `workbook` field in Edit mode). Independent review and a clean pytest run remain pending.
+
+Verified by Claude before commit: the change only moves `notes` out of the new-workbook branch (returned for any session with added files); the round-9 test fails on e656f68e and passes after (Codex could not run it in its sandbox). PC gates are in the next line.
+PC gates after round 9: Python 920 passed / 27 skipped; flutter test 543 passed / 5 skipped; ws_frozen_check ok.

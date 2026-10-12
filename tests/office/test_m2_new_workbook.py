@@ -587,6 +587,22 @@ def test_edit_role_makes_the_file_the_working_file_saved_in_place(tmp_path, offi
     assert list((tmp_path / "state" / "backups" / wid).iterdir())       # M1 save in place keeps a backup
 
 
+def test_r9_01_edit_copy_reports_uncalculated_source_cell(tmp_path, office):
+    reference = make_source(tmp_path / "reference.xlsx", formula="=B2*2")
+    working = make_source(tmp_path / "working.xlsx")
+    o, _ = office({"message": "Copied the result.", "ops": [
+        op(op="copy_range", source="S1", from_sheet="Data", from_range="C2", sheet="Data", cell="C2"),
+    ]})
+    v = o.open_new([str(reference), str(working)])
+    wid = v["workbook_id"]
+    v = o.set_roles(wid, {"roles": {"S1": "reference", "S2": "edit"}})
+    assert v["engine"] == "local"
+
+    r = o.instruct(wid, {"text": "Copy the reference result"})
+    assert r["refused"] == [] and len(r["proposed"]) == 1
+    assert r["notes"] == {"uncalculated": 1, "not_copied": 0}
+
+
 def test_switching_the_working_file_needs_unsaved_changes_saved_first(tmp_path, office):
     o, _ = office()
     a, b = make_source(tmp_path / "a.xlsx"), make_source(tmp_path / "b.xlsx")
