@@ -1,0 +1,163 @@
+{
+ "findings": [
+  {
+   "blocking": true,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired a5a3143",
+   "title": "Every REFUSED status, including DNS failure, port refusal and invalid URL, is reported as a 'private or local network' address"
+  },
+  {
+   "blocking": false,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Content-Encoding gzip response is reported as unsupported content type 'unknown'"
+  },
+  {
+   "blocking": false,
+   "id": "R1-03",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "HTML without a charset is now decoded as UTF-8 instead of ISO-8859-1"
+  },
+  {
+   "blocking": false,
+   "id": "R1-04",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "extra_types overrides TEXT_TYPES, which silently changes robots.txt handling for such a fetcher"
+  },
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "fetch_url can no longer fetch internationalised (IDN) host names: SafeFetcher's pin check compares httpx's Unicode host with netpolicy's punycode host"
+  },
+  {
+   "blocking": false,
+   "id": "R2-02",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "fetch_url now sends W1's Accept / Accept-Encoding: identity; a server that gzips anyway gets a misleading 'unsupported, unknown content type'"
+  },
+  {
+   "blocking": false,
+   "id": "R3-01",
+   "round": "R3",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "A public page sent with Content-Encoding gzip is now reported as 'unsupported, content type unknown'; requests used to decompress it"
+  },
+  {
+   "blocking": false,
+   "id": "R3-02",
+   "round": "R3",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "HOST_NUMERIC_AMBIGUOUS (and proxy-only HOST_SINGLE_LABEL) are worded 'private or local network' even when the address is public"
+  }
+ ],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "b4d896c15267",
+   "failed": 178,
+   "gate": "python",
+   "new": 0,
+   "ok": true,
+   "passed": 6339,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  },
+  {
+   "changed_cause": 0,
+   "commit": "b4d896c15267",
+   "failed": 1,
+   "gate": "flutter",
+   "new": 0,
+   "ok": true,
+   "passed": 537,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
+ "owner": [],
+ "repairs": [
+  {
+   "addresses": "R1-01",
+   "commit": "",
+   "reason": "no change made",
+   "repair": "P1",
+   "status": "REFUSED"
+  },
+  {
+   "addresses": "R1-01",
+   "commit": "a5a31435035c",
+   "reason": "",
+   "repair": "P2",
+   "status": "COMMITTED"
+  }
+ ],
+ "rounds": [
+  {
+   "blocking": 1,
+   "candidate": "f44f70a58e49",
+   "findings": 4,
+   "finished": "2026-10-12T02:12:00Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "f6fd90f9-d34a-4b11-97a2-534e8115e22a",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "a5a31435035c",
+   "findings": 2,
+   "finished": "2026-10-12T02:18:50Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R2",
+   "session": "0b084aad-70a2-4cab-bb89-0897f34c0f59",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  },
+  {
+   "blocking": 0,
+   "candidate": "b4d896c15267",
+   "findings": 2,
+   "finished": "2026-10-12T03:08:29Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R3",
+   "session": "93e38eb1-9829-4965-b0b9-471bdf8000f1",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "summary": {
+  "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded",
+  "candidate": "b4d896c152671101ec604a3efbf1e83963578c78",
+  "evidence_ok": true,
+  "findings_repaired": 1,
+  "findings_total": 8,
+  "integration": "INTEGRATED",
+  "milestone": "SSRF-1",
+  "open_blocking": 0,
+  "owner_actions": 0,
+  "receipt_chain_ok": true,
+  "repairs_committed": 1,
+  "rounds": 3,
+  "stage": "COMPLETE",
+  "written_at": "2026-10-12T03:21:12Z"
+ }
+}
