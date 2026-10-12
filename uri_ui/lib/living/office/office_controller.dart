@@ -304,7 +304,14 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       final r = await client.instruct(wid, t, activeSheet: activeSheet);
       brainMessage = r['message'] as String?;
       final refused = (r['refused'] as List?) ?? const [];
-      if (refused.isNotEmpty) notice = '${refused.length} suggested change(s) were refused as unsafe or invalid.';
+      if (refused.isNotEmpty) {
+        // Say why, so the owner can rephrase: the code and the service's short detail of each refused op.
+        final why = {
+          for (final x in refused.whereType<Map>())
+            '${x['code']}${(x['detail'] as String? ?? '').isEmpty ? '' : ': ${x['detail']}'}',
+        };
+        notice = '${refused.length} suggested change(s) were refused as unsafe or invalid (${why.join('; ')}).';
+      }
       final notes = (r['notes'] as Map?) ?? const {};
       final unc = notes['uncalculated'] as int? ?? 0;
       final skipped = notes['not_copied'] as int? ?? 0;

@@ -27,6 +27,9 @@ The sources are never written. Nothing leaves the PC.
 | M2-D3 | `copy_range` copies **values** (the cached results for formula cells), never formulas, from a source into the new workbook. A source formula cell without a cached result (a file Excel never calculated) is copied as empty and reported. | Formulas from a source would point at sheets that are not in the new workbook. External references stay refused (M1 rule). |
 | M2-D4 | In a new workbook, `add_sheet` and `rename_sheet` take effect in the draft at once (there is no file yet); they are listed in the conversation. A sheet left with no cells is not written. Saving with no cells at all is refused (`NOTHING_TO_SAVE`). | Structure is free until the file exists; it keeps the draft model unchanged. |
 | M2-D5 | New files are written with `openpyxl` (already in `requirements.txt`): values and formulas only, no styles; `calcPr fullCalcOnLoad` so Excel calculates on open. | Plain, reproducible output; styling is out of scope for M2. |
+| M2-D7 (from the PC live check) | `copy_range` source ranges may be open-ended (`A2:B` = to the last used row, `A:B` = whole columns) and the target `cell` may be a bare column (`A` = first empty row below what those columns hold, including earlier ops of the same answer). | The local Brain miscounted table rows on the PC (dropped rows, stacked a total onto data); these forms move whole tables without counting. |
+| M2-D8 (from the PC live check) | Within one Brain answer, an op that would overwrite a non-empty cell an earlier op of the same answer wrote is refused as `OVERLAPS_EARLIER_OP` (reported, never merged or moved). An empty placeholder may be filled. | A slip such as a total written over a copied row must not silently destroy copied data. |
+| M2-D9 (from the PC live check) | For a new workbook the strict output schema limits `source` and `from_sheet` to the ids and sheet names that exist, and the Brain sees every sheet of the new workbook (within the cell cap), not only the first. | On the PC the Brain put the source id into `from_sheet` (2 of 3 answers), and on a second request it saw only the empty first sheet. |
 | M2-D6 | The correction history stays per workbook and off by default; a new workbook has no history until it is saved and reopened as a local file. | M1 OFF-O3 ruling. |
 
 ## 4. Acceptance criteria
@@ -75,3 +78,22 @@ Owner-gated steps stay NOT VERIFIED until the owner does them. Independent revie
 The page bundle is unchanged from M1 (`b379fff2…`): new sheets reach the grid through the existing `load` message.
 
 Not verified yet: M2-AC12 (PC scripted live check with the real Brain and WebView2; needs a GPU override from the owner), the independent review, the owner's own check.
+
+### 2026-10-12, M2-AC12 scripted live check on the PC (owner allowed the GPU override; NOT the owner's own check)
+
+Brain READY 158 tok/s with `--override-contention` (owner: "Yes, override start" for this check); `gpu_lease advise --window` GO before every window. Two sources (`north_sales.xlsx` 3 regions, `south_sales.xlsx` 2 regions), app `OfficeRegion` inside `LivingScope`, Office focus.
+
+| Run | What happened | Finding / repair |
+|---|---|---|
+| 1 | Flow completed; 2 of URI's ops refused, only the total row written | refusal reasons were not shown: the notice now names each code and detail |
+| 2 | `UNKNOWN_SOURCE: None`: the Brain put the source id into `from_sheet` (direct probes: 2 of 3 answers) | M2-D9 schema enums; example op in the prompt; probes then 5 of 5 correct ids |
+| 2b (probes) | The Brain placed "Total" on a copied row (4 of 5 answers) | M2-D8 `OVERLAPS_EARLIER_OP`; the copied rows are never overwritten |
+| 3 | Second request ("add Total under the regions") answered "sheet is empty": the Brain saw only `Sheet1` | M2-D9 excerpt of every sheet for new workbooks |
+| 3 | First request copied too few S1 rows (row miscount) | M2-D7 open ranges and bare-column targets; probes then 3 of 3 correct (12 cells) |
+| 4 | **COMPLETED_WITH_RESULT.** Request 1: 12 cells (S1 table with header, then S2 rows stacked under it); Accept all; request 2: `Total` and `=SUM(B2:B6)` in row 7; Accept all; summary card; Create file. The new file holds exactly `Region/Amount, North 120, North-East 95, Hills 143, South 88, Coast 61, Total =SUM(B2:B6)` on one sheet `Summary` (empty `Sheet1` not written), `fullCalcOnLoad` on; both sources unchanged (SHA-256 before = after); the session became a local workbook on the new file. Brain and service stopped; GPU lease FREE. | Evidence `evidence/m2_live_check_20261012/` |
+
+Seen in run 4's screenshots: the grid stayed on the empty `Sheet1` while URI's data was on `Summary`. Repair: the grid now lists sheets with changes first (file order unchanged). Tested (`test_grid_opens_on_the_sheet_uri_built_not_the_empty_start_sheet`); **not re-verified on the PC** (the Brain had been stopped; another override would be needed).
+
+Gates after these repairs: Python `tests/office tests/a2ui tests/ws tests/oi` 872 passed, 27 skipped; `flutter test` 541 passed, 5 skipped; `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok.
+
+Model quality note: the local Brain still makes planning slips; every op is validated, refused ops are explained in the pane, and nothing is written until the owner accepts and approves.

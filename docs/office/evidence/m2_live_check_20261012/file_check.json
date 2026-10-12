@@ -1,0 +1,42 @@
+{
+ "sheets": [
+  "Summary"
+ ],
+ "cells": {
+  "Summary": [
+   [
+    "Region",
+    "Amount"
+   ],
+   [
+    "North",
+    120
+   ],
+   [
+    "North-East",
+    95
+   ],
+   [
+    "Hills",
+    143
+   ],
+   [
+    "South",
+    88
+   ],
+   [
+    "Coast",
+    61
+   ],
+   [
+    "Total",
+    "=SUM(B2:B6)"
+   ]
+  ]
+ },
+ "calc_full_on_load": true,
+ "sources_sha256_after": {
+  "north_sales.xlsx": "0fcad13e27e7035c777f1915581b3656ec66fa6337d1dce85170c09d1757969f",
+  "south_sales.xlsx": "cb06977525ac999b20e8fd00b6b65efd4ccbf6284e5a6a8d8613ef17466cbd66"
+ }
+}

@@ -52,6 +52,11 @@ class _Service {
             return http.Response(jsonEncode(view()), 200);
           case '/workbook/w1':
             return http.Response(jsonEncode(view()), 200);
+          case '/workbook/w1/instruct':
+            return http.Response(jsonEncode({'message': '', 'proposed': [], 'metrics': {}, 'draft': _draft(proposed),
+              'refused': [{'index': 1, 'code': 'UNKNOWN_SOURCE', 'detail': 'None'},
+                {'index': 2, 'code': 'OVERLAPS_EARLIER_OP', 'detail': 'Summary!A6 was already written'}],
+              'notes': {'uncalculated': 2, 'not_copied': 0}, 'workbook': _wb(['Summary'])}), 200);
           case '/workbook/w1/sources':
             labels = [...labels, 'east.xlsx'];
             return http.Response(jsonEncode(view()), 200);
@@ -180,5 +185,17 @@ void main() {
     expect(c.sources, isEmpty);
     expect(c.view!['label'], 'summary.xlsx');
     expect(c.notice, 'Created summary.xlsx.');
+  });
+
+  test('refused ops and copy notes are explained to the owner', () async {
+    final svc = _Service();
+    final c = OfficeController(client: svc.client(), surface: FakeSurface());
+    addTearDown(c.dispose);
+    await c.openNew([r'C:\Users\me\north.xlsx']);
+    await c.instruct('build it');
+    final texts = [for (final t in c.conversation) t.text];
+    expect(texts, contains('2 suggested change(s) were refused as unsafe or invalid '
+        '(UNKNOWN_SOURCE: None; OVERLAPS_EARLIER_OP: Summary!A6 was already written).'));
+    expect(texts, contains('2 source formula cell(s) had no calculated value and were copied as empty.'));
   });
 }

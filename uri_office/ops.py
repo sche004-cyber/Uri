@@ -172,9 +172,26 @@ def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
     return out
 
 
-def copy_edits(op, *, sources: dict, sheets) -> tuple:
+_OPEN_RANGE = re.compile(r"^([A-Z]{1,3})([1-9][0-9]{0,6})?:([A-Z]{1,3})$")
+
+
+def _source_range(ref, sheet: dict) -> tuple:
+    """A source range: 'A1:C3' as usual, or open-ended to the sheet's last used row: 'A2:C' (from row 2) and 'A:C'
+    (from row 1). Open ranges let URI copy a whole table without counting its rows."""
+    m = _OPEN_RANGE.match(ref) if isinstance(ref, str) else None
+    if m is None:
+        return refs.parse_range(ref)
+    last = max(1, int(sheet.get("max_row") or 1))
+    first = int(m.group(2) or 1)
+    if first > last:
+        raise OfficeError("BAD_RANGE", "the range starts below the sheet's last used row")
+    return refs.parse_range(f"{m.group(1)}{first}:{m.group(3)}{last}")
+
+
+def copy_edits(op, *, sources: dict, sheets, next_free_row=None) -> tuple:
     """M2 `copy_range`: copy a range's **values** from a source workbook into the new workbook (M2-D3). `sources`
-    maps source id -> workbook model (`xlsx_model.read`). Formula cells copy their cached result; one without a cached
+    maps source id -> workbook model (`xlsx_model.read`). `cell` may be a bare column ("A"): the copy then starts at
+    `next_free_row(sheet, first_col, last_col)`. Formula cells copy their cached result; one without a cached
     result is copied as empty and counted, and so is a value a workbook cannot store as a value. Returns
     (edits, uncalculated_count, skipped_count)."""
     src = sources.get(op.get("source")) if isinstance(op.get("source"), str) else None
@@ -183,11 +200,18 @@ def copy_edits(op, *, sources: dict, sheets) -> tuple:
     sheet = next((sh for sh in src["sheets"] if sh["name"] == op.get("from_sheet")), None)
     if sheet is None:
         raise OfficeError("UNKNOWN_SOURCE_SHEET", str(op.get("from_sheet"))[:64])
-    c1, r1, c2, r2 = refs.parse_range(op.get("from_range"))
+    c1, r1, c2, r2 = _source_range(op.get("from_range"), sheet)
     if (r2 - r1 + 1) * (c2 - c1 + 1) > MAX_CELLS_PER_OP:
         raise OfficeError("OP_TOO_LARGE", f"more than {MAX_CELLS_PER_OP} cells")
     to = _sheet(op, sheets)
-    tc, tr = refs.parse_cell(refs.canonical_cell(op.get("cell")))
+    target = op.get("cell")
+    if isinstance(target, str) and re.fullmatch(r"[A-Z]{1,3}", target) and next_free_row is not None:
+        # A bare column: append below what the target columns already hold (accepted cells and earlier ops of the
+        # same answer), so tables can be stacked without counting rows.
+        tc = refs.col_index(target)
+        tr = next_free_row(to, tc, tc + (c2 - c1))
+    else:
+        tc, tr = refs.parse_cell(refs.canonical_cell(target))
     if tc + (c2 - c1) > refs.MAX_COL or tr + (r2 - r1) > refs.MAX_ROW:
         raise OfficeError("BAD_RANGE", "the copy does not fit in the sheet")
     out, uncalculated, skipped = [], 0, 0

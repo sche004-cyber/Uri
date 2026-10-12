@@ -150,6 +150,7 @@ def test_new_workbook_ops_in_order_build_sheets_and_copy_values(tmp_path, office
     v = o.open_new([str(a)])
     r = o.instruct(v["workbook_id"], {"text": "Summarise"})
     assert r["refused"] == []
+    # The grid lists sheets with URI's changes first (both have some here, so draft order); the file keeps draft order.
     assert [s["name"] for s in r["workbook"]["sheets"]] == ["Notes", "Summary"]
     assert r["notes"] == {"uncalculated": 1, "not_copied": 0}
     ch = {(c["sheet"], c["cell"]): c for c in r["draft"]["changes"] if c["kind"] == "cell"}
@@ -359,3 +360,54 @@ def test_close_releases_source_grants(tmp_path, office):
     o.close(v["workbook_id"])
     with pytest.raises(OfficeError):
         o.grants.get(gid, "open")
+
+
+def test_grid_opens_on_the_sheet_uri_built_not_the_empty_start_sheet(tmp_path, office):
+    a = make_source(tmp_path / "a.xlsx")
+    o, _ = office({"message": "ok", "ops": [
+        op(op="add_sheet", name="Summary"),
+        op(op="copy_range", source="S1", from_sheet="Data", from_range="A1:B", sheet="Summary", cell="A1"),
+        op(op="copy_range", source="S1", from_sheet="Data", from_range="A2:B", sheet="Summary", cell="A")]})
+    v = o.open_new([str(a)])
+    r = o.instruct(v["workbook_id"], {"text": "go"})
+    assert [s["name"] for s in r["workbook"]["sheets"]] == ["Summary", "Sheet1"]
+    # Open-ended source range and a bare-column target: the second copy is stacked under the first, no row counting.
+    cells = {c["cell"]: c["after"].get("v") for c in r["draft"]["changes"] if c["kind"] == "cell"}
+    assert cells["A1"] == "Region" and cells["A4"] == "East" and cells["A5"] == "North" and cells["B7"] == 30
+    assert r["refused"] == []
+
+
+def test_a_later_op_may_not_overwrite_what_an_earlier_op_wrote(tmp_path, office):
+    a = make_source(tmp_path / "a.xlsx")
+    o, _ = office({"message": "ok", "ops": [
+        op(op="copy_range", source="S1", from_sheet="Data", from_range="A1:B4", sheet="Sheet1", cell="A1"),
+        op(op="set_values", sheet="Sheet1", range="A4:B4", values=[["Total", None]]),
+        op(op="set_values", sheet="Sheet1", range="A5:B5", values=[["Total", None]]),
+        op(op="set_formula", sheet="Sheet1", cell="B5", formula="=SUM(B2:B4)")]})
+    v = o.open_new([str(a)])
+    r = o.instruct(v["workbook_id"], {"text": "go"})
+    assert [(x["index"], x["code"]) for x in r["refused"]] == [(1, "OVERLAPS_EARLIER_OP")]
+    cells = {c["cell"]: c["after"] for c in r["draft"]["changes"] if c["kind"] == "cell"}
+    assert cells["A4"] == {"v": "East"} and cells["B5"] == {"f": "=SUM(B2:B4)"}   # an empty placeholder may be filled
+
+
+def test_brain_schema_limits_source_fields_to_real_sources(tmp_path, office):
+    a = make_source(tmp_path / "a.xlsx")
+    o, client = office({"message": "ok", "ops": []})
+    v = o.open_new([str(a)])
+    o.instruct(v["workbook_id"], {"text": "go"})
+    props = client.bodies[0]["response_format"]["json_schema"]["schema"]["properties"]["ops"]["items"]["properties"]
+    assert props["source"]["enum"] == ["S1", None] and props["from_sheet"]["enum"] == ["Data", None]
+    assert O.BRAIN_SCHEMA["properties"]["ops"]["items"]["properties"]["source"] == {"type": ["string", "null"]}
+
+
+@pytest.mark.parametrize("rng, rows", [("A2:B", (2, 4)), ("A:B", (1, 4)), ("A1:B3", (1, 3))])
+def test_open_source_ranges_end_at_the_last_used_row(rng, rows):
+    c1, r1, c2, r2 = O._source_range(rng, {"max_row": 4})
+    assert (r1, r2) == rows and (c1, c2) == (1, 2)
+
+
+def test_open_source_range_below_the_data_is_refused():
+    with pytest.raises(OfficeError) as e:
+        O._source_range("A9:B", {"max_row": 4})
+    assert e.value.code == "BAD_RANGE"

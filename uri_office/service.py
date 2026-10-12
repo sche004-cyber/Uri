@@ -181,8 +181,13 @@ class Office:
             return self.view(wid)
 
     def _sync_new_sheets(self, s):
-        """New workbook: the session's sheet list follows the draft (sheets added or renamed by URI, M2-D4)."""
-        s.workbook = {**s.workbook, "sheets": [self._empty_sheet(n, i) for i, n in enumerate(s.draft.sheets())]}
+        """New workbook: the session's sheet list follows the draft (sheets added or renamed by URI, M2-D4). The grid
+        shows sheets with changes first, so it opens on what URI built rather than on the empty starting sheet; the
+        file keeps the draft's order (and leaves empty sheets out)."""
+        live = {c["sheet"] for c in s.draft.changes if c["kind"] == "cell" and c["state"] in D.LIVE}
+        names = s.draft.sheets()
+        order = [n for n in names if n in live] + [n for n in names if n not in live]
+        s.workbook = {**s.workbook, "sheets": [self._empty_sheet(n, i) for i, n in enumerate(order)]}
 
     def close(self, wid):
         s = self._session(wid)

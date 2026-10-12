@@ -18,6 +18,7 @@
   "M2-AC5/AC6 ops: ops.copy_edits (values only, caps, unknown source/sheet/range refused, text starting with '=' never copied as a formula); add_sheet/rename_sheet only for engine new (Draft._sheet_op); copy_range and sheet ops refused for existing files",
   "M2-AC7 decide_all (Draft.decide_all, proposed_set_sha256; Dart OfficeController.proposedSetSha256 must match the Python hash): bound to draft version and set hash, all or nothing",
   "M2-AC9/AC10 new file: approval card summary (decision M2-D1, owner may overrule) still binds the full content; uri_office/xlsx_new.py never replaces an existing file (temporary file + no-overwrite link or O_EXCL), the session becomes an ordinary local M1 session",
+  "M2-D7..D9 from the PC live check: open source ranges and bare-column targets (ops._source_range, brain._next_row), OVERLAPS_EARLIER_OP, per-request schema enums (brain.schema_for), excerpt of every sheet (brain.excerpt_all), grid sheet order (Office._sync_new_sheets)",
   "M2-AC8 pane: sources, Add file, Accept all / Reject all, at most 50 cards, Save as new file only (uri_ui/lib/living/office/office_panel.dart, office_controller.dart)",
   "M1 behaviour unchanged for existing files and Google (M2-AC11)"
  ],
@@ -50,7 +51,8 @@
   "uri_ui/lib/living/widgets/living_composer.dart",
   "uri_ui/lib/living/voice/voice_interaction.dart",
   "uri_ui/test/living/live_voice_test.dart",
-  "uri_ui/lib/office_live_check.dart"
+  "uri_ui/lib/office_live_check.dart",
+  "uri_ui/lib/office_m2_live_check.dart"
  ],
  "test_globs": [
   "tests/**",

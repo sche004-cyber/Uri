@@ -9,6 +9,7 @@ The Brain host holds the GPU lease (scripts/ws_brain_host.py); this module never
 """
 from __future__ import annotations
 
+import copy
 import json
 
 from uri_operational_intelligence import brain_client as BC
@@ -38,7 +39,14 @@ SYSTEM_NEW = (
     "ops in the required JSON schema. Allowed ops: add_sheet (name), rename_sheet (sheet, name), set_values (sheet, "
     "range like A1:C3, values as rows), set_formula (sheet, cell, formula starting with '=') and copy_range (source "
     "id like S1, from_sheet, from_range like A1:D200, sheet, cell = top-left target cell) which copies the source "
-    "range's values into the new workbook. Ops run in order, so add a sheet before writing to it. The sources are "
+    "range's values into the new workbook, for example {\"op\": \"copy_range\", \"source\": \"S1\", "
+    "\"from_sheet\": \"Data\", \"from_range\": \"A1:B4\", \"sheet\": \"Summary\", \"cell\": \"A1\"}: source is the "
+    "file's id and from_sheet is a sheet name inside that file. To copy every row of a table, end the range without a row "
+    "number: \"A1:B\" copies from row 1 to the last used row and \"A2:B\" skips a header row. The target cell may be just a column letter such as "
+    "\"A\": the copy then starts at the first empty row below what those columns already hold, which stacks tables "
+    "without counting rows. A copy of N rows starting at row R fills rows R to "
+    "R+N-1; never write a cell that an earlier op in the same answer already wrote. "
+    "Ops run in order, so add a sheet before writing to it. The sources are "
     "only shown in part; use copy_range to move data you have not seen cell by cell. Formulas may refer only to "
     "sheets of the new workbook. Set every field you do not use to null. Never use formulas that reach the network, "
     "other programs or other files. If the instruction is unclear or cannot be done with these ops, return no ops "
@@ -60,6 +68,43 @@ def excerpt(sheets: list, active: str | None) -> dict:
     return out
 
 
+def excerpt_all(sheets: list) -> dict:
+    """New workbook (M2): every sheet's size and non-empty cells, within the same total cap, so URI sees what was
+    already accepted on any sheet (the first sheet is often still empty)."""
+    out = {"sheets": [], "cells_omitted": 0}
+    budget = MAX_EXCERPT_CELLS
+    for sh in sheets:
+        cells = {}
+        rows = sorted(sh["cells"].items(), key=lambda kv: (refs.parse_cell(kv[0])[1], refs.parse_cell(kv[0])[0]))
+        for ref, c in rows:
+            v = c.get("f") or c.get("v")
+            if v is None:
+                continue
+            if budget <= 0:
+                out["cells_omitted"] += 1
+                continue
+            cells[ref] = v
+            budget -= 1
+        out["sheets"].append({"name": sh["name"], "rows": sh["max_row"], "cols": sh["max_col"], "cells": cells})
+    if not out["cells_omitted"]:
+        del out["cells_omitted"]
+    return out
+
+
+def schema_for(engine: str, source_view: list | None) -> dict:
+    """The strict output schema. For a new workbook the source id and source sheet fields are limited to the sources
+    that exist, so the decoder cannot put a file id where a sheet name belongs (seen on the PC, 2026-10-12)."""
+    if engine != "new":
+        return O.BRAIN_SCHEMA
+    sch = copy.deepcopy(O.BRAIN_SCHEMA)
+    props = sch["properties"]["ops"]["items"]["properties"]
+    ids = [x["source"] for x in source_view or []]
+    names = sorted({sh["name"] for x in source_view or [] for sh in x["sheets"]})
+    props["source"] = {"type": ["string", "null"], "enum": ids + [None]}
+    props["from_sheet"] = {"type": ["string", "null"], "enum": names + [None]}
+    return sch
+
+
 def build_body(instruction: str, view: dict, history_rows: list, engine: str, source_view: list | None = None) -> dict:
     if engine == "new":
         system = SYSTEM_NEW
@@ -75,8 +120,27 @@ def build_body(instruction: str, view: dict, history_rows: list, engine: str, so
                              [{k: r.get(k) for k in ("kind", "sheet", "cell", "reason")} for r in history_rows]))
     return {"model": "local", "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
             "response_format": {"type": "json_schema",
-                                "json_schema": {"name": "office_ops", "schema": O.BRAIN_SCHEMA, "strict": True}},
+                                "json_schema": {"name": "office_ops", "schema": schema_for(engine, source_view),
+                                                "strict": True}},
             **tier_params(FAST, use="answer", max_tokens=MAX_TOKENS)}
+
+
+def _next_row(sheets: list, written: set, sheet: str, c1: int, c2: int) -> int:
+    """First row below every non-empty cell of columns c1..c2 of `sheet`: the draft as it is now plus the cells earlier
+    ops of the same answer wrote."""
+    last = 0
+    for sh in sheets:
+        if sh["name"] == sheet:
+            for ref, c in sh["cells"].items():
+                col, row = refs.parse_cell(ref)
+                if c1 <= col <= c2 and (c.get("f") or c.get("v") not in (None, "")):
+                    last = max(last, row)
+    for s_name, ref in written:
+        if s_name == sheet:
+            col, row = refs.parse_cell(ref)
+            if c1 <= col <= c2:
+                last = max(last, row)
+    return last + 1
 
 
 class OfficeBrain:
@@ -89,7 +153,8 @@ class OfficeBrain:
             raise OfficeError("EMPTY_INSTRUCTION")
         if len(instruction) > MAX_INSTRUCTION:
             raise OfficeError("INSTRUCTION_TOO_LONG")
-        body = build_body(instruction.strip(), excerpt(sheets, active), history_rows, engine,
+        view = excerpt_all(sheets) if engine == "new" else excerpt(sheets, active)
+        body = build_body(instruction.strip(), view, history_rows, engine,
                           SRC.excerpt(sources or []) if engine == "new" else None)
         res = self.client.stream_chat(body, cancel=cancel or BC.CancelToken(), deadlines=TIMEOUT)
         if res.status == BC.CANCELLED:
@@ -108,16 +173,26 @@ class OfficeBrain:
         src = SRC.by_id(sources or [])
         edits, refused = [], []
         notes = {"uncalculated": 0, "not_copied": 0}
+        written: set = set()                 # cells written by earlier ops of this answer
         for i, op in enumerate(data["ops"][:20]):
             if isinstance(op, dict):
                 op = {k: v for k, v in op.items() if v is not None}
             try:
                 if engine == "new" and isinstance(op, dict) and op.get("op") in O.SOURCE_OPS:
-                    got, unc, skipped = O.copy_edits(op, sources=src, sheets=names)
+                    got, unc, skipped = O.copy_edits(op, sources=src, sheets=names,
+                                                     next_free_row=lambda sh, a, b: _next_row(sheets, written, sh, a, b))
                     notes["uncalculated"] += unc
                     notes["not_copied"] += skipped
                 else:
                     got = O.to_cell_edits(op, engine=engine, sheets=names, locked=locked)
+                # An op that would overwrite a cell an earlier op of the same answer wrote is a planning slip (for example
+                # a total placed on a copied row): it is refused and reported, never merged or moved.
+                hit = next((e for e in got if "cell" in e and (e["sheet"], e["cell"]) in written), None)
+                if hit is not None:
+                    raise OfficeError("OVERLAPS_EARLIER_OP", f"{hit['sheet']}!{hit['cell']} was already written by an "
+                                                             "earlier change in this answer")
+                written.update((e["sheet"], e["cell"]) for e in got           # an empty value loses nothing
+                               if "cell" in e and (e.get("formula") or e.get("value") not in (None, "")))
                 edits += got
                 for e in got:            # later ops in the same answer see the sheets earlier ops made (M2-D4)
                     if e.get("op") == "add_sheet":
