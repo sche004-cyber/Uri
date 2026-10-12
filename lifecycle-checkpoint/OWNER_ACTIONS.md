@@ -12,7 +12,6 @@ here the same day, and removed only when it is done, with the date. Newest chang
 | A3 | Remove the three leftover `url.insteadOf` test lines from `~/.gitconfig` (cloud container). | Left from earlier testing; I'm not allowed to change them. | Nothing (tidy-up) |
 | A4 | Send the OFF-O6 approval text to the Office thread, if you haven't yet. | Lets the Office thread start the WebView2 work. | Office OFF-O6 |
 | A5 | Let the cloud environment run Codex: in the environment settings (environment menu in the session title bar → Edit) add `npm install -g @openai/codex` to the Setup script, and add your OpenAI key as the environment variable `OPENAI_API_KEY` (Network secrets / API credentials if offered). Never paste the key in chat. Then start a new session or tell me. | You asked to use Codex as much as possible (D32). Codex is not installed here and I may not install it myself. | Codex reviewer/implementer; until then milestones keep using Claude |
-| A6 | Delete the branch `milestone/graphify-leak-1-20261012` on GitHub: Uri repo → Branches → trash icon next to it. You approved deleting it (2026-10-12), but this environment refuses branch deletions from here (tried 4 times: "remote end hung up"). | Tidy-up; holds an early copy of the GRAPHIFY-LEAK-1 fix, nothing secret. | Nothing |
 
 ## 2. Things to run on your Windows PC
 
