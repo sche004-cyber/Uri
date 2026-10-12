@@ -48,7 +48,8 @@ class SearchResult:
     hits: list = field(default_factory=list)
     error_code: Optional[str] = None
     http_status: Optional[int] = None
-    blocked_non_english: int = 0        # IDN-1: hits dropped because the site's address uses non-English letters
+    blocked_non_english: int = 0        # IDN-1: sites dropped because the address uses non-English letters
+    blocked_sites: list = field(default_factory=list)   # R1-02: those sites, one entry each (NP.site_key)
 
 
 class SearchProvider(Protocol):
@@ -114,18 +115,20 @@ class _HttpProvider:
             data = resp.json()
         except ValueError:
             return SearchResult(self.name, q, FAILED, error_code="BAD_RESPONSE", http_status=resp.status_code)
-        kept, blocked = [], 0
+        kept, blocked = [], []
         for h in self._hits(data):
             code = _hit_refusal(h.url)
             if code is None:
                 kept.append(h)
             elif code == NP.HOST_NON_ENGLISH:
-                blocked += 1
+                site = NP.site_key(h.url) or h.url
+                if site not in blocked:
+                    blocked.append(site)
         hits = kept[:MAX_HITS]
         for i, h in enumerate(hits, 1):
             h.rank = i
         return SearchResult(self.name, q, OK if hits else NO_RESULTS, hits=hits, http_status=resp.status_code,
-                            blocked_non_english=blocked)
+                            blocked_non_english=len(blocked), blocked_sites=blocked)
 
     def _hits(self, data) -> list:
         raise NotImplementedError

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import ipaddress
 from dataclasses import dataclass
+from typing import Optional
 from urllib.parse import urlsplit
 
 ALLOWED_SCHEMES = ("http", "https")
@@ -92,6 +93,21 @@ def check_address(address) -> None:
         raise EgressRefused("ADDRESS_NOT_PUBLIC", "flags")
 
 
+def site_key(url) -> Optional[str]:
+    """R1-02: one name per site for counting blocked sites ('b\u00fccher.de' and 'xn--bcher-kva.de' are one site);
+    None when the URL has no host."""
+    try:
+        host = (urlsplit(url).hostname or "").rstrip(".")
+    except (ValueError, TypeError, AttributeError):
+        return None
+    if not host:
+        return None
+    try:
+        return host.encode("idna").decode("ascii").lower()
+    except UnicodeError:
+        return host.lower()
+
+
 def check_url(url: str, *, allowed_ports=ALLOWED_PORTS) -> Target:
     """Parse and check a URL. Returns the connection target. Refuses anything but plain public http(s)."""
     if not isinstance(url, str) or not url or len(url) > MAX_URL_LENGTH:
@@ -128,7 +144,9 @@ def check_url(url: str, *, allowed_ports=ALLOWED_PORTS) -> Target:
             labels = host.split(".")
             if all(lab.isdigit() or lab.lower().startswith("0x") for lab in labels if lab):
                 raise EgressRefused("HOST_NUMERIC_AMBIGUOUS")
-        non_ascii = not host.isascii()
+        # R1-01: tested on the raw authority, because urlsplit lower-cases the host and KELVIN SIGN (U+212A)
+        # lower-cases to ASCII 'k'.
+        non_ascii = not host.isascii() or not parts.netloc.isascii()
         try:
             host = host.encode("idna").decode("ascii").lower()
         except UnicodeError:

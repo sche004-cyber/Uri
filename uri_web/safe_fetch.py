@@ -180,6 +180,7 @@ class FetchResult:
     body: bytes = b""
     text: str = ""
     kind: Optional[str] = None     # html | text | feed | json
+    refused_url: Optional[str] = None   # R1-02: the URL the egress policy refused (the user URL or a redirect target)
 
     @property
     def ok(self):
@@ -310,7 +311,7 @@ class SafeFetcher:
                 NP.check_url(url, allowed_ports=self.allowed_ports)
             except NP.EgressRefused as exc:
                 rec.fetch_status, rec.refusal_code = R.REFUSED, exc.code
-                return FetchResult(rec)
+                return FetchResult(rec, refused_url=url)
             rec.robots_decision = self._robots_allows(url, deadline, cancel)
             if rec.robots_decision == "DISALLOWED":
                 rec.fetch_status = R.ROBOTS_DISALLOWED
@@ -325,7 +326,7 @@ class SafeFetcher:
             except NP.EgressRefused as exc:
                 rec.fetch_status, rec.refusal_code = R.REFUSED, exc.code
                 rec.redirect_chain = chain
-                return FetchResult(rec)
+                return FetchResult(rec, refused_url=current)
             except _Stop as stop:
                 rec.fetch_status, rec.redirect_chain = stop.status, chain
                 return FetchResult(rec)
