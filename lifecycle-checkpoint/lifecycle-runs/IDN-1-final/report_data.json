@@ -1,0 +1,112 @@
+{
+ "findings": [
+  {
+   "blocking": true,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired af73c76",
+   "title": "KELVIN SIGN (U+212A) bypasses HOST_NON_ENGLISH because non-ASCII is tested after urlsplit lower-cases the host"
+  },
+  {
+   "blocking": true,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired af73c76",
+   "title": "blocked_non_english counts hits and refused fetches, not sites: one blocked site is double counted"
+  },
+  {
+   "blocking": false,
+   "id": "R1-03",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Percent-encoded non-English host is refused as HOST_INVALID with no user note"
+  },
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Percent-encoded or httpx-rejected non-English hosts are refused without HOST_NON_ENGLISH, so they are not counted and no reason is shown"
+  }
+ ],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "af73c76d8edb",
+   "failed": 178,
+   "gate": "python",
+   "new": 0,
+   "ok": true,
+   "passed": 6456,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  },
+  {
+   "changed_cause": 0,
+   "commit": "af73c76d8edb",
+   "failed": 1,
+   "gate": "flutter",
+   "new": 0,
+   "ok": true,
+   "passed": 537,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
+ "owner": [],
+ "repairs": [
+  {
+   "addresses": "R1-01, R1-02",
+   "commit": "af73c76d8edb",
+   "reason": "",
+   "repair": "P1",
+   "status": "COMMITTED"
+  }
+ ],
+ "rounds": [
+  {
+   "blocking": 2,
+   "candidate": "21ad94099cba",
+   "findings": 3,
+   "finished": "2026-10-12T04:40:28Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "750643e7-ff50-4eef-916c-aa1eace28808",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "af73c76d8edb",
+   "findings": 1,
+   "finished": "2026-10-12T04:49:34Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R2",
+   "session": "670d8b5a-4ee0-4017-a63c-9df3cff3fce0",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "summary": {
+  "baseline": "e761ce8f30b4aa21ed90da0a3dfbca52c4172a03",
+  "candidate": "af73c76d8edb853cb6224016de314f5bf2f61a89",
+  "evidence_ok": true,
+  "findings_repaired": 2,
+  "findings_total": 4,
+  "integration": "INTEGRATED",
+  "milestone": "IDN-1",
+  "open_blocking": 0,
+  "owner_actions": 0,
+  "receipt_chain_ok": true,
+  "repairs_committed": 1,
+  "rounds": 2,
+  "stage": "COMPLETE",
+  "written_at": "2026-10-12T05:09:03Z"
+ }
+}

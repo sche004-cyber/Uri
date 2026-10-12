@@ -1,0 +1,210 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/IDN-1/audit_R1",
+ "baseline": "e761ce8f30b4aa21ed90da0a3dfbca52c4172a03",
+ "blocking_ids": [
+  "R1-01",
+  "R1-02"
+ ],
+ "candidate": "21ad94099cbaaec5dbd82b80847be1b8c6c983b2",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-12T04:40:28Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "21ad94099cbaaec5dbd82b80847be1b8c6c983b2",
+   "impl_head": "21ad94099cbaaec5dbd82b80847be1b8c6c983b2",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/idn-1-20261012",
+   "refs": "5585b57541d96d894b4cf8584bdc01697374b125404775f65f0e024a6576099d",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "21ad94099cbaaec5dbd82b80847be1b8c6c983b2",
+   "impl_head": "21ad94099cbaaec5dbd82b80847be1b8c6c983b2",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/idn-1-20261012",
+   "refs": "5585b57541d96d894b4cf8584bdc01697374b125404775f65f0e024a6576099d",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "e761ce8f30b4aa21ed90da0a3dfbca52c4172a03",
+  "candidate": "21ad94099cbaaec5dbd82b80847be1b8c6c983b2",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "parts.hostname lower-cases '\\u212aelvin.com' to ASCII 'kelvin.com', so non_ascii=False. U+212A is the only code point whose lower() is ASCII. check_url('http://\\u212aelvin.com/') returns OK host=kelvin.com. In ResearchJob with a mock fetcher, the user URL, the Tavily search hit and a 302 Location to it all resolved and contacted kelvin.com; status COMPLETED_WITH_RESULT, blocked_non_english=0, no note. Plan Scope says 'a host name with any character outside ASCII ... is refused'. Practical impact is low (the contacted host and the displayed label are the genuine ASCII kelvin.com), but the review focus names Unicode that maps to ASCII as a blocking bypass.",
+    "files": [
+     "uri_web/netpolicy.py:111",
+     "uri_web/netpolicy.py:131",
+     "uri_web/netpolicy.py:151"
+    ],
+    "id": "R1-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Compute non_ascii from the raw authority, e.g. `non_ascii = not parts.netloc.isascii()` (or from urlsplit(url).netloc before lower-casing), and add http://\\u212aelvin.com/ to the IDN_URLS tests.",
+    "title": "KELVIN SIGN (U+212A) bypasses HOST_NON_ENGLISH because non-ASCII is tested after urlsplit lower-cases the host"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "Probes (mock fetcher and providers), each with a single blocked site, gave blocked_non_english=2 and the note 'Blocked 2 sites: ...': (a) one provider returning b\u00fccher.de/1 and b\u00fccher.de/2; (b) provider A returning only \u0440\u0430\u0443\u0440\u0430l.com (NO_RESULTS, so the loop continues) and provider B returning the same \u0440\u0430\u0443\u0440\u0430l.com; (c) user URL http://b\u00fccher.de/ plus the same URL as a search hit; (d) two user URLs hop1/hop2.example both redirecting to b\u00fccher.de. The review criterion requires 'no double counting of one site'.",
+    "files": [
+     "uri_web/search.py:117",
+     "uri_web/search.py:123",
+     "uri_web/pipeline.py:152",
+     "uri_web/pipeline.py:179"
+    ],
+    "id": "R1-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Have _hit_refusal / attempts report the refused host (e.g. urlsplit(url).hostname), collect the hosts in a job-level set across search providers, user URLs, feeds and redirects, and set blocked_non_english = len(set). Add regression tests for cases (a)-(d).",
+    "title": "blocked_non_english counts hits and refused fetches, not sites: one blocked site is double counted"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "A redirect to 'http://%D1%80aypal.com/' (WHATWG browsers decode it to a Cyrillic host) is refused with HOST_INVALID (ldh) and never contacted, but blocked_non_english=0 and no D21 note is shown. Identical on baseline; not a bypass.",
+    "files": [
+     "uri_web/netpolicy.py:155"
+    ],
+    "id": "R1-03",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Percent-decode the host before the non-ASCII test and refuse with HOST_NON_ENGLISH when the decoded host is non-ASCII, or document it as a limitation.",
+    "title": "Percent-encoded non-English host is refused as HOST_INVALID with no user note"
+   }
+  ],
+  "prior_findings": [],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/web/test_idn_1.py (candidate)",
+    "result": "27 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "same file copied into a git-archive export of e761ce8f, pytest -q tests/web/test_idn_1.py",
+    "result": "16 failed, 11 passed; failures are DID NOT RAISE, missing HOST_NON_ENGLISH attribute, no note, Hebrew masked (correct reasons)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/web tests/ssrf (candidate)",
+    "result": "3769 passed in 61s (implementer reported 3770)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R1/probe1.py: check_url on 50 hosts, candidate vs baseline",
+    "result": "all non-ASCII/xn-- refused HOST_NON_ENGLISH except U+212A; ASCII hosts, IPs, HOST_NUMERIC_AMBIGUOUS unchanged",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R1/probe2.py: ResearchJob routes and counting probes",
+    "result": "R1-01 and R1-02 reproduced; scheme-relative, U+3002 redirects and feed refused and counted once",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R1/probe3.py: O2 Hebrew point probes, candidate vs baseline",
+    "result": "only legitimate pointed Hebrew changed; all 28 link-disguise variants still detected",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Root fetch_url tests (test_m32_*, test_orchestrator_evidence_transport.py, etc.) not run",
+   "Flutter UI not run (not changed by this diff)",
+   "Feed item URLs pointing to IDN hosts are kept in result.feed_items; not rendered by build_surface and the UI sends no feeds, so not reported as a finding",
+   "ws_frozen_check zip part BLOCKED (checkpoint zip not present)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 1,
+ "started_at": "2026-10-12T04:33:44Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "750643e7-ff50-4eef-916c-aa1eace28808",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.3204969,
+  "cwd": "/tmp/claude-0/lc-work/IDN-1/audit_R1",
+  "ended_at": "2026-10-12T04:40:27Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 29,
+  "pid": 7147,
+  "prompt_sha256": "78f3d4a9e6d2b44563fb59f9be1b9bdcd90c983bff81de248cf49dc7e2b7205c",
+  "provider": "claude_cli",
+  "result_text_sha256": "af1a04281d2f1f380aecfe7e0b465a94745658f522ee0dafce47e5681463a27f",
+  "role": "reviewer",
+  "session_id": "750643e7-ff50-4eef-916c-aa1eace28808",
+  "session_id_requested": "750643e7-ff50-4eef-916c-aa1eace28808",
+  "started_at": "2026-10-12T04:33:44Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "ef421fb792a2d8d08ad850be5adb52067e497227370b86d77d0e99bbfb2817a7"
+ }
+}

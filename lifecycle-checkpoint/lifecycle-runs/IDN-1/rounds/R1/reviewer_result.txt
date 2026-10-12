@@ -1,0 +1,64 @@
+**Verdict: REJECT.** I found two blocking defects, both medium, and one minor point.
+
+I checked both SHAs myself: the candidate is the detached HEAD at `21ad9409…` and the baseline commit `e761ce8f…` exists. No protected path changed, the checkout is still clean, and all my probes ran under `/tmp/uri_review_R1/`.
+
+**R1-01 (MEDIUM, blocking): the KELVIN SIGN gets past the non-English check.**
+- `check_url` decides whether a host is non-ASCII only after `urlsplit().hostname` has lower-cased it (`uri_web/netpolicy.py:111` and `:131`). U+212A KELVIN SIGN lower-cases to ASCII `k`. It is the only character in Unicode that does.
+- So `http://\u212aelvin.com/` is accepted as `kelvin.com` and the host is contacted. This happens for a user URL, a search hit and a redirect: the request reaches `kelvin.com`, the job completes, the count is 0 and no note appears.
+- The real-world risk is low, because the host contacted and the label shown are both the genuine `kelvin.com`. But it breaks the plan's rule that "any character outside ASCII" is refused, and the review focus lists this kind of bypass as blocking.
+- Fix: test `parts.netloc.isascii()` on the raw URL text, and add the case to the tests.
+
+**R1-02 (MEDIUM, blocking): one blocked site is counted more than once, so the note says "Blocked 2 sites" when there was one.**
+The count adds one per search hit and one per refused fetch, with nothing removing repeats of the same site (`uri_web/search.py:117-123`, `uri_web/pipeline.py:152` and `:179`). Each of these gives a count of 2 for a single site:
+- Two search results from the same site (`bücher.de/1` and `bücher.de/2`). This is very likely with real searches.
+- The first provider returns only blocked hits, so it reports no results and the next provider returns the same hit.
+- The same site given as a user URL and also returned as a search hit.
+- Two different pages that both redirect to the same blocked site.
+
+Fix: collect the refused host names in a set across the whole job and report how many are in it.
+
+**R1-03 (LOW, not blocking): a percent-encoded address gets no explanation.**
+A redirect to `http://%D1%80aypal.com/` (a browser would read this as a Cyrillic look-alike of paypal.com) is refused with `HOST_INVALID`. It is never contacted, but it isn't counted and the user gets no note. Either decode percent signs in the host before the non-ASCII check, or accept and document this.
+
+**What holds up:**
+- **Other address tricks:** a check of 50 addresses on both trees shows every other trick is refused with `HOST_NON_ENGLISH`. That includes look-alike letters, `xn--` in any letter case and in the ending, the U+3002 and full-width dots, full-width letters, zero-width and soft hyphens, ligatures, accented letters, trailing dots, ports, scheme-relative redirects and feeds.
+- **Plain ASCII hosts:** genuine ASCII hosts and IP literals behave exactly as before, and full-width digits still get `HOST_NUMERIC_AMBIGUOUS`.
+- **The note:** it appears once, passes A2UI validation, contains no address, and says why in plain words.
+- **Hebrew points:** 28 probes, covering a point alone, on another script, between name and ending, repeated, mixed with other points, and Hebrew-script domain endings, are all still caught as links. Only real pointed Hebrew changed.
+- **The `fetch_url.py` statement:** the plan is correct. The tool goes through `SafeFetcher`, so it already refuses these hosts, and it falls back to the generic "URI refused to fetch that URL."
+- **Tests:** `tests/web/test_idn_1.py` gives 16 failed and 11 passed on the baseline, and each failure is for the right reason (the check doesn't refuse, the count or note is missing, or Hebrew is masked). It gives 27 passed on the candidate. `tests/web` plus `tests/ssrf` give 3769 passed on the candidate, one fewer than the 3770 the implementer reported.
+
+Not checked:
+- The root fetch_url tests and Flutter.
+- Feed item links that point to non-English sites: they stay in the raw result, but the research view doesn't show feed items and the app sends no feeds.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "21ad94099cbaaec5dbd82b80847be1b8c6c983b2", "baseline": "e761ce8f30b4aa21ed90da0a3dfbca52c4172a03", "verdict": "REJECT",
+ "findings": [
+  {"id": "R1-01", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "KELVIN SIGN (U+212A) bypasses HOST_NON_ENGLISH because non-ASCII is tested after urlsplit lower-cases the host",
+   "files": ["uri_web/netpolicy.py:111", "uri_web/netpolicy.py:131", "uri_web/netpolicy.py:151"],
+   "evidence": "parts.hostname lower-cases '\\u212aelvin.com' to ASCII 'kelvin.com', so non_ascii=False. U+212A is the only code point whose lower() is ASCII. check_url('http://\\u212aelvin.com/') returns OK host=kelvin.com. In ResearchJob with a mock fetcher, the user URL, the Tavily search hit and a 302 Location to it all resolved and contacted kelvin.com; status COMPLETED_WITH_RESULT, blocked_non_english=0, no note. Plan Scope says 'a host name with any character outside ASCII ... is refused'. Practical impact is low (the contacted host and the displayed label are the genuine ASCII kelvin.com), but the review focus names Unicode that maps to ASCII as a blocking bypass.",
+   "suggested_fix": "Compute non_ascii from the raw authority, e.g. `non_ascii = not parts.netloc.isascii()` (or from urlsplit(url).netloc before lower-casing), and add http://\\u212aelvin.com/ to the IDN_URLS tests."},
+  {"id": "R1-02", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "blocked_non_english counts hits and refused fetches, not sites: one blocked site is double counted",
+   "files": ["uri_web/search.py:117", "uri_web/search.py:123", "uri_web/pipeline.py:152", "uri_web/pipeline.py:179"],
+   "evidence": "Probes (mock fetcher and providers), each with a single blocked site, gave blocked_non_english=2 and the note 'Blocked 2 sites: ...': (a) one provider returning bücher.de/1 and bücher.de/2; (b) provider A returning only раураl.com (NO_RESULTS, so the loop continues) and provider B returning the same раураl.com; (c) user URL http://bücher.de/ plus the same URL as a search hit; (d) two user URLs hop1/hop2.example both redirecting to bücher.de. The review criterion requires 'no double counting of one site'.",
+   "suggested_fix": "Have _hit_refusal / attempts report the refused host (e.g. urlsplit(url).hostname), collect the hosts in a job-level set across search providers, user URLs, feeds and redirects, and set blocked_non_english = len(set). Add regression tests for cases (a)-(d)."},
+  {"id": "R1-03", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Percent-encoded non-English host is refused as HOST_INVALID with no user note",
+   "files": ["uri_web/netpolicy.py:155"],
+   "evidence": "A redirect to 'http://%D1%80aypal.com/' (WHATWG browsers decode it to a Cyrillic host) is refused with HOST_INVALID (ldh) and never contacted, but blocked_non_english=0 and no D21 note is shown. Identical on baseline; not a bypass.",
+   "suggested_fix": "Percent-decode the host before the non-ASCII test and refuse with HOST_NON_ENGLISH when the decoded host is non-ASCII, or document it as a limitation."}
+ ],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/web/test_idn_1.py (candidate)", "result": "27 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "same file copied into a git-archive export of e761ce8f, pytest -q tests/web/test_idn_1.py", "result": "16 failed, 11 passed; failures are DID NOT RAISE, missing HOST_NON_ENGLISH attribute, no note, Hebrew masked (correct reasons)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/web tests/ssrf (candidate)", "result": "3769 passed in 61s (implementer reported 3770)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/uri_review_R1/probe1.py: check_url on 50 hosts, candidate vs baseline", "result": "all non-ASCII/xn-- refused HOST_NON_ENGLISH except U+212A; ASCII hosts, IPs, HOST_NUMERIC_AMBIGUOUS unchanged", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/uri_review_R1/probe2.py: ResearchJob routes and counting probes", "result": "R1-01 and R1-02 reproduced; scheme-relative, U+3002 redirects and feed refused and counted once", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/uri_review_R1/probe3.py: O2 Hebrew point probes, candidate vs baseline", "result": "only legitimate pointed Hebrew changed; all 28 link-disguise variants still detected", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Root fetch_url tests (test_m32_*, test_orchestrator_evidence_transport.py, etc.) not run", "Flutter UI not run (not changed by this diff)", "Feed item URLs pointing to IDN hosts are kept in result.feed_items; not rendered by build_surface and the UI sends no feeds, so not reported as a finding", "ws_frozen_check zip part BLOCKED (checkpoint zip not present)"]}
+AUDIT_RESULT_END

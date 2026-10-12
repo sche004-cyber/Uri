@@ -1,0 +1,22 @@
+I fixed both findings, the four source changes and the new test file are in the working tree only, and nothing is committed.
+
+**R1-01 (KELVIN SIGN gets past the non-English check)**, `uri_web/netpolicy.py`
+- **Cause:** `urlsplit` lower-cases the host before the check runs, so `K` (U+212A) became an ordinary `k` and `http://Kelvin.com/` (with the KELVIN SIGN) was allowed.
+- **Fix:** the non-ASCII test now also looks at the address as typed (`not parts.netloc.isascii()`). That covers user URLs, search hits and redirects, because they all go through `check_url`.
+
+**R1-02 (one blocked site counted twice)**, `uri_web/search.py`, `uri_web/pipeline.py`, `uri_web/safe_fetch.py`
+- **Cause:** the count added up hits and refused fetches, not sites.
+- **Fix:** a new `netpolicy.site_key(url)` gives one name per site, so `bücher.de` and `xn--bcher-kva.de` count as the same site. Each search result now lists its blocked sites as well as the count. The research job gathers them into one set across search providers, user URLs, feeds and redirects, and `blocked_non_english` is the size of that set.
+- **Redirect targets:** the refused address of a redirect wasn't kept anywhere, and `records.py` is outside the paths I may change. So `FetchResult` in `safe_fetch.py` gets a new optional field `refused_url`.
+
+**Tests**
+- **New file:** `tests/web/test_idn_1_r1.py` covers three KELVIN SIGN addresses, KELVIN SIGN on all three routes in one research job (never contacted, counted once), and the reviewer's cases (a)–(d). It also checks that the ASCII and non-ASCII spellings of one site count once, and that three different sites still count as 3.
+- **Before the repair:** copied alone into a clean export of 21ad9409, 9 of the 10 tests fail. The "three different sites" test passes there too, on purpose: it guards against the fix under-counting.
+- **After the repair:** the whole `tests/web` suite passes, 3714 tests, including the existing IDN-1 test that expects 3 different blocked sites.
+
+No existing tests were changed. I didn't run `graphify update`, as instructed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R1-01", "R1-02"], "not_repaired": [],
+ "regression_tests": ["tests/web/test_idn_1_r1.py"], "notes": "R1-01: non_ascii now also tests parts.netloc (raw, before urlsplit lower-cases the host). R1-02: added netpolicy.site_key (IDNA-normalised host); SearchResult.blocked_sites lists distinct sites; FetchResult.refused_url records the refused user/redirect URL; ResearchJob keeps a job-level set across search providers, user URLs, feeds and redirects, and blocked_non_english = len(set). Run on a clean export of 21ad9409: 9 of 10 new tests fail; test_r1_02_distinct_sites_are_still_each_counted passes there on purpose (guards against under-counting). After the repair, all 3714 tests in tests/web pass. No existing tests changed; graphify not run."}
+REPAIR_RESULT_END

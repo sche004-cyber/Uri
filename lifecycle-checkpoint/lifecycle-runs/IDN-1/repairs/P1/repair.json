@@ -1,0 +1,103 @@
+{
+ "addresses": [
+  "R1-01",
+  "R1-02"
+ ],
+ "changed": [
+  "tests/web/test_idn_1_r1.py",
+  "uri_web/netpolicy.py",
+  "uri_web/pipeline.py",
+  "uri_web/safe_fetch.py",
+  "uri_web/search.py"
+ ],
+ "commit": "af73c76d8edb853cb6224016de314f5bf2f61a89",
+ "ended_at": "2026-10-12T04:43:15Z",
+ "pre": "21ad94099cbaaec5dbd82b80847be1b8c6c983b2",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/web/test_idn_1_r1.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 1,
+ "report": {
+  "not_repaired": [],
+  "notes": "R1-01: non_ascii now also tests parts.netloc (raw, before urlsplit lower-cases the host). R1-02: added netpolicy.site_key (IDNA-normalised host); SearchResult.blocked_sites lists distinct sites; FetchResult.refused_url records the refused user/redirect URL; ResearchJob keeps a job-level set across search providers, user URLs, feeds and redirects, and blocked_non_english = len(set). Run on a clean export of 21ad9409: 9 of 10 new tests fail; test_r1_02_distinct_sites_are_still_each_counted passes there on purpose (guards against under-counting). After the repair, all 3714 tests in tests/web pass. No existing tests changed; graphify not run.",
+  "regression_tests": [
+   "tests/web/test_idn_1_r1.py"
+  ],
+  "repaired": [
+   "R1-01",
+   "R1-02"
+  ]
+ },
+ "started_at": "2026-10-12T04:40:28Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "41f2da19-d5b3-4cbd-ba25-9374e120141d",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.5869814,
+  "cwd": "/home/user/uri-wt/idn",
+  "ended_at": "2026-10-12T04:43:08Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 12,
+  "pid": 8186,
+  "prompt_sha256": "a0e220039ff3ddb2c1cb969fa936f4494dce504f90e361e9504d70538fe9de02",
+  "provider": "claude_cli",
+  "result_text_sha256": "6c37760e94b9c66f58ee60b6b73a65c21470ec2495171d2da22d85b275ec0923",
+  "role": "implementer",
+  "session_id": "41f2da19-d5b3-4cbd-ba25-9374e120141d",
+  "session_id_requested": "41f2da19-d5b3-4cbd-ba25-9374e120141d",
+  "started_at": "2026-10-12T04:40:28Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "0dc1dde03a05259198a90ad6a571784985eb8d53969ddff28d1f1072a978a0ea"
+ }
+}

@@ -1,0 +1,48 @@
+I recommend **ACCEPT WITH FINDINGS**. Both blocking findings from round 1 are fixed, I found no way to get past `HOST_NON_ENGLISH`, ASCII hosts behave exactly as before, and I have one low-severity, non-blocking finding.
+
+**Earlier findings**
+- **R1-01 (Kelvin sign): FIXED.** `netpolicy.py:149` now checks the raw address before the host is lower-cased. `K`-sign hosts are refused on user URLs and redirects, and the host is never contacted.
+- **R1-02 (double counting): FIXED.** Blocked sites are now counted once each, across search providers, user URLs, feeds and redirects. In my end-to-end probe, `bücher.de` and `XN--BCHER-KVA.DE.` counted as one site, `kelvin。com` was counted once, and a private-address refusal was not counted.
+
+**What I checked**
+- **Bypasses:** I ran 45 hostile URLs through `check_url` on the baseline and the candidate: full-width letters, soft hyphen, ideographic dots (`。`), upper-case `XN--`, trailing dots, ports, ligatures, Roman numerals, dotless ı, long s, circled and math letters, and combining marks. Every one that the baseline let through and that maps to a non-English name is now refused with `HOST_NON_ENGLISH`. Redirects written as scheme-relative, raw UTF-8 or Latin-1 `Location` values were refused, and the blocked host was never contacted.
+- **Other routes:** Search hits from all three providers go through one shared filter. robots.txt and social instances go through the same check. The research screen never shows feed-item links or progress host names.
+- **ASCII regressions:** None. Ordinary names, IP literals, `xn.example.com`, `axn--b.example.com`, and all existing refusal codes are unchanged. Full-width digits that spell an IP address still get `HOST_NUMERIC_AMBIGUOUS`. The only behaviour changes are `xn--` labels and hosts with non-ASCII characters, which the plan intends.
+- **The note:** It appears once, comes first, passes A2UI validation, has no address or link, and uses short plain sentences.
+- **Hebrew points (O2):** I generated 30,240 cases with SHIN DOT and SIN DOT used as separators, glued to names, repeated, or alone. None was caught without the dots but missed with them. A further 684 link-disguise probes gave identical results on the baseline and the candidate.
+- **Scope:** No protected path changed. The plan's statement about `uri_core/tools/fetch_url.py` is correct: it uses `check_url` and gives the generic "URI refused to fetch that URL." message.
+
+**R2-01 (LOW, non-blocking): some refusals don't say why**
+A few unusual address forms are still refused and never contacted, but they get a different refusal code, so they aren't counted and no note is shown:
+- A percent-encoded host such as `http://%D1%80aypal.com/` is refused as `HOST_INVALID`, whether it comes in as a user URL, search hit or redirect. Browsers decode this to `раураl.com`.
+- A redirect to a full-width host such as `http://ｐａｙｐａｌ.com/` ends as `UNREACHABLE`, because httpx rejects the redirect URL before `check_url` runs.
+
+Real sites are unlikely to use these forms. The suggested fix is to return `HOST_NON_ENGLISH` when a host contains `%` that decodes to a non-ASCII name, and to read the raw `Location` header in `safe_fetch.py` so redirects go through `check_url`.
+
+**Tests**
+- On the candidate, `tests/web/test_idn_1.py` and `test_idn_1_r1.py` pass (37), and `tests/web` plus `tests/ssrf` pass (3,779).
+- On the baseline, 16 of the 27 IDN-1 tests fail as the plan says, and the R1 tests fail too, all for the expected reasons.
+- On the pre-repair commit `21ad9409`, 9 of the 10 R1 tests fail for the right reasons: Kelvin hosts not refused or contacted, and counts of 2 instead of 1.
+- I couldn't compare the root `fetch_url` test files: three of them fail to load on both commits because the Google client libraries aren't installed here. The `tests/ssrf/test_ssrf_1_fetch_url.py` tests did pass.
+
+I didn't run the Flutter rendering tests, and didn't test a live proxy or real DNS.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "af73c76d8edb853cb6224016de314f5bf2f61a89", "baseline": "e761ce8f30b4aa21ed90da0a3dfbca52c4172a03", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [{"id": "R2-01", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Percent-encoded or httpx-rejected non-English hosts are refused without HOST_NON_ENGLISH, so they are not counted and no reason is shown",
+   "files": ["uri_web/netpolicy.py:149", "uri_web/netpolicy.py:173", "uri_web/safe_fetch.py:348", "uri_web/safe_fetch.py:394"],
+   "evidence": "check_url('http://%D1%80aypal.com/') -> HOST_INVALID (a WHATWG browser decodes it to 'раураl.com'), on user URLs, search hits and redirects. A redirect with Location 'http://ｐａｙｐａｌ.com/' (UTF-8) gives fetch_status UNREACHABLE with refusal_code None, because httpx raises RemoteProtocolError 'Invalid IDNA hostname' while reading the response, before check_url runs. In both cases the host is never contacted (verified with MockTransport), but blocked_non_english stays 0 and the D21 note is missing.",
+   "suggested_fix": "In check_url, when the host contains '%', percent-decode it and refuse with HOST_NON_ENGLISH if the result is non-ASCII. In safe_fetch, read the raw Location header (or catch the httpx redirect URL error) so the target goes through check_url."}],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "pytest tests/web/test_idn_1.py tests/web/test_idn_1_r1.py (candidate)", "result": "37 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/web tests/ssrf (candidate)", "result": "3779 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest test_idn_1.py + test_idn_1_r1.py on e761ce8f (git archive)", "result": "26 failed, 11 passed; test_idn_1: 16 failed / 11 guards passed; failures are DID NOT RAISE, missing attributes, wrong counts, missing note, Hebrew masked", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest test_idn_1_r1.py on pre-repair 21ad9409", "result": "9 failed (Kelvin host not refused or contacted; counts 2 != 1), 1 guard passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "check_url probe: 45 hostile and ASCII URLs on baseline vs candidate", "result": "every non-English host the baseline accepted is now HOST_NON_ENGLISH; ASCII, IP and numeric refusals unchanged; percent-encoded host is HOST_INVALID (R2-01)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "end-to-end pipeline probe: redirects (scheme-relative, Kelvin UTF-8, Latin-1, U+3002, upper-case XN-- with trailing dot, full-width)", "result": "no non-English host contacted; blocked count correct (3 and 2 distinct sites); one note shown; full-width redirect gives UNREACHABLE (R2-01)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "O2 differential: 30240 generated strings, has_link_or_contact with vs without SHIN/SIN dots; 684 link probes baseline vs candidate", "result": "0 cases caught without the dots but missed with them; identical results on baseline and candidate", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest root fetch_url-related tests (test_m32..., test_m19..., test_orchestrator_evidence_transport, test_m20_*)", "result": "3 collection errors on both commits (Google client libraries not installed)", "status": "BLOCKED"}],
+ "unverified": ["Flutter rendering of the note (only A2UI validation via require_valid was run)", "Root fetch_url test files beyond tests/ssrf (collection blocked by missing Google libraries)", "Live proxy egress mode and real DNS behaviour"]}
+AUDIT_RESULT_END

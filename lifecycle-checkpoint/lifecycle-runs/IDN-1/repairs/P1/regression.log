@@ -1,0 +1,96 @@
+=== tests/web/test_idn_1_r1.py BEFORE (21ad94099cbaaec5dbd82b80847be1b8c6c983b2) DONE
+kelvin_sign_is_refused(url):
+>       with pytest.raises(N.EgressRefused) as e:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE EgressRefused
+
+tests/web/test_idn_1_r1.py:22: Failed
+____________ test_r1_01_kelvin_sign_is_never_contacted_on_any_route ____________
+
+    def test_r1_01_kelvin_sign_is_never_contacted_on_any_route():
+        seen = []
+    
+        def handler(req):
+            host = req.headers["host"]
+            seen.append(host)
+            if host == "hop.example":
+                return httpx.Response(302, headers=[(b"location", "http://Kelvin.com/".encode())])
+            return httpx.Response(200, headers={"content-type": "text/html"}, content=_PAGE)
+    
+        fetcher = SafeFetcher(resolver=lambda host, port: ["93.184.215.14"], transport=httpx.MockTransport(handler),
+                              honour_robots=False)
+        job = P.ResearchJob(P.ResearchRequest(query="eiffel tower height",
+                                              urls=["http://Kelvin.com/a", "http://hop.example/"], use_search=True),
+                            fetcher=fetcher, providers=[_tavily(["http://good.example/", "http://Kelvin.com/b"])])
+        r = job.run()
+>       assert "kelvin.com" not in seen, seen
+E       AssertionError: ['kelvin.com', 'hop.example', 'kelvin.com', 'good.example', 'kelvin.com']
+E       assert 'kelvin.com' not in ['kelvin.com', 'hop.example', 'kelvin.com', 'good.example', 'kelvin.com']
+
+tests/web/test_idn_1_r1.py:43: AssertionError
+_______________ test_r1_02_a_one_provider_two_pages_of_one_site ________________
+
+    def test_r1_02_a_one_provider_two_pages_of_one_site():
+        sr = _tavily(["http://good.example/", "http://bücher.de/1", "http://bücher.de/2"]).search("eiffel")
+>       assert sr.blocked_non_english == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = SearchResult(provider='tavily', query='eiffel', status='OK', hits=[SearchHit(title='Eiffel tower facts', url='http://g...metres tall.', rank=1, provider='tavily', published_at=None)], error_code=None, http_status=200, blocked_non_english=2).blocked_non_english
+
+tests/web/test_idn_1_r1.py:75: AssertionError
+_______________ test_r1_02_b_two_providers_return_the_same_site ________________
+
+    def test_r1_02_b_two_providers_return_the_same_site():
+        site = "http://раураl.com/"
+        r = _run(urls=["http://good.example/"], providers=[_tavily([site]), _tavily([site, "http://good.example/x"])])
+>       assert r.blocked_non_english == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = ResearchResult(job_id='dbe4e9f3-bfab-4314-a484-54149ab13b6a', query='eiffel tower height', status='COMPLETED_WITH_RESU...n_status=None, started_at='2026-10-12T04:43:12Z', finished_at='2026-10-12T04:43:12Z', elapsed_s=0.138, error_code=None).blocked_non_english
+
+tests/web/test_idn_1_r1.py:83: AssertionError
+_______________ test_r1_02_c_user_url_and_search_hit_of_one_site _______________
+
+    def test_r1_02_c_user_url_and_search_hit_of_one_site():
+        r = _run(urls=["http://bücher.de/", "http://good.example/"],
+                 providers=[_tavily(["http://bücher.de/", "http://good.example/x"])])
+>       assert r.blocked_non_english == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = ResearchResult(job_id='d7c4a03e-de6a-4015-a4a7-766084535c02', query='eiffel tower height', status='COMPLETED_WITH_RESU...n_status=None, started_at='2026-10-12T04:43:12Z', finished_at='2026-10-12T04:43:13Z', elapsed_s=0.135, error_code=None).blocked_non_english
+
+tests/web/test_idn_1_r1.py:89: AssertionError
+____________ test_r1_02_c2_unicode_and_ascii_spellings_are_one_site ____________
+
+    def test_r1_02_c2_unicode_and_ascii_spellings_are_one_site():
+        r = _run(urls=["http://bücher.de/", "http://good.example/"],
+                 providers=[_tavily(["http://xn--bcher-kva.de/", "http://good.example/x"])])
+>       assert r.blocked_non_english == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = ResearchResult(job_id='c04ec276-a1c5-4f2f-96d6-f19f909173ed', query='eiffel tower height', status='COMPLETED_WITH_RESU...n_status=None, started_at='2026-10-12T04:43:13Z', finished_at='2026-10-12T04:43:13Z', elapsed_s=0.182, error_code=None).blocked_non_english
+
+tests/web/test_idn_1_r1.py:95: AssertionError
+____________________ test_r1_02_d_two_redirects_to_one_site ____________________
+
+    def test_r1_02_d_two_redirects_to_one_site():
+        r = _run(urls=["http://hop1.example/", "http://hop2.example/", "http://good.example/"],
+                 redirects={"hop1.example": "http://bücher.de/", "hop2.example": "http://bücher.de/other"})
+        assert r.status == P.COMPLETED_WITH_RESULT
+>       assert r.blocked_non_english == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = ResearchResult(job_id='08b379a2-405a-44d2-9cbd-0eca18090b33', query='eiffel tower height', status='COMPLETED_WITH_RESU...n_status=None, started_at='2026-10-12T04:43:13Z', finished_at='2026-10-12T04:43:13Z', elapsed_s=0.178, error_code=None).blocked_non_english
+
+tests/web/test_idn_1_r1.py:102: AssertionError
+=========================== short test summary info ============================
+FAILED tests/web/test_idn_1_r1.py::test_r1_01_kelvin_sign_is_refused[http://\u212aelvin.com/]
+FAILED tests/web/test_idn_1_r1.py::test_r1_01_kelvin_sign_is_refused[https://\u212aELVIN.com/x]
+FAILED tests/web/test_idn_1_r1.py::test_r1_01_kelvin_sign_is_refused[http://a.\u212a.example/]
+FAILED tests/web/test_idn_1_r1.py::test_r1_01_kelvin_sign_is_never_contacted_on_any_route
+FAILED tests/web/test_idn_1_r1.py::test_r1_02_a_one_provider_two_pages_of_one_site
+FAILED tests/web/test_idn_1_r1.py::test_r1_02_b_two_providers_return_the_same_site
+FAILED tests/web/test_idn_1_r1.py::test_r1_02_c_user_url_and_search_hit_of_one_site
+FAILED tests/web/test_idn_1_r1.py::test_r1_02_c2_unicode_and_ascii_spellings_are_one_site
+FAILED tests/web/test_idn_1_r1.py::test_r1_02_d_two_redirects_to_one_site - A...
+9 failed, 1 passed in 1.65s
+
+=== tests/web/test_idn_1_r1.py AFTER (af73c76d8edb853cb6224016de314f5bf2f61a89) DONE
+..........                                                               [100%]
+10 passed in 1.58s
+
