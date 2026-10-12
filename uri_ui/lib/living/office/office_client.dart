@@ -69,6 +69,9 @@ class OfficeClient {
   Future<Map<String, dynamic>> openNew(List<String> paths) => _post('/open/new', {'paths': paths});
   Future<Map<String, dynamic>> addSources(String wid, List<String> paths) =>
       _post('/workbook/$wid/sources', {'paths': paths});
+  /// M2-D10: what each added file is for ({"S1": "reference" | "check" | "edit"}).
+  Future<Map<String, dynamic>> setRoles(String wid, Map<String, String> roles) =>
+      _post('/workbook/$wid/roles', {'roles': roles});
   /// M2-D2: decide every proposed change at once, bound to the draft version and the set hash shown.
   Future<Map<String, dynamic>> decideAll(String wid, String decision, int version, String setSha) =>
       _post('/workbook/$wid/decide_all', {'decision': decision, 'draft_version': version, 'set_sha256': setSha});

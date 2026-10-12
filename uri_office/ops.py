@@ -188,7 +188,7 @@ def _source_range(ref, sheet: dict) -> tuple:
     return refs.parse_range(f"{m.group(1)}{first}:{m.group(3)}{last}")
 
 
-def copy_edits(op, *, sources: dict, sheets, next_free_row=None) -> tuple:
+def copy_edits(op, *, sources: dict, sheets, next_free_row=None, locked=None) -> tuple:
     """M2 `copy_range`: copy a range's **values** from a source workbook into the new workbook (M2-D3). `sources`
     maps source id -> workbook model (`xlsx_model.read`). `cell` may be a bare column ("A"): the copy then starts at
     `next_free_row(sheet, first_col, last_col)`. Formula cells copy their cached result; one without a cached
@@ -227,4 +227,8 @@ def copy_edits(op, *, sources: dict, sheets, next_free_row=None) -> tuple:
                 v = None                          # e.g. text starting with "=": copied as empty, never as a formula
                 skipped += 1
             out.append({"sheet": to, "cell": refs.cell_ref(tc + dc, tr + dr), "value": v})
+    lk = (locked or {}).get(to, ())
+    hit = next((e for e in out if e["cell"] in lk), None)
+    if hit is not None:
+        raise OfficeError("CELL_NOT_EDITABLE", f"{to}!{hit['cell']} is part of a shared formula or merged range")
     return out, uncalculated, skipped

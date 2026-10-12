@@ -104,8 +104,11 @@ class Office:
         with s.lock:                                     # read-only (AC6): a pending re-read is done by reload()
             out = {"workbook_id": s.workbook_id, "engine": s.engine, "label": s.label, "workbook": s.workbook,
                    "draft": s.draft.snapshot(), "history_on": self.history.consented(s.key)}
-            if s.engine == "new":
+            if s.sources:
                 out["sources"] = SRC.listing(s.sources)
+                w = SRC.working(s.sources)
+                out["working"] = w.sid if w else None
+                out["task"] = w.role if w else "build"
             if s.engine == "google":
                 out["open_url"] = G.open_url(s.file_id)
                 out["writable"] = self.google.writable(s.file_id)
@@ -173,12 +176,60 @@ class Office:
     def add_sources(self, wid, body) -> dict:
         """M2-AC2: more source files for an open new workbook."""
         s = self._session(wid)
-        if s.engine != "new":
-            raise OfficeError("NOT_A_NEW_WORKBOOK", "sources can be added to a new workbook only")
+        if not s.sources:
+            raise OfficeError("NOT_A_NEW_WORKBOOK", "files can be added only to a workbook opened with \"New from files\"")
         with s.lock:
             s.sources = SRC.add(self.grants, self.state / "work" / wid, s.sources, body.get("paths"))
             self.approvals.audit("office.sources_added", {"workbook_id": wid, "sources": len(s.sources)})
             return self.view(wid)
+
+    def set_roles(self, wid, body) -> dict:
+        """M2-D10/D11: the owner says what each added file is for. At most one file is checked or edited (the working
+        file, shown in the sheet view and saved in place through the M1 path); with none, URI builds a new workbook.
+        Changing the working file is refused while the current one has accepted or typed changes not yet saved."""
+        s = self._session(wid)
+        roles = body.get("roles")
+        if not s.sources:
+            raise OfficeError("NO_SOURCES", "this workbook has no added files")
+        if not isinstance(roles, dict) or any(k not in {x.sid for x in s.sources} or v not in SRC.ROLES
+                                              for k, v in roles.items()):
+            raise OfficeError("BAD_ROLES", "each file is reference, check or edit")
+        with s.lock:
+            merged = {x.sid: roles.get(x.sid, x.role) for x in s.sources}
+            work = [k for k, v in merged.items() if v in SRC.WORKING_ROLES]
+            if len(work) > 1:
+                raise OfficeError("ONE_WORKING_FILE", "check or edit one file at a time")
+            old = SRC.working(s.sources)
+            new_sid = work[0] if work else None
+            if (old.sid if old else None) != new_sid:
+                if s.draft.pending()["edits"]:
+                    raise OfficeError("SAVE_OR_DISCARD_FIRST", "save or undo the changes to the current file before "
+                                                               "working on another one", 409)
+                self._switch_target(s, next((x for x in s.sources if x.sid == new_sid), None))
+            for x in s.sources:
+                x.role = merged[x.sid]
+            self.approvals.audit("office.roles_set", {"workbook_id": wid, "roles": merged})
+            return self.view(wid)
+
+    def _switch_target(self, s, src):
+        """Make `src` the working file (a local workbook on the original, saved through the M1 cell patch), or, with
+        None, a new empty workbook."""
+        self.approvals.close_workbook(s.workbook_id)       # an open approval was for the previous target
+        if src is None:
+            wb = {"sheets": [self._empty_sheet("Sheet1", 0)], "styles": {},
+                  "kept_not_shown": {"charts": 0, "images": 0, "pivot_tables": 0}}
+            s.engine, s.label, s.workbook = "new", "New workbook", wb
+            s.draft = D.Draft(s.workbook_id, "new", wb)
+            s.key = workbook_key("new", s.workbook_id)
+            s.grant_id = s.path = s.open_sha = None
+            return
+        path = self.grants.get(src.grant_id, "open").path
+        if xlsx_model.file_sha256(path) != src.sha256:
+            raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was added; add it again", 409)
+        s.engine, s.label, s.workbook = "local", src.label, src.workbook
+        s.draft = D.Draft(s.workbook_id, "local", src.workbook)
+        s.key = workbook_key("local", str(path).lower())
+        s.grant_id, s.path, s.open_sha = src.grant_id, path, src.sha256
 
     def _sync_new_sheets(self, s):
         """New workbook: the session's sheet list follows the draft (sheets added or renamed by URI, M2-D4). The grid
@@ -331,13 +382,23 @@ class Office:
         s = self._session(wid)
         with s.lock:                                     # the draft is locked for the whole turn; user edits queue
             refreshed = self._refresh(s)
+            extra = {}
+            if s.sources:
+                missing = SRC.roles_needed(s.sources)
+                if missing:
+                    raise OfficeError("ROLES_NEEDED", "say what each file is for (reference, check or edit): "
+                                                      + ", ".join(missing))
+                w = SRC.working(s.sources)
+                extra = {"sources": [x for x in s.sources if x is not w], "task": w.role if w else "build"}
             res = self.brain.plan(body.get("text"), sheets=self._current_sheets(s), active=body.get("active_sheet"),
                                   engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key),
-                                  **({"sources": s.sources} if s.engine == "new" else {}))
+                                  **extra)
             new = s.draft.propose(res["edits"]) if res["edits"] else []
             out = {"message": res["message"], "proposed": [c["cid"] for c in new if c["state"] == "proposed"],
                    "refused": res["refused"], "metrics": res["metrics"], "draft": s.draft.snapshot(),
                    **self._reloaded(s, refreshed)}
+            if res.get("findings") is not None:
+                out["findings"] = res["findings"]
             if s.engine == "new":
                 self._sync_new_sheets(s)
                 out["workbook"] = s.workbook             # the grid reloads: sheets may have been added or renamed
@@ -604,6 +665,7 @@ def make_handler(office: Office, token: str):
                              "edit_copy": lambda: office.edit_copy(wid), "export": lambda: office.export(wid, b),
                              "history": lambda: office.history_op(wid, b), "close": lambda: office.close(wid),
                              "sources": lambda: office.add_sources(wid, b),
+                             "roles": lambda: office.set_roles(wid, b),
                              "decide_all": lambda: office.decide_all(wid, b)}
                     if verb in table:
                         return table[verb]()

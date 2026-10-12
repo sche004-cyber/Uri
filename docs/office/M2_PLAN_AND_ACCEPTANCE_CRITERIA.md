@@ -8,6 +8,8 @@ Branch `phase/uri-office-m2`, from `phase/uri-office` at `6348b1b1` (M1 with the
 
 The owner placed this in a new milestone M2 ("New milestone M2 (Recommended)").
 
+Later the same day the owner added: "The one this is to be made clear from the user, the intent of adding the sheet, eg. is it for reference or user wants something checked or edited", and "So somthing like active working sheet or reference sheet may be arranged". Owner answers: a checked file gets "Findings + suggested fixes"; files are edited "One at a time".
+
 ## 2. What M2 adds
 
 1. **New from files.** The owner picks one or more `.xlsx` files (the system file picker, multi-select). They become read-only *sources*. URI Office opens a fresh, empty workbook next to them.
@@ -30,6 +32,8 @@ The sources are never written. Nothing leaves the PC.
 | M2-D7 (from the PC live check) | `copy_range` source ranges may be open-ended (`A2:B` = to the last used row, `A:B` = whole columns) and the target `cell` may be a bare column (`A` = first empty row below what those columns hold, including earlier ops of the same answer). | The local Brain miscounted table rows on the PC (dropped rows, stacked a total onto data); these forms move whole tables without counting. |
 | M2-D8 (from the PC live check) | Within one Brain answer, an op that would overwrite a non-empty cell an earlier op of the same answer wrote is refused as `OVERLAPS_EARLIER_OP` (reported, never merged or moved). An empty placeholder may be filled. | A slip such as a total written over a copied row must not silently destroy copied data. |
 | M2-D9 (from the PC live check) | For a new workbook the strict output schema limits `source` and `from_sheet` to the ids and sheet names that exist, and the Brain sees every sheet of the new workbook (within the cell cap), not only the first. | On the PC the Brain put the source id into `from_sheet` (2 of 3 answers), and on a second request it saw only the empty first sheet. |
+| M2-D10 (owner, 2026-10-12) | Every added file needs a role the owner chooses: **Reference** (URI only reads it), **Check** or **Edit**. URI does not work with the files until each has a role: a request is refused (`ROLES_NEEDED`, and the pane does not send it) and the pane asks "What is each file for?". The role is never inferred. | The owner's intent must be explicit (consequence-aware binding: editing a file is consequential). |
+| M2-D11 (owner, 2026-10-12) | At most one file is the **working file** (Check or Edit), shown in the sheet view and saved in place through the M1 path (copy-in, conflict check, backup, hash-bound card). Choosing another working file makes the previous one a reference; it is refused while the current one has unsaved accepted or typed changes (`SAVE_OR_DISCARD_FIRST`) and when the file changed on disk since it was added (`TARGET_CHANGED`). With no working file URI builds a new workbook. **Check** means: URI compares the working file with the references, lists findings (sheet, cell, issue) in the pane, and offers clear fixes as ordinary change cards; nothing is applied without the owner. | Owner answers "Findings + suggested fixes" and "One at a time". |
 | M2-D6 | The correction history stays per workbook and off by default; a new workbook has no history until it is saved and reopened as a local file. | M1 OFF-O3 ruling. |
 
 ## 4. Acceptance criteria
@@ -47,6 +51,7 @@ The sources are never written. Nothing leaves the PC.
 | M2-AC9 | `propose_save` for a new workbook requires `save_as_path`; the destination must not exist (checked at propose and again at create); the card follows D1; the create action writes the file through a temporary file in the destination folder and a no-overwrite link, so a file that appeared meanwhile is never replaced. | pytest |
 | M2-AC10 | The created file opens with openpyxl and holds exactly the draft's cells (values and formulas) on non-empty sheets in order; no source file changed (hash before and after). After creating, the session is a local M1 session on the new file (copy-in), so later saves use the M1 cell patch. | pytest |
 | M2-AC11 | M1 behaviour and gates are unchanged: `tests/office`, `tests/a2ui`, `flutter test`, `flutter analyze`, `ws_frozen_check`. The guarded worker never imports `uri_office`. | gates |
+| M2-AC13 | Roles (D10/D11): `POST /workbook/<id>/roles` validates roles and the one-working-file rule; requests wait for every role; the Edit file becomes the working file and saves in place with a backup while references stay unchanged; switching with unsaved changes or after an outside change is refused; Check returns validated findings and fixes as proposed changes; copies into the working file respect its locked cells. The pane shows each file with Reference / Check / Edit, marks the working file, and does not send requests until every file has a role. | pytest, widget tests |
 | M2-AC12 | PC scripted live check (owner choice 2b pattern, NOT the owner's own check): two source files -> URI builds a summary sheet -> accept all -> create file -> the new file holds the expected cells; sources unchanged. Needs the Brain (GPU lease; an override needs the owner's permission each time). | evidence |
 
 ## 5. Limits (M2)
@@ -97,3 +102,12 @@ Seen in run 4's screenshots: the grid stayed on the empty `Sheet1` while URI's d
 Gates after these repairs: Python `tests/office tests/a2ui tests/ws tests/oi` 872 passed, 27 skipped; `flutter test` 541 passed, 5 skipped; `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok.
 
 Model quality note: the local Brain still makes planning slips; every op is validated, refused ops are explained in the pane, and nothing is written until the owner accepts and approves.
+
+### 2026-10-12, roles added (M2-D10/D11, owner request)
+
+| Check | Result |
+|---|---|
+| `tests/office/test_m2_new_workbook.py` | 37 passed (7 new role tests) |
+| `uri_ui/test/office` | 28 passed (2 new role/findings tests) |
+
+The PC live check (M2-AC12, run 4) predates the roles: it is evidence for building a new workbook, not for the role flow. The harness now sets both files as references first; a PC run of the role flow needs the Brain (owner's GPU permission) and is NOT VERIFIED until then.

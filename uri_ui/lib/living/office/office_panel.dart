@@ -190,7 +190,11 @@ class _OfficeRegionState extends State<OfficeRegion> {
           ),
         ),
         if (open) ...[
-          Text(c.view?['label'] as String? ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            c.working != null ? 'Working file: ${c.view?['label'] ?? ''}' : c.view?['label'] as String? ?? '',
+            key: const ValueKey('office-label'),
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           if (c.view?['engine'] == 'google' && c.view?['open_url'] is String)
             OutlinedButton(
               onPressed: () => env.openExternalLink(Uri.parse(c.view!['open_url'] as String)),
@@ -232,7 +236,7 @@ class _OfficeRegionState extends State<OfficeRegion> {
                 if (!open)
                   Text('Open a workbook, then tell URI what to change. URI suggests; you accept, reject and save.',
                       style: TextStyle(color: colors.inkSoft)),
-                if (c.isNew) _sources(context, c, env),
+                if (c.sources.isNotEmpty) _sources(context, c, env),
                 for (final (i, t) in c.conversation.indexed) _turn(context, t, i),
                 if (c.busy)
                   Padding(
@@ -378,25 +382,31 @@ class _OfficeRegionState extends State<OfficeRegion> {
   /// At most this many change cards; the rest are marked in the sheet (M2-AC8).
   static const int maxCards = 50;
 
-  /// M2: the read-only source files of a new workbook, and "Add file".
+  /// M2: the added files and what each is for (M2-D10/D11): the working file (check or edit; shown in the sheet
+  /// view) or a reference (read-only). URI does not work with the files until each has a role.
   Widget _sources(BuildContext context, OfficeController c, OfficeEnvironment env) {
     final colors = UriColors.of(context);
+    final missing = c.rolesNeeded.isNotEmpty;
     return Container(
       key: const ValueKey('office-sources'),
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(border: Border.all(color: colors.inkFaint), borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(
+        border: Border.all(color: missing ? colors.warning : colors.inkFaint),
+        borderRadius: BorderRadius.circular(6),
+      ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Working from (read-only)', style: TextStyle(color: colors.inkSoft, fontSize: 12)),
+        Text(
+          missing ? 'What is each file for?' : 'Files',
+          key: const ValueKey('office-roles-title'),
+          style: TextStyle(color: missing ? colors.warning : colors.inkSoft, fontSize: 12, fontWeight: FontWeight.w600),
+        ),
+        if (missing)
+          Text('Choose a reference (URI only reads it) or the working file (URI checks or edits it; one at a time).',
+              style: TextStyle(color: colors.inkSoft, fontSize: 12)),
         const SizedBox(height: 4),
+        for (final s in c.sources) _roleRow(context, c, s),
         Wrap(spacing: 6, runSpacing: 4, children: [
-          for (final s in c.sources)
-            Chip(
-              key: ValueKey('office-source-${s['id']}'),
-              visualDensity: VisualDensity.compact,
-              avatar: const Icon(Icons.description_outlined, size: 16),
-              label: Text('${s['id']} ${s['label']}'),
-            ),
           if (env.pickSourcePaths != null)
             ActionChip(
               key: const ValueKey('office-add-source'),
@@ -411,6 +421,48 @@ class _OfficeRegionState extends State<OfficeRegion> {
                     },
             ),
         ]),
+      ]),
+    );
+  }
+
+  Widget _roleRow(BuildContext context, OfficeController c, Map<String, dynamic> s) {
+    final colors = UriColors.of(context);
+    final id = s['id'] as String;
+    final role = s['role'] as String?;
+    final working = role == 'check' || role == 'edit';
+    return Padding(
+      key: ValueKey('office-source-$id'),
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(working ? Icons.edit_document : Icons.description_outlined, size: 16,
+              color: working ? colors.accent : colors.inkSoft),
+          const SizedBox(width: 4),
+          Expanded(child: Text('$id ${s['label']}', overflow: TextOverflow.ellipsis)),
+          if (working)
+            Text('Working file', key: ValueKey('office-working-$id'),
+                style: TextStyle(color: colors.accent, fontSize: 12, fontWeight: FontWeight.w600))
+          else if (role == 'reference')
+            Text('Reference', style: TextStyle(color: colors.inkSoft, fontSize: 12)),
+        ]),
+        const SizedBox(height: 2),
+        SegmentedButton<String>(
+          key: ValueKey('office-role-$id'),
+          showSelectedIcon: false,
+          emptySelectionAllowed: true,
+          style: const ButtonStyle(visualDensity: VisualDensity.compact),
+          segments: const [
+            ButtonSegment(value: 'reference', label: Text('Reference')),
+            ButtonSegment(value: 'check', label: Text('Check')),
+            ButtonSegment(value: 'edit', label: Text('Edit')),
+          ],
+          selected: {?role},
+          onSelectionChanged: c.busy
+              ? null
+              : (sel) {
+                  if (sel.isNotEmpty) c.setRole(id, sel.first);
+                },
+        ),
       ]),
     );
   }

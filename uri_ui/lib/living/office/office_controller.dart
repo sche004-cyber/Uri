@@ -51,6 +51,38 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
   List<Map<String, dynamic>> get sources =>
       [for (final s in (view?['sources'] as List? ?? const [])) (s as Map).cast<String, dynamic>()];
 
+  /// M2-D10: files without a role yet (URI does not work with the files until each has one).
+  List<String> get rolesNeeded => [for (final s in sources) if (s['role'] == null) s['label'] as String];
+
+  /// M2-D11: the working file's source id (checked or edited, shown in the sheet view), or null (a new workbook).
+  String? get working => view?['working'] as String?;
+
+  /// "build" (no working file), "check" or "edit".
+  String get task => view?['task'] as String? ?? 'build';
+
+  /// Sets one file's role. Making a file the working file makes the previous working file a reference.
+  Future<void> setRole(String sid, String role) => _guard(() async {
+        final wid = workbookId;
+        if (wid == null) return;
+        final roles = <String, String>{
+          for (final s in sources)
+            if (s['role'] is String) s['id'] as String: s['role'] as String,
+        };
+        if (role != 'reference') {
+          roles.updateAll((k, v) => k != sid && v != 'reference' ? 'reference' : v);
+        }
+        roles[sid] = role;
+        final before = working;
+        await _apply(await client.setRoles(wid, roles));
+        if (working != before) {
+          final w = sources.where((s) => s['id'] == working).map((s) => s['label']).firstOrNull;
+          _say(OfficeSpeaker.notice, w == null
+              ? 'No working file: URI builds a new workbook from the references.'
+              : 'Working file: $w (${task == 'check' ? 'URI checks it and suggests fixes' : 'URI edits it'}). '
+                  'The other files are references.');
+        }
+      });
+
   /// M2-D2: SHA-256 over the sorted (change id, change hash) pairs of every proposed change, as the service computes
   /// it (`Draft.proposed_set_sha256`, canonical JSON).
   String proposedSetSha256() {
@@ -97,6 +129,10 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
         'PERMISSION_NOT_GRANTED' =>
           'Editing this Google Sheet in place needs a Google permission the owner has not granted. Use "Edit a copy".',
         'GOOGLE_NOT_CONNECTED' => 'URI\'s Google connection is not set up or has expired.',
+        'ROLES_NEEDED' => 'First say what each file is for: the working file (check or edit) or a reference. '
+            '${detail ?? ''}',
+        'ONE_WORKING_FILE' => 'Only one file can be the working file at a time.',
+        'SAVE_OR_DISCARD_FIRST' => 'Save or undo the changes to the current working file before switching to another.',
         'NOT_A_SHEETS_LINK' => 'Paste a link that starts with https://docs.google.com/spreadsheets/d/.',
         'BRAIN_UNAVAILABLE' => 'The local Brain is not running. Nothing was changed.',
         'CELL_NOT_EDITABLE' => 'That cell is part of a table header, shared formula or merged range and cannot be edited here.',
@@ -296,6 +332,14 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
     final t = text.trim();
     if (busy || t.isEmpty || workbookId == null) return;
     _say(OfficeSpeaker.owner, t);
+    final missing = rolesNeeded;
+    if (missing.isNotEmpty) {
+      // M2-D10: the owner says what each file is for before URI works with the files.
+      _say(OfficeSpeaker.notice, 'First say what each file is for (working file or reference): ${missing.join(', ')}. '
+          'Nothing was sent.');
+      notifyListeners();
+      return;
+    }
     brainMessage = null;
     final before = proposed.length;
     await _guard(() async {
@@ -311,6 +355,13 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
             '${x['code']}${(x['detail'] as String? ?? '').isEmpty ? '' : ': ${x['detail']}'}',
         };
         notice = '${refused.length} suggested change(s) were refused as unsafe or invalid (${why.join('; ')}).';
+      }
+      final found = (r['findings'] as List?)?.whereType<Map>().toList();
+      if (found != null) {
+        findings = [
+          for (final f in found)
+            '${f['sheet'] == null ? '' : '${f['sheet']}${f['cell'] == null ? '' : '!${f['cell']}'}: '}${f['issue']}',
+        ];
       }
       final notes = (r['notes'] as Map?) ?? const {};
       final unc = notes['uncalculated'] as int? ?? 0;
@@ -333,6 +384,15 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       _say(OfficeSpeaker.uri, 'No change was suggested.');
     }
     if (notice != null) _say(OfficeSpeaker.notice, notice!);
+    final f = findings;
+    if (f != null) {
+      _say(OfficeSpeaker.uri, f.isEmpty ? 'Check: no issues found.' : 'Check: ${f.length} issue(s) found.');
+      for (final line in f.take(maxFindingLines)) {
+        _say(OfficeSpeaker.uri, line);
+      }
+      if (f.length > maxFindingLines) _say(OfficeSpeaker.uri, 'and ${f.length - maxFindingLines} more.');
+      findings = null;
+    }
     final note = copyNote;
     if (note != null) _say(OfficeSpeaker.notice, '$note.');
     copyNote = null;
@@ -341,6 +401,10 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
 
   /// M2-D3: what a copy from the sources could not carry over, said once after the request.
   String? copyNote;
+
+  /// M2-D11: a check's findings ("Sheet!B4: issue"), said once after the request.
+  List<String>? findings;
+  static const int maxFindingLines = 30;
 
   Future<void> decide(Map<String, dynamic> change, String decision, {String reason = ''}) => _guard(() async {
         final wid = workbookId;

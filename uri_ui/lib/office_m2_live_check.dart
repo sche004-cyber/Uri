@@ -172,6 +172,14 @@ class _LiveState extends State<_Live> {
         'companion_routes_to_office': identical(services.activeOfficeTarget(), ctl)});
       await _snap('2_new_from_files');
 
+      // M2-D10: the owner says what each file is for; here both are references and URI builds a new workbook.
+      for (final src in List.of(ctl.sources)) {
+        await ctl.setRole(src['id'] as String, 'reference');
+      }
+      _record('2b_roles', {'roles': {for (final x in ctl.sources) x['id']: x['role']}, 'working': ctl.working,
+        'notice': ctl.notice});
+      await _snap('2b_roles');
+
       final target = services.activeOfficeTarget();
       if (target == null) throw StateError('the companion is not routed to the new workbook');
       final sw = Stopwatch()..start();

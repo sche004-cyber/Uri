@@ -27,14 +27,18 @@ Map<String, dynamic> _change(String cid, String cell, String sha) => {'cid': cid
 Map<String, dynamic> _draft(List<Map<String, dynamic>> changes, {int version = 3, String engine = 'new'}) =>
     {'workbook_id': 'w1', 'engine': engine, 'version': version, 'can_undo': false, 'can_redo': false, 'changes': changes};
 
-List<Map<String, dynamic>> _sources(List<String> labels) => [
+List<Map<String, dynamic>> _sources(List<String> labels, Map<String, String?> roles) => [
       for (final (i, l) in labels.indexed)
-        {'id': 'S${i + 1}', 'label': l, 'sheets': [{'name': 'Data', 'rows': 4, 'cols': 2, 'truncated': false}]},
+        {'id': 'S${i + 1}', 'label': l, 'role': roles['S${i + 1}'],
+          'sheets': [{'name': 'Data', 'rows': 4, 'cols': 2, 'truncated': false}]},
     ];
 
 class _Service {
-  _Service({this.proposed = const []});
+  _Service({this.proposed = const [], String? role = 'reference'}) : roles = {'S1': role, 'S2': role, 'S3': role};
   List<Map<String, dynamic>> proposed;
+  Map<String, String?> roles;
+  String? get working => roles.entries.where((e) => e.value == 'check' || e.value == 'edit').map((e) => e.key).firstOrNull;
+  dynamic findings;
   final calls = <String, List<Map<String, dynamic>>>{};
   var labels = <String>['north.xlsx', 'south.xlsx'];
   var created = false;
@@ -45,8 +49,11 @@ class _Service {
         Map<String, dynamic> view() => created
             ? {'workbook_id': 'w1', 'engine': 'local', 'label': 'summary.xlsx', 'workbook': _wb(['Summary']),
                 'draft': _draft([], engine: 'local'), 'history_on': false}
-            : {'workbook_id': 'w1', 'engine': 'new', 'label': 'New workbook', 'workbook': _wb(['Summary']),
-                'draft': _draft(proposed), 'history_on': false, 'sources': _sources(labels)};
+            : {'workbook_id': 'w1', 'engine': working == null ? 'new' : 'local',
+                'label': working == null ? 'New workbook' : labels[int.parse(working!.substring(1)) - 1],
+                'workbook': _wb(['Summary']), 'draft': _draft(proposed), 'history_on': false,
+                'sources': _sources(labels, roles), 'working': working,
+                'task': working == null ? 'build' : roles[working]};
         switch (req.url.path) {
           case '/open/new':
             return http.Response(jsonEncode(view()), 200);
@@ -56,7 +63,10 @@ class _Service {
             return http.Response(jsonEncode({'message': '', 'proposed': [], 'metrics': {}, 'draft': _draft(proposed),
               'refused': [{'index': 1, 'code': 'UNKNOWN_SOURCE', 'detail': 'None'},
                 {'index': 2, 'code': 'OVERLAPS_EARLIER_OP', 'detail': 'Summary!A6 was already written'}],
-              'notes': {'uncalculated': 2, 'not_copied': 0}, 'workbook': _wb(['Summary'])}), 200);
+              'notes': {'uncalculated': 2, 'not_copied': 0}, 'workbook': _wb(['Summary']), 'findings': ?findings}), 200);
+          case '/workbook/w1/roles':
+            roles = {...roles, ...(body['roles'] as Map).cast<String, String>()};
+            return http.Response(jsonEncode(view()), 200);
           case '/workbook/w1/sources':
             labels = [...labels, 'east.xlsx'];
             return http.Response(jsonEncode(view()), 200);
@@ -197,5 +207,64 @@ void main() {
     expect(texts, contains('2 suggested change(s) were refused as unsafe or invalid '
         '(UNKNOWN_SOURCE: None; OVERLAPS_EARLIER_OP: Summary!A6 was already written).'));
     expect(texts, contains('2 source formula cell(s) had no calculated value and were copied as empty.'));
+  });
+
+  testWidgets('every added file needs a role: working file (check or edit) or reference', (tester) async {
+    tester.view.physicalSize = const Size(1400, 1100);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final svc = _Service(role: null);
+    final surface = FakeSurface();
+    await tester.pumpWidget(_app(OfficeRegion(
+        environment: _env(surface, picked: [r'C:\Users\me\north.xlsx', r'C:\Users\me\south.xlsx']),
+        clientFactory: svc.client)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('office-new-from-files')));
+    await tester.pumpAndSettle();
+    expect(find.text('What is each file for?'), findsOneWidget);
+
+    // A request before the roles are set is not sent.
+    await tester.enterText(find.byKey(const ValueKey('office-ask')), 'Check the totals');
+    await tester.tap(find.byKey(const ValueKey('office-ask-send')));
+    await tester.pumpAndSettle();
+    expect(svc.calls['/workbook/w1/instruct'], isNull);
+    expect(find.textContaining('First say what each file is for (working file or reference): north.xlsx, south.xlsx'),
+        findsOneWidget);
+
+    // S2 becomes the working file to check; S1 a reference.
+    await tester.tap(find.descendant(of: find.byKey(const ValueKey('office-role-S2')), matching: find.text('Check')));
+    await tester.pumpAndSettle();
+    expect(svc.calls['/workbook/w1/roles']!.last, {'roles': {'S2': 'check'}});
+    expect(find.byKey(const ValueKey('office-working-S2')), findsOneWidget);
+    expect(find.text('Working file: south.xlsx'), findsOneWidget);
+    expect(find.textContaining('Working file: south.xlsx (URI checks it and suggests fixes)'), findsOneWidget);
+    await tester.tap(find.descendant(of: find.byKey(const ValueKey('office-role-S1')), matching: find.text('Reference')));
+    await tester.pumpAndSettle();
+    expect(svc.calls['/workbook/w1/roles']!.last, {'roles': {'S2': 'check', 'S1': 'reference'}});
+    expect(find.text('What is each file for?'), findsNothing);
+
+    // Making S1 the file to edit makes S2 a reference (one working file at a time).
+    await tester.tap(find.descendant(of: find.byKey(const ValueKey('office-role-S1')), matching: find.text('Edit')));
+    await tester.pumpAndSettle();
+    expect(svc.calls['/workbook/w1/roles']!.last, {'roles': {'S2': 'reference', 'S1': 'edit'}});
+    expect(find.byKey(const ValueKey('office-working-S1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('office-working-S2')), findsNothing);
+  });
+
+  test('a check lists its findings in the conversation', () async {
+    final svc = _Service()
+      ..roles = {'S1': 'check', 'S2': 'reference'}
+      ..findings = [
+        {'sheet': 'Data', 'cell': 'B4', 'issue': 'Total is 1200 but the rows add up to 1300.'},
+        {'sheet': null, 'cell': null, 'issue': 'Dates use two formats.'},
+      ];
+    final c = OfficeController(client: svc.client(), surface: FakeSurface());
+    addTearDown(c.dispose);
+    await c.openNew([r'C:\Users\me\budget.xlsx']);
+    await c.instruct('Check my budget');
+    final texts = [for (final t in c.conversation) t.text];
+    expect(texts, containsAllInOrder(['Check: 2 issue(s) found.', 'Data!B4: Total is 1200 but the rows add up to 1300.',
+      'Dates use two formats.']));
   });
 }

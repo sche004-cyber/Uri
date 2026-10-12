@@ -1,6 +1,9 @@
 """Source workbooks for a new workbook (M2-AC1..AC3).
 
-The owner picks one or more .xlsx files; each goes through the M1 path rule (`grants.grant_open`), is copied into the
+The owner picks one or more .xlsx files and says what each one is for (M2-D10): `reference` (URI reads it), `check`
+(URI checks it, lists findings and suggests fixes) or `edit` (URI changes it). Until every file has a role, URI does
+not work with them. At most one file is the working file (check or edit) at a time; the others are references. Each
+file goes through the M1 path rule (`grants.grant_open`), is copied into the
 workbook's work folder (the original is only read, and a file that changes during the copy is refused), and is read
 with `xlsx_model.read`. Sources are read-only: nothing here writes to them. The view lists sources by id and label,
 never by path.
@@ -18,6 +21,8 @@ from .errors import OfficeError
 MAX_SOURCES = 10
 EXCERPT_ROWS = 8                 # first rows of each source sheet shown to the Brain
 MAX_EXCERPT_CELLS = 400          # across all sources (the new workbook's own excerpt has its own cap)
+ROLES = ("reference", "check", "edit")
+WORKING_ROLES = ("check", "edit")
 
 
 @dataclass
@@ -27,6 +32,7 @@ class Source:
     workbook: dict               # xlsx_model.read of the copied-in file
     sha256: str                  # of the original at copy-in
     grant_id: str
+    role: str | None = None      # None until the owner says: "reference" | "check" | "edit"
 
 
 def add(grants, work: Path, existing: list, raw_paths) -> list:
@@ -70,7 +76,7 @@ def _unique(name: str, taken: list) -> str:
 
 def listing(sources: list) -> list:
     """What the view shows: id, label, sheets and sizes. No paths."""
-    return [{"id": s.sid, "label": s.label,
+    return [{"id": s.sid, "label": s.label, "role": s.role,
              "sheets": [{"name": sh["name"], "rows": sh["max_row"], "cols": sh["max_col"],
                          "truncated": sh["truncated"]} for sh in s.workbook["sheets"]]} for s in sources]
 
@@ -94,6 +100,15 @@ def excerpt(sources: list) -> list:
             sheets.append({"name": sh["name"], "rows": sh["max_row"], "cols": sh["max_col"], "first_rows": cells})
         out.append({"source": s.sid, "label": s.label, "sheets": sheets})
     return out
+
+
+def working(sources: list):
+    """The source the owner chose to check or edit, or None."""
+    return next((s for s in sources if s.role in WORKING_ROLES), None)
+
+
+def roles_needed(sources: list) -> list:
+    return [s.label for s in sources if s.role not in ROLES]
 
 
 def by_id(sources: list) -> dict:

@@ -13,6 +13,7 @@
  "state_dir": "../uri-wt/lifecycle-runs/URI-OFFICE-M2",
  "acceptance_criteria_file": "docs/office/M2_PLAN_AND_ACCEPTANCE_CRITERIA.md",
  "review_focus": [
+  "M2-D10/D11 roles (owner requirement): every added file needs an explicit owner-chosen role (reference/check/edit), never inferred; requests refused until then (service ROLES_NEEDED and the pane); at most one working file, saved in place through the M1 path (copy-in sha check, backup, hash-bound card); switching refused with unsaved changes or an outside change; check returns validated findings and fixes only as proposed changes (Office.set_roles/_switch_target, brain.system_for/schema_for, controller.setRole, panel _roleRow)",
   "M2-AC1..AC3 sources: uri_office/sources.py and Office.open_new/add_sources reuse the M1 path rule (grants.grant_open), copy in, refuse a file changing during copy, all or nothing, at most 10, never write a source, never show a path; grants released on close and after the new file is created",
   "M2-AC4 untrusted data: source excerpts reach the Brain only inside data blocks (uri_office/brain.py SYSTEM_NEW, build_body)",
   "M2-AC5/AC6 ops: ops.copy_edits (values only, caps, unknown source/sheet/range refused, text starting with '=' never copied as a formula); add_sheet/rename_sheet only for engine new (Draft._sheet_op); copy_range and sheet ops refused for existing files",
