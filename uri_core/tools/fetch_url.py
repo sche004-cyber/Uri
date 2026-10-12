@@ -64,6 +64,29 @@ _EXTENSION_BY_CONTENT_TYPE = {
 }
 
 
+# SSRF-1 refusal codes (uri_web.netpolicy / safe_fetch) -> the real reason, worded for the user. Only the
+# address-class codes say "private or local network"; a DNS failure is "could not reach", as before SSRF-1.
+# Never includes the address itself.
+_PRIVATE_MESSAGE = "URI will not fetch that address (private or local network)."
+_REFUSAL_MESSAGES = {
+    "ADDRESS_NOT_PUBLIC": _PRIVATE_MESSAGE,
+    "ADDRESS_TRANSITION_REFUSED": _PRIVATE_MESSAGE,
+    "HOST_LOCAL_NAME": _PRIVATE_MESSAGE,
+    "HOST_NUMERIC_AMBIGUOUS": _PRIVATE_MESSAGE,
+    "HOST_SINGLE_LABEL": _PRIVATE_MESSAGE,
+    "DNS_FAILED": "URI could not reach that URL.",
+    "DNS_EMPTY": "URI could not reach that URL.",
+    "USERINFO_REFUSED": "URI will not fetch a URL that contains a username or password.",
+    "PORT_REFUSED": "URI only fetches web pages on the standard ports (80 and 443).",
+    "SCHEME_REFUSED": "Only http(s) URLs can be fetched.",
+    "URL_INVALID": "That URL is not valid.",
+    "HOST_INVALID": "That URL is not valid.",
+    "HOST_MISSING": "That URL is not valid.",
+    "ADDRESS_INVALID": "That URL is not valid.",
+}
+_REFUSAL_FALLBACK = "URI refused to fetch that URL."
+
+
 class _TextExtractingHTMLParser(HTMLParser):
     """A minimal, dependency-free HTML-to-text reader - deliberately
     not a full renderer, just enough to turn a page into readable
@@ -147,7 +170,7 @@ class FetchUrlTool:
         if rec.fetch_status == R.REFUSED:
             return {
                 "status": "unavailable",
-                "message": "URI will not fetch that address (private or local network).",
+                "message": _REFUSAL_MESSAGES.get(rec.refusal_code, _REFUSAL_FALLBACK),
                 "refusal_code": rec.refusal_code,
                 "url": url,
             }
