@@ -1,7 +1,7 @@
-"""The guarded worker imports only `uri_operational_intelligence` and can never import `uri_office` (plan §4).
+"""The guarded worker keeps canonical's package list and cannot import `uri_office` (plan §4).
 
 URI Office runs as its own local service. These tests pin that the worker sandbox was not widened for it:
-  1. the worker's package list is exactly ("uri_operational_intelligence",) — read from the script source, not imported;
+  1. the worker's package list exactly matches canonical 1b5423bc (including accepted W1/A0 packages), not Office;
   2. the worker's file guard (FixtureGuard with the worker's package roots), which is what actually stops imports of
      unlisted packages (the worker's SourceFinder only declines them), refuses every `uri_office` file;
   3. no module inside `uri_operational_intelligence` imports `uri_office`.
@@ -25,7 +25,10 @@ def _assigned(name):
 
 
 def test_worker_package_list_is_unchanged():
-    assert _assigned("WS_PACKAGES") == ("uri_operational_intelligence",)
+    # Canonical W1/A0 already added these packages before Office integration.
+    # Pin the whole canonical list; Office must not widen it.
+    assert _assigned("WS_PACKAGES") == (
+        "uri_operational_intelligence", "uri_web", "uri_assist", "uri_a2ui")
     assert "uri_office" not in _assigned("PHASE2_PACKAGES")
 
 
