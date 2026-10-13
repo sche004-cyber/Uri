@@ -34,7 +34,8 @@ from urllib.parse import parse_qs, urlparse
 
 from . import draft as D
 from . import google as G
-from . import refs, xlsx_model, xlsx_patch
+from . import refs, xlsx_model, xlsx_new, xlsx_patch
+from . import sources as SRC
 from .approvals import Approvals
 from .errors import OfficeError
 from .grants import Grants
@@ -48,7 +49,7 @@ MAX_SESSIONS = 16
 @dataclass
 class Session:
     workbook_id: str
-    engine: str                     # "local" | "google"
+    engine: str                     # "local" | "google" | "new" (M2: a new workbook built from sources)
     label: str
     workbook: dict
     draft: D.Draft
@@ -59,6 +60,7 @@ class Session:
     file_id: str | None = None      # google
     stale_ops: list = field(default_factory=list)   # google: applied structural ops not yet re-read
     layout_version: int = 0         # google: bumped by every re-read after a layout change; grids carry it
+    sources: list = field(default_factory=list)     # new: read-only source workbooks (sources.Source)
     lock: threading.RLock = field(default_factory=threading.RLock)
 
 
@@ -102,6 +104,11 @@ class Office:
         with s.lock:                                     # read-only (AC6): a pending re-read is done by reload()
             out = {"workbook_id": s.workbook_id, "engine": s.engine, "label": s.label, "workbook": s.workbook,
                    "draft": s.draft.snapshot(), "history_on": self.history.consented(s.key)}
+            if s.sources:
+                out["sources"] = SRC.listing(s.sources)
+                w = SRC.working(s.sources)
+                out["working"] = w.sid if w else None
+                out["task"] = w.role if w else "build"
             if s.engine == "google":
                 out["open_url"] = G.open_url(s.file_id)
                 out["writable"] = self.google.writable(s.file_id)
@@ -145,11 +152,116 @@ class Office:
                     workbook_key("google", fid), file_id=fid)
         return self._add(s)
 
+    @staticmethod
+    def _empty_sheet(name: str, index: int) -> dict:
+        return {"name": name, "index": index, "max_row": 0, "max_col": 0, "truncated": False, "cells": {},
+                "locked": [], "merges": [], "col_widths": {}, "row_heights": {}}
+
+    def open_new(self, raw_paths) -> dict:
+        """M2-AC1: a new, empty workbook with read-only source files (copied in; the originals are only read)."""
+        wid = uuid.uuid4().hex[:16]
+        work = self.state / "work" / wid
+        work.mkdir(parents=True)
+        try:
+            srcs = SRC.add(self.grants, work, [], raw_paths)
+            wb = {"sheets": [self._empty_sheet("Sheet1", 0)], "styles": {},
+                  "kept_not_shown": {"charts": 0, "images": 0, "pivot_tables": 0}}
+            s = Session(wid, "new", "New workbook", wb, D.Draft(wid, "new", wb), workbook_key("new", wid), sources=srcs)
+            return self._add(s)
+        except Exception:
+            if wid not in self.sessions:
+                shutil.rmtree(work, ignore_errors=True)
+            raise
+
+    def add_sources(self, wid, body) -> dict:
+        """M2-AC2: more source files for an open new workbook."""
+        s = self._session(wid)
+        if not s.sources:
+            raise OfficeError("NOT_A_NEW_WORKBOOK", "files can be added only to a workbook opened with \"New from files\"")
+        with s.lock:
+            s.sources = SRC.add(self.grants, self.state / "work" / wid, s.sources, body.get("paths"))
+            self.approvals.audit("office.sources_added", {"workbook_id": wid, "sources": len(s.sources)})
+            return self.view(wid)
+
+    def set_roles(self, wid, body) -> dict:
+        """M2-D10/D11: the owner says what each added file is for. At most one file is checked or edited (the working
+        file, shown in the sheet view and saved in place through the M1 path); with none, URI builds a new workbook.
+        Changing the working file is refused while the current one has accepted or typed changes not yet saved."""
+        s = self._session(wid)
+        roles = body.get("roles")
+        if not s.sources:
+            raise OfficeError("NO_SOURCES", "this workbook has no added files")
+        if not isinstance(roles, dict) or any(k not in {x.sid for x in s.sources} or v not in SRC.ROLES
+                                              for k, v in roles.items()):
+            raise OfficeError("BAD_ROLES", "each file is reference, check or edit")
+        with s.lock:
+            merged = {x.sid: roles.get(x.sid, x.role) for x in s.sources}
+            work = [k for k, v in merged.items() if v in SRC.WORKING_ROLES]
+            if len(work) > 1:
+                raise OfficeError("ONE_WORKING_FILE", "check or edit one file at a time")
+            old = SRC.working(s.sources)
+            new_sid = work[0] if work else None
+            if (old.sid if old else None) != new_sid:
+                if s.draft.pending()["edits"]:
+                    raise OfficeError("SAVE_OR_DISCARD_FIRST", "save or undo the changes to the current file before "
+                                                               "working on another one", 409)
+                self._switch_target(s, next((x for x in s.sources if x.sid == new_sid), None))
+            for x in s.sources:
+                x.role = merged[x.sid]
+            self.approvals.audit("office.roles_set", {"workbook_id": wid, "roles": merged})
+            return self.view(wid)
+
+    def _switch_target(self, s, src):
+        """Make `src` the working file (a local workbook on the original, saved through the M1 cell patch), or, with
+        None, a new empty workbook."""
+        if SRC.working(s.sources) is not None:
+            old_path = self.grants.get(s.grant_id, "open").path
+            try:
+                old_hash = xlsx_model.file_sha256(old_path)
+            except OSError:
+                raise OfficeError("TARGET_CHANGED", "the working file is missing or unreadable; add it again", 409) from None
+            if old_hash != s.open_sha:
+                raise OfficeError("TARGET_CHANGED", "the working file changed on disk since it was opened; add it "
+                                                    "again", 409)
+        path = None
+        if src is not None:
+            path = self.grants.get(src.grant_id, "open").path
+            try:
+                new_hash = xlsx_model.file_sha256(path)
+            except OSError:
+                raise OfficeError("TARGET_CHANGED", "the file is missing or unreadable; add it again", 409) from None
+            if new_hash != src.sha256:
+                raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was added; add it again", 409)
+        self.approvals.close_workbook(s.workbook_id)       # an open approval was for the previous target
+        if src is None:
+            wb = {"sheets": [self._empty_sheet("Sheet1", 0)], "styles": {},
+                  "kept_not_shown": {"charts": 0, "images": 0, "pivot_tables": 0}}
+            s.engine, s.label, s.workbook = "new", "New workbook", wb
+            s.draft = D.Draft(s.workbook_id, "new", wb)
+            s.key = workbook_key("new", s.workbook_id)
+            s.grant_id = s.path = s.open_sha = None
+            return
+        s.engine, s.label, s.workbook = "local", src.label, src.workbook
+        s.draft = D.Draft(s.workbook_id, "local", src.workbook)
+        s.key = workbook_key("local", str(path).lower())
+        s.grant_id, s.path, s.open_sha = src.grant_id, path, src.sha256
+
+    def _sync_new_sheets(self, s):
+        """New workbook: the session's sheet list follows the draft (sheets added or renamed by URI, M2-D4). The grid
+        shows sheets with changes first, so it opens on what URI built rather than on the empty starting sheet; the
+        file keeps the draft's order (and leaves empty sheets out)."""
+        live = {c["sheet"] for c in s.draft.changes if c["kind"] == "cell" and c["state"] in D.LIVE}
+        names = s.draft.sheets()
+        order = [n for n in names if n in live] + [n for n in names if n not in live]
+        s.workbook = {**s.workbook, "sheets": [self._empty_sheet(n, i) for i, n in enumerate(order)]}
+
     def close(self, wid):
         s = self._session(wid)
         with self.lock:
             self.sessions.pop(wid, None)
         self.approvals.close_workbook(wid)
+        for src in s.sources:
+            self.grants.revoke(src.grant_id)
         if s.grant_id:
             self.grants.revoke(s.grant_id)
         shutil.rmtree(self.state / "work" / wid, ignore_errors=True)
@@ -262,12 +374,26 @@ class Office:
                 self.history.record(s.key, s.draft.version, ev, body.get("reason", ""))
             return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
 
+    def decide_all(self, wid, body) -> dict:
+        """M2-AC7: accept or reject every proposed change, bound to the draft version and the set hash shown."""
+        s = self._session(wid)
+        with s.lock:
+            refreshed = self._refresh(s)
+            events = s.draft.decide_all(body.get("decision"), body.get("draft_version"), body.get("set_sha256"))
+            for ev in events:
+                self.history.record(s.key, s.draft.version, ev, body.get("reason", ""))
+            return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
+
     def undo(self, wid, redo=False) -> dict:
         s = self._session(wid)
         with s.lock:
             refreshed = self._refresh(s)
             (s.draft.redo if redo else s.draft.undo)()
-            return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
+            out = {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
+            if s.engine == "new":                      # undo may remove or bring back a sheet (Codex R2-03)
+                self._sync_new_sheets(s)
+                out["workbook"] = s.workbook
+            return out
 
     def instruct(self, wid, body) -> dict:
         if self.brain is None:
@@ -275,11 +401,29 @@ class Office:
         s = self._session(wid)
         with s.lock:                                     # the draft is locked for the whole turn; user edits queue
             refreshed = self._refresh(s)
+            extra = {}
+            if s.sources:
+                missing = SRC.roles_needed(s.sources)
+                if missing:
+                    raise OfficeError("ROLES_NEEDED", "say what each file is for (reference, check or edit): "
+                                                      + ", ".join(missing))
+                w = SRC.working(s.sources)
+                extra = {"sources": [x for x in s.sources if x is not w], "task": w.role if w else "build"}
             res = self.brain.plan(body.get("text"), sheets=self._current_sheets(s), active=body.get("active_sheet"),
-                                  engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key))
+                                  engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key),
+                                  **extra)
             new = s.draft.propose(res["edits"]) if res["edits"] else []
-            return {"message": res["message"], "proposed": [c["cid"] for c in new], "refused": res["refused"],
-                    "metrics": res["metrics"], "draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
+            out = {"message": res["message"], "proposed": [c["cid"] for c in new if c["state"] == "proposed"],
+                   "refused": res["refused"], "metrics": res["metrics"], "draft": s.draft.snapshot(),
+                   **self._reloaded(s, refreshed)}
+            if res.get("findings") is not None:
+                out["findings"] = res["findings"]
+            if s.sources:
+                out["notes"] = res.get("notes", {})
+            if s.engine == "new":
+                self._sync_new_sheets(s)
+                out["workbook"] = s.workbook             # the grid reloads: sheets may have been added or renamed
+            return out
 
     # ---- approvals -----------------------------------------------------------------------------------------------
     def propose_save(self, wid, body) -> dict:
@@ -297,6 +441,17 @@ class Office:
                 target = {"kind": "local", "label": str(dest.path if dest else s.path),
                           "grant_id": dest.grant_id if dest else s.grant_id, "save_as": bool(dest),
                           "source_sha256": s.open_sha, "draft_version": s.draft.version}
+            elif s.engine == "new":
+                if not body.get("save_as_path"):
+                    raise OfficeError("SAVE_AS_REQUIRED", "choose where to create the new file")
+                g = self.grants.grant_save_as(body["save_as_path"])
+                if g.path.exists():
+                    raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
+                if not xlsx_new.content(s.draft.sheets(), pending["edits"]):
+                    raise OfficeError("NOTHING_TO_SAVE", "the new workbook has no cells")
+                target = {"kind": "new_file", "label": str(g.path), "grant_id": g.grant_id,
+                          "draft_version": s.draft.version, "sheets": s.draft.sheets(),
+                          "sources": [src.label for src in s.sources]}
             else:
                 target = {"kind": "google", "label": s.label, "file_id": s.file_id, "draft_version": s.draft.version}
             surface = self.approvals.propose(wid, target, pending)
@@ -328,6 +483,8 @@ class Office:
                 raise OfficeError("STALE_CHANGE", "the draft changed after this approval was shown; review the save "
                                                   "again", 409)
             pending = {"edits": body["edits"], "struct_ops": body["struct_ops"]}
+            if t["kind"] == "new_file":
+                return self._create_new_file(s, t, pending)
             if t["kind"] == "google":
                 r = self.google.apply(t["file_id"], body)
                 return {**r, **self._committed(s, pending)}
@@ -353,7 +510,49 @@ class Office:
             if not t["save_as"]:
                 self._committed(s, pending)
                 s.open_sha = xlsx_model.file_sha256(dest)
+                # A working file that is also one of the added files: its record follows URI's own save, so it can
+                # be a reference or the working file again without a false "changed on disk" (Codex C-02).
+                for src in s.sources:
+                    if src.grant_id == s.grant_id:
+                        src.sha256, src.workbook = s.open_sha, s.workbook
             return {"changed_parts": res["changed_parts"], "saved_to": dest.name}
+
+    def _create_new_file(self, s, t, pending) -> dict:
+        """M2-AC9/AC10: publish the new file, then open it as a local session when possible."""
+        dest = self.grants.get(t["grant_id"], "save_as").path
+        if dest.exists():
+            raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
+        try:
+            res = xlsx_new.write(dest, xlsx_new.content(t["sheets"], pending["edits"]))
+        except OfficeError as exc:
+            if exc.code == "NEW_FILE_TOO_LARGE":
+                self.approvals.close_workbook(s.workbook_id)
+            raise
+        sources = s.sources
+        previous = (s.engine, s.label, s.workbook, s.draft, s.key, s.grant_id, s.path, s.open_sha, sources)
+        g = None
+        try:
+            g = self.grants.grant_open(str(dest))
+            copy = self.state / "work" / s.workbook_id / "opened.xlsx"
+            shutil.copy2(dest, copy)
+            wb = xlsx_model.read(copy)
+            draft = D.Draft(s.workbook_id, "local", wb)
+            key = workbook_key("local", str(dest).lower())
+            sha = xlsx_model.file_sha256(dest)
+            s.engine, s.label, s.workbook, s.draft, s.key = "local", dest.name, wb, draft, key
+            s.grant_id, s.path, s.open_sha, s.sources = g.grant_id, dest, sha, []
+        except Exception:  # noqa: BLE001 - publication already succeeded; report the file honestly
+            (s.engine, s.label, s.workbook, s.draft, s.key, s.grant_id, s.path, s.open_sha, s.sources) = previous
+            if g is not None:
+                self.grants.revoke(g.grant_id)
+            reopen_needed = True
+        else:
+            for src in sources:
+                self.grants.revoke(src.grant_id)
+            reopen_needed = False
+        self.approvals.audit("office.new_file_created", {"workbook_id": s.workbook_id, **res,
+                                                         "reopen_needed": reopen_needed})
+        return {"saved_to": dest.name, "created": True, "reopen_needed": reopen_needed, **res}
 
     def action(self, msg) -> dict:
         # Lock order everywhere: workbook lock, then approvals lock (propose_save/propose_share take them that way).
@@ -494,6 +693,8 @@ def make_handler(office: Office, token: str):
                     return office.open_local(b.get("path"))
                 if parts == ["open", "google"]:
                     return office.open_google(b.get("url"))
+                if parts == ["open", "new"]:
+                    return office.open_new(b.get("paths"))
                 if parts == ["a2ui", "action"]:
                     return office.action(b.get("action"))
                 if len(parts) == 3 and parts[0] == "workbook":
@@ -504,7 +705,10 @@ def make_handler(office: Office, token: str):
                              "propose_save": lambda: office.propose_save(wid, b),
                              "propose_share": lambda: office.propose_share(wid), "reload": lambda: office.reload(wid),
                              "edit_copy": lambda: office.edit_copy(wid), "export": lambda: office.export(wid, b),
-                             "history": lambda: office.history_op(wid, b), "close": lambda: office.close(wid)}
+                             "history": lambda: office.history_op(wid, b), "close": lambda: office.close(wid),
+                             "sources": lambda: office.add_sources(wid, b),
+                             "roles": lambda: office.set_roles(wid, b),
+                             "decide_all": lambda: office.decide_all(wid, b)}
                     if verb in table:
                         return table[verb]()
                 raise OfficeError("NOT_FOUND", "", 404)

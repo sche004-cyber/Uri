@@ -20,6 +20,7 @@ from uri_a2ui.surface import canonical
 
 from . import refs
 from .errors import OfficeError
+from .ops import _XML_INVALID
 
 MAX_VERSIONS = 50
 MAX_CHANGES = 20_000
@@ -54,14 +55,32 @@ class Draft:
         return cur
 
     def snapshot(self) -> dict:
+        """Every live change plus the latest 500 historical changes, in draft order."""
+        shown = [ch for ch in self.changes if ch["state"] in LIVE or ch["state"] in ("rejected", "edited_by_user")]
+        history = {id(ch) for ch in [c for c in shown if c["state"] in ("rejected", "edited_by_user")][-500:]}
         return {"workbook_id": self.workbook_id, "engine": self.engine, "version": self.version,
                 "can_undo": bool(self._undo), "can_redo": bool(self._redo),
-                "changes": [dict(ch, change_sha256=change_sha256(ch)) for ch in self.changes
-                            if ch["state"] in LIVE or ch["state"] in ("rejected", "edited_by_user")][-500:]}
+                "proposed_count": sum(1 for c in self.changes if c["state"] == "proposed"),
+                "proposed_set_sha256": self.proposed_set_sha256(),
+                "changes": [dict(ch, change_sha256=change_sha256(ch)) for ch in shown
+                            if ch["state"] in LIVE or id(ch) in history]}
 
     # ---- versioning ----------------------------------------------------------------------------------------------
+    def _state(self):
+        """What undo and redo restore: the changes and, for a new workbook, its sheets (Codex R2-03). Only a new
+        workbook changes its sheets inside the draft, so an opened file's (possibly large) base is not copied."""
+        if self.engine == "new":
+            return copy.deepcopy((self.changes, self.base, self.locked))
+        return (copy.deepcopy(self.changes), None, None)
+
+    def _restore(self, state):
+        changes, base, locked = state
+        self.changes = changes
+        if base is not None:
+            self.base, self.locked = base, locked
+
     def _push(self):
-        self._undo.append(copy.deepcopy(self.changes))
+        self._undo.append(self._state())
         del self._undo[:-MAX_VERSIONS]
         self._redo.clear()
         self.version += 1
@@ -69,15 +88,15 @@ class Draft:
     def undo(self):
         if not self._undo:
             raise OfficeError("NOTHING_TO_UNDO")
-        self._redo.append(copy.deepcopy(self.changes))
-        self.changes = self._undo.pop()
+        self._redo.append(self._state())
+        self._restore(self._undo.pop())
         self.version += 1
 
     def redo(self):
         if not self._redo:
             raise OfficeError("NOTHING_TO_REDO")
-        self._undo.append(copy.deepcopy(self.changes))
-        self.changes = self._redo.pop()
+        self._undo.append(self._state())
+        self._restore(self._redo.pop())
         self.version += 1
 
     # ---- edits ---------------------------------------------------------------------------------------------------
@@ -101,11 +120,28 @@ class Draft:
         return cell
 
     def propose(self, edits: list) -> list:
-        """URI's validated edits (from `ops.to_cell_edits`) become proposed, marked changes. Returns the new changes."""
+        """URI's validated edits (from `ops.to_cell_edits`) become proposed, marked changes. Returns the new changes.
+        In a new workbook (engine "new", M2-D4/D12) add_sheet takes effect at once and is recorded as an
+        accepted structural change. All or nothing: a refusal part way (draft cap, unknown sheet, locked cell)
+        leaves the draft exactly as it was (Codex C-03)."""
+        if len(self.changes) + len(edits) > MAX_CHANGES:
+            raise OfficeError("DRAFT_TOO_LARGE", "save or discard before making more changes")
+        saved = (copy.deepcopy(self.changes), copy.deepcopy(self.base), copy.deepcopy(self.locked),
+                 copy.deepcopy(self._undo), copy.deepcopy(self._redo), self.version)
+        try:
+            return self._propose(edits)
+        except Exception:
+            self.changes, self.base, self.locked, self._undo, self._redo, self.version = saved
+            raise
+
+    def _propose(self, edits: list) -> list:
         self._push()
         new = []
         for e in edits:
-            if "op" in e:
+            if "op" in e and self.engine == "new":
+                self._sheet_op(e)
+                ch = self._new("uri", "struct", "accepted", op=e, sheet=e.get("sheet") or e.get("name"))
+            elif "op" in e:
                 ch = self._new("uri", "struct", "proposed", op=e, sheet=e.get("sheet"))
             else:
                 cell = self._check_cell(e["sheet"], e["cell"])
@@ -114,6 +150,47 @@ class Draft:
             self.changes.append(ch)
             new.append(ch)
         return new
+
+    def _sheet_op(self, op: dict):
+        """New workbook only: add a sheet now. Undo and redo restore the sheets with the changes."""
+        if op["op"] == "add_sheet":
+            name = op["name"]
+            if not isinstance(name, str) or _XML_INVALID.search(name) or \
+                    any(name.casefold() == sheet.casefold() for sheet in self.base):
+                raise OfficeError("BAD_SHEET_NAME", str(name)[:40])
+            self.base[op["name"]] = {}
+            self.locked[op["name"]] = set()
+        else:
+            raise OfficeError("OP_NOT_SUPPORTED_LOCALLY", op["op"])
+
+    def proposed_set_sha256(self) -> str:
+        """M2-D2: the hash of every change still proposed, as (change id, change hash) pairs in id order."""
+        pairs = sorted((c["cid"], change_sha256(c)) for c in self.changes if c["state"] == "proposed")
+        return hashlib.sha256(canonical(pairs)).hexdigest()
+
+    def decide_all(self, decision: str, version, set_sha: str) -> list:
+        """Accept or reject every proposed change at once, only if the draft is still at `version` and the proposed set
+        still hashes to `set_sha` (what the owner saw). All or nothing. Returns correction events for rejections."""
+        if decision not in ("accept", "reject"):
+            raise OfficeError("BAD_DECISION")
+        if version != self.version or set_sha != self.proposed_set_sha256():
+            raise OfficeError("STALE_CHANGE", "the suggested changes differ from what was shown; review them again")
+        todo = [c for c in self.changes if c["state"] == "proposed"]
+        if not todo:
+            raise OfficeError("NOTHING_PROPOSED")
+        for c in todo:
+            if c["kind"] == "cell" and c["before"] != self.before(c["sheet"], c["cell"]):
+                raise OfficeError("STALE_CHANGE", "a cell changed after URI proposed this; review it again")
+        self._push()
+        events = []
+        for c in self.changes:
+            if c["state"] != "proposed":
+                continue
+            c["state"] = "accepted" if decision == "accept" else "rejected"
+            if decision == "reject":
+                events.append({"kind": "uri_change_rejected", "change_id": c["cid"], "sheet": c["sheet"],
+                               "cell": c["cell"]})
+        return events
 
     def user_edit(self, edit: dict) -> list:
         """The owner typed in the panel. Returns correction events (for the consented history)."""

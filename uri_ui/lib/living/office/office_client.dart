@@ -65,6 +65,16 @@ class OfficeClient {
   Future<Map<String, dynamic>> openLocal(String path) => _post('/open/local', {'path': path});
   Future<Map<String, dynamic>> openGoogle(String url) => _post('/open/google', {'url': url});
   Future<Map<String, dynamic>> view(String wid) => _get('/workbook/$wid');
+  /// M2: a new workbook built from source files (the paths come from the owner's file picker only).
+  Future<Map<String, dynamic>> openNew(List<String> paths) => _post('/open/new', {'paths': paths});
+  Future<Map<String, dynamic>> addSources(String wid, List<String> paths) =>
+      _post('/workbook/$wid/sources', {'paths': paths});
+  /// M2-D10: what each added file is for ({"S1": "reference" | "check" | "edit"}).
+  Future<Map<String, dynamic>> setRoles(String wid, Map<String, String> roles) =>
+      _post('/workbook/$wid/roles', {'roles': roles});
+  /// M2-D2: decide every proposed change at once, bound to the draft version and the set hash shown.
+  Future<Map<String, dynamic>> decideAll(String wid, String decision, int version, String setSha) =>
+      _post('/workbook/$wid/decide_all', {'decision': decision, 'draft_version': version, 'set_sha256': setSha});
   /// The workbook's open approval cards (A2UI messages), to show them again after the panel is rebuilt.
   Future<Map<String, dynamic>> surfaces(String wid) => _get('/a2ui/surfaces?workbook=${Uri.encodeQueryComponent(wid)}');
   Future<Map<String, dynamic>> reload(String wid) => _post('/workbook/$wid/reload');
