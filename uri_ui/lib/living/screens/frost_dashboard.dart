@@ -211,47 +211,59 @@ class FrostDashboard extends StatelessWidget {
               ),
           ],
         );
+        Widget reviewButton() => OutlinedButton(
+          onPressed: () => focus(WorkspaceFocus.tasks),
+          child: Text(
+            app.isLoadingTasks
+                ? 'Checking decisions…'
+                : app.tasksError != null
+                ? 'Review status unavailable'
+                : '$needs review needed',
+          ),
+        );
         final header = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
               width: double.infinity,
-              child: Wrap(
-                alignment: wide
-                    ? WrapAlignment.spaceBetween
-                    : WrapAlignment.start,
-                spacing: 16,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  if (!wide)
-                    Builder(
-                      builder: (context) => IconButton(
-                        tooltip: 'Navigation',
-                        icon: const Icon(Icons.menu),
-                        onPressed: () => Scaffold.of(context).openDrawer(),
-                      ),
+              child: wide
+                  ? Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      spacing: 16,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        const Text(
+                          'Personal workspace / Dashboard',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        reviewButton(),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Builder(
+                          builder: (context) => IconButton(
+                            tooltip: 'Navigation',
+                            icon: const Icon(Icons.menu),
+                            onPressed: () => Scaffold.of(context).openDrawer(),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: reviewButton(),
+                          ),
+                        ),
+                      ],
                     ),
-                  const Text(
-                    'Personal workspace / Dashboard',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  OutlinedButton(
-                    onPressed: () => focus(WorkspaceFocus.tasks),
-                    child: Text(
-                      app.isLoadingTasks
-                          ? 'Checking decisions…'
-                          : app.tasksError != null
-                          ? 'Review status unavailable'
-                          : '$needs review needed',
-                    ),
-                  ),
-                ],
-              ),
             ),
-            const SizedBox(height: 16),
-            Divider(color: c.border.withValues(alpha: .5)),
-            const SizedBox(height: 16),
+            if (wide) ...[
+              const SizedBox(height: 16),
+              Divider(color: c.border.withValues(alpha: .5)),
+            ],
+            SizedBox(height: wide ? 16 : 8),
             Text(
               'URI / COMMAND CHAMBER',
               style: TextStyle(
@@ -265,7 +277,7 @@ class FrostDashboard extends StatelessWidget {
               'Your work, connected.',
               style: TextStyle(
                 fontFamily: 'Georgia',
-                fontSize: wide ? 38 : 28,
+                fontSize: wide ? 38 : 24,
                 color: c.ink,
               ),
             ),

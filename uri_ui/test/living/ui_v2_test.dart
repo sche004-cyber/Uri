@@ -524,7 +524,7 @@ void main() {
     final (_, app, _) = await pumpV2(tester, size: const Size(360, 560));
     app.conversation.add(
       UriTurn(
-        turnId: 'compact-layout-fixture',
+        id: 'compact-layout-fixture',
         userText: 'Can you help with my draft?',
         timestamp: DateTime(2026, 10, 13),
         stage: TurnStage.completed,
@@ -566,6 +566,10 @@ void main() {
       tester.getRect(scroll).bottom,
       lessThan(tester.getRect(find.byKey(LivingShell.orbKey)).top),
     );
+    // Dashboard status reads use the mock client's bounded network delay.
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
   });
   testWidgets('orbit stops for nearby pointer, open chat and reduced motion', (
     tester,

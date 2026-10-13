@@ -287,7 +287,7 @@ class _Node extends StatelessWidget {
                 side: BorderSide.none,
                 backgroundColor: c.surface,
                 foregroundColor: c.ink,
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 textStyle: TextStyle(
                   fontSize: box.maxWidth < 96 ? 13 : 16,
