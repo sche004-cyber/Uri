@@ -238,7 +238,7 @@ class Probe:
         def subpixel_channels(colour, k, background):
             # Each credited channel supplies its OWN signal in both paints.
             # Weak channels receive zero credit, and cannot establish a match.
-            measured, channels = [], []
+            channels = []
             floor = math.ceil(MIN_PROBE_CONTRAST * MIN_ALPHA / 2)
             for ch in range(3):
                 clear = background[ch]
@@ -255,11 +255,13 @@ class Probe:
                 al = channel_coverage(colour, ch, k, background)
                 if al is None:
                     return ()                             # contradictory measurable data
-                measured.append(al)
                 if al >= MIN_ALPHA:
                     channels.append(ch)
-            if len(channels) < 2 or max(measured) - min(measured) <= MAX_ALPHA_GAP:
-                return ()                                 # keep scalar and ambiguous sparse evidence out
+            if len(channels) < 2:
+                return ()                                 # sparse evidence cannot establish a match
+            # Independent gamma-corrected channel proofs remain valid when
+            # their coverages happen to agree. Requiring a spread discards
+            # real glyph interiors/edges according to the random palette.
             return tuple(channels)
 
         for m in re.finditer(rb"[^\x00]", cand.tobytes()):

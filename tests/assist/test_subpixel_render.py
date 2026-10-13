@@ -159,3 +159,19 @@ def test_uninked_tint_evidence_stays_in_the_visibility_fraction_denominator(capt
                 d.rectangle([at, y + 2, at + 1, y + h - 3], fill=blend((0, 0, 0), (0.4, 0.8, 1.0)))
     raw["base"] = raw["base2"] = raw["plain"] = R._png(partly_visible)
     assert R._kept(snap, raw) == ([], Counter({"no_ink": 2}))
+
+
+@pytest.fixture(scope="module")
+def r13_high_value_palette(tmp_path_factory):
+    # Captured f64db040 omission in BOTH selection modes. These HSV values
+    # are within the unchanged original random driver's permitted range.
+    # Pin only the palette draw; keep its page, capture flow and assertions.
+    original = "const h0 = crypto.randomInt(360), s = 0.85 + crypto.randomInt(16) / 100, v = 0.8 + crypto.randomInt(16) / 100;"
+    runner = R.RUNNER.replace(original, "const h0 = 0, s = 0.85, v = 0.95;")
+    assert runner != R.RUNNER
+    return R.run_chromium(tmp_path_factory.mktemp("r13_high_value"), R.PAGE, runner)
+
+
+@pytest.mark.parametrize("mode", ["no_selection", "ctrl_a"])
+def test_original_r13_keeps_visible_underlay_with_independently_proved_similar_coverages(r13_high_value_palette, mode):
+    R.test_r13_01_hidden_text_over_visible_ink_never_reaches_the_brain(r13_high_value_palette, mode)
