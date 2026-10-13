@@ -20,6 +20,7 @@ import '../integration/oi_widgets.dart';
 import '../integration/ws_settings.dart';
 import '../living_app.dart';
 import '../living_scope.dart';
+import '../office/office_panel.dart';
 import '../presentation/living_shell.dart';
 import '../presentation/presentation_controller.dart';
 import '../widgets/glass_panel.dart';
@@ -100,6 +101,8 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
                               WorkspaceFocus.tasks => const TasksRegion(),
                               WorkspaceFocus.documents =>
                                 const DocumentsRegion(),
+                              WorkspaceFocus.office =>
+                                OfficeRegion(environment: LivingScope.of(context).office),
                               WorkspaceFocus.intelligence =>
                                 const IntelligenceOverviewView(),
                               WorkspaceFocus.settings =>
@@ -152,6 +155,7 @@ class _Rail extends StatelessWidget {
       ),
       (WorkspaceFocus.tasks, Icons.check_circle_outline_rounded, 'Tasks'),
       (WorkspaceFocus.documents, Icons.description_outlined, 'Documents'),
+      (WorkspaceFocus.office, Icons.table_chart_outlined, 'Office'),
       (WorkspaceFocus.intelligence, Icons.hub_outlined, 'Intelligence'),
       (WorkspaceFocus.settings, Icons.tune_rounded, 'Settings'),
     ];
@@ -308,6 +312,7 @@ class _FocusHeader extends StatelessWidget {
       WorkspaceFocus.conversation => 'Conversation',
       WorkspaceFocus.tasks => 'Tasks',
       WorkspaceFocus.documents => 'Documents',
+      WorkspaceFocus.office => 'Office',
       WorkspaceFocus.intelligence => 'Intelligence',
       WorkspaceFocus.settings => 'Settings',
     };

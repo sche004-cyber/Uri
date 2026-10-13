@@ -39,7 +39,7 @@ class ShowModeCommand extends UiCommand {
   String toString() => 'ShowModeCommand(${mode.name}, focus: ${focus?.name})';
 }
 
-enum WorkspaceFocus { conversation, tasks, documents, intelligence, settings }
+enum WorkspaceFocus { conversation, tasks, documents, office, intelligence, settings }
 
 /// Parses the demo phrases the brief asks for, from local text only.
 ///

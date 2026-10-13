@@ -1,3 +1,4 @@
+import 'office/office_bridge.dart';
 import 'package:flutter/widgets.dart';
 
 import 'a2ui/a2ui_hub.dart';
@@ -133,6 +134,33 @@ class LivingServices {
   /// one.
   VoiceCatalog voiceCatalog = const UnavailableVoiceCatalog();
 
+  /// URI Office platform pieces (WebView2 sheet view, path pickers). Null where they are unavailable; the
+  /// Windows entry point installs them.
+  OfficeEnvironment? office;
+
+  /// The workbook open in the Office region, while that region is shown. The Office region sets and clears it.
+  final ValueNotifier<OfficeRequestTarget?> officeTarget = ValueNotifier<OfficeRequestTarget?>(null);
+
+  /// The workbook kept open while the owner is away from the Office region (R1-02, review URI-OFFICE-M1-c2).
+  final OfficeKeep officeKeep = OfficeKeep();
+
+  /// The Office region's target while the owner is in it (Workspace mode, Office focus), open workbook or not.
+  /// Requests typed or spoken there belong to Office: with no workbook open they are refused, never sent to the
+  /// hidden ordinary conversation (R1-01, review URI-OFFICE-M1-c2).
+  OfficeRequestTarget? officeInFocus() {
+    final t = officeTarget.value;
+    if (t == null) return null;
+    if (presentation.mode != UiPresentationMode.workspace || presentation.focus != WorkspaceFocus.office) return null;
+    return t;
+  }
+
+  /// Where the companion's requests go now: the open workbook when the owner is in the Office region with a
+  /// workbook open, otherwise null.
+  OfficeRequestTarget? activeOfficeTarget() {
+    final t = officeInFocus();
+    return t != null && t.acceptsRequests ? t : null;
+  }
+
   /// The adapter currently feeding [voice], if any.
   VoiceServiceAdapter? get voiceAdapter => _voiceBinding?.adapter;
 
@@ -170,6 +198,7 @@ class LivingServices {
       oi: oi,
       dictation: dictation,
       keepInComposer: (text) => composerInsert.value = text,
+      officeTarget: officeInFocus,
     );
     voiceInteraction = controller;
     companion.addSource(controller);
@@ -194,6 +223,7 @@ class LivingServices {
     voiceInteraction?.dispose();
     liveVoice?.dispose();
     composerInsert.dispose();
+    officeTarget.dispose();
     voice.dispose();
     frameGovernor.dispose();
     frameClock.dispose();
@@ -205,6 +235,10 @@ class LivingScope extends InheritedWidget {
   const LivingScope({super.key, required this.services, required super.child});
 
   final LivingServices services;
+
+  /// The services, or null when there is no living scope above (a region shown on its own, as in tests).
+  static LivingServices? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<LivingScope>()?.services;
 
   static LivingServices of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<LivingScope>();

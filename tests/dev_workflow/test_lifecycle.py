@@ -389,6 +389,35 @@ def test_regression_proof_rules(tmp_path):
     assert not p["ok"] and p["tests"]["tests/test_hang.py"]["after_state"] == "TIMED_OUT"
 
 
+def test_test_setup_runs_in_fresh_regression_worktrees(tmp_path):
+    """A regression test that skips without installed (ignored) files proves nothing in a fresh worktree unless the
+    config's test_setup installs them there first (URI-OFFICE-M1 P2-P4: node_modules missing, tests skipped)."""
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt)
+    st = L.State(cfg)
+    L.init(cfg, st)
+    sha = g(wt, "rev-parse", "HEAD")
+    (wt / ".gitignore").write_text("__pycache__/\n.pytest_cache/\ndeps/\n")
+    (wt / "pkg/calc.py").write_text("def safe_div(a, b):\n    if b == 0:\n        return None\n    return a / b\n")
+    (wt / "tests/test_zero.py").write_text(
+        "from pathlib import Path\n\nimport pytest\n\nfrom pkg.calc import safe_div\n\n\n"
+        "@pytest.mark.skipif(not Path('deps/installed').is_file(), reason='deps not installed')\n"
+        "def test_z():\n    assert safe_div(1, 0) is None\n")
+    g(wt, "add", "-A")
+    g(wt, "commit", "-qm", "fix")
+    fix = g(wt, "rev-parse", "HEAD")
+    p = L.regression_proof(cfg, sha, fix, ["tests/test_zero.py"], tmp_path / "p1")
+    assert not p["ok"] and "no regression test fails" in p["reason"]  # skipped both times
+    install = [PY, "-c", "import pathlib; d = pathlib.Path('deps'); d.mkdir(); (d / 'installed').write_text('1')"]
+    cfg["test_setup"] = [{"cmd": ["missing-tool"], "cwd": "not/at/this/commit"}, {"cmd": install}]
+    p = L.regression_proof(cfg, sha, fix, ["tests/test_zero.py"], tmp_path / "p2")
+    assert p["ok"] and p["tests"]["tests/test_zero.py"]["before_exit"] != 0
+    cfg["test_setup"] = [{"cmd": [PY, "-c", "raise SystemExit(3)"]}]
+    p = L.regression_proof(cfg, sha, fix, ["tests/test_zero.py"], tmp_path / "p3")
+    assert not p["ok"] and "test setup step 0" in p["reason"]
+    assert "test_setup" in L.POLICY_KEYS
+
+
 def test_reviewer_that_touches_the_implementation_worktree_is_not_independent(tmp_path):
     repo, wt, base, remote = make_fixture(tmp_path, defect=False)
     cfg = config(tmp_path, repo, wt)
