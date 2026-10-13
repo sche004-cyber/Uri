@@ -185,18 +185,27 @@ class _CompanionGalleryState extends State<CompanionGallery> {
               builder: (context) => Scaffold(
                 appBar: AppBar(
                   title: const Text('Companions'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
-                    ),
-                    FilledButton(
-                      key: const ValueKey('gallery-apply'),
-                      onPressed: _apply,
-                      child: const Text('Apply'),
-                    ),
-                    const SizedBox(width: 16),
-                  ],
+                ),
+                bottomNavigationBar: SafeArea(
+                  top: false,
+                  minimum: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      TextButton(
+                        key: const ValueKey('gallery-cancel'),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                      FilledButton(
+                        key: const ValueKey('gallery-apply'),
+                        onPressed: _apply,
+                        child: const Text('Apply'),
+                      ),
+                    ],
+                  ),
                 ),
                 body: LayoutBuilder(
                   builder: (context, box) {
@@ -227,118 +236,134 @@ class _CompanionGalleryState extends State<CompanionGallery> {
                         if (!_large)
                           Flexible(
                             child: SingleChildScrollView(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      '${_design.displayName} · live procedural 2D renderer',
+                              child: Align(
+                                alignment: Alignment.topCenter,
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 640,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
                                     ),
-                                    const Text(
-                                      'Model rotation unavailable: this renderer is not a 3D mesh.',
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Wrap(
-                                      spacing: 12,
-                                      runSpacing: 8,
-                                      crossAxisAlignment:
-                                          WrapCrossAlignment.center,
+                                    child: Column(
                                       children: [
-                                        DropdownButton<CompanionState>(
-                                          value: _state,
-                                          items: [
-                                            for (final s
-                                                in CompanionState.values)
-                                              DropdownMenuItem(
-                                                value: s,
-                                                child: Text(
-                                                  s == CompanionState.success
-                                                      ? 'Completion expression (preview)'
-                                                      : s.label,
+                                        Text(
+                                          '${_design.displayName} · live procedural 2D renderer',
+                                        ),
+                                        const Text(
+                                          'Model rotation unavailable: this renderer is not a 3D mesh.',
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Wrap(
+                                          spacing: 12,
+                                          runSpacing: 8,
+                                          crossAxisAlignment:
+                                              WrapCrossAlignment.center,
+                                          children: [
+                                            SizedBox(
+                                              width: 320,
+                                              child: DropdownButtonFormField<CompanionState>(
+                                                initialValue: _state,
+                                                isExpanded: true,
+                                                itemHeight: null,
+                                                decoration: const InputDecoration(
+                                                  labelText: 'Animation preview',
                                                 ),
+                                                items: [
+                                                  for (final s
+                                                      in CompanionState.values)
+                                                    DropdownMenuItem(
+                                                      value: s,
+                                                      child: Text(
+                                                        s == CompanionState.success
+                                                            ? 'Completion expression (preview)'
+                                                            : s.label,
+                                                      ),
+                                                    ),
+                                                ],
+                                                onChanged: (v) =>
+                                                    setState(() => _state = v!),
+                                              ),
+                                            ),
+                                            TextButton.icon(
+                                              onPressed: () => setState(() {
+                                                _playing = !_playing;
+                                                _effects.setReducedMotion(
+                                                  !_playing ||
+                                                      widget
+                                                          .services
+                                                          .effects
+                                                          .reducedMotion,
+                                                );
+                                                _visibility();
+                                              }),
+                                              icon: Icon(
+                                                _playing
+                                                    ? Icons.pause
+                                                    : Icons.play_arrow,
+                                              ),
+                                              label: Text(
+                                                _playing
+                                                    ? 'Pause animation'
+                                                    : 'Play animation',
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            const Text('Zoom'),
+                                            Expanded(
+                                              child: Slider(
+                                                value: _zoom,
+                                                min: .6,
+                                                max: 1.5,
+                                                label: '${(_zoom * 100).round()}%',
+                                                onChanged: (v) =>
+                                                    setState(() => _zoom = v),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        DropdownButtonFormField<String>(
+                                          key: ValueKey(
+                                            'gallery-theme-${_theme?.name ?? 'original'}',
+                                          ),
+                                          initialValue: _theme?.name ?? 'original',
+                                          isExpanded: true,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Preview interface theme',
+                                          ),
+                                          items: [
+                                            const DropdownMenuItem(
+                                              value: 'original',
+                                              child: Text(
+                                                "Use Companion's original theme",
+                                              ),
+                                            ),
+                                            for (final t in {
+                                              ...installedInterfaceThemes,
+                                              ?_theme,
+                                            })
+                                              DropdownMenuItem(
+                                                value: t.name,
+                                                child: Text(t.label),
                                               ),
                                           ],
-                                          onChanged: (v) =>
-                                              setState(() => _state = v!),
+                                          onChanged: (v) => setState(
+                                            () => _theme = UriThemeChoice.values
+                                                .where((t) => t.name == v)
+                                                .firstOrNull,
+                                          ),
                                         ),
-                                        TextButton.icon(
-                                          onPressed: () => setState(() {
-                                            _playing = !_playing;
-                                            _effects.setReducedMotion(
-                                              !_playing ||
-                                                  widget
-                                                      .services
-                                                      .effects
-                                                      .reducedMotion,
-                                            );
-                                            _visibility();
-                                          }),
-                                          icon: Icon(
-                                            _playing
-                                                ? Icons.pause
-                                                : Icons.play_arrow,
-                                          ),
-                                          label: Text(
-                                            _playing
-                                                ? 'Pause animation'
-                                                : 'Play animation',
-                                          ),
+                                        const SizedBox(height: 12),
+                                        const Text(
+                                          'Animation states are simulated previews. Apply changes appearance only.',
                                         ),
                                       ],
                                     ),
-                                    Row(
-                                      children: [
-                                        const Text('Zoom'),
-                                        Expanded(
-                                          child: Slider(
-                                            value: _zoom,
-                                            min: .6,
-                                            max: 1.5,
-                                            label: '${(_zoom * 100).round()}%',
-                                            onChanged: (v) =>
-                                                setState(() => _zoom = v),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    DropdownButtonFormField<String>(
-                                      key: ValueKey(
-                                        'gallery-theme-${_theme?.name ?? 'original'}',
-                                      ),
-                                      initialValue: _theme?.name ?? 'original',
-                                      isExpanded: true,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Preview interface theme',
-                                      ),
-                                      items: [
-                                        const DropdownMenuItem(
-                                          value: 'original',
-                                          child: Text(
-                                            "Use Companion's original theme",
-                                          ),
-                                        ),
-                                        for (final t in {
-                                          ...installedInterfaceThemes,
-                                          ?_theme,
-                                        })
-                                          DropdownMenuItem(
-                                            value: t.name,
-                                            child: Text(t.label),
-                                          ),
-                                      ],
-                                      onChanged: (v) => setState(
-                                        () => _theme = UriThemeChoice.values
-                                            .where((t) => t.name == v)
-                                            .firstOrNull,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    const Text(
-                                      'Animation states are simulated previews. Apply changes appearance only.',
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ),

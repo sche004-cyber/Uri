@@ -164,6 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
+                          key: const ValueKey('login-submit'),
                           onPressed: _isSubmitting ? null : _submit,
                           child: _isSubmitting
                               ? const SizedBox(

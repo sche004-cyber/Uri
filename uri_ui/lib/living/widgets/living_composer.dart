@@ -223,7 +223,7 @@ class _LivingComposerState extends State<LivingComposer> {
                                 borderRadius: BorderRadius.circular(24),
                                 borderSide: BorderSide.none,
                               )
-                            : null,
+                            : InputBorder.none,
                         focusedBorder: widget.floating
                             ? OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(24),
@@ -232,7 +232,12 @@ class _LivingComposerState extends State<LivingComposer> {
                                   width: 1.5,
                                 ),
                               )
-                            : null,
+                            : UnderlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: c.accent,
+                                  width: 1.5,
+                                ),
+                              ),
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: widget.floating ? 12 : 0,
                           vertical: widget.floating ? 8 : 10,
@@ -260,8 +265,8 @@ class _LivingComposerState extends State<LivingComposer> {
                       customBorder: const CircleBorder(),
                       onTap: sending ? null : _submit,
                       child: SizedBox(
-                        width: widget.floating ? 44 : 34,
-                        height: widget.floating ? 44 : 34,
+                        width: 44,
+                        height: 44,
                         child: Icon(
                           sending
                               ? Icons.more_horiz

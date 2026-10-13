@@ -1,3 +1,5 @@
+> Latest source adds button and page-placement refinements. See [current pass](BUTTON_LAYOUT_REPORT.md). Flutter tests, fresh captures and independent acceptance remain **NOT VERIFIED** for this source.
+
 > Current source has newer **unverified spacing refinements**. The captures and 567-pass suite below belong to `15a322d17aa54a4aec8316c6fc6628f70bf617ff`. See [refinement status](REFINEMENT_REPORT.md); do not treat earlier evidence as testing the new source.
 
 # Visual qualification — isolated candidate

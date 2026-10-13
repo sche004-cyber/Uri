@@ -1,3 +1,5 @@
+> Latest source adds button and page-placement refinements. See [current pass](BUTTON_LAYOUT_REPORT.md). Flutter tests, fresh captures and independent acceptance remain **NOT VERIFIED** for this source.
+
 # Functional coverage matrix
 
 Owner visual approval applies to the image, not candidate code. Unit/widget fixtures, recorded render captures, independent acceptance, integration and deployment are separate evidence fields. No Figma node links are claimed.

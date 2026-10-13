@@ -70,7 +70,9 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
             final w = constraints.maxWidth;
             final railExpanded = w >= OrbDock.railExpandAt;
             final contextDefault = w >= 1180;
-            final showContext = _contextOverride ?? contextDefault;
+            final inlineContext = w >= 960;
+            final showContext =
+                inlineContext && (_contextOverride ?? contextDefault);
             return Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -85,8 +87,35 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
                       _FocusHeader(
                         focus: focus,
                         contextOpen: showContext,
-                        onToggleContext: () =>
-                            setState(() => _contextOverride = !showContext),
+                        onToggleContext: () {
+                          if (inlineContext) {
+                            setState(() => _contextOverride = !showContext);
+                            return;
+                          }
+                          showDialog<void>(
+                            context: context,
+                            builder: (context) => Dialog(
+                              child: SizedBox(
+                                width: 320,
+                                height: MediaQuery.sizeOf(context).height * .8,
+                                child: Column(
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: IconButton(
+                                        tooltip: 'Close context',
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
+                                        icon: const Icon(Icons.close),
+                                      ),
+                                    ),
+                                    const Expanded(child: _ContextPanel()),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       Expanded(
                         child: AnimatedSwitcher(
@@ -313,21 +342,25 @@ class _FocusHeader extends StatelessWidget {
       WorkspaceFocus.intelligence => 'Intelligence',
       WorkspaceFocus.settings => 'Settings',
     };
-    return SizedBox(
-      height: 48,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 56),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: UriSpace.md),
+        padding: const EdgeInsets.symmetric(
+          horizontal: UriSpace.md,
+          vertical: 4,
+        ),
         child: Row(
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: c.ink,
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: c.ink,
+                ),
               ),
             ),
-            const Spacer(),
             IconButton(
               tooltip: contextOpen ? 'Hide context' : 'Show context',
               icon: Icon(
@@ -584,14 +617,15 @@ class _WorkApprovalCard extends StatelessWidget {
               style: TextStyle(fontSize: 13, color: c.inkSoft),
             ),
             const SizedBox(height: 10),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 FilledButton(
                   key: ValueKey('approve-${item.id}'),
                   onPressed: () => services.work.approve(item.id),
                   child: const Text('Approve'),
                 ),
-                const SizedBox(width: 8),
                 OutlinedButton(
                   key: ValueKey('cancel-${item.id}'),
                   onPressed: () => services.work.cancel(item.id),
@@ -645,13 +679,14 @@ class _PendingTaskCard extends StatelessWidget {
               style: TextStyle(fontSize: 12, color: c.inkFaint),
             ),
             const SizedBox(height: 10),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 FilledButton(
                   onPressed: () => appState.approveTask(task.id),
                   child: const Text('Approve'),
                 ),
-                const SizedBox(width: 8),
                 OutlinedButton(
                   onPressed: () => appState.cancelTask(task.id),
                   child: const Text('Cancel'),

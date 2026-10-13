@@ -464,7 +464,7 @@ class _DetachedChat extends StatelessWidget {
           child: Column(
             children: [
               SizedBox(
-                height: referenceSize ? 64 : 44,
+                height: referenceSize ? 64 : 48,
                 child: Padding(
                   padding: EdgeInsets.only(
                     left: referenceSize ? 24 : 14,

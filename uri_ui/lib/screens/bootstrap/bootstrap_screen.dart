@@ -54,7 +54,7 @@ class BootstrapScreen extends StatelessWidget {
           body: SafeArea(
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
+                constraints: const BoxConstraints(maxWidth: 520),
                 child: Padding(
                   padding: const EdgeInsets.all(UriSpace.xl),
                   child: SingleChildScrollView(

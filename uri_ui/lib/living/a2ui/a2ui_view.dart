@@ -287,9 +287,12 @@ class _Node extends StatelessWidget {
                 side: BorderSide.none,
                 backgroundColor: c.surface,
                 foregroundColor: c.ink,
-                padding: const EdgeInsets.all(5),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                textStyle: const TextStyle(fontSize: 14, height: 1.1),
+                textStyle: TextStyle(
+                  fontSize: box.maxWidth < 96 ? 13 : 16,
+                  height: 1.2,
+                ),
               ),
               onPressed: enabled ? () => hub.act(s.id, id, scope: scope) : null,
               child: Column(
@@ -297,7 +300,7 @@ class _Node extends StatelessWidget {
                 children: [
                   Icon(
                     hostIcon,
-                    size: (box.maxWidth * .38).clamp(25.0, 38.0),
+                    size: (box.maxWidth * .38).clamp(24.0, 38.0),
                     color: c.accent,
                   ),
                   const SizedBox(height: 5),

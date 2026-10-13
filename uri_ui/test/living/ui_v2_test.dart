@@ -470,6 +470,54 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets('narrow context opens without squeezing the conversation', (
+    tester,
+  ) async {
+    final (_, app, services) = await pumpV2(tester);
+    services.presentation.setMode(UiPresentationMode.workspace);
+    await tester.pumpAndSettle();
+    final field = find.byKey(const ValueKey('living-composer-field'));
+    await tester.enterText(field, 'Layout fixture draft');
+    final before = tester.getRect(field);
+    await tester.tap(find.byTooltip('Show context'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsOneWidget);
+    expect(tester.getRect(field), before);
+    await tester.tap(find.byTooltip('Close context'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsNothing);
+    expect(app.composerDraft, 'Layout fixture draft');
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('gallery actions remain visible below viewer at 200% text', (
+    tester,
+  ) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final (_, _, services) = await pumpV2(tester, size: const Size(390, 844));
+    Navigator.of(LivingShell.orbKey.currentContext!).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CompanionGallery(
+          active: services.companionPrefs,
+          services: services,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final apply = tester.getRect(find.byKey(const ValueKey('gallery-apply')));
+    final cancel = tester.getRect(find.byKey(const ValueKey('gallery-cancel')));
+    final viewer = tester.getRect(
+      find.byKey(const ValueKey('gallery-live-renderer')),
+    );
+    expect(apply.height, greaterThanOrEqualTo(48));
+    expect(apply.bottom, lessThanOrEqualTo(844));
+    expect(apply.overlaps(cancel), isFalse);
+    expect(viewer.bottom, lessThanOrEqualTo(apply.top));
+    await tester.tap(find.byKey(const ValueKey('gallery-cancel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('gallery-apply')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('small detached chat shows a complete latest reply above input', (
     tester,
   ) async {

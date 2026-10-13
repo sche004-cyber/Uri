@@ -1,3 +1,5 @@
+> Historical spacing pass: see [newer button/page pass](BUTTON_LAYOUT_REPORT.md) for the latest source status.
+
 # Companion spacing refinement — unverified local candidate
 
 **NOT READY — BLOCKERS.** These source edits are newer than the last tested/captured snapshot `15a322d17aa54a4aec8316c6fc6628f70bf617ff`. They are isolated work for later qualification, not an accepted build.

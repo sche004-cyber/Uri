@@ -201,31 +201,41 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              TextButton(
-                                key: const ValueKey('onboarding-skip'),
-                                onPressed: _finish,
-                                child: const Text('Skip setup'),
-                              ),
-                              const Spacer(),
-                              if (_step > 0)
-                                OutlinedButton(
-                                  key: const ValueKey('onboarding-back'),
-                                  onPressed: () => _go(-1),
-                                  child: const Text('Back'),
+                          SizedBox(
+                            width: double.infinity,
+                            child: Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                TextButton(
+                                  key: const ValueKey('onboarding-skip'),
+                                  onPressed: _finish,
+                                  child: const Text('Skip setup'),
                                 ),
-                              const SizedBox(width: 8),
-                              FilledButton(
-                                key: const ValueKey('onboarding-next'),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: glass.glow,
-                                  foregroundColor: c.canvas,
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    if (_step > 0)
+                                      OutlinedButton(
+                                        key: const ValueKey('onboarding-back'),
+                                        onPressed: () => _go(-1),
+                                        child: const Text('Back'),
+                                      ),
+                                    FilledButton(
+                                      key: const ValueKey('onboarding-next'),
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: glass.glow,
+                                        foregroundColor: c.canvas,
+                                      ),
+                                      onPressed: last ? _finish : () => _go(1),
+                                      child: Text(last ? 'Start using URI' : 'Next'),
+                                    ),
+                                  ],
                                 ),
-                                onPressed: last ? _finish : () => _go(1),
-                                child: Text(last ? 'Start using URI' : 'Next'),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
