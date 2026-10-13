@@ -151,7 +151,7 @@ class CompanionModeView extends StatefulWidget {
     final wanted = size.width > 480
         ? size.width * .34
         : ((size.width - diameter) / 2 - 20).clamp(0.0, 160.0);
-    final centerY = size.height * (size.width > 480 ? .30 : .31);
+    final centerY = size.height * (size.width > 480 ? .297 : .31);
     return math.min(
       wanted,
       math.min(size.width / 2 - diameter / 2 - 12, centerY - diameter / 2 - 12),
@@ -159,7 +159,7 @@ class CompanionModeView extends StatefulWidget {
   }
 
   static double orbitVerticalRadius(Size size) =>
-      orbitRadius(size) * (size.width > 480 ? .94 : 1);
+      orbitRadius(size) * (size.width > 480 ? .947 : 1);
 
   static Rect voiceRect(
     Size size,
@@ -188,13 +188,17 @@ class CompanionModeView extends StatefulWidget {
     Rect orb, {
     double textScale = 1,
     Iterable<Rect> buttons = const [],
+    bool voiceVisible = true,
   }) {
     final width = textScale > 1.2
         ? size.width - 24
-        : math.min(size.width * .54, 450.0);
-    final top =
-        voiceRect(size, orb, textScale: textScale, buttons: buttons).bottom +
-        (size.width > 480 ? 20 : 10);
+        : size.width > 480
+        ? math.min(size.width * .54, 450.0)
+        : (size.width * .72).clamp(260.0, 320.0);
+    final wave = voiceRect(size, orb, textScale: textScale, buttons: buttons);
+    final top = voiceVisible
+        ? wave.bottom + (size.width > 480 ? 20 : 10)
+        : wave.top;
     return Rect.fromLTWH(
       (size.width - width) / 2,
       top,
@@ -323,6 +327,8 @@ class _CompanionModeViewState extends State<CompanionModeView> {
                         rect: CompanionModeView.chatRect(
                           box.biggest,
                           widget.orbRect,
+                          voiceVisible:
+                              s.voice.session.phase != VoicePhase.off,
                           textScale:
                               MediaQuery.textScalerOf(context).scale(14) / 14,
                           buttons: rects.values,
@@ -447,46 +453,72 @@ class _DetachedChat extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = LivingScope.of(context);
     final c = UriColors.of(context);
-    return Material(
-      key: const ValueKey('companion-detached-chat'),
-      color: c.surface,
-      borderRadius: BorderRadius.circular(18),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16, right: 4),
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Text('Conversation', style: TextStyle(fontSize: 16)),
+    return LayoutBuilder(
+      builder: (context, box) {
+        final referenceSize = box.maxWidth > 350;
+        return Material(
+          key: const ValueKey('companion-detached-chat'),
+          color: c.surface,
+          borderRadius: BorderRadius.circular(referenceSize ? 22 : 18),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              SizedBox(
+                height: referenceSize ? 64 : 44,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: referenceSize ? 24 : 14,
+                    right: referenceSize ? 10 : 4,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Conversation',
+                          style: TextStyle(fontSize: referenceSize ? 18 : 16),
+                        ),
+                      ),
+                      IconButton(
+                        key: const ValueKey('companion-close-chat'),
+                        tooltip: 'Close conversation',
+                        onPressed: onClose,
+                        icon: Icon(
+                          Icons.close_rounded,
+                          size: referenceSize ? 26 : 20,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                IconButton(
-                  key: const ValueKey('companion-close-chat'),
-                  tooltip: 'Close conversation',
-                  onPressed: onClose,
-                  icon: const Icon(Icons.close_rounded, size: 20),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: referenceSize ? 24 : 12,
+                  ),
+                  child: s.oi != null
+                      ? OiConversationPane(conversation: s.oi!, compact: true)
+                      : const _DetachedClassicConversation(),
                 ),
-              ],
-            ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(
+                  left: referenceSize ? 10 : 0,
+                  right: referenceSize ? 10 : 0,
+                  bottom: referenceSize ? 12 : 2,
+                ),
+                child: LivingComposer(
+                  compact: true,
+                  minimal: true,
+                  floating: true,
+                  hint: 'Ask URI…',
+                  filePicker: filePicker,
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: s.oi != null
-                  ? OiConversationPane(conversation: s.oi!, compact: true)
-                  : const _DetachedClassicConversation(),
-            ),
-          ),
-          LivingComposer(
-            compact: true,
-            minimal: true,
-            floating: true,
-            hint: 'Ask URI…',
-            filePicker: filePicker,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -535,14 +567,20 @@ class _DetachedClassicConversation extends StatelessWidget {
     return ListenableBuilder(
       listenable: app,
       builder: (context, _) {
+        final referenceSize = MediaQuery.sizeOf(context).width > 480;
         Widget bubble(String text, bool user) => Align(
           alignment: user ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            margin: EdgeInsets.only(bottom: referenceSize ? 16 : 8),
+            padding: EdgeInsets.symmetric(
+              horizontal: referenceSize ? 16 : 12,
+              vertical: referenceSize ? 12 : 6,
+            ),
             decoration: BoxDecoration(
-              color: user ? c.accentSoft : c.canvas,
-              borderRadius: BorderRadius.circular(12),
+              color: user
+                  ? Color.lerp(c.surface, c.surfaceSunken, .6)
+                  : c.surface,
+              borderRadius: BorderRadius.circular(referenceSize ? 20 : 14),
             ),
             child: Text(text, style: TextStyle(fontSize: 14, color: c.ink)),
           ),
@@ -592,7 +630,7 @@ class _DetachedClassicConversation extends StatelessWidget {
             child: ListView(
               shrinkWrap: true,
               reverse: true,
-              padding: EdgeInsets.only(top: box.maxWidth > 350 ? 28 : 4),
+              padding: EdgeInsets.only(top: box.maxWidth > 350 ? 0 : 4),
               children: messages.reversed.toList(),
             ),
           ),

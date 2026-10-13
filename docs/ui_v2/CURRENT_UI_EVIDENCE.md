@@ -1,3 +1,5 @@
+> Current source has newer **unverified spacing refinements**. The captures and 567-pass suite below belong to `15a322d17aa54a4aec8316c6fc6628f70bf617ff`. See [refinement status](REFINEMENT_REPORT.md); do not treat earlier evidence as testing the new source.
+
 # Current isolated UI evidence — 13 October 2026
 
 Accepted canonical development base: `1b5423bc15fd7e5da9161c862cf839925da9f2eb`, rechecked from `uri-repo/integration/git-sync-20261008`. Candidate branch: `ui/companion-v2-visual-qualification`; worktree `C:/Users/cheta/Development/uri-ui-v2`. Source repositories and other dirty worktrees were left unchanged.

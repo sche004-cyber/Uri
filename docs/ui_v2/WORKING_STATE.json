@@ -2,7 +2,7 @@
   "baseline": "1b5423bc15fd7e5da9161c862cf839925da9f2eb",
   "branch": "ui/companion-v2-visual-qualification",
   "candidate_committed": true,
-  "candidate_commit": "See git HEAD and external lifecycle receipt; local snapshot only",
+  "candidate_commit": "15a322d17aa54a4aec8316c6fc6628f70bf617ff",
   "flutter_tests": {
     "passed": 567,
     "skipped": 5,
@@ -63,5 +63,7 @@
     "uri_ui/lib/services/companion_window_adapter.dart": "2c271fee2aa505bac12e39e2a7095518746c3fc0b7c1465015db0642c3c32601",
     "uri_ui/test/living/ui_v2_test.dart": "b477f7fb5cf86067b222b8bf26170e75d19aa299a6193361d52ce115def888b8",
     "uri_ui/tool/capture/ui_v2_capture.dart": "807f49975fd58e2aa45d70d084a3ce5a6edee608d548c68e57f7209043abe776"
-  }
+  },
+  "historical_snapshot_only": true,
+  "newer_unverified_refinement": "REFINEMENT_STATE.json"
 }

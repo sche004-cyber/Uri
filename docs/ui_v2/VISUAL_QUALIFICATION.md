@@ -1,3 +1,5 @@
+> Current source has newer **unverified spacing refinements**. The captures and 567-pass suite below belong to `15a322d17aa54a4aec8316c6fc6628f70bf617ff`. See [refinement status](REFINEMENT_REPORT.md); do not treat earlier evidence as testing the new source.
+
 # Visual qualification — isolated candidate
 
 The owner approved [Detached chat](evidence/reference/companion-approved.jpg) on 13 October 2026. Dashboard authority is [the supplied image](evidence/reference/owner-current.jpg) plus the three approved theme studies. Approval applies to those references, not this new code.

@@ -470,6 +470,55 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets('small detached chat shows a complete latest reply above input', (
+    tester,
+  ) async {
+    final (_, app, _) = await pumpV2(tester, size: const Size(360, 560));
+    app.conversation.add(
+      UriTurn(
+        turnId: 'compact-layout-fixture',
+        userText: 'Can you help with my draft?',
+        timestamp: DateTime(2026, 10, 13),
+        stage: TurnStage.completed,
+        result: const ActionResult(summary: 'What would you like to change?'),
+      ),
+    );
+    await tester.tap(find.byKey(LivingShell.orbKey));
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('a2ui.companion-controls.chat')));
+    await tester.pumpAndSettle();
+    final reply = tester.getRect(find.text('What would you like to change?'));
+    final header = tester.getRect(
+      find.byKey(const ValueKey('companion-close-chat')),
+    );
+    final composer = tester.getRect(
+      find.byKey(const ValueKey('living-composer-field')),
+    );
+    expect(reply.top, greaterThanOrEqualTo(header.bottom));
+    expect(reply.bottom, lessThanOrEqualTo(composer.top));
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('small dashboard initially shows all supporting header copy', (
+    tester,
+  ) async {
+    final (_, _, services) = await pumpV2(tester, size: const Size(390, 844));
+    services.presentation.setMode(UiPresentationMode.dashboard);
+    await tester.pumpAndSettle();
+    final disclaimer = find.text('SIMULATED PREVIEW · no backend connected');
+    final scroll = find.ancestor(
+      of: disclaimer,
+      matching: find.byType(SingleChildScrollView),
+    );
+    expect(
+      tester.getRect(disclaimer).bottom,
+      lessThanOrEqualTo(tester.getRect(scroll).bottom),
+    );
+    expect(
+      tester.getRect(scroll).bottom,
+      lessThan(tester.getRect(find.byKey(LivingShell.orbKey)).top),
+    );
+  });
   testWidgets('orbit stops for nearby pointer, open chat and reduced motion', (
     tester,
   ) async {

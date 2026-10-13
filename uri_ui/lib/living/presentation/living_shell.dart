@@ -77,7 +77,7 @@ class OrbDock {
           return OrbDock(
             rect: Rect.fromLTWH(
               (shell.width - size) / 2,
-              shell.height * (shell.width > 480 ? .30 : .31) - size / 2,
+              shell.height * (shell.width > 480 ? .297 : .31) - size / 2,
               size,
               size,
             ),
@@ -122,7 +122,11 @@ class OrbDock {
               wide ? (shell.width + 208) / 2 : shell.width / 2,
               wide
                   ? shell.height * .45
-                  : (shell.height * .35).clamp(0, 260) +
+                  : math.min(
+                        shell.height * .5,
+                        (shell.width < 500 ? 320.0 : 260.0) +
+                            math.max(0, textScale - 1) * 100,
+                      ) +
                         (shell.height * .35).clamp(0, 220) / 2,
             ),
             width: size,
@@ -492,6 +496,8 @@ class _LivingShellState extends State<LivingShell> {
                   ? CompanionModeView.chatRect(
                       shellSize,
                       dock.rect,
+                      voiceVisible:
+                          services.voice.session.phase != VoicePhase.off,
                       textScale:
                           MediaQuery.textScalerOf(context).scale(14) / 14,
                       buttons: buttonRects,

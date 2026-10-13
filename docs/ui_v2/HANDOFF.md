@@ -1,10 +1,12 @@
+> Current source has newer **unverified spacing refinements**. The captures and 567-pass suite below belong to `15a322d17aa54a4aec8316c6fc6628f70bf617ff`. See [refinement status](REFINEMENT_REPORT.md); do not treat earlier evidence as testing the new source.
+
 # URI UI V2 — isolated review handoff
 
 **NOT READY — BLOCKERS.** The owner-approved reference is implemented as an isolated candidate, not independently accepted or integrated. Companion screenshot similarity is 0.634 against the 0.80 checkpoint; dashboard is 0.879. Native desktop/device/live runtime/performance qualification remains unverified. Reviewer availability/status is recorded by the external lifecycle receipt, never inferred from unit tests.
 
-Worktree: `C:/Users/cheta/Development/uri-ui-v2`  
-Branch: `ui/companion-v2-visual-qualification`  
-Accepted base: `1b5423bc15fd7e5da9161c862cf839925da9f2eb`  
+Worktree: `C:/Users/cheta/Development/uri-ui-v2`
+Branch: `ui/companion-v2-visual-qualification`
+Accepted base: `1b5423bc15fd7e5da9161c862cf839925da9f2eb`
 Exact local snapshot: run `git rev-parse HEAD` in this worktree; the external lifecycle report pins that SHA. No canonical push, merge or deployment is authorized.
 
 ## Review evidence

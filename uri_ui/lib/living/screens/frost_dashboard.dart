@@ -365,7 +365,7 @@ class FrostDashboard extends StatelessWidget {
             : Column(
                 children: [
                   SizedBox(
-                    height: (box.maxHeight * .35).clamp(0, 260),
+                    height: math.max(0, orbRect.top - 20),
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(20),
                       child: header,
