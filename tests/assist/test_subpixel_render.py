@@ -11,7 +11,9 @@ PAL2 = [[9, 93, 219], [219, 9, 198], [219, 135, 9], [9, 219, 30]]
 
 
 def blend(colour, coverage):
-    return tuple(round(255 + a * (p - 255)) for p, a in zip(colour, coverage))
+    # Independent gamma-2.2 renderer fixture, close to sRGB but not a copy of
+    # the production transfer function. Coverage is in light, not encoded bytes.
+    return tuple(round(255 * (1 - a + a * (p / 255) ** 2.2) ** (1 / 2.2)) for p, a in zip(colour, coverage))
 
 
 @pytest.fixture
@@ -19,21 +21,27 @@ def capture(monkeypatch):
     monkeypatch.setattr(R, "PAL", PAL)
     monkeypatch.setattr(R, "PAL2", PAL2)
 
-    def make(coverage=(0.4, 0.8, 1.0), *, mode="own"):
+    def make(coverage=(0.4, 0.8, 1.0), *, mode="own", first_red=None, arbitrary_red=None, secondary=None):
+        first = [list(c) for c in PAL]
+        if first_red is not None: first[0][0] = first_red
+        monkeypatch.setattr(R, "PAL", first)
         def paint(palette):
             def draw(d, i, rect, colour):
                 if i == 0 and mode == "foreign": colour = palette[1]
                 if i == 0 and mode == "inconsistent" and palette is PAL2:
                     cov = (1.0, 0.4, 0.4)
                 else:
-                    cov = coverage
+                    cov = secondary if i == 1 and secondary is not None else coverage
                 if i == 0 and mode == "clipped":
                     x, y, w, h = rect
                     rect = (x, y, w // 3, h)
-                R._glyphs(d, rect, blend(colour, cov))
+                pixel = list(blend(colour, cov))
+                if i == 0 and palette is first and arbitrary_red is not None:
+                    pixel[0] = arbitrary_red
+                R._glyphs(d, rect, pixel)
             return draw
-        base = lambda d, i, rect: R._glyphs(d, rect, blend((0, 0, 0), coverage))
-        snap, probe = R.synthetic(R.TWO, base_ink=base, tint=paint(PAL), tint2=paint(PAL2))
+        base = lambda d, i, rect: R._glyphs(d, rect, blend((0, 0, 0), secondary if i == 1 and secondary is not None else coverage))
+        snap, probe = R.synthetic(R.TWO, base_ink=base, tint=paint(first), tint2=paint(PAL2))
         if mode == "undrawn": probe["plain"] = probe["base"] = probe["base2"] = R._png(lambda d: None)
         if mode == "decorated": probe["base"] = probe["base2"] = R._png(lambda d: None)
         return snap, probe
@@ -45,7 +53,7 @@ def test_subpixel_coverage_keeps_visible_own_glyphs(capture):
 
 
 def test_subpixel_channels_are_fractional_pixels_not_three_whole_pixels(capture):
-    snap, raw = capture((0.2, 0.6, 1.0))
+    snap, raw = capture((0.2, 0.6, 1.0), secondary=(0.4, 0.8, 1.0))
     probe = O.load(raw, snap)
     tinted, inked, _, _, _ = probe._counts(*probe.where[0], probe.units[0]["r"][0])
     # 40 two-pixel strokes, 14 rows; only two of three channels meet unchanged MIN_ALPHA.
@@ -75,3 +83,38 @@ def test_subpixel_branch_requires_measurable_contrast_in_every_channel(capture):
     for palette in probe.palettes:
         palette[0] = (255, *palette[0][1:])  # no contrast against the white clear shot in R
     assert probe.verify(0) == O.NO_INK
+
+
+@pytest.mark.parametrize("first_red", [255, 254, 246, 242])
+def test_one_flat_or_low_contrast_paint_cannot_absorb_arbitrary_residual_data(capture, first_red):
+    # Exact independent-review reproduction: the first red paint may be flat
+    # against white, yet the old joint-energy test admitted arbitrary delta -28.
+    # Also cover near-flat data and a measurable but low-contrast paint, whose
+    # residual allowance must scale down rather than retain the full 28 bytes.
+    assert R._kept(*capture(first_red=first_red, arbitrary_red=227)) == ([1], Counter({"no_ink": 1}))
+
+
+def test_lower_contrast_paint_must_still_supply_correlated_coverage(capture):
+    # Contrast 13 can supply a measured response of 13, with independently
+    # agreeing gamma-corrected coverage. It cannot absorb arbitrary delta -28.
+    assert R._kept(*capture((1.0, 0.8, 0.4), first_red=242)) == ([0, 1], Counter())
+
+
+@pytest.mark.parametrize("first_red_pixel", [227, 255])
+def test_independent_review_zero_contrast_reproduction_is_refused(monkeypatch, first_red_pixel):
+    # Preserve the reviewer's exact encoded-byte counterexample independently of
+    # the gamma-rendered positive fixture. Both arbitrary -28 and flat 0 fail.
+    monkeypatch.setattr(R, "PAL", [[255, 219, 9], *PAL[1:]])
+    monkeypatch.setattr(R, "PAL2", PAL2)
+    cov = (0.4, 0.8, 1.0)
+    def paint(palette):
+        def draw(d, i, rect, colour):
+            pixel = [round(255 + a * (p - 255)) for p, a in zip(colour, cov)]
+            if i == 0 and palette is R.PAL: pixel[0] = first_red_pixel
+            R._glyphs(d, rect, pixel)
+        return draw
+    snap, raw = R.synthetic(R.TWO, tint=paint(R.PAL), tint2=paint(R.PAL2))
+    probe = O.load(raw, snap)
+    assert probe is not None
+    assert probe.verify(0) == O.NO_INK
+    assert 0 not in R._kept(snap, raw)[0]

@@ -211,23 +211,33 @@ class Probe:
                                                       abs(d2 - al * p2)) <= MAX_RESIDUAL
             return al if ok else None
 
+        # Fixed sRGB transfer (W3C CSS Color 4), never a per-pixel fitted gamma.
+        linear = tuple(v / 255 / 12.92 if v / 255 <= 0.04045 else ((v / 255 + 0.055) / 1.055) ** 2.4
+                       for v in range(256))
+        def encoded(v):
+            return 255 * (12.92 * v if v <= 0.0031308 else 1.055 * v ** (1 / 2.4) - 0.055)
+
         def subpixel_weight(colour, k, background, foreign=False):
-            # ClearType blends R/G/B separately. Bind each channel to BOTH random
-            # paints; a scalar alpha incorrectly discards its coloured glyph edges.
+            # ClearType has separate channel coverage and gamma-corrected edges.
+            # Recover coverage INDEPENDENTLY from each paint; never borrow signal
+            # from another paint or another RGB channel to validate flat data.
             coverage = []
+            floor = math.ceil(MIN_PROBE_CONTRAST * MIN_ALPHA / 2)
             for ch in range(3):
-                p1 = self.palettes[0][colour][ch] - background[ch]
-                p2 = self.palettes[1][colour][ch] - background[ch]
-                d1, d2 = a_px[k + ch] - background[ch], b_px[k + ch] - background[ch]
-                norm = p1 * p1 + p2 * p2
-                if norm < MIN_PROBE_CONTRAST ** 2:
-                    return 0                              # this channel cannot be measured
-                al = (d1 * p1 + d2 * p2) / norm
-                if not 0 <= al <= MAX_ALPHA or max(abs(d1 - al * p1), abs(d2 - al * p2)) > MAX_RESIDUAL:
+                clear = background[ch]
+                pa, pb = self.palettes[0][colour][ch], self.palettes[1][colour][ch]
+                ta, tb = a_px[k + ch], b_px[k + ch]
+                if min(abs(pa - clear), abs(pb - clear), abs(ta - clear), abs(tb - clear)) < floor:
+                    return 0                              # either paint is unmeasurable: fail closed
+                bg = linear[clear]
+                p1, p2 = linear[pa] - bg, linear[pb] - bg
+                a1, a2 = (linear[ta] - bg) / p1, (linear[tb] - bg) / p2
+                if not 0 <= a1 <= MAX_ALPHA or not 0 <= a2 <= MAX_ALPHA or abs(a1 - a2) > MAX_ALPHA_GAP:
                     return 0
-                if min(abs(p1), abs(p2)) >= MIN_PROBE_CONTRAST and abs(d1 / p1 - d2 / p2) > MAX_ALPHA_GAP:
+                al = (a1 + a2) / 2
+                if max(abs(ta - encoded(bg + al * p1)), abs(tb - encoded(bg + al * p2))) > MAX_RESIDUAL:
                     return 0
-                coverage.append(al)
+                coverage.append(min(a1, a2))               # both paints must meet MIN_ALPHA for any credit
             if foreign:
                 return 1                                  # any competing explanation is ambiguous, even scalar
             if max(coverage) - min(coverage) <= MAX_ALPHA_GAP:
