@@ -23,12 +23,17 @@ def capture(monkeypatch):
 
     def make(coverage=(0.4, 0.8, 1.0), *, mode="own", first_red=None, arbitrary_red=None, secondary=None):
         first = [list(c) for c in PAL]
+        second = [list(c) for c in PAL2]
         if first_red is not None: first[0][0] = first_red
+        if mode == "alias":
+            first[1] = [9, first[0][1], first[0][2]]
+            second[1] = [219, second[0][1], second[0][2]]
         monkeypatch.setattr(R, "PAL", first)
+        monkeypatch.setattr(R, "PAL2", second)
         def paint(palette):
             def draw(d, i, rect, colour):
-                if i == 0 and mode == "foreign": colour = palette[1]
-                if i == 0 and mode == "inconsistent" and palette is PAL2:
+                if i == 0 and mode in ("foreign", "alias"): colour = palette[1]
+                if i == 0 and mode == "inconsistent" and palette is second:
                     cov = (1.0, 0.4, 0.4)
                 else:
                     cov = secondary if i == 1 and secondary is not None else coverage
@@ -41,7 +46,7 @@ def capture(monkeypatch):
                 R._glyphs(d, rect, pixel)
             return draw
         base = lambda d, i, rect: R._glyphs(d, rect, blend((0, 0, 0), secondary if i == 1 and secondary is not None else coverage))
-        snap, probe = R.synthetic(R.TWO, base_ink=base, tint=paint(first), tint2=paint(PAL2))
+        snap, probe = R.synthetic(R.TWO, base_ink=base, tint=paint(first), tint2=paint(second))
         if mode == "undrawn": probe["plain"] = probe["base"] = probe["base2"] = R._png(lambda d: None)
         if mode == "decorated": probe["base"] = probe["base2"] = R._png(lambda d: None)
         return snap, probe
@@ -118,3 +123,39 @@ def test_independent_review_zero_contrast_reproduction_is_refused(monkeypatch, f
     assert probe is not None
     assert probe.verify(0) == O.NO_INK
     assert 0 not in R._kept(snap, raw)[0]
+
+
+def test_weak_channel_has_zero_weight_without_erasing_two_proved_channels(capture):
+    snap, raw = capture((0.2, 0.6, 1.0), first_red=242, secondary=(0.4, 0.8, 1.0))
+    probe = O.load(raw, snap)
+    tinted, inked, _, _, _ = probe._counts(*probe.where[0], probe.units[0]["r"][0])
+    assert tinted == pytest.approx(1120 * 2 / 3)  # unmeasurable red supplies NO weight
+    assert inked == pytest.approx(tinted)
+    assert R._kept(snap, raw) == ([0, 1], Counter())
+
+
+def test_foreign_colour_cannot_hide_behind_an_unmeasured_channel(capture):
+    # Competing colours alias on G/B but differ in weak, uncredited R. They
+    # remain ambiguous: the unmeasured channel cannot make the match unique.
+    assert R._kept(*capture((0.01, 0.6, 1.0), mode="alias", secondary=(0.4, 0.8, 1.0))) == ([1], Counter({"no_ink": 1}))
+
+
+def test_subpixel_visibility_cannot_be_borrowed_from_an_uncredited_channel(capture):
+    snap, raw = capture((0.2, 0.6, 1.0), first_red=242, secondary=(0.4, 0.8, 1.0))
+    def base(d):
+        for i, (rect, _) in enumerate(R.TWO):
+            colour = blend((0, 0, 0), (0.2, 0, 0) if i == 0 else (0.4, 0.8, 1.0))
+            R._glyphs(d, rect, colour)
+    raw["base"] = raw["base2"] = raw["plain"] = R._png(base)
+    assert R._kept(snap, raw) == ([1], Counter({"no_ink": 1}))
+
+
+def test_uninked_tint_evidence_stays_in_the_visibility_fraction_denominator(capture):
+    snap, raw = capture()
+    def partly_visible(d):
+        for rect, _ in R.TWO:
+            x, y, w, h = rect
+            for at in range(x, x + w - 1, 12):  # only one third of the full glyph-like mask is visible
+                d.rectangle([at, y + 2, at + 1, y + h - 3], fill=blend((0, 0, 0), (0.4, 0.8, 1.0)))
+    raw["base"] = raw["base2"] = raw["plain"] = R._png(partly_visible)
+    assert R._kept(snap, raw) == ([], Counter({"no_ink": 2}))
