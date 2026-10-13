@@ -144,6 +144,10 @@ const report = { tool: 'edge_probe.mjs', engine: version.Browser, user_agent: ve
   full: await run('full', '/index.html'), csp_only: await run('csp_only', '/csp-only.html'),
   console_sample: consoleMsgs.slice(0, 20) };
 writeFileSync(outFile, JSON.stringify(report, null, 2));
+// Edge may relaunch the spawned process on Windows. Close the browser that owns
+// this CDP session; killing only the original spawn can leave it and its HTTP
+// keep-alive connections alive, keeping this probe running after it has finished.
+await cdp('Browser.close');
 ws.close();
 edge.kill();
 await sleep(500);
