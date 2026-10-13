@@ -50,6 +50,11 @@ Limits (docs/assist/03_PERMISSION_AND_DATA_FLOW.md): the page's own scripts run 
 page between the shots; glyphs a font draws more than three line heights outside their own box can be credited to a
 same-colour unit of the same group; text the highlight does not repaint (SVG text) is never kept; a web font that
 draws other glyphs than the characters (glyph substitution) passes the check (owner decision).
+
+Windows ClearType uses separate RGB subpixel coverage. When scalar coverage fails, a coloured edge can instead be
+bound channel by channel to both independent paints, with the same contrast/residual/coverage bounds. Every channel
+must be measurable, no competing group colour may explain the pair, and only channels meeting MIN_ALPHA contribute
+one third of a pixel each. Original visibility, stability, decoration, density and per-cell requirements still apply.
 """
 from __future__ import annotations
 
@@ -205,6 +210,32 @@ class Probe:
             ok = MIN_ALPHA <= al <= MAX_ALPHA and max(abs(d0 - al * p0), abs(d1 - al * p1),
                                                       abs(d2 - al * p2)) <= MAX_RESIDUAL
             return al if ok else None
+
+        def subpixel_weight(colour, k, background, foreign=False):
+            # ClearType blends R/G/B separately. Bind each channel to BOTH random
+            # paints; a scalar alpha incorrectly discards its coloured glyph edges.
+            coverage = []
+            for ch in range(3):
+                p1 = self.palettes[0][colour][ch] - background[ch]
+                p2 = self.palettes[1][colour][ch] - background[ch]
+                d1, d2 = a_px[k + ch] - background[ch], b_px[k + ch] - background[ch]
+                norm = p1 * p1 + p2 * p2
+                if norm < MIN_PROBE_CONTRAST ** 2:
+                    return 0                              # this channel cannot be measured
+                al = (d1 * p1 + d2 * p2) / norm
+                if not 0 <= al <= MAX_ALPHA or max(abs(d1 - al * p1), abs(d2 - al * p2)) > MAX_RESIDUAL:
+                    return 0
+                if min(abs(p1), abs(p2)) >= MIN_PROBE_CONTRAST and abs(d1 / p1 - d2 / p2) > MAX_ALPHA_GAP:
+                    return 0
+                coverage.append(al)
+            if foreign:
+                return 1                                  # any competing explanation is ambiguous, even scalar
+            if max(coverage) - min(coverage) <= MAX_ALPHA_GAP:
+                return 0                                  # no fallback for ordinary scalar coverage
+            # One verified subpixel counts as one THIRD of a pixel. All existing
+            # alpha, ink-density, per-cell, visibility and decoration bounds remain.
+            return sum(al >= MIN_ALPHA for al in coverage) / 3
+
         for m in re.finditer(rb"[^\x00]", cand.tobytes()):
             k = 3 * m.start()
             c0, c1, c2 = c_px[k], c_px[k + 1], c_px[k + 2]
@@ -217,14 +248,18 @@ class Probe:
                 if al is None or any(alpha(Q, c0, c1, c2, d0, d1, d2) is not None for Q in others):
                     break
                 alphas.append(al)
+            weight = 1.0
             if len(alphas) != 2 or abs(alphas[0] - alphas[1]) > MAX_ALPHA_GAP:
-                continue
-            tinted += 1
+                weight = subpixel_weight(ci, k, (c0, c1, c2))
+                if not weight or any(subpixel_weight(other, k, (c0, c1, c2), foreign=True)
+                                     for other in g["used"] if other != ci):
+                    continue
+            tinted += weight
             # R2-03: the glyph shows with decorations off (plain vs clear) and nothing paints over it (base = plain).
             if max(abs(p_px[k] - c0), abs(p_px[k + 1] - c1), abs(p_px[k + 2] - c2)) >= OWN_DELTA and max(
                     abs(n_px[k] - p_px[k]), abs(n_px[k + 1] - p_px[k + 1]), abs(n_px[k + 2] - p_px[k + 2])) < OWN_DELTA:
-                inked += 1
-                per[min(cells - 1, ((k // 3) % bw) * cells // bw)] += 1
+                inked += weight
+                per[min(cells - 1, ((k // 3) % bw) * cells // bw)] += weight
         return tinted, inked, unstable, [p / (bh * bh) for p in per], decorated
 
     def verify(self, i: int) -> Optional[str]:
