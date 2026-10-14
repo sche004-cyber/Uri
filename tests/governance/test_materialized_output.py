@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 import pytest
 
@@ -260,3 +261,13 @@ def test_other_generated_looking_files_are_still_refused(output, rel):
     p.write_bytes(b"x")
     result = V.verify(source, runtime)
     assert not result["ok"] and "UNKNOWN_OUTPUT" in result["error"]
+
+
+def test_historical_chain_reaches_the_verifier_when_run_isolated(tmp_path):
+    """FCV-R chain: phase2close_chain.py runs as `python -I`; its scope gate must still import the verifier."""
+    chain = ROOT / "scripts/phase2close_chain.py"
+    code = ("import importlib.util, sys; spec = importlib.util.spec_from_file_location('chain', sys.argv[1]); "
+            "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); "
+            "print(sorted(m.runtime_transitions(m.ROOT)))")
+    run = subprocess.run([sys.executable, "-I", "-B", "-c", code, str(chain)], capture_output=True, text=True, cwd=tmp_path)
+    assert run.returncode == 0, run.stderr[-800:]

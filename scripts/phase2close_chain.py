@@ -344,6 +344,15 @@ WS_EXACT = frozenset((
 FROZEN_PHASE1 = Path(r"C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\work\c1\checkpoints\final-closure-20261005-phase1.zip")
 
 
+def runtime_transitions(root):
+    """The owner-authorized exact transitions this runtime proves (ws_materialized_verify). The chain runs as
+    `python -I`, so the tree root is not on sys.path; put it there before importing the verifier from it."""
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    from scripts.ws_materialized_verify import verified_transitions
+    return verified_transitions(root)
+
+
 def phase1_scope_check(root, closure_zip, frozen_zip=FROZEN_PHASE1):
     """OQ-R2-1: prove the Phase 1 suite's inputs equal those of the accepted closure candidate. Every path that differs
     from -f, is new, or is modified vs HEAD must be either Phase 2-only scope or a frozen Phase 1 checkpoint file whose
@@ -366,8 +375,7 @@ def phase1_scope_check(root, closure_zip, frozen_zip=FROZEN_PHASE1):
     outside, frozen_ok = [], 0
     # Owner 2026-10-14: original checkpoint remains immutable. Only the two
     # exact approved blobs can differ, after independent full-output proof.
-    from scripts.ws_materialized_verify import verified_transitions
-    authorized = verified_transitions(root)
+    authorized = runtime_transitions(root)
     runner_ok = None
     for r in sorted(set(changed + new + modified)):
         if r in ("scripts/phase2d_regression.py", "scripts/phase2d_pytest.ini"):
