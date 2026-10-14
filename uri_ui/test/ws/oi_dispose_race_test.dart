@@ -21,6 +21,7 @@ void main() {
     'memory': (c) => c.refreshMemory(),
     'cloud': (c) => c.refreshCloud(),
     'draft': (c) => c.refreshDraft(),
+    'idle monitor': (c) => c.monitorTick(),
   };
   for (final entry in reads.entries) {
     for (final error in [false, true]) {
@@ -55,6 +56,30 @@ void main() {
       if (rt.commands.isNotEmpty) rt.pending.completeError(IntegratedRuntimeException('WORKER_CLOSED'));
       await expectLater(future, completes);
       expect(rt.commands, isEmpty);
+      await rt.close();
+    });
+  }
+  for (final outcome in ['success', 'error', 'timeout']) {
+    test('busy monitor completion after dispose is discarded ($outcome)', () async {
+      final rt = DelayedRefreshRuntime();
+      final conv = OiConversation(rt, probeAfter: Duration.zero,
+          probeTimeout: const Duration(milliseconds: 20));
+      conv.activeTurnId = 'pending-turn';
+      var notifications = 0;
+      conv.addListener(() => notifications++);
+      final future = conv.monitorTick();
+      expect(rt.commands.single['command'], 'oi_turn_status');
+      conv.dispose();
+      if (outcome == 'success') rt.pending.complete({'busy': false});
+      if (outcome == 'error') rt.pending.completeError(IntegratedRuntimeException('WORKER_CLOSED'));
+      await expectLater(future, completes);
+      expect(notifications, 0);
+      expect(conv.activeTurnId, 'pending-turn');
+      expect(conv.messages, isEmpty);
+      expect(conv.turnStatus, isEmpty);
+      expect(conv.workerUnresponsive, isFalse);
+      expect(conv.lastError, isNull);
+      if (outcome == 'timeout') rt.pending.complete({'busy': false});
       await rt.close();
     });
   }

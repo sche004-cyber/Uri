@@ -266,13 +266,15 @@ class OiConversation extends ChangeNotifier {
 
   /// Health polling and the liveness monitor (one timer).
   void startMonitor([Duration every = const Duration(seconds: 5)]) {
+    if (_disposed) return;
     _monitor?.cancel();
     _monitor = Timer.periodic(every, (_) => monitorTick());
   }
 
   /// One monitor step (public for tests).
   Future<void> monitorTick() async {
-    if (_probing || restarting || workerExited) return;
+    if (_disposed || _probing || restarting || workerExited) return;
+    final rt = runtime;
     _probing = true;
     try {
       if (busy && DateTime.now().difference(_lastFrame) >= probeAfter) {
@@ -280,7 +282,7 @@ class OiConversation extends ChangeNotifier {
       } else if (!busy) {
         turnStalled = false;
         await refreshHealth(notify: false);
-        notifyListeners();
+        if (_active(rt)) notifyListeners();
       }
     } finally {
       _probing = false;
@@ -288,18 +290,22 @@ class OiConversation extends ChangeNotifier {
   }
 
   Future<void> _probe() async {
+    final rt = runtime;
     final Map<String, dynamic> st;
     try {
-      st = await runtime.call({'command': 'oi_turn_status'}).timeout(probeTimeout);
+      st = await rt.call({'command': 'oi_turn_status'}).timeout(probeTimeout);
     } on TimeoutException {
+      if (!_active(rt)) return;
       workerUnresponsive = true;
       notifyListeners();
       return;
     } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
       lastError = e.code;
       notifyListeners();
       return;
     }
+    if (!_active(rt)) return;
     workerUnresponsive = false;
     turnStatus = st;
     final t = activeTurnId;
