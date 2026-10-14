@@ -264,11 +264,25 @@ class IntegratedTurns:
         history = list(self.history.get(session_id, ()))
         # A transcript reaches the ordinary path with fillers removed; the raw transcript stays in the envelope.
         plain = TI.clean_transcript(text) if inp.is_transcript else text
+        with self._lock:
+            clarifications = {tid: p for tid, p in self.pending.items()
+                              if p["session_id"] == session_id and p["env"].get("clarification")
+                              and not p["env"].get("confirmation")
+                              and p["env"].get("state") != "approval_required"}
+        continue_core = bool(clarifications) and inp.mode != "dictation"
 
         def ordinary(sink, request=None):
             words = request if request is not None else plain
-            out = self.o.handle_turn(words, session_id, depth=depth, history=history, sink=sink, turn_id=turn_id)
+            out = self.o.handle_turn(words, session_id, depth=depth, history=history, sink=sink, turn_id=turn_id,
+                                     core_clarification=continue_core)
             out.events = getattr(sink, "events", out.events)
+            if continue_core and out.core is not None:
+                # Core returned the replacement state. Retire only the questions it continued; never an
+                # approval or confirmation. On transport failure retain the question for an explicit retry.
+                with self._lock:
+                    for tid, old in clarifications.items():
+                        if self.pending.get(tid) is old:
+                            self.pending.pop(tid)
             self._remember(turn_id, session_id, words, out.core, out.status)
             answer = (out.answer or {}).get("text")
             self._record_history(session_id, words, answer if out.status in ("ok", "incomplete") else None)
@@ -278,7 +292,7 @@ class IntegratedTurns:
         # scheduler, which proposes and renders an editable surface. No authority is exercised here.
         # Combined with text intelligence: the interpreter reads the cleaned transcript (`plain`); dictated content is
         # never handed off (TI L-2: dictation is content); a handoff ends an open draft question like any new request.
-        handoff = schedule_intent.interpret(plain) if inp.mode != "dictation" else None
+        handoff = schedule_intent.interpret(plain) if inp.mode != "dictation" and not continue_core else None
         if handoff is not None:
             self.desk.drop_open_question(session_id)
             self._start(turn_id, lambda: self._a2ui_handoff(turn_id, session_id, plain, handoff))
@@ -287,6 +301,10 @@ class IntegratedTurns:
         def run():
             sink = self._sink(turn_id)
             try:
+                if continue_core:
+                    self.desk.drop_open_question(session_id)
+                    ordinary(sink)
+                    return
                 # L-2: explicit modes. "command" is an instruction for the ordinary path (intent discovery, Core,
                 # approvals) and never a draft; "dictation" is content and never reaches Core.
                 if inp.mode == "command":

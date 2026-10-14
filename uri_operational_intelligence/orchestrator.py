@@ -149,7 +149,7 @@ class Orchestrator:
         return False
 
     def handle_turn(self, text, session_id, *, depth="auto", history=(), sink: EventSink | None = None,
-                    turn_id=None) -> TurnOutcome:
+                    turn_id=None, core_clarification=False) -> TurnOutcome:
         turn_id = turn_id or str(uuid.uuid4())
         sink = sink or EventSink()
         cancel = self.cancels.setdefault(turn_id, BC.CancelToken())
@@ -158,7 +158,10 @@ class Orchestrator:
         try:
             emit("turn.started", text_chars=len(text), depth=depth)
             emit("companion.state", state="thinking")
-            tri = T.triage(text)
+            # The integrated worker holds the same client's pending Core question. Its next free-text
+            # answer belongs to Core's existing intent continuation, not standalone conversational triage.
+            # This only chooses the authority path; it never confirms, approves or rewrites the user's words.
+            tri = T.Triage(T.ACTION, ["pending_core_clarification"]) if core_clarification else T.triage(text)
             tier = RP.decide(tri.kind, depth)
             out = self._route(text, session_id, tri, tier, depth, history, emit, cancel, turn_id)
         finally:
