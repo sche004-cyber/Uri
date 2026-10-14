@@ -134,6 +134,9 @@ Library versions: python-docx 1.2.0, python-pptx 1.0.2, PyMuPDF 1.28.2, pypdf 6.
 | Merge 3 × 20 pages (pypdf) | 307 ms | |
 | OCR one page at 200 dpi (Tesseract) | 1,163 ms | Text read correctly |
 | Render one PDF page to PNG at 150 dpi (PyMuPDF) | 42 ms | |
+| **LibreOffice 26.8.1 headless**, DOCX to PDF, cold (2026-10-15) | 26.5 s / 17.1 s | Peak RSS 418 MB / 396 MB (two runs) |
+| LibreOffice, DOCX to PDF, second call | 7.5–7.6 s | Peak RSS 361 MB |
+| LibreOffice, 11-slide PPTX to PDF | 7.4–8.1 s | Peak RSS 369 MB. All 11 slides and the native chart render. |
 | Peak process RSS | 102 MB | |
 
 Notes on the measurements:
@@ -152,7 +155,7 @@ Notes on the measurements:
 | **PyMuPDF** 1.28 | PDF read, text, `find_tables`, render, annotate, redact, generate | **AGPL-3.0** or commercial ([Artifex](https://github.com/pymupdf/pymupdf)) | yes | High for PDF | yes (Core `PDFReader`, writer) | **Select** for PDF. OD-U3 records the AGPL acknowledgement. |
 | **pypdf** 6.19 | Merge, split, rotate, form fields | BSD-3 | yes | Lossless page assembly | yes | **Select** for page assembly and AcroForm fill (keeps the AGPL surface small) |
 | **Tesseract** 5.5 | OCR | Apache-2.0 | installed at `C:\Program Files\Tesseract-OCR` | Good on clean scans | yes (Core) | **Select** (existing) |
-| **LibreOffice** headless (`soffice --headless --convert-to pdf`) | DOCX/PPTX to PDF for preview, Word-to-PDF output, visual qualification | MPL-2.0 | Windows supported; console use via `soffice.com`; one instance per profile ([ask.libreoffice.org](https://ask.libreoffice.org/t/file-format-conversion/90964/3)) | The only free high-fidelity OOXML layout engine found | **not installed** (checked: no `soffice`) | **Select, subject to OD-U2** (download and install about 350 MB). Rasterize its PDF with PyMuPDF, because direct PNG export renders only the first page ([LibreOffice bug 157425](https://www.libreoffice.org/bugzilla/show_bug.cgi?id=157425)). |
+| **LibreOffice** headless (`soffice --headless --convert-to pdf`) | DOCX/PPTX to PDF for preview, Word-to-PDF output, visual qualification | MPL-2.0 | Windows supported; console use via `soffice.com`; one instance per profile ([ask.libreoffice.org](https://ask.libreoffice.org/t/file-format-conversion/90964/3)) | The only free high-fidelity OOXML layout engine found | **installed 2026-10-15** as a user-folder extract (`%LOCALAPPDATA%\URI\engines\libreoffice-26.8.1`). See `evidence/libreoffice_probe_20261015/`. | **Selected (OD-U2).** Fidelity verified on the probe documents. (download and install about 350 MB). Rasterize its PDF with PyMuPDF, because direct PNG export renders only the first page ([LibreOffice bug 157425](https://www.libreoffice.org/bugzilla/show_bug.cgi?id=157425)). |
 | Univer docs preset | Rich in-app DOCX editing | Apache-2.0 core | WebView2 | DOCX import and export need the Univer Pro server; unlicensed use has a watermark and a 1 MB cap ([Univer import/export](https://docs.univer.ai/guides/docs/features/import-export)) | Univer sheets already bundled | Reject for now: a paid path, or a custom DOCX-to-IDocumentData converter with fidelity loss |
 | docx-preview (docxjs) | DOCX to HTML preview | Apache-2.0 | WebView2 | Approximate HTML layout, not pixel-faithful; upstream inactive since about 2024 ([jsDelivr README](https://cdn.jsdelivr.net/npm/docx-preview@0.4.1/README.md)) | no | Fallback only if OD-U2 is declined |
 | pdfplumber, camelot | PDF tables | MIT | yes | Comparable to PyMuPDF `find_tables` for ruled tables | no | Reject: redundant with PyMuPDF |
@@ -389,7 +392,7 @@ Core: imported read-only (PDFReader, load_usable_credentials); uri_core unchange
   - no network; enforcement method to be proved in O2: profile proxy to an unreachable port and update checks off;
   - output only into the working folder.
 
-**Resources:** CPU-only engines (section 2.1). LibreOffice is started on demand and exits after an idle timeout. There is no GPU use other than the existing Brain. Phase O2 measures LibreOffice RSS and cold-start time; it is NOT MEASURED yet.
+**Resources:** CPU-only engines (section 2.1). LibreOffice is started on demand and exits after an idle timeout. There is no GPU use other than the existing Brain. Measured: 7–26 s and about 360–420 MB per conversion, process per call. O2 must measure a persistent listener (`soffice --accept`, UNO) and choose it if it is materially faster. Previews are cached by input SHA-256.
 
 **Recovery:**
 - working copies and atomic writes;
@@ -465,7 +468,7 @@ Only `COMPLETED_WITH_RESULT` evidence supports PASS (CLAUDE.md).
 
 **Known live-qualification blockers (carried, not hidden):**
 - The Brain needs an owner GPU override for each live run (W-5). Without it, live Brain categories are BLOCKED.
-- LibreOffice is not installed (OD-U2). Without it, categories B, K and Word→PDF are BLOCKED.
+- LibreOffice was installed without admin rights as a user-folder extract (both elevated attempts were cancelled at UAC). Categories B, K and Word→PDF are unblocked.
 - Linux gates: not a target (owner ruling 2026-10-11). They stay NOT VERIFIED and non-blocking for Office, unless the owner's later integration rule requires them (the readiness report lists them as blocking for the M1/M2 integration).
 
 ## 11. Delivery order for the first implementation milestone
@@ -498,7 +501,7 @@ The recommendation is to start O2, not Word first. A Word milestone without the 
 | Criterion | Result | Notes and repairs made in this draft |
 |---|---|---|
 | P1 | Met | Every tier cites a commit or report. AC11: `docs/office/evidence/` holds only GPU-advice probes, with no speed record, so it is P / NOT VERIFIED. Excel-saved fixture provenance is not re-audited (stated). |
-| P2 | Met | Measured: python-docx, python-pptx, PyMuPDF, pypdf, Tesseract. The negative PyMuPDF render result is preserved. **Not measured:** LibreOffice fidelity, RSS and cold start (not installed), docx-preview fidelity, `drive.file` with the Docs and Slides APIs. Each is marked, and each affects only its own phase. |
+| P2 | Met | Measured: python-docx, python-pptx, PyMuPDF, pypdf, Tesseract. The negative PyMuPDF render result is preserved. **Measured 2026-10-15:** LibreOffice fidelity, RSS and cold and warm time. **Not measured:** a persistent-listener mode, docx-preview fidelity, `drive.file` with the Docs and Slides APIs. Each is marked, and each affects only its own phase. |
 | P3 | Met | Extends `uri_office`. No new service or assistant. |
 | P4 | Met | Core imported read-only. Scope changes are routed to OD-U4. |
 | P5 | Partly met | Phase-level criteria are given. Per-phase frozen blueprints with full AC tables are produced at each phase's plan step (lifecycle), not in this program plan. |
