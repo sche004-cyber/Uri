@@ -395,26 +395,28 @@ void main() {
       expect(lib.hasFailed(EmberClip.thinking), isTrue);
     });
 
-    testWidgets('a first clip that fails shows the fallback and stops waking', (
-      tester,
-    ) async {
-      bundle.broken.add('idle.webp');
-      await tester.pumpWidget(
-        Directionality(
-          textDirection: TextDirection.ltr,
-          child: EmberCompanion(
-            library: lib,
-            fallback: const Text('fallback', key: ValueKey('fb')),
+    testWidgets(
+      'a first clip that fails shows the fallback and asks for no frames',
+      (tester) async {
+        bundle.broken.add('idle.webp');
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: EmberCompanion(
+              library: lib,
+              fallback: const Text('fallback', key: ValueKey('fb')),
+            ),
           ),
-        ),
-      );
-      await settleDecode(tester);
-      expect(find.byKey(const ValueKey('fb')), findsOneWidget);
-      final st = tester.state(find.byType(EmberCompanion)) as dynamic;
-      expect(st.sleepingBetweenFrames, isFalse);
-      await tester.pump(const Duration(seconds: 1));
-      expect(tester.binding.hasScheduledFrame, isFalse);
-    });
+        );
+        await settleDecode(tester);
+        expect(find.byKey(const ValueKey('fb')), findsOneWidget);
+        final st = tester.state(find.byType(EmberCompanion)) as dynamic;
+        // One wake is kept for the retry window (30 s), nothing sooner.
+        expect(st.sleepingBetweenFrames, isTrue);
+        await tester.pump(const Duration(seconds: 1));
+        expect(tester.binding.hasScheduledFrame, isFalse);
+      },
+    );
 
     for (final motion in [0.5, 1.0, 1.5]) {
       testWidgets('sprite cadence follows the motion preference ($motion)', (
@@ -455,6 +457,68 @@ void main() {
         expect(longest, lessThanOrEqualTo((periodVsyncs * 1.5).ceil() + 1));
       });
     }
+
+    testWidgets('after the retry window a failed first clip is loaded again', (
+      tester,
+    ) async {
+      var clock = Duration.zero;
+      lib.now = () => clock;
+      bundle.broken.add('idle.webp');
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: EmberCompanion(
+            library: lib,
+            fallback: const Text('fallback', key: ValueKey('fb')),
+          ),
+        ),
+      );
+      await settleDecode(tester);
+      expect(find.byKey(const ValueKey('fb')), findsOneWidget);
+      expect(lib.hasFailed(EmberClip.idle), isTrue);
+      // Inside the window: nothing is retried.
+      final loads = bundle.loads;
+      await tester.pump(const Duration(seconds: 10));
+      expect(bundle.loads, loads);
+      // The asset is back and the window has passed: one wake, one load.
+      bundle.broken.clear();
+      clock += EmberLibrary.retryAfter + const Duration(seconds: 1);
+      await tester.pump(const Duration(seconds: 21));
+      await settleDecode(tester);
+      expect(lib.hasFailed(EmberClip.idle), isFalse);
+      expect(find.byKey(const ValueKey('fb')), findsNothing);
+    });
+
+    testWidgets('a refused target is followed once it may be retried', (
+      tester,
+    ) async {
+      var clock = Duration.zero;
+      lib.now = () => clock;
+      Widget at(CompanionState s) => Directionality(
+        textDirection: TextDirection.ltr,
+        child: SizedBox(
+          width: 200,
+          height: 200,
+          child: EmberCompanion(library: lib, state: s),
+        ),
+      );
+      await tester.pumpWidget(at(CompanionState.idle));
+      await settleDecode(tester);
+      bundle.broken.add('thinking.webp');
+      await tester.pumpWidget(at(CompanionState.thinking));
+      await settleDecode(tester);
+      final st = tester.state(find.byType(EmberCompanion)) as dynamic;
+      expect(st.currentClip, EmberClip.idle);
+      // No parent rebuild: the companion re-checks on its own.
+      bundle.broken.clear();
+      clock += EmberLibrary.retryAfter + const Duration(seconds: 1);
+      await tester.pump(const Duration(seconds: 31));
+      await settleDecode(tester);
+      for (var i = 0; i < 30; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expect(st.currentClip, EmberClip.thinking);
+    });
 
     testWidgets('a still Ember (picker) settles and requests nothing', (
       tester,

@@ -69,7 +69,7 @@ render quality) and show a 15 KB still in the picker; reduced effects -> classic
 Full `flutter test`: baseline `1b5423bc` 543/543 pass; candidate (run 1) 558/558 pass, one test renamed, 16 new
 (`evidence/tests/run1_test_compare.json`). Final full suite on the code of `d7093fbf`: 570/570 pass, one renamed,
 28 new (`evidence/tests/final_test_compare.json`); after the R3 repairs the four companion suites were re-run
-(141/141). Ember-specific: 25 tests
+(141/141; log not kept - superseded by the R4 run, `evidence/tests/r4_companion_suites.log`, 143/143). Ember-specific: 25 tests
 (mapping, assets, manifest validation, decode-wait fade, failed loads, shared library, VRAM release, cadence at three
 motion speeds, still mode) + 2 shell/settings tests.
 
@@ -83,8 +83,8 @@ pre-existing framework assertions in canonical voice settings (PRE-1).
 
 ## 11. Performance (`03_MEASUREMENTS.md`)
 Profile build, real window, 476 px: Ember GPU 3D median 0.23 % vs Solar 6.2 %; raster p50 0.68 vs 0.83 ms; 35-60
-frames requested per second vs 145-160; dedicated VRAM +40-65 MB vs Solar while shown (decoded atlases), released
-when another companion is selected. App bundle +~14 MB.
+frames requested per second vs 145-160; dedicated VRAM +40-65 MB vs Solar while shown (decoded atlases). Release of
+the atlases when another companion is selected is asserted by a unit test, not measured live. App bundle +~14 MB.
 
 ## 12. GPU and Brain coexistence
 Runtime v1 (15.3 GB) does not fit next to the desktop on the 16 GB card without oversubscription; with the owner's
@@ -102,8 +102,10 @@ Fresh separate Claude reviewers (no lifecycle driver - OD-4): R1 REJECT (2 block
 R2 ACCEPT WITH FINDINGS (3 MEDIUM) -> repaired `96bcc319`, `59157120`; R3 on `d7093fbf`: REJECT on evidence
 integrity (four MEDIUM: unsupported preference-hash claim, wrong screenshot citation and an unlogged 133 tok/s figure,
 critique scores and eye self-check not committed, journey 2 marked PASS without a change of companion) plus LOW code
-findings (failed clips retried on every rebuild, a stale pending wake delaying the next) -> repaired in the commit
-after `626639c9`; R4: see the addendum at the end.
+findings (failed clips retried on every rebuild, a stale pending wake delaying the next) -> repaired in `c9d91758`;
+R4 on `c9d91758`: REJECT (R4-01 MEDIUM: the R3 retry window introduced a regression - an expired failure was never
+reloaded and polled at 20 Hz; R4-02 MEDIUM: VRAM release overstated in this report) plus LOW items -> repaired in
+the commit after `c9d91758`; R5: see the addendum at the end.
 Visual critique by a separate reviewer: section 5. Not lifecycle-ACCEPTED.
 
 ## 15. Remaining defects and limitations
@@ -116,7 +118,8 @@ conflicts).
 ## 16. Branch, worktree, commits
 Branch `phase/fire-companion-20261014` in `C:\Users\cheta\Development\uri-fire-companion`, local only (not pushed):
 `8a1438ec` feature, `9508281a`/`4e3e0ed0` live harness, `7d83947d` R1 repairs, `96bcc319` R2 repairs, `59157120` pacing,
-`d00211ab`/`d7093fbf` docs and evidence. Disposable runtime `C:\Users\cheta\Development\uri-fire-companion-rt`
+`d00211ab`/`d7093fbf` docs and evidence, `626639c9` report draft, `c9d91758` R3 repairs, then the R4 repair commit
+(see addendum). Disposable runtime `C:\Users\cheta\Development\uri-fire-companion-rt`
 (materialized from `59157120`). Live harness folder `C:\Users\cheta\Development\uri-fire-companion-live`.
 
 ## 17. Canonical integration readiness and proposal
@@ -128,3 +131,7 @@ approach. Options for the owner:
    choosing whether reference images stay in git.
 3. **Keep on the branch** as research.
 Any integration needs explicit owner authorisation; follow-ups F-SUCCESS and PRE-1 are proposed separately.
+
+## Addendum - review rounds after the first draft
+
+(Filled in as rounds complete; nothing above is rewritten except where a correction is marked.)

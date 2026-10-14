@@ -152,8 +152,15 @@ class EmberLibrary {
       <EmberClip, Future<ui.Image?>>{};
   final List<EmberClip> _recent = <EmberClip>[];
   final Map<Object, Set<EmberClip>> _pins = <Object, Set<EmberClip>>{};
-  final Map<EmberClip, DateTime> _failed = <EmberClip, DateTime>{};
+  final Map<EmberClip, Duration> _failed = <EmberClip, Duration>{};
   String? lastFailure;
+
+  /// Monotonic time for the retry window (wall-clock changes cannot move it).
+  /// Tests replace it to step past [retryAfter].
+  @visibleForTesting
+  Duration Function() now = _monotonic;
+  static final Stopwatch _since = Stopwatch()..start();
+  static Duration _monotonic() => _since.elapsed;
 
   /// How long a failed clip is not retried. A transient failure (e.g. memory
   /// pressure during decode) must not block the clip for the life of the app,
@@ -164,13 +171,19 @@ class EmberLibrary {
   /// manifest). A widget never waits on it and does not fade to it.
   bool hasFailed(EmberClip clip) {
     final at = _failed[clip];
-    if (at == null) return false;
-    if (DateTime.now().difference(at) >= retryAfter) {
-      _failed.remove(clip);
-      return false;
-    }
-    return true;
+    return at != null && now() - at < retryAfter;
   }
+
+  /// Time left before a failed clip may be tried again (zero if it may).
+  Duration retryIn(EmberClip clip) {
+    final at = _failed[clip];
+    if (at == null) return Duration.zero;
+    final left = retryAfter - (now() - at);
+    return left.isNegative ? Duration.zero : left;
+  }
+
+  /// A decode for [clip] is in flight.
+  bool isLoading(EmberClip clip) => _loading.containsKey(clip);
 
   /// Clips some widget has on screen. Never evicted.
   Set<EmberClip> get pinned => {for (final s in _pins.values) ...s};
@@ -246,7 +259,7 @@ class EmberLibrary {
     final m = await manifest();
     final info = m?.clips[clip];
     if (info == null) {
-      _failed[clip] = DateTime.now();
+      _failed[clip] = now();
       return null;
     }
     try {
@@ -266,7 +279,7 @@ class EmberLibrary {
       return frame.image;
     } catch (e) {
       lastFailure = '${clip.name}: $e';
-      _failed[clip] = DateTime.now();
+      _failed[clip] = now();
       return null;
     }
   }
@@ -412,35 +425,40 @@ class _EmberCompanionState extends State<EmberCompanion>
   @override
   void didUpdateWidget(EmberCompanion old) {
     super.didUpdateWidget(old);
-    var next = _target;
-    // A clip that failed recently is not faded to again on every rebuild;
-    // the companion keeps what it shows until the retry window passes.
-    if (next != _current && _lib.hasFailed(next)) next = _current;
-    if (next != _current && next == _previous && _fade < 0.5) {
+    _followTarget();
+    resumeFrames();
+  }
+
+  /// Moves towards the clip the state asks for. A clip that failed recently is
+  /// not faded to (the companion keeps what it shows); once its retry window
+  /// has passed, the next delivery calls this again and tries it.
+  void _followTarget() {
+    final next = _target;
+    if (next == _current || _lib.hasFailed(next)) return;
+    if (next == _previous && _fade < 0.5) {
       // Going back before the new clip took over: cancel, no fade.
       _current = next;
       _time = _prevTime;
       _previous = null;
       _fade = 1;
       _lib.pin(this, {_current});
-    } else if (next != _current) {
-      // Fade from what dominates the screen. If the clip that was fading in
-      // has not decoded yet, or is still less than half in, the clip that is
-      // mostly visible stays the outgoing one, so a quick run of changes never
-      // blanks the companion or drops a clip in one frame.
-      final currentShown = _lib.imageIfLoaded(_current) != null;
-      if (_previous == null || (currentShown && _fade >= 0.5)) {
-        _previous = _current;
-        _prevTime = _time;
-      }
-      _fadeLength = EmberClips.fadeBetween(_previous!, next);
-      _current = next;
-      _time = 0;
-      _fade = 0;
-      _lib.pin(this, {_previous!, next});
-      _request(next);
+      return;
     }
-    resumeFrames();
+    // Fade from what dominates the screen. If the clip that was fading in has
+    // not decoded yet, or is still less than half in, the clip that is mostly
+    // visible stays the outgoing one, so a quick run of changes never blanks
+    // the companion or drops a clip in one frame.
+    final currentShown = _lib.imageIfLoaded(_current) != null;
+    if (_previous == null || (currentShown && _fade >= 0.5)) {
+      _previous = _current;
+      _prevTime = _time;
+    }
+    _fadeLength = EmberClips.fadeBetween(_previous!, next);
+    _current = next;
+    _time = 0;
+    _fade = 0;
+    _lib.pin(this, {_previous!, next});
+    _request(next);
   }
 
   @override
@@ -460,11 +478,20 @@ class _EmberCompanionState extends State<EmberCompanion>
     if (_settling) return true;
     if (_frozen) return false;
     if (_lib.imageIfLoaded(_current) == null) {
-      // Still decoding: look again shortly (the load callback also wakes it,
-      // this only makes sure a missed callback cannot leave it blank). A clip
-      // that failed shows the fallback and gets no wakes at all.
-      if (!_lib.hasFailed(_current)) _wakeIn(0.05);
+      if (_lib.hasFailed(_current)) {
+        // Failed: the fallback shows; wake once when it may be retried.
+        _wakeIn(_lib.retryIn(_current).inMicroseconds / 1e6 + 0.01);
+      } else {
+        // Not loaded and not failed: make sure a load is running (a retry
+        // after the window, or a missed callback), then look again shortly.
+        if (!_lib.isLoading(_current)) _request(_current);
+        _wakeIn(0.05);
+      }
       return false;
+    }
+    if (_target != _current && _lib.hasFailed(_target)) {
+      // Showing a stand-in for a failed target: re-check when it may retry.
+      _wakeIn(_lib.retryIn(_target).inMicroseconds / 1e6 + 0.01);
     }
     // The approval pulse is a slow brightness wave: 30 updates a second are
     // indistinguishable from more.
@@ -478,7 +505,6 @@ class _EmberCompanionState extends State<EmberCompanion>
 
   /// Sleeps until the next sprite frame is due, then asks for frames again.
   void _scheduleNextSpriteFrame() {
-    if (_wake != null) return;
     final m = _lib.manifestIfLoaded;
     if (m == null) return;
     final speed = widget.look.motion <= 0 ? 1.0 : widget.look.motion;
@@ -493,18 +519,17 @@ class _EmberCompanionState extends State<EmberCompanion>
     _wakeIn(math.max(0.004, remaining + 0.008));
   }
 
-  DateTime? _wakeDue;
+  Duration? _wakeDue; // monotonic
 
   /// One pending wake at a time; a new, earlier reason replaces a later one
   /// (a 50 ms decode poll must not delay the next sprite frame or pulse step).
   void _wakeIn(double seconds) {
-    final due = DateTime.now().add(
-      Duration(microseconds: (seconds * 1e6).round()),
-    );
-    if (_wake != null && _wakeDue != null && !due.isBefore(_wakeDue!)) return;
+    final delay = Duration(microseconds: (seconds * 1e6).round());
+    final due = EmberLibrary._monotonic() + delay;
+    if (_wake != null && _wakeDue != null && due >= _wakeDue!) return;
     _wake?.cancel();
     _wakeDue = due;
-    _wake = Timer(Duration(microseconds: (seconds * 1e6).round()), () {
+    _wake = Timer(delay, () {
       _wake = null;
       _wakeDue = null;
       if (mounted) resumeFrames();
@@ -533,6 +558,10 @@ class _EmberCompanionState extends State<EmberCompanion>
     if (_settleFailure()) {
       setState(() {});
       return;
+    }
+    if (_target != _current && !_lib.hasFailed(_target)) {
+      // A target that was refused (failed) may be tried now.
+      setState(_followTarget);
     }
     final now = SchedulerBinding.instance.currentSystemFrameTimeStamp;
     final last = _lastStamp;
