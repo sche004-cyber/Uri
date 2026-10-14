@@ -29,9 +29,10 @@ URI_SYSTEM = (
     "say that you did. URI's controller performs actions separately, with the user's confirmation.\n"
     "If the user's message asks you to DO something that changes anything outside this conversation (remember or "
     "save information, send or reply to messages, create, edit, move or delete files, schedule, install, run or "
-    "fix code, change settings), reply with exactly " + ACTION_MARKER + " and nothing else. URI can do many of "
-    "these, so never refuse them yourself: \"remember that ...\", \"note down ...\" and \"tell X ...\" are such "
-    "requests.\n"
+    "fix code, change settings), reply with exactly " + ACTION_MARKER + " and nothing else. The controller "
+    "determines support and permission; the list above describes action requests, not implemented capabilities. "
+    "Route these requests to Core instead of refusing or promising execution yourself: \"remember that ...\", "
+    "\"note down ...\" and \"tell X ...\" are such requests.\n"
     "Otherwise answer directly and concisely. Write drafts, explanations, plans and analysis in the reply itself. "
     "If you are unsure or lack information, say so plainly instead of guessing.")
 
@@ -94,6 +95,9 @@ def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, cap
                    json.dumps(sorted(capability_ids), ensure_ascii=True) +
                    ". Core must validate, confirm and approve each action. Other integrations are unknown "
                    "in this reply channel; do not claim they work or are absent without evidence. "
+                   "Do not infer email, browser, file-management or application-control support from a harness "
+                   "capability ID. A development harness handles supported development tasks only when available "
+                   "and explicitly selected; it is not general computer-control authority. "
                    "Explain capabilities in user-facing terms, not internal IDs or the action marker protocol. "
                    "Describe confirmation and approval as the controller's user prompts.")
     if memory is not None:
