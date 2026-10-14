@@ -448,8 +448,12 @@ class _EmberCompanionState extends State<EmberCompanion>
       if (!_lib.hasFailed(_current)) _wakeIn(0.05);
       return false;
     }
-    // The approval pulse moves continuously.
-    if (_attention > 0.001) return true;
+    // The approval pulse is a slow brightness wave: 30 updates a second are
+    // indistinguishable from more.
+    if (_attention > 0.001) {
+      _wakeIn(1 / 30);
+      return false;
+    }
     _scheduleNextSpriteFrame();
     return false;
   }
@@ -462,11 +466,13 @@ class _EmberCompanionState extends State<EmberCompanion>
     final speed = widget.look.motion <= 0 ? 1.0 : widget.look.motion;
     // _time is already the companion's own (speed-scaled) time; the next
     // frame boundary is that far away in companion time, so divide by speed
-    // for wall time. Wake 1 ms after the boundary: an earlier wake can land on
-    // the vsync before it and cost a delivery that shows nothing new.
+    // for wall time. Wake one 144 Hz vsync (8 ms) after the boundary: the
+    // delivery is stamped with the vsync time, which can lag the timer, and a
+    // wake that lands just before the boundary costs a frame that shows
+    // nothing new (measured: about 2 deliveries per sprite frame with 1 ms).
     final perFrame = 1 / m.fps;
     final remaining = (perFrame - _time % perFrame) / speed;
-    _wakeIn(math.max(0.004, remaining + 0.001));
+    _wakeIn(math.max(0.004, remaining + 0.008));
   }
 
   void _wakeIn(double seconds) {

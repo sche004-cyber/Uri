@@ -69,7 +69,8 @@ in the settings preview". Neither was true; it is now removed from the app and d
 
 - Each clip is one WebP atlas. Only clips on screen are pinned; at most `capacity` (2) atlases stay decoded while
   Ember is shown, and every atlas is disposed when no Ember widget remains (switching to another companion frees them).
-- Between sprite frames Ember stops asking the frame clock for frames and a timer wakes it for the next one, so it
-  requests about 24 frames per second instead of one per vsync; fades and the approval pulse run at the clock rate.
+- Between sprite frames Ember stops asking the frame clock for frames and a timer wakes it for the next one; the
+  approval pulse updates 30 times a second; fades run at the clock rate. Measured (03_MEASUREMENTS.md M-3): 35-60
+  frames requested per second depending on the clip, against 145-160 for the shader companions.
 - The companion picker shows a 192 px still (`thumbnail.webp`, about 15 KB), never a decoded atlas.
 - Measured sizes and memory: see `03_MEASUREMENTS.md`.

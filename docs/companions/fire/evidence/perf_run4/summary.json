@@ -1,0 +1,22 @@
+{
+ "per_state_frames_per_s": {
+  "idle": 60.3,
+  "unavailable": 48.8,
+  "listening": 35.3,
+  "thinking": 36.8,
+  "speaking": 35.7,
+  "working": 36.2,
+  "awaitingApproval": 56.0,
+  "success": 59.5,
+  "error": 37.7
+ },
+ "total_per_s": 45.1,
+ "gpu3d_med": 0.23,
+ "gpu3d_max": 0.56,
+ "vram_med": 153.9,
+ "vram_max": 174.9,
+ "raster_p50": 0.683,
+ "raster_p99": 1.185,
+ "rss_max": 142.15625,
+ "brain": []
+}

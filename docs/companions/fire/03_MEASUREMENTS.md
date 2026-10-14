@@ -35,9 +35,28 @@ Worst resident case while Ember is on screen: the two most recent atlases plus a
 96 MiB (two 96-frame clips and one 48-frame clip), plus mipmaps if the backend builds them (not measured).
 After the R1-05 repair, all atlases are disposed when no Ember widget remains.
 
-## M-3 Pacing repair (to be measured)
+## M-3 Pacing repairs (runs 2 and 4)
 
-Status: NOT YET MEASURED. Will be re-run with the same harness after the review repairs.
+Same harness and window size. No Brain resident in either run.
+
+| | Run 1 (8a1438ec) | Run 2 (7d83947d, R1-07 sleep between frames) | Run 4 (R2 wake fix + 8 ms margin + 30 fps pulse) | Solar (run 2) |
+|---|---|---|---|---|
+| Frames requested / s, whole run | 156.1 | 56.5 | 45.1 | 145.7 |
+| Frames / s, idle | - | 59.7 | 60.3 | 145.2 |
+| Frames / s, listening / thinking / speaking / working / error | - | 35.8 / 38.8 / 35.7 / 39.3 / 37.5 | 35.3 / 36.8 / 35.7 / 36.2 / 37.7 | 145-160 |
+| Frames / s, awaiting approval (pulse) | - | 147.3 | 56.0 | 145.0 |
+| GPU 3D median / max (%) | 1.30 / 1.51 | 0.24 / 1.51 | 0.23 / 0.56 | 6.20 / 7.90 |
+| Dedicated VRAM median / max (MB) | 152.7 / 173.2 | 153.9 / 174.9 | 153.9 / 174.9 | 108.7 / 110.7 |
+| Raster p50 / p99 (ms) | 0.62 / 1.00 | 0.64 / 1.12 | 0.68 / 1.19 | 0.83 / 1.25 |
+
+Evidence: `evidence/perf_run2/`, `evidence/perf_run4/`.
+
+Reading: sleeping between sprite frames cut Ember's requested frames by about two thirds and its GPU time to about
+4 % of Solar's. The goal of one frame per sprite frame (24 / s) is NOT reached: 48-frame clips request about 36 / s and
+the idle and success clips about 60 / s. The cause of the remaining extra deliveries is not established (the
+harness uses Ember's own ticker, not the app's shared clock). This does not affect correctness; the cost is already
+far below every shader companion. An earlier version of `02_STATE_MATRIX.md` said "about 24 frames per second"
+before it was measured (review R2-04); it now gives these measured values.
 
 ## M-4 Brain coexistence (to be measured)
 
