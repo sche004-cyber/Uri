@@ -150,6 +150,7 @@ WS_EXACT = frozenset((
     "model_lab/lab/runtime.py",
     "model_lab/lab/vision.py",
     "scripts/oi_materialize_test_runtime.py",
+    "scripts/ws_materialized_verify.py",
     "scripts/run_uri_integrated_server.py",
     "scripts/run_uri_integrated_worker.py",
     "scripts/ti_live_matrix.py",
@@ -281,6 +282,10 @@ def phase1_scope_check(root, closure_zip, frozen_zip=FROZEN_PHASE1):
     frozen = zipfile.ZipFile(frozen_zip)
     frozen_names = set(frozen.namelist())
     outside, frozen_ok = [], 0
+    # Owner 2026-10-14: original checkpoint remains immutable. Only the two
+    # exact approved blobs can differ, after independent full-output proof.
+    from scripts.ws_materialized_verify import verified_transitions
+    authorized = verified_transitions(root)
     runner_ok = None
     for r in sorted(set(changed + new + modified)):
         if r in ("scripts/phase2d_regression.py", "scripts/phase2d_pytest.ini"):
@@ -297,6 +302,8 @@ def phase1_scope_check(root, closure_zip, frozen_zip=FROZEN_PHASE1):
                 outside.append(r)
             continue
         if r.startswith(PHASE2_SCOPE) or r in WS_EXACT:
+            continue
+        if r in authorized:
             continue
         if r in frozen_names and (root / r).is_file() and (root / r).read_bytes() == frozen.read(r):
             frozen_ok += 1
