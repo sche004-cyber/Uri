@@ -1,4 +1,7 @@
 """The existing paired Core owns free-text clarification and all later decisions."""
+import pytest
+
+from uri_operational_intelligence.worker_bridge import BridgeRefused
 from tests.oi.test_oi_orchestrator import FakeCore
 from tests.ws.test_ws_worker_bridge import DIGEST, SID, fake, make
 from tests.ws.test_ws_answer_context import ask
@@ -84,3 +87,37 @@ def test_dictation_never_becomes_a_clarification_answer(fake, tmp_path):
                                                    "language": "en", "uncertain": []}}})
     b.wait(10)
     assert len(core.calls) == 1 and len(b.pending) == 1
+
+
+def test_multiple_same_session_questions_refused_without_discarding_any(fake, tmp_path):
+    b, _, _, core = pending(fake, tmp_path)
+    b.pending['intervening'] = {'session_id': SID, 'text': 'another request',
+                               'env': {**QUESTION, 'turn_id': 'c-other'}}
+    before = b.pending.copy()
+    with pytest.raises(BridgeRefused, match='CLARIFICATION_STATE_AMBIGUOUS'):
+        ask(b, 'Friday')
+    assert b.pending == before and len(core.calls) == 1 and fake.requests == []
+
+
+def test_transport_failure_keeps_question_for_explicit_retry(fake, tmp_path):
+    b, frames, _, core = pending(fake, tmp_path)
+    before = b.pending.copy()
+    begin = core.begin
+    def failed(*args):
+        raise OSError('private server path')
+    core.begin = failed
+    ask(b, 'Friday')
+    assert b.pending == before
+    assert frames.data('error')[-1]['code'] == 'CORE_ERROR'
+    core.begin = begin
+    ask(b, 'the science lab is closed on Friday')
+    assert len(b.pending) == 1 and next(iter(b.pending.values()))['env'] == CONFIRM
+
+
+def test_supersession_only_retires_the_continued_question(fake, tmp_path):
+    b, _, _, _ = pending(fake, tmp_path)
+    other = {'session_id': 'd43ab28b-d2fc-42e1-b930-7f1be59344cf', 'text': 'other client question',
+             'env': {**QUESTION, 'turn_id': 'c-other'}}
+    b.pending['other'] = other
+    ask(b, 'the science lab is closed on Friday')
+    assert b.pending['other'] is other and len(b.pending) == 2

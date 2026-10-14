@@ -270,6 +270,10 @@ class IntegratedTurns:
                               and not p["env"].get("confirmation")
                               and p["env"].get("state") != "approval_required"}
         continue_core = bool(clarifications) and inp.mode != "dictation"
+        if continue_core and len(clarifications) != 1:
+            # No arbitrary selection or bulk retirement of independent cards. Keep all records and let the
+            # caller surface the ambiguous state; nothing reaches a model, Core continuation or decision.
+            raise BridgeRefused("CLARIFICATION_STATE_AMBIGUOUS")
 
         def ordinary(sink, request=None):
             words = request if request is not None else plain
