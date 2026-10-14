@@ -69,7 +69,7 @@ render quality) and show a 15 KB still in the picker; reduced effects -> classic
 Full `flutter test`: baseline `1b5423bc` 543/543 pass; candidate (run 1) 558/558 pass, one test renamed, 16 new
 (`evidence/tests/run1_test_compare.json`). Final full suite on the code of `d7093fbf`: 570/570 pass, one renamed,
 28 new (`evidence/tests/final_test_compare.json`); after the R3 repairs the four companion suites were re-run
-(141/141; log not kept - superseded by the R4 run, `evidence/tests/r4_companion_suites.log`, 143/143). Ember-specific: 26 test declarations in ember_companion_test.dart (the cadence test runs at three motion speeds)
+(141/141; log not kept - superseded by the R4 run, `evidence/tests/r4_companion_suites.log`, 143/143). Ember-specific: 26 test declarations, 28 executed tests in ember_companion_test.dart (the cadence test runs at three motion speeds)
 (mapping, assets, manifest validation, decode-wait fade, failed loads, shared library, VRAM release, cadence at three
 motion speeds, still mode) + 2 shell/settings tests.
 
