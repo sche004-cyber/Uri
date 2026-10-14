@@ -212,3 +212,25 @@ def test_source_outside_accepted_lineage_is_refused(tmp_path):
                    check=True)
     with pytest.raises(V.VerificationError, match="GIT_REFUSED|SOURCE_NOT_ACCEPTED_LINEAGE"):
         V.accepted_anchor(source)
+
+
+def test_materializer_always_reconciles_and_verifies_security_transitions():
+    """FCV-03: canonical's materializer restored pre-security server.py/fetch_url.py. The builder must apply the
+    authorized transition and refuse its own output unless full verification passes; neither call may be optional."""
+    import ast
+    tree_ = ast.parse((ROOT / "scripts/oi_materialize_test_runtime.py").read_text(encoding="utf-8"))
+    main = next(n for n in tree_.body if isinstance(n, ast.FunctionDef) and n.name == "main")
+    calls = [n for n in ast.walk(main) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+             and isinstance(n.func.value, ast.Name) and n.func.value.id == "V"]
+    names = [c.func.attr for c in calls]
+    assert names.count("source_authority") == 1 and names.count("reconcile") == 1 and names.count("verify") == 1
+    for c in calls:   # top-level statements of main(): not inside an if/try that could skip them
+        parent = next(s for s in main.body if any(x is c for x in ast.walk(s)))
+        assert not isinstance(parent, (ast.If, ast.Try, ast.For, ast.While)), c.func.attr
+    exits = [n for n in ast.walk(main) if isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "exit"
+             and n.args and isinstance(n.args[0], ast.BinOp)]
+    assert any("MATERIALIZED_OUTPUT_REFUSED" in ast.unparse(e) for e in exits)
+    assert V.BEFORE.keys() == M_APPROVED_KEYS
+
+
+M_APPROVED_KEYS = {"uri_core/app/server.py", "uri_core/tools/fetch_url.py"}
