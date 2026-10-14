@@ -9,7 +9,7 @@ Nothing is merged, pushed or deployed. **STOP: waiting for the owner's decision.
 | Item | State |
 |------|-------|
 | Researched | YES - `01_RESEARCH_AND_APPROACH.md` |
-| Planned | YES - `00_PLAN_AND_ACCEPTANCE_CRITERIA.md` (AC-1..AC-10, owner decisions OD-1..OD-4) |
+| Planned | YES - `00_PLAN_AND_ACCEPTANCE_CRITERIA.md` (AC-1..AC-10, owner decisions OD-1..OD-7) |
 | Implemented | YES - Blender source + 8 shipped clips + Flutter integration as an additional companion |
 | Tested (automated) | YES - see section 9 |
 | Live verified (Windows, real server + Brain) | PARTIAL - 7 of 10 journeys fully, 2 partial, 1 not available (section 10); automated input, not a human |
