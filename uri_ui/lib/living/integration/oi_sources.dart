@@ -73,6 +73,7 @@ class OiReadinessSource extends ReadinessSource {
 
   final OiConversation conversation;
   List<HarnessFact> _harnesses = const [];
+  bool _disposed = false;
 
   @override
   bool get isSimulated => false;
@@ -119,9 +120,13 @@ class OiReadinessSource extends ReadinessSource {
 
   @override
   Future<void> refresh() async {
+    if (_disposed) return;
+    final rt = conversation.runtime;
     await conversation.refreshStatus();
+    if (_disposed || !identical(rt, conversation.runtime)) return;
     try {
-      final v = await conversation.runtime.call({'command': 'harness_discover'});
+      final v = await rt.call({'command': 'harness_discover'});
+      if (_disposed || !identical(rt, conversation.runtime)) return;
       final list = v['harnesses'];
       _harnesses = [
         if (list is List)
@@ -141,11 +146,12 @@ class OiReadinessSource extends ReadinessSource {
     } catch (_) {
       // Discovery refused (e.g. while a turn runs): keep the previous facts.
     }
-    notifyListeners();
+    if (!_disposed && identical(rt, conversation.runtime)) notifyListeners();
   }
 
   @override
   void dispose() {
+    _disposed = true;
     conversation.removeListener(notifyListeners);
     super.dispose();
   }
