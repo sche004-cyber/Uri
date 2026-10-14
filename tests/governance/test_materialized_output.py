@@ -147,3 +147,21 @@ def test_authorized_transition_gate_requires_full_output_proof(output):
     (runtime / "worker.py").write_text("changed source\n")
     with pytest.raises(V.VerificationError, match="MATERIALIZED_GATE_REFUSED"):
         V.verified_transitions(runtime)
+
+
+def test_inherited_paths_pin_exact_accepted_bytes_even_without_receipt(tmp_path):
+    name = "uri_assist/onscreen.py"
+    p = tmp_path / name
+    p.parent.mkdir()
+    shutil.copy2(ROOT / name, p)
+    assert V.verified_transitions(tmp_path) == set()
+    p.write_text("altered inherited implementation\n")
+    with pytest.raises(V.VerificationError, match="INHERITED_SCOPE_BLOB_CHANGED"):
+        V.verified_transitions(tmp_path)
+
+
+def test_every_inherited_scope_pin_matches_immutable_accepted_git_blob():
+    assert len(V.INHERITED_SCOPE_BLOBS) == 81
+    for name, expected in V.INHERITED_SCOPE_BLOBS.items():
+        data = subprocess.check_output(["git", "-C", str(ROOT), "show", V.ACCEPTED_SOURCE + ":" + name])
+        assert V.digest(data) == expected
