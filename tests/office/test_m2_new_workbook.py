@@ -664,8 +664,10 @@ def test_brain_schema_limits_source_fields_to_real_sources(tmp_path, office):
     v = o.open_new([str(a)])
     as_reference(o, v)
     o.instruct(v["workbook_id"], {"text": "go"})
-    props = client.bodies[0]["response_format"]["json_schema"]["schema"]["properties"]["ops"]["items"]["properties"]
-    assert props["source"]["enum"] == ["S1", None] and props["from_sheet"]["enum"] == ["Data", None]
+    item = client.bodies[0]["response_format"]["json_schema"]["schema"]["properties"]["ops"]["items"]
+    for variant in item["anyOf"]:
+        props = variant["properties"]
+        assert props["source"]["enum"] == ["S1", None] and props["from_sheet"]["enum"] == ["Data", None]
     assert O.BRAIN_SCHEMA["properties"]["ops"]["items"]["properties"]["source"] == {"type": ["string", "null"]}
 
 
@@ -1172,7 +1174,8 @@ def test_r7_03_ops_reject_case_only_duplicate_add_sheet():
 def test_r7_01_new_workbook_prompt_and_schema_do_not_offer_rename():
     assert "rename_sheet" not in SYSTEM_NEW
     for sources in (None, []):
-        choices = schema_for("new", sources)["properties"]["ops"]["items"]["properties"]["op"]["enum"]
+        variants = schema_for("new", sources)["properties"]["ops"]["items"]["anyOf"]
+        choices = [op for variant in variants for op in variant["properties"]["op"]["enum"]]
         assert "rename_sheet" not in choices and "add_sheet" in choices
     google = schema_for("google", None)["properties"]["ops"]["items"]["properties"]["op"]["enum"]
     assert "rename_sheet" in google

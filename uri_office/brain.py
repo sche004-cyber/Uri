@@ -126,7 +126,7 @@ def schema_for(engine: str, source_view: list | None, task: str = "build") -> di
     if engine == "new":
         props["op"]["enum"].remove("rename_sheet")
     if source_view is None:
-        return sch
+        return _new_sheet_contract(sch) if engine == "new" else sch
     ids = [x["source"] for x in source_view or []]
     names = sorted({sh["name"] for x in source_view or [] for sh in x["sheets"]})
     props["source"] = {"type": ["string", "null"], "enum": ids + [None]}
@@ -137,7 +137,27 @@ def schema_for(engine: str, source_view: list | None, task: str = "build") -> di
             "type": "object", "additionalProperties": False, "required": ["sheet", "cell", "issue"],
             "properties": {"sheet": {"type": ["string", "null"]}, "cell": {"type": ["string", "null"]},
                            "issue": {"type": "string"}}}}
-    return sch
+    return _new_sheet_contract(sch) if engine == "new" else sch
+
+
+def _new_sheet_contract(schema: dict) -> dict:
+    """A nullable unused name must not permit add_sheet(name=null).
+
+    Use two closed alternatives: mixing object properties and anyOf at the
+    same level is unsupported by llama.cpp's schema-to-grammar converter.
+    Runtime validation remains authoritative, including duplicate-sheet checks.
+    """
+    item = schema["properties"]["ops"]["items"]
+    add = copy.deepcopy(item)
+    add["properties"]["op"] = {"type": "string", "enum": ["add_sheet"]}
+    add["properties"]["name"] = {
+        "type": "string", "minLength": 1, "maxLength": 31,
+        "pattern": r"^[^\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF\[\]:*?/\\]{1,31}$",
+    }
+    other = copy.deepcopy(item)
+    other["properties"]["op"]["enum"].remove("add_sheet")
+    schema["properties"]["ops"]["items"] = {"anyOf": [add, other]}
+    return schema
 
 
 def build_body(instruction: str, view: dict, history_rows: list, engine: str, source_view: list | None = None,
