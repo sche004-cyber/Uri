@@ -165,3 +165,50 @@ def test_every_inherited_scope_pin_matches_immutable_accepted_git_blob():
     for name, expected in V.INHERITED_SCOPE_BLOBS.items():
         data = subprocess.check_output(["git", "-C", str(ROOT), "show", V.ACCEPTED_SOURCE + ":" + name])
         assert V.digest(data) == expected
+
+
+def test_canonical_lineage_pins_exact_canonical_bytes():
+    """FCV-20261014: a canonical-descended candidate keeps canonical's exact inherited bytes."""
+    for name, expected in V.CANONICAL_SCOPE_BLOBS.items():
+        p = subprocess.run(["git", "-C", str(ROOT), "show", V.CANONICAL_SOURCE + ":" + name], capture_output=True)
+        assert (V.digest(p.stdout) if p.returncode == 0 else None) == expected
+    assert set(V.CANONICAL_SCOPE_BLOBS) <= set(V.INHERITED_SCOPE_BLOBS)
+    assert subprocess.run(["git", "-C", str(ROOT), "merge-base", "--is-ancestor", V.CANONICAL_SOURCE,
+                           V.ACCEPTED_SOURCE]).returncode == 0
+
+
+def test_canonical_lineage_refuses_other_inherited_bytes(tmp_path):
+    name = "uri_assist/onscreen.py"
+    p = tmp_path / name
+    p.parent.mkdir()
+    canonical = subprocess.check_output(["git", "-C", str(ROOT), "show", V.CANONICAL_SOURCE + ":" + name])
+    accepted = subprocess.check_output(["git", "-C", str(ROOT), "show", V.ACCEPTED_SOURCE + ":" + name])
+    p.write_bytes(canonical)
+    V.verify_inherited_scope(tmp_path, anchor=V.CANONICAL_SOURCE)
+    V.verify_inherited_scope(tmp_path)
+    with pytest.raises(V.VerificationError, match="INHERITED_SCOPE_BLOB_CHANGED"):
+        V.verify_inherited_scope(tmp_path, anchor=V.ACCEPTED_SOURCE)
+    p.write_bytes(accepted)
+    with pytest.raises(V.VerificationError, match="INHERITED_SCOPE_BLOB_CHANGED"):
+        V.verify_inherited_scope(tmp_path, anchor=V.CANONICAL_SOURCE)
+    p.write_text("altered inherited implementation\n")
+    with pytest.raises(V.VerificationError, match="INHERITED_SCOPE_BLOB_CHANGED"):
+        V.verify_inherited_scope(tmp_path)
+    absent_on_canonical = tmp_path / "tests/assist/test_subpixel_render.py"
+    absent_on_canonical.parent.mkdir(parents=True)
+    absent_on_canonical.write_bytes(subprocess.check_output(
+        ["git", "-C", str(ROOT), "show", V.ACCEPTED_SOURCE + ":tests/assist/test_subpixel_render.py"]))
+    with pytest.raises(V.VerificationError, match="INHERITED_SCOPE_BLOB_CHANGED"):
+        V.verify_inherited_scope(tmp_path, anchor=V.CANONICAL_SOURCE)
+
+
+def test_source_outside_accepted_lineage_is_refused(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    subprocess.run(["git", "-C", str(source), "init", "-q"], check=True)
+    (source / "x").write_text("x\n")
+    subprocess.run(["git", "-C", str(source), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(source), "-c", "user.name=F", "-c", "user.email=f@invalid", "commit", "-qm", "x"],
+                   check=True)
+    with pytest.raises(V.VerificationError, match="GIT_REFUSED|SOURCE_NOT_ACCEPTED_LINEAGE"):
+        V.accepted_anchor(source)

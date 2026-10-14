@@ -22,6 +22,15 @@ if str(SOURCE) not in sys.path:
 from scripts import ws_frozen_check as F
 
 ACCEPTED_SOURCE = "e0b5c298d046622d52550f1455ab649070165602"
+# Published canonical integration. A candidate that descends from canonical but not from the accepted
+# Assist/Office line (FCV-20261014 recovery) is verified against canonical's own accepted bytes.
+CANONICAL_SOURCE = "1b5423bc15fd7e5da9161c862cf839925da9f2eb"
+# Only these inherited paths differ between canonical and ACCEPTED_SOURCE (Assist repair). On the
+# canonical lineage they must hold canonical's exact bytes; None means the path is absent there.
+CANONICAL_SCOPE_BLOBS = {
+    "uri_assist/onscreen.py": "55d7e674e1f16bed2a8050bff15e81626db56ca1a9f70783f7ca03176a6dca17",
+    "tests/assist/test_subpixel_render.py": None,
+}
 PATCH_PATH = "docs/governance/windows_restoration/EXACT_RUNTIME_SECURITY_TRANSITIONS.patch"
 AUTHORITY_PATH = "docs/governance/windows_restoration/OWNER_RUNTIME_AUTHORIZATION.json"
 PATCH_SHA256 = "ba9249dad002e62c6cf1698284e8a2ada325d0afa1444579a371af7fa9caea02"
@@ -171,7 +180,7 @@ def source_authority(source):
     source = Path(source).absolute()
     if Path(git(source, "rev-parse", "--show-toplevel").decode().strip()).resolve() != source.resolve():
         raise VerificationError("SOURCE_ROOT")
-    git(source, "merge-base", "--is-ancestor", ACCEPTED_SOURCE, "HEAD")
+    anchor = accepted_anchor(source)
     if git(source, "diff", "--name-only") or git(source, "diff", "--cached", "--name-only"):
         raise VerificationError("SOURCE_DIRTY")
     frozen = F.check(source)
@@ -195,15 +204,37 @@ def source_authority(source):
         "scope": "Fresh isolated historical runtime only; no other protected change, GPU override or cutover",
     }:
         raise VerificationError("OWNER_AUTHORITY_CHANGED")
-    verify_inherited_scope(source, require_all=True)
+    verify_inherited_scope(source, require_all=True, anchor=anchor)
     return files, frozen
 
 
-def verify_inherited_scope(root, *, require_all=False):
-    """Path recognition never authorizes a change to these inherited bytes."""
+def accepted_anchor(source):
+    """The accepted line the source descends from; anything else is refused."""
+    for anchor in (ACCEPTED_SOURCE, CANONICAL_SOURCE):
+        p = subprocess.run(["git", "-C", str(source), "merge-base", "--is-ancestor", anchor, "HEAD"],
+                           capture_output=True)
+        if p.returncode == 0:
+            return anchor
+        if p.returncode != 1:
+            raise VerificationError("GIT_REFUSED:merge-base --is-ancestor")
+    raise VerificationError("SOURCE_NOT_ACCEPTED_LINEAGE")
+
+
+def verify_inherited_scope(root, *, require_all=False, anchor=None):
+    """Path recognition never authorizes a change to these inherited bytes.
+
+    With no known anchor (an output gate without a source), the exact bytes of either accepted line
+    are recognized; full output verification still compares every file with its own source.
+    """
     for name, expected in INHERITED_SCOPE_BLOBS.items():
-        if require_all or (Path(root) / name).exists():
-            if digest(raw(root, name)) != expected:
+        allowed = {expected}
+        if name in CANONICAL_SCOPE_BLOBS and anchor != ACCEPTED_SOURCE:
+            allowed = {CANONICAL_SCOPE_BLOBS[name]} if anchor == CANONICAL_SOURCE else allowed | {CANONICAL_SCOPE_BLOBS[name]}
+        present = (Path(root) / name).exists()
+        if not present and None in allowed and require_all:
+            continue
+        if require_all or present:
+            if digest(raw(root, name)) not in allowed:
                 raise VerificationError("INHERITED_SCOPE_BLOB_CHANGED:" + name)
 
 
@@ -213,7 +244,7 @@ def expected_files(source, *, exclude_tests=False):
     files, _ = source_authority(source)
     expected = tree(source, M.BASE)
     overlay_data = raw(source, M.OVERLAY_LIST)
-    if overlay_data != git(source, "show", ACCEPTED_SOURCE + ":" + M.OVERLAY_LIST):
+    if overlay_data != git(source, "show", accepted_anchor(source) + ":" + M.OVERLAY_LIST):
         raise VerificationError("OVERLAY_LIST_CHANGED")
     overlay = tree(source, M.OVERLAY_COMMIT)
     for path in overlay_data.decode().splitlines():
