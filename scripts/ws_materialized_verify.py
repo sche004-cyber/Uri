@@ -343,8 +343,9 @@ def verify(source, runtime):
         for path in BEFORE:
             if digest(raw(runtime, path)) != F.APPROVED[path]["sha256"]:
                 raise VerificationError("APPROVED_BLOB_CHANGED:" + path)
-        for path, sha in F.PROVENANCE.items():
-            if digest(raw(runtime, path)) != sha:
+        # Provenance of the two runtime transitions (the runtime carries exactly these records).
+        for path in sorted({w for p in BEFORE for w in F.APPROVED[p]["provenance"]}):
+            if digest(raw(runtime, path)) != F.PROVENANCE[path]:
                 raise VerificationError("PROVENANCE_CHANGED:" + path)
         result.update(ok=True, source_head=head, source_tree=source_tree, historical_head=M.BASE,
                       checked_files=len(expected), checkpoint_sha256=F.ZIP_SHA,
