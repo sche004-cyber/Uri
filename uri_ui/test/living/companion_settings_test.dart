@@ -839,6 +839,27 @@ void main() {
       expect(find.text('Energy ribbons'), findsOneWidget);
     });
 
+    testWidgets('the Ember tile shows its still frame; its look omits baked controls', (
+      tester,
+    ) async {
+      final services = await pumpShell(tester);
+      await openSettings(tester, services);
+      final card = find.byKey(const ValueKey('companion-choice-ember'));
+      await scrollTo(tester, card);
+      // The tile is a shipped still image, never a shader frame.
+      expect(find.byKey(const ValueKey('companion-still-ember')), findsOneWidget);
+      expect(CompanionShaderCache.failureFor(CompanionIdentity.ember), isNull);
+      await tester.tap(card);
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(services.companionPrefs.choice.identity, CompanionIdentity.ember);
+      expect(find.text('APPEARANCE · EMBER'), findsOneWidget);
+      expect(find.byKey(const ValueKey('look-particles')), findsNothing);
+      expect(find.byKey(const ValueKey('look-atmosphere')), findsNothing);
+      expect(find.byKey(const ValueKey('quality-unavailable')), findsOneWidget);
+    });
+
     testWidgets('appearance sliders change only the selected companion', (
       tester,
     ) async {

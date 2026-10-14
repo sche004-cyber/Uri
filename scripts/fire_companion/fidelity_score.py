@@ -265,16 +265,29 @@ def colour_similarity(lab_a, mask_a, lab_b, mask_b) -> float:
     return float(max(0.0, 1 - d * 2.5))
 
 
-def eye_blobs(lab: np.ndarray, fg: np.ndarray) -> list[tuple[float, float, float]]:
-    """The two largest very dark compact blobs in the upper 70% of the
-    character's box: (cx, cy, area) normalised to the image."""
+def eye_blobs(lab: np.ndarray, fg: np.ndarray, bg_l: float) -> list[tuple[float, float, float]]:
+    """The two largest compact blobs that are clearly darker than the backdrop
+    and lie inside the character, in the upper 70% of its box:
+    (cx, cy, area) normalised to the image.
+
+    Correction 2026-10-15 (review R1-04): the first version used an absolute
+    L* < 22 threshold, which the painted backdrop (L* 21-25) also passes, so it
+    measured background regions. Eyes must now be inside the character mask
+    and at least 12 L* darker than the backdrop."""
     h, w = fg.shape
     ys, xs = np.nonzero(fg)
     if len(ys) == 0:
         return []
-    y0, y1 = ys.min(), ys.max()
+    y0, y1 = np.percentile(ys, 2), np.percentile(ys, 98)
     limit = y0 + 0.7 * (y1 - y0)
-    dark = (lab[..., 0] < 22) & (np.arange(h)[:, None] < limit)
+    # The eyes sit inside the head, so fill the mask's holes along rows:
+    # a pixel between the leftmost and rightmost character pixel counts.
+    inside = np.zeros_like(fg)
+    for r in range(h):
+        cols = np.nonzero(fg[r])[0]
+        if len(cols):
+            inside[r, cols.min() : cols.max() + 1] = True
+    dark = inside & (lab[..., 0] < bg_l - 12) & (np.arange(h)[:, None] < limit)
     # Connected components (4-neighbour flood fill; images are small).
     seen = np.zeros_like(dark)
     blobs = []
@@ -305,8 +318,8 @@ def eye_blobs(lab: np.ndarray, fg: np.ndarray) -> list[tuple[float, float, float
     return blobs[:2]
 
 
-def eye_similarity(lab_a, fg_a, lab_b, fg_b) -> float:
-    ea, eb = eye_blobs(lab_a, fg_a), eye_blobs(lab_b, fg_b)
+def eye_similarity(lab_a, fg_a, bg_a, lab_b, fg_b, bg_b) -> float:
+    ea, eb = eye_blobs(lab_a, fg_a, bg_a), eye_blobs(lab_b, fg_b, bg_b)
     if len(ea) < 2 and len(eb) < 2:
         return 1.0  # neither shows open dark eyes (e.g. joyful smiles)
     if len(ea) < 2 or len(eb) < 2:
@@ -341,7 +354,7 @@ def raw_components(ref: Image.Image, cand: Image.Image) -> dict[str, float]:
         "structure": ssim(sa, sb),
         "flow": flow_similarity(la[..., 0], lb[..., 0]),
         "colour": colour_similarity(la, ma, lb, mb),
-        "eyes": eye_similarity(la, ma, lb, mb),
+        "eyes": eye_similarity(la, ma, float(bga[0]), lb, mb, float(bgb[0])),
     }
 
 
@@ -398,13 +411,18 @@ def generic_fire_spirit(ref: Image.Image) -> Image.Image:
 
 def score(state: str, candidate: Path | None = None, extra: dict[str, Path] | None = None) -> dict:
     ref = load_panel(state)
-    hi = combine(raw_components(ref, degraded_copy(ref)))
-    lo = combine(raw_components(ref, generic_fire_spirit(ref)))
+    # Both anchors go through the same registration as a candidate
+    # (correction 2026-10-15, review R1-04), so none gets an advantage.
+    hi = combine(raw_components(ref, register(degraded_copy(ref), ref)))
+    lo = combine(raw_components(ref, register(generic_fire_spirit(ref), ref)))
 
-    def calibrate(raw: float) -> float:
+    def unclamped(raw: float) -> float:
         if hi - lo < 1e-6:
             return 0.0
-        return float(np.clip((raw - lo) / (hi - lo) * 100, 0, 100))
+        return float((raw - lo) / (hi - lo) * 100)
+
+    def calibrate(raw: float) -> float:
+        return float(np.clip(unclamped(raw), 0, 100))
 
     out: dict = {
         "state": state,
@@ -424,6 +442,8 @@ def score(state: str, candidate: Path | None = None, extra: dict[str, Path] | No
             "components": comps,
             "raw": raw,
             "calibrated": calibrate(raw),
+            # Below 0 means less like the panel than the generic anchor.
+            "calibrated_unclamped": unclamped(raw),
         }
     return out
 

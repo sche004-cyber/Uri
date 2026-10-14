@@ -346,6 +346,11 @@ class CompanionShaderCache {
       _loading[id] ??= _doLoad(id);
 
   static Future<ui.FragmentProgram?> _doLoad(CompanionIdentity id) async {
+    if (!id.usesShader) {
+      // Ember plays rendered clips; there is no program to load.
+      _failures[id] = 'not a shader identity';
+      return null;
+    }
     try {
       final program = await ui.FragmentProgram.fromAsset(id.shaderAsset);
       _programs[id] = program;

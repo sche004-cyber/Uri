@@ -43,6 +43,35 @@ def note(event, **kw):
     (OUT / "runner-log.json").write_text(json.dumps(log, indent=1))
 
 
+STOP_FILE = RT / "work/oi/state/runtime_v1.stop"
+
+
+def stop_brain_hosts(reason, wait_s=150):
+    """Graceful stop through the host's own stop file, so it stops the server
+    and releases the GPU lease itself; kill only what is left after wait_s."""
+    hosts = brain_hosts()
+    if not hosts:
+        return []
+    STOP_FILE.parent.mkdir(parents=True, exist_ok=True)
+    STOP_FILE.write_text(json.dumps({"by": "run_fire_live", "reason": reason}))
+    end = time.monotonic() + wait_s
+    while time.monotonic() < end and any(h.is_running() for h in hosts):
+        time.sleep(2)
+    killed = []
+    for h in hosts:
+        try:
+            if h.is_running():
+                for c in h.children(recursive=True):
+                    c.kill()
+                h.kill()
+                killed.append(h.pid)
+        except psutil.NoSuchProcess:
+            pass
+    STOP_FILE.unlink(missing_ok=True)
+    note("brain host stop", reason=reason, pids=[h.pid for h in hosts], killed_after_wait=killed)
+    return hosts
+
+
 def brain_hosts():
     out = []
     for p in psutil.process_iter(["pid", "cmdline"]):
@@ -86,22 +115,21 @@ try:
             note("launcher", rc=r.returncode, out=r.stdout[-1500:], err=r.stderr[-800:])
             started_brain = True
         if started_brain and not stopped and (OUT / "stop-brain.json").exists():
-            hosts = brain_hosts()
-            for h in hosts:
-                for c in h.children(recursive=True):
-                    c.kill()
-                h.kill()
-            note("brain host stopped (recoverable-error journey)", pids=[h.pid for h in hosts])
+            stop_brain_hosts("recoverable-error journey")
             stopped = True
         if stopped and not restarted and (OUT / "restart-brain.json").exists():
+            STOP_FILE.unlink(missing_ok=True)
             r = subprocess.run(launcher, capture_output=True, text=True, timeout=600)
             note("brain host restarted", rc=r.returncode, out=r.stdout[-800:])
             restarted = True
-        uis = [str(p.pid) for p in psutil.process_iter(["name", "exe"]) if (p.info["name"] or "").lower() == "uri_ui.exe"
-               and str(UI).lower() in (p.info["exe"] or "").lower()]
-        llama = [str(p.pid) for p in psutil.process_iter(["name"]) if (p.info["name"] or "").lower() == "llama-server.exe"]
-        g = gpu_sample(set(uis + llama))
-        rss = {pid: round(psutil.Process(int(pid)).memory_info().rss / 1048576, 1) for pid in uis if psutil.pid_exists(int(pid))}
+        try:
+            uis = [str(p.pid) for p in psutil.process_iter(["name", "exe"]) if (p.info["name"] or "").lower() == "uri_ui.exe"
+                   and str(UI).lower() in (p.info["exe"] or "").lower()]
+            llama = [str(p.pid) for p in psutil.process_iter(["name"]) if (p.info["name"] or "").lower() == "llama-server.exe"]
+            g = gpu_sample(set(uis + llama))
+            rss = {pid: round(psutil.Process(int(pid)).memory_info().rss / 1048576, 1) for pid in uis}
+        except (psutil.NoSuchProcess, psutil.AccessDenied, subprocess.TimeoutExpired):
+            continue
         bh = RT / "work/c1/ws-fire/client/control/oi/brain_host.json"
         state = json.loads(bh.read_text()).get("state") if bh.exists() else None
         samples.append(dict(t=round(time.monotonic() - t0, 1), ui=uis, llama=llama, gpu=g, ui_rss_mb=rss, brain_state=state))
@@ -110,8 +138,20 @@ try:
             note("runner timeout")
             proc.kill()
 finally:
+    if proc.poll() is None:
+        proc.kill()
     flog.close()
     note("flutter test finished", rc=proc.returncode)
+    # Leave nothing running that this run started: the Brain host (graceful,
+    # lease released) and any test window of this UI tree.
+    stop_brain_hosts("end of run")
+    for p in psutil.process_iter(["name", "exe"]):
+        try:
+            if (p.info["name"] or "").lower() == "uri_ui.exe" and str(UI).lower() in (p.info["exe"] or "").lower():
+                p.kill()
+                note("orphan test window closed", pid=p.pid)
+        except psutil.NoSuchProcess:
+            pass
     for f in ("brain_host.json",):
         p = RT / "work/c1/ws-fire/client/control/oi" / f
         if p.exists():

@@ -1,0 +1,597 @@
+{
+ "identity": "solar",
+ "per_state": {
+  "unavailable": {
+   "frames": 532,
+   "p50_ms": 0.956,
+   "p90_ms": 1.218,
+   "max_ms": 15.575
+  },
+  "idle": {
+   "frames": 946,
+   "p50_ms": 0.903,
+   "p90_ms": 1.106,
+   "max_ms": 1.714
+  },
+  "listening": {
+   "frames": 877,
+   "p50_ms": 0.871,
+   "p90_ms": 1.06,
+   "max_ms": 1.553
+  },
+  "thinking": {
+   "frames": 872,
+   "p50_ms": 0.84,
+   "p90_ms": 0.996,
+   "max_ms": 1.472
+  },
+  "speaking": {
+   "frames": 972,
+   "p50_ms": 0.804,
+   "p90_ms": 1.022,
+   "max_ms": 1.433
+  },
+  "working": {
+   "frames": 964,
+   "p50_ms": 0.807,
+   "p90_ms": 1.052,
+   "max_ms": 1.536
+  },
+  "awaitingApproval": {
+   "frames": 871,
+   "p50_ms": 0.821,
+   "p90_ms": 1.069,
+   "max_ms": 1.403
+  },
+  "success": {
+   "frames": 885,
+   "p50_ms": 0.751,
+   "p90_ms": 0.881,
+   "max_ms": 1.26
+  },
+  "error": {
+   "frames": 945,
+   "p50_ms": 0.78,
+   "p90_ms": 0.954,
+   "max_ms": 1.487
+  }
+ },
+ "rss": [
+  {
+   "t": 0.501,
+   "state": "unavailable",
+   "rss_mb": 149.35546875
+  },
+  {
+   "t": 1.002,
+   "state": "unavailable",
+   "rss_mb": 150.84375
+  },
+  {
+   "t": 1.504,
+   "state": "unavailable",
+   "rss_mb": 151.01953125
+  },
+  {
+   "t": 2.005,
+   "state": "unavailable",
+   "rss_mb": 151.265625
+  },
+  {
+   "t": 3.144,
+   "state": "unavailable",
+   "rss_mb": 103.453125
+  },
+  {
+   "t": 3.647,
+   "state": "unavailable",
+   "rss_mb": 103.5859375
+  },
+  {
+   "t": 4.149,
+   "state": "unavailable",
+   "rss_mb": 103.4140625
+  },
+  {
+   "t": 4.651,
+   "state": "unavailable",
+   "rss_mb": 103.2265625
+  },
+  {
+   "t": 5.153,
+   "state": "unavailable",
+   "rss_mb": 103.12109375
+  },
+  {
+   "t": 5.655,
+   "state": "unavailable",
+   "rss_mb": 102.87109375
+  },
+  {
+   "t": 6.156,
+   "state": "unavailable",
+   "rss_mb": 102.6484375
+  },
+  {
+   "t": 6.658,
+   "state": "idle",
+   "rss_mb": 103.9375
+  },
+  {
+   "t": 7.16,
+   "state": "idle",
+   "rss_mb": 103.6875
+  },
+  {
+   "t": 7.66,
+   "state": "idle",
+   "rss_mb": 103.75
+  },
+  {
+   "t": 8.162,
+   "state": "idle",
+   "rss_mb": 103.9375
+  },
+  {
+   "t": 8.714,
+   "state": "idle",
+   "rss_mb": 104.3203125
+  },
+  {
+   "t": 9.215,
+   "state": "idle",
+   "rss_mb": 104.51171875
+  },
+  {
+   "t": 9.716,
+   "state": "idle",
+   "rss_mb": 104.32421875
+  },
+  {
+   "t": 10.218,
+   "state": "idle",
+   "rss_mb": 104.07421875
+  },
+  {
+   "t": 10.719,
+   "state": "idle",
+   "rss_mb": 103.88671875
+  },
+  {
+   "t": 11.221,
+   "state": "idle",
+   "rss_mb": 103.63671875
+  },
+  {
+   "t": 11.722,
+   "state": "idle",
+   "rss_mb": 103.38671875
+  },
+  {
+   "t": 12.224,
+   "state": "idle",
+   "rss_mb": 104.7109375
+  },
+  {
+   "t": 12.726,
+   "state": "listening",
+   "rss_mb": 104.44921875
+  },
+  {
+   "t": 13.227,
+   "state": "listening",
+   "rss_mb": 104.265625
+  },
+  {
+   "t": 13.729,
+   "state": "listening",
+   "rss_mb": 104.015625
+  },
+  {
+   "t": 14.231,
+   "state": "listening",
+   "rss_mb": 103.51953125
+  },
+  {
+   "t": 14.787,
+   "state": "listening",
+   "rss_mb": 103.5078125
+  },
+  {
+   "t": 15.288,
+   "state": "listening",
+   "rss_mb": 103.2578125
+  },
+  {
+   "t": 15.79,
+   "state": "listening",
+   "rss_mb": 104.58203125
+  },
+  {
+   "t": 16.291,
+   "state": "listening",
+   "rss_mb": 104.33203125
+  },
+  {
+   "t": 16.792,
+   "state": "listening",
+   "rss_mb": 104.12109375
+  },
+  {
+   "t": 17.294,
+   "state": "listening",
+   "rss_mb": 103.87109375
+  },
+  {
+   "t": 17.796,
+   "state": "listening",
+   "rss_mb": 103.6328125
+  },
+  {
+   "t": 18.298,
+   "state": "listening",
+   "rss_mb": 103.39453125
+  },
+  {
+   "t": 18.799,
+   "state": "thinking",
+   "rss_mb": 104.70703125
+  },
+  {
+   "t": 19.3,
+   "state": "thinking",
+   "rss_mb": 104.5078125
+  },
+  {
+   "t": 19.802,
+   "state": "thinking",
+   "rss_mb": 104.2578125
+  },
+  {
+   "t": 20.303,
+   "state": "thinking",
+   "rss_mb": 103.9453125
+  },
+  {
+   "t": 20.857,
+   "state": "thinking",
+   "rss_mb": 104.0703125
+  },
+  {
+   "t": 21.359,
+   "state": "thinking",
+   "rss_mb": 103.88671875
+  },
+  {
+   "t": 21.861,
+   "state": "thinking",
+   "rss_mb": 105.19921875
+  },
+  {
+   "t": 22.363,
+   "state": "thinking",
+   "rss_mb": 104.94921875
+  },
+  {
+   "t": 22.865,
+   "state": "thinking",
+   "rss_mb": 104.76171875
+  },
+  {
+   "t": 23.367,
+   "state": "thinking",
+   "rss_mb": 104.51171875
+  },
+  {
+   "t": 23.868,
+   "state": "thinking",
+   "rss_mb": 104.25
+  },
+  {
+   "t": 24.369,
+   "state": "thinking",
+   "rss_mb": 103.94921875
+  },
+  {
+   "t": 24.87,
+   "state": "speaking",
+   "rss_mb": 105.32421875
+  },
+  {
+   "t": 25.372,
+   "state": "speaking",
+   "rss_mb": 104.99609375
+  },
+  {
+   "t": 25.874,
+   "state": "speaking",
+   "rss_mb": 104.81640625
+  },
+  {
+   "t": 26.375,
+   "state": "speaking",
+   "rss_mb": 105.06640625
+  },
+  {
+   "t": 26.923,
+   "state": "speaking",
+   "rss_mb": 105.32421875
+  },
+  {
+   "t": 27.425,
+   "state": "speaking",
+   "rss_mb": 105.51171875
+  },
+  {
+   "t": 27.926,
+   "state": "speaking",
+   "rss_mb": 105.38671875
+  },
+  {
+   "t": 28.429,
+   "state": "speaking",
+   "rss_mb": 105.1171875
+  },
+  {
+   "t": 28.93,
+   "state": "speaking",
+   "rss_mb": 104.953125
+  },
+  {
+   "t": 29.433,
+   "state": "speaking",
+   "rss_mb": 104.77734375
+  },
+  {
+   "t": 29.934,
+   "state": "speaking",
+   "rss_mb": 104.6640625
+  },
+  {
+   "t": 30.435,
+   "state": "speaking",
+   "rss_mb": 104.62890625
+  },
+  {
+   "t": 30.937,
+   "state": "working",
+   "rss_mb": 104.37890625
+  },
+  {
+   "t": 31.438,
+   "state": "working",
+   "rss_mb": 105.78125
+  },
+  {
+   "t": 31.939,
+   "state": "working",
+   "rss_mb": 105.640625
+  },
+  {
+   "t": 32.441,
+   "state": "working",
+   "rss_mb": 105.453125
+  },
+  {
+   "t": 32.995,
+   "state": "working",
+   "rss_mb": 105.5390625
+  },
+  {
+   "t": 33.497,
+   "state": "working",
+   "rss_mb": 105.3515625
+  },
+  {
+   "t": 33.999,
+   "state": "working",
+   "rss_mb": 105.5390625
+  },
+  {
+   "t": 34.5,
+   "state": "working",
+   "rss_mb": 105.4453125
+  },
+  {
+   "t": 35.002,
+   "state": "working",
+   "rss_mb": 105.6015625
+  },
+  {
+   "t": 35.503,
+   "state": "working",
+   "rss_mb": 105.5390625
+  },
+  {
+   "t": 36.004,
+   "state": "working",
+   "rss_mb": 105.34765625
+  },
+  {
+   "t": 36.505,
+   "state": "working",
+   "rss_mb": 105.03125
+  },
+  {
+   "t": 37.007,
+   "state": "awaitingApproval",
+   "rss_mb": 104.7890625
+  },
+  {
+   "t": 37.509,
+   "state": "awaitingApproval",
+   "rss_mb": 104.51171875
+  },
+  {
+   "t": 38.01,
+   "state": "awaitingApproval",
+   "rss_mb": 105.83984375
+  },
+  {
+   "t": 38.512,
+   "state": "awaitingApproval",
+   "rss_mb": 105.6015625
+  },
+  {
+   "t": 39.066,
+   "state": "awaitingApproval",
+   "rss_mb": 105.56640625
+  },
+  {
+   "t": 39.568,
+   "state": "awaitingApproval",
+   "rss_mb": 105.32421875
+  },
+  {
+   "t": 40.069,
+   "state": "awaitingApproval",
+   "rss_mb": 105.07421875
+  },
+  {
+   "t": 40.57,
+   "state": "awaitingApproval",
+   "rss_mb": 104.8359375
+  },
+  {
+   "t": 41.072,
+   "state": "awaitingApproval",
+   "rss_mb": 106.11328125
+  },
+  {
+   "t": 41.574,
+   "state": "awaitingApproval",
+   "rss_mb": 105.96875
+  },
+  {
+   "t": 42.076,
+   "state": "awaitingApproval",
+   "rss_mb": 105.71875
+  },
+  {
+   "t": 42.577,
+   "state": "awaitingApproval",
+   "rss_mb": 105.46875
+  },
+  {
+   "t": 43.079,
+   "state": "success",
+   "rss_mb": 105.21875
+  },
+  {
+   "t": 43.581,
+   "state": "success",
+   "rss_mb": 104.96875
+  },
+  {
+   "t": 44.082,
+   "state": "success",
+   "rss_mb": 106.34375
+  },
+  {
+   "t": 44.584,
+   "state": "success",
+   "rss_mb": 106.15625
+  },
+  {
+   "t": 45.135,
+   "state": "success",
+   "rss_mb": 106.296875
+  },
+  {
+   "t": 45.637,
+   "state": "success",
+   "rss_mb": 106.046875
+  },
+  {
+   "t": 46.138,
+   "state": "success",
+   "rss_mb": 105.796875
+  },
+  {
+   "t": 46.64,
+   "state": "success",
+   "rss_mb": 105.5625
+  },
+  {
+   "t": 47.142,
+   "state": "success",
+   "rss_mb": 105.28125
+  },
+  {
+   "t": 47.644,
+   "state": "success",
+   "rss_mb": 106.625
+  },
+  {
+   "t": 48.145,
+   "state": "success",
+   "rss_mb": 106.375
+  },
+  {
+   "t": 48.646,
+   "state": "success",
+   "rss_mb": 106.125
+  },
+  {
+   "t": 49.148,
+   "state": "error",
+   "rss_mb": 105.84375
+  },
+  {
+   "t": 49.65,
+   "state": "error",
+   "rss_mb": 105.61328125
+  },
+  {
+   "t": 50.152,
+   "state": "error",
+   "rss_mb": 106.92578125
+  },
+  {
+   "t": 50.653,
+   "state": "error",
+   "rss_mb": 106.73828125
+  },
+  {
+   "t": 51.205,
+   "state": "error",
+   "rss_mb": 106.61328125
+  },
+  {
+   "t": 51.706,
+   "state": "error",
+   "rss_mb": 106.36328125
+  },
+  {
+   "t": 52.208,
+   "state": "error",
+   "rss_mb": 106.11328125
+  },
+  {
+   "t": 52.709,
+   "state": "error",
+   "rss_mb": 105.80078125
+  },
+  {
+   "t": 53.211,
+   "state": "error",
+   "rss_mb": 105.55078125
+  },
+  {
+   "t": 53.712,
+   "state": "error",
+   "rss_mb": 106.86328125
+  },
+  {
+   "t": 54.213,
+   "state": "error",
+   "rss_mb": 106.67578125
+  },
+  {
+   "t": 54.715,
+   "state": "error",
+   "rss_mb": 106.42578125
+  }
+ ],
+ "ember_resident_bytes": 0
+}

@@ -1,0 +1,602 @@
+{
+ "identity": "ember",
+ "per_state": {
+  "idle": {
+   "frames": 1325,
+   "p50_ms": 0.602,
+   "p90_ms": 0.774,
+   "max_ms": 5.211
+  },
+  "unavailable": {
+   "frames": 875,
+   "p50_ms": 0.629,
+   "p90_ms": 0.785,
+   "max_ms": 4.232
+  },
+  "listening": {
+   "frames": 878,
+   "p50_ms": 0.61,
+   "p90_ms": 0.768,
+   "max_ms": 1.332
+  },
+  "thinking": {
+   "frames": 876,
+   "p50_ms": 0.641,
+   "p90_ms": 0.822,
+   "max_ms": 6.021
+  },
+  "speaking": {
+   "frames": 878,
+   "p50_ms": 0.638,
+   "p90_ms": 0.82,
+   "max_ms": 4.458
+  },
+  "working": {
+   "frames": 880,
+   "p50_ms": 0.64,
+   "p90_ms": 0.828,
+   "max_ms": 3.217
+  },
+  "awaitingApproval": {
+   "frames": 880,
+   "p50_ms": 0.626,
+   "p90_ms": 0.79,
+   "max_ms": 4.051
+  },
+  "success": {
+   "frames": 883,
+   "p50_ms": 0.614,
+   "p90_ms": 0.802,
+   "max_ms": 2.669
+  },
+  "error": {
+   "frames": 953,
+   "p50_ms": 0.595,
+   "p90_ms": 0.757,
+   "max_ms": 1.231
+  }
+ },
+ "rss": [
+  {
+   "t": 0.501,
+   "state": "unavailable",
+   "rss_mb": 138.70703125
+  },
+  {
+   "t": 1.002,
+   "state": "unavailable",
+   "rss_mb": 138.56640625
+  },
+  {
+   "t": 1.503,
+   "state": "unavailable",
+   "rss_mb": 139.44140625
+  },
+  {
+   "t": 2.004,
+   "state": "unavailable",
+   "rss_mb": 138.62890625
+  },
+  {
+   "t": 2.524,
+   "state": "unavailable",
+   "rss_mb": 139.98046875
+  },
+  {
+   "t": 3.026,
+   "state": "unavailable",
+   "rss_mb": 139.203125
+  },
+  {
+   "t": 3.528,
+   "state": "unavailable",
+   "rss_mb": 139.953125
+  },
+  {
+   "t": 4.03,
+   "state": "unavailable",
+   "rss_mb": 139.20703125
+  },
+  {
+   "t": 4.531,
+   "state": "unavailable",
+   "rss_mb": 139.9609375
+  },
+  {
+   "t": 5.033,
+   "state": "unavailable",
+   "rss_mb": 139.25390625
+  },
+  {
+   "t": 5.534,
+   "state": "unavailable",
+   "rss_mb": 140.0
+  },
+  {
+   "t": 6.035,
+   "state": "unavailable",
+   "rss_mb": 139.171875
+  },
+  {
+   "t": 6.537,
+   "state": "idle",
+   "rss_mb": 101.46875
+  },
+  {
+   "t": 7.038,
+   "state": "idle",
+   "rss_mb": 101.21484375
+  },
+  {
+   "t": 7.54,
+   "state": "idle",
+   "rss_mb": 102.1171875
+  },
+  {
+   "t": 8.041,
+   "state": "idle",
+   "rss_mb": 101.22265625
+  },
+  {
+   "t": 8.567,
+   "state": "idle",
+   "rss_mb": 102.4375
+  },
+  {
+   "t": 9.068,
+   "state": "idle",
+   "rss_mb": 101.625
+  },
+  {
+   "t": 9.569,
+   "state": "idle",
+   "rss_mb": 102.375
+  },
+  {
+   "t": 10.071,
+   "state": "idle",
+   "rss_mb": 103.25
+  },
+  {
+   "t": 10.572,
+   "state": "idle",
+   "rss_mb": 102.51171875
+  },
+  {
+   "t": 11.074,
+   "state": "idle",
+   "rss_mb": 103.23046875
+  },
+  {
+   "t": 11.576,
+   "state": "idle",
+   "rss_mb": 102.46484375
+  },
+  {
+   "t": 12.077,
+   "state": "idle",
+   "rss_mb": 103.21484375
+  },
+  {
+   "t": 12.578,
+   "state": "listening",
+   "rss_mb": 124.296875
+  },
+  {
+   "t": 13.08,
+   "state": "listening",
+   "rss_mb": 123.484375
+  },
+  {
+   "t": 13.582,
+   "state": "listening",
+   "rss_mb": 124.2109375
+  },
+  {
+   "t": 14.084,
+   "state": "listening",
+   "rss_mb": 123.421875
+  },
+  {
+   "t": 14.609,
+   "state": "listening",
+   "rss_mb": 124.23828125
+  },
+  {
+   "t": 15.111,
+   "state": "listening",
+   "rss_mb": 123.5390625
+  },
+  {
+   "t": 15.613,
+   "state": "listening",
+   "rss_mb": 124.2890625
+  },
+  {
+   "t": 16.116,
+   "state": "listening",
+   "rss_mb": 123.5390625
+  },
+  {
+   "t": 16.617,
+   "state": "listening",
+   "rss_mb": 124.2890625
+  },
+  {
+   "t": 17.118,
+   "state": "listening",
+   "rss_mb": 123.46484375
+  },
+  {
+   "t": 17.62,
+   "state": "listening",
+   "rss_mb": 124.15234375
+  },
+  {
+   "t": 18.121,
+   "state": "listening",
+   "rss_mb": 124.90234375
+  },
+  {
+   "t": 18.623,
+   "state": "thinking",
+   "rss_mb": 142.359375
+  },
+  {
+   "t": 19.125,
+   "state": "thinking",
+   "rss_mb": 141.5234375
+  },
+  {
+   "t": 19.628,
+   "state": "thinking",
+   "rss_mb": 142.2734375
+  },
+  {
+   "t": 20.129,
+   "state": "thinking",
+   "rss_mb": 141.546875
+  },
+  {
+   "t": 20.648,
+   "state": "thinking",
+   "rss_mb": 142.3515625
+  },
+  {
+   "t": 21.15,
+   "state": "thinking",
+   "rss_mb": 141.6015625
+  },
+  {
+   "t": 21.652,
+   "state": "thinking",
+   "rss_mb": 142.3515625
+  },
+  {
+   "t": 22.153,
+   "state": "thinking",
+   "rss_mb": 141.5390625
+  },
+  {
+   "t": 22.654,
+   "state": "thinking",
+   "rss_mb": 142.2890625
+  },
+  {
+   "t": 23.156,
+   "state": "thinking",
+   "rss_mb": 142.9609375
+  },
+  {
+   "t": 23.657,
+   "state": "thinking",
+   "rss_mb": 142.21484375
+  },
+  {
+   "t": 24.158,
+   "state": "thinking",
+   "rss_mb": 142.98046875
+  },
+  {
+   "t": 24.66,
+   "state": "speaking",
+   "rss_mb": 141.56640625
+  },
+  {
+   "t": 25.161,
+   "state": "speaking",
+   "rss_mb": 140.81640625
+  },
+  {
+   "t": 25.663,
+   "state": "speaking",
+   "rss_mb": 141.56640625
+  },
+  {
+   "t": 26.164,
+   "state": "speaking",
+   "rss_mb": 140.89453125
+  },
+  {
+   "t": 26.689,
+   "state": "speaking",
+   "rss_mb": 141.6953125
+  },
+  {
+   "t": 27.19,
+   "state": "speaking",
+   "rss_mb": 140.96875
+  },
+  {
+   "t": 27.692,
+   "state": "speaking",
+   "rss_mb": 141.70703125
+  },
+  {
+   "t": 28.194,
+   "state": "speaking",
+   "rss_mb": 140.9765625
+  },
+  {
+   "t": 28.695,
+   "state": "speaking",
+   "rss_mb": 141.7890625
+  },
+  {
+   "t": 29.197,
+   "state": "speaking",
+   "rss_mb": 140.9609375
+  },
+  {
+   "t": 29.699,
+   "state": "speaking",
+   "rss_mb": 141.7109375
+  },
+  {
+   "t": 30.201,
+   "state": "speaking",
+   "rss_mb": 140.8984375
+  },
+  {
+   "t": 30.702,
+   "state": "working",
+   "rss_mb": 127.59765625
+  },
+  {
+   "t": 31.203,
+   "state": "working",
+   "rss_mb": 125.0859375
+  },
+  {
+   "t": 31.705,
+   "state": "working",
+   "rss_mb": 125.859375
+  },
+  {
+   "t": 32.207,
+   "state": "working",
+   "rss_mb": 124.984375
+  },
+  {
+   "t": 32.736,
+   "state": "working",
+   "rss_mb": 126.0234375
+  },
+  {
+   "t": 33.237,
+   "state": "working",
+   "rss_mb": 125.20703125
+  },
+  {
+   "t": 33.739,
+   "state": "working",
+   "rss_mb": 125.95703125
+  },
+  {
+   "t": 34.241,
+   "state": "working",
+   "rss_mb": 125.14453125
+  },
+  {
+   "t": 34.742,
+   "state": "working",
+   "rss_mb": 125.90625
+  },
+  {
+   "t": 35.244,
+   "state": "working",
+   "rss_mb": 125.1484375
+  },
+  {
+   "t": 35.745,
+   "state": "working",
+   "rss_mb": 125.8984375
+  },
+  {
+   "t": 36.248,
+   "state": "working",
+   "rss_mb": 125.125
+  },
+  {
+   "t": 36.749,
+   "state": "awaitingApproval",
+   "rss_mb": 127.53125
+  },
+  {
+   "t": 37.25,
+   "state": "awaitingApproval",
+   "rss_mb": 125.95703125
+  },
+  {
+   "t": 37.752,
+   "state": "awaitingApproval",
+   "rss_mb": 125.70703125
+  },
+  {
+   "t": 38.253,
+   "state": "awaitingApproval",
+   "rss_mb": 125.45703125
+  },
+  {
+   "t": 38.779,
+   "state": "awaitingApproval",
+   "rss_mb": 125.41015625
+  },
+  {
+   "t": 39.28,
+   "state": "awaitingApproval",
+   "rss_mb": 125.09765625
+  },
+  {
+   "t": 39.782,
+   "state": "awaitingApproval",
+   "rss_mb": 126.421875
+  },
+  {
+   "t": 40.284,
+   "state": "awaitingApproval",
+   "rss_mb": 126.22265625
+  },
+  {
+   "t": 40.786,
+   "state": "awaitingApproval",
+   "rss_mb": 126.03125
+  },
+  {
+   "t": 41.288,
+   "state": "awaitingApproval",
+   "rss_mb": 125.703125
+  },
+  {
+   "t": 41.789,
+   "state": "awaitingApproval",
+   "rss_mb": 125.43359375
+  },
+  {
+   "t": 42.29,
+   "state": "awaitingApproval",
+   "rss_mb": 125.50390625
+  },
+  {
+   "t": 42.791,
+   "state": "success",
+   "rss_mb": 125.703125
+  },
+  {
+   "t": 43.292,
+   "state": "success",
+   "rss_mb": 126.98828125
+  },
+  {
+   "t": 43.795,
+   "state": "success",
+   "rss_mb": 126.73828125
+  },
+  {
+   "t": 44.297,
+   "state": "success",
+   "rss_mb": 125.9921875
+  },
+  {
+   "t": 44.825,
+   "state": "success",
+   "rss_mb": 127.29296875
+  },
+  {
+   "t": 45.327,
+   "state": "success",
+   "rss_mb": 126.54296875
+  },
+  {
+   "t": 45.828,
+   "state": "success",
+   "rss_mb": 127.29296875
+  },
+  {
+   "t": 46.33,
+   "state": "success",
+   "rss_mb": 126.50390625
+  },
+  {
+   "t": 46.831,
+   "state": "success",
+   "rss_mb": 127.29296875
+  },
+  {
+   "t": 47.332,
+   "state": "success",
+   "rss_mb": 126.46484375
+  },
+  {
+   "t": 47.834,
+   "state": "success",
+   "rss_mb": 127.21484375
+  },
+  {
+   "t": 48.335,
+   "state": "success",
+   "rss_mb": 126.40234375
+  },
+  {
+   "t": 48.837,
+   "state": "error",
+   "rss_mb": 128.48046875
+  },
+  {
+   "t": 49.338,
+   "state": "error",
+   "rss_mb": 126.50390625
+  },
+  {
+   "t": 49.839,
+   "state": "error",
+   "rss_mb": 127.25390625
+  },
+  {
+   "t": 50.341,
+   "state": "error",
+   "rss_mb": 126.56640625
+  },
+  {
+   "t": 50.868,
+   "state": "error",
+   "rss_mb": 127.31640625
+  },
+  {
+   "t": 51.369,
+   "state": "error",
+   "rss_mb": 126.51171875
+  },
+  {
+   "t": 51.872,
+   "state": "error",
+   "rss_mb": 127.26171875
+  },
+  {
+   "t": 52.374,
+   "state": "error",
+   "rss_mb": 126.4609375
+  },
+  {
+   "t": 52.875,
+   "state": "error",
+   "rss_mb": 127.2109375
+  },
+  {
+   "t": 53.376,
+   "state": "error",
+   "rss_mb": 126.58984375
+  },
+  {
+   "t": 53.878,
+   "state": "error",
+   "rss_mb": 127.27734375
+  },
+  {
+   "t": 54.38,
+   "state": "error",
+   "rss_mb": 126.65234375
+  }
+ ],
+ "ember_resident_bytes": 44236800
+}

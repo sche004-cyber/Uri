@@ -4,6 +4,7 @@ import '../../../theme/uri_theme.dart';
 import '../../companion/companion_orb.dart';
 import '../../companion/companion_preferences.dart';
 import '../../companion/companion_state.dart';
+import '../../companion/ember_companion.dart' show EmberManifest;
 import '../../companion/energy_orb.dart';
 import '../../companion/frame_clock.dart';
 import '../../living_app.dart' show LivingThemeController;
@@ -220,6 +221,19 @@ class _StillCompanion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scale = presenceScale(identity);
+    if (!identity.usesShader) {
+      // Ember is drawn from rendered clips; its tile is one small still frame
+      // shipped for this purpose, not a decoded animation atlas.
+      return Image.asset(
+        EmberManifest.thumbnailPath,
+        key: const ValueKey('companion-still-ember'),
+        width: size * scale,
+        height: size * scale,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.medium,
+        semanticLabel: identity.label,
+      );
+    }
     return OverflowBox(
       maxWidth: size * scale,
       maxHeight: size * scale,

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:flutter/services.dart' show AssetBundle, rootBundle;
 import 'package:flutter/widgets.dart';
 
@@ -16,13 +17,13 @@ import 'frame_clock.dart';
 /// (`companion_art/fire/`) and shipped as WebP sprite atlases.
 ///
 /// A clip is an expression, not a state: several [CompanionState]s share one
-/// (see [EmberClips.forState]). `fierce` is rendered and available to the
-/// settings preview but no operational state uses it, because an angry face
-/// aimed at the user would misreport what URI is doing.
+/// (see [EmberClips.forState]). The reference sheet's "Fierce" is rendered
+/// from the same rig (`companion_art/fire/states.json`) but not shipped: no
+/// operational state may use it, because an angry face aimed at the user would
+/// misreport what URI is doing. `focused` carries its energy for `working`.
 enum EmberClip {
   idle,
   joyful,
-  fierce,
   depleted,
   listening,
   thinking,
@@ -100,6 +101,9 @@ class EmberManifest {
   static const String assetDir = 'assets/companions/ember';
   static const String assetPath = '$assetDir/manifest.json';
 
+  /// A small still of the idle expression for the companion picker.
+  static const String thumbnailPath = '$assetDir/thumbnail.webp';
+
   static EmberManifest parse(String text) {
     final j = jsonDecode(text) as Map<String, dynamic>;
     final clips = <EmberClip, EmberClipInfo>{};
@@ -107,14 +111,22 @@ class EmberManifest {
     for (final c in EmberClip.values) {
       final m = raw[c.name] as Map<String, dynamic>?;
       if (m == null) continue;
-      clips[c] = EmberClipInfo(
+      final info = EmberClipInfo(
         file: m['file'] as String,
         frames: (m['frames'] as num).toInt(),
         cols: (m['cols'] as num).toInt(),
         cell: (m['cell'] as num).toInt(),
       );
+      if (info.frames <= 0 || info.cols <= 0 || info.cell <= 0) {
+        throw FormatException('ember manifest: ${c.name} has an empty layout');
+      }
+      clips[c] = info;
     }
-    return EmberManifest(fps: (j['fps'] as num).toDouble(), clips: clips);
+    final fps = (j['fps'] as num).toDouble();
+    if (fps <= 0) {
+      throw const FormatException('ember manifest: fps must be > 0');
+    }
+    return EmberManifest(fps: fps, clips: clips);
   }
 }
 
@@ -152,8 +164,18 @@ class EmberLibrary {
     _evict();
   }
 
+  /// When no widget shows Ember any more, every atlas is disposed: a hidden
+  /// companion must not hold GPU memory next to the Brain.
   void release(Object owner) {
     _pins.remove(owner);
+    if (_pins.isEmpty) {
+      for (final i in _images.values) {
+        i.dispose();
+      }
+      _images.clear();
+      _recent.clear();
+      return;
+    }
     _evict();
   }
 
@@ -210,6 +232,11 @@ class EmberLibrary {
       final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
       final frame = await codec.getNextFrame();
       codec.dispose();
+      if (_pins.isEmpty) {
+        // Everyone left while this decoded: keep nothing resident.
+        frame.image.dispose();
+        return null;
+      }
       _images[clip] = frame.image;
       _touch(clip);
       _evict();
@@ -263,8 +290,9 @@ class EmberLibrary {
 /// The fire companion. Plays the expression for [state], cross-fades between
 /// expressions, and pulses gently while [attention] is on.
 ///
-/// It redraws only when the visible sprite frame changes (24 per second) or a
-/// fade is in progress, so a 144 Hz display does not cost 144 blits.
+/// It asks the frame clock for frames only while something moves: between two
+/// sprite frames (24 per second) it stops listening and a timer wakes it for
+/// the next one, so a 144 Hz display is not asked for 144 frames a second.
 class EmberCompanion extends StatefulWidget {
   const EmberCompanion({
     super.key,
@@ -274,16 +302,20 @@ class EmberCompanion extends StatefulWidget {
     this.look = CompanionLook.standard,
     this.fallback,
     this.library,
+    this.still = false,
   });
 
   final CompanionState state;
 
-  /// Overrides the state mapping (settings preview, capture harness).
+  /// Overrides the state mapping (companion picker, capture harness).
   final EmberClip? clip;
   final bool attention;
   final CompanionLook look;
   final Widget? fallback;
   final EmberLibrary? library;
+
+  /// One representative frame and no animation (the companion picker tile).
+  final bool still;
 
   @override
   State<EmberCompanion> createState() => _EmberCompanionState();
@@ -303,7 +335,16 @@ class _EmberCompanionState extends State<EmberCompanion>
   int _shownFrame = -1;
   bool _reducedMotion = false;
 
+  /// Time between deliveries, taken from the frame timestamp: the frame
+  /// driver restarts its own `dt` at zero whenever this widget resumes after
+  /// sleeping between sprite frames, and the shared clock does not count the
+  /// time nobody listened. The vsync timestamp is continuous (and is the fake
+  /// clock under test).
+  Duration? _lastStamp;
+  Timer? _wake;
+
   EmberClip get _target => widget.clip ?? EmberClips.forState(widget.state);
+  bool get _frozen => _reducedMotion || widget.still;
 
   @override
   void initState() {
@@ -315,6 +356,7 @@ class _EmberCompanionState extends State<EmberCompanion>
 
   @override
   void dispose() {
+    _wake?.cancel();
     _lib.release(this);
     super.dispose();
   }
@@ -322,7 +364,9 @@ class _EmberCompanionState extends State<EmberCompanion>
   void _request(EmberClip clip) {
     if (_lib.imageIfLoaded(clip) != null) return;
     _lib.load(clip).then((_) {
-      if (mounted) setState(() {});
+      if (!mounted) return;
+      setState(() {});
+      resumeFrames();
     });
   }
 
@@ -331,9 +375,15 @@ class _EmberCompanionState extends State<EmberCompanion>
     super.didUpdateWidget(old);
     final next = _target;
     if (next != _current) {
-      _previous = _current;
-      _prevTime = _time;
-      _fadeLength = EmberClips.fadeBetween(_current, next);
+      // Fade from what is actually on screen. If the clip that was fading in
+      // has not decoded yet, the clip still visible stays the outgoing one,
+      // so a quick run of changes never leaves the companion blank.
+      final currentShown = _lib.imageIfLoaded(_current) != null;
+      if (currentShown || _previous == null) {
+        _previous = _current;
+        _prevTime = _time;
+      }
+      _fadeLength = EmberClips.fadeBetween(_previous!, next);
       _current = next;
       _time = 0;
       _fade = 0;
@@ -349,39 +399,75 @@ class _EmberCompanionState extends State<EmberCompanion>
     super.didChangeDependencies();
   }
 
-  @override
-  bool get wantsFrames {
-    if (!_reducedMotion) return true;
+  bool get _settling {
     final goal = widget.attention ? 1.0 : 0.0;
     return _fade < 1 || (goal - _attention).abs() > 0.01;
   }
+
+  @override
+  bool get wantsFrames {
+    if (_settling) return true;
+    if (_frozen) return false;
+    // The approval pulse moves continuously.
+    if (_attention > 0.001) return true;
+    _scheduleNextSpriteFrame();
+    return false;
+  }
+
+  /// Sleeps until the next sprite frame is due, then asks for frames again.
+  void _scheduleNextSpriteFrame() {
+    if (_wake != null) return;
+    final m = _lib.manifestIfLoaded;
+    if (m == null) return;
+    final speed = widget.look.motion <= 0 ? 1.0 : widget.look.motion;
+    final perFrame = 1 / (m.fps * speed);
+    final wait = math.max(0.004, perFrame - (_time * speed) % perFrame - 0.002);
+    _wake = Timer(Duration(microseconds: (wait * 1e6).round()), () {
+      _wake = null;
+      if (mounted) resumeFrames();
+    });
+  }
+
+  @visibleForTesting
+  bool get sleepingBetweenFrames => _wake != null;
 
   int _frameAt(EmberClip clip, double t) {
     final m = _lib.manifestIfLoaded;
     final info = m?.clips[clip];
     if (m == null || info == null) return 0;
-    if (_reducedMotion) return 0;
+    if (_frozen) return 0;
     return (t * m.fps).floor() % info.frames;
   }
 
   @override
   void onCompanionFrame(double seconds, double dt) {
+    final now = SchedulerBinding.instance.currentSystemFrameTimeStamp;
+    final last = _lastStamp;
+    _lastStamp = now;
+    final realDt = last == null ? 0.0 : (now - last).inMicroseconds / 1e6;
+    // After a long pause (a minimised window) do not jump through a fade.
+    final step = realDt.clamp(0.0, 0.25);
     final speed = widget.look.motion;
-    _time += dt * speed;
-    _prevTime += dt * speed;
+    _time += step * speed;
+    _prevTime += step * speed;
     var changed = false;
     if (_fade < 1) {
-      final len = _fadeLength.inMicroseconds / 1e6;
-      _fade = len <= 0 ? 1 : (_fade + dt / len).clamp(0.0, 1.0);
-      if (_fade >= 1) {
-        _previous = null;
-        _lib.pin(this, {_current});
+      // The fade starts only once the incoming clip can be drawn.
+      if (_lib.imageIfLoaded(_current) != null) {
+        final len = _fadeLength.inMicroseconds / 1e6;
+        _fade = len <= 0 ? 1 : (_fade + step / len).clamp(0.0, 1.0);
+        if (_fade >= 1) {
+          _previous = null;
+          _lib.pin(this, {_current});
+        }
+      } else {
+        _time = 0;
       }
       changed = true;
     }
     final goal = widget.attention ? 1.0 : 0.0;
     if ((goal - _attention).abs() > 0.001) {
-      _attention += (goal - _attention) * (1 - math.exp(-dt / 0.35));
+      _attention += (goal - _attention) * (1 - math.exp(-step / 0.35));
       if ((goal - _attention).abs() <= 0.01) _attention = goal;
       changed = true;
     }
@@ -402,30 +488,29 @@ class _EmberCompanionState extends State<EmberCompanion>
     if (m == null || (cur == null && prev == null)) {
       return widget.fallback ?? const SizedBox.expand();
     }
-    final pulse = _reducedMotion
+    final pulse = _frozen
         ? 0.5
         : 0.5 - 0.5 * math.cos(2 * math.pi * ((_time / 2.8) % 1.0));
+    final e = Curves.easeInOut.transform(_fade);
     final layers = <EmberLayer>[
-      if (prev != null && _fade < 1)
+      if (prev != null && (_fade < 1 || cur == null))
         EmberLayer(
           image: prev,
           src: m.clips[_previous!]!.frameRect(_frameAt(_previous!, _prevTime)),
-          opacity: cur == null ? 1 : 1 - Curves.easeInOut.transform(_fade),
+          opacity: cur == null ? 1 : 1 - e,
         ),
       if (cur != null)
         EmberLayer(
           image: cur,
           src: m.clips[_current]!.frameRect(_frameAt(_current, _time)),
-          opacity: prev == null || _fade >= 1
-              ? 1
-              : Curves.easeInOut.transform(_fade),
+          opacity: prev == null || _fade >= 1 ? 1 : e,
         ),
     ];
     return CustomPaint(
       size: Size.infinite,
       painter: EmberPainter(
         layers: layers,
-        // Glow preference (±12 %) and the approval pulse both lift light.
+        // Glow preference (+-12 %) and the approval pulse both lift light.
         brightness: widget.look.glow * (1 + 0.14 * pulse * _attention),
       ),
     );
@@ -477,16 +562,39 @@ class EmberPainter extends CustomPainter {
       width: side,
       height: side,
     );
-    for (final l in layers) {
-      if (l.opacity <= 0.001) continue;
-      final p = Paint()
-        ..filterQuality = FilterQuality.medium
-        ..color = Color.fromRGBO(255, 255, 255, l.opacity.clamp(0.0, 1.0));
-      if ((brightness - 1).abs() > 0.002) {
-        p.colorFilter = ColorFilter.matrix(brightnessMatrix(brightness));
-      }
-      canvas.drawImageRect(l.image, l.src, dst, p);
+    ColorFilter? filter;
+    if ((brightness - 1).abs() > 0.002) {
+      filter = ColorFilter.matrix(brightnessMatrix(brightness));
     }
+    final visible = [
+      for (final l in layers)
+        if (l.opacity > 0.001) l,
+    ];
+    if (visible.length < 2) {
+      for (final l in visible) {
+        canvas.drawImageRect(l.image, l.src, dst, _paint(l.opacity, filter));
+      }
+      return;
+    }
+    // Cross-fade: the two weighted frames are added in a layer of their own,
+    // giving (1 - e) * outgoing + e * incoming in premultiplied colour. Drawn
+    // over each other instead, the character would sit at about 75 % opacity
+    // half-way through every change.
+    canvas.saveLayer(dst, Paint());
+    for (var i = 0; i < visible.length; i++) {
+      final p = _paint(visible[i].opacity, filter);
+      if (i > 0) p.blendMode = BlendMode.plus;
+      canvas.drawImageRect(visible[i].image, visible[i].src, dst, p);
+    }
+    canvas.restore();
+  }
+
+  static Paint _paint(double opacity, ColorFilter? filter) {
+    final p = Paint()
+      ..filterQuality = FilterQuality.medium
+      ..color = Color.fromRGBO(255, 255, 255, opacity.clamp(0.0, 1.0));
+    if (filter != null) p.colorFilter = filter;
+    return p;
   }
 
   @override

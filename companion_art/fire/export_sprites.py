@@ -30,7 +30,12 @@ def main() -> None:
     quality = int(args[args.index("--quality") + 1]) if "--quality" in args else 88
     limit = 4096 // cell
     manifest = {"fps": STATES["fps"], "cell": cell, "source": "companion_art/fire (Blender)", "clips": {}}
-    for clip in STATES["clips"]:
+    for clip, spec in STATES["clips"].items():
+        if spec.get("ship", True) is False:
+            stale = OUT / f"{clip}.webp"
+            if stale.exists():
+                stale.unlink()
+            continue
         frames = len(list((post / clip).glob("f_*.png")))
         if frames == 0:
             raise SystemExit(f"no frames for {clip}")
@@ -41,6 +46,12 @@ def main() -> None:
         info = pack(post / clip, OUT / f"{clip}.webp", cell, cols, quality)
         info["sha256"] = hashlib.sha256((OUT / f"{clip}.webp").read_bytes()).hexdigest()
         manifest["clips"][clip] = info
+    # Picker tile: one still idle frame, small, so the settings page never
+    # decodes an animation atlas just to show a thumbnail.
+    from PIL import Image
+    still = Image.open(sorted((post / "idle").glob("f_*.png"))[0]).convert("RGBA")
+    still.resize((192, 192), Image.LANCZOS).save(OUT / "thumbnail.webp", "WEBP", quality=90, method=6, exact=True)
+    manifest["thumbnail"] = "thumbnail.webp"
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n", encoding="utf-8")
     total = sum(c["bytes"] for c in manifest["clips"].values())
     print(f"EXPORT {len(manifest['clips'])} clips, {total / 1048576:.2f} MiB on disk")

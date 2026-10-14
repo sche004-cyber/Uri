@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -16,9 +17,14 @@ import 'package:uri_ui/theme/uri_theme.dart';
 class _DiskBundle extends CachingAssetBundle {
   int loads = 0;
 
+  /// Atlases (not the manifest) wait for this before they are served, so a
+  /// test can hold a clip "still decoding".
+  Completer<void>? gate;
+
   @override
   Future<ByteData> load(String key) async {
     loads++;
+    if (key.endsWith('.webp') && gate != null) await gate!.future;
     final bytes = File(key).readAsBytesSync();
     return ByteData.view(Uint8List.fromList(bytes).buffer);
   }
@@ -26,11 +32,16 @@ class _DiskBundle extends CachingAssetBundle {
 
 void main() {
   group('state mapping', () {
-    test('every CompanionState has an expression, never fierce', () {
+    test('every CompanionState has a shipped expression', () {
       for (final s in CompanionState.values) {
-        final clip = EmberClips.forState(s);
-        expect(clip, isNot(EmberClip.fierce), reason: s.name);
+        expect(
+          EmberClip.values,
+          contains(EmberClips.forState(s)),
+          reason: s.name,
+        );
       }
+      // Fierce is rendered for fidelity but never shipped or shown.
+      expect(EmberClip.values.map((c) => c.name), isNot(contains('fierce')));
     });
 
     test('the table is the one documented in 02_STATE_MATRIX.md', () {
@@ -117,6 +128,27 @@ void main() {
         expect(f.existsSync(), isTrue, reason: e.key.name);
         expect(e.value.frames, greaterThanOrEqualTo(24), reason: e.key.name);
       }
+    });
+
+    test(
+      'the manifest refuses an empty layout instead of dividing by zero',
+      () {
+        String m(int frames, int cols) => jsonEncode({
+          'fps': 24,
+          'clips': {
+            'idle': {'file': 'x', 'frames': frames, 'cols': cols, 'cell': 10},
+          },
+        });
+        expect(() => EmberManifest.parse(m(0, 4)), throwsFormatException);
+        expect(() => EmberManifest.parse(m(4, 0)), throwsFormatException);
+        expect(EmberManifest.parse(m(4, 2)).clips[EmberClip.idle]!.frames, 4);
+      },
+    );
+
+    test('the picker thumbnail is shipped and small', () {
+      final f = File(EmberManifest.thumbnailPath);
+      expect(f.existsSync(), isTrue);
+      expect(f.lengthSync(), lessThan(64 * 1024));
     });
 
     test('pubspec bundles the ember asset directory', () {
@@ -217,7 +249,7 @@ void main() {
       expect(lib.resident, contains(EmberClip.thinking));
     });
 
-    testWidgets('unmounting releases its pins', (tester) async {
+    testWidgets('unmounting the last Ember frees every atlas', (tester) async {
       await tester.pumpWidget(
         Directionality(
           textDirection: TextDirection.ltr,
@@ -226,16 +258,133 @@ void main() {
       );
       await settleDecode(tester);
       expect(lib.pinned, isNotEmpty);
+      expect(lib.resident, isNotEmpty);
       await tester.pumpWidget(const SizedBox());
       expect(lib.pinned, isEmpty);
+      expect(lib.resident, isEmpty);
+      expect(lib.residentBytes, 0);
+    });
+
+    testWidgets(
+      'two companions share the library; one leaving keeps the other',
+      (tester) async {
+        Widget two(bool both) => Directionality(
+          textDirection: TextDirection.ltr,
+          child: Row(
+            children: [
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: EmberCompanion(library: lib),
+              ),
+              if (both)
+                SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: EmberCompanion(
+                    library: lib,
+                    state: CompanionState.thinking,
+                  ),
+                ),
+            ],
+          ),
+        );
+        await tester.pumpWidget(two(true));
+        await settleDecode(tester);
+        expect(lib.resident, containsAll([EmberClip.idle, EmberClip.thinking]));
+        await tester.pumpWidget(two(false));
+        expect(lib.pinned, {EmberClip.idle});
+        expect(lib.resident, contains(EmberClip.idle));
+      },
+    );
+
+    testWidgets(
+      'a fade waits for the incoming clip; the old one stays visible',
+      (tester) async {
+        Widget at(CompanionState s) => Directionality(
+          textDirection: TextDirection.ltr,
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: EmberCompanion(
+              library: lib,
+              state: s,
+              fallback: const Text('fallback', key: ValueKey('fb')),
+            ),
+          ),
+        );
+        await tester.pumpWidget(at(CompanionState.idle));
+        await settleDecode(tester);
+        bundle.gate = Completer<void>();
+        await tester.pumpWidget(at(CompanionState.thinking));
+        // Long past the 450 ms fade, the incoming atlas is still "decoding":
+        // the idle clip must still be drawn, never the fallback.
+        for (var i = 0; i < 30; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        expect(find.byKey(const ValueKey('fb')), findsNothing);
+        expect(lib.pinned, containsAll([EmberClip.idle, EmberClip.thinking]));
+        // A second change while still waiting keeps idle as the outgoing clip.
+        await tester.pumpWidget(at(CompanionState.speaking));
+        await tester.pump(const Duration(milliseconds: 50));
+        expect(lib.pinned, containsAll([EmberClip.idle, EmberClip.speaking]));
+        expect(find.byKey(const ValueKey('fb')), findsNothing);
+        bundle.gate!.complete();
+        await settleDecode(tester);
+        for (var i = 0; i < 30; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        expect(lib.pinned, {EmberClip.speaking});
+      },
+    );
+
+    testWidgets('between sprite frames Ember asks for no frames', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: EmberCompanion(library: lib),
+        ),
+      );
+      await settleDecode(tester);
+      await tester.pump(const Duration(milliseconds: 16));
+      await tester.pump(const Duration(milliseconds: 16));
+      // A frame was shown and the next one is ~42 ms away: no frame is
+      // scheduled until the wake-up timer fires.
+      expect(tester.binding.hasScheduledFrame, isFalse);
+      await tester.pump(const Duration(milliseconds: 60));
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(lib.resident, contains(EmberClip.idle));
+    });
+
+    testWidgets('a still Ember (picker) settles and requests nothing', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: EmberCompanion(library: lib, still: true),
+        ),
+      );
+      await settleDecode(tester);
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(tester.binding.hasScheduledFrame, isFalse);
+      await tester.pump(const Duration(seconds: 1));
+      expect(tester.binding.hasScheduledFrame, isFalse);
     });
   });
 
-  test('states.json and the manifest agree on the clip set', () {
+  test('states.json ships exactly the clips the app knows', () {
     final states = jsonDecode(
       File('../companion_art/fire/states.json').readAsStringSync(),
     ) as Map<String, dynamic>;
-    final clips = (states['clips'] as Map<String, dynamic>).keys.toSet();
-    expect(clips, EmberClip.values.map((c) => c.name).toSet());
+    final clips = (states['clips'] as Map<String, dynamic>);
+    final shipped = {
+      for (final e in clips.entries)
+        if ((e.value as Map<String, dynamic>)['ship'] != false) e.key,
+    };
+    expect(shipped, EmberClip.values.map((c) => c.name).toSet());
+    expect(clips.keys, contains('fierce'));
   });
 }

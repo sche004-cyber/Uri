@@ -115,8 +115,12 @@ void main() {
     await until(() => find.byType(LivingScope).evaluate().isNotEmpty, 'integrated worker bootstrap');
     final services = t.widget<LivingScope>(find.byType(LivingScope).first).services;
     final conv = services.oi!;
-    CompanionState orbState() =>
-        t.widget<LivingCompanion>(find.byKey(LivingShell.orbKey)).state;
+    CompanionState? orbStateOrNull() {
+      final f = find.byKey(LivingShell.orbKey);
+      return f.evaluate().isEmpty ? null : t.widget<LivingCompanion>(f).state;
+    }
+    await until(() => orbStateOrNull() != null, 'living shell with companion', seconds: 60);
+    CompanionState orbState() => orbStateOrNull() ?? CompanionState.idle;
     record('1 start', {
       'seconds_to_shell': sw.elapsedMilliseconds / 1000,
       'manifest': Platform.environment['URI_CLIENT_MANIFEST'],
@@ -131,6 +135,13 @@ void main() {
     services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.settings);
     await pumpFor(const Duration(milliseconds: 900));
     final choice = find.byKey(const ValueKey('companion-choice-ember'));
+    // The companion section is at the end of a lazily built settings list:
+    // scroll it like a user would until the picker is built.
+    final view = t.binding.renderViews.first.size;
+    for (var i = 0; i < 40 && choice.evaluate().isEmpty; i++) {
+      await t.dragFrom(Offset(view.width * 0.62, view.height * 0.7), const Offset(0, -320));
+      await pumpFor(const Duration(milliseconds: 250));
+    }
     await until(() => choice.evaluate().isNotEmpty, 'Ember in the companion picker', seconds: 20);
     await t.ensureVisible(choice);
     await pumpFor(const Duration(milliseconds: 300));
