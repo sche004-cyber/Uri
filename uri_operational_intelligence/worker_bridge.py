@@ -133,6 +133,7 @@ class IntegratedTurns:
         """
         self.o, self.cfg, self._status, self._write = orchestrator, cfg, status, write_event
         self._memory, self.cloud = memory, cloud or cloud_policy.CloudSpendPolicy()
+        self.o.remembered_facts = memory  # same consented client store used by Settings; no second store/cache
         self.selected = brain_catalog.runtime_v1_selection(cfg)          # Runtime v1 is the default Brain
         self.o.brain_selection = dict(self.selected)
         self._readiness_for_orchestrator()

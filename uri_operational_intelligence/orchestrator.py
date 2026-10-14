@@ -127,6 +127,7 @@ class Orchestrator:
         self.client, self.core, self.brain_selection = client, core, brain_selection
         self.ledger, self.capability_ids = ledger, set(capability_ids)
         self.readiness = readiness
+        self.remembered_facts = None  # injected by the client-scoped integrated worker, like readiness
         self.harness_statuses = harness_statuses or (lambda: H.documented_status())
         self.deadlines = deadlines or BC.Deadlines()
         self.perf = perf       # optional PerfMonitor (OI-PERF-1): throughput health from finished answers
@@ -221,8 +222,13 @@ class Orchestrator:
             emit("answer.delta", text=chunk)
 
         use = "trivial" if tri.kind == T.TRIVIAL and tier.tier == RP.FAST else "answer"
+        memory = A.memory_evidence(self.remembered_facts) if self.remembered_facts is not None else None
         res = A.answer(self.client, text, tier=tier.tier, use=use, history=history, cancel=cancel,
-                       deadlines=self.deadlines, on_delta=on_delta, executed_action=executed_action)
+                       deadlines=self.deadlines, on_delta=on_delta, executed_action=executed_action,
+                       memory=memory, capability_ids=self.capability_ids)
+        if memory is not None:
+            res.metrics["memory_context"] = {"status": memory["status"], "fact_count": len(memory["facts"]),
+                                             "truncated": memory["truncated"]}
         if res.status == "ACTION_REQUESTED" and rerouted_from is None:
             # Model-side guard: the user asked URI to DO something. Core decides; nothing was said to the user yet.
             return self._core_turn(text, session_id, T.Triage(T.ACTION, ["answer_channel_action_marker"]),
