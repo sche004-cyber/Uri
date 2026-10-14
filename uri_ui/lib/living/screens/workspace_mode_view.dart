@@ -1278,14 +1278,25 @@ class _ContextPanel extends StatelessWidget {
                 (h) => h!.id == services.selectedHarness.value,
                 orElse: () => null,
               );
+          // With the real worker connected this rail is operational: placeholder
+          // (simulated) documents and results are not mixed into it (FCV-10).
+          final live = oi != null;
           final results = services.work.items
               .where(
                 (i) =>
-                    i.state == WorkItemState.completed && i.outputName != null,
+                    i.state == WorkItemState.completed &&
+                    i.outputName != null &&
+                    !(live && i.simulated),
               )
               .take(4)
               .toList();
-          final lastTurn = appState.conversation.isEmpty
+          final documents = services.work.documents
+              .where((d) => !(live && d.simulated))
+              .take(3)
+              .toList();
+          final mockAppData = live && services.appDataIsMock;
+          final attachments = mockAppData ? const [] : appState.attachments;
+          final lastTurn = appState.conversation.isEmpty || mockAppData
               ? null
               : appState.conversation.last;
           return ListView(
@@ -1349,18 +1360,18 @@ class _ContextPanel extends StatelessWidget {
               const SizedBox(height: UriSpace.lg),
               const Eyebrow('Context & files'),
               const SizedBox(height: 6),
-              if (appState.attachments.isEmpty)
+              if (attachments.isEmpty && documents.isEmpty)
                 Text(
                   'No attachments staged.',
                   style: TextStyle(fontSize: 12.5, color: c.inkFaint),
                 ),
-              for (final a in appState.attachments)
+              for (final a in attachments)
                 _KeyValue(
                   'Attached',
                   a.filename,
                   simulated: services.appDataIsMock,
                 ),
-              for (final d in services.work.documents.take(3))
+              for (final d in documents)
                 _KeyValue('Document', d.name, simulated: d.simulated),
               const SizedBox(height: UriSpace.lg),
               const Eyebrow('Results'),
