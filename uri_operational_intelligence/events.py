@@ -23,6 +23,8 @@ EVENT_TYPES = {
     "answer.delta": "text",
     "answer.done": "status, complete, escalation_candidate, flags, metrics",
     "core.result": "state, code, message, needs (confirmation|clarification|approval|none), intent?, approval_request?",
+    # Emitted only after a core.result with SETTLED_VERIFIED: what actually changed, read from the client store.
+    "core.outcome": "capability_id, summary, saved[] (facts new in the client store), read_back (bool)",
     "approval.required": "core_turn_id, capability_id, arguments, approval_digest, effect, reversible",
     "plan.proposed": "task_id, goal, steps[], clarifications[], problems[], downgraded[]",
     "task.step": "task_id, step_id, state, core_code?",

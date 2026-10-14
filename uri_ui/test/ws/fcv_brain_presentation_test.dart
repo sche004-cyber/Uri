@@ -50,7 +50,7 @@ class _Runtime implements IntegratedRuntime {
 Map<String, dynamic> _health(String? hostState, {String? explain, bool running = true}) => {
       'state': 'RECOVERING',
       'host': {'running': running, 'state': hostState},
-      if (explain != null) 'explain': explain,
+      'explain': ?explain,
     };
 
 void main() {

@@ -101,6 +101,29 @@ class _Rerouted:
         return self.inner.emit(turn_id, type_, **data)
 
 
+def completion_outcome(request_env: dict, env: dict, before, after):
+    """What actually happened after an approval, in plain words (FCV UX-D).
+
+    Only Core's verified settlement of a remember_fact request is described: Core settles it as verified only after
+    the client runtime read the new fact back from the client store. The saved text comes from that same store
+    (facts present after and not before), never from the request. Anything else keeps Core's own message.
+    """
+    if env.get("code") != "SETTLED_VERIFIED" or env.get("state") != "reply":
+        return None
+    capability = (request_env.get("approval_request") or {}).get("capability_id")
+    if capability != "remember_fact":
+        return None
+    saved = [f for f in (after or []) if before is not None and f not in before]
+    if saved:
+        quoted = "; ".join("\u201c%s\u201d" % f for f in saved[:3])
+        summary = ("Saved to URI's memory on this computer: %s. URI read it back from the memory store to check "
+                   "it was stored." % quoted)
+    else:
+        summary = ("Saved to URI's memory on this computer, and read back from the memory store to check it. "
+                   "No new entry appeared in the list, so it may already have been there.")
+    return {"capability_id": capability, "summary": summary, "saved": saved[:3], "read_back": True}
+
+
 def _is_uuid(value) -> bool:
     try:
         return isinstance(value, str) and str(uuid.UUID(value)) == value.lower()
@@ -438,10 +461,14 @@ class IntegratedTurns:
             sink = self._sink(turn_id)
             try:
                 sink.emit(turn_id, "companion.state", state="thinking")
+                before = self._facts() if approve else None
                 env = self.o.decide(p["text"], p["session_id"], p["env"], approve, sink=sink)
             except Exception as exc:
                 self._fail(sink, turn_id, exc)
                 return
+            outcome = completion_outcome(p["env"], env, before, self._facts()) if approve else None
+            if outcome:
+                sink.emit(turn_id, "core.outcome", **outcome)
             from .orchestrator import core_needs, core_turn_status
             status = core_turn_status(env, core_needs(env))
             sink.emit(turn_id, "turn.finished", status=status, route="core", total_s=0)
@@ -491,6 +518,16 @@ class IntegratedTurns:
         self.o.brain_selection = dict(sel)
         self._readiness_for_orchestrator()
         return {"selected": sel}
+
+    def _facts(self):
+        """The client store's facts, or None when they cannot be read (never a guess)."""
+        if self._memory is None:
+            return None
+        try:
+            rows = self._memory()
+        except Exception:
+            return None
+        return [f for f in rows if isinstance(f, str)] if isinstance(rows, list) else None
 
     def _memory_list(self, _c):
         if self._memory is None:

@@ -40,6 +40,11 @@ class OiMessage {
   String? coreCode;
   String? coreMessage;
 
+  /// What actually changed after Core's verified settlement, read by the
+  /// worker from the client store (`core.outcome`). Shown instead of Core's
+  /// generic message when present.
+  String? outcomeSummary;
+
   /// FAST / NORMAL tier actually used, and the route (answer, core, plan...).
   String? tier;
   String? route;
@@ -757,6 +762,11 @@ class OiConversation extends ChangeNotifier {
             message: data['message'] as String?,
             data: (data['confirmation'] as Map?)?.cast<String, dynamic>() ?? const {},
           );
+        }
+      case 'core.outcome':
+        final summary = data['summary'];
+        if (summary is String && summary.isNotEmpty && m?.coreCode == 'SETTLED_VERIFIED') {
+          m?.outcomeSummary = summary;
         }
       case 'approval.required':
         if (turnId != null) {
