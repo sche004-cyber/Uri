@@ -49,7 +49,8 @@ Same harness and window size. No Brain resident in either run.
 | Dedicated VRAM median / max (MB) | 152.7 / 173.2 | 153.9 / 174.9 | 153.9 / 174.9 | 108.7 / 110.7 |
 | Raster p50 / p99 (ms) | 0.62 / 1.00 | 0.64 / 1.12 | 0.68 / 1.19 | 0.83 / 1.25 |
 
-Evidence: `evidence/perf_run2/`, `evidence/perf_run4/`.
+Evidence: `evidence/perf_run2/` (commit 7d83947d), `evidence/perf_run4/` (built from the working tree that was then
+committed unchanged as 59157120 - the build preceded the commit; recorded in `perf_run4/summary.json`).
 
 Reading: sleeping between sprite frames cut Ember's requested frames by about two thirds and its GPU time to about
 4 % of Solar's. The goal of one frame per sprite frame (24 / s) is NOT reached: 48-frame clips request about 36 / s and

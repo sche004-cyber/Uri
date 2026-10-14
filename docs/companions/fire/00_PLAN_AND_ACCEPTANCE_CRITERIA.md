@@ -14,6 +14,9 @@ Merge: NOT authorised. Stop at the integration proposal.
 | OD-2 | Licence of the reference art (Fiverr illustration; emotions sheet carries a Gemini mark) | "I hold rights / will license". Recorded as the provenance basis; not independently verifiable by the implementer. |
 | OD-3 | The "supplied video" was not attached | Owner will attach it. Until it arrives, motion design uses the image and research only. |
 | OD-4 | Independent reviewer (Claude CLI `loggedIn: false`) | Fresh Claude subagent reviewer only. Findings are real; the report must say the work is NOT lifecycle-driver ACCEPTED. |
+| OD-5 | (2026-10-15) How far to take live qualification | "Full integrated run": provision a disposable runtime for this branch and start server + UI + Brain. This supersedes AC-7's "No Brain is launched by this work". |
+| OD-6 | (2026-10-15) Brain WAITING_FOR_GPU (15.3 GB needed, 13.5 GB free) | "Authorize override, this run only" (`-OverrideGpu`). Recorded by the implementer from the owner's answer in the session: `evidence/live/OWNER_GPU_OVERRIDE_AUTHORIZATION.json`. |
+| OD-7 | (2026-10-14) The winget MSI install stalled on UAC | "Use portable zip instead": official blender-5.2.2-windows-x64.zip, SHA-256 checked against download.blender.org, extracted to `C:\Users\cheta\Development\_tools`. |
 
 ## Discovery facts that shape the plan
 

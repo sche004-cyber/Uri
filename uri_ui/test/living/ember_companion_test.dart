@@ -385,6 +385,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 16));
       await tester.pump(const Duration(milliseconds: 16));
       expect(st.sleepingBetweenFrames, isTrue);
+      // A rebuild with the same (failed) state neither fades to it again nor
+      // decodes it again inside the retry window (review R3-07).
+      final loads = bundle.loads;
+      await tester.pumpWidget(at(CompanionState.thinking));
+      await settleDecode(tester);
+      expect(st.currentClip, EmberClip.idle);
+      expect(bundle.loads, loads);
+      expect(lib.hasFailed(EmberClip.thinking), isTrue);
     });
 
     testWidgets('a first clip that fails shows the fallback and stops waking', (

@@ -152,12 +152,25 @@ class EmberLibrary {
       <EmberClip, Future<ui.Image?>>{};
   final List<EmberClip> _recent = <EmberClip>[];
   final Map<Object, Set<EmberClip>> _pins = <Object, Set<EmberClip>>{};
-  final Set<EmberClip> _failed = <EmberClip>{};
+  final Map<EmberClip, DateTime> _failed = <EmberClip, DateTime>{};
   String? lastFailure;
 
-  /// The clip could not be loaded or decoded (missing, corrupt, no manifest).
-  /// Remembered for the life of the library; a widget never waits on it.
-  bool hasFailed(EmberClip clip) => _failed.contains(clip);
+  /// How long a failed clip is not retried. A transient failure (e.g. memory
+  /// pressure during decode) must not block the clip for the life of the app,
+  /// and a permanent one must not be decoded again on every rebuild.
+  static const Duration retryAfter = Duration(seconds: 30);
+
+  /// The clip could not be loaded or decoded recently (missing, corrupt, no
+  /// manifest). A widget never waits on it and does not fade to it.
+  bool hasFailed(EmberClip clip) {
+    final at = _failed[clip];
+    if (at == null) return false;
+    if (DateTime.now().difference(at) >= retryAfter) {
+      _failed.remove(clip);
+      return false;
+    }
+    return true;
+  }
 
   /// Clips some widget has on screen. Never evicted.
   Set<EmberClip> get pinned => {for (final s in _pins.values) ...s};
@@ -219,6 +232,7 @@ class EmberLibrary {
   }
 
   Future<ui.Image?> load(EmberClip clip) {
+    if (hasFailed(clip)) return Future<ui.Image?>.value(null);
     final ready = _images[clip];
     if (ready != null) {
       _touch(clip);
@@ -232,7 +246,7 @@ class EmberLibrary {
     final m = await manifest();
     final info = m?.clips[clip];
     if (info == null) {
-      _failed.add(clip);
+      _failed[clip] = DateTime.now();
       return null;
     }
     try {
@@ -240,6 +254,7 @@ class EmberLibrary {
       final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
       final frame = await codec.getNextFrame();
       codec.dispose();
+      _failed.remove(clip);
       if (_pins.isEmpty) {
         // Everyone left while this decoded: keep nothing resident.
         frame.image.dispose();
@@ -251,7 +266,7 @@ class EmberLibrary {
       return frame.image;
     } catch (e) {
       lastFailure = '${clip.name}: $e';
-      _failed.add(clip);
+      _failed[clip] = DateTime.now();
       return null;
     }
   }
@@ -397,7 +412,10 @@ class _EmberCompanionState extends State<EmberCompanion>
   @override
   void didUpdateWidget(EmberCompanion old) {
     super.didUpdateWidget(old);
-    final next = _target;
+    var next = _target;
+    // A clip that failed recently is not faded to again on every rebuild;
+    // the companion keeps what it shows until the retry window passes.
+    if (next != _current && _lib.hasFailed(next)) next = _current;
     if (next != _current && next == _previous && _fade < 0.5) {
       // Going back before the new clip took over: cancel, no fade.
       _current = next;
@@ -466,7 +484,7 @@ class _EmberCompanionState extends State<EmberCompanion>
     final speed = widget.look.motion <= 0 ? 1.0 : widget.look.motion;
     // _time is already the companion's own (speed-scaled) time; the next
     // frame boundary is that far away in companion time, so divide by speed
-    // for wall time. Wake one 144 Hz vsync (8 ms) after the boundary: the
+    // for wall time. Wake about one 144 Hz vsync (8 ms; a vsync is 6.9 ms) after the boundary: the
     // delivery is stamped with the vsync time, which can lag the timer, and a
     // wake that lands just before the boundary costs a frame that shows
     // nothing new (measured: about 2 deliveries per sprite frame with 1 ms).
@@ -475,10 +493,20 @@ class _EmberCompanionState extends State<EmberCompanion>
     _wakeIn(math.max(0.004, remaining + 0.008));
   }
 
+  DateTime? _wakeDue;
+
+  /// One pending wake at a time; a new, earlier reason replaces a later one
+  /// (a 50 ms decode poll must not delay the next sprite frame or pulse step).
   void _wakeIn(double seconds) {
-    if (_wake != null) return;
+    final due = DateTime.now().add(
+      Duration(microseconds: (seconds * 1e6).round()),
+    );
+    if (_wake != null && _wakeDue != null && !due.isBefore(_wakeDue!)) return;
+    _wake?.cancel();
+    _wakeDue = due;
     _wake = Timer(Duration(microseconds: (seconds * 1e6).round()), () {
       _wake = null;
+      _wakeDue = null;
       if (mounted) resumeFrames();
     });
   }

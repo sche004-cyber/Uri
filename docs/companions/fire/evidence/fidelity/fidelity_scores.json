@@ -2,6 +2,7 @@
  "method": "scripts/fire_companion/fidelity_score.py",
  "states": {
   "idle": {
+   "eye_self_check": 0.973,
    "frames": [
     {
      "frame": "f_0001.png",
@@ -68,6 +69,7 @@
    "met": false
   },
   "joyful": {
+   "eye_self_check": 0.5,
    "frames": [
     {
      "frame": "f_0001.png",
@@ -134,6 +136,7 @@
    "met": false
   },
   "fierce": {
+   "eye_self_check": 0.5,
    "frames": [
     {
      "frame": "f_0001.png",
@@ -200,6 +203,7 @@
    "met": false
   },
   "depleted": {
+   "eye_self_check": 0.841,
    "frames": [
     {
      "frame": "f_0001.png",

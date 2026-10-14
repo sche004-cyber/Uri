@@ -19,7 +19,8 @@ Two independent measures, as the brief asked (not pixel similarity alone):
    - Informational point: an AI video redraw of the same character (owner-supplied video, key frames).
 2. **Independent visual critique** - a separate reviewer that did not make the images scored nine dimensions
    (silhouette, proportions, eyes, expression, flame structure, colour, material, lighting, overall identity) 0-10 per
-   state, and scored the video redraw the same way for calibration.
+   state, and scored the video redraw the same way for calibration. Full table:
+   `evidence/fidelity/independent_visual_critique.md`.
 
 ## Results (final scorer; renders from `companion_art/fire/ember.blend`, unchanged since 8a1438ec)
 
@@ -32,8 +33,8 @@ Evidence: `evidence/fidelity/fidelity_scores.json`, `evidence/fidelity/fidelity_
 | Fierce | 6.1 (3.9 - 8.3) | 3.9 | 46 % | 66 % | 90 - NOT MET |
 | Depleted | 21.5 (18.9 - 32.3) | 18.8 | 50 % | 67 % | 90 - NOT MET |
 
-Eye-component self-check (panel against its own degraded copy): idle 0.97, joyful 0.50, fierce 0.50,
-depleted 0.84. Below 0.9 the eye component is not trustworthy for that panel: the joyful and fierce eyes have bright
+Eye-component self-check (panel against its own degraded copy, `eye_self_check` in `fidelity_scores.json`):
+idle 0.97, joyful 0.50, fierce 0.50, depleted 0.84. Below 0.9 the eye component is not trustworthy for that panel: the joyful and fierce eyes have bright
 irises the detector cannot isolate, so they score "unknown" (0.5) for every candidate.
 
 ## What the numbers mean
@@ -56,7 +57,7 @@ irises the detector cannot isolate, so they score "unknown" (0.5) for every cand
 | When | Change | Effect on reported scores |
 |------|--------|---------------------------|
 | 2026-10-14, before any candidate render | Registration of the candidate to the reference box added (framing dominated the first calibration). | Calibration only. |
-| 2026-10-14, iteration rounds r2-r12 | Look tuned over 12 rounds with the first scorer; idle reached 17-22, joyful up to 28 on single frames. | Superseded: the first scorer's eye component measured the backdrop (review R1-04). |
-| 2026-10-15, review R1-04 | Eyes must lie inside the character and be 12 L* darker than the backdrop; both anchors registered; unclamped reported. | Medians became idle -8.5, joyful -6.9, fierce -9.7, depleted 19.3. |
+| 2026-10-14, iteration rounds r2-r12 | Look tuned over 12 rounds with the first scorer (comparison sheets kept in `evidence/fidelity_iterations/`; per-round scores were printed, not saved: UNVERIFIABLE). | Superseded: the first scorer's eye component measured the backdrop (review R1-04). |
+| 2026-10-15, review R1-04 | Eyes must lie inside the character and be 12 L* darker than the backdrop; both anchors registered; unclamped reported. | Intermediate medians (idle -8.5, joyful -6.9, fierce -9.7, depleted 19.3) were printed in the session but that output was not preserved: UNVERIFIABLE from the evidence folder. Superseded by the final values. |
 | 2026-10-15, review R2-03 | Eyes must form a side-by-side pair of at least 0.1 % of the frame each; an undetectable pair scores 0.5. | Final values above. |
 | 2026-10-15, review R1-02 | `02_STATE_MATRIX.md` had said fierce was "qualified for fidelity". It never was. | Wording corrected. |

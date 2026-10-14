@@ -43,6 +43,7 @@ def main() -> None:
         unc = [x["unclamped"] for x in rows]
         vid = fs.score(s, video / f"vcrop_{s}.jpg")["candidate"]
         report["states"][s] = {
+            "eye_self_check": round(fs.score(s)["eye_self_check"], 3),
             "frames": rows,
             "median_calibrated": statistics.median(cal),
             "min_calibrated": min(cal),

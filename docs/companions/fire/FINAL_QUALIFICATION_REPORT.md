@@ -12,7 +12,7 @@ Nothing is merged, pushed or deployed. **STOP: waiting for the owner's decision.
 | Planned | YES - `00_PLAN_AND_ACCEPTANCE_CRITERIA.md` (AC-1..AC-10, owner decisions OD-1..OD-4) |
 | Implemented | YES - Blender source + 8 shipped clips + Flutter integration as an additional companion |
 | Tested (automated) | YES - see section 9 |
-| Live verified (Windows, real server + Brain) | PARTIAL - 8 of 10 journeys fully, 1 partial, 1 not available (section 10) |
+| Live verified (Windows, real server + Brain) | PARTIAL - 7 of 10 journeys fully, 2 partial, 1 not available (section 10); automated input, not a human |
 | Visual fidelity >= 90 % | **NOT MET** in any state (section 5) |
 | Independently accepted | NO lifecycle-driver acceptance (OD-4: Claude CLI logged out). Separate-reviewer rounds: R1 REJECT, R2 ACCEPT WITH FINDINGS, R3 see section 14 |
 | Ready for integration | **NO** as specified (AC-2 not met); integrable as-is only if the owner accepts the fidelity result (section 17) |
@@ -67,12 +67,15 @@ render quality) and show a 15 KB still in the picker; reduced effects -> classic
 
 ## 9. Automated tests
 Full `flutter test`: baseline `1b5423bc` 543/543 pass; candidate (run 1) 558/558 pass, one test renamed, 16 new
-(`evidence/tests/run1_test_compare.json`). Final candidate: see section 14 addendum. Ember-specific: 25 tests
+(`evidence/tests/run1_test_compare.json`). Final full suite on the code of `d7093fbf`: 570/570 pass, one renamed,
+28 new (`evidence/tests/final_test_compare.json`); after the R3 repairs the four companion suites were re-run
+(141/141). Ember-specific: 25 tests
 (mapping, assets, manifest validation, decode-wait fade, failed loads, shared library, VRAM release, cadence at three
 motion speeds, still mode) + 2 shell/settings tests.
 
 ## 10. Live Windows results (`05_LIVE_QUALIFICATION.md`)
-Real production `main()`, real worker/Core/Brain, automated input (not human): start PASS, select PASS, idle PASS,
+Real production `main()`, real worker/Core/Brain, automated input (not human): start PASS, select PARTIAL (the
+fixture already held Ember, so a change of companion was not exercised in the recorded run), idle PASS,
 wake phrase NOT AVAILABLE, conversation PARTIAL (typed turn only, no microphone turn), mode switching PASS, real task
 with approval PASS, completion PASS for the task but the joyful expression is never reached in the integrated profile
 (F-SUCCESS), recoverable error PASS, return to idle PASS. The test process reported failure only because of 12
@@ -96,7 +99,11 @@ first-time user for ~5 minutes.
 
 ## 14. Independent audit
 Fresh separate Claude reviewers (no lifecycle driver - OD-4): R1 REJECT (2 blocking MEDIUM) -> repaired `7d83947d`;
-R2 ACCEPT WITH FINDINGS (3 MEDIUM) -> repaired `96bcc319`, `59157120`; R3 on `d7093fbf`: PENDING at time of writing.
+R2 ACCEPT WITH FINDINGS (3 MEDIUM) -> repaired `96bcc319`, `59157120`; R3 on `d7093fbf`: REJECT on evidence
+integrity (four MEDIUM: unsupported preference-hash claim, wrong screenshot citation and an unlogged 133 tok/s figure,
+critique scores and eye self-check not committed, journey 2 marked PASS without a change of companion) plus LOW code
+findings (failed clips retried on every rebuild, a stale pending wake delaying the next) -> repaired in the commit
+after `626639c9`; R4: see the addendum at the end.
 Visual critique by a separate reviewer: section 5. Not lifecycle-ACCEPTED.
 
 ## 15. Remaining defects and limitations
