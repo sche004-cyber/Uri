@@ -186,6 +186,8 @@ class OiConversation extends ChangeNotifier {
   Map<String, dynamic> catalog = const {};
   List<String> memory = const [];
   Map<String, dynamic> cloud = const {};
+  bool _disposed = false;
+  bool _active(IntegratedRuntime rt) => !_disposed && identical(rt, runtime);
 
   /// When the `oi_turn` that is awaiting its reply was sent (Codex H-r1 F4).
   DateTime? _sendingSince;
@@ -215,26 +217,38 @@ class OiConversation extends ChangeNotifier {
   // ---- commands ---------------------------------------------------------
 
   Future<void> refreshStatus() async {
+    if (_disposed) return;
+    final rt = runtime;
     try {
-      brainStatus = await runtime.call({'command': 'brain_status'});
-      catalog = await runtime.call({'command': 'brain_catalog'});
+      final status = await rt.call({'command': 'brain_status'});
+      if (!_active(rt)) return;
+      brainStatus = status;
+      final rows = await rt.call({'command': 'brain_catalog'});
+      if (!_active(rt)) return;
+      catalog = rows;
       lastError = null;
     } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
       lastError = e.code;
     }
     await refreshHealth(notify: false);
-    notifyListeners();
+    if (_active(rt)) notifyListeners();
   }
 
   Future<void> refreshHealth({bool notify = true}) async {
+    if (_disposed) return;
+    final rt = runtime;
     try {
-      brainHealth = await runtime.call({'command': 'brain_health'}).timeout(probeTimeout);
+      final health = await rt.call({'command': 'brain_health'}).timeout(probeTimeout);
+      if (!_active(rt)) return;
+      brainHealth = health;
     } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
       lastError = e.code;
     } on TimeoutException {
       // The liveness probe decides about the worker; a slow health read alone does not.
     }
-    if (notify) notifyListeners();
+    if (notify && _active(rt)) notifyListeners();
   }
 
   /// Explicit Brain host request: 'restart', 'stop' or 'start'.
@@ -381,19 +395,28 @@ class OiConversation extends ChangeNotifier {
   }
 
   Future<void> refreshMemory() async {
+    if (_disposed) return;
+    final rt = runtime;
     try {
-      final v = await runtime.call({'command': 'memory_list'});
+      final v = await rt.call({'command': 'memory_list'});
+      if (!_active(rt)) return;
       memory = [for (final f in (v['facts'] as List? ?? const [])) if (f is String) f];
     } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
       lastError = e.code;
     }
     notifyListeners();
   }
 
   Future<void> refreshCloud() async {
+    if (_disposed) return;
+    final rt = runtime;
     try {
-      cloud = await runtime.call({'command': 'cloud_policy'});
+      final policy = await rt.call({'command': 'cloud_policy'});
+      if (!_active(rt)) return;
+      cloud = policy;
     } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
       lastError = e.code;
     }
     notifyListeners();
@@ -626,15 +649,15 @@ class OiConversation extends ChangeNotifier {
   }
 
   Future<void> refreshDraft() async {
-    if (restarting || workerExited) return;
+    if (_disposed || restarting || workerExited) return;
     final rt = runtime;
     try {
       final r = await rt.call({'command': 'draft_get', 'session_id': sessionId});
-      if (!identical(rt, runtime)) return;
+      if (!_active(rt)) return;
       draft = OiDraft.parse(r['draft']);
       draftQuestion = draft?.pendingQuestion;
     } on IntegratedRuntimeException catch (e) {
-      if (!identical(rt, runtime)) return;
+      if (!_active(rt)) return;
       lastError = e.code;
     }
     notifyListeners();
@@ -648,6 +671,7 @@ class OiConversation extends ChangeNotifier {
   // ---- events -----------------------------------------------------------
 
   void _onEvent(Map<String, dynamic> ev) {
+    if (_disposed) return;
     if (ev['schema'] == assistEventSchema) {
       // A research job's progress must not make a silent OI turn look alive.
       if (!_assistEvents.isClosed) _assistEvents.add(ev);
@@ -793,6 +817,7 @@ class OiConversation extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _monitor?.cancel();
     _sub.cancel();
     _a2uiHandoffs.close();
