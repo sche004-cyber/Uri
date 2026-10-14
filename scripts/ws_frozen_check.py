@@ -27,6 +27,7 @@ PROVENANCE = {
     "docs/graphify/GRAPHIFY_LEAK_1_PLAN_AND_ACCEPTANCE.md": "1eeb1f9132d7b314420a1751b4574088e830ae6a2923e86a932e433bbcdeea6f",
     "docs/ssrf/SSRF_1_PLAN_AND_ACCEPTANCE.md": "fac7a8681b0ff83923a34073b16da8d5dc3630fba89a211ff712c12432e5dba9",
     "docs/web/IDN_1B_PLAN_AND_ACCEPTANCE.md": "387a29366348a5b492885fd121d97a81d60f0080fff30ad9dda3aee069aeb71b",
+    "docs/governance/fcv_recovery/FCV01_ROLLBACK_AMENDMENT_AUTHORIZATION.md": "f73e7c4be82808df141287f1e92edb70b6732e527f171dba651bb8bd28df3c43",
 }
 APPROVED = {
     "uri_core/app/server.py": {
@@ -40,6 +41,15 @@ APPROVED = {
         "decisions": ["SSRF-1/D2", "IDN-1b/D33"],
         "commits": ["f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7", "a5a31435035c88ab5c3a868796f96232bc036759", "6a33c1b5dbfe0c3694963416310945db8ee06b9d"],
         "provenance": ["docs/ssrf/SSRF_1_PLAN_AND_ACCEPTANCE.md", "docs/web/IDN_1B_PLAN_AND_ACCEPTANCE.md"],
+    },
+    # FCV-01: owner-authorized frozen amendment (C7 rehearsal of the exact checkpoint). Its own anchor is the commit
+    # that introduced it, so it is required only in trees that descend from that commit.
+    "scripts/phase1_offline_rollback.py": {
+        "sha256": "50f8540da21f0a3f812bf5e807129ef7eb6f805767c91c980b28c4b67498d70e",
+        "decisions": ["OWNER-FCV01-20261014"],
+        "commits": ["0d3e12245cd8522b2b1785daa45f48564f7adc9e"],
+        "provenance": ["docs/governance/fcv_recovery/FCV01_ROLLBACK_AMENDMENT_AUTHORIZATION.md"],
+        "anchor": "0d3e12245cd8522b2b1785daa45f48564f7adc9e",
     },
 }
 
@@ -74,16 +84,20 @@ def regular_bytes(tree, name):
     return p.read_bytes()
 
 
+def spec_anchor(spec):
+    return spec.get("anchor", ANCHOR)
+
+
 def exact_exception(tree, name):
     spec = APPROVED.get(name)
-    if spec is None or not ancestor(tree, ANCHOR):
+    if spec is None or not ancestor(tree, spec_anchor(spec)):
         return False
     if not all(ancestor(tree, c) for c in spec["commits"]):
         return False
     if digest(regular_bytes(tree, name)) != spec["sha256"]:
         return False
     # Committed and staged content/modes must also be the pinned canonical blob.
-    for revision in (ANCHOR, "HEAD"):
+    for revision in (spec_anchor(spec), "HEAD"):
         if digest(git(tree, "show", revision + ":" + name)) != spec["sha256"]:
             return False
         if not git(tree, "ls-tree", revision, "--", name).startswith(b"100644 blob "):
@@ -98,10 +112,10 @@ def exact_exception(tree, name):
         if digest(regular_bytes(tree, witness)) != expected:
             return False
         if any(digest(git(tree, "show", ":" + witness if rev == ":" else rev + ":" + witness)) != expected
-               for rev in (ANCHOR, "HEAD", ":")):
+               for rev in (spec_anchor(spec), "HEAD", ":")):
             return False
         if any(not git(tree, "ls-tree", rev, "--", witness).startswith(b"100644 blob ")
-               for rev in (ANCHOR, "HEAD")):
+               for rev in (spec_anchor(spec), "HEAD")):
             return False
         witness_stage = git(tree, "ls-files", "--stage", "--", witness).split(b"\t", 1)[0].split()
         if len(witness_stage) != 3 or witness_stage[0] != b"100644" or witness_stage[2] != b"0":
@@ -143,7 +157,7 @@ def check(tree):
         protected = {p for p in changed if p and (p.startswith(PROTECTED) or p in PROTECTED)}
         # Once canonical security fixes are in ancestry, reverting them to the
         # original checkpoint is also refused, even if diff(BASELINE) is empty.
-        required = set(APPROVED) if ancestor(tree, ANCHOR) else set()
+        required = {p for p, spec in APPROVED.items() if ancestor(tree, spec_anchor(spec))}
         accepted = {p for p in protected | required if p not in hidden and exact_exception(tree, p)}
         out["recognized_exact_blobs"] = {p: APPROVED[p] for p in sorted(accepted)}
         with zipfile.ZipFile(io.BytesIO(checkpoint_bytes)) as z:

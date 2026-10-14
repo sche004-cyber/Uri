@@ -338,8 +338,10 @@ def verify(source, runtime):
                     extras.append(path)
         if extras:
             raise VerificationError("UNKNOWN_OUTPUT:" + ",".join(sorted(extras)[:10]))
-        for path, spec in F.APPROVED.items():
-            if digest(raw(runtime, path)) != spec["sha256"]:
+        # The two runtime security transitions. The FCV-01 rollback amendment is a source-tree tool change; the
+        # historical runtime keeps the overlay's original rollback script (checked as an expected file above).
+        for path in BEFORE:
+            if digest(raw(runtime, path)) != F.APPROVED[path]["sha256"]:
                 raise VerificationError("APPROVED_BLOB_CHANGED:" + path)
         for path, sha in F.PROVENANCE.items():
             if digest(raw(runtime, path)) != sha:
