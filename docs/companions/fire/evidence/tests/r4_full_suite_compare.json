@@ -1,0 +1,50 @@
+{
+ "baseline_1b5423bc": {
+  "counts": {
+   "success": 543
+  },
+  "success": true
+ },
+ "candidate_e6ae4712": {
+  "counts": {
+   "success": 572
+  },
+  "success": true
+ },
+ "failing_candidate": [],
+ "new": [
+  "identity Ember adopts the existing warm theme, no new palette",
+  "identity Ember is an additional choice; nothing else moved",
+  "identity controls that cannot change Ember are not offered",
+  "settings page the Ember tile shows its still frame; its look omits baked controls",
+  "shader cache every shader identity names a distinct shader asset",
+  "shell and theme Ember is drawn from clips through the companion seam",
+  "shipped assets frame rectangles tile the atlas row-major and wrap",
+  "shipped assets manifest lists every clip, and every atlas exists at its size",
+  "shipped assets pubspec bundles the ember asset directory",
+  "shipped assets the manifest refuses an empty layout instead of dividing by zero",
+  "shipped assets the picker thumbnail is shipped and small",
+  "shipped assets the resident budget stays bounded",
+  "state mapping every CompanionState has a shipped expression",
+  "state mapping fading into or out of depleted is slower than other changes",
+  "state mapping the table is the one documented in 02_STATE_MATRIX.md",
+  "states.json ships exactly the clips the app knows",
+  "widget a clip that fails to load ends the fade on the old clip",
+  "widget a fade waits for the incoming clip; the old one stays visible",
+  "widget a first clip that fails shows the fallback and asks for no frames",
+  "widget a refused target is followed once it may be retried",
+  "widget a state change cross-fades and evicts the old clip after",
+  "widget a still Ember (picker) settles and requests nothing",
+  "widget after the retry window a failed first clip is loaded again",
+  "widget between sprite frames Ember asks for no frames",
+  "widget shows the fallback until the clip is decoded, then paints",
+  "widget sprite cadence follows the motion preference (0.5)",
+  "widget sprite cadence follows the motion preference (1.0)",
+  "widget sprite cadence follows the motion preference (1.5)",
+  "widget two companions share the library; one leaving keeps the other",
+  "widget unmounting the last Ember frees every atlas"
+ ],
+ "removed_or_renamed": [
+  "shader cache every identity names a distinct shader asset"
+ ]
+}

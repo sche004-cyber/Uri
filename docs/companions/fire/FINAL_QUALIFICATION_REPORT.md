@@ -69,7 +69,7 @@ render quality) and show a 15 KB still in the picker; reduced effects -> classic
 Full `flutter test`: baseline `1b5423bc` 543/543 pass; candidate (run 1) 558/558 pass, one test renamed, 16 new
 (`evidence/tests/run1_test_compare.json`). Final full suite on the code of `d7093fbf`: 570/570 pass, one renamed,
 28 new (`evidence/tests/final_test_compare.json`); after the R3 repairs the four companion suites were re-run
-(141/141; log not kept - superseded by the R4 run, `evidence/tests/r4_companion_suites.log`, 143/143). Ember-specific: 25 tests
+(141/141; log not kept - superseded by the R4 run, `evidence/tests/r4_companion_suites.log`, 143/143). Ember-specific: 26 test declarations in ember_companion_test.dart (the cadence test runs at three motion speeds)
 (mapping, assets, manifest validation, decode-wait fade, failed loads, shared library, VRAM release, cadence at three
 motion speeds, still mode) + 2 shell/settings tests.
 
@@ -135,3 +135,14 @@ Any integration needs explicit owner authorisation; follow-ups F-SUCCESS and PRE
 ## Addendum - review rounds after the first draft
 
 (Filled in as rounds complete; nothing above is rewritten except where a correction is marked.)
+
+- **R4** on `c9d91758`: REJECT - R4-01 (MEDIUM, a regression introduced by the R3 retry window: an expired failure
+  was never reloaded and the widget polled at 20 Hz), R4-02 (MEDIUM, VRAM release overstated in section 11), LOW
+  R4-03..R4-08. Repaired in `e6ae4712`. Full suite on `e6ae4712`: 572/572 pass, one renamed, 30 new
+  (`evidence/tests/r4_full_suite_compare.json`).
+- **R5** on `e6ae4712`: ACCEPT WITH FINDINGS, no HIGH or blocking finding. The reviewer reproduced R4-01/R4-03
+  repairs with its own probes. LOW findings: R5-01 a still or reduced-motion companion never retried a failed clip;
+  R5-02 wake arbitration used a different clock from the injectable one; R5-03 test count and log binding in this
+  report; R5-04 the preference-copy time is not evidenced. Repaired in the commit after `e6ae4712`
+  (R5-04: the time is marked unverifiable; the conclusion rests on the unchanged hash and the 2026-10-10 last write).
+- **R6**: see below.

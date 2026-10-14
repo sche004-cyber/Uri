@@ -520,6 +520,31 @@ void main() {
       expect(st.currentClip, EmberClip.thinking);
     });
 
+    testWidgets('a still Ember also retries a failed clip after the window', (
+      tester,
+    ) async {
+      var clock = Duration.zero;
+      lib.now = () => clock;
+      bundle.broken.add('idle.webp');
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: EmberCompanion(
+            library: lib,
+            still: true,
+            fallback: const Text('fallback', key: ValueKey('fb')),
+          ),
+        ),
+      );
+      await settleDecode(tester);
+      expect(find.byKey(const ValueKey('fb')), findsOneWidget);
+      bundle.broken.clear();
+      clock += EmberLibrary.retryAfter + const Duration(seconds: 1);
+      await tester.pump(const Duration(seconds: 31));
+      await settleDecode(tester);
+      expect(find.byKey(const ValueKey('fb')), findsNothing);
+    });
+
     testWidgets('a still Ember (picker) settles and requests nothing', (
       tester,
     ) async {

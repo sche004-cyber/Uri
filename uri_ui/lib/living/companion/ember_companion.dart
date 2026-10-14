@@ -371,6 +371,7 @@ class _EmberCompanionState extends State<EmberCompanion>
   double _prevTime = 0;
   double _attention = 0;
   int _shownFrame = -1;
+  bool _drawable = false;
   bool _reducedMotion = false;
 
   /// Time between deliveries, taken from the frame timestamp: the frame
@@ -476,7 +477,9 @@ class _EmberCompanionState extends State<EmberCompanion>
   @override
   bool get wantsFrames {
     if (_settling) return true;
-    if (_frozen) return false;
+    // Loading and retries come before the frozen check: a still or
+    // reduced-motion companion must still recover from a failed clip
+    // (review R5-01).
     if (_lib.imageIfLoaded(_current) == null) {
       if (_lib.hasFailed(_current)) {
         // Failed: the fallback shows; wake once when it may be retried.
@@ -493,6 +496,7 @@ class _EmberCompanionState extends State<EmberCompanion>
       // Showing a stand-in for a failed target: re-check when it may retry.
       _wakeIn(_lib.retryIn(_target).inMicroseconds / 1e6 + 0.01);
     }
+    if (_frozen) return false;
     // The approval pulse is a slow brightness wave: 30 updates a second are
     // indistinguishable from more.
     if (_attention > 0.001) {
@@ -525,7 +529,7 @@ class _EmberCompanionState extends State<EmberCompanion>
   /// (a 50 ms decode poll must not delay the next sprite frame or pulse step).
   void _wakeIn(double seconds) {
     final delay = Duration(microseconds: (seconds * 1e6).round());
-    final due = EmberLibrary._monotonic() + delay;
+    final due = _lib.now() + delay;
     if (_wake != null && _wakeDue != null && due >= _wakeDue!) return;
     _wake?.cancel();
     _wakeDue = due;
@@ -594,6 +598,13 @@ class _EmberCompanionState extends State<EmberCompanion>
       changed = true;
     }
     if (_attention > 0.001) changed = true; // the pulse moves every frame
+    // A clip that has just become drawable must be painted even when no
+    // sprite frame advances (still mode, reduced motion).
+    final drawable = _lib.imageIfLoaded(_current) != null;
+    if (drawable != _drawable) {
+      _drawable = drawable;
+      changed = true;
+    }
     final f = _frameAt(_current, _time);
     if (f != _shownFrame) {
       _shownFrame = f;
