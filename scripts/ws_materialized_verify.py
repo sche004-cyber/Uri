@@ -179,7 +179,10 @@ def verify(source, runtime):
         if (Path(receipt["candidate_source"]).resolve() != source.resolve()
                 or receipt["candidate_head"] != head or receipt["candidate_tree"] != source_tree
                 or receipt["head"] != M.BASE or receipt["overlay_commit"] != M.OVERLAY_COMMIT
-                or receipt["security_patch_sha256"] != PATCH_SHA256):
+                or receipt["security_patch_sha256"] != PATCH_SHA256
+                or receipt["security_transitions"] != {
+                    p: {"before_sha256": before, "after_sha256": F.APPROVED[p]["sha256"]}
+                    for p, before in BEFORE.items()}):
             raise VerificationError("RECEIPT_IDENTITY")
         if type(receipt["oi_tests_included"]) is not bool:
             raise VerificationError("RECEIPT_TEST_SCOPE")
@@ -218,6 +221,24 @@ def verify(source, runtime):
     except (OSError, ValueError, KeyError, TypeError) as exc:
         result["error"] = str(exc)
     return result
+
+
+def verified_transitions(runtime):
+    """Narrow reconciliation for original historical integrity gates.
+
+    No receipt means original byte-identity behavior. A new receipt requires
+    full output proof; it never grants permission merely by naming an exception.
+    """
+    receipt_path = Path(runtime) / "OI_MATERIALIZATION_RECEIPT.json"
+    if not receipt_path.exists():
+        return set()
+    receipt = json.loads(raw(runtime, "OI_MATERIALIZATION_RECEIPT.json"))
+    if "security_patch_sha256" not in receipt:
+        return set()  # historical materializations retain their original gates
+    result = verify(receipt["candidate_source"], runtime)
+    if not result["ok"]:
+        raise VerificationError("MATERIALIZED_GATE_REFUSED:" + result.get("error", "UNKNOWN"))
+    return set(BEFORE)
 
 
 def main():

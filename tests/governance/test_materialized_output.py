@@ -53,6 +53,9 @@ def output(tmp_path, monkeypatch):
     receipt = dict(candidate_source=str(source), candidate_head=head,
                    candidate_tree=git(source, "rev-parse", "HEAD^{tree}"),
                    head=head, overlay_commit=head, security_patch_sha256=V.PATCH_SHA256,
+                   security_transitions={p: {"before_sha256": before,
+                                              "after_sha256": V.F.APPROVED[p]["sha256"]}
+                                         for p, before in V.BEFORE.items()},
                    oi_tests_included=True)
     (runtime / "OI_MATERIALIZATION_RECEIPT.json").write_text(json.dumps(receipt))
     verified = V.verify(source, runtime)
@@ -82,7 +85,7 @@ def test_unknown_output_refused_even_if_ignored(output, path):
 
 
 @pytest.mark.parametrize("field", ["candidate_source", "candidate_head", "candidate_tree", "head",
-                                   "overlay_commit", "security_patch_sha256", "oi_tests_included"])
+                                   "overlay_commit", "security_patch_sha256", "security_transitions", "oi_tests_included"])
 def test_receipt_cannot_authorize_substitution(output, field):
     source, runtime, receipt = output
     receipt[field] = "substituted"
@@ -127,3 +130,20 @@ def test_reconciliation_refuses_unknown_before_bytes(output):
     source, runtime, _ = output
     with pytest.raises(V.VerificationError, match="TRANSITION_BEFORE_CHANGED"):
         V.reconcile(source, runtime)
+
+
+def test_original_checkpoint_behavior_without_receipt(tmp_path):
+    assert V.verified_transitions(tmp_path) == set()
+
+
+def test_original_checkpoint_behavior_with_historical_receipt(tmp_path):
+    (tmp_path / "OI_MATERIALIZATION_RECEIPT.json").write_text("{}")
+    assert V.verified_transitions(tmp_path) == set()
+
+
+def test_authorized_transition_gate_requires_full_output_proof(output):
+    source, runtime, _ = output
+    assert V.verified_transitions(runtime) == set(V.BEFORE)
+    (runtime / "worker.py").write_text("changed source\n")
+    with pytest.raises(V.VerificationError, match="MATERIALIZED_GATE_REFUSED"):
+        V.verified_transitions(runtime)

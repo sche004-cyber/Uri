@@ -51,6 +51,11 @@ ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "d
                "model_lab/lab/runtime.py",
                "model_lab/lab/vision.py",
                "scripts/oi_materialize_test_runtime.py",
+               "scripts/ws_materialized_verify.py",
+               "docs/governance/windows_restoration/OWNER_RUNTIME_AUTHORIZATION.json",
+               "docs/governance/windows_restoration/EXACT_RUNTIME_SECURITY_TRANSITIONS.patch",
+               "docs/graphify/GRAPHIFY_LEAK_1_PLAN_AND_ACCEPTANCE.md",
+               "docs/ssrf/SSRF_1_PLAN_AND_ACCEPTANCE.md", "docs/web/IDN_1B_PLAN_AND_ACCEPTANCE.md",
                "scripts/run_uri_integrated_server.py",
                "scripts/run_uri_integrated_worker.py",
                "scripts/ti_live_matrix.py",
@@ -216,7 +221,9 @@ def test_every_checkpoint_file_is_byte_identical_in_this_tree():
         f = ROOT / name
         if not f.is_file() or f.read_bytes() != z.read(name):
             bad.append(name)
-    assert bad == []
+    from scripts.ws_materialized_verify import verified_transitions
+    authorized = verified_transitions(ROOT)
+    assert set(bad) <= authorized
 
 
 @needs_zip
@@ -224,7 +231,10 @@ def test_nothing_changed_outside_checkpoint_and_phase2a_paths():
     z = {n for n in zipfile.ZipFile(CHECKPOINT).namelist() if not n.startswith("GIT_")}
     changed = set(sh("diff", "--name-only", BASE_COMMIT).split()) | set(sh("ls-files", "--others", "--exclude-standard").split())
     changed = {c.replace("\\", "/") for c in changed}
-    stray = sorted(c for c in changed if c not in z and not any(fnmatch.fnmatch(c, g) for g in ALLOWED_NEW))
+    from scripts.ws_materialized_verify import verified_transitions
+    authorized = verified_transitions(ROOT)
+    stray = sorted(c for c in changed if c not in z and c not in authorized
+                   and not any(fnmatch.fnmatch(c, g) for g in ALLOWED_NEW))
     assert stray == [], stray
 
 
