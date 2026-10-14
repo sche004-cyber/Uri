@@ -40,7 +40,7 @@ def output(tmp_path, monkeypatch):
     git(source, "commit", "-qm", "fixture")
     head = git(source, "rev-parse", "HEAD")
     runtime = tmp_path / "runtime"
-    subprocess.run(["git", "clone", "-q", "--shared", str(source), str(runtime)], check=True)
+    subprocess.run(["git", "-c", "core.autocrlf=false", "clone", "-q", "--shared", str(source), str(runtime)], check=True)
     monkeypatch.setattr(M, "BASE", head)
     monkeypatch.setattr(M, "OVERLAY_COMMIT", head)
     monkeypatch.setattr(M, "OVERLAY_LIST", "overlay.txt")
@@ -55,7 +55,8 @@ def output(tmp_path, monkeypatch):
                    head=head, overlay_commit=head, security_patch_sha256=V.PATCH_SHA256,
                    oi_tests_included=True)
     (runtime / "OI_MATERIALIZATION_RECEIPT.json").write_text(json.dumps(receipt))
-    assert V.verify(source, runtime)["ok"]
+    verified = V.verify(source, runtime)
+    assert verified["ok"], verified
     return source, runtime, receipt
 
 
