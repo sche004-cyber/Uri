@@ -3,7 +3,7 @@
 Date: 2026-10-14. Milestone family id `URI-OFFICE-U`. Process: `uri-development-lifecycle` (explore, plan, owner vision
 check, independent plan review, freeze, then one isolated branch and worktree per phase).
 Planning branch: `phase/uri-office-unified-plan` from `5b958da0`, worktree `C:\Users\cheta\Development\uri-office-unified`.
-Status: **DRAFT, NOT FROZEN.** Owner decisions OD-U1 to OD-U7 (section 12) are open. No production code has changed.
+Status: **DRAFT, NOT FROZEN.** Owner decided OD-U1, OD-U2 and OD-U6, and chose O2 as the first milestone (2026-10-14, section 12a). OD-U3, OD-U4, OD-U5 and OD-U7 are open. No production code has changed.
 
 ## 0. Acceptance criteria for this document
 
@@ -483,6 +483,15 @@ The recommendation is to start O2, not Word first. A Word milestone without the 
 | OD-U5 | Workspace concept B (after mockups) | B | Re-plan O2 |
 | OD-U6 | Live-run GPU override policy for this program: per run (current) or standing for scripted qualification windows | Per qualification window, logged | Per-run approvals slow O2–O9 |
 | OD-U7 | Real owner documents for category J (consent, kept out of git) or synthetic only | Synthetic first. Owner documents in the owner check only. | — |
+
+## 12a. Owner rulings recorded 2026-10-14 (answered in chat)
+
+| Id | Ruling |
+|---|---|
+| OD-U1 | Stack new Office phases on `5b958da0`. Rebase when M1/M2 integrates into canonical. |
+| OD-U2 | LibreOffice download and install approved: official package, pinned version, run only as a sandboxed headless subprocess. |
+| OD-U6 | GPU override: one logged override window per phase qualification. No process is killed without asking. |
+| First milestone | O2 (shared workspace and render layer). |
 
 ## 13. Self-review against section 0 (draft 1)
 
