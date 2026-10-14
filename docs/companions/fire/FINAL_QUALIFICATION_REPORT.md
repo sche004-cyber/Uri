@@ -14,7 +14,7 @@ Nothing is merged, pushed or deployed. **STOP: waiting for the owner's decision.
 | Tested (automated) | YES - see section 9 |
 | Live verified (Windows, real server + Brain) | PARTIAL - 7 of 10 journeys fully, 2 partial, 1 not available (section 10); automated input, not a human |
 | Visual fidelity >= 90 % | **NOT MET** in any state (section 5) |
-| Independently accepted | NO lifecycle-driver acceptance (OD-4: Claude CLI logged out). Separate-reviewer rounds: R1 REJECT, R2 ACCEPT WITH FINDINGS, R3 see section 14 |
+| Independently accepted | NO lifecycle-driver acceptance (OD-4: Claude CLI logged out). Separate-reviewer rounds: R1 REJECT, R2 ACCEPT WITH FINDINGS, R3 REJECT, R4 REJECT, R5 and R6 ACCEPT WITH FINDINGS (LOW only); see section 14 and the addendum |
 | Ready for integration | **NO** as specified (AC-2 not met); integrable as-is only if the owner accepts the fidelity result (section 17) |
 
 ## 1. Research findings
@@ -66,8 +66,8 @@ follows the existing Solar Ember palette; settings hide controls that cannot cha
 render quality) and show a 15 KB still in the picker; reduced effects -> classic orb, reduced motion -> still frame.
 
 ## 9. Automated tests
-Full `flutter test`: baseline `1b5423bc` 543/543 pass; candidate (run 1) 558/558 pass, one test renamed, 16 new
-(`evidence/tests/run1_test_compare.json`). Final full suite on the code of `d7093fbf`: 570/570 pass, one renamed,
+Full `flutter test` (pass / skipped, the 5 skipped are live-only tests outside Ember's scope; `evidence/tests/pass_skip_counts.json`): baseline `1b5423bc` 538 pass / 5 skipped / 0 fail; candidate run 1 553 / 5 / 0, one test renamed, 16 new
+(`evidence/tests/run1_test_compare.json`). Final full suite on the code of `d7093fbf`: 565 / 5 / 0, one renamed,
 28 new (`evidence/tests/final_test_compare.json`); after the R3 repairs the four companion suites were re-run
 (141/141; log not kept - superseded by the R4 run, `evidence/tests/r4_companion_suites.log`, 143/143). Ember-specific: 26 test declarations, 28 executed tests in ember_companion_test.dart (the cadence test runs at three motion speeds)
 (mapping, assets, manifest validation, decode-wait fade, failed loads, shared library, VRAM release, cadence at three
@@ -138,11 +138,22 @@ Any integration needs explicit owner authorisation; follow-ups F-SUCCESS and PRE
 
 - **R4** on `c9d91758`: REJECT - R4-01 (MEDIUM, a regression introduced by the R3 retry window: an expired failure
   was never reloaded and the widget polled at 20 Hz), R4-02 (MEDIUM, VRAM release overstated in section 11), LOW
-  R4-03..R4-08. Repaired in `e6ae4712`. Full suite on `e6ae4712`: 572/572 pass, one renamed, 30 new
+  R4-03..R4-08. Repaired in `e6ae4712`. Full suite on `e6ae4712`: 567 pass / 5 skipped / 0 fail, one renamed, 30 new
   (`evidence/tests/r4_full_suite_compare.json`).
 - **R5** on `e6ae4712`: ACCEPT WITH FINDINGS, no HIGH or blocking finding. The reviewer reproduced R4-01/R4-03
   repairs with its own probes. LOW findings: R5-01 a still or reduced-motion companion never retried a failed clip;
   R5-02 wake arbitration used a different clock from the injectable one; R5-03 test count and log binding in this
   report; R5-04 the preference-copy time is not evidenced. Repaired in the commit after `e6ae4712`
   (R5-04: the time is marked unverifiable; the conclusion rests on the unchanged hash and the 2026-10-10 last write).
-- **R6**: see below.
+- **R5 repairs**: `a96beb01` (code and test), `f3a2c688` (companion-suite log bound to `a96beb01`,
+  `evidence/tests/r5_companion_suites.log`, 144/144), `75720f8c` (report test count).
+- **R6** on `75720f8c`: ACCEPT WITH FINDINGS, LOW only. The reviewer's own probes confirmed R5-01 for still and
+  reduced-motion (and that a healthy frozen Ember schedules no frames; 48 rebuilds for 48 sprite frames when
+  animated); full suite on a clean extract 568 pass / 5 skipped / 0 fail. Findings: R6-01 earlier "N/N pass" counts
+  included the 5 skipped live tests (corrected above, with a correction note); R6-02 this addendum and the status line
+  were out of date (corrected). Both are documentation-only and were repaired without a further review round.
+- Correction note: sections 9 and 14 previously stated 543/543, 558/558, 570/570 and 572/572 "pass"; those totals
+  counted 5 skipped tests as passes.
+
+**Review loop stopped** after R6: no HIGH, MEDIUM or blocking finding open; remaining items are LOW and listed in
+section 15. Not lifecycle-driver ACCEPTED (OD-4).
