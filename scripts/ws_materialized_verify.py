@@ -188,9 +188,13 @@ def verify(source, runtime):
             raise VerificationError("RECEIPT_TEST_SCOPE")
         expected = expected_files(source, exclude_tests=not receipt["oi_tests_included"])
         mismatches = []
-        for name, (_mode, oid) in expected.items():
+        for name, (mode, oid) in expected.items():
             if blob_id(raw(runtime, name)) != oid:
                 mismatches.append(name)
+            # Windows has no POSIX execute bit; its Git index mode was checked
+            # above. On hosts with real execution bits, verify those as well.
+            if os.name != "nt" and bool((runtime / name).stat().st_mode & 0o111) != (mode == "100755"):
+                raise VerificationError("OUTPUT_EXECUTION_MODE_CHANGED:" + name)
         if mismatches:
             raise VerificationError("OUTPUT_CHANGED:" + ",".join(mismatches[:10]))
         extras = []
