@@ -1,0 +1,960 @@
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.1.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.3.1 available)
+  file_picker_linux 1.1.0 (2.0.2 available)
+  file_picker_platform_interface 3.3.0 (4.2.0 available)
+  file_picker_web 3.1.0 (4.1.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  screen_retriever 0.2.2 (0.3.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+19 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/cheta/Development/uri-fire-companion/uri_ui/integration_test/fire_live_test.dart
+Building Windows application...                                    37.2s
+√ Built build\windows\x64\runner\Debug\uri_ui.exe
+00:00 +0: Ember live journeys on the production main()
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:296:12)
+#10     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#11     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#12     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#13     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#14     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#15     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#16     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#17     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#26     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#27     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#28     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#75     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#76     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#77     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#78     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#79     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#80     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#81     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#82     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#83     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#84     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#85     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#86     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#87     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#88     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#89     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#90     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#91     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#92     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#93     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#94     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#95     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#96     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#97     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#99     RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#100    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#101    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#102    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#103    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#104    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#105    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#109    _invoke (dart:ui/hooks.dart:443:10)
+#110    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#111    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:296:12)
+#10     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#11     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#12     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#13     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#14     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#15     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#16     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#17     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#26     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#27     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#28     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#75     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#76     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#77     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#78     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#79     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#80     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#81     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#82     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#83     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#84     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#85     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#86     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#87     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#88     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#89     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#90     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#91     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#92     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#93     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#94     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#95     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#96     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#97     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#99     RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#100    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#101    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#102    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#103    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#104    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#105    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#109    _invoke (dart:ui/hooks.dart:443:10)
+#110    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#111    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:296:12)
+#10     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#11     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#12     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#13     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#14     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#15     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#16     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#17     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#26     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#27     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#28     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#75     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#76     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#77     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#78     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#79     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#80     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#81     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#82     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#83     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#84     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#85     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#86     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#87     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#88     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#89     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#90     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#91     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#92     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#93     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#94     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#95     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#96     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#97     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#99     RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#100    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#101    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#102    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#103    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#104    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#105    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#109    _invoke (dart:ui/hooks.dart:443:10)
+#110    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#111    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._unavailable (package:uri_ui/services/live_voice_service.dart:343:12)
+#10     LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:311:18)
+#11     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#12     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#13     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#14     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#15     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#16     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#17     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#18     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#27     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#28     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#29     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#76     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#77     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#78     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#79     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#80     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#81     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#82     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#83     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#84     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#85     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#86     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#87     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#88     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#89     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#90     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#91     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#92     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#93     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#94     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#95     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#96     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#97     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#99     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#100    RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#101    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#102    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#103    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#104    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#105    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#106    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#110    _invoke (dart:ui/hooks.dart:443:10)
+#111    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#112    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._unavailable (package:uri_ui/services/live_voice_service.dart:343:12)
+#10     LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:311:18)
+#11     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#12     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#13     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#14     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#15     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#16     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#17     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#18     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#27     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#28     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#29     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#76     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#77     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#78     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#79     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#80     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#81     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#82     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#83     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#84     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#85     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#86     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#87     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#88     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#89     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#90     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#91     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#92     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#93     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#94     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#95     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#96     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#97     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#99     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#100    RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#101    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#102    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#103    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#104    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#105    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#106    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#110    _invoke (dart:ui/hooks.dart:443:10)
+#111    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#112    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._unavailable (package:uri_ui/services/live_voice_service.dart:343:12)
+#10     LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:311:18)
+#11     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#12     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#13     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#14     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#15     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#16     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#17     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#18     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#27     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#28     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#29     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#76     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#77     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#78     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#79     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#80     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#81     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#82     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#83     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#84     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#85     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#86     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#87     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#88     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#89     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#90     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#91     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#92     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#93     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#94     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#95     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#96     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#97     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#99     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#100    RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#101    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#102    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#103    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#104    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#105    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#106    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#110    _invoke (dart:ui/hooks.dart:443:10)
+#111    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#112    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:296:12)
+#10     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#11     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#12     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#13     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#14     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#15     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#16     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#17     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#26     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#27     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#28     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#75     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#76     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#77     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#78     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#79     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#80     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#81     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#82     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#83     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#84     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#85     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#86     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#87     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#88     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#89     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#90     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#91     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#92     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#93     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#94     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#95     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#96     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#97     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#99     RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#100    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#101    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#102    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#103    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#104    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#105    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#109    _invoke (dart:ui/hooks.dart:443:10)
+#110    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#111    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:296:12)
+#10     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#11     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#12     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#13     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#14     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#15     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#16     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#17     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#26     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#27     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#28     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#75     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#76     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#77     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#78     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#79     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#80     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#81     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#82     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#83     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#84     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#85     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#86     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#87     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#88     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#89     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#90     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#91     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#92     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#93     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#94     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#95     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#96     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#97     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#99     RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#100    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#101    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#102    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#103    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#104    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#105    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#109    _invoke (dart:ui/hooks.dart:443:10)
+#110    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#111    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:296:12)
+#10     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#11     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#12     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#13     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#14     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#15     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#16     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#17     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#26     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#27     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#28     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#75     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#76     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#77     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#78     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#79     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#80     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#81     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#82     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#83     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#84     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#85     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#86     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#87     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#88     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#89     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#90     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#91     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#92     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#93     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#94     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#95     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#96     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#97     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#99     RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#100    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#101    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#102    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#103    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#104    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#105    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#109    _invoke (dart:ui/hooks.dart:443:10)
+#110    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#111    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._unavailable (package:uri_ui/services/live_voice_service.dart:343:12)
+#10     LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:311:18)
+#11     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#12     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#13     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#14     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#15     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#16     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#17     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#18     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#27     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#28     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#29     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#76     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#77     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#78     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#79     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#80     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#81     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#82     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#83     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#84     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#85     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#86     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#87     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#88     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#89     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#90     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#91     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#92     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#93     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#94     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#95     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#96     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#97     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#99     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#100    RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#101    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#102    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#103    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#104    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#105    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#106    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#110    _invoke (dart:ui/hooks.dart:443:10)
+#111    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#112    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._unavailable (package:uri_ui/services/live_voice_service.dart:343:12)
+#10     LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:311:18)
+#11     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#12     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#13     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#14     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#15     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#16     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#17     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#18     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#27     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#28     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#29     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#76     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#77     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#78     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#79     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#80     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#81     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#82     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#83     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#84     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#85     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#86     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#87     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#88     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#89     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#90     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#91     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#92     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#93     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#94     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#95     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#96     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#97     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#99     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#100    RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#101    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#102    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#103    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#104    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#105    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#106    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#110    _invoke (dart:ui/hooks.dart:443:10)
+#111    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#112    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for CompositeCompanionSource:
+setState() or markNeedsBuild() called during build.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is already
+in the process of building widgets. A widget can be marked as needing to be built during the build
+phase only if one of its ancestors is currently building. This exception is allowed because the
+framework builds parent widgets before children, which means a dirty descendant will always be
+built. Otherwise, the framework might not visit this widget during this build phase.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+The widget which was currently being built when the offending call was made was:
+  _VoiceSettings
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5386:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#6      VoiceInteractionController._onStatus (package:uri_ui/living/voice/voice_interaction.dart:460:5)
+#7      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#8      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#9      LiveVoiceService._unavailable (package:uri_ui/services/live_voice_service.dart:343:12)
+#10     LiveVoiceService._start (package:uri_ui/services/live_voice_service.dart:311:18)
+#11     LiveVoiceService.ensureStarted (package:uri_ui/services/live_voice_service.dart:292:26)
+#12     _VoiceInputSettingsState._check (package:uri_ui/living/screens/settings/voice_input_settings.dart:47:17)
+#13     _VoiceInputSettingsState.initState (package:uri_ui/living/screens/settings/voice_input_settings.dart:28:5)
+#14     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5963:55)
+#15     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5806:5)
+#16     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#17     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#18     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (9 frames)
+#27     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#28     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7277:36)
+#29     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7292:32)
+...     Normal element mounting (47 frames)
+#76     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4600:20)
+#77     Element.updateChild (package:flutter/src/widgets/framework.dart:4072:18)
+#78     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1092:37)
+#79     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1077:20)
+#80     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3114:19)
+#81     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1067:12)
+#82     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#83     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3042:17)
+#84     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#85     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3041:14)
+#86     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#87     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#88     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#89     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#90     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#91     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#92     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#93     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#94     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#95     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#96     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#97     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#98     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#99     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#100    RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:692:23)
+#101    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1573:13)
+#102    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#103    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#104    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#105    LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#106    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#110    _invoke (dart:ui/hooks.dart:443:10)
+#111    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#112    _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The CompositeCompanionSource sending notification was:
+  Instance of 'CompositeCompanionSource'
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (12) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+09:26 +0 -1: Ember live journeys on the production main() [E]
+  Test failed. See exception logs above.
+  The test description was: Ember live journeys on the production main()
+  
+09:26 +0 -1: (tearDownAll)
+09:26 +0 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/cheta/Development/uri-fire-companion/uri_ui/integration_test/fire_live_test.dart: Ember live journeys on the production main()

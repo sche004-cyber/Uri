@@ -1,0 +1,54 @@
+[
+ {
+  "utc": "2026-10-14T19:44:24.303576+00:00",
+  "event": "start",
+  "manifest": "C:\\Users\\cheta\\Development\\uri-fire-companion-rt\\work\\c1\\ws-fire\\client\\client-manifest.json",
+  "port": 18300
+ },
+ {
+  "utc": "2026-10-14T19:45:42.155355+00:00",
+  "event": "ui ready -> launcher -NoUi -OverrideGpu"
+ },
+ {
+  "utc": "2026-10-14T19:45:52.007769+00:00",
+  "event": "launcher",
+  "rc": 0,
+  "out": "Integrated server: port 18300, identity proven\nGPU override: owner-authorized start next to other GPU processes (recorded)\nBrain host: starting (GPU check, load and speed check run in the background; URI shows the state)\n",
+  "err": ""
+ },
+ {
+  "utc": "2026-10-14T19:52:07.502289+00:00",
+  "event": "brain host stop",
+  "reason": "recoverable-error journey",
+  "pids": [
+   8480,
+   10552
+  ],
+  "killed_after_wait": []
+ },
+ {
+  "utc": "2026-10-14T19:52:41.037174+00:00",
+  "event": "brain host restarted",
+  "rc": 0,
+  "out": "Integrated server: port 18300, identity proven\nGPU override: owner-authorized start next to other GPU processes (recorded)\nBrain host: starting (GPU check, load and speed check run in the background; URI shows the state)\n"
+ },
+ {
+  "utc": "2026-10-14T19:54:40.432407+00:00",
+  "event": "flutter test finished",
+  "rc": 1
+ },
+ {
+  "utc": "2026-10-14T19:54:42.467460+00:00",
+  "event": "brain host stop",
+  "reason": "end of run",
+  "pids": [
+   16096,
+   23956
+  ],
+  "killed_after_wait": []
+ },
+ {
+  "utc": "2026-10-14T19:54:42.472253+00:00",
+  "event": "driver removed"
+ }
+]
