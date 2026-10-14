@@ -234,3 +234,29 @@ def test_materializer_always_reconciles_and_verifies_security_transitions():
 
 
 M_APPROVED_KEYS = {"uri_core/app/server.py", "uri_core/tools/fetch_url.py"}
+
+
+def test_gate_generated_bytecode_beside_expected_source_is_not_unknown_output(output):
+    """FCV-R chain: the accepted gates run Python with -I (bytecode on); their .pyc beside an expected source and
+    pytest's root cache are generated artifacts. Anything else stays UNKNOWN_OUTPUT."""
+    source, runtime, _ = output
+    cache = runtime / "__pycache__"
+    cache.mkdir()
+    (cache / "worker.cpython-313.pyc").write_bytes(b"bytecode")
+    (cache / "worker.cpython-313-pytest-9.1.1.pyc").write_bytes(b"bytecode")
+    (runtime / ".pytest_cache/v/cache").mkdir(parents=True)
+    (runtime / ".pytest_cache/v/cache/lastfailed").write_text("{}")
+    result = V.verify(source, runtime)
+    assert result["ok"], result
+    assert result["generated_files_ignored"] == 3
+
+
+@pytest.mark.parametrize("rel", ["__pycache__/unknown.cpython-313.pyc", "__pycache__/worker.py", "worker.cpython-313.pyc",
+                                 ".pytest_cache/evil.py", "sub/__pycache__/worker.cpython-313.pyc"])
+def test_other_generated_looking_files_are_still_refused(output, rel):
+    source, runtime, _ = output
+    p = runtime / rel
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_bytes(b"x")
+    result = V.verify(source, runtime)
+    assert not result["ok"] and "UNKNOWN_OUTPUT" in result["error"]

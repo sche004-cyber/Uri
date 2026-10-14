@@ -11,6 +11,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path, PurePosixPath
 import stat
 import subprocess
@@ -323,7 +324,7 @@ def verify(source, runtime):
                 raise VerificationError("OUTPUT_EXECUTION_MODE_CHANGED:" + name)
         if mismatches:
             raise VerificationError("OUTPUT_CHANGED:" + ",".join(mismatches[:10]))
-        extras = []
+        extras, generated = [], []
         for current, dirs, names in os.walk(runtime, followlinks=False):
             rel = Path(current).relative_to(runtime)
             if not rel.parts:
@@ -334,8 +335,12 @@ def verify(source, runtime):
                     raise VerificationError("OUTPUT_DIRECTORY_LINK:" + p.relative_to(runtime).as_posix())
             for name in names:
                 path = (rel / name).as_posix()
-                if path not in expected and path not in (".git", "OI_MATERIALIZATION_RECEIPT.json"):
-                    extras.append(path)
+                if path in expected or path in (".git", "OI_MATERIALIZATION_RECEIPT.json"):
+                    continue
+                if generated_by_gates(rel, name, expected):
+                    generated.append(path)
+                    continue
+                extras.append(path)
         if extras:
             raise VerificationError("UNKNOWN_OUTPUT:" + ",".join(sorted(extras)[:10]))
         # The two runtime security transitions. The FCV-01 rollback amendment is a source-tree tool change; the
@@ -348,12 +353,27 @@ def verify(source, runtime):
             if digest(raw(runtime, path)) != F.PROVENANCE[path]:
                 raise VerificationError("PROVENANCE_CHANGED:" + path)
         result.update(ok=True, source_head=head, source_tree=source_tree, historical_head=M.BASE,
-                      checked_files=len(expected), checkpoint_sha256=F.ZIP_SHA,
+                      checked_files=len(expected), generated_files_ignored=len(generated), checkpoint_sha256=F.ZIP_SHA,
                       approved_blobs={p: F.APPROVED[p]["sha256"] for p in BEFORE},
                       note="Execution dependencies/state retain existing C1 identity and permission gates; this verifies source output, not live qualification.")
     except (OSError, ValueError, KeyError, TypeError) as exc:
         result["error"] = str(exc)
     return result
+
+
+_PYC = re.compile(r"^(?P<stem>[A-Za-z0-9_]+)\.cpython-\d+(?:-pytest-[0-9.]+)?(?:\.opt-[12])?\.pyc$")
+
+
+def generated_by_gates(rel, name, expected):
+    """Files the accepted gates themselves write into the runtime (they run Python with -I, which ignores
+    PYTHONDONTWRITEBYTECODE): bytecode beside an expected source, and pytest's root cache. Nothing else, and never a
+    source, script or data file. Expected files are still compared byte for byte."""
+    if rel.parts and rel.parts[0] == ".pytest_cache":
+        return not name.endswith((".py", ".pyc", ".pyd", ".dll", ".exe", ".pth"))
+    if rel.parts and rel.parts[-1] == "__pycache__":
+        m = _PYC.match(name)
+        return bool(m) and (PurePosixPath(*rel.parts[:-1]) / (m.group("stem") + ".py")).as_posix() in expected
+    return False
 
 
 def verified_transitions(runtime):
