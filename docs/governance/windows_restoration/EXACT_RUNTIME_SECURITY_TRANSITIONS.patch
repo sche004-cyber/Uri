@@ -1,0 +1,312 @@
+diff --git a/uri_core/app/server.py b/uri_core/app/server.py
+index 490b3764..8e490728 100644
+--- a/uri_core/app/server.py
++++ b/uri_core/app/server.py
+@@ -22,6 +22,7 @@ no authentication beyond this file's own login endpoints.
+ """
+ 
+ import asyncio
++import contextlib
+ import json
+ import os
+ import tempfile
+@@ -228,6 +229,62 @@ _orchestrator.graph_store = _graph_store
+ _graphify_index = GraphifyIndex()
+ _orchestrator.graphify_index = _graphify_index
+ 
++
++class _MemoryScopedGraphifyView(GraphifyIndex):
++    """A Graphify view whose `memory:` pointers come only from one memory
++    store, read again on every lookup (GRAPHIFY-LEAK-1). The shared
++    index's memory pointers belong to whichever store it was built from
++    (the install's primary user); a copy of it handed to another user
++    told that user's Brain about memories that are not theirs. Every
++    other scope (capabilities, skills, workflows, services) is copied
++    unchanged. `memory_store_source` is a callable so the legacy view
++    follows `_memory_store` when it is replaced.
++
++    One view is shared by every request of its user and /ask runs in a
++    thread pool, so each lookup holds `lock` while it reads, and the
++    memory pointers are swapped in by one assignment of `records`, never
++    by editing it in place. Anything else that edits `records` (the
++    capability/service refresh in refresh_user_external_lifecycle) takes
++    the same lock."""
++
++    def __init__(self, records, memory_store_source) -> None:
++        super().__init__(records={
++            key: value for key, value in dict(records).items() if not key.startswith("memory:")
++        })
++        self.lock = threading.RLock()
++        self._memory_store_source = memory_store_source
++        self._sync_memory()
++
++    def _sync_memory(self) -> None:
++        """Never raises: on any failure the view keeps its last records."""
++        try:
++            try:
++                store = self._memory_store_source()
++            except Exception:
++                store = None
++            memory = build_index(memory_store=store).records
++            with self.lock:
++                merged = {key: value for key, value in self.records.items() if not key.startswith("memory:")}
++                merged.update({key: value for key, value in memory.items() if key.startswith("memory:")})
++                self.records = merged
++        except Exception:
++            pass
++
++    def get(self, entry_id):
++        with self.lock:
++            self._sync_memory()
++            return super().get(entry_id)
++
++    def list_all(self):
++        with self.lock:
++            self._sync_memory()
++            return super().list_all()
++
++    def relevant_subset(self, goal_text, limit=5):
++        with self.lock:
++            self._sync_memory()
++            return super().relevant_subset(goal_text, limit=limit)
++
+ # Growth ledger: see growth_ledger.py. Every event is recorded only as
+ # a side effect of a real, already-succeeded user-driven write below
+ # (POST /memory, POST /profile) - there is no public "add XP" surface,
+@@ -554,7 +611,10 @@ def _build_user_context(user_id: str) -> _UserContext:
+     # This is a derived, per-user view.  Never mutate the process-global
+     # Graphify index with a user's installed capability/service state: doing
+     # so would leak that state to another user's context.
+-    orchestrator.graphify_index = GraphifyIndex(records=dict(_graphify_index.records))
++    # Memory pointers come from this user's own memory store only.
++    orchestrator.graphify_index = _MemoryScopedGraphifyView(
++        _graphify_index.records, lambda: memory_store
++    )
+     orchestrator.multi_action_dispatch.audit_sink = (
+         lambda entry: audit_trail.record(
+             event_type="multi_action_capability_execution",
+@@ -621,14 +681,16 @@ def refresh_user_external_lifecycle(
+             from uri_core.core.graphify_index import refresh as graphify_refresh
+ 
+             cap_dir = CapabilityDirectory(multi_action_registry=res.registry)
+-            graphify_refresh(graphify, capability_directory=cap_dir, scope="capabilities")
+-            if context.connected_service_store is not None:
+-                graphify_refresh(
+-                    graphify,
+-                    connected_service_store=context.connected_service_store,
+-                    user_id=user_id,
+-                    scope="services",
+-                )
++            # The view's lookups read records under its lock (GRAPHIFY-LEAK-1).
++            with getattr(graphify, "lock", None) or contextlib.nullcontext():
++                graphify_refresh(graphify, capability_directory=cap_dir, scope="capabilities")
++                if context.connected_service_store is not None:
++                    graphify_refresh(
++                        graphify,
++                        connected_service_store=context.connected_service_store,
++                        user_id=user_id,
++                        scope="services",
++                    )
+         # One attribute replacement publishes a complete coherent generation:
+         # registry, discovery engine, permission resolver, selected-session
+         # state, and cached executors can never be mixed across generations.
+@@ -907,7 +969,9 @@ class _GraphifyIndexLoader:
+             save_index(index, DEFAULT_INDEX_PATH)
+ 
+         _graphify_index = index
+-        _orchestrator.graphify_index = index
++        _orchestrator.graphify_index = _MemoryScopedGraphifyView(
++            index.records, lambda: _memory_store
++        )
+ 
+ 
+ @asynccontextmanager
+diff --git a/uri_core/tools/fetch_url.py b/uri_core/tools/fetch_url.py
+index ac2a2c41..dc4fa80c 100644
+--- a/uri_core/tools/fetch_url.py
++++ b/uri_core/tools/fetch_url.py
+@@ -24,6 +24,18 @@ Bounded and safe: a strict http(s)-only scheme check, a content-length
+ cap enforced on real bytes received (never a client-declared header),
+ a short timeout, and no redirect to a non-http(s) scheme. Never
+ invents content when a fetch fails - reports the real reason.
++
++SSRF-1 (owner decision D2): the network hop goes through W1's
++uri_web.safe_fetch.SafeFetcher instead of `requests`. Every hop is
++checked by uri_web.netpolicy (public http(s) only: no loopback,
++private, link-local/metadata, CGNAT, multicast or reserved address, no
++userinfo, allowed ports only), the name is resolved once and refused if
++ANY answer is non-public, the connection is pinned to the checked
++address (no DNS rebinding), at most 5 redirects are followed and each
++is re-checked, and environment proxies, cookies and credentials are
++never used. A refused target returns "unavailable" with a refusal code
++and nothing about the internal address. robots.txt is not applied: this
++is one user-directed read, not a crawler (as before).
+ """
+ 
+ import os
+@@ -32,9 +44,10 @@ import tempfile
+ from html.parser import HTMLParser
+ from typing import Optional
+ 
+-import requests
+-
+ from uri_core.services.file_extraction import extract_file_text
++from uri_web import netpolicy as NP
++from uri_web import records as R
++from uri_web.safe_fetch import SafeFetcher
+ 
+ _URL_RE = re.compile(r"https?://[^\s<>\"']+", re.IGNORECASE)
+ 
+@@ -52,6 +65,31 @@ _EXTENSION_BY_CONTENT_TYPE = {
+ }
+ 
+ 
++# SSRF-1 refusal codes (uri_web.netpolicy / safe_fetch) -> the real reason, worded for the user. Only the
++# address-class codes say "private or local network"; a DNS failure is "could not reach", as before SSRF-1.
++# Never includes the address itself.
++_PRIVATE_MESSAGE = "URI will not fetch that address (private or local network)."
++_REFUSAL_MESSAGES = {
++    "ADDRESS_NOT_PUBLIC": _PRIVATE_MESSAGE,
++    "ADDRESS_TRANSITION_REFUSED": _PRIVATE_MESSAGE,
++    "HOST_LOCAL_NAME": _PRIVATE_MESSAGE,
++    "HOST_NUMERIC_AMBIGUOUS": _PRIVATE_MESSAGE,
++    "HOST_SINGLE_LABEL": _PRIVATE_MESSAGE,
++    "DNS_FAILED": "URI could not reach that URL.",
++    "DNS_EMPTY": "URI could not reach that URL.",
++    "USERINFO_REFUSED": "URI will not fetch a URL that contains a username or password.",
++    "PORT_REFUSED": "URI only fetches web pages on the standard ports (80 and 443).",
++    "SCHEME_REFUSED": "Only http(s) URLs can be fetched.",
++    "URL_INVALID": "That URL is not valid.",
++    "HOST_INVALID": "That URL is not valid.",
++    "HOST_MISSING": "That URL is not valid.",
++    "ADDRESS_INVALID": "That URL is not valid.",
++    # IDN-1b (owner decision D33): say why, and that the user's own browser can open it.
++    NP.HOST_NON_ENGLISH: NP.NON_ENGLISH_MESSAGE,
++}
++_REFUSAL_FALLBACK = "URI refused to fetch that URL."
++
++
+ class _TextExtractingHTMLParser(HTMLParser):
+     """A minimal, dependency-free HTML-to-text reader - deliberately
+     not a full renderer, just enough to turn a page into readable
+@@ -96,9 +134,16 @@ class FetchUrlTool:
+     never decides what a page means, never drafts an answer from it,
+     and never invents content when a fetch fails."""
+ 
+-    def __init__(self, session=None, timeout: int = _TIMEOUT_SECONDS):
+-        self._session = session or requests
++    def __init__(self, fetcher: Optional[SafeFetcher] = None, timeout: int = _TIMEOUT_SECONDS):
++        # `fetcher` is a test seam (an injected SafeFetcher with a fake resolver/transport); production builds its own.
+         self._timeout = timeout
++        self._fetcher = fetcher
++
++    def _new_fetcher(self) -> SafeFetcher:
++        types = {mime: "document" for mime in _EXTENSION_BY_CONTENT_TYPE}
++        types.update({"": "html"})          # no Content-Type: read as HTML, as before
++        return SafeFetcher(honour_robots=False, max_bytes=_MAX_BYTES, total_timeout=float(self._timeout),
++                           extra_types=types)
+ 
+     def execute(self, **kwargs) -> dict:
+         request_text = kwargs.get("request_text", "") or ""
+@@ -121,54 +166,67 @@ class FetchUrlTool:
+                 "url": url,
+             }
+ 
+-        try:
+-            response = self._session.get(
+-                url,
+-                timeout=self._timeout,
+-                headers={"User-Agent": "URI/1.0 (institutional research assistant)"},
+-                stream=True,
+-            )
+-        except requests.RequestException as error:
++        fetcher = self._fetcher or self._new_fetcher()
++        result = fetcher.fetch(url, robots=False)
++        rec = result.record
++
++        if rec.fetch_status == R.REFUSED:
+             return {
+                 "status": "unavailable",
+-                "message": "URI could not reach that URL.",
+-                "error": str(error),
++                "message": _REFUSAL_MESSAGES.get(rec.refusal_code, _REFUSAL_FALLBACK),
++                "refusal_code": rec.refusal_code,
+                 "url": url,
+             }
+ 
+-        if response.status_code != 200:
++        if rec.fetch_status == R.HTTP_ERROR:
+             return {
+                 "status": "unavailable",
+-                "message": f"The page returned HTTP {response.status_code}.",
++                "message": f"The page returned HTTP {rec.http_status}.",
+                 "url": url,
+             }
+ 
+-        content_type = (response.headers.get("Content-Type") or "").split(";")[0].strip().lower()
++        if rec.fetch_status == R.TOO_LARGE:
++            return {
++                "status": "unavailable",
++                "message": (
++                    f"The page exceeded the {_MAX_BYTES // (1024 * 1024)} MB "
++                    "fetch limit."
++                ),
++                "url": url,
++            }
+ 
+-        content = bytearray()
+-        try:
+-            for chunk in response.iter_content(chunk_size=65536):
+-                content.extend(chunk)
+-                if len(content) > _MAX_BYTES:
+-                    return {
+-                        "status": "unavailable",
+-                        "message": (
+-                            f"The page exceeded the {_MAX_BYTES // (1024 * 1024)} MB "
+-                            "fetch limit."
+-                        ),
+-                        "url": url,
+-                    }
+-        finally:
+-            response.close()
++        content_type = (rec.content_type or "").lower()
++
++        if rec.fetch_status == R.UNSUPPORTED_CONTENT_TYPE:
++            return {
++                "status": "unsupported",
++                "message": (
++                    f"URI has no reader for content type '{content_type or 'unknown'}'."
++                ),
++                "url": url,
++                "content_type": content_type,
++            }
++
++        if rec.fetch_status != R.OK:
++            return {
++                "status": "unavailable",
++                "message": "URI could not reach that URL.",
++                "error": rec.fetch_status,
++                "url": url,
++            }
++
++        if rec.http_status != 200:
++            return {
++                "status": "unavailable",
++                "message": f"The page returned HTTP {rec.http_status}.",
++                "url": url,
++            }
+ 
+-        if content_type in ("text/html", "application/xhtml+xml") or not content_type:
+-            try:
+-                html_text = bytes(content).decode(response.encoding or "utf-8", errors="replace")
+-            except (LookupError, TypeError):
+-                html_text = bytes(content).decode("utf-8", errors="replace")
++        content = result.body
+ 
++        if result.kind == "html":
+             parser = _TextExtractingHTMLParser()
+-            parser.feed(html_text)
++            parser.feed(result.text)
+             text = parser.text().strip()
+ 
+             if not text:
