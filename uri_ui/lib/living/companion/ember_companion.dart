@@ -152,7 +152,12 @@ class EmberLibrary {
       <EmberClip, Future<ui.Image?>>{};
   final List<EmberClip> _recent = <EmberClip>[];
   final Map<Object, Set<EmberClip>> _pins = <Object, Set<EmberClip>>{};
+  final Set<EmberClip> _failed = <EmberClip>{};
   String? lastFailure;
+
+  /// The clip could not be loaded or decoded (missing, corrupt, no manifest).
+  /// Remembered for the life of the library; a widget never waits on it.
+  bool hasFailed(EmberClip clip) => _failed.contains(clip);
 
   /// Clips some widget has on screen. Never evicted.
   Set<EmberClip> get pinned => {for (final s in _pins.values) ...s};
@@ -226,7 +231,10 @@ class EmberLibrary {
   Future<ui.Image?> _decode(EmberClip clip) async {
     final m = await manifest();
     final info = m?.clips[clip];
-    if (info == null) return null;
+    if (info == null) {
+      _failed.add(clip);
+      return null;
+    }
     try {
       final data = await _bundle.load('${EmberManifest.assetDir}/${info.file}');
       final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
@@ -243,6 +251,7 @@ class EmberLibrary {
       return frame.image;
     } catch (e) {
       lastFailure = '${clip.name}: $e';
+      _failed.add(clip);
       return null;
     }
   }
@@ -281,6 +290,7 @@ class EmberLibrary {
     _loading.clear();
     _recent.clear();
     _pins.clear();
+    _failed.clear();
     _manifest = null;
     _manifestValue = null;
     lastFailure = null;
@@ -365,21 +375,43 @@ class _EmberCompanionState extends State<EmberCompanion>
     if (_lib.imageIfLoaded(clip) != null) return;
     _lib.load(clip).then((_) {
       if (!mounted) return;
-      setState(() {});
+      setState(_settleFailure);
       resumeFrames();
     });
+  }
+
+  /// A clip that cannot be drawn ends its fade on what was on screen, rather
+  /// than holding the fade open (and frames running) forever. Checked on the
+  /// load callback and on every delivery, so it never depends on one path.
+  /// Returns true when it changed something.
+  bool _settleFailure() {
+    if (!_lib.hasFailed(_current) || _previous == null) return false;
+    _current = _previous!;
+    _time = _prevTime;
+    _previous = null;
+    _fade = 1;
+    _lib.pin(this, {_current});
+    return true;
   }
 
   @override
   void didUpdateWidget(EmberCompanion old) {
     super.didUpdateWidget(old);
     final next = _target;
-    if (next != _current) {
-      // Fade from what is actually on screen. If the clip that was fading in
-      // has not decoded yet, the clip still visible stays the outgoing one,
-      // so a quick run of changes never leaves the companion blank.
+    if (next != _current && next == _previous && _fade < 0.5) {
+      // Going back before the new clip took over: cancel, no fade.
+      _current = next;
+      _time = _prevTime;
+      _previous = null;
+      _fade = 1;
+      _lib.pin(this, {_current});
+    } else if (next != _current) {
+      // Fade from what dominates the screen. If the clip that was fading in
+      // has not decoded yet, or is still less than half in, the clip that is
+      // mostly visible stays the outgoing one, so a quick run of changes never
+      // blanks the companion or drops a clip in one frame.
       final currentShown = _lib.imageIfLoaded(_current) != null;
-      if (currentShown || _previous == null) {
+      if (_previous == null || (currentShown && _fade >= 0.5)) {
         _previous = _current;
         _prevTime = _time;
       }
@@ -401,13 +433,21 @@ class _EmberCompanionState extends State<EmberCompanion>
 
   bool get _settling {
     final goal = widget.attention ? 1.0 : 0.0;
-    return _fade < 1 || (goal - _attention).abs() > 0.01;
+    final fading = _fade < 1 && !_lib.hasFailed(_current);
+    return fading || (goal - _attention).abs() > 0.01;
   }
 
   @override
   bool get wantsFrames {
     if (_settling) return true;
     if (_frozen) return false;
+    if (_lib.imageIfLoaded(_current) == null) {
+      // Still decoding: look again shortly (the load callback also wakes it,
+      // this only makes sure a missed callback cannot leave it blank). A clip
+      // that failed shows the fallback and gets no wakes at all.
+      if (!_lib.hasFailed(_current)) _wakeIn(0.05);
+      return false;
+    }
     // The approval pulse moves continuously.
     if (_attention > 0.001) return true;
     _scheduleNextSpriteFrame();
@@ -420,9 +460,18 @@ class _EmberCompanionState extends State<EmberCompanion>
     final m = _lib.manifestIfLoaded;
     if (m == null) return;
     final speed = widget.look.motion <= 0 ? 1.0 : widget.look.motion;
-    final perFrame = 1 / (m.fps * speed);
-    final wait = math.max(0.004, perFrame - (_time * speed) % perFrame - 0.002);
-    _wake = Timer(Duration(microseconds: (wait * 1e6).round()), () {
+    // _time is already the companion's own (speed-scaled) time; the next
+    // frame boundary is that far away in companion time, so divide by speed
+    // for wall time. Wake 1 ms after the boundary: an earlier wake can land on
+    // the vsync before it and cost a delivery that shows nothing new.
+    final perFrame = 1 / m.fps;
+    final remaining = (perFrame - _time % perFrame) / speed;
+    _wakeIn(math.max(0.004, remaining + 0.001));
+  }
+
+  void _wakeIn(double seconds) {
+    if (_wake != null) return;
+    _wake = Timer(Duration(microseconds: (seconds * 1e6).round()), () {
       _wake = null;
       if (mounted) resumeFrames();
     });
@@ -430,6 +479,12 @@ class _EmberCompanionState extends State<EmberCompanion>
 
   @visibleForTesting
   bool get sleepingBetweenFrames => _wake != null;
+
+  @visibleForTesting
+  int get shownFrame => _shownFrame;
+
+  @visibleForTesting
+  EmberClip get currentClip => _current;
 
   int _frameAt(EmberClip clip, double t) {
     final m = _lib.manifestIfLoaded;
@@ -441,6 +496,10 @@ class _EmberCompanionState extends State<EmberCompanion>
 
   @override
   void onCompanionFrame(double seconds, double dt) {
+    if (_settleFailure()) {
+      setState(() {});
+      return;
+    }
     final now = SchedulerBinding.instance.currentSystemFrameTimeStamp;
     final last = _lastStamp;
     _lastStamp = now;

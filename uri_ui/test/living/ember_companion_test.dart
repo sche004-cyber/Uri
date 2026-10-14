@@ -21,10 +21,14 @@ class _DiskBundle extends CachingAssetBundle {
   /// test can hold a clip "still decoding".
   Completer<void>? gate;
 
+  /// Atlases whose load fails, as a corrupt or missing file would.
+  final Set<String> broken = <String>{};
+
   @override
   Future<ByteData> load(String key) async {
     loads++;
     if (key.endsWith('.webp') && gate != null) await gate!.future;
+    if (broken.any(key.endsWith)) throw StateError('broken asset $key');
     final bytes = File(key).readAsBytesSync();
     return ByteData.view(Uint8List.fromList(bytes).buffer);
   }
@@ -357,6 +361,92 @@ void main() {
       await tester.pump(const Duration(milliseconds: 16));
       expect(lib.resident, contains(EmberClip.idle));
     });
+
+    testWidgets('a clip that fails to load ends the fade on the old clip', (
+      tester,
+    ) async {
+      Widget at(CompanionState s) => Directionality(
+        textDirection: TextDirection.ltr,
+        child: SizedBox(
+          width: 200,
+          height: 200,
+          child: EmberCompanion(library: lib, state: s),
+        ),
+      );
+      await tester.pumpWidget(at(CompanionState.idle));
+      await settleDecode(tester);
+      bundle.broken.add('thinking.webp');
+      await tester.pumpWidget(at(CompanionState.thinking));
+      await settleDecode(tester);
+      final st = tester.state(find.byType(EmberCompanion)) as dynamic;
+      expect(st.currentClip, EmberClip.idle);
+      expect(lib.pinned, {EmberClip.idle});
+      // Not stuck in a fade: it sleeps between sprite frames again.
+      await tester.pump(const Duration(milliseconds: 16));
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(st.sleepingBetweenFrames, isTrue);
+    });
+
+    testWidgets('a first clip that fails shows the fallback and stops waking', (
+      tester,
+    ) async {
+      bundle.broken.add('idle.webp');
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: EmberCompanion(
+            library: lib,
+            fallback: const Text('fallback', key: ValueKey('fb')),
+          ),
+        ),
+      );
+      await settleDecode(tester);
+      expect(find.byKey(const ValueKey('fb')), findsOneWidget);
+      final st = tester.state(find.byType(EmberCompanion)) as dynamic;
+      expect(st.sleepingBetweenFrames, isFalse);
+      await tester.pump(const Duration(seconds: 1));
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
+    for (final motion in [0.5, 1.0, 1.5]) {
+      testWidgets('sprite cadence follows the motion preference ($motion)', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: EmberCompanion(
+              library: lib,
+              look: CompanionLook(motion: motion),
+            ),
+          ),
+        );
+        await settleDecode(tester);
+        final st = tester.state(find.byType(EmberCompanion)) as dynamic;
+        // Drive 2 s at a 144 Hz vsync and count distinct frames shown.
+        var changes = 0;
+        var last = st.shownFrame as int;
+        var longest = 0;
+        var held = 0;
+        for (var i = 0; i < 288; i++) {
+          await tester.pump(const Duration(microseconds: 6944));
+          final f = st.shownFrame as int;
+          if (f != last) {
+            changes++;
+            longest = held > longest ? held : longest;
+            held = 0;
+            last = f;
+          } else {
+            held++;
+          }
+        }
+        final expected = 2 * 24 * motion;
+        expect(changes, inInclusiveRange(expected - 3, expected + 2));
+        // No frame is held much longer than its period (plus one vsync).
+        final periodVsyncs = 144 / (24 * motion);
+        expect(longest, lessThanOrEqualTo((periodVsyncs * 1.5).ceil() + 1));
+      });
+    }
 
     testWidgets('a still Ember (picker) settles and requests nothing', (
       tester,

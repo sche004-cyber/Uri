@@ -109,6 +109,10 @@ t0 = time.monotonic()
 try:
     while proc.poll() is None:
         time.sleep(5)
+        if time.monotonic() - t0 > 60 * 60:
+            note("runner timeout")
+            proc.kill()
+            break
         if not started_brain and (OUT / "ui-ready.json").exists():
             note("ui ready -> launcher -NoUi -OverrideGpu")
             r = subprocess.run(launcher, capture_output=True, text=True, timeout=600)
@@ -134,9 +138,6 @@ try:
         state = json.loads(bh.read_text()).get("state") if bh.exists() else None
         samples.append(dict(t=round(time.monotonic() - t0, 1), ui=uis, llama=llama, gpu=g, ui_rss_mb=rss, brain_state=state))
         (OUT / "gpu-samples.json").write_text(json.dumps(samples))
-        if time.monotonic() - t0 > 60 * 60:
-            note("runner timeout")
-            proc.kill()
 finally:
     if proc.poll() is None:
         proc.kill()

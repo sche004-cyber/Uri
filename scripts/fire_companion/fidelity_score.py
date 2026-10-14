@@ -304,7 +304,9 @@ def eye_blobs(lab: np.ndarray, fg: np.ndarray, bg_l: float) -> list[tuple[float,
                 if 0 <= ny < h and 0 <= nx < w and dark[ny, nx] and not seen[ny, nx]:
                     seen[ny, nx] = True
                     stack.append((ny, nx))
-        if len(pts) < 6:
+        # At least 0.1 % of the frame: smaller dark specks are mouths, brush
+        # marks or ember shadows (review R2-03).
+        if len(pts) < max(6, int(0.001 * h * w)):
             continue
         p = np.array(pts, dtype=np.float64)
         bh = np.ptp(p[:, 0]) + 1
@@ -315,15 +317,27 @@ def eye_blobs(lab: np.ndarray, fg: np.ndarray, bg_l: float) -> list[tuple[float,
             continue  # strokes and limbs, not eyes
         blobs.append((p[:, 1].mean() / w, p[:, 0].mean() / h, len(pts) / (w * h)))
     blobs.sort(key=lambda b: -b[2])
-    return blobs[:2]
+    # Eyes come as a pair: side by side (similar height, 8-50 % of the frame
+    # apart). Take the largest pair that satisfies that, not just the two
+    # largest blobs.
+    best = []
+    for i in range(len(blobs)):
+        for j in range(i + 1, len(blobs)):
+            a, b = blobs[i], blobs[j]
+            if abs(a[1] - b[1]) < 0.06 and 0.08 < abs(a[0] - b[0]) < 0.5:
+                if not best or a[2] + b[2] > best[0][2] + best[1][2]:
+                    best = [a, b]
+    return best
 
 
 def eye_similarity(lab_a, fg_a, bg_a, lab_b, fg_b, bg_b) -> float:
     ea, eb = eye_blobs(lab_a, fg_a, bg_a), eye_blobs(lab_b, fg_b, bg_b)
     if len(ea) < 2 and len(eb) < 2:
-        return 1.0  # neither shows open dark eyes (e.g. joyful smiles)
+        return 1.0  # neither shows a pair of open dark eyes
     if len(ea) < 2 or len(eb) < 2:
-        return 0.0
+        # One side has no detectable pair (bright irises, squints): unknown,
+        # scored neutral rather than as a total miss (review R2-03).
+        return 0.5
     ea.sort()
     eb.sort()
     score = 0.0
@@ -424,8 +438,13 @@ def score(state: str, candidate: Path | None = None, extra: dict[str, Path] | No
     def calibrate(raw: float) -> float:
         return float(np.clip(unclamped(raw), 0, 100))
 
+    eye_check = raw_components(ref, register(degraded_copy(ref), ref))["eyes"]
     out: dict = {
         "state": state,
+        # Self-check: the eye component of the reference against its own
+        # degraded copy. Below 0.9 the eye component is not trustworthy on
+        # this panel and the report must say so.
+        "eye_self_check": eye_check,
         "panel_box": PANELS[state],
         "weights": WEIGHTS,
         "anchor_raw": {"degraded_reference_100": hi, "generic_fire_spirit_0": lo},

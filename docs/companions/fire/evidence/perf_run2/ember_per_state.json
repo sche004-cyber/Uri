@@ -1,0 +1,612 @@
+{
+ "identity": "ember",
+ "commit": "7d83947d",
+ "per_state": {
+  "idle": {
+   "frames": 358,
+   "per_s": 59.7,
+   "p50_ms": 0.692,
+   "p90_ms": 0.868,
+   "max_ms": 9.965
+  },
+  "unavailable": {
+   "frames": 330,
+   "per_s": 55.0,
+   "p50_ms": 0.699,
+   "p90_ms": 0.883,
+   "max_ms": 3.32
+  },
+  "listening": {
+   "frames": 215,
+   "per_s": 35.8,
+   "p50_ms": 0.678,
+   "p90_ms": 0.834,
+   "max_ms": 3.598
+  },
+  "thinking": {
+   "frames": 233,
+   "per_s": 38.8,
+   "p50_ms": 0.679,
+   "p90_ms": 0.807,
+   "max_ms": 2.696
+  },
+  "speaking": {
+   "frames": 214,
+   "per_s": 35.7,
+   "p50_ms": 0.664,
+   "p90_ms": 0.797,
+   "max_ms": 1.147
+  },
+  "working": {
+   "frames": 236,
+   "per_s": 39.3,
+   "p50_ms": 0.677,
+   "p90_ms": 0.811,
+   "max_ms": 1.445
+  },
+  "awaitingApproval": {
+   "frames": 884,
+   "per_s": 147.3,
+   "p50_ms": 0.53,
+   "p90_ms": 0.667,
+   "max_ms": 1.963
+  },
+  "success": {
+   "frames": 358,
+   "per_s": 59.7,
+   "p50_ms": 0.616,
+   "p90_ms": 0.799,
+   "max_ms": 2.701
+  },
+  "error": {
+   "frames": 225,
+   "per_s": 37.5,
+   "p50_ms": 0.69,
+   "p90_ms": 0.797,
+   "max_ms": 1.487
+  }
+ },
+ "rss": [
+  {
+   "t": 0.502,
+   "state": "unavailable",
+   "rss_mb": 135.69921875
+  },
+  {
+   "t": 1.004,
+   "state": "unavailable",
+   "rss_mb": 137.140625
+  },
+  {
+   "t": 1.506,
+   "state": "unavailable",
+   "rss_mb": 137.1875
+  },
+  {
+   "t": 2.007,
+   "state": "unavailable",
+   "rss_mb": 137.4765625
+  },
+  {
+   "t": 2.528,
+   "state": "unavailable",
+   "rss_mb": 138.31640625
+  },
+  {
+   "t": 3.03,
+   "state": "unavailable",
+   "rss_mb": 138.50390625
+  },
+  {
+   "t": 3.531,
+   "state": "unavailable",
+   "rss_mb": 138.75390625
+  },
+  {
+   "t": 4.032,
+   "state": "unavailable",
+   "rss_mb": 138.94140625
+  },
+  {
+   "t": 4.533,
+   "state": "unavailable",
+   "rss_mb": 137.70703125
+  },
+  {
+   "t": 5.034,
+   "state": "unavailable",
+   "rss_mb": 137.9375
+  },
+  {
+   "t": 5.535,
+   "state": "unavailable",
+   "rss_mb": 138.11328125
+  },
+  {
+   "t": 6.036,
+   "state": "unavailable",
+   "rss_mb": 138.375
+  },
+  {
+   "t": 6.537,
+   "state": "idle",
+   "rss_mb": 100.55859375
+  },
+  {
+   "t": 7.038,
+   "state": "idle",
+   "rss_mb": 100.46875
+  },
+  {
+   "t": 7.54,
+   "state": "idle",
+   "rss_mb": 100.94921875
+  },
+  {
+   "t": 8.041,
+   "state": "idle",
+   "rss_mb": 101.140625
+  },
+  {
+   "t": 8.563,
+   "state": "idle",
+   "rss_mb": 101.609375
+  },
+  {
+   "t": 9.065,
+   "state": "idle",
+   "rss_mb": 101.859375
+  },
+  {
+   "t": 9.567,
+   "state": "idle",
+   "rss_mb": 100.4921875
+  },
+  {
+   "t": 10.069,
+   "state": "idle",
+   "rss_mb": 100.7421875
+  },
+  {
+   "t": 10.57,
+   "state": "idle",
+   "rss_mb": 100.984375
+  },
+  {
+   "t": 11.071,
+   "state": "idle",
+   "rss_mb": 101.171875
+  },
+  {
+   "t": 11.573,
+   "state": "idle",
+   "rss_mb": 101.40234375
+  },
+  {
+   "t": 12.075,
+   "state": "idle",
+   "rss_mb": 101.671875
+  },
+  {
+   "t": 12.576,
+   "state": "listening",
+   "rss_mb": 122.6015625
+  },
+  {
+   "t": 13.078,
+   "state": "listening",
+   "rss_mb": 122.98046875
+  },
+  {
+   "t": 13.579,
+   "state": "listening",
+   "rss_mb": 123.1953125
+  },
+  {
+   "t": 14.081,
+   "state": "listening",
+   "rss_mb": 121.85546875
+  },
+  {
+   "t": 14.605,
+   "state": "listening",
+   "rss_mb": 122.203125
+  },
+  {
+   "t": 15.106,
+   "state": "listening",
+   "rss_mb": 122.453125
+  },
+  {
+   "t": 15.607,
+   "state": "listening",
+   "rss_mb": 122.69921875
+  },
+  {
+   "t": 16.109,
+   "state": "listening",
+   "rss_mb": 122.88671875
+  },
+  {
+   "t": 16.61,
+   "state": "listening",
+   "rss_mb": 123.13671875
+  },
+  {
+   "t": 17.111,
+   "state": "listening",
+   "rss_mb": 123.375
+  },
+  {
+   "t": 17.612,
+   "state": "listening",
+   "rss_mb": 122.04296875
+  },
+  {
+   "t": 18.113,
+   "state": "listening",
+   "rss_mb": 122.23046875
+  },
+  {
+   "t": 18.614,
+   "state": "thinking",
+   "rss_mb": 139.5859375
+  },
+  {
+   "t": 19.115,
+   "state": "thinking",
+   "rss_mb": 140.23046875
+  },
+  {
+   "t": 19.616,
+   "state": "thinking",
+   "rss_mb": 140.48046875
+  },
+  {
+   "t": 20.118,
+   "state": "thinking",
+   "rss_mb": 140.7265625
+  },
+  {
+   "t": 20.637,
+   "state": "thinking",
+   "rss_mb": 141.21484375
+  },
+  {
+   "t": 21.139,
+   "state": "thinking",
+   "rss_mb": 139.9453125
+  },
+  {
+   "t": 21.641,
+   "state": "thinking",
+   "rss_mb": 140.21484375
+  },
+  {
+   "t": 22.142,
+   "state": "thinking",
+   "rss_mb": 140.40234375
+  },
+  {
+   "t": 22.643,
+   "state": "thinking",
+   "rss_mb": 140.65234375
+  },
+  {
+   "t": 23.144,
+   "state": "thinking",
+   "rss_mb": 140.8984375
+  },
+  {
+   "t": 23.646,
+   "state": "thinking",
+   "rss_mb": 141.1484375
+  },
+  {
+   "t": 24.147,
+   "state": "thinking",
+   "rss_mb": 141.3359375
+  },
+  {
+   "t": 24.648,
+   "state": "speaking",
+   "rss_mb": 139.9609375
+  },
+  {
+   "t": 25.15,
+   "state": "speaking",
+   "rss_mb": 140.3359375
+  },
+  {
+   "t": 25.651,
+   "state": "speaking",
+   "rss_mb": 138.9921875
+  },
+  {
+   "t": 26.153,
+   "state": "speaking",
+   "rss_mb": 139.25
+  },
+  {
+   "t": 26.677,
+   "state": "speaking",
+   "rss_mb": 139.54296875
+  },
+  {
+   "t": 27.178,
+   "state": "speaking",
+   "rss_mb": 139.79296875
+  },
+  {
+   "t": 27.681,
+   "state": "speaking",
+   "rss_mb": 139.98046875
+  },
+  {
+   "t": 28.182,
+   "state": "speaking",
+   "rss_mb": 140.23046875
+  },
+  {
+   "t": 28.684,
+   "state": "speaking",
+   "rss_mb": 140.43359375
+  },
+  {
+   "t": 29.186,
+   "state": "speaking",
+   "rss_mb": 139.12109375
+  },
+  {
+   "t": 29.688,
+   "state": "speaking",
+   "rss_mb": 139.30859375
+  },
+  {
+   "t": 30.19,
+   "state": "speaking",
+   "rss_mb": 139.53125
+  },
+  {
+   "t": 30.692,
+   "state": "working",
+   "rss_mb": 139.6640625
+  },
+  {
+   "t": 31.193,
+   "state": "working",
+   "rss_mb": 140.1015625
+  },
+  {
+   "t": 31.693,
+   "state": "working",
+   "rss_mb": 140.3515625
+  },
+  {
+   "t": 32.196,
+   "state": "working",
+   "rss_mb": 140.6015625
+  },
+  {
+   "t": 32.722,
+   "state": "working",
+   "rss_mb": 139.30078125
+  },
+  {
+   "t": 33.224,
+   "state": "working",
+   "rss_mb": 139.55078125
+  },
+  {
+   "t": 33.725,
+   "state": "working",
+   "rss_mb": 139.72265625
+  },
+  {
+   "t": 34.226,
+   "state": "working",
+   "rss_mb": 139.98828125
+  },
+  {
+   "t": 34.727,
+   "state": "working",
+   "rss_mb": 140.1796875
+  },
+  {
+   "t": 35.228,
+   "state": "working",
+   "rss_mb": 140.41015625
+  },
+  {
+   "t": 35.731,
+   "state": "working",
+   "rss_mb": 140.66015625
+  },
+  {
+   "t": 36.232,
+   "state": "working",
+   "rss_mb": 139.36328125
+  },
+  {
+   "t": 36.733,
+   "state": "awaitingApproval",
+   "rss_mb": 125.28515625
+  },
+  {
+   "t": 37.234,
+   "state": "awaitingApproval",
+   "rss_mb": 123.79296875
+  },
+  {
+   "t": 37.736,
+   "state": "awaitingApproval",
+   "rss_mb": 123.56640625
+  },
+  {
+   "t": 38.237,
+   "state": "awaitingApproval",
+   "rss_mb": 123.31640625
+  },
+  {
+   "t": 38.765,
+   "state": "awaitingApproval",
+   "rss_mb": 123.27734375
+  },
+  {
+   "t": 39.267,
+   "state": "awaitingApproval",
+   "rss_mb": 122.96484375
+  },
+  {
+   "t": 39.768,
+   "state": "awaitingApproval",
+   "rss_mb": 124.40234375
+  },
+  {
+   "t": 40.269,
+   "state": "awaitingApproval",
+   "rss_mb": 124.15234375
+  },
+  {
+   "t": 40.771,
+   "state": "awaitingApproval",
+   "rss_mb": 123.87890625
+  },
+  {
+   "t": 41.272,
+   "state": "awaitingApproval",
+   "rss_mb": 123.76171875
+  },
+  {
+   "t": 41.774,
+   "state": "awaitingApproval",
+   "rss_mb": 123.76171875
+  },
+  {
+   "t": 42.276,
+   "state": "awaitingApproval",
+   "rss_mb": 123.63671875
+  },
+  {
+   "t": 42.777,
+   "state": "success",
+   "rss_mb": 123.7421875
+  },
+  {
+   "t": 43.279,
+   "state": "success",
+   "rss_mb": 123.5859375
+  },
+  {
+   "t": 43.781,
+   "state": "success",
+   "rss_mb": 124.89453125
+  },
+  {
+   "t": 44.282,
+   "state": "success",
+   "rss_mb": 123.8359375
+  },
+  {
+   "t": 44.809,
+   "state": "success",
+   "rss_mb": 124.4140625
+  },
+  {
+   "t": 45.311,
+   "state": "success",
+   "rss_mb": 124.6640625
+  },
+  {
+   "t": 45.812,
+   "state": "success",
+   "rss_mb": 124.9140625
+  },
+  {
+   "t": 46.313,
+   "state": "success",
+   "rss_mb": 125.1640625
+  },
+  {
+   "t": 46.814,
+   "state": "success",
+   "rss_mb": 123.72265625
+  },
+  {
+   "t": 47.315,
+   "state": "success",
+   "rss_mb": 123.96875
+  },
+  {
+   "t": 47.817,
+   "state": "success",
+   "rss_mb": 124.171875
+  },
+  {
+   "t": 48.318,
+   "state": "success",
+   "rss_mb": 124.40625
+  },
+  {
+   "t": 48.819,
+   "state": "error",
+   "rss_mb": 123.7265625
+  },
+  {
+   "t": 49.32,
+   "state": "error",
+   "rss_mb": 124.0703125
+  },
+  {
+   "t": 49.821,
+   "state": "error",
+   "rss_mb": 124.3203125
+  },
+  {
+   "t": 50.322,
+   "state": "error",
+   "rss_mb": 124.5078125
+  },
+  {
+   "t": 50.846,
+   "state": "error",
+   "rss_mb": 124.828125
+  },
+  {
+   "t": 51.347,
+   "state": "error",
+   "rss_mb": 123.48046875
+  },
+  {
+   "t": 51.848,
+   "state": "error",
+   "rss_mb": 123.73046875
+  },
+  {
+   "t": 52.349,
+   "state": "error",
+   "rss_mb": 123.9375
+  },
+  {
+   "t": 52.851,
+   "state": "error",
+   "rss_mb": 124.203125
+  },
+  {
+   "t": 53.352,
+   "state": "error",
+   "rss_mb": 124.3828125
+  },
+  {
+   "t": 53.854,
+   "state": "error",
+   "rss_mb": 124.62890625
+  },
+  {
+   "t": 54.356,
+   "state": "error",
+   "rss_mb": 124.87890625
+  }
+ ],
+ "ember_resident_bytes": 44236800
+}

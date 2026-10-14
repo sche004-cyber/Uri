@@ -1,0 +1,269 @@
+{
+ "method": "scripts/fire_companion/fidelity_score.py",
+ "states": {
+  "idle": {
+   "frames": [
+    {
+     "frame": "f_0001.png",
+     "calibrated": 0.64,
+     "unclamped": 0.64,
+     "components": {
+      "silhouette": 0.541,
+      "structure": 0.53,
+      "flow": 0.254,
+      "colour": 0.751,
+      "eyes": 0.5
+     }
+    },
+    {
+     "frame": "f_0012.png",
+     "calibrated": 0.65,
+     "unclamped": 0.65,
+     "components": {
+      "silhouette": 0.546,
+      "structure": 0.532,
+      "flow": 0.248,
+      "colour": 0.747,
+      "eyes": 0.5
+     }
+    },
+    {
+     "frame": "f_0024.png",
+     "calibrated": 0.0,
+     "unclamped": -6.09,
+     "components": {
+      "silhouette": 0.543,
+      "structure": 0.552,
+      "flow": 0.262,
+      "colour": 0.748,
+      "eyes": 0.248
+     }
+    },
+    {
+     "frame": "f_0036.png",
+     "calibrated": 0.0,
+     "unclamped": -0.17,
+     "components": {
+      "silhouette": 0.549,
+      "structure": 0.521,
+      "flow": 0.238,
+      "colour": 0.75,
+      "eyes": 0.5
+     }
+    }
+   ],
+   "median_calibrated": 0.32,
+   "min_calibrated": 0.0,
+   "max_calibrated": 0.65,
+   "median_unclamped": 0.235,
+   "anchors_raw": {
+    "degraded_reference_100": 0.9586948374460152,
+    "generic_fire_spirit_0": 0.5032222958538853
+   },
+   "video_redraw_same_character": {
+    "calibrated": 0.0,
+    "unclamped": -8.49
+   },
+   "target": 90,
+   "met": false
+  },
+  "joyful": {
+   "frames": [
+    {
+     "frame": "f_0001.png",
+     "calibrated": 13.78,
+     "unclamped": 13.78,
+     "components": {
+      "silhouette": 0.562,
+      "structure": 0.548,
+      "flow": 0.311,
+      "colour": 0.683,
+      "eyes": 0.5
+     }
+    },
+    {
+     "frame": "f_0012.png",
+     "calibrated": 15.55,
+     "unclamped": 15.55,
+     "components": {
+      "silhouette": 0.548,
+      "structure": 0.566,
+      "flow": 0.334,
+      "colour": 0.693,
+      "eyes": 0.5
+     }
+    },
+    {
+     "frame": "f_0024.png",
+     "calibrated": 12.3,
+     "unclamped": 12.3,
+     "components": {
+      "silhouette": 0.55,
+      "structure": 0.541,
+      "flow": 0.3,
+      "colour": 0.69,
+      "eyes": 0.5
+     }
+    },
+    {
+     "frame": "f_0036.png",
+     "calibrated": 12.58,
+     "unclamped": 12.58,
+     "components": {
+      "silhouette": 0.527,
+      "structure": 0.553,
+      "flow": 0.323,
+      "colour": 0.686,
+      "eyes": 0.5
+     }
+    }
+   ],
+   "median_calibrated": 13.18,
+   "min_calibrated": 12.3,
+   "max_calibrated": 15.55,
+   "median_unclamped": 13.18,
+   "anchors_raw": {
+    "degraded_reference_100": 0.8619598924532244,
+    "generic_fire_spirit_0": 0.4621295217476493
+   },
+   "video_redraw_same_character": {
+    "calibrated": 7.01,
+    "unclamped": 7.01
+   },
+   "target": 90,
+   "met": false
+  },
+  "fierce": {
+   "frames": [
+    {
+     "frame": "f_0001.png",
+     "calibrated": 8.34,
+     "unclamped": 8.34,
+     "components": {
+      "silhouette": 0.423,
+      "structure": 0.339,
+      "flow": 0.208,
+      "colour": 0.586,
+      "eyes": 1.0
+     }
+    },
+    {
+     "frame": "f_0012.png",
+     "calibrated": 5.69,
+     "unclamped": 5.69,
+     "components": {
+      "silhouette": 0.389,
+      "structure": 0.321,
+      "flow": 0.213,
+      "colour": 0.59,
+      "eyes": 1.0
+     }
+    },
+    {
+     "frame": "f_0024.png",
+     "calibrated": 3.88,
+     "unclamped": 3.88,
+     "components": {
+      "silhouette": 0.387,
+      "structure": 0.311,
+      "flow": 0.196,
+      "colour": 0.58,
+      "eyes": 1.0
+     }
+    },
+    {
+     "frame": "f_0036.png",
+     "calibrated": 6.5,
+     "unclamped": 6.5,
+     "components": {
+      "silhouette": 0.395,
+      "structure": 0.332,
+      "flow": 0.217,
+      "colour": 0.58,
+      "eyes": 1.0
+     }
+    }
+   ],
+   "median_calibrated": 6.095000000000001,
+   "min_calibrated": 3.88,
+   "max_calibrated": 8.34,
+   "median_unclamped": 6.095000000000001,
+   "anchors_raw": {
+    "degraded_reference_100": 0.8652760909374682,
+    "generic_fire_spirit_0": 0.4339032323219507
+   },
+   "video_redraw_same_character": {
+    "calibrated": 3.87,
+    "unclamped": 3.87
+   },
+   "target": 90,
+   "met": false
+  },
+  "depleted": {
+   "frames": [
+    {
+     "frame": "f_0001.png",
+     "calibrated": 32.25,
+     "unclamped": 32.25,
+     "components": {
+      "silhouette": 0.086,
+      "structure": 0.717,
+      "flow": 0.221,
+      "colour": 0.857,
+      "eyes": 0.5
+     }
+    },
+    {
+     "frame": "f_0012.png",
+     "calibrated": 18.93,
+     "unclamped": 18.93,
+     "components": {
+      "silhouette": 0.095,
+      "structure": 0.707,
+      "flow": 0.22,
+      "colour": 0.83,
+      "eyes": 0.221
+     }
+    },
+    {
+     "frame": "f_0024.png",
+     "calibrated": 20.64,
+     "unclamped": 20.64,
+     "components": {
+      "silhouette": 0.095,
+      "structure": 0.715,
+      "flow": 0.224,
+      "colour": 0.851,
+      "eyes": 0.223
+     }
+    },
+    {
+     "frame": "f_0036.png",
+     "calibrated": 22.27,
+     "unclamped": 22.27,
+     "components": {
+      "silhouette": 0.103,
+      "structure": 0.719,
+      "flow": 0.226,
+      "colour": 0.867,
+      "eyes": 0.22
+     }
+    }
+   ],
+   "median_calibrated": 21.455,
+   "min_calibrated": 18.93,
+   "max_calibrated": 32.25,
+   "median_unclamped": 21.455,
+   "anchors_raw": {
+    "degraded_reference_100": 0.684250914427821,
+    "generic_fire_spirit_0": 0.33640347677926885
+   },
+   "video_redraw_same_character": {
+    "calibrated": 18.84,
+    "unclamped": 18.84
+   },
+   "target": 90,
+   "met": false
+  }
+ }
+}
