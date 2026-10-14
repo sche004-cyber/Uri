@@ -76,11 +76,12 @@ void main() {
       }
     });
 
-    test('every identity names a distinct shader asset', () {
-      final assets = CompanionIdentity.values
-          .map((i) => i.shaderAsset)
-          .toSet();
-      expect(assets.length, CompanionIdentity.values.length);
+    test('every shader identity names a distinct shader asset', () {
+      final shaded = CompanionIdentity.values.where((i) => i.usesShader);
+      final assets = shaded.map((i) => i.shaderAsset).toSet();
+      expect(assets.length, shaded.length);
+      // Ember is drawn from rendered clips, never by a shader.
+      expect(CompanionIdentity.ember.usesShader, isFalse);
       for (final a in assets) {
         expect(a, startsWith('shaders/'));
         expect(a, endsWith('.frag'));

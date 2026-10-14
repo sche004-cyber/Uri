@@ -30,6 +30,7 @@ class CompanionChoice {
     CompanionChoice.living(CompanionIdentity.sakura),
     CompanionChoice.living(CompanionIdentity.lunar),
     CompanionChoice.living(CompanionIdentity.moonlit),
+    CompanionChoice.living(CompanionIdentity.ember),
     CompanionChoice.classic(),
   ];
 
@@ -228,8 +229,10 @@ class CompanionLookVocabulary {
     required this.atmosphere,
   });
 
-  final String particles;
-  final String atmosphere;
+  /// Null when the identity cannot vary it (Ember's embers and glow are
+  /// rendered into its clips), so the control is not offered.
+  final String? particles;
+  final String? atmosphere;
 
   static CompanionLookVocabulary of(CompanionIdentity id) => switch (id) {
     CompanionIdentity.solar => const CompanionLookVocabulary(
@@ -247,6 +250,10 @@ class CompanionLookVocabulary {
     CompanionIdentity.moonlit => const CompanionLookVocabulary(
       particles: 'Petals and mist',
       atmosphere: 'Moon halo',
+    ),
+    CompanionIdentity.ember => const CompanionLookVocabulary(
+      particles: null,
+      atmosphere: null,
     ),
   };
 }

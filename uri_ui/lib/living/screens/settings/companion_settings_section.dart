@@ -279,15 +279,16 @@ class _LivingAppearance extends StatelessWidget {
           display: pct(look.size),
           onChanged: (v) => set(look.copyWith(size: v)),
         ),
-        _LookSlider(
-          keyName: 'particles',
-          label: words.particles,
-          value: look.particles,
-          min: CompanionLook.particlesMin,
-          max: CompanionLook.particlesMax,
-          display: pct(look.particles),
-          onChanged: (v) => set(look.copyWith(particles: v)),
-        ),
+        if (words.particles case final label?)
+          _LookSlider(
+            keyName: 'particles',
+            label: label,
+            value: look.particles,
+            min: CompanionLook.particlesMin,
+            max: CompanionLook.particlesMax,
+            display: pct(look.particles),
+            onChanged: (v) => set(look.copyWith(particles: v)),
+          ),
         _LookSlider(
           keyName: 'glow',
           label: 'Glow',
@@ -297,15 +298,16 @@ class _LivingAppearance extends StatelessWidget {
           display: pct(look.glow),
           onChanged: (v) => set(look.copyWith(glow: v)),
         ),
-        _LookSlider(
-          keyName: 'atmosphere',
-          label: words.atmosphere,
-          value: look.atmosphere,
-          min: CompanionLook.atmosphereMin,
-          max: CompanionLook.atmosphereMax,
-          display: pct(look.atmosphere),
-          onChanged: (v) => set(look.copyWith(atmosphere: v)),
-        ),
+        if (words.atmosphere case final label?)
+          _LookSlider(
+            keyName: 'atmosphere',
+            label: label,
+            value: look.atmosphere,
+            min: CompanionLook.atmosphereMin,
+            max: CompanionLook.atmosphereMax,
+            display: pct(look.atmosphere),
+            onChanged: (v) => set(look.copyWith(atmosphere: v)),
+          ),
         _LookSlider(
           keyName: 'motion',
           label: 'Animation intensity',
@@ -509,6 +511,9 @@ class _PerformanceSettings extends StatelessWidget {
       builder: (context, _) {
         final hz = governor.displayHz;
         final living = !prefs.choice.isClassic;
+        // Render quality scales a shader's pixel work; Ember plays rendered
+        // clips, so the choice would do nothing for it.
+        final shaded = prefs.choice.identity?.usesShader ?? false;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -562,7 +567,7 @@ class _PerformanceSettings extends StatelessWidget {
             const SizedBox(height: UriSpace.md),
             Text('Render quality', style: _label(context)),
             const SizedBox(height: 6),
-            if (living)
+            if (shaded)
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -579,6 +584,14 @@ class _PerformanceSettings extends StatelessWidget {
                     ),
                 ],
               )
+            else if (living)
+              const _Unavailable(
+                key: ValueKey('quality-unavailable'),
+                title: 'Render quality',
+                reason:
+                    'Ember plays animation rendered in advance, not a shader; '
+                    'render quality applies to the shader companions.',
+              )
             else
               const _Unavailable(
                 key: ValueKey('quality-unavailable'),
@@ -587,7 +600,7 @@ class _PerformanceSettings extends StatelessWidget {
                     'The classic orb is drawn with vector paths, not a shader; '
                     'render quality applies to the living companions.',
               ),
-            if (living) ...[
+            if (shaded) ...[
               const SizedBox(height: 6),
               Text(
                 '${prefs.quality.detail}. Lower quality computes fewer pixels '

@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uri_ui/living/companion/companion_orb.dart';
+import 'package:uri_ui/living/companion/ember_companion.dart';
 import 'package:uri_ui/living/companion/companion_preferences.dart';
 import 'package:uri_ui/living/companion/companion_state.dart';
 import 'package:uri_ui/living/companion/companion_theme.dart';
@@ -749,6 +750,38 @@ void main() {
       expect(find.byType(CompanionOrb), findsNothing);
       expect(find.byType(EnergyOrb), findsOneWidget);
       expect(find.bySemanticsLabel(RegExp('URI companion: ')), findsWidgets);
+    });
+
+    testWidgets('Ember is drawn from clips through the companion seam', (
+      tester,
+    ) async {
+      final services = await pumpShell(tester);
+      services.companionPrefs.select(
+        const CompanionChoice.living(CompanionIdentity.ember),
+      );
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(EmberCompanion), findsOneWidget);
+      expect(
+        tester.widget<CompanionOrb>(find.byType(CompanionOrb)).identity,
+        CompanionIdentity.ember,
+      );
+      expect(find.bySemanticsLabel(RegExp('URI companion: ')), findsWidgets);
+      services.effects.setReducedEffects(true);
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(EmberCompanion), findsNothing);
+      expect(find.byType(EnergyOrb), findsOneWidget);
+      services.effects.setReducedEffects(false);
+      services.companionPrefs.select(
+        const CompanionChoice.living(CompanionIdentity.solar),
+      );
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(EmberCompanion), findsNothing);
     });
 
     testWidgets('preferences survive a restart of the app', (tester) async {
