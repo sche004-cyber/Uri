@@ -1,4 +1,4 @@
-"""Run the Ember live qualification driver on the real Windows app.
+r"""Run the Ember live qualification driver on the real Windows app.
 
     <runtime>\.venv\Scripts\python.exe -B docs\companions\fire\live\run_fire_live.py
 
@@ -22,7 +22,8 @@ current = json.loads((RT / "work/c1/ws-current.json").read_text())
 for p in (OUT, FX / "prefs", FX / "local/roaming", FX / "local/temp"):
     p.mkdir(parents=True, exist_ok=True)
 driver = UI / "integration_test/fire_live_test.dart"
-shutil.copy2(SRC / "docs/companions/fire/live/fire_live_driver.dart", driver)
+# Read from the live folder: the UI tree itself must stay at the runtime receipt's commit.
+shutil.copy2(LIVE / "fire_live_driver.dart", driver)
 nuget = pathlib.Path(r"C:\Users\cheta\Development\uri-windows-live-qualification-20261013\candidate\uri_ui\build\windows\x64\nuget.exe")
 dest = UI / "build/windows/x64/nuget.exe"
 if nuget.exists() and not dest.exists():
@@ -52,8 +53,8 @@ def brain_hosts():
 
 
 def gpu_sample(pids):
-    ps = ("$c=Get-Counter '\GPU Process Memory(*)\Dedicated Usage','\GPU Engine(*engtype_3D)\Utilization Percentage' -EA 0;"
-          "$c.CounterSamples | ? { $_.CookedValue -gt 0 } | % { $_.InstanceName + '|' + $_.Path + '|' + $_.CookedValue }")
+    ps = (r"$c=Get-Counter '\GPU Process Memory(*)\Dedicated Usage','\GPU Engine(*engtype_3D)\Utilization Percentage' -EA 0;"
+          r"$c.CounterSamples | ? { $_.CookedValue -gt 0 } | % { $_.InstanceName + '|' + $_.Path + '|' + $_.CookedValue }")
     r = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True, timeout=60)
     rows = {}
     for line in r.stdout.splitlines():
