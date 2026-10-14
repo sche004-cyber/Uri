@@ -181,7 +181,7 @@ class _Rail extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                 child: Text(
-                  s.state.label,
+                  s.title,
                   key: const ValueKey('rail-state-label'),
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -1297,7 +1297,7 @@ class _ContextPanel extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      signal.state.label,
+                      signal.title,
                       key: const ValueKey('context-now-state'),
                       style: TextStyle(
                         fontWeight: FontWeight.w600,

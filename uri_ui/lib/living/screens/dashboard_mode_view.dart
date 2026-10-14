@@ -95,7 +95,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${signal.state.label}${signal.detail != null ? ' · ${signal.detail}' : ''}',
+                        '${signal.title}${signal.detail != null ? ' · ${signal.detail}' : ''}',
                         key: const ValueKey('dashboard-state-line'),
                         style: TextStyle(fontSize: 13, color: c.inkSoft),
                       ),
