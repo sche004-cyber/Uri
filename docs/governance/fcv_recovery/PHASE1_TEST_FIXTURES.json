@@ -1,0 +1,21 @@
+{
+ "schema": "uri.fcv.phase1_test_fixtures.v1",
+ "purpose": "Untracked fixtures the accepted Phase 1 suite reads from work/c1/checkpoints (FCV-09). Never committed: they are frozen checkpoint archives, identified only by exact SHA-256.",
+ "fixtures": [
+  {
+   "path": "work/c1/checkpoints/c3-provisional-source.zip",
+   "sha256": "7b2a7a563ae7a58bb7273eee98fbd19a3f21f0dec75c65a3e900b066b6fc4c2f",
+   "bytes": 174981,
+   "used_by": ["test_phase1_offline_components.py::test_offline_checkpoint_restore_hashes_and_no_application_start"],
+   "provenance": "docs/plans/C3_IMPLEMENTATION_EVIDENCE.md (Phase 1 integration worktree, 2026-10-05): C3 source overlay, 39 files",
+   "origin": "C:/Users/cheta/.codex/worktrees/uri-phase1-integration/uri-agent/work/c1/checkpoints/c3-provisional-source.zip"
+  },
+  {
+   "path": "work/c1/checkpoints/final-closure-20261005-phase1.zip",
+   "sha256": "31a34dcbb37ee48e1b06a1bcd60418a2e52ff9a0c65fd8cc7f3c59defeb98cf7",
+   "used_by": ["scripts/ws_frozen_check.py (checkpoint)", "C7 offline rollback rehearsal (FCV-01)"],
+   "provenance": "docs/plans/PHASE1_FINAL_CLOSURE_REPORT.md section 10; tag accepted/phase1-core-freeze-31a34dcb",
+   "origin": "C:/Users/cheta/.codex/worktrees/uri-phase1-integration/uri-agent/work/c1/checkpoints/final-closure-20261005-phase1.zip"
+  }
+ ]
+}
