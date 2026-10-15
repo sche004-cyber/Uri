@@ -50,6 +50,28 @@ Items the reviewer could not verify are carried into plan section 17:
 - Brain-host prompt logging (spike S8, mitigated);
 - the `ctypes` Job Object, `uno` under `-I`, and per-call against listener pixel parity (spikes S3, S1, S5).
 
-## Round 2
+## Round 2, at `78cfdacc` (plan rev 2)
 
-Recorded below after the re-review of rev 2.
+**Verdict: REVISE (narrow).** No blockers.
+- F1–F25: 16 CLOSED. 9 PARTIAL: F1, F2, F6, F9, F12, F16, F20 and F23, plus stale-text side effects.
+- New findings: N1–N4 are major; N5–N11 are minor.
+- The reviewer ran `python -I -c "import uri_office"` from the worktree root and got `ModuleNotFoundError`, which confirms N1.
+
+| Id | Severity | Finding (short) | Disposition in rev 3 |
+|---|---|---|---|
+| N1 | MAJOR | `python -I -m uri_office.raster_worker` cannot import the package | Repaired. A standalone script, run by its absolute path under `-I`, imports only `pymupdf` and the standard library. |
+| N2 | MAJOR | `run_plan` apply would run the workflow inside the global approvals lock | Repaired. Apply records the state and enqueues, then returns. Concurrency test added (section 5.1). |
+| N3 | MAJOR | Offstage WebView2: hidden sheet could take keys, and its GPU use is unmeasured | Repaired. The controller is set invisible and focus moves to Flutter. New AC-O2-21. AC-O2-16 scope clarified. |
+| N4 | MAJOR | Section 9.5 contradicted section 4.5 (names and titles sent to the Brain) | Repaired. Section 9.5 now matches, and a prompt test was added. |
+| N5 | MINOR | Positional INSERT breaks after the new column. The ALTER is not idempotent. | Repaired. Named-column insert, and a `PRAGMA table_info` guard. |
+| N6 | MINOR | Focus-aware history changes the existing test and rail Back | Repaired. Mode-only `history` kept. A separate Office view history. Rail Back unchanged. |
+| N7 | MINOR | Stale passages: §1.2, §6.1 step 8, §6.3, §9.3, R10, "kept inert", U3/AC-O2-15, AC-O2-9 | Repaired. All aligned. `workflow.json` records the input path (not content) so resume can pre-fill the picker. |
+| N8 | MINOR | An exclusive create is not atomic | Repaired. Temporary file, then fsync, then a rename that does not replace, with cleanup on failure. ENOSPC test. |
+| N9 | MINOR | No lock for workflow subjects | Repaired. One lock per workflow, taken before the approvals lock. |
+| N10 | MINOR | Census polling misses short connections; ambient SMB traffic | Repaired. Dedicated canary host `127.0.0.2`, census polled at ≤ 50 ms, canary servers primary. |
+| N11 | MINOR | Programme plan correction note incomplete; "later run" unsupported | Repaired. Full table of committed against quoted values. Unsupported wording removed. |
+| F11 note | — | The bundled Python's library and `share/` are checked only at service start | Stated in section 3. |
+
+## Round 3
+
+Recorded below after the check of the rev 3 diff.

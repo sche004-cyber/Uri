@@ -139,7 +139,27 @@ Library versions: python-docx 1.2.0, python-pptx 1.0.2, PyMuPDF 1.28.2, pypdf 6.
 | LibreOffice, 11-slide PPTX to PDF | 7.4–8.1 s | Peak RSS 369 MB. All 11 slides and the native chart render. |
 | Peak process RSS | 102 MB | |
 
-**Correction 2026-10-15 (O2 review F12):** the committed `evidence/engine_probe_20261014/engine_probe_result.json` is from a later run than the one this table quotes. It records 50 ms for the order, 881 ms for the merge, 84 ms for the 11-slide PPTX and 60 ms for a 150 dpi page render. The quoted 79 ms, 826 ms, 104 ms and 42 ms came from a run whose output was not committed. Both runs are kept; only the committed values count as evidence. The JSON file also starts with a stray stdout line from PyMuPDF.
+**Correction 2026-10-15 (O2 review F12, N11):** the values in the table above do not match the committed
+`evidence/engine_probe_20261014/engine_probe_result.json`. The output of the run that produced the table was not
+committed and is not stored anywhere, so only the committed values count as evidence. The table is kept unedited
+for history.
+
+| Operation | Table | Committed |
+|---|---|---|
+| Office order (python-docx) | 79 ms | 50.0 ms |
+| Mail merge, 40 letters | 826 ms | 880.7 ms |
+| Reopen, edit, save | 19 ms | 19.7 ms |
+| 11-slide PPTX with chart | 104 ms | 84.0 ms |
+| Generate 20-page PDF | 441 ms | 435.1 ms |
+| Extract text, 20 pages | 103 ms | 35.4 ms |
+| `find_tables`, 1 page | 14 ms | 14.0 ms |
+| Merge 3 × 20 pages | 307 ms | 332.0 ms |
+| OCR 1 page, 200 dpi | 1,163 ms | 649.1 ms |
+| Render 1 page, 150 dpi | 42 ms | 60.0 ms |
+| Peak RSS | 102 MB | 102.3 MB |
+
+The committed JSON also starts with a stray stdout line from PyMuPDF; the number of the run is not recorded. None
+of the conclusions changes: every operation stays under 1 s, and all of them run on the CPU.
 
 Notes on the measurements:
 - All of these run on the CPU. None needs the GPU, so they do not compete with the Brain.
@@ -313,7 +333,7 @@ They are structural references only; no code is used. **Owner decision 2026-10-1
 
 ### 5.2 Workflow record (structured, per run)
 
-`work/<id>/workflow.json` records:
+`workflows/<id>/workflow.json` records (path corrected 2026-10-15, O2 review F16):
 - intent;
 - inputs (file id, role, sha256 before);
 - steps (kind D/B, engine, version, duration, result);

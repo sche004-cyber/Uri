@@ -1,8 +1,8 @@
-# URI Office Unified: O2 plan and acceptance criteria (frozen-blueprint candidate, rev 2)
+# URI Office Unified: O2 plan and acceptance criteria (frozen-blueprint candidate, rev 3)
 
 Date: 2026-10-15. Milestone `URI-OFFICE-U`, phase **O2: unified workspace, engine layer and validation pipeline**.
 Planning branch `phase/uri-office-unified-plan` (base `5b958da0`, local only). Programme plan:
-`00_DISCOVERY_RESEARCH_AND_ROADMAP.md`. Status: **CANDIDATE rev 2 (after independent review REVISE and repair), NOT FROZEN, NOT AUTHORIZED FOR IMPLEMENTATION.**
+`00_DISCOVERY_RESEARCH_AND_ROADMAP.md`. Status: **CANDIDATE rev 3 (after independent review rounds 1 and 2, both REVISE, and repair), NOT FROZEN, NOT AUTHORIZED FOR IMPLEMENTATION.**
 
 Owner authorization in force (chat, 2026-10-15):
 - OD-U5 is settled: B1 with B2 goal grouping.
@@ -51,7 +51,7 @@ Evidence: `evidence/excel_baseline_20261015/`.
 | Brain client | `uri_office/brain.py` via `uri_operational_intelligence.brain_client` (FAST tier, strict schema, untrusted block) | Add one schema: Office intent classification. `OfficeBrain.plan` for sheets is unchanged. |
 | Untrusted-data wrapper | `uri_office/untrusted.py` | File names, outlines and request history in Brain prompts. |
 | Companion routing | `LivingServices.activeOfficeTarget` (`living_scope.dart:159`), `office_panel.dart:208-400` | The companion pane is extracted into its own widget, without behaviour change for sheets. The target is generalized to documents. |
-| UI-state controller | `UiPresentationController`, `ShowModeCommand`, `WorkspaceFocus.office` (`presentation_controller.dart:26-160`) | Add an optional `OfficeView` to `ShowModeCommand` and phrases such as `uri office pdfs`. Same cooldown, same history and Back. |
+| UI-state controller | `UiPresentationController`, `ShowModeCommand`, `WorkspaceFocus.office` (`presentation_controller.dart:26-160`) | Add an optional `OfficeView` to `ShowModeCommand` and phrases such as `uri office pdfs`. Same cooldown. History and Back are extended for Office views (section 4.4). |
 | Rail and regions | `workspace_mode_view.dart:103-105,158` | The rail "Documents" item and the simulated `DocumentsRegion` (`:740`, `work_items.dart:166` `isSimulated => true`) are removed. `WorkspaceFocus.documents` stays as an alias that opens Office › Documents. **Tests retired or rewritten** (review F2), because they test the simulated region: `living_shell_test.dart:235-275` (A4 template-to-approval flow on the simulated Documents region) and `:292` (`START NEW WORK`, `RECENT DOCUMENTS` labels). `presentation_controller_test.dart:76-82` is kept: its expected focus stays `documents`, now rendered as Office › Documents. The O2 test report lists each change with its reason. |
 | Live UI harness pattern | `uri_ui/lib/office_live_check.dart`, `office_m2_live_check.dart` | New `office_o2_live_check.dart` on the same pattern. |
 | Core PDF and OCR | `uri_core/services/pdf_reader.py` | **Not used in O2.** PDF preview uses PyMuPDF directly. OCR starts in O4. Core stays untouched. |
@@ -119,7 +119,8 @@ integration gate.
 by `PATH`. **Engine integrity (review F11):** `uri_office/engines.json` holds a full-tree manifest (the SHA-256 of every file
 in the extract, recorded once from the hash-verified MSI administrative extract) and the expected Authenticode signer of
 the signed binaries. The full manifest is checked at service start. The executables, the DLLs and the bundled
-`python.exe` are re-checked at **every engine launch**, including a relaunch after idle shutdown. Spike S6 measures the
+`python.exe` are re-checked at **every engine launch** (the bundled Python's `.py` library files and `share/`
+configuration only at service start), including a relaunch after idle shutdown. Spike S6 measures the
 cost. On any mismatch the preview becomes unavailable and the status strip names the reason. An unverified engine is
 never run.
 
@@ -185,7 +186,9 @@ this live.
 
 **Sheet lifecycle across view switches (review F13):** while a workbook is open, its sheet view stays mounted offstage
 when the centre switches to Home or a document. WebView2 is not disposed, Univer is not restarted, and the draft and
-undo stack are kept. Closing the workbook disposes it. H2 measures the memory cost. Acceptance: AC-O2-17.
+undo stack are kept. On a switch away, the WebView2 controller is set invisible and keyboard focus moves to Flutter,
+so no keystroke can reach the hidden sheet (review N3). Closing the workbook disposes it. H2 measures memory, CPU and
+GPU of the hidden WebView2. Acceptance: AC-O2-17 and AC-O2-21.
 
 ### 4.3 Flutter components
 
@@ -218,8 +221,10 @@ All live under `uri_ui/lib/living/office/`.
   a setting or dismiss a card (`presentation_controller.dart:20-25`).
 - Local phrases: `uri office`, `uri office <view>`. `uri documents` now opens Office › Documents.
 - **History (review F3):** today `_history` holds modes only and `back()` restores only the mode
-  (`presentation_controller.dart:118,157-186`). O2 changes a history entry to `(mode, focus, officeView)`, so Back
-  returns from Office › PDFs to Office › Home. A mode change still adds an entry, so the mode-only tests stay valid.
+  (`presentation_controller.dart:118,157-186`). O2 keeps the existing mode-only `history` getter (derived), so the
+  existing test that expects `[UiPresentationMode.companion]` stays valid. A separate Office view history records
+  `officeView` changes only, and Back inside the Office region uses it first. Back for other rail switches (Tasks,
+  Settings) is not changed (review N6).
 - The Office service may return `navigate: {view, file_id?}` in a response to the owner's own request. The Office
   pane applies it with `UiCommandOrigin.brain`. If the 600 ms cooldown refuses it, nothing moves silently: the
   companion shows the destination as a chip ("Open PDFs") for the owner to press. Navigation never opens a file
@@ -283,10 +288,10 @@ unchanged.
 | `brain.py` | edit | Add `classify(...)`: FAST tier, strict schema, untrusted block. `plan(...)` for sheets is unchanged. |
 | `content.py` | new | `Block` and `SourceRef` dataclasses, plus outline readers for DOCX headings, PPTX titles and PDF TOC or page first lines. The O3–O5 io modules extend it. |
 | `docs.py` | new | `DocSession`: grant, kind, input SHA-256, page count, outline, preview state, close. Read-only. |
-| `sanitize.py` | new | Make the render copy. Refuse zip bombs (more than 500 MB uncompressed, ratio over 100, more than 10,000 entries). Refuse encrypted OOXML. Remove external relationships (`TargetMode="External"`, except hyperlinks, which are kept inert). Neutralize `INCLUDETEXT`, `INCLUDEPICTURE`, `LINK` and `DDE*` fields. Drop `altChunk` external targets and OLE links. Remove `attachedTemplate` and `subDocument` relationships, PPTX `ppaction://program` and other non-navigation `ppaction` links, and external `href` / `xlink:href` in embedded SVG. OLE **embedded** objects are kept but never activated; OLE **links** are removed. The sanitizer parses XML with a hardened lxml parser (no DTD loading, `resolve_entities=False`, `no_network=True`, `huge_tree=False`) and refuses any part that has a DOCTYPE (review F10). Report each removal as a finding. Never change the original. |
+| `sanitize.py` | new | Make the render copy. Refuse zip bombs (more than 500 MB uncompressed, ratio over 100, more than 10,000 entries). Refuse encrypted OOXML. Remove external relationships (`TargetMode="External"`, except hyperlinks, which stay live in outputs and are never fetched; see section 7). Neutralize `INCLUDETEXT`, `INCLUDEPICTURE`, `LINK` and `DDE*` fields. Drop `altChunk` external targets and OLE links. Remove `attachedTemplate` and `subDocument` relationships, PPTX `ppaction://program` and other non-navigation `ppaction` links, and external `href` / `xlink:href` in embedded SVG. OLE **embedded** objects are kept but never activated; OLE **links** are removed. The sanitizer parses XML with a hardened lxml parser (no DTD loading, `resolve_entities=False`, `no_network=True`, `huge_tree=False`) and refuses any part that has a DOCTYPE (review F10). Report each removal as a finding. Never change the original. |
 | `render.py` | new | Engine manager. Checks the pin. Checks engine integrity at every launch. Re-seeds the hardened profile under `<state>/lo-profile/` at every start; the profile also disables crash reporting and update and extension checks (review F8). Sets `TMP`/`TEMP` for the engine to `<state>/lo-tmp/` and empties it after each job and at shutdown. Starts the listener inside a Job Object (`ctypes`) with a random pipe name. One queue with two priorities: previews before conversions. A queued job is cancelled when its document or workflow closes. Timeouts: 60 s per conversion, 90 s for start-up. Restarts once after a crash. **Idle** means no queued or running job; shutdown after 10 idle minutes (review F20). Results are PDF files in the job's folder. |
 | `lo_bridge.py` | new | Runs in LibreOffice's `python.exe`. JSON lines on stdin and stdout: `{in, out, filter}` → `{ok, seconds, error}`. Accepts only paths under the service's working root, as passed at start. |
-| `preview.py` + `raster_worker.py` | new | PDF to PNG pages with PyMuPDF at 110 dpi (on-screen), 200 dpi (zoom) and 40 dpi (thumbnails). **Untrusted PDFs are parsed in a worker subprocess** (`python -I -m uri_office.raster_worker`) in its own Job Object, with a 1.5 GB memory limit and a 60 s timeout. They are not parsed in the service process, which holds the token and the grants (review F9). The worker receives only a file path and an output folder. Cache under `<state>/previews/<key>/`; the key is the SHA-256 of (input SHA-256, engine manifest hash, sanitizer version, dpi) (review F20). 1 GB LRU cap. "Clear previews" is in the Office region's left-pane menu, because `settings_shell.dart` is protected. |
+| `preview.py` + `raster_worker.py` | new | PDF to PNG pages with PyMuPDF at 110 dpi (on-screen), 200 dpi (zoom) and 40 dpi (thumbnails). **Untrusted PDFs are parsed in a worker subprocess**: `raster_worker.py` is a standalone script that imports only `pymupdf` and the standard library, run as `python -I <absolute path>\raster_worker.py <in> <outdir>` (`-m uri_office...` fails under `-I`, review N1), in its own Job Object, with a 1.5 GB memory limit and a 60 s timeout. They are not parsed in the service process, which holds the token and the grants (review F9). The worker receives only a file path and an output folder. Cache under `<state>/previews/<key>/`; the key is the SHA-256 of (input SHA-256, engine manifest hash, sanitizer version, dpi) (review F20). 1 GB LRU cap. "Clear previews" is in the Office region's left-pane menu, because `settings_shell.dart` is protected. |
 | `validate.py` | new | Shared checks and the findings model (section 8) |
 | `workflows.py` | new | Workflow runner: `<state>/workflows/<id>/` (review F16: `work/` already holds workbook copies, `service.py:134,536`), `workflow.json`, step states, resume, cancel, retention (7 days for abandoned runs, removal on discard or after approval) |
 | `recent.py` | new | `<state>/recent.json`: path, kind, last opened, size. No content and no hash. Remove an entry, Clear all. Re-opening an entry asks the picker to confirm the file, so a new grant is made. A recent entry is not a grant. |
@@ -300,11 +305,12 @@ unchanged.
 | Change | Detail |
 |---|---|
 | Table | `surface` gains `subject_kind TEXT NOT NULL DEFAULT 'workbook'` through `ALTER TABLE ... ADD COLUMN`, so existing rows stay `workbook`. The existing `workbook_id` column holds the subject id: a workbook id or a workflow id. Plan cards are rows of the same table (`record_json.kind = 'plan'`). One audit chain. |
-| Propose | New `propose_outputs(workflow_id, outputs, destination)` and `propose_plan(workflow_id, plan)`. The existing workbook `propose` is unchanged. "One open card per workbook" becomes "one open card per subject". |
-| Action | `Approvals.action` reads the bound hash key from a per-action map: `office.apply_change` and `office.reject_change` use `change_sha256`; `office.run_plan` and `office.discard_plan` use `plan_sha256`. Audit payloads use counts that exist for each kind (outputs, steps). |
+| Propose | New `propose_outputs(workflow_id, outputs, destination)` and `propose_plan(workflow_id, plan)`. The existing workbook `propose` keeps its behaviour, with one mechanical change: its positional `INSERT INTO surface VALUES (...)` (`approvals.py:144`) becomes a named-column insert, because the new column would break it (review N5). The `ALTER TABLE` runs only when `PRAGMA table_info(surface)` lacks the column. "One open card per workbook" becomes "one open card per subject". |
+| Action | `office.run_plan` apply only records the state change and enqueues the workflow, then returns. Execution never runs inside the approvals lock, which `Approvals.action` holds around `apply_fn` (`approvals.py:241-264`; review N2). Each workflow has its own lock, taken before the approvals lock, as workbook sessions do (`service.py:561-567`; review N9). `Approvals.action` reads the bound hash key from a per-action map: `office.apply_change` and `office.reject_change` use `change_sha256`; `office.run_plan` and `office.discard_plan` use `plan_sha256`. Audit payloads use counts that exist for each kind (outputs, steps). |
 | Apply | `Office._apply` dispatches on `body["target"]["kind"]`. `output_files` and `plan` are handled **before** any workbook session lookup. The workbook branch is unchanged. |
-| Output write | For each output, at apply time: re-check the destination's real path against the grant (no junction swapped in since the grant), then write with an exclusive create that never overwrites (review F23). The same gap in the M1/M2 save path is reported to the owner as a finding. O2 does not change M1/M2 code. |
+| Output write | For each output, at apply time: re-check the destination's real path against the grant (no junction swapped in since the grant), then write to a temporary file in the destination folder, flush and fsync, and rename it to the final name with a rename that fails if the name exists (`os.rename` on Windows). Any failure deletes the temporary file, so nothing partial is left at the destination (reviews F23, N8). A test injects ENOSPC and checks this. The same gap in the M1/M2 save path is reported to the owner as a finding. O2 does not change M1/M2 code. |
 | Dart | One region-level action handler (section 4.3) |
+| Concurrency test | A workbook save completes while a conversion runs (review N2). |
 | Regression | All M1/M2 approval tests (`tests/office/test_service.py`, `test_review_*`, `test_m2_new_workbook.py`) pass unchanged. A test proves that an existing database without `subject_kind` migrates and its chain still verifies. |
 
 **Destination order (review F5):**
@@ -360,8 +366,9 @@ existing `/a2ui/action` route.
 5. **Execute** in the working folder. Brain steps (O3+) return only validated operation JSON.
 6. **Validate**, then repair. Repair is deterministic rules only, at most 2 passes. Remaining findings go to the owner.
 7. **Preview** the outputs in the centre pane.
-8. **Approve outputs.** An `output_files` card goes through `office.apply_change`. The owner picks the destination in a
-   save dialog (SAVE_AS grant). The write never overwrites, is atomic, and is audited.
+8. **Approve outputs.** The owner presses Save and picks the destination in a save dialog (SAVE_AS grant). Then an
+   `output_files` card, binding the outputs and the destination, goes through `office.apply_change` (order in section
+   5.1). The write never overwrites, is atomic, and is audited.
 9. **Refine.** At most two follow-up chips taken from the registry (for example "Open the PDF", "Show folder").
 
 ### 6.2 Brain-use policy
@@ -377,9 +384,9 @@ Effect: O2's only Brain use is stage-2 classification. Everything else in O2 run
 
 ### 6.3 Workflow record
 
-`work/<id>/workflow.json` holds:
+`workflows/<id>/workflow.json` holds:
 - the intent and capability id;
-- the inputs (grant id, kind, SHA-256 before);
+- the inputs (path, kind, SHA-256 before; the path is kept so that resume can pre-fill the picker; it is not content);
 - the steps (kind D, E or B; engine and version; start; end; state; finding ids);
 - the outputs (name, SHA-256, pages);
 - approvals (surface id, `change_sha256`);
@@ -462,11 +469,13 @@ changing the pipeline.
    - Only paths under the working root.
    - The canary set (section 12, F-items) runs in every qualification.
 3. **UNC and NTLM.** A link target such as `\\host\share` could make Windows send credentials. The sanitizer removes
-   UNC targets, and the canary set includes one (an SMB canary on `127.0.0.1`).
+   UNC targets. The canary set includes a dedicated UNC canary host (section 12, row F1).
 4. **PDF.** PyMuPDF renders only. JavaScript, launch actions and embedded files are never run or extracted.
 5. **Brain.**
-   - Stage-2 classification sees the owner's request, file names, and the outline titles of the active file.
-   - The file names and outline titles go inside an untrusted block.
+   - Stage-2 classification sees the owner's request, the last owner turns and the **kind** of the active file only.
+     It sees no file names and no outline titles (section 4.5, spike S8; review N4). A test asserts that the
+     classify prompt contains no file name or title.
+   - The request and turns go inside an untrusted block.
    - The output is a closed enum checked against the schema. Anything else becomes a clarification.
 6. **No cloud.** O2 adds no Google, upload or share path. The existing Google Sheets path is unchanged.
 7. **No learning.**
@@ -486,7 +495,7 @@ changing the pipeline.
 |---|---|---|---|
 | U1 | Three panes at ≥ 1280 px. Left and right panes resize between their limits and collapse. Sizes persist after a restart. | widget tests at 1440 and 1280 px | E1 |
 | U2 | Responsive: icon strip at 1000–1279 px, side sheet under 1000 px, single view under 720 px. No overflow errors at 1.3 text scale. | widget tests at 1100, 900 and 700 px | E2 |
-| U3 | With a workbook open, the Excel view and companion behave as before. All M1 and M2 Flutter tests pass unchanged. | existing suites | L1 |
+| U3 | With a workbook open, the Excel view and companion behave as before. All M1 and M2 Flutter tests pass unchanged, except the simulated-Documents tests listed in section 1.2, which are retired or rewritten with reasons. | existing suites | L1 |
 | U4 | Goal groups show only `available` capabilities. Empty groups are hidden. No control leads to "not implemented". | widget test with the registry fixture | E3 |
 | U5 | Conversation history persists across Home, sheet, document and back. Each turn shows its target label. | widget test | E4 |
 | U6 | First-visit hint and first-of-kind hints appear once. A dismissal persists. The help chip lists available and planned capabilities separately. | widget tests | E5 |
@@ -514,18 +523,19 @@ changing the pipeline.
 | AC-O2-6 | Engine pin mismatch or missing engine: preview unavailable with the stated message. The engine is never run. | `test_engine_pin.py` |
 | AC-O2-7 | Convert to PDF works end to end. The pipeline runs plan card → execute → validate → preview → `output_files` approval → write, with no overwrite. `workflow.json` has every step. Sources are unchanged. | `test_workflow_convert.py` + D1 |
 | AC-O2-8 | Validation blocks approval on any error finding. Warnings need explicit acceptance, which is audited. | `test_validate.py` |
-| AC-O2-9 | Resume: killing the service during the render step, then restarting, shows "Interrupted at step N". Resume re-runs the step after re-checking the input hashes. A changed input stops the workflow with a finding. | `test_workflow_resume.py` + F3 |
+| AC-O2-9 | Resume: killing the service during the render step, then restarting, shows "Interrupted at step N". Resume asks the owner to re-pick each input (path pre-filled), makes a new grant, and re-runs the step only if the SHA-256 equals the recorded value. A changed input stops the workflow with a finding. Open output cards were closed at start-up. | `test_workflow_resume.py` + F3 |
 | AC-O2-10 | Intent corpus (review F14): 40 requests in `tests/office_u2/intent_corpus.json`, with expected results recorded before the run: 24 deterministic and 16 ambiguous.<ul><li>Deterministic: 24/24 correct on stage 1, with **zero** Brain calls.</li><li>Brain subset (live, GPU window): 100 % schema-valid; at least 14/16 correct; a wrong classification never starts a workflow without the plan card.</li><li>With the Brain unavailable, all 16 ambiguous requests give clarification chips.</li></ul>`missing` is a closed enum (`input_file`, `output_format`, `page_scope`, `input_role`). The classifier uses a document-specific system rule, not the spreadsheet `SYSTEM_RULE`. | `test_intent.py` + C1 (Brain) |
 | AC-O2-11 | Planned capabilities answer "not available yet" with the phase. They never start a workflow. | `test_intent.py` |
 | AC-O2-12 | A2UI: `office.run_plan` refuses a stale or changed plan hash and a replay. `output_files` approvals refuse a changed output and a destination that already exists. | `test_plan_card.py`, `test_output_approval.py` |
 | AC-O2-13 | Security: every new route refuses a missing token, a bad Host or Origin, and an unknown id. Paths outside grants are refused. Zip bomb, encrypted and oversize files are refused with a finding. | `test_service_u2.py`, `test_sanitize.py` |
 | AC-O2-14 | No content in `workflow.json`, `recent.json` or the logs: the fixture text "SENTINEL-CONTENT-7f3a" never appears in the state folder outside `workflows/` and `previews/`, and never in `%TEMP%` after a job. | `test_no_content_leak.py` |
+| AC-O2-15 | Excel regression: `tests/office`, `tests/a2ui`, `uri_ui/test/office` and the living shell tests pass unchanged, except the simulated-Documents tests listed in section 1.2. `ws_frozen_check` shows no protected path changed. | full suites + L1 |
+| AC-O2-16 | No GPU use by the Office engines: the GPU process census during previews and conversion shows no LibreOffice, raster-worker or Office-service GPU memory. WebView2's own GPU process is measured separately (AC-O2-21). | H2 |
 | AC-O2-17 | Switching sheet → PDF → sheet keeps the workbook's draft, change marks and undo stack, with no Univer reload. | widget test + live E4 |
 | AC-O2-18 | The hardened profile also disables crash reporting and update and extension checks. The census of Job Object process ids shows no outbound connection during the whole live run. | `test_render_isolation.py` + F1 |
 | AC-O2-19 | Engine integrity: changing one byte of any file in the manifest makes the next launch refuse to run the engine. | `test_engine_pin.py` |
 | AC-O2-20 | A malformed or hostile PDF that crashes or hangs MuPDF kills only the raster worker. The service keeps running and shows "Preview unavailable". | `test_raster_worker.py` |
-| AC-O2-15 | Excel regression: `tests/office`, `tests/a2ui`, `uri_ui/test/office` and the living shell tests pass unchanged. `ws_frozen_check` shows no protected path changed. | full suites + L1 |
-| AC-O2-16 | No GPU use by the Office engines: the GPU process census during previews and conversion shows no LibreOffice or Office-service GPU memory. | H2 |
+| AC-O2-21 | While a sheet is hidden behind a document view, keys typed in the document view never change the sheet's draft. The hidden WebView2's CPU and GPU use is measured in H2 and H3 and reported against the Excel baseline. | widget test + live E4, H2, H3 |
 
 ## 12. Live qualification matrix (O2)
 
@@ -553,7 +563,7 @@ Column key:
 | D2 | 7 Batch generation / D | **Not O2** (O7) | — | — | N/A |
 | O1 | 8 Contextual suggestions | **Not O2** (O8). O2 checks only the one-hint rule (U8). | no | no | runnable |
 | E1–E7 | 9 First-time use and usability / E | Scripted first-visit path. Time to first preview. Hint behaviour. Responsive widths. Keyboard. Then an **owner think-aloud session** recording confusion points and time to the first output. Repairs are retested. | no | **yes** | Scripted part runnable. Owner session **BLOCKED** (owner away). |
-| F1–F6 | 10 Errors and recovery / F | <ul><li>**F1 canaries:**<ul><li>an HTTP canary for each reference type;</li><li>for SMB/UNC, a system-wide before/after diff of TCP connections to ports 445 and 139 (the kernel redirector, PID 4, makes SMB connections, so a per-process census cannot see them);</li><li>a WebDAV canary `\\127.0.0.1@<port>\x` on a high port (review F6);</li><li>an outbound-connection census of all Job Object process ids for the whole run (review F8).</li></ul></li><li>**F2:** engine crash and timeout, with crash reporting disabled and no dump upload.</li><li>**F3:** service kill mid-workflow, then resume (inputs re-confirmed).</li><li>**F4:** corrupt, encrypted, oversize, zip-bomb and DOCTYPE/XXE files.</li><li>**F5:** disk full by **fault injection** (ENOSPC raised in the write and convert paths), labelled as a simulation (review F7).</li><li>**F6:** file changed on disk while open.</li></ul> | no | no | F1 HTTP and port diff, F2–F4, F5 (simulated) and F6 runnable. WebDAV canary runnable only if the WebClient service is running; otherwise NOT VERIFIED. A real disk-full test: NOT VERIFIED. |
+| F1–F6 | 10 Errors and recovery / F | <ul><li>**F1 canaries:**<ul><li>an HTTP canary for each reference type;</li><li>for SMB/UNC, links point at a dedicated canary host `\\127.0.0.2\canary`, and connections to 127.0.0.2 on ports 445 and 139 are detected system-wide (the kernel redirector, PID 4, makes SMB connections, so a per-process census cannot see them), which filters out ambient SMB traffic (review N10);</li><li>a WebDAV canary `\\127.0.0.1@<port>\x` on a high port (review F6);</li><li>an outbound-connection census of all Job Object process ids for the whole run, polled at ≤ 50 ms (review F8). A poll can miss a very short connection, so the canary servers remain the primary detector and the census is a second net.</li></ul></li><li>**F2:** engine crash and timeout, with crash reporting disabled and no dump upload.</li><li>**F3:** service kill mid-workflow, then resume (inputs re-confirmed).</li><li>**F4:** corrupt, encrypted, oversize, zip-bomb and DOCTYPE/XXE files.</li><li>**F5:** disk full by **fault injection** (ENOSPC raised in the write and convert paths), labelled as a simulation (review F7).</li><li>**F6:** file changed on disk while open.</li></ul> | no | no | F1 HTTP and port diff, F2–F4, F5 (simulated) and F6 runnable. WebDAV canary runnable only if the WebClient service is running; otherwise NOT VERIFIED. A real disk-full test: NOT VERIFIED. |
 | G1 | 11 Original protection / G | Source hashes before and after every live item. No stray files outside `workflows/`, `previews/`, `lo-tmp/` (empty after each job) and the chosen destination. `%TEMP%` scanned before and after for new files from the engine (review F8). | no | no | runnable |
 | H1–H3 | 12 Performance / H | H1 preview and convert latencies (U12, AC-O2-3); H2 CPU, RSS (service, LibreOffice, UI) and GPU census; H3 Brain tok/s with the Office region open (sheet and document) against the Excel baseline (AC11) | H3 only | no | H1 and H2 runnable. H3 **BLOCKED** (GPU window). |
 | L1–L2 | 13 Repeats and regression / L | L1 Excel live journey (open, instruct, accept, save) with the Brain; L2 five repeats of D1, F1 and F3 with identical outcomes | L1 | no | L2 runnable. L1 **BLOCKED** (GPU window). |
@@ -646,7 +656,7 @@ capabilities through one additive entry each, merged in the order O3 → O4 → 
 | R7 | Stacking on an unintegrated Office line (W-7) and the canonical frozen checker exiting 1 (W-8) | High (integration) | Unchanged owner items. O2 stays rebase-ready and small. |
 | R8 | Brain-dependent rows stay BLOCKED until the GPU window | Certain until the owner returns | Most of O2 is Brain-free by design. The rows are reported BLOCKED. |
 | R9 | Scope creep into editing within O2 | Medium | Section 2.2. The registry only exposes `available` capabilities. |
-| R10 | Preview cache holds rendered images of sensitive documents | Medium | ACL-restricted state folder. 1 GB LRU. "Clear previews" in Office settings. Previews are deleted when a recent entry is removed. |
+| R10 | Preview cache holds rendered images of sensitive documents | Medium | ACL-restricted state folder. 1 GB LRU. "Clear previews" in the Office region's left-pane menu. Previews are deleted when a recent entry is removed. |
 | R11 | Same-user processes could drive the UNO pipe | Low | Random pipe name. Same-user processes already hold the user's rights. Documented. |
 | R12 | A fresh worktree lacks the Univer bundle, so `test_page` fails | Low | WS-C setup stages the hash-verified bundle or records the skip. Found on 2026-10-15. |
 | R13 | MuPDF parses hostile PDFs | Medium → Low | Raster worker subprocess in a Job Object (AC-O2-20). Residual: the worker runs as the same user. |
@@ -697,6 +707,11 @@ Repairs made during self-review:
 
 ## 19. Independent review
 
-Round 1 (separate Claude reviewer, read-only, at `d2706bff`): **REVISE**, with 2 blockers, 13 major, 8 minor and
-2 note findings. Every finding is repaired in rev 2 or answered. The disposition table is in
-`02_O2_INDEPENDENT_REVIEW.md`, which also records the round 2 result.
+- Round 1 (separate Claude reviewer, read-only, at `d2706bff`): **REVISE**. It found 2 blockers, 13 major, 8 minor and
+  2 notes.
+- Round 2 (same reviewer, at `78cfdacc`): **REVISE (narrow)**. No blockers. 16 of the 25 findings were closed and 9
+  were partly closed. It found 4 new major and 7 new minor findings.
+- Rev 3 repairs all of them.
+
+The reviewer's freeze-readiness expectation after these repairs was ACCEPT WITH FINDINGS. The round 3 check of the
+rev 3 diff is recorded in `02_O2_INDEPENDENT_REVIEW.md`.
