@@ -1,0 +1,100 @@
+[
+ {
+  "run": "solar_r1",
+  "gpu3d_med": 3.77,
+  "gpu3d_max": 8.21,
+  "vram_med": 108.9,
+  "vram_max": 110.9,
+  "frames_per_s": 148.4,
+  "frame_total_p50": 1.57,
+  "frame_total_p99": 2.85,
+  "rss_max": 152,
+  "resident_bytes": 0,
+  "failure": null,
+  "brain": "llama_at_start=",
+  "brain_pids_at_start": []
+ },
+ {
+  "run": "solar_r2",
+  "gpu3d_med": 11.04,
+  "gpu3d_max": 64.72,
+  "vram_med": 106.7,
+  "vram_max": 126.2,
+  "frames_per_s": 136.8,
+  "frame_total_p50": 1.75,
+  "frame_total_p99": 33.84,
+  "rss_max": 151,
+  "resident_bytes": 0,
+  "failure": null,
+  "brain": "llama_at_start=19004",
+  "brain_pids_at_start": [
+   19004
+  ]
+ },
+ {
+  "run": "v1ember_r1",
+  "gpu3d_med": 0.14,
+  "gpu3d_max": 10.61,
+  "vram_med": 145.4,
+  "vram_max": 189.7,
+  "frames_per_s": 44.3,
+  "frame_total_p50": 1.58,
+  "frame_total_p99": 2.94,
+  "rss_max": 142,
+  "resident_bytes": 44236800,
+  "failure": null,
+  "brain": "llama_at_start=19004",
+  "brain_pids_at_start": [
+   19004
+  ]
+ },
+ {
+  "run": "v1ember_r2",
+  "gpu3d_med": 5.47,
+  "gpu3d_max": 7.08,
+  "vram_med": 148.7,
+  "vram_max": 197.7,
+  "frames_per_s": 44.4,
+  "frame_total_p50": 1.71,
+  "frame_total_p99": 13.51,
+  "rss_max": 142,
+  "resident_bytes": 44236800,
+  "failure": null,
+  "brain": "llama_at_start=19004",
+  "brain_pids_at_start": [
+   19004
+  ]
+ },
+ {
+  "run": "v2ember_r1",
+  "gpu3d_med": 0.29,
+  "gpu3d_max": 0.31,
+  "vram_med": 142.9,
+  "vram_max": 162.7,
+  "frames_per_s": 47.8,
+  "frame_total_p50": 1.59,
+  "frame_total_p99": 2.9,
+  "rss_max": 134,
+  "resident_bytes": 44777844,
+  "failure": null,
+  "brain": "llama_at_start=",
+  "brain_pids_at_start": []
+ },
+ {
+  "run": "v2ember_r2",
+  "gpu3d_med": 0.14,
+  "gpu3d_max": 0.3,
+  "vram_med": 141.8,
+  "vram_max": 175.4,
+  "frames_per_s": 45.6,
+  "frame_total_p50": 1.51,
+  "frame_total_p99": 2.94,
+  "rss_max": 135,
+  "resident_bytes": 44777844,
+  "failure": null,
+  "brain": "llama_at_start=19004",
+  "brain_pids_at_start": [
+   19004
+  ]
+ }
+]
