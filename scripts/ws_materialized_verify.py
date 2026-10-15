@@ -346,7 +346,7 @@ def verify(source, runtime, *, strict_extras=True):
                 raise VerificationError("OUTPUT_EXECUTION_MODE_CHANGED:" + name)
         if mismatches:
             raise VerificationError("OUTPUT_CHANGED:" + ",".join(mismatches[:10]))
-        extras, generated = [], []
+        extras, generated, bytecode = [], [], []
         for current, dirs, names in os.walk(runtime, followlinks=False):
             rel = Path(current).relative_to(runtime)
             if not rel.parts:
@@ -362,7 +362,14 @@ def verify(source, runtime, *, strict_extras=True):
                 if generated_by_gates(rel, name, expected, runtime):
                     generated.append(path)
                     continue
+                if name.endswith((".pyc", ".pyo")) or (rel.parts and rel.parts[-1] == "__pycache__"):
+                    # Review R2-02: bytecode that is not the exact compile of a verified source could be executed
+                    # in place of it, so it is refused in every mode, including the historical gates.
+                    bytecode.append(path)
+                    continue
                 extras.append(path)
+        if bytecode:
+            raise VerificationError("UNVERIFIED_BYTECODE:" + ",".join(sorted(bytecode)[:10]))
         if extras and strict_extras:
             raise VerificationError("UNKNOWN_OUTPUT:" + ",".join(sorted(extras)[:10]))
         # The two runtime security transitions. The FCV-01 rollback amendment is a source-tree tool change; the
@@ -451,7 +458,7 @@ def generated_by_gates(rel, name, expected, runtime=None):
     try:
         cached = marshal.loads(data[16:])            # data only: marshal never executes code
         wanted = _expected_code(Path(runtime) / source_rel, name, m)
-    except (ValueError, EOFError, TypeError, SyntaxError, ImportError):
+    except Exception:                                 # R2-05: any failure to prove the bytecode refuses it
         return False
     return _same_code(cached, wanted)
 

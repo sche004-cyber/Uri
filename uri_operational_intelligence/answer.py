@@ -45,7 +45,7 @@ _CLAIM = re.compile(
 # FCV-06: the routing marker is internal. A reply that merely mentions it (for example while explaining how URI
 # handles actions) must not show it to the user; only a reply that IS the marker reroutes to Core.
 _MARKER_MENTION = re.compile(r"`?" + re.escape(ACTION_MARKER) + r"`?")
-MARKER_MENTION_TEXT = "an action request"
+MARKER_MENTION_TEXT = "a hidden signal to URI's controller"   # review R2-04: true wherever it is substituted
 _MARKER_FORMS = ("`" + ACTION_MARKER + "`", ACTION_MARKER + "`")
 
 
@@ -62,23 +62,26 @@ def _safe_cut(s: str) -> int:
     return len(s)
 
 
-_CONDITIONAL = re.compile(r"\b(if|whether|once|when|after)\b[^.!?\n]{0,40}$", re.I)
-_RECORDED = {"saved", "stored", "remembered"}
-_ABOUT_MEMORY = re.compile(r"\b(facts?|information|memory|remember(?:ed)?)\b", re.I)
+# Review R2-01: the only exemptions are (1) a passive "has/have been X" inside a conditional clause that directly
+# governs it ("if it has been saved", no clause break in between) and (2) a relative clause about facts already in
+# this answer's supplied memory ("the facts I have saved for you"). First-person "I have X" is never exempted by a
+# preceding conditional ("Once again, I have deleted the files" is a claim).
+_GOVERNING_CONDITIONAL = re.compile(r"\b(if|whether|once|unless|until)\s+(?:it|they|this|that|these|those|[a-z]+)"
+                                    r"(?:\s+[a-z]+){0,3}\s*$", re.I)
+_RECORDED_RELATIVE = re.compile(r"\b(?:facts?|things|information|details)\s+(?:that\s+|which\s+)?"
+                                r"(?:i(?:'ve| have)|you(?:'ve| have)(?: asked me to)?)\s+(?:saved|stored|remembered)\b",
+                                re.I)
 
 
 def claims_action(text, memory=None):
-    """An UNVERIFIED_ACTION_CLAIM is a statement that something was done. Not one: a conditional ("if it has been
-    saved"), or a reference to facts that are in this answer's supplied memory ("the facts I have saved for you")."""
+    """An UNVERIFIED_ACTION_CLAIM is a statement that something was done in this reply. See the exemptions above."""
     has_facts = bool(memory and memory.get("status") == "available" and memory.get("facts"))
     for m in _CLAIM.finditer(text):
-        if _CONDITIONAL.search(text[max(0, m.start() - 60):m.start()]):
+        passive = m.group(3) is not None
+        if passive and _GOVERNING_CONDITIONAL.search(text[max(0, m.start() - 40):m.start()]):
             continue
-        verb = (m.group(2) or m.group(4) or "").lower()
-        start = max(text.rfind(c, 0, m.start()) for c in ".!?\n") + 1
-        ends = [i for i in (text.find(c, m.end()) for c in ".!?\n") if i != -1]
-        sentence = text[start:min(ends) if ends else len(text)]
-        if has_facts and verb in _RECORDED and _ABOUT_MEMORY.search(sentence):
+        if has_facts and any(r.start() <= m.start() < r.end()
+                             for r in _RECORDED_RELATIVE.finditer(text, max(0, m.start() - 40), m.end() + 1)):
             continue
         return True
     return False

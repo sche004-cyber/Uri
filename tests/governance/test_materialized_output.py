@@ -272,9 +272,15 @@ def test_crafted_bytecode_with_a_valid_header_is_refused(output):
     evil = compile("import os\nPAYLOAD = 'not the verified source'\n", str(worker), "exec", dont_inherit=True)
     (cache / tag).write_bytes(_pyc_for(worker, evil))
     result = V.verify(source, runtime)
-    assert not result["ok"] and "UNKNOWN_OUTPUT" in result["error"]
+    assert not result["ok"] and "UNVERIFIED_BYTECODE" in result["error"]
+    # Review R2-02: the historical gates (strict_extras=False) refuse it too.
+    historical = V.verify(source, runtime, strict_extras=False)
+    assert not historical["ok"] and "UNVERIFIED_BYTECODE" in historical["error"]
+    with pytest.raises(V.VerificationError, match="MATERIALIZED_GATE_REFUSED:UNVERIFIED_BYTECODE"):
+        V.verified_transitions(runtime)
     (cache / tag).write_bytes(b"bytecode")
     assert not V.verify(source, runtime)["ok"]
+    assert not V.verify(source, runtime, strict_extras=False)["ok"]
 
 
 @pytest.mark.parametrize("rel", ["__pycache__/unknown.cpython-313.pyc", "__pycache__/worker.py", "worker.cpython-313.pyc",
@@ -285,7 +291,9 @@ def test_other_generated_looking_files_are_still_refused(output, rel):
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_bytes(b"x")
     result = V.verify(source, runtime)
-    assert not result["ok"] and "UNKNOWN_OUTPUT" in result["error"]
+    assert not result["ok"] and ("UNKNOWN_OUTPUT" in result["error"] or "UNVERIFIED_BYTECODE" in result["error"])
+    if rel.endswith(".pyc") or "__pycache__" in rel:
+        assert not V.verify(source, runtime, strict_extras=False)["ok"]
 
 
 def test_historical_chain_reaches_the_verifier_when_run_isolated(tmp_path):

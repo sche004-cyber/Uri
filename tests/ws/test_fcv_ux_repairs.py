@@ -29,7 +29,7 @@ def test_marker_mentioned_mid_answer_is_never_shown(fake, tmp_path, chunks):
     turn(b, "How do you handle actions?")
     text = shown(frames)
     assert "<<" not in text and "ACTION>>" not in text and "`" not in text
-    assert text == "If you ask, I reply with an action request and the controller asks you."
+    assert text == "If you ask, I reply with a hidden signal to URI's controller and the controller asks you."
     assert frames.data("answer.done")[-1]["status"] == "COMPLETE"
 
 
@@ -164,3 +164,29 @@ def test_unreadable_store_is_said_plainly():
     request = {"approval_request": {"capability_id": "remember_fact"}}
     out = completion_outcome(request, {"code": "SETTLED_VERIFIED", "state": "reply"}, None, ["x"])
     assert "could not list the store" in out["summary"] and "No new entry" not in out["summary"]
+
+
+# ---- review round 2 ----------------------------------------------------------------------------------------------
+
+FACTS = {"status": "available", "facts": ["the science lab is closed on Friday"]}
+
+
+@pytest.mark.parametrize("text,memory", [
+    ("Once again, I have deleted the files.", None),
+    ("After checking your inbox, I have sent the email to Sam.", None),
+    ("When you asked, I have deleted the old files.", None),
+    ("I have remembered your locker number is 42.", FACTS),
+    ("I have saved this new information to your memory.", FACTS),
+    ("If you want, I have saved it already.", FACTS),
+])
+def test_real_action_claims_are_still_flagged(text, memory):
+    """R2-01: the round-1 exemptions must not hide genuine 'I did it' claims (canonical flags every one)."""
+    assert A.claims_action(text, memory) is True
+
+
+def test_a_fabricated_memory_save_gets_the_correction(fake, tmp_path):
+    fake.scripts.append({"chunks": [("answer", "Done! I have saved this new information to your memory.")], "finish": "stop"})
+    b, frames, _ = make(fake, tmp_path, FakeCore(), memory=lambda: ["the science lab is closed on Friday"])
+    turn(b, "What day is it?")
+    done = frames.data("answer.done")[-1]
+    assert "UNVERIFIED_ACTION_CLAIM" in done["flags"]
