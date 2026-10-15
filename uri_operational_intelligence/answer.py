@@ -66,9 +66,12 @@ def _safe_cut(s: str) -> int:
 # governs it ("if it has been saved", no clause break in between) and (2) a relative clause about facts already in
 # this answer's supplied memory ("the facts I have saved for you"). First-person "I have X" is never exempted by a
 # preceding conditional ("Once again, I have deleted the files" is a claim).
-_GOVERNING_CONDITIONAL = re.compile(r"\b(if|whether|once|unless|until)\s+(?:it|they|this|that|these|those|[a-z]+)"
+# "once again/more" is not a conditional: "Once again the files have been deleted" is a claim (review R3-01).
+_GOVERNING_CONDITIONAL = re.compile(r"\b(if|whether|unless|until|once(?!\s+(?:again|more)\b))\s+"
+                                    r"(?:it|they|this|that|these|those|[a-z]+)"
                                     r"(?:\s+[a-z]+){0,3}\s*$", re.I)
-_RECORDED_RELATIVE = re.compile(r"\b(?:facts?|things|information|details)\s+(?:that\s+|which\s+)?"
+# Only "facts" already supplied; "details/information I have saved: ..." can introduce new content (R3-01).
+_RECORDED_RELATIVE = re.compile(r"\b(?:the\s+)?facts?\s+(?:that\s+|which\s+)?"
                                 r"(?:i(?:'ve| have)|you(?:'ve| have)(?: asked me to)?)\s+(?:saved|stored|remembered)\b",
                                 re.I)
 

@@ -190,3 +190,24 @@ def test_a_fabricated_memory_save_gets_the_correction(fake, tmp_path):
     turn(b, "What day is it?")
     done = frames.data("answer.done")[-1]
     assert "UNVERIFIED_ACTION_CLAIM" in done["flags"]
+
+
+# ---- review round 3 ----------------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("text,memory", [
+    ("Once again the files have been deleted.", None),
+    ("Once more the email has been sent to Sam.", None),
+    ("The new details I have saved: your locker is 42.", FACTS),
+    ("Good news: the information I have stored now includes your locker number 42.", FACTS),
+])
+def test_round3_claims_canonical_flags_stay_flagged(text, memory):
+    """R3-01: no exemption may pass a sentence canonical flags."""
+    assert A.claims_action(text, memory) is True
+
+
+@pytest.mark.parametrize("text,memory", [
+    ("Use any information you asked URI to remember (if it has been saved).", None),
+    ("These are the facts I have saved for you.", FACTS),
+])
+def test_round3_legitimate_phrasing_still_exempt(text, memory):
+    assert A.claims_action(text, memory) is False
