@@ -71,16 +71,11 @@ void main() {
       return src.signal;
     }
 
-    for (final st in ['STARTING', 'LOADING', 'STARTING_HOST', 'CALIBRATING']) {
+    for (final st in ['STARTING', 'LOADING']) {
       final s = await at(st);
       expect(s.state, CompanionState.initializing, reason: st);
       expect(s.detail, 'Brain loading', reason: st);
       expect(s.simulated, isFalse);
-    }
-    for (final st in ['WAITING_FOR_GPU', 'WAITING_FOR_LEASE']) {
-      final s = await at(st);
-      expect(s.state, CompanionState.initializing, reason: st);
-      expect(s.detail, 'Waiting for the GPU', reason: st);
     }
     for (final st in ['STOPPED', 'FAILED', 'ARTIFACT_MISSING', 'IDENTITY_MISMATCH', 'FOREIGN_INSTANCE', 'DEGRADED', 'SOMETHING_NEW']) {
       final s = await at(st);
@@ -94,8 +89,11 @@ void main() {
     expect(src.signal.detail, 'Brain loading');
     rt.hostState = 'WAITING_FOR_LEASE';
     expect((await at('STOPPED')).detail, 'Waiting for the GPU');
-    // A host that is stopping, or a runtime fault, is never shown as starting.
+    // A host that is stopping, or waiting on GPU contention that needs the
+    // user (review R3-02), or a runtime fault, is never shown as starting.
     rt.hostState = 'STOPPING';
+    expect((await at('STOPPED')).state, CompanionState.unavailable);
+    rt.hostState = 'WAITING_FOR_GPU';
     expect((await at('STOPPED')).state, CompanionState.unavailable);
     rt.hostState = 'STARTING_HOST';
     expect((await at('FAILED')).state, CompanionState.unavailable);
@@ -109,6 +107,42 @@ void main() {
     await pumpEventQueue();
     expect(src.signal.state, CompanionState.initializing);
     src.dispose();
+  });
+
+  group('brainStartingDetail decides from both snapshots (review R3-01)', () {
+    Map<String, dynamic> h(String? readiness, [String? host]) => {
+      'readiness': ?readiness,
+      'host': {'running': host != null, 'state': host},
+    };
+
+    test('a stale starting runtime never hides a newer failure', () {
+      expect(brainStartingDetail('LOADING', h('FAILED')), isNull);
+      expect(brainStartingDetail('LOADING', h('STOPPED')), isNull);
+      expect(brainStartingDetail('LOADING', h('LOADING', 'FAILED')), isNull);
+      expect(brainStartingDetail('STARTING', h('STARTING', 'STOPPING')), isNull);
+      expect(brainStartingDetail('LOADING', h('LOADING', 'WAITING_FOR_GPU')), isNull);
+      expect(brainStartingDetail('LOADING', h('ARTIFACT_MISSING')), isNull);
+    });
+
+    test('a stale STOPPED does not flash depleted while the Brain comes up', () {
+      expect(brainStartingDetail('STOPPED', h('LOADING')), 'Brain loading');
+      expect(brainStartingDetail('STOPPED', h('READY')), 'Brain loading');
+      expect(brainStartingDetail('STOPPED', h('READY', 'CALIBRATING')), 'Brain loading');
+      expect(brainStartingDetail('LOADING', h('READY')), 'Brain loading');
+    });
+
+    test('a stopped Brain with no starting host stays unavailable', () {
+      expect(brainStartingDetail('STOPPED', h('STOPPED')), isNull);
+      expect(brainStartingDetail('STOPPED', h('STOPPED', 'STOPPED')), isNull);
+      expect(brainStartingDetail('STOPPED', const {}), isNull);
+      expect(brainStartingDetail('FAILED', h('LOADING', 'STARTING_HOST')), isNull);
+      expect(brainStartingDetail(null, h('LOADING')), isNull);
+    });
+
+    test('without a health report the runtime state decides alone', () {
+      expect(brainStartingDetail('LOADING', const {}), 'Brain loading');
+      expect(brainStartingDetail('STARTING', const {}), 'Brain loading');
+    });
   });
 
   test('initializing never hides a failure or a request from another source', () {

@@ -34,37 +34,52 @@
 | **AC-F1R, relative presentation (proposed)** | Passes as computed: R = 1.000-1.007. It is **not meaningful**; see reading 1. |
 | FP-21 AC-F1, absolute visual >= 90 (rule of record) | **NOT MET** (dark: 77.5-83.8) |
 
-## Reading
+## Reading (repaired after independent review R3, findings R3-04 and R3-10)
 
-1. **The reviewers could not tell Ember from the unanimated painting under the same treatment.** All six reviewers,
-   in R1 and R2, said so in their notes, and scored the two identically.
-   - **What this supports:**
-     - Ember's animation and re-rendering cost nothing measurable, on either surround.
-     - Ember is as faithful as the original painting can be in this presentation.
-   - **What it does not support:** a measured presentation ratio. R = 1.000 is an artefact of reviewers who cannot
-     distinguish the two images, which is the protocol's stated weakness 1. **This report does not claim that
-     AC-F1R is meaningfully met.**
-2. **Character 90 % is not reachable by the painting itself in the transparent presentation.**
-   - On the dark surround the painting scores 83.3-90.8 for character.
+1. **The reviewers could not tell Ember from the unanimated painting under the same treatment.**
+   - All six reviewers, in R1 and R2, said so in their notes and scored the two identically.
+   - **Why this happens.** The control `painting_t` is cut out with Ember's own layer alpha and edge colours, so the
+     two images are close by construction: mean pixel difference 0.8-5.1 / 255 (review R3-04).
+   - **What it supports, and only this:** in these still frames, at this size, the animated and re-rendered Ember
+     shows no difference the panel can see from the unanimated painting given the same cut-out and presentation.
+   - **What it does not support:**
+     - that the animation costs nothing in motion: only two still frames per state were scored, and motion was
+       last judged in Q2 (AC-F2);
+     - a measured presentation ratio. R = 1.000 is an artefact of indistinguishable images (protocol weakness 1).
+       **AC-F1R is not claimed as meaningfully met.**
+2. **The painting under the same cut-out and presentation does not reach 90 % character either.**
+   - On the dark surround it scores 83.3-90.8 for character.
      - Depleted is lowest, because its dark smoke disappears against black.
-     - In Q2's painted (opaque) presentation the character scores were 92.2-93.1.
-     - The panel varies by about 5 points between rounds, so the size of the transparency cost on character is
-       uncertain. Its direction is consistent: P3 and R1 point the same way.
-   - On a light surround the painting scores 73.9-78.9. The reviewers' reasons were:
+     - In Q2's painted (opaque) presentation, character was 92.2-93.1.
+     - Panel variance between rounds is about 5 points, so the size of the transparency cost on character is
+       uncertain. Its direction is consistent with P3 and R1.
+   - On a light surround it scores 73.9-78.9. The reviewers' reasons, all shared by the control:
      - emissive flames turn pale on white;
      - a hard painted outline on the head;
      - semi-transparent gaps in the robe strokes let the desktop show through;
      - the depleted foot shadow reads as a blob.
-   - These are properties of a transparent painted character on a light desktop. Finding **F-LIGHT-1**.
-3. **Against V2, Ember V2.1 is clearly better on the dark surround:**
+   - This is about **this** cut-out: Ember's matte, glow and haze. It does not show that no transparent artwork could
+     reach 90. A different matte or a light-desktop treatment might. Finding **F-LIGHT-1**.
+3. **Against V2, Ember V2.1 scores clearly higher on the dark surround:**
    - character +6.4 to +7.2 (depleted +3.9);
    - visual +5.3 to +6.0 (depleted +2.3).
-   V2 was opaque, and in the app it was cropped by the host disc.
-4. **Consequence for the owner's decision.** As written, the 90 % character requirement cannot be met by any
-   artwork under the mandated transparent presentation as this panel measures it, including the original painting
-   itself. Three ways forward:
-   - (a) measure character on the opaque painted presentation, which Q2 did and where it was met;
-   - (b) accept character fidelity relative to the painting under the same transparency, which these rounds give
-     as identical;
-   - (c) invest in a light-desktop treatment (F-LIGHT-1) and re-measure.
+   V2 was opaque, and the host disc cropped it in the app.
+4. **Consequence for the owner's decision.** As measured, the 90 % character requirement is not met by Ember, nor by
+   the painting given Ember's transparent cut-out and presentation. Ways forward:
+   - (a) measure character on the opaque painted presentation, where Q2 met it;
+   - (b) accept character relative to the painting under the same transparency. Note that this panel cannot
+     separate the two, so the comparison is weak evidence;
+   - (c) invest in a light-desktop and matte treatment (F-LIGHT-1) and re-measure.
    This is the owner's decision. Nothing is accepted here.
+
+### Wording corrections (R3-10)
+
+- **"AC-F3 unchanged" in the protocol.** The threshold (90, with a reviewer floor of 85) is unchanged, but FP-21R
+  requires it on both surrounds. That is stricter than FP-21's AC-F3, which was dark-canvas only.
+  - On the dark surround alone, AC-F3 is still NOT MET in R2: idle 88.9, joyful 89.2, depleted 83.3.
+- **The protocol's alpha rule.** It says "where the alpha is below 0.85, the layer colour". The code
+  (`critique_pack_v21r.py`) blends the painting's pixels and the layer colour linearly between alpha 0.60 and 0.85.
+  The images match the code, and both candidates and the control used them.
+- **Decoder rounding.** `r2_decoded.md` prints the "lowest" values rounded to whole numbers. The decimal values do
+  not change any gate result. The lowest character values on the dark surround are 87.5 (idle), 88.3 (joyful),
+  90.8 (fierce) and 80.8 (depleted), from `r2_raw`.

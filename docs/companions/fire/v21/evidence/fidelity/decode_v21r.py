@@ -84,11 +84,13 @@ def main() -> None:
             okr = mean(R) >= 0.95 and min(R) >= 0.90
             f3 &= ok3
             f1r &= okr
-            out.append(f"| {st} | {s} | {mean(ch):.1f} | {min(ch):.0f} | {'PASS' if ok3 else 'FAIL'} | "
+            out.append(f"| {st} | {s} | {mean(ch):.1f} | {min(ch):.1f} | {'PASS' if ok3 else 'FAIL'} | "
                        f"{' / '.join(f'{x:.3f}' for x in R)} | {mean(R):.3f} | {min(R):.3f} | "
                        f"{'PASS' if okr else 'FAIL'} |")
     out += ["", f"**AC-F3 (character, owner's 90 %): {'PASS' if f3 and valid else 'NOT MET'}**",
-            f"**AC-F1R (relative presentation, PROPOSED, not approved): {'PASS' if f1r and valid else 'NOT MET'}**",
+            f"**AC-F1R (relative presentation, PROPOSED, not approved): {'PASS' if f1r and valid else 'NOT MET'}**"
+            " (as computed; R near 1.000 when reviewers cannot tell Ember from painting_t is not evidence on its own,"
+            " see the results document)",
             "", "## FP-21 AC-F1 for continuity (absolute visual, dark surround; rule unchanged)", ""]
     f1 = True
     for st in STATES:

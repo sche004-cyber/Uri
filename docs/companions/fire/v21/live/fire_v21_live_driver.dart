@@ -312,6 +312,7 @@ void main() {
 
     Future<OiMessage> send(String scenario, String text, {String? shotWhileBusy}) async {
       states.clear();
+      lastState = ''; // review R3-06: the first state after a reset is recorded
       final count = conv.messages.length;
       final timer = Stopwatch()..start();
       await t.enterText(find.byKey(const ValueKey('living-composer-field')), text);
@@ -403,6 +404,7 @@ void main() {
     record('7 approval shown', {'orb_state': orbState().name, 'arguments': conv.pendingApproval!.arguments});
     await shot('awaiting-approval');
     states.clear();
+    lastState = ''; // review R3-06: the first state after a reset is recorded
     await press('Approve');
     for (var i = 0; i < 40; i++) {
       sample();
@@ -448,6 +450,7 @@ void main() {
     await pumpFor(const Duration(seconds: 1));
     File('${out.path}/stop-brain.json').writeAsStringSync('{"stop":true}');
     states.clear();
+    lastState = ''; // review R3-06: the first state after a reset is recorded
     final stopEnd = DateTime.now().add(const Duration(minutes: 3));
     while (conv.brainReady) {
       await t.runAsync(conv.refreshStatus);

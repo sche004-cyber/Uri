@@ -6,6 +6,48 @@ import '../contracts/readiness_report.dart';
 import '../widgets/status_badge.dart';
 import 'oi_conversation.dart';
 
+/// The calm Initializing look during a normal Brain startup (owner decision,
+/// Ember V2.1 final). [brainStartingDetail] decides; everything it does not
+/// accept stays `unavailable` with the real state named.
+///
+/// Runtime v1 readiness states of a normal startup.
+const Set<String> brainRuntimeStarting = {'STARTING', 'LOADING'};
+
+/// Brain host states (`brain_health.py`, host report) of a normal startup,
+/// while the runtime itself still reads `STOPPED`. `WAITING_FOR_GPU` is not
+/// one: the host uses it for contention that needs the user (close GPU apps),
+/// and `brain_health` reports it as UNAVAILABLE (review R3-02).
+const Set<String> brainHostStarting = {'STARTING_HOST', 'STARTING', 'LOADING', 'CALIBRATING', 'WAITING_FOR_LEASE'};
+
+/// Host states that mean the Brain is not coming up: they always win over a
+/// runtime snapshot that still says it is starting (review R3-01).
+const Set<String> brainHostNotStarting = {'FAILED', 'STOPPED', 'STOPPING', 'RELEASE_WAIT', 'WAITING_FOR_GPU'};
+
+/// The detail to show while the Brain starts normally, or null.
+///
+/// [runtimeState] is the polled `brain_status` state (refreshed every 15 s,
+/// and by `brain.status` events); [health] is the `brain_health` report
+/// (refreshed every 5 s, so usually newer). The two may disagree for a few
+/// seconds, so Initializing needs both to be consistent with a startup: the
+/// runtime is starting or not yet up, the newer readiness is starting (or has
+/// just become READY), and the running host reports nothing that means
+/// failure or stop. A failure in either snapshot is never shown as
+/// Initializing.
+String? brainStartingDetail(String? runtimeState, Map<String, dynamic> health) {
+  if (runtimeState != 'STOPPED' && !brainRuntimeStarting.contains(runtimeState)) return null;
+  final host = health['host'];
+  final hostState = host is Map && host['running'] == true ? host['state'] as String? : null;
+  if (brainHostNotStarting.contains(hostState)) return null;
+  final readiness = health['readiness'] as String? ?? runtimeState;
+  // READY here means the newer snapshot has just seen the Brain come up while
+  // the older one still says starting or stopped: stay calm, not depleted.
+  final starting = readiness == 'READY' ||
+      brainRuntimeStarting.contains(readiness) ||
+      (readiness == 'STOPPED' && brainHostStarting.contains(hostState));
+  if (!starting) return null;
+  return hostState == 'WAITING_FOR_LEASE' ? 'Waiting for the GPU' : 'Brain loading';
+}
+
 /// Companion signal from the real OI event stream (WS blueprint W9).
 ///
 /// `companion.state` comes from the orchestrator. A pending approval card or
@@ -18,20 +60,6 @@ import 'oi_conversation.dart';
 /// Brain answer, or Core's `SETTLED_VERIFIED` reply; `core_turn_status`), so
 /// the UI adds no judgement of its own. Turns that finished before this
 /// source existed never celebrate (finding F-SUCCESS, Ember V2).
-/// Brain states that are part of a normal startup: Runtime v1 readiness
-/// `STARTING`/`LOADING`, or - while the runtime still reads `STOPPED` - the
-/// running Brain host's startup states (`brain_health.py`). Everything else
-/// that is not `READY` reads as unavailable, including a host that is
-/// stopping or releasing the GPU.
-const Set<String> brainStartingStates = {
-  'STARTING',
-  'LOADING',
-  'STARTING_HOST',
-  'CALIBRATING',
-  'WAITING_FOR_GPU',
-  'WAITING_FOR_LEASE',
-};
-
 class OiCompanionSource extends CompanionStateSource {
   OiCompanionSource(
     this.conversation, {
@@ -109,20 +137,11 @@ class OiCompanionSource extends CompanionStateSource {
     }
     final state = c.brainStatus['state'];
     if (state != null && state != 'READY' && c.selectedRowId == 'runtime-v1') {
-      // A Brain that is starting normally is not a failure: show the calm
-      // initializing look. Stopped, failed and unknown states stay
-      // unavailable, and the detail keeps naming the real state.
-      // While the Brain host boots or waits for the GPU lease the runtime
-      // still reads STOPPED; the host's own state (brain_health) says why.
-      final host = c.brainHealth['host'];
-      final hostState = host is Map && host['running'] == true ? host['state'] : null;
-      final starting = brainStartingStates.contains(state)
-          ? state
-          : (state == 'STOPPED' && brainStartingStates.contains(hostState) ? hostState as String : null);
-      if (starting != null) {
-        final waiting = starting == 'WAITING_FOR_GPU' || starting == 'WAITING_FOR_LEASE';
-        return s(CompanionState.initializing, waiting ? 'Waiting for the GPU' : 'Brain loading');
-      }
+      // A normal startup is not a failure: the calm Initializing look.
+      // Stopped, failed and unknown states stay unavailable, and the detail
+      // keeps naming the real state.
+      final starting = brainStartingDetail(state as String?, c.brainHealth);
+      if (starting != null) return s(CompanionState.initializing, starting);
       return s(CompanionState.unavailable, 'Brain $state');
     }
     return s(CompanionState.idle);

@@ -4,7 +4,7 @@
 - **Pack:** built from `6adf8fbf` (build `e43e97a7`) with `critique_pack_v21r.py --tag r1 --seed 4100`. The pack
   integrity check is OK.
 - **Raw answers:** in `r1_raw/`. Transcripts are kept locally; their hashes are in `SHA256SUMS.txt`.
-- **Access audit (`access_audit.txt`): clean.** Reviewer 1 made one Bash call, which printed its own answer file.
+- **Access audit (`access_audit.txt`): clean.** Reviewer 1 made one Bash call, which printed its own answer file. The audit lists it under the folder `.`, its working directory (review R3-10).
 - **Decoded tables:** `r1_decoded.md`.
 
 ## Validity: INVALID

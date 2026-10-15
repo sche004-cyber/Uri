@@ -162,3 +162,15 @@ Known weaknesses of the relative rule:
   - a new letter shuffle (seed 4200);
   - the same prompt apart from round and reviewer names;
   - unchanged rules.
+
+**C-2 (after R2, from independent review R3): corrections of wording only; no rule or score change.**
+1. **AC-F3, "unchanged".** The threshold (90, with a reviewer floor of 85) is unchanged. FP-21R requires it on both
+   surrounds, which is stricter than FP-21's dark-canvas AC-F3. The dark-surround result is reported separately in
+   `R2_RESULTS.md`.
+2. **The alpha rule in section 2.** The code blends the painting's pixels and the layer colour linearly between alpha
+   0.60 and 0.85 (`critique_pack_v21r.py`). It does not switch at 0.85. The images follow the code, identically for
+   the control and for Ember.
+3. **The decoder.** It now prints "lowest" values to one decimal place, and puts a caveat on any AC-F1R PASS.
+   Re-decoding changed no gate result.
+4. **Why `painting_t` and Ember are close by construction.** Both use Ember's layer alpha. So R mostly measures
+   the animation and re-render, which reviewers could not see in stills. Weakness 1 in section 7 applies in full.

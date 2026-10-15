@@ -1,5 +1,18 @@
 # Ember V2.1 - Phase 4: Startup state (scoped proposal, NOT implemented)
 
+> **Status update (Ember V2.1 final, 2026-10-15; review R3-09).**
+> - **Approval.** The owner's task "URI Ember V2.1 - Final Qualification and Integration" approved the design
+>   direction for a shared **Initializing** state. It named the expected states: Initializing, Ready, Working,
+>   Success, Error, and Unavailable.
+> - **Implementation.** It is implemented on the isolated branch `phase/ember-v21-final-20261015`, not integrated.
+>   The state is named `CompanionState.initializing`, as the owner named it, instead of `starting` below. Ember
+>   plays `kindling`.
+> - **Mapping.** The mapping was revised after independent review R3: `brainStartingDetail` in `oi_sources.dart`
+>   decides from both Brain snapshots, and `WAITING_FOR_GPU` stays unavailable.
+> - **Where it is recorded.** `FINAL_REPORT_V21_FINAL.md`, section 4.
+>
+> The text below is the original proposal, kept as written.
+
 Status: **AMBER - needs owner approval.** The fix crosses into shared, accepted companion code. Following the brief, it
 is prepared here as a proposal and not implemented silently.
 

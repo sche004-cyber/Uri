@@ -25,7 +25,7 @@ no UI V2 branch was changed.
 
 ## 2. Merge surface
 
-- **Ember's diff against canonical `1b5423bc`:** 19 files under `uri_ui` (plus assets, art and docs).
+- **Ember's diff against canonical `1b5423bc`:** 23 non-asset files under `uri_ui`, plus 12 asset files, the art and the docs (review R3-11: 19 was the count at `28149905`).
 - **Overlap with UI V2's own diff:** 4 files:
   - `companion_preferences.dart`, auto-merged;
   - `companion_settings_section.dart`, auto-merged;
@@ -63,7 +63,7 @@ It does not include:
   - Until the host writes its first report, the runtime reads `STOPPED` with no host, which is truthfully
     `unavailable` (depleted).
   - The new mapping shows `initializing` as soon as the host reports `STARTING_HOST` or `WAITING_FOR_LEASE`.
-  - The live run measures the gap (`06b`).
+  - The final live run records how long each look lasts, with timed state sequences (`FINAL_REPORT_V21_FINAL.md`, section 6).
   - Closing it fully needs the launcher to announce the host before the UI starts. That is a shared launcher
     change, and is not made here.
 

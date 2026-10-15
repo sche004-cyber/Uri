@@ -53,17 +53,17 @@ Reviewers with answers: reviewer1, reviewer2, reviewer3
 
 | State | Surround | Character mean (>= 90) | lowest (>= 85) | AC-F3 | R per reviewer | R mean (>= 0.95) | lowest R (>= 0.90) | AC-F1R |
 |---|---|---|---|---|---|---|---|---|
-| idle | dark | 88.9 | 88 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
-| idle | light | 76.9 | 77 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
-| joyful | dark | 89.2 | 88 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
-| joyful | light | 78.3 | 78 | FAIL | 1.000 / 1.000 / 1.020 | 1.007 | 1.000 | PASS |
-| fierce | dark | 90.8 | 91 | PASS | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
-| fierce | light | 78.9 | 77 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
-| depleted | dark | 83.3 | 81 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
-| depleted | light | 73.9 | 71 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
+| idle | dark | 88.9 | 87.5 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
+| idle | light | 76.9 | 76.7 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
+| joyful | dark | 89.2 | 88.3 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
+| joyful | light | 78.3 | 77.5 | FAIL | 1.000 / 1.000 / 1.020 | 1.007 | 1.000 | PASS |
+| fierce | dark | 90.8 | 90.8 | PASS | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
+| fierce | light | 78.9 | 76.7 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
+| depleted | dark | 83.3 | 80.8 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
+| depleted | light | 73.9 | 70.8 | FAIL | 1.000 / 1.000 / 1.000 | 1.000 | 1.000 | PASS |
 
 **AC-F3 (character, owner's 90 %): NOT MET**
-**AC-F1R (relative presentation, PROPOSED, not approved): PASS**
+**AC-F1R (relative presentation, PROPOSED, not approved): PASS** (as computed; R near 1.000 when reviewers cannot tell Ember from painting_t is not evidence on its own, see the results document)
 
 ## FP-21 AC-F1 for continuity (absolute visual, dark surround; rule unchanged)
 

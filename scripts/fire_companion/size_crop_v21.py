@@ -10,7 +10,10 @@ For each state and size this reports, as shares of Ember's alpha mass at
 frame 0:
   visible - weighted by the disc's opacity (diag_v21's "visible share")
   full    - inside the opaque core (r <= 0.72)
-  cut     - outside the box edge (r > 1): not drawn at all
+  cut     - outside the box edge (r > 1): not drawn at all. It counts only alpha
+            that falls outside the disc box, not alpha already lost where the
+            painting panel or the cell ends (review R3-11). Visible + faded +
+            cut therefore need not add up to 100 %.
 
     python -B scripts/fire_companion/size_crop_v21.py [--out FILE]
 """
