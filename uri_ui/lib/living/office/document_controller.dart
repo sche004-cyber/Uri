@@ -230,9 +230,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       }
       final w = activeWorkflow;
       if (w != null && (workflowView == null || workflowView!['state'] == 'running')) {
-        workflowView = await client.workflow(w);
-        stepLabel = _stepLabel(workflowView!);
-        if (workflowView!['state'] != 'running') _onWorkflowSettled();
+        _takeWorkflowView(w, await client.workflow(w));
         _notify();
       }
     } catch (_) {
@@ -506,13 +504,55 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       });
 
   Future<void> cancelWorkflow() => _guard(() async {
-        workflowView = await client.cancelWorkflow(activeWorkflow!);
-        _clearCards(activeWorkflow!);
-        stepLabel = null;
-        // CX-1: the conversation said "Working on it" and nothing more after a cancel.
-        conversation.say(OfficeSpeaker.notice, 'Cancelled. Nothing was saved, and your original file is unchanged.',
-            'Task');
+        final w = activeWorkflow!;
+        final v = await client.cancelWorkflow(w);
+        _clearCards(w);
+        // CX-1: the conversation said "Working on it" and nothing more after a cancel. Codex R4-R6: a running task
+        // may still be stopping, may have ended another way first, or the poll may already have seen the outcome;
+        // every answer goes through _takeWorkflowView, which says each outcome once.
+        if (v['state'] == 'running') {
+          final now = workflowView?['state'];
+          if (activeWorkflow == w && (now == null || now == 'running')) {
+            workflowView = v;
+            conversation.say(OfficeSpeaker.notice, 'Stopping the task…', 'Task');
+          }
+        } else {
+          _takeWorkflowView(w, v);
+        }
       });
+
+  /// Workflow views from the poll and from owner actions arrive concurrently (Codex R5/R6). A settled view is never
+  /// replaced by a late "running" one (except by an explicit resume), each settled state of a workflow is announced
+  /// once, and the outcome of a task the owner has moved away from is still said.
+  static const _settledStates = {'ready_to_save', 'needs_review', 'failed', 'cancelled', 'saved', 'discarded'};
+  final List<String> _announced = [];
+
+  bool _firstTime(String key) {
+    if (_announced.contains(key)) return false;
+    _announced.add(key);
+    if (_announced.length > 64) _announced.removeAt(0);   // bounded; old tasks are not polled again
+    return true;
+  }
+
+  void _takeWorkflowView(String wid, Map<String, dynamic> v, {bool resumed = false}) {
+    final state = '${v['state']}';
+    if (activeWorkflow != wid) {
+      if (_settledStates.contains(state) && _firstTime('$wid:$state')) {
+        if (state == 'cancelled') conversation.say(OfficeSpeaker.notice, _cancelledText, 'Task');
+        if (state == 'failed') {
+          final errs = (v['errors'] as List? ?? const []);
+          final code = errs.isEmpty ? '' : '${(errs.last as Map)['code']}';
+          conversation.say(OfficeSpeaker.notice, officeErrorText[code] ?? 'The task stopped.', 'Task');
+        }
+      }
+      return;
+    }
+    final current = workflowView?['state'];
+    if (state == 'running' && !resumed && _settledStates.contains(current)) return;
+    workflowView = v;
+    stepLabel = _stepLabel(v);
+    if (state != 'running' && _firstTime('$wid:$state')) _onWorkflowSettled();
+  }
 
   Future<void> resumeWorkflow() => _guard(() async {
         final pick = environment?.pickDocumentPath;
@@ -524,13 +564,18 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
           if (p == null) return;
           paths.add(p);
         }
-        workflowView = await client.resumeWorkflow(activeWorkflow!, paths);
+        final w = activeWorkflow!;
+        _announced.removeWhere((k) => k.startsWith('$w:'));   // a resumed task may settle again
+        // Codex R6-3: a resume can settle before its answer is read; the answer goes through the settle path.
+        _takeWorkflowView(w, await client.resumeWorkflow(w, paths), resumed: true);
       });
 
   void _clearCards(String subject) {
     final ids = [for (final s in hub.surfaces) if (s.id.contains('.$subject.')) s.id];
     if (ids.isNotEmpty) hub.apply([for (final id in ids) {'version': 'v0.9', 'deleteSurface': {'surfaceId': id}}]);
   }
+
+  static const _cancelledText = 'Cancelled. Nothing was saved, and your original file is unchanged.';
 
   void _onWorkflowSettled() {
     final v = workflowView!;
@@ -545,6 +590,9 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     } else if (state == 'needs_review') {
       stepLabel = 'Needs review';
       conversation.say(OfficeSpeaker.uri, 'The PDF has problems that block saving. See the findings.', 'Task');
+    } else if (state == 'cancelled') {
+      stepLabel = 'Cancelled';
+      conversation.say(OfficeSpeaker.notice, _cancelledText, 'Task');
     } else if (state == 'failed') {
       final errs = (v['errors'] as List? ?? const []);
       final code = errs.isEmpty ? '' : '${(errs.last as Map)['code']}';
@@ -577,9 +625,13 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     final kind = result['subject_kind'];
     if (kind == 'plan') {
       if (result['status'] == 'applied') {
-        stepLabel = 'Starting…';
-        workflowView = {...?workflowView, 'state': 'running'};
-        centre = OfficeCentre.workflow;
+        // Codex R6-2: only the workflow this plan belongs to, and never over an outcome the poll already saw.
+        final wid = '${result['subject_id'] ?? activeWorkflow}';
+        if (wid == activeWorkflow && !_settledStates.contains(workflowView?['state'])) {
+          stepLabel = 'Starting…';
+          workflowView = {...?workflowView, 'state': 'running'};
+          centre = OfficeCentre.workflow;
+        }
         conversation.say(OfficeSpeaker.uri, 'Working on it. Your original file is not changed.', 'Task');
       } else {
         stepLabel = null;

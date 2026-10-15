@@ -194,6 +194,11 @@ class _PageImage extends StatefulWidget {
 class _PageImageState extends State<_PageImage> {
   Uint8List? _bytes;
   String? _error;
+  bool _canRetry = false;
+
+  // Codex review R4-2: the first LibreOffice / WinRT start can take minutes, so a page keeps being asked for (with a
+  // growing pause) for up to three minutes before it is reported, and the owner can ask again.
+  static const _patience = Duration(minutes: 3);
 
   @override
   void initState() {
@@ -202,7 +207,9 @@ class _PageImageState extends State<_PageImage> {
   }
 
   Future<void> _load() async {
-    for (var attempt = 0; attempt < 20 && mounted; attempt++) {
+    final sw = Stopwatch()..start();
+    var pause = 400;
+    while (mounted && sw.elapsed < _patience) {
       try {
         final b = widget.output
             ? await widget.controller.outputPage(widget.docId, widget.page, widget.width)
@@ -215,10 +222,24 @@ class _PageImageState extends State<_PageImage> {
         if (mounted) setState(() => _error = officeErrorMessage(e));
         return;
       }
-      await Future<void>.delayed(const Duration(milliseconds: 400));
+      await Future<void>.delayed(Duration(milliseconds: pause));
+      pause = (pause * 3 ~/ 2).clamp(400, 3000);
     }
     // CX-1: a page that never arrives is said, not shown as an endless spinner.
-    if (mounted && _bytes == null && _error == null) setState(() => _error = 'This page is not available.');
+    if (mounted && _bytes == null && _error == null) {
+      setState(() {
+        _error = 'This page is not ready yet.';
+        _canRetry = true;
+      });
+    }
+  }
+
+  void _retry() {
+    setState(() {
+      _error = null;
+      _canRetry = false;
+    });
+    _load();
   }
 
   @override
@@ -226,7 +247,11 @@ class _PageImageState extends State<_PageImage> {
     final colors = UriColors.of(context);
     final w = widget.width.toDouble();
     if (_error != null) {
-      return SizedBox(width: w, height: w * 1.3, child: Center(child: Text(_error!, style: TextStyle(color: colors.warning))));
+      return SizedBox(width: w, height: w * 1.3, child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text(_error!, textAlign: TextAlign.center, style: TextStyle(color: colors.warning)),
+        if (_canRetry)
+          TextButton(key: ValueKey('office-page-retry-${widget.page}'), onPressed: _retry, child: const Text('Try again')),
+      ])));
     }
     final b = _bytes;
     if (b == null) {
@@ -328,15 +353,16 @@ class OfficeWorkflowView extends StatelessWidget {
             title: Text('${f['message']}${f['weak'] == true ? ' (rough check)' : ''}'),
           ),
       ],
-      // CX-1: a cancelled, failed or discarded task has no output any more (its work files are removed): say so
-      // instead of drawing pages that can never load.
+      // CX-1: a cancelled task says so instead of drawing pages that can never load.
       if (state == 'cancelled')
         Padding(
           padding: const EdgeInsets.only(top: UriSpace.sm),
           child: Text('Cancelled. Nothing was saved, and your original file is unchanged. Use the arrow at the top to '
               'go back.', key: const ValueKey('office-workflow-cancelled')),
         ),
-      if (out != null && !const {'cancelled', 'failed', 'discarded'}.contains(state)) ...[
+      // Codex review R4-1: pages exist only while the output waits for review; after a save (or cancel, failure,
+      // discard) the work files are removed, so no page is requested.
+      if (out != null && const {'ready_to_save', 'needs_review'}.contains(state)) ...[
         const SizedBox(height: UriSpace.sm),
         Eyebrow('${out['name']} · ${out['pages']} page(s)'),
         SizedBox(
