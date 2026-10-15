@@ -1,5 +1,10 @@
 # O2 and O2P qualification status (visible receipt, not a freeze)
 
+> **Update 2026-10-15 evening (correction):** the UI rows below came from a harness entry point with `MockUriClient`
+> and do not count as UI qualification. The real-application qualification is `07_O2_REAL_APP_QUALIFICATION.md`
+> (final code `b4ea0fae`, Codex ACCEPT; real-app journeys 32/33 PASS; Brain rows now measured; status NOT VERIFIED
+> pending physical input, the owner check and owner decisions). O2P printing is deferred and stays off.
+
 Date: 2026-10-15. Branch `phase/uri-office-u-2-a` (local only; nothing pushed, merged or deployed).
 **O2 is NOT frozen and NOT accepted for integration. O2P is NOT qualified (PARTIAL at best without a physical
 printer).** The freeze rule (plan §12) needs every applicable row PASS at one exact commit, the Brain rows in an
