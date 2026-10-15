@@ -52,6 +52,7 @@ def test_plain_streaming_is_unchanged_without_a_marker(fake, tmp_path):
 def test_memory_instruction_forbids_internal_names():
     system = A.build_messages("q", memory={"status": "available", "facts": []})[0]["content"]
     assert "never mention MEMORY_EVIDENCE" in system and "asked URI to remember" in system
+    assert "conversation context, never describe it as remembered or saved" in system   # live FCV-R discovery
 
 
 def test_verified_memory_save_names_the_fact_read_from_the_store(fake, tmp_path):
