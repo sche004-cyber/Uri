@@ -1,10 +1,22 @@
-Boundary / frozen-file check (Ember V2.1 final).
-Range A: V2.1 28149905..HEAD 0484afdc (this pass). Range B: canonical 1b5423bc..HEAD (whole Ember line).
+Boundary / frozen-file check (Ember V2.1 final), generated at commit 06370431 (the final code and evidence commit; this file is committed in the next, docs-only commit).
 
-== Range A, code/asset/test files (docs/evidence omitted) ==
+== Protected prefixes changed in 28149905..06370431 (ws_frozen_check PROTECTED + uri_operational_intelligence/ + Runtime v1 configs + launch scripts) ==
+(none)
+
+== Protected prefixes changed in 1b5423bc..06370431 (ws_frozen_check PROTECTED + uri_operational_intelligence/ + Runtime v1 configs + launch scripts) ==
+(none)
+
+== Shared UI files changed since V2.1 28149905 (owner-approved Initializing state; isolated branch, not integrated) ==
+uri_ui/lib/living/companion/companion_orb.dart
+uri_ui/lib/living/companion/companion_sources.dart
+uri_ui/lib/living/companion/companion_state.dart
+uri_ui/lib/living/companion/ember_companion.dart
+uri_ui/lib/living/companion/energy_orb.dart
+uri_ui/lib/living/integration/oi_sources.dart
+
+== Code, asset and test files changed since 28149905 (docs and evidence omitted) ==
 companion_art/fire_v2/export_v2.py
 companion_art/fire_v2/expressions.json
-docs/companions/fire/v21/live/fire_v21_live_driver.dart
 rnd/companions/registry.js
 rnd/companions/state_tables.json
 rnd/companions/state_tables.py
@@ -31,17 +43,3 @@ uri_ui/lib/living/companion/energy_orb.dart
 uri_ui/lib/living/integration/oi_sources.dart
 uri_ui/test/living/companion_initializing_test.dart
 uri_ui/test/living/ember_companion_test.dart
-
-== Protected prefixes changed in 28149905..HEAD (ws_frozen_check PROTECTED + uri_operational_intelligence/ + Runtime v1 configs + launch scripts) ==
-(none)
-
-== Protected prefixes changed in 1b5423bc..HEAD (ws_frozen_check PROTECTED + uri_operational_intelligence/ + Runtime v1 configs + launch scripts) ==
-(none)
-
-== Shared UI files changed in this pass (owner-approved Initializing state; isolated branch, not integrated) ==
-uri_ui/lib/living/companion/companion_orb.dart
-uri_ui/lib/living/companion/companion_sources.dart
-uri_ui/lib/living/companion/companion_state.dart
-uri_ui/lib/living/companion/ember_companion.dart
-uri_ui/lib/living/companion/energy_orb.dart
-uri_ui/lib/living/integration/oi_sources.dart

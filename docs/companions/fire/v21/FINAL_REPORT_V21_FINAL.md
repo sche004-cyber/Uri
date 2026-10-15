@@ -290,3 +290,18 @@ No integration candidate was cut, and there is no integration receipt.
 7. **Reviewer access:** log in the Claude CLI, or choose a Codex sandbox configuration, so that a driver-counted
    independent acceptance can run.
 8. **UI V2:** its own frozen-integrity decision and qualification. Ember's Stage 2 waits on this.
+
+## Commits (branch `phase/ember-v21-final-20261015`, local only)
+
+| Commit | Content |
+|---|---|
+| `e43e97a7` | Initializing state, `kindling`, haze pool, `panel_feather`, atlases. Fails the suite (orb tables; review R3-08). |
+| `6adf8fbf` | FP-21R protocol locked before its pack |
+| `23fb2878` | R1 prompts, stored before the round |
+| `7baefb17` | Initializing rows through the single-source state tables (suite passes from here on) |
+| `269821cd` | R1 INVALID, recorded; R2 prompts and key |
+| `0484afdc` | R2 results; UI V2 integration plan and rehearsal |
+| `d12e70ed` | Review R3 repairs (the live runs used this code) |
+| `5d05f4dc` | Recheck R4 repairs; live evidence |
+| `06370431` | Recheck R5 repairs; final report sections 6-8; perf series. **The final code is this commit.** |
+| next (docs only) | Boundary check at `06370431`, this table, and the R6 record |
