@@ -203,3 +203,15 @@ def test_clear_then_restore_keeps_both_edits(session):
     assert r["refused"] == []
     # Both edits stay, exactly as before NOOP-1 (two proposals for B5, the last one restores 60000).
     assert [c["after"] for c in r["draft"]["changes"] if c["cell"] == "B5"] == [{"v": ""}, {"v": 60000}]
+
+
+def test_a_refused_op_does_not_mark_its_cells_touched(session):
+    """Codex R11-1: op 2 (B4, B5) is refused for B5; its B4 must not stop a later restatement of B4 (30000) from being
+    dropped as a no-op."""
+    o, wid, _ = session({"message": "x", "status": "propose", "ops": [
+        op(op="set_values", sheet="Budget", range="B5", values=[[25000]]),
+        op(op="set_values", sheet="Budget", range="B4:B5", values=[[1], [2]]),
+        op(op="set_values", sheet="Budget", range="B4", values=[[30000]])]})
+    r = o.instruct(wid, {"text": "x", "active_sheet": "Budget"})
+    assert [x["code"] for x in r["refused"]] == ["OVERLAPS_EARLIER_OP"]
+    assert [c["cell"] for c in r["draft"]["changes"]] == ["B5"]       # the B4 restatement is not a change card

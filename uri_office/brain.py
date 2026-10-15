@@ -263,13 +263,14 @@ class OfficeBrain:
                 # Codex R10-1: "touched" also holds clears (which `written` leaves out for row placement), so a clear
                 # then a restore of the same cell keeps both, as before NOOP-1.
                 got = [e for e in got if (e.get("sheet"), e.get("cell")) in touched or not O.unchanged_edit(e, current)]
-                touched.update((e.get("sheet"), e.get("cell")) for e in got if "cell" in e)
                 # An op that would overwrite a cell an earlier op of the same answer wrote is a planning slip (for example
                 # a total placed on a copied row): it is refused and reported, never merged or moved.
                 hit = next((e for e in got if "cell" in e and (e["sheet"], e["cell"]) in written), None)
                 if hit is not None:
                     raise OfficeError("OVERLAPS_EARLIER_OP", f"{hit['sheet']}!{hit['cell']} was already written by an "
                                                              "earlier change in this answer")
+                # Codex R11-1: only an op that passed the overlap check marks its cells as touched.
+                touched.update((e.get("sheet"), e.get("cell")) for e in got if "cell" in e)
                 written.update((e["sheet"], e["cell"]) for e in got           # an empty value loses nothing
                                if "cell" in e and (e.get("formula") or e.get("value") not in (None, "")))
                 edits += got
