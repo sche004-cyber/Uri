@@ -79,7 +79,7 @@ Order (from `URI_UNIFIED_CONSOLIDATION_PLAN.md` section 7, unchanged):
 | P-4 provisioning | delete the fresh state roots (no legacy data was touched) |
 | P-2 containment (undo first) | `scripts\uri_containment.ps1 -Restore -BackupRoot <folder printed by -Apply>`: re-enables the existing task (unless it was already disabled before `-Apply`) and moves the shortcuts back. It does not re-import the XML; the exported XML is a manual fallback (`Register-ScheduledTask -Xml`) |
 | P-3 legacy stop (after P-2 is undone) | `Start-ScheduledTask -TaskName URIServer`, or log on again |
-| Phase 1 file set | `scripts/phase1_offline_rollback.py` (frozen C7 offline rollback) |
+| Phase 1 file set | `scripts/fcv_guarded_rollback.py` (FCV-11), which runs the frozen C7 offline rollback `scripts/phase1_offline_rollback.py` only after inspecting the checkpoint. The accepted checkpoint restores the pre-security `server.py` and `fetch_url.py`, so the default run refuses; `--inspect` reports, and `--secure-recovery` applies the owner-authorized security transitions (`docs/governance/fcv_recovery/FCV11_GUARDED_ROLLBACK.md`). Do not call the frozen tool directly |
 | Git | nothing was rewritten; every accepted state has a commit and a tag; old tips remain reachable |
 | Runtime v1 | flags and hashes in `model_lab/integration/local_brain.json`; binaries and models on `D:\uri-model-lab` (pinned SHA-256 re-verified 2026-10-08) |
 | Secret ACL hardening (CONS-13) | `icacls <dir> /restore <saved acl file>` per entry in `uri-canonical-evidence\acl\` |
