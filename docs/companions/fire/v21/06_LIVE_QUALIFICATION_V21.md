@@ -26,6 +26,9 @@
 | 1 | First-time user, real Brain | **PASS**, all journeys | `evidence/live/run1_first/` |
 | 2 | Returning user, no Brain | **PASS** for every journey step. The test process reported one failure at teardown: `OiConversation was used after being disposed` (`refreshStatus` after dispose). This is the known pre-existing defect PRE-2 in unchanged canonical code (`oi_conversation.dart`), the same as V2's run 2. | `evidence/live/run2_returning/` |
 
+Assets in these runs: the painted V2.1 build (`9933ca2b`). The transparency build (`73e84a6d`) is covered by the
+live check in section "Transparency build" below.
+
 After the runs, none of this session's processes were left. The lease was then taken by the parallel FCV recovery
 session, whose own Brain and UI were not touched.
 
@@ -38,13 +41,13 @@ session, whose own Brain and UI were not touched.
 | 3b | Blinks before the Brain | 4 blinks in 15 s; gaps 3.6, 0.5 (double blink), 3.8 s |
 | 4 | Wake phrase | NOT AVAILABLE: no wake-word recogniser in canonical URI |
 | 5 | Brain ready, idle | PASS. Brain READY in about 2 min, ours (`our_brain: true`, pid 12336). Ember idle shows the whole figure inside the disc over its painted backdrop (`first-05`). |
-| 5 | Conversation | PASS. "Hello URI" -> COMPLETE at 139.6 tok/s. Companion thinking -> speaking -> **success** ("Done"), the joyful clip (`first-06..08`). |
+| 5 | Conversation | PASS. "Hello URI" -> COMPLETE at 139.6 tok/s. Companion thinking -> **success** ("Done"), the joyful clip (`first-06..08`). The short greeting recorded no `speaking` state; `speaking` was recorded in the coexistence and recovery turns. (Corrected after review R1-09.) |
 | 6 | Companion <-> workspace, dashboard | PASS (`first-09`, `first-10`) |
 | 7 | Task needing approval | PASS. Approval card shown, companion `awaitingApproval` (`first-11..12`). |
 | 8 | Task completed | PASS. Core `SETTLED_VERIFIED`, companion success -> idle after the hold (`first-13..14`). |
 | 8c | Blinks in idle | 4 blinks in 20 s; gaps 0.5 (double), 5.1, 5.9 s. Irregular. |
 | C | Coexistence, Ember and Solar alternating, 3 pairs | All COMPLETE; tok/s in `05_MEASUREMENTS_V21.md` |
-| 9 | Recoverable error: the runner stops our Brain | PASS. Companion `unavailable`, then "Attention needed" with a clear Brain-unavailable card; the request fails with `BRAIN_UNAVAILABLE` (`first-15..16`). |
+| 9 | Recoverable error: the runner stops our Brain | PASS. Companion `unavailable`, then "Attention needed" with a clear Brain-unavailable card; the request fails with `BRAIN_UNAVAILABLE`. The code is evidenced by the screenshot `first-16`; the driver's structured record has it as null (R1-09). |
 | 10 | Recovery: our Brain restarted (lease free again) | PASS. Reply "15" COMPLETE; states error -> thinking -> speaking -> success (`first-17`). Unlike V2 run 4, the lease was not taken by another session in the gap, so this journey is no longer BLOCKED. |
 | R1 | Returning user (run 2) | PASS. Ember restored with no choice (`returning-02`). |
 | R2 | Blinks while shown (run 2) | 5 blinks in 25 s; gaps 3.7-4.9 s |

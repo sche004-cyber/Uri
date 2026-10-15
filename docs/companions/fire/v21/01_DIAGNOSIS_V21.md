@@ -35,7 +35,8 @@ the feet, the lower robe and the crest tip fall in or beyond the fade. The V2 li
 (`docs/companions/fire/v2/evidence/live/run4_first/first-05-idle-brain-ready.jpg`) shows exactly this: Ember's lower
 body fades out.
 
-Measured share of the character's alpha mass that the app actually shows (frame 0):
+Measured share of the character's alpha mass that the app actually shows (frame 0; script
+`scripts/fire_companion/diag_v21.py`, output `evidence/diagnosis/diag_v21.json`, added in review R1-07):
 
 | State | V2 | V2.1 framing |
 |---|---|---|
@@ -44,8 +45,11 @@ Measured share of the character's alpha mass that the app actually shows (frame 
 | fierce | 80 % | 95 % |
 | depleted | 89 % | 98 % |
 
-V2's blind packs showed the square cell without the zoom and the disc, so the V2 score of about 82 was measured on a
-more favourable view than the one users see.
+V2's blind packs showed the square cell without the zoom and the disc. The crop is real geometry. How much of the
+change from V2's reported 82 to FP-21's 72-78 it explains is **not measured**: the rubric (7 -> 10 dimensions, 4 of
+them presentation) and the reviewer panels changed at the same time. In P1, V2's character % (82.2-82.5) equals its
+V2-era score, and V2 sits level with the blurred-copy anchor under both protocols (correction after review R1-02; the
+first version said the 82 "was measured on a more favourable view").
 
 ### F-2: the cut-out discards the painting's background, which carries the style
 
@@ -53,15 +57,22 @@ more favourable view than the one users see.
 brush strokes, swirls and distant glow are in neither the layer nor the smooth plate `bg`. V2's backdrop pool was that
 smooth plate, blurred again (8 px). The strokes are therefore lost, which is what reviewers kept naming.
 
-They can be recovered exactly: what lies behind the layer is `(src - F * a) / (1 - a)` wherever the layer is not
-opaque. Under the opaque head and body the smooth plate stands in; those areas are only uncovered by a few pixels of
-motion. When nothing moves, layer over this backdrop reproduces the painting.
+They can be recovered: what lies behind the layer is `(src - F * a) / (1 - a)` wherever the layer is not opaque.
+Under the opaque head and body the smooth plate stands in; those areas are only uncovered by a few pixels of motion.
+When nothing moves, layer over this backdrop reproduces the painting.
+
+Limitation (review R1-05, disclosed): where `layers.py` clipped `F` to [0, 1] (bright flame cores at low alpha) and
+where faint flame fringes fell under the alpha floor, part of the flame's own light stays in the **static** backdrop
+(p99 difference from the plate about 0.18-0.20 at alpha 0.02-0.3). When the flames move, that residue does not, which
+can read as faint ghosted wisps; one P1 reviewer noted it. Animation artefact scores were not worse than V2's. Since
+`73e84a6d` the shipped build uses the backdrop only as the depleted clip's 60 % haze.
 
 ### F-3: the evaluation mixed character and presentation, and had no presentation control
 
 See `03_FIDELITY_PROTOCOL_V21.md` section 1. The new protocol scores character and presentation separately, shows
 every candidate as the app shows it, and adds `painting_app`: the unmodified painting in the app presentation. If
-that control cannot reach 90, no artwork can, and the cap is the presentation, not Ember.
+that control does not reach 90, the presentation, not Ember, sets the limit for this rubric and panel size (see
+`evidence/fidelity/P1_P2_RESULTS.md` for how strong that reading is).
 
 ## 3. Answer: where the 82 % came from
 
@@ -90,8 +101,10 @@ Two configuration-level changes to the existing V2 pipeline, no new dependency, 
 change:
 
 1. `animate.Panel.backdrop` and a textured branch in `export_v2.Framing.aura`, enabled by the `stage` block in
-   `expressions.json`. Without `stage`, the code path is V2's (checked: V2 settings reproduce the shipped V2 atlas cell
-   to WebP noise, mean absolute difference 0.0022).
+   `expressions.json`. With V2's `frame` and no `stage`, the code path is V2's (checked: those settings reproduce the
+   shipped V2 atlas cell to WebP noise, mean absolute difference 0.0022, `diag_v21.py`). Note (R1-06): a stage
+   `strength` replaces every clip's `motion.aura` strength; the transparent stage uses `strength: 0` to switch the
+   V2 pool off.
 2. `expressions.json` `frame`: a square of 643 panel pixels centred on the panel, so the app's box shows 540 panel
    pixels (about the painting's own composition) inside the disc.
 

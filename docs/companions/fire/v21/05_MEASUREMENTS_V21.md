@@ -17,7 +17,8 @@
 - **Attempts, all kept:**
   - Attempt 1 (`evidence/perf/attempt1_overwritten/`) ran correctly under the lease. A defect in my build script
     gave all three builds the same output folder, so four of the six frame-timing files were overwritten. Its GPU
-    samples are valid but not used.
+    samples are valid but not used. The shared folder is the oddly named `_incoming$3`: a shell-quoting slip turned
+    the intended per-build `$3` into a literal name; later runs collect from it explicitly (`-Baked`).
   - Attempt 2 was refused: the lease was held by the FCV recovery session (`attempt2_refused.txt`).
   - Attempt 3 waited for the lease and ran cleanly. Its results are below.
 - **Census** of other GPU users before and after: `census_before.json`, `census_after.json`. The "before" census was
@@ -53,6 +54,9 @@
 From live run 1 (`06_LIVE_QUALIFICATION_V21.md`, `evidence/live/run1_first/observations-first.json`).
 - **Brain ownership:** the driver proved ownership (server pid 12336 in this runtime's `brain_host.json`;
   `our_brain: true`).
+- **Lease (added after review R1-08):** the machine-wide lease history shows this runtime's Brain host holding the
+  lease 07:37:03-07:40:13 UTC (host pid 6384; the coexistence pairs ran 07:39:40-07:40:03) and again
+  07:40:42-07:42:35 for the recovery journey (`evidence/live/lease_history_extract_0700_0800Z.txt`).
 - **Override:** started with `-OverrideGpu`, under OD-V21-1.
 - **Residency:** the host recorded verdict `CONTENDED`: 14.7 GB dedicated, 1.98 GB non-local (demoted), with the
   test UI (497 MB) and the desktop compositor present.
@@ -67,12 +71,13 @@ From live run 1 (`06_LIVE_QUALIFICATION_V21.md`, `evidence/live/run1_first/obser
 
 **Reading:**
 - In pairs 2 and 3, where speculative-draft acceptance was equal, Ember and Solar were within 0.2-7.4 tok/s, and
-  the pair-2 difference favours Ember.
+  the pair-2 difference favours Ember (+0.2).
 - Pair 1's lower Ember rate coincides with a lower draft acceptance (48 of 78 against 58 of 58). Acceptance depends
   on the generated text, not on the companion's GPU load.
 - With three pairs this is **evidence of no material slowdown**, not a precise A/B: about 2-5 % either way cannot
-  be excluded. V2's measurement had been inconclusive because the Brain was demoted mid-run. Here the rates held at
-  139-152 tok/s throughout, despite partial demotion.
+  be excluded. V2's measurement had been inconclusive because the Brain was demoted mid-run. Here the rates were
+  139-152 tok/s except pair 1 Ember (115.3, lower draft acceptance), despite partial demotion. (Corrected after
+  review R1-08; the first version said "throughout".)
 
 ## Limits
 

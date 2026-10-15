@@ -19,11 +19,13 @@ merged, pushed or deployed.
 | AC-R3 | Lifecycle acceptance of the exact final commit | BLOCKED while the Claude CLI is logged out |
 | AC-S1 | Startup state designed; shared changes proposed, not implemented without approval | `04_STARTUP_PROPOSAL_V21.md` |
 | AC-A1 | Reference art and derived assets stay local | git: nothing pushed |
+| AC-T1..T7 | Transparency readiness (owner directive "URI UI V2 compatibility", 2026-10-15), Stage 1 | `07_UI_V2_COMPATIBILITY_V21.md` |
+| AC-U | Final UI V2 integration compatibility, Stage 2 | PENDING until the accepted UI V2 candidate exists |
 
 ## Phases
 
 1. Research and diagnosis: `01_DIAGNOSIS_V21.md`.
-2. Fidelity protocol FP-21: `03_FIDELITY_PROTOCOL_V21.md` (locked before P1; change log C-1).
+2. Fidelity protocol FP-21: `03_FIDELITY_PROTOCOL_V21.md` (written before P1, committed after P2: see change log C-4; changes C-1..C-4).
 3. Visual refinement: textured backdrop and in-disc framing (`9933ca2b`).
 4. Startup: `04_STARTUP_PROPOSAL_V21.md` (AMBER).
 5. Performance: `05_MEASUREMENTS_V21.md`.
@@ -37,8 +39,14 @@ merged, pushed or deployed.
   lease must be followed, only a Brain this run started may be used, and a lost lease means stop and record
   BLOCKED.
 
+- **OD-V21-2 (2026-10-15, owner directive, MANDATORY):** "Ember V2.1 - URI UI V2 Compatibility". Ember must render
+  with genuine alpha (no permanent opaque background, no visible boundary), adapt to UI V2's companion architecture
+  without UI V2 changing for it, and keep separate qualification records: A (visual and functional), B
+  (transparency readiness), C (final UI V2 integration, deferred). The painted backdrop is approved for
+  experimentation only. Ember may be proposed for canonical integration only when every Stage 3 condition is met.
+
 ## Boundaries kept
 
-- No Dart file changed so far. Runtime code, Core and Runtime v1 untouched. The shared companion host
+- No Dart file under `uri_ui/lib` changed. New test: `uri_ui/test/living/ember_transparency_test.dart`. Runtime code, Core and Runtime v1 untouched. The shared companion host
   (`living_companion.dart`, `companion_presence.dart`) unchanged.
 - Reference art: as in V2, the reference sheet and derived images are in this branch's local history only.

@@ -46,11 +46,13 @@ Visual fidelity %, mean of three reviewers:
 
 ## What this means
 
-1. Under FP-21 no in-app presentation of the painting itself, at the app's size and on its dark surface, scores
-   >= 90. Reviewers name the same costs every time: darker surround instead of the painted brown, the figure scaled
+1. Under FP-21, the painting itself in the tested app presentations scored 85-89 across three panels (P1, P2, Q1).
+   With this rubric and 3 reviewers per round, 90 was not reached by any app-presented candidate, including the
+   control. That is weaker than "no artwork can pass": a round mean is uncertain by about +-2 points and P1's control
+   was 89.0-89.2 with one reviewer at 90 (review R1-03). Reviewers name the same costs every time: darker surround instead of the painted brown, the figure scaled
    down, slight softening from the 320 px atlas, and the margins (signature, edge glow) faded.
 2. V2.1 has reached that ceiling: in all 24 state-reviewer pairs across two rounds, V2.1 equals the painting control.
-3. The >= 90 target as written therefore cannot be shown for any in-app presentation with this rubric. This is a
-   limit of comparing an app rendering with a standalone painting, not a defect in Ember. The threshold is not
+3. The >= 90 target as written was not shown for any in-app presentation with this rubric. The evidence points to a
+   limit of comparing an app rendering with a standalone painting, not to a defect in Ember. The threshold is not
    changed; the evidence goes to the owner.
 4. Changing the shared host is not justified by the evidence (+1 point at most).

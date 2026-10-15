@@ -1,0 +1,64 @@
+{
+  "reviewer": "q2-reviewer3",
+  "static": {
+    "idle": {
+      "A": {"C1": 9.5, "C2": 8, "C3": 8.5, "C4": 7.5, "C5": 9, "C6": 9.5, "P1": 5, "P2": 9, "P3": 9.5, "P4": 10, "note": "Same painting, same framing, but heavily blurred/low-resolution; brushwork, flame strands and eye highlights are smeared."},
+      "B": {"C1": 9.5, "C2": 9.5, "C3": 10, "C4": 9, "C5": 9.5, "C6": 10, "P1": 9, "P2": 8, "P3": 8, "P4": 8, "note": "Character intact on a dark vignette; painted brown backdrop and floor wisps darkened away, character slightly smaller in frame."},
+      "C": {"C1": 9, "C2": 9.5, "C3": 10, "C4": 8.5, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7, "P3": 7, "P4": 8, "note": "Character intact but backdrop is near-black with an added orange halo around the figure; looks partly cut out and glow is not as painted."},
+      "D": {"C1": 4, "C2": 3, "C3": 4, "C4": 3, "C5": 4, "C6": 4, "P1": 1, "P2": 4, "P3": 4, "P4": 5, "note": "A smooth 3D render: egg-shaped head, glossy eyes, wiry procedural flames, stick legs, no tail; a different rendition of the character."},
+      "E": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "Essentially the target painting with a thin dark border/inset frame added."},
+      "F": {"C1": 9, "C2": 9.5, "C3": 10, "C4": 8.5, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7, "P3": 7, "P4": 8, "note": "Near-identical to C: black backdrop with an added glow halo, faint floor and wisps; slight cut-out look."},
+      "G": {"C1": 7, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 6.5, "C6": 9, "P1": 9, "P2": 8, "P3": 7.5, "P4": 4.5, "note": "Zoomed-in crop in a vignette: legs, feet, floor and most of the tail are cut off; head is dominant."},
+      "H": {"C1": 9.5, "C2": 9.5, "C3": 10, "C4": 9, "C5": 9.5, "C6": 10, "P1": 9, "P2": 8, "P3": 8, "P4": 8, "note": "Full character in a soft round vignette keeping some warm backdrop; very close to B."}
+    },
+    "joyful": {
+      "A": {"C1": 7, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 6.5, "C6": 9, "P1": 9, "P2": 8, "P3": 7.5, "P4": 4.5, "note": "Zoomed crop in a vignette: lower body and the kicked-up legs are cut off, sparks thinned; face and head flames intact."},
+      "B": {"C1": 9.5, "C2": 9.5, "C3": 10, "C4": 9, "C5": 9.5, "C6": 10, "P1": 9, "P2": 8, "P3": 8, "P4": 8, "note": "Full leaping pose in a dark round vignette; background darker than the painting, sparks preserved."},
+      "C": {"C1": 9.5, "C2": 9.5, "C3": 10, "C4": 8.5, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 7.5, "P3": 7.5, "P4": 8, "note": "Similar to B but sparks are fewer/fainter and backdrop flatter; slightly more isolated figure."},
+      "D": {"C1": 9.5, "C2": 8, "C3": 8.5, "C4": 7.5, "C5": 9, "C6": 9.5, "P1": 5, "P2": 9, "P3": 9.5, "P4": 10, "note": "Target framing but blurred/low resolution; sparks and flame strands smeared, faces softened."},
+      "E": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "Target painting with an added dark border/inset frame."},
+      "F": {"C1": 4, "C2": 3, "C3": 4, "C4": 3, "C5": 4, "C6": 4.5, "P1": 1, "P2": 4, "P3": 4, "P4": 5, "note": "3D render with egg head, flat smile, wiry yellow flames, straight standing legs; joyful mood only partly carried, not the painted character."},
+      "G": {"C1": 9, "C2": 9.5, "C3": 10, "C4": 8, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7, "P3": 7, "P4": 8, "note": "Near-black background with an added halo glow around the head; many sparks removed; figure reads as cut out."},
+      "H": {"C1": 9, "C2": 9.5, "C3": 10, "C4": 8, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7, "P3": 7, "P4": 8, "note": "Near-identical to G: black backdrop, added halo, reduced sparks."}
+    },
+    "fierce": {
+      "A": {"C1": 9, "C2": 9.5, "C3": 10, "C4": 8.5, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7, "P3": 7, "P4": 8, "note": "Near-black backdrop with added glow halo; ember sparks reduced, painted background swirls gone; somewhat cut-out look."},
+      "B": {"C1": 9, "C2": 9.5, "C3": 10, "C4": 8.5, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7, "P3": 7, "P4": 8, "note": "Essentially the same as A: black surround, halo glow, fewer embers."},
+      "C": {"C1": 7, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 6.5, "C6": 9, "P1": 9, "P2": 8, "P3": 7.5, "P4": 4.5, "note": "Zoomed crop in a vignette: legs/stance cut off, hand flames pushed to edges; face and head intact."},
+      "D": {"C1": 9.5, "C2": 8, "C3": 8.5, "C4": 7.5, "C5": 9, "C6": 9.5, "P1": 5, "P2": 9, "P3": 9.5, "P4": 10, "note": "Target framing but blurred/low-res; brow lines, embers and flame strands smeared."},
+      "E": {"C1": 9.5, "C2": 9.5, "C3": 10, "C4": 9, "C5": 9.5, "C6": 10, "P1": 9, "P2": 8, "P3": 8, "P4": 8, "note": "Full character in a dark round vignette keeping a warm backdrop; embers somewhat reduced."},
+      "F": {"C1": 9.5, "C2": 9.5, "C3": 10, "C4": 9.5, "C5": 9.5, "C6": 10, "P1": 9, "P2": 8.5, "P3": 8.5, "P4": 8, "note": "Full character in a vignette with most embers and background swirls kept; closest of the app presentations."},
+      "G": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "Target painting with an added dark border/inset frame."},
+      "H": {"C1": 3.5, "C2": 3, "C3": 4.5, "C4": 3, "C5": 3.5, "C6": 4.5, "P1": 1, "P2": 4, "P3": 4, "P4": 4, "note": "3D render: oversized egg head with angry eyes, blown-out wiry flames, fists held close rather than fire-filled open hands; a different character and composition."}
+    },
+    "depleted": {
+      "A": {"C1": 9.5, "C2": 8, "C3": 8.5, "C4": 7.5, "C5": 9, "C6": 9.5, "P1": 5, "P2": 9, "P3": 9.5, "P4": 10, "note": "Target framing (including the grey rectangle patch) but blurred/low-res; smoke and small flames smeared."},
+      "B": {"C1": 9.5, "C2": 9.5, "C3": 10, "C4": 8.5, "C5": 9.5, "C6": 10, "P1": 8.5, "P2": 7.5, "P3": 8, "P4": 8, "note": "Full character in a dark vignette; smoke plume fainter, background texture and left warm glow lost; grey rectangle removed."},
+      "C": {"C1": 3.5, "C2": 2.5, "C3": 4, "C4": 3, "C5": 3.5, "C6": 4.5, "P1": 1, "P2": 4, "P3": 4, "P4": 5, "note": "3D render with a dark egg head, tall bright flames and grey tube smoke; more fire than the painting and a different look, sad expression only partly retained."},
+      "D": {"C1": 9.5, "C2": 9.5, "C3": 10, "C4": 9.5, "C5": 9.5, "C6": 10, "P1": 9, "P2": 8.5, "P3": 8.5, "P4": 8, "note": "Full character in a vignette with the smoke plume and warm backdrop largely kept; rectangle removed; closest app presentation."},
+      "E": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "Target painting (including the grey rectangle) with an added dark border frame."},
+      "F": {"C1": 7, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 6, "C6": 9, "P1": 9, "P2": 8, "P3": 7.5, "P4": 4.5, "note": "Zoomed crop in a vignette: legs and feet cut off, head dominant; smoke partly kept."},
+      "G": {"C1": 9.5, "C2": 9.5, "C3": 10, "C4": 8.5, "C5": 9.5, "C6": 10, "P1": 8.5, "P2": 7.5, "P3": 8, "P4": 8, "note": "Very close to B: dark vignette, faint smoke, flat backdrop."},
+      "H": {"C1": 9.5, "C2": 9.5, "C3": 10, "C4": 8.5, "C5": 9.5, "C6": 10, "P1": 8.5, "P2": 7.5, "P3": 8, "P4": 8, "note": "Very close to B and G: dark vignette, faint smoke."}
+    }
+  },
+  "motion": {
+    "idle": {
+      "X": {"A1": 6.5, "A2": 9.5, "A3": 9, "A4": 5.5, "note": "Zoomed crop presentation; only subtle shimmer in flame strands and small wisps, character fixed; plausible but very restrained, little sense of a living fire."},
+      "Y": {"A1": 6.5, "A2": 9.5, "A3": 9, "A4": 6, "note": "Full-figure presentation; slight flame-tip and hand-flame flicker, body static; calm, fits idle but motion is minimal."}
+    },
+    "joyful": {
+      "X": {"A1": 6, "A2": 9.5, "A3": 9, "A4": 5, "note": "Cropped framing; flame strands and sparks shift slightly between frames; no bounce or body motion, so joy is not expressed through movement."},
+      "Y": {"A1": 6.5, "A2": 9.5, "A3": 9, "A4": 5.5, "note": "Full figure; sparks and flame tips flicker a little more visibly; still no body motion for a leaping joyful pose."}
+    },
+    "fierce": {
+      "X": {"A1": 6, "A2": 9.5, "A3": 9, "A4": 5, "note": "Full figure; very slight variation in hand fires and head flames; reads almost static for a fierce state."},
+      "Y": {"A1": 7, "A2": 9.5, "A3": 8.5, "A4": 6, "note": "Cropped framing; hand fireballs and head flames visibly churn between frames, more energetic; character stable, minor smear in flame regions."}
+    },
+    "depleted": {
+      "X": {"A1": 6.5, "A2": 9.5, "A3": 9, "A4": 6.5, "note": "Full figure; small flames on the head flicker faintly, smoke barely moves; the near-stillness suits a depleted mood."},
+      "Y": {"A1": 6.5, "A2": 9.5, "A3": 9, "A4": 6.5, "note": "Cropped framing; head flames and embers flicker a bit more, smoke wisps shift slightly; stable and subdued, fits the mood."}
+    }
+  },
+  "general_notes": "Candidates fall into recurring groups across states: an exact copy with an added border frame; a blurred low-resolution copy; a zoomed crop that cuts off the legs; soft-vignette app presentations (some keep the backdrop and embers, others go near-black with an added halo and lose sparks/smoke); and a 3D render that is a different rendition. The depleted target contains a grey rectangular patch at lower right that some candidates keep and others remove; I treated removing it as neutral to slightly positive for P3. Motion was judged from six still frames only: all sequences show only subtle flame/spark changes with no body motion, so A1/A4 are uncertain and may understate or overstate how the motion feels at playback speed. Differences between near-identical vignette candidates (e.g. idle B vs H, depleted B/G/H) are small and my half-point distinctions there carry low confidence."
+}

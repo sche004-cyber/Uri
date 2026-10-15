@@ -140,3 +140,28 @@ the P2 prompt (no animation task), the same dimensions, anchors and validity rul
 glow, alpha capped at 0.45), `t2_glow_haze35` and `t3_glow_haze60` (t1 plus the painted backdrop as a translucent
 haze at 35 % / 60 %). P3 has no pass rule. Q1 remains the qualification result for the presentation it measured;
 any transparent build that becomes the shipped default needs its own qualification round under section 7.
+
+**C-3 (before Q2): Q2 is the one further round section 8 allows after Q1.** The repair it measures is the
+owner-mandated transparency change (`73e84a6d`), now the shipped default. Q2 uses Q1's prompt, candidates and rules
+unchanged, except that `painting_app` stays the painting in the painted V2.1 presentation of Q1 (a fixed control
+across rounds), while `v21_worst`/`v21_mid`/animation show the shipped transparent build. Section 7 applies. After Q2
+there are no further rounds.
+
+**C-4 (record of deviations found by review R1-11):**
+1. *Lock evidence.* The protocol was written before P1's pack was built (session order: protocol file, then
+   `critique_pack_v21.py --tag p1`), but it was first committed in `9933ca2b`, after P1 and P2 had run. Git therefore
+   does not evidence the lock time; the file was not edited between P1 and that commit except for C-1. Future
+   rounds: commit the protocol before building a pack.
+2. *Hand-back files.* Section 3 promised `reviewer<N>_handback.txt`. They were not written. Instead each reviewer's
+   full transcript (which contains the hand-back verbatim) is preserved locally as
+   `<round>_raw/reviewer<N>_transcript.jsonl.gz`, hashed in `SHA256SUMS.txt`, and audited with
+   `audit_reviewer_access.py`.
+3. *Worst frame.* "The loop frame the automated scorer ranks furthest" comes from V2's `auto_cp8/scores_v2.json`. The
+   motion is unchanged in V2.1, but the frame was not re-scored for V2.1. Impact: none measured (worst and mid scored
+   the same in every round).
+4. *Prompt wording.* The prompt tells reviewers some candidates are shown "inside an app ... with a soft round
+   vignette". This applies to all candidates equally but may encourage class-scoring (R1-03).
+5. *Canvas and box (R1-01).* The pack composites on flat `#130F0B` in a 490 px box. The live companion screen has a
+   lighter, warmer radial surround next to the disc (about (29,20,11) sampled from `first-05`) and a box of about
+   300 px. The host arithmetic (scale, disc) is exact; the surround and size are approximations, applied equally to
+   every candidate and to the control. A pixel check against a live crop is in `evidence/diagnosis/`.

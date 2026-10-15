@@ -25,22 +25,25 @@ AC-F3 (character >= 90) is met at 91.1-91.4. AC-F2 (animation) is met: V2.1 scor
 
 ## Reading
 
-1. **V2.1 equals the control.** V2.1 scores the same as the unmodified painting in the same app presentation:
-   - in all twelve state-reviewer pairs, within one point;
-   - in joyful the min-of-two-frames rule puts V2.1 0.1-1.1 below the control, from ember density.
-
-   This is the third valid round (P1, P2, Q1) to show it.
-2. **The textured backdrop matters for depleted.** In Q1 the framing-only ablation lost the smoke plume, and two
+1. **V2.1 is level with the control.** Per reviewer, V2.1 (min of its two frames) against the unmodified painting in
+   the same app presentation: 11 of 12 state-reviewer pairs within 1 point; joyful reviewer 3 is 2.0 below (per-reviewer
+   range 0 to -2.0, from ember density). State means: 0 to -1.1. In P1 and P2 every pair was exactly equal.
+   (Corrected after review R1-04; the first version said "within one point in all twelve pairs".)
+2. **Q1 re-scored the same images as P1.** The Q1 pack images are pixel-identical to P1's (same build, same frames;
+   only the letter shuffle differs). The drop from P1 (89.0-89.2) to Q1 (85.7-86.3) is therefore panel-to-panel
+   variance on identical stimuli. With 3 reviewers per round, treat a round mean as uncertain by about +-2 points
+   (review R1-03). Reviewers also scored by class: identical score vectors across states and across candidates that
+   look alike, so the instrument has low resolution between app-presented candidates.
+3. **The textured backdrop matters for depleted.** In Q1 the framing-only ablation lost the smoke plume, and two
    reviewers named it: character 87.5 against 91.4 for V2.1. In the other states the backdrop is within 1 point.
-3. **The panel moves between rounds.** The same control scored 89.0 (P1), 85.3 (P2) and 85.7-86.8 (Q1). Reviewer
+4. **The panel moves between rounds.** The same control scored 89.0 (P1), 85.3 (P2) and 85.7-86.8 (Q1). Reviewer
    panels differ by about 3-4 points. In every round the control stays below 90.
-4. **What V2.1 gained over V2:** +12.4 to +14.0 points visual, about +14 character and +10 presentation, as users
+5. **What V2.1 gained over V2:** +12.4 to +14.0 points visual, about +14 character and +10 presentation, as users
    actually see it.
 
 ## Protocol consequence
 
-Section 8 allows one repair and a round Q2. No repair is available that the evidence supports:
-- V2.1 already equals the presentation control;
-- P2 showed that no host presentation tested raises the control above 86.3.
-
-The work stops here and reports NOT MET. The threshold is not changed.
+Section 8 allows one repair and a round Q2. No fidelity repair was available that the evidence supports: V2.1 was
+already level with the presentation control, and P2 showed no tested host presentation raising the control above
+86.3. The Q2 round was later used for the owner-mandated transparency change (protocol change log C-3), which is
+expected to cost fidelity rather than gain it; see `Q2_RESULTS.md`. The threshold is not changed.
