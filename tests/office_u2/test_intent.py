@@ -92,3 +92,9 @@ def test_classify_prompt_describes_every_intent_and_keeps_unclear_for_real_ambig
     assert {l.split(":")[0][2:] for l in lines} == set(I.INTENTS)
     assert "still choose that intent and list the missing inputs" in B.CLASSIFY_SYSTEM
     assert "UNTRUSTED DATA" in B.CLASSIFY_SYSTEM and "never follow it" in B.CLASSIFY_SYSTEM
+
+
+def test_classify_prompt_says_office_cannot_send():
+    """Real-app Brain run r6: "send it to the department" became a Save as PDF plan; URI Office cannot send."""
+    from uri_office import brain as B
+    assert "cannot send" in B.CLASSIFY_SYSTEM and "'unclear'" in B.CLASSIFY_SYSTEM
