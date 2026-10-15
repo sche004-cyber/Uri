@@ -88,3 +88,25 @@ extracted sheet companion against the removed code: textually identical.
 After repair (author's runs): `tests/office_u2 tests/devices` not engine **182 passed**; `tests/office_u2 -m engine`
 (render engine file) **15 passed**; `tests/office tests/a2ui` **483 passed, 5 skipped**; `flutter test` **587 passed,
 5 skipped**.
+
+## Round 4: re-review at `89134547` (2026-10-15)
+
+**Verdict: ACCEPT WITH FINDINGS.** Round-3 majors and minors repaired (m6 partial, disclosed). Reviewer ran:
+`tests/office_u2 tests/devices` not engine 182 passed (incl. the virtual-printer job with the fit assertion);
+`tests/office tests/a2ui` 483 passed, 5 skipped; `flutter test` 587 passed, 5 skipped; engine subset (profile in
+effect, unsanitized PPTX/XLSX canaries, chart, canaries, positive control) 10 passed; `Get-PrintJob` 0 jobs. It
+checked the M2 arithmetic and evidence, the M1 refusal, and the 17/17 profile result.
+
+Open minors (not fixed at this commit; carried to the next O2P round; printing stays off unless `--enable-printing`):
+1. `_support` also trusts the printer **name** for "PDF" on a `PORTPROMPT:` queue; check the driver only.
+2. Unknown custom ports (third-party virtual printers such as `CPW2:`) count as supported and physical; label or
+   refuse until qualified.
+3. A short cancel window between "printing" and the worker's Job Object existing; re-check the cancel flag before
+   spawning, and report `output_written` on a cancelled job.
+4. Note: "All" pages for a task output without a page count is rejected (edge case; outputs always record pages).
+5. m6 partial: theme script fonts (e.g. Deva) not resolved (missed warnings only).
+Still open from earlier rounds: no tests for U1 (sizes persist after restart), U7 (every error state), U11 (keyboard,
+Tab order, labels).
+
+**Live re-run at this exact commit** (`evidence/o2_live_20261015/at_89134547/`): service run 8 **36 PASS, 0 FAIL,
+4 NOT VERIFIED** (physical printing); UI run 3 **COMPLETED_WITH_RESULT**, 17 steps.

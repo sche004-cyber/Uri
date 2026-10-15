@@ -13,7 +13,8 @@ Only results with `COMPLETED_WITH_RESULT` evidence are counted as PASS.
 |---|---|---|---|
 | 1 | WS-A backend | `6d2d6816` | REVISE (2 major), repaired |
 | 2 | WS-A backend | `c974a655` | ACCEPT WITH FINDINGS (contract o2.1 frozen for O2P) |
-| 3 | Flutter B1 workspace, O2P printing, live-run repairs | `63e0e73f` | REVISE (narrow), repaired; round 4 pending |
+| 3 | Flutter B1 workspace, O2P printing, live-run repairs | `63e0e73f` | REVISE (narrow), repaired |
+| 4 | Round-3 repairs | `89134547` | **ACCEPT WITH FINDINGS** (5 open minors, see review record) |
 
 ## Automated suites (author's runs after the round-3 repairs, Windows 11)
 
@@ -27,7 +28,7 @@ Only results with `COMPLETED_WITH_RESULT` evidence are counted as PASS.
 
 ## Live matrix (plan §12, A1 §A8)
 
-Evidence: `evidence/o2_live_20261015/README.md` (service run 7, UI run 2).
+Evidence: `evidence/o2_live_20261015/README.md` (service run 7, UI run 2); re-run at `89134547`: service run 8 36 PASS / 4 NOT VERIFIED, UI run 3 COMPLETED_WITH_RESULT (`at_89134547/`).
 
 | Row | Status | Notes |
 |---|---|---|
