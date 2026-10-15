@@ -1,0 +1,18 @@
+{
+ "_comment": "Pinned engines and worker scripts (plan section 3, A1 section A7). Recorded 2026-10-15 from the user-folder extract under LOCALAPPDATA/URI/engines/libreoffice-26.8.1. Provenance: the downloaded MSI (winget cache) SHA-256 c6298b10...5312 equals the winget manifest; the extract was made with msiexec /a (no elevation); soffice.bin equals the qualified pin and is Authenticode-signed by The Document Foundation (status Valid on 2026-10-15). The MSI kept in the folder is the administrative-image copy written by msiexec /a (19,836,928 bytes) and is excluded from the manifest. Update workers with: python -m uri_office.engines pin-workers",
+ "libreoffice": {
+  "dir": "libreoffice-26.8.1",
+  "version": "26.8.1.1",
+  "soffice_bin_sha256": "cb08cffda137256a95e3802c13476dd96f0f6310cb6f3e186621d8f73d7c2fa1",
+  "manifest_root_sha256": "70a9c1e1495c6bdd5773d006e42b238cdddefee66425af492715bc993327d22d",
+  "manifest_files": 19457,
+  "installer_name": "LibreOffice_26.8.1_Win_x86-64.msi",
+  "source_msi_sha256": "c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312",
+  "signer": "CN=The Document Foundation, O=The Document Foundation, L=Berlin, S=Berlin, C=DE"
+ },
+ "workers": {
+  "lo_bridge.py": "101af4e3ebe89067c5c6464b45e64a7a1ac1e7a6953959770e966e612e0845f3",
+  "pdf_text.py": "db09df8078647a1cd195fa907a086aceeab3e3ef6bfc3f243b166295e6e9ac58",
+  "winrt_raster.ps1": "a432d8500b3e4327513468fc7186fcfd0cdaa1eb6e684cbdd81671fb987c22bb"
+ }
+}
