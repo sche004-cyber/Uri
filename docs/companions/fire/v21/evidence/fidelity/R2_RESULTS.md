@@ -41,7 +41,7 @@
 ## Reading (repaired after independent review R3, findings R3-04 and R3-10)
 
 1. **The reviewers could not tell Ember from the unanimated painting under the same treatment.**
-   - All six reviewers, in R1 and R2, said so in their notes and scored the two identically.
+   - All six reviewers, in R1 and R2, said so in their notes and scored the two identically, apart from one 0.5-point difference on two items (reviewer 3, joyful, light surround: 78.1 against 78.3; review R6-5).
    - **Why this happens.** The control `painting_t` is cut out with Ember's own layer alpha and edge colours, so the
      two images are close by construction: mean pixel difference 0.8-5.1 / 255 (review R3-04).
    - **What it supports, and only this:** in these still frames, at this size, the animated and re-rendered Ember

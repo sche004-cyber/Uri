@@ -16,3 +16,7 @@
 | R5-N6 LOW: R2 audit wording | **Repaired.** `R2_RESULTS.md` explains that the audit script reduces the Glob path argument to its parent folder. |
 
 Final full suite at this code: 602 passed, 5 skipped, 0 failed (`evidence/final/full_flutter_test.log`).
+
+**Correction (after recheck R6, finding R6-6).** The R5-N1 row says the `R3_repairs.md` wording "is corrected", but at
+`06370431` that file was unchanged; its rows had become true only because the report sections were filled. The
+R3-05 row was corrected in the R6 repair commit. The row above is kept as written.

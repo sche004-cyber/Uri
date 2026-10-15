@@ -18,6 +18,12 @@ class _Runtime implements IntegratedRuntime {
   final _events = StreamController<Map<String, dynamic>>.broadcast();
   String brainState = 'READY';
   String? hostState;
+
+  String? healthReadiness;
+
+  /// When set, both reports carry `checked_at` like the real worker (review R6-7).
+  num? statusAt;
+  num? healthAt;
   int _turn = 0;
 
   void emit(String turnId, String type, Map<String, dynamic> data) =>
@@ -32,10 +38,11 @@ class _Runtime implements IntegratedRuntime {
   @override
   Future<Map<String, dynamic>> call(Map<String, dynamic> command) async => switch (command['command']) {
     'oi_turn' => {'turn_id': 't${++_turn}', 'accepted': true},
-    'brain_status' => {'state': brainState, 'model_id': 'qwen-test', 'artifacts': 'MATCH'},
+    'brain_status' => {'state': brainState, 'model_id': 'qwen-test', 'artifacts': 'MATCH', 'checked_at': ?statusAt},
     'brain_health' => {
-      'readiness': brainState,
+      'readiness': healthReadiness ?? brainState,
       'host': {'running': hostState != null, 'state': hostState},
+      'checked_at': ?healthAt,
     },
     'brain_catalog' => {
       'rows': [
@@ -178,6 +185,37 @@ void main() {
       expect(brainStartingDetail('LOADING', const {}), 'Brain loading');
       expect(brainStartingDetail('STARTING', const {}), 'Brain loading');
     });
+  });
+
+  test('stamped reports through the real conversation: the newer one decides (review R6-7)', () async {
+    final rt = _Runtime()
+      ..statusAt = 100
+      ..healthAt = 200;
+    final conv = OiConversation(rt);
+    final src = OiCompanionSource(conv);
+    // Newer health: the host has failed although the runtime read still says LOADING.
+    rt
+      ..brainState = 'LOADING'
+      ..hostState = 'FAILED';
+    await conv.refreshStatus();
+    expect(src.signal.state, CompanionState.unavailable);
+    expect(src.signal.detail, 'Brain FAILED');
+    // Newer health says the Brain is up while the runtime read is a stale STOPPED: calm, not depleted.
+    rt
+      ..brainState = 'STOPPED'
+      ..healthReadiness = 'READY'
+      ..hostState = 'READY';
+    await conv.refreshStatus();
+    expect(src.signal.state, CompanionState.initializing);
+    // Older health (a failed refresh kept it): only the fresh STOPPED counts.
+    rt
+      ..statusAt = 300
+      ..healthReadiness = 'LOADING'
+      ..hostState = 'STARTING';
+    await conv.refreshStatus();
+    expect(src.signal.state, CompanionState.unavailable);
+    expect(src.signal.detail, 'Brain STOPPED');
+    src.dispose();
   });
 
   test('initializing never hides a failure or a request from another source', () {

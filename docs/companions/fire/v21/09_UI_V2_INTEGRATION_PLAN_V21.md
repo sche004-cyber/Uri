@@ -62,7 +62,7 @@ It does not include:
   window, and only then starts the Brain host.
   - Until the host writes its first report, the runtime reads `STOPPED` with no host, which is truthfully
     `unavailable` (depleted).
-  - The mapping is designed to show `initializing` once a running host reports `STARTING_HOST`, `STARTING`, `LOADING`, `CALIBRATING` or `WAITING_FOR_LEASE`. The live run did not demonstrate the host-only path: Initializing first appeared once the runtime read `LOADING`, about 11 s after our host process started (R5-N5).
+  - The mapping is designed to show `initializing` once a running host reports `STARTING_HOST`, `STARTING`, `LOADING`, `CALIBRATING` or `WAITING_FOR_LEASE`. The live run did not demonstrate the host-only path: Initializing first appeared once the runtime read `LOADING`, about 12-13 s after our host process started (R5-N5, R6-1).
   - The final live run at `d12e70ed` recorded how long each look lasted, as timed state sequences (`FINAL_REPORT_V21_FINAL.md`, section 6).
   - Closing it fully needs the launcher to announce the host before the UI starts. That is a shared launcher
     change, and is not made here.

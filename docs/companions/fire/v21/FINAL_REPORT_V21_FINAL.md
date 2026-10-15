@@ -41,7 +41,7 @@
 
 - **AC-F3, character >= 90 (owner requirement): NOT MET.** Only fierce on the dark surround reaches 90.
 - **AC-F1R, relative presentation (proposed):** R = 1.000-1.007 passes as computed. It is **not meaningful**: all six
-  reviewers said they could not tell Ember from the painting, and scored the two identically.
+  reviewers said they could not tell Ember from the painting, and scored the two identically, apart from one 0.5-point difference on two items (R2 reviewer 3, joyful, light surround; review R6-5).
 - **FP-21 AC-F1, absolute visual >= 90 (rule of record):** NOT MET. Dark: 77.5-83.8.
 
 **What the evidence supports (corrected after review R3-04):**
@@ -141,7 +141,7 @@ detached worktree. It is not a candidate, and no UI V2 branch was changed.
 
 | # | Owner journey | Result | Evidence |
 |---|---|---|---|
-| 1 | Fresh install / first-time user | **PASS.** Fresh preferences (none stored), default Solar, shell in 15.9 s | `first-01` |
+| 1 | Fresh install / first-time user | **PASS.** Fresh preferences (none stored), default Solar, shell in 14.8 s | `first-01` |
 | 2 | Companion selection | **PASS.** Ember selected in Settings and stored | `first-02`, `first-03` |
 | 3 | Preference persistence | **PASS.** Returning run: stored choice `ember`, Ember shown, blinks (5 in 25 s), Settings opened with no framework errors; flutter rc=0 | `run_returning_d12e70ed/` |
 | 4-7 | Transparent floating window, dragging, click-through, scaling including 1.25x | **PENDING.** These need UI V2 Companion Mode. Static evidence only: transparency gates (section 3) and F-SIZE-1 | sections 3, 5 |
@@ -149,7 +149,7 @@ detached worktree. It is not a candidate, and no UI V2 branch was changed.
 | 9 | Companion to Dashboard | **PASS** | `first-11` |
 | 10 | Idle, listening, thinking, speaking | **Partly.** Idle, thinking and speaking were observed on every reply. Listening has no source in this integration (no voice layer), so it was not exercised. | observations |
 | 11 | Task completion and the joyful expression | **PASS.** Greeting reply: thinking -> speaking -> success. Approval -> task `SETTLED_VERIFIED` -> success -> idle after the hold | `first-09`, `first-13`, `first-14`, `first-15` |
-| 12 | Brain initializing and ready | **PASS.** Unavailable while no Brain had started (the runner was waiting for the lease) -> **Initializing, "Brain loading"** 18 s after our host started (runtime `LOADING`, host `STARTING`) -> idle when ready, after 97 s of Initializing | `first-04`, `first-05`, `first-06`; `3c brain initializing` |
+| 12 | Brain initializing and ready | **PASS.** Unavailable while no Brain had started (the runner was waiting for the lease) -> **Initializing, "Brain loading"** about 12-13 s after our host started (launcher event 10:11:28.7; host override 10:11:29.0; first Initializing sample 10:11:41.0; review R6-1) (runtime `LOADING`, host `STARTING`) -> idle when ready, after 97 s of Initializing | `first-04`, `first-05`, `first-06`; `3c brain initializing` |
 | 13 | Brain unavailable and recovery | **PASS.** Brain stopped -> depleted, "Brain STOPPED" -> request -> error shown -> host restarted -> reply "15" -> success. The look during the restart window was not captured, because the driver resets the sequence when it sends; this is disclosed, not rerun. | `first-16`, `first-17`, `first-18` |
 | 14 | Returning user | **PASS** (as row 3) | `run_returning_d12e70ed/` |
 | 15 | Switching between Ember and existing companions | **PASS.** Three alternating Ember / Solar pairs, each with a completed answer | observations |
@@ -160,9 +160,9 @@ detached worktree. It is not a candidate, and no UI V2 branch was changed.
 - **Code tested.** The run tested `d12e70ed`. The later R4 and R5 repairs change only the mapping for stale or
   unstamped snapshots. The recorded startup pairs map the same way under the final code (R5 section 3.3). Those
   repairs are proven by unit tests, not live.
-- **The host-only path to Initializing was not demonstrated.** Our host process started at 10:11:28. The companion
-  stayed depleted until about 10:11:39, and the first Initializing sample came at 10:11:41, when the runtime already
-  read `STARTING` or `LOADING`.
+- **The host-only path to Initializing was not demonstrated.** Our host process started at 10:11:28.7. The companion
+  stayed depleted until the first Initializing sample at 10:11:41.0, about 12-13 s later, when the runtime already read
+  `STARTING` or `LOADING`. The driver samples about every 2 s.
   - The likely cause is that the host had not yet written its first report (Python start plus a GPU census of about
     3.7 s).
   - This is not proven from the files. It is part of F-START-GAP.
@@ -192,7 +192,7 @@ detached worktree. It is not a candidate, and no UI V2 branch was changed.
 `lease_checks.txt`).
 - **Lease checks:** 12 of 12 passed, before and after each run: the lease was held by our process tree and no Brain
   was resident.
-- **Waiting:** the series waited about 10 minutes (617 s; machine lease history) for another session's Brain run to release the lease. It held the lease for 6.6 minutes.
+- **Waiting:** the series waited about 10 minutes (617 s, from `census_queued.json` to the ACQUIRED event in the machine lease history) for another session's Brain run to release the lease. It held the lease for 6.6 minutes.
 - **Builds:** the final Ember and Solar perf executables were built from `0484afdc`, whose atlases and companion
   tables equal the final ones. The perf app does not use the Brain mapping. V2 Ember is the earlier build from
   `b73bd26c`.
@@ -207,13 +207,15 @@ detached worktree. It is not a candidate, and no UI V2 branch was changed.
   higher than V2's (183.5 against 175.4), from the extra `kindling` clip. Decoded atlases are capped at about 42.5
   MiB by the existing cache.
 - **State transitions** (frames in the first 10 after each state change, Ember r1 / r2):
-  - p99 8.7 / 5.8 ms, against a steady-state p99 of 3.1 / 2.9 ms;
-  - single worst frames of 53 / 34 ms, when a clip's atlas is first decoded;
+  - The app's cold start (frame 0) is excluded (review R6-2).
+  - p99 8.7 / 4.6 ms; worst frame 8.7 ms (r1, entering `speaking`) and 4.6 ms (r2). Steady-state p99 is
+    3.1 / 2.9 ms.
+  - The cold start itself, frame 0 of each run, takes 53 / 34 ms.
   - Initializing frames: p50 1.6-1.7 ms, p99 2.8-3.0 ms.
-  - So a state change costs a one-off decode hitch, not a sustained one.
+  - So a state change costs at most a few milliseconds on one frame, not a sustained cost.
 - **Defect in the measurement script.** The V2 build's frame timings for r1 were overwritten by r2: that old build
-  writes to a fixed folder. r1's GPU samples are valid. The orphan output was moved into
-  `series/v2_ember_r2/` and is untracked old evidence; nothing tracked was changed.
+  writes to a fixed folder. r1's GPU samples are valid. Its output folder (`evidence/perf/_incoming$3`) was untracked. Its contents (r2's timings and screenshots) were moved
+  into `series/v2_ember_r2/` and are now committed there. No tracked file was changed (review R6-8).
 
 **Brain throughput** (live run, our own Brain, alternating, `evidence/final/live/`):
 
@@ -231,7 +233,7 @@ detached worktree. It is not a candidate, and no UI V2 branch was changed.
 - No stress test was run.
 
 **Regression:**
-- Full Flutter suite at the final code: **602 passed, 5 skipped, 0 failed** (`evidence/final/full_flutter_test.log`;
+- Full Flutter suite at the final commit: **603 passed, 5 skipped, 0 failed** (602 at `06370431`; R6 added one test) (`evidence/final/full_flutter_test.log`;
   the header records the base commit and working tree).
 - Rehearsal on UI V2: section 5.
 - Boundary check: no frozen or protected path changed in `1b5423bc..HEAD` (`evidence/final/boundary_check_final.txt`,
@@ -254,10 +256,10 @@ cannot give VERIFIED or permit canonical integration.
 
 | Round | Commit | Verdict | Outcome |
 |---|---|---|---|
-| R3 (whole diff since V2.1) | `0484afdc` | REVISE (1 HIGH, 4 MEDIUM, 7 LOW) | The HIGH (Initializing from inconsistent Brain snapshots) and all MEDIUMs repaired (`R3_repairs.md`) |
+| R3 (whole diff since V2.1) | `0484afdc` | REVISE (1 HIGH, 4 MEDIUM, 7 LOW) | The HIGH (Initializing from inconsistent Brain snapshots) and the MEDIUMs repaired or disclosed. R3-05 (F-START-GAP) stays open as an owner decision (`R3_repairs.md`; review R6-3). |
 | R4 (recheck) | `d12e70ed` | ACCEPT WITH FINDINGS (9 LOW) | Repaired (`R4_repairs.md`). Three rows were marked repaired before the work was done; R5 found this, and the history is kept. |
 | R5 (recheck) | `5d05f4dc` | REVISE (1 MEDIUM: false repair claims; 5 LOW) | Repaired (`R5_repairs.md`) |
-| R6 (final recheck) | final commit | see `R6_*` in `evidence/review/` | - |
+| R6 (final recheck) | `b4ff2ed2` | ACCEPT WITH FINDINGS (8 LOW, no HIGH or MEDIUM) | Repaired in the following commit (`R6_recheck_b4ff2ed2.md`, `R6_repairs.md`) |
 
 Blind fidelity reviewers (FP-21R R1, R2) are separate agents and appear in section 2.
 
@@ -304,4 +306,5 @@ No integration candidate was cut, and there is no integration receipt.
 | `d12e70ed` | Review R3 repairs (the live runs used this code) |
 | `5d05f4dc` | Recheck R4 repairs; live evidence |
 | `06370431` | Recheck R5 repairs; final report sections 6-8; perf series. **The final code is this commit.** |
-| next (docs only) | Boundary check at `06370431`, this table, and the R6 record |
+| `b4ff2ed2` | Docs only: boundary check at `06370431`, and this table |
+| final (R6 repairs) | A stamped end-to-end test (R6-7, test only); R6 wording repairs; the R6 record |
