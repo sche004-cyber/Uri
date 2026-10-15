@@ -35,3 +35,18 @@ def test_only_wheel_files_are_installed(tmp_path):
     with pytest.raises(SystemExit) as e:
         M.install_wheels(tmp_path, [str(bad)])
     assert str(e.value) == "WHEEL_REFUSED:pypdf.tar.gz"
+
+
+def test_a_wheel_must_be_a_declared_requirement(tmp_path):
+    """Codex review R1-3: an unrelated wheel is refused before anything is installed."""
+    other = tmp_path / "evil_pkg-1.0-py3-none-any.whl"
+    other.write_bytes(b"PK")
+    with pytest.raises(SystemExit) as e:
+        M.install_wheels(tmp_path, [str(other)], declared={"pypdf"})
+    assert str(e.value) == "WHEEL_NOT_DECLARED:evil_pkg-1.0-py3-none-any.whl"
+
+
+def test_declared_requirements_reads_names_only():
+    names = M.declared_requirements()
+    assert {"pypdf", "python-docx", "python-pptx", "openpyxl"} <= names
+    assert M._dist("Python_Docx") == "python-docx"

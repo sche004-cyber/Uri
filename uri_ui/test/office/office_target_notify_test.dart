@@ -51,6 +51,7 @@ void main() {
     final client = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client());
     final appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
     var showOffice = true;
+    var showSecond = false;
     late StateSetter set;
     await tester.pumpWidget(MaterialApp(
       theme: ThemeData(extensions: const [UriColors.graphite]),
@@ -68,9 +69,14 @@ void main() {
                 builder: (_, _) => Text(services.officeTarget.value == null ? 'target: none' : 'target: office'),
               ),
               Expanded(
-                child: showOffice
-                    ? OfficeWorkspace(environment: _env(), clientFactory: () => client)
-                    : const SizedBox.shrink(),
+                child: Row(children: [
+                  if (showOffice)
+                    Expanded(child: OfficeWorkspace(key: const ValueKey('first'), environment: _env(),
+                        clientFactory: () => client)),
+                  if (showSecond)
+                    Expanded(child: OfficeWorkspace(key: const ValueKey('second'), environment: _env(),
+                        clientFactory: () => client)),
+                ]),
               ),
             ]);
           }),
@@ -91,6 +97,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.text('target: office'), findsOneWidget);
+
+    // Codex review R1-2: two workspaces share the scope's controller; closing one keeps the target.
+    set(() => showSecond = true);
+    await tester.pumpAndSettle();
+    set(() => showOffice = false);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('target: office'), findsOneWidget);
+    set(() => showSecond = false);
+    await tester.pumpAndSettle();
+    expect(find.text('target: none'), findsOneWidget);
     // The controller keeps polling while Office is shown; end the tree and let its timers run out.
     set(() => showOffice = false);
     await tester.pumpAndSettle();
