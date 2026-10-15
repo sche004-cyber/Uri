@@ -7,6 +7,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -14,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uri_ui/living/office/document_controller.dart';
 import 'package:uri_ui/living/office/office_bridge.dart';
 import 'package:uri_ui/living/office/office_client.dart';
+import 'package:uri_ui/living/office/office_nav_pane.dart';
 import 'package:uri_ui/living/office/office_workspace.dart';
 import 'package:uri_ui/living/presentation/presentation_controller.dart';
 import 'package:uri_ui/theme/uri_theme.dart';
@@ -45,6 +47,7 @@ class FakeOffice {
   Map<String, dynamic> requestReply = {'result': 'clarify', 'question_id': 'q', 'question': 'What would you like to do?',
                                        'chips': [{'label': 'Make a PDF', 'intent': 'save_as_pdf'}]};
   bool ready = true;
+  Map<String, dynamic>? openError;           // POST /open/document answers this error (400) when set
   Map<String, dynamic> doc = {
     'document_id': '0123456789abcdef', 'kind': 'docx', 'name': 'order.docx', 'pages': 3,
     'outline': [{'title': 'Office Order No. 41', 'level': 1, 'page': null}],
@@ -75,6 +78,7 @@ class FakeOffice {
             },
           _ => {'error': 'NOT_FOUND'},
         };
+        if (path == '/open/document' && openError != null) return http.Response(jsonEncode(openError), 400);
         if (out['error'] != null) return http.Response(jsonEncode(out), 404);
         if (path == '/request') out['echo'] = body;
         return http.Response(jsonEncode(out), 200);
@@ -258,6 +262,62 @@ void main() {
     }
     // exactly one hub per workspace controller; the sheet controller is given it
     expect(File('lib/living/office/document_controller.dart').readAsStringSync().split('A2uiHub()').length - 1, 1);
+  });
+
+  testWidgets('U1-persist: pane widths and collapsed panes survive a restart (new controller, same settings)',
+      (tester) async {
+    await _pump(tester);
+    double navWidth() => tester.getSize(find.byType(OfficeNavPane)).width;
+    expect(navWidth(), 260);
+    await tester.drag(find.byKey(const ValueKey('office-resize-left')), const Offset(60, 0));
+    await tester.pumpAndSettle();
+    expect(navWidth(), 320);
+    expect(find.byKey(const ValueKey('office-region-conversation')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('office-toggle-uri')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('office-region-conversation')), findsNothing);
+    // "restart": the workspace and its controller are gone; a new one reads the same settings store
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+    final client = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client());
+    await tester.pumpWidget(_app(OfficeWorkspace(environment: _env(), clientFactory: () => client)));
+    await tester.pumpAndSettle();
+    expect(navWidth(), 320);
+    expect(find.byKey(const ValueKey('office-region-conversation')), findsNothing);
+  });
+
+  testWidgets('U11: keyboard - Ctrl+Shift+B and Ctrl+Shift+J toggle the panes, Ctrl+K focuses the request box',
+      (tester) async {
+    await _pump(tester);
+    Future<void> chord(LogicalKeyboardKey k, {bool shift = true}) async {
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(k);
+      if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+    }
+    // focus somewhere inside the workspace first, as a user's click would
+    await tester.tap(find.byKey(const ValueKey('office-view-title')));
+    await tester.pumpAndSettle();
+    final before = tester.getSize(find.byType(OfficeNavPane)).width;
+    await chord(LogicalKeyboardKey.keyB);
+    expect(tester.getSize(find.byType(OfficeNavPane)).width, lessThan(before));
+    await chord(LogicalKeyboardKey.keyB);
+    expect(tester.getSize(find.byType(OfficeNavPane)).width, before);
+    await chord(LogicalKeyboardKey.keyJ);
+    expect(find.byKey(const ValueKey('office-region-conversation')), findsNothing);
+    await chord(LogicalKeyboardKey.keyJ);
+    expect(find.byKey(const ValueKey('office-region-conversation')), findsOneWidget);
+    await chord(LogicalKeyboardKey.keyK, shift: false);
+    final focused = FocusManager.instance.primaryFocus?.context;
+    expect(focused, isNotNull);
+    var insideRequestBox = false;
+    focused!.visitAncestorElements((e) {
+      if (e.widget.key == const ValueKey('office-request')) insideRequestBox = true;
+      return !insideRequestBox;
+    });
+    expect(insideRequestBox, isTrue, reason: 'Ctrl+K should put the cursor in the request box');
   });
 
   group('R5-1: the app starts the Office service on first use (real-app run 2026-10-15)', () {
