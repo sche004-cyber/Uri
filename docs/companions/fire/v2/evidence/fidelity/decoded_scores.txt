@@ -1,0 +1,35 @@
+== cp2
+  idle      V2(min)=[84, 85.7] mean=84.8   ref_copy=77/77.1  v1=47/48.6  v2=84/85.7  video=53/50.0
+  joyful    V2(min)=[80, 85.7] mean=82.8   ref_copy=77/77.1  v1=43/45.7  v2=80/85.7  video=53/48.6
+  fierce    V2(min)=[80, 80.0] mean=80.0   ref_copy=77/77.1  v1=43/41.4  v2=80/80.0  video=60/51.4
+  depleted  V2(min)=[74, 74.3] mean=74.2   ref_copy=77/77.1  v1=40/40.0  v2=74/74.3  video=53/50.0
+== cp3
+  idle      V2(min)=[82.9, 77.1] mean=80.0   ref_copy=81.4/78.6  ref_reframed=98.6/100  v1=41.4/41.4  v2=82.9/77.1  video=50.0/50.0
+  joyful    V2(min)=[81.4, 78.6] mean=80.0   ref_copy=81.4/78.6  ref_reframed=98.6/100  v1=47.6/37.1  v2=81.4/78.6  video=37.1/48.6
+  fierce    V2(min)=[77.1, 77.1] mean=77.1   ref_copy=81.4/78.6  ref_reframed=98.6/100  v1=37.1/37.1  v2=77.1/77.1  video=51.4/54.3
+  depleted  V2(min)=[80.0, 74.3] mean=77.2   ref_copy=81.4/78.6  ref_reframed=98.6/47.1  v1=37.1/37.1  v2=80.0/74.3  video=48.6/100
+== cp4
+  idle      V2(min)=[77, 78.6] mean=77.8   ref_copy=81/90.0  ref_reframed=100/100  v1=34/38.6  v2=77/78.6  video=49/41.4
+  joyful    V2(min)=[76, 74.3] mean=75.2   ref_copy=81/91.4  ref_reframed=100/100  v1=47/34.3  v2=76/74.3  video=36/40.0
+  fierce    V2(min)=[74, 78.6] mean=76.3   ref_copy=81/90.0  ref_reframed=100/100  v1=34/30.0  v2=74/78.6  video=51/44.3
+  depleted  V2(min)=[74, 74.3] mean=74.2   ref_copy=81/90.0  ref_reframed=100/100  v1=37/38.6  v2=74/74.3  video=47/44.3
+== cp5
+  idle      V2(min)=[71, 73] mean=72.0   ref_copy=76/80  ref_reframed=100/100  still_in_app=81/76  v1=37/37  v2=71/73
+  joyful    V2(min)=[74, 76] mean=75.0   ref_copy=76/80  ref_reframed=100/100  still_in_app=81/79  v1=39/36  v2=74/76
+  fierce    V2(min)=[70, 77] mean=73.5   ref_copy=73/80  ref_reframed=100/100  still_in_app=71/77  v1=39/31  v2=70/77
+  depleted  V2(min)=[69, 73] mean=71.0   ref_copy=73/80  ref_reframed=100/100  still_in_app=69/76  v1=40/39  v2=69/73
+== cp6
+  idle      V2(min)=[73, 71.4] mean=72.2   ref_copy=79/82.9  ref_reframed=100/100  still_in_app=81/78.6  v1=34/38.6  v2_card=73/71.4
+  joyful    V2(min)=[79, 78.6] mean=78.8   ref_copy=79/81.4  ref_reframed=100/100  still_in_app=80/81.4  v1=30/35.7  v2_card=79/78.6
+  fierce    V2(min)=[70, 77.1] mean=73.5   ref_copy=79/81.4  ref_reframed=100/100  still_in_app=81/81.4  v1=31/35.7  v2_card=70/77.1
+  depleted  V2(min)=[73, 77.1] mean=75.0   ref_copy=79/81.4  ref_reframed=100/100  still_in_app=81/81.4  v1=34/35.7  v2_card=73/77.1
+== cp7
+  idle      V2(min)=[87.1, 80.0] mean=83.5   ref_copy=77.1/85.7  ref_reframed=98.6/98.6  still_in_app=87.1/80.0  v1=35.7/32.9  v2_mid=87.1/80.0  v2_worst=87.1/80.0
+  joyful    V2(min)=[85.7, 84.3] mean=85.0   ref_copy=77.1/85.7  ref_reframed=98.6/98.6  still_in_app=85.7/84.3  v1=30.0/34.3  v2_mid=85.7/84.3  v2_worst=85.7/84.3
+  fierce    V2(min)=[87.1, 81.4] mean=84.2   ref_copy=77.1/85.7  ref_reframed=98.6/98.6  still_in_app=87.1/81.4  v1=32.9/32.9  v2_mid=87.1/81.4  v2_worst=87.1/81.4
+  depleted  V2(min)=[88.6, 82.9] mean=85.8   ref_copy=78.6/87.1  ref_reframed=98.6/98.6  still_in_app=88.6/82.9  v1=35.7/34.3  v2_mid=88.6/82.9  v2_worst=88.6/82.9
+== cp8
+  idle      V2(min)=[83, 84] mean=83.5   ref_copy=81/81  ref_reframed=100/100  still_in_app=83/84  v1=36/34  v2_mid=83/84  v2_worst=83/84
+  joyful    V2(min)=[81, 83] mean=82.0   ref_copy=81/81  ref_reframed=100/100  still_in_app=81/83  v1=34/34  v2_mid=81/83  v2_worst=81/83
+  fierce    V2(min)=[80, 81] mean=80.5   ref_copy=81/81  ref_reframed=100/100  still_in_app=80/81  v1=34/33  v2_mid=80/81  v2_worst=80/81
+  depleted  V2(min)=[81, 84] mean=82.5   ref_copy=81/83  ref_reframed=100/100  still_in_app=81/84  v1=36/36  v2_mid=81/84  v2_worst=81/84

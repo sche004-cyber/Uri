@@ -55,11 +55,13 @@ class OiCompanionSource extends CompanionStateSource {
     final finish = _lastFinish(c);
     if (finish != null && finish != _seenFinish) {
       _seenFinish = finish;
-      if (finish.$2 == 'ok') {
-        _successTimer?.cancel();
-        _successTimer = Timer(successHold, _update);
-      }
+      _successTimer?.cancel();
+      // A later finish that is not ok ends any celebration still running (review R1-01).
+      if (finish.$2 == 'ok') _successTimer = Timer(successHold, _update);
     }
+    // A new turn in flight is not the one that succeeded: stop celebrating it (review R1-01).
+    final active = c.activeTurnId;
+    if (active != null && active != _seenFinish?.$1) _successTimer?.cancel();
     var next = _derive(c);
     if (next.state == CompanionState.idle && (_successTimer?.isActive ?? false)) {
       next = const CompanionSignal(

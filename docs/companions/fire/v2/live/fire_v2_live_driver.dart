@@ -283,7 +283,15 @@ void main() {
       await t.runAsync(() => conv.runtime.close());
       return;
     }
-    record('brain ready', {'state_sequence_while_loading': List.of(states), 'brain_status': conv.brainStatus});
+    record('brain ready', {
+      'state_sequence_while_loading': List.of(states),
+      'brain_status': conv.brainStatus,
+      // OD-8 proof (review R1-07): the Brain the turns go to is this run's own.
+      'our_brain': ourBrain(),
+      'host_record': File(Platform.environment['URI_QUAL_BRAIN_HOST'] ?? '').existsSync()
+          ? jsonDecode(File(Platform.environment['URI_QUAL_BRAIN_HOST']!).readAsStringSync())['server']
+          : null,
+    });
     await pumpFor(const Duration(seconds: 2));
     phase = 'idle';
     await shot('idle-brain-ready');

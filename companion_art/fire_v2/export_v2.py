@@ -189,6 +189,9 @@ def main() -> None:
         prev = json.loads(old.read_text(encoding="utf-8"))
         if prev.get("source", "").startswith("companion_art/fire_v2"):
             manifest["clips"] = prev["clips"]
+            # keep the blink atlas of the clips not re-rendered (review R1-02)
+            if "blink_atlas" in prev:
+                manifest["blink_atlas"] = prev["blink_atlas"]
     panels: dict[str, Panel] = {}
     blink_cells: list[tuple[str, list[np.ndarray]]] = []
     for name, spec in EXPR["clips"].items():

@@ -1,0 +1,31 @@
+{
+ "_provenance": "Letter-level Fidelity % exactly as each fresh reviewer reported it in its hand-back message (before any decoding). Transcribed by the implementer from those messages in the session of 2026-10-15; the harness did not persist the reviewer transcripts (their task output files are 0 bytes), so the messages are the only primary source. decode_raw_scores.py decodes these with cpN_key/key.json and reproduces the cpN_RESULTS.md tables (review R1-03).",
+ "cp2": {
+  "reviewer1": {"idle": {"A": 47, "B": 53, "C": 84, "D": 77}, "joyful": {"A": 53, "B": 43, "C": 77, "D": 80}, "fierce": {"A": 77, "B": 43, "C": 80, "D": 60}, "depleted": {"A": 74, "B": 77, "C": 53, "D": 40}},
+  "reviewer2": {"idle": {"A": 48.6, "B": 50.0, "C": 77.1, "D": 85.7}, "joyful": {"A": 77.1, "B": 48.6, "C": 85.7, "D": 45.7}, "fierce": {"A": 80.0, "B": 77.1, "C": 51.4, "D": 41.4}, "depleted": {"A": 40.0, "B": 77.1, "C": 50.0, "D": 74.3}}
+ },
+ "cp3": {
+  "reviewer1": {"idle": {"A": 41.4, "B": 50.0, "C": 82.9, "D": 81.4, "E": 98.6}, "joyful": {"A": 98.6, "B": 81.4, "C": 47.6, "D": 37.1, "E": 81.4}, "fierce": {"A": 81.4, "B": 98.6, "C": 37.1, "D": 51.4, "E": 77.1}, "depleted": {"A": 37.1, "B": 81.4, "C": 48.6, "D": 98.6, "E": 80.0}},
+  "reviewer2": {"idle": {"A": 78.6, "B": 41.4, "C": 100, "D": 50.0, "E": 77.1}, "joyful": {"A": 48.6, "B": 100, "C": 78.6, "D": 37.1, "E": 78.6}, "fierce": {"A": 54.3, "B": 78.6, "C": 37.1, "D": 100, "E": 77.1}, "depleted": {"A": 78.6, "B": 37.1, "C": 100, "D": 47.1, "E": 74.3}}
+ },
+ "cp4": {
+  "reviewer1": {"idle": {"A": 34, "B": 49, "C": 77, "D": 81, "E": 100}, "joyful": {"A": 100, "B": 76, "C": 47, "D": 36, "E": 81}, "fierce": {"A": 81, "B": 100, "C": 34, "D": 51, "E": 74}, "depleted": {"A": 37, "B": 81, "C": 47, "D": 100, "E": 74}},
+  "reviewer2": {"idle": {"A": 90.0, "B": 38.6, "C": 100, "D": 41.4, "E": 78.6}, "joyful": {"A": 40.0, "B": 100, "C": 74.3, "D": 34.3, "E": 91.4}, "fierce": {"A": 44.3, "B": 90.0, "C": 30.0, "D": 100, "E": 78.6}, "depleted": {"A": 90.0, "B": 38.6, "C": 44.3, "D": 100, "E": 74.3}}
+ },
+ "cp5": {
+  "reviewer1": {"idle": {"A": 37, "B": 71, "C": 81, "D": 76, "E": 100}, "joyful": {"A": 100, "B": 81, "C": 39, "D": 74, "E": 76}, "fierce": {"A": 73, "B": 100, "C": 39, "D": 70, "E": 71}, "depleted": {"A": 40, "B": 73, "C": 69, "D": 100, "E": 69}},
+  "reviewer2": {"idle": {"A": 80, "B": 37, "C": 100, "D": 73, "E": 76}, "joyful": {"A": 76, "B": 100, "C": 79, "D": 36, "E": 80}, "fierce": {"A": 77, "B": 80, "C": 31, "D": 100, "E": 77}, "depleted": {"A": 80, "B": 39, "C": 73, "D": 100, "E": 76}}
+ },
+ "cp6": {
+  "reviewer1": {"idle": {"A": 34, "B": 81, "C": 73, "D": 79, "E": 100}, "joyful": {"A": 100, "B": 79, "C": 30, "D": 80, "E": 79}, "fierce": {"A": 79, "B": 100, "C": 31, "D": 81, "E": 70}, "depleted": {"A": 34, "B": 79, "C": 81, "D": 100, "E": 73}},
+  "reviewer2": {"idle": {"A": 82.9, "B": 38.6, "C": 100, "D": 78.6, "E": 71.4}, "joyful": {"A": 81.4, "B": 100, "C": 78.6, "D": 35.7, "E": 81.4}, "fierce": {"A": 81.4, "B": 81.4, "C": 35.7, "D": 100, "E": 77.1}, "depleted": {"A": 81.4, "B": 35.7, "C": 81.4, "D": 100, "E": 77.1}}
+ },
+ "cp7": {
+  "reviewer1": {"idle": {"A": 87.1, "B": 87.1, "C": 35.7, "D": 87.1, "E": 77.1, "F": 98.6}, "joyful": {"A": 98.6, "B": 85.7, "C": 85.7, "D": 30.0, "E": 85.7, "F": 77.1}, "fierce": {"A": 32.9, "B": 87.1, "C": 87.1, "D": 98.6, "E": 77.1, "F": 87.1}, "depleted": {"A": 88.6, "B": 98.6, "C": 35.7, "D": 78.6, "E": 88.6, "F": 88.6}},
+  "reviewer2": {"idle": {"A": 85.7, "B": 32.9, "C": 98.6, "D": 80.0, "E": 80.0, "F": 80.0}, "joyful": {"A": 84.3, "B": 84.3, "C": 98.6, "D": 84.3, "E": 34.3, "F": 85.7}, "fierce": {"A": 85.7, "B": 32.9, "C": 81.4, "D": 98.6, "E": 81.4, "F": 81.4}, "depleted": {"A": 87.1, "B": 82.9, "C": 34.3, "D": 82.9, "E": 82.9, "F": 98.6}}
+ },
+ "cp8": {
+  "reviewer1": {"idle": {"A": 83, "B": 83, "C": 36, "D": 83, "E": 81, "F": 100}, "joyful": {"A": 100, "B": 81, "C": 81, "D": 34, "E": 81, "F": 81}, "fierce": {"A": 34, "B": 80, "C": 80, "D": 100, "E": 81, "F": 80}, "depleted": {"A": 81, "B": 100, "C": 36, "D": 81, "E": 81, "F": 81}},
+  "reviewer2": {"idle": {"A": 81, "B": 34, "C": 100, "D": 84, "E": 84, "F": 84}, "joyful": {"A": 83, "B": 83, "C": 100, "D": 83, "E": 34, "F": 81}, "fierce": {"A": 81, "B": 33, "C": 81, "D": 100, "E": 81, "F": 81}, "depleted": {"A": 83, "B": 84, "C": 36, "D": 84, "E": 84, "F": 100}}
+ }
+}

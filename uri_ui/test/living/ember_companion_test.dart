@@ -214,7 +214,13 @@ void main() {
         ),
         throwsFormatException,
       );
-      expect(() => EmberManifest.parse(m(atlas: false)), throwsFormatException);
+      // Without the atlas, or with a patch outside the cell, Ember still
+      // plays: only the blink is dropped (review R1-06).
+      expect(
+        EmberManifest.parse(m(atlas: false)).clips[EmberClip.idle]!.blink,
+        isNull,
+      );
+      expect(EmberManifest.parse(m(atlas: false)).blinkFile, isNull);
       final ok = EmberManifest.parse(
         m(
           offsets: [
@@ -224,6 +230,16 @@ void main() {
         ),
       );
       expect(ok.clips[EmberClip.idle]!.eyeOffset(3), const Offset(0.5, -1));
+      final outside = jsonDecode(m()) as Map<String, dynamic>;
+      ((outside['clips'] as Map)['idle'] as Map)['blink'] = {
+        'rect': [8, 8, 4, 3], // cell is 10 px: the patch would leave it
+        'src': [
+          [0, 0],
+        ],
+      };
+      final parsed = EmberManifest.parse(jsonEncode(outside));
+      expect(parsed.clips[EmberClip.idle]!.blink, isNull);
+      expect(parsed.clips[EmberClip.idle]!.frames, 2);
       expect(
         ok.clips[EmberClip.idle]!.blink!.sourceRect(2),
         const Rect.fromLTWH(0, 0, 4, 3),
@@ -521,6 +537,32 @@ void main() {
         greaterThan(seen.length * 0.9),
       );
     });
+
+    testWidgets(
+      'the blink atlas is freed with the last Ember; a still tile never loads it',
+      (tester) async {
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: EmberCompanion(library: lib, still: true),
+          ),
+        );
+        await settleDecode(tester);
+        expect(lib.resident, contains(EmberClip.idle));
+        expect(lib.blinkImageIfLoaded, isNull); // still: no lid patches decoded
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: EmberCompanion(library: lib),
+          ),
+        );
+        await settleDecode(tester);
+        expect(lib.blinkImageIfLoaded, isNotNull);
+        await tester.pumpWidget(const SizedBox());
+        expect(lib.blinkImageIfLoaded, isNull);
+        expect(lib.residentBytes, 0);
+      },
+    );
 
     testWidgets('a smiling (joyful) or reduced-motion Ember never blinks', (
       tester,

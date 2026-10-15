@@ -31,8 +31,8 @@
 
 | Measure | Result | Status |
 |---|---|---|
-| GPU cost | V2 uses about 2-8 % of Solar's 3D engine time (0.14-0.29 % vs 3.8-11 %). It is the same cost as V1: one textured quad per sprite frame, plus a small lid patch during a blink. | **Must not exceed Solar: MET** |
-| Additional VRAM | +33-36 MB over Solar, and 3-6 MB under V1. At most 2 clips are decoded at once (≤ 42.7 MiB), plus the 40 KB blink atlas. Everything is freed when Ember is unmounted (unit test). | **Bounded and stated: MET** |
+| GPU cost | V2 uses about 1.3-7.7 % of Solar's 3D engine time (0.14-0.29 % vs 3.8-11 %; review R1-08). It is the same cost as V1: one textured quad per sprite frame, plus a small lid patch during a blink. | **Must not exceed Solar: MET** |
+| Additional VRAM | +33-36 MB over Solar, and 2.5-6.9 MB under V1. At most 2 clips are decoded at once (≤ 42.7 MiB), plus the 40 KB blink atlas. Everything is freed when Ember is unmounted (unit test). | **Bounded and stated: MET** |
 | Frame pacing | 46-48 frames requested per second: the 24 fps sprite cadence, plus wakes on the vsync. Solar asks for 137-148. p99 frame time is 2.9 ms. | |
 | Idle rendering | Same contract as V1. No frames are requested between sprite frames, while frozen (reduced motion or the still picker tile) or while hidden. Blinks never request frames of their own; a blink is drawn only on sprite frames the player already draws. Covered by widget tests. | |
 | Transitions | V1's additive cross-fade, unchanged: one extra textured quad while it runs. Not measured separately. | |

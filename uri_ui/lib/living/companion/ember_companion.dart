@@ -105,6 +105,13 @@ class EmberClipInfo {
   }
 }
 
+/// [r] lies wholly inside [outer].
+bool _inside(Rect outer, Rect r) =>
+    r.left >= outer.left &&
+    r.top >= outer.top &&
+    r.right <= outer.right &&
+    r.bottom <= outer.bottom;
+
 /// Where a clip's lid patches are: [rect] is the patch's place in a cell at
 /// frame 0, [sources] the top-left of each lid level (half closed .. closed)
 /// in the blink atlas.
@@ -135,6 +142,34 @@ class EmberManifest {
   /// A small still of the idle expression for the companion picker.
   static const String thumbnailPath = '$assetDir/thumbnail.webp';
 
+  /// A clip's lid patches, or null when the entry is malformed or lies
+  /// outside the cell: that clip then just does not blink, and the rest of
+  /// Ember is unaffected (review R1-06).
+  static EmberBlink? _parseBlink(Map<String, dynamic> b, double cell) {
+    try {
+      final r = (b['rect'] as List<dynamic>).cast<num>();
+      final src = [
+        for (final s in b['src'] as List<dynamic>)
+          Offset(
+            ((s as List<dynamic>)[0] as num).toDouble(),
+            (s[1] as num).toDouble(),
+          ),
+      ];
+      if (r.length != 4 || r[2] <= 0 || r[3] <= 0 || src.isEmpty) return null;
+      final rect = Rect.fromLTWH(
+        r[0].toDouble(),
+        r[1].toDouble(),
+        r[2].toDouble(),
+        r[3].toDouble(),
+      );
+      if (!_inside(Offset.zero & Size(cell, cell), rect)) return null;
+      if (src.any((o) => o.dx < 0 || o.dy < 0)) return null;
+      return EmberBlink(rect: rect, sources: src);
+    } on Object {
+      return null;
+    }
+  }
+
   static EmberManifest parse(String text) {
     final j = jsonDecode(text) as Map<String, dynamic>;
     final clips = <EmberClip, EmberClipInfo>{};
@@ -158,28 +193,7 @@ class EmberManifest {
       }
       final b = m['blink'] as Map<String, dynamic>?;
       EmberBlink? blink;
-      if (b != null) {
-        final r = (b['rect'] as List<dynamic>).cast<num>();
-        final src = [
-          for (final s in b['src'] as List<dynamic>)
-            Offset(
-              ((s as List<dynamic>)[0] as num).toDouble(),
-              (s[1] as num).toDouble(),
-            ),
-        ];
-        if (r.length != 4 || r[2] <= 0 || r[3] <= 0 || src.isEmpty) {
-          throw FormatException('ember manifest: ${c.name} has a bad blink');
-        }
-        blink = EmberBlink(
-          rect: Rect.fromLTWH(
-            r[0].toDouble(),
-            r[1].toDouble(),
-            r[2].toDouble(),
-            r[3].toDouble(),
-          ),
-          sources: src,
-        );
-      }
+      if (b != null) blink = _parseBlink(b, (m['cell'] as num).toDouble());
       final info = EmberClipInfo(
         file: m['file'] as String,
         frames: frames,
@@ -199,10 +213,19 @@ class EmberManifest {
     }
     final blinkAtlas = j['blink_atlas'] as Map<String, dynamic>?;
     final blinkFile = blinkAtlas?['file'] as String?;
-    if (blinkFile == null && clips.values.any((c) => c.blink != null)) {
-      throw const FormatException(
-        'ember manifest: blink patches without an atlas',
-      );
+    if (blinkFile == null) {
+      // Lid patches without their atlas: Ember plays without blinks rather
+      // than not at all (review R1-06).
+      for (final e in clips.entries.toList()) {
+        if (e.value.blink == null) continue;
+        clips[e.key] = EmberClipInfo(
+          file: e.value.file,
+          frames: e.value.frames,
+          cols: e.value.cols,
+          cell: e.value.cell,
+          eyeOffsets: e.value.eyeOffsets,
+        );
+      }
     }
     return EmberManifest(fps: fps, clips: clips, blinkFile: blinkFile);
   }
@@ -587,7 +610,8 @@ class _EmberCompanionState extends State<EmberCompanion>
     _current = _target;
     _lib.pin(this, {_current});
     _request(_current);
-    _lib.requestBlink();
+    // A still tile never blinks, so it never decodes the lid patches.
+    if (!widget.still) _lib.requestBlink();
   }
 
   @override
@@ -858,7 +882,19 @@ class _EmberCompanionState extends State<EmberCompanion>
     final lid = _lid;
     EmberOverlay? overlay;
     final blink = info?.blink;
-    if (lid != null && cur != null && blink != null && blinkImage != null) {
+    // Never during a cross-fade (review R1-05), and only for a patch that lies
+    // inside the decoded atlas (review R1-06).
+    final settled = _previous == null && _fade >= 1;
+    if (lid != null &&
+        settled &&
+        cur != null &&
+        blink != null &&
+        blinkImage != null &&
+        _inside(
+          Offset.zero &
+              Size(blinkImage.width.toDouble(), blinkImage.height.toDouble()),
+          blink.sourceRect(lid),
+        )) {
       overlay = EmberOverlay(
         image: blinkImage,
         src: blink.sourceRect(lid),

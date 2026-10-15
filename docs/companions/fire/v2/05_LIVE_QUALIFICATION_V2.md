@@ -36,6 +36,11 @@ Guards added to the harness after runs 1 and 3 (OD-8):
   Brain host.
 - Known gap: the recovery restart was not guarded by the runner, which is why run 4 was stopped by hand. Recorded
   here; the harness is not product code.
+- Evidence gap (review R1-07): in run 4 the ownership check is proven by code, not by a recorded value. The driver
+  runs no Brain journey unless `ourBrain()` holds (`fire_v2_live_driver.dart`). `gpu-samples-first.json` shows one
+  llama-server (pid 9676) during the Brain journeys, and `first-brain_host.json` was snapshotted after the graceful
+  stop (pid null, lease released). The driver now records the ownership proof and the pids at "brain ready", for
+  any future run.
 
 ## Journeys
 
@@ -55,7 +60,7 @@ Guards added to the harness after runs 1 and 3 (OD-8):
 | 9 | Recoverable error | PASS: Brain host stopped gracefully; companion **Unavailable** (depleted); a request then -> **error** (concerned) | `first-15`, `first-16` |
 | 10 | Return to idle after recovery | **BLOCKED**: the GPU lease was taken by a parallel session (see run 4). Not simulated. | runner log |
 | R1 | **Returning user** | PASS (run 2): a second start with the same preferences restores **Ember** without any choice | `run2_returning/returning-01..02` |
-| R3 | Settings with the voice section (**PRE-1**) | **PASS, repaired**: **0** "setState() or markNeedsBuild() called during build" assertions in all V2 runs, against **12** in the V1 live run | flutter logs |
+| R3 | Settings with the voice section (**PRE-1**) | **PASS, repaired**: **0** "setState() or markNeedsBuild() called during build" assertions in the complete logs of runs 1-3. Run 2 includes the Settings journey R3. The V1 live run had **12**. Run 4's log ends where the run was stopped (rc 15), but it also shows 0 up to that point, after its Settings journey F2. | flutter logs |
 
 ## Brain coexistence (live, run 4)
 

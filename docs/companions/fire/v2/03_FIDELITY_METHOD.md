@@ -37,6 +37,34 @@ its reason; no threshold was lowered.
    A session is valid when `ref_reframed` scores >= 90 and V1 scores below the video. CP2 had no top anchor and is
    recorded as miscalibrated.
 
+### Refinement of AC-2b, recorded (review R1-04)
+
+AC-2b, as written before scoring, says: a session is miscalibrated, and must be repeated, if an anchor lands
+outside +-10 points of its prior. The priors were the reference near 100, V1 41-51 and the video 63-67.
+
+**Under that original rule, every session CP2-CP8 is miscalibrated:**
+- the video anchor scored 37-60 (CP2-CP4) and was dropped from CP5 onward;
+- V1 scored 30-48, at times more than 10 points below its prior.
+
+The priors came from a different rubric (V1's nine dimensions) and a single earlier reviewer. With the new
+7-dimension rubric, every reviewer compressed both weak anchors by about 15-25 points. Repeating the sessions did
+not change that (CP2-CP8 used 14 different reviewers).
+
+From CP3 the implementer used a narrower validity check:
+- the sharp painting (`ref_reframed`) must score >= 90 (it scored 98.6-100 in every session);
+- V1 must score below the painting copies.
+
+**This is a change to the pre-registered rule.** It is disclosed here and not hidden. It affects only how anchor
+scores are interpreted. The V2 pass threshold (mean >= 90 and no reviewer below 85) was never changed, and V2 did
+not meet it in any session. The verdict NOT MET holds under either rule.
+
+## Raw scores
+
+`evidence/fidelity/raw_letter_scores.json` holds the letter-level scores for every reviewer and checkpoint,
+transcribed from the reviewers' hand-back messages; the harness did not keep the transcripts. Running
+`evidence/fidelity/decode_raw_scores.py` reproduces every `cpN_RESULTS.md` table from them and the keys
+(`decoded_scores.txt`).
+
 ## Secondary measure: automated scorer (AC-2c, regression only)
 
 `scripts/fire_companion/score_v2.py` scores every 6th frame of each reference clip with V1's

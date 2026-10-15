@@ -42,6 +42,12 @@ C is the V1 render and D is the video frame, but the reviewer described C as "di
 render". Its two scores are therefore attributed by its descriptions: V1 37.1, video 47.6. The table keeps the
 transcribed values against the key, marked *. This affects only the anchors, not V2.
 
+Correction (review R1-03, after decoding `raw_letter_scores.json`): reviewer 2's **depleted** candidates C and D
+have the same kind of mismatch. Against the key, C = video and D = ref_reframed. The reviewer described C as
+"no difference from the target" (100) and D as "a different artist" (47.1). The table above attributes these by
+description and was published without this note. The CP4 pack has the same letters, and there reviewer 2 scored
+them as the key says. V2's values are unaffected.
+
 **Verdict for CP3: AC-2a NOT MET.** V2 scores 74-83 per reviewer and 77-80 mean per state.
 
 **Calibration:** the top anchor works (99-100). A sharp, reframed copy of the painting is scored as the painting.

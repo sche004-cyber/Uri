@@ -192,6 +192,39 @@ void main() {
     src.dispose();
   });
 
+  testWidgets('a failed turn or a new turn ends the success hold at once (review R1-01)', (tester) async {
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt);
+    late OiCompanionSource src;
+    await tester.runAsync(() async {
+      await conv.refreshStatus();
+      src = OiCompanionSource(conv, successHold: const Duration(seconds: 4));
+      await conv.send('what time is it');
+    });
+    rt.emit('t1', 'turn.finished', {'status': 'ok'});
+    rt.emit('t1', 'companion.state', {'state': 'idle'});
+    await tester.pump();
+    expect(src.signal.state, CompanionState.success);
+    // Within the hold, the next turn finishes not_verified: no more "Done".
+    await tester.runAsync(() => conv.send('remember the bus leaves at 7'));
+    rt.emit('t2', 'turn.finished', {'status': 'not_verified'});
+    rt.emit('t2', 'companion.state', {'state': 'idle'});
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(src.signal.state, CompanionState.idle);
+    // ok again, then a new turn starts within the hold: the hold ends even
+    // before the orchestrator reports thinking.
+    await tester.runAsync(() => conv.send('and tomorrow'));
+    rt.emit('t3', 'turn.finished', {'status': 'ok'});
+    rt.emit('t3', 'companion.state', {'state': 'idle'});
+    await tester.pump();
+    expect(src.signal.state, CompanionState.success);
+    await tester.runAsync(() => conv.send('one more'));
+    await tester.pump();
+    expect(src.signal.state, isNot(CompanionState.success));
+    await tester.pump(const Duration(seconds: 5));
+    src.dispose();
+  });
+
   test('a turn finished before the source existed is not celebrated', () async {
     final rt = FakeRuntime();
     final conv = OiConversation(rt);
