@@ -261,6 +261,7 @@ void main() {
       await until(() => c.notice != null);
       expect(c.notice, contains('Formatting'));
       expect(c.notice, contains('not applied'));
+      expect(c.notice, contains('column widths'));
       expect(edits, isEmpty);
     });
 
