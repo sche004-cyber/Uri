@@ -436,7 +436,12 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   final Map<String, Uint8List> _outPages = {};
   Future<Uint8List?> outputPage(String wid, int page, int width) async {
     final key = '$wid/$page/$width';
-    return _outPages[key] ??= (await client.outputPage(wid, page, width)) ?? Uint8List(0);
+    final cached = _outPages[key];
+    if (cached != null) return cached;
+    // CX-1 (readiness run r2): a page that was not drawn yet (202) was cached as empty, so it never loaded later.
+    final bytes = await client.outputPage(wid, page, width);
+    if (bytes != null && bytes.isNotEmpty) _outPages[key] = bytes;
+    return bytes;
   }
 
   void selectPage(int p) {
@@ -504,6 +509,9 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         workflowView = await client.cancelWorkflow(activeWorkflow!);
         _clearCards(activeWorkflow!);
         stepLabel = null;
+        // CX-1: the conversation said "Working on it" and nothing more after a cancel.
+        conversation.say(OfficeSpeaker.notice, 'Cancelled. Nothing was saved, and your original file is unchanged.',
+            'Task');
       });
 
   Future<void> resumeWorkflow() => _guard(() async {

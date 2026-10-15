@@ -362,6 +362,51 @@ void main() {
     });
   });
 
+  group('CX-1 cancel (readiness run r2)', () {
+    testWidgets('a cancelled task says so and draws no output pages', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 600));
+      final c = OfficeWorkspaceController(
+          client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client()))
+        ..activeWorkflow = 'a' * 20
+        ..workflowView = {'state': 'cancelled', 'steps': [], 'findings': [],
+          'outputs': [{'name': 'deck.pdf', 'pages': 11}]};
+      await tester.pumpWidget(MaterialApp(theme: ThemeData(extensions: const [UriColors.graphite]),
+          home: Scaffold(body: OfficeWorkflowView(controller: c))));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('office-workflow-cancelled')), findsOneWidget);
+      expect(find.textContaining('Nothing was saved'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing, reason: 'no page that can never load');
+      expect(find.byKey(const ValueKey('office-cancel')), findsNothing);
+    });
+
+    test('an output page that is not drawn yet is fetched again, not cached as empty', () async {
+      var n = 0;
+      final mock = MockClient((req) async {
+        if (req.url.path.contains('/page/')) {
+          n++;
+          return n == 1 ? http.Response('', 202) : http.Response.bytes(_png, 200, headers: {'content-type': 'image/png'});
+        }
+        return http.Response(jsonEncode({'error': 'NOT_FOUND'}), 404);
+      });
+      final c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', mock));
+      final first = await c.outputPage('a' * 20, 1, 160);
+      expect(first == null || first.isEmpty, isTrue);
+      final second = await c.outputPage('a' * 20, 1, 160);
+      expect(second, isNotNull);
+      expect(second!.isNotEmpty, isTrue);
+    });
+
+    test('cancelling says so in the Office conversation', () async {
+      final mock = MockClient((req) async => http.Response(
+          jsonEncode({'state': 'cancelled', 'steps': [], 'findings': []}), 200));
+      final c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', mock))
+        ..activeWorkflow = 'a' * 20;
+      await c.cancelWorkflow();
+      expect(c.workflowView?['state'], 'cancelled');
+      expect(c.conversation.lines.last.text, contains('Cancelled. Nothing was saved'));
+    });
+  });
+
   group('R5 real-app repairs (2026-10-15)', () {
     Future<void> openDoc(WidgetTester tester) async {
       await tester.tap(find.byKey(const ValueKey('office-home-open')));
