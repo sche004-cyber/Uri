@@ -1,6 +1,7 @@
 // O2 B1 Office workspace widget tests (plan §10): U1 panes, U2 responsive, U4 goal groups, U5 conversation across
 // views, U6/U8 hints, U9 navigation, U10 no colour literals, U13 waiting badge, U14 renderer label, U15 Documents
 // alias, U16 no duplication, U17 dismissible chips. The Office service is a fake (package:http/testing MockClient).
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -257,6 +258,76 @@ void main() {
     }
     // exactly one hub per workspace controller; the sheet controller is given it
     expect(File('lib/living/office/document_controller.dart').readAsStringSync().split('A2uiHub()').length - 1, 1);
+  });
+
+  group('R5-1: the app starts the Office service on first use (real-app run 2026-10-15)', () {
+    OfficeEnvironment env(Future<String?> Function() start) => OfficeEnvironment(
+          surfaceFactory: () => throw UnimplementedError(),
+          pickWorkbookPath: () async => null,
+          pickSavePath: (_) async => null,
+          openExternalLink: (_) async {},
+          pickDocumentPath: () async => null,
+          startService: start,
+        );
+
+    testWidgets('no service: starts it, shows progress, then the workspace', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.binding.setSurfaceSize(const Size(1440, 900));
+      final client = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client());
+      var started = 0;
+      final gate = Completer<String?>();
+      await tester.pumpWidget(_app(OfficeWorkspace(
+          environment: env(() {
+            started++;
+            return gate.future;
+          }),
+          clientFactory: () => gate.isCompleted ? client : null)));
+      await tester.pump();
+      expect(started, 1);
+      expect(find.text('Starting URI Office…'), findsOneWidget);
+      gate.complete(null);
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('office-start-error')), findsNothing);
+      expect(find.byKey(const ValueKey('office-home')), findsOneWidget);
+    });
+
+    testWidgets('a start problem is shown in words with Try again, which tries again', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.binding.setSurfaceSize(const Size(1440, 900));
+      var started = 0;
+      await tester.pumpWidget(_app(OfficeWorkspace(
+          environment: env(() async {
+            started++;
+            return 'URI Office is not installed with this copy of URI.';
+          }),
+          clientFactory: () => null)));
+      await tester.pumpAndSettle();
+      expect(find.text('URI Office is not installed with this copy of URI.'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('office-start-retry')));
+      await tester.pumpAndSettle();
+      expect(started, 2);
+    });
+
+    testWidgets('a service.json left by an ended service is not trusted: a new service is started', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.binding.setSurfaceSize(const Size(1440, 900));
+      final dead = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't',
+          MockClient((_) async => throw const SocketException('refused')));
+      final live = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client());
+      var started = 0;
+      await tester.pumpWidget(_app(OfficeWorkspace(
+          environment: env(() async {
+            started++;
+            return null;
+          }),
+          clientFactory: () => started > 0 ? live : dead)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
+      expect(started, 1);
+      expect(find.byKey(const ValueKey('office-home')), findsOneWidget);
+    });
   });
 
   test('page bytes are fetched as PNG and 202 means not ready', () async {

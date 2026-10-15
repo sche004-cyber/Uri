@@ -1011,9 +1011,17 @@ def main(argv=None):
                      help="O2P: offer printing (off until O2P qualifies; physical printing needs owner authorization)")
     run.add_argument("--allow-root", action="append", default=None,
                      help="folder the owner's workbooks may come from (repeatable; default: the user's home folder)")
+    run.add_argument("--parent-pid", type=int, default=None,
+                     help="the URI application that started this service: the service stops when it exits")
+    run.add_argument("--brain-from-runtime", action="store_true",
+                     help="use the pinned Runtime v1 address (uri_operational_intelligence.runtime_v1 configuration)")
     a = ap.parse_args(argv)
     state = Path(a.state)
+    state.mkdir(parents=True, exist_ok=True)
     brain = None
+    if a.brain_from_runtime and not a.brain_url:
+        from uri_operational_intelligence import runtime_v1 as RV1
+        a.brain_url = f"http://127.0.0.1:{RV1.load_config()['runtime']['port']}"
     if a.brain_url:
         from uri_operational_intelligence import brain_client as BC
         from .brain import OfficeBrain
@@ -1028,13 +1036,41 @@ def main(argv=None):
                                                      "started": time.time(), "token_file": str(state / "api-token")}),
                                         encoding="utf-8")
     print(json.dumps({"ready": True, "port": srv.server_address[1]}), flush=True)
+    if a.parent_pid:
+        threading.Thread(target=_stop_with_parent, args=(a.parent_pid, srv), daemon=True, name="parent-watch").start()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
         srv.server_close()
+        if office._hub is not None:
+            office._hub.shutdown()
+        try:
+            if json.loads((state / "service.json").read_text(encoding="utf-8")).get("pid") == os.getpid():
+                (state / "service.json").unlink()
+        except (OSError, ValueError):
+            pass
     return 0
+
+
+def _stop_with_parent(pid: int, srv) -> None:
+    """Stops the service when the application that started it exits (it is started on demand by the app). The
+    parent's start time is compared so a reused process id is not mistaken for the application."""
+    import psutil
+    try:
+        born = psutil.Process(pid).create_time()
+    except psutil.Error:
+        born = None
+    while True:
+        try:
+            alive = born is not None and psutil.Process(pid).create_time() == born
+        except psutil.Error:
+            alive = False
+        if not alive:
+            srv.shutdown()
+            return
+        time.sleep(2)
 
 
 if __name__ == "__main__":

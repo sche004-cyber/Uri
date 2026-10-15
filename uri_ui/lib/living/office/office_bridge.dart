@@ -46,6 +46,7 @@ class OfficeEnvironment {
     this.pickDocumentPath,
     this.pickPdfSavePath,
     this.openPrinterSettings,
+    this.startService,
   });
 
   final OfficeSurface Function() surfaceFactory;
@@ -74,6 +75,11 @@ class OfficeEnvironment {
   /// O2P "Connect a printer": opens Windows Settings › Printers & scanners after the owner's explicit click. Windows
   /// does any discovery, driver install or elevation in its own UI; URI installs and changes nothing.
   final Future<void> Function()? openPrinterSettings;
+
+  /// Starts the URI Office service when it is not running (the app starts it on demand, the way it starts the live
+  /// voice service). Returns null once the process is started, or a sentence for the owner saying why it cannot be.
+  /// Null where the platform cannot start it; the workspace then asks the owner to start URI Office.
+  final Future<String?> Function()? startService;
 }
 
 final RegExp _cellRef = RegExp(r'^[A-Z]{1,3}[1-9][0-9]{0,6}$');

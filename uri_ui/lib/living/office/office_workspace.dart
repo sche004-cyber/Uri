@@ -34,6 +34,7 @@ class OfficeWorkspace extends StatefulWidget {
 class _OfficeWorkspaceState extends State<OfficeWorkspace> {
   OfficeWorkspaceController? _c;
   String? _startError;
+  bool _starting = false;                      // the app is starting the Office service (first use of Office)
   bool _sheetOpen = false;                     // the sheet view stays mounted offstage once opened (plan §4.2, F13)
   bool _sideSheet = false;                     // < 1000 px: the URI pane as a side sheet
   final _composerFocus = FocusNode(debugLabel: 'office-composer');
@@ -54,7 +55,35 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
       _claim();
       return;
     }
-    final client = widget.clientFactory();
+    var client = widget.clientFactory();
+    if (client != null && !await client.reachable()) client = null;   // left behind by a service that has ended
+    if (!mounted) return;
+    final start = widget.environment?.startService;
+    if (client == null && start != null) {
+      // Office is started on demand: the first visit starts the service (and its engine check) here.
+      setState(() {
+        _starting = true;
+        _startError = null;
+      });
+      final problem = await start();
+      if (problem == null) {
+        for (var i = 0; i < 120 && mounted && client == null; i++) {
+          final found = widget.clientFactory();
+          if (found != null && await found.reachable()) {
+            client = found;
+          } else {
+            await Future<void>.delayed(const Duration(milliseconds: 500));
+          }
+        }
+      }
+      if (!mounted) return;
+      setState(() => _starting = false);
+      if (client == null) {
+        setState(() => _startError = problem ??
+            'URI Office did not start. Try again. If it keeps failing, close URI and open it again.');
+        return;
+      }
+    }
     if (client == null) {
       setState(() => _startError = 'The URI Office service is not running. Start URI Office, then open this again.');
       return;
@@ -101,9 +130,28 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
 
   @override
   Widget build(BuildContext context) {
+    if (_starting) {
+      return const Center(
+        key: ValueKey('office-starting'),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Starting URI Office…', style: TextStyle(fontWeight: FontWeight.w600)),
+          SizedBox(height: 6),
+          Text('This takes a few seconds the first time.'),
+        ]),
+      );
+    }
     if (_startError != null) {
       return Center(child: Padding(padding: const EdgeInsets.all(24),
-          child: Text(_startError!, key: const ValueKey('office-start-error'))));
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(_startError!, key: const ValueKey('office-start-error'), textAlign: TextAlign.center),
+            if (widget.environment?.startService != null) ...[
+              const SizedBox(height: 12),
+              FilledButton(key: const ValueKey('office-start-retry'), onPressed: () => unawaited(_start()),
+                  child: const Text('Try again')),
+            ],
+          ])));
     }
     final c = _c;
     if (c == null) return const Center(child: CircularProgressIndicator());

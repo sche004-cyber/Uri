@@ -1,0 +1,53 @@
+"""R5-1 (O2 real-application run 2026-10-15): the app starts the Office service on demand through
+scripts/run_uri_office_service.py, and the service stops by itself when that app exits (--parent-pid)."""
+import json
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import psutil
+
+REPO = Path(__file__).resolve().parents[2]
+ENTRY = REPO / "scripts" / "run_uri_office_service.py"
+
+PARENT = r'''
+import os, subprocess, sys, time
+state, entry, port = sys.argv[1], sys.argv[2], sys.argv[3]
+p = subprocess.Popen([sys.executable, "-B", "-I", entry, "run", "--state", state, "--port", port,
+                      "--parent-pid", str(os.getpid())], env=dict(os.environ, URI_OFFICE_O2="0"),
+                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                     creationflags=0x00000008 if os.name == "nt" else 0)
+for _ in range(120):
+    if os.path.exists(os.path.join(state, "service.json")):
+        break
+    time.sleep(0.25)
+print(p.pid, flush=True)
+'''
+
+
+def test_entry_script_runs_isolated_and_service_stops_with_its_parent(tmp_path):
+    state = tmp_path / "state"
+    script = tmp_path / "parent.py"
+    script.write_text(PARENT, encoding="utf-8")
+    out = subprocess.run([sys.executable, "-B", str(script), str(state), str(ENTRY), "18598"], capture_output=True,
+                         text=True, timeout=90)
+    child = int(out.stdout.strip())
+    try:
+        svc = json.loads((state / "service.json").read_text(encoding="utf-8"))
+        assert svc["pid"] == child and svc["port"] == 18598
+        deadline = time.monotonic() + 20
+        while psutil.pid_exists(child) and time.monotonic() < deadline:
+            time.sleep(0.25)
+        assert not psutil.pid_exists(child), "service kept running after the app that started it exited"
+        assert not (state / "service.json").exists(), "service.json left behind"
+    finally:
+        if psutil.pid_exists(child):
+            psutil.Process(child).kill()
+
+
+def test_entry_script_does_not_depend_on_the_current_directory(tmp_path):
+    r = subprocess.run([sys.executable, "-B", "-I", str(ENTRY), "--help"], cwd=tmp_path, capture_output=True,
+                       text=True, timeout=60)
+    assert r.returncode == 0 and "run" in r.stdout

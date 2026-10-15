@@ -63,6 +63,17 @@ class OfficeClient {
   }
 
   Future<Map<String, dynamic>> status() => _get('/status');
+
+  /// True when a service answers on the recorded port (any HTTP answer); false for a service.json left behind by a
+  /// service that has ended.
+  Future<bool> reachable() async {
+    try {
+      await _http.get(_base.resolve('/status'), headers: _headers).timeout(const Duration(seconds: 3));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
   Future<Map<String, dynamic>> openLocal(String path) => _post('/open/local', {'path': path});
   Future<Map<String, dynamic>> openGoogle(String url) => _post('/open/google', {'url': url});
   Future<Map<String, dynamic>> view(String wid) => _get('/workbook/$wid');

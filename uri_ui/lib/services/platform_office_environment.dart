@@ -2,12 +2,14 @@
 /// the owner's browser). Imported only by main.dart: it pulls in platform plugins.
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../living/office/office_bridge.dart';
+import '../living/office/office_client.dart';
 import '../living/webview_host/webview2_office_surface.dart';
 
 OfficeEnvironment platformOfficeEnvironment() => OfficeEnvironment(
@@ -63,6 +65,7 @@ OfficeEnvironment platformOfficeEnvironment() => OfficeEnvironment(
       openPrinterSettings: () async {
         await launchUrl(Uri.parse('ms-settings:printers'), mode: LaunchMode.externalApplication);
       },
+      startService: startOfficeService,
       openExternalLink: (url) async {
         // Only Google Sheets links reach here (the service builds them from a validated sheet id).
         if (url.scheme == 'https' && url.host == 'docs.google.com' && url.path.startsWith('/spreadsheets/d/')) {
@@ -70,3 +73,41 @@ OfficeEnvironment platformOfficeEnvironment() => OfficeEnvironment(
         }
       },
     );
+
+/// Starts the URI Office service for this application (on demand, the first time Office is opened). The interpreter
+/// and the URI source folder come from the installation's client manifest (`interpreter`, `source_root`), the same
+/// ones the integrated worker uses; URI_OFFICE_PYTHON and URI_OFFICE_SOURCE override them for development runs.
+/// Nothing comes from user input. The service binds 127.0.0.1 only, writes a per-launch token, and stops by itself
+/// when this application exits (`--parent-pid`).
+Future<String?> startOfficeService() async {
+  final env = Platform.environment;
+  String? python = env['URI_OFFICE_PYTHON'];
+  String? source = env['URI_OFFICE_SOURCE'];
+  final manifest = env['URI_CLIENT_MANIFEST'];
+  if ((python == null || source == null) && manifest != null && manifest.isNotEmpty) {
+    try {
+      final m = jsonDecode(File(manifest).readAsStringSync()) as Map;
+      python ??= m['interpreter'] as String?;
+      source ??= m['source_root'] as String?;
+    } catch (_) {}
+  }
+  if (python == null || source == null) {
+    return 'URI Office cannot start here: this copy of URI does not say where URI is installed.';
+  }
+  final script = '$source${Platform.pathSeparator}scripts${Platform.pathSeparator}run_uri_office_service.py';
+  if (!File(python).existsSync() || !File(script).existsSync()) {
+    return 'URI Office is not installed with this copy of URI.';
+  }
+  try {
+    await Process.start(
+      python,
+      ['-B', '-I', script, 'run', '--state', OfficeClient.defaultStateDir(), '--parent-pid', '$pid',
+        '--brain-from-runtime'],
+      workingDirectory: source,
+      mode: ProcessStartMode.detached,
+    );
+  } catch (_) {
+    return 'URI Office could not start. Close URI and open it again.';
+  }
+  return null;
+}
