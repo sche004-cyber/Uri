@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../services/app_state_scope.dart';
 import '../../theme/uri_theme.dart';
 import '../assist/assist_scope_line.dart' show AssistStatusSummary;
-import '../companion/companion_state.dart';
 import '../contracts/work_items.dart';
 import '../integration/oi_health_widgets.dart';
 import '../integration/scheduler_client.dart';

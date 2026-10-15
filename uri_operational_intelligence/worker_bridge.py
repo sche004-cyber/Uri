@@ -114,7 +114,10 @@ def completion_outcome(request_env: dict, env: dict, before, after):
     if capability != "remember_fact":
         return None
     saved = [f for f in (after or []) if before is not None and f not in before]
-    if saved:
+    if before is None or after is None:
+        summary = ("Saved to URI's memory on this computer, and read back from the memory store to check it. "
+                   "URI could not list the store just now, so it cannot show the saved text here.")
+    elif saved:
         quoted = "; ".join("\u201c%s\u201d" % f for f in saved[:3])
         summary = ("Saved to URI's memory on this computer: %s. URI read it back from the memory store to check "
                    "it was stored." % quoted)
@@ -510,7 +513,7 @@ class IntegratedTurns:
             sink.emit(turn_id, "companion.state", state="error" if status == "error" else "idle")
 
         self._start(turn_id, run)
-        return {"turn_id": turn_id, "accepted": True, "abandoned": True}
+        return {"turn_id": turn_id, "accepted": True}       # the outcome is Core's, relayed as core.result
 
     # ---- Brain / memory / cloud -----------------------------------------------------------------
     def _brain_status(self, _c):

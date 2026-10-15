@@ -1,7 +1,9 @@
-"""PROPOSAL ONLY: exact-blob reconciliation of recorded D12/D2/D33 exceptions.
+"""Frozen-boundary check with exact-blob recognition of owner-authorized transitions.
 
-This file is not the active scripts/ws_frozen_check.py. Owner activation approval
-is required. The original checkpoint and protected path boundary are immutable.
+Active on this line: the owner approved activation (aa232e36, 2026-10-13) for the D12/D2/D33 security blobs, and
+owner decisions OWNER-FCV01-20261014 and OWNER-FCV05-20261015 add the FCV-01 and FCV-05 exact blobs, each bound to
+its own anchor commit and provenance record. The original checkpoint and protected path boundary are immutable;
+nothing here is a path-wide exception.
 """
 import hashlib
 import io

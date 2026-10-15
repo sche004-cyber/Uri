@@ -1336,7 +1336,7 @@ class _ContextPanel extends StatelessWidget {
               // Working system: the real Brain selection and state from the integrated worker.
               if (oi != null) ...[
                 _KeyValue('Brain', oi.selectedRowId == 'runtime-v1' ? 'Runtime v1 (local)' : (oi.selectedRowId == 'deterministic' ? 'No Brain (deterministic rules)' : oi.selectedRowId)),
-                _KeyValue('Model', '${oi.brainStatus['model_id'] ?? '—'} · ${oi.brainStatus['state'] ?? '…'}'),
+                _KeyValue('Model', '${oi.brainStatus['model_id'] ?? '—'} · ${oiBrainStateLabel(oi.brainStatus['state'] as String?)}'),
                 _KeyValue('Reasoning', 'Depth ${oi.depth.name}'),
                 // Core requires an explicit approval for every action; nothing here is a preference.
                 _KeyValue('Approvals', 'Every action needs your approval (Core)'),

@@ -342,7 +342,8 @@ class Orchestrator:
 
     def abandon(self, session_id, turn, sink: EventSink | None = None):
         """The user's explicit "No" on a SINGLE-turn Core confirmation or clarification: Core's own structured
-        abandon decision (digest/revision-bound by the frozen TurnRunner), never typed text."""
+        abandon decision, bound to the intent id and revision by the frozen TurnRunner (a stale card is refused as
+        INTENT_DECISION_STALE), never typed text. If the call fails the intent stays open and is offered again."""
         self._require_single(turn)
         sink = sink or EventSink()
         env = self.core.abandon(session_id, self.brain_selection, turn)

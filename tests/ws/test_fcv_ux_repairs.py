@@ -109,7 +109,7 @@ def test_no_on_a_confirmation_reaches_core_as_its_structured_abandon(fake, tmp_p
     assert frames.data("core.result")[-1]["needs"] == "confirmation"
     out = b.handle("oi_abandon", {"command": "oi_abandon", "turn_id": r["turn_id"]})
     b.wait(10)
-    assert out["abandoned"] is True
+    assert out == {"turn_id": r["turn_id"], "accepted": True}      # the outcome comes from Core (R1-07)
     assert ("abandon", "c1") in core.calls
     assert frames.data("core.result")[-1]["code"] == "INTENT_ABANDONED"
     assert frames.data("turn.finished")[-1]["status"] != "ok"          # an abandon is never reported as success
@@ -123,3 +123,44 @@ def test_no_on_an_approval_still_releases_it_as_a_denial(fake, tmp_path):
     r = turn(b, "remember that x")
     assert b.handle("oi_abandon", {"command": "oi_abandon", "turn_id": r["turn_id"]}) == {"abandoned": True}
     assert ("decide", False) in core.calls and not any(c[0] == "abandon" for c in core.calls)
+
+
+# ---- review round 1 ----------------------------------------------------------------------------------------------
+
+def test_discovery_names_only_configured_actions_and_marks_others_unavailable():
+    """R1-02: live discovery listed sending messages and opening apps as approval-gated actions."""
+    system = A.build_messages("What can you do?", capability_ids={"remember_fact"})[0]["content"]
+    assert "saving a fact you ask URI to remember" in system
+    assert "never describe it as available with permission" in system
+    assert "development tool" not in system                   # not configured here, so not offered
+
+
+@pytest.mark.parametrize("text,memory,claim", [
+    ("Use any information you asked URI to remember (if it has been saved).", None, False),
+    ("These are the facts I have saved for you.", {"status": "available", "facts": ["x"]}, False),
+    ("These are the facts I have saved for you.", {"status": "available", "facts": []}, True),
+    ("I have saved the file to your desktop.", {"status": "available", "facts": ["x"]}, True),
+    ("Done. I sent the email.", None, True),
+    ("I have sent the email.", None, True),
+    ("Once it has been saved you will see it.", None, False),
+])
+def test_action_claim_detection_ignores_conditionals_and_recorded_facts(text, memory, claim):
+    assert A.claims_action(text, memory) is claim
+
+
+@pytest.mark.parametrize("reply", ["`<<ACTION>>`", " `<<ACTION>>` ", "<<ACTION>>"])
+def test_a_reply_that_is_only_the_backticked_marker_reroutes(fake, tmp_path, reply):
+    """R1-05."""
+    fake.scripts.append({"chunks": [("answer", reply)], "finish": "stop"})
+    core = FakeCore([{"turn_id": "c1", "state": "reply", "code": "CONVERSATION", "message": "Core handled it."}])
+    b, frames, _ = make(fake, tmp_path, core)
+    turn(b, "Please tidy my desktop")
+    assert any(c[0] == "begin" for c in core.calls)
+    assert "action request" not in shown(frames)
+
+
+def test_unreadable_store_is_said_plainly():
+    """R1-06: no claim that 'no new entry appeared' when the store could not be read."""
+    request = {"approval_request": {"capability_id": "remember_fact"}}
+    out = completion_outcome(request, {"code": "SETTLED_VERIFIED", "state": "reply"}, None, ["x"])
+    assert "could not list the store" in out["summary"] and "No new entry" not in out["summary"]

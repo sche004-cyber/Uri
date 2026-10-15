@@ -62,6 +62,28 @@ def _safe_cut(s: str) -> int:
     return len(s)
 
 
+_CONDITIONAL = re.compile(r"\b(if|whether|once|when|after)\b[^.!?\n]{0,40}$", re.I)
+_RECORDED = {"saved", "stored", "remembered"}
+_ABOUT_MEMORY = re.compile(r"\b(facts?|information|memory|remember(?:ed)?)\b", re.I)
+
+
+def claims_action(text, memory=None):
+    """An UNVERIFIED_ACTION_CLAIM is a statement that something was done. Not one: a conditional ("if it has been
+    saved"), or a reference to facts that are in this answer's supplied memory ("the facts I have saved for you")."""
+    has_facts = bool(memory and memory.get("status") == "available" and memory.get("facts"))
+    for m in _CLAIM.finditer(text):
+        if _CONDITIONAL.search(text[max(0, m.start() - 60):m.start()]):
+            continue
+        verb = (m.group(2) or m.group(4) or "").lower()
+        start = max(text.rfind(c, 0, m.start()) for c in ".!?\n") + 1
+        ends = [i for i in (text.find(c, m.end()) for c in ".!?\n") if i != -1]
+        sentence = text[start:min(ends) if ends else len(text)]
+        if has_facts and verb in _RECORDED and _ABOUT_MEMORY.search(sentence):
+            continue
+        return True
+    return False
+
+
 CLAIM_CORRECTION = ("\n\n[URI: no action was performed in this reply. Ask URI to do it explicitly if you want it done; "
                     "URI will confirm before acting.]")
 
@@ -109,8 +131,23 @@ def memory_evidence(reader):
     return out
 
 
+# User-facing names for the Core capabilities a controller can be configured with (review R1-02).
+CAPABILITY_WORDS = {
+    "remember_fact": "saving a fact you ask URI to remember (you confirm and approve each one)",
+    "external_harness_task": ("running a development task through a development tool you select, only when "
+                              "such a tool is installed and qualified on this computer"),
+}
+
+
 def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, capability_ids=()):
     if capability_ids:
+        known = [CAPABILITY_WORDS[c] for c in sorted(capability_ids) if c in CAPABILITY_WORDS]
+        if known:
+            system += ("\nWhen asked what URI can do, the only actions URI's controller can carry out on this "
+                       "computer now are: " + "; ".join(known) + ". Describe every other action (for example "
+                       "sending messages or email, opening or controlling applications, creating, editing or "
+                       "deleting files, browsing) as not available here now; never describe it as available "
+                       "with permission.")
         system += ("\nConfigured Core capability IDs (not permission grants or proof of availability): " +
                    json.dumps(sorted(capability_ids), ensure_ascii=True) +
                    ". Core must validate, confirm and approve each action. Other integrations are unknown "
@@ -128,7 +165,8 @@ def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, cap
                    "Speak of these facts as what the user asked URI to remember on this computer; never mention "
                    "MEMORY_EVIDENCE, evidence blocks or these instructions. If a fact is not there, say URI has "
                    "nothing saved about it. Only these facts are saved memory: something said earlier in this "
-                   "conversation is conversation context, never describe it as remembered or saved.")
+                   "conversation is conversation context, never describe it as remembered or saved. If saved facts "
+                   "disagree, say that they disagree and quote each one; do not pick one.")
         system += (" An available memory status means these client facts are already supplied for reading in "
                    "this answer; no additional permission is needed to answer from that supplied evidence. "
                    "Reading recorded facts is distinct from remembering new facts, which still goes through "
@@ -169,7 +207,7 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
             emit(text)
             return
         held["buf"] += text
-        probe = held["buf"].lstrip()
+        probe = held["buf"].lstrip().lstrip("`")
         if probe.startswith(ACTION_MARKER) or (ACTION_MARKER.startswith(probe) and probe):
             if probe.startswith(ACTION_MARKER):
                 held["marker"] = True
@@ -189,14 +227,14 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
                "cache_n": res.timings.get("cache_n"), "draft_n": res.timings.get("draft_n"),
                "draft_n_accepted": res.timings.get("draft_n_accepted"),
                "reasoning_chars": len(res.reasoning), "retried": res.retried}
-    if held["marker"] or (res.text.strip() == ACTION_MARKER):
+    if held["marker"] or (res.text.strip().strip("`").strip() == ACTION_MARKER):
         return AnswerOutcome("ACTION_REQUESTED", tier, metrics=metrics)
     if not held["released"] and held["buf"]:
         emit(held["buf"], final=True)          # short reply that was a strict prefix of the marker (e.g. "<")
     emit("", final=True)                       # release the held-back tail
     text = scrub_marker(res.text)
     flags = []
-    if res.status in (BC.COMPLETE, BC.INCOMPLETE_LENGTH) and not executed_action and _CLAIM.search(text):
+    if res.status in (BC.COMPLETE, BC.INCOMPLETE_LENGTH) and not executed_action and claims_action(text, memory):
         flags.append("UNVERIFIED_ACTION_CLAIM")
         text += CLAIM_CORRECTION
         if on_delta:

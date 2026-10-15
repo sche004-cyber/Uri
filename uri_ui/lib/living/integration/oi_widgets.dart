@@ -102,6 +102,20 @@ String oiCoreLabel(String code) => switch (code) {
       _ => 'URI Core',
     };
 
+/// Plain words for the worker's Brain readiness code (review R1-12); the code stays in the Dashboard detail.
+String oiBrainStateLabel(String? state) => switch (state) {
+      'READY' => 'ready',
+      'LOADING' => 'loading',
+      'STARTING' => 'starting',
+      'STOPPED' => 'not running',
+      'NOT_CONFIGURED' => 'not set up',
+      'ARTIFACT_MISSING' => 'files missing',
+      'IDENTITY_MISMATCH' || 'FOREIGN_INSTANCE' => 'check failed',
+      'FAILED' => 'failed',
+      null => 'checking',
+      _ => 'unavailable',
+    };
+
 String oiAnswerStatusLabel(String status) => switch (status) {
       'INCOMPLETE_LENGTH' => 'Cut short',
       'CANCELLED' => 'Stopped',
@@ -352,7 +366,7 @@ class OiBrainBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = UriColors.of(context);
     final conv = conversation;
-    final state = conv.brainStatus['state'] as String? ?? 'checking';
+    final state = oiBrainStateLabel(conv.brainStatus['state'] as String?);
     final health = conv.healthState;
     final rows = [for (final r in (conv.catalog['rows'] as List? ?? const [])) if (r is Map) r];
     final selectable = [for (final r in rows) if (r['selectable'] == true) r];

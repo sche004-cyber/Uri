@@ -183,7 +183,9 @@ void main() {
     await tester.runAsync(conv.refreshStatus);
     await tester.pumpWidget(host(OiConversationPane(conversation: conv)));
     await tester.pump();
-    expect(find.textContaining('READY'), findsOneWidget);
+    // Readiness is shown in plain words (FCV-R review R1-12); the raw code stays in the Dashboard detail.
+    expect(find.textContaining('· ready'), findsOneWidget);
+    expect(find.textContaining('READY'), findsNothing);
     await tester.tap(find.byKey(const ValueKey('oi-brain-picker')));
     await tester.pumpAndSettle();
     expect(find.text('Anthropic Claude (cloud)'), findsNothing);
