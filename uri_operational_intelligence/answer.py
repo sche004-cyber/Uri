@@ -6,9 +6,9 @@ This channel has NO tools and NO authority. Two guards keep it honest:
      back until they cannot be the marker; on the marker the generation is cancelled and the turn is handed to Core.
      This catches action requests that deterministic triage missed, at no extra model call.
   2. Action-claim check: text from a word that could start a completed-action claim is held back while it streams,
-     for at most _CLAIM_WINDOW characters (longer than any claim), then released if no claim formed. Once a claim
-     matches, nothing more streams; an unverified claim is discarded and replaced with a correction before it
-     reaches the UI. Text with no such word streams unchanged.
+     only until the following words rule every claim form out. Once a claim matches, nothing more streams; an
+     unverified claim is discarded and replaced with a correction before it reaches the UI. Text with no such
+     word streams unchanged.
 
 Prompt layout follows the v1 context architecture (stable system message first, current turn last) so the
 prompt cache reuses the prefix across turns.
@@ -37,19 +37,31 @@ URI_SYSTEM = (
     "Otherwise answer directly and concisely. Write drafts, explanations, plans and analysis in the reply itself. "
     "If you are unsure or lack information, say so plainly instead of guessing.")
 
+_CLAIM_LEADS = ("i've", "i have", "i'll now", "i will now", "i just", "done i", "done. i", "done! i", "done, i")
+_CLAIM_VERBS = ("saved", "sent", "deleted", "removed", "created", "scheduled", "emailed", "stored", "remembered",
+                "booked", "moved", "renamed", "updated", "installed", "ran", "executed", "uploaded", "downloaded",
+                "forwarded", "replied", "written to", "changed", "set up", "cancelled")
+_CLAIM_PASSIVE = ("saved", "sent", "deleted", "scheduled", "emailed", "stored", "booked", "moved", "created", "uploaded")
 _CLAIM = re.compile(
     r"\b(i(?:'ve| have)|i(?:'ll| will) now|i just|done[.!,]?\s+i)\s+(?:successfully\s+)?"
-    r"(saved|sent|deleted|removed|created|scheduled|emailed|stored|remembered|booked|moved|renamed|updated|"
-    r"installed|ran|executed|uploaded|downloaded|forwarded|replied|written to|changed|set up|cancelled)\b|"
-    r"\b(has|have) been (saved|sent|deleted|scheduled|emailed|stored|booked|moved|created|uploaded)\b", re.I)
+    r"(" + "|".join(_CLAIM_VERBS) + r")\b|"
+    r"\b(has|have) been (" + "|".join(_CLAIM_PASSIVE) + r")\b", re.I)
 
-# A claim can cross arbitrary stream chunks. Streaming holds text from the first word that could start a _CLAIM
-# match (including a word split at the end of a chunk), but only while that word is within _CLAIM_WINDOW
-# characters of the end: longer than any _CLAIM match (the longest, "done, i successfully written to", is under
-# 40), so a claim is always found before any of it is shown. Only an implausible whitespace run inside a claim
-# could exceed the window; the final check below still flags and corrects that case.
+# A claim can cross arbitrary stream chunks. Streaming holds text from a word that could start a _CLAIM match
+# (including a word split at the end of a chunk) only while the text from that word, with whitespace runs
+# collapsed, is still a prefix of some claim form below; the next word that rules every form out releases it.
+# The forms spell out every _CLAIM match (with any whitespace run as one space), so a claim is always found
+# before any of it is shown, whatever the whitespace inside it.
 _CLAIM_START = re.compile(r"\b(?:i|done|has|have)\b|\b(?:d|do|don|h|ha|hav)\Z", re.I)
-_CLAIM_WINDOW = 120
+_CLAIM_FORMS = tuple(lead + " " + adv + verb for lead in _CLAIM_LEADS for adv in ("", "successfully ")
+                     for verb in _CLAIM_VERBS) + tuple(aux + " been " + verb for aux in ("has", "have")
+                                                       for verb in _CLAIM_PASSIVE)
+
+
+def _could_start_claim(text: str) -> bool:
+    t = re.sub(r"\s+", " ", text.lower())
+    return any(form.startswith(t) for form in _CLAIM_FORMS)
+
 
 # FCV-06: the routing marker is internal. A reply that merely mentions it (for example while explaining how URI
 # handles actions) must not show it to the user; only a reply that IS the marker reroutes to Core.
@@ -226,9 +238,13 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
             cut = m.start() - len(held["prev"])
             held["claim_held"] = True
         else:
-            lo = len(held["prev"]) + max(0, len(held["claim"]) - _CLAIM_WINDOW)
-            start = _CLAIM_START.search(held["prev"] + held["claim"], lo)
-            cut = start.start() - len(held["prev"]) if start else len(held["claim"])
+            # Release up to the first word that could still begin a claim; everything else is ruled out.
+            full = held["prev"] + held["claim"]
+            cut = len(held["claim"])
+            for start in _CLAIM_START.finditer(full, len(held["prev"])):
+                if _could_start_claim(full[start.start():]):
+                    cut = start.start() - len(held["prev"])
+                    break
         if cut:
             emit(held["claim"][:cut])
             held["prev"] = held["claim"][cut - 1]
