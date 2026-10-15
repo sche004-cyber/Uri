@@ -83,3 +83,25 @@ From live run 1 (`06_LIVE_QUALIFICATION_V21.md`, `evidence/live/run1_first/obser
 
 - Other GPU users not under the lease (desktop compositor, other apps) were present and recorded in the censuses.
 - The perf harness shows one companion in a dedicated window, not the full app.
+
+## Transparent build (`73e84a6d`), added for the UI V2 directive
+
+The same series and harness, run on the transparency-ready atlases, inside our own lease. The V2.1 executable was
+rebuilt from `73e84a6d`; the bundled `idle.webp` was byte-checked against the committed asset. Lease checks: 12/12
+(`evidence/perf_transparent/lease_checks.txt`). Summary: `evidence/perf_transparent/summary.json`.
+
+| Run | GPU 3D median (max) | Dedicated VRAM median (max) | Frames/s | Frame p50 / p99 | Decoded atlases |
+|---|---|---|---|---|---|
+| V2.1 transparent r1 | 0.28 % (0.36) | 147.2 MB (160.4) | 47.5 | 1.43 / 2.78 ms | 42.5 MiB |
+| V2.1 transparent r2 | 0.28 % (0.86) | 147.2 MB (175.2) | 48.4 | 1.44 / 2.75 ms | 42.5 MiB |
+| V2 r1 | 0.28 % (1.70) | 147.4 MB (175.4) | 47.7 | 1.42 / 2.71 ms | 42.7 MiB |
+| V2 r2 | 0.28 % (1.26) | 147.4 MB (175.4) | 47.9 | 1.40 / 2.70 ms | 42.7 MiB |
+| Solar r1 | 6.62 % (9.06) | 106.7 MB (108.7) | 158.2 | 1.59 / 2.99 ms | - |
+| Solar r2 | 7.47 % (9.10) | 108.7 MB (110.7) | 164.8 | 1.48 / 2.77 ms | - |
+
+- **Transparency is free at runtime.** Cell size, frame count and the draw path are unchanged; only pixel content
+  differs.
+- **Disk:** atlases are 10.35 MiB (transparent cells compress less well than opaque ones), against 3.3 MiB for the
+  painted build and 9.7 MiB for V2.
+- **Brain coexistence on the transparent build:** not re-measured live. The runtime draw cost is identical (above),
+  and the earlier live coexistence result applies to the same draw path.
