@@ -164,9 +164,14 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
     b.ensureVisualUpdate();
   }
 
+  // Codex review R1-2: two mounted workspaces can share the scope's retained controller. A workspace releases the
+  // target only when no other mounted workspace still claims the same controller.
+  static final Map<OfficeWorkspaceController, Set<State>> _claims = Map.identity();
+
   void _claim() {
     final t = _target, c = _c;
     if (c == null || t == null) return;
+    (_claims[c] ??= <State>{}).add(this);
     _whenSafe(() {
       if (mounted && identical(_target, t) && identical(_c, c)) t.value = c;
     });
@@ -175,8 +180,11 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
   void _release() {
     final t = _target, c = _c;
     if (t == null || c == null) return;
+    final holders = _claims[c];
+    holders?.remove(this);
+    if (holders != null && holders.isEmpty) _claims.remove(c);
     _whenSafe(() {
-      if (identical(t.value, c)) t.value = null;
+      if (identical(t.value, c) && (_claims[c]?.isEmpty ?? true)) t.value = null;
     });
   }
 

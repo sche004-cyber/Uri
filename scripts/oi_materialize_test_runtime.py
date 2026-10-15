@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -74,13 +75,33 @@ def venv_python(venv: Path) -> Path:
     return venv / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
 
 
-def install_wheels(venv: Path, wheels) -> dict:
-    """Install local wheels into the runtime's venv copy: no index, no dependencies. Returns {file name: sha256}."""
+def _dist(name: str) -> str:
+    """PEP 503 normalized distribution name."""
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def declared_requirements(path: Path = SRC / "requirements.txt") -> set:
+    """Distribution names declared in requirements.txt (comments, options and markers ignored)."""
+    out = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        m = re.match(r"^([A-Za-z0-9][A-Za-z0-9._-]*)", line)
+        if m and not line.startswith("-"):
+            out.add(_dist(m.group(1)))
+    return out
+
+
+def install_wheels(venv: Path, wheels, declared=None) -> dict:
+    """Install local wheels of DECLARED requirements into the runtime's venv copy: no index, no dependencies.
+    A wheel whose distribution is not in requirements.txt is refused (Codex review R1-3). Returns {file: sha256}."""
     done = {}
+    declared = declared_requirements() if declared is None else declared
     for w in wheels:
         w = Path(w).resolve()
         if w.suffix != ".whl" or not w.is_file():
             sys.exit("WHEEL_REFUSED:" + w.name)
+        if _dist(w.name.split("-", 1)[0]) not in declared:
+            sys.exit("WHEEL_NOT_DECLARED:" + w.name)
         done[w.name] = sha(w)
         subprocess.run([str(venv_python(venv)), "-m", "pip", "install", "--no-index", "--no-deps",
                         "--disable-pip-version-check", str(w)], check=True, capture_output=True, text=True)
