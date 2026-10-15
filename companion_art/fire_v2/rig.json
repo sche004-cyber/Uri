@@ -1,5 +1,5 @@
 {
- "_comment": "Landmarks on each reference panel, in panel pixels (crop of uri_emotions_sheet.png given by 'crop' = x0,y0,x1,y1). Read by hand from grid renders (work/grid_*.png). Ellipses are centre x, centre y, radius x, radius y. 'erase' rectangles are inpainted before matting (artist signature, generator mark). Eye ellipses refined from 3x face crops (work/face_*.png). 'smoke' = box (x0,y0,x1,y1) where painted smoke darker than the background belongs to the character.",
+ "_comment": "Landmarks on each reference panel, in panel pixels (crop of uri_emotions_sheet.png given by 'crop' = x0,y0,x1,y1). Read by hand from grid renders (work/grid_*.png). Ellipses are centre x, centre y, radius x, radius y. 'erase' rectangles are inpainted before matting (artist signature, generator mark). Eye ellipses refined from 3x face crops (work/face_*.png). 'smoke' = box (x0,y0,x1,y1) where painted smoke darker than the background belongs to the character. 'solid_robe': the robe inside its outline is opaque even where its grey is close to the background.",
  "idle": {
   "crop": [
    0,
@@ -248,6 +248,7 @@
    0,
    340,
    230
-  ]
+  ],
+  "solid_robe": true
  }
 }

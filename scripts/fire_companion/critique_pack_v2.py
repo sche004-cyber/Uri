@@ -62,15 +62,77 @@ def v2_strip(state: str, worst: int) -> Image.Image:
     return Image.fromarray(np.concatenate(tiles, 1))
 
 
+def v2_card_strip(state: str, worst: int) -> Image.Image:
+    """Option under test (checkpoint 6): V2's animated frames shown as a
+    living painting card - over the painting's own background plate, the
+    whole panel, edges softly vignetted into the app canvas - instead of a
+    cut-out on the canvas."""
+    spec = EXPR["clips"][state]
+    pn = Panel(spec["panel"])
+    n = spec["loop"]
+    picks = sorted({0, round(n * 0.3), round(n * 0.55), worst % n})
+    while len(picks) < 4:
+        picks = sorted(set(picks) | {(picks[-1] + n // 8) % n})
+    h, w = pn.h, pn.w
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    edge = np.minimum.reduce([xx, w - 1 - xx, yy, h - 1 - yy])
+    v = np.clip(edge / 28.0, 0, 1)[..., None]
+    tiles = []
+    for i in picks[:4]:
+        pm = pn.frame(i / n, spec["motion"], face_at(spec.get("face", {}), i / n))
+        card = pm[..., :3] + pn.bg * (1 - pm[..., 3:])
+        rgb = card * v + CANVAS * (1 - v)
+        tiles.append((rgb.clip(0, 1) * 255).astype(np.uint8))
+    return Image.fromarray(np.concatenate(tiles, 1))
+
+
+def v2_frame(state: str, i: int) -> Image.Image:
+    """One V2 frame as the app shows it, at full resolution (checkpoint 7:
+    4-frame strips are shown to reviewers downscaled to about a quarter of
+    the target's resolution, the same handicap as the blurred anchor)."""
+    spec = EXPR["clips"][state]
+    pn = Panel(spec["panel"])
+    n = spec["loop"]
+    fr = Framing(pn, EXPR["cell"])
+    pm = pn.frame(i / n, spec["motion"], face_at(spec.get("face", {}), i / n))
+    big = fr.big_frame(pm, spec["motion"].get("aura", 0.0))
+    rgb = big[..., :3] + CANVAS * (1 - big[..., 3:])
+    return Image.fromarray((rgb.clip(0, 1) * 255).astype(np.uint8))
+
+
+def still_in_app(state: str) -> Image.Image:
+    """The painting with no animation at all, cut out and shown exactly as the
+    app shows V2 (same framing, backdrop pool and canvas): separates what the
+    presentation costs from what the animation costs (checkpoint 5)."""
+    spec = EXPR["clips"][state]
+    pn = Panel(spec["panel"])
+    fr = Framing(pn, EXPR["cell"])
+    pm = pn.pm.copy()
+    for (x0, y0, spr) in pn.sparks:  # put the lifted sparks back where painted
+        h, w = spr.shape[:2]
+        pm[y0:y0 + h, x0:x0 + w] = spr + pm[y0:y0 + h, x0:x0 + w] * (1 - spr[..., 3:4])
+    big = fr.big_frame(pm, spec["motion"].get("aura", 0.0))
+    rgb = big[..., :3] + CANVAS * (1 - big[..., 3:])
+    return Image.fromarray((rgb.clip(0, 1) * 255).astype(np.uint8))
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--reviewers", type=int, default=2)
     ap.add_argument("--tag", default="cp2")
+    ap.add_argument("--singles", action="store_true",
+                    help="checkpoint 7: V2 as two separate full-resolution frames (the worst-scored and a mid-loop one)")
+    ap.add_argument("--auto", default="auto",
+                    help="automated-score folder whose worst frames are used")
+    ap.add_argument("--card", action="store_true",
+                    help="checkpoint 6: V2 as a painting card replaces the cut-out V2; still_in_app stays")
+    ap.add_argument("--diagnostic", action="store_true",
+                    help="replace the video anchor with the unanimated painting in the app framing")
     a = ap.parse_args()
     base = REPO / "docs/companions/fire/v2/evidence/fidelity" / a.tag
     keydir = REPO / "docs/companions/fire/v2/evidence/fidelity" / f"{a.tag}_key"
     keydir.mkdir(parents=True, exist_ok=True)
-    auto = json.loads((REPO / "docs/companions/fire/v2/evidence/fidelity/auto/scores_v2.json").read_text())
+    auto = json.loads((REPO / "docs/companions/fire/v2/evidence/fidelity" / a.auto / "scores_v2.json").read_text())
     v1sheet = Image.open(V1_SHEET).convert("RGB")
     key = {}
     for r in range(1, a.reviewers + 1):
@@ -92,7 +154,21 @@ def main() -> None:
                 "video": Image.open(VIDEO / f"key_{state}.jpg").convert("RGB").crop(VIDEO_BOX),
                 "v2": v2_strip(state, auto[state]["worst_frame"]),
             }
-            letters = ["A", "B", "C", "D", "E"]
+            if a.diagnostic or a.card:
+                del cands["video"]
+                cands["still_in_app"] = still_in_app(state)
+            if a.singles:
+                del cands["v2"], cands["video"]
+                n = EXPR["clips"][state]["loop"]
+                w_ = auto[state]["worst_frame"] % n
+                mid = (w_ + n // 2) % n
+                cands["v2_worst"] = v2_frame(state, w_)
+                cands["v2_mid"] = v2_frame(state, mid)
+                cands["still_in_app"] = still_in_app(state)
+            if a.card:
+                del cands["v2"]
+                cands["v2_card"] = v2_card_strip(state, auto[state]["worst_frame"])
+            letters = ["A", "B", "C", "D", "E", "F"]
             names = list(cands)
             rng.shuffle(names)
             key[f"reviewer{r}"][state] = {}

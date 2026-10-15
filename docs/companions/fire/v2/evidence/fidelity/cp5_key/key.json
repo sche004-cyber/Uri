@@ -1,0 +1,62 @@
+{
+ "reviewer1": {
+  "idle": {
+   "A": "v1",
+   "B": "v2",
+   "C": "still_in_app",
+   "D": "ref_copy",
+   "E": "ref_reframed"
+  },
+  "joyful": {
+   "A": "ref_reframed",
+   "B": "still_in_app",
+   "C": "v1",
+   "D": "v2",
+   "E": "ref_copy"
+  },
+  "fierce": {
+   "A": "ref_copy",
+   "B": "ref_reframed",
+   "C": "v1",
+   "D": "v2",
+   "E": "still_in_app"
+  },
+  "depleted": {
+   "A": "v1",
+   "B": "ref_copy",
+   "C": "v2",
+   "D": "ref_reframed",
+   "E": "still_in_app"
+  }
+ },
+ "reviewer2": {
+  "idle": {
+   "A": "ref_copy",
+   "B": "v1",
+   "C": "ref_reframed",
+   "D": "v2",
+   "E": "still_in_app"
+  },
+  "joyful": {
+   "A": "v2",
+   "B": "ref_reframed",
+   "C": "still_in_app",
+   "D": "v1",
+   "E": "ref_copy"
+  },
+  "fierce": {
+   "A": "v2",
+   "B": "ref_copy",
+   "C": "v1",
+   "D": "ref_reframed",
+   "E": "still_in_app"
+  },
+  "depleted": {
+   "A": "ref_copy",
+   "B": "v1",
+   "C": "v2",
+   "D": "ref_reframed",
+   "E": "still_in_app"
+  }
+ }
+}

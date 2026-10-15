@@ -1,0 +1,70 @@
+{
+ "reviewer1": {
+  "idle": {
+   "A": "v2_worst",
+   "B": "v2_mid",
+   "C": "v1",
+   "D": "still_in_app",
+   "E": "ref_copy",
+   "F": "ref_reframed"
+  },
+  "joyful": {
+   "A": "ref_reframed",
+   "B": "still_in_app",
+   "C": "v2_mid",
+   "D": "v1",
+   "E": "v2_worst",
+   "F": "ref_copy"
+  },
+  "fierce": {
+   "A": "v1",
+   "B": "still_in_app",
+   "C": "v2_worst",
+   "D": "ref_reframed",
+   "E": "ref_copy",
+   "F": "v2_mid"
+  },
+  "depleted": {
+   "A": "v2_worst",
+   "B": "ref_reframed",
+   "C": "v1",
+   "D": "ref_copy",
+   "E": "v2_mid",
+   "F": "still_in_app"
+  }
+ },
+ "reviewer2": {
+  "idle": {
+   "A": "ref_copy",
+   "B": "v1",
+   "C": "ref_reframed",
+   "D": "v2_worst",
+   "E": "still_in_app",
+   "F": "v2_mid"
+  },
+  "joyful": {
+   "A": "still_in_app",
+   "B": "v2_mid",
+   "C": "ref_reframed",
+   "D": "v2_worst",
+   "E": "v1",
+   "F": "ref_copy"
+  },
+  "fierce": {
+   "A": "ref_copy",
+   "B": "v1",
+   "C": "v2_mid",
+   "D": "ref_reframed",
+   "E": "v2_worst",
+   "F": "still_in_app"
+  },
+  "depleted": {
+   "A": "ref_copy",
+   "B": "v2_mid",
+   "C": "v1",
+   "D": "still_in_app",
+   "E": "v2_worst",
+   "F": "ref_reframed"
+  }
+ }
+}

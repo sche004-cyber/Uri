@@ -20,6 +20,7 @@ the art pipeline and fixes the V1 findings that fall in scope.
 | OD-2 | Rights to the reference character | Carried over: "I hold rights / will license". Not verifiable by the implementer. The reference and all derived art stay local (see AC-12). |
 | OD-4 | Reviewer | Carried over: the lifecycle driver needs the Claude CLI. It was logged out in V1. Checked again at the review stage. If the driver is unavailable, independent acceptance is reported **BLOCKED**, and fresh-subagent audit rounds still run as audit evidence only. |
 | OD-6 | GPU override for a live Brain | Was "this run only" for V1. A V2 live run needs a new answer if Runtime v1 reports WAITING_FOR_GPU (AMBER: ask). |
+| OD-8 | (2026-10-15) `-OverrideGpu` for the V2 live run | Owner, in session: "Authorized but other threads are running in parrallel so ensure gpu leasing is being followed". So the V2 live run only, and only through the GPU lease. The Brain starts only when the lease is free or held by this run. Another session's lease is never broken, stolen or overridden. The Brain is stopped gracefully through the stop file, which releases the lease. `-OverrideGpu` relaxes only the free-VRAM check, never the lease. |
 
 ## Acceptance criteria (defined before implementation)
 

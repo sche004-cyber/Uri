@@ -78,7 +78,13 @@ def cut(state):
     zone[ny - 6:fy + 6, :] = True
     ids = [i for i in range(1, n + 1) if (lab[zone] == i).sum() > 40]
     body = np.isin(lab, ids) & zone
-    body = ndi.binary_fill_holes(ndi.binary_closing(body, iterations=2)) & (dn > 0.06)
+    filled = ndi.binary_fill_holes(ndi.binary_closing(body, iterations=2))
+    if r.get('solid_robe'):
+        # The depleted robe is pale grey, close to the background: inside its
+        # painted outline it is cloth, not glass (checkpoint 7: "ghostly").
+        body = filled
+    else:
+        body = filled & (dn > 0.06)
     solid = head | body
     for e in r['eyes']:
         solid |= ellipse(h, w, e, grow=2)
@@ -95,7 +101,14 @@ def cut(state):
     # Suppress background brush texture: soft floor, smooth the faint glow
     # (texture speckle lives there), fade with distance from the character.
     a = a * np.clip((a - 0.05) / 0.12, 0, 1)
-    a = np.where(a < 0.3, np.minimum(a, ndi.gaussian_filter(a, 1.5)), a)
+    # ...but never on painted sparks: small bright blobs keep their full
+    # alpha (checkpoint 7: joyful's chunky embers had become fine dust).
+    lum = c.max(2)
+    lab_s, n_s = ndi.label((up > 0.12) & (lum > 0.45))
+    sizes = ndi.sum(np.ones_like(up), lab_s, range(1, n_s + 1)) if n_s else []
+    spark = np.isin(lab_s, 1 + np.where((np.asarray(sizes) >= 3) & (np.asarray(sizes) <= 160))[0])
+    spark = ndi.binary_dilation(spark, iterations=2)
+    a = np.where((a < 0.3) & ~spark, np.minimum(a, ndi.gaussian_filter(a, 1.5)), a)
     near = ndi.gaussian_filter(keep.astype(np.float32), 12)
     a = a * np.clip(near * 1.6, 0, 1)
     # Never a hard edge at the crop border (checkpoint 2, defect 1).

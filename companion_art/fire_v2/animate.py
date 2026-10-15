@@ -99,6 +99,8 @@ class Panel:
         fy = max(f[1] for f in self.r['feet'])
         self.lift = np.clip((fy - yy) / max(fy - ny_, 1), 0, 1) ** 1.2
         self.above_neck = np.clip((ny_ + 10 - yy) / 20, 0, 1)
+        # everything but the ground light under the figure
+        self.air = np.clip((fy + 12 - yy) / 10, 0, 1)
         self._sparks()
         flame = z['flame'].astype(np.float32)
         fl = ndi.gaussian_filter(flame, 2.0)
@@ -259,17 +261,19 @@ class Panel:
             s = t * h
             dx += sa * scroll(self.nx[1], s)
             dy += sa * scroll(self.ny[1], s) * 0.5
+        sp = p.get('sway_px', 4.0)
+        if sp:
+            dx += sp * self.flame_w * self.tip * np.sin(TWO_PI * t * p.get('sway_cycles', 1) + self.yy / 60.0)
         # Thin far strokes must not travel further than they are wide, or the
         # backdrop shows through and they change colour (checkpoint 3: the
-        # fierce crest turned maroon). Cap the turbulence, keep its shape.
+        # fierce crest turned maroon). One cap over all flame motion
+        # (turbulence, smoke and sway; checkpoint 6 measured 10-12 px when the
+        # sway was added after the cap).
         mag = np.sqrt(dx * dx + dy * dy)
         cap = p.get('flow_cap', 6.0)
         k = np.minimum(1.0, cap / np.maximum(mag, 1e-6))
         dx *= k
         dy *= k
-        sp = p.get('sway_px', 4.0)
-        if sp:
-            dx += sp * self.flame_w * self.tip * np.sin(TWO_PI * t * p.get('sway_cycles', 1) + self.yy / 60.0)
         # breathing / bob
         b = p.get('bob_px', 2.0)
         if b:
@@ -278,7 +282,10 @@ class Panel:
                 v = b * (1 - math.cos(TWO_PI * t * cyc)) / 2
             else:
                 v = b * math.sin(TWO_PI * t * cyc)
-            dy += -v * self.lift
+            # airborne (joyful leaps): the whole figure moves as one, nothing
+            # stretches; otherwise the feet stay planted and the body above
+            # them breathes (checkpoint 6: leg stretch read as pose jumps)
+            dy += -v * (self.air if p.get('airborne') else self.lift)
         # head tilt about the neck (static + oscillation)
         th = math.radians(p.get('tilt_deg', 0.0) + p.get('tilt_osc', 0.0) * math.sin(TWO_PI * t))
         if th:

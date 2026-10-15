@@ -1,0 +1,478 @@
+{
+ "idle": {
+  "frames_scored": 12,
+  "median": 107.41499999999999,
+  "min": 106.39,
+  "max": 108.46,
+  "worst_frame": 54,
+  "per_frame": [
+   {
+    "frame": 0,
+    "calibrated_unclamped": 108.46,
+    "components": {
+     "silhouette": 0.9488,
+     "structure": 0.9806,
+     "flow": 0.9289,
+     "colour": 0.9827,
+     "eyes": 0.9966
+    }
+   },
+   {
+    "frame": 6,
+    "calibrated_unclamped": 107.93,
+    "components": {
+     "silhouette": 0.9453,
+     "structure": 0.9787,
+     "flow": 0.9296,
+     "colour": 0.9827,
+     "eyes": 0.9873
+    }
+   },
+   {
+    "frame": 12,
+    "calibrated_unclamped": 107.41,
+    "components": {
+     "silhouette": 0.9475,
+     "structure": 0.9735,
+     "flow": 0.9243,
+     "colour": 0.9831,
+     "eyes": 0.9821
+    }
+   },
+   {
+    "frame": 18,
+    "calibrated_unclamped": 107.13,
+    "components": {
+     "silhouette": 0.9462,
+     "structure": 0.9724,
+     "flow": 0.9234,
+     "colour": 0.9794,
+     "eyes": 0.9815
+    }
+   },
+   {
+    "frame": 24,
+    "calibrated_unclamped": 107.33,
+    "components": {
+     "silhouette": 0.947,
+     "structure": 0.9719,
+     "flow": 0.9244,
+     "colour": 0.9835,
+     "eyes": 0.9821
+    }
+   },
+   {
+    "frame": 30,
+    "calibrated_unclamped": 107.32,
+    "components": {
+     "silhouette": 0.9429,
+     "structure": 0.9756,
+     "flow": 0.9215,
+     "colour": 0.9825,
+     "eyes": 0.9873
+    }
+   },
+   {
+    "frame": 36,
+    "calibrated_unclamped": 108.25,
+    "components": {
+     "silhouette": 0.9425,
+     "structure": 0.9807,
+     "flow": 0.9313,
+     "colour": 0.9831,
+     "eyes": 0.9966
+    }
+   },
+   {
+    "frame": 42,
+    "calibrated_unclamped": 107.95,
+    "components": {
+     "silhouette": 0.9394,
+     "structure": 0.9826,
+     "flow": 0.9313,
+     "colour": 0.9835,
+     "eyes": 0.9882
+    }
+   },
+   {
+    "frame": 48,
+    "calibrated_unclamped": 107.42,
+    "components": {
+     "silhouette": 0.9403,
+     "structure": 0.9796,
+     "flow": 0.9251,
+     "colour": 0.9853,
+     "eyes": 0.9809
+    }
+   },
+   {
+    "frame": 54,
+    "calibrated_unclamped": 106.39,
+    "components": {
+     "silhouette": 0.9372,
+     "structure": 0.9734,
+     "flow": 0.9144,
+     "colour": 0.9816,
+     "eyes": 0.9806
+    }
+   },
+   {
+    "frame": 60,
+    "calibrated_unclamped": 106.66,
+    "components": {
+     "silhouette": 0.9381,
+     "structure": 0.9731,
+     "flow": 0.9201,
+     "colour": 0.9813,
+     "eyes": 0.9809
+    }
+   },
+   {
+    "frame": 66,
+    "calibrated_unclamped": 107.51,
+    "components": {
+     "silhouette": 0.9425,
+     "structure": 0.9793,
+     "flow": 0.9218,
+     "colour": 0.9819,
+     "eyes": 0.9882
+    }
+   }
+  ]
+ },
+ "joyful": {
+  "frames_scored": 8,
+  "median": 118.99000000000001,
+  "min": 112.86,
+  "max": 128.39,
+  "worst_frame": 12,
+  "per_frame": [
+   {
+    "frame": 0,
+    "calibrated_unclamped": 128.39,
+    "components": {
+     "silhouette": 0.899,
+     "structure": 0.9732,
+     "flow": 0.9057,
+     "colour": 0.9637,
+     "eyes": 0.9977
+    }
+   },
+   {
+    "frame": 6,
+    "calibrated_unclamped": 120.5,
+    "components": {
+     "silhouette": 0.8757,
+     "structure": 0.9284,
+     "flow": 0.8605,
+     "colour": 0.9692,
+     "eyes": 0.9627
+    }
+   },
+   {
+    "frame": 12,
+    "calibrated_unclamped": 112.86,
+    "components": {
+     "silhouette": 0.8478,
+     "structure": 0.8818,
+     "flow": 0.8112,
+     "colour": 0.9738,
+     "eyes": 0.9512
+    }
+   },
+   {
+    "frame": 18,
+    "calibrated_unclamped": 117.94,
+    "components": {
+     "silhouette": 0.8674,
+     "structure": 0.9137,
+     "flow": 0.8399,
+     "colour": 0.969,
+     "eyes": 0.9626
+    }
+   },
+   {
+    "frame": 24,
+    "calibrated_unclamped": 120.99,
+    "components": {
+     "silhouette": 0.8796,
+     "structure": 0.9235,
+     "flow": 0.8518,
+     "colour": 0.9602,
+     "eyes": 0.9977
+    }
+   },
+   {
+    "frame": 30,
+    "calibrated_unclamped": 118.93,
+    "components": {
+     "silhouette": 0.8714,
+     "structure": 0.9242,
+     "flow": 0.8438,
+     "colour": 0.965,
+     "eyes": 0.9627
+    }
+   },
+   {
+    "frame": 36,
+    "calibrated_unclamped": 113.82,
+    "components": {
+     "silhouette": 0.8423,
+     "structure": 0.8932,
+     "flow": 0.8232,
+     "colour": 0.9726,
+     "eyes": 0.9512
+    }
+   },
+   {
+    "frame": 42,
+    "calibrated_unclamped": 119.05,
+    "components": {
+     "silhouette": 0.8663,
+     "structure": 0.9183,
+     "flow": 0.8566,
+     "colour": 0.9696,
+     "eyes": 0.9626
+    }
+   }
+  ]
+ },
+ "fierce": {
+  "frames_scored": 8,
+  "median": 98.83500000000001,
+  "min": 89.83,
+  "max": 109.18,
+  "worst_frame": 30,
+  "per_frame": [
+   {
+    "frame": 0,
+    "calibrated_unclamped": 109.18,
+    "components": {
+     "silhouette": 0.9161,
+     "structure": 0.967,
+     "flow": 0.9247,
+     "colour": 0.9773,
+     "eyes": 1.0
+    }
+   },
+   {
+    "frame": 6,
+    "calibrated_unclamped": 91.39,
+    "components": {
+     "silhouette": 0.9097,
+     "structure": 0.934,
+     "flow": 0.9058,
+     "colour": 0.9911,
+     "eyes": 0.5
+    }
+   },
+   {
+    "frame": 12,
+    "calibrated_unclamped": 107.06,
+    "components": {
+     "silhouette": 0.9241,
+     "structure": 0.9369,
+     "flow": 0.8991,
+     "colour": 0.9797,
+     "eyes": 1.0
+    }
+   },
+   {
+    "frame": 18,
+    "calibrated_unclamped": 90.16,
+    "components": {
+     "silhouette": 0.9072,
+     "structure": 0.9319,
+     "flow": 0.8888,
+     "colour": 0.9818,
+     "eyes": 0.5
+    }
+   },
+   {
+    "frame": 24,
+    "calibrated_unclamped": 106.85,
+    "components": {
+     "silhouette": 0.9171,
+     "structure": 0.9415,
+     "flow": 0.8964,
+     "colour": 0.9806,
+     "eyes": 1.0
+    }
+   },
+   {
+    "frame": 30,
+    "calibrated_unclamped": 89.83,
+    "components": {
+     "silhouette": 0.9024,
+     "structure": 0.9315,
+     "flow": 0.8813,
+     "colour": 0.9896,
+     "eyes": 0.5
+    }
+   },
+   {
+    "frame": 36,
+    "calibrated_unclamped": 106.28,
+    "components": {
+     "silhouette": 0.9119,
+     "structure": 0.9371,
+     "flow": 0.8944,
+     "colour": 0.9806,
+     "eyes": 1.0
+    }
+   },
+   {
+    "frame": 42,
+    "calibrated_unclamped": 90.5,
+    "components": {
+     "silhouette": 0.9051,
+     "structure": 0.9333,
+     "flow": 0.8978,
+     "colour": 0.9819,
+     "eyes": 0.5
+    }
+   }
+  ]
+ },
+ "depleted": {
+  "frames_scored": 12,
+  "median": 116.9,
+  "min": 115.49,
+  "max": 121.5,
+  "worst_frame": 24,
+  "per_frame": [
+   {
+    "frame": 0,
+    "calibrated_unclamped": 121.5,
+    "components": {
+     "silhouette": 0.8728,
+     "structure": 0.9833,
+     "flow": 0.8301,
+     "colour": 0.9802,
+     "eyes": 0.9983
+    }
+   },
+   {
+    "frame": 6,
+    "calibrated_unclamped": 119.11,
+    "components": {
+     "silhouette": 0.8469,
+     "structure": 0.9798,
+     "flow": 0.8243,
+     "colour": 0.9817,
+     "eyes": 0.9828
+    }
+   },
+   {
+    "frame": 12,
+    "calibrated_unclamped": 117.49,
+    "components": {
+     "silhouette": 0.8252,
+     "structure": 0.9748,
+     "flow": 0.8238,
+     "colour": 0.9807,
+     "eyes": 0.9809
+    }
+   },
+   {
+    "frame": 18,
+    "calibrated_unclamped": 115.97,
+    "components": {
+     "silhouette": 0.8073,
+     "structure": 0.9693,
+     "flow": 0.8197,
+     "colour": 0.9799,
+     "eyes": 0.9811
+    }
+   },
+   {
+    "frame": 24,
+    "calibrated_unclamped": 115.49,
+    "components": {
+     "silhouette": 0.8083,
+     "structure": 0.9668,
+     "flow": 0.8118,
+     "colour": 0.9792,
+     "eyes": 0.981
+    }
+   },
+   {
+    "frame": 30,
+    "calibrated_unclamped": 116.78,
+    "components": {
+     "silhouette": 0.8285,
+     "structure": 0.9672,
+     "flow": 0.8124,
+     "colour": 0.9776,
+     "eyes": 0.9855
+    }
+   },
+   {
+    "frame": 36,
+    "calibrated_unclamped": 118.72,
+    "components": {
+     "silhouette": 0.8512,
+     "structure": 0.9677,
+     "flow": 0.8147,
+     "colour": 0.9807,
+     "eyes": 0.9979
+    }
+   },
+   {
+    "frame": 42,
+    "calibrated_unclamped": 117.02,
+    "components": {
+     "silhouette": 0.831,
+     "structure": 0.9682,
+     "flow": 0.8056,
+     "colour": 0.9811,
+     "eyes": 0.992
+    }
+   },
+   {
+    "frame": 48,
+    "calibrated_unclamped": 116.7,
+    "components": {
+     "silhouette": 0.8272,
+     "structure": 0.9686,
+     "flow": 0.8055,
+     "colour": 0.9822,
+     "eyes": 0.9878
+    }
+   },
+   {
+    "frame": 54,
+    "calibrated_unclamped": 116.16,
+    "components": {
+     "silhouette": 0.8204,
+     "structure": 0.9687,
+     "flow": 0.8041,
+     "colour": 0.9824,
+     "eyes": 0.9844
+    }
+   },
+   {
+    "frame": 60,
+    "calibrated_unclamped": 116.31,
+    "components": {
+     "silhouette": 0.8191,
+     "structure": 0.9715,
+     "flow": 0.8038,
+     "colour": 0.9814,
+     "eyes": 0.9878
+    }
+   },
+   {
+    "frame": 66,
+    "calibrated_unclamped": 118.5,
+    "components": {
+     "silhouette": 0.8385,
+     "structure": 0.9778,
+     "flow": 0.8179,
+     "colour": 0.9791,
+     "eyes": 0.993
+    }
+   }
+  ]
+ }
+}
