@@ -260,15 +260,6 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   Map<String, dynamic>? engine(String id) => engines.where((e) => e['id'] == id).firstOrNull;
 
-  /// The full path of a recently used file with this name (newest first), or null.
-  String? recentPathNamed(String name) {
-    for (final r in recent) {
-      final p = '${r['path'] ?? ''}';
-      if (p.isNotEmpty && (p.endsWith('\\$name') || p.endsWith('/$name'))) return p;
-    }
-    return null;
-  }
-
   /// True while the document engine has not passed its check (first use, or a check that has to run again).
   bool get engineNotReady {
     final s = engine('libreoffice')?['state'];

@@ -435,3 +435,25 @@ def test_language_tags_and_unused_lists_do_not_add_fonts(tmp_path):
     d.add_paragraph("first point", style="List Bullet")
     d.save(listed)
     assert "Symbol" in V.source_fonts(listed, "docx")             # a used bullet list still counts its font
+
+
+def test_only_the_used_list_definition_counts(tmp_path):
+    """Codex O2-R6-03: fonts of numbering definitions the document does not use are not counted."""
+    import zipfile
+    import docx
+    src = tmp_path / "lists.docx"
+    d = docx.Document()
+    d.add_paragraph("first point", style="List Bullet")
+    d.save(src)
+    with zipfile.ZipFile(src) as z:
+        parts = {n: z.read(n) for n in z.namelist()}
+    num = parts["word/numbering.xml"].decode()
+    extra = ('<w:abstractNum w:abstractNumId="999"><w:lvl w:ilvl="0"><w:rPr><w:rFonts w:ascii="URI Unused List Font"'
+             ' w:hAnsi="URI Unused List Font"/></w:rPr></w:lvl></w:abstractNum>')
+    i = num.index("<w:abstractNum ")
+    parts["word/numbering.xml"] = (num[:i] + extra + num[i:]).encode()
+    with zipfile.ZipFile(src, "w", zipfile.ZIP_DEFLATED) as z:
+        for n, b in parts.items():
+            z.writestr(n, b)
+    fonts = V.source_fonts(src, "docx")
+    assert "URI Unused List Font" not in fonts and "Symbol" in fonts, fonts

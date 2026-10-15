@@ -291,10 +291,12 @@ class OfficeWorkflowView extends StatelessWidget {
         Row(children: [
           Expanded(child: Text('Saved as ${(v['saved'] as Map)['name']}. It is listed under Recent and PDFs.',
               key: const ValueKey('office-saved-name'))),
-          if (c.recentPathNamed('${(v['saved'] as Map)['name']}') != null)
+          // A saved file is opened like any file: the owner confirms it in the picker (a recent entry is not a
+          // grant; Codex O2-R6-01).
+          if (c.environment?.pickDocumentPath != null)
             TextButton.icon(key: const ValueKey('office-open-saved'),
-                onPressed: c.busy ? null : () => c.openDocumentPath(c.recentPathNamed('${(v['saved'] as Map)['name']}')!),
-                icon: const Icon(Icons.open_in_new_rounded, size: 18), label: const Text('Open it')),
+                onPressed: c.busy ? null : c.pickAndOpenDocument,
+                icon: const Icon(Icons.folder_open_rounded, size: 18), label: const Text('Open it…')),
         ]),
       ],
       const SizedBox(height: UriSpace.sm),

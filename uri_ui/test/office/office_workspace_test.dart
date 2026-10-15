@@ -347,9 +347,10 @@ void main() {
 
     testWidgets('a saved task names the file and offers to open it', (tester) async {
       await tester.binding.setSurfaceSize(const Size(900, 600));
-      final c = ctl()
+      final c = OfficeWorkspaceController(
+          client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client()),
+          environment: _env(docPath: r'C:\Users\me\Saved\report.pdf'))
         ..activeWorkflow = 'a' * 20
-        ..recent = [{'path': r'C:\Users\me\Saved\report.pdf', 'kind': 'pdf'}]
         ..workflowView = {'state': 'saved', 'steps': [], 'findings': [], 'saved': {'name': 'report.pdf'},
           'outputs': [{'name': 'report.pdf', 'pages': 2}]};
       await tester.pumpWidget(MaterialApp(theme: ThemeData(extensions: const [UriColors.graphite]),
@@ -357,7 +358,7 @@ void main() {
       await tester.pump();
       expect(find.textContaining('Saved as report.pdf'), findsOneWidget);
       expect(find.byKey(const ValueKey('office-open-saved')), findsOneWidget);
-      expect(c.recentPathNamed('report.pdf'), r'C:\Users\me\Saved\report.pdf');
+      expect(find.text('Open it…'), findsOneWidget, reason: 'opening goes through the picker');
     });
   });
 

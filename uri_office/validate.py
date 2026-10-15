@@ -97,7 +97,9 @@ def _theme_fonts(z) -> dict:
 _SCRIPT_RANGES = ((0x0590, 0x05FF, "Hebr"), (0x0600, 0x06FF, "Arab"), (0x0900, 0x097F, "Deva"),
                   (0x0980, 0x09FF, "Beng"), (0x0A00, 0x0A7F, "Guru"), (0x0A80, 0x0AFF, "Gujr"), (0x0B00, 0x0B7F, "Orya"),
                   (0x0B80, 0x0BFF, "Taml"), (0x0C00, 0x0C7F, "Telu"), (0x0C80, 0x0CFF, "Knda"), (0x0D00, 0x0D7F, "Mlym"),
-                  (0x0E00, 0x0E7F, "Thai"), (0x3040, 0x30FF, "Jpan"), (0x4E00, 0x9FFF, "CJK"), (0xAC00, 0xD7AF, "Hang"))
+                  (0x0E00, 0x0E7F, "Thai"), (0x3040, 0x30FF, "Jpan"), (0x3400, 0x4DBF, "CJK"), (0x4E00, 0x9FFF, "CJK"),
+                  (0xA8E0, 0xA8FF, "Deva"), (0xAC00, 0xD7AF, "Hang"), (0xF900, 0xFAFF, "CJK"), (0xFB1D, 0xFB4F, "Hebr"),
+                  (0xFB50, 0xFDFF, "Arab"), (0xFE70, 0xFEFF, "Arab"), (0x20000, 0x2FA1F, "CJK"))
 _EA_SCRIPTS = {"Jpan", "CJK", "Hang", "Hans"}
 
 
@@ -179,7 +181,7 @@ def _word_used_fonts(z) -> set:
         return out
 
     used_styles, names = set(), set()
-    uses_numbering = False                       # list fonts (numbering.xml) count only when a list is used (run r2)
+    num_ids = set()                              # list fonts count only for the lists used (run r2; Codex O2-R6-03)
     for n in z.namelist():
         low = n.lower()
         if not (low.startswith("word/") and low.endswith(".xml") and
@@ -189,8 +191,9 @@ def _word_used_fonts(z) -> set:
             root = etree.fromstring(z.read(n), _PARSER)
         except etree.XMLSyntaxError:
             continue
-        if next(root.iter(f"{w}numPr"), None) is not None:
-            uses_numbering = True
+        for el in root.iter(f"{w}numId"):
+            if el.get(f"{w}val") not in (None, "0"):
+                num_ids.add(el.get(f"{w}val"))
         for el in root.iter(f"{w}rFonts"):
             names |= fonts_of(el)
         for tag in ("pStyle", "rStyle", "tblStyle"):
@@ -225,14 +228,23 @@ def _word_used_fonts(z) -> set:
         link = el.find(f"{w}link")
         if link is not None and link.get(f"{w}val"):
             todo.append(link.get(f"{w}val"))
-        if el.find(f".//{w}numPr") is not None:
-            uses_numbering = True
-    if uses_numbering:
+        for nid in el.iter(f"{w}numId"):
+            if nid.get(f"{w}val") not in (None, "0"):
+                num_ids.add(nid.get(f"{w}val"))
+    if num_ids:
         try:
-            for el in etree.fromstring(z.read("word/numbering.xml"), _PARSER).iter(f"{w}rFonts"):
-                names |= fonts_of(el)
+            numbering = etree.fromstring(z.read("word/numbering.xml"), _PARSER)
         except (KeyError, etree.XMLSyntaxError):
-            pass
+            numbering = None
+        if numbering is not None:
+            abstract = {n.get(f"{w}numId"): (n.find(f"{w}abstractNumId").get(f"{w}val")
+                                              if n.find(f"{w}abstractNumId") is not None else None)
+                        for n in numbering.iter(f"{w}num")}
+            used_abs = {abstract.get(n) for n in num_ids} - {None}
+            for an in numbering.iter(f"{w}abstractNum"):
+                if an.get(f"{w}abstractNumId") in used_abs:
+                    for el in an.iter(f"{w}rFonts"):
+                        names |= fonts_of(el)
     return names
 
 
