@@ -128,7 +128,7 @@ mention; the r2 and r3 logs contain none.
 | R9 | `50f6f7be`, merge `b77cbda6` | REVISE | R9-1 reverse order silently dropped -> `fdbc2ad5` |
 | R10 | `fdbc2ad5` | REVISE | R10-1 clear then restore -> `d3542134` |
 | R11 | `d3542134` | REVISE | R11-1 a refused op marked its cells touched -> `59ba27bd` |
-| R12 | `59ba27bd` and the whole change set (tip `76b0f600`) | **NO RESULT** (Codex usage limit; resets 00:32 IST) | see section 7 |
+| R12 | `59ba27bd` and the whole change set (tip `76b0f600`) | **ACCEPT** (2026-10-16 00:35 IST; first attempt at 23:12 hit the Codex usage limit, NO RESULT) | no open findings; R8-1..R11-1 re-checked in memory |
 
 Process note: R4-R7 kept finding new interleavings in the same task-outcome code because each path had its own checks;
 `9f07248a` replaced them with one rule, after which R8 found nothing further there. R8-R11 were narrow edge cases of
@@ -247,8 +247,9 @@ Brain config hash unchanged, no Office process left, lease FREE at the end.
 - O2 readiness repairs B1-B5: implemented; B1 (M2-XB-1), B2 (C1-1), B3 (pypdf in the packaged runtime), B4 (Office
   from the packaged runtime), B5 (running-task cancel) each LIVE VERIFIED through the real app in r4 at `76b0f600`.
 - New defects found and repaired in this work: XF-1, UI-NOTIFY-1, CX-1, NOOP-1 (plus 22 Codex findings R1-R11).
-- Independent review: Codex R1-R11 on exact commits; R11's only finding repaired in `59ba27bd`; **R12 (final, on
-  `76b0f600`) NOT RUN** because of the Codex usage limit (resets 00:32 IST). Not counted as accepted.
+- Independent review: Codex R1-R11 on exact commits (all findings repaired with failing-first tests); **R12 ACCEPT on
+  `76b0f600`** (source review; Codex could not run tests in its sandbox, so the gates and live runs are the
+  author's evidence).
 - Physical keyboard/mouse: NOT VERIFIED. Owner check: BLOCKED (owner away).
 - Integrated: no. Frozen: no. Pushed: no. Printing (O2P): deferred and off.
 
