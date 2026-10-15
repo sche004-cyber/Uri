@@ -184,6 +184,9 @@ class LibreOffice:
     def _env(self) -> dict:
         env = {k: v for k, v in os.environ.items() if not k.upper().startswith(("PYTHON", "URE_", "UNO_"))}
         env["TMP"] = env["TEMP"] = str(self.tmp)
+        # LibreOffice's embedded Python (pyuno loader, Lightproof) and the bridge must never write bytecode caches
+        # into the pinned engine tree: an added .pyc would fail the integrity check, and it is code the engine loads.
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
         for k in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy"):
             env.pop(k, None)
         return env
@@ -209,7 +212,7 @@ class LibreOffice:
 
         def bridge_args():
             copy = E.run_copy("lo_bridge.py", self.state)
-            return [str(program / "python.exe"), "-I", str(copy), pipe, str(self.work_root)], copy.unlink
+            return [str(program / "python.exe"), "-I", "-B", str(copy), pipe, str(self.work_root)], copy.unlink
 
         self._bridge = Worker("lo_bridge", bridge_args, memory_limit=BRIDGE_MEMORY, start_timeout=START_TIMEOUT,
                               env=env, cwd=str(self.tmp))
