@@ -186,3 +186,36 @@ def xlsx_canary(path: Path, base: str) -> Path:
         parts["[Content_Types].xml"] = ct.encode()
     rewrite(path, edit)
     return path
+
+
+def docx_webdav_canary(path: Path, port: int) -> Path:
+    r"""WebDAV form of the Word canary (plan F1; not run in the first live runs). UNC paths of the form
+    \\127.0.0.1@<port>\DavWWWRoot\... make Windows' WebDAV redirector (the WebClient service) send HTTP requests to
+    the canary server: a linked picture, INCLUDEPICTURE and INCLUDETEXT fields, and a hyperlink."""
+    import docx
+    dav = "\\\\127.0.0.1@%d\\DavWWWRoot\\canary" % port
+    d = docx.Document()
+    d.add_paragraph("WebDAV canary letter")
+    pic = path.with_suffix(".png")
+    pic.write_bytes(png())
+    d.add_picture(str(pic))
+    d.save(path)
+    pic.unlink()
+
+    def edit(parts):
+        doc = parts["word/document.xml"].decode()
+        rels = parts["word/_rels/document.xml.rels"]
+        doc = re.sub(r'r:embed="(rId\d+)"', 'r:link="rIdW1"', doc, count=1)
+        rels = _add_rel(rels, "rIdW1", f"{R}/image", dav + "\\linked.png")
+        instrs = ['INCLUDEPICTURE "%s\\\\field.png" \\d' % dav.replace("\\", "\\\\"),
+                  'INCLUDETEXT "%s\\\\inc.docx"' % dav.replace("\\", "\\\\")]
+        fields = "".join(f"<w:p><w:fldSimple w:instr=' {instr} '><w:r><w:t>cached {k}</w:t></w:r></w:fldSimple></w:p>"
+                         for k, instr in enumerate(instrs))
+        fields += '<w:p><w:hyperlink r:id="rIdW2"><w:r><w:t>dav link</w:t></w:r></w:hyperlink></w:p>'
+        rels = _add_rel(rels, "rIdW2", f"{R}/hyperlink", dav + "\\share.docx")
+        doc = doc.replace("<w:sectPr", fields + "<w:sectPr", 1)
+        parts["word/document.xml"] = doc.encode()
+        parts["word/_rels/document.xml.rels"] = rels
+    rewrite(path, edit)
+    return path
+

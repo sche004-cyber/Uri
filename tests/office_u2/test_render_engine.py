@@ -135,6 +135,52 @@ def test_sanitized_canaries_make_no_connection(lo, tmp_path, kind, maker):
     assert census.proc == set(), census.proc           # the engine made no network connection at all
 
 
+def _webclient_state():
+    import subprocess as sp
+    out = sp.run(["sc", "query", "WebClient"], capture_output=True, text=True).stdout
+    return "RUNNING" if "RUNNING" in out else ("STOPPED" if "STOPPED" in out else "UNKNOWN")
+
+
+def test_sanitized_webdav_canary_makes_no_connection(lo, tmp_path):
+    """Plan F1 WebDAV canary (O2 live gap, 2026-10-15): the sanitized render copy of a Word file with WebDAV UNC
+    references makes no request. Checked three ways: the canary server's hits, a system-wide census of connections
+    to the canary port (the WebDAV redirector runs in a service host, not in the engine), and the WebClient service
+    state before and after (it is trigger-started by WebDAV use; nothing here starts or configures it)."""
+    can = Canary()
+    port = can.srv.server_address[1]
+    dav_conns = set()
+    stop = threading.Event()
+
+    def watch():
+        while not stop.is_set():
+            try:
+                for c in psutil.net_connections(kind="inet"):
+                    if c.raddr and c.raddr.port == port:
+                        dav_conns.add((c.pid, c.raddr.ip))
+            except psutil.Error:
+                pass
+            stop.wait(0.05)
+    before = _webclient_state()
+    th = threading.Thread(target=watch, daemon=True)
+    th.start()
+    census = Census(lo.pids)
+    try:
+        src = CN.docx_webdav_canary(tmp_path / "dav.docx", port)
+        out = _convert(lo, src, "docx")
+        time.sleep(2.0)
+    finally:
+        stop.set()
+        th.join(5)
+        census.stop()
+        can.close()
+    after = _webclient_state()
+    assert out.is_file() and out.read_bytes()[:5] == b"%PDF-"
+    assert can.hits == [], can.hits
+    assert dav_conns == set(), dav_conns
+    assert census.proc == set(), census.proc
+    assert not (before == "STOPPED" and after == "RUNNING"), "the WebDAV redirector was started by the render"
+
+
 def test_hardened_profile_alone_blocks_unsanitized_canaries(lo, tmp_path):
     """Defence in depth: even the unsanitized file fetches nothing under the hardened profile."""
     can = Canary()

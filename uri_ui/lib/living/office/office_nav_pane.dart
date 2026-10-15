@@ -49,6 +49,20 @@ class OfficeNavPane extends StatelessWidget {
                 onPressed: c.busy ? null : c.pickAndOpenDocument, icon: const Icon(Icons.folder_open_rounded)),
           IconButton(key: const ValueKey('office-nav-sheet'), tooltip: 'Spreadsheet view', onPressed: onOpenSheet,
               icon: const Icon(Icons.grid_on_rounded)),
+          // Real-app run 2026-10-15: in the icon strip an open document could not be reached again.
+          if (c.documents.isNotEmpty) const Divider(height: UriSpace.md),
+          for (final d in c.documents.values)
+            IconButton(
+              key: ValueKey('office-open-doc-${d.id}'),
+              tooltip: d.name,
+              isSelected: c.activeDocument == d.id && c.centre == OfficeCentre.document,
+              onPressed: () => c.showDocument(d.id),
+              icon: Icon(switch (d.kind) {
+                'pdf' => Icons.picture_as_pdf_outlined,
+                'pptx' => Icons.slideshow_outlined,
+                _ => Icons.description_outlined,
+              }, size: 20),
+            ),
         ]),
       );
     }

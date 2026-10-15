@@ -146,3 +146,61 @@ def test_launch_check_rehashes_python_code(tree, tmp_path):
     os.utime(p, ns=(st.st_atime_ns, st.st_mtime_ns))
     with pytest.raises(OfficeError):
         ei.launch_check()
+
+
+def test_signer_problems_rules():
+    """Plan F11 signer check: only Valid files from an allowed signer, or the pinned unsigned files, pass."""
+    from uri_office import engines as EN
+    pin = {"signers_allowed": ["CN=The Document Foundation"], "unsigned_allowed": ["program/a.dll"]}
+    ok = [{"path": "program/soffice.bin", "status": "Valid", "signer": "CN=The Document Foundation"},
+          {"path": "program/a.dll", "status": "NotSigned", "signer": None}]
+    assert EN.signer_problems(ok, pin) == []
+    bad = [{"path": "program/b.dll", "status": "NotSigned", "signer": None},                 # newly unsigned
+           {"path": "program/c.dll", "status": "Valid", "signer": "CN=Someone Else"},        # foreign signer
+           {"path": "program/d.dll", "status": "HashMismatch", "signer": "CN=The Document Foundation"}]
+    assert [b.split(":")[0] for b in EN.signer_problems(bad, pin)] == ["program/b.dll", "program/c.dll", "program/d.dll"]
+
+
+def test_pinned_signers_are_recorded_for_libreoffice():
+    from uri_office import engines as EN
+    lo = EN.pins()["libreoffice"]
+    assert "CN=The Document Foundation, O=The Document Foundation, L=Berlin, S=Berlin, C=DE" in lo["signers_allowed"]
+    assert lo["signed_files"] >= 200 and all(p.startswith("program/") for p in lo["unsigned_allowed"])
+
+
+def test_a_check_that_cannot_finish_leaves_the_engine_unavailable_not_checking(tree, tmp_path, monkeypatch):
+    """Real-app run 2026-10-15 (R5-2): a MemoryError while hashing killed the start-up check and left the engine in
+    'verifying' for the rest of the session. Now it ends 'unavailable' with ENGINE_CHECK_FAILED and can run again."""
+    root, pin = tree
+    ei = E.EngineIntegrity("libreoffice", tmp_path / "state", pin)
+    real = E.sha256_file
+
+    def boom(p):
+        raise MemoryError()
+    monkeypatch.setattr(E, "sha256_file", boom)
+    with pytest.raises(OfficeError) as e:
+        ei.verify_full()
+    assert e.value.code == "ENGINE_CHECK_FAILED"
+    assert ei.status()["state"] == "unavailable" and ei.status()["reason"] == "ENGINE_CHECK_FAILED"
+    monkeypatch.setattr(E, "sha256_file", real)
+    assert ei.verify_full()["ok"] and ei.status()["state"] == "ready"
+
+
+def test_startup_check_records_an_unexpected_failure():
+    from uri_office import engine_hub as H
+
+    class FakeIntegrity:
+        state, reason = "verifying", None
+
+        class store:
+            @staticmethod
+            def exists():
+                return False
+
+        def verify_full(self):
+            raise MemoryError()
+
+    hub = H.EngineHub.__new__(H.EngineHub)
+    hub.lo = type("LO", (), {"integrity": FakeIntegrity()})()
+    hub._startup_check()
+    assert (hub.lo.integrity.state, hub.lo.integrity.reason) == ("unavailable", "ENGINE_CHECK_FAILED")

@@ -48,8 +48,19 @@ class _PagePreviewState extends State<PagePreview> {
         key: const ValueKey('office-preview-unavailable'),
         child: Padding(
           padding: const EdgeInsets.all(UriSpace.lg),
-          child: Text('Preview unavailable: ${officeErrorText[d.previewReason] ?? 'the preview could not be made.'}',
-              style: TextStyle(color: colors.warning)),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text('Preview unavailable: ${officeErrorText[d.previewReason] ?? 'the preview could not be made.'}',
+                textAlign: TextAlign.center, style: TextStyle(color: colors.warning)),
+            const SizedBox(height: UriSpace.sm),
+            if (c.stepLabel != null) Text(c.stepLabel!, style: TextStyle(color: colors.inkSoft)),
+            if (!const {'ENCRYPTED', 'ARCHIVE_REFUSED', 'XML_REFUSED', 'TOO_MANY_PAGES', 'FILE_TOO_LARGE'}
+                .contains(d.previewReason))
+              FilledButton(
+                key: const ValueKey('office-preview-retry'),
+                onPressed: c.busy ? null : () => c.retryPreview(d.id),
+                child: Text(c.engineNotReady ? 'Check the engine and try again' : 'Try again'),
+              ),
+          ]),
         ),
       );
     }

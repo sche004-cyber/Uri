@@ -233,6 +233,19 @@ void main() {
   );
 
   testWidgets(
+    'R5-3: in Office the global context panel starts closed, so the Office URI pane has room (real-app run 2026-10-15)',
+    (tester) async {
+      final (_, services) = await pumpLiving(tester, size: const Size(1280, 800));
+      services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.tasks);
+      await tester.pumpAndSettle();
+      expect(find.text('EXECUTOR'), findsOneWidget, reason: 'other regions keep the context panel at this width');
+      services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.office);
+      await tester.pumpAndSettle();
+      expect(find.text('EXECUTOR'), findsNothing);
+    },
+  );
+
+  testWidgets(
     'A4: office workflow: template -> in progress -> approval card -> approve -> Done',
     (tester) async {
       // O2 (plan §1.2, review F2): the simulated Documents region and its template tiles are retired; Documents is

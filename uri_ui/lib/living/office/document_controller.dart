@@ -18,6 +18,7 @@ const officeErrorText = <String, String>{
   'ENGINE_START_FAILED': 'The document engine did not start.',
   'ENGINE_TIMEOUT': 'The document took too long to process.',
   'ENGINE_CRASHED': 'The document engine stopped unexpectedly. It will restart on the next try.',
+  'ENGINE_CHECK_FAILED': 'The document engine check did not finish. Check it again.',
   'ENGINE_UNAVAILABLE': 'Previews and conversions are not available right now.',
   'WORKER_INTEGRITY': 'A helper program failed its safety check and was not run.',
   'CLM_ACTIVE': 'Windows security policy on this PC blocks the PDF renderer.',
@@ -206,10 +207,17 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   }
 
   bool _ticking = false;
+  int _engineTicks = 0;
   Future<void> _tick() async {
     if (_ticking || _disposed) return;
     _ticking = true;
     try {
+      // The engine check runs in the background (about 2 minutes the first time): follow it until it settles.
+      final lo = engine('libreoffice')?['state'];
+      if (lo == null || lo == 'verifying' || lo == 'unverified') {
+        _engineTicks++;
+        if (_engineTicks % 4 == 0) await refresh();
+      }
       final d = activeDocument == null ? null : documents[activeDocument];
       if (d != null && d.previewState == 'rendering') {
         d.view = await client.document(d.id);
@@ -252,6 +260,49 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   Map<String, dynamic>? engine(String id) => engines.where((e) => e['id'] == id).firstOrNull;
 
+  /// True while the document engine has not passed its check (first use, or a check that has to run again).
+  bool get engineNotReady {
+    final s = engine('libreoffice')?['state'];
+    return s == null || s == 'verifying' || s == 'unverified' || s == 'unavailable';
+  }
+
+  /// Why Save as PDF cannot run now, in words, or null when it can.
+  String? get saveAsPdfBlockedReason {
+    if (ready('save_as_pdf')) return null;
+    final s = engine('libreoffice')?['state'];
+    if (s == 'verifying' || s == null || s == 'unverified') {
+      return 'Available once URI has checked the document engine (about 2 minutes the first time).';
+    }
+    final cap = capabilityList.where((c) => c['id'] == 'save_as_pdf').firstOrNull;
+    return officeErrorText['${cap?['unready_reason']}'] ?? 'Not available right now.';
+  }
+
+  /// Runs the engine check again when it is not ready, then prepares the document's preview again (R5-2, real-app
+  /// run 2026-10-15: a preview that was unavailable because the engine check had not finished had no way back).
+  Future<void> retryPreview(String id) => _guard(() async {
+        if (engineNotReady) {
+          stepLabel = 'Checking the document engine… (about 2 minutes the first time)';
+          _notify();
+          try {
+            await client.verifyEngine();
+          } finally {
+            stepLabel = null;
+            await refresh();
+          }
+        }
+        final v = await client.retryDocument(id);
+        documents[id]?.view = v;
+      });
+
+  /// A message about an earlier action is cleared when the owner moves to another view (real-app run: the damaged
+  /// file's message stayed under the spreadsheet).
+  void _leaveView() {
+    if (!busy) {
+      lastError = null;
+      lastErrorCode = null;
+    }
+  }
+
   // ---- navigation ------------------------------------------------------------------------------------------------
   OfficeView get view => presentation?.officeView ?? _localView;
   OfficeView _localView = OfficeView.home;
@@ -263,6 +314,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       _localView = v;
     }
     centre = v == OfficeView.home ? OfficeCentre.home : OfficeCentre.list;
+    _leaveView();
     _notify();
   }
 
@@ -284,6 +336,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   void showSheet() {
     centre = OfficeCentre.sheet;
+    _leaveView();
     _notify();
   }
 
@@ -293,6 +346,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     selectedPage = 1;
     searchMatches = const [];
     searchNotice = null;
+    _leaveView();
     _notify();
   }
 

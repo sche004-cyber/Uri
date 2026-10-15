@@ -71,6 +71,8 @@ class FakeOffice {
           'POST /request' => requestReply,
           'POST /open/document' => doc,
           'GET /document/0123456789abcdef' => doc,
+          'POST /document/0123456789abcdef/retry' => (doc = {...doc, 'preview': {'state': 'ready', 'reason': null}}),
+          'POST /engines/verify' => {'ok': true},
           'POST /workflow' => {
               'workflow_id': 'a' * 20,
               'messages': _planCard(),
@@ -318,6 +320,81 @@ void main() {
       return !insideRequestBox;
     });
     expect(insideRequestBox, isTrue, reason: 'Ctrl+K should put the cursor in the request box');
+  });
+
+  group('R5 real-app repairs (2026-10-15)', () {
+    Future<void> openDoc(WidgetTester tester) async {
+      await tester.tap(find.byKey(const ValueKey('office-home-open')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('R5-6: Ctrl+Shift+B works while the keyboard focus is outside the workspace', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.binding.setSurfaceSize(const Size(1440, 900));
+      final client = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client());
+      await tester.pumpWidget(MaterialApp(
+        theme: ThemeData(extensions: const [UriColors.graphite]),
+        home: Scaffold(body: Column(children: [
+          const TextField(key: ValueKey('outside-field')),
+          Expanded(child: OfficeWorkspace(environment: _env(), clientFactory: () => client)),
+        ])),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('outside-field')));
+      await tester.pumpAndSettle();
+      final before = tester.getSize(find.byType(OfficeNavPane)).width;
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyB);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+      expect(tester.getSize(find.byType(OfficeNavPane)).width, lessThan(before));
+    });
+
+    testWidgets('R5-4: in the icon strip (1100 px) the open document can be reached again', (tester) async {
+      final fake = await _pump(tester, size: const Size(1100, 800), docPath: r'C:\Users\me\order.docx');
+      await tester.tap(find.byKey(const ValueKey('office-nav-open')));
+      await tester.pumpAndSettle();
+      expect(fake.calls, contains('POST /open/document'));
+      await tester.tap(find.byKey(const ValueKey('office-nav-home')));
+      await tester.pumpAndSettle();
+      final docIcon = find.byKey(const ValueKey('office-open-doc-0123456789abcdef'));
+      expect(docIcon, findsOneWidget);
+      expect(find.byTooltip('order.docx'), findsOneWidget);
+      await tester.tap(docIcon);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('office-page-label')), findsOneWidget);
+    });
+
+    testWidgets('R5-2: an unavailable preview offers a way back (engine check, then the preview again)', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.binding.setSurfaceSize(const Size(1440, 900));
+      final fake = FakeOffice();
+      fake.doc = {...fake.doc, 'preview': {'state': 'unavailable', 'reason': 'ENGINE_UNAVAILABLE'}};
+      final client = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', fake.client());
+      await tester.pumpWidget(_app(OfficeWorkspace(environment: _env(docPath: r'C:\Users\me\order.docx'),
+          clientFactory: () => client)));
+      await tester.pumpAndSettle();
+      await openDoc(tester);
+      expect(find.byKey(const ValueKey('office-preview-unavailable')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('office-preview-retry')));
+      await tester.pumpAndSettle();
+      expect(fake.calls, contains('POST /document/0123456789abcdef/retry'));
+      expect(find.byKey(const ValueKey('office-preview-unavailable')), findsNothing);
+      expect(find.byKey(const ValueKey('office-page-label')), findsOneWidget);
+    });
+
+    testWidgets('R5-5: a message about an earlier action is cleared when the owner moves to another view',
+        (tester) async {
+      final fake = await _pump(tester, docPath: r'C:\Users\me\bad.docx');
+      fake.openError = {'error': 'ARCHIVE_REFUSED'};
+      await openDoc(tester);
+      expect(find.text('This file looks damaged or unsafe and was not opened.'), findsWidgets);
+      await tester.tap(find.byKey(const ValueKey('office-nav-recent')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('office-status-error')), findsNothing);
+    });
   });
 
   group('R5-1: the app starts the Office service on first use (real-app run 2026-10-15)', () {

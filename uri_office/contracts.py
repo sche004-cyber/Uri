@@ -56,6 +56,8 @@ ERRORS: dict[str, ErrorInfo] = {
     "ENGINE_TIMEOUT": ErrorInfo("The document took too long to process.", ("retry",)),
     "ENGINE_CRASHED": ErrorInfo("The document engine stopped unexpectedly. It will restart on the next try.",
                                 ("retry",)),
+    "ENGINE_CHECK_FAILED": ErrorInfo("The document engine check did not finish. Check it again.",
+                                     ("verify_engine",)),
     "ENGINE_UNAVAILABLE": ErrorInfo("Previews and conversions are not available right now.",
                                     ("verify_engine", "help_engine")),
     "WORKER_INTEGRITY": ErrorInfo("A helper program failed its safety check and was not run.", ("help_engine",)),

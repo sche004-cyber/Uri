@@ -127,6 +127,7 @@ class OfficeClient {
   Future<Map<String, dynamic>> document(String id) => _get('/document/$id');
   Future<Map<String, dynamic>> searchDocument(String id, String text) => _post('/document/$id/search', {'text': text});
   Future<Map<String, dynamic>> closeDocument(String id) => _post('/document/$id/close');
+  Future<Map<String, dynamic>> retryDocument(String id) => _post('/document/$id/retry');
   Future<Map<String, dynamic>> request(Map<String, dynamic> body) => _post('/request', body);
   Future<Map<String, dynamic>> createWorkflow(String capability, List<Map<String, dynamic>> inputs) =>
       _post('/workflow', {'capability': capability, 'inputs': inputs});

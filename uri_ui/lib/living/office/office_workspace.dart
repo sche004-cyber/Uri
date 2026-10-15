@@ -41,10 +41,45 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
   ValueNotifier<OfficeRequestTarget?>? _target;
   bool _scoped = false;
 
+  bool _sheetModeNow = false;                  // the layout's last side-sheet decision, for the keyboard handler
+
   @override
   void initState() {
     super.initState();
+    HardwareKeyboard.instance.addHandler(_onKey);
     unawaited(_start());
+  }
+
+  /// Ctrl+Shift+B, Ctrl+Shift+J and Ctrl+K work wherever the keyboard focus is while Office is shown (real-app run
+  /// 2026-10-15: they only worked when the focus happened to be inside the workspace, which a click on a button or
+  /// the page does not give).
+  bool _onKey(KeyEvent e) {
+    final c = _c;
+    if (c == null || !mounted || e is! KeyDownEvent) return false;
+    final kb = HardwareKeyboard.instance;
+    if (!kb.isControlPressed || kb.isAltPressed || kb.isMetaPressed) return false;
+    if (kb.isShiftPressed && e.logicalKey == LogicalKeyboardKey.keyB) {
+      c.toggleLeft();
+      return true;
+    }
+    if (kb.isShiftPressed && e.logicalKey == LogicalKeyboardKey.keyJ) {
+      if (_sheetModeNow) {
+        setState(() => _sideSheet = !_sideSheet);
+      } else {
+        c.toggleRight();
+      }
+      return true;
+    }
+    if (!kb.isShiftPressed && e.logicalKey == LogicalKeyboardKey.keyK) {
+      if (_sheetModeNow && !_sideSheet) {
+        setState(() => _sideSheet = true);
+        WidgetsBinding.instance.addPostFrameCallback((_) => _composerFocus.requestFocus());
+      } else {
+        _composerFocus.requestFocus();
+      }
+      return true;
+    }
+    return false;
   }
 
   Future<void> _start() async {
@@ -120,6 +155,7 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onKey);
     _release();
     _composerFocus.dispose();
     // The controller is kept in the living scope (documents, workflows and the conversation survive leaving the
@@ -201,11 +237,10 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
     );
 
     final waiting = c.waitingCards;
+    _sheetModeNow = sheetMode;
     return Shortcuts(
+      // Ctrl+K, Ctrl+Shift+B and Ctrl+Shift+J are handled by [_onKey] wherever the focus is.
       shortcuts: const {
-        SingleActivator(LogicalKeyboardKey.keyK, control: true): _FocusComposerIntent(),
-        SingleActivator(LogicalKeyboardKey.keyB, control: true, shift: true): _ToggleLeftIntent(),
-        SingleActivator(LogicalKeyboardKey.keyJ, control: true, shift: true): _ToggleRightIntent(),
         SingleActivator(LogicalKeyboardKey.escape): _EscapeIntent(),
       },
       child: Actions(
@@ -319,11 +354,14 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
         (c.centre == OfficeCentre.document && d != null && d.kind != 'pdf');
     return [
       if (convertible && c.available('save_as_pdf'))
-        TextButton.icon(
-          key: const ValueKey('office-save-as-pdf'),
-          onPressed: c.busy || !c.ready('save_as_pdf') ? null : c.saveAsPdf,
-          icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
-          label: const Text('Save as PDF'),
+        Tooltip(
+          message: c.saveAsPdfBlockedReason ?? 'Make a PDF copy. URI shows a plan first; your file is not changed.',
+          child: TextButton.icon(
+            key: const ValueKey('office-save-as-pdf'),
+            onPressed: c.busy || !c.ready('save_as_pdf') ? null : c.saveAsPdf,
+            icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
+            label: const Text('Save as PDF'),
+          ),
         ),
       if (c.available('print_document'))
         TextButton.icon(

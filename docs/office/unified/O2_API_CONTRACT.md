@@ -99,6 +99,7 @@ any other value is `404 UNKNOWN_*`.
 | `/document/<id>/page/<n>` | GET | `?w=440|880|1240|160` | `image/png` | `UNKNOWN_DOCUMENT`, `PAGE_NOT_READY` (202), `PREVIEW_UNAVAILABLE` |
 | `/document/<id>/search` | POST | `{"text"}` (≤ 200 chars) | `{"matches": [{"page", "context"}], "truncated"}` | `NO_TEXT_LAYER` |
 | `/document/<id>/close` | POST | – | `{"closed": true}` | – |
+| `/document/<id>/retry` | POST | – | DocView (preview prepared again when it was unavailable; otherwise unchanged) | `UNKNOWN_DOCUMENT` |
 | `/request` | POST | `{"text", "target": {"kind", "id"}?, "scope": {"pages": [..]}?, "chip": <intent id>?}` | IntentResult | `BRAIN_UNAVAILABLE` never surfaces as an error: the result is `clarify` |
 | `/workflow` | POST | `{"capability", "inputs": [{"document_id" or "workbook_id"}], "options": {}}` | `{"workflow_id", "messages": [plan card]}` | `CAPABILITY_PLANNED`, `ENGINE_UNAVAILABLE`, `UNSAVED_CHANGES` |
 | `/workflow/<id>` | GET | – | workflow record view | `UNKNOWN_WORKFLOW` |

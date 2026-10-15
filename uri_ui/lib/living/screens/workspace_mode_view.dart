@@ -68,7 +68,8 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
           builder: (context, constraints) {
             final w = constraints.maxWidth;
             final railExpanded = w >= OrbDock.railExpandAt;
-            final contextDefault = w >= 1180;
+            final contextDefault = w >= 1180 &&
+                focus != WorkspaceFocus.office && focus != WorkspaceFocus.documents;
             final showContext = _contextOverride ?? contextDefault;
             return Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,

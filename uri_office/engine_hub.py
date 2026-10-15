@@ -7,6 +7,7 @@ full verification runs only when there is no stored manifest (first use, about 1
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import shutil
 import threading
@@ -73,6 +74,9 @@ class EngineHub:
                 ei.verify_full()
         except OfficeError:
             pass                                             # state and reason are recorded on the integrity object
+        except Exception as e:  # noqa: BLE001 - live run 2026-10-15: a MemoryError here left the engine "checking"
+            ei.state, ei.reason = "unavailable", "ENGINE_CHECK_FAILED"
+            print(json.dumps({"engine_check_failed": type(e).__name__}), flush=True)
 
     def verify(self) -> dict:
         return self.lo.integrity.verify_full()

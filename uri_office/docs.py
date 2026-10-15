@@ -182,6 +182,18 @@ class Documents:
             raise OfficeError("NO_TEXT_LAYER", "", 422)
         return {"matches": r["matches"], "truncated": r["truncated"]}
 
+    def retry(self, did) -> dict:
+        """Prepare the preview again after it was unavailable (for example the engine check had not finished). The
+        sanitized copy is reused; nothing is read from the owner's file again."""
+        s = self.get(did)
+        with s.lock:
+            if s.state != "unavailable":
+                return s.view()
+            s.state, s.reason = "rendering", None
+            s.ready.clear()
+        threading.Thread(target=self._prepare, args=(s,), daemon=True, name=f"doc-{did}-retry").start()
+        return s.view()
+
     def close(self, did) -> dict:
         with self._lock:
             s = self.sessions.pop(did, None)

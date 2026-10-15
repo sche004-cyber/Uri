@@ -8,7 +8,30 @@
   "manifest_files": 19417,
   "installer_name": "LibreOffice_26.8.1_Win_x86-64.msi",
   "source_msi_sha256": "c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312",
-  "signer": "CN=The Document Foundation, O=The Document Foundation, L=Berlin, S=Berlin, C=DE"
+  "signer": "CN=The Document Foundation, O=The Document Foundation, L=Berlin, S=Berlin, C=DE",
+  "signers_allowed": [
+   "CN=Microsoft Windows Software Compatibility Publisher, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+   "CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+   "CN=The Document Foundation, O=The Document Foundation, L=Berlin, S=Berlin, C=DE"
+  ],
+  "unsigned_allowed": [
+   "program/intl/fbintl.dll",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/t32.exe",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/t64-arm.exe",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/t64.exe",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/w32.exe",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/w64-arm.exe",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/w64.exe",
+   "program/python-core-3.13.15/lib/setuptools/cli-32.exe",
+   "program/python-core-3.13.15/lib/setuptools/cli-64.exe",
+   "program/python-core-3.13.15/lib/setuptools/cli-arm64.exe",
+   "program/python-core-3.13.15/lib/setuptools/cli.exe",
+   "program/python-core-3.13.15/lib/setuptools/gui-32.exe",
+   "program/python-core-3.13.15/lib/setuptools/gui-64.exe",
+   "program/python-core-3.13.15/lib/setuptools/gui-arm64.exe",
+   "program/python-core-3.13.15/lib/setuptools/gui.exe"
+  ],
+  "signed_files": 229
  },
  "workers": {
   "lo_bridge.py": "101af4e3ebe89067c5c6464b45e64a7a1ac1e7a6953959770e966e612e0845f3",

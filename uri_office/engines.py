@@ -91,7 +91,19 @@ class EngineIntegrity:
         return self.root / "program"
 
     def verify_full(self, progress=None) -> dict:
-        """Hash the whole tree, compare its root with the pin, store the manifest. About 107 s for LibreOffice."""
+        """Hash the whole tree, compare its root with the pin, store the manifest. About 107 s for LibreOffice.
+        A failure that is not an integrity verdict (memory, disk, the signature tool) leaves the engine
+        `unavailable` with ENGINE_CHECK_FAILED, never stuck in `verifying`; the owner can run the check again."""
+        try:
+            return self._verify_full(progress)
+        except OfficeError:
+            raise
+        except Exception as e:  # noqa: BLE001
+            self._entries = None
+            self.state, self.reason = "unavailable", "ENGINE_CHECK_FAILED"
+            raise OfficeError("ENGINE_CHECK_FAILED", type(e).__name__, 503) from None
+
+    def _verify_full(self, progress=None) -> dict:
         with self._lock:
             if not self._program().is_dir():
                 self._fail("ENGINE_MISSING", "engine folder not found")
@@ -114,6 +126,14 @@ class EngineIntegrity:
                 self._entries = None
                 self.store.unlink(missing_ok=True)
                 self._fail("ENGINE_INTEGRITY", "engine files differ from the pinned engine")
+            signers = None
+            if self.pin.get("signers_allowed") and os.name == "nt":
+                signers = signer_survey(self.root)
+                bad = signer_problems(signers, self.pin)
+                if bad:
+                    self._entries = None
+                    self.store.unlink(missing_ok=True)
+                    self._fail("ENGINE_INTEGRITY", f"engine signature check failed for {len(bad)} file(s): {bad[:3]}")
             self.store.parent.mkdir(parents=True, exist_ok=True)
             tmp = self.store.with_name(self.store.name + f".{uuid.uuid4().hex[:8]}.tmp")
             tmp.write_text(json.dumps({"root": root, "files": entries, "verified_at": time.time()}),
@@ -121,7 +141,11 @@ class EngineIntegrity:
             os.replace(tmp, self.store)
             self._entries = entries
             self.state, self.last_verified = "ready", time.time()
-            return {"ok": True, "files": len(entries), "seconds": seconds, "mismatches": 0}
+            out = {"ok": True, "files": len(entries), "seconds": round(time.perf_counter() - t0, 1), "mismatches": 0,
+                   "hash_seconds": seconds}
+            if signers is not None:
+                out["signed_files_checked"] = len(signers)
+            return out
 
     def _load(self) -> dict:
         if self._entries is None:
@@ -214,6 +238,47 @@ def run_copy(script_name: str, state_dir: Path) -> Path:
     return dest
 
 
+_SIGNER_PS = r"""
+$ErrorActionPreference = 'Stop'
+$root = $env:URI_SIGNER_ROOT
+$files = Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { @('.exe','.dll','.bin','.com','.pyd') -contains $_.Extension.ToLower() }
+$out = foreach ($s in ($files | Get-AuthenticodeSignature)) {
+  [pscustomobject]@{ path = $s.Path.Substring($root.Length).TrimStart([char]92).Replace([string][char]92, '/');
+                     status = $s.Status.ToString(); signer = if ($s.SignerCertificate) { $s.SignerCertificate.Subject } else { $null } }
+}
+@($out) | ConvertTo-Json -Compress
+"""
+
+
+def signer_survey(root: Path) -> list:
+    """Authenticode status and signer subject of every executable and library in the engine tree (plan F11). Run at
+    full verification only (about 18 s for LibreOffice 26.8.1); the SHA-256 manifest stays the primary control."""
+    import subprocess
+    from .workerproc import powershell_exe
+    r = subprocess.run([powershell_exe(), "-NoProfile", "-NonInteractive", "-Command", _SIGNER_PS],
+                       capture_output=True, text=True, timeout=600, env=dict(os.environ, URI_SIGNER_ROOT=str(root)),
+                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    if r.returncode != 0:
+        raise OfficeError("ENGINE_INTEGRITY", "the engine signature check could not run", 503)
+    data = json.loads(r.stdout or "[]")
+    return data if isinstance(data, list) else [data]
+
+
+def signer_problems(survey: list, pin: dict) -> list:
+    """Files whose signature is not Valid from an allowed signer, except the pinned unsigned files (which the SHA-256
+    manifest still covers). A signed file that became unsigned, or a new signer, is a problem."""
+    allowed = set(pin.get("signers_allowed", []))
+    unsigned_ok = set(pin.get("unsigned_allowed", []))
+    bad = []
+    for row in survey:
+        if row.get("status") == "Valid" and row.get("signer") in allowed:
+            continue
+        if row.get("status") == "NotSigned" and row.get("path") in unsigned_ok:
+            continue
+        bad.append(f"{row.get('path')}: {row.get('status')}")
+    return bad
+
+
 def worker_hashes() -> dict:
     """Current hashes of the worker scripts (used by `python -m uri_office.engines pin-workers` and the pin test)."""
     return {p.name: sha256_file(p) for p in sorted(WORKERS_DIR.iterdir())
@@ -227,6 +292,22 @@ def _main(argv):
         PINS_FILE.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
         print(json.dumps(data["workers"], indent=1))
         return 0
+    if argv[:1] == ["pin-signers"]:
+        # Developer tool: record the signers and the unsigned files of the pinned tree (run once, after verify_full
+        # has confirmed the tree is the pinned one).
+        data = pins()
+        lo = data["libreoffice"]
+        survey = signer_survey(engines_root() / lo["dir"])
+        lo["signers_allowed"] = sorted({r["signer"] for r in survey if r.get("status") == "Valid" and r.get("signer")})
+        lo["unsigned_allowed"] = sorted(r["path"] for r in survey if r.get("status") == "NotSigned")
+        lo["signed_files"] = sum(1 for r in survey if r.get("status") == "Valid")
+        others = [r for r in survey if r.get("status") not in ("Valid", "NotSigned")]
+        if others:
+            print(json.dumps({"refused": others[:10]}))
+            return 1
+        PINS_FILE.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
+        print(json.dumps({k: lo[k] for k in ("signers_allowed", "signed_files")} | {"unsigned": len(lo["unsigned_allowed"])}))
+        return 0
     if argv[:1] == ["manifest-root"]:
         # Developer tool: print the root of the tree as it is now (used once to record the pin, with provenance).
         entries = {rel: {"sha256": sha256_file(p), "size": p.stat().st_size}
@@ -234,7 +315,7 @@ def _main(argv):
         print(json.dumps({"root": manifest_root(entries), "files": len(entries),
                           "soffice_bin": entries.get("program/soffice.bin", {}).get("sha256")}))
         return 0
-    print("usage: python -m uri_office.engines pin-workers | manifest-root <dir> [installer name]")
+    print("usage: python -m uri_office.engines pin-workers | pin-signers | manifest-root <dir> [installer name]")
     return 2
 
 

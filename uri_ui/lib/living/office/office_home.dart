@@ -31,16 +31,24 @@ class OfficeHome extends StatelessWidget {
         Wrap(spacing: 8, runSpacing: 8, children: [
           if (environment?.pickDocumentPath != null)
             ActionChip(key: const ValueKey('office-home-open'), avatar: const Icon(Icons.folder_open_rounded, size: 18),
-                label: const Text('Open a document or PDF'), onPressed: c.busy ? null : c.pickAndOpenDocument),
+                label: const Text('Open a Word, PowerPoint or PDF file'), onPressed: c.busy ? null : c.pickAndOpenDocument),
           ActionChip(key: const ValueKey('office-home-sheet'), avatar: const Icon(Icons.grid_on_rounded, size: 18),
               label: const Text('Work on a spreadsheet'), onPressed: onOpenSheet),
           for (final (g, caps) in c.availableGroups())
             for (final cap in caps)
               if (cap['id'] != 'open_workbook')
-                ActionChip(
-                  key: ValueKey('office-home-cap-${cap['id']}'),
-                  label: Text('${g['title']}: ${cap['title']}'),
-                  onPressed: c.busy || cap['ready'] != true ? null : () => c.chip('${cap['id']}'),
+                Tooltip(
+                  // Real-app run 2026-10-15: a greyed-out goal gave no reason.
+                  message: cap['ready'] == true
+                      ? ''
+                      : (cap['id'] == 'save_as_pdf'
+                          ? (c.saveAsPdfBlockedReason ?? '')
+                          : (officeErrorText['${cap['unready_reason']}'] ?? 'Not ready yet.')),
+                  child: ActionChip(
+                    key: ValueKey('office-home-cap-${cap['id']}'),
+                    label: Text('${g['title']}: ${cap['title']}'),
+                    onPressed: c.busy || cap['ready'] != true ? null : () => c.chip('${cap['id']}'),
+                  ),
                 ),
         ]),
         const SizedBox(height: UriSpace.lg),

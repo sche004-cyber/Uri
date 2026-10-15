@@ -903,6 +903,8 @@ def make_handler(office: Office, token: str):
                         return office.documents.search(parts[1], b.get("text"))
                     if parts[2] == "close":
                         return office.documents.close(parts[1])
+                    if parts[2] == "retry":
+                        return office.documents.retry(parts[1])
                 if len(parts) == 3 and parts[0] == "workflow" and _ok_id(parts[1]):
                     wf = office.workflows
                     table = {"cancel": lambda: wf.cancel(parts[1]), "resume": lambda: wf.resume(parts[1], b),
