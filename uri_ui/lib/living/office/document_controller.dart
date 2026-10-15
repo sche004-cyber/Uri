@@ -230,9 +230,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       }
       final w = activeWorkflow;
       if (w != null && (workflowView == null || workflowView!['state'] == 'running')) {
-        workflowView = await client.workflow(w);
-        stepLabel = _stepLabel(workflowView!);
-        if (workflowView!['state'] != 'running') _onWorkflowSettled();
+        _takeWorkflowView(w, await client.workflow(w));
         _notify();
       }
     } catch (_) {
@@ -506,17 +504,32 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       });
 
   Future<void> cancelWorkflow() => _guard(() async {
-        workflowView = await client.cancelWorkflow(activeWorkflow!);
-        _clearCards(activeWorkflow!);
-        stepLabel = null;
-        // CX-1: the conversation said "Working on it" and nothing more after a cancel. Codex R4-3: a running task
-        // may still be stopping; "Cancelled" is said once the service reports it (here or when the task settles).
-        if (workflowView?['state'] == 'cancelled') {
-          conversation.say(OfficeSpeaker.notice, _cancelledText, 'Task');
-        } else {
+        final w = activeWorkflow!;
+        final v = await client.cancelWorkflow(w);
+        _clearCards(w);
+        // CX-1: the conversation said "Working on it" and nothing more after a cancel. Codex R4-3/R5: a running task
+        // may still be stopping, or may have ended another way (failed) before the cancel landed; every settled
+        // answer goes through the same path as the poll, which says each outcome once.
+        if (v['state'] == 'running') {
+          if (workflowView == null || workflowView!['state'] == 'running') workflowView = v;
           conversation.say(OfficeSpeaker.notice, 'Stopping the task…', 'Task');
+        } else {
+          _takeWorkflowView(w, v);
         }
       });
+
+  /// Workflow views from the poll and from owner actions arrive concurrently (Codex R5-1). A settled view is never
+  /// replaced by a late "running" one, and each settled state of a workflow is announced once.
+  final Set<String> _announced = {};
+
+  void _takeWorkflowView(String wid, Map<String, dynamic> v) {
+    if (activeWorkflow != wid) return;
+    final current = workflowView?['state'];
+    if (v['state'] == 'running' && current != null && current != 'running') return;
+    workflowView = v;
+    stepLabel = _stepLabel(v);
+    if (v['state'] != 'running' && _announced.add('$wid:${v['state']}')) _onWorkflowSettled();
+  }
 
   Future<void> resumeWorkflow() => _guard(() async {
         final pick = environment?.pickDocumentPath;
@@ -528,6 +541,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
           if (p == null) return;
           paths.add(p);
         }
+        _announced.removeWhere((k) => k.startsWith('${activeWorkflow!}:'));   // a resumed task may settle again
         workflowView = await client.resumeWorkflow(activeWorkflow!, paths);
       });
 

@@ -416,6 +416,33 @@ void main() {
       expect(c.conversation.lines.any((l) => l.text.startsWith('Cancelled')), isFalse);
     });
 
+    test('Codex R5-2: a task that failed before the cancel landed says why, not "Stopping"', () async {
+      final mock = MockClient((req) async => http.Response(jsonEncode({'state': 'failed', 'steps': [], 'findings': [],
+        'errors': [{'code': 'ENGINE_TIMEOUT'}]}), 200));
+      final c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', mock))
+        ..activeWorkflow = 'a' * 20
+        ..workflowView = {'state': 'running', 'steps': [], 'findings': []};
+      await c.cancelWorkflow();
+      expect(c.workflowView?['state'], 'failed');
+      expect(c.conversation.lines.any((l) => l.text == 'Stopping the task…'), isFalse);
+      expect(c.stepLabel, 'Failed');
+    });
+
+    test('Codex R5-1: a settled outcome is said once and is not undone by a late "running" view', () async {
+      var answer = 'cancelled';
+      final mock = MockClient((req) async => http.Response(
+          jsonEncode({'state': answer, 'steps': [], 'findings': []}), 200));
+      final c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', mock))
+        ..activeWorkflow = 'a' * 20
+        ..workflowView = {'state': 'running', 'steps': [], 'findings': []};
+      await c.cancelWorkflow();
+      await c.cancelWorkflow();              // the same settled answer again (as from the poll): said once
+      expect(c.conversation.lines.where((l) => l.text.startsWith('Cancelled')).length, 1);
+      answer = 'running';                    // a late answer read before the cancel took effect
+      await c.cancelWorkflow();
+      expect(c.workflowView?['state'], 'cancelled');
+    });
+
     testWidgets('Codex R4-1: a saved task requests no output pages (its work files are gone)', (tester) async {
       await tester.binding.setSurfaceSize(const Size(900, 600));
       var pages = 0;
