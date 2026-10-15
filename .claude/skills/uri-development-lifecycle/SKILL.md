@@ -77,17 +77,20 @@ lifecycle numbers in the first column.
    really work: `codex --version`, `codex login status` ("Logged in"), a one-line probe with the configured model
    (`echo "Reply PROBE_OK" | codex exec -m <model> --sandbox read-only --skip-git-repo-check -`; on 2026-10-15
    `gpt-6-sol` worked and `gpt-6.1-sol` was refused for a ChatGPT login), a sandbox probe in the candidate checkout
-   that must run a shell command (`echo "Run git rev-parse HEAD and print its output" | codex exec -m <model>
-   --sandbox read-only -C <checkout> -`; the SHA must come back, because a login probe cannot detect a sandbox that
-   refuses commands), always set `reviewer.model` (the reviewer
-   gets a fresh CODEX_HOME, so `~/.codex/config.toml` does not apply), and that one `codex` resolves on PATH (the driver's
-   `provider_available` and reviewer binding). Then confirm from the first round's record that the reviewer read
-   the exact candidate SHA (`candidate` in its result). An invocation that was only attempted is not an audit.
+   that must run a shell command in the driver's reviewer environment: `CODEX_HOME` set to a new temporary folder
+   holding only a copy of `auth.json`, plus `-c project_doc_max_bytes=0` (`echo "Run git rev-parse HEAD and print its
+   output" | codex exec -m <model> -c project_doc_max_bytes=0 --sandbox read-only -C <checkout> -`); the SHA must
+   come back, because a login probe cannot detect a sandbox that refuses commands. Always set `reviewer.model` (the
+   reviewer gets a fresh CODEX_HOME, so `~/.codex/config.toml` does not apply), and check that one `codex` resolves
+   on PATH (the driver's `provider_available` and reviewer binding). The `candidate` SHA in a round's result proves
+   nothing (the prompt contains it): judge inspection from `tests_run` and `inspected`. An invocation that was only
+   attempted is not an audit.
    Known (2026-10-15, Windows): through the driver Codex's read-only sandbox rejects every shell command, so its
    review inspects nothing. While that driver limit stands, Windows milestones go straight to the fallback (the
-   template defaults to `claude_cli`); switch a NEW config to `codex_cli` only after the sandbox probe passes. The
-   driver does not read `tests_run`: check it yourself after every Codex round. A round whose commands were all
-   BLOCKED is a Codex failure whatever its verdict — an ACCEPT from it never supports VERIFIED, D1 or any report of
+   template defaults to `claude_cli`). A passing probe makes Codex a candidate again, but the first `codex_cli`
+   round of a new config must itself show inspection before Codex is trusted on Windows. The driver does not read
+   `tests_run`: check it yourself after every Codex round. A round whose commands were all BLOCKED, or whose
+   `tests_run` and `inspected` are empty, is a Codex failure whatever its verdict — an ACCEPT from it never supports VERIFIED, D1 or any report of
    independent acceptance; go to the fallback.
 2. **Fallback: a separate Claude process** (`"provider": "claude_cli"`; needs `claude auth status` loggedIn true).
    Use it when Codex is missing, logged out, out of quota, cannot reach the repository or exact candidate commit,
@@ -181,12 +184,13 @@ Driver outcomes map by stage and blocker kind:
 | Driver outcome | Report as |
 |---|---|
 | round REJECT routed to repair (FIXING) | REVISE |
-| BLOCKED `STALLED` or `RETRY_LIMIT`; a repair refused as out of scope or protected | REJECT (this candidate) |
-| BLOCKED `OWNER_*`, or a finding with `owner_decision: true` | BLOCKED (needs the owner) |
+| BLOCKED `STALLED` or `RETRY_LIMIT` | REJECT (this candidate) |
+| BLOCKED `OWNER_*` (including `OWNER_DECISION` for a repair refused as protected or out of scope), or a finding with `owner_decision: true` | BLOCKED (needs the owner) |
 | BLOCKED `NO_ACTIONABLE_FINDINGS` | BLOCKED; if all the round's commands were BLOCKED, an auditor failure (Auditor selection) |
-| other BLOCKED kinds (`TAMPER`, `CONFIG`, `EVIDENCE`, `RESOURCE`, `BUDGET`, `REVIEWER_EXEC`), WAITING_FOR_MODEL, NOT_VERIFIED | BLOCKED |
+| any other BLOCKED kind (e.g. `TAMPER`, `CONFIG`, `EVIDENCE`, `RESOURCE`, `BUDGET`, `REVIEWER_EXEC`, `REPAIR_FAILED`, `STEP_LIMIT`), WAITING_FOR_MODEL, NOT_VERIFIED | BLOCKED |
 | VERIFIED / COMPLETE on an independent ACCEPT or ACCEPT WITH FINDINGS | that verdict |
- An ACCEPT on source
+
+An ACCEPT on source
 code alone never means the phase is qualified: live UI, security, regression and owner gates must also pass.
 
 ## Reporting (you)

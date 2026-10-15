@@ -102,9 +102,17 @@ parsed result, `round.json` with worker identity and integrity check), `repairs/
   `gpt-6-sol`, Windows): the round completed and was independent, but Codex's read-only sandbox rejected every shell
   command ("blocked by policy", also `git rev-parse` and `Get-Content`), so it inspected nothing and returned REJECT
   with no findings (driver: BLOCKED NO_ACTIONABLE_FINDINGS). On Windows a `codex_cli` reviewer is therefore NOT
-  usable through the driver until its sandbox/approval settings are fixed (a driver change); use the Claude fallback.
+  usable through the driver until a probe in the driver's reviewer environment (SKILL.md "Auditor selection") and a
+  first round both show inspection; a driver change to its sandbox/approval settings may be needed. Use the Claude
+  fallback meanwhile.
 - The UI qualification of section 8 is enforced by the skill and the auditor, not by the driver: the driver does not
   read the qualification record. Integration authorisation is the control (SKILL.md "Integration preconditions").
+
+## 7. Repository note
+
+The frozen root `.gitignore` ignores `.claude/`. The skill file was added with `git add -f` (a tracked file inside an
+ignored directory); `.gitignore` itself is unchanged. If the owner prefers, the skill can live only under
+`.agents/skills/` and be copied into `.claude/skills/` locally.
 
 ## 8. UI-first live qualification (owner directive 2026-10-15, DEV-LIFECYCLE-3)
 
@@ -189,9 +197,3 @@ behaviour it observed itself and what it could not verify (template `environment
 reports is never reported as independent live observation. The reviewer records them as JSON keys `inspected`,
 `evidence_reviewed_only` and `live_observed` next to `tests_run` and `unverified` (the driver keeps the whole result
 object); the qualification record mirrors them under `independent_audit`.
-
-## 7. Repository note
-
-The frozen root `.gitignore` ignores `.claude/`. The skill file was added with `git add -f` (a tracked file inside an
-ignored directory); `.gitignore` itself is unchanged. If the owner prefers, the skill can live only under
-`.agents/skills/` and be copied into `.claude/skills/` locally.
