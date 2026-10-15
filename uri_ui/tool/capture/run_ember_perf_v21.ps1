@@ -3,7 +3,7 @@ Ember V2.1 performance series: V2.1 Ember, V2 Ember and Solar, alternated, two
 runs each, through run_ember_perf.ps1. Meant to run INSIDE the GPU lease:
 
   python -m uri_operational_intelligence.gpu_lease run --purpose benchmark `
-    --label "Ember V2.1 perf series" -- powershell -File tool\capture\run_ember_perf_v21.ps1 -Builds <dir> -Out <dir>
+    --label "Ember V2.1 perf series" -- powershell -File tool\capture\run_ember_perf_v21.ps1 -Builds <dir> -Out <dir> -Baked <dir>
 
 Before every run it re-checks that this process tree still holds the lease and
 that no llama-server (Brain) is resident; if either fails it stops and writes

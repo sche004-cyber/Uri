@@ -1,6 +1,6 @@
 """Re-runnable measurements behind 01_DIAGNOSIS_V21.md (review R1-07).
 
-    python -B scripts/fire_companion/diag_v21.py [--v2-assets DIR]
+    python -B scripts/fire_companion/diag_v21.py [--out DIR]
 
 1. Share of the character's alpha mass the app shows (frame 0 of each
    reference clip): the frame placed in the cell framing, weighted by the host's
@@ -8,7 +8,7 @@
    box edge), for V2's framing and V2.1's.
 2. V2 reproduction: frame 0 of idle rendered with V2's frame and no stage,
    through the WebP round trip, against cell 0 of the shipped V2 atlas
-   (--v2-assets, default: the V2 worktree's).
+   (read from git history at b73bd26c).
 3. Live check of the pack's app view (review R1-01): the live screenshot
    evidence/live/run1_first/first-05-idle-brain-ready.jpg (V2.1 painted build,
    idle) against app_view of idle frame 0 rendered at box sizes 240-340 px
@@ -20,7 +20,9 @@ Writes docs/companions/fire/v21/evidence/diagnosis/diag_v21.json.
 from __future__ import annotations
 
 import argparse
+import io
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -88,8 +90,7 @@ def cp_mask(box: int) -> np.ndarray:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--v2-assets", type=Path,
-                    default=Path(r"C:\Users\cheta\Development\uri-fire-companion-v2\uri_ui\assets\companions\ember"))
+    ap.add_argument("--out", type=Path, default=REPO / "docs/companions/fire/v21/evidence/diagnosis")
     a = ap.parse_args()
     out = {"visible_share": {}, "v2_reproduction": {}}
     for st in cp.STATES:
@@ -97,16 +98,19 @@ def main() -> None:
                                     "v21": round(visible_share(st, V21_FRAME), 3)}
         print(st, out["visible_share"][st], flush=True)
     cell = cp.Renderer().cell("idle", 0, cp.V2_FRAME, cp.V2_STAGE)
-    sheet = np.asarray(Image.open(a.v2_assets / "idle.webp").convert("RGBA")).astype(np.float32) / 255
+    # the V2 atlas straight from git history (review R2-09), not from another worktree
+    blob = subprocess.run(["git", "show", "b73bd26c:uri_ui/assets/companions/ember/idle.webp"], cwd=REPO,
+                          capture_output=True, check=True).stdout
+    sheet = np.asarray(Image.open(io.BytesIO(blob)).convert("RGBA")).astype(np.float32) / 255
     s = sheet[:320, :320].copy()
     s[..., :3] *= s[..., 3:]
     d = np.abs(s - cell)
-    out["v2_reproduction"] = {"v2_atlas": str(a.v2_assets / "idle.webp"), "mean_abs_diff": round(float(d.mean()), 4),
+    out["v2_reproduction"] = {"v2_atlas": "git b73bd26c:uri_ui/assets/companions/ember/idle.webp", "mean_abs_diff": round(float(d.mean()), 4),
                               "max_abs_diff": round(float(d.max()), 4)}
     print(out["v2_reproduction"])
     out["live_check"] = live_check()
     print(out["live_check"])
-    dst = REPO / "docs/companions/fire/v21/evidence/diagnosis"
+    dst = a.out
     dst.mkdir(parents=True, exist_ok=True)
     (dst / "diag_v21.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
 

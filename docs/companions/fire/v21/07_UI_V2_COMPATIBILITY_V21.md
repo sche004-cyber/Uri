@@ -39,7 +39,7 @@ Research summary. The candidate techniques, and what was taken:
   parts of each frame, blurred, with alpha proportional to the blurred brightness and capped at 0.45. It follows the
   animated flames frame by frame and fades before the cell border. Pre-baked into the atlas: zero runtime cost, no
   shader.
-- **Painted backdrop as atmosphere.** Used only as a translucent haze (60 %, radial fade, alpha <= 0.31 outside the
+- **Painted backdrop as atmosphere.** Used only as a translucent haze (60 %, radial fade, alpha <= 0.29 outside the
   figure) on the depleted clip. There the smoke needs a backdrop (P3: 73.8 without it, 79.0 with it). Other clips
   gained nothing from haze in P3 and are cleaner without it on light desktops.
 - **Rejected:**
@@ -64,10 +64,10 @@ Q2. In P3 it cost about 6 points against the painted build on today's dark app c
 | # | Requirement | How tested | Result |
 |---|---|---|---|
 | 1 | Transparent rendering against multiple backgrounds | Every shipped clip, frames 0, 1/3 and 2/3, composited from the shipped atlases over black, white, saturated blue, mid grey, a colour gradient, a checkerboard and noise: `evidence/transparency/contrast_<clip>.jpg`. Earlier variant sheets also used a Windows wallpaper locally (not committed: third-party image). | PASS (visual) |
-| 2 | No rectangular cut-out artefacts | T1: outer 2 % band alpha <= 2/255 in **every frame of every shipped clip** (worst 0); T2: outside the central circle alpha <= 128 (worst 79, depleted haze; others 64 or less); T3: opaque area <= 25 % (worst 7.0 %). `transparency_gates.json` | PASS |
-| 3 | Flame, smoke and glow alpha blending | T4 matte check: no dark-matte fringe pixels at semi-transparent rims in any frame. Visual: flames and glow read as light on dark and light backgrounds. Smoke is dark, painted translucency: faint on black, visible on light backgrounds. That is inherent to dark smoke on a transparent surface, not a defect. | PASS, with the noted limitation |
+| 2 | No rectangular cut-out artefacts | T0: every frame contains Ember (guard against an empty atlas, added after R2-04). T1: outer 2 % band alpha <= 2/255 in **every frame of every shipped clip** (worst 0); T2: outside the central circle alpha <= 128 (worst 73, depleted haze; others 64 or less); T3: opaque area <= 25 % (worst 7.0 %). `transparency_gates.json` | PASS |
+| 3 | Flame, smoke and glow alpha blending | T4 matte check: no dark-matte fringe pixels at semi-transparent rims in any frame. Limitation (R2-04): T4 tests rims next to opaque pixels; depleted has almost none, so T4 is close to vacuous there and its smoke is judged from the contrast sheets. T5 checks the blink patch's outer edge only. Visual: flames and glow read as light on dark and light backgrounds. Smoke is dark, painted translucency: faint on black, visible on light backgrounds. That is inherent to dark smoke on a transparent surface, not a defect. | PASS, with the noted limitation |
 | 4 | Animation clipping and boundaries | T1 holds for all 456 frames of the 8 shipped clips (fierce is not shipped). Blink patches (T5): inside the cell, patch-edge alpha <= 1. | PASS |
-| 5 | Existing companion rendering compatibility | New Flutter test `ember_transparency_test.dart`: the real `EmberCompanion`/`EmberPainter`, real atlases, transparent layer with no host mask, all 8 clips; border, ring and opaque-area gates pass. It fails on the painted atlases (verified before the change). Existing Ember tests 44/44. | PASS |
+| 5 | Existing companion rendering compatibility | New Flutter test `ember_transparency_test.dart`: the real `EmberCompanion`/`EmberPainter`, real atlases, transparent layer with no host mask, all 8 clips; border, ring and opaque-area gates pass. It failed on the painted atlases when run before the change; that console output was not committed (the committed baseline is the equivalent atlas-gate result, `baseline_v21_painted_9933ca2b_gates.json`). Ember tests: 36 existing plus the 8 new transparency tests, 44/44. The render test covers frame 0 of each clip (`still: true`), without blinks; all frames and the blink patches are covered by the atlas gates. | PASS |
 | 6 | Stable animation and performance | Perf series on the transparent atlases under our own GPU lease (`evidence/perf_transparent/`, 12/12 lease checks): GPU 0.28 % median (Solar 6.6-7.5 %), dedicated VRAM 147 MB (= V2), frame p99 2.75-2.78 ms, 47.5-48.4 frames/s. Live run 3 (`evidence/live/run3_returning_transparent/`): Ember restored, irregular blinks, Settings clean. | PASS |
 | 7 | No regressions to existing companions | Full Flutter suite at `e792ddc8`: 588 passed, 5 skipped, 0 failed. Solar perf unchanged against the earlier series. | PASS |
 | - | Transparent borderless **desktop window** | Not exercised. UI V2's transparent window lives on a separate stream and Ember is not integrated there. Rendering tests are isolated and do not prove the real window. | **PENDING (Stage 2)** |
@@ -79,7 +79,7 @@ Inspected candidate `C:\Users\cheta\Development\uri-ui-v2-final-repair` at `316e
   (`services/companion_window_adapter.dart`: `setAsFrameless`, `setBackgroundColor(Colors.transparent)`, 440x680).
 - The companion is drawn through the same `LivingCompanion` -> `SoftDisc` -> `CompanionOrb` path as today, with
   `scale = presenceScale(id) * look.size * presentationScale`. `presentationScale` is 1.85 only for Solar in Companion
-  Mode and 1 otherwise.
+  Mode with `services.visualV2`, and 1 otherwise.
 - **Ember is not present in UI V2:** no `CompanionIdentity.ember`, no `ember_companion.dart`, no Ember assets.
 
 Compatibility reading:
@@ -115,7 +115,7 @@ Compatibility reading:
 | Gate | Status | Evidence |
 |---|---|---|
 | B1 Genuine alpha transparency | **PASS** | gates T2/T3, Flutter test |
-| B2 No permanent opaque rectangular background | **PASS** | T2, T3, contrast sheets |
+| B2 No permanent opaque rectangular background | **PASS** for opacity. Qualifier (R2-05): the depleted haze covers about 59 % of the cell at alpha > 0.1 and reads as a soft grey field on white; translucent, but a visible atmosphere, so it shares B4's owner sign-off | T2, T3, contrast sheets |
 | B3 No visible window boundaries (Ember's own edges) | **PASS** | T1 on all frames |
 | B4 Painterly lighting blends into transparency | **PASS** (technical). The depleted haze look on light desktops needs **owner visual sign-off** (PENDING owner) | contrast sheets |
 | B5 Correct alpha for flames, smoke, particles | **PASS**; limitation: dark smoke is faint on dark desktops | T4, contrast sheets |

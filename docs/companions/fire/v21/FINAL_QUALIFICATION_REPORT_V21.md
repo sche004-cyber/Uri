@@ -16,7 +16,7 @@ Branch `phase/fire-companion-v21-20261015` (local only), cut from V2 `b73bd26c`.
 | A. Brain coexistence (AC-P2) | MET with limits (own Brain, lease evidenced; 3 pairs) |
 | A. Live Windows (AC-L1) | PASS; known pre-existing PRE-2 teardown failure in returning runs |
 | A. Regression (AC-R1) | PASS: 588 passed, 5 skipped, 0 failed at `e792ddc8`; no protected path changed |
-| A. Independent review (AC-R2) | R1: ACCEPT WITH FINDINGS, repaired; R2 recheck: see `evidence/review/` |
+| A. Independent review (AC-R2) | R1 and R2 (recheck): ACCEPT WITH FINDINGS. Findings repaired or, where noted, disclosed (`evidence/review/`); no high-severity finding |
 | A. Lifecycle acceptance (AC-R3) | **BLOCKED**: the Claude CLI is logged out |
 | **B. Transparency readiness (Stage 1)** | **PASS** on all technical gates; the depleted haze look needs owner visual sign-off |
 | **C. UI V2 integration (Stage 2)** | **PENDING**: UI V2 is not at its integration checkpoint, and Ember is not in UI V2 |
@@ -70,9 +70,13 @@ Reading:
   0-1.1 points (state means) in Q1.
 - **Transparent build.** It costs about 2.5-6 points against that control, depending on the panel.
 - **Ceiling.** The control itself scored 85-89 in the app presentation. 90 was not reached by any app-presented
-  candidate. A round mean is uncertain by about +-2 points: Q1 re-scored P1's identical images 3.3 points lower.
-  So "no artwork can pass" is not established. What is established is that, with this rubric and panel size, the
-  painting itself did not reach 90 in the app (review R1-03).
+  candidate. So "no artwork can pass" is not established. What is established is that, with this rubric and panel
+  size, the painting itself did not reach 90 in the app (review R1-03).
+- **Measurement uncertainty is larger than first stated (review R2-01).** Pixel-identical images moved between
+  panels by up to 4.9 points (Q1 -> Q2: control, V2 and the ablation all rose 2.0-4.9) and the transparent images by
+  5.6-7.8 points (P3 t1 -> Q2). Comparisons across rounds are therefore unreliable. Only within-round differences
+  should be used: in Q2, the shipped transparent build is 2.4-3.5 below the control; in Q1, the painted build is
+  0-1.1 below.
 - **Gain over V2.** V2.1 is 7.5-14 points above V2 as users see it (Q2 transparent: +7.5 to +9.6).
 
 ## 4. Transparency and UI V2 compatibility (records B and C)
@@ -92,7 +96,7 @@ Full record: `07_UI_V2_COMPATIBILITY_V21.md`.
 | Gate | Result | Baseline V2 / V2.1 painted |
 |---|---|---|
 | T1 outer band alpha <= 2/255 | worst 0 | 255 / 94 (FAIL) |
-| T2 outside the central circle alpha <= 128 | worst 79 (depleted haze); others 64 or less | 255 / 255 (FAIL) |
+| T2 outside the central circle alpha <= 128 | worst 73 (depleted haze); others 64 or less | 255 / 255 (FAIL) |
 | T3 opaque area <= 25 % | worst 7.0 % | 21 % / 86 % |
 | T4 dark-matte fringe | 0 pixels | - |
 | T5 blink patches | edge alpha <= 1 | - |
@@ -103,7 +107,7 @@ over black, white, blue, grey, a gradient, a checkerboard and noise.
 
 **Existing companion compatibility:**
 - no change under `uri_ui/lib`;
-- Ember tests 44/44;
+- Ember tests 36 existing + 8 new transparency tests, 44/44;
 - full suite at the final commit (section 7);
 - live run 3 in today's host: Ember restored, blinks, Settings clean.
 
@@ -160,7 +164,8 @@ The interaction was automated; this is not a human usability study. The wake phr
 - **Full Flutter suite at `e792ddc8`:** 588 passed, 5 skipped, 0 failed (`evidence/tests/full_flutter_test_final*`).
   That is 580 as in V2, plus the 8 new transparency tests.
 - **Boundary and frozen-file check:** `evidence/tests/boundary_check.txt` lists every file changed since V2's
-  `b73bd26c`. None is under `uri_ui/lib`, Core, Runtime v1 or the shared host files.
+  `b73bd26c`, except the reviewer pack images (`evidence/fidelity/<round>/`). The protected-path check covers all
+  files. None is under `uri_ui/lib`, Core, Runtime v1 or the shared host files.
 
 ## 8. Startup (`04_STARTUP_PROPOSAL_V21.md`), AMBER
 
@@ -183,7 +188,7 @@ unshipped.
    - class-scoring;
    - a dark-canvas surround approximation;
    - it does not score the desktop backgrounds of a transparent window.
-2. Transparency trades about 2.5-6 points of fidelity on today's dark canvas for UI V2 readiness.
+2. Transparency costs fidelity on today's dark canvas: within-round, about 2.4-3.5 points below the control in Q2 and about 6 below the painted build in P3. Cross-round numbers carry 5+ points of panel variance (R2-01).
 3. The depleted clip's translucent haze is a visual-identity choice.
 4. Dark smoke is faint on dark desktops.
 5. UI V2 integration is untested (PENDING). The size preference above 1.0 crops the figure inside the disc.
@@ -197,8 +202,7 @@ unshipped.
 ## 11. Recommendation for the owner
 
 1. **AC-F1.**
-   - Option 1: accept Ember V2.1 under a waiver, on the evidence that it is within a few points of the painting in
-     the app presentation.
+   - Option 1: accept Ember V2.1 under a waiver. Evidence: within each round it scores 0-3.5 points below the painting shown the same way. Panel variance between rounds is about 5 points, so the absolute level is uncertain.
    - Option 2: redefine the target relative to the painting shown in the app (an owner decision, not applied here).
    - Otherwise V2.1 is not eligible for Stage 3.
 2. **Approve or adjust the transparency look**, especially the depleted haze, from `evidence/transparency/`.

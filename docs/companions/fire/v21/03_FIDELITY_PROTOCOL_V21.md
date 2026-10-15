@@ -165,3 +165,15 @@ there are no further rounds.
    lighter, warmer radial surround next to the disc (about (29,20,11) sampled from `first-05`) and a box of about
    300 px. The host arithmetic (scale, disc) is exact; the surround and size are approximations, applied equally to
    every candidate and to the control. A pixel check against a live crop is in `evidence/diagnosis/`.
+
+**C-5 (record of deviations found by review R2):**
+1. *Two rounds after Q1 (R2-07).* Section 8 allows one round after Q1. P3 (exploratory, no pass rule) and Q2 both ran
+   after Q1. P3 did not qualify anything, but it is a deviation from the letter of section 8, recorded here. Q2 is
+   the last scored round.
+2. *Panel variance (R2-01).* Q2 re-scored images pixel-identical to Q1's for `painting_app`, `v2_app` and
+   `v21_frame_only`, and nearly identical to P3's `t1_glow` for the transparent build. Those images moved 2.0-4.9 and
+   5.6-7.8 points between panels. The "+-2 points" stated after R1 understates the uncertainty. Use only
+   within-round comparisons.
+3. *Indistinguishable variants (R2-08).* In P3 the t1, t2 and t3 images differ by 3-8/255 outside depleted, and
+   reviewers scored them identically. "Made no difference" means "reviewers did not distinguish them".
+

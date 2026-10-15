@@ -22,8 +22,8 @@
    - For depleted the drop was 12 points without the haze, because its dark smoke needs a backdrop.
    - Reviewers named three costs: an "added halo", fewer distant embers, and a near-black surround in place of the
      painted brown.
-2. **The haze.** It made no difference in idle, joyful or fierce, where reviewers scored the three variants
-   identically. It helped depleted: 73.8 without it, 79.0 at 60 %.
+2. **The haze.** Reviewers did not distinguish the three variants in idle, joyful or fierce; there the images
+   differ by only 3-8/255 (R2-08). It helped depleted: 73.8 without it, 79.0 at 60 %.
 3. **Choice (the smallest evidence-based change).** Glow only for every clip, plus the 60 % haze for depleted only.
    This is what `73e84a6d` ships.
 4. **This is exploratory.** The qualification result for the shipped transparent build is Q2 (`Q2_RESULTS.md`).

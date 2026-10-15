@@ -45,5 +45,6 @@ AC-F3 (character >= 90) is met at 91.1-91.4. AC-F2 (animation) is met: V2.1 scor
 
 Section 8 allows one repair and a round Q2. No fidelity repair was available that the evidence supports: V2.1 was
 already level with the presentation control, and P2 showed no tested host presentation raising the control above
-86.3. The Q2 round was later used for the owner-mandated transparency change (protocol change log C-3), which is
+86.3. An exploratory round P3 (transparency variants, no pass rule; `P3_RESULTS.md`) also ran after Q1 (deviation recorded as
+C-5). The Q2 round was later used for the owner-mandated transparency change (protocol change log C-3), which is
 expected to cost fidelity rather than gain it; see `Q2_RESULTS.md`. The threshold is not changed.

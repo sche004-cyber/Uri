@@ -87,7 +87,9 @@ From live run 1 (`06_LIVE_QUALIFICATION_V21.md`, `evidence/live/run1_first/obser
 ## Transparent build (`73e84a6d`), added for the UI V2 directive
 
 The same series and harness, run on the transparency-ready atlases, inside our own lease. The V2.1 executable was
-rebuilt from `73e84a6d`; the bundled `idle.webp` was byte-checked against the committed asset. Lease checks: 12/12
+rebuilt from `73e84a6d`; the bundled atlases are byte-identical to the committed ones
+(`evidence/perf_transparent/bundled_asset_check.txt`). There is no `census_before.json` for this series (only
+`census_after.json`); the lease checks and `brain_resident=0` before every run are the exclusivity evidence. Lease checks: 12/12
 (`evidence/perf_transparent/lease_checks.txt`). Summary: `evidence/perf_transparent/summary.json`.
 
 | Run | GPU 3D median (max) | Dedicated VRAM median (max) | Frames/s | Frame p50 / p99 | Decoded atlases |

@@ -31,15 +31,17 @@
 ## Reading
 
 1. **What transparency costs.**
-   - In this panel the transparent build is 2.5-3.5 points below the painted-presentation control: 85.3-86.8
+   - In this panel the transparent build is 2.4-3.5 points below the painted-presentation control: 85.3-86.8
      against 88.3-89.3.
-   - In P3 the transparent variants were about 6 points below. That is consistent within the about +-2 point
-     uncertainty per round mean.
+   - In P3 the transparent variants were about 6 points below the painted build. Note (R2-01): Q2's control,
+     `v2_app` and ablation images are pixel-identical to Q1's, yet scored 2.0-4.9 higher; the transparent images
+     are nearly identical to P3's `t1_glow`, yet scored 5.6-7.8 higher. Panel variance is about 5 points or more, so
+     only within-round differences are reliable.
    - Reviewers named a "halo that reads slightly cut-out against flat black", fewer distant embers, and the lost
      painted backdrop.
 2. **What the haze does for depleted.** Depleted, which keeps the painted backdrop as a 60 % haze, scored highest
    (86.8). That agrees with P3.
-3. **Against V2.** V2.1 is still 8-10 points above V2 as users see it (77.0-77.8).
+3. **Against V2.** V2.1 is still 7.5-9.6 points above V2 as users see it (77.0-77.8).
 4. **Section 8.** This was the last round the protocol allows. The threshold is not changed. AC-F1 stays NOT MET
    unless the owner decides otherwise.
 

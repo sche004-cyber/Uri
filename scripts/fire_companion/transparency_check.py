@@ -17,6 +17,8 @@ frame of every clip, plus every blink patch, with no host mask:
                 straight colour is near black (max channel < 12/255) and not
                 part of a dark painted area is reported (premultiplication
                 errors show up as black rims on light desktops);
+  T0 painted  - every frame actually contains Ember (>= 0.5 % opaque), so an
+                empty atlas cannot pass vacuously;
   T5 blink    - each blink patch is inside its cell and transparent outside
                 the eye sockets' soft mask (checked like T1 on the patch edge).
 
@@ -112,6 +114,8 @@ def main() -> None:
             "semi_rim_px_median": float(np.median([x["semi_rim_px"] for x in g])),
         }
         passed = {
+            # guard (review R2-04): a blank or nearly empty atlas must not pass
+            "T0_painted": min(x["opaque_frac"] for x in g) >= 0.005,
             "T1_border": worst["border_max"] <= 2,
             "T2_ring": worst["ring_max"] <= 128,
             "T3_opaque": worst["opaque_frac_max"] <= 0.25,

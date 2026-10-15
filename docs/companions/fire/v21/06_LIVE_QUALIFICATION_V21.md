@@ -27,7 +27,7 @@
 | 2 | Returning user, no Brain | **PASS** for every journey step. The test process reported one failure at teardown: `OiConversation was used after being disposed` (`refreshStatus` after dispose). This is the known pre-existing defect PRE-2 in unchanged canonical code (`oi_conversation.dart`), the same as V2's run 2. | `evidence/live/run2_returning/` |
 
 Assets in these runs: the painted V2.1 build (`9933ca2b`). The transparency build (`73e84a6d`) is covered by the
-live check in section "Transparency build" below.
+live run 3 in the section "Transparency build (run 3)" below.
 
 After the runs, none of this session's processes were left. The lease was then taken by the parallel FCV recovery
 session, whose own Brain and UI were not touched.
@@ -69,3 +69,19 @@ session, whose own Brain and UI were not touched.
   head-and-shoulders crop; the face stays readable (`first-08`, `first-16`).
 - **Error and concern:** the concerned expression (V2's derived clip) reads correctly over the new backdrop
   (`first-16`).
+
+## Transparency build (run 3)
+
+- **When and what:** 2026-10-15 08:35 UTC, returning-user mode, no Brain, on the transparent assets of `73e84a6d`.
+  Assets were unchanged through the final commit. Atlas SHA-256 prefixes from `manifest.json`: idle `d042061fe1c4`,
+  depleted `a5b1bcece9be`, joyful `ca36a998e7c5`.
+- **Evidence:** `evidence/live/run3_returning_transparent/`.
+- **Result:** PASS for R1-R3. Ember was restored with no choice. Blinks were irregular: 5 in 25 s, gaps 3.1-6.3 s.
+  Settings opened with no framework errors. The test process again exited with the PRE-2 teardown failure.
+- **What the screenshots show:** Ember drawn from its transparent atlas inside the current host. There is no square
+  and no visible disc edge; the depleted haze reads as soft atmosphere (`returning-02`).
+- **Limits (review R2-03):**
+  - With no Brain the state is `unavailable`, so only the **depleted** clip was seen live. The glow-only clips (idle,
+    joyful, thinking and others) were seen only in the perf harness window (`evidence/perf_transparent/*/ember_*.png`)
+    and in the rendering tests, not in the full app.
+  - `returning-brain_host.json` in this folder is a stale copy of run 2's file: no Brain host ran in run 3. Ignore it.

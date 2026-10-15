@@ -137,7 +137,7 @@
     1.0
    ],
    "stage": {
-    "_comment": "Depleted only: the painted backdrop as a 60 % translucent haze (P3: smoke reads 73.8 without it, 79.0 with it); still transparent (alpha <= 0.31 outside the figure).",
+    "_comment": "Depleted only: the painted backdrop as a 60 % translucent haze (P3: smoke reads 73.8 without it, 79.0 with it); still transparent (alpha <= 0.29 outside the central circle; transparency_gates.json).",
     "glow": {
      "sigma": 18,
      "gain": 2.0,
