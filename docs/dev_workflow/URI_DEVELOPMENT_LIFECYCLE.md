@@ -115,7 +115,9 @@ parsed result, `round.json` with worker identity and integrity check), `repairs/
   coordinator in the candidate worktree and re-audited in a new revision; a driver fix (`git add -f` for tracked
   paths only) is a later milestone.
 - The UI qualification of section 8 is enforced by the skill and the auditor, not by the driver: the driver does not
-  read the qualification record. Integration authorisation is the control (SKILL.md "Integration preconditions").
+  read the qualification record, and `REPORT.html` / `report_data.json` do not show it: the coordinator shows the
+  record's status beside the driver report (SKILL.md "Visual report" item 5). Integration authorisation is the
+  control (SKILL.md "Integration preconditions").
 
 ## 7. Repository note
 

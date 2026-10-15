@@ -297,12 +297,17 @@ closes, give the owner a visual report without being asked:
    `<state_dir>/dashboard_url.txt`). Otherwise send `REPORT.html` to the owner as a file (SendUserFile or
    equivalent). Never hand-type figures: every number comes from `report_data.json`.
 3. In the reply, give the link and three lines: stage, what was achieved this run, and what needs the owner
-   (`summary.owner_actions` / `owner` rows). If `summary.evidence_ok` is false, say "not qualified" plainly.
+   (`summary.owner_actions` / `owner` rows). If `summary.evidence_ok` is false, say "not qualified" plainly. For
+   user-facing work add a fourth line: the UI qualification status (item 5).
 4. A program-level view across milestones (like the W1/A0 + skill dashboard of 2026-10-11) is updated the same way
    when several milestones run together.
 5. Structured evidence is authoritative (`events.jsonl`, `round.json`, `receipt.json`, the UI qualification JSON).
-   Reports and dashboards are views generated from it; they show the UI qualification status next to the driver
-   stage and never replace or round up either.
+   Reports and dashboards are views generated from it and never replace or round up either. The driver report
+   reads only driver evidence: its "qualified" wording and `summary.evidence_ok` mean an independent ACCEPT with
+   passing gates on the source commit, never LIVE VERIFIED. For `USER_FACING` and `INDIRECT` work show the UI
+   qualification status beside it, copied from the record's `status`, `status_reason` and `code_commit` (in the
+   dashboard as rows of their own, read from the JSON file; in the reply as its own line). No record means NOT
+   VERIFIED. Driver support for reading the record is a later milestone.
 
 ## Containment
 
