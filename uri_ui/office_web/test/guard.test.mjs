@@ -90,6 +90,9 @@ test('XF-1: guardFormatting refuses merges, strips user styles, leaves page writ
   guardFormatting(cs, Cancel, () => applying, (id) => refused.push(id));
   const l = listeners[0];
   assert.ok(FORMAT_COMMANDS.has('sheet.command.add-worksheet-merge'));
+  for (const id of ['sheet.command.paste-col-width', 'sheet.mutation.set-worksheet-col-width',
+    'sheet.mutation.set-worksheet-row-height']) assert.ok(FORMAT_COMMANDS.has(id), id);
+  assert.ok(!FORMAT_COMMANDS.has('sheet.mutation.set-worksheet-row-auto-height'));
   assert.throws(() => l({ id: 'sheet.command.add-worksheet-merge' }), Cancel);
   const user = { id: 'sheet.mutation.set-range-values', params: { cellValue: { 0: { 0: { v: 1, s: { bl: 1 } } } } } };
   l(user);
