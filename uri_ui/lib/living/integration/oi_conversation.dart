@@ -27,6 +27,15 @@ import 'oi_draft.dart';
 
 enum OiRole { user, uri, system }
 
+/// Plain words for a turn the worker did not accept (FCV-08); the code stays in the worker's evidence.
+String notSentMessage(String code) => switch (code) {
+      'TURN_IN_PROGRESS' => 'Not sent: URI is still finishing the previous request. Try again in a moment.',
+      'BRAIN_RESTARTING' => 'Not sent: the Brain is restarting. Try again when it is ready.',
+      'TEXT_INVALID' => 'Not sent: the message was empty or too long.',
+      'WORKER_TIMEOUT' => 'Not sent: URI did not answer in time. Try again.',
+      _ => 'Not sent: URI could not accept this request right now.',
+    };
+
 class OiMessage {
   OiMessage({required this.role, required this.text, this.turnId});
   final OiRole role;
@@ -510,7 +519,7 @@ class OiConversation extends ChangeNotifier {
             role: OiRole.system,
             text: 'No reply from URI. The request may or may not have started; it was not repeated.'));
       } else {
-        messages.add(OiMessage(role: OiRole.system, text: 'Not sent: ${e.code}'));
+        messages.add(OiMessage(role: OiRole.system, text: notSentMessage(e.code)));
       }
       notifyListeners();
     }
@@ -605,13 +614,28 @@ class OiConversation extends ChangeNotifier {
   Future<void> abandon() async {
     final id = pendingApproval?.turnId ?? pendingConfirmation?.turnId;
     if (id == null) return;
+    // A confirmation's "No" is now Core's abandon decision, a short worker job: stay busy until it finishes so
+    // the next request is not refused as TURN_IN_PROGRESS (FCVR-01, live). An approval is released at once.
+    final viaCore = pendingApproval == null;
     pendingApproval = null;
     pendingConfirmation = null;
+    if (viaCore) {
+      activeTurnId = id;
+      _jobs[id] = (_jobs[id] ?? 0) + 1;
+    }
     notifyListeners();
     try {
-      await runtime.call({'command': 'oi_abandon', 'turn_id': id});
+      final r = await runtime.call({'command': 'oi_abandon', 'turn_id': id});
+      if (viaCore && r['accepted'] != true) {
+        _jobs[id] = (_jobs[id] ?? 1) - 1;
+        if ((_finishes[id] ?? 0) >= (_jobs[id] ?? 0)) activeTurnId = null;
+      }
     } on IntegratedRuntimeException catch (e) {
       lastError = e.code;
+      if (viaCore) {
+        _jobs[id] = (_jobs[id] ?? 1) - 1;
+        if ((_finishes[id] ?? 0) >= (_jobs[id] ?? 0)) activeTurnId = null;
+      }
     }
     notifyListeners();
   }
