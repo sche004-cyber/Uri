@@ -181,7 +181,9 @@ Both ran tests and checked evidence themselves.
 | R1 | `279a961e` | ACCEPT WITH FINDINGS | 4 MEDIUM, 5 LOW: success hold; partial export; raw scores; AC-2b disclosure; overlay during fade; blink validation; evidence wording; ranges; tests | All repaired in `1fcddab3`. Verified by R2. `evidence/review/R1_findings_and_repairs.md` |
 | R2 | `1fcddab3` | ACCEPT WITH FINDINGS | 1 MEDIUM, 5 LOW, all in documentation: AC-2b missing from this report; stale numbers; wrong checkpoint ranges; mixed-source summary claims; live F-SUCCESS predating R1-01; this section unfinished | Repaired in this revision. No code defects. |
 
-The final commit has not been re-reviewed after the R2 documentation repairs. **Lifecycle acceptance is BLOCKED
+| R3 | `a3edd43c` | ACCEPT WITH FINDINGS | All of R2-01..R2-06 verified fixed. 1 LOW (R3-01): the wording in section 10 omitted F-STARTUP from its exceptions | Fixed in the next commit, a one-line wording change in this report only |
+
+The final commit differs from the R3-reviewed `a3edd43c` only by the R3-01 wording line and this table row. **Lifecycle acceptance is BLOCKED
 (OD-4)**: the Claude CLI is logged out. These audits are not a substitute for it.
 
 ## 10. Recommendation
@@ -192,7 +194,7 @@ Do **not** integrate as "meets spec":
 
 V2 is still a large step from V1:
 - blind fidelity of about 82, against about 40;
-- the functional, performance and live checks pass, apart from the BLOCKED, NOT AVAILABLE and INCONCLUSIVE items above;
+- the functional, performance and live checks pass, apart from the open F-STARTUP finding and the BLOCKED, NOT AVAILABLE and INCONCLUSIVE items above (review R3-01);
 - two lifecycle defects fixed (F-SUCCESS and PRE-1).
 
 Options for the owner:
