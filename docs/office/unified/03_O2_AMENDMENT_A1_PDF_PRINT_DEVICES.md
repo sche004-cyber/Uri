@@ -1,4 +1,4 @@
-# O2 plan amendment A1 (rev 2): PDF scope, PyMuPDF replacement, printing and device discovery
+# O2 plan amendment A1 (rev 3): PDF scope, PyMuPDF replacement, printing and device discovery
 
 Date: 2026-10-15. Amends `01_O2_PLAN_AND_ACCEPTANCE_CRITERIA.md` (rev 3.1 → rev 4) and the programme plan
 `00_DISCOVERY_RESEARCH_AND_ROADMAP.md`. Planning branch `phase/uri-office-unified-plan`, local only.
@@ -50,9 +50,17 @@ Evidence: `evidence/pdf_print_probe_20261015/`. Run 2026-10-15 at 09:45 +0530, w
 
 | Need | Engine | Licence | Installed? | Measured on this PC |
 |---|---|---|---|---|
-| Page images: preview, thumbnails, zoom, validation raster, print raster | **Windows.Data.Pdf** (Windows' built-in WinRT PDF API), run in a PowerShell 5.1 worker | Part of Windows. Nothing is redistributed. | yes (OS) | 10-page PDF: open 159 ms; first page 169 ms; then **27 ms per page** at 900 px; every page distinct; faithful text, table and heading (`winrt_report20_p6.png`). PowerShell start-up is about **1.4 s** once per worker (1.97 s wall minus 0.60 s of rendering; review A1-m7). **GPU:** 0 bytes of dedicated GPU memory and 0 % GPU engine use across 40 samples while rendering 1800 px pages 3 times. The positive control (dwm.exe) read 389 MB, so the counter works (`winrt_gpu_census_result.json`, `gpu_counter_positive_control.json`; review A1-M4). |
+| Page images: preview, thumbnails, zoom, validation raster, print raster | **Windows.Data.Pdf** (Windows' built-in WinRT PDF API), run in a PowerShell 5.1 worker | Part of Windows. Nothing is redistributed. | yes (OS) | 10-page PDF: open 159 ms; first page 169 ms; then **27 ms per page** at 900 px; every page distinct; faithful text, table and heading (`winrt_report20_p6.png`). PowerShell start-up is about **1.4 s** once per worker (1.97 s wall minus 0.60 s of rendering; review A1-m7). **GPU:** 0 bytes of dedicated GPU memory and 0 % GPU engine use across 40 samples while rendering 1800 px pages 3 times. The positive control (dwm.exe) read 389 MB, so the counter works (`winrt_gpu_census_result.json`, `gpu_counter_positive_control.json` from `gpu_counter_positive_control.ps1`; review A1-M4).
+
+**Scope of the GPU result (review R4):**
+- one simple 10-page text PDF;
+- dedicated memory only;
+- samples taken about every 100 ms plus the collection time, interval not recorded;
+- no instance count recorded.
+
+A very short allocation could be missed. Complex, transparent or image-heavy PDFs are measured in S10 and H2 before AC-O2-16 can pass. |
 | Text, search, outline, fonts, page count, scan images | **pypdf 6.19** | BSD-3-Clause | yes (existing dependency) | 10 pages: open 3.9 ms; extract all 279 ms (22,494 characters). Outline items found. Fonts listed (Calibri-Bold, Cambria). Search found "Section 7" on the right page. |
-| OCR of scanned pages | **Tesseract 5.5** on the page images that pypdf extracts | Apache-2.0 | yes | 2-page image-only PDF: 554 ms and 223 ms. The text was read correctly. |
+| OCR of scanned pages | **Tesseract 5.5** on WinRT page rasters at 300 dpi (see "OCR input" below) | Apache-2.0 | yes | Measured only on the earlier path, Tesseract on images pypdf extracted from a 2-page image-only PDF: 554 ms and 223 ms, with the text read correctly. **The WinRT-raster OCR path is not yet measured.** It is added to S10 and H. |
 | Word, Excel and PowerPoint → PDF | **LibreOffice 26.8.1.1** listener | MPL-2.0 (OD-U2 approved) | yes (user-folder extract) | Load plus export (review A1-M1; export alone is not the conversion time):<ul><li>DOCX, 10 pages: first 4.09 + 0.17 s; warm repeat 0.44 + 0.07 = **0.51 s**.</li><li>PPTX, 11 slides: 0.52 + 0.11 = 0.63 s.</li><li>XLSX: 0.33 + 0.29 = 0.62 s. **The XLSX page count was not measured** (`pages: null`).</li></ul> |
 | Slide images | LibreOffice `impress_png_Export` per slide | MPL-2.0 | yes | 11 slides in 0.97 s, all distinct |
 | **Negative result** | LibreOffice `writer_png_Export` with `PageRange` | — | — | All 10 page PNGs have one SHA-256 (`lo_writer_pagerange_png_hashes.json`: 1 distinct value out of 10). The probe JSON's `png_pages: 10` counts files written, not distinct pages. The programme plan cited LibreOffice bug 157425 for this limitation; this probe did not re-verify the bug report. Writer pages are rasterized from the PDF. |
@@ -106,7 +114,7 @@ Notes:
 | §11 AC-O2-2 | The reference renders and comparisons use the **WinRT raster worker** at 110 dpi. |
 | §11 AC-O2-16 | "No GPU" covers LibreOffice, the WinRT raster worker, the text worker, the print worker and the service. It is checked by the GPU-memory and GPU-engine counter census of each worker process in H2. The 2026-10-15 probe measured 0 for the WinRT worker, with a positive control. |
 | new AC-O2-22 | No Office module, worker or Office test tool imports `fitz` or `pymupdf` (test). |
-| §14 spikes | Add S9: pypdf text positions and font sizes for the overflow and size checks. Add S10: the WinRT worker under a Job Object memory limit, a malformed-PDF corpus, and the effect of the PowerShell execution policy with `-File` on a hash-checked script. |
+| §14 spikes | Add S9: pypdf text positions and font sizes for the overflow and size checks. Add S10: the WinRT worker under a Job Object memory limit, a malformed-PDF corpus, a PowerShell Constrained Language Mode check, a per-worker GPU census (dedicated and shared memory, with the instance count recorded) on complex, transparent and image-heavy PDFs, WinRT-raster OCR timing, and the effect of the PowerShell execution policy with `-File` on a hash-checked script. |
 | §15 gates | OD-U3 withdrawn (A2). New gates in A9. |
 | §1.2 row "Core PDF and OCR" | Core `pdf_reader.py` stays unused by Office (and is PyMuPDF; OD-U14) |
 | §7 rows PDF → Word, PDF → Excel, PDF → presentation | Reader is **pypdf** with Tesseract OCR on WinRT rasters, not PyMuPDF. The PDF → Excel tables row waits for OD-U11. |
@@ -314,7 +322,7 @@ Severity: Low. It needs a racing process under the same user. The repair would u
 | R-P2 | Windows.Data.Pdf fails on some PDFs, or is slower on very large ones | Medium | Spike S10 corpus. The pypdfium2 fallback needs OD-U3b. |
 | R-P3 | Raster printing gives larger spool files and slower jobs than vector printing | Medium | 600 dpi cap, a progress display, banding per page. WebView2 `PrintAsync` is the recorded vector alternative. |
 | R-P4 | Print driver dialogs or behaviour differ by vendor | Medium | Only `PrinterSettings` and `DeviceCapabilities` fields are used. No vendor dialog in O2P. |
-| R-P5 | PowerShell 5.1 as a worker runtime (policy, profile, AMSI scanning) | Low | `-NoProfile -ExecutionPolicy Bypass -File`, hash-checked scripts, measured start-up (about 1.8 s once) |
+| R-P5 | PowerShell 5.1 as a worker runtime (policy, profile, AMSI scanning) | Low | `-NoProfile -ExecutionPolicy Bypass -File`, hash-checked scripts, measured start-up (about 1.4 s once) |
 | R-P6 | Search without hit highlighting is a weaker UX than PyMuPDF's | Low | Page list and jump. Highlighting depends on S9. |
 
 ## A12. Self-review against A0

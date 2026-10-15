@@ -96,3 +96,16 @@ Carried into implementation, as the plan already places them:
 All of them are repaired in A1 rev 2. The table is in `03_O2_AMENDMENT_A1_PDF_PRINT_DEVICES.md`, sections A2, A3, A4,
 A7 and A12. A1-M4 was answered by measurement: the WinRT worker used 0 bytes of GPU memory and 0 % of the GPU engine
 over 40 samples, and the dwm.exe positive control read 389 MB (`evidence/pdf_print_probe_20261015/`).
+
+## Amendment A1 rev 2 re-check, at `abb6fc99`
+
+**Verdict: ACCEPT WITH FINDINGS (planning gate). Licensing resolved** (AC-O2-22 enforces no `fitz` or `pymupdf`
+import). All majors and minors are closed, except A1-m7 and A1-m8, which were partly closed.
+
+Residuals R1–R6 (5 minor, 1 note) were repaired in A1 rev 3:
+- R1: the pypdf row of the programme plan.
+- R2: start-up is 1.4 s.
+- R3: the OCR row now uses WinRT rasters, and that path's timing is marked unmeasured.
+- R4: the GPU claim is scoped, and the positive-control script is committed.
+- R5: the overlay list in the 01 header is complete.
+- R6: the Constrained Language Mode check is in S10.

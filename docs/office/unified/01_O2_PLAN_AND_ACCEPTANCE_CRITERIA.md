@@ -16,8 +16,8 @@ Owner authorization in force (chat, 2026-10-15):
 > - Printing and device discovery move to a separate phase, **O2P**.
 > - New live rows: P-1 to P-6 for O2, and PR-1 to PR-12 for O2P.
 >
-> Where A1 disagrees with this document, A1 wins. Sections A1 changes: §2.1 items 2 and 6, §2.2, §3 (PyMuPDF rows),
-> §4.1, §4.3, §5 (`preview.py` / `raster_worker.py`), §8, §9.4, §11 AC-O2-20, §13 (O4), §14 (S9, S10) and §15 (OD-U3).
+> Where A1 disagrees with this document, A1 wins. Sections A1 changes: §1.2 (Core PDF row), §2.1 items 2 and 6, §2.2, §3 (PyMuPDF rows), §7 (PDF reader rows),
+> §4.1, §4.3, §5 (`preview.py` / `raster_worker.py`), §8, §9.4, §11 AC-O2-20, §13 (O4), §14 (S9, S10, S11), §15 (OD-U3), §16 (R13) and §17 (pin row).
 > The text below is kept unchanged for history.
 
 ## 0. Acceptance criteria for this plan
