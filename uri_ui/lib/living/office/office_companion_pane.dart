@@ -336,18 +336,48 @@ class _OfficeSheetCompanionState extends State<OfficeSheetCompanion> {
 /// conversation with each line's target, clarification and follow-up chips, the hint (one at a time), the plan and
 /// output cards through the region-level A2UI hub, and the companion's composer. Requests made here go to the
 /// workspace controller (the Office request target).
-class OfficeCompanionPane extends StatelessWidget {
+class OfficeCompanionPane extends StatefulWidget {
   const OfficeCompanionPane({super.key, required this.controller, this.composerFocus, this.onClose});
   final OfficeWorkspaceController controller;
   final FocusNode? composerFocus;
   final VoidCallback? onClose;
 
   @override
+  State<OfficeCompanionPane> createState() => _OfficeCompanionPaneState();
+}
+
+class _OfficeCompanionPaneState extends State<OfficeCompanionPane> {
+  // Live run 2026-10-15, UX finding: new lines and cards were added below the visible part of the list (the print
+  // card and a clarification were off-screen). The list now follows the newest entry.
+  final _scroll = ScrollController();
+  int _seen = -1;
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _follow(int count) {
+    if (count == _seen) return;
+    _seen = count;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scroll.hasClients) {
+        _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final c = controller;
+    final c = widget.controller;
+    final onClose = widget.onClose;
+    final composerFocus = widget.composerFocus;
     final colors = UriColors.of(context);
     final scoped = LivingScope.maybeOf(context) != null;
     final lines = c.conversation.lines;
+    _follow(lines.length + c.hub.placed('workspace').length * 1000);
     return GlassPanel(
       key: const ValueKey('office-uri-pane'),
       child: Column(
@@ -380,6 +410,7 @@ class OfficeCompanionPane extends StatelessWidget {
           Expanded(
             child: ListView(
               key: const ValueKey('office-region-conversation'),
+              controller: _scroll,
               children: [
                 if (lines.isEmpty)
                   Text('Ask for what you need, or open a file. URI shows a plan before it changes anything.',

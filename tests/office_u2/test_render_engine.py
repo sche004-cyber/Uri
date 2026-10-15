@@ -302,3 +302,25 @@ def test_split_field_canary_makes_no_connection(lo, tmp_path, sanitized):
         census.stop()
         can.close()
     assert can.hits == [] and census.smb == set() and census.proc == set(), (can.hits, census.smb, census.proc)
+
+
+def test_native_chart_is_drawn(lo, tmp_path):
+    """Live run 2026-10-15 regression: a native PowerPoint chart must be drawn (axis labels and series in the PDF),
+    not replaced by a broken-object icon (it was, while DisableActiveContent was set)."""
+    from pptx import Presentation
+    from pptx.chart.data import CategoryChartData
+    from pptx.enum.chart import XL_CHART_TYPE
+    from pptx.util import Inches
+    import pypdf
+    pr = Presentation()
+    s = pr.slides.add_slide(pr.slide_layouts[5])
+    s.shapes.title.text = "Scanned per month"
+    cd = CategoryChartData()
+    cd.categories = ["Junexample", "Julyexample"]
+    cd.add_series("Scannedseries", (320, 410))
+    s.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(1), Inches(1.5), Inches(8), Inches(5), cd)
+    p = tmp_path / "chart.pptx"
+    pr.save(p)
+    out = _convert(lo, p, "pptx")
+    text = pypdf.PdfReader(str(out)).pages[0].extract_text() or ""
+    assert "Junexample" in text and "Julyexample" in text, text

@@ -355,6 +355,21 @@ def test_validator_font_substitution_and_source_change(tmp_path):
     assert "Nirmala UI" in " ".join(f.message for f in fs.items)
 
 
+def test_two_short_lines_are_not_a_blank_page(tmp_path):
+    """Live run 2026-10-15 regression: a page holding only a two-line signature block was reported blank."""
+    from PIL import Image, ImageDraw
+    p = tmp_path / "sig.png"
+    im = Image.new("RGB", (440, 568), "white")
+    ImageDraw.Draw(im).text((60, 50), "By order,", fill="black")
+    ImageDraw.Draw(im).text((60, 62), "Joint Secretary", fill="black")
+    im.save(p)
+    cov, edge, ink = V.ink_stats(p, 4)
+    assert cov < 0.002 and ink >= V.BLANK_MAX_INK_PIXELS          # the old rule would have called it blank
+    blank = tmp_path / "blank.png"
+    Image.new("RGB", (440, 568), "white").save(blank)
+    assert V.ink_stats(blank, 4)[2] == 0
+
+
 def test_repair_interface_has_no_rules_in_o2_and_keeps_findings():
     from uri_office.contracts import Findings
     fs = Findings()

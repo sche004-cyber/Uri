@@ -39,12 +39,14 @@ BRIDGE_MEMORY = 512 * 2**20
 # main.xcd/onlineupdate.xcd schema on 2026-10-15:
 #   Writer Content/Update/Link: 0 always, 1 on request, 2 never.  Calc Content/Update/Link: 0 always, 1 never,
 #   2 on request.  Calc Formula/Load *RecalcMode: 0 always, 1 never, 2 prompt.
+# Not set: Common/Security/Scripting/DisableActiveContent. Added in review round 1, it was removed after the live run
+# of 2026-10-15 showed it stops LibreOffice drawing native charts (a chart slide printed as a broken-object icon).
+# What it guarded (DDE and active OLE) is removed from the render copy by the sanitizer and covered by the canaries.
 HARDENED_XCU = """<?xml version="1.0" encoding="UTF-8"?>
 <oor:items xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="MacroSecurityLevel" oor:op="fuse"><value>3</value></prop></item>
 <item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="DisableMacrosExecution" oor:op="fuse"><value>true</value></prop></item>
 <item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="BlockUntrustedRefererLinks" oor:op="fuse"><value>true</value></prop></item>
-<item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="DisableActiveContent" oor:op="fuse"><value>true</value></prop></item>
 <item oor:path="/org.openoffice.Inet/Settings"><prop oor:name="ooInetProxyType" oor:op="fuse"><value>2</value></prop></item>
 <item oor:path="/org.openoffice.Inet/Settings"><prop oor:name="ooInetHTTPProxyName" oor:op="fuse"><value>127.0.0.1</value></prop></item>
 <item oor:path="/org.openoffice.Inet/Settings"><prop oor:name="ooInetHTTPProxyPort" oor:op="fuse"><value>9</value></prop></item>

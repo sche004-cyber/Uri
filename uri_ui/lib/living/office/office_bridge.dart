@@ -133,6 +133,12 @@ abstract interface class OfficeRequestTarget implements Listenable {
   Future<void> instruct(String text, {String? activeSheet});
 }
 
+/// O2: a request target that says what the composer should offer (live run 2026-10-15, UX finding: the hint said
+/// "change this sheet" on Home, documents and tasks).
+abstract interface class OfficeRequestHint {
+  String get requestHint;
+}
+
 enum OfficeSpeaker { owner, uri, notice }
 
 /// One line of the Office conversation.

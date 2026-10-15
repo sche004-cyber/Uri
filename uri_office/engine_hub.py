@@ -22,6 +22,9 @@ from .workerproc import Worker, WorkerFailed, powershell_exe, python_exe
 TEXT_MEMORY = 1024 * 2**20
 RASTER_MEMORY = 1536 * 2**20
 PREVIEW_CACHE_BYTES = 1 * 2**30
+# The WinRT raster worker holds 30-41 MB of dedicated GPU memory while it lives (live run 2026-10-15; GPU engine use
+# 0 %). Idle PDF workers are stopped after this long so nothing stays on the GPU between uses.
+WORKER_IDLE_SECONDS = 60.0
 
 
 class EngineHub:
@@ -35,8 +38,22 @@ class EngineHub:
         self.text = Worker("pdf_text", self._text_args, memory_limit=TEXT_MEMORY)
         self.raster = Worker("winrt_raster", self._raster_args, memory_limit=RASTER_MEMORY)
         self._cache_lock = threading.Lock()
+        self._stopped = threading.Event()
         if start_checks:
             threading.Thread(target=self._startup_check, daemon=True, name="engine-check").start()
+        threading.Thread(target=self._idle_loop, daemon=True, name="worker-idle").start()
+
+    def _idle_loop(self):
+        import time as _t
+        while not self._stopped.wait(5.0):
+            for w in (self.raster, self.text):
+                if w.running and w.last_used and _t.monotonic() - w.last_used > WORKER_IDLE_SECONDS:
+                    if w._lock.acquire(blocking=False):          # never stop a worker in the middle of a request
+                        try:
+                            if _t.monotonic() - w.last_used > WORKER_IDLE_SECONDS:
+                                w.stop()
+                        finally:
+                            w._lock.release()
 
     def _text_args(self):
         c = E.run_copy("pdf_text.py", self.state)
@@ -144,6 +161,7 @@ class EngineHub:
         return [p for p in (self.lo.pids() + [self.text.pid(), self.raster.pid()]) if p]
 
     def shutdown(self):
+        self._stopped.set()
         self.lo.shutdown()
         self.text.stop()
         self.raster.stop()

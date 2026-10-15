@@ -113,7 +113,7 @@ class OfficeLayoutPrefs {
 /// A2UI hub, the one conversation, hints, and the status strip. As the companion's [OfficeRequestTarget] it takes
 /// every request made in the Office region: sheet requests go to the sheet controller unchanged; everything else goes
 /// to the service's intent routing (`POST /request`).
-class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestTarget {
+class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestTarget, OfficeRequestHint {
   OfficeWorkspaceController({required this.client, this.presentation, this.environment, OfficeLayoutPrefs? prefs})
       : prefs = prefs ?? OfficeLayoutPrefs() {
     hub.registry['office.apply_change'] = _action;
@@ -262,6 +262,9 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     }
     _notify();
   }
+
+  /// The sheet controller changed (a workbook opened or closed).
+  void sheetChanged() => _notify();
 
   void showSheet() {
     centre = OfficeCentre.sheet;
@@ -535,6 +538,15 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   // ---- requests (OfficeRequestTarget) -----------------------------------------------------------------------------
   @override
   bool get acceptsRequests => true;
+
+  @override
+  String get requestHint => switch (centre) {
+        OfficeCentre.sheet => sheet?.workbookId != null ? 'Ask URI to change this sheet' : 'Open a workbook first',
+        OfficeCentre.document => 'Ask about this ${documents[activeDocument]?.kindLabel.toLowerCase() ?? 'file'}, '
+            'or say what you need',
+        OfficeCentre.print => 'Ask URI Office',
+        _ => 'Ask URI Office, or open a file',
+      };
 
   @override
   Future<void> instruct(String text, {String? activeSheet}) async {

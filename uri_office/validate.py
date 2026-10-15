@@ -10,7 +10,7 @@ looks at page images it rendered itself. No finding carries document text.
 | pdf_risky_content    | structural  | error    | output contains JavaScript, launch, remote go-to, non-web links or attachments |
 | placeholders         | structural  | error    | «…», {{…}}, [NAME] tokens left in an output |
 | page_count           | render      | error    | PPTX: pages == slides; DOCX: pages == preview pages (same engine: consistency, not fidelity) |
-| blank_page           | visual      | warning  | ink coverage under 0.2 % on a page |
+| blank_page           | visual      | warning  | fewer than 20 ink pixels on the 440 px page image |
 | text_outside_page    | visual      | warning  | pypdf span origins left of, below or above the page box |
 | edge_ink_right       | visual      | warning  | ink within 2 mm of the right edge (weak: cannot tell text from graphics) |
 | font_substitution    | visual      | warning  | a font named in the source is not in the PDF |
@@ -32,7 +32,9 @@ from lxml import etree
 
 from .contracts import Findings
 
-BLANK_COVERAGE = 0.002
+# A page is blank when it has almost no ink at all. The first rule (coverage under 0.2 %) called a page with two short
+# lines blank (live run 2026-10-15: 335 ink pixels, 0.13 % at 440 px), so the rule is an absolute count.
+BLANK_MAX_INK_PIXELS = 20
 EDGE_MM = 2.0
 MIN_SIZE = {"docx": 8.0, "pptx": 10.0, "xlsx": 6.0, "pdf": 0.0}
 THUMB_W = 160
@@ -69,8 +71,96 @@ def sha256(p: Path) -> str:
     return h.hexdigest()
 
 
+def _theme_fonts(z) -> dict:
+    """{"major": name, "minor": name} from the first theme part, for theme font references."""
+    for n in z.namelist():
+        if n.lower().endswith(".xml") and "/theme/" in n.lower():
+            try:
+                root = etree.fromstring(z.read(n), _PARSER)
+            except etree.XMLSyntaxError:
+                continue
+            out = {}
+            for which in ("major", "minor"):
+                el = root.find(f".//{{{A_NS}}}{which}Font/{{{A_NS}}}latin")
+                if el is not None and el.get("typeface"):
+                    out[which] = el.get("typeface")
+            return out
+    return {}
+
+
+def _word_used_fonts(z) -> set:
+    """Fonts a Word document actually uses: direct run fonts in the body, headers and footers, plus the fonts of the
+    styles those parts use (with their basedOn chain), the default paragraph style and the document defaults. Fonts
+    that only appear in unused styles or the theme are not counted (live run 2026-10-15: the letter got "Calibri was
+    not available" and "Courier was not available" for fonts it never used)."""
+    w = f"{{{W_NS}}}"
+    theme = _theme_fonts(z)
+
+    def fonts_of(rfonts) -> set:
+        out = set()
+        if rfonts is None:
+            return out
+        for a in ("ascii", "hAnsi", "cs"):
+            v = rfonts.get(f"{w}{a}")
+            if v:
+                out.add(v)
+        for a in ("asciiTheme", "hAnsiTheme"):
+            v = rfonts.get(f"{w}{a}") or ""
+            if v.startswith("major") and theme.get("major"):
+                out.add(theme["major"])
+            elif v.startswith("minor") and theme.get("minor"):
+                out.add(theme["minor"])
+        return out
+
+    used_styles, names = set(), set()
+    for n in z.namelist():
+        low = n.lower()
+        if not (low.startswith("word/") and low.endswith(".xml") and
+                any(k in low for k in ("document", "header", "footer", "footnotes", "endnotes"))):
+            continue
+        try:
+            root = etree.fromstring(z.read(n), _PARSER)
+        except etree.XMLSyntaxError:
+            continue
+        for el in root.iter(f"{w}rFonts"):
+            names |= fonts_of(el)
+        for tag in ("pStyle", "rStyle", "tblStyle"):
+            for el in root.iter(f"{w}{tag}"):
+                if el.get(f"{w}val"):
+                    used_styles.add(el.get(f"{w}val"))
+    try:
+        st = etree.fromstring(z.read("word/styles.xml"), _PARSER)
+    except (KeyError, etree.XMLSyntaxError):
+        return names
+    by_id = {}
+    for el in st.iter(f"{w}style"):
+        sid = el.get(f"{w}styleId")
+        if sid:
+            by_id[sid] = el
+            if el.get(f"{w}default") in ("1", "true") and el.get(f"{w}type") in ("paragraph", "character", "table"):
+                used_styles.add(sid)
+    dd = st.find(f".//{w}docDefaults//{w}rFonts")
+    names |= fonts_of(dd)
+    seen = set()
+    todo = list(used_styles)
+    while todo:
+        sid = todo.pop()
+        if sid in seen or sid not in by_id:
+            continue
+        seen.add(sid)
+        el = by_id[sid]
+        names |= fonts_of(el.find(f".//{w}rFonts"))
+        based = el.find(f"{w}basedOn")
+        if based is not None and based.get(f"{w}val"):
+            todo.append(based.get(f"{w}val"))
+        link = el.find(f"{w}link")
+        if link is not None and link.get(f"{w}val"):
+            todo.append(link.get(f"{w}val"))
+    return names
+
+
 def source_fonts(path: Path, kind: str) -> set:
-    """Font family names the (sanitized) source asks for. Theme references (`+mn-lt`) resolve to the theme's fonts."""
+    """Font family names the (sanitized) source uses. Theme references (`+mn-lt`) resolve to the theme's fonts."""
     names: set = set()
     if kind not in ("docx", "pptx"):
         return names
@@ -79,29 +169,25 @@ def source_fonts(path: Path, kind: str) -> set:
     except zipfile.BadZipFile:
         return names
     with z:
+        if kind == "docx":
+            return {n for n in _word_used_fonts(z) if n and not n.startswith("+")}
+        theme = _theme_fonts(z)
         for n in z.namelist():
             low = n.lower()
-            if not low.endswith(".xml"):
-                continue
-            if kind == "docx" and not (low.startswith("word/") and ("document" in low or "styles" in low
-                                                                     or "theme" in low or "header" in low
-                                                                     or "footer" in low)):
-                continue
-            if kind == "pptx" and not low.startswith(("ppt/slides/", "ppt/slidelayouts/", "ppt/slidemasters/",
-                                                      "ppt/theme/")):
+            if not low.endswith(".xml") or not low.startswith(("ppt/slides/", "ppt/slidelayouts/",
+                                                                 "ppt/slidemasters/", "ppt/theme/")):
                 continue
             try:
                 root = etree.fromstring(z.read(n), _PARSER)
             except etree.XMLSyntaxError:
                 continue
-            for el in root.iter(f"{{{W_NS}}}rFonts"):
-                for a in ("ascii", "hAnsi", "cs"):
-                    v = el.get(f"{{{W_NS}}}{a}")
-                    if v:
-                        names.add(v)
             for el in root.iter(f"{{{A_NS}}}latin", f"{{{A_NS}}}cs"):
                 v = el.get("typeface")
-                if v:
+                if v == "+mj-lt" and theme.get("major"):
+                    names.add(theme["major"])
+                elif v == "+mn-lt" and theme.get("minor"):
+                    names.add(theme["minor"])
+                elif v:
                     names.add(v)
     return {n for n in names if n and not n.startswith("+")}
 
@@ -113,7 +199,7 @@ def _norm_font(n: str) -> str:
 
 
 def ink_stats(png: Path, edge_px: int) -> tuple:
-    """(coverage fraction, ink pixels in the right `edge_px` columns) of a page image."""
+    """(coverage fraction, ink pixels in the right `edge_px` columns, ink pixels) of a page image."""
     from PIL import Image
     with Image.open(png) as im:
         g = im.convert("L")
@@ -121,7 +207,7 @@ def ink_stats(png: Path, edge_px: int) -> tuple:
         mask = g.point(lambda v: 255 if v < INK_THRESHOLD else 0)
         ink = mask.histogram()[255]
         edge_hist = mask.crop((max(0, w - edge_px), 0, w, h)).histogram()
-        return ink / float(w * h or 1), edge_hist[255]
+        return ink / float(w * h or 1), edge_hist[255], ink
 
 
 class Validator:
@@ -208,8 +294,8 @@ class Validator:
                 n = item["page"]
                 box = facts["page_boxes"][n - 1] if n - 1 < len(facts["page_boxes"]) else [612, 792]
                 edge_px = max(1, round(EDGE_W * (EDGE_MM / 25.4 * 72) / box[0]))
-                cov, edge = ink_stats(work_dir / item["file"], edge_px)
-                if cov < BLANK_COVERAGE:
+                cov, edge, ink = ink_stats(work_dir / item["file"], edge_px)
+                if ink < BLANK_MAX_INK_PIXELS:
                     fs.add("blank_page", "visual", "warning", f"Page {n} is blank.", page=n)
                 elif edge > 0 and kind != "pptx":
                     fs.add("edge_ink_right", "visual", "warning",

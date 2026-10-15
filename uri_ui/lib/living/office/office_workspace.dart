@@ -267,7 +267,8 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
   /// available; Print stays hidden until O2P qualifies.
   List<Widget> _docControls(BuildContext context, OfficeWorkspaceController c) {
     final d = c.documents[c.activeDocument];
-    final convertible = c.centre == OfficeCentre.sheet || (d != null && d.kind != 'pdf');
+    final convertible = (c.centre == OfficeCentre.sheet && c.sheet?.workbookId != null) ||
+        (c.centre == OfficeCentre.document && d != null && d.kind != 'pdf');
     return [
       if (convertible && c.available('save_as_pdf'))
         TextButton.icon(
@@ -325,6 +326,7 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
                 hub: c.hub,
                 onController: (sc) {
                   c.sheet = sc;
+                  sc.addListener(c.sheetChanged);      // the composer hint and Save as PDF follow the sheet
                 },
                 onTurn: (t) => c.conversation.say(t.speaker, t.text, c.targetLabel),
               ),

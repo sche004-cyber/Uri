@@ -7,6 +7,7 @@ import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
 import '../integration/oi_conversation.dart';
 import '../living_scope.dart';
+import '../office/office_bridge.dart' show OfficeRequestHint;
 import '../presentation/presentation_controller.dart';
 import '../voice/voice_controls.dart';
 import 'glass_panel.dart';
@@ -216,7 +217,9 @@ class _LivingComposerState extends State<LivingComposer> {
                         onChanged: appState.setComposerDraft,
                         style: TextStyle(color: c.ink, fontSize: 14),
                         decoration: InputDecoration(
-                          hintText: office != null
+                          hintText: office is OfficeRequestHint
+                              ? (office as OfficeRequestHint).requestHint
+                              : office != null
                               ? (office.acceptsRequests ? 'Ask URI to change this sheet' : 'Open a workbook first')
                               : oi != null && oi.dictationMode
                               ? 'Dictation — written as draft text, never carried out'

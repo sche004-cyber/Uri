@@ -122,7 +122,8 @@ class Office:
         with self._o2_lock:
             if self._workflows is None:
                 from .workflows import Workflows
-                self._workflows = Workflows(self.state, hub, self.grants, self.approvals, docs, self._session)
+                self._workflows = Workflows(self.state, hub, self.grants, self.approvals, docs, self._session,
+                                            on_saved=self.recent.add)
             return self._workflows
 
     def capabilities(self) -> dict:

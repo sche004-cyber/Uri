@@ -73,12 +73,13 @@ class Workflow:
 
 
 class Workflows:
-    def __init__(self, office_state: Path, hub, grants, approvals, documents, workbook_lookup):
+    def __init__(self, office_state: Path, hub, grants, approvals, documents, workbook_lookup, on_saved=None):
         self.hub = hub
         self.grants = grants
         self.approvals = approvals
         self.documents = documents
         self.workbook_lookup = workbook_lookup          # workbook_id -> M1/M2 Session (or raise)
+        self.on_saved = on_saved                        # (path, kind, size): the recent list (live run UX finding)
         self.root = hub.work_root / "workflows"
         self.root.mkdir(parents=True, exist_ok=True)
         self.items: dict[str, Workflow] = {}
@@ -389,6 +390,11 @@ class Workflows:
             w.record["errors"].append({"code": "INPUT_CHANGED", "step": "save", "at": _now()})
         w.record["state"] = "saved"
         w.record["saved"] = {"name": g.path.name}
+        if self.on_saved:
+            try:
+                self.on_saved(g.path, "pdf", g.path.stat().st_size)
+            except OSError:
+                pass
         w.save()
         self.grants.revoke(g.grant_id)
         self._clean_work_files(w)
