@@ -252,13 +252,16 @@ def _same_value(a, b) -> bool:
     return a == b
 
 
-def unchanged_edit(edit: dict, current: dict, pending: set) -> bool:
+def unchanged_edit(edit: dict, current: dict) -> bool:
     """NOOP-1: True when a cell edit would leave the cell exactly as the draft holds it now (same formula, or same
-    value with no formula). A cell with a pending proposal is never "unchanged" (Codex R7-3: the owner may be asking
-    URI to keep the old value against that proposal). Structural ops and cells not seen are always changes."""
-    if "cell" not in edit or (edit["sheet"], edit["cell"]) in pending or (edit["sheet"], edit["cell"]) not in current:
+    value with no formula). `current` maps (sheet, cell) to the draft's cell; a cell marked "pending" (it has a pending
+    URI proposal) is never "unchanged" (Codex R7-3: the owner may be asking URI to keep the old value against that
+    proposal). Structural ops and cells not seen are always changes."""
+    if "cell" not in edit or (edit["sheet"], edit["cell"]) not in current:
         return False
     c = current[(edit["sheet"], edit["cell"])]
+    if c.get("pending"):
+        return False
     if "formula" in edit:
         return c.get("f") == edit["formula"]
     return not c.get("f") and _same_value(c.get("v"), edit.get("value"))
