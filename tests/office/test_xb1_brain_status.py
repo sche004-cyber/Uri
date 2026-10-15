@@ -146,12 +146,29 @@ def test_restated_cells_are_not_drafted(session):
 
 
 def test_unchanged_helper():
-    from uri_office.brain import _unchanged
+    from uri_office.ops import unchanged_edit
     cur = {("S", "A1"): {"v": "Travel"}, ("S", "B1"): {"v": 60000}, ("S", "C1"): {"f": "=B1*2", "v": 120000}}
-    assert _unchanged({"sheet": "S", "cell": "A1", "value": "Travel"}, cur)
-    assert _unchanged({"sheet": "S", "cell": "B1", "value": 60000.0}, cur)
-    assert not _unchanged({"sheet": "S", "cell": "B1", "value": 25000}, cur)
-    assert not _unchanged({"sheet": "S", "cell": "C1", "value": 120000}, cur)      # a value over a formula is a change
-    assert _unchanged({"sheet": "S", "cell": "C1", "formula": "=B1*2"}, cur)
-    assert not _unchanged({"sheet": "S", "cell": "D1", "value": "x"}, cur)        # unseen cell
-    assert not _unchanged({"sheet": "S", "cell": "B1", "value": True}, {("S", "B1"): {"v": 1}})
+    none = set()
+    assert unchanged_edit({"sheet": "S", "cell": "A1", "value": "Travel"}, cur, none)
+    assert unchanged_edit({"sheet": "S", "cell": "B1", "value": 60000.0}, cur, none)
+    assert not unchanged_edit({"sheet": "S", "cell": "B1", "value": 25000}, cur, none)
+    assert not unchanged_edit({"sheet": "S", "cell": "B1", "value": "60000"}, cur, none)      # text is not a number
+    assert not unchanged_edit({"sheet": "S", "cell": "C1", "value": 120000}, cur, none)       # value over a formula
+    assert unchanged_edit({"sheet": "S", "cell": "C1", "formula": "=B1*2"}, cur, none)
+    assert not unchanged_edit({"sheet": "S", "cell": "D1", "value": "x"}, cur, none)         # unseen cell
+    assert not unchanged_edit({"sheet": "S", "cell": "B1", "value": True}, {("S", "B1"): {"v": 1}}, none)
+    big = {("S", "A1"): {"v": 2 ** 53}}                                                     # Codex R7-4
+    assert not unchanged_edit({"sheet": "S", "cell": "A1", "value": 2 ** 53 + 1}, big, none)
+    assert not unchanged_edit({"sheet": "S", "cell": "A1", "value": "Travel"}, cur, {("S", "A1")})   # R7-3
+
+
+def test_keeping_the_old_value_against_a_pending_proposal_is_drafted(session):
+    """Codex R7-3: B5 has a pending proposal 60000 -> 25000; the owner asks to keep 60000: that answer is a change."""
+    o, wid, _ = session(
+        {"message": "Set to 25000.", "status": "propose",
+         "ops": [op(op="set_values", sheet="Budget", range="B5", values=[[25000]])]},
+        {"message": "Keep 60000.", "status": "propose",
+         "ops": [op(op="set_values", sheet="Budget", range="B5", values=[[60000]])]})
+    o.instruct(wid, {"text": "Set Digitization to 25000", "active_sheet": "Budget"})
+    r = o.instruct(wid, {"text": "No, keep it at 60000", "active_sheet": "Budget"})
+    assert len(r["proposed"]) == 1
