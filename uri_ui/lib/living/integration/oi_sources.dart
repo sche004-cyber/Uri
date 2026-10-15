@@ -50,7 +50,9 @@ class OiCompanionSource extends CompanionStateSource {
       case 'error':
         return s(CompanionState.error, c.lastError);
     }
-    final state = c.brainStatus['state'];
+    // brain_health is read after brain_status: its readiness is the newer fact (live FCV-R restart run showed
+    // "Brain unavailable | Brain ready." for one refresh when only the older status still said not ready).
+    final state = c.brainHealth['readiness'] is String ? c.brainHealth['readiness'] : c.brainStatus['state'];
     if (state != null && state != 'READY' && c.selectedRowId == 'runtime-v1') {
       final p = brainNotReadyPresentation('$state', c.brainHealth);
       return CompanionSignal(

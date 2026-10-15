@@ -134,5 +134,11 @@ void main() {
     await conv.refreshStatus();
     expect(src.signal.state, CompanionState.idle);
     expect(src.signal.title, 'Idle');
+    // Older status still STOPPED, newer health already READY: ready wins, no "Brain unavailable | Brain ready."
+    rt
+      ..brainState = 'STOPPED'
+      ..health = {'state': 'READY', 'readiness': 'READY', 'explain': 'Brain ready.'};
+    await conv.refreshStatus();
+    expect(src.signal.title, 'Idle');
   });
 }
