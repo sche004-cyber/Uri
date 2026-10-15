@@ -64,8 +64,20 @@ class Worker:
         made = self._make_args()
         args, self._cleanup = (made if isinstance(made, tuple) else (made, None))
         self._job = J.Job(memory_limit=self.memory_limit)
-        self._p = J.spawn(args, self._job, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                          text=True, encoding="utf-8", errors="replace", bufsize=1, env=self.env, cwd=self.cwd)
+        try:
+            self._p = J.spawn(args, self._job, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                              stderr=subprocess.DEVNULL, text=True, encoding="utf-8", errors="replace", bufsize=1,
+                              env=self.env, cwd=self.cwd)
+        except BaseException:
+            self._job.close()
+            self._job = None
+            if self._cleanup:
+                try:
+                    self._cleanup()
+                except OSError:
+                    pass
+                self._cleanup = None
+            raise
         self._q = queue.Queue()
         threading.Thread(target=self._reader, args=(self._p, self._q), daemon=True,
                          name=f"{self.name}-reader").start()

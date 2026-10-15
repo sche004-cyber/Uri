@@ -96,7 +96,7 @@ while ($true) {
                 AwaitAction ($page.RenderToStreamAsync($stream, $opts))
                 $net = [System.IO.WindowsRuntimeStreamExtensions]::AsStreamForRead($stream.GetInputStreamAt(0))
                 $name = 'p{0}_w{1}.png' -f $n, $width
-                $tmp = Join-Path ([System.IO.Path]::GetFullPath($req.out_dir)) ($name + '.part')
+                $tmp = Join-Path ([System.IO.Path]::GetFullPath($req.out_dir)) ($name + '.' + [guid]::NewGuid().ToString('N') + '.part')
                 $fs = [System.IO.File]::Open($tmp, [System.IO.FileMode]::CreateNew)
                 try { $net.CopyTo($fs) } finally { $fs.Close(); $net.Dispose(); $stream.Dispose(); $page.Dispose() }
                 $final = Join-Path ([System.IO.Path]::GetFullPath($req.out_dir)) $name

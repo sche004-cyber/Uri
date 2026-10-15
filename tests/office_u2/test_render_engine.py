@@ -272,3 +272,33 @@ def test_killing_the_service_process_kills_the_engine(tmp_path, integrity):
     while any(psutil.pid_exists(k) for k in kids) and time.monotonic() < deadline:
         time.sleep(0.2)
     assert not [k for k in kids if psutil.pid_exists(k)]
+
+
+def _split_field_docx(path, base):
+    import docx
+    d = docx.Document()
+    d.add_paragraph("Body")
+    d.save(path)
+    xml = ('<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText> INCLUDEPIC</w:instrText></w:r>'
+           '<w:r><w:instrText>TURE "' + base + '/split.png" </w:instrText></w:r><w:r><w:fldChar '
+           'w:fldCharType="separate"/></w:r><w:r><w:t>cached</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/>'
+           '</w:r></w:p>')
+    CN.rewrite(path, lambda parts: parts.__setitem__("word/document.xml", parts["word/document.xml"].replace(
+        b"<w:sectPr", xml.encode() + b"<w:sectPr", 1)))
+    return path
+
+
+@pytest.mark.parametrize("sanitized", [True, False], ids=["sanitized", "hardened_profile_only"])
+def test_split_field_canary_makes_no_connection(lo, tmp_path, sanitized):
+    """Review round 1, finding 2: a field instruction split over runs. Sanitized it is removed; unsanitized, the
+    hardened profile alone must still fetch nothing."""
+    can = Canary()
+    census = Census(lo.pids)
+    try:
+        src = _split_field_docx(tmp_path / "split.docx", can.base)
+        _convert(lo, src, "docx", sanitize=sanitized)
+        time.sleep(1.0)
+    finally:
+        census.stop()
+        can.close()
+    assert can.hits == [] and census.smb == set() and census.proc == set(), (can.hits, census.smb, census.proc)

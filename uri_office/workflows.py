@@ -32,6 +32,7 @@ from .errors import OfficeError
 from .render import CONVERT
 from .safe_write import publish_copy
 from .validate import Validator, sha256
+from concurrent.futures import TimeoutError as FutureTimeout
 
 RETENTION_SECONDS = 7 * 24 * 3600
 TERMINAL = ("saved", "cancelled", "failed", "discarded")
@@ -81,6 +82,7 @@ class Workflows:
         self.root = hub.work_root / "workflows"
         self.root.mkdir(parents=True, exist_ok=True)
         self.items: dict[str, Workflow] = {}
+        self._items_lock = threading.Lock()
         self._q: queue.Queue = queue.Queue()
         self.validator = Validator(_HubText(hub), _HubRaster(hub))
         self._startup_scan()
@@ -99,7 +101,9 @@ class Workflows:
 
     def listing(self) -> dict:
         running, done = [], []
-        for w in sorted(self.items.values(), key=lambda w: w.record["created_at"], reverse=True):
+        with self._items_lock:
+            items = list(self.items.values())
+        for w in sorted(items, key=lambda w: w.record["created_at"], reverse=True):
             item = {k: w.record.get(k) for k in ("workflow_id", "capability", "state", "created_at", "updated_at")}
             (done if w.record["state"] in TERMINAL else running).append(item)
         return {"running": running, "done": done[:50]}
@@ -140,8 +144,9 @@ class Workflows:
                 "inputs": [{"name": src["name"], "kind": src["kind"], "sha256": src["sha256"]}],
                 "outputs": [{"name": out_name, "kind": "pdf"}]}
         w.private["plan"] = plan
-        with w.lock:
+        with self._items_lock:
             self.items[wid] = w
+        with w.lock:
             surface = self.approvals.propose_plan(wid, plan)
             record["state"] = "waiting_approval"
             record["approvals"].append({"surface_id": surface.surface_id, "subject": "plan",
@@ -182,6 +187,7 @@ class Workflows:
             if w.record["state"] != "waiting_approval" or body["plan"] != w.private.get("plan"):
                 raise OfficeError("STALE_PLAN", "", 409)
             w.record["state"] = "running"
+            w.record["plan_approved"] = True
             w.save()
             self._q.put(w.id)
             return {"workflow_id": w.id, "state": "running"}
@@ -212,7 +218,7 @@ class Workflows:
                 with w.lock:
                     if w.record["state"] == "running":
                         w.record["state"] = "failed"
-                    code = e.code if isinstance(e, OfficeError) else type(e).__name__
+                    code = e.code if isinstance(e, OfficeError) else "ENGINE_CRASHED"
                     w.record["errors"].append({"code": code, "step": self._current_step(w), "at": _now()})
                     w.save()
 
@@ -261,7 +267,14 @@ class Workflows:
             # convert
             st = self._begin(w, "convert")
             out = w.folder / (Path(inp["name"]).stem + ".pdf")
-            r = self.hub.lo.submit(res.path, out, owner=w.id, priority=CONVERT).result(600)
+            try:
+                r = self.hub.lo.submit(res.path, out, owner=w.id, priority=CONVERT).result(600)
+            except OfficeError as e:
+                if e.code == "CANCELLED" or w.cancel.is_set():
+                    raise _Cancelled() from None
+                raise
+            except FutureTimeout:
+                raise OfficeError("ENGINE_TIMEOUT", "", 503) from None
             self._end(w, "convert", engine_version=self.hub.lo.integrity.pin.get("version"),
                       seconds=r.get("seconds"))
             del st
@@ -282,6 +295,8 @@ class Workflows:
             self._begin(w, "preview")
             self._end(w, "preview", engine_version="Windows.Data.Pdf")
             with w.lock:
+                if w.cancel.is_set():
+                    raise _Cancelled()
                 w.private["output_path"] = out
                 w.record["outputs"] = [{"name": out.name, "sha256": sha256(out), "pages": facts.get("pages"),
                                         "size": out.stat().st_size}]
@@ -304,6 +319,7 @@ class Workflows:
                 w.record["state"] = "failed"
                 w.record["errors"].append({"code": e.code, "step": cur, "at": _now()})
                 w.save()
+                self._clean_work_files(w)
 
     # ---- owner actions ---------------------------------------------------------------------------------------------
     def cancel(self, wid) -> dict:
@@ -343,7 +359,11 @@ class Workflows:
                 raise OfficeError("WARNINGS_NOT_ACCEPTED", "", 409)
             g = self.grants.grant_save_as(body.get("save_as_path"), kind="pdf")
             if os.path.lexists(g.path):
+                self.grants.revoke(g.grant_id)
                 raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
+            old = w.private.get("dest_grant")
+            if old:
+                self.grants.revoke(old)
             w.private["dest_grant"] = g.grant_id
             out = w.record["outputs"]
             warnings = [{"id": f.id, "message": f.message} for f in w.findings.warnings]
@@ -395,19 +415,22 @@ class Workflows:
                 continue
             w = Workflow(folder, record)
             st = record.get("state")
-            if st in TERMINAL and _now() - record.get("updated_at", 0) > RETENTION_SECONDS:
-                shutil.rmtree(folder, ignore_errors=True)
+            if st != "running" and _now() - record.get("updated_at", 0) > RETENTION_SECONDS:
+                shutil.rmtree(folder, ignore_errors=True)     # every abandoned or finished run, interrupted too
                 continue
-            if st in ("running", "waiting_approval", "ready_to_save", "needs_review", "planned"):
-                if st != "running" and _now() - record.get("updated_at", 0) > RETENTION_SECONDS:
-                    shutil.rmtree(folder, ignore_errors=True)
-                    continue
+            self.approvals.close_workbook(record["workflow_id"])        # no card survives a restart
+            if st in ("planned", "waiting_approval"):
+                # Review round 1, finding 1: a plan the owner never approved is not resumable. It is discarded.
+                record["state"] = "discarded"
+                record["errors"].append({"code": "INTERRUPTED", "step": None, "at": _now()})
+                w.save()
+                self._clean_work_files(w)
+            elif st in ("running", "ready_to_save", "needs_review"):
                 done = [s["id"] for s in record["steps"] if s["state"] == "done"]
                 record["interrupted_at_step"] = next((i + 1 for i, s in enumerate(record["steps"])
                                                       if s["state"] != "done"), len(record["steps"]))
                 record["state"] = "interrupted"
                 record["errors"].append({"code": "INTERRUPTED", "step": None, "at": _now(), "done": done})
-                self.approvals.close_workbook(record["workflow_id"])        # open plan/output cards
                 w.save()
             self.items[record["workflow_id"]] = w
 
@@ -416,6 +439,9 @@ class Workflows:
         with w.lock:
             if w.record["state"] != "interrupted":
                 raise OfficeError("NOT_CANCELLABLE", "only an interrupted task can be resumed", 409)
+            if not w.record.get("plan_approved"):
+                # Only a run the owner approved can continue; anything else needs a new plan card.
+                raise OfficeError("STALE_PLAN", "this task was never approved; start it again", 409)
             paths = body.get("inputs") or []
             if len(paths) != len(w.record["inputs"]):
                 raise OfficeError("BAD_REQUEST", "re-confirm every input")

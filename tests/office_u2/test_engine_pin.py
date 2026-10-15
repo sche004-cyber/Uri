@@ -116,3 +116,33 @@ def test_run_copy_is_exact_and_refuses_a_changed_script(tmp_path, monkeypatch):
     assert e.value.code == "WORKER_INTEGRITY"
     with pytest.raises(OfficeError):
         E.run_copy("not_a_worker.py", tmp_path)
+
+
+@pytest.mark.parametrize("name", ["program/sitecustomize.py", "program/evil.pth", "program/extra.dll"])
+def test_launch_check_refuses_a_file_added_after_verification(tree, tmp_path, name):
+    """Review round 1, finding 5: a file dropped into program/ after start-up is refused at the next launch."""
+    root, pin = tree
+    ei = E.EngineIntegrity("libreoffice", tmp_path / "state", pin)
+    ei.verify_full()
+    ei.launch_check()
+    (root / "eng" / name).write_text("x")
+    with pytest.raises(OfficeError) as e:
+        ei.launch_check()
+    assert e.value.code == "ENGINE_INTEGRITY"
+
+
+def test_launch_check_rehashes_python_code(tree, tmp_path):
+    root, pin0 = tree
+    (root / "eng" / "program" / "uno.py").write_text("import x\n")
+    entries = {rel: {"sha256": E.sha256_file(p), "size": p.stat().st_size}
+               for rel, p in E._walk(root / "eng") if rel != "setup.msi"}
+    pin = {**pin0, "manifest_root_sha256": E.manifest_root(entries), "manifest_files": len(entries)}
+    ei = E.EngineIntegrity("libreoffice", tmp_path / "state2", pin)
+    ei.verify_full()
+    p = root / "eng" / "program" / "uno.py"
+    st = p.stat()
+    p.write_text("import y\n")
+    import os
+    os.utime(p, ns=(st.st_atime_ns, st.st_mtime_ns))
+    with pytest.raises(OfficeError):
+        ei.launch_check()

@@ -189,10 +189,22 @@ class Validator:
                    page=small_pages[0])
         # raster checks: blank pages (thumbnails) and right-edge ink (weak)
         work_dir.mkdir(parents=True, exist_ok=True)
-        r = self.raster.request("render", pdf=str(pdf), out_dir=str(work_dir), pages=list(range(1, pages + 1)),
-                                width=EDGE_W, timeout=120)
-        if r.get("ok"):
-            for item in r["rendered"]:
+        rendered, failed = [], 0
+        for start in range(1, pages + 1, 20):
+            batch = list(range(start, min(pages, start + 19) + 1))
+            try:
+                r = self.raster.request("render", pdf=str(pdf), out_dir=str(work_dir), pages=batch, width=EDGE_W,
+                                        timeout=60 + 3 * len(batch))
+            except Exception:  # noqa: BLE001 - a worker timeout or crash becomes a finding below
+                r = {"ok": False}
+            if r.get("ok"):
+                rendered += r["rendered"]
+            else:
+                failed += len(batch)
+        if failed:
+            fs.add("pdf_opens", "render", "error", f"{failed} page(s) of the PDF could not be drawn.")
+        if rendered:
+            for item in rendered:
                 n = item["page"]
                 box = facts["page_boxes"][n - 1] if n - 1 < len(facts["page_boxes"]) else [612, 792]
                 edge_px = max(1, round(EDGE_W * (EDGE_MM / 25.4 * 72) / box[0]))
@@ -203,8 +215,6 @@ class Validator:
                     fs.add("edge_ink_right", "visual", "warning",
                            f"Something reaches the right edge of page {n}; check that text is not cut off.",
                            page=n, weak=True)
-        else:
-            fs.add("pdf_opens", "render", "error", "The PDF pages could not be drawn.")
         # integrity of the sources
         for p, recorded in (sources or {}).items():
             try:

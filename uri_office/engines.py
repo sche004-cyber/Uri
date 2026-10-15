@@ -29,6 +29,7 @@ HERE = Path(__file__).resolve().parent
 PINS_FILE = HERE / "engines.json"
 WORKERS_DIR = HERE / "workers"
 LAUNCH_SUFFIXES = (".exe", ".dll", ".com", ".bin", ".pyd")
+LAUNCH_CODE_SUFFIXES = (".py", ".pth", ".ini", ".cfg", ".pyc")      # Python code and start-up files under program/
 
 
 def engines_root() -> Path:
@@ -158,11 +159,25 @@ class EngineIntegrity:
             self.state, self.reason = "ready", None
 
     def launch_check(self) -> None:
-        """Every engine launch: re-hash executables, libraries and the bundled Python against the manifest."""
+        """Every engine launch: the `program/` tree has exactly the manifest's files (an added `sitecustomize.py`,
+        `.pth` or DLL is refused), and executables, libraries and the bundled Python's code are re-hashed
+        (review round 1, finding 5)."""
         with self._lock:
             entries = self._load()
+            program = {rel for rel in entries if rel.startswith("program/")}
+            seen = set()
+            for rel, p in _walk(self.root / "program"):
+                full = "program/" + rel
+                seen.add(full)
+                if full not in program:
+                    self._entries = None
+                    self._fail("ENGINE_INTEGRITY", "a file was added to the engine's program folder")
+            if seen != program:
+                self._entries = None
+                self._fail("ENGINE_INTEGRITY", "an engine program file is missing")
             for rel, e in entries.items():
-                if rel.lower().endswith(LAUNCH_SUFFIXES):
+                if rel.lower().endswith(LAUNCH_SUFFIXES) or (rel.startswith("program/") and
+                                                             rel.lower().endswith(LAUNCH_CODE_SUFFIXES)):
                     p = self.root / rel
                     try:
                         ok = sha256_file(p) == e["sha256"]

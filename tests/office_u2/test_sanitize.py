@@ -128,3 +128,60 @@ def test_crc_error_refused(tmp_path):
     with pytest.raises(OfficeError) as e:
         S.make_render_copy(p, tmp_path / "out", "docx")
     assert e.value.code == "ARCHIVE_REFUSED"
+
+
+# ---- review finding 2 (round 1): structural bypasses ---------------------------------------------------------
+def _plain_docx(p):
+    import docx
+    d = docx.Document()
+    d.add_paragraph("Body")
+    d.save(p)
+    return p
+
+
+SPLIT = ('<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText> INCLUDEPIC</w:instrText></w:r>'
+         '<w:r><w:instrText>TURE "' + CN.UNC + r'\pic.png" </w:instrText></w:r><w:r><w:fldChar '
+         'w:fldCharType="separate"/></w:r><w:r><w:t>cached</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>')
+
+
+def test_split_complex_field_instruction_is_neutralized(tmp_path):
+    p = _plain_docx(tmp_path / "split.docx")
+    CN.rewrite(p, lambda parts: parts.__setitem__("word/document.xml", parts["word/document.xml"].replace(
+        b"<w:sectPr", SPLIT.encode() + b"<w:sectPr", 1)))
+    r = S.make_render_copy(p, tmp_path / "out", "docx")
+    doc = parts_of(r.path)["word/document.xml"]
+    assert b"127.0.0.2" not in doc and b"INCLUDEPIC" not in doc and b"cached" in doc
+    assert r.removed["field"] == 1
+
+
+def _move_main(parts, new_name):
+    body = parts.pop("word/document.xml").replace(b"<w:sectPr", SPLIT.encode() + b"<w:sectPr", 1)
+    parts[new_name] = body
+    parts["_rels/.rels"] = parts["_rels/.rels"].replace(b"word/document.xml", new_name.encode())
+    ct = parts["[Content_Types].xml"].replace(b'PartName="/word/document.xml"', f'PartName="/{new_name}"'.encode())
+    parts["[Content_Types].xml"] = ct
+    rels = parts.pop("word/_rels/document.xml.rels")
+    d, f = new_name.rsplit("/", 1)
+    parts[f"{d}/_rels/{f}.rels"] = rels
+
+
+@pytest.mark.parametrize("new_name", ["main/document.xml", "word/document.dat"], ids=["moved", "renamed_dat"])
+def test_main_part_outside_word_or_renamed_is_still_cleaned(tmp_path, new_name):
+    p = _plain_docx(tmp_path / "moved.docx")
+    CN.rewrite(p, lambda parts: _move_main(parts, new_name))
+    r = S.make_render_copy(p, tmp_path / "out", "docx")
+    body = parts_of(r.path)[new_name]
+    assert b"127.0.0.2" not in body and r.removed.get("field") == 1
+
+
+def test_renamed_part_with_doctype_is_refused(tmp_path):
+    p = _plain_docx(tmp_path / "xxe.docx")
+
+    def edit(parts):
+        _move_main(parts, "word/document.dat")
+        parts["word/document.dat"] = (b'<?xml version="1.0"?><!DOCTYPE x [<!ENTITY e SYSTEM "file:///c:/x">]>'
+                                      + parts["word/document.dat"].split(b"?>", 1)[1])
+    CN.rewrite(p, edit)
+    with pytest.raises(OfficeError) as e:
+        S.make_render_copy(p, tmp_path / "out", "docx")
+    assert e.value.code == "XML_REFUSED"

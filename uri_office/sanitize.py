@@ -22,6 +22,7 @@ OLE embedded objects are kept (LibreOffice draws their stored picture and never 
 """
 from __future__ import annotations
 
+import codecs
 import hashlib
 import io
 import posixpath
@@ -34,7 +35,7 @@ from lxml import etree
 
 from .errors import OfficeError
 
-VERSION = "s1"                      # part of the preview cache key; bump on any rule change
+VERSION = "s2"                      # part of the preview cache key; bump on any rule change
 MAX_ENTRIES = 10_000
 MAX_UNCOMPRESSED = 500 * 1024 * 1024
 MAX_RATIO = 100
@@ -143,6 +144,31 @@ def _check_archive(raw: bytes) -> zipfile.ZipFile:
     return z
 
 
+def _sniff_doctype(data: bytes) -> bool:
+    """A non-XML-named part that is really markup with a DOCTYPE or ENTITY (an XXE carrier) is refused too."""
+    head = data[3:4096] if data.startswith(codecs.BOM_UTF8) else data[:4096]
+    if head.lstrip()[:1] != b"<":
+        return False
+    low = data[:65536].lower()
+    return b"<!doctype" in low or b"<!entity" in low
+
+
+def _content_types(z: zipfile.ZipFile) -> dict:
+    """{lower-case part name: content type} from [Content_Types].xml (Override wins over Default)."""
+    root = _parse("[Content_Types].xml", z.read("[Content_Types].xml"))
+    defaults, overrides = {}, {}
+    for el in root:
+        if el.tag.endswith("Default"):
+            defaults[(el.get("Extension") or "").lower()] = el.get("ContentType") or ""
+        elif el.tag.endswith("Override"):
+            overrides[(el.get("PartName") or "").lstrip("/").lower()] = el.get("ContentType") or ""
+    out = {}
+    for n in z.namelist():
+        ln = n.lower()
+        out[ln] = overrides.get(ln) or defaults.get(posixpath.splitext(ln)[1].lstrip("."), "")
+    return out
+
+
 def _rels_source(rels_name: str) -> str:
     """'word/_rels/document.xml.rels' -> 'word/document.xml'; '_rels/.rels' -> ''."""
     d, f = posixpath.split(rels_name)
@@ -208,9 +234,34 @@ def _clean_word(root, ctx: _Ctx):
                 idx += 1
             parent.remove(el)
             ctx.count("field")
-    for el in list(root.iter(f"{w}instrText")):
-        if _FIELD.match(el.text or ""):
-            el.text = " "                                   # empty instruction: the cached result stays visible
+    # Complex fields: the instruction may be split over several w:instrText runs (review finding 2), so the runs from
+    # a field's begin to its separate (or end) are joined before matching. Nested fields keep their own frames.
+    stack: list = []
+    for el in root.iter(f"{w}fldChar", f"{w}instrText"):
+        if el.tag == f"{w}instrText":
+            if stack and not stack[-1]["done"]:
+                stack[-1]["runs"].append(el)
+            elif _FIELD.match(el.text or ""):                # an instruction outside any field frame
+                el.text = " "
+                ctx.count("field")
+            continue
+        typ = el.get(f"{w}fldCharType")
+        if typ == "begin":
+            stack.append({"runs": [], "done": False})
+        elif typ in ("separate", "end") and stack:
+            frame = stack[-1]
+            if not frame["done"]:
+                frame["done"] = True
+                if _FIELD.match("".join(r.text or "" for r in frame["runs"])):
+                    for r in frame["runs"]:
+                        r.text = " "                         # empty instruction: the cached result stays visible
+                    ctx.count("field")
+            if typ == "end":
+                stack.pop()
+    for frame in stack:                                      # a field never closed: judge what it has
+        if not frame["done"] and _FIELD.match("".join(r.text or "" for r in frame["runs"])):
+            for r in frame["runs"]:
+                r.text = " "
             ctx.count("field")
     for el in list(root.iter(f"{w}attachedTemplate")):
         el.getparent().remove(el)
@@ -265,6 +316,7 @@ def make_render_copy(src: Path, dst_dir: Path, kind: str) -> SanitizeResult:
     z = _check_archive(raw)
     ctx = _Ctx(kind)
     names = z.namelist()
+    types = _content_types(z)
     parts = {}
     for n in names:
         data = z.read(n)
@@ -276,22 +328,28 @@ def make_render_copy(src: Path, dst_dir: Path, kind: str) -> SanitizeResult:
         if kind == "xlsx" and _XL_DROP_PARTS.match(n):
             ctx.drop_parts.add(n)
             continue
-        if low.endswith((".xml", ".rels", ".svg", ".vml")):
+        # Which parts are XML is decided by name AND by the package's own content types, never by folder: a main
+        # part moved out of word/ or renamed to .dat is still parsed and cleaned (review finding 2).
+        ctype = types.get(n.lower(), "")
+        xml_named = low.endswith((".xml", ".rels", ".svg", ".vml"))
+        xml_typed = ctype.endswith(("+xml", "/xml"))
+        if xml_named or xml_typed:
             root = _parse(n, data)
             if low.endswith(".rels"):
                 _clean_rels(n, root, ctx)
-            elif low.endswith(".svg"):
+            elif root.tag.endswith("}svg") or root.tag == "svg":
                 _clean_svg(root, ctx)
-            elif kind == "docx" and low.startswith("word/"):
+            elif kind == "docx":
                 _clean_word(root, ctx)
-            elif kind == "pptx" and low.startswith("ppt/"):
+            elif kind == "pptx":
                 _clean_pptx(root, ctx)
-            elif kind == "xlsx" and low.startswith("xl/worksheets/"):
+            elif kind == "xlsx":
                 _clean_sheet(root, ctx)
-            elif kind == "xlsx" and low == "xl/workbook.xml":
                 _clean_workbook(root, ctx)
             parts[n] = (root, None)
         else:
+            if _sniff_doctype(data):
+                _refuse("XML_REFUSED", "a part declares a DOCTYPE")
             parts[n] = (None, data)
     # Drop parts named by removed relationships, and their own .rels files.
     for n in list(parts):

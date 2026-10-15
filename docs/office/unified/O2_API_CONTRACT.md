@@ -14,7 +14,7 @@ contract. Where it disagrees with the plan, the plan wins, and this file is corr
 |---|---|---|
 | C1 | Every route has a request shape, a response shape and named error codes. | `tests/office_u2/test_contract.py` checks the route table against the handler. |
 | C2 | Every error code has a fixed owner-facing message and a recovery action (refinement 7). | `test_contract.py`: every code in `contracts.ERRORS` has both. |
-| C3 | Responses never carry document text, cell values or file content, except `/document/<id>/search` (page numbers and a short match context the owner asked for) and page PNG bytes. | `test_no_content_leak.py` (AC-O2-14) |
+| C3 | Responses carry no document text, cell values or file content, except what the owner opened and sees: `/document/<id>/search` (page numbers and a short match context), page PNG bytes, and outline titles in DocView. None of these is logged, stored in `workflow.json` or `recent.json`, or sent to the Brain. | `test_service_o2.py` (AC-O2-14 sentinel scan) |
 | C4 | One approval path: plan, outputs and print jobs are rows of the existing `surface` table, acted on through the existing `/a2ui/action`. No new authorization system. | `test_plan_card.py`, `test_output_approval.py` |
 | C5 | Capabilities, devices and printing are exposed as transport-free descriptors, so a later Brain registration can wrap them without a redesign (OD-U12). No Core file is written. | `test_capabilities.py`, `tests/devices/test_capability.py` |
 | C6 | All existing M1/M2 routes keep their shapes. | existing `tests/office` |
@@ -113,9 +113,11 @@ any other value is `404 UNKNOWN_*`.
 | `/recent/clear` | POST | – | `{"items": []}` | – |
 | `/a2ui/action` | POST | existing | existing; now also plan, output and print cards | existing plus `STALE_PLAN` |
 
-**DocView:** `{"document_id", "kind", "name", "pages", "outline": [{"title_len", "level", "page"}]?, "preview":
-{"state": "rendering|ready|unavailable", "ready_pages": n, "reason"}, "findings": [Finding], "sha256_prefix",
-"read_only": true, "renderer": "LibreOffice"|"Windows"}`.
+**DocView:** `{"document_id", "kind", "name", "pages", "slides"?, "outline": [{"title", "level", "page"}], "preview":
+{"state": "rendering|ready|unavailable", "reason", "seconds"}, "findings": [Finding], "sha256_prefix",
+"read_only": true, "renderer": "LibreOffice"|"Windows"}`. A PDF that is encrypted or over 2,000 pages opens with
+`preview.state = "unavailable"` and `preview.reason` = `ENCRYPTED` or `TOO_MANY_PAGES` (the PDF is parsed only in
+the workers, after the session exists).
 - Outline titles are shown to the owner in the UI. They travel only on this owner-facing route, never to the Brain
   (plan §9.5) and never into logs.
 
@@ -123,12 +125,19 @@ any other value is `404 UNKNOWN_*`.
 - `{"result": "matched", "intent", "capability", "stage": 1|2, "inputs_needed": []}`;
 - `{"result": "clarify", "question_id", "question", "chips": [{"label", "intent"|"answer"}]}`;
 - `{"result": "planned", "intent", "phase", "message": "… is not available yet (planned for O3)."}`;
-- `{"result": "navigate", "view": OfficeView}` for "show my PDFs" and similar.
+- `{"result": "navigate", "view": OfficeView}` for "show my PDFs" and similar;
+- `{"result": "help"}` for "help" / "what can you do"; the client builds the answer from `/capabilities`.
+
+`/request` body fields: `text`, `target: {kind}`, `history` (earlier owner turns, at most 4 reach the Brain), `chip`.
+`scope` is accepted and ignored in O2 (page scopes start in O3/O4).
 
 `OfficeView` = `home | recent | documents | spreadsheets | presentations | pdfs | templates | workflows | devices`
 (`devices` only when O2P is available).
 
 ## 5. Approval subjects (one table, one chain; plan §5.1, A1 §A4)
+
+Apply never runs a workflow or a print job inside the approvals lock; it records the decision and queues them. The
+O2 output write (a copy of one approved PDF) does run inside apply, as M1/M2 saves do.
 
 | `subject_kind` | Created by | Bound hash key | A2UI actions | Apply does |
 |---|---|---|---|---|
@@ -163,6 +172,15 @@ Every code has a fixed message and a recovery action; the UI shows both. The ful
 | `INPUT_CHANGED` | The file changed since this task started. | "Start again" |
 | `CAPABILITY_PLANNED` | This is not available yet. | none |
 | `CLM_ACTIVE` | Windows security policy blocks the PDF renderer on this PC. | "Learn more" |
+
+Other codes the O2 routes return, without a catalogue entry because they need no owner action: `UNKNOWN_PAGE`
+(404), `CANCELLED` (a queued engine job dropped because its document or task closed), `NOT_FOUND`, `BAD_REQUEST`.
+
+**Resume rules as built (review round 1).** At service start, a task that was running or waiting to be saved
+becomes `interrupted`; a plan the owner never approved becomes `discarded` (it cannot be resumed). Resume needs the
+owner's earlier plan approval, re-confirms each input through the picker and checks its SHA-256, then re-runs every
+step from the start (all O2 steps are deterministic and short; plan §4.7 said "from step N"). A new destination is
+picked with a new Save before any new output card.
 
 ## 7. Devices and printing (O2P; contract only in O2)
 

@@ -123,8 +123,20 @@ class Office:
             return self._workflows
 
     def capabilities(self) -> dict:
-        states = self._hub.states() if self._hub is not None else {}
+        # Before the engines start, nothing that needs them is reported ready (review round 1, finding 9).
+        states = self._hub.states() if self._hub is not None else {
+            e: ("unverified", "ENGINE_UNAVAILABLE") for e in ("libreoffice", "winrt_pdf", "pdf_text")}
         return CAP.registry(states)
+
+    def create_workflow(self, body) -> dict:
+        cap = CAP.get(body.get("capability")) if isinstance(body.get("capability"), str) else None
+        if cap is not None and cap["status"] == "available":
+            states = self.hub.states()
+            for e in cap["engines"]:
+                st, why = states.get(e, ("ready", None))
+                if st in ("unavailable",):
+                    raise OfficeError(why or "ENGINE_UNAVAILABLE", "", 503)
+        return self.workflows.create(body.get("capability"), body.get("inputs"), body.get("options"))
 
     def open_document(self, raw_path) -> dict:
         s = self.documents.open(raw_path)
@@ -816,7 +828,7 @@ def make_handler(office: Office, token: str):
                 if parts == ["request"]:
                     return office.request(b)
                 if parts == ["workflow"]:
-                    return office.workflows.create(b.get("capability"), b.get("inputs"), b.get("options"))
+                    return office.create_workflow(b)
                 if parts == ["recent", "remove"]:
                     return office.recent.remove(b.get("path"))
                 if parts == ["recent", "clear"]:
@@ -831,7 +843,9 @@ def make_handler(office: Office, token: str):
                     table = {"cancel": lambda: wf.cancel(parts[1]), "resume": lambda: wf.resume(parts[1], b),
                              "accept_warnings": lambda: wf.accept_warnings(parts[1]),
                              "propose_save": lambda: wf.propose_save(parts[1], b),
-                             "answer": lambda: office.request({"text": "", "chip": b.get("answer")})}
+                             "answer": lambda: (wf.get(parts[1]), office.request(
+                                 {"text": "", "chip": b.get("answer"),
+                                  "target": {"kind": wf.get(parts[1]).record["inputs"][0]["kind"]}}))[1]}
                     if parts[2] in table:
                         return table[parts[2]]()
                 if parts and parts[0] in ("document", "workflow"):
