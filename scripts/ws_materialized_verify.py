@@ -41,6 +41,15 @@ BEFORE = {
 }
 
 
+# Owner-authorized frozen amendments the historical runtime also carries (FCV-05, 2026-10-15): path -> frozen
+# bytes the runtime must hold before. The after-bytes are the candidate's committed blob, which must equal the
+# frozen checker's exact authorization (F.APPROVED). The FCV-01 rollback tool is a source-tree tool and is not here.
+RUNTIME_AMENDMENTS = {
+    "scripts/uri_client.ps1": "c8401bc06caa2fdd82838d69e9a93698bd19d741296f596b38ac6929e0409404",
+}
+RUNTIME_TRANSITIONS = {**BEFORE, **RUNTIME_AMENDMENTS}
+
+
 # Exact content of existing accepted e0 paths newly recognized by the historical scope gates.
 INHERITED_SCOPE_BLOBS = {
     "tests/assist/fixtures/run_selection.cjs": "9dd01567e426ca908b181c983f1dfaf1f7329dfd09d52c06fd8d62b83601348c",
@@ -260,21 +269,31 @@ def expected_files(source, *, exclude_tests=False):
         expected.update(chosen)
     for path in M.REPLACED_PATHS:
         expected[path] = files[path]
-    for path in BEFORE:
+    for path in RUNTIME_TRANSITIONS:
         expected[path] = files[path]
     return expected
 
 
 def reconcile(source, runtime):
     source_authority(source)
-    for path, sha in BEFORE.items():
+    # Every precondition is checked before anything is written into the runtime.
+    amendments = {}
+    for path, before in RUNTIME_AMENDMENTS.items():
+        data = raw(source, path)
+        if digest(data) != F.APPROVED[path]["sha256"]:
+            raise VerificationError("AMENDMENT_SOURCE_CHANGED:" + path)
+        amendments[path] = data
+    for path, sha in RUNTIME_TRANSITIONS.items():
         if digest(raw(runtime, path)) != sha:
             raise VerificationError("TRANSITION_BEFORE_CHANGED:" + path)
-    patch = Path(source) / PATCH_PATH
-    git(runtime, "apply", "--check", str(patch))
-    git(runtime, "apply", str(patch))
+    if BEFORE:
+        patch = Path(source) / PATCH_PATH
+        git(runtime, "apply", "--check", str(patch))
+        git(runtime, "apply", str(patch))
+    for path, data in amendments.items():
+        (Path(runtime) / path).write_bytes(data)
     result = {}
-    for path, before in BEFORE.items():
+    for path, before in RUNTIME_TRANSITIONS.items():
         after = digest(raw(runtime, path))
         if after != F.APPROVED[path]["sha256"]:
             raise VerificationError("TRANSITION_AFTER_CHANGED:" + path)
@@ -309,7 +328,7 @@ def verify(source, runtime):
                 or receipt["security_patch_sha256"] != PATCH_SHA256
                 or receipt["security_transitions"] != {
                     p: {"before_sha256": before, "after_sha256": F.APPROVED[p]["sha256"]}
-                    for p, before in BEFORE.items()}):
+                    for p, before in RUNTIME_TRANSITIONS.items()}):
             raise VerificationError("RECEIPT_IDENTITY")
         if type(receipt["oi_tests_included"]) is not bool:
             raise VerificationError("RECEIPT_TEST_SCOPE")
@@ -345,11 +364,11 @@ def verify(source, runtime):
             raise VerificationError("UNKNOWN_OUTPUT:" + ",".join(sorted(extras)[:10]))
         # The two runtime security transitions. The FCV-01 rollback amendment is a source-tree tool change; the
         # historical runtime keeps the overlay's original rollback script (checked as an expected file above).
-        for path in BEFORE:
+        for path in RUNTIME_TRANSITIONS:
             if digest(raw(runtime, path)) != F.APPROVED[path]["sha256"]:
                 raise VerificationError("APPROVED_BLOB_CHANGED:" + path)
         # Provenance of the two runtime transitions (the runtime carries exactly these records).
-        for path in sorted({w for p in BEFORE for w in F.APPROVED[p]["provenance"]}):
+        for path in sorted({w for p in RUNTIME_TRANSITIONS for w in F.APPROVED[p]["provenance"]}):
             if digest(raw(runtime, path)) != F.PROVENANCE[path]:
                 raise VerificationError("PROVENANCE_CHANGED:" + path)
         result.update(ok=True, source_head=head, source_tree=source_tree, historical_head=M.BASE,
@@ -392,7 +411,7 @@ def verified_transitions(runtime):
     result = verify(receipt["candidate_source"], runtime)
     if not result["ok"]:
         raise VerificationError("MATERIALIZED_GATE_REFUSED:" + result.get("error", "UNKNOWN"))
-    return set(BEFORE)
+    return set(RUNTIME_TRANSITIONS)
 
 
 def main():

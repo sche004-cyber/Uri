@@ -31,7 +31,7 @@ def output(tmp_path, monkeypatch):
     git(source, "config", "user.name", "Fixture")
     git(source, "config", "user.email", "fixture@invalid")
     git(source, "config", "core.autocrlf", "false")
-    for name in list(V.BEFORE) + list(V.F.PROVENANCE):
+    for name in list(V.RUNTIME_TRANSITIONS) + list(V.F.PROVENANCE):
         p = source / name
         p.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / name, p)
@@ -56,7 +56,7 @@ def output(tmp_path, monkeypatch):
                    head=head, overlay_commit=head, security_patch_sha256=V.PATCH_SHA256,
                    security_transitions={p: {"before_sha256": before,
                                               "after_sha256": V.F.APPROVED[p]["sha256"]}
-                                         for p, before in V.BEFORE.items()},
+                                         for p, before in V.RUNTIME_TRANSITIONS.items()},
                    oi_tests_included=True)
     (runtime / "OI_MATERIALIZATION_RECEIPT.json").write_text(json.dumps(receipt))
     verified = V.verify(source, runtime)
@@ -144,7 +144,7 @@ def test_original_checkpoint_behavior_with_historical_receipt(tmp_path):
 
 def test_authorized_transition_gate_requires_full_output_proof(output):
     source, runtime, _ = output
-    assert V.verified_transitions(runtime) == set(V.BEFORE)
+    assert V.verified_transitions(runtime) == set(V.RUNTIME_TRANSITIONS)
     (runtime / "worker.py").write_text("changed source\n")
     with pytest.raises(V.VerificationError, match="MATERIALIZED_GATE_REFUSED"):
         V.verified_transitions(runtime)
@@ -271,3 +271,27 @@ def test_historical_chain_reaches_the_verifier_when_run_isolated(tmp_path):
             "print(sorted(m.runtime_transitions(m.ROOT)))")
     run = subprocess.run([sys.executable, "-I", "-B", "-c", code, str(chain)], capture_output=True, text=True, cwd=tmp_path)
     assert run.returncode == 0, run.stderr[-800:]
+
+
+def test_runtime_amendment_is_exactly_the_owner_authorized_fcv05_blob():
+    """FCV-05: the runtime carries the authorized uri_client.ps1 and nothing else beyond the security transitions."""
+    assert V.RUNTIME_AMENDMENTS == {"scripts/uri_client.ps1":
+                                    "c8401bc06caa2fdd82838d69e9a93698bd19d741296f596b38ac6929e0409404"}
+    frozen = subprocess.check_output(["git", "-C", str(ROOT), "show",
+                                      "925ad45cec887ca33f5d6b12b2247508a18ac0b7:scripts/uri_client.ps1"])
+    assert V.digest(frozen) == V.RUNTIME_AMENDMENTS["scripts/uri_client.ps1"]
+    assert V.digest((ROOT / "scripts/uri_client.ps1").read_bytes()) == V.F.APPROVED["scripts/uri_client.ps1"]["sha256"]
+    assert "scripts/phase1_offline_rollback.py" not in V.RUNTIME_TRANSITIONS
+
+
+def test_reconcile_refuses_an_amendment_source_that_is_not_the_authorized_blob(output, monkeypatch):
+    source, runtime, _ = output
+    frozen = subprocess.check_output(["git", "-C", str(ROOT), "show",
+                                      "925ad45cec887ca33f5d6b12b2247508a18ac0b7:scripts/uri_client.ps1"])
+    (runtime / "scripts/uri_client.ps1").write_bytes(frozen)
+    (source / "scripts/uri_client.ps1").write_bytes(b"something else\n")
+    monkeypatch.setattr(V, "source_authority", lambda p: None)
+    monkeypatch.setattr(V, "BEFORE", {})              # isolate the amendment step from the security patch
+    with pytest.raises(V.VerificationError, match="AMENDMENT_SOURCE_CHANGED"):
+        V.reconcile(source, runtime)
+    assert (runtime / "scripts/uri_client.ps1").read_bytes() == frozen      # nothing written on refusal

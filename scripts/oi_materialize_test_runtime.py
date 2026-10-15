@@ -45,7 +45,9 @@ OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration",
             "docs/ssrf/SSRF_1_PLAN_AND_ACCEPTANCE.md", "docs/web/IDN_1B_PLAN_AND_ACCEPTANCE.md",
             "docs/governance/windows_restoration/OWNER_RUNTIME_AUTHORIZATION.json",
             "docs/governance/windows_restoration/EXACT_RUNTIME_SECURITY_TRANSITIONS.patch",
-            "scripts/oi_materialize_test_runtime.py", "scripts/ws_materialized_verify.py"]
+            "scripts/oi_materialize_test_runtime.py", "scripts/ws_materialized_verify.py",
+            # Owner 2026-10-15 (FCV-05): the authorization record for the runtime amendment of scripts/uri_client.ps1.
+            "docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md"]
 TEST_PATHS = ("tests/oi", "tests/ws", "tests/scheduler", "tests/a2ui", "tests/web", "tests/assist")
 # Accepted files the owner authorized to extend (WS-D3: exact-path scope guards). They replace the overlay copy; the
 # receipt records both digests so the replacement is auditable.

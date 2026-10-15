@@ -27,6 +27,7 @@ PROVENANCE = {
     "docs/graphify/GRAPHIFY_LEAK_1_PLAN_AND_ACCEPTANCE.md": "1eeb1f9132d7b314420a1751b4574088e830ae6a2923e86a932e433bbcdeea6f",
     "docs/ssrf/SSRF_1_PLAN_AND_ACCEPTANCE.md": "fac7a8681b0ff83923a34073b16da8d5dc3630fba89a211ff712c12432e5dba9",
     "docs/web/IDN_1B_PLAN_AND_ACCEPTANCE.md": "387a29366348a5b492885fd121d97a81d60f0080fff30ad9dda3aee069aeb71b",
+    "docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md": "06c3b5384d69478958869193b6f7c5abcdfb95a2d1f7f026ae10ef3273c67e20",
     "docs/governance/fcv_recovery/FCV01_ROLLBACK_AMENDMENT_AUTHORIZATION.md": "f73e7c4be82808df141287f1e92edb70b6732e527f171dba651bb8bd28df3c43",
 }
 APPROVED = {
@@ -50,6 +51,14 @@ APPROVED = {
         "commits": ["0d3e12245cd8522b2b1785daa45f48564f7adc9e"],
         "provenance": ["docs/governance/fcv_recovery/FCV01_ROLLBACK_AMENDMENT_AUTHORIZATION.md"],
         "anchor": "0d3e12245cd8522b2b1785daa45f48564f7adc9e",
+    },
+    # FCV-05: owner-authorized frozen amendment (PowerShell bridge without a UTF-8 BOM), anchored like FCV-01.
+    "scripts/uri_client.ps1": {
+        "sha256": "3a01127775a6075a5a971fc63944ef4ce7d8fb3f62af8f1866553587ecd3e34e",
+        "decisions": ["OWNER-FCV05-20261015"],
+        "commits": ["e1fb4708a149d8a5d0cab603ae5866e043ab7ba2"],
+        "provenance": ["docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md"],
+        "anchor": "e1fb4708a149d8a5d0cab603ae5866e043ab7ba2",
     },
 }
 
