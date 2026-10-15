@@ -149,4 +149,16 @@ Known weaknesses of the relative rule:
 
 ## Change log
 
-(none)
+**C-1 (after R1, before R2): R1 INVALID; replacement round R2.**
+- **What happened.** In R1, reviewer 2 scored depleted `ref_reframed` at 64, which fails the section 5 validity rule.
+  - The pack files match their key hashes; candidate B in reviewer 2's depleted set is `ref_reframed`.
+  - Reviewer 2's own notes for B and C describe each other's images, so the scores look transposed between them.
+- **Consequence.** The round is invalid under section 5, and it is reported as is (`R1_RESULTS.md`).
+  - No score was edited or removed.
+  - Its candidate results are not used.
+- **R2 (section 8).** R2 is the one replacement round:
+  - three new reviewers;
+  - the same build and images;
+  - a new letter shuffle (seed 4200);
+  - the same prompt apart from round and reviewer names;
+  - unchanged rules.
