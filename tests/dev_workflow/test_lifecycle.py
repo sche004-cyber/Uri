@@ -1936,3 +1936,54 @@ def test_r10_01_pipe_holder_outside_the_swept_tree_cannot_block_the_driver(tmp_p
     argv, pidfile = holder
     rc, out, err, state = _bounded(lambda: L.run_cmd(argv, tmp_path, 2), 25)
     assert state == "TIMED_OUT" and rc is None
+
+
+def test_3a_repair_of_a_tracked_file_under_an_ignored_directory_is_committed(tmp_path):
+    """DEV-LIFECYCLE-3-r2: the skill lives under the ignored .claude/ yet is tracked; `git add -A -- <path>` refused
+    it and every driver repair failed (REPAIR_FAILED). Tracked paths are now added with -f; the repair commits."""
+    repo, wt, base, remote = make_fixture(tmp_path)
+    (wt / ".gitignore").write_text("__pycache__/\n.pytest_cache/\npkg/\n")  # pkg/calc.py stays tracked
+    g(wt, "add", ".gitignore")
+    g(wt, "commit", "-qm", "ignore pkg/ (like .claude/)")
+    config(tmp_path, repo, wt)
+    raw = json.loads((tmp_path / "cfg.json").read_text())
+    raw["permitted_paths"] = ["pkg/**", "tests/**", ".gitignore"]
+    (tmp_path / "cfg.json").write_text(json.dumps(raw))
+    cfg = L.load_config(tmp_path / "cfg.json")
+    assert L.run(cfg) == S.COMPLETE
+    s = L.status(cfg)
+    assert s["repairs"][0]["status"] == "COMMITTED"
+    assert "b == 0" in g(wt, "show", f"{s['candidate']}:pkg/calc.py")
+
+
+def test_3a_new_ignored_file_is_still_not_force_added(tmp_path):
+    """Only paths already in the index get -f: a new file under an ignored directory is not smuggled in."""
+    repo, wt, base, remote = make_fixture(tmp_path)
+    (wt / ".gitignore").write_text("__pycache__/\n.pytest_cache/\nsecret/\n")
+    g(wt, "add", ".gitignore")
+    g(wt, "commit", "-qm", "ignore secret/")
+    (wt / "secret").mkdir()
+    (wt / "secret/key.txt").write_text("k")
+    with pytest.raises(L.LifecycleError):
+        L.git(wt, "add", "-A", "--", "secret/key.txt")
+    assert L.git(wt, "ls-files", "--", "secret/key.txt") == ""
+
+
+def test_3a_worker_output_is_decoded_as_utf8(tmp_path):
+    """DEV-LIFECYCLE-3-r4: worker stdout/stderr were decoded with the Windows ANSI code page; a UTF-8 quote (byte
+    0x9d) killed the reader thread and lost the output. The driver now decodes UTF-8 and records it intact."""
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = config(tmp_path, repo, wt)
+    body = ("head = subprocess.run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()\n"
+            "sys.stderr.buffer.write('stderr \u201cquoted\u201d \u2192 ok\\n'.encode('utf-8'))\n"
+            "out = 'AUDIT_RESULT_BEGIN\\n' + json.dumps({'candidate': head, 'baseline': 'x', 'verdict': 'ACCEPT',"
+            " 'findings': [], 'prior_findings': [], 'tests_run': [], 'unverified': ['\u201cnone\u201d \u2014 \u2192']},"
+            " ensure_ascii=False) + '\\nAUDIT_RESULT_END\\n'\n"
+            "sys.stdout.buffer.write(out.encode('utf-8'))\n")
+    (tmp_path / "u8.py").write_bytes(("import sys, json, subprocess\nsys.stdin.read()\n" + body).encode("utf-8"))
+    cfg["reviewer"] = {"provider": "command", "argv": [PY, "-X", "utf8", str(tmp_path / "u8.py")],
+                       "counts_as_independent": True}
+    assert L.run(cfg) == S.COMPLETE
+    rdir = tmp_path / "state/rounds/R1"
+    assert "\u201cquoted\u201d \u2192" in (rdir / "reviewer_stderr.txt").read_bytes().decode("utf-8")
+    assert "\u201cnone\u201d \u2014 \u2192" in (rdir / "reviewer_stdout.txt").read_bytes().decode("utf-8")

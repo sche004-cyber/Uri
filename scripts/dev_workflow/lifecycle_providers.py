@@ -595,7 +595,7 @@ def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) ->
         watch.__enter__()
     try:
         proc = containment.spawn(argv, cwd=worktree, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, text=True, env=env)
+                                 stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", env=env)
     except OSError as e:
         if watch:
             watch.__exit__(None, None, None)
