@@ -128,11 +128,12 @@ def route(text: str, target_kind: str | None, history: list | None, brain=None, 
     owner_turns = [h for h in (history or []) if isinstance(h, str)][-4:]
     try:
         got = brain.classify(text.strip(), target_kind=target_kind, history=owner_turns)
-    except Exception:  # noqa: BLE001 - any Brain failure becomes a clarification, never a guess
-        return clarify(target_kind)
+    except Exception as e:  # noqa: BLE001 - any Brain failure becomes a clarification, never a guess
+        # The reason is kept (code only, no text) so a Brain that never decides can be seen (real-app run r4).
+        return {**clarify(target_kind), "brain_outcome": getattr(e, "code", type(e).__name__)}
     intent = got.get("intent") if isinstance(got, dict) else None
     if intent not in INTENTS:
-        return clarify(target_kind)
+        return {**clarify(target_kind), "brain_outcome": intent if intent == "unclear" else "NOT_AN_INTENT"}
     res = resolve(intent, target_kind, stage=2)
     if res["result"] == "matched":
         extra = [m for m in (got.get("missing") or []) if m in MISSING and m not in res["inputs_needed"]]
