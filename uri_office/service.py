@@ -958,7 +958,9 @@ class _ExclusiveServer(ThreadingHTTPServer):
     """No port sharing (found during the O2 real-app review, 2026-10-15): Python's HTTP server sets SO_REUSEADDR,
     which on Windows lets a second process bind the same loopback port while the first is listening. The Office port
     is bound exclusively, so a second service (or any other program) cannot listen beside it."""
-    allow_reuse_address = False
+    # Windows: SO_REUSEADDR allows a second listener, so it is off and SO_EXCLUSIVEADDRUSE is on. Elsewhere
+    # SO_REUSEADDR only allows a quick restart over TIME_WAIT (never two listeners), so it stays on.
+    allow_reuse_address = os.name != "nt"
 
     def server_bind(self):
         import socket

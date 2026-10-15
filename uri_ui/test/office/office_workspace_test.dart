@@ -447,6 +447,26 @@ void main() {
       expect(started, 2);
     });
 
+    testWidgets('another program that answers 200 without the Office contract is not taken for URI Office',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.binding.setSurfaceSize(const Size(1440, 900));
+      final foreign = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't',
+          MockClient((_) async => http.Response('<html>hello</html>', 200)));
+      final live = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client());
+      var started = 0;
+      await tester.pumpWidget(_app(OfficeWorkspace(
+          environment: env(() async {
+            started++;
+            return null;
+          }),
+          clientFactory: () => started > 0 ? live : foreign)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
+      expect(started, 1);
+    });
+
     testWidgets('another program on the recorded port (token refused) is not taken for URI Office', (tester) async {
       SharedPreferences.setMockInitialValues({});
       await tester.binding.setSurfaceSize(const Size(1440, 900));

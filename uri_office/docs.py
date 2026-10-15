@@ -134,6 +134,9 @@ class Documents:
                 else:
                     out = s.folder / "preview.pdf"
                     self.hub.lo.submit(s.render_copy, out, owner=s.document_id, priority=PREVIEW).result(300)
+                    with self._lock:
+                        if self.sessions.get(s.document_id) is not s:      # closed while it was converted
+                            raise OfficeError("UNKNOWN_DOCUMENT", "closed", 404)
                     shutil.copy2(out, cached)
                     s.preview_pdf = out
             info = self.hub.text_request("info", pdf=str(s.preview_pdf))

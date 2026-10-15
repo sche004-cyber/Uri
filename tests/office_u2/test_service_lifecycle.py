@@ -96,3 +96,31 @@ def test_the_office_port_cannot_be_shared(tmp_path):
             ThreadingHTTPServer(("127.0.0.1", port), BaseHTTPRequestHandler)   # a plain reuse-address server too
     finally:
         srv.server_close()
+
+
+def test_a_quick_restart_on_the_same_port_binds_after_traffic(tmp_path):
+    """Codex O2-R5-05: the exclusive bind must not stop the service from starting again at once on its fixed port
+    after it served requests (server-side TIME_WAIT) or while a client still held an accepted connection."""
+    import socket
+    import threading
+    import urllib.request
+    from uri_office import service as SVC
+
+    class FakeOffice:
+        state = tmp_path / "s"
+    FakeOffice.state.mkdir()
+    srv, token = SVC.serve(FakeOffice(), "127.0.0.1", 0)
+    port = srv.server_address[1]
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    for _ in range(5):
+        try:
+            urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{port}/contract",
+                                                          headers={"Authorization": f"Bearer {token}"}), timeout=5)
+        except Exception:  # noqa: BLE001 - the fake office has no routes; any HTTP answer makes a connection
+            pass
+    held = socket.create_connection(("127.0.0.1", port))
+    srv.shutdown()
+    srv.server_close()
+    srv2, _ = SVC.serve(FakeOffice(), "127.0.0.1", port)      # immediately, same port
+    srv2.server_close()
+    held.close()
