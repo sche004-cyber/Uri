@@ -217,6 +217,8 @@ class _PageImageState extends State<_PageImage> {
       }
       await Future<void>.delayed(const Duration(milliseconds: 400));
     }
+    // CX-1: a page that never arrives is said, not shown as an endless spinner.
+    if (mounted && _bytes == null && _error == null) setState(() => _error = 'This page is not available.');
   }
 
   @override
@@ -326,7 +328,15 @@ class OfficeWorkflowView extends StatelessWidget {
             title: Text('${f['message']}${f['weak'] == true ? ' (rough check)' : ''}'),
           ),
       ],
-      if (out != null) ...[
+      // CX-1: a cancelled, failed or discarded task has no output any more (its work files are removed): say so
+      // instead of drawing pages that can never load.
+      if (state == 'cancelled')
+        Padding(
+          padding: const EdgeInsets.only(top: UriSpace.sm),
+          child: Text('Cancelled. Nothing was saved, and your original file is unchanged. Use the arrow at the top to '
+              'go back.', key: const ValueKey('office-workflow-cancelled')),
+        ),
+      if (out != null && !const {'cancelled', 'failed', 'discarded'}.contains(state)) ...[
         const SizedBox(height: UriSpace.sm),
         Eyebrow('${out['name']} · ${out['pages']} page(s)'),
         SizedBox(
