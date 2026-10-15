@@ -1,7 +1,7 @@
 {
   "schema": "uri.ui_v2.blocker_register.v1",
   "milestone": "UI-V2-COMPLETION",
-  "updated": "2026-10-15 (after live runs l1-l8, p1-p4)",
+  "updated": "2026-10-16 (after merge of canonical 85f6a0ec and live runs l11/l12, p5/p6)",
   "note": "Authoritative blocker list for the UI V2 completion. Earlier sources: C:/Users/cheta/Development/uri-ui-v2-final-qualification-20261013 (FINAL_REPORT.md, ENVIRONMENT_DIAGNOSIS.md, FROZEN_RECONCILIATION.md, reviewer-repaired/INDEPENDENT_REPAIRED_AUDIT.md). Evidence paths starting with run/ are under C:/Users/cheta/Development/uri-ui-v2c-run.",
   "blockers": [
     {
@@ -29,7 +29,8 @@
       "reproduction_2026_10_15": "Same result on canonical 7d3d0f63 and on this candidate (identical JSON). The candidate changes zero protected paths (git diff 7d3d0f63..HEAD over uri_core, scripts, uri_operational_intelligence, model_lab, .gitignore is empty).",
       "evidence": [
         "run/evidence/baseline/ws_frozen_check.json",
-        "run/evidence/baseline/ws_frozen_check_canonical_7d3d0f63.json"
+        "run/evidence/baseline/ws_frozen_check_canonical_7d3d0f63.json",
+        "docs/ui_v2/completion/evidence/env/ws_frozen_check_merged.json"
       ],
       "root_cause": "Inherited canonical condition: owner-approved security repairs D2 (SSRF-1), D12 (GRAPHIFY-LEAK-1) and D33 (IDN-1b) changed the two files; the strict historical checker does not know these exceptions.",
       "classification": "NOT UI V2-OWNED (canonical governance)",
@@ -37,7 +38,7 @@
       "responsible_milestone": "frozen-check governance reconciliation (owner decision, proposal in uri-ui-v2-final-qualification-20261013/FROZEN_RECONCILIATION.md)",
       "repair": "None in UI V2. The lifecycle integration precondition is the protected_paths diff against the baseline (driver protected_paths: ws_frozen_check), which is empty for this candidate; DEV-LIFECYCLE-3 was integrated on the same basis.",
       "tests": "driver protected-path diff; ws_frozen_check rerun recorded",
-      "status": "OPEN - OWNER (not blocking UI V2)",
+      "status": "RESOLVED BY CANONICAL: after merging canonical 85f6a0ec (FCV-R governance: recognized exact blobs with owner decisions), scripts/ws_frozen_check.py returns ok=true on this candidate; unapproved drift and unapproved protected changes are empty",
       "integration_dependency": "none for UI V2"
     },
     {
@@ -49,8 +50,12 @@
       "classification": "ENVIRONMENT",
       "responsible_milestone": "none",
       "repair": "None. Probe recorded before the first driver run.",
-      "status": "RESOLVED (probe pending at run time)",
-      "integration_dependency": "independent review"
+      "status": "RESOLVED: codex-cli 0.158.0 only on PATH; gpt-6-sol probe PROBE_OK; fresh-CODEX_HOME unelevated sandbox probe in the candidate ran git rev-parse HEAD",
+      "integration_dependency": "independent review",
+      "evidence": [
+        "docs/ui_v2/completion/evidence/env/codex_probe.txt",
+        "docs/ui_v2/completion/evidence/env/codex_sandbox_probe.txt"
+      ]
     },
     {
       "id": "BLK-NAT-1",
@@ -59,7 +64,7 @@
       "root_cause": "Automation transport of the reviewing session, not a product hit-test defect.",
       "classification": "QUALIFICATION GAP (UI V2-owned)",
       "repair": "Native runs of the production main() with integration_test on this PC (real worker, Core, Runtime v1 Brain): l6-v2-first and l7-v2-returning at a9959714 pass all journeys, including companion window 440x680 with a shaped region (regionKind 3 = complex region, corner not hit), single click, detached chat with a real reply, Escape, double click back to Dashboard with the window restored. Input is synthesized (flutter_test), not a physical mouse or keyboard.",
-      "status": "RESOLVED FOR AUTOMATED NATIVE INPUT - physical mouse/keyboard NOT VERIFIED",
+      "status": "RESOLVED FOR AUTOMATED NATIVE INPUT - physical mouse/keyboard NOT VERIFIED; re-verified live at merged commit 56dbc003 (l11-v2-first, l12-v2-returning)",
       "integration_dependency": "UI qualification record",
       "evidence": [
         "run/evidence/live/l6-v2-first",
@@ -73,7 +78,7 @@
       "classification": "UI defect found live (shared V1/V2 shell; blocks AC-5 keyboard navigation)",
       "repair": "a9959714: keyboard handler applies the same bindings only when focus is outside the shell and the shell's page is on top; CallbackShortcuts inside the shell unchanged.",
       "tests": "ui_v2_test 'mode shortcuts work when focus has fallen to the route scope' (fails before, passes after); live l6 key log",
-      "status": "REPAIRED - LIVE VERIFIED (l6-v2-first)",
+      "status": "REPAIRED - LIVE VERIFIED (l6-v2-first); re-verified live at merged commit 56dbc003 (l11-v2-first, l12-v2-returning)",
       "integration_dependency": "none"
     },
     {
@@ -83,7 +88,7 @@
       "classification": "UI defect found live (pre-existing code, reached through V2 Settings)",
       "repair": "a9959714: the service check runs after the first frame.",
       "tests": "ui_v2_test 'opening Settings starts the voice service after the frame'; live l6: no such error",
-      "status": "REPAIRED - LIVE VERIFIED (l6-v2-first)",
+      "status": "REPAIRED - LIVE VERIFIED (l6-v2-first); re-verified live at merged commit 56dbc003 (l11-v2-first, l12-v2-returning)",
       "integration_dependency": "none"
     },
     {
@@ -94,7 +99,7 @@
       "classification": "UI V2-OWNED integration gap",
       "repair": "ca9803c1: production integrated path passes visualV2 and wires the companion window adapter (regions, drag, pointer); URI_UI_VISUAL=living keeps the earlier composition; unpaired path unchanged.",
       "tests": "uri_ui/test/ws/ui_v2_entry_test.dart; live runs start from production main()",
-      "status": "REPAIRED - LIVE VERIFIED (l6 J1: production main opens V2 Dashboard)",
+      "status": "REPAIRED - LIVE VERIFIED (l6 J1: production main opens V2 Dashboard); re-verified live at merged commit 56dbc003 (l11-v2-first, l12-v2-returning)",
       "integration_dependency": "none"
     },
     {
@@ -105,7 +110,7 @@
       "classification": "UI V2-OWNED defect",
       "repair": "ca9803c1: tiles send one real turn and open the conversation; the SIMULATED badge is not shown for them.",
       "tests": "ws_integration_test 'V2 integrated: Start new work asks the real worker, never the simulator'",
-      "status": "REPAIRED - LIVE VERIFIED (l6 J6: Letter tile sends a real turn, no simulated item)",
+      "status": "REPAIRED - LIVE VERIFIED (l6 J6: Letter tile sends a real turn, no simulated item); re-verified live at merged commit 56dbc003 (l11-v2-first, l12-v2-returning)",
       "integration_dependency": "none"
     },
     {
@@ -115,7 +120,7 @@
       "classification": "UI V2-OWNED defect (honest status)",
       "repair": "c31516fd: count adds the worker's open approval and confirmation (same rule as the Workspace); plain labels.",
       "tests": "ws_integration_test 'V2 dashboard counts the worker approval waiting for the user'; live J9",
-      "status": "REPAIRED - LIVE VERIFIED (l6 J9: Dashboard shows 1 review needed while the confirmation waits; button opens Tasks)",
+      "status": "REPAIRED - LIVE VERIFIED (l6 J9: Dashboard shows 1 review needed while the confirmation waits; button opens Tasks); re-verified live at merged commit 56dbc003 (l11-v2-first, l12-v2-returning)",
       "integration_dependency": "none"
     },
     {
@@ -136,7 +141,7 @@
       ],
       "classification": "INTEGRATION DEPENDENCY (two pending candidates on the same canonical)",
       "repair": "Not done here (would duplicate FCV-R). Whichever integrates second rebases and resolves; FCV-R owns raw chips, card wording, Brain startup headline and simulated rail rows, so UI V2 does not change them.",
-      "status": "OPEN - ORDERING DECISION",
+      "status": "RESOLVED: FCV-R was integrated into canonical (85f6a0ec) first; this candidate merged it (2b3bd36f) and resolved the four conflicts; full Flutter suite 634 passed; live journeys pass at 56dbc003",
       "integration_dependency": "FCV-R"
     },
     {
@@ -152,7 +157,7 @@
       "component": "Materialized test runtime security (pre-SSRF fetch_url at e8e3b65)",
       "finding": "FCV 2026-10-14: canonical runtime materialization serves the frozen pre-SSRF fetch_url; repaired on the FCV-R line (FCV-11 guarded rollback).",
       "classification": "NOT UI V2-OWNED (Core/runtime, FCV-R)",
-      "status": "RECORDED",
+      "status": "ADDRESSED IN CANONICAL by FCV-R (85f6a0ec: materializer reconciles and verifies security transitions, FCV-11 guarded rollback); this candidate now includes it through the merge",
       "integration_dependency": "FCV-R"
     },
     {
