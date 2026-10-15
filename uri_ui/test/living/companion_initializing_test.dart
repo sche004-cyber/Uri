@@ -138,11 +138,32 @@ void main() {
     });
 
     test('the unavailable detail names the newer state (R4-N2)', () {
-      expect(brainUnavailableDetail('LOADING', h('LOADING', 'FAILED')), 'Brain FAILED');
-      expect(brainUnavailableDetail('LOADING', h('FAILED')), 'Brain FAILED');
-      expect(brainUnavailableDetail('STOPPED', h('STOPPED', 'WAITING_FOR_GPU')), 'Brain WAITING_FOR_GPU');
-      expect(brainUnavailableDetail('STOPPED', h('STOPPED')), 'Brain STOPPED');
+      // Health stamped after the status read (the worker stamps both).
+      Map<String, dynamic> newer(String? r, [String? host]) => {...h(r, host), 'checked_at': 300};
+      expect(brainUnavailableDetail('LOADING', newer('LOADING', 'FAILED'), statusCheckedAt: 200), 'Brain FAILED');
+      expect(brainUnavailableDetail('LOADING', newer('FAILED'), statusCheckedAt: 200), 'Brain FAILED');
+      expect(brainUnavailableDetail('STOPPED', newer('STOPPED', 'WAITING_FOR_GPU'), statusCheckedAt: 200),
+          'Brain WAITING_FOR_GPU');
+      expect(brainUnavailableDetail('STOPPED', newer('STOPPED'), statusCheckedAt: 200), 'Brain STOPPED');
       expect(brainUnavailableDetail('FAILED', const {}), 'Brain FAILED');
+      // Unstamped health is of unknown age: the polled state stands (R5-N2).
+      expect(brainUnavailableDetail('LOADING', h('FAILED')), 'Brain LOADING');
+    });
+
+    test('the newer snapshot decides when both are stamped (R5-N2/N3)', () {
+      Map<String, dynamic> at(num t, String? readiness, [String? host]) => {...h(readiness, host), 'checked_at': t};
+      // Health older than the status read: only the runtime state counts.
+      expect(brainStartingDetail('STOPPED', at(100, 'LOADING', 'STARTING'), statusCheckedAt: 200), isNull);
+      expect(brainStartingDetail('STOPPED', at(100, 'READY'), statusCheckedAt: 200), isNull);
+      expect(brainStartingDetail('LOADING', at(100, 'FAILED', 'FAILED'), statusCheckedAt: 200), 'Brain loading');
+      expect(brainUnavailableDetail('STOPPED', at(100, 'LOADING'), statusCheckedAt: 200), 'Brain STOPPED');
+      expect(brainUnavailableDetail('FAILED', at(100, 'STARTING', 'STARTING'), statusCheckedAt: 200), 'Brain FAILED');
+      // Health newer than the status read: it wins, also without a host.
+      expect(brainStartingDetail('STOPPED', at(300, 'LOADING'), statusCheckedAt: 200), 'Brain loading');
+      expect(brainStartingDetail('LOADING', at(300, 'FAILED'), statusCheckedAt: 200), isNull);
+      expect(brainUnavailableDetail('LOADING', at(300, 'FAILED'), statusCheckedAt: 200), 'Brain FAILED');
+      // UNKNOWN never replaces a known state.
+      expect(brainUnavailableDetail('FAILED', at(300, 'UNKNOWN'), statusCheckedAt: 200), 'Brain FAILED');
     });
 
     test('a stopped Brain with no starting host stays unavailable', () {

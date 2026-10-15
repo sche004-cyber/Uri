@@ -7,8 +7,12 @@
 - **Pack:** the same images as R1 (all 120 candidate hashes match), re-shuffled with seed 4200. Pack integrity OK.
 - **Reviewers:** three new reviewers.
 - **Raw answers:** `r2_raw/`. Transcripts are kept locally; their hashes are in `SHA256SUMS.txt`.
-- **Access audit: clean.** Each reviewer read only its own pack folder and wrote only its own answer. Reviewer 1's audit entry also lists the parent round folder (`fp21r2`), from its listing call. That folder holds only the three reviewer packs; the key is never in the scratch area (R4-N9). Reviewer 1
-  made one Glob call, `*.png`, in its own folder.
+- **Access audit: clean (R4-N9, R5-N6).** Every file each reviewer read or wrote is in its own pack folder or its
+  own answer file.
+  - Reviewer 1 also made one Glob call (`*.png`) whose `path` is its own folder `...\fp21r\r2\reviewer1`.
+  - `audit_reviewer_access.py` reduces every path argument to its parent folder, so that call appears in
+    `access_audit.txt` as `...\fp21r\r2`. No file outside the reviewer's own folder was read.
+  - The key folder (`r2_key`) is never in the scratch area.
 - **Decoded tables:** `r2_decoded.md`.
 
 **Round valid:**

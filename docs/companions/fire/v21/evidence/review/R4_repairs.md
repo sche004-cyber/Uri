@@ -23,3 +23,8 @@
 - A requested restart looks depleted during its stop and memory-release phase.
 - `WAITING_FOR_LEASE` stays calm for as long as another workload holds the GPU, while `brain_health` reports
   UNAVAILABLE. The detail "Waiting for the GPU" stays visible.
+
+**Correction (after recheck R5, MEDIUM finding R5-N1).** When this file was committed at `5d05f4dc`, the rows for R4-N5
+(boundary check regenerated), R4-N6 (section 6 filled) and R4-N7 (section 7 disclosure) were marked "Repaired",
+but that work had not yet been done. The claims were false at that commit. The work was done in the next commit:
+see `R5_repairs.md`. The rows above are kept as written, to preserve the history.

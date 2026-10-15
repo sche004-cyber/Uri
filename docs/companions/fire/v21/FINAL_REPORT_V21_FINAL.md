@@ -99,11 +99,11 @@ shipped clips:
 | Piece | Implementation |
 |---|---|
 | Shared state | `CompanionState.initializing`, label "Initializing"; not active and not waiting on the user |
-| Mapping (`oi_sources.dart`, `brainStartingDetail`; revised after review R3-01/R3-02) | Initializing only when both Brain snapshots agree on a normal startup:<br>- the polled runtime state is `STARTING`, `LOADING` or `STOPPED`;<br>- the newer `brain_health` readiness is `STARTING`, `LOADING` or `READY`, or `STOPPED` with a running host in `STARTING_HOST`, `STARTING`, `LOADING`, `CALIBRATING` or `WAITING_FOR_LEASE`;<br>- no running host reports `FAILED`, `STOPPED`, `STOPPING`, `RELEASE_WAIT` or `WAITING_FOR_GPU`.<br>Detail: "Brain loading", or "Waiting for the GPU" for the lease queue. Everything else that is not READY stays `unavailable` with "Brain <state>": FAILED, ARTIFACT_MISSING, IDENTITY_MISMATCH, FOREIGN_INSTANCE, DEGRADED, unknown states, GPU contention (`WAITING_FOR_GPU`, which needs the user) and a host that is stopping. A failure in either snapshot is never shown as Initializing. |
+| Mapping (`oi_sources.dart`; `brainStartingDetail` and `brainUnavailableDetail`; revised after reviews R3, R4 and R5) | **Which snapshot counts.** Two snapshots exist: the polled runtime state and the `brain_health` report. The worker stamps both with `checked_at`, and the newer one counts.<br>**Initializing** needs all of:<br>- the runtime is `STARTING`, `LOADING` or `STOPPED`;<br>- a newer health readiness is `STARTING`, `LOADING` or `READY`, or `STOPPED` with a running host in `STARTING_HOST`, `STARTING`, `LOADING`, `CALIBRATING` or `WAITING_FOR_LEASE`;<br>- no running host is `FAILED`, `STOPPED`, `STOPPING`, `RELEASE_WAIT` or `WAITING_FOR_GPU`.<br>**Health older than the status read:** only `STARTING` or `LOADING` count. **Either snapshot unstamped:** a `STOPPED` runtime counts only while a host is running.<br>**Details:** "Brain loading", or "Waiting for the GPU" for the lease queue.<br>**Everything else** that is not READY stays `unavailable`. Its detail names the newest known state; it never uses an older report, and never `UNKNOWN` over a known state. This covers FAILED, ARTIFACT_MISSING, IDENTITY_MISMATCH, FOREIGN_INSTANCE, DEGRADED, unknown states, GPU contention and a stopping host.<br>A failure in the newer snapshot is never shown as Initializing. |
 | Priority | Composite: below `unavailable` and every activity, above `idle`. It never hides a failure or a request. |
 | Ember | New clip `kindling` (calm, low flame, eyes half lowered), cross-fading normally into idle |
 | Solar, Sakura, Lunar, Moonlit, classic orb | A dimmer, calmer idle, through the single-source `rnd/companions/state_tables.py` (revision 3) |
-| Tests | `companion_initializing_test.dart` (8 tests: mapping through the real conversation, snapshots that disagree, priority, look ordering) plus the existing every-state tests |
+| Tests | `companion_initializing_test.dart` (11 tests: mapping through the real conversation; snapshots that disagree, stamped and unstamped; the unavailable detail; priority; look ordering) plus the existing every-state tests |
 | Frozen Core / Runtime | Untouched (`evidence/final/boundary_check_final.txt`) |
 
 **Open, F-START-GAP.**
@@ -126,15 +126,140 @@ detached worktree. It is not a candidate, and no UI V2 branch was changed.
 
 ## 6. Live Windows (Phase 6)
 
-TBD-LIVE
+- **What was run.** Real Windows app (production `main()`), real Core worker and the real Runtime v1 Brain,
+  driven by automation.
+  - The build was the code at `d12e70ed`.
+  - Interaction was automated: Flutter tester taps and text input. **This is not a human usability study.**
+  - Evidence: `evidence/final/live/` (raw observations, screenshots, runner logs, lease and host records).
+- **Host.** Today's UI V1 host. UI V2 Companion Mode, the transparent floating window, is not available for live
+  qualification (section 5).
+- **GPU lease (OD-V21-1 terms).**
+  - The runner started our Brain host only when the lease was FREE and no other `llama-server` was resident. It
+    waited about 3.5 minutes while another session held the lease.
+  - The driver counted only our own Brain: the server pid matched our host record (`our_brain: true`).
+  - Our hosts were stopped through their own stop file at the end. Nothing of another session's was touched.
+
+| # | Owner journey | Result | Evidence |
+|---|---|---|---|
+| 1 | Fresh install / first-time user | **PASS.** Fresh preferences (none stored), default Solar, shell in 15.9 s | `first-01` |
+| 2 | Companion selection | **PASS.** Ember selected in Settings and stored | `first-02`, `first-03` |
+| 3 | Preference persistence | **PASS.** Returning run: stored choice `ember`, Ember shown, blinks (5 in 25 s), Settings opened with no framework errors; flutter rc=0 | `run_returning_d12e70ed/` |
+| 4-7 | Transparent floating window, dragging, click-through, scaling including 1.25x | **PENDING.** These need UI V2 Companion Mode. Static evidence only: transparency gates (section 3) and F-SIZE-1 | sections 3, 5 |
+| 8 | Companion to Workspace | **PASS** (double click) | `first-10` |
+| 9 | Companion to Dashboard | **PASS** | `first-11` |
+| 10 | Idle, listening, thinking, speaking | **Partly.** Idle, thinking and speaking were observed on every reply. Listening has no source in this integration (no voice layer), so it was not exercised. | observations |
+| 11 | Task completion and the joyful expression | **PASS.** Greeting reply: thinking -> speaking -> success. Approval -> task `SETTLED_VERIFIED` -> success -> idle after the hold | `first-09`, `first-13`, `first-14`, `first-15` |
+| 12 | Brain initializing and ready | **PASS.** Unavailable while no Brain had started (the runner was waiting for the lease) -> **Initializing, "Brain loading"** 18 s after our host started (runtime `LOADING`, host `STARTING`) -> idle when ready, after 97 s of Initializing | `first-04`, `first-05`, `first-06`; `3c brain initializing` |
+| 13 | Brain unavailable and recovery | **PASS.** Brain stopped -> depleted, "Brain STOPPED" -> request -> error shown -> host restarted -> reply "15" -> success. The look during the restart window was not captured, because the driver resets the sequence when it sends; this is disclosed, not rerun. | `first-16`, `first-17`, `first-18` |
+| 14 | Returning user | **PASS** (as row 3) | `run_returning_d12e70ed/` |
+| 15 | Switching between Ember and existing companions | **PASS.** Three alternating Ember / Solar pairs, each with a completed answer | observations |
+
+**Limits of this live evidence (review R5-N5):**
+- **Provenance.** The runner prints the commit before it starts (`d12e70ed`, kept as `runner_task_output.txt`).
+  The flutter log and the runner log record no SHA themselves.
+- **Code tested.** The run tested `d12e70ed`. The later R4 and R5 repairs change only the mapping for stale or
+  unstamped snapshots. The recorded startup pairs map the same way under the final code (R5 section 3.3). Those
+  repairs are proven by unit tests, not live.
+- **The host-only path to Initializing was not demonstrated.** Our host process started at 10:11:28. The companion
+  stayed depleted until about 10:11:39, and the first Initializing sample came at 10:11:41, when the runtime already
+  read `STARTING` or `LOADING`.
+  - The likely cause is that the host had not yet written its first report (Python start plus a GPU census of about
+    3.7 s).
+  - This is not proven from the files. It is part of F-START-GAP.
+- **Recovery was not fully healthy.** After the restart, the recovered reply took 7.6 s (about 2 s earlier). The
+  restarted host ended `DEGRADED` (`DECODE_THROUGHPUT_LOW`) under GPU contention:
+  - our UI, plus another session's `uri_ui.exe`;
+  - the owner-authorized `-OverrideGpu`.
+  The companion showed success, then idle, because the mapping follows the runtime state, which was `READY`. The
+  journey passes for recovery and messaging, not for Brain speed. This is pre-existing behaviour.
+- **A label overstates the state.** The record "10 recovered to idle" and `first-18-recovered-idle.png` actually show
+  **success** ("Done"), within the success hold.
+
+**Observations:**
+- **The returning run saw another session's Brain.** The FCV recovery session's live run started its own Brain at
+  10:17:27 UTC, on the shared Runtime v1 port, after our run had released the lease. Our returning run sends no
+  turns. Its "initializing" reading reflected that foreign Brain loading. It is not evidence about our startup. This
+  is the known pre-existing behaviour: Runtime v1 attaches to any server on its port.
+- **F-START-GAP is real.** In both live sequences the companion was unavailable until a Brain host was running, then
+  became Initializing.
+- **Code version.** The live run used `d12e70ed`. Repair R4-N1/N2 (`5d05f4dc`) changes only the corner cases of stale
+  snapshots, and is covered by unit tests. The normal startup path recorded here maps the same way: runtime `LOADING`
+  with a running `STARTING` host is still Initializing.
 
 ## 7. Performance and regression (Phase 7)
 
-TBD-PERF
+**Performance**, under our own GPU lease. Evidence in `evidence/final/perf/series/` (`summary_table.md`,
+`lease_checks.txt`).
+- **Lease checks:** 12 of 12 passed, before and after each run: the lease was held by our process tree and no Brain
+  was resident.
+- **Waiting:** the series waited about 10 minutes (617 s; machine lease history) for another session's Brain run to release the lease. It held the lease for 6.6 minutes.
+- **Builds:** the final Ember and Solar perf executables were built from `0484afdc`, whose atlases and companion
+  tables equal the final ones. The perf app does not use the Brain mapping. V2 Ember is the earlier build from
+  `b73bd26c`.
+
+| Run (no Brain) | GPU 3D median (max) | Dedicated VRAM median (max) | Frames/s | Frame p50 / p99 |
+|---|---|---|---|---|
+| Ember final r1 / r2 | 0.28 % (0.60 / 1.16) | 147.2 MB (183.5) | 45.2 / 48.9 | 1.67 / 3.15 ms; 1.57 / 2.94 ms |
+| Ember V2 r1 / r2 | 0.28-0.29 % (1.53 / 1.01) | 147.4 MB (175.4) | r2: 48.4 | r2: 1.61 / 2.89 ms (r1 timings were overwritten, see below) |
+| Solar r1 / r2 | 6.54 / 7.11 % (8.9) | 110.7 / 108.7 MB | 154.6 / 160.0 | 1.69 / 2.93 ms; 1.71 / 3.11 ms |
+
+- **AC-P1 met.** Ember uses about 1/25 of Solar's GPU, and its median VRAM equals V2's. Ember's VRAM peak is 8 MB
+  higher than V2's (183.5 against 175.4), from the extra `kindling` clip. Decoded atlases are capped at about 42.5
+  MiB by the existing cache.
+- **State transitions** (frames in the first 10 after each state change, Ember r1 / r2):
+  - p99 8.7 / 5.8 ms, against a steady-state p99 of 3.1 / 2.9 ms;
+  - single worst frames of 53 / 34 ms, when a clip's atlas is first decoded;
+  - Initializing frames: p50 1.6-1.7 ms, p99 2.8-3.0 ms.
+  - So a state change costs a one-off decode hitch, not a sustained one.
+- **Defect in the measurement script.** The V2 build's frame timings for r1 were overwritten by r2: that old build
+  writes to a fixed folder. r1's GPU samples are valid. The orphan output was moved into
+  `series/v2_ember_r2/` and is untracked old evidence; nothing tracked was changed.
+
+**Brain throughput** (live run, our own Brain, alternating, `evidence/final/live/`):
+
+| Pair | Ember on screen | Solar on screen |
+|---|---|---|
+| 1 | 112.2 tok/s (draft acceptance 48/78) | 142.9 |
+| 2 | 138.6 | 141.1 |
+| 3 | 132.4 | 135.8 |
+
+- Excluding Ember's first turn, whose lower draft acceptance was also seen in V2.1 run 1, Ember averages 135.5 and
+  Solar 139.9. That is no material difference, but 3 pairs cannot exclude 2-5 %.
+- **Memory demotion:** the Brain's dedicated VRAM stayed at 14,982-15,009 MB while it was ready. No demotion was
+  observed in the samples.
+- The restarted Brain later ran DEGRADED under GPU contention (section 6, limits).
+- No stress test was run.
+
+**Regression:**
+- Full Flutter suite at the final code: **602 passed, 5 skipped, 0 failed** (`evidence/final/full_flutter_test.log`;
+  the header records the base commit and working tree).
+- Rehearsal on UI V2: section 5.
+- Boundary check: no frozen or protected path changed in `1b5423bc..HEAD` (`evidence/final/boundary_check_final.txt`,
+  regenerated at the final commit).
+- **History disclosure (review R3-08).** The intermediate commit `e43e97a7` fails the full suite: the hand-edited
+  orb tables disagreed with `rnd/companions/state_tables.json`. `7baefb17` repaired it through the single-source
+  generator. Every later commit passes.
 
 ## 8. Independent acceptance (Phase 8)
 
-TBD-REVIEW
+**Formal lifecycle acceptance: BLOCKED.** No driver-counted independent reviewer is available:
+- **Codex (primary):** the skill's sandbox probe on a clean clone failed. `powershell` and `cmd` were both "blocked
+  by policy", which is the known Windows driver limit.
+- **Claude CLI (fallback):** `loggedIn: false`.
+- No authentication was bypassed and no session was created on someone else's credentials.
+
+**Imported independent reviews.** These are separate read-only Claude agents with no implementation authority,
+given requirements and repository state. They are not counted by the driver, and under owner decision D1 they
+cannot give VERIFIED or permit canonical integration.
+
+| Round | Commit | Verdict | Outcome |
+|---|---|---|---|
+| R3 (whole diff since V2.1) | `0484afdc` | REVISE (1 HIGH, 4 MEDIUM, 7 LOW) | The HIGH (Initializing from inconsistent Brain snapshots) and all MEDIUMs repaired (`R3_repairs.md`) |
+| R4 (recheck) | `d12e70ed` | ACCEPT WITH FINDINGS (9 LOW) | Repaired (`R4_repairs.md`). Three rows were marked repaired before the work was done; R5 found this, and the history is kept. |
+| R5 (recheck) | `5d05f4dc` | REVISE (1 MEDIUM: false repair claims; 5 LOW) | Repaired (`R5_repairs.md`) |
+| R6 (final recheck) | final commit | see `R6_*` in `evidence/review/` | - |
+
+Blind fidelity reviewers (FP-21R R1, R2) are separate agents and appear in section 2.
 
 ## 9. Licensing and publication
 
