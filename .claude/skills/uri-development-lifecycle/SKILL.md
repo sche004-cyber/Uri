@@ -76,13 +76,19 @@ lifecycle numbers in the first column.
 1. **Primary: Codex** (`"reviewer": {"provider": "codex_cli", ...}`). Before the first run check that it can
    really work: `codex --version`, `codex login status` ("Logged in"), a one-line probe with the configured model
    (`echo "Reply PROBE_OK" | codex exec -m <model> --sandbox read-only --skip-git-repo-check -`; on 2026-10-15
-   `gpt-6-sol` worked and `gpt-6.1-sol` was refused for a ChatGPT login), always set `reviewer.model` (the reviewer
+   `gpt-6-sol` worked and `gpt-6.1-sol` was refused for a ChatGPT login), a sandbox probe in the candidate checkout
+   that must run a shell command (`echo "Run git rev-parse HEAD and print its output" | codex exec -m <model>
+   --sandbox read-only -C <checkout> -`; the SHA must come back, because a login probe cannot detect a sandbox that
+   refuses commands), always set `reviewer.model` (the reviewer
    gets a fresh CODEX_HOME, so `~/.codex/config.toml` does not apply), and that one `codex` resolves on PATH (the driver's
    `provider_available` and reviewer binding). Then confirm from the first round's record that the reviewer read
    the exact candidate SHA (`candidate` in its result). An invocation that was only attempted is not an audit.
    Known (2026-10-15, Windows): through the driver Codex's read-only sandbox rejects every shell command, so its
-   review inspects nothing — check `tests_run` statuses; a round whose commands were all BLOCKED is a Codex failure,
-   go to the fallback.
+   review inspects nothing. While that driver limit stands, Windows milestones go straight to the fallback (the
+   template defaults to `claude_cli`); switch a NEW config to `codex_cli` only after the sandbox probe passes. The
+   driver does not read `tests_run`: check it yourself after every Codex round. A round whose commands were all
+   BLOCKED is a Codex failure whatever its verdict — an ACCEPT from it never supports VERIFIED, D1 or any report of
+   independent acceptance; go to the fallback.
 2. **Fallback: a separate Claude process** (`"provider": "claude_cli"`; needs `claude auth status` loggedIn true).
    Use it when Codex is missing, logged out, out of quota, cannot reach the repository or exact candidate commit,
    or fails to finish. Record the fallback reason and the reviewer identity in the plan and the qualification
@@ -90,11 +96,19 @@ lifecycle numbers in the first column.
 3. **Outside-driver fallback**: if neither CLI can run, a separate Claude session (new thread, agent or cloud
    session; read-only; no implementation or repair authority; given requirements, repository state, diff and
    evidence — never the implementer's conclusion) may review. Record its result with `import-review`. It routes
-   findings to repair and counts as the stage-6 audit for reporting, but under owner decision D1 it does not by
-   itself allow VERIFIED or canonical integration; a driver-counted round still does.
+   findings to repair. Report it as "imported review (not driver-counted)", never as an independent ACCEPT: under
+   owner decision D1 it does not allow VERIFIED or canonical integration; a driver-counted round still does.
 4. Nothing independent available ⇒ report `INDEPENDENT AUDIT: BLOCKED`. Never self-review instead.
-5. If Codex fails during a run (WAITING_FOR_MODEL), do not edit the bound config: start a fresh revision config
-   (`<milestone>-c`, same baseline, the current candidate SHA) with `claude_cli` and a full audit from round 1.
+5. If Codex fails during a run (WAITING_FOR_MODEL, or any round whose commands were all BLOCKED — the driver may
+   then stop BLOCKED NO_ACTIONABLE_FINDINGS or even reach VERIFIED), do not edit the bound config: start a revision
+   config (see "Revision configs") with `claude_cli` and a full audit from round 1.
+
+## Revision configs
+
+A revision (`<milestone>-c` for a new auditor, `<milestone>-u<n>` after a UX repair, `<milestone>-final`) is a new
+config file with a NEW `milestone` id and a NEW `state_dir`. Reusing a `state_dir` loads the old `state.json`, and
+the changed config hash stops the run BLOCKED (CONFIG) until the owner unblocks. Keep the same baseline. The
+candidate SHA is not a config field: it is the candidate worktree's HEAD when the run starts, so commit first.
 
 ## Stage 2 — Implement
 
@@ -108,7 +122,7 @@ python -m scripts.dev_workflow.lifecycle run docs/dev_workflow/lifecycle/<milest
 ```
 
 Run it in the background; it can take hours. It will, without you:
-- launch a **fresh reviewer process** (`claude -p`, new session id, read-only tools, clean detached worktree at the
+- launch a **fresh reviewer process** (the configured CLI: `codex exec` or `claude -p`; new session id, read-only tools, clean detached worktree at the
   exact candidate SHA) and record its raw output, hash and verdict;
 - recompute the verdict from the findings (any HIGH/blocking ⇒ REJECT);
 - send blocking findings to a **separate implementer process**, refuse protected/out-of-scope changes, demand a
@@ -141,13 +155,13 @@ the code commit. Full rules: reference section 8.
    only where the live evidence shows it helps; it is minimal, contextual, dismissible, can be opened again and is
    not repeated to returning users.
 4. Commit the repair, run the regressions, and re-audit it with a fresh driver revision config
-   (`<milestone>-u<n>`, same baseline, new candidate SHA). Then repeat the full live journey. Loop until no
+   (`<milestone>-u<n>`, new `state_dir`; see "Revision configs"). Then repeat the full live journey. Loop until no
    material issue is left. A `MINOR` item may stay open only if the independent auditor confirms in writing that it
    does not compromise an essential journey.
 5. Write the qualification record from `docs/dev_workflow/lifecycle/UI_QUALIFICATION_TEMPLATE.json` (JSON is
    authoritative; any Markdown summary or dashboard is generated from it) bound to the exact code commit tested.
-   Status: PASS only when every mandatory journey has COMPLETED_WITH_RESULT live evidence on that commit; any
-   failed journey = FAIL; any mandatory journey not run = NOT VERIFIED or BLOCKED (with what is missing). Never
+   Status: PASS only when every mandatory journey is PASS with COMPLETED_WITH_RESULT live evidence on that commit
+   and no MATERIAL issue is open; any failed journey or open MATERIAL issue = FAIL; any mandatory journey not run = NOT VERIFIED or BLOCKED (with what is missing). Never
    report a capability as qualified while a mandatory UI or live check is open.
 6. Final independent acceptance (lifecycle stage 10): commit the record (evidence-only commit: only evidence/record paths
    may differ from the tested code commit) and run a final driver revision whose `review_focus` asks the auditor to
@@ -158,11 +172,21 @@ UI in the plan and the record.
 
 ## Verdicts
 
-Auditors and reports use: **ACCEPT** (criteria met with verified evidence), **ACCEPT WITH FINDINGS** (no blocking
-issue; non-blocking findings documented), **REVISE** (correctable issues; repair and re-review — the driver's
-REJECT that it routes to repair), **REJECT** (material failure invalidates the candidate — driver REJECT it cannot
-repair: STALLED, RETRY_LIMIT, a fix outside scope or needing the owner), **BLOCKED** (evidence, permission,
-runtime or independent reviewer missing — driver BLOCKED, WAITING_FOR_MODEL, NOT_VERIFIED). An ACCEPT on source
+Driver reviewers emit three labels (ACCEPT, ACCEPT WITH FINDINGS, REJECT). You and outside-driver auditors report
+with five: **ACCEPT** (criteria met with verified evidence), **ACCEPT WITH FINDINGS** (no blocking issue;
+non-blocking findings documented), **REVISE** (correctable issues; repair and re-review), **REJECT** (material
+failure invalidates the candidate), **BLOCKED** (evidence, permission, runtime or independent reviewer missing).
+Driver outcomes map by stage and blocker kind:
+
+| Driver outcome | Report as |
+|---|---|
+| round REJECT routed to repair (FIXING) | REVISE |
+| BLOCKED `STALLED` or `RETRY_LIMIT`; a repair refused as out of scope or protected | REJECT (this candidate) |
+| BLOCKED `OWNER_*`, or a finding with `owner_decision: true` | BLOCKED (needs the owner) |
+| BLOCKED `NO_ACTIONABLE_FINDINGS` | BLOCKED; if all the round's commands were BLOCKED, an auditor failure (Auditor selection) |
+| other BLOCKED kinds (`TAMPER`, `CONFIG`, `EVIDENCE`, `RESOURCE`, `BUDGET`, `REVIEWER_EXEC`), WAITING_FOR_MODEL, NOT_VERIFIED | BLOCKED |
+| VERIFIED / COMPLETE on an independent ACCEPT or ACCEPT WITH FINDINGS | that verdict |
+ An ACCEPT on source
 code alone never means the phase is qualified: live UI, security, regression and owner gates must also pass.
 
 ## Reporting (you)

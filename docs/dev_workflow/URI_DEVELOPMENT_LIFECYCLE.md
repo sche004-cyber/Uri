@@ -10,7 +10,7 @@ Status: implemented 2026-10-11 as an extension of AO-4 (`scripts/dev_workflow`).
 |---|---|---|
 | Skill | `.claude/skills/uri-development-lifecycle/SKILL.md` (pointer in `.agents/skills/`) | tells the coordinating Claude session when and how to run it |
 | Driver | `scripts/dev_workflow/lifecycle.py` | deterministic state machine, evidence, gates, integration, receipts |
-| Workers | `scripts/dev_workflow/lifecycle_providers.py` | separate reviewer / implementer processes (`codex_cli` preferred reviewer since DEV-LIFECYCLE-3, `claude_cli` fallback, `command` for tests) |
+| Workers | `scripts/dev_workflow/lifecycle_providers.py` | separate reviewer / implementer processes (`codex_cli` preferred reviewer since DEV-LIFECYCLE-3 where its sandbox probe passes (not on Windows today), `claude_cli` fallback and template default, `command` for tests) |
 | UI qualification | `docs/dev_workflow/lifecycle/UI_QUALIFICATION_TEMPLATE.json` | live Windows UI qualification record (section 8) |
 | Config | `docs/dev_workflow/lifecycle/<milestone>.json` (template `TEMPLATE.json`) | milestone scope |
 | Tests | `tests/dev_workflow/test_lifecycle.py`, fixture worker `tests/dev_workflow/lifecycle_fixture/worker.py` | DEVTEST scenarios |
@@ -186,7 +186,9 @@ paths. A record that is corrected later keeps the earlier entry in `corrections`
 
 The auditor states separately what it inspected, what it executed, what evidence it only reviewed, what live
 behaviour it observed itself and what it could not verify (template `environment_notes`). Reviewing screenshots or
-reports is never reported as independent live observation.
+reports is never reported as independent live observation. The reviewer records them as JSON keys `inspected`,
+`evidence_reviewed_only` and `live_observed` next to `tests_run` and `unverified` (the driver keeps the whole result
+object); the qualification record mirrors them under `independent_audit`.
 
 ## 7. Repository note
 
