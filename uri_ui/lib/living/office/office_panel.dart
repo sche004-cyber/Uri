@@ -3,11 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../theme/uri_theme.dart';
-import '../a2ui/a2ui_view.dart';
 import '../living_scope.dart';
-import '../widgets/glass_panel.dart';
-import '../widgets/living_composer.dart';
+import '../a2ui/a2ui_hub.dart';
 import 'office_bridge.dart';
+import 'office_companion_pane.dart';
 import 'office_client.dart';
 import 'office_controller.dart';
 
@@ -20,11 +19,18 @@ import 'office_controller.dart';
 /// card. While this region shows an open workbook, the companion's requests go to it (see
 /// [LivingServices.activeOfficeTarget]); elsewhere they go to the ordinary conversation.
 class OfficeRegion extends StatefulWidget {
-  const OfficeRegion({super.key, required this.environment, this.clientFactory = OfficeClient.discover});
+  const OfficeRegion({super.key, required this.environment, this.clientFactory = OfficeClient.discover, this.hub,
+      this.onController, this.onTurn});
 
   /// Null when the platform cannot host the sheet view (no WebView2); the region says so.
   final OfficeEnvironment? environment;
   final OfficeClient? Function() clientFactory;
+
+  /// O2: inside the Office workspace, the region-level A2UI hub, a callback with the sheet controller, and the
+  /// workspace conversation's sink. When [hub] is given, the workspace is the companion's request target.
+  final A2uiHub? hub;
+  final void Function(OfficeController controller)? onController;
+  final void Function(OfficeTurn turn)? onTurn;
 
   @override
   State<OfficeRegion> createState() => _OfficeRegionState();
@@ -33,7 +39,6 @@ class OfficeRegion extends StatefulWidget {
 class _OfficeRegionState extends State<OfficeRegion> {
   OfficeController? _c;
   String? _startError;
-  final _ask = TextEditingController();
   final _link = TextEditingController();
   ValueNotifier<OfficeRequestTarget?>? _target;   // the living scope's Office target, when there is a scope
 
@@ -50,10 +55,12 @@ class _OfficeRegionState extends State<OfficeRegion> {
 
   void _claim() {
     final c = _c;
+    if (widget.hub != null) return;            // inside the workspace, the workspace is the target
     if (c != null && _target != null) _target!.value = c;
   }
 
   void _release() {
+    if (widget.hub != null) return;
     final t = _target;
     if (t != null && _c != null && identical(t.value, _c)) t.value = null;
   }
@@ -78,7 +85,8 @@ class _OfficeRegionState extends State<OfficeRegion> {
     final surface = env.surfaceFactory();
     // Read without registering a dependency: this runs from initState.
     final keep = context.getInheritedWidgetOfExactType<LivingScope>()?.services.officeKeep;
-    final c = OfficeController(client: client, surface: surface, keep: keep);
+    final c = OfficeController(client: client, surface: surface, keep: keep, hub: widget.hub, onTurn: widget.onTurn);
+    widget.onController?.call(c);
     try {
       await surface.start();
     } catch (e) {
@@ -99,7 +107,6 @@ class _OfficeRegionState extends State<OfficeRegion> {
   void dispose() {
     _release();
     _c?.dispose();
-    _ask.dispose();
     _link.dispose();
     super.dispose();
   }
@@ -139,7 +146,7 @@ class _OfficeRegionState extends State<OfficeRegion> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    SizedBox(width: 380, child: _companion(context, c, open)),
+                    SizedBox(width: 380, child: OfficeSheetCompanion(controller: c, environment: widget.environment!)),
                   ],
                 ),
               ),
@@ -205,301 +212,4 @@ class _OfficeRegionState extends State<OfficeRegion> {
     );
   }
 
-  /// The URI companion pane for this workbook.
-  Widget _companion(BuildContext context, OfficeController c, bool open) {
-    final env = widget.environment!;
-    final colors = UriColors.of(context);
-    final google = c.view?['engine'] == 'google';
-    final scoped = LivingScope.maybeOf(context) != null;
-    return GlassPanel(
-      key: const ValueKey('office-companion'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(children: [
-            Icon(Icons.blur_on_rounded, size: 18, color: colors.accent),
-            const SizedBox(width: 6),
-            const Expanded(child: Text('URI', style: TextStyle(fontWeight: FontWeight.w600))),
-            if (c.busy)
-              const SizedBox(
-                key: ValueKey('office-companion-busy'),
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-          ]),
-          const Divider(height: 16),
-          Expanded(
-            child: ListView(
-              key: const ValueKey('office-conversation'),
-              children: [
-                if (!open)
-                  Text('Open a workbook, then tell URI what to change. URI suggests; you accept, reject and save.',
-                      style: TextStyle(color: colors.inkSoft)),
-                if (c.sources.isNotEmpty) _sources(context, c, env),
-                for (final (i, t) in c.conversation.indexed) _turn(context, t, i),
-                if (c.busy)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text('URI is working on it...', style: TextStyle(color: colors.inkSoft)),
-                  ),
-                if (c.proposed.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Text('URI\'s suggested changes (${c.proposed.length})', style: const TextStyle(fontWeight: FontWeight.w600)),
-                ],
-                // M2-D2: one request can propose thousands of cells; decide them all at once, bound to what is shown.
-                if (c.proposed.length > 1)
-                  Wrap(spacing: 6, children: [
-                    FilledButton.tonal(
-                      key: const ValueKey('office-accept-all'),
-                      onPressed: c.busy ? null : () => c.decideAll('accept'),
-                      child: Text('Accept all ${c.proposed.length}'),
-                    ),
-                    TextButton(
-                      key: const ValueKey('office-reject-all'),
-                      onPressed: c.busy ? null : () => c.decideAll('reject'),
-                      child: Text('Reject all ${c.proposed.length}'),
-                    ),
-                  ]),
-                for (final ch in c.proposed.take(maxCards))
-                  Container(
-                    key: ValueKey('office-change-${ch['cid']}'),
-                    margin: const EdgeInsets.only(top: 6),
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: colors.warningSoft,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: colors.warning),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [
-                          Icon(Icons.auto_awesome_rounded, size: 14, color: colors.warning, key: const ValueKey('office-uri-mark')),
-                          const SizedBox(width: 4),
-                          Expanded(child: Text(_describe(ch), maxLines: 3, overflow: TextOverflow.ellipsis)),
-                        ]),
-                        Row(children: [
-                          TextButton(onPressed: c.busy ? null : () => c.decide(ch, 'accept'), child: const Text('Accept')),
-                          TextButton(onPressed: c.busy ? null : () => c.decide(ch, 'reject'), child: const Text('Reject')),
-                        ]),
-                      ],
-                    ),
-                  ),
-                if (c.proposed.length > maxCards)
-                  Padding(
-                    key: const ValueKey('office-more-changes'),
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text('and ${c.proposed.length - maxCards} more, marked in the sheet',
-                        style: TextStyle(color: colors.inkSoft)),
-                  ),
-                for (final s in c.hub.placed('workspace'))
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: A2uiSurfaceView(hub: c.hub, surfaceId: s.id),
-                  ),
-                if (open) ...[
-                  const Divider(height: 24),
-                  Wrap(spacing: 6, runSpacing: 6, children: [
-                    OutlinedButton(onPressed: c.busy || c.draft['can_undo'] != true ? null : c.undo, child: const Text('Undo')),
-                    OutlinedButton(onPressed: c.busy || c.draft['can_redo'] != true ? null : c.redo, child: const Text('Redo')),
-                    if (c.isNew)
-                      FilledButton(
-                        key: const ValueKey('office-save-new'),
-                        onPressed: c.busy
-                            ? null
-                            : () async {
-                                final p = await env.pickSavePath('New workbook');
-                                if (p != null) await c.proposeSave(saveAsPath: p);
-                              },
-                        child: const Text('Save as new file...'),
-                      )
-                    else
-                      FilledButton(
-                        key: const ValueKey('office-save'),
-                        onPressed: c.busy ? null : () => c.proposeSave(),
-                        child: Text(google ? 'Apply to Google Sheet' : 'Save to file'),
-                      ),
-                    if (!google && !c.isNew)
-                      OutlinedButton(
-                        onPressed: c.busy
-                            ? null
-                            : () async {
-                                final p = await env.pickSavePath('${c.view?['label'] ?? 'workbook'}');
-                                if (p != null) await c.proposeSave(saveAsPath: p);
-                              },
-                        child: const Text('Save as...'),
-                      ),
-                    if (!google && !c.isNew)
-                      OutlinedButton(onPressed: c.busy ? null : c.proposeShare, child: const Text('Share via Google')),
-                    if (google && c.view?['writable'] != true)
-                      OutlinedButton(onPressed: c.busy ? null : c.editCopy, child: const Text('Edit a copy')),
-                  ]),
-                  if (!c.isNew)
-                  SwitchListTile(
-                    key: const ValueKey('office-history-consent'),
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Keep a correction history for this workbook'),
-                    subtitle: const Text('What changed and why, never cell values. Off unless you turn it on.'),
-                    value: c.view?['history_on'] == true,
-                    onChanged: c.busy ? null : c.setHistory,
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 6),
-          // The companion's own composer (with push-to-talk) inside the living UI; a plain request box when this
-          // region is shown on its own.
-          if (scoped)
-            const LivingComposer(compact: true, hint: 'Ask URI to change this sheet')
-          else
-            Row(children: [
-              Expanded(
-                child: TextField(
-                  key: const ValueKey('office-ask'),
-                  controller: _ask,
-                  enabled: open,
-                  minLines: 1,
-                  maxLines: 4,
-                  decoration: const InputDecoration(hintText: 'Ask URI to change the sheet'),
-                  onSubmitted: (_) => _sendAsk(c),
-                ),
-              ),
-              IconButton(
-                key: const ValueKey('office-ask-send'),
-                tooltip: 'Ask URI',
-                onPressed: c.busy || !open ? null : () => _sendAsk(c),
-                icon: const Icon(Icons.arrow_upward_rounded),
-              ),
-            ]),
-        ],
-      ),
-    );
-  }
-
-  /// At most this many change cards; the rest are marked in the sheet (M2-AC8).
-  static const int maxCards = 50;
-
-  /// M2: the added files and what each is for (M2-D10/D11): the working file (check or edit; shown in the sheet
-  /// view) or a reference (read-only). URI does not work with the files until each has a role.
-  Widget _sources(BuildContext context, OfficeController c, OfficeEnvironment env) {
-    final colors = UriColors.of(context);
-    final missing = c.rolesNeeded.isNotEmpty;
-    return Container(
-      key: const ValueKey('office-sources'),
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        border: Border.all(color: missing ? colors.warning : colors.inkFaint),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(
-          missing ? 'What is each file for?' : 'Files',
-          key: const ValueKey('office-roles-title'),
-          style: TextStyle(color: missing ? colors.warning : colors.inkSoft, fontSize: 12, fontWeight: FontWeight.w600),
-        ),
-        if (missing)
-          Text('Choose a reference (URI only reads it) or the working file (URI checks or edits it; one at a time).',
-              style: TextStyle(color: colors.inkSoft, fontSize: 12)),
-        const SizedBox(height: 4),
-        for (final s in c.sources) _roleRow(context, c, s),
-        Wrap(spacing: 6, runSpacing: 4, children: [
-          if (env.pickSourcePaths != null)
-            ActionChip(
-              key: const ValueKey('office-add-source'),
-              visualDensity: VisualDensity.compact,
-              avatar: const Icon(Icons.add, size: 16),
-              label: const Text('Add file'),
-              onPressed: c.busy
-                  ? null
-                  : () async {
-                      final paths = await env.pickSourcePaths!();
-                      if (paths.isNotEmpty) await c.addSources(paths);
-                    },
-            ),
-        ]),
-      ]),
-    );
-  }
-
-  Widget _roleRow(BuildContext context, OfficeController c, Map<String, dynamic> s) {
-    final colors = UriColors.of(context);
-    final id = s['id'] as String;
-    final role = s['role'] as String?;
-    final working = role == 'check' || role == 'edit';
-    return Padding(
-      key: ValueKey('office-source-$id'),
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Icon(working ? Icons.edit_document : Icons.description_outlined, size: 16,
-              color: working ? colors.accent : colors.inkSoft),
-          const SizedBox(width: 4),
-          Expanded(child: Text('$id ${s['label']}', overflow: TextOverflow.ellipsis)),
-          if (working)
-            Text('Working file', key: ValueKey('office-working-$id'),
-                style: TextStyle(color: colors.accent, fontSize: 12, fontWeight: FontWeight.w600))
-          else if (role == 'reference')
-            Text('Reference', style: TextStyle(color: colors.inkSoft, fontSize: 12)),
-        ]),
-        const SizedBox(height: 2),
-        SegmentedButton<String>(
-          key: ValueKey('office-role-$id'),
-          showSelectedIcon: false,
-          emptySelectionAllowed: true,
-          style: const ButtonStyle(visualDensity: VisualDensity.compact),
-          segments: const [
-            ButtonSegment(value: 'reference', label: Text('Reference')),
-            ButtonSegment(value: 'check', label: Text('Check')),
-            ButtonSegment(value: 'edit', label: Text('Edit')),
-          ],
-          selected: {?role},
-          onSelectionChanged: c.busy
-              ? null
-              : (sel) {
-                  if (sel.isNotEmpty) c.setRole(id, sel.first);
-                },
-        ),
-      ]),
-    );
-  }
-
-  Future<void> _sendAsk(OfficeController c) async {
-    final text = _ask.text.trim();
-    if (text.isEmpty || c.busy) return;
-    _ask.clear();
-    await c.instruct(text);
-  }
-
-  Widget _turn(BuildContext context, OfficeTurn t, int i) {
-    final colors = UriColors.of(context);
-    final owner = t.speaker == OfficeSpeaker.owner;
-    return Align(
-      alignment: owner ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        key: ValueKey('office-turn-$i-${t.speaker.name}'),
-        margin: const EdgeInsets.only(top: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        constraints: const BoxConstraints(maxWidth: 300),
-        decoration: BoxDecoration(
-          color: owner ? colors.accent.withValues(alpha: 0.14) : colors.surface,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          t.speaker == OfficeSpeaker.uri ? 'URI: ${t.text}' : t.text,
-          style: TextStyle(color: t.speaker == OfficeSpeaker.notice ? colors.warning : colors.ink),
-        ),
-      ),
-    );
-  }
-
-  static String _describe(Map<String, dynamic> ch) {
-    if (ch['kind'] == 'struct') return 'Structure: ${ch['op']}';
-    final after = (ch['after'] as Map?) ?? const {};
-    final v = after['f'] ?? after['v'];
-    return '${ch['sheet']}!${ch['cell']} -> ${v ?? '(empty)'}';
-  }
 }

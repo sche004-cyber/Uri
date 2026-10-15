@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -104,6 +105,43 @@ class OfficeClient {
         {'version': 'v0.9', 'deleteSurface': {'surfaceId': action['surfaceId']}},
       ],
     };
+  }
+
+  // ---- O2 (contract o2.1, docs/office/unified/O2_API_CONTRACT.md) ----------------------------------------------
+  Future<Map<String, dynamic>> contract() => _get('/contract');
+  Future<Map<String, dynamic>> capabilities() => _get('/capabilities');
+  Future<Map<String, dynamic>> engines() => _get('/engines');
+  Future<Map<String, dynamic>> verifyEngine() => _post('/engines/verify', {'engine': 'libreoffice'});
+  Future<Map<String, dynamic>> openDocument(String path) => _post('/open/document', {'path': path});
+  Future<Map<String, dynamic>> document(String id) => _get('/document/$id');
+  Future<Map<String, dynamic>> searchDocument(String id, String text) => _post('/document/$id/search', {'text': text});
+  Future<Map<String, dynamic>> closeDocument(String id) => _post('/document/$id/close');
+  Future<Map<String, dynamic>> request(Map<String, dynamic> body) => _post('/request', body);
+  Future<Map<String, dynamic>> createWorkflow(String capability, List<Map<String, dynamic>> inputs) =>
+      _post('/workflow', {'capability': capability, 'inputs': inputs});
+  Future<Map<String, dynamic>> workflow(String id) => _get('/workflow/$id');
+  Future<Map<String, dynamic>> workflows() => _get('/workflows');
+  Future<Map<String, dynamic>> cancelWorkflow(String id) => _post('/workflow/$id/cancel');
+  Future<Map<String, dynamic>> resumeWorkflow(String id, List<String> paths) =>
+      _post('/workflow/$id/resume', {'inputs': [for (final p in paths) {'path': p}]});
+  Future<Map<String, dynamic>> acceptWarnings(String id) => _post('/workflow/$id/accept_warnings');
+  Future<Map<String, dynamic>> proposeWorkflowSave(String id, String path) =>
+      _post('/workflow/$id/propose_save', {'save_as_path': path});
+  Future<Map<String, dynamic>> recent() => _get('/recent');
+  Future<Map<String, dynamic>> recentRemove(String path) => _post('/recent/remove', {'path': path});
+  Future<Map<String, dynamic>> recentClear() => _post('/recent/clear');
+
+  /// A page image (PNG bytes), or null while the page is still being prepared (HTTP 202).
+  Future<Uint8List?> documentPage(String id, int page, int width) => _png('/document/$id/page/$page?w=$width');
+  Future<Uint8List?> outputPage(String workflowId, int page, int width) =>
+      _png('/workflow/$workflowId/output/page/$page?w=$width');
+
+  Future<Uint8List?> _png(String path) async {
+    final r = await _http.get(_base.resolve(path), headers: _headers).timeout(const Duration(seconds: 60));
+    if (r.statusCode == 202) return null;
+    if (r.statusCode != 200) throw SchedulerApiError.from(r.body.isEmpty ? null : jsonDecode(r.body));
+    if ((r.headers['content-type'] ?? '') != 'image/png') throw SchedulerApiError('NOT_AN_IMAGE', null);
+    return r.bodyBytes;
   }
 
   void closeClient() => _http.close();

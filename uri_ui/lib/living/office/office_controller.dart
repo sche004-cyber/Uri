@@ -13,11 +13,21 @@ import 'office_client.dart';
 /// and an A2UI hub that renders the service's approval card. Every change goes through the service; the page
 /// only shows the workbook and reports the owner's typing.
 class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
-  OfficeController({required this.client, required this.surface, this.keep}) {
-    hub.registry['office.apply_change'] = _approvalAction;
-    hub.registry['office.reject_change'] = _approvalAction;
+  OfficeController({required this.client, required this.surface, this.keep, A2uiHub? hub, this.onTurn})
+      : hub = hub ?? A2uiHub(),
+        _ownsHub = hub == null {
+    // O2 (plan §4.3): inside the Office workspace one region-level hub is shared, and the workspace registers the
+    // office.* handlers once and hands sheet results back through [handleApprovalResult].
+    if (_ownsHub) {
+      this.hub.registry['office.apply_change'] = _approvalAction;
+      this.hub.registry['office.reject_change'] = _approvalAction;
+    }
     _sub = surface.messages.listen(_onPage);
   }
+
+  /// O2: every conversation line is also given to the Office workspace's one conversation (plan §4.5).
+  final void Function(OfficeTurn turn)? onTurn;
+  final bool _ownsHub;
 
   final OfficeClient client;
 
@@ -25,7 +35,7 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
   /// closes the workbook in the service.
   final OfficeKeep? keep;
   final OfficeSurface surface;
-  final A2uiHub hub = A2uiHub();
+  final A2uiHub hub;
   StreamSubscription<Map<String, dynamic>>? _sub;
 
   Map<String, dynamic>? view;      // service view: workbook, draft, engine, label, history_on
@@ -330,6 +340,7 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
 
   void _say(OfficeSpeaker who, String text) {
     conversation.add(OfficeTurn(who, text));
+    onTurn?.call(OfficeTurn(who, text));
     if (conversation.length > conversationCap) conversation.removeRange(0, conversation.length - conversationCap);
   }
 
@@ -441,7 +452,12 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
 
   Future<Map<String, dynamic>> _approvalAction(Map<String, dynamic> action) async {
     final r = await client.a2uiAction(action);
-    final result = (r['result'] as Map).cast<String, dynamic>();
+    await handleApprovalResult((r['result'] as Map).cast<String, dynamic>());
+    return r;
+  }
+
+  /// The sheet part of an approval reply (save, share, new file), also used by the Office workspace's shared hub.
+  Future<void> handleApprovalResult(Map<String, dynamic> result) async {
     await _refreshDraft(result);
     notice = result['status'] == 'applied'
         ? (result['created'] == true
@@ -461,14 +477,13 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       await _reloadView();               // the grid still shows the old rows: never let the owner edit it as is
     }
     notifyListeners();
-    return r;
   }
 
   @override
   void dispose() {
     _sub?.cancel();
     unawaited(surface.dispose());
-    hub.dispose();
+    if (_ownsHub) hub.dispose();
     final wid = workbookId;
     final k = keep;
     if (k != null && wid != null) {

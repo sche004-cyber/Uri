@@ -43,6 +43,8 @@ class OfficeEnvironment {
     required this.pickSavePath,
     required this.openExternalLink,
     this.pickSourcePaths,
+    this.pickDocumentPath,
+    this.pickPdfSavePath,
   });
 
   final OfficeSurface Function() surfaceFactory;
@@ -59,6 +61,14 @@ class OfficeEnvironment {
   /// M2: file picker for one or more .xlsx source files; returns their absolute paths (empty when cancelled).
   /// Null where the platform cannot pick several files; "New from files" is then not offered.
   final Future<List<String>> Function()? pickSourcePaths;
+
+  /// O2: file picker for a Word, PowerPoint or PDF file to view (read-only); returns its absolute path or null.
+  /// Null where the platform has no picker; the Office workspace then offers workbooks only.
+  final Future<String?> Function()? pickDocumentPath;
+
+  /// O2: where to save a new PDF; returns a path that did not exist when chosen, or null. The service checks again
+  /// and never replaces a file.
+  final Future<String?> Function(String suggestedName)? pickPdfSavePath;
 }
 
 final RegExp _cellRef = RegExp(r'^[A-Z]{1,3}[1-9][0-9]{0,6}$');

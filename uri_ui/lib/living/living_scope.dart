@@ -144,13 +144,20 @@ class LivingServices {
   /// The workbook kept open while the owner is away from the Office region (R1-02, review URI-OFFICE-M1-c2).
   final OfficeKeep officeKeep = OfficeKeep();
 
+  /// O2: the Office workspace's state (open documents, tasks, the region conversation), kept while the owner is away
+  /// from the Office region so it is all there on return (plan §4.5). Created by the Office workspace.
+  ChangeNotifier? officeWorkspace;
+
   /// The Office region's target while the owner is in it (Workspace mode, Office focus), open workbook or not.
   /// Requests typed or spoken there belong to Office: with no workbook open they are refused, never sent to the
   /// hidden ordinary conversation (R1-01, review URI-OFFICE-M1-c2).
   OfficeRequestTarget? officeInFocus() {
     final t = officeTarget.value;
     if (t == null) return null;
-    if (presentation.mode != UiPresentationMode.workspace || presentation.focus != WorkspaceFocus.office) return null;
+    if (presentation.mode != UiPresentationMode.workspace ||
+        (presentation.focus != WorkspaceFocus.office && presentation.focus != WorkspaceFocus.documents)) {
+      return null;                                  // O2: "documents" is Office › Documents
+    }
     return t;
   }
 
@@ -224,6 +231,7 @@ class LivingServices {
     liveVoice?.dispose();
     composerInsert.dispose();
     officeTarget.dispose();
+    officeWorkspace?.dispose();
     voice.dispose();
     frameGovernor.dispose();
     frameClock.dispose();

@@ -30,3 +30,23 @@ Reviewer ran: `tests/office_u2 -m "not engine"` 136 passed; `tests/office tests/
 
 After repair (author's runs, 2026-10-15): `tests/office_u2 -m "not engine"` **154 passed**; `tests/office_u2 -m engine`
 **15 passed** in 233 s; `tests/office tests/a2ui` **483 passed, 5 skipped**.
+
+## Round 2: WS-A backend at `c974a655` (2026-10-15)
+
+**Verdict: ACCEPT WITH FINDINGS.** Both round-1 majors and minors 3, 4, 6 to 9 are repaired; finding 5 is partly
+repaired with the signer check disclosed as open.
+
+Reviewer ran: `tests/office_u2 -m "not engine"` 154 passed; `tests/office tests/a2ui` 483 passed, 5 skipped (two
+`test_page.py` tests skip asking for `npm ci`, three are POSIX-only); `tests/office_u2 -m engine` 15 passed in 267 s;
+the resume probe (an unapproved plan becomes `discarded`, resume refused, nothing queued); the three sanitizer bypass
+probes (each now cleaned, `removed={'field': 1}`); and one further case through the real engine (below).
+
+| # | Severity | Finding | Disposition |
+|---|---|---|---|
+| N1 | note | A part with a non-XML name **and** a non-XML or missing content type is still not parsed. Reviewer ran it through the pinned LibreOffice: the engine refuses to load such a part (`PREVIEW_UNAVAILABLE`), the HTTP canary got 0 hits. | Accepted as mitigated on the pinned engine. Hardening option (parse any part on the main-document relationship path that starts with `<`) recorded for the closing review. |
+| N2 | note | Contract lists `BAD_REQUEST` as uncatalogued, but `contracts.ERRORS` has it | To fix in the contract wording. |
+| F5-open | minor | Authenticode signer check (plan F11) not implemented; the SHA-256 manifest pin is the integrity control in force | Carried to the O2 closing review. |
+
+**Status:** WS-A backend accepted at exact commit `c974a655` (ACCEPT WITH FINDINGS, no open blocker or major). The
+contract `o2.1` is the interface O2P builds on (A5 freeze condition: contract tests pass and independent review
+accepts).

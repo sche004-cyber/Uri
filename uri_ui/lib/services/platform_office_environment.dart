@@ -41,6 +41,25 @@ OfficeEnvironment platformOfficeEnvironment() => OfficeEnvironment(
         );
         return [for (final f in files) ?f.path];
       },
+      pickDocumentPath: () async {
+        final f = await FilePicker.pickFile(
+          dialogTitle: 'Open a document in URI Office',
+          type: FileType.custom,
+          allowedExtensions: const ['docx', 'pptx', 'pdf'],
+        );
+        return f?.path;
+      },
+      pickPdfSavePath: (suggested) async {
+        final dir = await FilePicker.getDirectoryPath(dialogTitle: 'Save the PDF in this folder');
+        if (dir == null) return null;
+        final base = suggested.replaceAll(RegExp(r'\.(docx|pptx|xlsx|pdf)$', caseSensitive: false), '');
+        for (var n = 1; n < 100; n++) {
+          final name = n == 1 ? '$base.pdf' : '$base ($n).pdf';
+          final path = '$dir${Platform.pathSeparator}$name';
+          if (!File(path).existsSync()) return path;
+        }
+        return null;
+      },
       openExternalLink: (url) async {
         // Only Google Sheets links reach here (the service builds them from a validated sheet id).
         if (url.scheme == 'https' && url.host == 'docs.google.com' && url.path.startsWith('/spreadsheets/d/')) {

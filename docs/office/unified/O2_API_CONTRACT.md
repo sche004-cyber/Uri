@@ -1,8 +1,9 @@
 # URI Office O2: service interface and capability contract (contract `o2.1`)
 
 Date: 2026-10-15. Phase O2 (G1 active), implementation branch `phase/uri-office-u-2-a`.
-Status: **WORKING CONTRACT.** It becomes the frozen O2P interface when the O2 contract tests pass and the independent
-review of this file accepts it (A5: "O2's raster worker and approvals contract, frozen at O2 contract time").
+Status: **ACCEPTED for O2P** (independent review round 2, ACCEPT WITH FINDINGS at `c974a655`; record in
+`O2_IMPLEMENTATION_REVIEW.md`). Additive changes bump the minor version. It became the O2P interface when the O2 contract
+tests passed and the independent review accepted it (A5: "O2's raster worker and approvals contract, frozen at O2 contract time").
 
 Sources: plan rev 3.1 §5, §5.1, §6, §8 and §9 (`01_O2_PLAN_AND_ACCEPTANCE_CRITERIA.md`); amendment A1 §A3, §A4, §A6 and §A7;
 the owner's OD-U12 refinement (gate record, 2026-10-15). Where this file is more specific, it is the implementation
@@ -174,7 +175,7 @@ Every code has a fixed message and a recovery action; the UI shows both. The ful
 | `CLM_ACTIVE` | Windows security policy blocks the PDF renderer on this PC. | "Learn more" |
 
 Other codes the O2 routes return, without a catalogue entry because they need no owner action: `UNKNOWN_PAGE`
-(404), `CANCELLED` (a queued engine job dropped because its document or task closed), `NOT_FOUND`, `BAD_REQUEST`.
+(404), `CANCELLED` (a queued engine job dropped because its document or task closed), `NOT_FOUND`.
 
 **Resume rules as built (review round 1).** At service start, a task that was running or waiting to be saved
 becomes `interrupted`; a plan the owner never approved becomes `discarded` (it cannot be resumed). Resume needs the
