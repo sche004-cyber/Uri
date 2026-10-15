@@ -67,7 +67,8 @@ class Workflow:
     def view(self) -> dict:
         r = self.record
         return {k: r.get(k) for k in ("workflow_id", "contract", "capability", "state", "created_at", "updated_at",
-                                      "steps", "outputs", "errors", "warnings_accepted", "interrupted_at_step")} | {
+                                      "steps", "outputs", "errors", "warnings_accepted", "interrupted_at_step",
+                                      "saved")} | {
             "inputs": [{"kind": i["kind"], "name": i["name"]} for i in r["inputs"]],
             "findings": self.findings.view() or r.get("findings", [])}
 

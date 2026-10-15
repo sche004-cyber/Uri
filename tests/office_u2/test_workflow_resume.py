@@ -416,3 +416,22 @@ def test_hindi_text_in_a_theme_font_resolves_to_the_theme_script_font(tmp_path):
             z.writestr(n, b)
     fonts = V.source_fonts(src, "docx")
     assert "URI Test Devanagari" in fonts
+
+
+def test_language_tags_and_unused_lists_do_not_add_fonts(tmp_path):
+    """Real-app run r2 (2026-10-15): a plain English report made with python-docx was warned about Arial, Symbol and
+    Times New Roman. Its defaults tag Arabic and Japanese (w:bidi="ar-SA", w:eastAsia="ja-JP") and its numbering part
+    names Symbol, but it has no such text and no list."""
+    import docx
+    plain = tmp_path / "plain.docx"
+    d = docx.Document()
+    d.add_heading("Report", 1)
+    d.add_paragraph("Plain English text only.")
+    d.save(plain)
+    fonts = V.source_fonts(plain, "docx")
+    assert not {"Arial", "Symbol", "Times New Roman"} & fonts, fonts
+    listed = tmp_path / "list.docx"
+    d = docx.Document()
+    d.add_paragraph("first point", style="List Bullet")
+    d.save(listed)
+    assert "Symbol" in V.source_fonts(listed, "docx")             # a used bullet list still counts its font

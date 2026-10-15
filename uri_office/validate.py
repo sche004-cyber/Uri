@@ -94,6 +94,23 @@ def _theme_fonts(z) -> dict:
     return {}
 
 
+_SCRIPT_RANGES = ((0x0590, 0x05FF, "Hebr"), (0x0600, 0x06FF, "Arab"), (0x0900, 0x097F, "Deva"),
+                  (0x0980, 0x09FF, "Beng"), (0x0A00, 0x0A7F, "Guru"), (0x0A80, 0x0AFF, "Gujr"), (0x0B00, 0x0B7F, "Orya"),
+                  (0x0B80, 0x0BFF, "Taml"), (0x0C00, 0x0C7F, "Telu"), (0x0C80, 0x0CFF, "Knda"), (0x0D00, 0x0D7F, "Mlym"),
+                  (0x0E00, 0x0E7F, "Thai"), (0x3040, 0x30FF, "Jpan"), (0x4E00, 0x9FFF, "CJK"), (0xAC00, 0xD7AF, "Hang"))
+_EA_SCRIPTS = {"Jpan", "CJK", "Hang", "Hans"}
+
+
+def _script_of(ch: str):
+    o = ord(ch)
+    if o < 0x0590:
+        return None
+    for lo, hi, sc in _SCRIPT_RANGES:
+        if lo <= o <= hi:
+            return sc
+    return None
+
+
 # Language (w:lang w:bidi / w:eastAsia, primary subtag) -> theme script code, for theme fonts whose cs or ea typeface
 # is empty (review round 4 m6: Hindi text in a theme font was checked against the Latin theme font).
 _LANG_SCRIPT = {"hi": "Deva", "mr": "Deva", "ne": "Deva", "sa": "Deva", "kok": "Deva", "bn": "Beng", "as": "Beng",
@@ -109,27 +126,43 @@ def _word_used_fonts(z) -> set:
     not available" and "Courier was not available" for fonts it never used)."""
     w = f"{{{W_NS}}}"
     theme = _theme_fonts(z)
-    langs = {"cs": set(), "ea": set()}                 # languages the document marks for complex and East Asian text
+    # Scripts the document's text actually contains (O2 real-app run r2: the language tags alone, such as python-docx's
+    # default w:bidi="ar-SA", pulled in theme fonts for scripts the document never uses and gave false warnings).
+    present = set()
+    langs = {"cs": set(), "ea": set()}
     for n in z.namelist():
         low = n.lower()
-        if low.startswith("word/") and low.endswith(".xml"):
-            try:
-                for el in etree.fromstring(z.read(n), _PARSER).iter(f"{w}lang"):
-                    for attr, key in (("bidi", "cs"), ("eastAsia", "ea")):
-                        v = el.get(f"{w}{attr}")
-                        if v:
-                            langs[key].add(v.split("-")[0].lower())
-            except etree.XMLSyntaxError:
-                continue
+        if not (low.startswith("word/") and low.endswith(".xml")):
+            continue
+        try:
+            root = etree.fromstring(z.read(n), _PARSER)
+        except etree.XMLSyntaxError:
+            continue
+        for el in root.iter(f"{w}lang"):
+            for attr, key in (("bidi", "cs"), ("eastAsia", "ea")):
+                v = el.get(f"{w}{attr}")
+                if v:
+                    langs[key].add(v.split("-")[0].lower())
+        if any(k in low for k in ("document", "header", "footer", "footnotes", "endnotes")):
+            for t in root.iter(f"{w}t"):
+                for ch in t.text or "":
+                    sc = _script_of(ch)
+                    if sc:
+                        present.add(sc)
 
     def theme_font(which: str, kind: str) -> set:
         if kind == "latin":
             return {theme[which]} if theme.get(which) else set()
+        wanted = {sc for sc in present if (sc in _EA_SCRIPTS) == (kind == "ea")}
+        if not wanted:
+            return set()                                     # no text of that kind: its theme font is never used
         named = theme.get(f"{which}_{kind}")
         if named:
             return {named}
         scripts = theme.get(f"{which}_scripts", {})
-        return {scripts[_LANG_SCRIPT[lg]] for lg in langs[kind] if _LANG_SCRIPT.get(lg) in scripts}
+        if "CJK" in wanted:                                   # Han characters: the language tag picks the variant
+            wanted = (wanted - {"CJK"}) | {_LANG_SCRIPT[lg] for lg in langs["ea"] if lg in ("ja", "zh", "ko")}
+        return {scripts[sc] for sc in wanted if sc in scripts}
 
     def fonts_of(rfonts) -> set:
         out = set()
@@ -146,15 +179,18 @@ def _word_used_fonts(z) -> set:
         return out
 
     used_styles, names = set(), set()
+    uses_numbering = False                       # list fonts (numbering.xml) count only when a list is used (run r2)
     for n in z.namelist():
         low = n.lower()
         if not (low.startswith("word/") and low.endswith(".xml") and
-                any(k in low for k in ("document", "header", "footer", "footnotes", "endnotes", "numbering"))):
+                any(k in low for k in ("document", "header", "footer", "footnotes", "endnotes"))):
             continue
         try:
             root = etree.fromstring(z.read(n), _PARSER)
         except etree.XMLSyntaxError:
             continue
+        if next(root.iter(f"{w}numPr"), None) is not None:
+            uses_numbering = True
         for el in root.iter(f"{w}rFonts"):
             names |= fonts_of(el)
         for tag in ("pStyle", "rStyle", "tblStyle"):
@@ -189,6 +225,14 @@ def _word_used_fonts(z) -> set:
         link = el.find(f"{w}link")
         if link is not None and link.get(f"{w}val"):
             todo.append(link.get(f"{w}val"))
+        if el.find(f".//{w}numPr") is not None:
+            uses_numbering = True
+    if uses_numbering:
+        try:
+            for el in etree.fromstring(z.read("word/numbering.xml"), _PARSER).iter(f"{w}rFonts"):
+                names |= fonts_of(el)
+        except (KeyError, etree.XMLSyntaxError):
+            pass
     return names
 
 

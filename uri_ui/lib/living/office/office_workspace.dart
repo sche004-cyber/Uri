@@ -71,11 +71,16 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
       return true;
     }
     if (!kb.isShiftPressed && e.logicalKey == LogicalKeyboardKey.keyK) {
+      // In the app the URI pane holds the shared living composer (its focus node is the scope's); in tests and
+      // without a scope it is the plain composer (real-app run r2: Ctrl+K focused a node no field used).
+      final focus = LivingScope.maybeOf(context)?.composerFocus ?? _composerFocus;
       if (_sheetModeNow && !_sideSheet) {
         setState(() => _sideSheet = true);
-        WidgetsBinding.instance.addPostFrameCallback((_) => _composerFocus.requestFocus());
+        WidgetsBinding.instance.addPostFrameCallback((_) => focus.requestFocus());
       } else {
-        _composerFocus.requestFocus();
+        if (c.prefs.rightCollapsed) c.toggleRight();
+        WidgetsBinding.instance.addPostFrameCallback((_) => focus.requestFocus());
+        focus.requestFocus();
       }
       return true;
     }
@@ -424,7 +429,7 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
           child: switch (c.centre) {
             OfficeCentre.home => OfficeHome(controller: c, environment: env, onOpenSheet: _openSheet),
             OfficeCentre.list => OfficeFileList(controller: c, environment: env, onOpenSheet: _openSheet),
-            OfficeCentre.document => PagePreview(controller: c),
+            OfficeCentre.document => PagePreview(key: ValueKey('office-preview-${c.activeDocument}'), controller: c),
             OfficeCentre.workflow => OfficeWorkflowView(controller: c),
             OfficeCentre.print => OfficePrintView(controller: c),
             OfficeCentre.devices => OfficePrintersView(controller: c),

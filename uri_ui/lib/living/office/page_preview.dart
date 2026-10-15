@@ -40,6 +40,14 @@ class _PagePreviewState extends State<PagePreview> {
           const SizedBox(height: UriSpace.sm),
           Text(d.renderer == 'LibreOffice' ? 'Preparing the preview…' : 'Reading the PDF…',
               style: TextStyle(color: colors.inkSoft)),
+          // Real-app run r2: the first Word preview took over 3 minutes while the engine was checked, with no word
+          // about why.
+          if (d.renderer == 'LibreOffice' && c.engineNotReady)
+            Padding(
+              padding: const EdgeInsets.only(top: UriSpace.xs),
+              child: Text('First use: URI is checking the document engine. This takes about 2 minutes, once.',
+                  key: const ValueKey('office-preview-first-use'), style: TextStyle(color: colors.inkSoft, fontSize: 12)),
+            ),
         ]),
       );
     }
@@ -261,6 +269,34 @@ class OfficeWorkflowView extends StatelessWidget {
     return ListView(key: const ValueKey('office-workflow'), padding: const EdgeInsets.all(UriSpace.md), children: [
       Text('Task: ${_stateLabel(state)}', key: const ValueKey('office-workflow-state'),
           style: Theme.of(context).textTheme.titleMedium),
+      // Real-app run r2 (2026-10-15): the Save button sat under the findings and twelve page images, out of sight.
+      // The task's actions now come first; after saving, the file is named and can be opened from here.
+      const SizedBox(height: UriSpace.sm),
+      Wrap(spacing: 8, runSpacing: 8, children: [
+        if (state == 'ready_to_save' && warnings > 0 && v['warnings_accepted'] != true)
+          OutlinedButton(key: const ValueKey('office-accept-warnings'), onPressed: c.busy ? null : c.acceptWarnings,
+              child: const Text('Accept with warnings')),
+        if (state == 'ready_to_save' && (warnings == 0 || v['warnings_accepted'] == true))
+          FilledButton.icon(key: const ValueKey('office-save-output'), onPressed: c.busy ? null : c.saveWorkflowOutput,
+              icon: const Icon(Icons.save_alt_rounded, size: 18), label: const Text('Save…')),
+        if (state == 'interrupted')
+          FilledButton(key: const ValueKey('office-resume'), onPressed: c.busy ? null : c.resumeWorkflow,
+              child: const Text('Resume (confirm the file again)')),
+        if (!{'saved', 'cancelled', 'failed', 'discarded'}.contains(state))
+          TextButton(key: const ValueKey('office-cancel'), onPressed: c.busy ? null : c.cancelWorkflow,
+              child: const Text('Cancel')),
+      ]),
+      if (state == 'saved' && v['saved'] is Map) ...[
+        const SizedBox(height: UriSpace.sm),
+        Row(children: [
+          Expanded(child: Text('Saved as ${(v['saved'] as Map)['name']}. It is listed under Recent and PDFs.',
+              key: const ValueKey('office-saved-name'))),
+          if (c.recentPathNamed('${(v['saved'] as Map)['name']}') != null)
+            TextButton.icon(key: const ValueKey('office-open-saved'),
+                onPressed: c.busy ? null : () => c.openDocumentPath(c.recentPathNamed('${(v['saved'] as Map)['name']}')!),
+                icon: const Icon(Icons.open_in_new_rounded, size: 18), label: const Text('Open it')),
+        ]),
+      ],
       const SizedBox(height: UriSpace.sm),
       for (final s in steps)
         ListTile(
@@ -303,21 +339,6 @@ class OfficeWorkflowView extends StatelessWidget {
           ]),
         ),
       ],
-      const SizedBox(height: UriSpace.md),
-      Wrap(spacing: 8, runSpacing: 8, children: [
-        if (state == 'ready_to_save' && warnings > 0 && v['warnings_accepted'] != true)
-          OutlinedButton(key: const ValueKey('office-accept-warnings'), onPressed: c.busy ? null : c.acceptWarnings,
-              child: const Text('Accept with warnings')),
-        if (state == 'ready_to_save' && (warnings == 0 || v['warnings_accepted'] == true))
-          FilledButton.icon(key: const ValueKey('office-save-output'), onPressed: c.busy ? null : c.saveWorkflowOutput,
-              icon: const Icon(Icons.save_alt_rounded, size: 18), label: const Text('Save…')),
-        if (state == 'interrupted')
-          FilledButton(key: const ValueKey('office-resume'), onPressed: c.busy ? null : c.resumeWorkflow,
-              child: const Text('Resume (confirm the file again)')),
-        if (!{'saved', 'cancelled', 'failed', 'discarded'}.contains(state))
-          TextButton(key: const ValueKey('office-cancel'), onPressed: c.busy ? null : c.cancelWorkflow,
-              child: const Text('Cancel')),
-      ]),
       if (state == 'failed')
         Padding(
           padding: const EdgeInsets.only(top: UriSpace.sm),

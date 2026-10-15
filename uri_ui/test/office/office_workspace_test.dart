@@ -4,7 +4,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +16,7 @@ import 'package:uri_ui/living/office/office_bridge.dart';
 import 'package:uri_ui/living/office/office_client.dart';
 import 'package:uri_ui/living/office/office_nav_pane.dart';
 import 'package:uri_ui/living/office/office_workspace.dart';
+import 'package:uri_ui/living/office/page_preview.dart';
 import 'package:uri_ui/living/presentation/presentation_controller.dart';
 import 'package:uri_ui/theme/uri_theme.dart';
 
@@ -321,6 +321,44 @@ void main() {
       return !insideRequestBox;
     });
     expect(insideRequestBox, isTrue, reason: 'Ctrl+K should put the cursor in the request box');
+  });
+
+  group('R6 task view (real-app run r2)', () {
+    OfficeWorkspaceController ctl() => OfficeWorkspaceController(
+        client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client()));
+    final findings = [
+      for (var i = 0; i < 6; i++) {'id': 'f$i', 'severity': 'warning', 'message': 'Warning $i.', 'check': 'x'}
+    ];
+
+    testWidgets('the task actions come before the findings and page images', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 600));
+      final c = ctl()
+        ..activeWorkflow = 'a' * 20
+        ..workflowView = {'state': 'ready_to_save', 'steps': [], 'findings': findings, 'warnings_accepted': true,
+          'outputs': [{'name': 'report.pdf', 'pages': 20}]};
+      await tester.pumpWidget(MaterialApp(theme: ThemeData(extensions: const [UriColors.graphite]),
+          home: Scaffold(body: OfficeWorkflowView(controller: c))));
+      await tester.pump();
+      final save = find.byKey(const ValueKey('office-save-output'));
+      expect(save, findsOneWidget, reason: 'Save is built without scrolling');
+      expect(tester.getTopLeft(save).dy, lessThan(tester.getTopLeft(find.text('Warning 0.')).dy));
+      expect(tester.getBottomLeft(save).dy, lessThan(600));
+    });
+
+    testWidgets('a saved task names the file and offers to open it', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 600));
+      final c = ctl()
+        ..activeWorkflow = 'a' * 20
+        ..recent = [{'path': r'C:\Users\me\Saved\report.pdf', 'kind': 'pdf'}]
+        ..workflowView = {'state': 'saved', 'steps': [], 'findings': [], 'saved': {'name': 'report.pdf'},
+          'outputs': [{'name': 'report.pdf', 'pages': 2}]};
+      await tester.pumpWidget(MaterialApp(theme: ThemeData(extensions: const [UriColors.graphite]),
+          home: Scaffold(body: OfficeWorkflowView(controller: c))));
+      await tester.pump();
+      expect(find.textContaining('Saved as report.pdf'), findsOneWidget);
+      expect(find.byKey(const ValueKey('office-open-saved')), findsOneWidget);
+      expect(c.recentPathNamed('report.pdf'), r'C:\Users\me\Saved\report.pdf');
+    });
   });
 
   group('R5 real-app repairs (2026-10-15)', () {
