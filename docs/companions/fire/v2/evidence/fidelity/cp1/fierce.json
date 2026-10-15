@@ -1,0 +1,34 @@
+{
+  "state": "fierce",
+  "eye_self_check": 0.5,
+  "panel_box": [
+    0,
+    650,
+    448,
+    1130
+  ],
+  "weights": {
+    "silhouette": 0.25,
+    "structure": 0.25,
+    "flow": 0.2,
+    "colour": 0.15,
+    "eyes": 0.15
+  },
+  "anchor_raw": {
+    "degraded_reference_100": 0.8652760909374682,
+    "generic_fire_spirit_0": 0.4339032323219507
+  },
+  "candidate": {
+    "path": "companion_art\\fire_v2\\work\\fierce_cut.png",
+    "components": {
+      "silhouette": 0.5282880551962053,
+      "structure": 0.4221338490587887,
+      "flow": 0.4018635584305024,
+      "colour": 0.9579299284097884,
+      "eyes": 0.5
+    },
+    "raw": 0.5366676770113172,
+    "calibrated": 23.822649625937746,
+    "calibrated_unclamped": 23.822649625937746
+  }
+}

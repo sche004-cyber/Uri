@@ -153,6 +153,58 @@ void main() {
     expect(src.signal.state, CompanionState.awaitingApproval);
   });
 
+  testWidgets('a turn that finished ok shows success for the hold, then idle; others never do (F-SUCCESS)', (tester) async {
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt);
+    late OiCompanionSource src;
+    await tester.runAsync(() async {
+      await conv.refreshStatus();
+      src = OiCompanionSource(conv, successHold: const Duration(seconds: 4));
+      await conv.send('what time is it');
+    });
+    rt.emit('t1', 'companion.state', {'state': 'thinking'});
+    await tester.pump();
+    expect(src.signal.state, CompanionState.thinking);
+    rt.emit('t1', 'turn.finished', {'status': 'ok'});
+    rt.emit('t1', 'companion.state', {'state': 'idle'});
+    await tester.pump();
+    expect(src.signal.state, CompanionState.success);
+    expect(src.signal.simulated, isFalse);
+    await tester.pump(const Duration(seconds: 3));
+    expect(src.signal.state, CompanionState.success);
+    await tester.pump(const Duration(seconds: 2));
+    expect(src.signal.state, CompanionState.idle);
+    // A turn that did not settle (Core not verified) never celebrates.
+    await tester.runAsync(() => conv.send('remember the bus leaves at 7'));
+    rt.emit('t2', 'turn.finished', {'status': 'not_verified'});
+    rt.emit('t2', 'companion.state', {'state': 'idle'});
+    await tester.pump();
+    expect(src.signal.state, CompanionState.idle);
+    // A new turn starting during the hold takes over at once.
+    await tester.runAsync(() => conv.send('and tomorrow'));
+    rt.emit('t3', 'turn.finished', {'status': 'ok'});
+    rt.emit('t3', 'companion.state', {'state': 'idle'});
+    await tester.pump();
+    expect(src.signal.state, CompanionState.success);
+    rt.emit('t3', 'companion.state', {'state': 'thinking'});
+    await tester.pump();
+    expect(src.signal.state, CompanionState.thinking);
+    src.dispose();
+  });
+
+  test('a turn finished before the source existed is not celebrated', () async {
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt);
+    await conv.refreshStatus();
+    await conv.send('hi');
+    rt.emit('t1', 'turn.finished', {'status': 'ok'});
+    rt.emit('t1', 'companion.state', {'state': 'idle'});
+    await pumpEventQueue();
+    final src = OiCompanionSource(conv);
+    expect(src.signal.state, CompanionState.idle);
+    src.dispose();
+  });
+
   testWidgets('approval card buttons send the decision; deny is a decision too', (tester) async {
     final rt = FakeRuntime();
     final conv = OiConversation(rt);

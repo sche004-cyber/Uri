@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -9,6 +10,7 @@ import 'package:uri_ui/living/companion/companion_orb.dart';
 import 'package:uri_ui/living/companion/companion_preferences.dart';
 import 'package:uri_ui/living/companion/companion_state.dart';
 import 'package:uri_ui/living/companion/companion_theme.dart';
+import 'package:uri_ui/living/companion/effects_settings.dart';
 import 'package:uri_ui/living/companion/ember_companion.dart';
 import 'package:uri_ui/theme/uri_theme.dart';
 
@@ -149,6 +151,85 @@ void main() {
       },
     );
 
+    test('blinking clips carry lid patches and per-frame eye offsets', () {
+      final m = EmberManifest.parse(
+        File(EmberManifest.assetPath).readAsStringSync(),
+      );
+      expect(m.blinkFile, isNotNull);
+      expect(File('${dir.path}/${m.blinkFile}').existsSync(), isTrue);
+      // Every expression with open eyes blinks; joyful's eyes are smiling.
+      for (final c in EmberClip.values) {
+        final info = m.clips[c]!;
+        if (c == EmberClip.joyful) {
+          expect(info.blink, isNull, reason: c.name);
+          continue;
+        }
+        expect(info.blink, isNotNull, reason: c.name);
+        expect(info.blink!.sources.length, 3, reason: c.name);
+        expect(info.eyeOffsets.length, info.frames, reason: c.name);
+        expect(info.eyeOffset(0), Offset.zero, reason: c.name);
+        // The patch lies inside the cell, even with the breathing offsets.
+        for (final o in info.eyeOffsets) {
+          final r = info.blink!.rect.shift(o);
+          expect(r.left, greaterThanOrEqualTo(0), reason: c.name);
+          expect(r.top, greaterThanOrEqualTo(0), reason: c.name);
+          expect(r.right, lessThanOrEqualTo(info.cell.toDouble()));
+          expect(r.bottom, lessThanOrEqualTo(info.cell.toDouble()));
+        }
+      }
+    });
+
+    test('the manifest refuses inconsistent blink data', () {
+      String m({
+        List<dynamic>? offsets,
+        bool atlas = true,
+        bool blink = true,
+      }) => jsonEncode({
+        'fps': 24,
+        if (atlas) 'blink_atlas': {'file': 'blink.webp'},
+        'clips': {
+          'idle': {
+            'file': 'x',
+            'frames': 2,
+            'cols': 2,
+            'cell': 10,
+            'eye_offsets': ?offsets,
+            if (blink)
+              'blink': {
+                'rect': [1, 1, 4, 3],
+                'src': [
+                  [0, 0],
+                ],
+              },
+          },
+        },
+      });
+      expect(
+        () => EmberManifest.parse(
+          m(
+            offsets: [
+              [0, 0],
+            ],
+          ),
+        ),
+        throwsFormatException,
+      );
+      expect(() => EmberManifest.parse(m(atlas: false)), throwsFormatException);
+      final ok = EmberManifest.parse(
+        m(
+          offsets: [
+            [0, 0],
+            [0.5, -1],
+          ],
+        ),
+      );
+      expect(ok.clips[EmberClip.idle]!.eyeOffset(3), const Offset(0.5, -1));
+      expect(
+        ok.clips[EmberClip.idle]!.blink!.sourceRect(2),
+        const Rect.fromLTWH(0, 0, 4, 3),
+      );
+    });
+
     test('the picker thumbnail is shipped and small', () {
       final f = File(EmberManifest.thumbnailPath);
       expect(f.existsSync(), isTrue);
@@ -180,6 +261,67 @@ void main() {
       print(
         'EMBER_BUDGET worst three atlases: ${(worst / 1048576).toStringAsFixed(1)} MiB',
       );
+    });
+  });
+
+  group('blink timing', () {
+    List<double> blinkStarts(EmberBlinker b, double seconds) {
+      final starts = <double>[];
+      int? last;
+      for (var t = 0.0; t < seconds; t += EmberBlinker.step) {
+        final l = b.levelAt(t);
+        if (l != null && last == null) starts.add(t);
+        last = l;
+      }
+      return starts;
+    }
+
+    test('blinks are irregular, 2.5-7 s apart, sometimes double', () {
+      final b = EmberBlinker(random: math.Random(7));
+      final starts = blinkStarts(b, 600);
+      final gaps = [
+        for (var i = 1; i < starts.length; i++) starts[i] - starts[i - 1],
+      ];
+      final singles = gaps.where((g) => g > 1).toList();
+      final doubles = gaps.where((g) => g <= 1).toList();
+      expect(singles, isNotEmpty);
+      for (final g in singles) {
+        // gap + the blink itself (6 steps) + up to one step of sampling
+        expect(g, greaterThanOrEqualTo(EmberBlinker.minGap));
+        expect(g, lessThanOrEqualTo(EmberBlinker.maxGap + 0.4));
+      }
+      // Irregular: not one fixed period.
+      final spread = singles.reduce(math.max) - singles.reduce(math.min);
+      expect(spread, greaterThan(2));
+      // Double blinks happen, but rarely.
+      expect(doubles, isNotEmpty);
+      expect(doubles.length, lessThan(singles.length * 0.4));
+      for (final g in doubles) {
+        expect(g, lessThan(0.6));
+      }
+    });
+
+    test('one blink closes, holds and opens in about a quarter second', () {
+      final b = EmberBlinker(random: math.Random(1));
+      final levels = <int?>[];
+      var t = 0.0;
+      while (b.levelAt(t) == null) {
+        t += EmberBlinker.step;
+      }
+      for (var i = 0; i < 8; i++) {
+        levels.add(b.levelAt(t + i * EmberBlinker.step + 1e-6));
+      }
+      expect(levels.take(6), EmberBlinker.sequence);
+      expect(levels.last, isNull);
+      expect(EmberBlinker.sequence.reduce(math.max), 2); // fully closed
+    });
+
+    test('a long pause skips the missed blink instead of replaying it', () {
+      final b = EmberBlinker(random: math.Random(3));
+      expect(b.levelAt(0), isNull);
+      final due = b.nextBlinkAt!;
+      expect(b.levelAt(due + 30), isNull);
+      expect(b.nextBlinkAt, greaterThan(due + 30));
     });
   });
 
@@ -341,6 +483,77 @@ void main() {
         expect(lib.pinned, {EmberClip.speaking});
       },
     );
+
+    Future<List<int?>> watchLids(WidgetTester tester, double seconds) async {
+      final st = tester.state(find.byType(EmberCompanion)) as dynamic;
+      final seen = <int?>[];
+      for (var t = 0.0; t < seconds; t += 1 / 24) {
+        await tester.pump(const Duration(microseconds: 41667));
+        seen.add(st.lidLevel as int?);
+      }
+      return seen;
+    }
+
+    testWidgets('idle Ember blinks on its own, at irregular moments', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: EmberCompanion(library: lib, blinkRandom: math.Random(5)),
+          ),
+        ),
+      );
+      await settleDecode(tester);
+      expect(lib.blinkImageIfLoaded, isNotNull);
+      final seen = await watchLids(tester, 20);
+      final starts = <int>[
+        for (var i = 1; i < seen.length; i++)
+          if (seen[i] != null && seen[i - 1] == null) i,
+      ];
+      expect(starts.length, greaterThanOrEqualTo(2));
+      expect(seen.where((l) => l == 2), isNotEmpty); // eyes fully closed
+      expect(
+        seen.where((l) => l == null).length,
+        greaterThan(seen.length * 0.9),
+      );
+    });
+
+    testWidgets('a smiling (joyful) or reduced-motion Ember never blinks', (
+      tester,
+    ) async {
+      Widget at({
+        CompanionState s = CompanionState.idle,
+        bool reduced = false,
+      }) => Directionality(
+        textDirection: TextDirection.ltr,
+        child: EffectsSettingsScope(
+          settings: EffectsSettings(reducedMotion: reduced),
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: EmberCompanion(
+              library: lib,
+              state: s,
+              blinkRandom: math.Random(5),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(at(s: CompanionState.success));
+      await settleDecode(tester);
+      expect((await watchLids(tester, 12)).whereType<int>(), isEmpty);
+      await tester.pumpWidget(at(reduced: true));
+      await settleDecode(tester);
+      for (var i = 0; i < 12; i++) {
+        await tester.pump(const Duration(seconds: 1));
+        final st = tester.state(find.byType(EmberCompanion)) as dynamic;
+        expect(st.lidLevel, isNull);
+      }
+    });
 
     testWidgets('between sprite frames Ember asks for no frames', (
       tester,
@@ -562,9 +775,9 @@ void main() {
     });
   });
 
-  test('states.json ships exactly the clips the app knows', () {
+  test('expressions.json ships exactly the clips the app knows', () {
     final states = jsonDecode(
-      File('../companion_art/fire/states.json').readAsStringSync(),
+      File('../companion_art/fire_v2/expressions.json').readAsStringSync(),
     ) as Map<String, dynamic>;
     final clips = (states['clips'] as Map<String, dynamic>);
     final shipped = {

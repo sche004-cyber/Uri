@@ -96,10 +96,22 @@ def background_colour(rgb: np.ndarray) -> np.ndarray:
     return np.median(border, axis=0)
 
 
-def prepare_candidate(path: Path, reference: Image.Image) -> Image.Image:
+def prepare_candidate(path: Path, reference: Image.Image, aligned: bool = False) -> Image.Image:
     """Composite a transparent render over the reference's backdrop colour and
-    fit it to the reference panel's size (letterboxed, never stretched)."""
+    fit it to the reference panel's size (letterboxed, never stretched).
+
+    ``aligned``: the candidate is already in the panel's own pixel frame
+    (same crop box and size, as Ember V2 frames are, being made from the
+    panel). It is then compared in place. Automatic registration is skipped
+    because it is fragile when candidate and panel differ in extent (glow,
+    smoke, ground light): in V2's control run the reference itself, cropped
+    with a slightly different box, scored 39 on depleted."""
     img = Image.open(path)
+    if aligned:
+        img = img.convert("RGB")
+        if img.size != reference.size:
+            raise ValueError(f"aligned candidate must be {reference.size}, got {img.size}")
+        return img
     ref = np.asarray(reference)
     bg = tuple(int(v) for v in background_colour(ref))
     if img.mode in ("RGBA", "LA", "P"):
@@ -423,12 +435,16 @@ def generic_fire_spirit(ref: Image.Image) -> Image.Image:
     return img.filter(ImageFilter.GaussianBlur(1.5))
 
 
-def score(state: str, candidate: Path | None = None, extra: dict[str, Path] | None = None) -> dict:
+def score(state: str, candidate: Path | None = None, extra: dict[str, Path] | None = None,
+          aligned: bool = False) -> dict:
     ref = load_panel(state)
     # Both anchors go through the same registration as a candidate
-    # (correction 2026-10-15, review R1-04), so none gets an advantage.
-    hi = combine(raw_components(ref, register(degraded_copy(ref), ref)))
-    lo = combine(raw_components(ref, register(generic_fire_spirit(ref), ref)))
+    # (correction 2026-10-15, review R1-04), so none gets an advantage. In
+    # aligned mode no one is registered: the anchors are made in the panel's
+    # frame already.
+    reg = (lambda img, r: img) if aligned else register
+    hi = combine(raw_components(ref, reg(degraded_copy(ref), ref)))
+    lo = combine(raw_components(ref, reg(generic_fire_spirit(ref), ref)))
 
     def unclamped(raw: float) -> float:
         if hi - lo < 1e-6:
@@ -438,7 +454,7 @@ def score(state: str, candidate: Path | None = None, extra: dict[str, Path] | No
     def calibrate(raw: float) -> float:
         return float(np.clip(unclamped(raw), 0, 100))
 
-    eye_check = raw_components(ref, register(degraded_copy(ref), ref))["eyes"]
+    eye_check = raw_components(ref, reg(degraded_copy(ref), ref))["eyes"]
     out: dict = {
         "state": state,
         # Self-check: the eye component of the reference against its own
@@ -446,6 +462,7 @@ def score(state: str, candidate: Path | None = None, extra: dict[str, Path] | No
         # this panel and the report must say so.
         "eye_self_check": eye_check,
         "panel_box": PANELS[state],
+        "aligned": aligned,
         "weights": WEIGHTS,
         "anchor_raw": {"degraded_reference_100": hi, "generic_fire_spirit_0": lo},
     }
@@ -453,7 +470,7 @@ def score(state: str, candidate: Path | None = None, extra: dict[str, Path] | No
     if candidate is not None:
         items = {"candidate": candidate, **items}
     for name, path in items.items():
-        cand = prepare_candidate(Path(path), ref)
+        cand = prepare_candidate(Path(path), ref, aligned)
         comps = raw_components(ref, cand)
         raw = combine(comps)
         out[name] = {
@@ -473,9 +490,11 @@ def main() -> None:
     ap.add_argument("--candidate", type=Path)
     ap.add_argument("--extra", action="append", default=[], metavar="NAME=PATH")
     ap.add_argument("--json", type=Path)
+    ap.add_argument("--aligned", action="store_true",
+                    help="candidate is already in the panel's pixel frame; compare in place")
     a = ap.parse_args()
     extra = dict(e.split("=", 1) for e in a.extra)
-    res = score(a.state, a.candidate, {k: Path(v) for k, v in extra.items()})
+    res = score(a.state, a.candidate, {k: Path(v) for k, v in extra.items()}, a.aligned)
     text = json.dumps(res, indent=2)
     if a.json:
         a.json.parent.mkdir(parents=True, exist_ok=True)

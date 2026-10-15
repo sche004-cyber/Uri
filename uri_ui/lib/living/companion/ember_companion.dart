@@ -13,12 +13,13 @@ import 'companion_state.dart';
 import 'effects_settings.dart';
 import 'frame_clock.dart';
 
-/// The fire companion's animation clips, rendered in Blender
-/// (`companion_art/fire/`) and shipped as WebP sprite atlases.
+/// The fire companion's animation clips, made from the reference painting
+/// itself (`companion_art/fire_v2/`: the panels are cut into layers and
+/// animated in 2.5D) and shipped as WebP sprite atlases.
 ///
 /// A clip is an expression, not a state: several [CompanionState]s share one
-/// (see [EmberClips.forState]). The reference sheet's "Fierce" is rendered
-/// from the same rig (`companion_art/fire/states.json`) but not shipped: no
+/// (see [EmberClips.forState]). The reference sheet's "Fierce" is animated
+/// and scored (`companion_art/fire_v2/expressions.json`) but not shipped: no
 /// operational state may use it, because an angry face aimed at the user would
 /// misreport what URI is doing. `focused` carries its energy for `working`.
 enum EmberClip {
@@ -67,12 +68,25 @@ class EmberClipInfo {
     required this.frames,
     required this.cols,
     required this.cell,
+    this.blink,
+    this.eyeOffsets = const <Offset>[],
   });
 
   final String file;
   final int frames;
   final int cols;
   final int cell;
+
+  /// Lid patches for the runtime blink, or null when this expression does not
+  /// blink (smiling or already closed eyes).
+  final EmberBlink? blink;
+
+  /// Per frame, how far the eyes have moved from frame 0 (cell pixels): the
+  /// head breathes, and the lid patch follows it.
+  final List<Offset> eyeOffsets;
+
+  Offset eyeOffset(int index) =>
+      eyeOffsets.isEmpty ? Offset.zero : eyeOffsets[index % eyeOffsets.length];
 
   Rect frameRect(int index) {
     final i = index % frames;
@@ -91,12 +105,29 @@ class EmberClipInfo {
   }
 }
 
+/// Where a clip's lid patches are: [rect] is the patch's place in a cell at
+/// frame 0, [sources] the top-left of each lid level (half closed .. closed)
+/// in the blink atlas.
+@immutable
+class EmberBlink {
+  const EmberBlink({required this.rect, required this.sources});
+
+  final Rect rect;
+  final List<Offset> sources;
+
+  Rect sourceRect(int level) =>
+      sources[level.clamp(0, sources.length - 1)] & rect.size;
+}
+
 @immutable
 class EmberManifest {
-  const EmberManifest({required this.fps, required this.clips});
+  const EmberManifest({required this.fps, required this.clips, this.blinkFile});
 
   final double fps;
   final Map<EmberClip, EmberClipInfo> clips;
+
+  /// The atlas holding every clip's lid patches (small), if any clip blinks.
+  final String? blinkFile;
 
   static const String assetDir = 'assets/companions/ember';
   static const String assetPath = '$assetDir/manifest.json';
@@ -111,11 +142,51 @@ class EmberManifest {
     for (final c in EmberClip.values) {
       final m = raw[c.name] as Map<String, dynamic>?;
       if (m == null) continue;
+      final frames = (m['frames'] as num).toInt();
+      final offsets = <Offset>[
+        for (final o in (m['eye_offsets'] as List<dynamic>? ?? const []))
+          Offset(
+            ((o as List<dynamic>)[0] as num).toDouble(),
+            (o[1] as num).toDouble(),
+          ),
+      ];
+      if (offsets.isNotEmpty && offsets.length != frames) {
+        throw FormatException(
+          'ember manifest: ${c.name} has ${offsets.length} eye offsets for '
+          '$frames frames',
+        );
+      }
+      final b = m['blink'] as Map<String, dynamic>?;
+      EmberBlink? blink;
+      if (b != null) {
+        final r = (b['rect'] as List<dynamic>).cast<num>();
+        final src = [
+          for (final s in b['src'] as List<dynamic>)
+            Offset(
+              ((s as List<dynamic>)[0] as num).toDouble(),
+              (s[1] as num).toDouble(),
+            ),
+        ];
+        if (r.length != 4 || r[2] <= 0 || r[3] <= 0 || src.isEmpty) {
+          throw FormatException('ember manifest: ${c.name} has a bad blink');
+        }
+        blink = EmberBlink(
+          rect: Rect.fromLTWH(
+            r[0].toDouble(),
+            r[1].toDouble(),
+            r[2].toDouble(),
+            r[3].toDouble(),
+          ),
+          sources: src,
+        );
+      }
       final info = EmberClipInfo(
         file: m['file'] as String,
-        frames: (m['frames'] as num).toInt(),
+        frames: frames,
         cols: (m['cols'] as num).toInt(),
         cell: (m['cell'] as num).toInt(),
+        blink: blink,
+        eyeOffsets: offsets,
       );
       if (info.frames <= 0 || info.cols <= 0 || info.cell <= 0) {
         throw FormatException('ember manifest: ${c.name} has an empty layout');
@@ -126,7 +197,14 @@ class EmberManifest {
     if (fps <= 0) {
       throw const FormatException('ember manifest: fps must be > 0');
     }
-    return EmberManifest(fps: fps, clips: clips);
+    final blinkAtlas = j['blink_atlas'] as Map<String, dynamic>?;
+    final blinkFile = blinkAtlas?['file'] as String?;
+    if (blinkFile == null && clips.values.any((c) => c.blink != null)) {
+      throw const FormatException(
+        'ember manifest: blink patches without an atlas',
+      );
+    }
+    return EmberManifest(fps: fps, clips: clips, blinkFile: blinkFile);
   }
 }
 
@@ -154,6 +232,9 @@ class EmberLibrary {
   final Map<Object, Set<EmberClip>> _pins = <Object, Set<EmberClip>>{};
   final Map<EmberClip, Duration> _failed = <EmberClip, Duration>{};
   String? lastFailure;
+  ui.Image? _blinkImage;
+  Future<void>? _blinkLoading;
+  Duration? _blinkFailedAt;
 
   /// Monotonic time for the retry window (wall-clock changes cannot move it).
   /// Tests replace it to step past [retryAfter].
@@ -205,6 +286,8 @@ class EmberLibrary {
       }
       _images.clear();
       _recent.clear();
+      _blinkImage?.dispose();
+      _blinkImage = null;
       return;
     }
     _evict();
@@ -241,7 +324,45 @@ class EmberLibrary {
     for (final c in _images.keys) {
       n += m.clips[c]?.decodedBytes ?? 0;
     }
+    final b = _blinkImage;
+    if (b != null) n += b.width * b.height * 4;
     return n;
+  }
+
+  /// The lid-patch atlas, once decoded (small: a few eye-sized patches per
+  /// clip). Null while loading, after a failure, or when nothing blinks.
+  ui.Image? get blinkImageIfLoaded => _blinkImage;
+
+  /// Starts decoding the lid-patch atlas if a widget shows Ember and it is not
+  /// resident. A failure only means no blinks; it is retried after
+  /// [retryAfter].
+  void requestBlink() {
+    if (_blinkImage != null || _blinkLoading != null || _pins.isEmpty) return;
+    final failed = _blinkFailedAt;
+    if (failed != null && now() - failed < retryAfter) return;
+    _blinkLoading = _decodeBlink().whenComplete(() => _blinkLoading = null);
+  }
+
+  Future<void> _decodeBlink() async {
+    final m = await manifest();
+    final file = m?.blinkFile;
+    if (file == null) return;
+    try {
+      final data = await _bundle.load('${EmberManifest.assetDir}/$file');
+      final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+      final frame = await codec.getNextFrame();
+      codec.dispose();
+      _blinkFailedAt = null;
+      if (_pins.isEmpty) {
+        frame.image.dispose();
+        return;
+      }
+      _blinkImage?.dispose();
+      _blinkImage = frame.image;
+    } catch (e) {
+      lastFailure = 'blink: $e';
+      _blinkFailedAt = now();
+    }
   }
 
   Future<ui.Image?> load(EmberClip clip) {
@@ -319,9 +440,77 @@ class EmberLibrary {
     _recent.clear();
     _pins.clear();
     _failed.clear();
+    _blinkImage?.dispose();
+    _blinkImage = null;
+    _blinkLoading = null;
+    _blinkFailedAt = null;
     _manifest = null;
     _manifestValue = null;
     lastFailure = null;
+  }
+}
+
+/// When the companion blinks: at irregular intervals (2.5-7 s apart, now and
+/// then twice in quick succession), each blink a short close-hold-open run of
+/// lid levels, one level per sprite frame (about a quarter of a second).
+///
+/// Pure and driven by the caller's clock, so it never asks for frames itself:
+/// a blink shows only on sprite frames the companion draws anyway.
+class EmberBlinker {
+  EmberBlinker({math.Random? random}) : _rng = random ?? math.Random();
+
+  final math.Random _rng;
+
+  /// Lid level per step (index into a clip's lid patches; 0 = half closed).
+  static const List<int> sequence = <int>[0, 1, 2, 2, 1, 0];
+  static const double step = 1 / 24;
+  static const double minGap = 2.5;
+  static const double maxGap = 7.0;
+  static const double doubleChance = 0.15;
+  static const double doubleGap = 0.2;
+
+  double? _next;
+  double? _start;
+  bool _double = false;
+
+  double get _gap => minGap + _rng.nextDouble() * (maxGap - minGap);
+
+  /// The seconds (of the caller's clock) when the next blink starts.
+  double? get nextBlinkAt => _next;
+
+  /// Lid level at time [t] (seconds, never decreasing), or null when the eyes
+  /// are open. Time jumps (a hidden window) skip a missed blink rather than
+  /// replaying it late.
+  int? levelAt(double t) {
+    final start = _start;
+    if (start != null) {
+      final k = ((t - start) / step).floor();
+      if (k >= 0 && k < sequence.length) return sequence[k];
+      _start = null;
+      if (_double) {
+        _double = false;
+        _next = t + doubleGap;
+      } else {
+        _next = t + _gap;
+        _double = _rng.nextDouble() < doubleChance;
+      }
+      return null;
+    }
+    final next = _next ??= t + _gap;
+    if (t < next) return null;
+    if (t - next > step * sequence.length) {
+      _next = t + _gap;
+      return null;
+    }
+    _start = t;
+    return sequence[0];
+  }
+
+  /// Forget any blink in progress and schedule the next from [t].
+  void restart(double t) {
+    _start = null;
+    _double = false;
+    _next = t + _gap;
   }
 }
 
@@ -341,6 +530,7 @@ class EmberCompanion extends StatefulWidget {
     this.fallback,
     this.library,
     this.still = false,
+    this.blinkRandom,
   });
 
   final CompanionState state;
@@ -354,6 +544,9 @@ class EmberCompanion extends StatefulWidget {
 
   /// One representative frame and no animation (the companion picker tile).
   final bool still;
+
+  /// Seeds the blink timing (tests); null = a fresh random source.
+  final math.Random? blinkRandom;
 
   @override
   State<EmberCompanion> createState() => _EmberCompanionState();
@@ -373,6 +566,9 @@ class _EmberCompanionState extends State<EmberCompanion>
   int _shownFrame = -1;
   bool _drawable = false;
   bool _reducedMotion = false;
+  late final EmberBlinker _blinker = EmberBlinker(random: widget.blinkRandom);
+  double _blinkTime = 0; // never reset: blinks are independent of clip changes
+  int? _lid;
 
   /// Time between deliveries, taken from the frame timestamp: the frame
   /// driver restarts its own `dt` at zero whenever this widget resumes after
@@ -391,6 +587,7 @@ class _EmberCompanionState extends State<EmberCompanion>
     _current = _target;
     _lib.pin(this, {_current});
     _request(_current);
+    _lib.requestBlink();
   }
 
   @override
@@ -549,6 +746,25 @@ class _EmberCompanionState extends State<EmberCompanion>
   @visibleForTesting
   EmberClip get currentClip => _current;
 
+  /// The lid level being shown (0 half closed .. 2 closed), null when open.
+  @visibleForTesting
+  int? get lidLevel => _lid;
+
+  /// A blink may show: animating, one clip settled on screen, and that clip
+  /// has lid patches that are decoded.
+  bool get _canBlink {
+    if (_frozen || _previous != null || _fade < 1) return false;
+    final info = _lib.manifestIfLoaded?.clips[_current];
+    if (info?.blink == null || _lib.imageIfLoaded(_current) == null) {
+      return false;
+    }
+    if (_lib.blinkImageIfLoaded == null) {
+      _lib.requestBlink();
+      return false;
+    }
+    return true;
+  }
+
   int _frameAt(EmberClip clip, double t) {
     final m = _lib.manifestIfLoaded;
     final info = m?.clips[clip];
@@ -576,7 +792,19 @@ class _EmberCompanionState extends State<EmberCompanion>
     final speed = widget.look.motion;
     _time += step * speed;
     _prevTime += step * speed;
+    _blinkTime += step * speed;
     var changed = false;
+    final canBlink = _canBlink;
+    final lid = canBlink ? _blinker.levelAt(_blinkTime) : null;
+    if (!canBlink) {
+      // Not blinking now (frozen, fading, no patches): the next blink is
+      // scheduled from when blinking becomes possible again, never replayed.
+      _blinker.restart(_blinkTime);
+    }
+    if (lid != _lid) {
+      _lid = lid;
+      changed = true;
+    }
     if (_fade < 1) {
       // The fade starts only once the incoming clip can be drawn.
       if (_lib.imageIfLoaded(_current) != null) {
@@ -625,6 +853,19 @@ class _EmberCompanionState extends State<EmberCompanion>
         ? 0.5
         : 0.5 - 0.5 * math.cos(2 * math.pi * ((_time / 2.8) % 1.0));
     final e = Curves.easeInOut.transform(_fade);
+    final info = m.clips[_current];
+    final blinkImage = _lib.blinkImageIfLoaded;
+    final lid = _lid;
+    EmberOverlay? overlay;
+    final blink = info?.blink;
+    if (lid != null && cur != null && blink != null && blinkImage != null) {
+      overlay = EmberOverlay(
+        image: blinkImage,
+        src: blink.sourceRect(lid),
+        cellRect: blink.rect.shift(info!.eyeOffset(_frameAt(_current, _time))),
+        cell: info.cell.toDouble(),
+      );
+    }
     final layers = <EmberLayer>[
       if (prev != null && (_fade < 1 || cur == null))
         EmberLayer(
@@ -643,6 +884,7 @@ class _EmberCompanionState extends State<EmberCompanion>
       size: Size.infinite,
       painter: EmberPainter(
         layers: layers,
+        overlay: overlay,
         // Glow preference (+-12 %) and the approval pulse both lift light.
         brightness: widget.look.glow * (1 + 0.14 * pulse * _attention),
       ),
@@ -672,10 +914,38 @@ class EmberLayer {
   int get hashCode => Object.hash(identityHashCode(image), src, opacity);
 }
 
+/// A patch drawn over the shown frame (the lids of a blink), placed in the
+/// cell's own pixels so it scales with the companion.
+@immutable
+class EmberOverlay {
+  const EmberOverlay({
+    required this.image,
+    required this.src,
+    required this.cellRect,
+    required this.cell,
+  });
+  final ui.Image image;
+  final Rect src;
+  final Rect cellRect;
+  final double cell;
+
+  @override
+  bool operator ==(Object other) =>
+      other is EmberOverlay &&
+      identical(other.image, image) &&
+      other.src == src &&
+      other.cellRect == cellRect &&
+      other.cell == cell;
+
+  @override
+  int get hashCode => Object.hash(identityHashCode(image), src, cellRect, cell);
+}
+
 class EmberPainter extends CustomPainter {
-  EmberPainter({required this.layers, this.brightness = 1});
+  EmberPainter({required this.layers, this.overlay, this.brightness = 1});
 
   final List<EmberLayer> layers;
+  final EmberOverlay? overlay;
   final double brightness;
 
   /// Colour matrix scaling RGB by [b] (alpha untouched).
@@ -707,6 +977,22 @@ class EmberPainter extends CustomPainter {
       for (final l in visible) {
         canvas.drawImageRect(l.image, l.src, dst, _paint(l.opacity, filter));
       }
+      final o = overlay;
+      if (o != null && visible.isNotEmpty) {
+        final k = side / o.cell;
+        final r = o.cellRect;
+        canvas.drawImageRect(
+          o.image,
+          o.src,
+          Rect.fromLTWH(
+            dst.left + r.left * k,
+            dst.top + r.top * k,
+            r.width * k,
+            r.height * k,
+          ),
+          _paint(visible.first.opacity, filter),
+        );
+      }
       return;
     }
     // Cross-fade: the two weighted frames are added in a layer of their own,
@@ -732,5 +1018,7 @@ class EmberPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(EmberPainter old) =>
-      old.brightness != brightness || !listEquals(old.layers, layers);
+      old.brightness != brightness ||
+      old.overlay != overlay ||
+      !listEquals(old.layers, layers);
 }

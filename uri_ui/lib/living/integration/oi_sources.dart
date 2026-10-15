@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../companion/companion_sources.dart';
 import '../companion/companion_state.dart';
 import '../contracts/readiness_report.dart';
@@ -10,13 +12,29 @@ import 'oi_conversation.dart';
 /// confirmation, Brain unavailability, and a worker exit are derived from
 /// the same authoritative stream. Listening stays without a source: there is
 /// no voice layer in this integration.
+///
+/// Success: a turn whose `turn.finished` status is `ok` shows `success` for
+/// [successHold], then idle. The orchestrator allowlists `ok` (a complete
+/// Brain answer, or Core's `SETTLED_VERIFIED` reply; `core_turn_status`), so
+/// the UI adds no judgement of its own. Turns that finished before this
+/// source existed never celebrate (finding F-SUCCESS, Ember V2).
 class OiCompanionSource extends CompanionStateSource {
-  OiCompanionSource(this.conversation) {
+  OiCompanionSource(
+    this.conversation, {
+    this.successHold = const Duration(seconds: 4),
+  }) {
+    _seenFinish = _lastFinish(conversation);
     conversation.addListener(_update);
     _update();
   }
 
   final OiConversation conversation;
+  final Duration successHold;
+  Timer? _successTimer;
+
+  /// The latest finished URI turn already accounted for (and its status), so
+  /// one finish is celebrated once.
+  (String?, String?)? _seenFinish;
   CompanionSignal _signal = const CompanionSignal(state: CompanionState.idle, sourceName: 'URI');
 
   @override
@@ -25,9 +43,32 @@ class OiCompanionSource extends CompanionStateSource {
   @override
   CompanionSignal get signal => _signal;
 
+  static (String?, String?)? _lastFinish(OiConversation c) {
+    for (final m in c.messages.reversed) {
+      if (m.role == OiRole.uri && m.turnId != null && m.finishedStatus != null) return (m.turnId, m.finishedStatus);
+    }
+    return null;
+  }
+
   void _update() {
     final c = conversation;
-    final next = _derive(c);
+    final finish = _lastFinish(c);
+    if (finish != null && finish != _seenFinish) {
+      _seenFinish = finish;
+      if (finish.$2 == 'ok') {
+        _successTimer?.cancel();
+        _successTimer = Timer(successHold, _update);
+      }
+    }
+    var next = _derive(c);
+    if (next.state == CompanionState.idle && (_successTimer?.isActive ?? false)) {
+      next = const CompanionSignal(
+        state: CompanionState.success,
+        detail: 'Done',
+        sourceName: 'URI',
+        simulated: false,
+      );
+    }
     if (next.state != _signal.state || next.detail != _signal.detail) {
       _signal = next;
       notifyListeners();
@@ -59,6 +100,7 @@ class OiCompanionSource extends CompanionStateSource {
 
   @override
   void dispose() {
+    _successTimer?.cancel();
     conversation.removeListener(_update);
     super.dispose();
   }

@@ -1,0 +1,34 @@
+{
+  "state": "idle",
+  "eye_self_check": 0.9731067982152883,
+  "panel_box": [
+    0,
+    90,
+    448,
+    570
+  ],
+  "weights": {
+    "silhouette": 0.25,
+    "structure": 0.25,
+    "flow": 0.2,
+    "colour": 0.15,
+    "eyes": 0.15
+  },
+  "anchor_raw": {
+    "degraded_reference_100": 0.9586948374460152,
+    "generic_fire_spirit_0": 0.5032222958538853
+  },
+  "candidate": {
+    "path": "companion_art\\fire_v2\\work\\idle_cut.png",
+    "components": {
+      "silhouette": 0.9161591675042866,
+      "structure": 0.9067993189870017,
+      "flow": 0.8457631545642207,
+      "colour": 0.98504387885402,
+      "eyes": 0.9348557726096738
+    },
+    "raw": 0.9128772002552203,
+    "calibrated": 89.94063680971045,
+    "calibrated_unclamped": 89.94063680971045
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "state": "depleted",
+  "eye_self_check": 0.8408418169649843,
+  "panel_box": [
+    448,
+    650,
+    896,
+    1130
+  ],
+  "weights": {
+    "silhouette": 0.25,
+    "structure": 0.25,
+    "flow": 0.2,
+    "colour": 0.15,
+    "eyes": 0.15
+  },
+  "anchor_raw": {
+    "degraded_reference_100": 0.684250914427821,
+    "generic_fire_spirit_0": 0.33640347677926885
+  },
+  "candidate": {
+    "path": "companion_art\\fire_v2\\work\\depleted_cut.png",
+    "components": {
+      "silhouette": 0.1293872130525517,
+      "structure": 0.7122161647882757,
+      "flow": 0.21041739874153725,
+      "colour": 0.9870763417409577,
+      "eyes": 0.39661528665948464
+    },
+    "raw": 0.46003806846858064,
+    "calibrated": 35.542763380716934,
+    "calibrated_unclamped": 35.542763380716934
+  }
+}
