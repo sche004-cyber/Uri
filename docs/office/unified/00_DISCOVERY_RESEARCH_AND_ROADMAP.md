@@ -139,6 +139,8 @@ Library versions: python-docx 1.2.0, python-pptx 1.0.2, PyMuPDF 1.28.2, pypdf 6.
 | LibreOffice, 11-slide PPTX to PDF | 7.4–8.1 s | Peak RSS 369 MB. All 11 slides and the native chart render. |
 | Peak process RSS | 102 MB | |
 
+**Correction 2026-10-15 (O2 review F12):** the committed `evidence/engine_probe_20261014/engine_probe_result.json` is from a later run than the one this table quotes. It records 50 ms for the order, 881 ms for the merge, 84 ms for the 11-slide PPTX and 60 ms for a 150 dpi page render. The quoted 79 ms, 826 ms, 104 ms and 42 ms came from a run whose output was not committed. Both runs are kept; only the committed values count as evidence. The JSON file also starts with a stray stdout line from PyMuPDF.
+
 Notes on the measurements:
 - All of these run on the CPU. None needs the GPU, so they do not compete with the Brain.
 - **Negative result:** PyMuPDF base opens DOCX and PPTX as "Office document", but only as reflowed plain text. The header, the table, the centred heading and the slide layout are all lost. The 3-page order rendered as 9 pages, and 11 slides collapsed into 2 text pages (see the two PNGs). Base PyMuPDF is **not** usable for DOCX or PPTX previews. Faithful Office rendering in MuPDF is the commercial PyMuPDF Pro ([PyMuPDF Pro docs](https://pymupdf.readthedocs.io/en/latest/pymupdf-pro)), which is excluded by the no-paid-licence rule.
