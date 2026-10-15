@@ -522,7 +522,8 @@ class Office:
                                   engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key),
                                   **extra)
             new = s.draft.propose(res["edits"]) if res["edits"] else []
-            out = {"message": res["message"], "proposed": [c["cid"] for c in new if c["state"] == "proposed"],
+            out = {"status": res.get("status", "propose"), "message": res["message"],
+                   "proposed": [c["cid"] for c in new if c["state"] == "proposed"],
                    "refused": res["refused"], "metrics": res["metrics"], "draft": s.draft.snapshot(),
                    **self._reloaded(s, refreshed)}
             if res.get("findings") is not None:

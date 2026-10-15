@@ -21,12 +21,12 @@ def operation(**values):
 def valid(op, sources=None):
     schema = brain.schema_for("new", sources)
     jsonschema.Draft202012Validator.check_schema(schema)
-    return jsonschema.Draft202012Validator(schema).is_valid({"message": "", "ops": [op]})
+    return jsonschema.Draft202012Validator(schema).is_valid({"message": "", "status": "propose", "ops": [op]})
 
 
 def test_original_null_name_reproduces_schema_runtime_disagreement():
     op = operation(op="add_sheet", name=None)
-    assert jsonschema.Draft202012Validator(ops.BRAIN_SCHEMA).is_valid({"message": "", "ops": [op]})
+    assert jsonschema.Draft202012Validator(ops.BRAIN_SCHEMA).is_valid({"message": "", "status": "propose", "ops": [op]})
     with pytest.raises(OfficeError) as exc:
         ops.to_cell_edits(op, engine="new", sheets=["Sheet1"])
     assert exc.value.code == "BAD_SHEET_NAME"

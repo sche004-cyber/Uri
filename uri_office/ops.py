@@ -41,10 +41,15 @@ _SHEET_NAME = re.compile(r"^[^\[\]:*?/\\]{1,31}$")
 
 # Strict JSON schema for one Brain answer (every property required; unused ones are null).
 _SCALAR = {"type": ["string", "number", "boolean", "null"]}
+# `status` (M2-XB-1): the Brain says whether its ops are a proposal. Only "propose" may put changes in the draft;
+# "clarify" (the instruction could mean different changes) and "cannot" (the ops cannot do it) never change anything.
+# It follows `message` so a constrained decoder writes the explanation before it commits to a status.
+BRAIN_STATUSES = ("propose", "clarify", "cannot")
 BRAIN_SCHEMA = {
-    "type": "object", "additionalProperties": False, "required": ["message", "ops"],
+    "type": "object", "additionalProperties": False, "required": ["message", "status", "ops"],
     "properties": {
         "message": {"type": "string"},
+        "status": {"type": "string", "enum": list(BRAIN_STATUSES)},
         "ops": {"type": "array", "maxItems": 20, "items": {
             "type": "object", "additionalProperties": False,
             "required": ["op", "sheet", "range", "values", "cell", "formula", "at", "count", "name", "source",
