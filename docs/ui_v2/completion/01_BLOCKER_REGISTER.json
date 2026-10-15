@@ -1,7 +1,7 @@
 {
   "schema": "uri.ui_v2.blocker_register.v1",
   "milestone": "UI-V2-COMPLETION",
-  "updated": "2026-10-16 (after merge of canonical 85f6a0ec and live runs l11/l12, p5/p6)",
+  "updated": "2026-10-16 (after Codex round 1 and manual repair d4a48317)",
   "note": "Authoritative blocker list for the UI V2 completion. Earlier sources: C:/Users/cheta/Development/uri-ui-v2-final-qualification-20261013 (FINAL_REPORT.md, ENVIRONMENT_DIAGNOSIS.md, FROZEN_RECONCILIATION.md, reviewer-repaired/INDEPENDENT_REPAIRED_AUDIT.md). Evidence paths starting with run/ are under C:/Users/cheta/Development/uri-ui-v2c-run.",
   "blockers": [
     {
@@ -89,6 +89,45 @@
       "repair": "a9959714: the service check runs after the first frame.",
       "tests": "ui_v2_test 'opening Settings starts the voice service after the frame'; live l6: no such error",
       "status": "REPAIRED - LIVE VERIFIED (l6-v2-first); re-verified live at merged commit 56dbc003 (l11-v2-first, l12-v2-returning)",
+      "integration_dependency": "none"
+    },
+    {
+      "id": "R1-01",
+      "component": "V2 Dashboard Connections destination (frost_dashboard.dart)",
+      "original_finding": "Codex round 1 (HIGH): on the integrated worker the destination opened the classic account screens on the local placeholder client (MockUriClient): Gmail/Drive shown connected, 'Google credentials saved' without a backend.",
+      "classification": "UI V2-OWNED defect (honest status)",
+      "repair": "d4a48317: plain page; card 'Not managed here yet'",
+      "tests": "ws_integration_test 'V2 integrated Connections says accounts are not managed here'",
+      "status": "REPAIRED (live l13)",
+      "integration_dependency": "none"
+    },
+    {
+      "id": "R1-02",
+      "component": "Completion claims (report, record)",
+      "original_finding": "Codex round 1 (MEDIUM): composer below the fold at 900x640 and 800x600 windows while the report said common laptop windows keep it in view.",
+      "classification": "Evidence claim defect",
+      "repair": "Claims corrected (content area >= 900x640); driver J11 checks composer visibility where the medium layout applies",
+      "status": "REPAIRED (docs, live l13)",
+      "integration_dependency": "none"
+    },
+    {
+      "id": "R1-03",
+      "component": "Native region channel (windows/runner/flutter_window.cpp)",
+      "original_finding": "Codex round 1 (MEDIUM): coordinates cast to int without finiteness, order or range checks; malformed optional regions ignored.",
+      "classification": "UI V2-OWNED robustness defect",
+      "repair": "d4a48317: validated boxes, INVALID_LAYOUT, current region kept",
+      "tests": "live driver J7 (NaN, infinite, inverted rejected; region kept)",
+      "status": "REPAIRED (live l13)",
+      "integration_dependency": "none"
+    },
+    {
+      "id": "R1-04",
+      "component": "OiBrainBar ready colour (oi_widgets.dart, from FCV-R)",
+      "original_finding": "Codex round 1 (LOW): plain label 'ready' compared with 'READY'.",
+      "classification": "Canonical defect (FCV-R), small",
+      "repair": "d4a48317: compares the raw state code",
+      "tests": "ws_integration_test 'ready Brain shows the ready colour' (fails before)",
+      "status": "REPAIRED",
       "integration_dependency": "none"
     },
     {

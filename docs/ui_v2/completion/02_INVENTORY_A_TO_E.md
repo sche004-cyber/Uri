@@ -18,9 +18,9 @@ Row IDs (UI-0xx) refer to `../SCREEN_AND_FUNCTION_INVENTORY.md`. "Live" means th
 | Companion catalog, theme independence, gallery | UI-017..019 | A | none | A (J8, returning run) |
 | Shared composer | UI-020 | A | none | A |
 | Workspace regions | UI-021 | A; Documents tiles simulated in integrated V2 (D) | real turns (BLK-INT-2) | A (J6) |
-| OI stream, confirmations, approvals | UI-022 | A; raw codes on chips (owned by FCV-R) | none (no duplicate of FCV-R) | A with FCV-R items recorded |
+| OI stream, confirmations, approvals | UI-022 | A; raw codes on chips (owned by FCV-R) | none here; FCV-R's plain wording arrived with the canonical merge (2b3bd36f) | A (live J4, J5) |
 | Tasks, supervised tasks, drafts | UI-023..025 | A (preserved, frozen where noted) | none | A |
-| Providers, connections, memory, intelligence, settings, diagnostics, grants | UI-026..032 | A (preserved) | none | A |
+| Providers, connections, memory, intelligence, settings, diagnostics, grants | UI-026..032 | A (preserved); on the integrated V2 the Connections destination showed placeholder-client results (R1-01) | integrated V2 Connections opens a plain 'not managed here yet' page; classic and preview paths unchanged | A |
 | Scheduler | UI-033 | A (needs `URI_SCHEDULER_STATE`; honest "unavailable" page otherwise) | none | A |
 | Assist | UI-034 | A (permissions unchanged) | none | A (J2 navigation) |
 | Runtime A2UI | UI-035 | A | none | A |

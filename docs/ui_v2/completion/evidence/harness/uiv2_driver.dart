@@ -261,6 +261,19 @@ void main() {
         final m = await send('returning conversation', 'Reply with exactly the word ready.');
         check('R-conversation', m.text.toLowerCase().contains('ready'), {'text': m.text});
       });
+      await step('R-connections-honest', () async {
+        await key(LogicalKeyboardKey.digit3, control: true);
+        final card = find.text('Not managed here yet');
+        check('R-connections-card-plain', card.evaluate().isNotEmpty);
+        await t.tap(card.first);
+        await settle(1500);
+        check('R-connections-page-plain', find.byKey(const ValueKey('connections-unavailable')).evaluate().isNotEmpty &&
+            find.text('Connected').evaluate().isEmpty);
+        await shot('r-connections');
+        await t.tap(find.text('Open Settings'));
+        await settle(1500);
+        check('R-connections-open-settings', services.presentation.focus == WorkspaceFocus.settings);
+      });
       await step('R-restore-defaults', () async {
         services.companionPrefs.select(const CompanionChoice.living(CompanionIdentity.solar));
         await services.companionPrefs.setInterfaceTheme(null);
@@ -435,6 +448,23 @@ void main() {
           check('J7-window-440x680', (size.width - 440).abs() < 2 && (size.height - 680).abs() < 2, {'size': '$size'});
           check('J7-shaped-region', facts?['regionKind'] != 1 && facts?['cornerHit'] == false, {'facts': facts});
           await shot('j7-companion-idle');
+          // R1-03: the native region channel rejects malformed layouts and keeps the current region.
+          for (final (name, orb) in [
+            ('nan', [double.nan, 0.0, 10.0, 10.0]),
+            ('infinite', [0.0, 0.0, double.infinity, 10.0]),
+            ('inverted', [50.0, 50.0, 10.0, 10.0]),
+          ]) {
+            String? code;
+            try {
+              await _companionWindow.invokeMethod<void>('regions', {'active': true, 'orb': orb});
+            } on PlatformException catch (e) {
+              code = e.code;
+            }
+            check('J7-native-rejects-$name', code == 'INVALID_LAYOUT', {'code': code});
+          }
+          final factsAfterReject = await _companionWindow.invokeMapMethod<String, Object?>('facts');
+          check('J7-region-kept-after-reject', factsAfterReject?['regionKind'] == facts?['regionKind'] &&
+              factsAfterReject?['regionWidth'] == facts?['regionWidth'], {'before': facts, 'after': factsAfterReject});
           await perfWindow('idle-companion', const Duration(seconds: 10));
           await t.tap(find.byKey(LivingShell.orbKey));
           await settle(900);
@@ -540,8 +570,10 @@ void main() {
             final composer = find.byKey(const ValueKey('living-composer-field'));
             final visible = composer.evaluate().isNotEmpty &&
                 (Offset.zero & view).contains(t.getRect(composer.first).bottomRight);
+            final medium = view.width >= 900 && view.height >= 640;
             record('resize', {'requested': '$s', 'view': '$view', 'composer_visible_without_scroll': visible,
-              'new_flutter_errors': flutterErrors.length - errors});
+              'expected_layout': medium ? 'medium (composer in view)' : 'scrolling column', 'new_flutter_errors': flutterErrors.length - errors});
+            if (medium) check('J11-composer-in-view-${s.width.toInt()}', visible, {'view': '$view'});
             check('J11-no-layout-error-${s.width.toInt()}', flutterErrors.length == errors);
             await key(LogicalKeyboardKey.digit2, control: true);
             await shot('j11-workspace-${s.width.toInt()}x${s.height.toInt()}');

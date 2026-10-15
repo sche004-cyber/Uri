@@ -5,7 +5,7 @@ lighter on the GPU than the earlier screen. Five integration defects were found 
 to be environment or governance issues that are now gone. Independent review and canonical integration are recorded
 in the lifecycle receipt; integration still needs the owner's approval.
 
-Code commit tested live: `56dbc003855811834b3c45ebe474f84267cafd2e` (branch `milestone/ui-v2-completion-20261015`,
+Code commit tested live: `d4a48317` (see the record for the full SHA) (branch `milestone/ui-v2-completion-20261015`,
 canonical base `85f6a0ec`). Live record: [UI_QUALIFICATION_UI_V2.json](UI_QUALIFICATION_UI_V2.json) (authoritative).
 
 ## A. Existing URI preserved
@@ -22,7 +22,7 @@ canonical base `85f6a0ec`). Live record: [UI_QUALIFICATION_UI_V2.json](UI_QUALIF
 
 | ID | Change | Evidence |
 |---|---|---|
-| V-2 | Medium Dashboard layout for common laptop windows (900–1099 wide, or wider but under 960 tall): six destinations beside a smaller companion, composer kept in view, rail from 1100 px | before `evidence/visual/before/dashboard-1024x768.png`, after `evidence/visual/after/dashboard-1024x768.png`, `dashboard-1366x768.png`, `dashboard-1536x864.png`; live J11 |
+| V-2 | Medium Dashboard layout when the content area is at least 900×640 and below the tall layout (live: windows 1366×768, 1280×800, 1024×768): six destinations beside a smaller companion, composer kept in view, rail from 1100 px. Smaller content areas (live: 900×640 and 800×600 windows, 601 and 561 px high) keep the scrolling column by design | before `evidence/visual/before/dashboard-1024x768.png`, after `evidence/visual/after/dashboard-1024x768.png`, `dashboard-1366x768.png`, `dashboard-1536x864.png`; live J11 |
 | V-1 | "Nothing to review" / "1 review needed" / "N reviews needed"; "1 pending decision" | live J9 screenshot |
 | V-3 | Detached chat fades earlier messages under its header (no thin cut bubble) | before/after `companion-detached-chat.png` |
 | V-4 | One-line hover hints on Dashboard navigation (Companion: click for Chat, double-click to return) | widget tests |
@@ -42,6 +42,10 @@ canonical base `85f6a0ec`). Live record: [UI_QUALIFICATION_UI_V2.json](UI_QUALIF
 | LV-2 Ctrl+1..4 / Escape dead after sending a message | Focus fell above the shell (found live) | Fixed; live J2/J7/J9/J11 |
 | LV-1 14 framework errors on opening Settings | Voice status changed during build (found live) | Fixed |
 | DEP-FCVR-1 conflicts with FCV-R | Two pending candidates | FCV-R reached canonical first; merged and resolved here |
+| R1-01 Connections showed made-up accounts (Codex) | Classic account screens on the integrated path's placeholder client | Plain 'not managed here yet' page with Open Settings / classic interface; live R2 |
+| R1-02 size claim (Codex) | Report overstated the medium layout range | Corrected; J11 now checks the composer where medium applies |
+| R1-03 native regions unchecked (Codex) | Doubles cast to int without checks | Malformed boxes rejected with INVALID_LAYOUT, region kept; live J7 |
+| R1-04 ready colour (Codex, LOW) | Plain label compared with raw code | Compares the raw code |
 
 Full list with evidence: [blocker register](01_BLOCKER_REGISTER.json).
 
@@ -67,18 +71,20 @@ Not verified: physical mouse/keyboard and window drag, microphone/speaker, other
 | UI RAM | 342 MiB | 345 MiB |
 | Frame time p95 (idle Companion) | 4.3 ms | 3.4 ms |
 
-Data: `evidence/perf_summary.json`, `evidence/live/p5-living`, `evidence/live/p6-v2`. Earlier rounds p1–p4 agree.
+Data: `evidence/perf_summary.json`, `evidence/live/p5-living`, `evidence/live/p6-v2` (measured at 56dbc003; the later repairs touch no rendering path: a new page, native argument checks and one colour condition). Earlier rounds p1–p4 agree.
 
 ## F. Regression
 
-Full Flutter suite after the canonical merge: 634 passed, 5 skipped (the same five opt-in live suites). Python
+Full Flutter suite after the round 1 repairs: 636 passed, 5 skipped (the same five opt-in live suites). Python
 ssrf/web/a2ui/ws suites: driver gates (receipt). Earlier accepted workflows (conversation, clarification,
 approval, memory, recall, Brain-unavailable handling) pass live.
 
 ## G. Independent review
 
-Codex (`gpt-6-sol`) through the lifecycle driver on the exact final commit. Verdict, rounds and findings are in the
-driver receipt (`uri-ui-v2c-run/lifecycle/`), not in this report.
+Codex (`gpt-6-sol`) through the lifecycle driver. Round 1 (state `lifecycle/r1`, commit 0263e61b): REJECT with R1-01..R1-04; the
+driver's repair worker failed three times, so the coordinator repaired them (d4a48317). The revision run
+`UI-V2-COMPLETION-r2` (state `lifecycle/r2`) reviews the whole candidate again from round 1; its verdict is in that
+receipt, not in this report.
 
 ## H. Integration status
 

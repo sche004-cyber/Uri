@@ -7,7 +7,7 @@
   "no_ui_reason": null,
   "phase": "UI V2 completion",
   "candidate_branch": "milestone/ui-v2-completion-20261015",
-  "code_commit": "56dbc003855811834b3c45ebe474f84267cafd2e",
+  "code_commit": "d4a48317e4a20d672bd5bd436e3c11e51ddc22c6",
   "acceptance_criteria_file": "docs/ui_v2/completion/00_COMPLETION_PLAN_AND_ACCEPTANCE.md",
   "acceptance_criteria": [
    "AC-1",
@@ -29,11 +29,11 @@
  "environment": {
   "windows": "Windows-11-10.0.26200-SP0",
   "app_build": {
-   "commit": "56dbc003855811834b3c45ebe474f84267cafd2e",
-   "tree": "05e52677055730ab55c8b001b5c7303f10ecbd83",
+   "commit": "d4a48317e4a20d672bd5bd436e3c11e51ddc22c6",
+   "tree": "9d5f6dd89e1f1066407fb98cf300b39298c690bf",
    "build": "flutter test integration_test (debug, Windows) of production main()",
-   "binary_sha256": "efb0e394234f06126b93bd90d61d029909816b5f8178578877720396a6b558eb",
-   "returning_run_commit": "56dbc003855811834b3c45ebe474f84267cafd2e"
+   "binary_sha256": "c509c6914b54100c088babfc5fc608b8dfb60d0ad215a3ee85735e1f5bb1b40f",
+   "returning_run_commit": "d4a48317e4a20d672bd5bd436e3c11e51ddc22c6"
   },
   "core": "materialized test runtime (e8e3b65 + Phase 2 OQ overlay + candidate new paths), receipt evidence/runtime/materialize2.json",
   "brain": "Runtime v1 llama-server b11425, Qwen3.6-35B-A3B UD-IQ3_S + MTP, started under the machine-wide GPU lease",
@@ -60,22 +60,22 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j1-onboarding-first.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j1-ready.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j1-start.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-dashboard-1024x768.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-dashboard-1280x800.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-dashboard-1366x768.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-dashboard-800x600.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-dashboard-900x640.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-workspace-1024x768.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-workspace-1280x800.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-workspace-1366x768.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-workspace-800x600.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-workspace-900x640.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j12-dashboard-brain-stopped.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j12-turn-without-brain.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j1-onboarding-first.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j1-ready.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j1-start.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1024x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1280x800.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1366x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-800x600.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-900x640.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1024x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1280x800.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1366x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-800x600.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-900x640.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j12-dashboard-brain-stopped.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j12-turn-without-brain.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -101,14 +101,14 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j2-assist.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j2-dashboard.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j2-nav-conversation.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j2-nav-documents.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j2-nav-settings.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j2-nav-tasks.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j2-workspace.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-assist.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-dashboard.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-nav-conversation.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-nav-documents.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-nav-settings.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-nav-tasks.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-workspace.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -129,8 +129,8 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j3-conversation.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j3-conversation.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -151,8 +151,8 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j4-confirmation.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j4-confirmation.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -174,9 +174,9 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j5-after-approve.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j5-approval-card.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j5-after-approve.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j5-approval-card.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -197,9 +197,9 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j6-documents.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j6-letter-reply.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j6-documents.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j6-letter-reply.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -222,17 +222,21 @@
     "J7-stays-companion": "PASS",
     "J7-escape-closes-chat": "PASS",
     "J7-double-click-dashboard": "PASS",
-    "J7-window-restored": "PASS"
+    "J7-window-restored": "PASS",
+    "J7-native-rejects-nan": "PASS",
+    "J7-native-rejects-infinite": "PASS",
+    "J7-native-rejects-inverted": "PASS",
+    "J7-region-kept-after-reject": "PASS"
    },
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j7-after-escape.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j7-back-dashboard.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j7-companion-chat.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j7-companion-controls.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j7-companion-idle.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j7-after-escape.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j7-back-dashboard.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j7-companion-chat.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j7-companion-controls.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j7-companion-idle.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -255,10 +259,10 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j8-after-theme.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j8-dashboard-snow-lunar.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j8-gallery.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j8-after-theme.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j8-dashboard-snow-lunar.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j8-gallery.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -280,10 +284,10 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j9-after-deny.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j9-dashboard-review-count.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j9-tasks-review.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j9-after-deny.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j9-dashboard-review-count.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j9-tasks-review.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -303,7 +307,7 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -314,7 +318,7 @@
    "user": "first_time",
    "mandatory": true,
    "steps": [
-    "Window sizes 1366x768, 1280x800, 1024x768, 900x640, 800x600: no layout error"
+    "Window sizes 1366x768, 1280x800, 1024x768, 900x640, 800x600: no layout error; composer and destinations in view where the content area is at least 900x640 (smaller windows use the scrolling column by design)"
    ],
    "expected": "every listed check PASS",
    "checks": {
@@ -322,22 +326,25 @@
     "J11-no-layout-error-1280": "PASS",
     "J11-no-layout-error-1024": "PASS",
     "J11-no-layout-error-900": "PASS",
-    "J11-no-layout-error-800": "PASS"
+    "J11-no-layout-error-800": "PASS",
+    "J11-composer-in-view-1366": "PASS",
+    "J11-composer-in-view-1280": "PASS",
+    "J11-composer-in-view-1024": "PASS"
    },
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-dashboard-1024x768.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-dashboard-1280x800.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-dashboard-1366x768.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-dashboard-800x600.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-dashboard-900x640.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-workspace-1024x768.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-workspace-1280x800.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-workspace-1366x768.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-workspace-800x600.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j11-workspace-900x640.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1024x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1280x800.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1366x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-800x600.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-900x640.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1024x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1280x800.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1366x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-800x600.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-900x640.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -357,11 +364,11 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j12-dashboard-brain-stopped.png",
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/main-j12-turn-without-brain.png"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j12-dashboard-brain-stopped.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j12-turn-without-brain.png"
    ],
-   "failure_and_recovery": "{\"utc\": \"2026-10-15T19:00:51.946095Z\", \"label\": \"turn without brain\", \"text\": \"\", \"error_code\": \"BRAIN_UNAVAILABLE\", \"error_message\": \"The local Brain is not ready (STOPPED).\", \"recovery\": [\"start_brain\", \"retry\", \"choose_other_source\"]}",
+   "failure_and_recovery": "{\"utc\": \"2026-10-15T19:53:08.611541Z\", \"label\": \"turn without brain\", \"text\": \"\", \"error_code\": \"BRAIN_UNAVAILABLE\", \"error_message\": \"The local Brain is not ready (STOPPED).\", \"recovery\": [\"start_brain\", \"retry\", \"choose_other_source\"]}",
    "evidence_status": "COMPLETED_WITH_RESULT",
    "result": "PASS"
   },
@@ -379,7 +386,7 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l11-v2-first/observations-main.json"
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -402,8 +409,32 @@
    "actual": "all checks PASS",
    "outputs": [],
    "evidence": [
-    "docs/ui_v2/completion/evidence/live/l12-v2-returning/observations-returning.json",
-    "docs/ui_v2/completion/evidence/live/l12-v2-returning/returning-r-start.png"
+    "docs/ui_v2/completion/evidence/live/l14-v2-returning/observations-returning.json",
+    "docs/ui_v2/completion/evidence/live/l14-v2-returning/returning-r-connections.png",
+    "docs/ui_v2/completion/evidence/live/l14-v2-returning/returning-r-start.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "R2",
+   "user": "returning",
+   "mandatory": true,
+   "steps": [
+    "Connections destination on the integrated worker says plainly that accounts are not managed here; Open Settings works"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "R-connections-card-plain": "PASS",
+    "R-connections-page-plain": "PASS",
+    "R-connections-open-settings": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l14-v2-returning/observations-returning.json",
+    "docs/ui_v2/completion/evidence/live/l14-v2-returning/returning-r-connections.png"
    ],
    "failure_and_recovery": "see J12",
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -612,6 +643,26 @@
    "onboarding_change": "none",
    "retest": "l11 with draft closed: ordinary reply",
    "deferral_confirmed_by_auditor": "pending"
+  },
+  {
+   "issue_id": "R1-01",
+   "class": "MATERIAL",
+   "issue": "Connections destination showed made-up accounts on the integrated path (Codex)",
+   "repair": "plain page",
+   "repair_commit": "d4a48317",
+   "onboarding_change": "none",
+   "retest": "R2 live",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "R1-03",
+   "class": "MINOR",
+   "issue": "Native region channel accepted malformed numbers (Codex)",
+   "repair": "validation",
+   "repair_commit": "d4a48317",
+   "onboarding_change": "none",
+   "retest": "J7 native rejection checks",
+   "deferral_confirmed_by_auditor": null
   }
  ],
  "performance": {
@@ -685,7 +736,9 @@
      "over_16ms": 0
     }
    }
-  }
+  },
+  "measured_at_commit": "56dbc003855811834b3c45ebe474f84267cafd2e",
+  "note": "Measured before the round 1 repairs (d4a48317). Those repairs add one page, native argument checks and one colour condition; no rendering path of the measured views changed."
  },
  "remaining_limitations": [
   "Physical mouse, keyboard and window drag: NOT VERIFIED (synthesized input only). Does not change the status of the mandatory journeys, which were defined for automated native input.",
@@ -713,6 +766,11 @@
  },
  "status": "PASS",
  "status_reason": "Every mandatory journey PASS with COMPLETED_WITH_RESULT live evidence on code_commit; no MATERIAL issue open.",
- "recorded_at": "2026-10-15T19:05:13.891742+00:00",
- "corrections": []
+ "recorded_at": "2026-10-15T19:55:41.770498+00:00",
+ "corrections": [
+  {
+   "at": "2026-10-16",
+   "what": "Earlier record at 0263e61b (code 56dbc003) said the medium Dashboard keeps the composer in view on common laptop windows without the size limit; Codex R1-02 showed 900x640 and 800x600 windows (601/561 px content) use the scrolling column. J11 now checks composer visibility only where the medium layout applies (content >= 900x640)."
+  }
+ ]
 }

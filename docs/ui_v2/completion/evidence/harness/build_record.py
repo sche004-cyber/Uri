@@ -22,7 +22,7 @@ def checks(rows):
 
 
 def rel(p):
-    return "run/" + str(Path(p).relative_to(ROOT)).replace("\\", "/")
+    return "docs/ui_v2/completion/evidence/" + str(Path(p).relative_to(ROOT / "evidence")).replace("\\", "/")
 
 
 f_rows, r_rows = load(first, "main"), load(returning, "returning")
@@ -47,21 +47,24 @@ JOURNEYS = [
      ["J6-letter-opens-conversation", "J6-letter-real-turn"], "main-j6"),
     ("J7", "first_time", "Companion: frameless 440x680 shaped window, single click actions, detached chat with a real reply, Escape, double click back with the window restored",
      ["J7-window-440x680", "J7-shaped-region", "J7-single-click-controls", "J7-detached-chat", "J7-chat-reply",
-      "J7-stays-companion", "J7-escape-closes-chat", "J7-double-click-dashboard", "J7-window-restored"], "main-j7"),
+      "J7-stays-companion", "J7-escape-closes-chat", "J7-double-click-dashboard", "J7-window-restored",
+      "J7-native-rejects-nan", "J7-native-rejects-infinite", "J7-native-rejects-inverted", "J7-region-kept-after-reject"], "main-j7"),
     ("J8", "first_time", "Settings: companion gallery preview isolation and Apply; interface theme",
      ["J8-gallery-opens", "J8-preview-isolated", "J8-apply", "J8-theme"], "main-j8"),
     ("J9", "first_time", "Approval visibility on the Dashboard; review opens Tasks; Deny is honoured",
      ["J9-dashboard-counts-decision", "J9-review-opens-tasks", "J9-deny-honoured"], "main-j9"),
     ("J10", "first_time", "Responsiveness while the Brain works: navigate during a turn",
      ["J10-navigation-while-busy"], None),
-    ("J11", "first_time", "Window sizes 1366x768, 1280x800, 1024x768, 900x640, 800x600: no layout error",
+    ("J11", "first_time", "Window sizes 1366x768, 1280x800, 1024x768, 900x640, 800x600: no layout error; composer and destinations in view where the content area is at least 900x640 (smaller windows use the scrolling column by design)",
      ["J11-no-layout-error-1366", "J11-no-layout-error-1280", "J11-no-layout-error-1024", "J11-no-layout-error-900",
-      "J11-no-layout-error-800"], "main-j11"),
+      "J11-no-layout-error-800", "J11-composer-in-view-1366", "J11-composer-in-view-1280", "J11-composer-in-view-1024"], "main-j11"),
     ("J12", "first_time", "Failure and recovery: Brain stops; UI shows it; a turn fails with a plain message and recovery options",
      ["J12-brain-not-ready-seen"], "main-j12"),
     ("J13", "first_time", "Regression: classic interface entry still offered", ["J13-classic-entry-present"], None),
     ("R1", "returning", "Returning user: no onboarding repeat; companion and theme persisted; conversation works",
      ["R-no-onboarding", "R-companion-persisted", "R-theme-persisted", "R-conversation"], "returning-r"),
+    ("R2", "returning", "Connections destination on the integrated worker says plainly that accounts are not managed here; Open Settings works",
+     ["R-connections-card-plain", "R-connections-page-plain", "R-connections-open-settings"], "returning-r-connections"),
 ]
 functional = []
 for jid, user, title, ids, prefix in JOURNEYS:
