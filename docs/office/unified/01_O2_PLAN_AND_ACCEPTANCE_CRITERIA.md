@@ -1,4 +1,4 @@
-# URI Office Unified: O2 plan and acceptance criteria (frozen-blueprint candidate, rev 3.1)
+# URI Office Unified: O2 plan and acceptance criteria (frozen-blueprint candidate, rev 4 = rev 3.1 + amendment A1)
 
 Date: 2026-10-15. Milestone `URI-OFFICE-U`, phase **O2: unified workspace, engine layer and validation pipeline**.
 Planning branch `phase/uri-office-unified-plan` (base `5b958da0`, local only). Programme plan:
@@ -8,6 +8,17 @@ Owner authorization in force (chat, 2026-10-15):
 - OD-U5 is settled: B1 with B2 goal grouping.
 - Planning, acceptance criteria, live-test matrices and independent review are authorized.
 - O2 implementation, frozen-system changes and integration are **not** authorized.
+
+> **Amendment A1 (2026-10-15) applies.** See `03_O2_AMENDMENT_A1_PDF_PRINT_DEVICES.md`. It changes the following:
+> - PDF scope is reduced: no editing, annotation, assembly or forms.
+> - **PyMuPDF is removed** and replaced by Windows.Data.Pdf, pypdf and Tesseract (no install).
+> - Save as PDF covers Excel as well.
+> - Printing and device discovery move to a separate phase, **O2P**.
+> - New live rows: P-1 to P-6 for O2, and PR-1 to PR-12 for O2P.
+>
+> Where A1 disagrees with this document, A1 wins. Sections A1 changes: §2.1 items 2 and 6, §2.2, §3 (PyMuPDF rows),
+> §4.1, §4.3, §5 (`preview.py` / `raster_worker.py`), §8, §9.4, §11 AC-O2-20, §13 (O4), §14 (S9, S10) and §15 (OD-U3).
+> The text below is kept unchanged for history.
 
 ## 0. Acceptance criteria for this plan
 

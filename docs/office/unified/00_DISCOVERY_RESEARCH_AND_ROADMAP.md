@@ -526,6 +526,7 @@ The recommendation is to start O2, not Word first. A Word milestone without the 
 | OD-U6 | GPU override: one logged override window per phase qualification. No process is killed without asking. |
 | First milestone | O2 (shared workspace and render layer). |
 | OD-U5 (2026-10-15) | **B1 approved with refinements**: three panes (files and workflows, workbench, URI), plus B2's goal-based task grouping, plus 10 refinements. Records: `docs/design_library/approved/office_workspace_2026-10-15.md`, `rejected/office_workspace_b2_layout_2026-10-15.md`. Detailed O2 plan: `01_O2_PLAN_AND_ACCEPTANCE_CRITERIA.md`. |
+| D-PDF and G0/G1 (2026-10-15) | Owner amendment. PDF editing, annotation, assembly and forms are removed. Kept: viewing, Save as PDF, print preview, reading, extraction, Q&A. Printing is added through one shared interface. A lightweight device discovery service starts with printers. PyMuPDF AGPL is not approved; **Office drops PyMuPDF** (Windows.Data.Pdf, pypdf, Tesseract). G0 and G1 are conditional on independent acceptance of amendment A1 and on licensing being resolved. No install, elevation, real printing, push or integration. See `03_O2_AMENDMENT_A1_PDF_PRINT_DEVICES.md`. Sections 2.2, 3, 6 and 8 of this plan are superseded by A1 where they disagree. |
 
 ## 13. Self-review against section 0 (draft 1)
 
