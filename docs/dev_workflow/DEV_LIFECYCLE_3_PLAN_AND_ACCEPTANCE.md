@@ -63,8 +63,9 @@ weakened. Driver-level enforcement of the UI qualification record is a possible 
 | AC-23 | Codex review `DEV-LIFECYCLE-3-r4`: R1-01 AGENTS.md auditor precedence (repaired by the driver's implementer, P1); R2-01 the driver report does not show the UI qualification status, so the skill says what its wording means and where the UI status comes from | AGENTS.md, SKILL.md Visual report items 3 and 5, reference section 6 |
 
 The driver change itself is milestone DEV-LIFECYCLE-3A (`docs/dev_workflow/DEV_LIFECYCLE_3A_PLAN_AND_ACCEPTANCE.md`
-on branch `milestone/dev-lifecycle-3a-codex-win-sandbox-20261015`); this milestone is rebased on it and still
-changes no driver code itself.
+on branch `milestone/dev-lifecycle-3a-codex-win-sandbox-20261015`; revision 2 there also fixes DRV-1 and DRV-2,
+which this milestone's driver runs hit); this milestone is rebased on it and still changes no driver code itself.
+The two milestones are integrated in order (3A first) by one fast-forward of this branch.
 
 ## 4. Owner-only decisions
 

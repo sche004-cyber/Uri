@@ -110,10 +110,12 @@ parsed result, `round.json` with worker identity and integrity check), `repairs/
   `-c windows.sandbox="unelevated"` a probe with the same model, home and `--sandbox read-only` ran `git rev-parse`
   and a write was denied. The driver now passes that flag on Windows; Codex is usable through the driver there when
   the probe and the first round show inspection.
-- Driver repairs cannot commit a tracked file under the ignored `.claude/` directory: `git add -A -- <path>` refuses
-  ignored paths (observed DEV-LIFECYCLE-3-r2 R1, BLOCKED REPAIR_FAILED). Such findings are repaired by the
-  coordinator in the candidate worktree and re-audited in a new revision; a driver fix (`git add -f` for tracked
-  paths only) is a later milestone.
+- Driver repairs could not commit a tracked file under the ignored `.claude/` directory: `git add -A -- <path>`
+  refuses ignored paths (observed DEV-LIFECYCLE-3-r2 and -r3, BLOCKED REPAIR_FAILED); the coordinator repaired those
+  findings in the candidate worktree and re-audited them in a new revision. Fixed in DEV-LIFECYCLE-3A (DRV-1):
+  paths tracked in the pre-worker commit are added with `-f`; a new ignored file is refused (`IGNORED_NEW_FILE`).
+- On Windows, worker, gate and git output was decoded with the ANSI code page and a UTF-8 character lost the stream
+  (DEV-LIFECYCLE-3-r2..r4). Fixed in DEV-LIFECYCLE-3A (DRV-2): UTF-8 decoding with `errors="replace"`.
 - The UI qualification of section 8 is enforced by the skill and the auditor, not by the driver: the driver does not
   read the qualification record, and `REPORT.html` / `report_data.json` do not show it: the coordinator shows the
   record's status beside the driver report (SKILL.md "Visual report" item 5). Integration authorisation is the
