@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/uri_theme.dart';
@@ -149,13 +150,34 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
     }
   }
 
+  // UI-NOTIFY-1 (real-app runs r7 and r1b): the target notifier was changed from didChangeDependencies (during build)
+  // and from dispose (tree locked), so its listeners were marked dirty at a forbidden time and Flutter raised
+  // assertions. A change during those phases now waits for the end of the frame; the identity checks keep a deferred
+  // change from undoing a newer claim by another Office view.
+  static void _whenSafe(VoidCallback change) {
+    final b = SchedulerBinding.instance;
+    if (b.schedulerPhase == SchedulerPhase.idle || b.schedulerPhase == SchedulerPhase.postFrameCallbacks) {
+      change();
+      return;
+    }
+    b.addPostFrameCallback((_) => change());
+    b.ensureVisualUpdate();
+  }
+
   void _claim() {
-    if (_c != null && _target != null) _target!.value = _c;
+    final t = _target, c = _c;
+    if (c == null || t == null) return;
+    _whenSafe(() {
+      if (mounted && identical(_target, t) && identical(_c, c)) t.value = c;
+    });
   }
 
   void _release() {
-    final t = _target;
-    if (t != null && identical(t.value, _c)) t.value = null;
+    final t = _target, c = _c;
+    if (t == null || c == null) return;
+    _whenSafe(() {
+      if (identical(t.value, c)) t.value = null;
+    });
   }
 
   @override
