@@ -204,6 +204,25 @@ def _next_row(sheets: list, written: set, sheet: str, c1: int, c2: int) -> int:
     return last + 1
 
 
+def _same_value(a, b) -> bool:
+    if isinstance(a, bool) or isinstance(b, bool):
+        return a is b
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return float(a) == float(b)
+    return a == b
+
+
+def _unchanged(edit: dict, current: dict) -> bool:
+    """True when a cell edit would leave the cell exactly as the draft holds it now (same formula, or same value with
+    no formula). Structural ops and cells not seen are always changes."""
+    if "cell" not in edit or (edit["sheet"], edit["cell"]) not in current:
+        return False
+    c = current[(edit["sheet"], edit["cell"])]
+    if "formula" in edit:
+        return c.get("f") == edit["formula"]
+    return not c.get("f") and _same_value(c.get("v"), edit.get("value"))
+
+
 class OfficeBrain:
     def __init__(self, client):
         self.client = client
@@ -242,6 +261,7 @@ class OfficeBrain:
         src = SRC.by_id(sources or [])
         edits, refused = [], []
         notes = {"uncalculated": 0, "not_copied": 0}
+        current = {(sh["name"], ref): c for sh in sheets for ref, c in sh.get("cells", {}).items()}
         written: set = set()                 # cells written by earlier ops of this answer
         # M2-XB-1: a question or a refusal never changes the draft, whatever ops came with it.
         for i, op in enumerate(data["ops"][:20] if status == "propose" else ()):
@@ -260,6 +280,9 @@ class OfficeBrain:
                 if hit is not None:
                     raise OfficeError("OVERLAPS_EARLIER_OP", f"{hit['sheet']}!{hit['cell']} was already written by an "
                                                              "earlier change in this answer")
+                # NOOP-1 (readiness run r3): a cell op that leaves the cell as it is (the Brain restated "Travel" and
+                # 22100 while changing only B5) is not a change: it is dropped, so every change card is a real change.
+                got = [e for e in got if not _unchanged(e, current)]
                 written.update((e["sheet"], e["cell"]) for e in got           # an empty value loses nothing
                                if "cell" in e and (e.get("formula") or e.get("value") not in (None, "")))
                 edits += got
