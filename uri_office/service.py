@@ -43,7 +43,6 @@ from .history import History, workbook_key
 from . import capabilities as CAP
 from . import contracts as K
 from . import intent as INTENT
-from .ops import unchanged_edit
 from .recent import Recent
 
 DEFAULT_PORT = 18530
@@ -519,15 +518,15 @@ class Office:
                                                       + ", ".join(missing))
                 w = SRC.working(s.sources)
                 extra = {"sources": [x for x in s.sources if x is not w], "task": w.role if w else "build"}
-            res = self.brain.plan(body.get("text"), sheets=self._current_sheets(s), active=body.get("active_sheet"),
-                                  engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key),
-                                  **extra)
-            # NOOP-1 (readiness run r3): a restated cell (same value or formula as the draft holds it) is not a change.
-            current = {(sh["name"], ref): c for sh in self._current_sheets(s) for ref, c in sh.get("cells", {}).items()}
+            # NOOP-1 / Codex R7-3, R8-1: cells with a pending URI proposal are marked, so plan() never treats an
+            # answer about them as "unchanged"; plan() drops restated cells before its overlap check.
             pending = {(c["sheet"], c["cell"]) for c in s.draft.snapshot()["changes"]
                        if c.get("state") == "proposed" and c.get("kind") == "cell"}
-            edits = [e for e in res["edits"] if not unchanged_edit(e, current, pending)]
-            new = s.draft.propose(edits) if edits else []
+            res = self.brain.plan(body.get("text"), sheets=_mark_pending(self._current_sheets(s), pending),
+                                  active=body.get("active_sheet"),
+                                  engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key),
+                                  **extra)
+            new = s.draft.propose(res["edits"]) if res["edits"] else []
             out = {"status": res.get("status", "propose"), "message": res["message"],
                    "proposed": [c["cid"] for c in new if c["state"] == "proposed"],
                    "refused": res["refused"], "metrics": res["metrics"], "draft": s.draft.snapshot(),
@@ -750,6 +749,24 @@ class Office:
             raise OfficeError("BAD_HISTORY_ACTION")
         self.approvals.audit("office.history_" + act, {"workbook_id": wid})
         return {**self.history.view(s.key), "pointer": History.pointer(s.key), "graphify_wired": False}
+
+
+def _mark_pending(sheets: list, pending: set) -> list:
+    """A copy of `sheets` where each cell with a pending proposal carries `"pending": True` (the Brain's excerpt reads
+    only values and formulas, so the prompt is unchanged)."""
+    if not pending:
+        return sheets
+    out = []
+    for sh in sheets:
+        mine = [c for (name, c) in pending if name == sh["name"] and c in sh["cells"]]
+        if not mine:
+            out.append(sh)
+            continue
+        cells = dict(sh["cells"])
+        for c in mine:
+            cells[c] = {**cells[c], "pending": True}
+        out.append({**sh, "cells": cells})
+    return out
 
 
 def make_handler(office: Office, token: str):

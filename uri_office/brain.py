@@ -242,6 +242,7 @@ class OfficeBrain:
         src = SRC.by_id(sources or [])
         edits, refused = [], []
         notes = {"uncalculated": 0, "not_copied": 0}
+        current = {(sh["name"], ref): c for sh in sheets for ref, c in sh.get("cells", {}).items()}
         written: set = set()                 # cells written by earlier ops of this answer
         # M2-XB-1: a question or a refusal never changes the draft, whatever ops came with it.
         for i, op in enumerate(data["ops"][:20] if status == "propose" else ()):
@@ -254,6 +255,9 @@ class OfficeBrain:
                                                      next_free_row=lambda sh, a, b: _next_row(sheets, written, sh, a, b))
                 else:
                     got = O.to_cell_edits(op, engine=engine, sheets=names, locked=locked)
+                # NOOP-1 (readiness run r3): a restated cell is not a change. Dropped BEFORE the overlap check, so a
+                # restatement cannot reserve a cell and block a real change of it later in the answer (Codex R8-1).
+                got = [e for e in got if not O.unchanged_edit(e, current)]
                 # An op that would overwrite a cell an earlier op of the same answer wrote is a planning slip (for example
                 # a total placed on a copied row): it is refused and reported, never merged or moved.
                 hit = next((e for e in got if "cell" in e and (e["sheet"], e["cell"]) in written), None)
