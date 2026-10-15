@@ -158,10 +158,10 @@ class OrbDock {
               wide
                   ? shell.height * .45
                   : math.min(
-                        shell.height * .5,
-                        (shell.width < 500 ? 320.0 : 260.0) +
-                            math.max(0, textScale - 1) * 100,
-                      ) +
+                          shell.height * .5,
+                          (shell.width < 500 ? 320.0 : 260.0) +
+                              math.max(0, textScale - 1) * 100,
+                        ) +
                         (shell.height * .35).clamp(0, 220) / 2,
             ),
             width: size,
@@ -324,6 +324,37 @@ class _LivingShellState extends State<LivingShell> {
   bool _readingPointer = false;
   Rect? _orbitBounds;
 
+  // Mode keys (Ctrl+1..4, Escape). The CallbackShortcuts below handles them
+  // while focus is inside the shell. When a focused control goes away (the
+  // composer is disabled while URI works), focus falls to the page's scope,
+  // above the shell, and those keys stopped working; the keyboard handler
+  // applies the same bindings then, and only while this page is on top.
+  final FocusNode _shellFocus = FocusNode(debugLabel: 'living-shell');
+  Map<ShortcutActivator, VoidCallback> _bindings = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_onKey);
+  }
+
+  bool _onKey(KeyEvent event) {
+    if (!mounted || event is KeyUpEvent) return false;
+    if (ModalRoute.of(context)?.isCurrent == false) return false;
+    final primary = FocusManager.instance.primaryFocus;
+    if (primary != null &&
+        (primary == _shellFocus || primary.ancestors.contains(_shellFocus))) {
+      return false; // inside the shell: the CallbackShortcuts handles it
+    }
+    for (final entry in _bindings.entries) {
+      if (entry.key.accepts(event, HardwareKeyboard.instance)) {
+        entry.value();
+        return true;
+      }
+    }
+    return false;
+  }
+
   bool _orbitListening = false;
   void _configureOrbit(LivingServices services, bool enabled) {
     final clock = services.frameClock;
@@ -432,6 +463,8 @@ class _LivingShellState extends State<LivingShell> {
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onKey);
+    _shellFocus.dispose();
     _bubbleTimer?.cancel();
     _orbitClock?.removeListener(_orbitTick);
     super.dispose();
@@ -545,46 +578,48 @@ class _LivingShellState extends State<LivingShell> {
                 if (mounted) services.updateCompanionWindow?.call(layout);
               });
             }
+            _bindings = {
+              const SingleActivator(LogicalKeyboardKey.escape): () {
+                if (services.visualV2 &&
+                    mode == UiPresentationMode.companion &&
+                    (_chatOpen || _panelExpanded)) {
+                  setState(() {
+                    if (_chatOpen) {
+                      _chatOpen = false;
+                    } else {
+                      _panelExpanded = false;
+                    }
+                  });
+                } else {
+                  services.presentation.setMode(UiPresentationMode.companion);
+                }
+              },
+              const SingleActivator(
+                LogicalKeyboardKey.digit1,
+                control: true,
+              ): () =>
+                  services.presentation.setMode(UiPresentationMode.companion),
+              const SingleActivator(
+                LogicalKeyboardKey.digit2,
+                control: true,
+              ): () =>
+                  services.presentation.setMode(UiPresentationMode.workspace),
+              const SingleActivator(
+                LogicalKeyboardKey.digit3,
+                control: true,
+              ): () =>
+                  services.presentation.setMode(UiPresentationMode.dashboard),
+              const SingleActivator(
+                LogicalKeyboardKey.digit4,
+                control: true,
+              ): () =>
+                  services.presentation.setMode(UiPresentationMode.assist),
+            };
             return CallbackShortcuts(
               // Escape dismisses transient Companion UI before changing forms.
-              bindings: {
-                const SingleActivator(LogicalKeyboardKey.escape): () {
-                  if (services.visualV2 &&
-                      mode == UiPresentationMode.companion &&
-                      (_chatOpen || _panelExpanded)) {
-                    setState(() {
-                      if (_chatOpen) {
-                        _chatOpen = false;
-                      } else {
-                        _panelExpanded = false;
-                      }
-                    });
-                  } else {
-                    services.presentation.setMode(UiPresentationMode.companion);
-                  }
-                },
-                const SingleActivator(
-                  LogicalKeyboardKey.digit1,
-                  control: true,
-                ): () =>
-                    services.presentation.setMode(UiPresentationMode.companion),
-                const SingleActivator(
-                  LogicalKeyboardKey.digit2,
-                  control: true,
-                ): () =>
-                    services.presentation.setMode(UiPresentationMode.workspace),
-                const SingleActivator(
-                  LogicalKeyboardKey.digit3,
-                  control: true,
-                ): () =>
-                    services.presentation.setMode(UiPresentationMode.dashboard),
-                const SingleActivator(
-                  LogicalKeyboardKey.digit4,
-                  control: true,
-                ): () =>
-                    services.presentation.setMode(UiPresentationMode.assist),
-              },
+              bindings: _bindings,
               child: Focus(
+                focusNode: _shellFocus,
                 autofocus: true,
                 child: Scaffold(
                   backgroundColor: Colors.transparent,

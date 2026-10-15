@@ -399,15 +399,83 @@ void main() {
       },
     );
   }
-  test('dashboard layouts: wide only for tall windows, medium never at large text', () {
-    expect(OrbDock.dashboardWide(const Size(1440, 1000), 1), isTrue);
-    expect(OrbDock.dashboardMedium(const Size(1440, 1000), 1), isFalse);
-    expect(OrbDock.dashboardMedium(const Size(1366, 768), 2), isFalse);
-    expect(OrbDock.dashboardMedium(const Size(800, 640), 1), isFalse);
-    expect(OrbDock.dashboardMedium(const Size(1366, 768), 1.3), isFalse);
-    expect(OrbDock.dashboardMedium(const Size(1024, 600), 1), isFalse);
-    expect(OrbDock.dashboardRail(const Size(1024, 768), 1), 0);
-    expect(OrbDock.dashboardRail(const Size(1366, 768), 1), 208);
+  test(
+    'dashboard layouts: wide only for tall windows, medium never at large text',
+    () {
+      expect(OrbDock.dashboardWide(const Size(1440, 1000), 1), isTrue);
+      expect(OrbDock.dashboardMedium(const Size(1440, 1000), 1), isFalse);
+      expect(OrbDock.dashboardMedium(const Size(1366, 768), 2), isFalse);
+      expect(OrbDock.dashboardMedium(const Size(800, 640), 1), isFalse);
+      expect(OrbDock.dashboardMedium(const Size(1366, 768), 1.3), isFalse);
+      expect(OrbDock.dashboardMedium(const Size(1024, 600), 1), isFalse);
+      expect(OrbDock.dashboardRail(const Size(1024, 768), 1), 0);
+      expect(OrbDock.dashboardRail(const Size(1366, 768), 1), 208);
+    },
+  );
+  // UI V2 completion LV-1 (live run l4): opening Settings started the voice
+  // service inside initState, so its status notified listeners during build.
+  testWidgets('opening Settings starts the voice service after the frame', (
+    tester,
+  ) async {
+    final (_, _, services) = await pumpV2(tester, size: const Size(1280, 800));
+    final never = Completer<_VoiceTransport>();
+    final voice = LiveVoiceService(launch: () => never.future);
+    services.attachLiveVoice(voice);
+    services.presentation.setMode(
+      UiPresentationMode.workspace,
+      focus: WorkspaceFocus.settings,
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(voice.status.value.state, VoiceServiceState.starting);
+    voice.dispose();
+    await tester.pump(const Duration(minutes: 1));
+  });
+  // UI V2 completion LV-2 (live run l4): after a focused control went away
+  // (the composer is disabled while URI works), focus fell to the route's
+  // scope above the shell and Ctrl+1..4 / Escape stopped working.
+  testWidgets('mode shortcuts work when focus has fallen to the route scope', (
+    tester,
+  ) async {
+    final (_, _, services) = await pumpV2(tester, size: const Size(1280, 800));
+    services.presentation.setMode(
+      UiPresentationMode.workspace,
+      focus: WorkspaceFocus.conversation,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('living-composer-field')).first);
+    await tester.pump();
+    FocusManager.instance.primaryFocus!.unfocus();
+    await tester.pump();
+    expect(FocusManager.instance.primaryFocus, isA<FocusScopeNode>());
+    Future<void> ctrl(LogicalKeyboardKey key) async {
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(key);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+    }
+
+    await ctrl(LogicalKeyboardKey.digit3);
+    expect(services.presentation.mode, UiPresentationMode.dashboard);
+    await ctrl(LogicalKeyboardKey.digit2);
+    expect(services.presentation.mode, UiPresentationMode.workspace);
+    // A page pushed above the shell keeps its own keys: no mode change under it.
+    final nav = Navigator.of(tester.element(find.byType(LivingShell)));
+    unawaited(
+      nav.push(
+        MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: Text('page')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await ctrl(LogicalKeyboardKey.digit3);
+    expect(services.presentation.mode, UiPresentationMode.workspace);
+    nav.pop();
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(services.presentation.mode, UiPresentationMode.companion);
   });
   test('floating controls fit both sizes without covering the Companion', () {
     for (final size in [const Size(440, 680), const Size(360, 560)]) {
@@ -593,7 +661,9 @@ void main() {
     await tester.tap(find.byKey(LivingShell.orbKey));
     await tester.pump(const Duration(milliseconds: 350));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('a2ui.companion-controls.chat')));
+    await tester.tap(
+      find.byKey(const ValueKey('a2ui.companion-controls.chat')),
+    );
     await tester.pumpAndSettle();
     final reply = tester.getRect(find.text('What would you like to change?'));
     final header = tester.getRect(

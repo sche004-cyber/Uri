@@ -25,7 +25,11 @@ class _VoiceInputSettingsState extends State<VoiceInputSettings> {
   @override
   void initState() {
     super.initState();
-    _check();
+    // After the first frame: starting the service changes its status, which
+    // other widgets listen to, and listeners must not fire during a build.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _check();
+    });
   }
 
   @override
