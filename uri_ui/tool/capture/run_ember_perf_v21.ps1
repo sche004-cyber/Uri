@@ -11,7 +11,10 @@ BLOCKED.txt instead of measuring. Nothing else is started or stopped.
 #>
 param(
   [Parameter(Mandatory)] [string] $Builds,
-  [Parameter(Mandatory)] [string] $Out
+  [Parameter(Mandatory)] [string] $Out,
+  # Folder the builds were compiled to write their own <id>_perf.json and PNGs to
+  # (--dart-define=OUT). Its files are moved into each run's folder after the run.
+  [Parameter(Mandatory)] [string] $Baked
 )
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -49,10 +52,12 @@ foreach ($name in $order) {
   Assert-Exclusive "before $run"
   $id = if ($name -like '*solar') { 'solar' } else { 'ember' }
   $src = Join-Path $incoming $name
+  Get-ChildItem -Path $Baked -Filter "$($id)_*" -ErrorAction SilentlyContinue | Remove-Item -Force
   if (Test-Path $src) { Remove-Item -Recurse -Force $src }
   New-Item -ItemType Directory -Force $src | Out-Null
   & (Join-Path $here 'run_ember_perf.ps1') -Exe (Join-Path $Builds "$name\uri_ui.exe") -Id $id -Out $src
   Assert-Exclusive "after $run"
+  Get-ChildItem -Path $Baked -Filter "$($id)_*" -ErrorAction SilentlyContinue | Move-Item -Destination $src
   Move-Item $src (Join-Path $Out $run)
 }
 "RUN_EMBER_PERF_V21_DONE"

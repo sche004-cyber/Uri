@@ -1,0 +1,64 @@
+{
+  "reviewer": "q1-reviewer3",
+  "static": {
+    "idle": {
+      "A": {"C1": 9, "C2": 9, "C3": 8.5, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "In-app presentation on a dark vignette; character smaller and slightly softened, eye highlights and fine flame strands reduced, painted background and signature replaced by the vignette."},
+      "B": {"C1": 9, "C2": 9, "C3": 8.5, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "Very similar to A; in-app vignette, slightly smoother flame strands with a little less brush detail."},
+      "C": {"C1": 9, "C2": 8, "C3": 8, "C4": 7.5, "C5": 8.5, "C6": 8.5, "P1": 5, "P2": 8, "P3": 9, "P4": 9.5, "note": "Same framing as the target but visibly blurred/low-resolution; brushwork and flame strand detail lost."},
+      "D": {"C1": 9, "C2": 9, "C3": 8.5, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version essentially the same as A; slight softening, background replaced."},
+      "E": {"C1": 7, "C2": 9, "C3": 8.5, "C4": 8.5, "C5": 5.5, "C6": 8, "P1": 8, "P2": 8, "P3": 8, "P4": 4.5, "note": "Tight zoomed crop in a vignette; head and flames large, legs, feet and tail curl largely cut off, so pose and framing differ."},
+      "F": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 9.5, "P2": 9.5, "P3": 9, "P4": 9, "note": "The target painting inset with a thin flat border; essentially identical artwork, only a frame added."},
+      "G": {"C1": 4, "C2": 3, "C3": 3.5, "C4": 2.5, "C5": 3.5, "C6": 4, "P1": 1, "P2": 3, "P3": 3, "P4": 5, "note": "A different, smooth CG/vector rendition: glossy egg head with specular eyes, regular wavy flame strands, stiff stick body; no painterly texture."},
+      "H": {"C1": 9, "C2": 9, "C3": 8.5, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version, indistinguishable from A/D at this size; slight softening and background replaced."}
+    },
+    "joyful": {
+      "A": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version; character complete but smaller, some embers near the edges dimmed by the vignette, slight softening."},
+      "B": {"C1": 9, "C2": 9, "C3": 9, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 7.5, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version with noticeably fewer and smaller embers/sparks around the character; otherwise faithful."},
+      "C": {"C1": 7, "C2": 9, "C3": 9, "C4": 8.5, "C5": 5.5, "C6": 8, "P1": 8, "P2": 8, "P3": 8, "P4": 4.5, "note": "Zoomed crop in a vignette; the kicked legs and lower body are cut off, so the leaping pose is lost; sparks reduced."},
+      "D": {"C1": 9, "C2": 9, "C3": 9, "C4": 9, "C5": 9, "C6": 9.5, "P1": 8.5, "P2": 8.5, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version, crisp, with the ember field well preserved; background texture replaced by vignette and character smaller."},
+      "E": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 9.5, "P2": 9.5, "P3": 9, "P4": 9, "note": "The target inset with a thin flat border; artwork effectively identical."},
+      "F": {"C1": 9, "C2": 8, "C3": 8, "C4": 7.5, "C5": 8.5, "C6": 8.5, "P1": 5, "P2": 8, "P3": 9, "P4": 9.5, "note": "Same framing as the target but strongly blurred; facial line work, flame strands and sparks lose definition."},
+      "G": {"C1": 4, "C2": 3, "C3": 3, "C4": 2.5, "C5": 3.5, "C6": 4.5, "P1": 1, "P2": 3, "P3": 3, "P4": 5, "note": "CG/vector reinterpretation: glossy oval head, simple grin, dense regular yellow flame strands, stiff stick legs; joyful leap and painterly look lost."},
+      "H": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version, nearly identical to A; minor softening and embers slightly sparser than target."}
+    },
+    "fierce": {
+      "A": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 9.5, "P2": 9.5, "P3": 9, "P4": 9, "note": "The target inset with a thin flat border; artwork effectively identical."},
+      "B": {"C1": 9, "C2": 8, "C3": 8, "C4": 7.5, "C5": 8.5, "C6": 8.5, "P1": 5, "P2": 8, "P3": 9, "P4": 9.5, "note": "Same framing as the target but blurred/low-resolution; scowl, hair strands and embers softened."},
+      "C": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version with embers fairly well preserved; character smaller, background texture replaced."},
+      "D": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version; slightly fewer embers than C, otherwise faithful."},
+      "E": {"C1": 7, "C2": 9, "C3": 9, "C4": 8, "C5": 5.5, "C6": 8, "P1": 8, "P2": 8, "P3": 8, "P4": 4.5, "note": "Zoomed crop in a vignette; legs and the wide stance are cut off, hand fireballs partly clipped by the vignette edge."},
+      "F": {"C1": 3.5, "C2": 3, "C3": 3.5, "C4": 2.5, "C5": 3, "C6": 4, "P1": 1, "P2": 3, "P3": 3, "P4": 4, "note": "CG/vector reinterpretation with blown-out yellow flame hair, glossy head, different hands; reads as a different, more cartoon character."},
+      "G": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version, essentially identical to D."},
+      "H": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version, essentially identical to D/G."}
+    },
+    "depleted": {
+      "A": {"C1": 9, "C2": 8, "C3": 8, "C4": 7.5, "C5": 8.5, "C6": 8.5, "P1": 5, "P2": 8, "P3": 9, "P4": 9.5, "note": "Same framing as the target (including the grey square patch) but blurred; facial detail and small flames soften."},
+      "B": {"C1": 7, "C2": 9, "C3": 9, "C4": 8, "C5": 5, "C6": 8, "P1": 8, "P2": 8, "P3": 8, "P4": 4.5, "note": "Zoomed crop in a vignette; lower body and feet cut off, upper smoke plume partly cropped, so the slumped full-figure pose is lost."},
+      "C": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8.5, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version; character smaller, painted background and the grey square patch replaced by the vignette, smoke slightly fainter."},
+      "D": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8.5, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version essentially the same as C."},
+      "E": {"C1": 8.5, "C2": 9, "C3": 9, "C4": 7, "C5": 9, "C6": 8.5, "P1": 8, "P2": 8, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version but the large smoke plume is mostly missing (only thin wisps), changing the silhouette above the head."},
+      "F": {"C1": 4, "C2": 3, "C3": 4, "C4": 3, "C5": 3.5, "C6": 4.5, "P1": 1, "P2": 3, "P3": 3, "P4": 5, "note": "CG/vector reinterpretation: dark glossy round head with tall regular flames and tangled grey smoke, stiff stick body; sadness reads but character and style differ."},
+      "G": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 9.5, "P2": 9.5, "P3": 9, "P4": 9, "note": "The target inset with a thin flat border; artwork effectively identical including the grey square patch."},
+      "H": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 8.5, "P3": 8.5, "P4": 7.5, "note": "In-app vignette version, indistinguishable from C/D."}
+    }
+  },
+  "motion": {
+    "idle": {
+      "X": {"A1": 6.5, "A2": 9.5, "A3": 9, "A4": 5.5, "note": "Tightly cropped framing (feet and tail cut). Very small changes in the flame wisps across frames; reads as a gentle flicker but motion is minimal and mostly near the flame tips."},
+      "Y": {"A1": 7, "A2": 9.5, "A3": 9, "A4": 6.5, "note": "Full figure in vignette. Subtle wisp changes around the head and small hand-flame variation; calm, organic, appropriate for idle though low amplitude."}
+    },
+    "joyful": {
+      "X": {"A1": 6.5, "A2": 9.5, "A3": 9, "A4": 5.5, "note": "Cropped framing (legs cut). Flame tips and embers shift slightly; little perceptible change in the character, so the joyful energy is weakly conveyed."},
+      "Y": {"A1": 7, "A2": 9.5, "A3": 8.5, "A4": 6.5, "note": "Full figure; embers redistribute between frames and the flame crown sways slightly, arms shift a little. Livelier than X, but ember changes look partly like re-scattering rather than continuous rising motion."}
+    },
+    "fierce": {
+      "X": {"A1": 6.5, "A2": 9.5, "A3": 9, "A4": 5.5, "note": "Full figure; small changes in hair flames and hand fireballs, embers mostly static. Stable but restrained for a fierce mood."},
+      "Y": {"A1": 7, "A2": 9.5, "A3": 8.5, "A4": 6.5, "note": "Cropped framing (legs cut). Hand fireballs and flame hair change shape more visibly across frames; more energetic, though still modest for fierce."}
+    },
+    "depleted": {
+      "X": {"A1": 6.5, "A2": 9.5, "A3": 9, "A4": 6.5, "note": "Full figure; faint flicker of the small head flames and smoke, otherwise near-static, which suits the low-energy mood but shows little motion."},
+      "Y": {"A1": 7, "A2": 9.5, "A3": 8.5, "A4": 7, "note": "Cropped framing (lower body cut). Small head flames visibly flicker and change shape, smoke shifts; fits the dying-fire mood. Some flame changes look like discrete shape swaps."}
+    }
+  },
+  "general_notes": "Across states the candidates fall into recurring types: (1) the target with a thin flat border (near-identical); (2) the full target frame but blurred/low-resolution; (3) in-app vignette versions with the full character (several per state, often indistinguishable from each other at this resolution, small differences mainly in ember density); (4) tight zoomed crops that cut off legs/feet; (5) a smooth CG/vector reinterpretation that does not match the painting. For P4 I penalised vignette versions moderately for the smaller character, loss of painted background and signature, and heavily penalised crops. The grey square patch in the depleted target appears to be part of the reference image; I did not penalise candidates that omit it under character dimensions. Motion judgments come from six static frames per sequence, so timing smoothness, looping and flicker artefacts between frames cannot be fully assessed; differences between frames were small in all sequences, which limits confidence in A1/A4 scores."
+}
