@@ -72,6 +72,16 @@ Items the reviewer could not verify are carried into plan section 17:
 | N11 | MINOR | Programme plan correction note incomplete; "later run" unsupported | Repaired. Full table of committed against quoted values. Unsupported wording removed. |
 | F11 note | — | The bundled Python's library and `share/` are checked only at service start | Stated in section 3. |
 
-## Round 3
+## Round 3, at `d54f8905` (plan rev 3)
 
-Recorded below after the check of the rev 3 diff.
+**Verdict: ACCEPT WITH FINDINGS (planning gate only; implementation not authorized).**
+- All of N1–N11 and the 8 partly closed round-1 items are CLOSED.
+- A grep for stale text found nothing.
+- Two NOTE findings remained. Both are fixed in rev 3.1:
+  - R3-1: "Workbook code is unchanged" now reads "Workbook behaviour is unchanged; section 5.1 lists the mechanical edits".
+  - R3-2: the `office_panel.dart` row now notes the offstage lifecycle exception.
+
+Carried into implementation, as the plan already places them:
+- spikes S1–S8;
+- the Brain rows and the owner rows, which stay BLOCKED;
+- OD-U3 and OD-U7, which must be ruled before G1.

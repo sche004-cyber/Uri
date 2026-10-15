@@ -1,4 +1,4 @@
-# URI Office Unified: O2 plan and acceptance criteria (frozen-blueprint candidate, rev 3)
+# URI Office Unified: O2 plan and acceptance criteria (frozen-blueprint candidate, rev 3.1)
 
 Date: 2026-10-15. Milestone `URI-OFFICE-U`, phase **O2: unified workspace, engine layer and validation pipeline**.
 Planning branch `phase/uri-office-unified-plan` (base `5b958da0`, local only). Programme plan:
@@ -44,7 +44,7 @@ Evidence: `evidence/excel_baseline_20261015/`.
 | Existing part | Location | O2 use |
 |---|---|---|
 | Loopback HTTP service, bearer token, ACL, Host and Origin guards | `uri_office/service.py:612-765` | Same server. O2 adds routes and one binary (PNG) response path. |
-| Session table | `service.py:74-131` (`Office`, `_session`, `open_local`) | A document session sits beside the workbook session. Workbook code is unchanged. |
+| Session table | `service.py:74-131` (`Office`, `_session`, `open_local`) | A document session sits beside the workbook session. Workbook behaviour is unchanged; section 5.1 lists the mechanical edits. |
 | Picker grants and path rules | `uri_office/grants.py` (`.xlsx` only, `grants.py:84`) | Add per-kind suffixes `.docx .pptx .pdf` through a parameter. The `.xlsx` default and its messages stay, so the existing tests stay green. |
 | Hash-bound approvals and audit chain | `uri_office/approvals.py` (`propose`, target kinds `local`, `google`, `google_upload`, `new_file`) | Reuse the same table, hash binding, audit chain and the `office.apply_change` / `office.reject_change` actions. **The approval path is workbook-shaped today** (review F1): `propose` needs `edits`/`struct_ops`, `surface.workbook_id` is NOT NULL, `Office._apply` starts with a workbook session lookup, and `Approvals.action` reads only `change_sha256`. Section 5.1 specifies the generalization. It extends the one existing path; it is not a second path. |
 | A2UI action registry | `uri_a2ui/actions.py:30-31`, Dart mirror `uri_ui/lib/living/a2ui/a2ui_contract.dart:117-119` | Add `office.run_plan` (confirms, `plan_sha256`) and `office.discard_plan`. This is the only A2UI growth. |
@@ -204,7 +204,7 @@ All live under `uri_ui/lib/living/office/`.
 | `office_conversation.dart` | new | One conversation store for the Office region. **It absorbs the existing per-workbook `OfficeKeep.conversation`** (`office_bridge.dart:133-140`, review F13), so there is one store, not two. Each turn is tagged with its target. It survives view switches for the app session. It is not written to disk. |
 | `document_controller.dart` | new | Document session and preview state. Implements the same request-target interface as `OfficeController`. |
 | `office_status_strip.dart` | new | Step, progress, save state, engine state, findings, last error with a recovery action |
-| `office_panel.dart` | edit | The sheet view becomes the centre view for workbooks. Behaviour is unchanged. |
+| `office_panel.dart` | edit | The sheet view becomes the centre view for workbooks. Behaviour is unchanged, except the offstage, invisible and unfocused lifecycle in section 4.2. |
 | `office_client.dart` | edit | New routes, binary PNG fetch |
 | `office_controller.dart` | edit (minimal) | Implements the shared target interface. Excel logic is unchanged. |
 | `../presentation/presentation_controller.dart` | edit | `OfficeView` enum, optional field on `ShowModeCommand`, phrases |
@@ -713,5 +713,5 @@ Repairs made during self-review:
   were partly closed. It found 4 new major and 7 new minor findings.
 - Rev 3 repairs all of them.
 
-The reviewer's freeze-readiness expectation after these repairs was ACCEPT WITH FINDINGS. The round 3 check of the
-rev 3 diff is recorded in `02_O2_INDEPENDENT_REVIEW.md`.
+The reviewer's freeze-readiness expectation after these repairs was ACCEPT WITH FINDINGS. Round 3 (check of the rev 3 diff, at `d54f8905`): **ACCEPT WITH FINDINGS** for the planning gate.
+Its two wording notes are fixed in rev 3.1. Details are in `02_O2_INDEPENDENT_REVIEW.md`.
