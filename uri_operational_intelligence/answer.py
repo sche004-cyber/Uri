@@ -98,12 +98,12 @@ _GOVERNING_CONDITIONAL = re.compile(r"\b(if|whether|unless|until|once(?!\s+(?:ag
 
 def claims_action(text):
     """An UNVERIFIED_ACTION_CLAIM is a statement that something was done in this reply. See the exemption above."""
-    for m in _CLAIM.finditer(text):
-        passive = m.group(3) is not None
-        if passive and _GOVERNING_CONDITIONAL.search(text[max(0, m.start() - 40):m.start()]):
-            continue
-        return True
-    return False
+    return any(not _exempt_passive(text, m) for m in _CLAIM.finditer(text))
+
+
+def _exempt_passive(text, m):
+    """A passive match governed by a condition ("if it has been saved") is not a claim."""
+    return m.group(3) is not None and bool(_GOVERNING_CONDITIONAL.search(text[max(0, m.start() - 40):m.start()]))
 
 
 CLAIM_CORRECTION = ("\n\n[URI: no action was performed in this reply. Ask URI to do it explicitly if you want it done; "
@@ -232,22 +232,24 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
         held["claim"] += chunk
         if held["claim_held"]:
             return
-        # Search with the last released character as context, so a word boundary is judged as in the full text.
-        m = _CLAIM.search(held["prev"] + held["claim"], len(held["prev"]))
-        if m:
-            cut = m.start() - len(held["prev"])
-            held["claim_held"] = True
-        else:
-            # Release up to the first word that could still begin a claim; everything else is ruled out.
-            full = held["prev"] + held["claim"]
-            cut = len(held["claim"])
-            for start in _CLAIM_START.finditer(full, len(held["prev"])):
-                if _could_start_claim(full[start.start():]):
-                    cut = start.start() - len(held["prev"])
-                    break
+        # The last 40 released characters are kept as context: word boundaries and the conditional exemption are
+        # judged exactly as claims_action judges the full text. Every _CLAIM match begins at a _CLAIM_START word.
+        full = held["prev"] + held["claim"]
+        cut, skip_to = len(held["claim"]), 0
+        for start in _CLAIM_START.finditer(full, len(held["prev"])):
+            if start.start() < skip_to:
+                continue
+            m = _CLAIM.match(full, start.start())
+            if m and _exempt_passive(full, m):
+                skip_to = m.end()             # "if it has been saved": not a claim; keep screening after it
+                continue
+            if m or _could_start_claim(full[start.start():]):
+                cut = start.start() - len(held["prev"])
+                held["claim_held"] = bool(m)
+                break
         if cut:
+            held["prev"] = (held["prev"] + held["claim"][:cut])[-40:]
             emit(held["claim"][:cut])
-            held["prev"] = held["claim"][cut - 1]
             held["claim"] = held["claim"][cut:]
 
     def relay(kind, text):

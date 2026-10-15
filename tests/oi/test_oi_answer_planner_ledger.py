@@ -122,6 +122,31 @@ def test_an_i_first_reply_streams_once_the_next_word_rules_a_claim_out(fake):
     assert seen[0] == "I can " and "".join(seen) == out.text == "I can help with your question."
 
 
+def test_a_conditional_passive_phrase_keeps_streaming(fake):
+    """Review final6 R1-01: "If it has been saved" is not a claim, so it must not stop the stream."""
+    chunks = ["If it has been saved, ", "I can help you find it. ", "Here are the steps."]
+    fake.scripts.append({"chunks": [("answer", c) for c in chunks], "finish": "stop", "delay": 0.05})
+    seen, done = [], []
+
+    class Recorder(BC.BrainClient):
+        def stream_chat(self, *a, **k):
+            r = super().stream_chat(*a, **k)
+            done.append("".join(seen))
+            return r
+    out = A.answer(Recorder(fake.url), "hi", on_delta=lambda k, t: seen.append(t))
+    assert done[0].startswith("If it has been saved, I can help you find it.")
+    assert out.text == "".join(chunks) and out.flags == []
+
+
+def test_a_real_claim_after_a_conditional_phrase_is_still_caught(fake):
+    chunks = ["If it has been saved, fine. ", "I have", " deleted the old copy."]
+    fake.scripts.append({"chunks": [("answer", c) for c in chunks], "finish": "stop"})
+    deltas = []
+    out = A.answer(BC.BrainClient(fake.url), "hi", on_delta=lambda k, t: deltas.append(t))
+    assert "deleted" not in "".join(deltas)
+    assert out.text == "If it has been saved, fine. " + A.CLAIM_CORRECTION
+
+
 def test_normal_tier_request_parameters_and_length_escalation(fake):
     fake.scripts.append({"chunks": [("reasoning", "r" * 10), ("answer", "partial")], "finish": "length"})
     out = A.answer(BC.BrainClient(fake.url), "plan my week", tier=NORMAL)
