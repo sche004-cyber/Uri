@@ -18,7 +18,7 @@ import { CanceledError, ICommandService } from '@univerjs/core';
 import { FormulaDataModel, IFunctionService } from '@univerjs/engine-formula';
 import '@univerjs/preset-sheets-core/lib/index.css';
 import { editsFromMutation, parseCell, toUniver } from './convert.js';
-import { blockFunctions, guardStructure } from './guard.js';
+import { blockFunctions, guardFormatting, guardStructure } from './guard.js';
 
 // user: owner's own edits are applied without a mark.
 const MARK_BG = { proposed: '#FFF2B3', accepted: '#D9F2D9', user: null };
@@ -39,6 +39,9 @@ const functionGuard = blockFunctions(injector.get(IFunctionService));
 // Structural grid edits are refused in the page (see guard.js); the owner is told why.
 guardStructure(injector.get(ICommandService), CanceledError,
   () => send({ type: 'error', code: 'STRUCTURE_CHANGE_NOT_SUPPORTED' }));
+// XF-1: formatting is not saved yet, so it is not applied either; the owner is told (see guard.js).
+guardFormatting(injector.get(ICommandService), CanceledError, () => applying > 0,
+  () => send({ type: 'error', code: 'FORMAT_CHANGE_NOT_SAVED' }));
 // Read-only diagnostics for the Edge/WebView2 probe: which blocked functions the engine still has (must be none).
 Object.defineProperty(window, 'uriOfficeGuard', {
   value: Object.freeze({ blockedFunctionsPresent: () => functionGuard.present() }),

@@ -199,10 +199,15 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
         _pageEdits.add((wid, body));
         await _sendPageEdits();
       case 'error':
-        notice = m['code'] == 'STRUCTURE_CHANGE_NOT_SUPPORTED'
-            ? 'Inserting, deleting or moving rows and columns, sorting, and adding or renaming sheets are not '
-                'available in this panel yet. Nothing was changed.'
-            : 'The sheet view reported a problem (${m['code']}).';
+        notice = switch (m['code']) {
+          'STRUCTURE_CHANGE_NOT_SUPPORTED' =>
+            'Inserting, deleting or moving rows and columns, sorting, and adding or renaming sheets are not '
+                'available in this panel yet. Nothing was changed.',
+          // XF-1: formatting is not saved yet, so the page does not apply it (values and formulas still are).
+          'FORMAT_CHANGE_NOT_SAVED' => 'Formatting (bold, colours, number formats, borders, merged cells) is not '
+              'saved by this panel yet, so it was not applied. Values and formulas are kept.',
+          _ => 'The sheet view reported a problem (${m['code']}).',
+        };
         notifyListeners();
     }
   }

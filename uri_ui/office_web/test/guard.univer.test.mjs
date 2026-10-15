@@ -6,10 +6,11 @@ import { test } from 'node:test';
 
 import { CanceledError, ICommandService, IUniverInstanceService, LocaleType, Univer, UniverInstanceType } from '@univerjs/core';
 import { IFunctionService, UniverFormulaEnginePlugin } from '@univerjs/engine-formula';
-import { UniverSheetsPlugin } from '@univerjs/sheets';
+import { SetBoldCommand, SetStyleCommand, SheetsSelectionsService, UniverSheetsPlugin } from '@univerjs/sheets';
 import sheetsCoreEnUS from '@univerjs/preset-sheets-core/locales/en-US';
 
-import { BLOCKED_FUNCTIONS, blockFunctions, guardStructure } from '../src/guard.js';
+import { BLOCKED_FUNCTIONS, blockFunctions, guardFormatting, guardStructure } from '../src/guard.js';
+import { editsFromMutation } from '../src/convert.js';
 
 const tick = () => new Promise((r) => setTimeout(r, 50));
 
@@ -62,5 +63,62 @@ test('structural commands are cancelled and the grid is unchanged', async () => 
   assert.notEqual(await cs.executeCommand('sheet.command.set-range-values', { unitId: 'w', subUnitId: 's0',
     range: { startRow: 2, endRow: 2, startColumn: 1, endColumn: 1 }, value: { v: 7 } }), false);
   assert.equal(ws.getCellRaw(2, 1).v, 7);
+  univer.dispose();
+});
+
+// XF-1: formatting is not saved, so the page does not apply it; values and formulas still go to the service.
+test('formatting is not applied; values, existing styles and page marks are kept', async () => {
+  const univer = start();
+  const injector = univer.__getInjector();
+  const cs = injector.get(ICommandService);
+  let applying = 0;
+  const refused = [];
+  guardFormatting(cs, CanceledError, () => applying > 0, (id) => refused.push(id));
+  const data = book('w');
+  data.styles = { k: { bl: 1 } };
+  data.sheets.s0.cellData[1] = { 0: { v: 3, s: 'k' } };
+  univer.createUnit(UniverInstanceType.UNIVER_SHEET, data);
+  await tick();
+  // The page's preset registers these through the UI plugin; the headless model registers only some of them.
+  for (const c of [SetBoldCommand, SetStyleCommand]) { if (!cs.hasCommand(c.id)) cs.registerCommand(c); }
+  const edits = [];
+  cs.onCommandExecuted((cmd, o) => {
+    if (cmd.id === 'sheet.mutation.set-range-values' && !(o && (o.onlyLocal || o.fromFormula)) && !applying) {
+      edits.push(...editsFromMutation(cmd.params, { s0: 'Sales' }));
+    }
+  });
+  const ws = injector.get(IUniverInstanceService).getUnit('w').getSheetBySheetId('s0');
+  const primary = { actualRow: 0, actualColumn: 0, startRow: 0, startColumn: 0, endRow: 0, endColumn: 0,
+    isMerged: false, isMergedMainCell: false };
+  injector.get(SheetsSelectionsService).setSelections([{ range: { startRow: 0, endRow: 0, startColumn: 0,
+    endColumn: 0 }, primary, style: null }]);
+  // toolbar bold and fill: nothing is applied, nothing is sent
+  await cs.executeCommand(SetBoldCommand.id);
+  await cs.executeCommand(SetStyleCommand.id, { style: { type: 'bg', value: { rgb: '#FF0000' } } });
+  assert.equal(ws.getCellRaw(0, 0).s, undefined);
+  // a paste of a value with formatting: the value is applied and sent, the formatting is not
+  await cs.executeCommand('sheet.command.set-range-values', { unitId: 'w', subUnitId: 's0',
+    range: { startRow: 2, endRow: 2, startColumn: 0, endColumn: 0 }, value: { v: 7, s: { bl: 1 } } });
+  assert.equal(ws.getCellRaw(2, 0).v, 7);
+  assert.equal(ws.getCellRaw(2, 0).s, undefined);
+  // typing into a formatted cell keeps its existing style
+  await cs.executeCommand('sheet.command.set-range-values', { unitId: 'w', subUnitId: 's0',
+    range: { startRow: 1, endRow: 1, startColumn: 0, endColumn: 0 }, value: { v: 9 } });
+  assert.equal(ws.getCellRaw(1, 0).v, 9);
+  assert.equal(ws.getCellRaw(1, 0).s, 'k');
+  // merging is refused before it can clear cells
+  const merged = await cs.executeCommand('sheet.command.add-worksheet-merge', { unitId: 'w', subUnitId: 's0',
+    selections: [{ startRow: 0, endRow: 1, startColumn: 0, endColumn: 1 }] });
+  assert.equal(merged, false);
+  assert.equal(ws.getMergeData().length, 0);
+  assert.equal(ws.getCellRaw(1, 0).v, 9);
+  // the page's own change marks (applying > 0) still set backgrounds
+  applying++;
+  await cs.executeCommand(SetStyleCommand.id, { style: { type: 'bg', value: { rgb: '#FFF2B3' } } });
+  applying--;
+  assert.ok(ws.getCellRaw(0, 0).s, 'mark applied');
+  assert.deepEqual(edits, [{ sheet: 'Sales', cell: 'A3', value: 7 }, { sheet: 'Sales', cell: 'A2', value: 9 }]);
+  assert.ok(refused.includes('sheet.mutation.set-range-values'));
+  assert.ok(refused.includes('sheet.command.add-worksheet-merge'));
   univer.dispose();
 });

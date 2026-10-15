@@ -252,6 +252,18 @@ void main() {
       expect(surface.posted.last['type'], 'load');
     });
 
+    test('XF-1: formatting the page did not apply is explained, and nothing is sent', () async {
+      final surface = FakeSurface();
+      final c = make(surface);
+      await c.openLocal(r'C:\Users\me\book.xlsx');
+      surface.ctl.add({'type': 'ready'});
+      surface.ctl.add({'type': 'error', 'code': 'FORMAT_CHANGE_NOT_SAVED'});
+      await until(() => c.notice != null);
+      expect(c.notice, contains('Formatting'));
+      expect(c.notice, contains('not applied'));
+      expect(edits, isEmpty);
+    });
+
     test('typing during a Brain turn is sent, not discarded', () async {
       final surface = FakeSurface();
       final c = make(surface);

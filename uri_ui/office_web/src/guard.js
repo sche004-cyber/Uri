@@ -71,3 +71,48 @@ export function guardStructure(commandService, CancelError, onRefused = () => {}
     }
   });
 }
+
+// XF-1 (Office capability audit, 2026-10-15): formatting is not saved. The page reports cell values and formulas only,
+// and the service writes only those, so bold, colours, number formats, borders or merges applied in the page were shown
+// and then silently lost on save. Until formatting is saved, the page does not apply it: what is shown is what is saved.
+// Merges are refused as commands (a merge also clears the non-anchor cells, which would be sent as clears) and as
+// mutations; worksheet-wide styles are refused as mutations.
+export const FORMAT_COMMANDS = Object.freeze(new Set([
+  'sheet.command.add-worksheet-merge', 'sheet.command.add-worksheet-merge-all',
+  'sheet.command.add-worksheet-merge-horizontal', 'sheet.command.add-worksheet-merge-vertical',
+  'sheet.command.remove-worksheet-merge',
+  'sheet.mutation.add-worksheet-merge', 'sheet.mutation.remove-worksheet-merge',
+  'sheet.mutation.set-worksheet-default-style', 'sheet.mutation.set-worksheet-range-theme-style',
+]));
+
+// Remove the style (`s`) of every cell in a set-range-values mutation's params; values, formulas and rich text stay.
+// Returns how many cells had a style. A cell keeps the style it already has (a value write without `s` does not touch
+// it), so typing into a formatted cell keeps its look.
+export function stripCellStyles(params) {
+  let n = 0;
+  const cv = params && params.cellValue;
+  if (!cv || typeof cv !== 'object') return 0;
+  for (const cols of Object.values(cv)) {
+    for (const cell of Object.values(cols || {})) {
+      if (cell && typeof cell === 'object' && 's' in cell) { delete cell.s; n++; }
+    }
+  }
+  return n;
+}
+
+// `isApplying()` is true while the page itself changes cells (loads and change marks), which may set backgrounds.
+// `onRefused(id)` lets the page tell the host once per refused or stripped action.
+export function guardFormatting(commandService, CancelError, isApplying = () => false, onRefused = () => {}) {
+  return commandService.beforeCommandExecuted((info, options) => {
+    if (!info || isApplying()) return;
+    if (FORMAT_COMMANDS.has(info.id)) {
+      onRefused(info.id);
+      throw new CancelError();
+    }
+    if (info.id === 'sheet.mutation.set-range-values') {
+      const o = options || {};
+      if (o.onlyLocal || o.fromFormula) return;
+      if (stripCellStyles(info.params)) onRefused(info.id);
+    }
+  });
+}
