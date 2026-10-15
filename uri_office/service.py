@@ -40,6 +40,10 @@ from .approvals import Approvals
 from .errors import OfficeError
 from .grants import Grants
 from .history import History, workbook_key
+from . import capabilities as CAP
+from . import contracts as K
+from . import intent as INTENT
+from .recent import Recent
 
 DEFAULT_PORT = 18530
 MAX_BODY = 256 * 1024
@@ -83,6 +87,58 @@ class Office:
         self.brain = brain
         self.sessions: dict[str, Session] = {}
         self.lock = threading.RLock()
+        # O2: engines, documents and workflows start on first use, so the M1/M2 paths and their tests start nothing.
+        self.recent = Recent(self.state)
+        self._hub = None
+        self._documents = None
+        self._workflows = None
+        self._o2_lock = threading.Lock()
+        self._engine_checks = False
+
+    # ---- O2 parts (plan §5) --------------------------------------------------------------------------------------
+    @property
+    def hub(self):
+        with self._o2_lock:
+            if self._hub is None:
+                from .engine_hub import EngineHub
+                self._hub = EngineHub(self.state, start_checks=self._engine_checks)
+            return self._hub
+
+    @property
+    def documents(self):
+        hub = self.hub
+        with self._o2_lock:
+            if self._documents is None:
+                from .docs import Documents
+                self._documents = Documents(hub, self.grants, self.approvals.audit)
+            return self._documents
+
+    @property
+    def workflows(self):
+        hub, docs = self.hub, self.documents
+        with self._o2_lock:
+            if self._workflows is None:
+                from .workflows import Workflows
+                self._workflows = Workflows(self.state, hub, self.grants, self.approvals, docs, self._session)
+            return self._workflows
+
+    def capabilities(self) -> dict:
+        states = self._hub.states() if self._hub is not None else {}
+        return CAP.registry(states)
+
+    def open_document(self, raw_path) -> dict:
+        s = self.documents.open(raw_path)
+        self.recent.add(s.path, s.kind, s.size)
+        return s.view()
+
+    def request(self, body) -> dict:
+        target = body.get("target") or {}
+        kind = target.get("kind") if isinstance(target, dict) else None
+        if kind not in (None, *K.KINDS):
+            raise OfficeError("BAD_REQUEST", "target kind")
+        hist = body.get("history")
+        return INTENT.route(body.get("text", ""), kind, hist if isinstance(hist, list) else [], brain=self.brain,
+                            chip=body.get("chip"))
 
     # ---- sessions ------------------------------------------------------------------------------------------------
     def _session(self, wid) -> Session:
@@ -141,7 +197,9 @@ class Office:
         wb = xlsx_model.read(copy)
         s = Session(wid, "local", g.path.name, wb, D.Draft(wid, "local", wb),
                     workbook_key("local", str(g.path).lower()), grant_id=g.grant_id, path=g.path, open_sha=sha)
-        return self._add(s)
+        out = self._add(s)
+        self.recent.add(g.path, "xlsx", g.path.stat().st_size)          # O2 recent list: path, kind, time, size only
+        return out
 
     def open_google(self, url) -> dict:
         fid = G.parse_link(url)
@@ -468,6 +526,9 @@ class Office:
             return {"messages": surface.messages(), "surface_id": surface.surface_id}
 
     def _apply(self, body) -> dict:
+        # O2 (plan §5.1): plan and output subjects are dispatched before any workbook session lookup.
+        if body.get("target", {}).get("kind") in ("plan", "output_files"):
+            return self.workflows.apply(body)
         s = self._session(body["workbook_id"])
         with s.lock:
             t = body["target"]
@@ -558,6 +619,18 @@ class Office:
         # Lock order everywhere: workbook lock, then approvals lock (propose_save/propose_share take them that way).
         # Taking the approvals lock first and the workbook lock inside `_apply` could deadlock against a concurrent
         # propose on the same workbook.
+        kind, subject = self.approvals.subject_of(msg.get("surfaceId") if isinstance(msg, dict) else None)
+        if kind in ("plan", "output_files"):
+            # Lock order: workflow lock, then approvals lock (plan §5.1, review N9).
+            lock = self.workflows.lock_of(subject)
+            if lock is None:
+                r = self.approvals.action(msg, self._apply)
+            else:
+                with lock:
+                    r = self.approvals.action(msg, self._apply)
+            if r.get("status") == "declined":
+                self.workflows.declined(subject, kind)
+            return r
         wid = self.approvals.workbook_of(msg.get("surfaceId") if isinstance(msg, dict) else None)
         s = self.sessions.get(wid) if wid else None
         if s is None:
@@ -654,11 +727,26 @@ def make_handler(office: Office, token: str):
                 raise OfficeError("PRINCIPAL_MISMATCH", "this service acts only for its owner", 403)
             return b
 
+        def _send_png(self, path):
+            data = Path(path).read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(data)
+
         def _run(self, fn):
             try:
-                self._send(200, fn())
+                out = fn()
+                if isinstance(out, tuple) and out and out[0] == "png":
+                    self._send_png(out[1])
+                    return
+                self._send(200, out)
             except OfficeError as exc:
-                self._send(exc.status, {"error": exc.code, "detail": exc.detail})
+                body = K.error_view(exc.code, exc.detail) if exc.code in K.ERRORS else \
+                    {"error": exc.code, "detail": exc.detail}
+                self._send(exc.status, body)
             except (KeyError, ValueError, TypeError) as exc:
                 self._send(400, {"error": "BAD_REQUEST", "detail": type(exc).__name__})
             except Exception as exc:  # noqa: BLE001 - never leak internals or cell values
@@ -679,6 +767,29 @@ def make_handler(office: Office, token: str):
                     return office.view(parts[1])
                 if parts == ["a2ui", "surfaces"]:
                     return {"messages": office.approvals.open_messages(qs.get("workbook", [None])[0])}
+                # ---- O2 (contract o2.1) ----
+                if parts == ["contract"]:
+                    return K.contract_view()
+                if parts == ["capabilities"]:
+                    return office.capabilities()
+                if parts == ["engines"]:
+                    return office.hub.status()
+                if parts == ["recent"]:
+                    return office.recent.listing()
+                if parts == ["workflows"]:
+                    return office.workflows.listing()
+                width = _width(qs)
+                if len(parts) == 2 and parts[0] == "document" and _ok_id(parts[1]):
+                    return office.documents.get(parts[1]).view()
+                if len(parts) == 4 and parts[0] == "document" and parts[2] == "page" and _ok_id(parts[1]):
+                    return ("png", office.documents.page(parts[1], _page(parts[3]), width))
+                if len(parts) == 2 and parts[0] == "workflow" and _ok_id(parts[1]):
+                    return office.workflows.get(parts[1]).view()
+                if len(parts) == 5 and parts[0] == "workflow" and parts[2:4] == ["output", "page"] and \
+                        _ok_id(parts[1]):
+                    return ("png", office.workflows.output_page(parts[1], _page(parts[4]), width))
+                if parts and parts[0] in ("document", "workflow"):
+                    raise OfficeError("UNKNOWN_DOCUMENT" if parts[0] == "document" else "UNKNOWN_WORKFLOW", "", 404)
                 raise OfficeError("NOT_FOUND", "", 404)
             self._run(go)
 
@@ -697,6 +808,34 @@ def make_handler(office: Office, token: str):
                     return office.open_new(b.get("paths"))
                 if parts == ["a2ui", "action"]:
                     return office.action(b.get("action"))
+                # ---- O2 (contract o2.1) ----
+                if parts == ["engines", "verify"]:
+                    return office.hub.verify()
+                if parts == ["open", "document"]:
+                    return office.open_document(b.get("path"))
+                if parts == ["request"]:
+                    return office.request(b)
+                if parts == ["workflow"]:
+                    return office.workflows.create(b.get("capability"), b.get("inputs"), b.get("options"))
+                if parts == ["recent", "remove"]:
+                    return office.recent.remove(b.get("path"))
+                if parts == ["recent", "clear"]:
+                    return office.recent.clear()
+                if len(parts) == 3 and parts[0] == "document" and _ok_id(parts[1]):
+                    if parts[2] == "search":
+                        return office.documents.search(parts[1], b.get("text"))
+                    if parts[2] == "close":
+                        return office.documents.close(parts[1])
+                if len(parts) == 3 and parts[0] == "workflow" and _ok_id(parts[1]):
+                    wf = office.workflows
+                    table = {"cancel": lambda: wf.cancel(parts[1]), "resume": lambda: wf.resume(parts[1], b),
+                             "accept_warnings": lambda: wf.accept_warnings(parts[1]),
+                             "propose_save": lambda: wf.propose_save(parts[1], b),
+                             "answer": lambda: office.request({"text": "", "chip": b.get("answer")})}
+                    if parts[2] in table:
+                        return table[parts[2]]()
+                if parts and parts[0] in ("document", "workflow"):
+                    raise OfficeError("UNKNOWN_DOCUMENT" if parts[0] == "document" else "UNKNOWN_WORKFLOW", "", 404)
                 if len(parts) == 3 and parts[0] == "workbook":
                     wid, verb = parts[1], parts[2]
                     table = {"edit": lambda: office.edit(wid, b), "decide": lambda: office.decide(wid, b),
@@ -715,6 +854,23 @@ def make_handler(office: Office, token: str):
             self._run(go)
 
     return H
+
+
+def _ok_id(x) -> bool:
+    return isinstance(x, str) and 16 <= len(x) <= 32 and all(c in "0123456789abcdef" for c in x)
+
+
+def _page(x) -> int:
+    if not x.isdigit() or not 1 <= int(x) <= 2000:
+        raise OfficeError("UNKNOWN_PAGE", "", 404)
+    return int(x)
+
+
+def _width(qs) -> int:
+    w = (qs.get("w") or ["880"])[0]
+    if not w.isdigit() or int(w) not in K.PAGE_WIDTHS:
+        return 880
+    return int(w)
 
 
 def serve(office: Office, host: str, port: int):
@@ -783,6 +939,9 @@ def main(argv=None):
         brain = OfficeBrain(BC.BrainClient(a.brain_url))
     office = Office(state, owner=a.owner, google=G.GoogleSheets(state, a.google_token), brain=brain,
                     allowed_roots=a.allow_root)
+    office._engine_checks = True                          # O2: engine integrity check starts with the service
+    if os.environ.get("URI_OFFICE_O2", "1") == "1":
+        threading.Thread(target=lambda: office.workflows, daemon=True, name="o2-start").start()
     srv, _ = serve(office, "127.0.0.1", a.port)
     (state / "service.json").write_text(json.dumps({"port": srv.server_address[1], "pid": os.getpid(),
                                                      "started": time.time(), "token_file": str(state / "api-token")}),

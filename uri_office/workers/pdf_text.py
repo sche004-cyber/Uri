@@ -7,12 +7,16 @@ Protocol: one JSON object per line on stdin, one per line on stdout.
                                              fonts: [{name, embedded}], page_boxes: [[w, h], ...]}
   {"id", "op": "spans", "pdf", "page"}   -> {id, ok, box: [x0, y0, x1, y1], spans: [{x, y, size, chars}]}
   {"id", "op": "search", "pdf", "text"}  -> {id, ok, matches: [{page, context}], truncated, text_pages}
+  {"id", "op": "risk", "pdf"}            -> {id, ok, javascript, launch, remote_goto, unsafe_uri, embedded_files,
+                                             web_uri}  (counts only)
+  {"id", "op": "placeholders", "pdf"}    -> {id, ok, pages: [{page, count}]}  (counts of «…», {{…}}, [NAME] tokens)
   {"id", "op": "quit"}
 `spans` carries positions, sizes and character counts only, never text (validation needs no content). `search`
 returns at most 50 matches with 60 characters of context each; the owner asked for them.
 """
 import json
 import os
+import re
 import sys
 
 import pypdf
@@ -135,6 +139,75 @@ def search(r, text):
     return matches, False, text_pages
 
 
+PLACEHOLDER = re.compile(r"«[^»]{1,40}»|\{\{[^}]{1,40}\}\}|\[[A-Z][A-Z _]{1,30}\]")
+
+
+def _action_kind(a):
+    try:
+        a = a.get_object()
+        return str(a.get("/S", ""))
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def risk(r):
+    out = {"javascript": 0, "launch": 0, "remote_goto": 0, "unsafe_uri": 0, "embedded_files": 0, "web_uri": 0}
+    root = r.trailer["/Root"].get_object()
+    names = root.get("/Names")
+    if names is not None:
+        names = names.get_object()
+        out["javascript"] += int("/JavaScript" in names)
+        out["embedded_files"] += int("/EmbeddedFiles" in names)
+    for key in ("/OpenAction", "/AA"):
+        if key in root:
+            obj = root[key].get_object()
+            if key == "/OpenAction":
+                kinds = [_action_kind(obj)] if hasattr(obj, "get") else []
+            else:
+                kinds = [_action_kind(v) for v in obj.values()] if hasattr(obj, "values") else []
+            for k in kinds:
+                out["javascript"] += k == "/JavaScript"
+                out["launch"] += k == "/Launch"
+    for page in r.pages[:2000]:
+        for ref in (page.get("/Annots") or []):
+            try:
+                an = ref.get_object()
+            except Exception:  # noqa: BLE001
+                continue
+            a = an.get("/A")
+            if a is None:
+                if an.get("/Subtype") == "/FileAttachment":
+                    out["embedded_files"] += 1
+                continue
+            a = a.get_object()
+            k = str(a.get("/S", ""))
+            if k == "/JavaScript":
+                out["javascript"] += 1
+            elif k == "/Launch":
+                out["launch"] += 1
+            elif k in ("/GoToR", "/GoToE"):
+                out["remote_goto"] += 1
+            elif k == "/URI":
+                uri = str(a.get("/URI", ""))
+                if re.match(r"^(https?://|mailto:)", uri, re.I):
+                    out["web_uri"] += 1
+                else:
+                    out["unsafe_uri"] += 1
+    return out
+
+
+def placeholders(r):
+    pages = []
+    for i, page in enumerate(r.pages[:2000]):
+        try:
+            n = len(PLACEHOLDER.findall(page.extract_text() or ""))
+        except Exception:  # noqa: BLE001
+            continue
+        if n:
+            pages.append({"page": i + 1, "count": n})
+    return pages
+
+
 def main():
     root = norm(sys.argv[1])
     reply({"id": None, "ok": True, "ready": True})
@@ -171,6 +244,10 @@ def main():
                 t = str(req.get("text", ""))[:200]
                 m, trunc, tp = search(r, t)
                 reply({"id": rid, "ok": True, "matches": m, "truncated": trunc, "text_pages": tp})
+            elif op == "risk":
+                reply({"id": rid, "ok": True, **risk(r)})
+            elif op == "placeholders":
+                reply({"id": rid, "ok": True, "pages": placeholders(r)})
             else:
                 reply({"id": rid, "ok": False, "error": "BAD_REQUEST"})
         except Exception as e:  # noqa: BLE001 - a code, never content

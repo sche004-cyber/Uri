@@ -30,6 +30,10 @@ from pathlib import Path
 from .errors import OfficeError
 
 MAX_BYTES = 50 * 1024 * 1024
+# O2 (plan §5 grants.py): per-kind suffixes and size caps. The `.xlsx` default and its messages are unchanged.
+KIND_SUFFIX = {"xlsx": ".xlsx", "docx": ".docx", "pptx": ".pptx", "pdf": ".pdf"}
+KIND_MAX_BYTES = {"xlsx": MAX_BYTES, "docx": 50 * 1024 * 1024, "pptx": 50 * 1024 * 1024, "pdf": 100 * 1024 * 1024}
+KIND_LABEL = {"xlsx": "workbook", "docx": "document", "pptx": "presentation", "pdf": "PDF"}
 MAX_PATH = 1024
 _WIN_ABS = re.compile(r"^[A-Za-z]:[\\/]")
 _WIN_RESERVED = re.compile(r"^(CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[0-9¹²³]|LPT[0-9¹²³])(\..*)?$", re.IGNORECASE)
@@ -47,7 +51,7 @@ def _refuse(why):
     raise OfficeError("PATH_REFUSED", why)
 
 
-def check_shape(raw, flavor: str | None = None) -> str:
+def check_shape(raw, flavor: str | None = None, *, suffixes=(".xlsx",)) -> str:
     """Pure shape check. `flavor` is "nt" or "posix" (default: this OS). Returns the path string unchanged."""
     flavor = flavor or ("nt" if os.name == "nt" else "posix")
     if not isinstance(raw, str) or not raw or len(raw) > MAX_PATH or "\x00" in raw:
@@ -81,8 +85,9 @@ def check_shape(raw, flavor: str | None = None) -> str:
         suffix = posixpath.splitext(raw)[1]
     else:
         raise ValueError(flavor)
-    if suffix.lower() != ".xlsx":
-        _refuse("only .xlsx workbooks")
+    if suffix.lower() not in suffixes:
+        _refuse("only .xlsx workbooks" if tuple(suffixes) == (".xlsx",) else
+                "only " + ", ".join(suffixes) + " files")
     return raw
 
 
@@ -117,20 +122,21 @@ class Grants:
             _refuse("the file is outside the folders URI may use")
         return p
 
-    def grant_open(self, raw) -> Grant:
-        p = Path(check_shape(raw))
+    def grant_open(self, raw, *, kind: str = "xlsx") -> Grant:
+        p = Path(check_shape(raw, suffixes=(KIND_SUFFIX[kind],)))
         try:
             self._real_inside(p, must_exist=True)
         except OSError:
             _refuse("the file does not exist")
         if not p.is_file() or p.is_symlink():
             _refuse("not a regular local file")
-        if p.stat().st_size > MAX_BYTES:
-            raise OfficeError("FILE_TOO_LARGE", "the workbook is larger than 50 MB")
+        cap = KIND_MAX_BYTES[kind]
+        if p.stat().st_size > cap:
+            raise OfficeError("FILE_TOO_LARGE", f"the {KIND_LABEL[kind]} is larger than {cap // (1024 * 1024)} MB")
         return self._add("open", p)
 
-    def grant_save_as(self, raw) -> Grant:
-        p = Path(check_shape(raw))
+    def grant_save_as(self, raw, *, kind: str = "xlsx") -> Grant:
+        p = Path(check_shape(raw, suffixes=(KIND_SUFFIX[kind],)))
         if not p.parent.is_dir():
             _refuse("the folder does not exist")
         self._real_inside(p.parent, must_exist=True)

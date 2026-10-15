@@ -47,6 +47,14 @@ CREATE TABLE IF NOT EXISTS event(
 """
 
 
+# O2 (plan rev 3.1 §5.1): one table and one chain for every approval subject. The bound hash is stored in the
+# `change_sha256` column for every kind; each action reads it from its own context key.
+SUBJECT_KINDS = ("workbook", "plan", "output_files", "print_job")
+HASH_KEY = {"office.apply_change": "change_sha256", "office.reject_change": "change_sha256",
+            "office.run_plan": "plan_sha256", "office.discard_plan": "plan_sha256"}
+DECLINE_ACTIONS = ("office.reject_change", "office.discard_plan")
+
+
 def jdump(obj) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
 
@@ -102,6 +110,9 @@ class Approvals:
         self.db = sqlite3.connect(str(Path(state_dir) / "office.db"), check_same_thread=False, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         self.db.executescript(SCHEMA)
+        cols = {r[1] for r in self.db.execute("PRAGMA table_info(surface)")}
+        if "subject_kind" not in cols:                   # existing M1/M2 databases: their rows stay 'workbook'
+            self.db.execute("ALTER TABLE surface ADD COLUMN subject_kind TEXT NOT NULL DEFAULT 'workbook'")
 
     # ---- audit chain ---------------------------------------------------------------------------------------------
     def audit(self, kind: str, payload: dict):
@@ -141,12 +152,106 @@ class Approvals:
                 self._close(r["surface_id"])
                 self.audit("office.approval_superseded", {"surface_id": r["surface_id"]})
             now = time.time()
-            self.db.execute("INSERT INTO surface VALUES (?,?,?,?,?,?,?,?,?)",
-                            (surface.surface_id, self.owner, workbook_id, "OPEN", jdump(surface.to_record()),
-                             jdump(body), sha, now, now))
+            self._insert(surface, workbook_id, "workbook", body, sha, now)
             self.audit("office.approval_proposed", {"surface_id": surface.surface_id, "change_sha256": sha,
                                                     "cells": len(body["edits"]), "struct_ops": len(body["struct_ops"])})
         return surface
+
+    def _insert(self, surface, subject_id, subject_kind, body, sha, now):
+        self.db.execute("INSERT INTO surface (surface_id, owner, workbook_id, state, record_json, body_json, "
+                        "change_sha256, created_at, updated_at, subject_kind) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                        (surface.surface_id, self.owner, subject_id, "OPEN", jdump(surface.to_record()), jdump(body),
+                         sha, now, now, subject_kind))
+
+    def _propose_subject(self, subject_id, subject_kind, body, surface_fn, audit_extra) -> Surface:
+        sha = hashlib.sha256(canonical(body)).hexdigest()
+        try:
+            surface = surface_fn(f"office.{subject_kind}.{subject_id}.{uuid.uuid4().hex[:8]}", sha)
+        except A2uiInvalid:
+            raise OfficeError("CHANGE_CANNOT_BE_SHOWN", "this card cannot be shown", 422) from None
+        with self.lock:
+            for r in self.db.execute("SELECT surface_id FROM surface WHERE workbook_id=? AND state='OPEN'",
+                                     (subject_id,)):
+                self._close(r["surface_id"])
+                self.audit("office.approval_superseded", {"surface_id": r["surface_id"]})
+            self._insert(surface, subject_id, subject_kind, body, sha, time.time())
+            self.audit("office.approval_proposed", {"surface_id": surface.surface_id, "change_sha256": sha,
+                                                    "subject_kind": subject_kind, **audit_extra})
+        return surface
+
+    def propose_plan(self, workflow_id: str, plan: dict) -> Surface:
+        """The plan card (`office.run_plan`). `plan`: capability, title, steps [{id, kind, label}], inputs
+        [{name, kind, sha256}], outputs [{name, kind}]. The hash binds all of it plus the originals statement."""
+        body = {"subject_kind": "plan", "workflow_id": workflow_id, "target": {"kind": "plan"}, "plan": plan,
+                "statement": "Your original files will not change."}
+
+        def card(sid, sha):
+            kind_label = {"D": "Rule-based", "E": "Engine", "B": "URI-written"}
+            lines = [f"{i}. {s['label']} ({kind_label[s['kind']]})" for i, s in enumerate(plan["steps"], 1)]
+            lines.append("Reads: " + ", ".join(_quoted(x["name"]) for x in plan["inputs"]))
+            lines.append("Makes: " + ", ".join(_quoted(x["name"]) for x in plan["outputs"]) if plan["outputs"]
+                         else "Makes: nothing new")
+            lines.append(body["statement"])
+            return self._card(sid, plan["title"], "", lines, "Run", "Not now", "office.run_plan",
+                              "office.discard_plan", "plan_sha256", sha, "office_plan", "Office plan")
+        return self._propose_subject(workflow_id, "plan", body, card, {"steps": len(plan["steps"])})
+
+    def propose_outputs(self, workflow_id: str, outputs: list, destination: str, warnings: list,
+                        warnings_accepted: bool) -> Surface:
+        """The output card (`office.apply_change` on an `output_files` subject). Binds each output (name, size, pages,
+        SHA-256), every warning, the acceptance flag and the full destination."""
+        body = {"subject_kind": "output_files", "workflow_id": workflow_id,
+                "target": {"kind": "output_files", "destination": destination}, "outputs": outputs,
+                "warnings": warnings, "warnings_accepted": warnings_accepted,
+                "statement": "Your original files will not change."}
+
+        def card(sid, sha):
+            if u16(destination) > C.MAX_STRING:
+                raise OfficeError("CHANGE_TOO_LARGE_TO_SHOW", "the destination path is too long to show")
+            lines = [f"{_quoted(o['name'])}: {o['pages']} pages, {o['size']} bytes, SHA-256 {o['sha256'][:12]}"
+                     for o in outputs]
+            lines += [f"Warning: {w['message']}" for w in warnings]
+            if warnings:
+                lines.append("You accepted these warnings." if warnings_accepted else "Warnings not accepted.")
+            lines.append(body["statement"])
+            lines.append("An existing file is never replaced.")
+            return self._card(sid, "Save this file?", destination, lines, "Save", "Not now", "office.apply_change",
+                              "office.reject_change", "change_sha256", sha, "office_change", "Office output")
+        return self._propose_subject(workflow_id, "output_files", body, card, {"outputs": len(outputs),
+                                                                               "warnings": len(warnings)})
+
+    def _card(self, sid, title, caption, lines, yes, no, yes_action, no_action, key, sha, kind, label) -> Surface:
+        texts = _chunks(lines, C.MAX_STRING)
+        if len(texts) > C.MAX_COMPONENTS - FIXED_COMPONENTS:
+            raise OfficeError("CHANGE_TOO_LARGE_TO_SHOW", "this card is too large to show in full", 413)
+        comps = [{"id": "title", "component": "Text", "variant": "title", "text": title},
+                 {"id": "target", "component": "Text", "variant": "caption", "text": caption}]
+        kids = ["title", "target"]
+        for i, text in enumerate(texts):
+            comps.append({"id": f"lines{i}", "component": "Text", "variant": "body", "text": text})
+            kids.append(f"lines{i}")
+        bind = {key: {"path": f"/bound/{key}"}}
+        comps += [
+            {"id": "apply", "component": "Button", "variant": "primary", "label": yes,
+             "action": {"event": {"name": yes_action, "context": bind}}},
+            {"id": "reject", "component": "Button", "variant": "secondary", "label": no,
+             "action": {"event": {"name": no_action, "context": bind}}},
+            {"id": "buttons", "component": "Row", "children": ["apply", "reject"], "gap": "small"},
+        ]
+        kids.append("buttons")
+        comps.insert(0, {"id": "root", "component": "Column", "children": kids, "gap": "medium"})
+        return Surface(sid, kind, comps, data={}, bound={key: sha}, actions=(yes_action, no_action),
+                       placement="workspace", title=label)
+
+    def subject_of(self, surface_id):
+        """(subject_kind, subject_id) of an approval, or (None, None). Lets the caller take the subject's own lock
+        before `action` takes this one."""
+        if not isinstance(surface_id, str):
+            return None, None
+        with self.lock:
+            r = self.db.execute("SELECT subject_kind, workbook_id FROM surface WHERE surface_id=?",
+                                (surface_id,)).fetchone()
+        return (r["subject_kind"], r["workbook_id"]) if r else (None, None)
 
     def _surface(self, sid, target, body, sha) -> Surface:
         google = target.get("kind") == "google"
@@ -253,13 +358,20 @@ class Approvals:
                 except ActionRefused as exc:
                     raise OfficeError(exc.code, exc.detail) from None
                 body = json.loads(r["body_json"])
+                kind = r["subject_kind"]
+                key = HASH_KEY.get(msg["name"])
+                if key is None or (key == "plan_sha256") != (kind == "plan"):
+                    raise OfficeError("ACTION_NOT_ALLOWED_ON_SURFACE", msg["name"])
                 if hashlib.sha256(canonical(body)).hexdigest() != r["change_sha256"] or \
-                        ctx["change_sha256"] != r["change_sha256"]:
+                        ctx[key] != r["change_sha256"]:
                     raise OfficeError("CHANGE_MISMATCH", "the change differs from what was shown")
-                if msg["name"] == "office.reject_change":
+                subject = {"workbook_id": r["workbook_id"]} if kind == "workbook" else \
+                    {"subject_kind": kind, "subject_id": r["workbook_id"]}
+                if msg["name"] in DECLINE_ACTIONS:
                     self._close(sid)
-                    self.audit("office.approval_declined", {"surface_id": sid, "change_sha256": r["change_sha256"]})
-                    return {"status": "declined", "workbook_id": r["workbook_id"]}
+                    self.audit("office.approval_declined", {"surface_id": sid, "change_sha256": r["change_sha256"],
+                                                            "subject_kind": kind})
+                    return {"status": "declined", **subject}
                 try:
                     result = apply_fn(body)
                 except OfficeError:
@@ -268,12 +380,18 @@ class Approvals:
                     self._close(sid)
                     raise OfficeError("APPLY_FAILED", "the change could not be saved; propose it again", 500) from exc
                 self._close(sid)
+                if kind == "workbook":
+                    counts = {"cells": len(body["edits"]), "struct_ops": len(body["struct_ops"])}
+                elif kind == "plan":
+                    counts = {"steps": len(body["plan"]["steps"])}
+                else:
+                    counts = {"outputs": len(body.get("outputs", []))}
                 self.audit("office.change_applied", {"surface_id": sid, "change_sha256": r["change_sha256"],
-                                                     "cells": len(body["edits"]), "struct_ops": len(body["struct_ops"])})
-                return {"status": "applied", "workbook_id": r["workbook_id"], **(result or {})}
+                                                     "subject_kind": kind, **counts})
+                return {"status": "applied", **subject, **(result or {})}
             except OfficeError as exc:
                 self.audit("office.action_refused", {"surface_id": sid if isinstance(sid, str) else None,
                                                      "code": exc.code})
-                if exc.code in ("TARGET_CHANGED", "STALE_CHANGE") and r is not None:
+                if exc.code in ("TARGET_CHANGED", "STALE_CHANGE", "STALE_PLAN", "INPUT_CHANGED") and r is not None:
                     self._close(sid)
                 raise

@@ -117,6 +117,9 @@ const a2uiActions = <String, Map<String, String>>{
   // URI Office (authority: uri_office service; bound change SHA-256, target re-read before writing).
   'office.apply_change': {'change_sha256': 'sha256'},
   'office.reject_change': {'change_sha256': 'sha256'},
+  // URI Office O2 (authority: uri_office service; bound plan SHA-256; apply only queues the run).
+  'office.run_plan': {'plan_sha256': 'sha256'},
+  'office.discard_plan': {'plan_sha256': 'sha256'},
   'surface.dismiss': {},
 };
 

@@ -1,0 +1,250 @@
+{
+ "_comment": "AC-O2-10 corpus. Expected results were written on 2026-10-15 BEFORE intent.py's matcher was run against this file. 'deterministic' items must resolve at stage 1 with zero Brain calls. 'ambiguous' items must NOT resolve uniquely at stage 1; with the Brain unavailable they must give clarification chips; their 'brain_expected' is the intent a correct classifier should return (checked only in the live GPU window, row C1). Targets give the kind of the active file, never its name.",
+ "deterministic": [
+  {
+   "text": "convert this to pdf",
+   "target": "docx",
+   "result": "matched",
+   "intent": "save_as_pdf"
+  },
+  {
+   "text": "Save as PDF",
+   "target": "pptx",
+   "result": "matched",
+   "intent": "save_as_pdf"
+  },
+  {
+   "text": "make a PDF of this letter",
+   "target": "docx",
+   "result": "matched",
+   "intent": "save_as_pdf"
+  },
+  {
+   "text": "export the spreadsheet as pdf",
+   "target": "xlsx",
+   "result": "matched",
+   "intent": "save_as_pdf"
+  },
+  {
+   "text": "turn this presentation into a pdf",
+   "target": "pptx",
+   "result": "matched",
+   "intent": "save_as_pdf"
+  },
+  {
+   "text": "convert to pdf",
+   "target": null,
+   "result": "matched",
+   "intent": "save_as_pdf",
+   "inputs_needed": [
+    "input_file"
+   ]
+  },
+  {
+   "text": "show my PDFs",
+   "target": null,
+   "result": "navigate",
+   "view": "pdfs"
+  },
+  {
+   "text": "open my recent files",
+   "target": null,
+   "result": "navigate",
+   "view": "recent"
+  },
+  {
+   "text": "go to presentations",
+   "target": null,
+   "result": "navigate",
+   "view": "presentations"
+  },
+  {
+   "text": "show spreadsheets",
+   "target": null,
+   "result": "navigate",
+   "view": "spreadsheets"
+  },
+  {
+   "text": "office home",
+   "target": null,
+   "result": "navigate",
+   "view": "home"
+  },
+  {
+   "text": "show running workflows",
+   "target": null,
+   "result": "navigate",
+   "view": "workflows"
+  },
+  {
+   "text": "print this",
+   "target": "docx",
+   "result": "planned",
+   "intent": "print_document",
+   "phase": "O2P"
+  },
+  {
+   "text": "print the document",
+   "target": "pdf",
+   "result": "planned",
+   "intent": "print_document",
+   "phase": "O2P"
+  },
+  {
+   "text": "summarize this pdf",
+   "target": "pdf",
+   "result": "planned",
+   "intent": "summarize_pdf",
+   "phase": "O4"
+  },
+  {
+   "text": "write a letter to the district collector",
+   "target": null,
+   "result": "planned",
+   "intent": "write_document",
+   "phase": "O3"
+  },
+  {
+   "text": "draft an office order",
+   "target": null,
+   "result": "planned",
+   "intent": "write_document",
+   "phase": "O3"
+  },
+  {
+   "text": "make a presentation from this report",
+   "target": "docx",
+   "result": "planned",
+   "intent": "make_presentation",
+   "phase": "O5"
+  },
+  {
+   "text": "extract the tables to excel",
+   "target": "pdf",
+   "result": "planned",
+   "intent": "pdf_tables_to_excel",
+   "phase": "deferred"
+  },
+  {
+   "text": "open a document",
+   "target": null,
+   "result": "matched",
+   "intent": "open_document",
+   "inputs_needed": [
+    "input_file"
+   ]
+  },
+  {
+   "text": "open a pdf",
+   "target": null,
+   "result": "matched",
+   "intent": "open_document",
+   "inputs_needed": [
+    "input_file"
+   ]
+  },
+  {
+   "text": "new workbook from these files",
+   "target": null,
+   "result": "matched",
+   "intent": "new_workbook_from_files",
+   "inputs_needed": [
+    "input_file"
+   ]
+  },
+  {
+   "text": "search this pdf for tender",
+   "target": "pdf",
+   "result": "matched",
+   "intent": "view_pdf"
+  },
+  {
+   "text": "help",
+   "target": null,
+   "result": "help"
+  }
+ ],
+ "ambiguous": [
+  {
+   "text": "can you do something with this",
+   "target": "docx",
+   "brain_expected": "unclear"
+  },
+  {
+   "text": "I need it in a format I can email",
+   "target": "docx",
+   "brain_expected": "save_as_pdf"
+  },
+  {
+   "text": "make this ready to share",
+   "target": "pptx",
+   "brain_expected": "save_as_pdf"
+  },
+  {
+   "text": "what is this about",
+   "target": "pdf",
+   "brain_expected": "summarize_pdf"
+  },
+  {
+   "text": "the deadline in this notice?",
+   "target": "pdf",
+   "brain_expected": "ask_pdf"
+  },
+  {
+   "text": "fix the spelling",
+   "target": "docx",
+   "brain_expected": "edit_document"
+  },
+  {
+   "text": "put this on slides",
+   "target": "docx",
+   "brain_expected": "make_presentation"
+  },
+  {
+   "text": "I want a hard copy",
+   "target": "docx",
+   "brain_expected": "print_document"
+  },
+  {
+   "text": "combine these into one report",
+   "target": null,
+   "brain_expected": "combine_report"
+  },
+  {
+   "text": "get the numbers out of this",
+   "target": "pdf",
+   "brain_expected": "pdf_tables_to_excel"
+  },
+  {
+   "text": "prepare a reply",
+   "target": "pdf",
+   "brain_expected": "write_document"
+  },
+  {
+   "text": "keep a copy for the record",
+   "target": "xlsx",
+   "brain_expected": "save_as_pdf"
+  },
+  {
+   "text": "look at the attachment",
+   "target": null,
+   "brain_expected": "open_document"
+  },
+  {
+   "text": "do the usual",
+   "target": null,
+   "brain_expected": "unclear"
+  },
+  {
+   "text": "send it to the department",
+   "target": "docx",
+   "brain_expected": "unclear"
+  },
+  {
+   "text": "shorten it",
+   "target": "pptx",
+   "brain_expected": "unclear"
+  }
+ ],
+ "_run_record": "First run 2026-10-15: deterministic 24/24 correct with 0 Brain calls; ambiguous 15/16 undecided at stage 1. 'prepare a reply' was decided at stage 1 as write_document (planned O3), because the matcher listed 'reply' as a document kind. Correction: 'reply' was removed from the write rule (a reply's kind and channel are unknown, so a clarification is right); the corpus expectations were not changed."
+}
