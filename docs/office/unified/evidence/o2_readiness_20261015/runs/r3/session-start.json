@@ -1,0 +1,22 @@
+{
+ "run": "r3",
+ "brain_mode": true,
+ "port": 18329,
+ "started_utc": "2026-10-15T17:10:17.783605+00:00",
+ "verified": {
+  "ok": true,
+  "source_head": "4a179be4dc8fd2c09eef67ea71e01f40afd7e69e",
+  "source_tree": "1d71751fec85eba297f79b52b7329bd6b5842172",
+  "checked_files": 1495
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "gpu_authority": "owner directive 2026-10-15 B5: Brain/GPU testing under the existing GPU lease, runtime safety and permission controls; no contention override",
+ "server_pid": 9656,
+ "server_listener_pid": 8388,
+ "server_listen_s": 2.154,
+ "server_listening": true
+}

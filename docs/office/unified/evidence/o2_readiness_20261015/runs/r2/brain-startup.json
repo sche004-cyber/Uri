@@ -1,0 +1,115 @@
+{
+ "state": "READY",
+ "load_s": 80.21,
+ "host": {
+  "schema": "uri.ws.brain_host.v1",
+  "host_pid": 9568,
+  "host_started": 1792083346.884,
+  "state": "READY",
+  "history": [
+   {
+    "t": 1792083353.484,
+    "state": "STARTING",
+    "detail": null
+   },
+   {
+    "t": 1792083385.118,
+    "state": "LOADING",
+    "detail": null
+   },
+   {
+    "t": 1792083417.523,
+    "state": "CALIBRATING",
+    "detail": null
+   },
+   {
+    "t": 1792083426.464,
+    "state": "READY",
+    "detail": null
+   }
+  ],
+  "override": null,
+  "lease": {
+   "held": true,
+   "acquired_at": 1792083346.898,
+   "recovered_from": null
+  },
+  "gpu": {
+   "fit": {
+    "verdict": "AT_RISK",
+    "card_mib": 16368,
+    "required_mib": 15626,
+    "others_mib": 885.7,
+    "unattributed_mib": 0.0,
+    "owner_mib": 0,
+    "free_mib": 15482.3,
+    "margin_mib": -143.7,
+    "consumers": [
+     {
+      "pid": 1792,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 376.8,
+      "role": "desktop compositor"
+     }
+    ]
+   },
+   "explain": "GPU memory is 144 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading.",
+   "census_t": 1792083346.9,
+   "census_s": 4.18
+  },
+  "detail": null,
+  "explain": "Brain ready (120 tok/s).",
+  "updated_at": 1792083426.464,
+  "heartbeat_at": 1792083422.046,
+  "server": {
+   "pid": 21276,
+   "owned": true,
+   "load_seconds": 35.4,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s"
+  },
+  "residency": {
+   "t": 1792083419.782,
+   "dedicated_mib": 15555.7,
+   "non_local_mib": 1120.6,
+   "others_mib": 885.7,
+   "verdict_now": "AT_RISK",
+   "consumers": [
+    {
+     "pid": 1792,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "dedicated_mib": 376.8,
+     "role": "desktop compositor"
+    }
+   ]
+  },
+  "calibration": {
+   "t": 1792083417.705,
+   "tokens": 160,
+   "threshold_tps": 60.0,
+   "server_pid": 21276,
+   "server_create_time": 1792083382.115412,
+   "reason": "START",
+   "decode_tps": 120.2,
+   "predicted_n": 160,
+   "prompt_ms": 348.604,
+   "residency": {
+    "t": 1792083419.782,
+    "dedicated_mib": 15555.7,
+    "non_local_mib": 1120.6,
+    "others_mib": 885.7,
+    "verdict_now": "AT_RISK",
+    "consumers": [
+     {
+      "pid": 1792,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 376.8,
+      "role": "desktop compositor"
+     }
+    ]
+   }
+  }
+ }
+}
