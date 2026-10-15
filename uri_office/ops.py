@@ -241,3 +241,24 @@ def copy_edits(op, *, sources: dict, sheets, next_free_row=None, locked=None) ->
     if hit is not None:
         raise OfficeError("CELL_NOT_EDITABLE", f"{to}!{hit['cell']} is part of a shared formula or merged range")
     return out, uncalculated, skipped
+
+
+def _same_value(a, b) -> bool:
+    """Exact equality; Python compares int and float exactly (Codex R7-4: no float() rounding of large integers)."""
+    if isinstance(a, bool) or isinstance(b, bool):
+        return a is b
+    if type(a) is not type(b) and not (isinstance(a, (int, float)) and isinstance(b, (int, float))):
+        return False
+    return a == b
+
+
+def unchanged_edit(edit: dict, current: dict, pending: set) -> bool:
+    """NOOP-1: True when a cell edit would leave the cell exactly as the draft holds it now (same formula, or same
+    value with no formula). A cell with a pending proposal is never "unchanged" (Codex R7-3: the owner may be asking
+    URI to keep the old value against that proposal). Structural ops and cells not seen are always changes."""
+    if "cell" not in edit or (edit["sheet"], edit["cell"]) in pending or (edit["sheet"], edit["cell"]) not in current:
+        return False
+    c = current[(edit["sheet"], edit["cell"])]
+    if "formula" in edit:
+        return c.get("f") == edit["formula"]
+    return not c.get("f") and _same_value(c.get("v"), edit.get("value"))

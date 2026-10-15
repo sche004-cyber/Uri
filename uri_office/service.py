@@ -40,6 +40,7 @@ from .approvals import Approvals
 from .errors import OfficeError
 from .grants import Grants
 from .history import History, workbook_key
+from .ops import unchanged_edit
 
 DEFAULT_PORT = 18530
 MAX_BODY = 256 * 1024
@@ -412,7 +413,12 @@ class Office:
             res = self.brain.plan(body.get("text"), sheets=self._current_sheets(s), active=body.get("active_sheet"),
                                   engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key),
                                   **extra)
-            new = s.draft.propose(res["edits"]) if res["edits"] else []
+            # NOOP-1 (readiness run r3): a restated cell (same value or formula as the draft holds it) is not a change.
+            current = {(sh["name"], ref): c for sh in self._current_sheets(s) for ref, c in sh.get("cells", {}).items()}
+            pending = {(c["sheet"], c["cell"]) for c in s.draft.snapshot()["changes"]
+                       if c.get("state") == "proposed" and c.get("kind") == "cell"}
+            edits = [e for e in res["edits"] if not unchanged_edit(e, current, pending)]
+            new = s.draft.propose(edits) if edits else []
             out = {"status": res.get("status", "propose"), "message": res["message"],
                    "proposed": [c["cid"] for c in new if c["state"] == "proposed"],
                    "refused": res["refused"], "metrics": res["metrics"], "draft": s.draft.snapshot(),
