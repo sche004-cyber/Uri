@@ -199,8 +199,6 @@ class CompanionParams {
           energy: 0.06, turbulence: 0.05, flare: 0.00,
           particles: 0.05, focus: 0.95, exposure: 0.72,
         ),
-        // Initializing: the idle look, calmer and dimmer (owner decision,
-        // Ember V2.1 final: a normal startup must not look failed).
         CompanionState.initializing: CompanionParams(
           energy: 0.14, turbulence: 0.10, flare: 0.04,
           particles: 0.16, focus: 0.88, exposure: 0.88,
@@ -245,8 +243,6 @@ class CompanionParams {
           energy: 0.06, turbulence: 0.05, flare: 0.00,
           particles: 0.06, focus: 0.95, exposure: 0.74,
         ),
-        // Initializing: the idle look, calmer and dimmer (owner decision,
-        // Ember V2.1 final: a normal startup must not look failed).
         CompanionState.initializing: CompanionParams(
           energy: 0.15, turbulence: 0.11, flare: 0.04,
           particles: 0.20, focus: 0.84, exposure: 0.88,
@@ -291,8 +287,6 @@ class CompanionParams {
           energy: 0.05, turbulence: 0.10, flare: 0.00,
           particles: 0.06, focus: 0.30, exposure: 0.70,
         ),
-        // Initializing: the idle look, calmer and dimmer (owner decision,
-        // Ember V2.1 final: a normal startup must not look failed).
         CompanionState.initializing: CompanionParams(
           energy: 0.14, turbulence: 0.15, flare: 0.05,
           particles: 0.18, focus: 0.55, exposure: 0.86,

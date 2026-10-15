@@ -28,6 +28,10 @@ that ordinary states change the companion's state, not its character:
   error      identity preserved: moderate values with low focus. The meaning
              is carried by the status label and its danger colour, not by
              making the companion look broken.
+  initializing  revision 3 (Ember V2.1 final, owner-approved shared state):
+             the Brain is starting normally. The idle look, calmer and
+             dimmer (energy, flare and particles below idle, exposure
+             0.86-0.88), never the unavailable look.
   speaking   only drives the small identity mark shown above the voice
              waveform while URI speaks.
 
@@ -49,12 +53,13 @@ import re
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, '..', '..'))
 
-STATES = ['unavailable', 'idle', 'listening', 'thinking', 'speaking',
+STATES = ['unavailable', 'initializing', 'idle', 'listening', 'thinking', 'speaking',
           'working', 'awaitingApproval', 'success', 'error']
 
 TABLES = {
     'solar': {
         'unavailable':      (0.06, 0.05, 0.00, 0.05, 0.95, 0.72),
+        'initializing':     (0.14, 0.10, 0.04, 0.16, 0.88, 0.88),
         'idle':             (0.22, 0.16, 0.10, 0.28, 0.85, 1.00),
         'listening':        (0.15, 0.09, 0.05, 0.18, 0.95, 0.97),
         'thinking':         (0.30, 0.46, 0.04, 0.12, 0.97, 0.84),
@@ -66,6 +71,7 @@ TABLES = {
     },
     'sakura': {
         'unavailable':      (0.06, 0.05, 0.00, 0.06, 0.95, 0.74),
+        'initializing':     (0.15, 0.11, 0.04, 0.20, 0.84, 0.88),
         'idle':             (0.24, 0.18, 0.10, 0.34, 0.80, 1.00),
         'listening':        (0.16, 0.10, 0.05, 0.26, 0.94, 0.98),
         'thinking':         (0.30, 0.42, 0.05, 0.24, 0.97, 0.85),
@@ -77,6 +83,7 @@ TABLES = {
     },
     'lunar': {
         'unavailable':      (0.05, 0.10, 0.00, 0.06, 0.30, 0.70),
+        'initializing':     (0.14, 0.15, 0.05, 0.18, 0.55, 0.86),
         'idle':             (0.22, 0.24, 0.12, 0.30, 0.55, 1.00),
         'listening':        (0.15, 0.14, 0.07, 0.24, 0.80, 0.98),
         'thinking':         (0.28, 0.46, 0.05, 0.24, 0.44, 0.85),
@@ -131,7 +138,7 @@ def write_js():
 
 def write_json():
     path = os.path.join(HERE, 'state_tables.json')
-    data = {'revision': 2, 'columns': ['energy', 'turbulence', 'flare',
+    data = {'revision': 3, 'columns': ['energy', 'turbulence', 'flare',
                                        'particles', 'focus', 'exposure'],
             'tables': {f: {s: list(v) for s, v in t.items()}
                        for f, t in TABLES.items()}}
