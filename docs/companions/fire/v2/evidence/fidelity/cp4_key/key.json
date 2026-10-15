@@ -1,0 +1,62 @@
+{
+ "reviewer1": {
+  "idle": {
+   "A": "v1",
+   "B": "video",
+   "C": "v2",
+   "D": "ref_copy",
+   "E": "ref_reframed"
+  },
+  "joyful": {
+   "A": "ref_reframed",
+   "B": "v2",
+   "C": "v1",
+   "D": "video",
+   "E": "ref_copy"
+  },
+  "fierce": {
+   "A": "ref_copy",
+   "B": "ref_reframed",
+   "C": "v1",
+   "D": "video",
+   "E": "v2"
+  },
+  "depleted": {
+   "A": "v1",
+   "B": "ref_copy",
+   "C": "video",
+   "D": "ref_reframed",
+   "E": "v2"
+  }
+ },
+ "reviewer2": {
+  "idle": {
+   "A": "ref_copy",
+   "B": "v1",
+   "C": "ref_reframed",
+   "D": "video",
+   "E": "v2"
+  },
+  "joyful": {
+   "A": "video",
+   "B": "ref_reframed",
+   "C": "v2",
+   "D": "v1",
+   "E": "ref_copy"
+  },
+  "fierce": {
+   "A": "video",
+   "B": "ref_copy",
+   "C": "v1",
+   "D": "ref_reframed",
+   "E": "v2"
+  },
+  "depleted": {
+   "A": "ref_copy",
+   "B": "v1",
+   "C": "video",
+   "D": "ref_reframed",
+   "E": "v2"
+  }
+ }
+}

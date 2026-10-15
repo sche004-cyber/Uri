@@ -66,12 +66,6 @@ def cut(state):
     bg, keep = background(c)
     up = ((c - bg) / np.maximum(1 - bg, 1e-3)).max(2).clip(0, 1)
     dn = ((bg - c) / np.maximum(bg, 1e-3)).max(2).clip(0, 1)
-    a = np.maximum(up, dn)
-    # Suppress background brush texture: soft floor, and fade with distance
-    # from the character so strokes far away never become alpha.
-    a = a * np.clip((a - 0.05) / 0.12, 0, 1)
-    near = ndi.gaussian_filter(keep.astype(np.float32), 12)
-    a = a * np.clip(near * 1.6, 0, 1)
     # Opaque parts: head ellipse, eyes, and the dark body below the head.
     head = ellipse(h, w, r['head'])
     body = (dn > 0.22) | (ndi.gaussian_filter(dn, 1.5) > 0.18)
@@ -88,6 +82,26 @@ def cut(state):
     solid = head | body
     for e in r['eyes']:
         solid |= ellipse(h, w, e, grow=2)
+    # "Darker than the background" is character only near the body and in
+    # painted smoke (rig 'smoke' box); elsewhere it is background brush
+    # texture, which on the app's near-black canvas turns into dark specks
+    # and rings (checkpoint 2, defect 2).
+    dark_ok = ndi.binary_dilation(solid, iterations=6)
+    if 'smoke' in r:
+        x0s, y0s, x1s, y1s = r['smoke']
+        dark_ok[y0s:y1s, x0s:x1s] = True
+    dark_ok = ndi.gaussian_filter(dark_ok.astype(np.float32), 3)
+    a = np.maximum(up, dn * dark_ok)
+    # Suppress background brush texture: soft floor, smooth the faint glow
+    # (texture speckle lives there), fade with distance from the character.
+    a = a * np.clip((a - 0.05) / 0.12, 0, 1)
+    a = np.where(a < 0.3, np.minimum(a, ndi.gaussian_filter(a, 1.5)), a)
+    near = ndi.gaussian_filter(keep.astype(np.float32), 12)
+    a = a * np.clip(near * 1.6, 0, 1)
+    # Never a hard edge at the crop border (checkpoint 2, defect 1).
+    yy, xx = np.mgrid[0:h, 0:w]
+    edge = np.minimum.reduce([xx, w - 1 - xx, yy, h - 1 - yy]).astype(np.float32)
+    a = a * np.clip(edge / 24.0, 0, 1)
     soft = ndi.gaussian_filter(solid.astype(np.float32), 0.8)
     alpha = np.maximum(a, soft).clip(0, 1)
     F = (c - bg * (1 - alpha[..., None])) / np.maximum(alpha[..., None], 1e-3)

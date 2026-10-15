@@ -1,0 +1,69 @@
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.0.1 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.2.0 available)
+  file_picker_linux 1.1.0 (2.0.2 available)
+  file_picker_platform_interface 3.3.0 (4.1.0 available)
+  file_picker_web 3.1.0 (4.1.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  screen_retriever 0.2.2 (0.3.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+19 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/cheta/Development/uri-fire-companion-v2/uri_ui/test/living/live_voice_test.dart
+00:00 +0: LiveVoiceService starts once, says hello, and reports readiness and devices
+00:00 +1: LiveVoiceService a denied microphone is a specific, recoverable problem
+00:00 +2: LiveVoiceService a model that fails its integrity check is reported, not hidden
+00:00 +3: LiveVoiceService events become presentation signals; the final transcript is separate data
+00:00 +4: LiveVoiceService a capture error becomes a visible failure
+00:00 +5: LiveVoiceService the process dying resets the presentation and marks voice unavailable
+00:00 +6: LiveVoiceService speak sends the user voice, rate, pitch and volume
+00:00 +7: LiveVoiceService a loading model is reported as loading, then ready or failed
+00:00 +8: LiveVoiceService dispose shuts the process down
+00:00 +9: VoiceInteractionController push to talk opens the chosen microphone and release asks for the transcript
+00:00 +10: VoiceInteractionController a spoken question becomes an ordinary turn and the reply is spoken by sentence
+00:00 +11: VoiceInteractionController speech never decides: an approval is pointed to, never answered
+00:00 +12: VoiceInteractionController INT-3: real speech keeps its real provenance whatever the composer toggles say
+00:00 +13: VoiceInteractionController INT-3: voice drafting sends the real transcript to the draft desk as dictation
+00:00 +14: VoiceInteractionController INT-3: a dictation while URI is busy stays in the composer, never dropped (Codex TIWS r13)
+00:00 +15: VoiceInteractionController INT-3: a failing dictation sink keeps the words in the composer (Codex TIWS r14)
+00:00 +16: VoiceInteractionController a local presentation command is applied, not sent
+00:00 +17: VoiceInteractionController nothing heard: a notice, nothing sent
+00:00 +18: VoiceInteractionController a punctuation-only transcript is not sent (noise, live run 3)
+00:00 +19: VoiceInteractionController cancel discards the capture: a late transcript is ignored
+00:00 +20: VoiceInteractionController drafting without a draft desk keeps the words and sends nothing
+00:00 +21: VoiceInteractionController drafting with a draft desk hands over the raw transcript and engine
+00:00 +22: VoiceInteractionController talking while URI speaks interrupts the reply (barge-in)
+00:00 +23: VoiceInteractionController a refused press while URI is still answering says why
+00:00 +24: VoiceInteractionController speak replies off: nothing is spoken
+00:00 +25: VoiceInteractionController long replies are cut at a sentence end and say the rest is on screen
+00:00 +26: VoiceInteractionController R1-1: a press released while the service starts never opens the microphone
+00:00 +27: VoiceInteractionController R1-2: the service dying mid-capture resets the interaction; the next press restarts it
+00:00 +28: VoiceInteractionController R1-6: the length bound ends the capture with a notice and transcribes
+00:00 +29: VoiceInteractionController R1-7: latency is measured to the first reply audio, not to queueing
+00:00 +30: VoiceInteractionController R1-5: a fallback microphone is a soft notice
+00:00 +31: VoiceInteractionController R2-1: the service dying while the turn is sent leaves nothing to speak
+00:00 +32: VoiceInteractionController R2-4: the spoken cap also holds for a long first sentence
+00:00 +33: VoiceInteractionController microphone denied: a press shows the reason and opens nothing
+00:00 +34: VoiceTalkButton two mounted buttons: one Ctrl+Space press opens one capture; Esc cancels it
+00:00 +35: voice preferences keep microphone, mode, reply speech and vocabulary
+00:00 +36: Stop while URI speaks (live run 6 finding) a tap on Stop silences URI and captures nothing
+00:00 +37: Stop while URI speaks (live run 6 finding) holding Stop interrupts URI and becomes the user turn
+00:01 +38: R3-3: clipped text never exceeds the cap, with or without spaces
+00:01 +39: bold labels do not gain a stray full stop
+00:01 +40: speakableText and completeSentences markdown marks, code and tables are not read aloud
+00:01 +41: speakableText and completeSentences only finished sentences are returned until the reply ends
+00:01 +42: opening voice settings does not notify listeners during build (PRE-1)
+00:01 +43: All tests passed!

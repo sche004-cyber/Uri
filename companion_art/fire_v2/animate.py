@@ -104,28 +104,19 @@ class Panel:
         fl = ndi.gaussian_filter(flame, 2.0)
         solid_soft = ndi.gaussian_filter(self.solid, 2)
         self.flame_w = np.clip(fl * 2.2, 0, 1) * (1 - solid_soft)
+        # No turbulence on the ground light around the feet: it dragged the
+        # legs along and smeared the ground (checkpoint 2, defect 3).
+        feet = np.full((h, w), 1e9, np.float32)
+        for fx_, fy_ in self.r['feet']:
+            feet = np.minimum(feet, np.hypot(xx - fx_, yy - fy_))
+        calm = np.clip((feet - 30) / 40, 0, 1) * np.clip((fy - 8 - yy) / 30, 0, 1)
+        self.flame_w *= calm
         a = self.pm[..., 3]
         # translucent, non-luminous matter above the neck: smoke
         self.smoke_w = np.clip(a * 1.5 - fl * 2, 0, 1) * (1 - solid_soft) * self.above_neck
         self.smoke_w = ndi.gaussian_filter(self.smoke_w, 3)
         self._eyes()
         self.bg = z['bg'].astype(np.float32)
-
-    def aura(self, strength):
-        """The painting's own backdrop around the character, fading out: keeps
-        dark parts (body, smoke) readable on the app's near-black canvas the way
-        they read on the sheet. Premultiplied RGBA."""
-        if strength <= 0:
-            return None
-        hx, hy, hrx, hry = self.r['head']
-        fy = max(f[1] for f in self.r['feet'])
-        cy = (hy + fy) / 2 - 20
-        ry = (fy - hy) * 0.95 + hry
-        rx = max(hrx * 2.1, ry * 0.62)
-        d = np.sqrt(ell(self.xx, self.yy, hx, cy, rx, ry))
-        a = strength * np.clip(1 - d, 0, 1) ** 1.6
-        a = np.minimum(a, strength)
-        return np.dstack([self.bg * a[..., None], a]).astype(np.float32)
 
     # ------------------------------------------------------------ sparks
     def _sparks(self):
@@ -149,10 +140,19 @@ class Panel:
             ys, xs = np.nonzero(m)
             y0, y1 = max(ys.min() - 3, 0), min(ys.max() + 4, self.h)
             x0, x1 = max(xs.min() - 3, 0), min(xs.max() + 4, self.w)
-            mm = ndi.gaussian_filter(ndi.binary_dilation(m, iterations=2).astype(np.float32), 0.8)[y0:y1, x0:x1]
-            sprite = self.pm[y0:y1, x0:x1] * mm[..., None]
-            self.pm[y0:y1, x0:x1] *= (1 - mm[..., None])
-            self.sparks.append((x0, y0, sprite))
+            # The spark sits in painted glow. Only its own light moves; the
+            # glow under it is filled from around it, so no hole is left
+            # behind (checkpoint 2: dark specks where sparks had been).
+            Y0, Y1 = max(y0 - 8, 0), min(y1 + 8, self.h)
+            X0, X1 = max(x0 - 8, 0), min(x1 + 8, self.w)
+            hole = ndi.binary_dilation(m, iterations=2)[Y0:Y1, X0:X1]
+            local = self.pm[Y0:Y1, X0:X1]
+            fill = nconv(local, ~hole, 2)
+            mm = ndi.gaussian_filter(hole.astype(np.float32), 0.8)
+            under = local * (1 - mm[..., None]) + fill * mm[..., None]
+            sprite = np.clip(local - under, 0, None)
+            self.pm[Y0:Y1, X0:X1] = under
+            self.sparks.append((X0, Y0, sprite))
 
     # -------------------------------------------------------------- face
     def _eyes(self):
@@ -259,6 +259,14 @@ class Panel:
             s = t * h
             dx += sa * scroll(self.nx[1], s)
             dy += sa * scroll(self.ny[1], s) * 0.5
+        # Thin far strokes must not travel further than they are wide, or the
+        # backdrop shows through and they change colour (checkpoint 3: the
+        # fierce crest turned maroon). Cap the turbulence, keep its shape.
+        mag = np.sqrt(dx * dx + dy * dy)
+        cap = p.get('flow_cap', 6.0)
+        k = np.minimum(1.0, cap / np.maximum(mag, 1e-6))
+        dx *= k
+        dy *= k
         sp = p.get('sway_px', 4.0)
         if sp:
             dx += sp * self.flame_w * self.tip * np.sin(TWO_PI * t * p.get('sway_cycles', 1) + self.yy / 60.0)
@@ -306,9 +314,6 @@ class Panel:
         out[..., :3] *= gain[..., None]
         out = self.float_sparks(out, t, p)
         out = extra_sparks(out, t, p, self)
-        au = self.aura(p.get('aura', 0.0))
-        if au is not None:
-            out = over(au, out)
         self.last_field = (dx, dy)
         return np.clip(out, 0, None)
 

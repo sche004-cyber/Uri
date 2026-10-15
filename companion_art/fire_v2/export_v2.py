@@ -39,6 +39,8 @@ class Framing:
     body axis with the feet at `feet_at` of the height, scaled to the cell."""
 
     def __init__(self, panel: Panel, cell: int):
+        self.panel = panel
+        self._aura: dict[float, np.ndarray | None] = {}
         side = EXPR["frame"]["side"]
         feet = max(f[1] for f in panel.r["feet"])
         self.x0 = panel.r["neck"][0] - side / 2
@@ -47,14 +49,60 @@ class Framing:
         self.s = cell / side
         self.cell = cell
 
-    def cell_image(self, pm: np.ndarray) -> np.ndarray:
-        """Premultiplied panel frame -> premultiplied cell (area-averaged)."""
-        h, w = pm.shape[:2]
-        big = np.zeros((self.side, self.side, 4), np.float32)
+    def place(self, img: np.ndarray) -> np.ndarray:
+        """Panel-pixel image -> the square frame (zeros outside the panel)."""
+        h, w = img.shape[:2]
+        big = np.zeros((self.side, self.side) + img.shape[2:], np.float32)
         ox, oy = int(round(-self.x0)), int(round(-self.y0))
         ya, yb = max(oy, 0), min(oy + h, self.side)
         xa, xb = max(ox, 0), min(ox + w, self.side)
-        big[ya:yb, xa:xb] = pm[ya - oy:yb - oy, xa - ox:xb - ox]
+        big[ya:yb, xa:xb] = img[ya - oy:yb - oy, xa - ox:xb - ox]
+        return big
+
+    def aura(self, strength: float) -> np.ndarray | None:
+        """The painting's own background as a soft pool of light behind the
+        character, fading to nothing well inside the cell. Inside it the
+        companion looks exactly as on the sheet (translucent flame strokes and
+        dark parts keep the contrast they were painted with); outside it the
+        app canvas shows. Premultiplied, square frame."""
+        if strength <= 0:
+            return None
+        pn = self.panel
+        h, w = pn.h, pn.w
+        ox, oy = int(round(-self.x0)), int(round(-self.y0))
+        # background plate, extended past the panel by its edge colours
+        pad = ((max(oy, 0), max(self.side - oy - h, 0)), (max(ox, 0), max(self.side - ox - w, 0)), (0, 0))
+        bg = np.pad(pn.bg, pad, mode="edge")
+        y0, x0 = max(-oy, 0), max(-ox, 0)
+        bg = bg[y0:y0 + self.side, x0:x0 + self.side]
+        bg = ndi.gaussian_filter(bg, (8, 8, 0))
+        hx, hy, hrx, hry = pn.r["head"]
+        fy = max(f[1] for f in pn.r["feet"])
+        top = hy - hry * 1.6
+        cx = (pn.r["neck"][0] + hx) / 2 - self.x0
+        cy = (top + fy) / 2 - self.y0
+        yy, xx = np.mgrid[0:self.side, 0:self.side].astype(np.float32)
+        d = np.sqrt(((xx - cx) / (0.56 * self.side)) ** 2 + ((yy - cy) / (0.58 * self.side)) ** 2)
+        u = np.clip((d - 0.55) / 0.45, 0, 1)
+        a = strength * (1 - u * u * (3 - 2 * u))
+        # always zero at the cell border: never a hard edge in the app
+        edge = np.minimum.reduce([xx, self.side - 1 - xx, yy, self.side - 1 - yy])
+        e = np.clip(edge / (0.12 * self.side), 0, 1)
+        a = a * e * e * (3 - 2 * e)
+        return np.dstack([bg * a[..., None], a]).astype(np.float32)
+
+    def big_frame(self, pm: np.ndarray, aura: float = 0.0) -> np.ndarray:
+        big = self.place(pm)
+        au = self._aura.get(aura)
+        if au is None and aura > 0:
+            au = self._aura[aura] = self.aura(aura)
+        if au is not None:
+            big = big + au * (1 - big[..., 3:4])
+        return big
+
+    def cell_image(self, pm: np.ndarray, aura: float = 0.0) -> np.ndarray:
+        """Premultiplied panel frame -> premultiplied cell (area-averaged)."""
+        big = self.big_frame(pm, aura)
         # downsample premultiplied (no dark fringes), Lanczos per channel
         out = [np.asarray(Image.fromarray(big[..., c]).resize((self.cell, self.cell), Image.LANCZOS))
                for c in range(4)]
@@ -122,7 +170,7 @@ def blink_patches(name: str, spec: dict, pn: Panel, fr: Framing):
         f = dict(face_at(spec.get("face", {}), 0.0))
         f["lid"] = max(lv, base_lid)
         pm = pn.frame(0.0, spec["motion"], f)
-        c = fr.cell_image(pm)
+        c = fr.cell_image(pm, spec["motion"].get("aura", 0.0))
         c = c * mcell[..., None]
         out.append(c[y0:y1, x0:x1])
     return {"rect": [x0, y0, x1 - x0, y1 - y0], "levels": levels}, out
@@ -165,7 +213,7 @@ def main() -> None:
             e = (float(dx[int(cy), int(cx)]) * fr.s, float(dy[int(cy), int(cx)]) * fr.s)
             e0 = e0 or e
             offs.append([round(e[0] - e0[0], 2), round(e[1] - e0[1], 2)])
-            cells.append(fr.cell_image(pm))
+            cells.append(fr.cell_image(pm, spec["motion"].get("aura", 0.0)))
         info = pack(cells, OUT / f"{name}.webp", cell, quality)
         info["sha256"] = hashlib.sha256((OUT / f"{name}.webp").read_bytes()).hexdigest()
         info["eye_offsets"] = offs

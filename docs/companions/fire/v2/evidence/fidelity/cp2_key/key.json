@@ -1,0 +1,54 @@
+{
+ "reviewer1": {
+  "idle": {
+   "A": "v1",
+   "B": "video",
+   "C": "v2",
+   "D": "ref_copy"
+  },
+  "joyful": {
+   "A": "video",
+   "B": "v1",
+   "C": "ref_copy",
+   "D": "v2"
+  },
+  "fierce": {
+   "A": "ref_copy",
+   "B": "v1",
+   "C": "v2",
+   "D": "video"
+  },
+  "depleted": {
+   "A": "v2",
+   "B": "ref_copy",
+   "C": "video",
+   "D": "v1"
+  }
+ },
+ "reviewer2": {
+  "idle": {
+   "A": "v1",
+   "B": "video",
+   "C": "ref_copy",
+   "D": "v2"
+  },
+  "joyful": {
+   "A": "ref_copy",
+   "B": "video",
+   "C": "v2",
+   "D": "v1"
+  },
+  "fierce": {
+   "A": "v2",
+   "B": "ref_copy",
+   "C": "video",
+   "D": "v1"
+  },
+  "depleted": {
+   "A": "v1",
+   "B": "ref_copy",
+   "C": "video",
+   "D": "v2"
+  }
+ }
+}

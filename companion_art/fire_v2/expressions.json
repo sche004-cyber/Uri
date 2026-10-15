@@ -13,16 +13,16 @@
    "loop": 72,
    "motion": {
     "flow_base": 1.0,
-    "flow_tip": 6.0,
+    "flow_tip": 8.0,
     "flow_tiles": [
      1,
      2
     ],
-    "sway_px": 4.0,
-    "bob_px": 2.5,
+    "sway_px": 6.0,
+    "bob_px": 3.5,
     "flicker": 0.1,
     "spark_rise": 40,
-    "aura": 0.6
+    "aura": 0.95
    },
    "face": {},
    "blink": [
@@ -43,7 +43,7 @@
      3
     ],
     "sway_px": 5.0,
-    "bob_px": 7.0,
+    "bob_px": 5.0,
     "hop": true,
     "bob_cycles": 2,
     "flicker": 0.12,
@@ -68,7 +68,7 @@
       "sigma": 20
      }
     ],
-    "aura": 0.6
+    "aura": 0.95
    },
    "face": {}
   },
@@ -91,7 +91,8 @@
     "bright": 1.05,
     "spark_rise": 80,
     "sparks": 8,
-    "aura": 0.6
+    "aura": 0.95,
+    "flow_cap": 4.0
    },
    "face": {},
    "blink": [
@@ -112,11 +113,11 @@
      2
     ],
     "sway_px": 1.5,
-    "bob_px": 1.4,
+    "bob_px": 2.2,
     "smoke": 1.0,
     "flicker": 0.18,
     "spark_rise": 30,
-    "aura": 0.85
+    "aura": 0.95
    },
    "face": {},
    "blink": [
@@ -141,7 +142,7 @@
     "tilt_deg": -4.0,
     "flicker": 0.08,
     "spark_rise": 30,
-    "aura": 0.6
+    "aura": 0.95
    },
    "face": {
     "eye_scale": 1.05
@@ -169,7 +170,7 @@
     "tilt_deg": 3.0,
     "flicker": 0.08,
     "spark_rise": 35,
-    "aura": 0.6
+    "aura": 0.95
    },
    "face": {
     "gaze": [
@@ -201,7 +202,7 @@
     "flicker": 0.1,
     "bright": 1.04,
     "spark_rise": 45,
-    "aura": 0.6
+    "aura": 0.95
    },
    "face": {
     "mouth": {
@@ -242,7 +243,7 @@
     "bright": 1.08,
     "spark_rise": 60,
     "sparks": 6,
-    "aura": 0.6
+    "aura": 0.95
    },
    "face": {
     "lid": 0.24,
@@ -271,7 +272,7 @@
     "flicker": 0.14,
     "bright": 0.82,
     "spark_rise": 25,
-    "aura": 0.6
+    "aura": 0.95
    },
    "face": {
     "lid": 0.26,

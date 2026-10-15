@@ -25,7 +25,12 @@ class _VoiceInputSettingsState extends State<VoiceInputSettings> {
   @override
   void initState() {
     super.initState();
-    _check();
+    // After this frame: starting the service changes its status at once, and
+    // other widgets listen to that status. Notifying them while this page is
+    // being built is a framework error (finding PRE-1, Ember V2).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _check();
+    });
   }
 
   @override
