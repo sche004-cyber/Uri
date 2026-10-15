@@ -5,9 +5,8 @@ This channel has NO tools and NO authority. Two guards keep it honest:
      DO something (save, send, delete, schedule, change files, run...). The first characters of the answer are held
      back until they cannot be the marker; on the marker the generation is cancelled and the turn is handed to Core.
      This catches action requests that deterministic triage missed, at no extra model call.
-  2. Action-claim check: a reply that claims a completed action ("I've saved...") although no Core execution
-     happened in this turn is flagged UNVERIFIED_ACTION_CLAIM and a correction is appended. URI never lets the
-     answer channel fabricate a tool outcome.
+  2. Action-claim check: text from the start of a possible completed-action claim is held until the full reply
+     can be checked. An unverified claim is discarded and replaced with a correction before it reaches the UI.
 
 Prompt layout follows the v1 context architecture (stable system message first, current turn last) so the
 prompt cache reuses the prefix across turns.
@@ -41,6 +40,10 @@ _CLAIM = re.compile(
     r"(saved|sent|deleted|removed|created|scheduled|emailed|stored|remembered|booked|moved|renamed|updated|"
     r"installed|ran|executed|uploaded|downloaded|forwarded|replied|written to|changed|set up|cancelled)\b|"
     r"\b(has|have) been (saved|sent|deleted|scheduled|emailed|stored|booked|moved|created|uploaded)\b", re.I)
+
+# A claim can cross arbitrary stream chunks. Hold from its first possible word (including a word split at the
+# end of a chunk); text before that word can still stream immediately. This covers every start in _CLAIM.
+_CLAIM_START = re.compile(r"\b(?:i|done|has|have)\b|\b(?:d|do|don|h|ha|hav)\Z", re.I)
 
 # FCV-06: the routing marker is internal. A reply that merely mentions it (for example while explaining how URI
 # handles actions) must not show it to the user; only a reply that IS the marker reroutes to Core.
@@ -191,14 +194,33 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
     """Stream an answer. `on_delta(kind, text)` receives "answer" text only after the marker check, and
     "reasoning" deltas (NORMAL tier) as they arrive."""
     cancel = cancel or BC.CancelToken()
-    held = {"buf": "", "released": False, "marker": False, "tail": ""}
+    held = {"buf": "", "released": False, "marker": False, "tail": "", "claim": "", "claim_held": False}
+    displayed = []
 
     def emit(text, final=False):
         s = held["tail"] + text
         cut = len(s) if final else _safe_cut(s)
         out, held["tail"] = scrub_marker(s[:cut]), s[cut:]
-        if out and on_delta:
-            on_delta("answer", out)
+        if out:
+            displayed.append(out)
+            if on_delta:
+                on_delta("answer", out)
+
+    def safe_emit(chunk):
+        if executed_action:
+            emit(chunk)
+            return
+        held["claim"] += chunk
+        if held["claim_held"]:
+            return
+        start = _CLAIM_START.search(held["claim"])
+        if start:
+            emit(held["claim"][:start.start()])
+            held["claim"] = held["claim"][start.start():]
+            held["claim_held"] = True
+        else:
+            emit(held["claim"])
+            held["claim"] = ""
 
     def relay(kind, text):
         if kind == "reasoning":
@@ -206,7 +228,7 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
                 on_delta("reasoning", text)
             return
         if held["released"]:
-            emit(text)
+            safe_emit(text)
             return
         held["buf"] += text
         probe = held["buf"].lstrip().lstrip("`")
@@ -216,7 +238,7 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
                 cancel.cancel("action_marker")
             return
         held["released"] = True
-        emit(held["buf"])
+        safe_emit(held["buf"])
 
     body = {"model": "local", "messages": build_messages(user_text, history, memory=memory,
                                                         capability_ids=capability_ids),
@@ -232,15 +254,14 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
     if held["marker"] or (res.text.strip().strip("`").strip() == ACTION_MARKER):
         return AnswerOutcome("ACTION_REQUESTED", tier, metrics=metrics)
     if not held["released"] and held["buf"]:
-        emit(held["buf"], final=True)          # short reply that was a strict prefix of the marker (e.g. "<")
-    emit("", final=True)                       # release the held-back tail
-    text = scrub_marker(res.text)
+        safe_emit(held["buf"])                  # short reply that was a strict prefix of the marker (e.g. "<")
     flags = []
-    if res.status in (BC.COMPLETE, BC.INCOMPLETE_LENGTH) and not executed_action and claims_action(text):
+    if not executed_action and claims_action(res.text):
         flags.append("UNVERIFIED_ACTION_CLAIM")
-        text += CLAIM_CORRECTION
-        if on_delta:
-            on_delta("answer", CLAIM_CORRECTION)
+        emit(CLAIM_CORRECTION, final=True)
+    else:
+        emit(held["claim"], final=True)
+    text = "".join(displayed)
     post = after_result(tier, res.status)
     return AnswerOutcome(res.status, tier, text=text, complete=post["complete"],
                          escalation_candidate=post["escalation_candidate"], flags=flags, metrics=metrics,

@@ -191,6 +191,24 @@ def test_a_fabricated_memory_save_gets_the_correction(fake, tmp_path):
     assert "UNVERIFIED_ACTION_CLAIM" in done["flags"]
 
 
+@pytest.mark.parametrize("chunks", [
+    ["I have saved your new fact."],
+    ["I ha", "ve sa", "ved your new fact."],
+    ["Here is the date. I", " have saved your new fact."],
+    ["Done", ". I have saved your new fact."],
+])
+def test_unverified_save_claim_never_reaches_an_answer_delta_or_final_text(fake, tmp_path, chunks):
+    """R1-03: the UI consumes each delta before answer.done, so a later correction cannot retract a claim."""
+    fake.scripts.append({"chunks": [("answer", chunk) for chunk in chunks], "finish": "stop"})
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    turn(b, "What day is it?")
+    deltas = [d["text"] for d in frames.data("answer.delta")]
+    assert all("saved your new fact" not in delta for delta in deltas)
+    assert "saved your new fact" not in shown(frames)
+    assert shown(frames).endswith(A.CLAIM_CORRECTION)
+    assert "UNVERIFIED_ACTION_CLAIM" in frames.data("answer.done")[-1]["flags"]
+
+
 # ---- review round 3 ----------------------------------------------------------------------------------------------
 
 @pytest.mark.parametrize("text", [

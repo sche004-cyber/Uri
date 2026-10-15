@@ -50,6 +50,25 @@ def test_unverified_action_claim_is_flagged_and_corrected(fake):
     assert out2.flags == []
 
 
+@pytest.mark.parametrize("chunks", [
+    ["I have saved your new fact."],
+    ["I ha", "ve sa", "ved your new fact."],
+    ["Here is the date. I", " have saved your new fact."],
+    ["Done", ". I have saved your new fact."],
+])
+def test_unverified_action_claim_is_never_streamed_or_retained(fake, chunks):
+    """R1-03: no answer delta or final result may assert an action this channel never executed."""
+    fake.scripts.append({"chunks": [("answer", chunk) for chunk in chunks], "finish": "stop"})
+    deltas = []
+    out = A.answer(BC.BrainClient(fake.url), "What day is it?", on_delta=lambda k, t: deltas.append((k, t)))
+    shown = "".join(text for kind, text in deltas if kind == "answer")
+    assert shown == out.text
+    assert "saved your new fact" not in shown
+    assert not any("saved your new fact" in text for _, text in deltas)
+    assert shown.endswith(A.CLAIM_CORRECTION)
+    assert "UNVERIFIED_ACTION_CLAIM" in out.flags
+
+
 def test_normal_tier_request_parameters_and_length_escalation(fake):
     fake.scripts.append({"chunks": [("reasoning", "r" * 10), ("answer", "partial")], "finish": "length"})
     out = A.answer(BC.BrainClient(fake.url), "plan my week", tier=NORMAL)
