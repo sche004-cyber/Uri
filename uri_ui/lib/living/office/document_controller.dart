@@ -512,7 +512,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         // every answer goes through _takeWorkflowView, which says each outcome once.
         if (v['state'] == 'running') {
           final now = workflowView?['state'];
-          if (activeWorkflow == w && (now == null || now == 'running')) {
+          if (activeWorkflow == w && !_isSettled(w) && (now == null || now == 'running')) {
             workflowView = v;
             conversation.say(OfficeSpeaker.notice, 'Stopping the task…', 'Task');
           }
@@ -521,37 +521,57 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         }
       });
 
-  /// Workflow views from the poll and from owner actions arrive concurrently (Codex R5/R6). A settled view is never
-  /// replaced by a late "running" one (except by an explicit resume), each settled state of a workflow is announced
-  /// once, and the outcome of a task the owner has moved away from is still said.
+  /// Workflow views from the poll and from owner actions arrive concurrently (Codex R5-R7). One rule for all of them:
+  /// [_lastSettled] keeps, per workflow, the last settled state that was taken (one entry per task run; a session holds
+  /// few). A "running" view never replaces a known settled state unless the owner resumed the task, also after a
+  /// revisit cleared the visible view. Each settled state is announced once, whether the task is shown or not.
   static const _settledStates = {'ready_to_save', 'needs_review', 'failed', 'cancelled', 'saved', 'discarded'};
-  final List<String> _announced = [];
+  final Map<String, String> _lastSettled = {};
 
-  bool _firstTime(String key) {
-    if (_announced.contains(key)) return false;
-    _announced.add(key);
-    if (_announced.length > 64) _announced.removeAt(0);   // bounded; old tasks are not polled again
-    return true;
-  }
+  bool _isSettled(String wid) => _settledStates.contains(_lastSettled[wid]);
 
   void _takeWorkflowView(String wid, Map<String, dynamic> v, {bool resumed = false}) {
     final state = '${v['state']}';
-    if (activeWorkflow != wid) {
-      if (_settledStates.contains(state) && _firstTime('$wid:$state')) {
-        if (state == 'cancelled') conversation.say(OfficeSpeaker.notice, _cancelledText, 'Task');
-        if (state == 'failed') {
-          final errs = (v['errors'] as List? ?? const []);
-          final code = errs.isEmpty ? '' : '${(errs.last as Map)['code']}';
-          conversation.say(OfficeSpeaker.notice, officeErrorText[code] ?? 'The task stopped.', 'Task');
-        }
-      }
-      return;
+    if (state == 'running' && !resumed && _isSettled(wid)) return;
+    final first = _settledStates.contains(state) && _lastSettled[wid] != state;
+    if (_settledStates.contains(state)) _lastSettled[wid] = state;
+    if (activeWorkflow == wid) {
+      workflowView = v;
+      stepLabel = _stepLabel(v);
     }
-    final current = workflowView?['state'];
-    if (state == 'running' && !resumed && _settledStates.contains(current)) return;
-    workflowView = v;
-    stepLabel = _stepLabel(v);
-    if (state != 'running' && _firstTime('$wid:$state')) _onWorkflowSettled();
+    if (first) _announce(wid, v);
+  }
+
+  /// The one place that says a task's outcome (shown task or not) and, for the shown task, sets its labels.
+  void _announce(String wid, Map<String, dynamic> v) {
+    final state = v['state'];
+    final shown = activeWorkflow == wid;
+    final findings = (v['findings'] as List? ?? const []);
+    switch (state) {
+      case 'ready_to_save':
+        final warn = findings.where((f) => (f as Map)['severity'] == 'warning').length;
+        if (shown) stepLabel = 'Ready to save';
+        conversation.say(OfficeSpeaker.uri,
+            warn == 0 ? 'The PDF is ready. Check the pages, then press Save.'
+                : 'The PDF is ready with $warn warning(s). Review them, then accept and save.', 'Task');
+      case 'needs_review':
+        if (shown) stepLabel = 'Needs review';
+        conversation.say(OfficeSpeaker.uri, 'The PDF has problems that block saving. See the findings.', 'Task');
+      case 'cancelled':
+        if (shown) stepLabel = 'Cancelled';
+        conversation.say(OfficeSpeaker.notice, _cancelledText, 'Task');
+      case 'failed':
+        final errs = (v['errors'] as List? ?? const []);
+        final code = errs.isEmpty ? '' : '${(errs.last as Map)['code']}';
+        final text = officeErrorText[code] ?? 'The task stopped.';
+        if (shown) {
+          stepLabel = 'Failed';
+          lastErrorCode = code;
+          lastError = text;
+        }
+        conversation.say(OfficeSpeaker.notice, text, 'Task');
+    }
+    unawaited(refresh());
   }
 
   Future<void> resumeWorkflow() => _guard(() async {
@@ -565,7 +585,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
           paths.add(p);
         }
         final w = activeWorkflow!;
-        _announced.removeWhere((k) => k.startsWith('$w:'));   // a resumed task may settle again
+        _lastSettled.remove(w);                                // a resumed task may settle again
         // Codex R6-3: a resume can settle before its answer is read; the answer goes through the settle path.
         _takeWorkflowView(w, await client.resumeWorkflow(w, paths), resumed: true);
       });
@@ -576,33 +596,6 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   }
 
   static const _cancelledText = 'Cancelled. Nothing was saved, and your original file is unchanged.';
-
-  void _onWorkflowSettled() {
-    final v = workflowView!;
-    final state = v['state'];
-    final findings = (v['findings'] as List? ?? const []);
-    if (state == 'ready_to_save') {
-      stepLabel = 'Ready to save';
-      final warn = findings.where((f) => (f as Map)['severity'] == 'warning').length;
-      conversation.say(OfficeSpeaker.uri,
-          warn == 0 ? 'The PDF is ready. Check the pages, then press Save.'
-              : 'The PDF is ready with $warn warning(s). Review them, then accept and save.', 'Task');
-    } else if (state == 'needs_review') {
-      stepLabel = 'Needs review';
-      conversation.say(OfficeSpeaker.uri, 'The PDF has problems that block saving. See the findings.', 'Task');
-    } else if (state == 'cancelled') {
-      stepLabel = 'Cancelled';
-      conversation.say(OfficeSpeaker.notice, _cancelledText, 'Task');
-    } else if (state == 'failed') {
-      final errs = (v['errors'] as List? ?? const []);
-      final code = errs.isEmpty ? '' : '${(errs.last as Map)['code']}';
-      stepLabel = 'Failed';
-      lastErrorCode = code;
-      lastError = officeErrorText[code] ?? 'The task stopped.';
-      conversation.say(OfficeSpeaker.notice, lastError!, 'Task');
-    }
-    unawaited(refresh());
-  }
 
   static String _stepLabel(Map<String, dynamic> v) {
     final steps = (v['steps'] as List? ?? const []).cast<Map>();
@@ -627,12 +620,13 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       if (result['status'] == 'applied') {
         // Codex R6-2: only the workflow this plan belongs to, and never over an outcome the poll already saw.
         final wid = '${result['subject_id'] ?? activeWorkflow}';
-        if (wid == activeWorkflow && !_settledStates.contains(workflowView?['state'])) {
+        if (wid == activeWorkflow && !_isSettled(wid) && !_settledStates.contains(workflowView?['state'])) {
           stepLabel = 'Starting…';
           workflowView = {...?workflowView, 'state': 'running'};
           centre = OfficeCentre.workflow;
+          // Codex R7-2: said only when it is still true.
+          conversation.say(OfficeSpeaker.uri, 'Working on it. Your original file is not changed.', 'Task');
         }
-        conversation.say(OfficeSpeaker.uri, 'Working on it. Your original file is not changed.', 'Task');
       } else {
         stepLabel = null;
         conversation.say(OfficeSpeaker.notice, 'Plan discarded. Nothing was done.', 'Task');
