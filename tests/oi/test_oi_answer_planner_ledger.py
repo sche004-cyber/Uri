@@ -69,6 +69,28 @@ def test_unverified_action_claim_is_never_streamed_or_retained(fake, chunks):
     assert "UNVERIFIED_ACTION_CLAIM" in out.flags
 
 
+def test_a_reply_without_a_claim_still_streams_before_it_completes(fake):
+    """The claim guard holds only a short trailing window, so ordinary replies that say "I" keep streaming."""
+    words = ["I don't have any saved information about your locker number. "] + ["Here is more detail. "] * 20
+    fake.scripts.append({"chunks": [("answer", w) for w in words], "finish": "stop"})
+    deltas = []
+    out = A.answer(BC.BrainClient(fake.url), "What is my locker number?", on_delta=lambda k, t: deltas.append(t))
+    assert len(deltas) > 10                                   # streamed, not released only at the end
+    assert "".join(deltas[:3]).startswith("I don't have any saved information")
+    assert "".join(deltas) == out.text == "".join(words)
+    assert out.flags == []
+
+
+def test_text_before_a_claim_streams_and_only_the_claim_is_replaced(fake):
+    chunks = ["The lab is closed on Friday. "] * 8 + ["I ha", "ve sa", "ved that for you."]
+    fake.scripts.append({"chunks": [("answer", c) for c in chunks], "finish": "stop"})
+    deltas = []
+    out = A.answer(BC.BrainClient(fake.url), "When is the lab closed?", on_delta=lambda k, t: deltas.append(t))
+    assert "saved" not in "".join(deltas)
+    assert out.text == "The lab is closed on Friday. " * 8 + A.CLAIM_CORRECTION
+    assert "UNVERIFIED_ACTION_CLAIM" in out.flags
+
+
 def test_normal_tier_request_parameters_and_length_escalation(fake):
     fake.scripts.append({"chunks": [("reasoning", "r" * 10), ("answer", "partial")], "finish": "length"})
     out = A.answer(BC.BrainClient(fake.url), "plan my week", tier=NORMAL)

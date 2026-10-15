@@ -5,8 +5,10 @@ This channel has NO tools and NO authority. Two guards keep it honest:
      DO something (save, send, delete, schedule, change files, run...). The first characters of the answer are held
      back until they cannot be the marker; on the marker the generation is cancelled and the turn is handed to Core.
      This catches action requests that deterministic triage missed, at no extra model call.
-  2. Action-claim check: text from the start of a possible completed-action claim is held until the full reply
-     can be checked. An unverified claim is discarded and replaced with a correction before it reaches the UI.
+  2. Action-claim check: text from a word that could start a completed-action claim is held back while it streams,
+     for at most _CLAIM_WINDOW characters (longer than any claim), then released if no claim formed. Once a claim
+     matches, nothing more streams; an unverified claim is discarded and replaced with a correction before it
+     reaches the UI. Text with no such word streams unchanged.
 
 Prompt layout follows the v1 context architecture (stable system message first, current turn last) so the
 prompt cache reuses the prefix across turns.
@@ -41,9 +43,13 @@ _CLAIM = re.compile(
     r"installed|ran|executed|uploaded|downloaded|forwarded|replied|written to|changed|set up|cancelled)\b|"
     r"\b(has|have) been (saved|sent|deleted|scheduled|emailed|stored|booked|moved|created|uploaded)\b", re.I)
 
-# A claim can cross arbitrary stream chunks. Hold from its first possible word (including a word split at the
-# end of a chunk); text before that word can still stream immediately. This covers every start in _CLAIM.
+# A claim can cross arbitrary stream chunks. Streaming holds text from the first word that could start a _CLAIM
+# match (including a word split at the end of a chunk), but only while that word is within _CLAIM_WINDOW
+# characters of the end: longer than any _CLAIM match (the longest, "done, i successfully written to", is under
+# 40), so a claim is always found before any of it is shown. Only an implausible whitespace run inside a claim
+# could exceed the window; the final check below still flags and corrects that case.
 _CLAIM_START = re.compile(r"\b(?:i|done|has|have)\b|\b(?:d|do|don|h|ha|hav)\Z", re.I)
+_CLAIM_WINDOW = 120
 
 # FCV-06: the routing marker is internal. A reply that merely mentions it (for example while explaining how URI
 # handles actions) must not show it to the user; only a reply that IS the marker reroutes to Core.
@@ -194,7 +200,8 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
     """Stream an answer. `on_delta(kind, text)` receives "answer" text only after the marker check, and
     "reasoning" deltas (NORMAL tier) as they arrive."""
     cancel = cancel or BC.CancelToken()
-    held = {"buf": "", "released": False, "marker": False, "tail": "", "claim": "", "claim_held": False}
+    held = {"buf": "", "released": False, "marker": False, "tail": "", "claim": "", "claim_held": False,
+            "prev": ""}
     displayed = []
 
     def emit(text, final=False):
@@ -213,14 +220,19 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
         held["claim"] += chunk
         if held["claim_held"]:
             return
-        start = _CLAIM_START.search(held["claim"])
-        if start:
-            emit(held["claim"][:start.start()])
-            held["claim"] = held["claim"][start.start():]
+        # Search with the last released character as context, so a word boundary is judged as in the full text.
+        m = _CLAIM.search(held["prev"] + held["claim"], len(held["prev"]))
+        if m:
+            cut = m.start() - len(held["prev"])
             held["claim_held"] = True
         else:
-            emit(held["claim"])
-            held["claim"] = ""
+            lo = len(held["prev"]) + max(0, len(held["claim"]) - _CLAIM_WINDOW)
+            start = _CLAIM_START.search(held["prev"] + held["claim"], lo)
+            cut = start.start() - len(held["prev"]) if start else len(held["claim"])
+        if cut:
+            emit(held["claim"][:cut])
+            held["prev"] = held["claim"][cut - 1]
+            held["claim"] = held["claim"][cut:]
 
     def relay(kind, text):
         if kind == "reasoning":
