@@ -21,7 +21,7 @@ CH = ["C1", "C2", "C3", "C4", "C5", "C6"]
 PR = ["P1", "P2", "P3", "P4"]
 AN = ["A1", "A2", "A3", "A4"]
 ORDER = ["ref_reframed", "painting_app", "painting_card", "ref_copy", "v21", "v21_worst", "v21_mid",
-         "v21_frame_only", "v21_disc", "v21_wide", "v21_card", "v2_app", "v1"]
+         "v21_frame_only", "v21_disc", "v21_wide", "v21_card", "v21_painted", "t1_glow", "t2_glow_haze35", "t3_glow_haze60", "v2_app", "v1"]
 
 
 def pct(d: dict, keys: list[str]) -> float:

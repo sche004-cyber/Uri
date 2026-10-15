@@ -25,7 +25,7 @@ OUT = REPO / "docs/companions/fire/v21/evidence/demos"
 
 def gif(rd: cp.Renderer, clip: str, size: int = 300) -> None:
     n = EXPR["clips"][clip]["loop"]
-    frames = [cp.app_view(rd.cell(clip, i, EXPR["frame"], EXPR.get("stage", {}))).resize((size, size), Image.LANCZOS)
+    frames = [cp.app_view(rd.cell(clip, i, EXPR["frame"], EXPR["clips"][clip].get("stage", EXPR.get("stage", {})))).resize((size, size), Image.LANCZOS)
               for i in range(0, n, 2)]
     frames[0].save(OUT / f"{clip}.gif", save_all=True, append_images=frames[1:], duration=1000 // 12, loop=0)
     print(clip, "gif", flush=True)
@@ -40,7 +40,7 @@ def main() -> None:
         tile = Image.new("RGB", (448 * 3 + 32, 490), (0x13, 0x0F, 0x0B))
         tile.paste(ref, (0, 5))
         tile.paste(cp.app_view(rd.cell(state, 0, cp.V2_FRAME, cp.V2_STAGE)).resize((448, 448)), (464, 21))
-        tile.paste(cp.app_view(rd.cell(state, 0, EXPR["frame"], EXPR.get("stage", {}))).resize((448, 448)),
+        tile.paste(cp.app_view(rd.cell(state, 0, EXPR["frame"], EXPR["clips"][state].get("stage", EXPR.get("stage", {})))).resize((448, 448)),
                    (928, 21))
         rows.append(np.asarray(tile))
     Image.fromarray(np.concatenate(rows, 0)).save(OUT / "before_after.jpg", quality=90)

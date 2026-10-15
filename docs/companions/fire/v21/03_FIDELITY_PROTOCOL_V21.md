@@ -131,3 +131,12 @@ candidates replace V2 and the V2.1 frame variants with: `v21_disc` (the current 
 0.86 of the radius), `v21_card` (square box with soft rounded edges over the outer 10 %) and the control
 `painting_card`. P2 has no animation part and no pass rule. It does not change the qualification rules: the verdict
 still comes only from Q1 under section 7, on whatever presentation is actually implemented.
+
+**C-2 (after Q1, before P3): exploratory round P3 "transparency".** The owner directive "Ember V2.1 - URI UI V2
+Compatibility" (2026-10-15) requires Ember to have no permanent opaque background. V2.1's painted backdrop (and V2's
+pool) is opaque. P3 measures what transparent-ready variants cost in fidelity, in the same app view as Q1. It uses
+the P2 prompt (no animation task), the same dimensions, anchors and validity rule. Candidates: `ref_reframed`,
+`ref_copy`, `v1`, `painting_app`, `v21_painted` (Q1's V2.1), `t1_glow` (alpha-only character with emissive flame
+glow, alpha capped at 0.45), `t2_glow_haze35` and `t3_glow_haze60` (t1 plus the painted backdrop as a translucent
+haze at 35 % / 60 %). P3 has no pass rule. Q1 remains the qualification result for the presentation it measured;
+any transparent build that becomes the shipped default needs its own qualification round under section 7.

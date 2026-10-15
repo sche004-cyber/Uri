@@ -117,12 +117,17 @@ class Framing:
             a = a * ss(xx) * ss(self.side - 1 - xx) * ss(yy) * ss(self.side - 1 - yy)
         else:
             edge = np.minimum.reduce([xx, self.side - 1 - xx, yy, self.side - 1 - yy])
-            e = np.clip(edge / fade, 0, 1)
+            # edge_margin (V2.1 transparency): fully transparent for the last
+            # few percent of the cell, not just at its outermost pixel
+            e = np.clip((edge - st.get("edge_margin", 0.0) * self.side) / fade, 0, 1)
             a = a * e * e * (3 - 2 * e)
         return np.dstack([bg * a[..., None], a]).astype(np.float32)
 
-    def big_frame(self, pm: np.ndarray, aura: float = 0.0) -> np.ndarray:
+    def big_frame(self, pm: np.ndarray, aura: float = 0.0, effects: bool = True) -> np.ndarray:
         big = self.place(pm)
+        g = self.stage.get("glow") if effects else None
+        if g:
+            big = big + self.glow(big, g) * (1 - big[..., 3:4])
         au = self._aura.get(aura)
         if au is None and aura > 0:
             au = self._aura[aura] = self.aura(aura)
@@ -130,9 +135,33 @@ class Framing:
             big = big + au * (1 - big[..., 3:4])
         return big
 
-    def cell_image(self, pm: np.ndarray, aura: float = 0.0) -> np.ndarray:
-        """Premultiplied panel frame -> premultiplied cell (area-averaged)."""
-        big = self.big_frame(pm, aura)
+    def glow(self, big: np.ndarray, g: dict) -> np.ndarray:
+        """Light the flames cast into the air around them (transparency mode).
+
+        On a transparent window there is no painted background to carry the
+        glow, and a desktop compositor only does source-over, so light is
+        encoded as a translucent warm layer: the bright parts of this frame,
+        blurred, with alpha proportional to the blurred brightness and never
+        above `cap`. It follows the animated flames frame by frame and fades
+        to zero before the cell border. Premultiplied, square frame."""
+        rgb = big[..., :3]
+        lum = rgb.max(2)
+        w = np.clip((lum - g.get("floor", 0.3)) / 0.4, 0, 1)
+        s = g.get("sigma", 18) * self.side / 490
+        col = ndi.gaussian_filter(rgb * w[..., None], (s, s, 0))
+        amt = ndi.gaussian_filter(lum * w, s)
+        ga = np.clip(amt * g.get("gain", 2.0), 0, g.get("cap", 0.45))
+        straight_col = col / np.maximum(amt, 1e-4)[..., None]
+        yy, xx = np.mgrid[0:self.side, 0:self.side].astype(np.float32)
+        edge = np.minimum.reduce([xx, self.side - 1 - xx, yy, self.side - 1 - yy])
+        e = np.clip(edge / (0.08 * self.side), 0, 1)
+        ga = ga * e * e * (3 - 2 * e)
+        return np.dstack([straight_col.clip(0, 1) * ga[..., None], ga]).astype(np.float32)
+
+    def cell_image(self, pm: np.ndarray, aura: float = 0.0, effects: bool = True) -> np.ndarray:
+        """Premultiplied panel frame -> premultiplied cell (area-averaged).
+        effects=False: geometry only (no glow), for masks."""
+        big = self.big_frame(pm, aura, effects)
         # downsample premultiplied (no dark fringes), Lanczos per channel
         out = [np.asarray(Image.fromarray(big[..., c]).resize((self.cell, self.cell), Image.LANCZOS))
                for c in range(4)]
@@ -193,7 +222,7 @@ def blink_patches(name: str, spec: dict, pn: Panel, fr: Framing):
         mask = np.maximum(mask, g.astype(np.float32))
     mask = ndi.gaussian_filter(mask, 1.2)
     mpm = np.dstack([mask, mask, mask, mask])
-    mcell = fr.cell_image(mpm)[..., 3]
+    mcell = fr.cell_image(mpm, effects=False)[..., 3]
     out = []
     base_lid = spec.get("face", {}).get("lid", 0.0)
     for lv in levels:
@@ -234,7 +263,8 @@ def main() -> None:
             manifest["clips"].pop(name, None)
             continue
         pn = panels.get(spec["panel"]) or panels.setdefault(spec["panel"], Panel(spec["panel"]))
-        fr = Framing(pn, cell)
+        # a clip may override the backdrop stage (expressions.json clip "stage")
+        fr = Framing(pn, cell, spec.get("stage"))
         n = spec["loop"]
         cells, offs = [], []
         e0 = None

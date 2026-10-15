@@ -51,7 +51,17 @@ PRESENCE_SCALE = min(max(0.50 / 0.42, 1.0), 1.4)  # companion_presence.dart pres
 # V2 as committed at b73bd26c (expressions.json had no "stage"; this "frame")
 V2_FRAME = {"side": 490, "feet_at": 0.955}
 V2_STAGE: dict = {}
+# V2.1's painted, opaque backdrop as committed at 9933ca2b
+PAINTED = {"texture": True, "pool": [5, 6], "edge": 0.04, "strength": 1.0}
 EVID = REPO / "docs/companions/fire/v21/evidence/fidelity"
+# Transparency variants (owner directive "UI V2 compatibility", round P3): no
+# opaque backdrop; the clips' V2 aura pool is switched off ("strength": 0).
+GLOW = {"sigma": 18, "gain": 2.0, "cap": 0.45}
+TRANSPARENT = {
+    "t1_glow": {"strength": 0.0, "glow": GLOW},
+    "t2_glow_haze35": {"glow": GLOW, "texture": True, "strength": 0.35, "pool": [0.35, 0.95], "edge": 0.08},
+    "t3_glow_haze60": {"glow": GLOW, "texture": True, "strength": 0.60, "pool": [0.35, 0.95], "edge": 0.08},
+}
 WORST = REPO / "docs/companions/fire/v2/evidence/fidelity/auto_cp8/scores_v2.json"
 
 
@@ -121,6 +131,8 @@ def main() -> None:
     ap.add_argument("--reviewers", type=int, default=3)
     ap.add_argument("--tag", required=True)
     ap.add_argument("--seed", type=int, default=2100)
+    ap.add_argument("--transparency", action="store_true",
+                    help="round P3: transparent-ready variants replace V2 and the V2.1 frame variants")
     ap.add_argument("--hostprobe", action="store_true",
                     help="round P2: host presentation alternatives replace V2 and the V2.1 frame variants")
     a = ap.parse_args()
@@ -129,7 +141,7 @@ def main() -> None:
     keydir.mkdir(parents=True, exist_ok=True)
     worst = json.loads(WORST.read_text())
     v21_frame, v21_stage = EXPR["frame"], EXPR.get("stage", {})
-    if v21_frame.get("center") != "panel" or not v21_stage.get("texture"):
+    if v21_frame.get("center") != "panel" or not (v21_stage.get("texture") or v21_stage.get("glow")):
         raise SystemExit("expressions.json is not the V2.1 configuration")
     rd = Renderer()
     v1sheet = Image.open(V1_SHEET).convert("RGB")
@@ -137,6 +149,8 @@ def main() -> None:
     static: dict[str, dict[str, Image.Image]] = {}
     anim: dict[str, dict[str, list[Image.Image]]] = {}
     for k, state in enumerate(STATES):
+        # the shipped stage for this clip (a clip may override the global one)
+        v21_stage = EXPR["clips"][state].get("stage", EXPR.get("stage", {}))
         ref = fs.load_panel(state)
         w, h = ref.size
         reframed = ref.resize((int(w * 0.94), int(h * 0.94)), Image.LANCZOS)
@@ -150,12 +164,19 @@ def main() -> None:
             "ref_reframed": sharp,
             "ref_copy": fs.degraded_copy(ref),
             "v1": v1sheet.crop((k * 448, 480, (k + 1) * 448, 960)),
-            "painting_app": app_view(rd.cell(state, None, v21_frame, v21_stage)),
+            # control: the painting in the V2.1 (painted, Q1) presentation in every round
+            "painting_app": app_view(rd.cell(state, None, v21_frame, PAINTED)),
             "v2_app": app_view(rd.cell(state, wf, V2_FRAME, V2_STAGE)),
             "v21_worst": app_view(rd.cell(state, wf, v21_frame, v21_stage)),
             "v21_mid": app_view(rd.cell(state, mid, v21_frame, v21_stage)),
             "v21_frame_only": app_view(rd.cell(state, wf, v21_frame, V2_STAGE)),
         }
+        if a.transparency:
+            for nm in ("v2_app", "v21_worst", "v21_mid", "v21_frame_only"):
+                del static[state][nm]
+            static[state]["v21_painted"] = app_view(rd.cell(state, wf, v21_frame, PAINTED))
+            for nm, cfg in TRANSPARENT.items():
+                static[state][nm] = app_view(rd.cell(state, wf, v21_frame, cfg))
         if a.hostprobe:
             c21 = rd.cell(state, wf, v21_frame, v21_stage)
             cp_ = rd.cell(state, None, v21_frame, v21_stage)
@@ -168,7 +189,7 @@ def main() -> None:
                 "painting_card": app_view(cp_, "card"),
             })
         picks = [round(j * n / 6) % n for j in range(6)]
-        if a.hostprobe:
+        if a.hostprobe or a.transparency:
             anim[state] = {}
             print(state, "rendered", flush=True)
             continue
@@ -194,7 +215,7 @@ def main() -> None:
                 p = out / f"{state}_candidate_{L}.png"
                 cands[nm].save(p)
                 rk[state][L] = nm
-            if a.hostprobe:
+            if a.hostprobe or a.transparency:
                 continue
             pair = ["v2", "v21"]
             rng.shuffle(pair)

@@ -1,0 +1,46 @@
+{
+  "reviewer": "p3-reviewer3",
+  "static": {
+    "idle": {
+      "A": {"C1": 9, "C2": 9, "C3": 9, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 6.5, "P3": 6, "P4": 7, "note": "Same painting but placed on a near-black square with a heavy vignette; the painted brown background, outer wisps and floor glow are mostly lost, so the glow reads as a halo on black. Slightly softer, lower-res rendering."},
+      "B": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 7.5, "P3": 7.5, "P4": 7.5, "note": "Painting inside a round soft vignette on dark; more of the painted background survives than in the hard-black versions, but edges and floor are darkened and the frame is cropped/rescaled."},
+      "C": {"C1": 9, "C2": 9, "C3": 9, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 6.5, "P3": 6, "P4": 7, "note": "Appears identical to A: near-black background with tight vignette, background brushwork and outer flame wisps suppressed."},
+      "D": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 7.5, "P3": 7.5, "P4": 7.5, "note": "Appears identical to B: round soft vignette, painted background partially retained, edges darkened, slight softening."},
+      "E": {"C1": 9, "C2": 9, "C3": 9, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 6.5, "P3": 6, "P4": 7, "note": "Appears identical to A and C: hard dark background with glow halo; the painted environment is largely gone."},
+      "F": {"C1": 4, "C2": 3, "C3": 3, "C4": 3, "C5": 4, "C6": 4, "P1": 1, "P2": 4, "P3": 4, "P4": 5, "note": "A clean 3D/vector re-creation: smooth egg head with glossy highlighted eyes, regular stringy flame strands, stick legs, no curled tail flame. Same concept but clearly a different rendering of the character."},
+      "G": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 9.5, "P2": 9.5, "P3": 9, "P4": 8.5, "note": "The target painting itself, slightly reduced and set inside a flat brown border frame; character identical, presentation differs only by the added frame margin."},
+      "H": {"C1": 9, "C2": 7.5, "C3": 8, "C4": 7, "C5": 8.5, "C6": 9, "P1": 4, "P2": 8, "P3": 9, "P4": 9.5, "note": "Target composition but heavily blurred/upscaled from low resolution; brushwork, flame strand detail and the signature are smeared away, though colours and framing match."}
+    },
+    "joyful": {
+      "A": {"C1": 9, "C2": 9, "C3": 9, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 6.5, "P3": 6, "P4": 7, "note": "Joyful painting on a near-black field with a tight vignette; many outer embers and the top flame tail fade into black, warm brown background gone."},
+      "B": {"C1": 4, "C2": 3, "C3": 3, "C4": 3, "C5": 4, "C6": 5, "P1": 1, "P2": 4, "P3": 4, "P4": 5, "note": "3D/vector reinterpretation: big smooth white head, glossy dot eyes, simple open-mouth smile, spiky symmetric flame strands, stiff stick body. Mood roughly joyful but character and style differ strongly."},
+      "C": {"C1": 9, "C2": 9, "C3": 9, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 6.5, "P3": 6, "P4": 7, "note": "Appears identical to A: hard dark background, embers and flame tips lost into black."},
+      "D": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 9.5, "P2": 9.5, "P3": 9, "P4": 8.5, "note": "Target painting reduced inside a flat brown border; otherwise unchanged."},
+      "E": {"C1": 9, "C2": 9, "C3": 9, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 6.5, "P3": 6, "P4": 7, "note": "Appears identical to A and C: black vignette treatment suppresses the painted ambience and outer embers."},
+      "F": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 7.5, "P3": 7.5, "P4": 7.5, "note": "Round soft vignette; more of the brown backdrop and embers survive, but the scene is darker at the edges and rescaled."},
+      "G": {"C1": 9, "C2": 7.5, "C3": 8, "C4": 7, "C5": 8.5, "C6": 9, "P1": 4, "P2": 8, "P3": 9, "P4": 9.5, "note": "Target composition heavily blurred; facial line work, flame strands and ember sharpness lost."},
+      "H": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 7.5, "P3": 7.5, "P4": 7.5, "note": "Appears identical to F: round vignette, painted background partly kept, edges darkened."}
+    },
+    "fierce": {
+      "A": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 7.5, "P3": 7.5, "P4": 7.5, "note": "Round soft vignette on dark; painted brown backdrop partly retained, top flame tail and ground edges darkened, image rescaled."},
+      "B": {"C1": 9, "C2": 7.5, "C3": 8, "C4": 7, "C5": 8.5, "C6": 9, "P1": 4, "P2": 8, "P3": 9, "P4": 9.5, "note": "Target composition heavily blurred; brow lines, flame strands and embers smeared, painterly texture gone."},
+      "C": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 9.5, "P2": 9.5, "P3": 9, "P4": 8.5, "note": "Target painting reduced inside a flat brown frame border; character unchanged."},
+      "D": {"C1": 9, "C2": 9, "C3": 9, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 6.5, "P3": 6, "P4": 7, "note": "Near-black background with tight vignette; embers and the swirling top flame partly lost, ambient brown painting replaced by black, glow reads as halo."},
+      "E": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 7.5, "P3": 7.5, "P4": 7.5, "note": "Appears identical to A: round vignette treatment."},
+      "F": {"C1": 3, "C2": 3, "C3": 4, "C4": 3, "C5": 3, "C6": 5, "P1": 1, "P2": 4, "P3": 4, "P4": 4, "note": "3D/vector rendition: huge smooth egg head, chaotic stringy flame mane, blob-fists, shortened stance, character cropped at the top. Angry face kept but proportions and style very different."},
+      "G": {"C1": 9, "C2": 9, "C3": 9, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 6.5, "P3": 6, "P4": 7, "note": "Appears identical to D: hard dark background and vignette."},
+      "H": {"C1": 9, "C2": 9, "C3": 9, "C4": 8, "C5": 9, "C6": 9, "P1": 7.5, "P2": 6.5, "P3": 6, "P4": 7, "note": "Appears identical to D and G: hard dark background and vignette."}
+    },
+    "depleted": {
+      "A": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 7.5, "P3": 7.5, "P4": 7.5, "note": "Round soft vignette; the grey-brown painted backdrop is partly kept, smoke plume still visible, edges darkened, the stray grey square at lower right removed/obscured."},
+      "B": {"C1": 8.5, "C2": 9, "C3": 9, "C4": 7, "C5": 8.5, "C6": 8.5, "P1": 7, "P2": 6, "P3": 6, "P4": 7, "note": "Near-black background; smoke plume largely sinks into the dark and the body/feet become faint, so the exhausted grey ambience is reduced to a halo around the head."},
+      "C": {"C1": 9, "C2": 9, "C3": 9, "C4": 8.5, "C5": 9, "C6": 9, "P1": 8, "P2": 7.5, "P3": 7.5, "P4": 7.5, "note": "Appears identical to A: round vignette treatment."},
+      "D": {"C1": 8, "C2": 9, "C3": 9, "C4": 6.5, "C5": 8, "C6": 8.5, "P1": 6.5, "P2": 5.5, "P3": 5.5, "P4": 6.5, "note": "Darkest variant: smoke almost entirely gone, body and legs fade into black, small leftover light patch near the right foot; head and face intact."},
+      "E": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 9.5, "P2": 9.5, "P3": 8.5, "P4": 8.5, "note": "Target painting inside a flat border frame, including the odd grey square at lower right that also appears in the target; character unchanged."},
+      "F": {"C1": 8.5, "C2": 9, "C3": 9, "C4": 7, "C5": 8.5, "C6": 8.5, "P1": 7, "P2": 6, "P3": 6, "P4": 7, "note": "Similar to B: hard dark background, smoke and lower body faded, painted ambience lost."},
+      "G": {"C1": 9, "C2": 7.5, "C3": 8, "C4": 7, "C5": 8.5, "C6": 9, "P1": 4, "P2": 8, "P3": 9, "P4": 9.5, "note": "Target heavily blurred; eye detail, flame flicks and smoke wisps smeared, brushwork gone."},
+      "H": {"C1": 4, "C2": 3, "C3": 3, "C4": 3, "C5": 4, "C6": 5, "P1": 1, "P2": 4, "P3": 4, "P4": 5, "note": "3D/vector rendition: wide dark mushroom-shaped head, tiny eye highlights, tall regular flames instead of small embers, stylised smoke, stiff stick legs. Sad mood partly kept but character clearly different."}
+    }
+  },
+  "general_notes": "Across all four states the candidates fall into five consistent groups: (1) the target with a flat border frame (near-perfect), (2) a heavily blurred copy (character intact in shape and colour but texture destroyed), (3) a round soft vignette on dark that keeps some painted background, (4) a hard near-black background with tight vignette that loses outer embers/smoke and the painted ambience, and (5) a 3D/vector re-creation of the character that differs substantially. Several candidates within a state appear pixel-identical to each other (e.g. idle A/C/E, idle B/D, joyful A/C/E, joyful F/H, fierce A/E, fierce D/G/H, depleted A/C, depleted B/F roughly); I scored them identically except where I could see a difference (depleted D is darker than B/F). The vignetted versions are also somewhat softer/lower-resolution than the target, which I folded into P1. The depleted target itself contains a grey rectangular patch at lower right; candidates that remove it were not penalised on character dims. Judgements are visual only at the displayed resolution; fine differences within the vignette group could be missed."
+}
