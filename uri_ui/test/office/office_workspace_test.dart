@@ -405,6 +405,61 @@ void main() {
       expect(c.workflowView?['state'], 'cancelled');
       expect(c.conversation.lines.last.text, contains('Cancelled. Nothing was saved'));
     });
+
+    test('Codex R4-3: a task still stopping is not announced as cancelled', () async {
+      final mock = MockClient((req) async => http.Response(
+          jsonEncode({'state': 'running', 'steps': [], 'findings': []}), 200));
+      final c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', mock))
+        ..activeWorkflow = 'a' * 20;
+      await c.cancelWorkflow();
+      expect(c.conversation.lines.last.text, 'Stopping the task…');
+      expect(c.conversation.lines.any((l) => l.text.startsWith('Cancelled')), isFalse);
+    });
+
+    testWidgets('Codex R4-1: a saved task requests no output pages (its work files are gone)', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 600));
+      var pages = 0;
+      final mock = MockClient((req) async {
+        if (req.url.path.contains('/page/')) pages++;
+        return http.Response(jsonEncode({'error': 'NOT_FOUND'}), 404);
+      });
+      final c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', mock))
+        ..activeWorkflow = 'a' * 20
+        ..workflowView = {'state': 'saved', 'steps': [], 'findings': [], 'saved': {'name': 'report.pdf'},
+          'outputs': [{'name': 'report.pdf', 'pages': 12}]};
+      await tester.pumpWidget(MaterialApp(theme: ThemeData(extensions: const [UriColors.graphite]),
+          home: Scaffold(body: OfficeWorkflowView(controller: c))));
+      await tester.pump(const Duration(seconds: 5));
+      expect(pages, 0);
+      expect(find.textContaining('Saved as report.pdf'), findsOneWidget);
+    });
+
+    testWidgets('Codex R4-2: a page that takes long to draw still appears (no 8-second cut-off)', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 600));
+      var n = 0;
+      final mock = MockClient((req) async {
+        if (req.url.path.contains('/page/')) {
+          n++;
+          return n <= 25 ? http.Response('', 202) : http.Response.bytes(_png, 200, headers: {'content-type': 'image/png'});
+        }
+        return http.Response(jsonEncode({'error': 'NOT_FOUND'}), 404);
+      });
+      final c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', mock))
+        ..activeWorkflow = 'a' * 20
+        ..workflowView = {'state': 'ready_to_save', 'steps': [], 'findings': [], 'outputs': [{'name': 'r.pdf', 'pages': 1}]};
+      await tester.pumpWidget(MaterialApp(theme: ThemeData(extensions: const [UriColors.graphite]),
+          home: Scaffold(body: OfficeWorkflowView(controller: c))));
+      for (var i = 0; i < 120; i++) {
+        await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+        await tester.pump(const Duration(seconds: 1));
+      }
+      // The fake PNG cannot be decoded by the test engine; the widget tree is what matters here.
+      final e = tester.takeException();
+      expect(e == null || '$e'.contains('Codec failed'), isTrue);
+      expect(n, greaterThan(25));
+      expect(find.byType(Image), findsOneWidget);
+      expect(find.textContaining('not ready yet'), findsNothing);
+    });
   });
 
   group('R5 real-app repairs (2026-10-15)', () {

@@ -509,9 +509,13 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         workflowView = await client.cancelWorkflow(activeWorkflow!);
         _clearCards(activeWorkflow!);
         stepLabel = null;
-        // CX-1: the conversation said "Working on it" and nothing more after a cancel.
-        conversation.say(OfficeSpeaker.notice, 'Cancelled. Nothing was saved, and your original file is unchanged.',
-            'Task');
+        // CX-1: the conversation said "Working on it" and nothing more after a cancel. Codex R4-3: a running task
+        // may still be stopping; "Cancelled" is said once the service reports it (here or when the task settles).
+        if (workflowView?['state'] == 'cancelled') {
+          conversation.say(OfficeSpeaker.notice, _cancelledText, 'Task');
+        } else {
+          conversation.say(OfficeSpeaker.notice, 'Stopping the task…', 'Task');
+        }
       });
 
   Future<void> resumeWorkflow() => _guard(() async {
@@ -532,6 +536,8 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     if (ids.isNotEmpty) hub.apply([for (final id in ids) {'version': 'v0.9', 'deleteSurface': {'surfaceId': id}}]);
   }
 
+  static const _cancelledText = 'Cancelled. Nothing was saved, and your original file is unchanged.';
+
   void _onWorkflowSettled() {
     final v = workflowView!;
     final state = v['state'];
@@ -545,6 +551,9 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     } else if (state == 'needs_review') {
       stepLabel = 'Needs review';
       conversation.say(OfficeSpeaker.uri, 'The PDF has problems that block saving. See the findings.', 'Task');
+    } else if (state == 'cancelled') {
+      stepLabel = 'Cancelled';
+      conversation.say(OfficeSpeaker.notice, _cancelledText, 'Task');
     } else if (state == 'failed') {
       final errs = (v['errors'] as List? ?? const []);
       final code = errs.isEmpty ? '' : '${(errs.last as Map)['code']}';
