@@ -27,12 +27,18 @@ MAX_EXCERPT_CELLS = 600
 MAX_INSTRUCTION = 2000
 MAX_FINDINGS = 100
 
+# M2-XB-1: uncertainty is said in `status`, never mixed with a proposal. The service keeps ops only for "propose".
+STATUS_TEXT = (
+    "Set status to 'propose' only when your ops do what the owner asked. Set it to 'clarify' when the instruction could "
+    "mean different changes or something needed is missing: return no ops and ask one short question in message. Set "
+    "it to 'cannot' when the allowed ops cannot do it: return no ops and say why in message. set_values replaces what "
+    "a cell holds: never write over cells that already hold data unless the owner asked to change those cells. ")
+
 SYSTEM = (
     "You are URI's spreadsheet assistant. You change a workbook only by returning ops in the required JSON schema. "
     "Allowed ops: set_values (sheet, range like A1:C3, values as rows), set_formula (sheet, cell, formula starting "
     "with '='){google}. Set every field you do not use to null. Never use formulas that reach the network, other "
-    "programs or other files. If the instruction is unclear or cannot be done with these ops, return no ops and say "
-    "why in message. Keep message short. " + SYSTEM_RULE)
+    "programs or other files. " + STATUS_TEXT + "Keep message short. " + SYSTEM_RULE)
 
 
 COPY_TEXT = (
@@ -71,8 +77,7 @@ def system_for(engine: str, task: str) -> str:
     return (head + COPY_TEXT + (CHECK_TEXT if task == "check" else "") + tail
             + "The reference files are only shown in part; use copy_range to move data you have not seen cell by "
               "cell. Set every field you do not use to null. Never use formulas that reach the network, other "
-              "programs or other files. If the instruction is unclear or cannot be done with these ops, return no "
-              "ops and say why in message. Keep message short. " + SYSTEM_RULE)
+              "programs or other files. " + STATUS_TEXT + "Keep message short. " + SYSTEM_RULE)
 
 
 SYSTEM_NEW = system_for("new", "build")
@@ -230,12 +235,16 @@ class OfficeBrain:
             raise OfficeError("BRAIN_OUTPUT_INVALID", "The Brain's answer was not usable; nothing was changed.") from None
         if not isinstance(data, dict) or not isinstance(data.get("ops"), list):
             raise OfficeError("BRAIN_OUTPUT_INVALID", "The Brain's answer was not usable; nothing was changed.")
+        status = data.get("status")
+        if status not in O.BRAIN_STATUSES:
+            raise OfficeError("BRAIN_OUTPUT_INVALID", "The Brain's answer was not usable; nothing was changed.")
         names = [s["name"] for s in sheets]
         src = SRC.by_id(sources or [])
         edits, refused = [], []
         notes = {"uncalculated": 0, "not_copied": 0}
         written: set = set()                 # cells written by earlier ops of this answer
-        for i, op in enumerate(data["ops"][:20]):
+        # M2-XB-1: a question or a refusal never changes the draft, whatever ops came with it.
+        for i, op in enumerate(data["ops"][:20] if status == "propose" else ()):
             if isinstance(op, dict):
                 op = {k: v for k, v in op.items() if v is not None}
             try:
@@ -265,6 +274,9 @@ class OfficeBrain:
             except OfficeError as exc:
                 refused.append({"index": i, "code": exc.code, "detail": exc.detail})
         msg = data.get("message") if isinstance(data.get("message"), str) else ""
+        if status != "propose" and not msg.strip():
+            msg = ("Please say more precisely what to change; nothing was changed." if status == "clarify"
+                   else "That cannot be done here; nothing was changed.")
         out_findings = None
         if task == "check":
             out_findings = []
@@ -278,6 +290,6 @@ class OfficeBrain:
                 except OfficeError:
                     cell = None
                 out_findings.append({"sheet": sheet, "cell": cell, "issue": f["issue"].strip()[:300]})
-        return {"message": msg[:1000], "edits": edits, "refused": refused, "notes": notes, "findings": out_findings,
-                "metrics": {"ttft_s": res.ttft_s, "total_s": res.total_s,
+        return {"status": status, "message": msg[:1000], "edits": edits, "refused": refused, "notes": notes,
+                "findings": out_findings, "metrics": {"ttft_s": res.ttft_s, "total_s": res.total_s,
                             "predicted_per_second": (res.timings or {}).get("predicted_per_second")}}
