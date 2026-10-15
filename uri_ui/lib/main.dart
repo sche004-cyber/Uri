@@ -12,7 +12,9 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 
 import 'app.dart';
+import 'living/presentation/companion_window_layout.dart';
 import 'services/app_state.dart';
+import 'services/companion_window_adapter.dart';
 import 'services/device_identity.dart';
 import 'services/http_uri_client.dart';
 import 'services/platform_attachment_opener.dart';
@@ -40,10 +42,28 @@ void main() async {
   // Nothing else changes for installations without the opt-in.
   final manifest = Platform.environment['URI_CLIENT_MANIFEST'];
   if (WorkerIntegratedRuntime.optInConfigured(manifest)) {
+    // UI V2 (owner-approved visual reference, 2026-10-13): the integrated
+    // installation opens the V2 presentation over the same worker, Core and
+    // Brain. The earlier living composition stays one switch away:
+    // URI_UI_VISUAL=living.
+    final visualV2 = useVisualV2(Platform.environment['URI_UI_VISUAL']);
+    final companionWindow = visualV2 ? CompanionWindowAdapter() : null;
     runApp(
       WorkingSystemRoot(
+        visualV2: visualV2,
         connect: () => WorkerIntegratedRuntime.fromManifest(manifest),
-        classicBuilder: (back) => _ClassicLoader(deviceId: deviceId, back: back),
+        classicBuilder: (back) {
+          // The classic interface uses the normal window: leave the
+          // companion's shaped, frameless window first.
+          if (companionWindow != null) {
+            unawaited(
+              companionWindow.update(
+                const CompanionWindowLayout(active: false, orb: Rect.zero),
+              ),
+            );
+          }
+          return _ClassicLoader(deviceId: deviceId, back: back);
+        },
         filePicker: pickPlatformFile,
         attachmentOpener: openPlatformAttachment,
         skipOnboarding: Platform.environment['URI_LIVING_SKIP_ONBOARDING'] == '1',
@@ -51,6 +71,14 @@ void main() async {
         // frames while the window is minimised (the binding is removed when
         // the services are disposed).
         configureServices: (services) {
+          if (companionWindow != null) {
+            services.updateCompanionWindow = (layout) async {
+              await companionWindow.update(layout);
+              services.windowNotice.value = companionWindow.lastError;
+            };
+            services.moveCompanionWindow = companionWindow.move;
+            services.readCompanionPointer = companionWindow.cursorPosition;
+          }
           if (Platform.isWindows) {
             services.voiceCatalog = WindowsVoiceCatalog();
             // Live voice: push-to-talk recognition on the CPU and reply

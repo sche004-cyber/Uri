@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 
 import '../../models/task_item.dart';
@@ -840,6 +842,7 @@ class DocumentsRegion extends StatelessWidget {
       listenable: services.work,
       builder: (context, _) {
         final docs = services.work.documents;
+        final realTurns = services.visualV2 && services.oi != null;
         return ListView(
           padding: const EdgeInsets.fromLTRB(
             UriSpace.md,
@@ -850,7 +853,9 @@ class DocumentsRegion extends StatelessWidget {
           children: [
             Eyebrow(
               'Start new work',
-              trailing: services.work.isSimulated
+              // In the integrated V2 the tiles start a real turn (below), so
+              // they are not simulated even though the document list is.
+              trailing: services.work.isSimulated && !realTurns
                   ? const StatusBadge.simulated(compact: true)
                   : null,
             ),
@@ -864,6 +869,15 @@ class DocumentsRegion extends StatelessWidget {
                     icon: icon,
                     label: label,
                     onTap: () {
+                      final oi = services.oi;
+                      if (realTurns && oi != null) {
+                        // Same rule as the composer: one turn at a time.
+                        if (!oi.busy) unawaited(oi.send(title));
+                        services.presentation.setFocus(
+                          WorkspaceFocus.conversation,
+                        );
+                        return;
+                      }
                       if (services.visualV2 && !services.appDataIsMock) {
                         AppStateScope.of(context).ask(title);
                         services.presentation.setFocus(

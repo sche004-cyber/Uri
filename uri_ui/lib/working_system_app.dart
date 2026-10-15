@@ -29,6 +29,11 @@ import 'theme/uri_theme.dart';
 
 const wsShellPref = 'uri.ws.shell';
 
+/// UI V2 is the integrated installation's presentation. The setting
+/// `URI_UI_VISUAL=living` keeps the earlier living composition; any other
+/// value (or none) selects V2.
+bool useVisualV2(String? setting) => setting?.trim().toLowerCase() != 'living';
+
 /// True when [baseUrl] points at the known legacy instance (port 8000 on this
 /// machine). The working system never contacts it.
 bool isLegacyServerAddress(String baseUrl) {

@@ -288,6 +288,56 @@ void main() {
   });
 
   testWidgets(
+    'V2 integrated: Start new work asks the real worker, never the simulator',
+    (tester) async {
+      // UI V2 completion BLK-INT-2: in the integrated V2 the template tiles
+      // created SIMULATED work items instead of asking URI.
+      SharedPreferences.setMockInitialValues({
+        'uri.living.onboardingDone': true,
+      });
+      await tester.binding.setSurfaceSize(const Size(1440, 1000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final rt = FakeRuntime();
+      LivingServices? services;
+      await tester.pumpWidget(
+        WorkingSystemRoot(
+          connect: () async => rt,
+          visualV2: true,
+          skipOnboarding: true,
+          statusInterval: const Duration(hours: 1),
+          healthInterval: const Duration(hours: 1),
+          configureServices: (value) {
+            services = value;
+            value.effects.setReducedMotion(true);
+          },
+          classicBuilder: (_) => const SizedBox.shrink(),
+        ),
+      );
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final living = services!;
+      living.presentation.setMode(
+        UiPresentationMode.workspace,
+        focus: WorkspaceFocus.documents,
+      );
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byKey(const ValueKey('template-Letter')), findsOneWidget);
+      // No SIMULATED badge: in the integrated V2 these tiles are real turns.
+      expect(find.text('SIMULATED'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('template-Letter')));
+      await tester.pump(const Duration(milliseconds: 400));
+      final turns = rt.commands.where((c) => c['command'] == 'oi_turn');
+      expect(turns.length, 1);
+      expect(turns.single['text'], 'Draft a letter');
+      expect(living.work.items, isEmpty);
+      expect(living.presentation.focus, WorkspaceFocus.conversation);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    },
+  );
+
+  testWidgets(
     'approval card buttons send the decision; deny is a decision too',
     (tester) async {
       final rt = FakeRuntime();
