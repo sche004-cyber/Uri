@@ -1,0 +1,52 @@
+{
+ "baseline": "1b5423bc15fd7e5da9161c862cf839925da9f2eb",
+ "blocker": null,
+ "candidate": "7d3d0f632ea3af7de17915351f089e5af4dcbb75",
+ "config_sha256": "4c765a331bc4ed2277d4fa486ce2f9b961f0874522fa5d3807a2104195664e84",
+ "events": 24,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "7d3d0f632ea3": {
+   "blocked": null,
+   "new_failures": {
+    "python": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-15T13:02:30Z",
+  "candidate": "7d3d0f632ea3af7de17915351f089e5af4dcbb75",
+  "command": "git push uri-repo 7d3d0f632ea3af7de17915351f089e5af4dcbb75:refs/heads/integration/git-sync-20261008",
+  "mode": "fast-forward",
+  "push_exit": 0,
+  "push_stderr": "To https://github.com/sche004-cyber/Uri.git\n   1b5423bc..7d3d0f63  7d3d0f632ea3af7de17915351f089e5af4dcbb75 -> integration/git-sync-20261008\n",
+  "remote": "uri-repo",
+  "result_commit": "7d3d0f632ea3af7de17915351f089e5af4dcbb75",
+  "status": "INTEGRATED",
+  "target_ref": "integration/git-sync-20261008",
+  "target_tip_after": "7d3d0f632ea3af7de17915351f089e5af4dcbb75",
+  "target_tip_before": "1b5423bc15fd7e5da9161c862cf839925da9f2eb"
+ },
+ "milestone": "DEV-LIFECYCLE-3-r5",
+ "open_findings": [],
+ "repairs": [],
+ "reviewers": [
+  {
+   "candidate": "7d3d0f632ea3af7de17915351f089e5af4dcbb75",
+   "independent": true,
+   "models": null,
+   "provider": "codex_cli",
+   "reviewer_label": "ACCEPT",
+   "round": 1,
+   "session_id": "codex_cli-dbe05cbd-814d-4c94-8536-980d3c3e5c9c",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT"
+  }
+ ],
+ "rounds": 1,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "COMPLETE",
+ "verify_errors": [],
+ "written_at": "2026-10-15T13:02:36Z"
+}

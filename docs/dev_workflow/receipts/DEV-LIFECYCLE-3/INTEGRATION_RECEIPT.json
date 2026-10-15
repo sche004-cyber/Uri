@@ -1,0 +1,172 @@
+{
+ "schema": "uri-integration-receipt/1",
+ "milestones": [
+  "DEV-LIFECYCLE-3A",
+  "DEV-LIFECYCLE-3"
+ ],
+ "target": {
+  "repository": "https://github.com/sche004-cyber/Uri",
+  "remote": "uri-repo",
+  "ref": "integration/git-sync-20261008"
+ },
+ "previous_canonical_sha": "1b5423bc15fd7e5da9161c862cf839925da9f2eb",
+ "new_canonical_sha": "7d3d0f632ea3af7de17915351f089e5af4dcbb75",
+ "integrated_commits": [
+  "7d3d0f632ea3af7de17915351f089e5af4dcbb75 DEV-LIFECYCLE-3: record DRV-1/DRV-2 as fixed in DEV-LIFECYCLE-3A after rebase",
+  "11c364d0847f39444aa9fe037f10f8dbe8f52579 DEV-LIFECYCLE-3: repair Codex review DEV-LIFECYCLE-3-r4 R2-01 (report vs UI qualification status)",
+  "cfdbc1fd7f813b96ed31bafc75111c031c26a6b6 fix(DEV-LIFECYCLE-3-r4): repair R1-01 (lifecycle P1)",
+  "54ba32ea27a62e86b351c8db4aaae3cb6150ecab DEV-LIFECYCLE-3: repair Codex review DEV-LIFECYCLE-3-r3 R1-01 (isolation vs revision configs)",
+  "254501c761d7c8a700c38a921c7cc59511e30aa4 DEV-LIFECYCLE-3: repair Codex review DEV-LIFECYCLE-3-r2 R1-01..R1-03",
+  "9e869f53f5efdb4116d0700465b94711c6fcd7bc DEV-LIFECYCLE-3: revision 2 (isolation, Stage 8 checklist and loop, status states, adoption, Codex on Windows, C3-01)",
+  "760bddd67ca84c34ebf5c029253df9e0ee3bbae2 DEV-LIFECYCLE-3: repair review C2 LOW findings C2-01..C2-04",
+  "da735e3713cd609a8709c1a7e7a449ff94597992 DEV-LIFECYCLE-3: repair fallback review C1 findings C1-01..C1-07",
+  "700b9dbc67fcc977a6a5d5c5da9d5adb3982f505 DEV-LIFECYCLE-3: record Codex sandbox failure on Windows (R1)",
+  "09450da1856494207a5fa076dddc256403b280fe DEV-LIFECYCLE-3: Codex model probe and pinned reviewer model",
+  "7525e2b1d675537d5c0416ae169b6b40593174db DEV-LIFECYCLE-3: UI-first live qualification and Codex-first audit",
+  "777f8d8157ff6278ebc57f330108268235d77cb9 fix(DEV-LIFECYCLE-3A-r2): repair R1-01 (lifecycle P1)",
+  "5ba722c25a82f63b42000485e9e8bf3c540cda66 DEV-LIFECYCLE-3A: UTF-8 subprocess decoding and repair commits of tracked ignored paths",
+  "0e9914d3560a0ea454e6c918861fd6bb7ffdc2c2 DEV-LIFECYCLE-3A: give the codex worker a Windows sandbox mode"
+ ],
+ "milestone_shas": {
+  "DEV-LIFECYCLE-3A": "777f8d8157ff6278ebc57f330108268235d77cb9",
+  "DEV-LIFECYCLE-3": "7d3d0f632ea3af7de17915351f089e5af4dcbb75"
+ },
+ "sequence_check": {
+  "3A_is_ancestor_of_V3": true,
+  "fast_forward_from_previous": true
+ },
+ "owner_authorisation": "OWNER DECISION: APPROVED - CONTROLLED CANONICAL INTEGRATION (chat, 2026-10-15); recorded as driver OWNER_UNBLOCK events seq 15 and 18 in C:/Users/cheta/Development/uri-dl3-run/r5/state/events.jsonl",
+ "independent_acceptance": {
+  "DEV-LIFECYCLE-3A (run DEV-LIFECYCLE-3A-r2)": [
+   {
+    "round": 1,
+    "provider": "codex_cli",
+    "session_id": "codex_cli-0b153bd8-e712-47c1-b922-42d0cac80afc",
+    "candidate": "5ba722c25a82f63b42000485e9e8bf3c540cda66",
+    "verdict": "REJECT",
+    "findings": 1,
+    "independent": true,
+    "tests_run": [
+     [
+      "git rev-parse HEAD; git rev-parse <baseline>; git diff --name-status <baseline>..HEAD; git",
+      "COMPLETED_WITH_RESULT"
+     ],
+     [
+      "git diff --check <baseline>..HEAD; git check-ignore -v tests/.env",
+      "COMPLETED_WITH_RESULT"
+     ],
+     [
+      "python -B read-only argv probe for codex_cli, claude_cli, and command on both WINDOWS valu",
+      "COMPLETED_WITH_RESULT"
+     ],
+     [
+      "python -B read-only ASCII hash/parser and UTF-8 round-trip probe",
+      "COMPLETED_WITH_RESULT"
+     ],
+     [
+      "python -B -m pytest -q -p no:cacheprovider tests/dev_workflow",
+      "BLOCKED"
+     ]
+    ]
+   },
+   {
+    "round": 2,
+    "provider": "codex_cli",
+    "session_id": "codex_cli-12a9b754-5334-4c7a-9033-2d59c1e0e62f",
+    "candidate": "777f8d8157ff6278ebc57f330108268235d77cb9",
+    "verdict": "ACCEPT",
+    "findings": 0,
+    "independent": true,
+    "tests_run": [
+     [
+      "git rev-parse HEAD; git rev-parse 1b5423bc15fd7e5da9161c862cf839925da9f2eb; git diff --sta",
+      "COMPLETED_WITH_RESULT"
+     ],
+     [
+      "git diff --check baseline..candidate; git status --porcelain=v1",
+      "COMPLETED_WITH_RESULT"
+     ],
+     [
+      "python -m pytest -q -p no:cacheprovider --basetemp=C:\\tmp\\uri_review_R2\\pytest tests/dev_w",
+      "BLOCKED"
+     ],
+     [
+      "python -B - (in-memory build_argv assertions for both roles, Windows and non-Windows, plus",
+      "COMPLETED_WITH_RESULT"
+     ],
+     [
+      "python -B - (lifecycle git/worktree helpers and ASCII UTF-8 byte check)",
+      "COMPLETED_WITH_RESULT"
+     ]
+    ]
+   }
+  ],
+  "DEV-LIFECYCLE-3 whole candidate incl. 3A (run DEV-LIFECYCLE-3-r5)": [
+   {
+    "round": 1,
+    "provider": "codex_cli",
+    "session_id": "codex_cli-dbe05cbd-814d-4c94-8536-980d3c3e5c9c",
+    "candidate": "7d3d0f632ea3af7de17915351f089e5af4dcbb75",
+    "verdict": "ACCEPT",
+    "findings": 0,
+    "independent": true,
+    "tests_run": [
+     [
+      "git rev-parse HEAD; git rev-parse <baseline>; git merge-base --is-ancestor <baseline> HEAD",
+      "COMPLETED_WITH_RESULT"
+     ],
+     [
+      "python -B -c '<load TEMPLATE.json and UI_QUALIFICATION_TEMPLATE.json; inspect reviewer pro",
+      "COMPLETED_WITH_RESULT"
+     ],
+     [
+      "python -B -m pytest -q -p no:cacheprovider tests/dev_workflow --basetemp=/tmp/uri_review_R",
+      "BLOCKED"
+     ]
+    ]
+   }
+  ]
+ },
+ "regression": {
+  "gate": "python: pytest -q -p no:cacheprovider tests/dev_workflow",
+  "candidate_new_failures": {
+   "python": []
+  },
+  "ok": true,
+  "rerun_at_integration": "2026-10-15T13:02:25Z",
+  "note": "baseline-compared; 5 Linux-only tests platform-gated (NOT VERIFIED on Windows)"
+ },
+ "frozen_paths": {
+  "protected_entries": 16,
+  "changed_protected": [],
+  "driver_protected_hits": []
+ },
+ "push": {
+  "command": "git push uri-repo 7d3d0f632ea3af7de17915351f089e5af4dcbb75:refs/heads/integration/git-sync-20261008",
+  "push_exit": 0,
+  "push_stderr": "To https://github.com/sche004-cyber/Uri.git\n   1b5423bc..7d3d0f63  7d3d0f632ea3af7de17915351f089e5af4dcbb75 -> integration/git-sync-20261008\n",
+  "target_tip_before": "1b5423bc15fd7e5da9161c862cf839925da9f2eb",
+  "result_commit": "7d3d0f632ea3af7de17915351f089e5af4dcbb75",
+  "status": "INTEGRATED",
+  "at": "2026-10-15T13:02:30Z"
+ },
+ "evidence": {
+  "driver_receipt": "C:/Users/cheta/Development/uri-dl3-run/r5/state/receipt.json",
+  "driver_receipt_sha256": "07932c1fb4e5abfc8bb65d12ea291bde72bd1c416303a3460a89929e226bca13",
+  "events_sha256": "03aec3432cfc5b7341b3b7f8c98775102a1bee8a40993f456b02a9a12eddc56d",
+  "3A_receipt": "C:/Users/cheta/Development/uri-dl3a-run/r2/state/receipt.json",
+  "3A_receipt_sha256": "87e49e619354f68fd9c747e931bc42ceee98250e422594454a6df86707aa4d80",
+  "verify_chain": "OK (both runs)"
+ },
+ "remaining_limitations": [
+  "3A run DEV-LIFECYCLE-3A-r2 state stays BLOCKED OWNER_AUTHORIZATION: 3A was integrated as an ancestor of 7d3d0f63 through the V3 run, not by its own run",
+  "Driver report does not read UI qualification records (coordinator shows them; SKILL Visual report item 5)",
+  "Only the unelevated Windows Codex sandbox mode was probed",
+  "Codex reviewers cannot run pytest in the read-only sandbox; driver gates supply test evidence",
+  "5 Linux-only driver tests NOT VERIFIED on Windows",
+  "No capability marked FROZEN; no production deployment"
+ ],
+ "integrated_at": "2026-10-15T13:02:30Z",
+ "status": "INTEGRATED",
+ "written_at": "2026-10-15T13:03:21Z"
+}

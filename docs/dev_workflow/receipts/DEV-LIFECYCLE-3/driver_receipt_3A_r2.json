@@ -1,0 +1,75 @@
+{
+ "baseline": "1b5423bc15fd7e5da9161c862cf839925da9f2eb",
+ "blocker": {
+  "at": "2026-10-15T11:53:35Z",
+  "kind": "OWNER_AUTHORIZATION",
+  "needs": "git push uri-repo 777f8d8157ff6278ebc57f330108268235d77cb9:refs/heads/integration/git-sync-20261008",
+  "reason": "integration into integration/git-sync-20261008 needs owner authorisation",
+  "stage": "VERIFIED"
+ },
+ "candidate": "777f8d8157ff6278ebc57f330108268235d77cb9",
+ "config_sha256": "ef88ec700d4fa6ca9a0c4eebf4693a9a98977f4e7652fee489957beb99a1688c",
+ "events": 19,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "777f8d8157ff": {
+   "blocked": null,
+   "new_failures": {
+    "python": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-15T11:53:35Z",
+  "candidate": "777f8d8157ff6278ebc57f330108268235d77cb9",
+  "command": "git push uri-repo 777f8d8157ff6278ebc57f330108268235d77cb9:refs/heads/integration/git-sync-20261008",
+  "mode": "fast-forward",
+  "remote": "uri-repo",
+  "status": "AWAITING_OWNER_AUTHORIZATION",
+  "target_ref": "integration/git-sync-20261008",
+  "target_tip_before": "1b5423bc15fd7e5da9161c862cf839925da9f2eb"
+ },
+ "milestone": "DEV-LIFECYCLE-3A-r2",
+ "open_findings": [],
+ "repairs": [
+  {
+   "addresses": [
+    "R1-01"
+   ],
+   "commit": "777f8d8157ff6278ebc57f330108268235d77cb9",
+   "reason": null,
+   "repair": 1,
+   "status": "COMMITTED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "5ba722c25a82f63b42000485e9e8bf3c540cda66",
+   "independent": true,
+   "models": null,
+   "provider": "codex_cli",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "codex_cli-0b153bd8-e712-47c1-b922-42d0cac80afc",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "777f8d8157ff6278ebc57f330108268235d77cb9",
+   "independent": true,
+   "models": null,
+   "provider": "codex_cli",
+   "reviewer_label": "ACCEPT",
+   "round": 2,
+   "session_id": "codex_cli-12a9b754-5334-4c7a-9033-2d59c1e0e62f",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT"
+  }
+ ],
+ "rounds": 2,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "BLOCKED",
+ "verify_errors": [],
+ "written_at": "2026-10-15T11:53:36Z"
+}
