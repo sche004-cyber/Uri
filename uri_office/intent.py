@@ -130,7 +130,10 @@ def route(text: str, target_kind: str | None, history: list | None, brain=None, 
         got = brain.classify(text.strip(), target_kind=target_kind, history=owner_turns)
     except Exception as e:  # noqa: BLE001 - any Brain failure becomes a clarification, never a guess
         # The reason is kept (code only, no text) so a Brain that never decides can be seen (real-app run r4).
-        return {**clarify(target_kind), "brain_outcome": getattr(e, "code", type(e).__name__)}
+        code = str(getattr(e, "code", "") or "")
+        # Codex O2-R6-01: a fixed shape only (an upper-case code), never free text from an exception.
+        return {**clarify(target_kind), "brain_outcome": code if re.fullmatch(r"[A-Z][A-Z0-9_]{0,39}", code)
+                else "BRAIN_ERROR"}
     intent = got.get("intent") if isinstance(got, dict) else None
     if intent not in INTENTS:
         return {**clarify(target_kind), "brain_outcome": intent if intent == "unclear" else "NOT_AN_INTENT"}

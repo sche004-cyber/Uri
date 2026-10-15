@@ -98,3 +98,24 @@ def test_classify_prompt_says_office_cannot_send():
     """Real-app Brain run r6: "send it to the department" became a Save as PDF plan; URI Office cannot send."""
     from uri_office import brain as B
     assert "cannot send" in B.CLASSIFY_SYSTEM and "'unclear'" in B.CLASSIFY_SYSTEM
+
+
+def test_brain_outcome_is_a_fixed_shape_code():
+    """Codex O2-R6-01: an exception's code is echoed only when it is an upper-case code."""
+    from uri_office.errors import OfficeError
+
+    class Boom:
+        def __init__(self, code):
+            self.code = code
+
+        def classify(self, *a, **k):
+            raise OfficeError(self.code, "") if self.code.isupper() else ValueError(self.code)
+
+    assert I.route("do something odd", "docx", [], brain=Boom("BRAIN_TIMEOUT"))["brain_outcome"] == "BRAIN_TIMEOUT"
+
+    class Leaky:
+        def classify(self, *a, **k):
+            e = RuntimeError()
+            e.code = "secret request text"
+            raise e
+    assert I.route("do something odd", "docx", [], brain=Leaky())["brain_outcome"] == "BRAIN_ERROR"

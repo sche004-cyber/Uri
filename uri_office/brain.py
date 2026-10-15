@@ -313,7 +313,7 @@ CLASSIFY_SYSTEM = (
         f"- {k}: {v}" for k, v in {
             "open_document": "open or look at a Word document, presentation or PDF",
             "view_pdf": "read or page through a PDF",
-            "save_as_pdf": "make a PDF copy of the file (for example to email, share, keep or send it as a PDF)",
+            "save_as_pdf": "make a PDF copy of the file (for example a format that can be emailed, shared or kept)",
             "print_document": "print the file or get a paper copy",
             "open_workbook": "open an Excel workbook",
             "new_workbook_from_files": "build a new workbook from several files",
