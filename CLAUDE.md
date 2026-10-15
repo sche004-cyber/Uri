@@ -50,8 +50,10 @@ All positive claims, readiness declarations, and verification conclusions must a
 New features, development milestones, significant bug fixes, security repairs, runtime or UI changes and
 multi-component integrations use the `uri-development-lifecycle` skill (`.claude/skills/uri-development-lifecycle/`)
 by default: after implementation, start `python -m scripts.dev_workflow.lifecycle run <config>` without waiting to be
-asked. It launches the independent reviewer (a separate Claude process), routes findings to repair, re-audits,
-qualifies and integrates only per policy. The implementing session never approves its own work. Documentation-only
+asked. It launches the independent reviewer (Codex first; a separate Claude process when Codex is unavailable),
+routes findings to repair, re-audits, qualifies and integrates only per policy. User-facing capabilities must also
+pass live qualification through the real URI Windows UI, with the UX and onboarding loop and a structured
+qualification record (skill Stage 8, owner directive 2026-10-15); backend-only or mock-UI results never qualify. The implementing session never approves its own work. Documentation-only
 changes may use the light path. Never use it for URI user conversations or URI runtime office or document tasks (URI Office development milestones
 are in scope).
 After every milestone run, give the owner the visual report (`REPORT.html` / milestone dashboard) with its link,

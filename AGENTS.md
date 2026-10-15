@@ -42,6 +42,18 @@ Do not duplicate or weaken these documents in implementation notes.
 
 The development operating model follows the authoritative cycle established by the User (see [ORCHESTRATION.md](ORCHESTRATION.md) for the full detail this summary condenses):
 
+**Auditor precedence (owner directive 2026-10-15):** For development milestones
+governed by `uri-development-lifecycle`, including URI Hybrid UI work, Codex
+CLI is the preferred independent code/security and final acceptance auditor;
+when Codex is unavailable, a separate Claude process is the fallback. Neither
+may audit its own implementation. This later directive supersedes the AO-4
+Claude-only final-auditor role and the 2026-09-16 UI initiative's
+planning-only restriction on Claude and Codex **for independent lifecycle
+audit only**. Antigravity's UI implementation/repair roles and Qwen's
+blueprint review remain in place; Qwen's review does not replace the lifecycle
+audit. The lifecycle's owner-approval, frozen-path, and integration gates
+still apply. The roles and cycle below retain their historical record.
+
 1. **Claude (CLI):** Architect / Pre-Auditor / Final Auditor / Bounded Fixer / Release Authority.
    - Plans and pre-audits each next milestone before implementation.
    - Performs the independent final audit of the implementation, tracing actual production paths rather than trusting a worker's report.
@@ -75,7 +87,7 @@ The development operating model follows the authoritative cycle established by t
    - **Antigravity (Gemini 3.8 Flash): repair** of the concrete findings Qwen's review produces, for this initiative.
    - See `docs/plans/UI_HYBRID_FROZEN_BLUEPRINT.md` for the full sequencing (including mandatory sequencing behind M31) and `docs/governance/URI_ACTIVE_MILESTONE.md` for the authoritative current-state record under this role set.
 
-### Standing Development Cycle
+### Standing Development Cycle (AO-4 historical record; auditor precedence above applies)
 ```
 CLAUDE PLANS → CLAUDE PRE-AUDITS → USER ACCEPTS → ANTIGRAVITY INITIATES TASKS (ROUTES TO CODEX OR GEMMA PER COMPLEXITY) → CODEX/GEMMA IMPLEMENTS → ANTIGRAVITY MANAGES UI/RESPONSE WORK WHERE ASSIGNED → ANTIGRAVITY SENDS RELEVANT EVIDENCE TO CLAUDE → CLAUDE AUDITS → [BOUNDED DEFECT: CLAUDE FIXES DIRECTLY → CLAUDE RE-AUDITS] OR [SUBSTANTIAL DEFECT: CLAUDE DEFINES REMEDIATION → ANTIGRAVITY ROUTES TO CODEX/GEMMA → CLAUDE RE-AUDITS] → VERIFIED → CLAUDE COMMITS/PUSHES → CLAUDE PLANS NEXT MILESTONE → USER ACCEPTS → REPEAT
 ```
@@ -123,6 +135,7 @@ CLAUDE PLANS → CLAUDE PRE-AUDITS → USER ACCEPTS → ANTIGRAVITY INITIATES TA
 
 Development milestones are driven by `uri-development-lifecycle` (`.claude/skills/uri-development-lifecycle/SKILL.md`,
 engine `scripts/dev_workflow/lifecycle.py`, reference `docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md`). It extends
-AO-4: independent review by a separate Claude (or, when available, Codex) process; Codex is optional, never required.
+AO-4 with the auditor precedence stated above: independent review by Codex first, or by a separate Claude process when Codex is unavailable (owner directive
+2026-10-15; Codex is preferred but never a reason to stop when a valid Claude fallback exists). User-facing work is
+qualified live through the real URI Windows UI with a UX and onboarding loop (skill Stage 8).
 It is a development skill only and is not part of the runtime skill registry.
-

@@ -1,0 +1,80 @@
+{
+ "schema": "uri-ui-qualification/1",
+ "task": {
+  "task_id": "<milestone id, e.g. URI-OFFICE-O2>",
+  "capability": "<capability name>",
+  "classification": "USER_FACING | INDIRECT | INTERNAL",
+  "no_ui_reason": "<INTERNAL only: why there is no UI and how it is verified instead>",
+  "phase": "<development phase>",
+  "candidate_branch": "<branch>",
+  "code_commit": "<40-char sha that was tested live>",
+  "acceptance_criteria_file": "<path>",
+  "acceptance_criteria": ["<criterion id>"]
+ },
+ "environment": {
+  "windows": "<edition, version, build>",
+  "app_build": "<URI Windows app build: commit, build command, binary sha256>",
+  "core": "<URI Core commit/version>",
+  "brain": "<Brain runtime and model, or 'not applicable'>",
+  "dependencies": ["<engine or package and version>"],
+  "gpu_override": "<owner decision id and logged window, or 'none'>"
+ },
+ "functional": [
+  {
+   "journey_id": "J1",
+   "user": "first_time | returning",
+   "mandatory": true,
+   "steps": ["<what the tester did in the real UI>"],
+   "expected": "<expected result>",
+   "actual": "<observed result>",
+   "outputs": ["<path to produced file and its sha256>"],
+   "evidence": ["<screenshot / recording / log path>"],
+   "failure_and_recovery": "<what failed, what the UI offered, whether recovery worked>",
+   "evidence_status": "COMPLETED_WITH_RESULT | FAILED | BLOCKED | NOT_RUN",
+   "result": "PASS | FAIL | NOT VERIFIED | BLOCKED"
+  }
+ ],
+ "ux": {
+  "discoverability": ["<finding with journey id and evidence>"],
+  "navigation": [],
+  "tool_visibility": [],
+  "control_usability": [],
+  "feedback": [],
+  "consistency": [],
+  "accessibility": [],
+  "onboarding_needed": ["<only where live evidence shows a user needs it>"]
+ },
+ "improvements": [
+  {
+   "issue_id": "UX-1",
+   "class": "MATERIAL | MINOR",
+   "issue": "<what blocked or slowed the user, with evidence>",
+   "repair": "<smallest change made, or 'deferred'>",
+   "repair_commit": "<sha or null>",
+   "onboarding_change": "<hint/label/empty state/etc., or 'none'>",
+   "retest": "<journey ids re-run and their results>",
+   "deferral_confirmed_by_auditor": "<round id, MINOR deferrals only>"
+  }
+ ],
+ "remaining_limitations": ["<limitation and whether it affects the status>"],
+ "independent_audit": {
+  "auditor": "codex_cli | claude_cli | separate Claude session (import-review)",
+  "fallback_reason": "<why Codex was not used, or null>",
+  "reviewer_identity": "<session id / process record>",
+  "reviewed_commit": "<sha>",
+  "lifecycle_state_dirs": ["<state_dir of each driver revision>"],
+  "repair_iterations": 0,
+  "findings": ["<id: severity: title: status>"],
+  "verdict": "ACCEPT | ACCEPT WITH FINDINGS | REVISE | REJECT | BLOCKED",
+  "auditor_observed_live": false,
+  "auditor_inspected": ["<code and documents the auditor read itself>"],
+  "auditor_tests_run": ["<command: result: status>"],
+  "auditor_evidence_reviewed_only": ["<reports, screenshots, logs read but not reproduced>"],
+  "auditor_live_observed": [],
+  "auditor_unverified": ["<claims the auditor could not verify>"]
+ },
+ "status": "PASS | FAIL | NOT VERIFIED | BLOCKED",
+ "status_reason": "<PASS only when every mandatory journey is PASS with COMPLETED_WITH_RESULT live evidence on code_commit and no MATERIAL issue is open>",
+ "recorded_at": "<UTC timestamp>",
+ "corrections": []
+}

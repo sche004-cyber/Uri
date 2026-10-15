@@ -1551,6 +1551,22 @@ def test_r6_02_reviewer_does_not_load_candidate_project_instructions(tmp_path):
     assert codex[codex.index("-c") + 1] == "project_doc_max_bytes=0" and codex[1] == "exec"
 
 
+def test_3a_codex_gets_windows_sandbox_only_on_windows(tmp_path, monkeypatch):
+    """DEV-LIFECYCLE-3A: the reviewer's fresh CODEX_HOME has no [windows] sandbox; without one codex rejects every
+    command under --sandbox on Windows. The flag is added on Windows only and never replaces --sandbox."""
+    from scripts.dev_workflow import lifecycle_providers as P
+    flag = ["-c", 'windows.sandbox="unelevated"']
+    for win in (True, False):
+        monkeypatch.setattr(P, "WINDOWS", win)
+        for role, mode in (("reviewer", "read-only"), ("implementer", "workspace-write")):
+            argv = P.build_argv({"provider": "codex_cli", "binary": "/x/codex", "model": "m"}, role, tmp_path, [],
+                                "sid")
+            has = any(argv[i:i + 2] == flag for i in range(len(argv)))
+            assert has is win, (win, role, argv)
+            assert argv[argv.index("--sandbox") + 1] == mode and argv[-1] == "-"
+            assert argv[argv.index("--model") + 1] == "m"
+
+
 def _config_loading_claude(path: Path, log: Path):
     """A ``claude`` stand-in that loads its config like Claude Code 2.1 (probed on 2.1.296): settings files from
     CLAUDE_CONFIG_DIR (default ~/.claude) when ``--setting-sources`` names ``user``, and the ``env`` of the global
@@ -1920,3 +1936,79 @@ def test_r10_01_pipe_holder_outside_the_swept_tree_cannot_block_the_driver(tmp_p
     argv, pidfile = holder
     rc, out, err, state = _bounded(lambda: L.run_cmd(argv, tmp_path, 2), 25)
     assert state == "TIMED_OUT" and rc is None
+
+
+def test_3a_repair_of_a_tracked_file_under_an_ignored_directory_is_committed(tmp_path):
+    """DEV-LIFECYCLE-3-r2: the skill lives under the ignored .claude/ yet is tracked; `git add -A -- <path>` refused
+    it and every driver repair failed (REPAIR_FAILED). Tracked paths are now added with -f; the repair commits."""
+    repo, wt, base, remote = make_fixture(tmp_path)
+    (wt / ".gitignore").write_text("__pycache__/\n.pytest_cache/\npkg/\n")  # pkg/calc.py stays tracked
+    g(wt, "add", ".gitignore")
+    g(wt, "commit", "-qm", "ignore pkg/ (like .claude/)")
+    config(tmp_path, repo, wt)
+    raw = json.loads((tmp_path / "cfg.json").read_text())
+    raw["permitted_paths"] = ["pkg/**", "tests/**", ".gitignore"]
+    (tmp_path / "cfg.json").write_text(json.dumps(raw))
+    cfg = L.load_config(tmp_path / "cfg.json")
+    assert L.run(cfg) == S.COMPLETE
+    s = L.status(cfg)
+    assert s["repairs"][0]["status"] == "COMMITTED"
+    assert "b == 0" in g(wt, "show", f"{s['candidate']}:pkg/calc.py")
+
+
+def test_3a_new_ignored_file_is_still_not_force_added(tmp_path):
+    """Only paths already in the index get -f: a new file under an ignored directory is not smuggled in."""
+    repo, wt, base, remote = make_fixture(tmp_path)
+    (wt / ".gitignore").write_text("__pycache__/\n.pytest_cache/\nsecret/\n")
+    g(wt, "add", ".gitignore")
+    g(wt, "commit", "-qm", "ignore secret/")
+    (wt / "secret").mkdir()
+    (wt / "secret/key.txt").write_text("k")
+    with pytest.raises(L.LifecycleError):
+        L.git(wt, "add", "-A", "--", "secret/key.txt")
+    assert L.git(wt, "ls-files", "--", "secret/key.txt") == ""
+
+
+def test_3a_worker_staged_new_ignored_file_is_refused(tmp_path):
+    """A worker's git add -f must not make a new ignored path eligible for the driver's force-add."""
+    repo, wt, base, remote = make_fixture(tmp_path)
+    (wt / ".gitignore").write_text("__pycache__/\n.pytest_cache/\ntests/.env\n")
+    g(wt, "add", ".gitignore")
+    g(wt, "commit", "-qm", "ignore test secrets")
+    candidate = g(wt, "rev-parse", "HEAD")
+    cfg = config(tmp_path, repo, wt, limits={"max_repair_attempts": 1})
+    cfg["permitted_paths"].append(".gitignore")
+    cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "stage_ignored.py", """
+from pathlib import Path
+Path('tests/.env').write_text('TOKEN=secret\\n')
+subprocess.run(['git', 'add', '-f', '--', 'tests/.env'], check=True)
+Path('pkg/calc.py').write_text('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+Path('tests/test_zero.py').write_text('from pkg.calc import safe_div\\n\\ndef test_zero():\\n    assert safe_div(1, 0) is None\\n')
+""")}
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["repairs"][0]["status"] == "REFUSED"
+    assert s["repairs"][0]["reason"] == "IGNORED_NEW_FILE: tests/.env"
+    assert s["candidate"] == candidate == g(wt, "rev-parse", "HEAD")
+    assert not g(wt, "ls-files", "--", "tests/.env")
+    assert remote_tip(remote) == base
+
+
+def test_3a_worker_output_is_decoded_as_utf8(tmp_path):
+    """DEV-LIFECYCLE-3-r4: worker stdout/stderr were decoded with the Windows ANSI code page; a UTF-8 quote (byte
+    0x9d) killed the reader thread and lost the output. The driver now decodes UTF-8 and records it intact."""
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = config(tmp_path, repo, wt)
+    body = ("head = subprocess.run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()\n"
+            "sys.stderr.buffer.write('stderr \u201cquoted\u201d \u2192 ok\\n'.encode('utf-8'))\n"
+            "out = 'AUDIT_RESULT_BEGIN\\n' + json.dumps({'candidate': head, 'baseline': 'x', 'verdict': 'ACCEPT',"
+            " 'findings': [], 'prior_findings': [], 'tests_run': [], 'unverified': ['\u201cnone\u201d \u2014 \u2192']},"
+            " ensure_ascii=False) + '\\nAUDIT_RESULT_END\\n'\n"
+            "sys.stdout.buffer.write(out.encode('utf-8'))\n")
+    (tmp_path / "u8.py").write_bytes(("import sys, json, subprocess\nsys.stdin.read()\n" + body).encode("utf-8"))
+    cfg["reviewer"] = {"provider": "command", "argv": [PY, "-X", "utf8", str(tmp_path / "u8.py")],
+                       "counts_as_independent": True}
+    assert L.run(cfg) == S.COMPLETE
+    rdir = tmp_path / "state/rounds/R1"
+    assert "\u201cquoted\u201d \u2192" in (rdir / "reviewer_stderr.txt").read_bytes().decode("utf-8")
+    assert "\u201cnone\u201d \u2014 \u2192" in (rdir / "reviewer_stdout.txt").read_bytes().decode("utf-8")

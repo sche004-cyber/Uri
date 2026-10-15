@@ -90,7 +90,7 @@ GIT_ENV = {**os.environ, "GIT_NO_REPLACE_OBJECTS": "1"}
 
 
 def git(repo, *args, check=True) -> str:
-    p = subprocess.run([*GIT, "-C", str(repo), *args], capture_output=True, text=True, env=GIT_ENV)
+    p = subprocess.run([*GIT, "-C", str(repo), *args], capture_output=True, text=True, encoding="utf-8", errors="replace", env=GIT_ENV)
     if check and p.returncode:
         raise LifecycleError(f"git {' '.join(args)}: {p.stderr.strip()}")
     return p.stdout.strip()
@@ -370,11 +370,11 @@ def _user_git_control(repo) -> list[str]:
     files = {home / ".gitconfig", xdg / "git/config", xdg / "git/attributes", xdg / "git/ignore",
              Path("/etc/gitconfig"), Path("/etc/gitattributes")}
     for var in ("GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM", "GIT_ATTR_GLOBAL", "GIT_ATTR_SYSTEM"):
-        p = subprocess.run(["git", "var", var], capture_output=True, text=True, env=GIT_ENV)  # git >= 2.42
+        p = subprocess.run(["git", "var", var], capture_output=True, text=True, encoding="utf-8", errors="replace", env=GIT_ENV)  # git >= 2.42
         files.update(Path(x) for x in p.stdout.splitlines() if p.returncode == 0 and x.strip())
     for key in ("core.attributesFile", "core.excludesFile"):  # wherever the effective config points them
         v = subprocess.run(["git", "-C", str(repo), "config", "--type=path", "--get", key],
-                           capture_output=True, text=True, env=GIT_ENV).stdout.strip()
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", env=GIT_ENV).stdout.strip()
         if v:
             files.add(Path(v))
     for p in sorted(files, key=str):
@@ -492,7 +492,7 @@ def changed_paths(repo, a: str, b: str) -> list[str]:
 
 def worktree_changes(wt) -> list[str]:
     out = subprocess.run([*GIT, "-C", str(wt), "status", "--porcelain", "-z", "--untracked-files=all"],
-                         capture_output=True, text=True, check=True, env=GIT_ENV).stdout
+                         capture_output=True, text=True, encoding="utf-8", errors="replace", check=True, env=GIT_ENV).stdout
     items, paths = out.split("\0"), set()
     i = 0
     while i < len(items):
@@ -666,7 +666,7 @@ def run_cmd(cmd, cwd, timeout) -> tuple:
     """Run in its own containment (POSIX process group + orphan sweep; Windows job object, DEV-LIFECYCLE-2); the whole
     tree is ended afterwards (timeout or not)."""
     try:
-        p = containment.spawn(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        p = containment.spawn(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace",
                               env=NOBYTECODE)
     except OSError as e:
         return None, "", f"cannot start: {e}", "BLOCKED"
@@ -1068,7 +1068,17 @@ def _restore(cfg, wt: Path, sha: str) -> bool:
 
 def _commit_and_prove(cfg, wt: Path, sha: str, n: int, rec: dict, findings: list, changed: list, rdir: Path):
     """Commit the checked change and prove it; returns a refusal reason or None (``rec['commit']`` set)."""
-    git(wt, "add", "-A", "--", *changed)
+    # A file tracked by the pre-worker commit under an ignored directory needs -f. The worker may have staged a new
+    # ignored file itself, so the mutable index cannot decide which paths qualify for force-add.
+    tracked = set(git(wt, "ls-tree", "-r", "--name-only", sha, "--", *changed).splitlines()) if changed else set()
+    rest = [c for c in changed if c not in tracked]
+    ignored = git(wt, "check-ignore", "--no-index", "--", *rest, check=False).splitlines() if rest else []
+    if ignored:
+        return "IGNORED_NEW_FILE: " + ", ".join(sorted(ignored))
+    if tracked:
+        git(wt, "add", "-f", "-A", "--", *sorted(tracked))
+    if rest:
+        git(wt, "add", "-A", "--", *rest)
     msg = f"fix({cfg['milestone']}): repair {', '.join(map(str, rec['addresses']))} (lifecycle P{n})\n\n" + \
           "Findings from independent review; regression proof in lifecycle receipts.\n"
     if cfg["commit_trailers"]:
@@ -1321,7 +1331,7 @@ def integrate(cfg, st: State, sha: str) -> None:
         iwt = add_worktree(cfg["repo"], Path(cfg["work_dir"]) / "integration", tip)
         try:
             m = subprocess.run([*GIT, "-C", str(iwt), "merge", "--no-ff", "-q", "-m",
-                                f"integrate {cfg['milestone']} ({sha[:12]})", sha], capture_output=True, text=True,
+                                f"integrate {cfg['milestone']} ({sha[:12]})", sha], capture_output=True, text=True, encoding="utf-8", errors="replace",
                                env=GIT_ENV)
             if m.returncode:
                 rec.update(status="REFUSED_MERGE_CONFLICT", detail=m.stderr[-400:])
@@ -1349,7 +1359,7 @@ def integrate(cfg, st: State, sha: str) -> None:
             st.block("TAMPER", "after the combined gates: " + drift, TAMPER_NEEDS)
             return
     p = subprocess.run([*GIT, "-C", cfg["repo"], "push", remote, f"{result_sha}:refs/heads/{target}"],
-                       capture_output=True, text=True, env=GIT_ENV)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", env=GIT_ENV)
     after = git(cfg["repo"], "ls-remote", remote, f"refs/heads/{target}").split("\t")[0]
     rec.update(command=command, push_exit=p.returncode, push_stderr=p.stderr[-400:], target_tip_after=after,
                result_commit=result_sha)
