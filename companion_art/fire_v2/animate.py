@@ -119,6 +119,28 @@ class Panel:
         self.smoke_w = ndi.gaussian_filter(self.smoke_w, 3)
         self._eyes()
         self.bg = z['bg'].astype(np.float32)
+        self._z = z
+        self._backdrop = None
+
+    @property
+    def backdrop(self):
+        """The painting behind the character, with its brush texture (V2.1).
+
+        The cut model is src = bg * (1 - a) + F * a, but the cut suppresses
+        faint alpha (background brush strokes, distant glow), so those live
+        only in src. Solving for what is behind the layer keeps them:
+        (src - F * a) / (1 - a). Under near-opaque parts (head, body) that is
+        undefined, and the smooth plate bg is used instead. Straight RGB,
+        panel pixels."""
+        if self._backdrop is None:
+            z = self._z
+            src = z['src'].astype(np.float32)
+            rgba = z['rgba'].astype(np.float32)
+            a = rgba[..., 3:4]
+            res = (src - rgba[..., :3] * a) / np.maximum(1 - a, 1e-3)
+            w = np.clip((0.85 - a) / 0.25, 0, 1)
+            self._backdrop = (res * w + self.bg * (1 - w)).clip(0, 1).astype(np.float32)
+        return self._backdrop
 
     # ------------------------------------------------------------ sparks
     def _sparks(self):

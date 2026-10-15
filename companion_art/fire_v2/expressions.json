@@ -3,8 +3,19 @@
  "fps": 24,
  "cell": 320,
  "frame": {
-  "side": 490,
-  "feet_at": 0.955
+  "_comment": "V2.1: a square of `side` panel pixels centred on the panel. The companion host draws the cell at presence scale 0.5/0.42 and fades it to a disc ending at its box, so the box shows side/1.19 = 540 panel px: the whole painting composition, feet and crest inside the disc. V2 was side 490 around the neck with the feet at 0.955 (feet and crest cut by the disc).",
+  "side": 643,
+  "center": "panel"
+ },
+ "stage": {
+  "_comment": "V2.1 backdrop: the painting behind the character with its brush texture (animate.Panel.backdrop), full strength inside the panel, smooth plate past its edge. V2 had no stage: a blurred plate faded to a pool.",
+  "texture": true,
+  "pool": [
+   5,
+   6
+  ],
+  "edge": 0.04,
+  "strength": 1.0
  },
  "clips": {
   "idle": {
@@ -286,6 +297,34 @@
      ],
      "scale": 1.5
     }
+   },
+   "blink": [
+    0.6,
+    0.9,
+    1.0
+   ]
+  },
+  "kindling": {
+   "panel": "idle",
+   "reference": "derived from 01. IDLE: startup (Brain loading) - calm, softly glowing, low flame; NOT SHIPPED until the shared 'starting' state is approved (see 04_STARTUP_PROPOSAL_V21.md)",
+   "loop": 96,
+   "ship": false,
+   "motion": {
+    "flow_base": 0.6,
+    "flow_tip": 4.0,
+    "flow_tiles": [
+     1,
+     2
+    ],
+    "sway_px": 2.5,
+    "bob_px": 1.0,
+    "flicker": 0.05,
+    "bright": 0.8,
+    "spark_rise": 20,
+    "aura": 0.95
+   },
+   "face": {
+    "lid": 0.35
    },
    "blink": [
     0.6,

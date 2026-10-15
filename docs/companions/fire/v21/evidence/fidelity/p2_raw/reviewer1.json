@@ -1,0 +1,46 @@
+{
+  "reviewer": "p2-reviewer1",
+  "static": {
+    "idle": {
+      "A": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 8, "P3": 7.5, "P4": 8, "note": "Same painting, slightly scaled down and softened, set in a square dark vignette; outer background darkened and edges of the painting cropped."},
+      "B": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "Effectively the target with a flat dark-brown border/frame added around it; artwork itself appears untouched."},
+      "C": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 8, "P3": 7.5, "P4": 8, "note": "Same as the other square-vignette presentation: slight softening, darkened edges, painting cropped and scaled."},
+      "D": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 7, "P4": 7.5, "note": "Painting in a round dark vignette; corners and outer background lost to black, slight softening; character intact."},
+      "E": {"C1": 9, "C2": 8, "C3": 8.5, "C4": 7.5, "C5": 8.5, "C6": 9, "P1": 4.5, "P2": 8, "P3": 9, "P4": 9.5, "note": "Same composition but heavily blurred/upscaled from low resolution; brushwork and flame strand detail lost."},
+      "F": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 7, "P4": 7.5, "note": "Round dark vignette presentation, visually the same as D; outer painting darkened and cropped."},
+      "G": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 7, "P4": 7.5, "note": "Round dark vignette presentation, visually the same as D and F."},
+      "H": {"C1": 3.5, "C2": 3, "C3": 4, "C4": 3, "C5": 4, "C6": 4.5, "P1": 1, "P2": 3.5, "P3": 4, "P4": 4.5, "note": "Different, procedural/3D-style render: smooth oval head with specular eyes, regular wavy flame strands, stick legs, no tail, flat backdrop with dots; no painterly quality."}
+    },
+    "joyful": {
+      "A": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "Target with a flat dark border added; artwork itself unchanged."},
+      "B": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 8, "P3": 7.5, "P4": 8, "note": "Square dark vignette; painting scaled down, slightly softened, outer embers and edges darkened/cropped."},
+      "C": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 8, "P3": 7.5, "P4": 8, "note": "Same square-vignette presentation as B."},
+      "D": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 6.5, "P4": 7.5, "note": "Round vignette; a slightly visible lighter circular boundary makes the disc edge more noticeable than in F/G."},
+      "E": {"C1": 3, "C2": 3, "C3": 3.5, "C4": 2.5, "C5": 3.5, "C6": 4, "P1": 1, "P2": 3, "P3": 4, "P4": 4, "note": "Different procedural render: smooth oval head, flat smile, dense straight-ish flame strands spreading wide, stiff stick body; not jumping, lacks blush, embers and paint texture."},
+      "F": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 7, "P4": 7.5, "note": "Round dark vignette; outer embers and background darkened, slight softening."},
+      "G": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 7, "P4": 7.5, "note": "Round dark vignette, essentially identical to F."},
+      "H": {"C1": 9, "C2": 8, "C3": 8, "C4": 7.5, "C5": 8.5, "C6": 9, "P1": 4.5, "P2": 8, "P3": 9, "P4": 9.5, "note": "Blurred low-resolution version of the target; facial detail, fine embers and brush strokes smeared."}
+    },
+    "fierce": {
+      "A": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 8, "P3": 7.5, "P4": 8, "note": "Square dark vignette; painting scaled and slightly softened, outer flame wisps near edges cropped/darkened."},
+      "B": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 7, "P4": 7.5, "note": "Round dark vignette; corners lost to black, slight softening."},
+      "C": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 6.5, "P4": 7.5, "note": "Round vignette with a somewhat visible lighter circular rim, making the disc boundary more apparent."},
+      "D": {"C1": 3, "C2": 3, "C3": 4, "C4": 2.5, "C5": 3, "C6": 4, "P1": 1, "P2": 3, "P3": 4, "P4": 3.5, "note": "Different procedural render: large smooth oval head, angry brows but generic eyes, wild uniform flame strands, hand flames as white blobs, stiff pose, head cropped by frame edges."},
+      "E": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "Target with a flat dark border added; artwork unchanged."},
+      "F": {"C1": 9, "C2": 8, "C3": 8.5, "C4": 7.5, "C5": 8.5, "C6": 9, "P1": 4.5, "P2": 8, "P3": 9, "P4": 9.5, "note": "Blurred low-resolution version; line work, ember sparks and painterly texture smeared."},
+      "G": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 7, "P4": 7.5, "note": "Round dark vignette, same as B."},
+      "H": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 8, "P3": 7.5, "P4": 8, "note": "Square dark vignette, same as A."}
+    },
+    "depleted": {
+      "A": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 7.5, "P4": 7.5, "note": "Round dark vignette; painting scaled and darkened at the periphery (left warm glow mostly lost); the grey rectangle artifact in the target is hidden."},
+      "B": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "Target with a flat dark border added; artwork including the grey rectangle near bottom right unchanged."},
+      "C": {"C1": 9, "C2": 8, "C3": 8, "C4": 7.5, "C5": 8.5, "C6": 9, "P1": 4.5, "P2": 8, "P3": 9, "P4": 9.5, "note": "Blurred low-resolution version; eye detail, small flames and texture smeared."},
+      "D": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 8, "P3": 7.5, "P4": 8, "note": "Square dark vignette; scaled down, slight softening, edges darkened and cropped."},
+      "E": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 7.5, "P4": 7.5, "note": "Round dark vignette, same as A."},
+      "F": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 8, "P3": 7.5, "P4": 8, "note": "Square dark vignette, same as D."},
+      "G": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 8.5, "P2": 7.5, "P3": 6.5, "P4": 7.5, "note": "Round vignette with a visible lighter circular rim, making the disc edge more apparent than A/E."},
+      "H": {"C1": 3.5, "C2": 3, "C3": 3.5, "C4": 2.5, "C5": 3.5, "C6": 4, "P1": 1, "P2": 3, "P3": 4.5, "P4": 4.5, "note": "Different procedural render: smooth grey oval head, small sad eyes, tall bright flame tongues instead of tiny dying flames, upright stiff stick body; lacks the slump, smoke texture and painted wall."}
+    }
+  },
+  "general_notes": "Across all four states the candidates fall into five recurring kinds: (1) the target with a plain dark border (idle B, joyful A, fierce E, depleted B), effectively identical; (2) a square soft-vignette app presentation and (3) a round soft-vignette app presentation, both showing the painting slightly scaled, slightly softened and with periphery darkened/cropped (character intact); (4) a heavily blurred version that keeps composition but loses brushwork; (5) a procedural/3D-style render (idle H, joyful E, fierce D, depleted H) that is a clearly different character rendering. Within the vignette groups I could not distinguish individual images by eye except that some round vignettes show a faintly lighter circular rim (joyful D, fierce C, depleted G), which I scored slightly lower on P3. The softening of vignette candidates is judged at the displayed resolution and is uncertain; it may be resampling only. The grey rectangle artifact in the depleted target is preserved in B and C and hidden by the vignettes; I did not penalise its absence on character dimensions."
+}

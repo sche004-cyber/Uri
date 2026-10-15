@@ -1,0 +1,64 @@
+{
+  "reviewer": "p1-reviewer2",
+  "static": {
+    "idle": {
+      "A": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "Same painting shown in-app on a square dark canvas with a round vignette; slightly smaller and softer, outer flame wisps and the floor glow dimmed by the vignette."},
+      "B": {"C1": 4, "C2": 3, "C3": 3.5, "C4": 3, "C5": 4, "C6": 4, "P1": 1, "P2": 4, "P3": 5, "P4": 6, "note": "A different smooth 3D/vector render: glossy egg head, stringy uniform flame strands, stick legs, no tail flame; painterly character and mood are lost."},
+      "C": {"C1": 9, "C2": 7, "C3": 7.5, "C4": 7.5, "C5": 8.5, "C6": 8.5, "P1": 4, "P2": 8, "P3": 9, "P4": 10, "note": "Same framing as the target but heavily blurred/low resolution; brushwork, flame strands and eye highlights are smeared."},
+      "D": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "In-app presentation essentially identical to A: vignette darkens edges and background, painting slightly reduced in size."},
+      "E": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "The target painting itself inset inside a flat grey-brown border frame; only the added frame differs."},
+      "F": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "Same in-app vignette presentation as A/D; no character differences visible to me."},
+      "G": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "Same in-app vignette presentation as A/D/F; indistinguishable from those at this size."},
+      "H": {"C1": 7, "C2": 9.5, "C3": 9.5, "C4": 8.5, "C5": 6, "C6": 9, "P1": 9, "P2": 8, "P3": 8, "P4": 5, "note": "In-app vignette but zoomed/cropped: legs, feet, floor and most of the tail flame are cut off, flame crown clipped at top-left; head and face intact."}
+    },
+    "joyful": {
+      "A": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "In-app vignette presentation; character complete, top flame wisp and outer embers dimmed, background darker than the painted warm grey."},
+      "B": {"C1": 4, "C2": 3, "C3": 3.5, "C4": 3, "C5": 4, "C6": 4.5, "P1": 1, "P2": 4, "P3": 5, "P4": 6, "note": "Different 3D/vector render: glossy egg head, stringy bright flames, simplified face with a flat orange mouth, stiff stick legs; not jumping, no ember spray."},
+      "C": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "Same in-app vignette presentation as A."},
+      "D": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "Same in-app vignette presentation as A/C."},
+      "E": {"C1": 7, "C2": 9.5, "C3": 9.5, "C4": 8.5, "C5": 6, "C6": 8.5, "P1": 9, "P2": 8, "P3": 8, "P4": 5, "note": "Zoomed/cropped in-app view: lower legs and the jumping kick are cut off, top flame wisp clipped; reads less as a mid-air jump."},
+      "F": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "The target painting inset inside a flat border frame; only the frame differs."},
+      "G": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 8.5, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "In-app vignette presentation like A/C/D, but the ember spray looks somewhat sparser, especially lower right."},
+      "H": {"C1": 9, "C2": 7, "C3": 7.5, "C4": 7.5, "C5": 8.5, "C6": 8.5, "P1": 4, "P2": 8, "P3": 9, "P4": 10, "note": "Target framing but heavily blurred; face details, flame strands and embers smeared."}
+    },
+    "fierce": {
+      "A": {"C1": 7, "C2": 9.5, "C3": 9.5, "C4": 8, "C5": 6, "C6": 9, "P1": 9, "P2": 8, "P3": 8, "P4": 5, "note": "Zoomed/cropped in-app view: legs and wide stance cut off, hand fireballs and top flame sweep clipped by the frame edge."},
+      "B": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "In-app vignette presentation; full character, background darkened and outer embers dimmed."},
+      "C": {"C1": 9, "C2": 7, "C3": 7.5, "C4": 7.5, "C5": 8.5, "C6": 8.5, "P1": 4, "P2": 8, "P3": 9, "P4": 10, "note": "Target framing but heavily blurred; angry brow lines and flame structure softened."},
+      "D": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "Same in-app vignette presentation as B."},
+      "E": {"C1": 3.5, "C2": 3, "C3": 4, "C4": 3, "C5": 3.5, "C6": 4.5, "P1": 1, "P2": 4, "P3": 5, "P4": 5.5, "note": "Different 3D/vector render: large glossy egg head, stringy flame mane, hand fire as white blobs, stiff stance; angry face is generic."},
+      "F": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "Same in-app vignette presentation as B/D."},
+      "G": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "Target painting inset in a flat border frame."},
+      "H": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "Same in-app vignette presentation as B/D/F."}
+    },
+    "depleted": {
+      "A": {"C1": 10, "C2": 10, "C3": 10, "C4": 10, "C5": 10, "C6": 10, "P1": 10, "P2": 10, "P3": 9, "P4": 9, "note": "Target painting inset in a flat border frame, including the grey rectangle that is already present in the target at lower right."},
+      "B": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "In-app vignette presentation; smoke plume darker/less visible, background darker; the grey rectangle from the target is hidden by the vignette."},
+      "C": {"C1": 4, "C2": 3, "C3": 3.5, "C4": 3, "C5": 4, "C6": 4.5, "P1": 1, "P2": 4, "P3": 5, "P4": 6, "note": "Different 3D/vector render: dark glossy head, big upright flames instead of dying embers, flat stylised smoke loops, stiff legs; the depleted mood is weakened."},
+      "D": {"C1": 7, "C2": 9.5, "C3": 9.5, "C4": 8, "C5": 6, "C6": 9, "P1": 9, "P2": 8, "P3": 8, "P4": 5, "note": "Zoomed/cropped in-app view: legs and feet cut off, smoke plume largely lost to the dark vignette."},
+      "E": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 8.5, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "In-app vignette presentation; smoke reads as thinner darker wisps with less volume than in B/F/G and the target."},
+      "F": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "Same in-app vignette presentation as B."},
+      "G": {"C1": 9.5, "C2": 9.5, "C3": 9.5, "C4": 9, "C5": 9.5, "C6": 9.5, "P1": 9, "P2": 8, "P3": 8.5, "P4": 8.5, "note": "Same in-app vignette presentation as B/F."},
+      "H": {"C1": 9, "C2": 7, "C3": 7.5, "C4": 7.5, "C5": 8.5, "C6": 8.5, "P1": 4, "P2": 8, "P3": 9, "P4": 10, "note": "Target framing but heavily blurred; tired eyes, ember flames and smoke detail smeared."}
+    }
+  },
+  "motion": {
+    "idle": {
+      "X": {"A1": 6, "A2": 9, "A3": 8, "A4": 5, "note": "Cropped in-app framing (legs cut). Only subtle flicker of outer flame wisps and small glow changes; plausible but very restrained, reads close to a still."},
+      "Y": {"A1": 6.5, "A2": 9, "A3": 8.5, "A4": 6, "note": "Full in-app framing. Gentle flame shimmer around the head and tail with slight shape changes; calm and fitting for idle, but low amplitude and somewhat warp-like rather than true licking flames."}
+    },
+    "joyful": {
+      "X": {"A1": 5.5, "A2": 9, "A3": 8.5, "A4": 4.5, "note": "Cropped framing. Almost static: tiny flame and ember shifts only; the joyful jump energy is not conveyed by motion."},
+      "Y": {"A1": 7, "A2": 8.5, "A3": 8, "A4": 7, "note": "Full framing. Arms lift/wave between frames and flames sway more noticeably, giving a lively bounce; slight softening/warping of flame edges and embers between frames."}
+    },
+    "fierce": {
+      "X": {"A1": 6, "A2": 9.5, "A3": 9, "A4": 5.5, "note": "Full in-app framing. Hand fireballs and hair flames flicker subtly; stable and clean but too gentle for an angry, aggressive state."},
+      "Y": {"A1": 6.5, "A2": 9, "A3": 8, "A4": 6.5, "note": "Cropped framing (legs cut, hand flames clipped). Hand fireballs change shape more visibly, a bit more intensity; some smeary warping in the flame masses."}
+    },
+    "depleted": {
+      "X": {"A1": 6.5, "A2": 9.5, "A3": 9, "A4": 6.5, "note": "Full framing. Small ember flames on the head flicker and the smoke drifts slightly; quiet and fitting for depletion, artefact-free to my eye."},
+      "Y": {"A1": 6.5, "A2": 9, "A3": 8.5, "A4": 6.5, "note": "Cropped framing (legs cut, smoke mostly lost). Head embers and dark wisps shift between frames; appropriate low energy, minor warping in the wisps."}
+    }
+  },
+  "general_notes": "Candidates fall into five recurring types per state: (1) the exact target inset in a flat border frame; (2) the target shown in-app on a square dark canvas with a round vignette (three to four near-identical copies per state, which I scored identically unless I could see a difference); (3) the in-app view zoomed/cropped so legs and outer flames are cut off; (4) a heavily blurred copy at target framing; (5) a different smooth 3D/vector re-render. Small differences between the in-app copies (ember density in joyful G, smoke volume in depleted E) are at the edge of what I can see at this resolution and may be uncertain. The depleted target itself contains a grey rectangle at lower right that looks like an artefact; I did not penalise its absence in vignette versions on the character dimensions. Motion judgments come from six still frames per loop, so smoothness between frames and timing could not be assessed directly; all eight sequences show low-amplitude motion, with joyful Y the most expressive."
+}

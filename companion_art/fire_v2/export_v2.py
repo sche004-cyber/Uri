@@ -38,13 +38,22 @@ class Framing:
     """Panel pixels -> cell pixels: a square of `side` panel pixels around the
     body axis with the feet at `feet_at` of the height, scaled to the cell."""
 
-    def __init__(self, panel: Panel, cell: int):
+    def __init__(self, panel: Panel, cell: int, stage: dict | None = None, frame: dict | None = None):
         self.panel = panel
+        # V2.1 backdrop settings (expressions.json "stage"); absent = V2
+        self.stage = EXPR.get("stage", {}) if stage is None else stage
         self._aura: dict[float, np.ndarray | None] = {}
-        side = EXPR["frame"]["side"]
-        feet = max(f[1] for f in panel.r["feet"])
-        self.x0 = panel.r["neck"][0] - side / 2
-        self.y0 = feet - EXPR["frame"]["feet_at"] * side
+        fc = EXPR["frame"] if frame is None else frame
+        side = int(fc["side"])
+        if fc.get("center") == "panel":
+            # V2.1: the square centred on the panel, so the painting keeps its
+            # own composition inside the app's disc (feet and crest visible)
+            self.x0 = panel.w / 2 - side / 2
+            self.y0 = panel.h / 2 - side / 2 + fc.get("shift_y", 0)
+        else:
+            feet = max(f[1] for f in panel.r["feet"])
+            self.x0 = panel.r["neck"][0] - side / 2
+            self.y0 = feet - fc["feet_at"] * side
         self.side = side
         self.s = cell / side
         self.cell = cell
@@ -67,15 +76,27 @@ class Framing:
         app canvas shows. Premultiplied, square frame."""
         if strength <= 0:
             return None
+        strength = self.stage.get("strength", strength)
         pn = self.panel
         h, w = pn.h, pn.w
         ox, oy = int(round(-self.x0)), int(round(-self.y0))
-        # background plate, extended past the panel by its edge colours
+        st = self.stage
+        textured = st.get("texture", False)
+        # V2: the smooth background plate, extended past the panel by its edge
+        # colours and blurred.
         pad = ((max(oy, 0), max(self.side - oy - h, 0)), (max(ox, 0), max(self.side - ox - w, 0)), (0, 0))
-        bg = np.pad(pn.bg, pad, mode="edge")
         y0, x0 = max(-oy, 0), max(-ox, 0)
-        bg = bg[y0:y0 + self.side, x0:x0 + self.side]
+        bg = np.pad(pn.bg, pad, mode="edge")[y0:y0 + self.side, x0:x0 + self.side]
         bg = ndi.gaussian_filter(bg, (8, 8, 0))
+        if textured:
+            # V2.1: inside the panel, the painting behind the character with
+            # its brush strokes; past the panel edge, the smooth plate above,
+            # cross-faded over `feather` px so the panel edge never shows.
+            tex = self.place(pn.backdrop)
+            inside = self.place(np.ones((h, w), np.float32))
+            f = st.get("feather", 24)
+            inside = ndi.gaussian_filter(ndi.binary_erosion(inside > 0.5, iterations=f // 2).astype(np.float32), f / 3)
+            bg = tex * inside[..., None] + bg * (1 - inside[..., None])
         hx, hy, hrx, hry = pn.r["head"]
         fy = max(f[1] for f in pn.r["feet"])
         top = hy - hry * 1.6
@@ -83,12 +104,21 @@ class Framing:
         cy = (top + fy) / 2 - self.y0
         yy, xx = np.mgrid[0:self.side, 0:self.side].astype(np.float32)
         d = np.sqrt(((xx - cx) / (0.56 * self.side)) ** 2 + ((yy - cy) / (0.58 * self.side)) ** 2)
-        u = np.clip((d - 0.55) / 0.45, 0, 1)
+        p0, p1 = st.get("pool", (0.55, 1.0))
+        u = np.clip((d - p0) / (p1 - p0), 0, 1)
         a = strength * (1 - u * u * (3 - 2 * u))
         # always zero at the cell border: never a hard edge in the app
-        edge = np.minimum.reduce([xx, self.side - 1 - xx, yy, self.side - 1 - yy])
-        e = np.clip(edge / (0.12 * self.side), 0, 1)
-        a = a * e * e * (3 - 2 * e)
+        fade = st.get("edge", 0.12) * self.side
+        if st.get("rounded"):
+            # product of the side fades: rounded corners
+            def ss(v):
+                v = np.clip(v / fade, 0, 1)
+                return v * v * (3 - 2 * v)
+            a = a * ss(xx) * ss(self.side - 1 - xx) * ss(yy) * ss(self.side - 1 - yy)
+        else:
+            edge = np.minimum.reduce([xx, self.side - 1 - xx, yy, self.side - 1 - yy])
+            e = np.clip(edge / fade, 0, 1)
+            a = a * e * e * (3 - 2 * e)
         return np.dstack([bg * a[..., None], a]).astype(np.float32)
 
     def big_frame(self, pm: np.ndarray, aura: float = 0.0) -> np.ndarray:
