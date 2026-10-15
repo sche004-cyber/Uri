@@ -10,7 +10,7 @@ Status: implemented 2026-10-11 as an extension of AO-4 (`scripts/dev_workflow`).
 |---|---|---|
 | Skill | `.claude/skills/uri-development-lifecycle/SKILL.md` (pointer in `.agents/skills/`) | tells the coordinating Claude session when and how to run it |
 | Driver | `scripts/dev_workflow/lifecycle.py` | deterministic state machine, evidence, gates, integration, receipts |
-| Workers | `scripts/dev_workflow/lifecycle_providers.py` | separate reviewer / implementer processes (`codex_cli` preferred reviewer since DEV-LIFECYCLE-3 where its sandbox probe passes (not on Windows today), `claude_cli` fallback and template default, `command` for tests) |
+| Workers | `scripts/dev_workflow/lifecycle_providers.py` | separate reviewer / implementer processes (`codex_cli` preferred reviewer since DEV-LIFECYCLE-3 where its sandbox probe passes (on Windows since DEV-LIFECYCLE-3A), `claude_cli` fallback and template default, `command` for tests) |
 | UI qualification | `docs/dev_workflow/lifecycle/UI_QUALIFICATION_TEMPLATE.json` | live Windows UI qualification record (section 8) |
 | Config | `docs/dev_workflow/lifecycle/<milestone>.json` (template `TEMPLATE.json`) | milestone scope |
 | Tests | `tests/dev_workflow/test_lifecycle.py`, fixture worker `tests/dev_workflow/lifecycle_fixture/worker.py` | DEVTEST scenarios |
@@ -105,6 +105,11 @@ parsed result, `round.json` with worker identity and integrity check), `repairs/
   usable through the driver until a probe in the driver's reviewer environment (SKILL.md "Auditor selection") and a
   first round both show inspection; a driver change to its sandbox/approval settings may be needed. Use the Claude
   fallback meanwhile.
+  Correction (DEV-LIFECYCLE-3A, 2026-10-15): the cause was the reviewer's fresh CODEX_HOME, which has no
+  `config.toml` and so no `[windows] sandbox` mode (the owner's own config sets `"unelevated"`). With
+  `-c windows.sandbox="unelevated"` a probe with the same model, home and `--sandbox read-only` ran `git rev-parse`
+  and a write was denied. The driver now passes that flag on Windows; Codex is usable through the driver there when
+  the probe and the first round show inspection.
 - The UI qualification of section 8 is enforced by the skill and the auditor, not by the driver: the driver does not
   read the qualification record. Integration authorisation is the control (SKILL.md "Integration preconditions").
 
@@ -136,8 +141,8 @@ behaviour alone is not enough. Mock UI tests, widget tests and CLI runs are supp
 
 The feature can be found; the user can navigate to it; its controls are understandable; natural-language
 interaction works where it applies; it runs through the real URI services; the output is correct; progress and
-status are visible; errors give understandable recovery options; the output can be inspected; the action can be
-repeated reliably. Run it once as a first-time user (clean profile / no prior state) and once as a returning user.
+status are visible; errors give understandable recovery options; permissions and approvals behave as designed; it stays within the
+approved resource limits (GPU lease, VRAM); the output can be inspected; the action can be repeated reliably. Run it once as a first-time user (clean profile / no prior state) and once as a returning user.
 
 Example (a Word automation capability): open URI Office, create or select a document, describe the operation,
 review URI's proposed changes, approve, inspect the resulting document, save or export it.
@@ -167,7 +172,7 @@ returning users. Both journeys (first-time, returning) are re-run after an onboa
 ### 8.5 UX improvement loop
 
 ```
-LIVE TEST -> IDENTIFY FUNCTIONAL AND UX ISSUES -> CLASSIFY (MATERIAL / MINOR) AND PRIORITISE
+LIVE TEST (DISCOVER) -> REPRODUCE -> CLASSIFY (MATERIAL / MINOR) AND PRIORITISE
   -> SMALLEST EFFECTIVE REPAIR (approved scope) -> REGRESSION TESTS -> LIVE RETEST
   -> INDEPENDENT REVIEW (driver revision <milestone>-u<n>) -> ACCEPT or ITERATE
 ```

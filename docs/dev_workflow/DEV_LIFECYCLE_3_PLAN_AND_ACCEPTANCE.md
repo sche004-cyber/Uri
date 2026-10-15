@@ -48,6 +48,21 @@ weakened. Driver-level enforcement of the UI qualification record is a possible 
 | AC-13 | No regression: `tests/dev_workflow` passes on the candidate as on the baseline; TEMPLATE.json still loads with `load_config` | gate run |
 | AC-14 | Independent review of this candidate by Codex, or a recorded fallback | lifecycle run record |
 
+### 3.1 Revision 2 (owner task "Lifecycle V3 independent qualification and controlled integration", 2026-10-15)
+
+| ID | Criterion | How it is checked |
+|---|---|---|
+| AC-15 | Isolation: one milestone = one branch, worktree, config and `state_dir`; no cherry-pick, rebase, reset or merge of another thread's branch; no use of another thread's gates or GPU reservation; a shared-tooling fix is its own milestone | SKILL.md Stage 2 |
+| AC-16 | Stage 8 covers functionality, output correctness, discoverability, navigation, first-time understanding, contextual onboarding, controls and feedback, error handling and recovery, security and permissions, performance within approved resource limits, returning-user workflows, integration behaviour; loop DISCOVER → REPRODUCE → PRIORITISE → REPAIR → INDEPENDENT REVIEW → LIVE RETEST; unavailable Windows runtime = BLOCKED / NOT VERIFIED | SKILL.md Stage 8, reference 8.2 and 8.5 |
+| AC-17 | Reports keep IMPLEMENTED, TESTED, LIVE VERIFIED, INDEPENDENTLY ACCEPTED, INTEGRATED, FROZEN and BLOCKED separate, each with its own evidence | SKILL.md Reporting |
+| AC-18 | Integration preconditions also name: no open blocking finding, a re-check of canonical for intervening changes, the driver receipt as the reproducible record | SKILL.md Integration preconditions |
+| AC-19 | Adoption: a policy change applies to milestones started after integration; running threads adopt it through their own process; existing evidence is not invalidated only because the policy changed; the Office thread owns Office work | SKILL.md "Adopting a policy change", Office section |
+| AC-20 | Codex on Windows: the text records the R1 failure as history, names the root cause and the driver fix (milestone DEV-LIFECYCLE-3A, separate branch), uses the same `-c windows.sandbox="unelevated"` flag in the probe, and the template defaults to `codex_cli` again; C3-01 repaired (empty `tests_run`/`inspected` named at both repeat sites) | SKILL.md Auditor selection, Verdicts table, reference section 6, TEMPLATE.json |
+
+The driver change itself is milestone DEV-LIFECYCLE-3A (`docs/dev_workflow/DEV_LIFECYCLE_3A_PLAN_AND_ACCEPTANCE.md`
+on branch `milestone/dev-lifecycle-3a-codex-win-sandbox-20261015`); this milestone is rebased on it and still
+changes no driver code itself.
+
 ## 4. Owner-only decisions
 
 None needed to land the policy text: the owner directive is the decision. Canonical integration of this milestone

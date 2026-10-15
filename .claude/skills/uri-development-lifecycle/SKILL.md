@@ -78,17 +78,19 @@ lifecycle numbers in the first column.
    (`echo "Reply PROBE_OK" | codex exec -m <model> --sandbox read-only --skip-git-repo-check -`; on 2026-10-15
    `gpt-6-sol` worked and `gpt-6.1-sol` was refused for a ChatGPT login), a sandbox probe in the candidate checkout
    that must run a shell command in the driver's reviewer environment: `CODEX_HOME` set to a new temporary folder
-   holding only a copy of `auth.json`, plus `-c project_doc_max_bytes=0` (`echo "Run git rev-parse HEAD and print its
-   output" | codex exec -m <model> -c project_doc_max_bytes=0 --sandbox read-only -C <checkout> -`); the SHA must
-   come back, because a login probe cannot detect a sandbox that refuses commands. Always set `reviewer.model` (the
+   holding only a copy of `auth.json`, plus `-c project_doc_max_bytes=0` and, on Windows, `-c
+   windows.sandbox="unelevated"` (the driver adds the same flag since DEV-LIFECYCLE-3A) (`echo "Run git rev-parse
+   HEAD and print its output" | codex exec -m <model> -c project_doc_max_bytes=0 -c windows.sandbox="unelevated"
+   --sandbox read-only -C <checkout> -`); the SHA must come back, because a login probe cannot detect a sandbox that
+   refuses commands. Always set `reviewer.model` (the
    reviewer gets a fresh CODEX_HOME, so `~/.codex/config.toml` does not apply), and check that one `codex` resolves
    on PATH (the driver's `provider_available` and reviewer binding). The `candidate` SHA in a round's result proves
    nothing (the prompt contains it): judge inspection from `tests_run` and `inspected`. An invocation that was only
    attempted is not an audit.
-   Known (2026-10-15, Windows): through the driver Codex's read-only sandbox rejects every shell command, so its
-   review inspects nothing. While that driver limit stands, Windows milestones go straight to the fallback (the
-   template defaults to `claude_cli`). A passing probe makes Codex a candidate again, but the first `codex_cli`
-   round of a new config must itself show inspection before Codex is trusted on Windows. The driver does not read
+   Windows history: in DEV-LIFECYCLE-3 R1 (2026-10-15) the driver's fresh CODEX_HOME had no `[windows] sandbox`
+   setting, Codex rejected every shell command and its review inspected nothing. DEV-LIFECYCLE-3A fixed the driver
+   (it passes `-c windows.sandbox="unelevated"` on Windows). A passing probe makes Codex usable; the first
+   `codex_cli` round of each new config must still show inspection before you rely on it. The driver does not read
    `tests_run`: check it yourself after every Codex round. A round whose commands were all BLOCKED, or whose
    `tests_run` and `inspected` are empty, is a Codex failure whatever its verdict — an ACCEPT from it never supports VERIFIED, D1 or any report of
    independent acceptance; go to the fallback.
@@ -102,7 +104,8 @@ lifecycle numbers in the first column.
    findings to repair. Report it as "imported review (not driver-counted)", never as an independent ACCEPT: under
    owner decision D1 it does not allow VERIFIED or canonical integration; a driver-counted round still does.
 4. Nothing independent available ⇒ report `INDEPENDENT AUDIT: BLOCKED`. Never self-review instead.
-5. If Codex fails during a run (WAITING_FOR_MODEL, or any round whose commands were all BLOCKED — the driver may
+5. If Codex fails during a run (WAITING_FOR_MODEL, or any round whose commands were all BLOCKED or whose
+   `tests_run` and `inspected` are empty — the driver may
    then stop BLOCKED NO_ACTIONABLE_FINDINGS or even reach VERIFIED), do not edit the bound config: start a revision
    config (see "Revision configs") with `claude_cli` and a full audit from round 1.
 
@@ -117,6 +120,12 @@ candidate SHA is not a config field: it is the candidate worktree's HEAD when th
 
 Implement in the candidate worktree only (or give the task to a `claude_cli` implementer). Commit there. Run the
 targeted tests. Never edit the canonical checkout, protected paths, or other sessions' worktrees.
+One milestone has one branch, one worktree, one config and one `state_dir`; its findings, decisions and evidence
+stay in that milestone's records. Never cherry-pick, rebase, reset or merge another thread's branch into a
+milestone, never run another thread's gates and never use its GPU reservation. A fix the milestone needs in shared
+tooling (for example the driver) is its own milestone with its own branch, review and integration; a milestone may
+be based on such a prerequisite milestone of the same thread only when its plan says so, and the two are integrated
+in order.
 
 ## Stages 3–7 — hand over to the driver (automatic)
 
@@ -149,10 +158,13 @@ the code commit. Full rules: reference section 8.
    approval cards and document/automation engines where they apply). Mock UI tests, widget tests, harness-only
    calls and CLI runs support but never replace this. Drive the real app (a scripted run of the built app, or
    computer use) and keep screenshots/recordings and logs.
-2. Check function and UX together: discoverability, visibility, usability, feedback (operation, progress,
-   success, failure, approval needed, recovery), functional gaps, consistency with Workspace, Companion, A2UI,
-   navigation, visual design and approval flows. Test a first-time user and a returning user.
-3. Classify each issue: `MATERIAL` (a user cannot discover, understand, complete or recover an essential
+2. Check function and UX together: functionality and output correctness; discoverability and navigation;
+   first-time understanding and contextual onboarding; clear controls and feedback (operation, progress, success,
+   failure, approval needed); error handling and recovery; security and permissions (approval cards, refusals);
+   performance within the approved resource limits (GPU lease, VRAM); returning-user workflows; integration
+   behaviour and consistency with Workspace, Companion, A2UI, navigation, visual design and approval flows.
+   Test a first-time user and a returning user.
+3. Reproduce each issue (steps, evidence) before you classify it. Classify each issue: `MATERIAL` (a user cannot discover, understand, complete or recover an essential
    journey; or output is wrong) or `MINOR`. Repair material issues with the smallest effective change inside the
    approved scope (no redesign, no feature growth, no frozen path without owner authorisation). Add onboarding
    only where the live evidence shows it helps; it is minimal, contextual, dismissible, can be opened again and is
@@ -160,11 +172,13 @@ the code commit. Full rules: reference section 8.
 4. Commit the repair, run the regressions, and re-audit it with a fresh driver revision config
    (`<milestone>-u<n>`, new `state_dir`; see "Revision configs"). Then repeat the full live journey. Loop until no
    material issue is left. A `MINOR` item may stay open only if the independent auditor confirms in writing that it
-   does not compromise an essential journey.
+   does not compromise an essential journey. The loop is DISCOVER → REPRODUCE → PRIORITISE → REPAIR → INDEPENDENT
+   REVIEW → LIVE RETEST. Prefer small, unobtrusive changes supported by the evidence; no unneeded redesign.
 5. Write the qualification record from `docs/dev_workflow/lifecycle/UI_QUALIFICATION_TEMPLATE.json` (JSON is
    authoritative; any Markdown summary or dashboard is generated from it) bound to the exact code commit tested.
    Status: PASS only when every mandatory journey is PASS with COMPLETED_WITH_RESULT live evidence on that commit
-   and no MATERIAL issue is open; any failed journey or open MATERIAL issue = FAIL; any mandatory journey not run = NOT VERIFIED or BLOCKED (with what is missing). Never
+   and no MATERIAL issue is open; any failed journey or open MATERIAL issue = FAIL; any mandatory journey not run = NOT VERIFIED or BLOCKED (with what is missing), also when the real Windows
+   runtime is unavailable. Never
    report a capability as qualified while a mandatory UI or live check is open.
 6. Final independent acceptance (lifecycle stage 10): commit the record (evidence-only commit: only evidence/record paths
    may differ from the tested code commit) and run a final driver revision whose `review_focus` asks the auditor to
@@ -186,7 +200,7 @@ Driver outcomes map by stage and blocker kind:
 | round REJECT routed to repair (FIXING) | REVISE |
 | BLOCKED `STALLED` or `RETRY_LIMIT` | REJECT (this candidate) |
 | BLOCKED `OWNER_*` (including `OWNER_DECISION` for a repair refused as protected or out of scope), or a finding with `owner_decision: true` | BLOCKED (needs the owner) |
-| BLOCKED `NO_ACTIONABLE_FINDINGS` | BLOCKED; if all the round's commands were BLOCKED, an auditor failure (Auditor selection) |
+| BLOCKED `NO_ACTIONABLE_FINDINGS` | BLOCKED; if all the round's commands were BLOCKED, or its `tests_run` and `inspected` are empty, an auditor failure (Auditor selection) |
 | any other BLOCKED kind (e.g. `TAMPER`, `CONFIG`, `EVIDENCE`, `RESOURCE`, `BUDGET`, `REVIEWER_EXEC`, `REPAIR_FAILED`, `STEP_LIMIT`), WAITING_FOR_MODEL, NOT_VERIFIED | BLOCKED |
 | VERIFIED / COMPLETE on an independent ACCEPT or ACCEPT WITH FINDINGS | that verdict |
 
@@ -209,14 +223,22 @@ code alone never means the phase is qualified: live UI, security, regression and
   the UI qualification status (PASS / FAIL / NOT VERIFIED / BLOCKED). Say which claims the auditor only read
   about and which it ran or observed itself.
 - Owner decision D18: every summary to the owner is short and in plain words; detail stays in the linked evidence.
+- Report these states separately; each needs its own evidence and none implies another: **IMPLEMENTED** (committed
+  on the candidate branch), **TESTED** (targeted tests and driver gates COMPLETED_WITH_RESULT on the SHA), **LIVE
+  VERIFIED** (UI qualification record PASS on the code commit), **INDEPENDENTLY ACCEPTED** (driver-counted ACCEPT or
+  ACCEPT WITH FINDINGS on the exact SHA, `evidence_ok_for_candidate: true`), **INTEGRATED** (the canonical branch
+  contains the SHA; receipt written and `verify` OK), **FROZEN** (owner freeze decision recorded), **BLOCKED** (with
+  the blocker and the smallest owner action).
 
 ## Integration preconditions (stage 11)
 
 Ask the owner for integration authorisation only when all of these hold, and give them in the request:
-the exact accepted commits; a final driver-counted independent ACCEPT/ACCEPT WITH FINDINGS on that SHA; a PASS UI
+the exact accepted commits; a final driver-counted independent ACCEPT/ACCEPT WITH FINDINGS on that SHA; no open
+blocking finding; canonical re-checked for intervening changes (a moved canonical means rebase and re-review); a PASS UI
 qualification record for each user-facing capability (or the owner's explicit acceptance of the named
 NOT VERIFIED items); frozen-file integrity (`protected_paths` diff); provenance; combined regression gates;
-security and approval boundaries checked. Never merge unqualified work silently. Development-branch acceptance
+security and approval boundaries checked; the driver receipt (`receipt.json`, `verify` OK) as the reproducible
+integration record. Never merge unqualified work silently. Development-branch acceptance
 is never authorisation for production deployment.
 
 ## Current application: URI Office (owner directive 2026-10-15)
@@ -227,7 +249,14 @@ later; it does not block other Office qualification. O2 live qualification must 
 Office navigation; Word, PowerPoint and PDF previews; Save as PDF; Excel workspace continuity; natural-language
 tasks; approval cards; document validation; file integrity; error recovery; discoverability; first-time onboarding;
 contextual automation suggestions; responsiveness; Brain integration where it applies. Repair material UX issues
-and re-run the live tests. Do not freeze O2 while a mandatory live check is open.
+and re-run the live tests. Do not freeze O2 while a mandatory live check is open. The Office thread owns this
+work; this skill states the rules and does not run Office work.
+
+## Adopting a policy change
+
+A lifecycle change applies to milestones started after it is integrated. Running milestones adopt it through
+their own normal process. Do not invalidate existing evidence only because the policy changed: name the mandatory
+evidence that is missing and let the owning thread supply it.
 
 ## Continuation policy (owner directive 2026-10-11)
 
