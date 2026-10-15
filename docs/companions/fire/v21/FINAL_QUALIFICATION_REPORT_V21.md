@@ -15,7 +15,7 @@ Branch `phase/fire-companion-v21-20261015` (local only), cut from V2 `b73bd26c`.
 | A. Performance (AC-P1) | MET (GPU 0.28 %, VRAM same as V2) |
 | A. Brain coexistence (AC-P2) | MET with limits (own Brain, lease evidenced; 3 pairs) |
 | A. Live Windows (AC-L1) | PASS; known pre-existing PRE-2 teardown failure in returning runs |
-| A. Regression (AC-R1) | See section 7 |
+| A. Regression (AC-R1) | PASS: 588 passed, 5 skipped, 0 failed at `e792ddc8`; no protected path changed |
 | A. Independent review (AC-R2) | R1: ACCEPT WITH FINDINGS, repaired; R2 recheck: see `evidence/review/` |
 | A. Lifecycle acceptance (AC-R3) | **BLOCKED**: the Claude CLI is logged out |
 | **B. Transparency readiness (Stage 1)** | **PASS** on all technical gates; the depleted haze look needs owner visual sign-off |
@@ -131,7 +131,7 @@ GPU, about 107 MB. Disk 10.35 MiB.
 | B6 existing rendering interfaces | PASS |
 | B7 existing interaction and animation | PASS (UI V1 host) |
 | B8 minimal GPU/VRAM | PASS |
-| B9 no regressions to existing companions | section 7 |
+| B9 no regressions to existing companions | PASS (588/5/0; Solar perf unchanged) |
 | Real transparent desktop window | **PENDING (Stage 2)**: not exercised; isolated rendering tests do not prove it |
 | C1-C10 UI V2 live checks | **PENDING** |
 
@@ -157,7 +157,8 @@ The interaction was automated; this is not a human usability study. The wake phr
 
 ## 7. Regression and integrity
 
-- **Full Flutter suite:** `evidence/tests/` records the run, the commit it ran on, and the result.
+- **Full Flutter suite at `e792ddc8`:** 588 passed, 5 skipped, 0 failed (`evidence/tests/full_flutter_test_final*`).
+  That is 580 as in V2, plus the 8 new transparency tests.
 - **Boundary and frozen-file check:** `evidence/tests/boundary_check.txt` lists every file changed since V2's
   `b73bd26c`. None is under `uri_ui/lib`, Core, Runtime v1 or the shared host files.
 

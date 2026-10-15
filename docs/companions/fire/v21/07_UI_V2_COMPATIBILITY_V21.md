@@ -69,7 +69,7 @@ Q2. In P3 it cost about 6 points against the painted build on today's dark app c
 | 4 | Animation clipping and boundaries | T1 holds for all 456 frames of the 8 shipped clips (fierce is not shipped). Blink patches (T5): inside the cell, patch-edge alpha <= 1. | PASS |
 | 5 | Existing companion rendering compatibility | New Flutter test `ember_transparency_test.dart`: the real `EmberCompanion`/`EmberPainter`, real atlases, transparent layer with no host mask, all 8 clips; border, ring and opaque-area gates pass. It fails on the painted atlases (verified before the change). Existing Ember tests 44/44. | PASS |
 | 6 | Stable animation and performance | Perf series on the transparent atlases under our own GPU lease (`evidence/perf_transparent/`, 12/12 lease checks): GPU 0.28 % median (Solar 6.6-7.5 %), dedicated VRAM 147 MB (= V2), frame p99 2.75-2.78 ms, 47.5-48.4 frames/s. Live run 3 (`evidence/live/run3_returning_transparent/`): Ember restored, irregular blinks, Settings clean. | PASS |
-| 7 | No regressions to existing companions | Full Flutter suite at the final commit (`evidence/tests/`). Solar perf unchanged against the earlier series. | See `evidence/tests/` |
+| 7 | No regressions to existing companions | Full Flutter suite at `e792ddc8`: 588 passed, 5 skipped, 0 failed. Solar perf unchanged against the earlier series. | PASS |
 | - | Transparent borderless **desktop window** | Not exercised. UI V2's transparent window lives on a separate stream and Ember is not integrated there. Rendering tests are isolated and do not prove the real window. | **PENDING (Stage 2)** |
 
 ## 5. UI V2 architecture check (read-only)
@@ -122,6 +122,6 @@ Compatibility reading:
 | B6 Existing rendering interfaces | **PASS** | no `uri_ui/lib` change; Ember tests |
 | B7 Existing interaction and animation behaviour | **PASS** (UI V1 host) | live run 3; perf |
 | B8 Minimal GPU/VRAM | **PASS** | perf_transparent |
-| B9 No regression to existing companions | See `evidence/tests/` (full suite at the final commit) | |
+| B9 No regression to existing companions | **PASS** | full suite 588/5/0 at `e792ddc8`; Solar perf unchanged |
 | C1-C10 UI V2 live integration (Stage 2 list) | **PENDING** | UI V2 not at its integration checkpoint; Ember not in UI V2 |
 | Stage 3 canonical integration | **NOT ELIGIBLE** | AC-F1 NOT MET; lifecycle acceptance BLOCKED; Stage 2 PENDING; licensing (OD-2) open |
