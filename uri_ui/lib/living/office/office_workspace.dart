@@ -164,14 +164,15 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
     b.ensureVisualUpdate();
   }
 
-  // Codex review R1-2: two mounted workspaces can share the scope's retained controller. A workspace releases the
-  // target only when no other mounted workspace still claims the same controller.
-  static final Map<OfficeWorkspaceController, Set<State>> _claims = Map.identity();
+  // Codex reviews R1-2/R2-2: two mounted workspaces can share the scope's retained controller, and a workspace can
+  // move to another scope. A claim is the pair (target notifier, controller); a target is cleared only when no mounted
+  // workspace still claims that pair. Records compare their fields with ==, which is identity for both types.
+  static final Map<(ValueNotifier<OfficeRequestTarget?>, OfficeWorkspaceController), Set<State>> _claims = {};
 
   void _claim() {
     final t = _target, c = _c;
     if (c == null || t == null) return;
-    (_claims[c] ??= <State>{}).add(this);
+    (_claims[(t, c)] ??= <State>{}).add(this);
     _whenSafe(() {
       if (mounted && identical(_target, t) && identical(_c, c)) t.value = c;
     });
@@ -180,11 +181,12 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
   void _release() {
     final t = _target, c = _c;
     if (t == null || c == null) return;
-    final holders = _claims[c];
+    final key = (t, c);
+    final holders = _claims[key];
     holders?.remove(this);
-    if (holders != null && holders.isEmpty) _claims.remove(c);
+    if (holders != null && holders.isEmpty) _claims.remove(key);
     _whenSafe(() {
-      if (identical(t.value, c) && (_claims[c]?.isEmpty ?? true)) t.value = null;
+      if (identical(t.value, c) && (_claims[key]?.isEmpty ?? true)) t.value = null;
     });
   }
 

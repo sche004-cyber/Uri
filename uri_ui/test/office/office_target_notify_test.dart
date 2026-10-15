@@ -115,4 +115,49 @@ void main() {
     services.dispose();
     await tester.pump(const Duration(seconds: 10));
   });
+
+  testWidgets('Codex R2-2: a workspace that moves to another scope clears the old target and claims the new one',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.binding.setSurfaceSize(const Size(1440, 900));
+    final a = _services(), b = _services();
+    final client = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client());
+    final appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
+    var useB = false;
+    late StateSetter set;
+    final workspace = GlobalKey();
+    await tester.pumpWidget(MaterialApp(
+      theme: ThemeData(extensions: const [UriColors.graphite]),
+      home: AppStateScope(
+        state: appState,
+        child: StatefulBuilder(builder: (context, setState) {
+          set = setState;
+          return LivingScope(
+            services: useB ? b : a,
+            child: Scaffold(
+              body: Column(children: [
+                ListenableBuilder(listenable: a.officeTarget,
+                    builder: (_, _) => Text('a: ${a.officeTarget.value == null ? 'none' : 'office'}')),
+                ListenableBuilder(listenable: b.officeTarget,
+                    builder: (_, _) => Text('b: ${b.officeTarget.value == null ? 'none' : 'office'}')),
+                Expanded(child: OfficeWorkspace(key: workspace, environment: _env(), clientFactory: () => client)),
+              ]),
+            ),
+          );
+        }),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('a: office'), findsOneWidget);
+    expect(find.text('b: none'), findsOneWidget);
+    set(() => useB = true);                  // same workspace element, new scope
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('a: none'), findsOneWidget);
+    expect(find.text('b: office'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    a.dispose();
+    b.dispose();
+    await tester.pump(const Duration(seconds: 10));
+  });
 }

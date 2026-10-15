@@ -42,11 +42,24 @@ def test_a_wheel_must_be_a_declared_requirement(tmp_path):
     other = tmp_path / "evil_pkg-1.0-py3-none-any.whl"
     other.write_bytes(b"PK")
     with pytest.raises(SystemExit) as e:
-        M.install_wheels(tmp_path, [str(other)], declared={"pypdf"})
+        M.install_wheels(tmp_path, [str(other)], declared=M.declared_requirements())
     assert str(e.value) == "WHEEL_NOT_DECLARED:evil_pkg-1.0-py3-none-any.whl"
 
 
 def test_declared_requirements_reads_names_only():
     names = M.declared_requirements()
-    assert {"pypdf", "python-docx", "python-pptx", "openpyxl"} <= names
+    assert {"pypdf", "python-docx", "python-pptx", "openpyxl"} <= set(names)
     assert M._dist("Python_Docx") == "python-docx"
+
+
+def test_a_wheel_version_outside_the_declared_specifier_is_refused(tmp_path):
+    """Codex review R2-3: requirements.txt says pypdf>=5.0, so a pypdf 1.0 wheel is refused."""
+    old = tmp_path / "pypdf-1.0-py3-none-any.whl"
+    old.write_bytes(b"PK")
+    with pytest.raises(SystemExit) as e:
+        M.install_wheels(tmp_path, [str(old)], declared=M.declared_requirements())
+    assert str(e.value) == "WHEEL_VERSION_NOT_DECLARED:pypdf-1.0-py3-none-any.whl"
+    assert M._wheel_name_version("pypdf-6.19.0-1-py3-none-any.whl") == ("pypdf", "6.19.0")
+    for bad in ("pypdf.whl", "pypdf-6.19.0.whl"):
+        with pytest.raises(SystemExit):
+            M._wheel_name_version(bad)
