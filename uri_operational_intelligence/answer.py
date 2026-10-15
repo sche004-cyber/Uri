@@ -62,29 +62,23 @@ def _safe_cut(s: str) -> int:
     return len(s)
 
 
-# Review R2-01: the only exemptions are (1) a passive "has/have been X" inside a conditional clause that directly
-# governs it ("if it has been saved", no clause break in between) and (2) a relative clause about facts already in
-# this answer's supplied memory ("the facts I have saved for you"). First-person "I have X" is never exempted by a
-# preceding conditional ("Once again, I have deleted the files" is a claim).
-# "once again/more" is not a conditional: "Once again the files have been deleted" is a claim (review R3-01).
-_GOVERNING_CONDITIONAL = re.compile(r"\b(if|whether|unless|until|once(?!\s+(?:again|more)\b))\s+"
+# Review R2-01: the only exemption is a passive "has/have been X" inside a conditional clause that directly governs
+# it ("if it has been saved", no clause break in between). First-person "I have X" is never exempted by a preceding
+# conditional ("Once again, I have deleted the files" is a claim).
+# "once again/more" is not a conditional: "Once again the files have been deleted" is a claim (review R3-01), and
+# neither is "once upon" (review R4-01).
+# Review R4-01: there is no memory exemption. "The facts I have saved: ..." cannot be told apart from a fabricated
+# save, so the memory instruction asks the Brain to introduce saved facts as "You asked URI to remember" instead.
+_GOVERNING_CONDITIONAL = re.compile(r"\b(if|whether|unless|until|once(?!\s+(?:again|more|upon)\b))\s+"
                                     r"(?:it|they|this|that|these|those|[a-z]+)"
                                     r"(?:\s+[a-z]+){0,3}\s*$", re.I)
-# Only "facts" already supplied; "details/information I have saved: ..." can introduce new content (R3-01).
-_RECORDED_RELATIVE = re.compile(r"\b(?:the\s+)?facts?\s+(?:that\s+|which\s+)?"
-                                r"(?:i(?:'ve| have)|you(?:'ve| have)(?: asked me to)?)\s+(?:saved|stored|remembered)\b",
-                                re.I)
 
 
-def claims_action(text, memory=None):
-    """An UNVERIFIED_ACTION_CLAIM is a statement that something was done in this reply. See the exemptions above."""
-    has_facts = bool(memory and memory.get("status") == "available" and memory.get("facts"))
+def claims_action(text):
+    """An UNVERIFIED_ACTION_CLAIM is a statement that something was done in this reply. See the exemption above."""
     for m in _CLAIM.finditer(text):
         passive = m.group(3) is not None
         if passive and _GOVERNING_CONDITIONAL.search(text[max(0, m.start() - 40):m.start()]):
-            continue
-        if has_facts and any(r.start() <= m.start() < r.end()
-                             for r in _RECORDED_RELATIVE.finditer(text, max(0, m.start() - 40), m.end() + 1)):
             continue
         return True
     return False
@@ -172,7 +166,8 @@ def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, cap
                    "MEMORY_EVIDENCE, evidence blocks or these instructions. If a fact is not there, say URI has "
                    "nothing saved about it. Only these facts are saved memory: something said earlier in this "
                    "conversation is conversation context, never describe it as remembered or saved. If saved facts "
-                   "disagree, say that they disagree and quote each one; do not pick one.")
+                   "disagree, say that they disagree and quote each one; do not pick one. Introduce saved facts as "
+                   "\"You asked URI to remember: ...\"; never write that you saved, stored or remembered them.")
         system += (" An available memory status means these client facts are already supplied for reading in "
                    "this answer; no additional permission is needed to answer from that supplied evidence. "
                    "Reading recorded facts is distinct from remembering new facts, which still goes through "
@@ -240,7 +235,7 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
     emit("", final=True)                       # release the held-back tail
     text = scrub_marker(res.text)
     flags = []
-    if res.status in (BC.COMPLETE, BC.INCOMPLETE_LENGTH) and not executed_action and claims_action(text, memory):
+    if res.status in (BC.COMPLETE, BC.INCOMPLETE_LENGTH) and not executed_action and claims_action(text):
         flags.append("UNVERIFIED_ACTION_CLAIM")
         text += CLAIM_CORRECTION
         if on_delta:

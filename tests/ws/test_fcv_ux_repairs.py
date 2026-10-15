@@ -135,17 +135,16 @@ def test_discovery_names_only_configured_actions_and_marks_others_unavailable():
     assert "development tool" not in system                   # not configured here, so not offered
 
 
-@pytest.mark.parametrize("text,memory,claim", [
-    ("Use any information you asked URI to remember (if it has been saved).", None, False),
-    ("These are the facts I have saved for you.", {"status": "available", "facts": ["x"]}, False),
-    ("These are the facts I have saved for you.", {"status": "available", "facts": []}, True),
-    ("I have saved the file to your desktop.", {"status": "available", "facts": ["x"]}, True),
-    ("Done. I sent the email.", None, True),
-    ("I have sent the email.", None, True),
-    ("Once it has been saved you will see it.", None, False),
+@pytest.mark.parametrize("text,claim", [
+    ("Use any information you asked URI to remember (if it has been saved).", False),
+    ("These are the facts I have saved for you.", True),          # R4-01: no memory exemption any more
+    ("I have saved the file to your desktop.", True),
+    ("Done. I sent the email.", True),
+    ("I have sent the email.", True),
+    ("Once it has been saved you will see it.", False),
 ])
-def test_action_claim_detection_ignores_conditionals_and_recorded_facts(text, memory, claim):
-    assert A.claims_action(text, memory) is claim
+def test_action_claim_detection_ignores_only_governing_conditionals(text, claim):
+    assert A.claims_action(text) is claim
 
 
 @pytest.mark.parametrize("reply", ["`<<ACTION>>`", " `<<ACTION>>` ", "<<ACTION>>"])
@@ -171,17 +170,17 @@ def test_unreadable_store_is_said_plainly():
 FACTS = {"status": "available", "facts": ["the science lab is closed on Friday"]}
 
 
-@pytest.mark.parametrize("text,memory", [
-    ("Once again, I have deleted the files.", None),
-    ("After checking your inbox, I have sent the email to Sam.", None),
-    ("When you asked, I have deleted the old files.", None),
-    ("I have remembered your locker number is 42.", FACTS),
-    ("I have saved this new information to your memory.", FACTS),
-    ("If you want, I have saved it already.", FACTS),
+@pytest.mark.parametrize("text", [
+    "Once again, I have deleted the files.",
+    "After checking your inbox, I have sent the email to Sam.",
+    "When you asked, I have deleted the old files.",
+    "I have remembered your locker number is 42.",
+    "I have saved this new information to your memory.",
+    "If you want, I have saved it already.",
 ])
-def test_real_action_claims_are_still_flagged(text, memory):
+def test_real_action_claims_are_still_flagged(text):
     """R2-01: the round-1 exemptions must not hide genuine 'I did it' claims (canonical flags every one)."""
-    assert A.claims_action(text, memory) is True
+    assert A.claims_action(text) is True
 
 
 def test_a_fabricated_memory_save_gets_the_correction(fake, tmp_path):
@@ -194,20 +193,100 @@ def test_a_fabricated_memory_save_gets_the_correction(fake, tmp_path):
 
 # ---- review round 3 ----------------------------------------------------------------------------------------------
 
-@pytest.mark.parametrize("text,memory", [
-    ("Once again the files have been deleted.", None),
-    ("Once more the email has been sent to Sam.", None),
-    ("The new details I have saved: your locker is 42.", FACTS),
-    ("Good news: the information I have stored now includes your locker number 42.", FACTS),
+@pytest.mark.parametrize("text", [
+    "Once again the files have been deleted.",
+    "Once more the email has been sent to Sam.",
+    "The new details I have saved: your locker is 42.",
+    "Good news: the information I have stored now includes your locker number 42.",
 ])
-def test_round3_claims_canonical_flags_stay_flagged(text, memory):
+def test_round3_claims_canonical_flags_stay_flagged(text):
     """R3-01: no exemption may pass a sentence canonical flags."""
-    assert A.claims_action(text, memory) is True
+    assert A.claims_action(text) is True
 
 
-@pytest.mark.parametrize("text,memory", [
-    ("Use any information you asked URI to remember (if it has been saved).", None),
-    ("These are the facts I have saved for you.", FACTS),
+# ---- review round 4 ----------------------------------------------------------------------------------------------
+
+R4_CLAIMS = [
+    "The new facts I have saved: your locker is 42.",
+    "The facts I have saved now include your locker number 42.",
+    "Facts I have stored today: your locker is 42.",
+    "The facts I have saved for you: the bus leaves at 7 am.",
+    "Once upon request the files have been deleted.",
+]
+
+
+@pytest.mark.parametrize("text", R4_CLAIMS)
+def test_round4_every_sentence_canonical_flags_is_flagged(text):
+    """R4-01: the memory-reference exemption is gone, so the candidate flags exactly what canonical flags here."""
+    assert A._CLAIM.search(text)            # canonical's rule (unchanged pattern) flags each one
+    assert A.claims_action(text) is True
+
+
+@pytest.mark.parametrize("text", [
+    "You asked URI to remember: the bus leaves at 7 am.",
+    "You asked URI to remember two things: the bus leaves at 7 am and the lab is closed on Friday.",
+    "URI has nothing saved about your locker.",
+    "Your saved notes disagree: “the bus leaves at 7 am” and “the bus leaves at 8 am”.",
+    "Use any information you asked URI to remember (if it has been saved).",
 ])
-def test_round3_legitimate_phrasing_still_exempt(text, memory):
-    assert A.claims_action(text, memory) is False
+def test_round4_recall_phrasing_the_memory_instruction_asks_for_is_not_a_claim(text):
+    assert A.claims_action(text) is False
+
+
+def test_memory_instruction_names_the_recall_phrasing():
+    system = A.build_messages("q", memory=FACTS)[0]["content"]
+    assert "You asked URI to remember: ...\"" in system
+    assert "never write that you saved, stored or remembered them" in system
+
+
+@pytest.mark.parametrize("reply", ["The facts I have saved for you: the science lab is closed on Friday.",
+                                   "The new facts I have saved: your locker is 42."])
+def test_a_recall_answer_with_a_save_claim_gets_the_correction(fake, tmp_path, reply):
+    fake.scripts.append({"chunks": [("answer", reply)], "finish": "stop"})
+    b, frames, _ = make(fake, tmp_path, FakeCore(), memory=lambda: ["the science lab is closed on Friday"])
+    turn(b, "What did I ask you to remember?")
+    done = frames.data("answer.done")[-1]
+    assert "UNVERIFIED_ACTION_CLAIM" in done["flags"]
+    assert shown(frames).endswith(A.CLAIM_CORRECTION)
+
+
+def test_a_plain_recall_answer_is_shown_unchanged(fake, tmp_path):
+    reply = "You asked URI to remember: the science lab is closed on Friday."
+    fake.scripts.append({"chunks": [("answer", reply)], "finish": "stop"})
+    b, frames, _ = make(fake, tmp_path, FakeCore(), memory=lambda: ["the science lab is closed on Friday"])
+    turn(b, "When is the science lab closed?")
+    assert shown(frames) == reply
+    assert "UNVERIFIED_ACTION_CLAIM" not in frames.data("answer.done")[-1]["flags"]
+
+
+def save_claim(fake):
+    fake.scripts.append({"chunks": [("answer", "Done! I have saved that to your memory.")], "finish": "stop"})
+
+
+def test_action_states_only_a_verified_completion_reports_success(fake, tmp_path):
+    """R4-01 / owner task: completed, proposed, failed and declined actions. Success is reported only from Core's
+    verified settlement plus the store read-back; an answer-channel save claim is always corrected."""
+    # proposed: Core asks for approval; nothing is reported as saved.
+    core = approval_core()
+    b, frames, _ = make(fake, tmp_path, core, memory=lambda: [])
+    r = turn(b, "remember that the science lab is closed on Friday")
+    assert frames.data("core.outcome") == []
+    assert frames.data("turn.finished") == [] or frames.data("turn.finished")[-1]["status"] != "ok"
+    # declined: the user says No; still nothing reported as saved.
+    b.handle("oi_decide", {"command": "oi_decide", "turn_id": r["turn_id"], "approve": False,
+                           "approval_digest": DIGEST})
+    b.wait(10)
+    assert frames.data("core.outcome") == []
+    # failed or uncertain settlement: no success summary.
+    request = {"approval_request": {"capability_id": "remember_fact"}}
+    for env in ({"code": "SETTLED_FAILED", "state": "failed"},
+                {"code": "SETTLED_EXECUTION_UNCERTAIN", "state": "execution_uncertain"}):
+        assert completion_outcome(request, env, [], ["x"]) is None
+    # completed: only the verified settlement names the fact, read from the store.
+    out = completion_outcome(request, {"code": "SETTLED_VERIFIED", "state": "reply"}, [], ["x"])
+    assert out["saved"] == ["x"] and out["read_back"] is True
+    # an answer-channel claim with no executed action is corrected in every case.
+    save_claim(fake)
+    b2, frames2, _ = make(fake, tmp_path, FakeCore(), memory=lambda: ["x"])
+    turn(b2, "Did it work?")
+    assert "UNVERIFIED_ACTION_CLAIM" in frames2.data("answer.done")[-1]["flags"]
