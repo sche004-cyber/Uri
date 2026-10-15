@@ -119,3 +119,33 @@ def test_brain_outcome_is_a_fixed_shape_code():
             e.code = "secret request text"
             raise e
     assert I.route("do something odd", "docx", [], brain=Leaky())["brain_outcome"] == "BRAIN_ERROR"
+
+
+# ---- C1-1 (real-app runs r6/r7): "shorten it" on a presentation was planned as edit_document (Word only) ------------
+@pytest.mark.parametrize("intent,kind", [("edit_document", "pptx"), ("edit_document", "pdf"),
+                                         ("edit_presentation", "docx"), ("summarize_pdf", "docx"),
+                                         ("ask_pdf", "xlsx"), ("pdf_tables_to_excel", "pptx")])
+def test_stage2_intent_for_another_kind_of_file_clarifies(intent, kind):
+    r = I.route("shorten it", kind, [], brain=CountingBrain(answer={"intent": intent}))
+    assert r["result"] == "clarify" and r["brain_outcome"] == "KIND_MISMATCH"
+
+
+def test_stage2_intent_that_fits_the_active_kind_is_kept():
+    r = I.route("shorten it", "pptx", [], brain=CountingBrain(answer={"intent": "edit_presentation"}))
+    assert r["result"] == "planned" and r["phase"] == "O5" and "presentation" in r["message"]
+    r = I.route("fix the spelling", "docx", [], brain=CountingBrain(answer={"intent": "edit_document"}))
+    assert r["result"] == "planned" and r["phase"] == "O3"
+
+
+def test_stage2_intent_without_an_active_file_is_not_a_mismatch():
+    r = I.route("shorten it", None, [], brain=CountingBrain(answer={"intent": "edit_document"}))
+    assert r["result"] == "planned"
+
+
+def test_presentation_editing_is_listed_as_planned_not_available():
+    """PowerPoint authoring must not look implemented because a .pptx can be viewed (owner directive 2026-10-15)."""
+    from uri_office import capabilities as CAP
+    c = CAP.get("edit_presentation")
+    assert c["status"] == "planned:O5" and c["inputs"] == ["pptx"]
+    assert not CAP.registry()["capabilities"][[x["id"] for x in CAP.registry()["capabilities"]].index(
+        "edit_presentation")]["ready"]

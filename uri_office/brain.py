@@ -321,7 +321,8 @@ CLASSIFY_SYSTEM = (
             "edit_document": "change the text of a Word document (wording, spelling, formatting)",
             "ask_pdf": "answer a question about what a PDF says",
             "summarize_pdf": "summarise a PDF or say what it is about",
-            "make_presentation": "make slides from a document",
+            "make_presentation": "make new slides from a document",
+            "edit_presentation": "change an existing presentation (its slides, wording or length)",
             "pdf_tables_to_excel": "copy tables or figures from a PDF into Excel",
             "combine_report": "combine several files into one report",
         }.items()))

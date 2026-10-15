@@ -16,8 +16,12 @@ import uuid
 from . import capabilities as CAP
 
 INTENTS = ("open_document", "view_pdf", "save_as_pdf", "print_document", "open_workbook", "new_workbook_from_files",
-           "write_document", "edit_document", "ask_pdf", "summarize_pdf", "make_presentation", "pdf_tables_to_excel",
-           "combine_report")
+           "write_document", "edit_document", "ask_pdf", "summarize_pdf", "make_presentation", "edit_presentation",
+           "pdf_tables_to_excel", "combine_report")
+# Intents that act on the ACTIVE file. A stage-2 answer naming one of them while a file of another kind is active does
+# not fit what the owner is looking at (C1-1: "shorten it" on a presentation came back as edit_document, a Word-only
+# intent); it becomes a clarification, never a plan for a different kind of file.
+ACTS_ON_ACTIVE = ("edit_document", "edit_presentation", "ask_pdf", "summarize_pdf", "view_pdf", "pdf_tables_to_excel")
 MISSING = ("input_file", "output_format", "page_scope", "input_role")
 VIEWS = {"pdf": "pdfs", "pdfs": "pdfs", "document": "documents", "documents": "documents", "word": "documents",
          "presentation": "presentations", "presentations": "presentations", "slides": "presentations",
@@ -137,6 +141,9 @@ def route(text: str, target_kind: str | None, history: list | None, brain=None, 
     intent = got.get("intent") if isinstance(got, dict) else None
     if intent not in INTENTS:
         return {**clarify(target_kind), "brain_outcome": intent if intent == "unclear" else "NOT_AN_INTENT"}
+    cap = CAP.get(intent)
+    if intent in ACTS_ON_ACTIVE and target_kind and cap is not None and target_kind not in cap["inputs"]:
+        return {**clarify(target_kind), "brain_outcome": "KIND_MISMATCH"}
     res = resolve(intent, target_kind, stage=2)
     if res["result"] == "matched":
         extra = [m for m in (got.get("missing") or []) if m in MISSING and m not in res["inputs_needed"]]

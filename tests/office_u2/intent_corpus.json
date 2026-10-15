@@ -243,7 +243,9 @@
   {
    "text": "shorten it",
    "target": "pptx",
-   "brain_expected": "unclear"
+   "brain_expected": "unclear",
+   "also_acceptable": ["edit_presentation"],
+   "_note": "C1-1 (2026-10-15): the Brain answered edit_document (Word only). Repair: a planned edit_presentation capability (O5) and a kind check after stage 2. Both 'unclear' and edit_presentation (planned, 'not available yet') are honest non-actions; the expectation itself is unchanged."
   }
  ],
  "_run_record": "First run 2026-10-15: deterministic 24/24 correct with 0 Brain calls; ambiguous 15/16 undecided at stage 1. 'prepare a reply' was decided at stage 1 as write_document (planned O3), because the matcher listed 'reply' as a document kind. Correction: 'reply' was removed from the write rule (a reply's kind and channel are unknown, so a clarification is right); the corpus expectations were not changed."
