@@ -29,7 +29,7 @@ def test_marker_mentioned_mid_answer_is_never_shown(fake, tmp_path, chunks):
     turn(b, "How do you handle actions?")
     text = shown(frames)
     assert "<<" not in text and "ACTION>>" not in text and "`" not in text
-    assert text == "If you ask, I reply with a hidden signal to URI's controller and the controller asks you."
+    assert text == "If you ask, I reply with a hidden routing signal and the controller asks you."
     assert frames.data("answer.done")[-1]["status"] == "COMPLETE"
 
 

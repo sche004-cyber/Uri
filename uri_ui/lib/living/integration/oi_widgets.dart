@@ -116,6 +116,27 @@ String oiBrainStateLabel(String? state) => switch (state) {
       _ => 'unavailable',
     };
 
+/// Plain words on the approval and confirmation cards (FCV-R final cycle). The internal capability id and effect
+/// code stay in a tooltip; an unknown id or key is shown with spaces instead of underscores, never hidden.
+String oiCapabilityLabel(String id) => switch (id) {
+      'remember_fact' => "Save a fact to URI's memory on this computer",
+      'external_harness_task' => 'Run a development task with the selected harness',
+      _ => id.replaceAll('_', ' '),
+    };
+
+String oiArgumentLabel(String key) => switch (key) {
+      'request_text' => 'Your request',
+      'fact' => 'Fact',
+      _ => key.replaceAll('_', ' '),
+    };
+
+String oiEffectLabel(String effect) => switch (effect) {
+      'local_write' => 'Changes data on this computer',
+      'external_write' => 'Changes something outside this computer',
+      'read_only' => 'Only reads',
+      _ => effect.replaceAll('_', ' '),
+    };
+
 String oiAnswerStatusLabel(String status) => switch (status) {
       'INCOMPLETE_LENGTH' => 'Cut short',
       'CANCELLED' => 'Stopped',
@@ -285,17 +306,26 @@ class OiApprovalCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('URI wants to: ${a.capabilityId}', style: TextStyle(color: c.ink, fontWeight: FontWeight.w600)),
+            Tooltip(
+              message: a.capabilityId,
+              child: Text('URI wants to: ${oiCapabilityLabel(a.capabilityId)}',
+                  style: TextStyle(color: c.ink, fontWeight: FontWeight.w600)),
+            ),
             const SizedBox(height: 6),
             for (final e in inputs.entries)
-              Text('${e.key}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
+              Text('${oiArgumentLabel('${e.key}')}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
             if (a.effect != null || a.reversible != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  [if (a.effect != null) 'Effect: ${a.effect}', if (a.reversible != null) a.reversible! ? 'Reversible' : 'Not reversible']
-                      .join(' · '),
-                  style: TextStyle(color: c.inkFaint, fontSize: 12),
+                child: Tooltip(
+                  message: a.effect ?? '',
+                  child: Text(
+                    [
+                      if (a.effect != null) oiEffectLabel(a.effect!),
+                      if (a.reversible != null) a.reversible! ? 'Can be undone' : 'Cannot be undone',
+                    ].join(' · '),
+                    style: TextStyle(color: c.inkFaint, fontSize: 12),
+                  ),
                 ),
               ),
             const SizedBox(height: 4),
@@ -340,7 +370,8 @@ class OiConfirmationCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(p.message ?? 'Is this what you meant?', style: TextStyle(color: c.ink)),
-            for (final e in args.entries) Text('${e.key}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
+            for (final e in args.entries)
+              Text('${oiArgumentLabel('${e.key}')}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
             const SizedBox(height: 8),
             Row(
               children: [

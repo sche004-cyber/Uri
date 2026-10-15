@@ -90,4 +90,44 @@ void main() {
     expect(find.byTooltip('BRAIN_UNAVAILABLE'), findsOneWidget);
     expect(digest, isNotEmpty);
   });
+
+  testWidgets('the approval card says what URI will do in plain words; ids stay in tooltips', (tester) async {
+    // Live FCV-R final cycle: the card showed "remember_fact", "request_text:" and "Effect: local_write".
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt);
+    await tester.runAsync(() async {
+      await conv.refreshStatus();
+      await conv.send('remember that the bus leaves at 7');
+    });
+    rt.emit('t1', 'approval.required', {
+      'capability_id': 'remember_fact',
+      'arguments': {'inputs': {'request_text': 'remember that the bus leaves at 7'}},
+      'effect': 'local_write',
+      'reversible': true,
+      'approval_digest': digest,
+    });
+    rt.emit('t1', 'turn.finished', {'status': 'needs_user'});
+    await tester.pumpWidget(host(OiConversationPane(conversation: conv)));
+    await tester.pump();
+    expect(find.text("URI wants to: Save a fact to URI's memory on this computer"), findsOneWidget);
+    expect(find.text('Your request: remember that the bus leaves at 7'), findsOneWidget);
+    expect(find.text('Changes data on this computer · Can be undone'), findsOneWidget);
+    expect(find.byTooltip('remember_fact'), findsOneWidget);
+    expect(find.byTooltip('local_write'), findsOneWidget);
+    for (final raw in ['remember_fact', 'request_text', 'local_write']) {
+      expect(find.textContaining(raw), findsNothing, reason: raw);
+    }
+  });
+
+  test('card labels never show an underscore id, even for unknown ids', () {
+    for (final id in ['remember_fact', 'external_harness_task', 'some_new_capability']) {
+      expect(oiCapabilityLabel(id), isNot(contains('_')), reason: id);
+    }
+    for (final key in ['request_text', 'fact', 'new_key']) {
+      expect(oiArgumentLabel(key), isNot(contains('_')), reason: key);
+    }
+    for (final effect in ['local_write', 'external_write', 'read_only', 'new_effect']) {
+      expect(oiEffectLabel(effect), isNot(contains('_')), reason: effect);
+    }
+  });
 }

@@ -45,7 +45,8 @@ _CLAIM = re.compile(
 # FCV-06: the routing marker is internal. A reply that merely mentions it (for example while explaining how URI
 # handles actions) must not show it to the user; only a reply that IS the marker reroutes to Core.
 _MARKER_MENTION = re.compile(r"`?" + re.escape(ACTION_MARKER) + r"`?")
-MARKER_MENTION_TEXT = "a hidden signal to URI's controller"   # review R2-04: true wherever it is substituted
+MARKER_MENTION_TEXT = "a hidden routing signal"   # review R2-04: true wherever it is substituted; no "controller",
+                                                 # since the Brain usually adds "to the controller" itself (live)
 _MARKER_FORMS = ("`" + ACTION_MARKER + "`", ACTION_MARKER + "`")
 
 
