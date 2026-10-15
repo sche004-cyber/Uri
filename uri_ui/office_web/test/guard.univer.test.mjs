@@ -112,6 +112,17 @@ test('formatting is not applied; values, existing styles and page marks are kept
   assert.equal(merged, false);
   assert.equal(ws.getMergeData().length, 0);
   assert.equal(ws.getCellRaw(1, 0).v, 9);
+  // Codex R1-1: resizing a column or a row is refused (widths and heights are not saved)
+  const w0 = ws.getColumnWidth(1);
+  const resized = await cs.executeCommand('sheet.command.set-worksheet-col-width', { unitId: 'w', subUnitId: 's0',
+    ranges: [{ startRow: 0, endRow: 19, startColumn: 1, endColumn: 1 }], value: w0 + 80 });
+  assert.equal(resized, false);
+  assert.equal(ws.getColumnWidth(1), w0);
+  const h0 = ws.getRowHeight(0);
+  const tall = await cs.executeCommand('sheet.command.set-row-height', { unitId: 'w', subUnitId: 's0',
+    ranges: [{ startRow: 0, endRow: 0, startColumn: 0, endColumn: 4 }], value: h0 + 40 });
+  assert.equal(tall, false);
+  assert.equal(ws.getRowHeight(0), h0);
   // the page's own change marks (applying > 0) still set backgrounds
   applying++;
   await cs.executeCommand(SetStyleCommand.id, { style: { type: 'bg', value: { rgb: '#FFF2B3' } } });
@@ -120,5 +131,7 @@ test('formatting is not applied; values, existing styles and page marks are kept
   assert.deepEqual(edits, [{ sheet: 'Sales', cell: 'A3', value: 7 }, { sheet: 'Sales', cell: 'A2', value: 9 }]);
   assert.ok(refused.includes('sheet.mutation.set-range-values'));
   assert.ok(refused.includes('sheet.command.add-worksheet-merge'));
+  assert.ok(refused.includes('sheet.command.set-worksheet-col-width'));
+  assert.ok(refused.includes('sheet.command.set-row-height'));
   univer.dispose();
 });

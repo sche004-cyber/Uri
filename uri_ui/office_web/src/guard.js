@@ -83,6 +83,12 @@ export const FORMAT_COMMANDS = Object.freeze(new Set([
   'sheet.command.remove-worksheet-merge',
   'sheet.mutation.add-worksheet-merge', 'sheet.mutation.remove-worksheet-merge',
   'sheet.mutation.set-worksheet-default-style', 'sheet.mutation.set-worksheet-range-theme-style',
+  // Codex review R1-1: column widths and row heights are not saved either. The owner's resize commands are refused
+  // (dragging a header edge, the width/height dialogs, auto-fit). The row auto-height mutation Univer runs itself while
+  // text is typed is not touched.
+  'sheet.command.delta-column-width', 'sheet.command.delta-row-height', 'sheet.command.set-worksheet-col-width',
+  'sheet.command.set-row-height', 'sheet.command.set-col-auto-width', 'sheet.command.set-col-is-auto-width',
+  'sheet.command.set-row-is-auto-height',
 ]));
 
 // Remove the style (`s`) of every cell in a set-range-values mutation's params; values, formulas and rich text stay.
