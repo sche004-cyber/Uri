@@ -41,3 +41,30 @@ Still open (owner):
 - OD-U4 (Google scopes);
 - the GPU window, the owner live check and physical-print authorization;
 - G5, G6 and G7.
+
+## 2026-10-15: owner decisions OD-U11, OD-U12, OD-U13, OD-U14, OD-U15; O2 implementation continues under G1
+
+**Owner instruction** (chat, 2026-10-15, "O2 IMPLEMENTATION — OWNER DECISIONS AND DEVELOPMENT AUTHORIZATION"). The
+decisions are recorded as the owner stated them. Quotes are short; the full text is in the chat.
+
+| Decision | Ruling | Effect on the plan |
+|---|---|---|
+| OD-U13 virtual printing | **APPROVED**, narrowly scoped and standing: "automated print testing using the existing Microsoft Print to PDF virtual printer". Conditions: synthetic documents only; a dedicated temporary test folder; no overwrite of existing files; no physical printing; no driver install; no elevation or system configuration change; no unwanted print dialogs or unattended operations outside the test scope; validate real output files and print results; clean up safely. | Unblocks A8 row PR-5 and the printer-backed part of spike S11. Physical printing (PR-6 to PR-9) still needs separate owner authorization. Virtual printing never counts as physical qualification; O2P stays **PARTIAL** without a physical printer. |
+| OD-U12 harness | **APPROVED WITH REFINEMENT.** Printer discovery and printing go through URI's existing application and service layer. No frozen Core change and no new agent-runner architecture. Design a **reusable capability interface** that can later be registered with the Brain and wider orchestration. Reuse the existing approval and permission mechanisms; no separate authorization system. Scanners stay architecturally possible but out of scope. | A6 stands. Added: `uri_devices/capability.py` exposes printing as a plain, transport-free capability descriptor (id, inputs, effects, approval kind) that the Office service routes call today and that a future Core registration could wrap without a redesign. No Core descriptor is written now. |
+| OD-U11 PDF tables | **RETAIN AS DEFERRED.** Keep PDF tables → Excel in the roadmap. Install nothing. First investigate whether existing engines or lightweight deterministic methods can extract tables reliably (accuracy, layout, licensing, performance, complexity). Must not block O2. | O7/O4 row stays. A table-extraction investigation (pypdf text positions plus a deterministic column/row clustering) is a separate research item, not an O2 acceptance criterion. |
+| OD-U15 Excel save safety | **SCOPED REPAIR APPROVED.** Separate isolated branch and worktree. Inspect the exact accepted Excel baseline. Atomic no-clobber save. Keep legitimate save behaviour. Verify real-path and symlink protection. Test concurrent destination creation, interrupted saves and recovery, and source integrity. Full relevant Excel regressions. Independent exact-commit acceptance. No unrelated Excel changes. No automatic merge into O2 or canonical. | Repair branch `repair/uri-office-xlsx-save-noclobber`, cut from the accepted Excel baseline `5b958da0`, in its own worktree. Not merged anywhere without the integration gate. |
+| OD-U14 Core PyMuPDF | **ACKNOWLEDGED.** No Core change. Office stays independent of PyMuPDF (AC-O2-22). Record Core's licensing considerations for a separate future distribution review. Do not expand O2 scope. | Recorded in `05_CORE_PYMUPDF_DISTRIBUTION_NOTE.md`. |
+
+**Physical printer qualification** (owner, restated): physical output, real offline handling and physical job
+cancellation are **NOT VERIFIED** and stay in the O2P ledger. Missing hardware must not block unrelated O2 work.
+
+**Implementation priorities** (owner order): 1 shared service interfaces and capability contracts; 2 engine and
+validation pipeline; 3 B1 Flutter workspace; 4 PDF conversion, viewing, preview, Save as PDF and validation; 5 intent,
+assistance, planning and the existing approvals; 6 O2P printing. O2 and O2P may run in parallel once the shared
+interfaces are stable. O2P evidence and acceptance stay separate.
+
+**Unchanged limits:** no push, merge, deployment or production activation because tests pass; no canonical
+integration; no installation or elevation; no physical printing; no frozen Core change; no protected path.
+
+Still open (owner): OD-U3b (pypdfium2, fallback only); OD-U4 (Google scopes); the GPU window; the owner live check;
+physical-print authorization; G5, G6 and G7.
