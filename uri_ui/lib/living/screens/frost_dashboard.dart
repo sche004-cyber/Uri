@@ -9,6 +9,7 @@ import '../companion/companion_design.dart';
 import '../companion/companion_state.dart';
 import '../living_scope.dart';
 import '../integration/scheduler_client.dart';
+import '../integration/ws_settings.dart' show WorkingSystemShellSwitch;
 import '../presentation/living_shell.dart' show OrbDock;
 import '../presentation/presentation_controller.dart';
 import '../widgets/living_composer.dart';
@@ -46,9 +47,20 @@ class FrostDashboard extends StatelessWidget {
       UiPresentationMode.workspace,
       focus: target,
     );
+    // On the integrated worker the classic account screens would run on the
+    // working system's local placeholder client and show made-up results, so
+    // the destination says plainly that accounts are not managed here yet.
+    final connectionsUnavailable =
+        services.oi != null && services.appDataIsMock;
     void connections() => Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const ConnectionsProvidersScreen(),
+        builder: (_) => connectionsUnavailable
+            ? _ConnectionsUnavailable(
+                openSettings: () => focus(WorkspaceFocus.settings),
+                openClassic: WorkingSystemShellSwitch.maybeOf(context)
+                    ?.openClassic,
+              )
+            : const ConnectionsProvidersScreen(),
       ),
     );
     // The integrated worker's open approval or confirmation waits for the
@@ -85,7 +97,13 @@ class FrostDashboard extends StatelessWidget {
             : app.activeBrain?.displayName ?? 'No Brain selected',
         () => focus(WorkspaceFocus.settings),
       ),
-      ('Connections', 'Your tools, in view.', connections),
+      (
+        'Connections',
+        connectionsUnavailable
+            ? 'Not managed here yet'
+            : 'Your tools, in view.',
+        connections,
+      ),
       (
         'Permissions',
         'Scope stays explicit',
@@ -566,6 +584,60 @@ class FrostDashboard extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Honest Connections page for the integrated worker (UI V2 completion R1-01).
+class _ConnectionsUnavailable extends StatelessWidget {
+  const _ConnectionsUnavailable({required this.openSettings, this.openClassic});
+  final VoidCallback openSettings;
+  final VoidCallback? openClassic;
+  @override
+  Widget build(BuildContext context) {
+    final c = UriColors.of(context);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Connections')),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          key: const ValueKey('connections-unavailable'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Accounts such as Gmail and Google Drive are not connected or managed in this working system yet. Nothing on this screen is connected for URI.',
+              style: TextStyle(fontSize: 15, color: c.ink),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'The Brain, cloud providers and what URI remembers are in Settings.',
+              style: TextStyle(fontSize: 13, color: c.inkSoft),
+            ),
+            const SizedBox(height: 20),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                FilledButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    openSettings();
+                  },
+                  child: const Text('Open Settings'),
+                ),
+                if (openClassic != null)
+                  OutlinedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      openClassic!();
+                    },
+                    child: const Text('Open the classic interface'),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// The owner's supplied artwork; the source asset stays unchanged.

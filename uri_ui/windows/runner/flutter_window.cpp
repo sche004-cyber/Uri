@@ -79,25 +79,35 @@ bool FlutterWindow::OnCreate() {
       SetWindowRgn(hwnd, nullptr, TRUE); clamp(); result->Success(); return;
     }
     const double scale = GetDpiForWindow(hwnd) / 96.0;
-    auto region = [args, scale](const char* key, bool ellipse) -> HRGN {
-      const auto it = args->find(flutter::EncodableValue(key));
-      if (it == args->end()) return nullptr;
-      const auto* values = std::get_if<flutter::EncodableList>(&it->second);
-      if (!values || values->size() != 4) return nullptr;
-      int v[4];
+    // A box is four finite logical coordinates [left, top, right, bottom] in a
+    // sane range with right > left and bottom > top. A missing or null region
+    // is absent; any malformed one rejects the whole layout (never ignored).
+    bool malformed = false;
+    auto box = [scale, &malformed](const flutter::EncodableValue& value, int v[4]) -> bool {
+      const auto* values = std::get_if<flutter::EncodableList>(&value);
+      if (!values || values->size() != 4) { malformed = true; return false; }
       for (size_t i = 0; i < 4; ++i) {
         const auto* number = std::get_if<double>(&(*values)[i]);
-        if (!number) return nullptr;
-        v[i] = static_cast<int>(*number * scale);
+        if (!number || !std::isfinite(*number) || std::abs(*number) > 100000.0) { malformed = true; return false; }
+        v[i] = static_cast<int>(std::lround(*number * scale));
       }
+      if (v[2] <= v[0] || v[3] <= v[1]) { malformed = true; return false; }
+      return true;
+    };
+    auto region = [args, scale, &box](const char* key, bool ellipse) -> HRGN {
+      const auto it = args->find(flutter::EncodableValue(key));
+      if (it == args->end() || std::holds_alternative<std::monostate>(it->second)) return nullptr;
+      int v[4];
+      if (!box(it->second, v)) return nullptr;
       return ellipse ? CreateEllipticRgn(v[0], v[1], v[2], v[3])
           : CreateRoundRectRgn(v[0], v[1], v[2], v[3], static_cast<int>(16 * scale), static_cast<int>(16 * scale));
     };
     HRGN orb = region("orb", true);
-    if (!orb) { result->Error("INVALID_ORB_REGION"); return; }
+    if (!orb) { result->Error(malformed ? "INVALID_LAYOUT" : "INVALID_ORB_REGION"); return; }
     // Narrow decoration regions preserve visible arcs without giving the
     // transparent ring interior a desktop hit target.
     HRGN orbit = region("orbit", true);
+    if (malformed) { DeleteObject(orb); result->Error("INVALID_LAYOUT"); return; }
     if (orbit) {
       RECT b; GetRgnBox(orbit, &b); DeleteObject(orbit);
       const double cx=(b.left+b.right)/2.0, cy=(b.top+b.bottom)/2.0;
@@ -126,25 +136,18 @@ bool FlutterWindow::OnCreate() {
     if (panel) { CombineRgn(orb, orb, panel, RGN_OR); DeleteObject(panel); }
     HRGN controls = region("controls", false);
     if (controls) { CombineRgn(orb, orb, controls, RGN_OR); DeleteObject(controls); }
+    if (malformed) { DeleteObject(orb); result->Error("INVALID_LAYOUT"); return; }
     const auto buttons_it = args->find(flutter::EncodableValue("buttons"));
-    if (buttons_it != args->end()) {
+    if (buttons_it != args->end() && !std::holds_alternative<std::monostate>(buttons_it->second)) {
       const auto* buttons = std::get_if<flutter::EncodableList>(&buttons_it->second);
-      if (buttons && buttons->size() <= 8) {
-        for (const auto& button : *buttons) {
-          const auto* values = std::get_if<flutter::EncodableList>(&button);
-          if (!values || values->size() != 4) continue;
-          int v[4]; bool valid = true;
-          for (size_t i=0;i<4;++i) {
-            const auto* n = std::get_if<double>(&(*values)[i]);
-            if (!n) { valid=false; break; }
-            v[i]=static_cast<int>(*n*scale);
-          }
-          if (!valid) continue;
-          HRGN r = std::abs((v[2]-v[0])-(v[3]-v[1])) <= 1
-              ? CreateEllipticRgn(v[0],v[1],v[2],v[3])
-              : CreateRoundRectRgn(v[0],v[1],v[2],v[3],static_cast<int>(16*scale),static_cast<int>(16*scale));
-          if (r) { CombineRgn(orb,orb,r,RGN_OR); DeleteObject(r); }
-        }
+      if (!buttons || buttons->size() > 8) { DeleteObject(orb); result->Error("INVALID_LAYOUT"); return; }
+      for (const auto& button : *buttons) {
+        int v[4];
+        if (!box(button, v)) { DeleteObject(orb); result->Error("INVALID_LAYOUT"); return; }
+        HRGN r = std::abs((v[2]-v[0])-(v[3]-v[1])) <= 1
+            ? CreateEllipticRgn(v[0],v[1],v[2],v[3])
+            : CreateRoundRectRgn(v[0],v[1],v[2],v[3],static_cast<int>(16*scale),static_cast<int>(16*scale));
+        if (r) { CombineRgn(orb,orb,r,RGN_OR); DeleteObject(r); }
       }
     }
     // Windows owns the region after success; failed transfers must be freed.

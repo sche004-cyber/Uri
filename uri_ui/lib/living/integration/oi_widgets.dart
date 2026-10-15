@@ -479,7 +479,8 @@ class OiBrainBar extends StatelessWidget {
       for (final r in rows)
         if (r['selectable'] == true) r,
     ];
-    final ready = state == 'READY';
+    // The label is plain words; readiness is decided on the raw state code.
+    final ready = conv.brainStatus['state'] == 'READY';
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         UriSpace.md,

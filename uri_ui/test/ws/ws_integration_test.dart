@@ -337,11 +337,63 @@ void main() {
     },
   );
 
+  testWidgets('V2 dashboard counts the worker approval waiting for the user', (
+    tester,
+  ) async {
+    // UI V2 completion BLK-INT-3: the Dashboard said "0 review needed"
+    // while an integrated approval card was waiting in the Workspace.
+    SharedPreferences.setMockInitialValues({'uri.living.onboardingDone': true});
+    await tester.binding.setSurfaceSize(const Size(1440, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final rt = FakeRuntime();
+    LivingServices? services;
+    await tester.pumpWidget(
+      WorkingSystemRoot(
+        connect: () async => rt,
+        visualV2: true,
+        skipOnboarding: true,
+        statusInterval: const Duration(hours: 1),
+        healthInterval: const Duration(hours: 1),
+        configureServices: (value) {
+          services = value;
+          value.effects.setReducedMotion(true);
+        },
+        classicBuilder: (_) => const SizedBox.shrink(),
+      ),
+    );
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    final living = services!;
+    expect(living.presentation.mode, UiPresentationMode.dashboard);
+    // The (mock) task list loads first: "Checking decisions…".
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Nothing to review'), findsOneWidget);
+    await living.oi!.send('remember a qualification fixture');
+    rt.emit('t1', 'approval.required', {
+      'capability_id': 'remember_fact',
+      'arguments': {},
+      'approval_digest': digest,
+    });
+    rt.emit('t1', 'turn.finished', {'status': 'needs_user'});
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('1 review needed'), findsOneWidget);
+    expect(find.text('1 pending decision'), findsOneWidget);
+    await tester.tap(find.text('1 review needed'));
+    await tester.pump(const Duration(seconds: 1));
+    expect(living.presentation.mode, UiPresentationMode.workspace);
+    expect(living.presentation.focus, WorkspaceFocus.tasks);
+    expect(rt.commands.where((c) => c['command'] == 'oi_decide'), isEmpty);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
   testWidgets(
-    'V2 dashboard counts the worker approval waiting for the user',
+    'V2 integrated Connections says accounts are not managed here (no mock results)',
     (tester) async {
-      // UI V2 completion BLK-INT-3: the Dashboard said "0 review needed"
-      // while an integrated approval card was waiting in the Workspace.
+      // UI V2 completion R1-01 (Codex round 1): the Connections destination
+      // opened the classic account screens on the working system's local
+      // placeholder client, which showed made-up connected accounts.
       SharedPreferences.setMockInitialValues({
         'uri.living.onboardingDone': true,
       });
@@ -366,30 +418,56 @@ void main() {
       for (var i = 0; i < 10; i++) {
         await tester.pump(const Duration(milliseconds: 50));
       }
-      final living = services!;
-      expect(living.presentation.mode, UiPresentationMode.dashboard);
-      // The (mock) task list loads first: "Checking decisions…".
+      expect(services!.presentation.mode, UiPresentationMode.dashboard);
+      expect(find.text('Not managed here yet'), findsOneWidget);
+      await tester.tap(find.text('Not managed here yet'));
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(
+        find.byKey(const ValueKey('connections-unavailable')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Gmail'), findsOneWidget);
+      expect(find.text('Connected'), findsNothing);
+      expect(find.text('Open the classic interface'), findsOneWidget);
+      await tester.tap(find.text('Open Settings'));
       await tester.pump(const Duration(seconds: 1));
-      expect(find.text('Nothing to review'), findsOneWidget);
-      await living.oi!.send('remember a qualification fixture');
-      rt.emit('t1', 'approval.required', {
-        'capability_id': 'remember_fact',
-        'arguments': {},
-        'approval_digest': digest,
-      });
-      rt.emit('t1', 'turn.finished', {'status': 'needs_user'});
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('1 review needed'), findsOneWidget);
-      expect(find.text('1 pending decision'), findsOneWidget);
-      await tester.tap(find.text('1 review needed'));
-      await tester.pump(const Duration(seconds: 1));
-      expect(living.presentation.mode, UiPresentationMode.workspace);
-      expect(living.presentation.focus, WorkspaceFocus.tasks);
-      expect(rt.commands.where((c) => c['command'] == 'oi_decide'), isEmpty);
+      expect(services!.presentation.mode, UiPresentationMode.workspace);
+      expect(services!.presentation.focus, WorkspaceFocus.settings);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
     },
   );
+
+  testWidgets('ready Brain shows the ready colour without a health report', (
+    tester,
+  ) async {
+    // UI V2 completion R1-04 (Codex round 1): the plain label 'ready' was
+    // compared with the raw code 'READY', so the dot always used the warning
+    // colour when no health report was present.
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt);
+    await tester.runAsync(conv.refreshStatus);
+    expect(conv.healthState, isNull);
+    await tester.pumpWidget(host(OiConversationPane(conversation: conv)));
+    await tester.pump();
+    final dot = tester.widget<Icon>(
+      find
+          .descendant(
+            of: find.ancestor(
+              of: find.byKey(const ValueKey('oi-brain-state')),
+              matching: find.byType(Wrap),
+            ),
+            matching: find.byIcon(Icons.circle),
+          )
+          .first,
+    );
+    final c = UriColors.of(
+      tester.element(find.byKey(const ValueKey('oi-brain-state'))),
+    );
+    expect(dot.color, c.success);
+  });
 
   testWidgets(
     'approval card buttons send the decision; deny is a decision too',
