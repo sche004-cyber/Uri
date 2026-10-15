@@ -459,6 +459,35 @@ void main() {
       expect(c.workflowView?['state'], 'ready_to_save', reason: "task B's view is not replaced");
     });
 
+    test('Codex R7-1/R7-5: an off-screen outcome is said once; a revisit neither repeats it nor goes back to running',
+        () async {
+      late OfficeWorkspaceController c;
+      var answer = <String, dynamic>{'state': 'ready_to_save', 'steps': [], 'findings': []};
+      var switchAway = true;
+      final mock = MockClient((req) async {
+        if (switchAway) {
+          c.activeWorkflow = 'b' * 20;
+          c.workflowView = {'state': 'running', 'steps': [], 'findings': []};
+        }
+        return http.Response(jsonEncode(answer), 200);
+      });
+      c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', mock))
+        ..activeWorkflow = 'a' * 20
+        ..workflowView = {'state': 'running', 'steps': [], 'findings': []};
+      await c.cancelWorkflow();                      // A settled (ready) while the owner looked at B
+      expect(c.conversation.lines.last.text, contains('The PDF is ready'));
+      switchAway = false;
+      c.showWorkflow('a' * 20);                      // the owner comes back to A
+      answer = {'state': 'running', 'steps': [], 'findings': []};
+      final before = c.conversation.lines.length;
+      await c.cancelWorkflow();                      // a stale "running" reply for A
+      expect(c.workflowView?['state'], isNot('running'));
+      answer = {'state': 'ready_to_save', 'steps': [], 'findings': []};
+      await c.cancelWorkflow();
+      expect(c.workflowView?['state'], 'ready_to_save');
+      expect(c.conversation.lines.length, before, reason: 'nothing repeated, no "Stopping"');
+    });
+
     test('Codex R6-3: a resume that settles at once is announced', () async {
       final mock = MockClient((req) async => http.Response(
           jsonEncode({'state': 'ready_to_save', 'steps': [], 'findings': []}), 200));
