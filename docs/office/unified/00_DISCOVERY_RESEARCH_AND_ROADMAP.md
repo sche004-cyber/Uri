@@ -236,7 +236,15 @@ Explicitly out of scope:
 
 Concept A was rejected because it builds the "separate scripts per format" experience the brief rejects. Concept C was rejected because it cannot show fidelity problems.
 
-Required next step: render concept B as static mockups through the `uri-ux-design` skill (reference-first, `docs/design_library/`). The owner then chooses (OD-U5) before O2 freezes.
+Mockups (2026-10-15): `design/office_workspace_mockups.html`, published privately at https://claude.ai/artifact/MwCYF84TWc6NtMBXG4PA8T. The page shows two variants of concept B:
+- **B1:** three panes (files, page, companion), recommended. Structure from AFFiNE (sidebar, document, AI chat panel `packages/frontend/core/src/blocksuite/ai/chat-panel/`) and Paperless-ngx (`src-ui/src/app/components/document-detail/`).
+- **B2:** task panel, workbench and companion drawer. Structure from Stirling-PDF (`frontend/editor/src/core/components/layout/Workbench.tsx`, `shared/quickAccessBar/`).
+
+The `docs/design_library/` index had no Office or document pattern, so these external references were verified with `gh api` on 2026-10-15. Licences:
+- AFFiNE and Stirling-PDF: MIT core with proprietary portions;
+- Paperless-ngx: GPL-3.0.
+
+They are structural references only; no code is used. The owner chooses (OD-U5) before O2 freezes. The `approved/` or `rejected/` record follows that choice.
 
 ### 4.2 Concept B behaviour
 
