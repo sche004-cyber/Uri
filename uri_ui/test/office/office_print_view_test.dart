@@ -36,6 +36,7 @@ void main() {
         return http.Response.bytes(_png, 200, headers: {'content-type': 'image/png'});
       }
       final Object out = switch (key) {
+        'GET /status' => {'ok': true},
         'GET /contract' => {'contract': 'o2.1'},
         'GET /capabilities' => {
             'goals': [{'id': 'pdfs', 'title': 'PDFs'}],

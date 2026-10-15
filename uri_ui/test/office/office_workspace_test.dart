@@ -63,6 +63,7 @@ class FakeOffice {
           return http.Response.bytes(_png, 200, headers: {'content-type': 'image/png'});
         }
         final out = switch ('${req.method} $path') {
+          'GET /status' => {'ok': true},
           'GET /contract' => {'contract': 'o2.1'},
           'GET /capabilities' => _caps(ready: ready),
           'GET /engines' => {'engines': [{'id': 'libreoffice', 'state': 'ready', 'reason': null}]},
@@ -444,6 +445,26 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('office-start-retry')));
       await tester.pumpAndSettle();
       expect(started, 2);
+    });
+
+    testWidgets('another program on the recorded port (token refused) is not taken for URI Office', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.binding.setSurfaceSize(const Size(1440, 900));
+      final foreign = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't',
+          MockClient((_) async => http.Response('{"error":"UNAUTHORIZED"}', 401)));
+      final live = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client());
+      var started = 0;
+      await tester.pumpWidget(_app(OfficeWorkspace(
+          environment: env(() async {
+            started++;
+            return null;
+          }),
+          clientFactory: () => started > 0 ? live : foreign)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
+      expect(started, 1);
+      expect(find.byKey(const ValueKey('office-home')), findsOneWidget);
     });
 
     testWidgets('a service.json left by an ended service is not trusted: a new service is started', (tester) async {

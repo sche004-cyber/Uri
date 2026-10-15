@@ -954,6 +954,19 @@ def _width(qs) -> int:
     return int(w)
 
 
+class _ExclusiveServer(ThreadingHTTPServer):
+    """No port sharing (found during the O2 real-app review, 2026-10-15): Python's HTTP server sets SO_REUSEADDR,
+    which on Windows lets a second process bind the same loopback port while the first is listening. The Office port
+    is bound exclusively, so a second service (or any other program) cannot listen beside it."""
+    allow_reuse_address = False
+
+    def server_bind(self):
+        import socket
+        if os.name == "nt" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
 def serve(office: Office, host: str, port: int):
     """Start the HTTP server on a loopback address only. Returns (server, token)."""
     try:
@@ -963,8 +976,14 @@ def serve(office: Office, host: str, port: int):
         raise OfficeError("BIND_REFUSED", "the Office service binds to 127.0.0.1 only") from None
     token = secrets.token_urlsafe(32)
     restrict_to_user(office.state, folder=True)
-    write_token_file(office.state / "api-token", token)
-    srv = ThreadingHTTPServer((host, port), make_handler(office, token))
+    # Bind before the token is published (Codex O2-R5-01): a second launch that cannot bind the port must not
+    # replace the token of the service that is already running.
+    srv = _ExclusiveServer((host, port), make_handler(office, token))
+    try:
+        write_token_file(office.state / "api-token", token)
+    except BaseException:
+        srv.server_close()
+        raise
     return srv, token
 
 

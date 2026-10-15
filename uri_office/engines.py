@@ -96,7 +96,10 @@ class EngineIntegrity:
         `unavailable` with ENGINE_CHECK_FAILED, never stuck in `verifying`; the owner can run the check again."""
         try:
             return self._verify_full(progress)
-        except OfficeError:
+        except OfficeError as e:
+            if self.state == "verifying":                    # Codex O2-R5-02: never left 'verifying'
+                self._entries = None
+                self.state, self.reason = "unavailable", e.code
             raise
         except Exception as e:  # noqa: BLE001
             self._entries = None
@@ -259,7 +262,7 @@ def signer_survey(root: Path) -> list:
                        capture_output=True, text=True, timeout=600, env=dict(os.environ, URI_SIGNER_ROOT=str(root)),
                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     if r.returncode != 0:
-        raise OfficeError("ENGINE_INTEGRITY", "the engine signature check could not run", 503)
+        raise OfficeError("ENGINE_CHECK_FAILED", "the engine signature check could not run", 503)
     data = json.loads(r.stdout or "[]")
     return data if isinstance(data, list) else [data]
 

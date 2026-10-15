@@ -204,3 +204,18 @@ def test_startup_check_records_an_unexpected_failure():
     hub.lo = type("LO", (), {"integrity": FakeIntegrity()})()
     hub._startup_check()
     assert (hub.lo.integrity.state, hub.lo.integrity.reason) == ("unavailable", "ENGINE_CHECK_FAILED")
+
+
+def test_an_integrity_style_failure_during_the_check_is_not_left_verifying(tree, tmp_path, monkeypatch):
+    """Codex O2-R5-02: an OfficeError raised inside the check (for example the signature tool) ends 'unavailable'."""
+    root, pin = tree
+    pin = {**pin, "signers_allowed": ["CN=x"]}
+    ei = E.EngineIntegrity("libreoffice", tmp_path / "state", pin)
+
+    def no_tool(_root):
+        raise OfficeError("ENGINE_CHECK_FAILED", "the engine signature check could not run", 503)
+    monkeypatch.setattr(E, "signer_survey", no_tool)
+    monkeypatch.setattr(E.os, "name", "nt")
+    with pytest.raises(OfficeError):
+        ei.verify_full()
+    assert ei.status()["state"] == "unavailable" and ei.status()["reason"] == "ENGINE_CHECK_FAILED"

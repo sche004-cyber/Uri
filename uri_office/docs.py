@@ -121,6 +121,11 @@ class Documents:
 
     def _prepare(self, s: DocSession):
         t0 = time.perf_counter()
+        with self._lock:
+            closed = self.sessions.get(s.document_id) is not s
+        if closed:                                           # Codex O2-R5-04: closed before a retry started
+            s.ready.set()
+            return
         try:
             if s.kind in ("docx", "pptx"):
                 cached = s.cache / "preview.pdf"

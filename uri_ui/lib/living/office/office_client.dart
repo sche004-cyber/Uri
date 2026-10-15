@@ -64,12 +64,12 @@ class OfficeClient {
 
   Future<Map<String, dynamic>> status() => _get('/status');
 
-  /// True when a service answers on the recorded port (any HTTP answer); false for a service.json left behind by a
-  /// service that has ended.
+  /// True when the service recorded in service.json answers on its port and accepts its token; false for a
+  /// service.json left behind by a service that has ended, or another program on that port (Codex O2-R5-03).
   Future<bool> reachable() async {
     try {
-      await _http.get(_base.resolve('/status'), headers: _headers).timeout(const Duration(seconds: 3));
-      return true;
+      final r = await _http.get(_base.resolve('/status'), headers: _headers).timeout(const Duration(seconds: 3));
+      return r.statusCode == 200;
     } catch (_) {
       return false;
     }

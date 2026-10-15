@@ -51,3 +51,48 @@ def test_entry_script_does_not_depend_on_the_current_directory(tmp_path):
     r = subprocess.run([sys.executable, "-B", "-I", str(ENTRY), "--help"], cwd=tmp_path, capture_output=True,
                        text=True, timeout=60)
     assert r.returncode == 0 and "run" in r.stdout
+
+
+def test_a_second_launch_that_cannot_bind_keeps_the_running_services_token(tmp_path):
+    """Codex O2-R5-01: the token file is written only after the port is bound."""
+    import socket
+    from uri_office import service as SVC
+
+    class FakeOffice:
+        state = tmp_path / "state"
+    FakeOffice.state.mkdir()
+    (FakeOffice.state / "api-token").write_text("LIVE-TOKEN", encoding="utf-8")
+    busy = socket.socket()
+    busy.bind(("127.0.0.1", 0))
+    busy.listen(1)
+    try:
+        import pytest
+        with pytest.raises(OSError):
+            SVC.serve(FakeOffice(), "127.0.0.1", busy.getsockname()[1])
+    finally:
+        busy.close()
+    assert (FakeOffice.state / "api-token").read_text(encoding="utf-8") == "LIVE-TOKEN"
+
+
+def test_the_office_port_cannot_be_shared(tmp_path):
+    """Windows SO_REUSEADDR would let a second server listen on the same loopback port; the Office server refuses."""
+    import pytest
+    from uri_office import service as SVC
+
+    class FakeOffice:
+        state = tmp_path / "s1"
+    FakeOffice.state.mkdir()
+    srv, _ = SVC.serve(FakeOffice(), "127.0.0.1", 0)
+    try:
+        port = srv.server_address[1]
+
+        class Other:
+            state = tmp_path / "s2"
+        Other.state.mkdir()
+        with pytest.raises(OSError):
+            SVC.serve(Other(), "127.0.0.1", port)
+        from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+        with pytest.raises(OSError):
+            ThreadingHTTPServer(("127.0.0.1", port), BaseHTTPRequestHandler)   # a plain reuse-address server too
+    finally:
+        srv.server_close()
