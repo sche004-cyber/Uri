@@ -47,8 +47,9 @@ class _Runtime implements IntegratedRuntime {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+// brain_health.assess: a live host in a starting phase is RECOVERING; a stale host is ignored (UNAVAILABLE).
 Map<String, dynamic> _health(String? hostState, {String? explain, bool running = true}) => {
-      'state': 'RECOVERING',
+      'state': running ? 'RECOVERING' : 'UNAVAILABLE',
       'host': {'running': running, 'state': hostState},
       'explain': ?explain,
     };
@@ -89,6 +90,15 @@ void main() {
       expect(brainNotReadyPresentation('FOREIGN_INSTANCE', const {}).state, CompanionState.error);
       expect(brainNotReadyPresentation('FAILED', const {}).headline, 'Brain failed to start');
       expect(brainNotReadyPresentation('SOMETHING_NEW', const {}).headline, 'Brain unavailable');
+    });
+
+    test('the health report readiness wins over an older status read', () {
+      final p = brainNotReadyPresentation('STOPPED', {'state': 'RECOVERING', 'readiness': 'LOADING',
+        'explain': 'The Brain is starting.', 'host': {'running': false}});
+      expect(p.headline, 'Loading model');
+      final q = brainNotReadyPresentation('STOPPED', {'state': 'RECOVERING', 'explain': 'The Brain is starting.'});
+      expect(q.headline, 'Starting Brain');
+      expect(q.detail, 'The Brain is starting.');
     });
 
     test('waiting for GPU memory says so and does not claim URI closes apps', () {

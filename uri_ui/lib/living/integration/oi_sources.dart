@@ -73,6 +73,10 @@ class OiCompanionSource extends CompanionStateSource {
 /// on the Dashboard; no progress or time estimate is invented.
 ({CompanionState state, String headline, String detail}) brainNotReadyPresentation(
     String readiness, Map<String, dynamic> health) {
+  // brain_health is read after brain_status and carries its own readiness: prefer it, so the headline and the
+  // host's explanation never describe two different moments (live FCV-R: "Brain not running | The Brain is starting").
+  if (health['readiness'] is String) readiness = health['readiness'] as String;
+  if (health['state'] == 'RECOVERING' && (readiness == 'STOPPED' || readiness == 'UNKNOWN')) readiness = 'STARTING';
   final host = health['host'] is Map ? health['host'] as Map : const {};
   final hostState = host['running'] == true ? host['state'] as String? : null;
   final explain = health['explain'];
