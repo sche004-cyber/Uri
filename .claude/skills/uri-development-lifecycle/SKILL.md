@@ -146,8 +146,11 @@ Run it in the background; it can take hours. It will, without you:
 
 Each stop also writes the visual report (see below). Exit codes: 0 COMPLETE/VERIFIED, 3 BLOCKED, 4 NOT_VERIFIED, 5 WAITING_FOR_MODEL (reviewer unavailable — never an
 ACCEPT). Re-running `run` resumes from `state.json`; it cannot skip a stage (evidence is bound to SHAs).
-Keep `integration.authorized: false` in these runs: for user-facing work driver VERIFIED is a source-code result,
-not phase qualification.
+For user-facing work set `integration.mode: "none"` in the code-commit run and in every `-u<n>` revision: the
+driver then stops VERIFIED (exit 0, integration `NOT_INTEGRATED_BY_POLICY`), which is the entry point for Stage 8;
+driver VERIFIED is a source-code result, not phase qualification. Only the final revision (and `INTERNAL` work) uses
+`fast-forward` with `authorized: false`: after VERIFIED it stops BLOCKED `OWNER_AUTHORIZATION` with `blocker.stage:
+VERIFIED`, the expected "ready for owner approval" state.
 
 ## Stage 8 — Live UI qualification and UX loop (you, Windows runtime)
 
@@ -212,7 +215,8 @@ code alone never means the phase is qualified: live UI, security, regression and
 - `python -m scripts.dev_workflow.lifecycle status <cfg>` (add `--a2ui` for the Developer Console surface) and
   `verify <cfg>` (hash chain). Report stage, rounds, reviewer session ids, open findings, gates, integration,
   blockers — from the receipt, not from memory.
-- Only `stage: VERIFIED/COMPLETE` with `evidence_ok_for_candidate: true` supports "independently accepted".
+- Only `stage: VERIFIED/COMPLETE`, or BLOCKED `OWNER_AUTHORIZATION` with `blocker.stage: VERIFIED`, together with
+  `evidence_ok_for_candidate: true` supports "independently accepted".
   WAITING_FOR_MODEL, BLOCKED, NOT_VERIFIED or a missing receipt means NOT QUALIFIED; say so.
 - BLOCKED with `OWNER_*` ⇒ ask the owner the specific question in `blocker.needs`; after their answer, record it
   with `unblock <cfg> --note "<their decision>"` and run again. Never set `authorized: true` or extend

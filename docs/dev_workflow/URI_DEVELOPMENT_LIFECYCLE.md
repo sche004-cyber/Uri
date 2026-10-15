@@ -10,7 +10,7 @@ Status: implemented 2026-10-11 as an extension of AO-4 (`scripts/dev_workflow`).
 |---|---|---|
 | Skill | `.claude/skills/uri-development-lifecycle/SKILL.md` (pointer in `.agents/skills/`) | tells the coordinating Claude session when and how to run it |
 | Driver | `scripts/dev_workflow/lifecycle.py` | deterministic state machine, evidence, gates, integration, receipts |
-| Workers | `scripts/dev_workflow/lifecycle_providers.py` | separate reviewer / implementer processes (`codex_cli` preferred reviewer since DEV-LIFECYCLE-3 where its sandbox probe passes (on Windows since DEV-LIFECYCLE-3A), `claude_cli` fallback and template default, `command` for tests) |
+| Workers | `scripts/dev_workflow/lifecycle_providers.py` | separate reviewer / implementer processes (`codex_cli` preferred reviewer since DEV-LIFECYCLE-3 where its sandbox probe passes (on Windows since DEV-LIFECYCLE-3A), `claude_cli` fallback; the template default is `codex_cli`, `command` for tests) |
 | UI qualification | `docs/dev_workflow/lifecycle/UI_QUALIFICATION_TEMPLATE.json` | live Windows UI qualification record (section 8) |
 | Config | `docs/dev_workflow/lifecycle/<milestone>.json` (template `TEMPLATE.json`) | milestone scope |
 | Tests | `tests/dev_workflow/test_lifecycle.py`, fixture worker `tests/dev_workflow/lifecycle_fixture/worker.py` | DEVTEST scenarios |
@@ -110,6 +110,10 @@ parsed result, `round.json` with worker identity and integrity check), `repairs/
   `-c windows.sandbox="unelevated"` a probe with the same model, home and `--sandbox read-only` ran `git rev-parse`
   and a write was denied. The driver now passes that flag on Windows; Codex is usable through the driver there when
   the probe and the first round show inspection.
+- Driver repairs cannot commit a tracked file under the ignored `.claude/` directory: `git add -A -- <path>` refuses
+  ignored paths (observed DEV-LIFECYCLE-3-r2 R1, BLOCKED REPAIR_FAILED). Such findings are repaired by the
+  coordinator in the candidate worktree and re-audited in a new revision; a driver fix (`git add -f` for tracked
+  paths only) is a later milestone.
 - The UI qualification of section 8 is enforced by the skill and the auditor, not by the driver: the driver does not
   read the qualification record. Integration authorisation is the control (SKILL.md "Integration preconditions").
 
@@ -173,11 +177,12 @@ returning users. Both journeys (first-time, returning) are re-run after an onboa
 
 ```
 LIVE TEST (DISCOVER) -> REPRODUCE -> CLASSIFY (MATERIAL / MINOR) AND PRIORITISE
-  -> SMALLEST EFFECTIVE REPAIR (approved scope) -> REGRESSION TESTS -> LIVE RETEST
-  -> INDEPENDENT REVIEW (driver revision <milestone>-u<n>) -> ACCEPT or ITERATE
+  -> SMALLEST EFFECTIVE REPAIR (approved scope) -> REGRESSION TESTS
+  -> INDEPENDENT REVIEW (driver revision <milestone>-u<n>) -> LIVE RETEST of the reviewed SHA -> ACCEPT or ITERATE
 ```
 
-Material discoverability, usability, onboarding or functional defects are fixed before qualification. A minor item
+A repair found in review or in the live retest goes round the loop again. Material discoverability, usability,
+onboarding or functional defects are fixed before qualification. A minor item
 may be deferred only when the independent auditor confirms it does not compromise an essential journey. No
 redesign or feature growth; frozen components only with owner authorisation.
 
