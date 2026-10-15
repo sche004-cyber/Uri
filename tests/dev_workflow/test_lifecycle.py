@@ -1551,6 +1551,22 @@ def test_r6_02_reviewer_does_not_load_candidate_project_instructions(tmp_path):
     assert codex[codex.index("-c") + 1] == "project_doc_max_bytes=0" and codex[1] == "exec"
 
 
+def test_3a_codex_gets_windows_sandbox_only_on_windows(tmp_path, monkeypatch):
+    """DEV-LIFECYCLE-3A: the reviewer's fresh CODEX_HOME has no [windows] sandbox; without one codex rejects every
+    command under --sandbox on Windows. The flag is added on Windows only and never replaces --sandbox."""
+    from scripts.dev_workflow import lifecycle_providers as P
+    flag = ["-c", 'windows.sandbox="unelevated"']
+    for win in (True, False):
+        monkeypatch.setattr(P, "WINDOWS", win)
+        for role, mode in (("reviewer", "read-only"), ("implementer", "workspace-write")):
+            argv = P.build_argv({"provider": "codex_cli", "binary": "/x/codex", "model": "m"}, role, tmp_path, [],
+                                "sid")
+            has = any(argv[i:i + 2] == flag for i in range(len(argv)))
+            assert has is win, (win, role, argv)
+            assert argv[argv.index("--sandbox") + 1] == mode and argv[-1] == "-"
+            assert argv[argv.index("--model") + 1] == "m"
+
+
 def _config_loading_claude(path: Path, log: Path):
     """A ``claude`` stand-in that loads its config like Claude Code 2.1 (probed on 2.1.296): settings files from
     CLAUDE_CONFIG_DIR (default ~/.claude) when ``--setting-sources`` names ``user``, and the ``env`` of the global

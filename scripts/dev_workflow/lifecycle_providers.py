@@ -387,6 +387,11 @@ def build_argv(spec: dict, role: str, worktree: Path, protected: list[str], sess
         head = cli_launch(spec, "codex")
         k = len(head) + 1  # after "exec"
         argv = [*head, "exec", "--sandbox", sandbox, "-"]
+        if WINDOWS:
+            # The reviewer's fresh CODEX_HOME has no config.toml, hence no [windows] sandbox, and codex then rejects
+            # every shell command under --sandbox ("blocked by policy", DEV-LIFECYCLE-3 R1). The unelevated Windows
+            # sandbox keeps --sandbox enforced (DEV-LIFECYCLE-3A probe: reads ran, a write was denied).
+            argv[k:k] = ["-c", 'windows.sandbox="unelevated"']
         if role == "reviewer":  # no candidate AGENTS.md as project instructions (R6-02)
             argv[k:k] = ["-c", "project_doc_max_bytes=0"]
         if spec.get("model"):
@@ -462,7 +467,8 @@ def reviewer_config_dir() -> Path:
 
 def reviewer_codex_home() -> Path:
     """The same for a ``codex`` reviewer: ~/.codex/config.toml can redefine the model provider's base URL. Only
-    ``auth.json`` is copied into a fresh CODEX_HOME (not verified against a real codex here: none is installed)."""
+    ``auth.json`` is copied into a fresh CODEX_HOME (probed with codex-cli 0.158.0 on Windows in DEV-LIFECYCLE-3A;
+    ``build_argv`` then supplies the Windows sandbox mode that config.toml would have set)."""
     src = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex")
     d = Path(tempfile.mkdtemp(prefix="uri-reviewer-codex-"))
     if (src / "auth.json").is_file():
