@@ -1068,12 +1068,15 @@ def _restore(cfg, wt: Path, sha: str) -> bool:
 
 def _commit_and_prove(cfg, wt: Path, sha: str, n: int, rec: dict, findings: list, changed: list, rdir: Path):
     """Commit the checked change and prove it; returns a refusal reason or None (``rec['commit']`` set)."""
-    # A tracked file under an ignored directory (the skill under the frozen-ignored .claude/) needs -f, or git refuses
-    # the whole add (DEV-LIFECYCLE-3-r2). Only paths already in the index get -f: a new ignored file is still refused.
-    tracked = set(git(wt, "ls-files", "--", *changed).splitlines()) if changed else set()
+    # A file tracked by the pre-worker commit under an ignored directory needs -f. The worker may have staged a new
+    # ignored file itself, so the mutable index cannot decide which paths qualify for force-add.
+    tracked = set(git(wt, "ls-tree", "-r", "--name-only", sha, "--", *changed).splitlines()) if changed else set()
+    rest = [c for c in changed if c not in tracked]
+    ignored = git(wt, "check-ignore", "--no-index", "--", *rest, check=False).splitlines() if rest else []
+    if ignored:
+        return "IGNORED_NEW_FILE: " + ", ".join(sorted(ignored))
     if tracked:
         git(wt, "add", "-f", "-A", "--", *sorted(tracked))
-    rest = [c for c in changed if c not in tracked]
     if rest:
         git(wt, "add", "-A", "--", *rest)
     msg = f"fix({cfg['milestone']}): repair {', '.join(map(str, rec['addresses']))} (lifecycle P{n})\n\n" + \

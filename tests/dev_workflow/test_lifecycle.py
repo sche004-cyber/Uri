@@ -1969,6 +1969,31 @@ def test_3a_new_ignored_file_is_still_not_force_added(tmp_path):
     assert L.git(wt, "ls-files", "--", "secret/key.txt") == ""
 
 
+def test_3a_worker_staged_new_ignored_file_is_refused(tmp_path):
+    """A worker's git add -f must not make a new ignored path eligible for the driver's force-add."""
+    repo, wt, base, remote = make_fixture(tmp_path)
+    (wt / ".gitignore").write_text("__pycache__/\n.pytest_cache/\ntests/.env\n")
+    g(wt, "add", ".gitignore")
+    g(wt, "commit", "-qm", "ignore test secrets")
+    candidate = g(wt, "rev-parse", "HEAD")
+    cfg = config(tmp_path, repo, wt, limits={"max_repair_attempts": 1})
+    cfg["permitted_paths"].append(".gitignore")
+    cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "stage_ignored.py", """
+from pathlib import Path
+Path('tests/.env').write_text('TOKEN=secret\\n')
+subprocess.run(['git', 'add', '-f', '--', 'tests/.env'], check=True)
+Path('pkg/calc.py').write_text('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+Path('tests/test_zero.py').write_text('from pkg.calc import safe_div\\n\\ndef test_zero():\\n    assert safe_div(1, 0) is None\\n')
+""")}
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["repairs"][0]["status"] == "REFUSED"
+    assert s["repairs"][0]["reason"] == "IGNORED_NEW_FILE: tests/.env"
+    assert s["candidate"] == candidate == g(wt, "rev-parse", "HEAD")
+    assert not g(wt, "ls-files", "--", "tests/.env")
+    assert remote_tip(remote) == base
+
+
 def test_3a_worker_output_is_decoded_as_utf8(tmp_path):
     """DEV-LIFECYCLE-3-r4: worker stdout/stderr were decoded with the Windows ANSI code page; a UTF-8 quote (byte
     0x9d) killed the reader thread and lost the output. The driver now decodes UTF-8 and records it intact."""
