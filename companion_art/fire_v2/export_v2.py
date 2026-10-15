@@ -124,6 +124,13 @@ class Framing:
         return np.dstack([bg * a[..., None], a]).astype(np.float32)
 
     def big_frame(self, pm: np.ndarray, aura: float = 0.0, effects: bool = True) -> np.ndarray:
+        f = self.stage.get("panel_feather")
+        if f:
+            # Transparency (Ember V2.1 final): the painted light that reaches
+            # the panel's edge (the glow on the ground under the feet) would end
+            # in a straight line on a desktop. Fade Ember's own alpha to zero
+            # over the last `f` panel pixels; feet and crest sit further in.
+            pm = pm * self._panel_fade(pm.shape[0], pm.shape[1], f)[..., None]
         big = self.place(pm)
         g = self.stage.get("glow") if effects else None
         if g:
@@ -134,6 +141,11 @@ class Framing:
         if au is not None:
             big = big + au * (1 - big[..., 3:4])
         return big
+
+    def _panel_fade(self, h: int, w: int, f: float) -> np.ndarray:
+        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+        e = np.clip(np.minimum.reduce([xx, w - 1 - xx, yy, h - 1 - yy]) / f, 0, 1)
+        return (e * e * (3 - 2 * e)).astype(np.float32)
 
     def glow(self, big: np.ndarray, g: dict) -> np.ndarray:
         """Light the flames cast into the air around them (transparency mode).

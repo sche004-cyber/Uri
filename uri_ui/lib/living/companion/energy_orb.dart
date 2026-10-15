@@ -419,6 +419,22 @@ class OrbParams {
       rippleStrength: 0,
       coreScale: 0.9,
     ),
+    // Initializing: the idle breathing, slower and dimmer.
+    CompanionState.initializing => const OrbParams(
+      breathRate: 0.15,
+      breathDepth: 0.03,
+      particleSpeed: 0.25,
+      particleSpread: 1.2,
+      particleAlpha: 0.4,
+      energy: 0.12,
+      turbulence: 0.05,
+      tintMix: 0,
+      ringStrength: 0,
+      orbitArc: 0,
+      bloom: 0,
+      rippleStrength: 0,
+      coreScale: 0.95,
+    ),
     CompanionState.idle => const OrbParams(
       breathRate: 0.18,
       breathDepth: 0.035,

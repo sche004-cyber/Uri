@@ -18,6 +18,20 @@ import 'oi_conversation.dart';
 /// Brain answer, or Core's `SETTLED_VERIFIED` reply; `core_turn_status`), so
 /// the UI adds no judgement of its own. Turns that finished before this
 /// source existed never celebrate (finding F-SUCCESS, Ember V2).
+/// Brain states that are part of a normal startup: Runtime v1 readiness
+/// `STARTING`/`LOADING`, or - while the runtime still reads `STOPPED` - the
+/// running Brain host's startup states (`brain_health.py`). Everything else
+/// that is not `READY` reads as unavailable, including a host that is
+/// stopping or releasing the GPU.
+const Set<String> brainStartingStates = {
+  'STARTING',
+  'LOADING',
+  'STARTING_HOST',
+  'CALIBRATING',
+  'WAITING_FOR_GPU',
+  'WAITING_FOR_LEASE',
+};
+
 class OiCompanionSource extends CompanionStateSource {
   OiCompanionSource(
     this.conversation, {
@@ -95,6 +109,20 @@ class OiCompanionSource extends CompanionStateSource {
     }
     final state = c.brainStatus['state'];
     if (state != null && state != 'READY' && c.selectedRowId == 'runtime-v1') {
+      // A Brain that is starting normally is not a failure: show the calm
+      // initializing look. Stopped, failed and unknown states stay
+      // unavailable, and the detail keeps naming the real state.
+      // While the Brain host boots or waits for the GPU lease the runtime
+      // still reads STOPPED; the host's own state (brain_health) says why.
+      final host = c.brainHealth['host'];
+      final hostState = host is Map && host['running'] == true ? host['state'] : null;
+      final starting = brainStartingStates.contains(state)
+          ? state
+          : (state == 'STOPPED' && brainStartingStates.contains(hostState) ? hostState as String : null);
+      if (starting != null) {
+        final waiting = starting == 'WAITING_FOR_GPU' || starting == 'WAITING_FOR_LEASE';
+        return s(CompanionState.initializing, waiting ? 'Waiting for the GPU' : 'Brain loading');
+      }
       return s(CompanionState.unavailable, 'Brain $state');
     }
     return s(CompanionState.idle);

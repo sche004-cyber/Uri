@@ -31,6 +31,10 @@ enum EmberClip {
   speaking,
   focused,
   concerned,
+
+  /// The Brain is starting: a calm, low, softly glowing flame with the eyes
+  /// half lowered. It brightens into [idle] when URI is ready.
+  kindling,
 }
 
 /// Pure mapping from authoritative state to expression. Kept free of widgets
@@ -40,6 +44,7 @@ class EmberClips {
 
   static EmberClip forState(CompanionState state) => switch (state) {
     CompanionState.unavailable => EmberClip.depleted,
+    CompanionState.initializing => EmberClip.kindling,
     CompanionState.idle => EmberClip.idle,
     CompanionState.listening => EmberClip.listening,
     CompanionState.thinking => EmberClip.thinking,

@@ -172,7 +172,7 @@ class CompanionParams {
 
   /// The parameter table for one identity, covering every [CompanionState].
   ///
-  /// It covers all nine, not the five in the visual brief: `CompanionState` is
+  /// It covers all ten, not the five in the visual brief: `CompanionState` is
   /// an existing contract driven by authoritative facts, and a companion that
   /// cannot express `awaitingApproval` or `unavailable` would silently fall
   /// back to some other state's appearance and misreport what URI is doing.
@@ -198,6 +198,12 @@ class CompanionParams {
         CompanionState.unavailable: CompanionParams(
           energy: 0.06, turbulence: 0.05, flare: 0.00,
           particles: 0.05, focus: 0.95, exposure: 0.72,
+        ),
+        // Initializing: the idle look, calmer and dimmer (owner decision,
+        // Ember V2.1 final: a normal startup must not look failed).
+        CompanionState.initializing: CompanionParams(
+          energy: 0.14, turbulence: 0.10, flare: 0.04,
+          particles: 0.16, focus: 0.88, exposure: 0.88,
         ),
         CompanionState.idle: CompanionParams(
           energy: 0.22, turbulence: 0.16, flare: 0.10,
@@ -239,6 +245,12 @@ class CompanionParams {
           energy: 0.06, turbulence: 0.05, flare: 0.00,
           particles: 0.06, focus: 0.95, exposure: 0.74,
         ),
+        // Initializing: the idle look, calmer and dimmer (owner decision,
+        // Ember V2.1 final: a normal startup must not look failed).
+        CompanionState.initializing: CompanionParams(
+          energy: 0.15, turbulence: 0.11, flare: 0.04,
+          particles: 0.20, focus: 0.84, exposure: 0.88,
+        ),
         CompanionState.idle: CompanionParams(
           energy: 0.24, turbulence: 0.18, flare: 0.10,
           particles: 0.34, focus: 0.80, exposure: 1.00,
@@ -278,6 +290,12 @@ class CompanionParams {
         CompanionState.unavailable: CompanionParams(
           energy: 0.05, turbulence: 0.10, flare: 0.00,
           particles: 0.06, focus: 0.30, exposure: 0.70,
+        ),
+        // Initializing: the idle look, calmer and dimmer (owner decision,
+        // Ember V2.1 final: a normal startup must not look failed).
+        CompanionState.initializing: CompanionParams(
+          energy: 0.14, turbulence: 0.15, flare: 0.05,
+          particles: 0.18, focus: 0.55, exposure: 0.86,
         ),
         CompanionState.idle: CompanionParams(
           energy: 0.22, turbulence: 0.24, flare: 0.12,

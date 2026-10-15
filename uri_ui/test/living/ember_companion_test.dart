@@ -69,6 +69,8 @@ void main() {
       );
       expect(EmberClips.forState(CompanionState.success), EmberClip.joyful);
       expect(EmberClips.forState(CompanionState.error), EmberClip.concerned);
+      // A normal Brain startup is calm, never the depleted (failed) look.
+      expect(EmberClips.forState(CompanionState.initializing), EmberClip.kindling);
     });
 
     test('fading into or out of depleted is slower than other changes', () {

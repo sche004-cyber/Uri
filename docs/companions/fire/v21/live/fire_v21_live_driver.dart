@@ -232,9 +232,17 @@ void main() {
     record('4 wake phrase', {'result': 'NOT AVAILABLE', 'reason': 'no wake-word recogniser in canonical URI; HOTWORDS only biases push-to-talk'});
 
     final states = <String>[];
+    // Ember V2.1 final: state changes carry seconds since the UI signalled ready (the Brain host starts then), so
+    // the Initializing journey shows how long each look lasted.
+    final sinceReady = Stopwatch()..start();
+    var lastState = '';
+    var initializingShot = false;
     void sample() {
       final s = orbState().name;
-      if (states.isEmpty || states.last != s) states.add(s);
+      if (s != lastState) {
+        states.add('$s@${sinceReady.elapsed.inSeconds}s');
+        lastState = s;
+      }
     }
 
     bool ourBrain() {
@@ -259,6 +267,12 @@ void main() {
     while (true) {
       await t.runAsync(conv.refreshStatus);
       sample();
+      if (!initializingShot && orbState() == CompanionState.initializing) {
+        initializingShot = true;
+        record('3c brain initializing', {'brain_status': conv.brainStatus, 'host': conv.brainHealth['host'],
+          'detail': services.companion.signal.detail});
+        await shot('brain-initializing');
+      }
       // Only a Brain started by this run's own Brain host counts (OD-8). The worker's 'owned' flag is about the
       // worker, not the run (live run 3: it reads false for our own host too), so the server pid the worker
       // reports must equal the pid this runtime's host records in its brain_host.json.

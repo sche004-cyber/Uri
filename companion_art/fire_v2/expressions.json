@@ -8,13 +8,14 @@
   "center": "panel"
  },
  "stage": {
-  "_comment": "Transparency-ready (owner directive 'URI UI V2 compatibility', 2026-10-15): no opaque backdrop. The clips' V2 aura pool is off (strength 0); light from the flames is a translucent emissive glow (export_v2.Framing.glow, alpha <= 0.45), fading before the cell border. Fidelity cost and choice: evidence/fidelity/P3_RESULTS.md. V2.1's painted opaque backdrop (9933ca2b) was: texture, pool [5, 6], edge 0.04, strength 1.0.",
+  "_comment": "Transparency-ready (owner directive 'URI UI V2 compatibility', 2026-10-15): no opaque backdrop. The clips' V2 aura pool is off (strength 0); light from the flames is a translucent emissive glow (export_v2.Framing.glow, alpha <= 0.45), fading before the cell border. panel_feather (Ember V2.1 final): Ember's own alpha fades over the last 20 panel px, so painted light reaching the panel edge (the ground glow under the feet) never ends in a straight line. Fidelity cost and choice: evidence/fidelity/P3_RESULTS.md. V2.1's painted opaque backdrop (9933ca2b) was: texture, pool [5, 6], edge 0.04, strength 1.0.",
   "strength": 0.0,
   "glow": {
    "sigma": 18,
    "gain": 2.0,
    "cap": 0.45
-  }
+  },
+  "panel_feather": 20
  },
  "clips": {
   "idle": {
@@ -137,7 +138,7 @@
     1.0
    ],
    "stage": {
-    "_comment": "Depleted only: the painted backdrop as a 60 % translucent haze (P3: smoke reads 73.8 without it, 79.0 with it); still transparent (alpha <= 0.29 outside the central circle; transparency_gates.json).",
+    "_comment": "Depleted only: the painted backdrop as a 60 % translucent haze (P3: smoke reads 73.8 without it, 79.0 with it), held close to the figure (pool [0.10, 0.60], Ember V2.1 final: the earlier [0.35, 0.95] pool read as a grey rounded rectangle on light desktops; evidence/final/haze/). Still transparent: nothing darkens a white desktop by 6 % or more outside the central circle.",
     "glow": {
      "sigma": 18,
      "gain": 2.0,
@@ -146,11 +147,12 @@
     "texture": true,
     "strength": 0.6,
     "pool": [
-     0.35,
-     0.95
+     0.10,
+     0.60
     ],
     "edge": 0.08,
-    "edge_margin": 0.03
+    "edge_margin": 0.03,
+    "panel_feather": 20
    }
   },
   "listening": {
@@ -321,9 +323,8 @@
   },
   "kindling": {
    "panel": "idle",
-   "reference": "derived from 01. IDLE: startup (Brain loading) - calm, softly glowing, low flame; NOT SHIPPED until the shared 'starting' state is approved (see 04_STARTUP_PROPOSAL_V21.md)",
+   "reference": "derived from 01. IDLE: initializing (Brain loading) - calm, softly glowing, low flame; shown for CompanionState.initializing (owner-approved direction, Ember V2.1 final; 04_STARTUP_PROPOSAL_V21.md)",
    "loop": 96,
-   "ship": false,
    "motion": {
     "flow_base": 0.6,
     "flow_tip": 4.0,

@@ -8,6 +8,12 @@ enum CompanionState {
   /// No backend / no opt-in / worker failed preflight. Dim, slow.
   unavailable,
 
+  /// The Brain is starting normally (loading its model, or waiting for the
+  /// GPU). Calm and neutral, never the failed look: a first-time user must
+  /// not read a normal startup as a fault (owner decision, Ember V2.1
+  /// final). Failures and stopped Brains stay [unavailable].
+  initializing,
+
   /// Nothing pending, nothing running. Breathing.
   idle,
 
@@ -40,6 +46,7 @@ extension CompanionStateLabel on CompanionState {
   /// Short human label used by badges and semantics.
   String get label => switch (this) {
     CompanionState.unavailable => 'Unavailable',
+    CompanionState.initializing => 'Initializing',
     CompanionState.idle => 'Idle',
     CompanionState.listening => 'Listening',
     CompanionState.thinking => 'Thinking',
