@@ -301,7 +301,10 @@ def reconcile(source, runtime):
     return result
 
 
-def verify(source, runtime):
+def verify(source, runtime, *, strict_extras=True):
+    """strict_extras=False is only for historical gates that run AFTER test suites wrote their own residue into the
+    tree: every expected file, the receipt and every authorized blob are still proven; the gate's own scope rules
+    decide about new files (tests/phase2a/test_frozen_core.py, phase2close_chain phase1-scope)."""
     from scripts import oi_materialize_test_runtime as M
     source, runtime = Path(source).absolute(), Path(runtime).absolute()
     result = {"ok": False, "source": str(source), "runtime": str(runtime)}
@@ -360,7 +363,7 @@ def verify(source, runtime):
                     generated.append(path)
                     continue
                 extras.append(path)
-        if extras:
+        if extras and strict_extras:
             raise VerificationError("UNKNOWN_OUTPUT:" + ",".join(sorted(extras)[:10]))
         # The two runtime security transitions. The FCV-01 rollback amendment is a source-tree tool change; the
         # historical runtime keeps the overlay's original rollback script (checked as an expected file above).
@@ -372,7 +375,8 @@ def verify(source, runtime):
             if digest(raw(runtime, path)) != F.PROVENANCE[path]:
                 raise VerificationError("PROVENANCE_CHANGED:" + path)
         result.update(ok=True, source_head=head, source_tree=source_tree, historical_head=M.BASE,
-                      checked_files=len(expected), generated_files_ignored=len(generated), checkpoint_sha256=F.ZIP_SHA,
+                      checked_files=len(expected), generated_files_ignored=len(generated),
+                      unchecked_new_files=0 if strict_extras else len(extras), checkpoint_sha256=F.ZIP_SHA,
                       approved_blobs={p: F.APPROVED[p]["sha256"] for p in BEFORE},
                       note="Execution dependencies/state retain existing C1 identity and permission gates; this verifies source output, not live qualification.")
     except (OSError, ValueError, KeyError, TypeError) as exc:
@@ -408,7 +412,8 @@ def verified_transitions(runtime):
     receipt = json.loads(raw(runtime, "OI_MATERIALIZATION_RECEIPT.json"))
     if "security_patch_sha256" not in receipt:
         return set()  # historical materializations retain their original gates
-    result = verify(receipt["candidate_source"], runtime)
+    # Historical gates run after suites that leave residue; they apply their own new-file scope rules.
+    result = verify(receipt["candidate_source"], runtime, strict_extras=False)
     if not result["ok"]:
         raise VerificationError("MATERIALIZED_GATE_REFUSED:" + result.get("error", "UNKNOWN"))
     return set(RUNTIME_TRANSITIONS)

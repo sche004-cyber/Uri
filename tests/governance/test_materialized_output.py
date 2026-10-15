@@ -295,3 +295,19 @@ def test_reconcile_refuses_an_amendment_source_that_is_not_the_authorized_blob(o
     with pytest.raises(V.VerificationError, match="AMENDMENT_SOURCE_CHANGED"):
         V.reconcile(source, runtime)
     assert (runtime / "scripts/uri_client.ps1").read_bytes() == frozen      # nothing written on refusal
+
+
+def test_historical_gate_proves_files_after_suite_residue_but_materialization_does_not_accept_residue(output):
+    """FCV-R chain: phase1-scope runs after the Phase 1 suite left residue (e.g. .tmp_m33_c2_pytest/). The historical
+    gate still proves every expected file, receipt and authorized blob and leaves new files to its own scope rules;
+    the strict materialization-time verification still refuses any unknown output."""
+    source, runtime, _ = output
+    residue = runtime / ".tmp_suite_residue/evidence_records.json"
+    residue.parent.mkdir()
+    residue.write_text("{}")
+    assert V.verified_transitions(runtime) == set(V.RUNTIME_TRANSITIONS)
+    strict = V.verify(source, runtime)
+    assert not strict["ok"] and "UNKNOWN_OUTPUT" in strict["error"]
+    (runtime / "worker.py").write_text("changed source\n")
+    with pytest.raises(V.VerificationError, match="MATERIALIZED_GATE_REFUSED"):
+        V.verified_transitions(runtime)
