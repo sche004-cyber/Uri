@@ -9,6 +9,13 @@
 >   plays `kindling`.
 > - **Mapping.** The mapping was revised after independent review R3: `brainStartingDetail` in `oi_sources.dart`
 >   decides from both Brain snapshots, and `WAITING_FOR_GPU` stays unavailable.
+> - **Deviations from the proposal below (R4-N3):**
+>   1. host `CALIBRATING` is accepted as a startup state;
+>   2. while the runtime still reads `STARTING`, `LOADING` or `STOPPED`, a newer `brain_health` readiness of `READY`
+>      keeps the calm look, so that a stale snapshot does not flash depleted;
+>   3. a runtime `STOPPED` with a running host in a startup state is Initializing (the proposal mapped only runtime
+>      states);
+>   4. `WAITING_FOR_GPU` stays unavailable (R3-02). `WAITING_FOR_LEASE` stays Initializing, as proposed.
 > - **Where it is recorded.** `FINAL_REPORT_V21_FINAL.md`, section 4.
 >
 > The text below is the original proposal, kept as written.

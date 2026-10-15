@@ -63,7 +63,7 @@ It does not include:
   - Until the host writes its first report, the runtime reads `STOPPED` with no host, which is truthfully
     `unavailable` (depleted).
   - The new mapping shows `initializing` as soon as the host reports `STARTING_HOST` or `WAITING_FOR_LEASE`.
-  - The final live run records how long each look lasts, with timed state sequences (`FINAL_REPORT_V21_FINAL.md`, section 6).
+  - The final live run at `d12e70ed` recorded how long each look lasted, as timed state sequences (`FINAL_REPORT_V21_FINAL.md`, section 6).
   - Closing it fully needs the launcher to announce the host before the UI starts. That is a shared launcher
     change, and is not made here.
 

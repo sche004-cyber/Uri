@@ -169,6 +169,9 @@ The interaction was automated; this is not a human usability study. The wake phr
 
 ## 8. Startup (`04_STARTUP_PROPOSAL_V21.md`), AMBER
 
+> Superseded (R4-N8): the owner approved the direction. It is implemented as `CompanionState.initializing` on
+> `phase/ember-v21-final-20261015`; see `FINAL_REPORT_V21_FINAL.md`, section 4. The text below is kept as written.
+
 This needs a shared `CompanionState.starting`. It is proposed, not implemented. The `kindling` clip is ready and
 unshipped.
 

@@ -7,7 +7,7 @@
 - **Pack:** the same images as R1 (all 120 candidate hashes match), re-shuffled with seed 4200. Pack integrity OK.
 - **Reviewers:** three new reviewers.
 - **Raw answers:** `r2_raw/`. Transcripts are kept locally; their hashes are in `SHA256SUMS.txt`.
-- **Access audit: clean.** Each reviewer read only its own pack folder and wrote only its own answer. Reviewer 1
+- **Access audit: clean.** Each reviewer read only its own pack folder and wrote only its own answer. Reviewer 1's audit entry also lists the parent round folder (`fp21r2`), from its listing call. That folder holds only the three reviewer packs; the key is never in the scratch area (R4-N9). Reviewer 1
   made one Glob call, `*.png`, in its own folder.
 - **Decoded tables:** `r2_decoded.md`.
 
@@ -80,6 +80,6 @@
 - **The protocol's alpha rule.** It says "where the alpha is below 0.85, the layer colour". The code
   (`critique_pack_v21r.py`) blends the painting's pixels and the layer colour linearly between alpha 0.60 and 0.85.
   The images match the code, and both candidates and the control used them.
-- **Decoder rounding.** `r2_decoded.md` prints the "lowest" values rounded to whole numbers. The decimal values do
+- **Decoder rounding.** Before change log C-2, `r2_decoded.md` printed the "lowest" values rounded to whole numbers; it now prints one decimal. The decimal values do
   not change any gate result. The lowest character values on the dark surround are 87.5 (idle), 88.3 (joyful),
   90.8 (fierce) and 80.8 (depleted), from `r2_raw`.

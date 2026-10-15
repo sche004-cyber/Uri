@@ -23,6 +23,18 @@ const Set<String> brainHostStarting = {'STARTING_HOST', 'STARTING', 'LOADING', '
 /// runtime snapshot that still says it is starting (review R3-01).
 const Set<String> brainHostNotStarting = {'FAILED', 'STOPPED', 'STOPPING', 'RELEASE_WAIT', 'WAITING_FOR_GPU'};
 
+/// The detail for the unavailable look: the polled runtime state, unless the
+/// newer health report or the running host already names a different one
+/// (review R4-N2).
+String brainUnavailableDetail(String runtimeState, Map<String, dynamic> health) {
+  final host = health['host'];
+  final hostState = host is Map && host['running'] == true ? host['state'] as String? : null;
+  if (brainHostNotStarting.contains(hostState)) return 'Brain $hostState';
+  final readiness = health['readiness'] as String?;
+  if (readiness != null && readiness != runtimeState && readiness != 'READY') return 'Brain $readiness';
+  return 'Brain $runtimeState';
+}
+
 /// The detail to show while the Brain starts normally, or null.
 ///
 /// [runtimeState] is the polled `brain_status` state (refreshed every 15 s,
@@ -38,6 +50,11 @@ String? brainStartingDetail(String? runtimeState, Map<String, dynamic> health) {
   final host = health['host'];
   final hostState = host is Map && host['running'] == true ? host['state'] as String? : null;
   if (brainHostNotStarting.contains(hostState)) return null;
+  // A STOPPED runtime is a startup only while a Brain host is running: with
+  // no host, a health report that still says starting or ready may be older
+  // than the STOPPED read (a failed health refresh keeps the last one;
+  // review R4-N1).
+  if (runtimeState == 'STOPPED' && hostState == null) return null;
   final readiness = health['readiness'] as String? ?? runtimeState;
   // READY here means the newer snapshot has just seen the Brain come up while
   // the older one still says starting or stopped: stay calm, not depleted.
@@ -142,7 +159,7 @@ class OiCompanionSource extends CompanionStateSource {
       // keeps naming the real state.
       final starting = brainStartingDetail(state as String?, c.brainHealth);
       if (starting != null) return s(CompanionState.initializing, starting);
-      return s(CompanionState.unavailable, 'Brain $state');
+      return s(CompanionState.unavailable, brainUnavailableDetail('$state', c.brainHealth));
     }
     return s(CompanionState.idle);
   }

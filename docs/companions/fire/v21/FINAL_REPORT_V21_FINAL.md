@@ -86,7 +86,7 @@ shipped clips:
 | Gate | Result |
 |---|---|
 | T0 painted, T1 border band, T2 ring, T3 opaque share, T5 blink patches | PASS, all clips |
-| T4 dark-matte fringe | PASS for 8 of 9 clips. **depleted: 14 px over the 5 px limit, at frame 8, gate unchanged.** Diagnosed: these pixels are the painted contact shadow under the feet. The source cut stores that shadow as near-black at alpha 0.2-0.4 (panel y 484-486), and the old wide haze used to cover it. It is not a premultiplication rim (`t4_depleted_contact_shadow_x6.png`). Recorded as a diagnosed gate failure for owner sign-off, not as a pass. |
+| T4 dark-matte fringe | PASS for 8 of 9 clips. **depleted: 70 of 72 frames exceed the 5 px limit, at 7-14 px; the worst is 14 px at frame 8 (R4-N4). Gate unchanged.** Diagnosed: these pixels are the painted contact shadow under the feet. The source cut stores that shadow as near-black at alpha 0.2-0.4 (panel y 484-486), and the old wide haze used to cover it. It is not a premultiplication rim (`t4_depleted_contact_shadow_x6.png`). Recorded as a diagnosed gate failure for owner sign-off, not as a pass. |
 | Flutter transparency test (real `EmberCompanion`, every clip including `kindling`) | PASS within the full suite |
 
 - **Contrast sheets** over 7 backgrounds: `evidence/final/transparency/contrast_<clip>.jpg`.

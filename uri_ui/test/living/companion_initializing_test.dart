@@ -125,10 +125,24 @@ void main() {
     });
 
     test('a stale STOPPED does not flash depleted while the Brain comes up', () {
-      expect(brainStartingDetail('STOPPED', h('LOADING')), 'Brain loading');
-      expect(brainStartingDetail('STOPPED', h('READY')), 'Brain loading');
+      expect(brainStartingDetail('STOPPED', h('LOADING', 'STARTING')), 'Brain loading');
+      expect(brainStartingDetail('STOPPED', h('READY', 'READY')), 'Brain loading');
       expect(brainStartingDetail('STOPPED', h('READY', 'CALIBRATING')), 'Brain loading');
       expect(brainStartingDetail('LOADING', h('READY')), 'Brain loading');
+    });
+
+    test('health older than a STOPPED read never turns a stopped Brain into Initializing (R4-N1)', () {
+      // refreshHealth failed after a fresh STOPPED: the last report still says READY or LOADING.
+      expect(brainStartingDetail('STOPPED', h('READY')), isNull);
+      expect(brainStartingDetail('STOPPED', h('LOADING')), isNull);
+    });
+
+    test('the unavailable detail names the newer state (R4-N2)', () {
+      expect(brainUnavailableDetail('LOADING', h('LOADING', 'FAILED')), 'Brain FAILED');
+      expect(brainUnavailableDetail('LOADING', h('FAILED')), 'Brain FAILED');
+      expect(brainUnavailableDetail('STOPPED', h('STOPPED', 'WAITING_FOR_GPU')), 'Brain WAITING_FOR_GPU');
+      expect(brainUnavailableDetail('STOPPED', h('STOPPED')), 'Brain STOPPED');
+      expect(brainUnavailableDetail('FAILED', const {}), 'Brain FAILED');
     });
 
     test('a stopped Brain with no starting host stays unavailable', () {
