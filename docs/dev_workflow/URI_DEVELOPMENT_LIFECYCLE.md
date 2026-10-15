@@ -96,7 +96,10 @@ parsed result, `round.json` with worker identity and integrity check), `repairs/
   hard bound.
 - The A2UI status surface is produced and validated; it is not wired into the Developer Console UI.
 - `codex_cli` adapter is untested (Codex not installed where this was built). Since DEV-LIFECYCLE-3 it is the
-  preferred reviewer; its first real use is recorded in that milestone's evidence.
+  preferred reviewer. Observed 2026-10-15 on Windows (milestone FCV-R-20261014 R1): it launched through the bound
+  `node.exe` + `codex.js` prefix, `contained` and `config_isolated` true, then failed because the requested model
+  `gpt-6.1-sol` is refused for a ChatGPT login; a probe with `gpt-6-sol` answered. DEV-LIFECYCLE-3's own review
+  records whether a full `codex_cli` round completed.
 - The UI qualification of section 8 is enforced by the skill and the auditor, not by the driver: the driver does not
   read the qualification record. Integration authorisation is the control (SKILL.md "Integration preconditions").
 

@@ -74,7 +74,10 @@ lifecycle numbers in the first column.
 ## Auditor selection (owner directive 2026-10-15)
 
 1. **Primary: Codex** (`"reviewer": {"provider": "codex_cli", ...}`). Before the first run check that it can
-   really work: `codex --version`, `codex login status` ("Logged in"), and that one `codex` resolves on PATH (the driver's
+   really work: `codex --version`, `codex login status` ("Logged in"), a one-line probe with the configured model
+   (`echo "Reply PROBE_OK" | codex exec -m <model> --sandbox read-only --skip-git-repo-check -`; on 2026-10-15
+   `gpt-6-sol` worked and `gpt-6.1-sol` was refused for a ChatGPT login), always set `reviewer.model` (the reviewer
+   gets a fresh CODEX_HOME, so `~/.codex/config.toml` does not apply), and that one `codex` resolves on PATH (the driver's
    `provider_available` and reviewer binding). Then confirm from the first round's record that the reviewer read
    the exact candidate SHA (`candidate` in its result). An invocation that was only attempted is not an audit.
 2. **Fallback: a separate Claude process** (`"provider": "claude_cli"`; needs `claude auth status` loggedIn true).
