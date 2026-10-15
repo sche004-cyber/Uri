@@ -63,3 +63,12 @@ def test_a_wheel_version_outside_the_declared_specifier_is_refused(tmp_path):
     for bad in ("pypdf.whl", "pypdf-6.19.0.whl"):
         with pytest.raises(SystemExit):
             M._wheel_name_version(bad)
+
+
+def test_a_prerelease_wheel_is_refused(tmp_path):
+    """Codex review R3-1: pypdf>=5.0 does not opt into prereleases, so 6.0rc1 is refused."""
+    rc = tmp_path / "pypdf-6.0rc1-py3-none-any.whl"
+    rc.write_bytes(b"PK")
+    with pytest.raises(SystemExit) as e:
+        M.install_wheels(tmp_path, [str(rc)], declared=M.declared_requirements())
+    assert str(e.value) == "WHEEL_VERSION_NOT_DECLARED:pypdf-6.0rc1-py3-none-any.whl"

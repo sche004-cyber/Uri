@@ -119,7 +119,7 @@ def install_wheels(venv: Path, wheels, declared=None) -> dict:
         if name not in declared:
             sys.exit("WHEEL_NOT_DECLARED:" + w.name)
         # Codex review R2-3: the version must satisfy the declared specifier (pypdf>=5.0 refuses pypdf 1.0).
-        if declared[name] is not None and not declared[name].contains(version, prereleases=True):
+        if declared[name] is not None and not declared[name].contains(version, prereleases=False):
             sys.exit("WHEEL_VERSION_NOT_DECLARED:" + w.name)
         done[w.name] = sha(w)
         subprocess.run([str(venv_python(venv)), "-m", "pip", "install", "--no-index", "--no-deps",
