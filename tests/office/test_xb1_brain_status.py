@@ -192,3 +192,14 @@ def test_a_later_write_back_to_the_old_value_is_still_an_overlap(session):
     r = o.instruct(wid, {"text": "Set Digitization to 25000", "active_sheet": "Budget"})
     assert [x["code"] for x in r["refused"]] == ["OVERLAPS_EARLIER_OP"]
     assert [(c["cell"], c["after"]) for c in r["draft"]["changes"]] == [("B5", {"v": 25000})]
+
+
+def test_clear_then_restore_keeps_both_edits(session):
+    """Codex R10-1: B5 cleared, then set back to 60000 in one answer: the restore is not dropped as a no-op."""
+    o, wid, _ = session({"message": "Reset B5.", "status": "propose", "ops": [
+        op(op="set_values", sheet="Budget", range="B5", values=[[""]]),
+        op(op="set_values", sheet="Budget", range="B5", values=[[60000]])]})
+    r = o.instruct(wid, {"text": "Reset Digitization", "active_sheet": "Budget"})
+    assert r["refused"] == []
+    # Both edits stay, exactly as before NOOP-1 (two proposals for B5, the last one restores 60000).
+    assert [c["after"] for c in r["draft"]["changes"] if c["cell"] == "B5"] == [{"v": ""}, {"v": 60000}]
