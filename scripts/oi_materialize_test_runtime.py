@@ -80,28 +80,47 @@ def _dist(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name).lower()
 
 
-def declared_requirements(path: Path = SRC / "requirements.txt") -> set:
-    """Distribution names declared in requirements.txt (comments, options and markers ignored)."""
-    out = set()
+def declared_requirements(path: Path = SRC / "requirements.txt") -> dict:
+    """{normalized distribution name: version specifier} declared in requirements.txt (comments and option lines
+    ignored; environment markers dropped)."""
+    try:
+        from packaging.requirements import Requirement
+    except ImportError:                                  # pip always vendors it
+        from pip._vendor.packaging.requirements import Requirement
+    out = {}
     for line in path.read_text(encoding="utf-8").splitlines():
         line = line.split("#", 1)[0].strip()
-        m = re.match(r"^([A-Za-z0-9][A-Za-z0-9._-]*)", line)
-        if m and not line.startswith("-"):
-            out.add(_dist(m.group(1)))
+        if not line or line.startswith("-"):
+            continue
+        r = Requirement(line)
+        out[_dist(r.name)] = r.specifier
     return out
+
+
+def _wheel_name_version(file_name: str) -> tuple:
+    """(distribution, version) from a wheel file name: name-version(-build)?-python-abi-platform.whl."""
+    parts = file_name[:-len(".whl")].split("-")
+    if len(parts) not in (5, 6):
+        sys.exit("WHEEL_REFUSED:" + file_name)
+    return _dist(parts[0]), parts[1]
 
 
 def install_wheels(venv: Path, wheels, declared=None) -> dict:
     """Install local wheels of DECLARED requirements into the runtime's venv copy: no index, no dependencies.
-    A wheel whose distribution is not in requirements.txt is refused (Codex review R1-3). Returns {file: sha256}."""
+    A wheel whose distribution is not in requirements.txt, or whose version is outside the declared specifier, is
+    refused (Codex reviews R1-3, R2-3). Returns {file: sha256}."""
     done = {}
     declared = declared_requirements() if declared is None else declared
     for w in wheels:
         w = Path(w).resolve()
         if w.suffix != ".whl" or not w.is_file():
             sys.exit("WHEEL_REFUSED:" + w.name)
-        if _dist(w.name.split("-", 1)[0]) not in declared:
+        name, version = _wheel_name_version(w.name)
+        if name not in declared:
             sys.exit("WHEEL_NOT_DECLARED:" + w.name)
+        # Codex review R2-3: the version must satisfy the declared specifier (pypdf>=5.0 refuses pypdf 1.0).
+        if declared[name] is not None and not declared[name].contains(version, prereleases=True):
+            sys.exit("WHEEL_VERSION_NOT_DECLARED:" + w.name)
         done[w.name] = sha(w)
         subprocess.run([str(venv_python(venv)), "-m", "pip", "install", "--no-index", "--no-deps",
                         "--disable-pip-version-check", str(w)], check=True, capture_output=True, text=True)
