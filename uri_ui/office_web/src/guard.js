@@ -89,6 +89,10 @@ export const FORMAT_COMMANDS = Object.freeze(new Set([
   'sheet.command.delta-column-width', 'sheet.command.delta-row-height', 'sheet.command.set-worksheet-col-width',
   'sheet.command.set-row-height', 'sheet.command.set-col-auto-width', 'sheet.command.set-col-is-auto-width',
   'sheet.command.set-row-is-auto-height',
+  // Codex review R2-1: also the paste of column widths and the width/height mutations themselves, whatever command
+  // runs them. Univer's own auto-height on typing uses a different mutation (set-worksheet-row-auto-height).
+  'sheet.command.paste-col-width',
+  'sheet.mutation.set-worksheet-col-width', 'sheet.mutation.set-worksheet-row-height',
 ]));
 
 // Remove the style (`s`) of every cell in a set-range-values mutation's params; values, formulas and rich text stay.

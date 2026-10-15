@@ -123,12 +123,23 @@ test('formatting is not applied; values, existing styles and page marks are kept
     ranges: [{ startRow: 0, endRow: 0, startColumn: 0, endColumn: 4 }], value: h0 + 40 });
   assert.equal(tall, false);
   assert.equal(ws.getRowHeight(0), h0);
+  // Codex R2-1: the mutations themselves are refused too (any command that runs them), and typing still works
+  assert.equal(cs.syncExecuteCommand('sheet.mutation.set-worksheet-col-width', { unitId: 'w', subUnitId: 's0',
+    ranges: [{ startRow: 0, endRow: 19, startColumn: 2, endColumn: 2 }], colWidth: 300 }), false);
+  assert.equal(cs.syncExecuteCommand('sheet.mutation.set-worksheet-row-height', { unitId: 'w', subUnitId: 's0',
+    ranges: [{ startRow: 3, endRow: 3, startColumn: 0, endColumn: 4 }], rowHeight: 90 }), false);
+  assert.notEqual(ws.getColumnWidth(2), 300);
+  assert.notEqual(ws.getRowHeight(3), 90);
+  await cs.executeCommand('sheet.command.set-range-values', { unitId: 'w', subUnitId: 's0',
+    range: { startRow: 3, endRow: 3, startColumn: 0, endColumn: 0 }, value: { v: 'long text that wraps '.repeat(5) } });
+  assert.equal(ws.getCellRaw(3, 0).v, 'long text that wraps '.repeat(5));
   // the page's own change marks (applying > 0) still set backgrounds
   applying++;
   await cs.executeCommand(SetStyleCommand.id, { style: { type: 'bg', value: { rgb: '#FFF2B3' } } });
   applying--;
   assert.ok(ws.getCellRaw(0, 0).s, 'mark applied');
-  assert.deepEqual(edits, [{ sheet: 'Sales', cell: 'A3', value: 7 }, { sheet: 'Sales', cell: 'A2', value: 9 }]);
+  assert.deepEqual(edits, [{ sheet: 'Sales', cell: 'A3', value: 7 }, { sheet: 'Sales', cell: 'A2', value: 9 },
+    { sheet: 'Sales', cell: 'A4', value: 'long text that wraps '.repeat(5) }]);
   assert.ok(refused.includes('sheet.mutation.set-range-values'));
   assert.ok(refused.includes('sheet.command.add-worksheet-merge'));
   assert.ok(refused.includes('sheet.command.set-worksheet-col-width'));
