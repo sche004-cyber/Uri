@@ -80,6 +80,9 @@ lifecycle numbers in the first column.
    gets a fresh CODEX_HOME, so `~/.codex/config.toml` does not apply), and that one `codex` resolves on PATH (the driver's
    `provider_available` and reviewer binding). Then confirm from the first round's record that the reviewer read
    the exact candidate SHA (`candidate` in its result). An invocation that was only attempted is not an audit.
+   Known (2026-10-15, Windows): through the driver Codex's read-only sandbox rejects every shell command, so its
+   review inspects nothing — check `tests_run` statuses; a round whose commands were all BLOCKED is a Codex failure,
+   go to the fallback.
 2. **Fallback: a separate Claude process** (`"provider": "claude_cli"`; needs `claude auth status` loggedIn true).
    Use it when Codex is missing, logged out, out of quota, cannot reach the repository or exact candidate commit,
    or fails to finish. Record the fallback reason and the reviewer identity in the plan and the qualification

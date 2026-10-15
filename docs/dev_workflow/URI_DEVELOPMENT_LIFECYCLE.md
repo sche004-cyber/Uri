@@ -98,8 +98,11 @@ parsed result, `round.json` with worker identity and integrity check), `repairs/
 - `codex_cli` adapter is untested (Codex not installed where this was built). Since DEV-LIFECYCLE-3 it is the
   preferred reviewer. Observed 2026-10-15 on Windows (milestone FCV-R-20261014 R1): it launched through the bound
   `node.exe` + `codex.js` prefix, `contained` and `config_isolated` true, then failed because the requested model
-  `gpt-6.1-sol` is refused for a ChatGPT login; a probe with `gpt-6-sol` answered. DEV-LIFECYCLE-3's own review
-  records whether a full `codex_cli` round completed.
+  `gpt-6.1-sol` is refused for a ChatGPT login; a probe with `gpt-6-sol` answered. DEV-LIFECYCLE-3 R1 (2026-10-15,
+  `gpt-6-sol`, Windows): the round completed and was independent, but Codex's read-only sandbox rejected every shell
+  command ("blocked by policy", also `git rev-parse` and `Get-Content`), so it inspected nothing and returned REJECT
+  with no findings (driver: BLOCKED NO_ACTIONABLE_FINDINGS). On Windows a `codex_cli` reviewer is therefore NOT
+  usable through the driver until its sandbox/approval settings are fixed (a driver change); use the Claude fallback.
 - The UI qualification of section 8 is enforced by the skill and the auditor, not by the driver: the driver does not
   read the qualification record. Integration authorisation is the control (SKILL.md "Integration preconditions").
 
