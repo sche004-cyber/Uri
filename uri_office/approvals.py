@@ -220,6 +220,41 @@ class Approvals:
         return self._propose_subject(workflow_id, "output_files", body, card, {"outputs": len(outputs),
                                                                                "warnings": len(warnings)})
 
+    def propose_print(self, job: str, p: dict) -> Surface:
+        """The print card (O2P, A1 §A4): `office.apply_change` on a `print_job` subject. The hash binds the PDF's
+        SHA-256, the page list, the printer name, every setting, the capability snapshot, the printer status and the
+        output file (for a printer that writes a file)."""
+        body = {"subject_kind": "print_job", "job": job, "target": {"kind": "print_job"}, "print": p}
+        sides = {"simplex": "one-sided", "long": "two-sided (long edge)", "short": "two-sided (short edge)"}
+
+        def card(sid, sha):
+            s = p["settings"]
+            pages = p["pages"]
+            if len(pages) > 1 and pages == list(range(pages[0], pages[-1] + 1)):
+                span = f"pages {pages[0]}-{pages[-1]}"
+            else:
+                span = "page " + ", ".join(str(n) for n in pages)
+            copies = f"{s['copies']} copy" if s["copies"] == 1 else f"{s['copies']} copies"
+            lines = [f"Printer: {_quoted(p['printer'])}",
+                     f"What: {_quoted(p['label'])}, {span} ({len(pages)} page(s)), {copies}",
+                     f"Paper: {_quoted(str(s['paper']))}, {'landscape' if s['landscape'] else 'portrait'}, "
+                     f"{'colour' if s['color'] else 'black and white'}, {sides[s['duplex']]}, "
+                     f"{'fit to page' if s['fit'] == 'fit' else 'actual size'}, {s['dpi']} dpi"]
+            lines += [f"Warning: {w}" for w in p.get("warnings", [])]
+            if p["connection"] == "network":
+                where = f" on {_quoted(p['server'])}" if p.get("server") else ""
+                lines.append(f"Network printer{where}: the pages leave this PC through Windows.")
+            else:
+                lines.append(f"Pages are sent to {_quoted(p['printer'])} through Windows.")
+            if p.get("output"):
+                lines.append("This printer writes a file. It is saved as the file shown above; an existing file is "
+                             "never replaced.")
+            return self._card(sid, "Print this?", p.get("output") or "", lines, "Print", "Not now",
+                              "office.apply_change", "office.reject_change", "change_sha256", sha, "office_change",
+                              "Office print")
+        return self._propose_subject(job, "print_job", body, card, {"pages": len(p["pages"]),
+                                                                     "copies": p["settings"]["copies"]})
+
     def _card(self, sid, title, caption, lines, yes, no, yes_action, no_action, key, sha, kind, label) -> Surface:
         texts = _chunks(lines, C.MAX_STRING)
         if len(texts) > C.MAX_COMPONENTS - FIXED_COMPONENTS:
@@ -384,6 +419,8 @@ class Approvals:
                     counts = {"cells": len(body["edits"]), "struct_ops": len(body["struct_ops"])}
                 elif kind == "plan":
                     counts = {"steps": len(body["plan"]["steps"])}
+                elif kind == "print_job":
+                    counts = {"pages": len(body["print"]["pages"]), "copies": body["print"]["settings"]["copies"]}
                 else:
                     counts = {"outputs": len(body.get("outputs", []))}
                 self.audit("office.change_applied", {"surface_id": sid, "change_sha256": r["change_sha256"],

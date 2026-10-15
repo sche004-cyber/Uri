@@ -76,7 +76,7 @@ def excel_lock_present(path: Path) -> bool:
 
 class Office:
     def __init__(self, state: Path, *, owner="owner", google: G.GoogleSheets | None = None, brain=None,
-                 allowed_roots=None):
+                 allowed_roots=None, printing: bool = False):
         self.state = Path(state)
         self.state.mkdir(parents=True, exist_ok=True)
         self.owner = owner
@@ -94,6 +94,9 @@ class Office:
         self._workflows = None
         self._o2_lock = threading.Lock()
         self._engine_checks = False
+        # O2P: printing is off until O2P qualifies; the owner's start flag (--enable-printing) or a test turns it on.
+        self.printing_enabled = printing
+        self._printing = None
 
     # ---- O2 parts (plan §5) --------------------------------------------------------------------------------------
     @property
@@ -126,7 +129,42 @@ class Office:
         # Before the engines start, nothing that needs them is reported ready (review round 1, finding 9).
         states = self._hub.states() if self._hub is not None else {
             e: ("unverified", "ENGINE_UNAVAILABLE") for e in ("libreoffice", "winrt_pdf", "pdf_text")}
-        return CAP.registry(states)
+        overrides = {"print_document": "available"} if self.printing_enabled else None
+        return CAP.registry(states, available_overrides=overrides)
+
+    # ---- O2P printing (A1 §A4, §A6) -------------------------------------------------------------------------------
+    @property
+    def printing(self):
+        if not self.printing_enabled:
+            raise OfficeError("CAPABILITY_PLANNED", "Print is not available yet (planned for printing).", 409)
+        hub = self.hub
+        with self._o2_lock:
+            if self._printing is None:
+                from uri_devices.known import Known
+                from uri_devices.printers import PrinterProvider
+                from .printing import Printing
+                self._printing = Printing(self.state, hub, self.approvals, self.grants,
+                                          PrinterProvider(known=Known(self.state)), self._print_source)
+            return self._printing
+
+    def _print_source(self, src: dict):
+        """The PDF a print job prints: a document's preview PDF, a task's output PDF, or (not yet) a workbook."""
+        if not isinstance(src, dict):
+            raise OfficeError("BAD_REQUEST", "source")
+        if "document_id" in src:
+            d = self.documents.get(src["document_id"])
+            if d.state != "ready" or d.preview_pdf is None:
+                raise OfficeError("PAGE_NOT_READY", "", 202)
+            return d.preview_pdf, d.name
+        if "workflow_id" in src:
+            w = self.workflows.get(src["workflow_id"])
+            out = w.private.get("output_path")
+            if out is None or not Path(out).exists():
+                raise OfficeError("PAGE_NOT_READY", "", 202)
+            return Path(out), Path(out).name
+        if "workbook_id" in src:
+            raise OfficeError("CAPABILITY_PLANNED", "Make a PDF of the workbook first, then print the PDF.", 409)
+        raise OfficeError("BAD_REQUEST", "source")
 
     def create_workflow(self, body) -> dict:
         cap = CAP.get(body.get("capability")) if isinstance(body.get("capability"), str) else None
@@ -541,6 +579,8 @@ class Office:
         # O2 (plan §5.1): plan and output subjects are dispatched before any workbook session lookup.
         if body.get("target", {}).get("kind") in ("plan", "output_files"):
             return self.workflows.apply(body)
+        if body.get("target", {}).get("kind") == "print_job":
+            return self.printing.apply(body)
         s = self._session(body["workbook_id"])
         with s.lock:
             t = body["target"]
@@ -632,6 +672,16 @@ class Office:
         # Taking the approvals lock first and the workbook lock inside `_apply` could deadlock against a concurrent
         # propose on the same workbook.
         kind, subject = self.approvals.subject_of(msg.get("surfaceId") if isinstance(msg, dict) else None)
+        if kind == "print_job":
+            job = self.printing.jobs.get(subject)
+            if job is None:
+                r = self.approvals.action(msg, self._apply)
+            else:
+                with job.lock:                           # job lock, then approvals lock
+                    r = self.approvals.action(msg, self._apply)
+            if r.get("status") == "declined":
+                self.printing.declined(subject)
+            return r
         if kind in ("plan", "output_files"):
             # Lock order: workflow lock, then approvals lock (plan §5.1, review N9).
             lock = self.workflows.lock_of(subject)
@@ -790,6 +840,12 @@ def make_handler(office: Office, token: str):
                     return office.recent.listing()
                 if parts == ["workflows"]:
                     return office.workflows.listing()
+                if parts == ["devices", "printers"]:
+                    return office.printing.printers()
+                if len(parts) == 3 and parts[:2] == ["devices", "printers"] and _ok_id(parts[2]):
+                    return office.printing.printer(parts[2])
+                if len(parts) == 2 and parts[0] == "print" and _ok_id(parts[1]):
+                    return office.printing.status(parts[1])
                 width = _width(qs)
                 if len(parts) == 2 and parts[0] == "document" and _ok_id(parts[1]):
                     return office.documents.get(parts[1]).view()
@@ -829,6 +885,14 @@ def make_handler(office: Office, token: str):
                     return office.request(b)
                 if parts == ["workflow"]:
                     return office.create_workflow(b)
+                if parts == ["devices", "refresh"]:
+                    return office.printing.printers()
+                if parts == ["print", "preview"]:
+                    return office.printing.preview(b)
+                if parts == ["print", "propose"]:
+                    return office.printing.propose(b)
+                if len(parts) == 3 and parts[0] == "print" and parts[2] == "cancel" and _ok_id(parts[1]):
+                    return office.printing.cancel(parts[1])
                 if parts == ["recent", "remove"]:
                     return office.recent.remove(b.get("path"))
                 if parts == ["recent", "clear"]:
@@ -942,6 +1006,8 @@ def main(argv=None):
     run.add_argument("--owner", default="owner")
     run.add_argument("--google-token", help="absolute path of URI's existing Google token.json")
     run.add_argument("--brain-url", help="Runtime v1 base URL, e.g. http://127.0.0.1:18470")
+    run.add_argument("--enable-printing", action="store_true",
+                     help="O2P: offer printing (off until O2P qualifies; physical printing needs owner authorization)")
     run.add_argument("--allow-root", action="append", default=None,
                      help="folder the owner's workbooks may come from (repeatable; default: the user's home folder)")
     a = ap.parse_args(argv)
@@ -952,7 +1018,7 @@ def main(argv=None):
         from .brain import OfficeBrain
         brain = OfficeBrain(BC.BrainClient(a.brain_url))
     office = Office(state, owner=a.owner, google=G.GoogleSheets(state, a.google_token), brain=brain,
-                    allowed_roots=a.allow_root)
+                    allowed_roots=a.allow_root, printing=a.enable_printing)
     office._engine_checks = True                          # O2: engine integrity check starts with the service
     if os.environ.get("URI_OFFICE_O2", "1") == "1":
         threading.Thread(target=lambda: office.workflows, daemon=True, name="o2-start").start()
