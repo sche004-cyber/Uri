@@ -9,10 +9,24 @@ import '../companion/companion_design.dart';
 import '../companion/companion_state.dart';
 import '../living_scope.dart';
 import '../integration/scheduler_client.dart';
+import '../presentation/living_shell.dart' show OrbDock;
 import '../presentation/presentation_controller.dart';
 import '../widgets/living_composer.dart';
 import 'scheduler/scheduler_view.dart';
 import 'workspace_mode_view.dart' show pendingDecisionCount;
+
+/// One line on what each destination is for (hover hint).
+const _navHints = {
+  'Dashboard': 'Overview of URI and what needs you',
+  'Conversation': 'Talk with URI',
+  'Tasks': 'Decisions waiting for you and work in progress',
+  'Documents': 'Start a letter, sheet, document or research',
+  'Assist': 'Let URI help in the apps you allow',
+  'Scheduler': 'Reminders and scheduled jobs',
+  'Connections': 'Accounts and tools URI can use',
+  'Settings': 'Brain, permissions, companion and preferences',
+  'Companion': 'Float URI on your desktop. Click it for Chat; double-click to come back here.',
+};
 
 /// The housing and associations surround the shell's actual Companion.
 class FrostDashboard extends StatelessWidget {
@@ -37,7 +51,13 @@ class FrostDashboard extends StatelessWidget {
         builder: (_) => const ConnectionsProvidersScreen(),
       ),
     );
-    final needs = pendingDecisionCount(app, services.work);
+    // The integrated worker's open approval or confirmation waits for the
+    // user too (the Workspace counts it the same way).
+    final oi = services.oi;
+    final needs =
+        pendingDecisionCount(app, services.work) +
+        (oi?.pendingApproval != null ? 1 : 0) +
+        (oi?.pendingConfirmation != null ? 1 : 0);
     final signal = services.companion.signal;
     final cards = <(String, String, VoidCallback)>[
       (
@@ -53,6 +73,8 @@ class FrostDashboard extends StatelessWidget {
             ? 'Task status unavailable'
             : needs == 0
             ? 'No pending decisions reported'
+            : needs == 1
+            ? '1 pending decision'
             : '$needs pending decisions',
         () => focus(WorkspaceFocus.tasks),
       ),
@@ -79,11 +101,10 @@ class FrostDashboard extends StatelessWidget {
     ];
     return LayoutBuilder(
       builder: (context, box) {
-        final wide =
-            box.maxWidth >= 1100 &&
-            box.maxHeight >= 960 &&
-            MediaQuery.textScalerOf(context).scale(14) <= 22;
-        final rail = wide ? 208.0 : 0.0;
+        final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+        final wide = OrbDock.dashboardWide(box.biggest, textScale);
+        final medium = OrbDock.dashboardMedium(box.biggest, textScale);
+        final rail = OrbDock.dashboardRail(box.biggest, textScale);
         final width = box.maxWidth - rail;
         Widget card(int i) => Material(
           color: c.surface,
@@ -94,7 +115,11 @@ class FrostDashboard extends StatelessWidget {
           child: InkWell(
             onTap: cards[i].$3,
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              // Medium windows place the cards beside the companion: one
+              // line of detail keeps them inside their fixed height.
+              padding: medium
+                  ? const EdgeInsets.symmetric(horizontal: 14, vertical: 8)
+                  : const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -115,10 +140,10 @@ class FrostDashboard extends StatelessWidget {
                       const Icon(Icons.north_east, size: 14),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: medium ? 6 : 10),
                   Text(
                     cards[i].$2,
-                    maxLines: 2,
+                    maxLines: medium ? 1 : 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 14,
@@ -195,17 +220,25 @@ class FrostDashboard extends StatelessWidget {
             for (final item in nav)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: ListTile(
-                    selected: item.$1 == 'Dashboard',
-                    selectedTileColor: c.accentSoft.withValues(alpha: .35),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+                child: Tooltip(
+                  // First-time help where the choice is made.
+                  message: _navHints[item.$1] ?? item.$1,
+                  waitDuration: const Duration(milliseconds: 600),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: ListTile(
+                      selected: item.$1 == 'Dashboard',
+                      selectedTileColor: c.accentSoft.withValues(alpha: .35),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      leading: Icon(item.$2, size: 18),
+                      title: Text(
+                        item.$1,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      onTap: item.$3,
                     ),
-                    leading: Icon(item.$2, size: 18),
-                    title: Text(item.$1, style: const TextStyle(fontSize: 14)),
-                    onTap: item.$3,
                   ),
                 ),
               ),
@@ -218,7 +251,11 @@ class FrostDashboard extends StatelessWidget {
                 ? 'Checking decisions…'
                 : app.tasksError != null
                 ? 'Review status unavailable'
-                : '$needs review needed',
+                : needs == 0
+                ? 'Nothing to review'
+                : needs == 1
+                ? '1 review needed'
+                : '$needs reviews needed',
           ),
         );
         final header = Column(
@@ -226,7 +263,7 @@ class FrostDashboard extends StatelessWidget {
           children: [
             SizedBox(
               width: double.infinity,
-              child: wide
+              child: rail > 0
                   ? Wrap(
                       alignment: WrapAlignment.spaceBetween,
                       spacing: 16,
@@ -277,7 +314,11 @@ class FrostDashboard extends StatelessWidget {
               'Your work, connected.',
               style: TextStyle(
                 fontFamily: 'Georgia',
-                fontSize: wide ? 38 : 24,
+                fontSize: wide
+                    ? 38
+                    : medium
+                    ? 30
+                    : 24,
                 color: c.ink,
               ),
             ),
@@ -374,6 +415,16 @@ class FrostDashboard extends StatelessWidget {
                   ),
                 ],
               )
+            : medium
+            ? _mediumBody(
+                orb: orbRect.shift(Offset(-rail, 0)),
+                width: width,
+                header: header,
+                card: card,
+                stateLine:
+                    '${signal.state == CompanionState.success ? 'Reply received' : signal.state.label} · ${CompanionDesign.active(services.companionPrefs).displayName}${signal.simulated ? ' · simulated' : ''}',
+                inkSoft: c.inkSoft,
+              )
             : Column(
                 children: [
                   SizedBox(
@@ -411,10 +462,10 @@ class FrostDashboard extends StatelessWidget {
               );
         return Scaffold(
           backgroundColor: Colors.transparent,
-          drawer: wide ? null : Drawer(child: navigation()),
+          drawer: rail > 0 ? null : Drawer(child: navigation()),
           body: Row(
             children: [
-              if (wide)
+              if (rail > 0)
                 Container(
                   width: rail,
                   decoration: BoxDecoration(
@@ -430,6 +481,80 @@ class FrostDashboard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  /// Medium windows: header on top, three destinations on each side of the
+  /// companion, and the composer kept in view at the bottom. Same cards,
+  /// header, composer and artwork as the other layouts.
+  Widget _mediumBody({
+    required Rect orb,
+    required double width,
+    required Widget header,
+    required Widget Function(int) card,
+    required String stateLine,
+    required Color inkSoft,
+  }) {
+    const cardHeight = 84.0, gap = 10.0;
+    final column = ((width - 72 - orb.width - 112) / 2).clamp(200.0, 380.0);
+    final top = orb.center.dy - (3 * cardHeight + 2 * gap) / 2;
+    return Stack(
+      children: [
+        Positioned(
+          left: 36,
+          right: 36,
+          top: 0,
+          height: OrbDock.dashboardHeader,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(top: 20),
+            child: header,
+          ),
+        ),
+        for (var i = 0; i < 6; i++)
+          Positioned(
+            left: i < 3 ? 36 : width - 36 - column,
+            top: top + (i % 3) * (cardHeight + gap),
+            width: column,
+            height: cardHeight,
+            child: card(i),
+          ),
+        Positioned(
+          top: orb.bottom + 6,
+          left: orb.center.dx - 180,
+          width: 360,
+          child: Text(
+            stateLine,
+            key: const ValueKey('dashboard-state-line'),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 14, color: inkSoft),
+          ),
+        ),
+        Positioned(
+          left: 36,
+          right: 36 + 92 + 20,
+          bottom: 20,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'CONTINUE YOUR WORK',
+                style: TextStyle(fontSize: 11, letterSpacing: 1),
+              ),
+              const SizedBox(height: 10),
+              const LivingComposer(hint: 'What would you like to work on?'),
+              const SizedBox(height: 8),
+              Text(
+                'Shared context and pending decisions stay with you.',
+                style: TextStyle(fontSize: 12, color: inkSoft),
+              ),
+            ],
+          ),
+        ),
+        const Positioned(right: 36, bottom: 16, width: 92, child: UriArtwork()),
+      ],
     );
   }
 

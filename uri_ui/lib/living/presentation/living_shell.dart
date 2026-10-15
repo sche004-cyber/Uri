@@ -56,6 +56,26 @@ class OrbDock {
   static double railOrbSpace(double shellWidth) =>
       railOrbTop + railOrbSize(shellWidth) + 12;
 
+  /// Dashboard geometry, shared with FrostDashboard so the companion and the
+  /// destinations around it always agree. Wide: the full composition (tall
+  /// windows). Medium: the six destinations beside a smaller companion with
+  /// the composer kept in view (common laptop windows such as 1366x768 and
+  /// 1536x864). Otherwise one scrolling column.
+  static bool dashboardWide(Size shell, double textScale) =>
+      shell.width >= 1100 && shell.height >= 960 && textScale <= 22 / 14;
+  static bool dashboardMedium(Size shell, double textScale) =>
+      !dashboardWide(shell, textScale) &&
+      shell.width >= 900 &&
+      shell.height >= 640 &&
+      textScale <= 1.2;
+  static double dashboardRail(Size shell, double textScale) =>
+      dashboardWide(shell, textScale) ||
+          (dashboardMedium(shell, textScale) && shell.width >= 1100)
+      ? 208
+      : 0;
+  static const double dashboardHeader = 196;
+  static const double dashboardFooter = 150;
+
   /// Assist geometry, shared with the Assist header so they always agree.
   static const double assistOrbSize = 84;
   static const double assistOrbLeft = 20;
@@ -113,8 +133,23 @@ class OrbDock {
             lightAt: const Alignment(0, -1),
           );
         }
-        final wide =
-            shell.width >= 1100 && shell.height >= 960 && textScale <= 22 / 14;
+        if (dashboardMedium(shell, textScale)) {
+          final rail = dashboardRail(shell, textScale);
+          final middle = shell.height - dashboardHeader - dashboardFooter;
+          final size = (middle - 56).clamp(120.0, 200.0);
+          return OrbDock(
+            rect: Rect.fromCenter(
+              center: Offset(
+                rail + (shell.width - rail) / 2,
+                dashboardHeader + (middle - 36) / 2,
+              ),
+              width: size,
+              height: size,
+            ),
+            lightAt: const Alignment(0, -1),
+          );
+        }
+        final wide = dashboardWide(shell, textScale);
         final size = wide ? 360.0 : 180.0;
         return OrbDock(
           rect: Rect.fromCenter(

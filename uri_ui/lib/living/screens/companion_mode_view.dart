@@ -492,13 +492,25 @@ class _DetachedChat extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: referenceSize ? 24 : 12,
+                // Earlier messages fade out under the header instead of
+                // being cut into a thin sliver.
+                child: ShaderMask(
+                  key: const ValueKey('companion-chat-fade'),
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: (bounds) => LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: const [Colors.transparent, Colors.black],
+                    stops: [0, (16 / math.max(bounds.height, 16)).clamp(0, 1)],
+                  ).createShader(bounds),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: referenceSize ? 24 : 12,
+                    ),
+                    child: s.oi != null
+                        ? OiConversationPane(conversation: s.oi!, compact: true)
+                        : const _DetachedClassicConversation(),
                   ),
-                  child: s.oi != null
-                      ? OiConversationPane(conversation: s.oi!, compact: true)
-                      : const _DetachedClassicConversation(),
                 ),
               ),
               Padding(

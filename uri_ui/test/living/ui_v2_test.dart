@@ -350,6 +350,65 @@ void main() {
       expect(orb.bottom, lessThanOrEqualTo(size.height));
     });
   }
+  // UI V2 completion V-2: common laptop windows got the one-column layout,
+  // with the destinations and the composer below the fold.
+  for (final size in [
+    const Size(1366, 768),
+    const Size(1536, 864),
+    const Size(1280, 800),
+    const Size(1024, 768),
+    const Size(900, 640),
+  ]) {
+    testWidgets(
+      'dashboard medium ${size.width}x${size.height} keeps destinations and composer in view',
+      (tester) async {
+        final (_, _, services) = await pumpV2(tester, size: size);
+        services.presentation.setMode(UiPresentationMode.dashboard);
+        await tester.pumpAndSettle();
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(OrbDock.dashboardMedium(size, 1), isTrue);
+        final view = Offset.zero & size;
+        final orb = tester.getRect(find.byKey(LivingShell.orbKey));
+        final composer = tester.getRect(
+          find.byKey(const ValueKey('living-composer-field')),
+        );
+        expect(view.contains(composer.bottomRight), isTrue);
+        expect(composer.overlaps(orb), isFalse);
+        for (final title in [
+          'Memory',
+          'Tasks',
+          'Brain & models',
+          'Connections',
+          'Permissions',
+          'Operational state',
+        ]) {
+          final card = tester.getRect(find.text(title).last);
+          expect(view.contains(card.bottomRight), isTrue, reason: title);
+          expect(card.overlaps(orb), isFalse, reason: title);
+          expect(card.overlaps(composer), isFalse, reason: title);
+        }
+        // Navigation: a rail when there is room, the drawer otherwise.
+        expect(
+          find.byTooltip('Navigation'),
+          size.width >= 1100 ? findsNothing : findsOneWidget,
+        );
+        final header = tester.getRect(find.text('Your work, connected.'));
+        expect(header.bottom, lessThan(orb.top));
+      },
+    );
+  }
+  test('dashboard layouts: wide only for tall windows, medium never at large text', () {
+    expect(OrbDock.dashboardWide(const Size(1440, 1000), 1), isTrue);
+    expect(OrbDock.dashboardMedium(const Size(1440, 1000), 1), isFalse);
+    expect(OrbDock.dashboardMedium(const Size(1366, 768), 2), isFalse);
+    expect(OrbDock.dashboardMedium(const Size(800, 640), 1), isFalse);
+    expect(OrbDock.dashboardMedium(const Size(1366, 768), 1.3), isFalse);
+    expect(OrbDock.dashboardMedium(const Size(1024, 600), 1), isFalse);
+    expect(OrbDock.dashboardRail(const Size(1024, 768), 1), 0);
+    expect(OrbDock.dashboardRail(const Size(1366, 768), 1), 208);
+  });
   test('floating controls fit both sizes without covering the Companion', () {
     for (final size in [const Size(440, 680), const Size(360, 560)]) {
       final orb = OrbDock.forMode(
