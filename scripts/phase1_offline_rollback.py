@@ -24,6 +24,18 @@ SOURCE_FILES = {".gitignore", "PROJECT_MEMORY.md", "URI_MILESTONE_TRACKER.md",
                 "uri_workspace/capabilities_registry.json"}
 
 
+# FCV-01 (owner authorization required): the accepted Phase 1 freeze checkpoint
+# (final-closure-20261005-phase1.zip) also carries the five frozen C6 UI contract sources and
+# three Git provenance members. Only these exact names are recognized; any other uri_ui path,
+# .dart file or metadata name stays refused.
+FROZEN_UI_SOURCES = {"uri_ui/lib/screens/settings/paired_runtime_screen.dart",
+                     "uri_ui/lib/screens/settings/settings_shell.dart",
+                     "uri_ui/lib/services/paired_runtime.dart",
+                     "uri_ui/test/paired_runtime_live_test.dart",
+                     "uri_ui/test/paired_runtime_screen_test.dart"}
+CHECKPOINT_METADATA = {"GIT_HEAD.txt", "GIT_STATUS.txt", "GIT_DIFF.patch"}
+
+
 _WINDOWS_RESERVED = {"con", "prn", "aux", "nul", "conin$", "conout$"} | {f"{d}{i}" for d in ("com", "lpt") for i in range(1, 10)}
 CATALOGUE = "uri_workspace/capabilities_registry.json"
 
@@ -75,7 +87,7 @@ def _catalogue_authority(overlay, base):
 
 
 def _source_member(p):
-    if str(p) in SOURCE_FILES:
+    if str(p) in SOURCE_FILES or str(p) in FROZEN_UI_SOURCES or str(p) in CHECKPOINT_METADATA:
         return True
     if len(p.parts) == 1:
         return p.name.startswith("test_") and p.suffix == ".py"
@@ -118,7 +130,8 @@ def rehearse(archive, expected_sha256, destination=None):
                     or item.is_dir() or str(p) != name or not p.parts
                     or not all(_portable_component(part) for part in p.parts) or not _source_member(p)):
                 raise ValueError("SOURCE_ONLY_ARCHIVE_REQUIRED")
-            if p.suffix not in {".py", ".ps1", ".json", ".md"} and p.name != ".gitignore":
+            if (p.suffix not in {".py", ".ps1", ".json", ".md"} and p.name != ".gitignore"
+                    and name not in FROZEN_UI_SOURCES and name not in CHECKPOINT_METADATA):
                 raise ValueError("SOURCE_ONLY_ARCHIVE_REQUIRED")
             if name.casefold() in names:
                 raise ValueError("DUPLICATE_MEMBER")
@@ -130,6 +143,11 @@ def rehearse(archive, expected_sha256, destination=None):
         if z.testzip() is not None:
             raise ValueError("ARCHIVE_INTEGRITY")
         members = [(item.filename, z.read(item)) for item in z.infolist()]
+    # Provenance members are verified and recorded, never restored as source. All three or none.
+    metadata = {n: d for n, d in members if n in CHECKPOINT_METADATA}
+    members = [(n, d) for n, d in members if n not in CHECKPOINT_METADATA]
+    if metadata and (set(metadata) != CHECKPOINT_METADATA or metadata["GIT_HEAD.txt"] != (BASELINE + "\n").encode()):
+        raise ValueError("CHECKPOINT_METADATA_INVALID")
     # Recover the accepted code base as well as the delta, rather than only
     # proving ZIP extraction. Public package metadata/catalogue are the only
     # accepted JSON here; no installed data, credentials or model config.
@@ -177,6 +195,7 @@ def rehearse(archive, expected_sha256, destination=None):
         "archive_sha256": actual, "source_files": len(members), "base_source_files": len(base_members),
         "base_checkpoint": BASELINE, "restored_files": len(hashes), "restored_digest":
         hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest(),
+        "checkpoint_metadata": {n: hashlib.sha256(d).hexdigest() for n, d in sorted(metadata.items())},
         "fresh_destination": True, "production_cutover": False, "private_data_restored": False,
         "application_started": False, "limitation": "Accepted runtime code plus source overlay, not full installation, dependencies or client state; private state needs separate journal/DPAPI recovery."}
     (destination / "rollback-evidence.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")

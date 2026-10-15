@@ -29,6 +29,11 @@ class FakeCore:
         return self._next({"turn_id": "t2", "state": "approval_required", "code": "APPROVAL_REQUIRED",
                            "approval_request": {"capability_id": "remember_fact", "arguments": {}, "approval_digest": "0" * 64}})
 
+    def abandon(self, session_id, selection, turn):
+        self.calls.append(("abandon", turn["turn_id"]))
+        return self._next({"turn_id": "t2", "state": "reply", "code": "INTENT_ABANDONED",
+                           "message": "Okay, I dropped that request. Nothing was done."})
+
     def decide(self, text, session_id, selection, turn, approve):
         self.calls.append(("decide", approve))
         return self._next({"turn_id": "t2", "state": "reply", "code": "SETTLED_VERIFIED"})

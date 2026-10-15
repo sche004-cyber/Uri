@@ -118,6 +118,68 @@ class _OiConversationPaneState extends State<OiConversationPane> {
   }
 }
 
+/// Plain words for Core's codes (FCV-08). The raw code stays in the chip's
+/// tooltip and in the worker's event evidence.
+String oiCoreLabel(String code) => switch (code) {
+      'SETTLED_VERIFIED' => 'Done · checked',
+      'SETTLED_FAILED' => 'Failed · nothing changed',
+      'SETTLED_CANCELLED' => 'Cancelled',
+      'SETTLED_EXECUTION_UNCERTAIN' || 'INTENT_EXECUTION_UNCERTAIN' => 'Outcome uncertain',
+      'APPROVAL_REQUIRED' => 'Approval needed',
+      'APPROVAL_DENIED' => 'Denied · nothing changed',
+      'INTENT_CONFIRMATION_REQUIRED' => 'Please confirm',
+      'INTENT_ABANDONED' => 'Stopped',
+      'WAITING_FOR_MODEL' => 'Your choice needed',
+      'CONVERSATION' => 'No action',
+      _ when code.startsWith('CLARIFICATION_') || code == 'INTENT_CLARIFICATION' => 'Needs more detail',
+      _ when code.startsWith('REFUSED_') => 'Not allowed',
+      _ when code.startsWith('INTENT_') => 'Not done',
+      _ => 'URI Core',
+    };
+
+/// Plain words for the worker's Brain readiness code (review R1-12); the code stays in the Dashboard detail.
+String oiBrainStateLabel(String? state) => switch (state) {
+      'READY' => 'ready',
+      'LOADING' => 'loading',
+      'STARTING' => 'starting',
+      'STOPPED' => 'not running',
+      'NOT_CONFIGURED' => 'not set up',
+      'ARTIFACT_MISSING' => 'files missing',
+      'IDENTITY_MISMATCH' || 'FOREIGN_INSTANCE' => 'check failed',
+      'FAILED' => 'failed',
+      null => 'checking',
+      _ => 'unavailable',
+    };
+
+/// Plain words on the approval and confirmation cards (FCV-R final cycle). The internal capability id and effect
+/// code stay in a tooltip; an unknown id or key is shown with spaces instead of underscores, never hidden.
+String oiCapabilityLabel(String id) => switch (id) {
+      'remember_fact' => "Save a fact to URI's memory on this computer",
+      'external_harness_task' => 'Run a development task with the selected harness',
+      _ => id.replaceAll('_', ' '),
+    };
+
+String oiArgumentLabel(String key) => switch (key) {
+      'request_text' => 'Your request',
+      'fact' => 'Fact',
+      _ => key.replaceAll('_', ' '),
+    };
+
+String oiEffectLabel(String effect) => switch (effect) {
+      'local_write' => 'Changes data on this computer',
+      'external_write' => 'Changes something outside this computer',
+      'read_only' => 'Only reads',
+      _ => effect.replaceAll('_', ' '),
+    };
+
+String oiAnswerStatusLabel(String status) => switch (status) {
+      'INCOMPLETE_LENGTH' => 'Cut short',
+      'CANCELLED' => 'Stopped',
+      'TIMED_OUT' || 'TIMEOUT' => 'Timed out',
+      'ERROR' || 'FAILED' => 'Failed',
+      _ => 'Incomplete',
+    };
+
 class _MessageTile extends StatelessWidget {
   const _MessageTile({required this.message});
   final OiMessage message;
@@ -167,14 +229,12 @@ class _MessageTile extends StatelessWidget {
           key: const ValueKey('oi-tier'),
         ),
       if (m.route != null && m.route != 'answer') _Chip(_routeLabel(m.route!)),
-      if (m.streaming && m.thinkingChars > 0 && m.text.isEmpty)
-        _Chip('Reasoning… ${m.thinkingChars} chars'),
-      if (m.streaming && m.draftChars > 0 && m.text.isEmpty)
-        _Chip('Writing… ${m.draftChars} chars'),
+      if (m.streaming && m.thinkingChars > 0 && m.text.isEmpty) _Chip('Reasoning… ${m.thinkingChars} chars'),
+      if (m.streaming && m.draftChars > 0 && m.text.isEmpty) _Chip('Writing… ${m.draftChars} chars'),
       if (m.coreCode != null)
-        _Chip(_coreLabel(m.coreCode!), tone: _coreTone(c, m.coreCode!)),
+        Tooltip(message: m.coreCode!, child: _Chip(oiCoreLabel(m.coreCode!), tone: _coreTone(c, m.coreCode!))),
       if (m.answerStatus != null && m.answerStatus != 'COMPLETE')
-        _Chip(m.answerStatus!, tone: c.warning),
+        Tooltip(message: m.answerStatus!, child: _Chip(oiAnswerStatusLabel(m.answerStatus!), tone: c.warning)),
       if (m.unverifiedClaim) _Chip('Not an action receipt', tone: c.danger),
     ];
     final metrics = _metricsLine(m.metrics);
@@ -193,11 +253,11 @@ class _MessageTile extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 4),
                 child: OiMarkdown(m.text, key: ValueKey('oi-text-${m.turnId}')),
               )
-            else if (m.coreMessage != null)
+            else if ((m.outcomeSummary ?? m.coreMessage) != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: SelectableText(
-                  m.coreMessage!,
+                  (m.outcomeSummary ?? m.coreMessage)!,
                   key: ValueKey('oi-text-${m.turnId}'),
                   style: TextStyle(color: c.ink, height: 1.4),
                 ),
@@ -210,10 +270,10 @@ class _MessageTile extends StatelessWidget {
             if (m.errorCode != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  '${m.errorMessage ?? m.errorCode} (${m.errorCode})',
-                  key: const ValueKey('oi-error'),
-                  style: TextStyle(color: c.danger, fontSize: 12),
+                child: Tooltip(
+                  message: m.errorCode!,
+                  child: Text(m.errorMessage ?? 'Something went wrong. Try again.',
+                      key: const ValueKey('oi-error'), style: TextStyle(color: c.danger, fontSize: 12)),
                 ),
               ),
             if (metrics != null)
@@ -239,15 +299,6 @@ class _MessageTile extends StatelessWidget {
     'harness_choice' => 'Needs a tool choice',
     'escalation_offer' => 'Needs a stronger tool',
     _ => r,
-  };
-
-  static String _coreLabel(String code) => switch (code) {
-    'SETTLED_VERIFIED' => 'Done · verified',
-    'APPROVAL_REQUIRED' => 'Approval needed',
-    'APPROVAL_DENIED' => 'Denied · nothing changed',
-    'INTENT_CONFIRMATION_REQUIRED' => 'Please confirm',
-    'CONVERSATION' => 'No action',
-    _ => code,
   };
 
   static Color _coreTone(UriColors c, String code) => code == 'SETTLED_VERIFIED'
@@ -314,26 +365,26 @@ class OiApprovalCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'URI wants to: ${a.capabilityId}',
-              style: TextStyle(color: c.ink, fontWeight: FontWeight.w600),
+            Tooltip(
+              message: a.capabilityId,
+              child: Text('URI wants to: ${oiCapabilityLabel(a.capabilityId)}',
+                  style: TextStyle(color: c.ink, fontWeight: FontWeight.w600)),
             ),
             const SizedBox(height: 6),
             for (final e in inputs.entries)
-              Text(
-                '${e.key}: ${e.value}',
-                style: TextStyle(color: c.inkSoft, fontSize: 13),
-              ),
+              Text('${oiArgumentLabel('${e.key}')}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
             if (a.effect != null || a.reversible != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  [
-                    if (a.effect != null) 'Effect: ${a.effect}',
-                    if (a.reversible != null)
-                      a.reversible! ? 'Reversible' : 'Not reversible',
-                  ].join(' · '),
-                  style: TextStyle(color: c.inkFaint, fontSize: 12),
+                child: Tooltip(
+                  message: a.effect ?? '',
+                  child: Text(
+                    [
+                      if (a.effect != null) oiEffectLabel(a.effect!),
+                      if (a.reversible != null) a.reversible! ? 'Can be undone' : 'Cannot be undone',
+                    ].join(' · '),
+                    style: TextStyle(color: c.inkFaint, fontSize: 12),
+                  ),
                 ),
               ),
             const SizedBox(height: 4),
@@ -383,15 +434,9 @@ class OiConfirmationCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              p.message ?? 'Is this what you meant?',
-              style: TextStyle(color: c.ink),
-            ),
+            Text(p.message ?? 'Is this what you meant?', style: TextStyle(color: c.ink)),
             for (final e in args.entries)
-              Text(
-                '${e.key}: ${e.value}',
-                style: TextStyle(color: c.inkSoft, fontSize: 13),
-              ),
+              Text('${oiArgumentLabel('${e.key}')}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -424,7 +469,7 @@ class OiBrainBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = UriColors.of(context);
     final conv = conversation;
-    final state = conv.brainStatus['state'] as String? ?? 'checking';
+    final state = oiBrainStateLabel(conv.brainStatus['state'] as String?);
     final health = conv.healthState;
     final rows = [
       for (final r in (conv.catalog['rows'] as List? ?? const []))

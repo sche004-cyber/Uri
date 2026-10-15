@@ -27,6 +27,15 @@ import 'oi_draft.dart';
 
 enum OiRole { user, uri, system }
 
+/// Plain words for a turn the worker did not accept (FCV-08); the code stays in the worker's evidence.
+String notSentMessage(String code) => switch (code) {
+      'TURN_IN_PROGRESS' => 'Not sent: URI is still finishing the previous request. Try again in a moment.',
+      'BRAIN_RESTARTING' => 'Not sent: the Brain is restarting. Try again when it is ready.',
+      'TEXT_INVALID' => 'Not sent: the message was empty or too long.',
+      'WORKER_TIMEOUT' => 'Not sent: URI did not answer in time. Try again.',
+      _ => 'Not sent: URI could not accept this request right now.',
+    };
+
 class OiMessage {
   OiMessage({required this.role, required this.text, this.turnId});
   final OiRole role;
@@ -39,6 +48,11 @@ class OiMessage {
   /// Core's authoritative code for an action turn (SETTLED_VERIFIED, ...).
   String? coreCode;
   String? coreMessage;
+
+  /// What actually changed after Core's verified settlement, read by the
+  /// worker from the client store (`core.outcome`). Shown instead of Core's
+  /// generic message when present.
+  String? outcomeSummary;
 
   /// FAST / NORMAL tier actually used, and the route (answer, core, plan...).
   String? tier;
@@ -186,6 +200,8 @@ class OiConversation extends ChangeNotifier {
   Map<String, dynamic> catalog = const {};
   List<String> memory = const [];
   Map<String, dynamic> cloud = const {};
+  bool _disposed = false;
+  bool _active(IntegratedRuntime rt) => !_disposed && identical(rt, runtime);
 
   /// When the `oi_turn` that is awaiting its reply was sent (Codex H-r1 F4).
   DateTime? _sendingSince;
@@ -215,26 +231,38 @@ class OiConversation extends ChangeNotifier {
   // ---- commands ---------------------------------------------------------
 
   Future<void> refreshStatus() async {
+    if (_disposed) return;
+    final rt = runtime;
     try {
-      brainStatus = await runtime.call({'command': 'brain_status'});
-      catalog = await runtime.call({'command': 'brain_catalog'});
+      final status = await rt.call({'command': 'brain_status'});
+      if (!_active(rt)) return;
+      brainStatus = status;
+      final rows = await rt.call({'command': 'brain_catalog'});
+      if (!_active(rt)) return;
+      catalog = rows;
       lastError = null;
     } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
       lastError = e.code;
     }
     await refreshHealth(notify: false);
-    notifyListeners();
+    if (_active(rt)) notifyListeners();
   }
 
   Future<void> refreshHealth({bool notify = true}) async {
+    if (_disposed) return;
+    final rt = runtime;
     try {
-      brainHealth = await runtime.call({'command': 'brain_health'}).timeout(probeTimeout);
+      final health = await rt.call({'command': 'brain_health'}).timeout(probeTimeout);
+      if (!_active(rt)) return;
+      brainHealth = health;
     } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
       lastError = e.code;
     } on TimeoutException {
       // The liveness probe decides about the worker; a slow health read alone does not.
     }
-    if (notify) notifyListeners();
+    if (notify && _active(rt)) notifyListeners();
   }
 
   /// Explicit Brain host request: 'restart', 'stop' or 'start'.
@@ -252,13 +280,15 @@ class OiConversation extends ChangeNotifier {
 
   /// Health polling and the liveness monitor (one timer).
   void startMonitor([Duration every = const Duration(seconds: 5)]) {
+    if (_disposed) return;
     _monitor?.cancel();
     _monitor = Timer.periodic(every, (_) => monitorTick());
   }
 
   /// One monitor step (public for tests).
   Future<void> monitorTick() async {
-    if (_probing || restarting || workerExited) return;
+    if (_disposed || _probing || restarting || workerExited) return;
+    final rt = runtime;
     _probing = true;
     try {
       if (busy && DateTime.now().difference(_lastFrame) >= probeAfter) {
@@ -266,7 +296,7 @@ class OiConversation extends ChangeNotifier {
       } else if (!busy) {
         turnStalled = false;
         await refreshHealth(notify: false);
-        notifyListeners();
+        if (_active(rt)) notifyListeners();
       }
     } finally {
       _probing = false;
@@ -274,18 +304,22 @@ class OiConversation extends ChangeNotifier {
   }
 
   Future<void> _probe() async {
+    final rt = runtime;
     final Map<String, dynamic> st;
     try {
-      st = await runtime.call({'command': 'oi_turn_status'}).timeout(probeTimeout);
+      st = await rt.call({'command': 'oi_turn_status'}).timeout(probeTimeout);
     } on TimeoutException {
+      if (!_active(rt)) return;
       workerUnresponsive = true;
       notifyListeners();
       return;
     } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
       lastError = e.code;
       notifyListeners();
       return;
     }
+    if (!_active(rt)) return;
     workerUnresponsive = false;
     turnStatus = st;
     final t = activeTurnId;
@@ -381,19 +415,28 @@ class OiConversation extends ChangeNotifier {
   }
 
   Future<void> refreshMemory() async {
+    if (_disposed) return;
+    final rt = runtime;
     try {
-      final v = await runtime.call({'command': 'memory_list'});
+      final v = await rt.call({'command': 'memory_list'});
+      if (!_active(rt)) return;
       memory = [for (final f in (v['facts'] as List? ?? const [])) if (f is String) f];
     } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
       lastError = e.code;
     }
     notifyListeners();
   }
 
   Future<void> refreshCloud() async {
+    if (_disposed) return;
+    final rt = runtime;
     try {
-      cloud = await runtime.call({'command': 'cloud_policy'});
+      final policy = await rt.call({'command': 'cloud_policy'});
+      if (!_active(rt)) return;
+      cloud = policy;
     } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
       lastError = e.code;
     }
     notifyListeners();
@@ -476,7 +519,7 @@ class OiConversation extends ChangeNotifier {
             role: OiRole.system,
             text: 'No reply from URI. The request may or may not have started; it was not repeated.'));
       } else {
-        messages.add(OiMessage(role: OiRole.system, text: 'Not sent: ${e.code}'));
+        messages.add(OiMessage(role: OiRole.system, text: notSentMessage(e.code)));
       }
       notifyListeners();
     }
@@ -571,13 +614,28 @@ class OiConversation extends ChangeNotifier {
   Future<void> abandon() async {
     final id = pendingApproval?.turnId ?? pendingConfirmation?.turnId;
     if (id == null) return;
+    // A confirmation's "No" is now Core's abandon decision, a short worker job: stay busy until it finishes so
+    // the next request is not refused as TURN_IN_PROGRESS (FCVR-01, live). An approval is released at once.
+    final viaCore = pendingApproval == null;
     pendingApproval = null;
     pendingConfirmation = null;
+    if (viaCore) {
+      activeTurnId = id;
+      _jobs[id] = (_jobs[id] ?? 0) + 1;
+    }
     notifyListeners();
     try {
-      await runtime.call({'command': 'oi_abandon', 'turn_id': id});
+      final r = await runtime.call({'command': 'oi_abandon', 'turn_id': id});
+      if (viaCore && r['accepted'] != true) {
+        _jobs[id] = (_jobs[id] ?? 1) - 1;
+        if ((_finishes[id] ?? 0) >= (_jobs[id] ?? 0)) activeTurnId = null;
+      }
     } on IntegratedRuntimeException catch (e) {
       lastError = e.code;
+      if (viaCore) {
+        _jobs[id] = (_jobs[id] ?? 1) - 1;
+        if ((_finishes[id] ?? 0) >= (_jobs[id] ?? 0)) activeTurnId = null;
+      }
     }
     notifyListeners();
   }
@@ -626,15 +684,15 @@ class OiConversation extends ChangeNotifier {
   }
 
   Future<void> refreshDraft() async {
-    if (restarting || workerExited) return;
+    if (_disposed || restarting || workerExited) return;
     final rt = runtime;
     try {
       final r = await rt.call({'command': 'draft_get', 'session_id': sessionId});
-      if (!identical(rt, runtime)) return;
+      if (!_active(rt)) return;
       draft = OiDraft.parse(r['draft']);
       draftQuestion = draft?.pendingQuestion;
     } on IntegratedRuntimeException catch (e) {
-      if (!identical(rt, runtime)) return;
+      if (!_active(rt)) return;
       lastError = e.code;
     }
     notifyListeners();
@@ -648,6 +706,7 @@ class OiConversation extends ChangeNotifier {
   // ---- events -----------------------------------------------------------
 
   void _onEvent(Map<String, dynamic> ev) {
+    if (_disposed) return;
     if (ev['schema'] == assistEventSchema) {
       // A research job's progress must not make a silent OI turn look alive.
       if (!_assistEvents.isClosed) _assistEvents.add(ev);
@@ -728,6 +787,11 @@ class OiConversation extends ChangeNotifier {
             data: (data['confirmation'] as Map?)?.cast<String, dynamic>() ?? const {},
           );
         }
+      case 'core.outcome':
+        final summary = data['summary'];
+        if (summary is String && summary.isNotEmpty && m?.coreCode == 'SETTLED_VERIFIED') {
+          m?.outcomeSummary = summary;
+        }
       case 'approval.required':
         if (turnId != null) {
           pendingApproval = OiApproval(
@@ -793,6 +857,7 @@ class OiConversation extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _monitor?.cancel();
     _sub.cancel();
     _a2uiHandoffs.close();

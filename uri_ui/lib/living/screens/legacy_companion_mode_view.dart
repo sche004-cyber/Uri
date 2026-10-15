@@ -53,7 +53,7 @@ class LegacyCompanionModeView extends StatelessWidget {
                 AnimatedSwitcher(
                   duration: UriMotion.fast,
                   child: Column(
-                    key: ValueKey('${signal.state}-${signal.detail}'),
+                    key: ValueKey('${signal.state}-${signal.headline}-${signal.detail}'),
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
@@ -62,7 +62,7 @@ class LegacyCompanionModeView extends StatelessWidget {
                           _StateDot(state: signal.state),
                           const SizedBox(width: 8),
                           Text(
-                            signal.state.label,
+                            signal.title,
                             key: const ValueKey('companion-state-label'),
                             style: TextStyle(
                               fontSize: 15,

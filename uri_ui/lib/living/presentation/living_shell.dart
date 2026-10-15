@@ -716,7 +716,7 @@ class _LivingShellState extends State<LivingShell> {
                             child: CompanionActivationTarget(
                               onActivate: () => _onOrbTap(services),
                               label:
-                                  'URI Companion: ${signal.state == CompanionState.success ? 'Reply received' : signal.state.label}. Activate to open chat; Control 3 opens dashboard.',
+                                  'URI Companion: ${signal.state == CompanionState.success ? 'Reply received' : signal.title}. Activate to open chat; Control 3 opens dashboard.',
                               child: LivingCompanion(
                                 key: LivingShell.orbKey,
                                 preserveIdentityTheme: services.visualV2,

@@ -214,7 +214,7 @@ class _Rail extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                 child: Text(
-                  s.state.label,
+                  s.title,
                   key: const ValueKey('rail-state-label'),
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -1384,14 +1384,25 @@ class _ContextPanel extends StatelessWidget {
                 (h) => h!.id == services.selectedHarness.value,
                 orElse: () => null,
               );
+          // With the real worker connected this rail is operational: placeholder
+          // (simulated) documents and results are not mixed into it (FCV-10).
+          final live = oi != null;
           final results = services.work.items
               .where(
                 (i) =>
-                    i.state == WorkItemState.completed && i.outputName != null,
+                    i.state == WorkItemState.completed &&
+                    i.outputName != null &&
+                    !(live && i.simulated),
               )
               .take(4)
               .toList();
-          final lastTurn = appState.conversation.isEmpty
+          final documents = services.work.documents
+              .where((d) => !(live && d.simulated))
+              .take(3)
+              .toList();
+          final mockAppData = live && services.appDataIsMock;
+          final attachments = mockAppData ? const [] : appState.attachments;
+          final lastTurn = appState.conversation.isEmpty || mockAppData
               ? null
               : appState.conversation.last;
           return ListView(
@@ -1403,7 +1414,7 @@ class _ContextPanel extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      signal.state.label,
+                      signal.title,
                       key: const ValueKey('context-now-state'),
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
@@ -1440,7 +1451,7 @@ class _ContextPanel extends StatelessWidget {
                 ),
                 _KeyValue(
                   'Model',
-                  '${oi.brainStatus['model_id'] ?? '—'} · ${oi.brainStatus['state'] ?? '…'}',
+                  '${oi.brainStatus['model_id'] ?? '—'} · ${oiBrainStateLabel(oi.brainStatus['state'] as String?)}',
                 ),
                 _KeyValue('Reasoning', 'Depth ${oi.depth.name}'),
                 // Core requires an explicit approval for every action; nothing here is a preference.
@@ -1469,18 +1480,18 @@ class _ContextPanel extends StatelessWidget {
               const SizedBox(height: UriSpace.lg),
               const Eyebrow('Context & files'),
               const SizedBox(height: 6),
-              if (appState.attachments.isEmpty)
+              if (attachments.isEmpty && documents.isEmpty)
                 Text(
                   'No attachments staged.',
                   style: TextStyle(fontSize: 12.5, color: c.inkFaint),
                 ),
-              for (final a in appState.attachments)
+              for (final a in attachments)
                 _KeyValue(
                   'Attached',
                   a.filename,
                   simulated: services.appDataIsMock,
                 ),
-              for (final d in services.work.documents.take(3))
+              for (final d in documents)
                 _KeyValue('Document', d.name, simulated: d.simulated),
               const SizedBox(height: UriSpace.lg),
               const Eyebrow('Results'),

@@ -50,9 +50,13 @@ class OiCompanionSource extends CompanionStateSource {
       case 'error':
         return s(CompanionState.error, c.lastError);
     }
-    final state = c.brainStatus['state'];
+    // brain_health is read after brain_status: its readiness is the newer fact (live FCV-R restart run showed
+    // "Brain unavailable | Brain ready." for one refresh when only the older status still said not ready).
+    final state = c.brainHealth['readiness'] is String ? c.brainHealth['readiness'] : c.brainStatus['state'];
     if (state != null && state != 'READY' && c.selectedRowId == 'runtime-v1') {
-      return s(CompanionState.unavailable, 'Brain $state');
+      final p = brainNotReadyPresentation('$state', c.brainHealth);
+      return CompanionSignal(
+          state: p.state, headline: p.headline, detail: p.detail, sourceName: 'URI', simulated: false);
     }
     return s(CompanionState.idle);
   }
@@ -64,6 +68,66 @@ class OiCompanionSource extends CompanionStateSource {
   }
 }
 
+/// What the companion says while the Brain is not ready (FCV-10).
+///
+/// Uses only the worker's readiness state, the Brain host's reported phase
+/// and the host's own explanation from `brain_health`. Raw state codes stay
+/// on the Dashboard; no progress or time estimate is invented.
+({CompanionState state, String headline, String detail}) brainNotReadyPresentation(
+    String readiness, Map<String, dynamic> health) {
+  // brain_health is read after brain_status and carries its own readiness: prefer it, so the headline and the
+  // host's explanation never describe two different moments (live FCV-R: "Brain not running | The Brain is starting").
+  if (health['readiness'] is String) readiness = health['readiness'] as String;
+  if (health['state'] == 'RECOVERING' && (readiness == 'STOPPED' || readiness == 'UNKNOWN')) readiness = 'STARTING';
+  final host = health['host'] is Map ? health['host'] as Map : const {};
+  final hostState = host['running'] == true ? host['state'] as String? : null;
+  final explain = health['explain'];
+  String say(String fallback) => explain is String && explain.trim().isNotEmpty ? explain.trim() : fallback;
+  ({CompanionState state, String headline, String detail}) p(CompanionState st, String h, String d) =>
+      (state: st, headline: h, detail: d);
+  switch (hostState) {
+    case 'CALIBRATING':
+      return p(CompanionState.working, 'Checking Brain speed',
+          say('The model is loaded. URI is measuring its speed before first use.'));
+    case 'LOADING':
+      return p(CompanionState.working, 'Loading model',
+          say('The Brain is loading its model into memory. URI can answer when it is ready.'));
+    case 'STARTING':
+    case 'STARTING_HOST':
+      return p(CompanionState.working, 'Starting Brain', say('The Brain is starting.'));
+    case 'RELEASE_WAIT':
+      return p(CompanionState.working, 'Waiting for GPU memory', say('Waiting for GPU memory to be released.'));
+    case 'WAITING_FOR_GPU':
+    case 'WAITING_FOR_LEASE':
+      return p(CompanionState.unavailable, 'Waiting for GPU',
+          say('Another program is using the GPU memory the Brain needs. URI waits; it does not close other apps.'));
+    case 'STOPPING':
+      return p(CompanionState.unavailable, 'Brain stopping', say('The Brain is stopping.'));
+  }
+  switch (readiness) {
+    case 'LOADING':
+      return p(CompanionState.working, 'Loading model',
+          'The Brain is loading its model into memory. URI can answer when it is ready.');
+    case 'STARTING':
+      return p(CompanionState.working, 'Starting Brain', 'The Brain is starting.');
+    case 'NOT_CONFIGURED':
+      return p(CompanionState.unavailable, 'Brain not set up', 'No local Brain is configured on this computer.');
+    case 'ARTIFACT_MISSING':
+      return p(CompanionState.unavailable, 'Brain files missing',
+          'The Brain model files were not found, so URI cannot load it.');
+    case 'IDENTITY_MISMATCH':
+    case 'FOREIGN_INSTANCE':
+      return p(CompanionState.error, 'Brain check failed',
+          'The running Brain does not match the approved model, so URI will not use it. Details are on the Dashboard.');
+    case 'FAILED':
+      return p(CompanionState.error, 'Brain failed to start',
+          say('The Brain did not start correctly. Details and recovery options are on the Dashboard.'));
+    case 'STOPPED':
+      return p(CompanionState.unavailable, 'Brain not running', say('The Brain is not running.'));
+  }
+  return p(CompanionState.unavailable, 'Brain unavailable', say('URI cannot use the Brain right now.'));
+}
+
 /// Readiness from the integrated worker: Brain status, the catalog and
 /// harness discovery. Read-only. It never selects, qualifies or logs in.
 class OiReadinessSource extends ReadinessSource {
@@ -73,6 +137,7 @@ class OiReadinessSource extends ReadinessSource {
 
   final OiConversation conversation;
   List<HarnessFact> _harnesses = const [];
+  bool _disposed = false;
 
   @override
   bool get isSimulated => false;
@@ -119,9 +184,13 @@ class OiReadinessSource extends ReadinessSource {
 
   @override
   Future<void> refresh() async {
+    if (_disposed) return;
+    final rt = conversation.runtime;
     await conversation.refreshStatus();
+    if (_disposed || !identical(rt, conversation.runtime)) return;
     try {
-      final v = await conversation.runtime.call({'command': 'harness_discover'});
+      final v = await rt.call({'command': 'harness_discover'});
+      if (_disposed || !identical(rt, conversation.runtime)) return;
       final list = v['harnesses'];
       _harnesses = [
         if (list is List)
@@ -141,11 +210,12 @@ class OiReadinessSource extends ReadinessSource {
     } catch (_) {
       // Discovery refused (e.g. while a turn runs): keep the previous facts.
     }
-    notifyListeners();
+    if (!_disposed && identical(rt, conversation.runtime)) notifyListeners();
   }
 
   @override
   void dispose() {
+    _disposed = true;
     conversation.removeListener(notifyListeners);
     super.dispose();
   }

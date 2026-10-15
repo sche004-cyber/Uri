@@ -1,0 +1,11 @@
+{
+  "decision": "OWNER_WINDOWS_RESTORATION_20261014",
+  "patch_sha256": "ba9249dad002e62c6cf1698284e8a2ada325d0afa1444579a371af7fa9caea02",
+  "historical_head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "checkpoint_sha256": "31a34dcbb37ee48e1b06a1bcd60418a2e52ff9a0c65fd8cc7f3c59defeb98cf7",
+  "approved_blobs": {
+    "uri_core/app/server.py": "59cfde59c709fa7f83df84e957f5962701276afce54cb196541134a9a43cf4f8",
+    "uri_core/tools/fetch_url.py": "404e60921c207753868589b8a16f409ee80f35a01b0a33e8400d8780d93139e8"
+  },
+  "scope": "Fresh isolated historical runtime only; no other protected change, GPU override or cutover"
+}

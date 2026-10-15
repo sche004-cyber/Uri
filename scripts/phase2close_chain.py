@@ -150,6 +150,89 @@ WS_EXACT = frozenset((
     "model_lab/lab/runtime.py",
     "model_lab/lab/vision.py",
     "scripts/oi_materialize_test_runtime.py",
+    "scripts/ws_materialized_verify.py",
+    # Exact inherited e0b5c298 paths; full output remains independently verified.
+    "tests/assist/fixtures/run_selection.cjs",
+    "tests/assist/fixtures/selection_page.html",
+    "tests/assist/fixtures/text_surfaces.html",
+    "tests/assist/test_a0_d10_pixel_checked_text.py",
+    "tests/assist/test_a0_d8_fail_closed.py",
+    "tests/assist/test_a0_r10_review_regressions.py",
+    "tests/assist/test_a0_r11_review_regressions.py",
+    "tests/assist/test_a0_r12_review_regressions.py",
+    "tests/assist/test_a0_r13_differential_render.py",
+    "tests/assist/test_a0_r14_review_regressions.py",
+    "tests/assist/test_a0_r15_review_regressions.py",
+    "tests/assist/test_a0_r16_url_secret_regressions.py",
+    "tests/assist/test_a0_r1_review_regressions.py",
+    "tests/assist/test_a0_r2_decoration_regressions.py",
+    "tests/assist/test_a0_r3_review_regressions.py",
+    "tests/assist/test_a0_r41_review_regressions.py",
+    "tests/assist/test_a0_r42_review_regressions.py",
+    "tests/assist/test_a0_r4_review_regressions.py",
+    "tests/assist/test_a0_r5_review_regressions.py",
+    "tests/assist/test_a0_r6_review_regressions.py",
+    "tests/assist/test_a0_r9_review_regressions.py",
+    "tests/assist/test_subpixel_render.py",
+    "tests/web/d7_invariant.py",
+    "tests/web/test_idn_1.py",
+    "tests/web/test_idn_1_r1.py",
+    "tests/web/test_idn_1b.py",
+    "tests/web/test_w1_closure_d15_review_regressions.py",
+    "tests/web/test_w1_closure_d16_review_regressions.py",
+    "tests/web/test_w1_closure_d31_plain_writing.py",
+    "tests/web/test_w1_closure_r11_review_regressions.py",
+    "tests/web/test_w1_closure_r12_review_regressions.py",
+    "tests/web/test_w1_closure_r13_review_regressions.py",
+    "tests/web/test_w1_closure_r14_review_regressions.py",
+    "tests/web/test_w1_closure_r16_review_regressions.py",
+    "tests/web/test_w1_closure_r17_review_regressions.py",
+    "tests/web/test_w1_closure_r18_review_regressions.py",
+    "tests/web/test_w1_closure_r19_review_regressions.py",
+    "tests/web/test_w1_closure_r20_review_regressions.py",
+    "tests/web/test_w1_closure_r21_review_regressions.py",
+    "tests/web/test_w1_closure_r22_review_regressions.py",
+    "tests/web/test_w1_closure_r23_review_regressions.py",
+    "tests/web/test_w1_closure_r24_review_regressions.py",
+    "tests/web/test_w1_closure_r25_review_regressions.py",
+    "tests/web/test_w1_closure_r26_review_regressions.py",
+    "tests/web/test_w1_closure_r27_review_regressions.py",
+    "tests/web/test_w1_closure_r28_review_regressions.py",
+    "tests/web/test_w1_closure_r29_review_regressions.py",
+    "tests/web/test_w1_closure_r30_review_regressions.py",
+    "tests/web/test_w1_closure_r31_review_regressions.py",
+    "tests/web/test_w1_closure_r32_review_regressions.py",
+    "tests/web/test_w1_closure_r33_review_regressions.py",
+    "tests/web/test_w1_closure_r34_review_regressions.py",
+    "tests/web/test_w1_closure_r35_review_regressions.py",
+    "tests/web/test_w1_closure_r36_review_regressions.py",
+    "tests/web/test_w1_closure_r37_review_regressions.py",
+    "tests/web/test_w1_closure_r38_review_regressions.py",
+    "tests/web/test_w1_closure_r39_review_regressions.py",
+    "tests/web/test_w1_closure_r40_review_regressions.py",
+    "tests/web/test_w1_closure_r41_review_regressions.py",
+    "tests/web/test_w1_closure_r43_review_regressions.py",
+    "tests/web/test_w1_closure_r4_review_regressions.py",
+    "tests/web/test_w1_closure_r5_review_regressions.py",
+    "tests/web/test_w1_closure_r6_review_regressions.py",
+    "tests/web/test_w1_closure_r7_review_regressions.py",
+    "tests/web/test_w1_closure_r8_review_regressions.py",
+    "tests/web/test_w1_closure_r9_review_regressions.py",
+    "tests/web/test_w1_d7_verbatim_numbers.py",
+    "tests/web/test_w1_env_keys.py",
+    "tests/web/test_w1_r16_review_regressions.py",
+    "tests/web/test_w1_r1_review_regressions.py",
+    "tests/web/test_w1_r2_review_regressions.py",
+    "tests/web/test_w1_r3_review_regressions.py",
+    "tests/web/test_w1_r4_review_regressions.py",
+    "tests/web/test_w1_r5_review_regressions.py",
+    "tests/web/test_w1_r6_review_regressions.py",
+    "tests/web/test_w1_r9_review_regressions.py",
+    "tests/ws/test_ws_flake_1_request_stamp.py",
+    "uri_assist/browser_extension/probe.js",
+    "uri_assist/onscreen.py",
+    "uri_web/confusables_ascii.py",
+    "uri_web/tld_list.py",
     "scripts/run_uri_integrated_server.py",
     "scripts/run_uri_integrated_worker.py",
     "scripts/ti_live_matrix.py",
@@ -261,6 +344,15 @@ WS_EXACT = frozenset((
 FROZEN_PHASE1 = Path(r"C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\work\c1\checkpoints\final-closure-20261005-phase1.zip")
 
 
+def runtime_transitions(root):
+    """The owner-authorized exact transitions this runtime proves (ws_materialized_verify). The chain runs as
+    `python -I`, so the tree root is not on sys.path; put it there before importing the verifier from it."""
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    from scripts.ws_materialized_verify import verified_transitions
+    return verified_transitions(root)
+
+
 def phase1_scope_check(root, closure_zip, frozen_zip=FROZEN_PHASE1):
     """OQ-R2-1: prove the Phase 1 suite's inputs equal those of the accepted closure candidate. Every path that differs
     from -f, is new, or is modified vs HEAD must be either Phase 2-only scope or a frozen Phase 1 checkpoint file whose
@@ -281,6 +373,9 @@ def phase1_scope_check(root, closure_zip, frozen_zip=FROZEN_PHASE1):
     frozen = zipfile.ZipFile(frozen_zip)
     frozen_names = set(frozen.namelist())
     outside, frozen_ok = [], 0
+    # Owner 2026-10-14: original checkpoint remains immutable. Only the two
+    # exact approved blobs can differ, after independent full-output proof.
+    authorized = runtime_transitions(root)
     runner_ok = None
     for r in sorted(set(changed + new + modified)):
         if r in ("scripts/phase2d_regression.py", "scripts/phase2d_pytest.ini"):
@@ -297,6 +392,8 @@ def phase1_scope_check(root, closure_zip, frozen_zip=FROZEN_PHASE1):
                 outside.append(r)
             continue
         if r.startswith(PHASE2_SCOPE) or r in WS_EXACT:
+            continue
+        if r in authorized:
             continue
         if r in frozen_names and (root / r).is_file() and (root / r).read_bytes() == frozen.read(r):
             frozen_ok += 1

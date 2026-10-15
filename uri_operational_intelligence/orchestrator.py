@@ -28,6 +28,7 @@ from .task_ledger import LedgerError, TaskLedger
 class CoreGateway(Protocol):
     def begin(self, text: str, session_id: str, selection: dict) -> dict: ...
     def confirm(self, session_id: str, selection: dict, turn: dict) -> dict: ...
+    def abandon(self, session_id: str, selection: dict, turn: dict) -> dict: ...
     def decide(self, text: str, session_id: str, selection: dict, turn: dict, approve: bool) -> dict: ...
     def continue_waiting(self, session_id: str, turn_id: str, selection: dict, approve: Callable) -> dict: ...
 
@@ -43,6 +44,9 @@ class PairedCoreGateway:
 
     def confirm(self, session_id, selection, turn):
         return self.runner.confirm(session_id, selection, turn)
+
+    def abandon(self, session_id, selection, turn):
+        return self.runner.abandon(session_id, selection, turn)
 
     def decide(self, text, session_id, selection, turn, approve):
         return self.runner.decide(text, session_id, selection, turn, approve)
@@ -127,6 +131,7 @@ class Orchestrator:
         self.client, self.core, self.brain_selection = client, core, brain_selection
         self.ledger, self.capability_ids = ledger, set(capability_ids)
         self.readiness = readiness
+        self.remembered_facts = None  # injected by the client-scoped integrated worker, like readiness
         self.harness_statuses = harness_statuses or (lambda: H.documented_status())
         self.deadlines = deadlines or BC.Deadlines()
         self.perf = perf       # optional PerfMonitor (OI-PERF-1): throughput health from finished answers
@@ -148,7 +153,7 @@ class Orchestrator:
         return False
 
     def handle_turn(self, text, session_id, *, depth="auto", history=(), sink: EventSink | None = None,
-                    turn_id=None) -> TurnOutcome:
+                    turn_id=None, core_clarification=False) -> TurnOutcome:
         turn_id = turn_id or str(uuid.uuid4())
         sink = sink or EventSink()
         cancel = self.cancels.setdefault(turn_id, BC.CancelToken())
@@ -157,7 +162,10 @@ class Orchestrator:
         try:
             emit("turn.started", text_chars=len(text), depth=depth)
             emit("companion.state", state="thinking")
-            tri = T.triage(text)
+            # The integrated worker holds the same client's pending Core question. Its next free-text
+            # answer belongs to Core's existing intent continuation, not standalone conversational triage.
+            # This only chooses the authority path; it never confirms, approves or rewrites the user's words.
+            tri = T.Triage(T.ACTION, ["pending_core_clarification"]) if core_clarification else T.triage(text)
             tier = RP.decide(tri.kind, depth)
             out = self._route(text, session_id, tri, tier, depth, history, emit, cancel, turn_id)
         finally:
@@ -221,8 +229,13 @@ class Orchestrator:
             emit("answer.delta", text=chunk)
 
         use = "trivial" if tri.kind == T.TRIVIAL and tier.tier == RP.FAST else "answer"
+        memory = A.memory_evidence(self.remembered_facts) if self.remembered_facts is not None else None
         res = A.answer(self.client, text, tier=tier.tier, use=use, history=history, cancel=cancel,
-                       deadlines=self.deadlines, on_delta=on_delta, executed_action=executed_action)
+                       deadlines=self.deadlines, on_delta=on_delta, executed_action=executed_action,
+                       memory=memory, capability_ids=self.capability_ids)
+        if memory is not None:
+            res.metrics["memory_context"] = {"status": memory["status"], "fact_count": len(memory["facts"]),
+                                             "truncated": memory["truncated"]}
         if res.status == "ACTION_REQUESTED" and rerouted_from is None:
             # Model-side guard: the user asked URI to DO something. Core decides; nothing was said to the user yet.
             return self._core_turn(text, session_id, T.Triage(T.ACTION, ["answer_channel_action_marker"]),
@@ -326,6 +339,17 @@ class Orchestrator:
         env = self.core.confirm(session_id, self.brain_selection, turn)
         return self._relay_core(env, "Confirm", session_id, T.Triage(T.ACTION, ["user_confirmed"]), RP.decide(T.ACTION),
                                 lambda t, **d: sink.emit(turn.get("turn_id"), t, **d), turn.get("turn_id"), (), None)
+
+    def abandon(self, session_id, turn, sink: EventSink | None = None):
+        """The user's explicit "No" on a SINGLE-turn Core confirmation or clarification: Core's own structured
+        abandon decision, bound to the intent id and revision by the frozen TurnRunner (a stale card is refused as
+        INTENT_DECISION_STALE), never typed text. If the call fails the intent stays open and is offered again."""
+        self._require_single(turn)
+        sink = sink or EventSink()
+        env = self.core.abandon(session_id, self.brain_selection, turn)
+        sink.emit(turn.get("turn_id"), "core.result", state=env.get("state"), code=env.get("code"),
+                  message=env.get("message"), needs=core_needs(env))
+        return env
 
     def decide(self, text, session_id, turn, approve: bool, sink: EventSink | None = None):
         """Approval decision for a SINGLE-turn Core request issued by this orchestrator (allowlist). Plan steps can

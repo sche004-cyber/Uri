@@ -39,7 +39,15 @@ OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration",
             # uri_operational_intelligence/schedule_intent.py arrive with their packages (listed above).
             "uri_a2ui", "tests/a2ui", "scripts/a2ui_live_check.py",
             # Web Intelligence W1 and URI Assist A0 (docs/assist/00_PLAN_AND_ACCEPTANCE_CRITERIA.md): new paths only.
-            "uri_web", "tests/web", "uri_assist", "tests/assist"]
+            "uri_web", "tests/web", "uri_assist", "tests/assist",
+            # Owner 2026-10-14: immutable authority for exactly two canonical security blobs.
+            "docs/graphify/GRAPHIFY_LEAK_1_PLAN_AND_ACCEPTANCE.md",
+            "docs/ssrf/SSRF_1_PLAN_AND_ACCEPTANCE.md", "docs/web/IDN_1B_PLAN_AND_ACCEPTANCE.md",
+            "docs/governance/windows_restoration/OWNER_RUNTIME_AUTHORIZATION.json",
+            "docs/governance/windows_restoration/EXACT_RUNTIME_SECURITY_TRANSITIONS.patch",
+            "scripts/oi_materialize_test_runtime.py", "scripts/ws_materialized_verify.py",
+            # Owner 2026-10-15 (FCV-05): the authorization record for the runtime amendment of scripts/uri_client.ps1.
+            "docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md"]
 TEST_PATHS = ("tests/oi", "tests/ws", "tests/scheduler", "tests/a2ui", "tests/web", "tests/assist")
 # Accepted files the owner authorized to extend (WS-D3: exact-path scope guards). They replace the overlay copy; the
 # receipt records both digests so the replacement is auditable.
@@ -63,6 +71,9 @@ def main(argv=None):
                     help="regression-gate checkout: copy the OI package but not tests/oi, so the accepted Phase 1/2 "
                          "gates collect exactly their accepted test set in the presence of the OI package")
     a = ap.parse_args(argv)
+    sys.path.insert(0, str(SRC))
+    from scripts import ws_materialized_verify as V
+    V.source_authority(SRC)
     dest = Path(a.dest).resolve()
     if dest.exists():
         sys.exit("DEST_EXISTS")
@@ -102,15 +113,21 @@ def main(argv=None):
         replaced[rel] = {"overlay_sha256": sha(d_) if d_.exists() else None}
         shutil.copy2(s_, d_)
         replaced[rel]["integration_sha256"] = sha(d_)
+    transitions = V.reconcile(SRC, dest)
     shutil.copytree(a.venv, dest / ".venv")
     head = git("rev-parse", "HEAD", cwd=dest).strip()
     status = git("status", "--porcelain", cwd=dest).splitlines()
     receipt = {"dest": str(dest), "head": head, "head_is_base": head == BASE, "overlay_commit": OVERLAY_COMMIT,
                "overlay_paths": len(paths), "candidate_source": str(SRC),
                "candidate_head": git("rev-parse", "HEAD").strip(), "oi_files_copied": copied,
+               "candidate_tree": git("rev-parse", "HEAD^{tree}").strip(),
+               "security_patch_sha256": V.PATCH_SHA256, "security_transitions": transitions,
                "porcelain_entries": len(status), "venv_source": a.venv,
                "oi_tests_included": not a.exclude_oi_tests, "replaced_accepted_files": replaced}
     (dest / "OI_MATERIALIZATION_RECEIPT.json").write_text(json.dumps(receipt, indent=1), encoding="utf-8")
+    verified = V.verify(SRC, dest)
+    if not verified["ok"]:
+        sys.exit("MATERIALIZED_OUTPUT_REFUSED:" + verified.get("error", "UNKNOWN"))
     print(json.dumps({k: v for k, v in receipt.items() if k != "oi_files_copied"}, indent=1))
     return 0
 

@@ -50,6 +50,103 @@ def test_unverified_action_claim_is_flagged_and_corrected(fake):
     assert out2.flags == []
 
 
+@pytest.mark.parametrize("chunks", [
+    ["I have saved your new fact."],
+    ["I ha", "ve sa", "ved your new fact."],
+    ["Here is the date. I", " have saved your new fact."],
+    ["Done", ". I have saved your new fact."],
+])
+def test_unverified_action_claim_is_never_streamed_or_retained(fake, chunks):
+    """R1-03: no answer delta or final result may assert an action this channel never executed."""
+    fake.scripts.append({"chunks": [("answer", chunk) for chunk in chunks], "finish": "stop"})
+    deltas = []
+    out = A.answer(BC.BrainClient(fake.url), "What day is it?", on_delta=lambda k, t: deltas.append((k, t)))
+    shown = "".join(text for kind, text in deltas if kind == "answer")
+    assert shown == out.text
+    assert "saved your new fact" not in shown
+    assert not any("saved your new fact" in text for _, text in deltas)
+    assert shown.endswith(A.CLAIM_CORRECTION)
+    assert "UNVERIFIED_ACTION_CLAIM" in out.flags
+
+
+def test_a_reply_without_a_claim_still_streams_before_it_completes(fake):
+    """The claim guard holds only a short trailing window, so ordinary replies that say "I" keep streaming."""
+    words = ["I don't have any saved information about your locker number. "] + ["Here is more detail. "] * 20
+    fake.scripts.append({"chunks": [("answer", w) for w in words], "finish": "stop"})
+    deltas = []
+    out = A.answer(BC.BrainClient(fake.url), "What is my locker number?", on_delta=lambda k, t: deltas.append(t))
+    assert len(deltas) > 10                                   # streamed, not released only at the end
+    assert "".join(deltas[:3]).startswith("I don't have any saved information")
+    assert "".join(deltas) == out.text == "".join(words)
+    assert out.flags == []
+
+
+def test_text_before_a_claim_streams_and_only_the_claim_is_replaced(fake):
+    chunks = ["The lab is closed on Friday. "] * 8 + ["I ha", "ve sa", "ved that for you."]
+    fake.scripts.append({"chunks": [("answer", c) for c in chunks], "finish": "stop"})
+    deltas = []
+    out = A.answer(BC.BrainClient(fake.url), "When is the lab closed?", on_delta=lambda k, t: deltas.append(t))
+    assert "saved" not in "".join(deltas)
+    assert out.text == "The lab is closed on Friday. " * 8 + A.CLAIM_CORRECTION
+    assert "UNVERIFIED_ACTION_CLAIM" in out.flags
+
+
+@pytest.mark.parametrize("chunks", [
+    ["I have" + " " * 120, "saved your file."],                    # review final5 R1-01: long whitespace run
+    ["Done." + "\n" * 200, "I", " " * 50, "successfully", "  sent it."],
+    ["Your note h", "as", " be", "en", " uploaded."],               # passive form split mid-word
+])
+def test_a_claim_with_any_whitespace_run_never_reaches_a_delta(fake, chunks):
+    fake.scripts.append({"chunks": [("answer", c) for c in chunks], "finish": "stop"})
+    deltas = []
+    out = A.answer(BC.BrainClient(fake.url), "hello", on_delta=lambda k, t: deltas.append(t))
+    shown = "".join(deltas)
+    assert not A.claims_action(shown)
+    assert not any(w in shown for w in ("saved", "sent it", "uploaded"))
+    assert shown.endswith(A.CLAIM_CORRECTION) and "UNVERIFIED_ACTION_CLAIM" in out.flags
+
+
+def test_an_i_first_reply_streams_once_the_next_word_rules_a_claim_out(fake):
+    """Review final5 R1-02: "I can ..." is released at the next word, before generation ends."""
+    fake.scripts.append({"chunks": [("answer", c) for c in ["I can ", "help with ", "your question."]],
+                         "finish": "stop", "delay": 0.05})
+    seen, done = [], []
+
+    class Recorder(BC.BrainClient):
+        def stream_chat(self, *a, **k):
+            r = super().stream_chat(*a, **k)
+            done.append(len(seen))
+            return r
+    out = A.answer(Recorder(fake.url), "hi", on_delta=lambda k, t: seen.append(t))
+    assert done[0] >= 2                                           # deltas arrived while the stream was running
+    assert seen[0] == "I can " and "".join(seen) == out.text == "I can help with your question."
+
+
+def test_a_conditional_passive_phrase_keeps_streaming(fake):
+    """Review final6 R1-01: "If it has been saved" is not a claim, so it must not stop the stream."""
+    chunks = ["If it has been saved, ", "I can help you find it. ", "Here are the steps."]
+    fake.scripts.append({"chunks": [("answer", c) for c in chunks], "finish": "stop", "delay": 0.05})
+    seen, done = [], []
+
+    class Recorder(BC.BrainClient):
+        def stream_chat(self, *a, **k):
+            r = super().stream_chat(*a, **k)
+            done.append("".join(seen))
+            return r
+    out = A.answer(Recorder(fake.url), "hi", on_delta=lambda k, t: seen.append(t))
+    assert done[0].startswith("If it has been saved, I can help you find it.")
+    assert out.text == "".join(chunks) and out.flags == []
+
+
+def test_a_real_claim_after_a_conditional_phrase_is_still_caught(fake):
+    chunks = ["If it has been saved, fine. ", "I have", " deleted the old copy."]
+    fake.scripts.append({"chunks": [("answer", c) for c in chunks], "finish": "stop"})
+    deltas = []
+    out = A.answer(BC.BrainClient(fake.url), "hi", on_delta=lambda k, t: deltas.append(t))
+    assert "deleted" not in "".join(deltas)
+    assert out.text == "If it has been saved, fine. " + A.CLAIM_CORRECTION
+
+
 def test_normal_tier_request_parameters_and_length_escalation(fake):
     fake.scripts.append({"chunks": [("reasoning", "r" * 10), ("answer", "partial")], "finish": "length"})
     out = A.answer(BC.BrainClient(fake.url), "plan my week", tier=NORMAL)

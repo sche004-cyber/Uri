@@ -389,7 +389,7 @@ class FrostDashboard extends StatelessWidget {
                         Text(
                           signal.state == CompanionState.success
                               ? 'Reply received'
-                              : signal.state.label,
+                              : signal.title,
                           key: const ValueKey('dashboard-state-line'),
                           style: const TextStyle(fontSize: 18),
                         ),
@@ -422,7 +422,7 @@ class FrostDashboard extends StatelessWidget {
                 header: header,
                 card: card,
                 stateLine:
-                    '${signal.state == CompanionState.success ? 'Reply received' : signal.state.label} · ${CompanionDesign.active(services.companionPrefs).displayName}${signal.simulated ? ' · simulated' : ''}',
+                    '${signal.state == CompanionState.success ? 'Reply received' : signal.title} · ${CompanionDesign.active(services.companionPrefs).displayName}${signal.simulated ? ' · simulated' : ''}',
                 inkSoft: c.inkSoft,
               )
             : Column(
@@ -440,7 +440,7 @@ class FrostDashboard extends StatelessWidget {
                       padding: const EdgeInsets.all(20),
                       children: [
                         Text(
-                          '${signal.state == CompanionState.success ? 'Reply received' : signal.state.label}${signal.simulated ? ' · simulated preview' : ''}',
+                          '${signal.state == CompanionState.success ? 'Reply received' : signal.title}${signal.simulated ? ' · simulated preview' : ''}',
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),

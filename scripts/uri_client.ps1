@@ -32,7 +32,15 @@ try {
         $start.RedirectStandardError = $true
         $process = New-Object System.Diagnostics.Process
         $process.StartInfo = $start
-        [void]$process.Start()
+        # Under a UTF-8 console code page (65001), Windows PowerShell 5.1 creates StandardInput with a UTF-8
+        # encoding whose preamble (EF BB BF) is written before the first frame, so the worker refuses the stream
+        # (FRAME_LIMIT). Create the writer with a preamble-free encoding, then restore the console's.
+        $inputEncoding = [Console]::InputEncoding
+        try {
+            [Console]::InputEncoding = New-Object System.Text.UTF8Encoding $false
+            [void]$process.Start()
+            [void]$process.StandardInput
+        } finally { [Console]::InputEncoding = $inputEncoding }
         $outputTask = $process.StandardOutput.BaseStream.CopyToAsync([Console]::OpenStandardOutput())
         $errorTask = $process.StandardError.BaseStream.CopyToAsync([Console]::OpenStandardError())
         $inputTask = [Console]::OpenStandardInput().CopyToAsync($process.StandardInput.BaseStream)

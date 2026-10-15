@@ -77,7 +77,7 @@ PresenceView resolvePresence(CompanionSignal signal, VoiceSession voice) {
           : CompanionState.speaking,
       speaker: speaker,
       status: blocking
-          ? signal.state.label
+          ? signal.title
           : (speaker == VoiceSpeaker.user ? 'Listening' : 'Speaking'),
       statusState: blocking
           ? signal.state
@@ -96,7 +96,7 @@ PresenceView resolvePresence(CompanionSignal signal, VoiceSession voice) {
   return PresenceView(
     mode: PresenceMode.companion,
     orbState: state,
-    status: state.label,
+    status: state == signal.state ? signal.title : state.label,
     statusState: state,
     detail: state == CompanionState.listening && !blocking
         ? null

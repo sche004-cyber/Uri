@@ -70,10 +70,12 @@ class CompanionSignal {
     this.progress,
     this.simulated = false,
     this.sourceName,
+    this.headline,
   });
 
   const CompanionSignal.idle()
     : state = CompanionState.idle,
+      headline = null,
       detail = null,
       progress = null,
       simulated = false,
@@ -93,15 +95,24 @@ class CompanionSignal {
   /// for authority).
   final String? sourceName;
 
+  /// A more precise name for this moment than [state]'s generic label,
+  /// e.g. "Loading model" while the Brain starts. Null uses the label.
+  final String? headline;
+
+  /// What status lines show: [headline] when set, else the state label.
+  String get title => headline ?? state.label;
+
   CompanionSignal copyWith({
     CompanionState? state,
     String? detail,
     double? progress,
     bool? simulated,
     String? sourceName,
+    String? headline,
   }) {
     return CompanionSignal(
       state: state ?? this.state,
+      headline: headline ?? this.headline,
       detail: detail ?? this.detail,
       progress: progress ?? this.progress,
       simulated: simulated ?? this.simulated,
@@ -116,14 +127,15 @@ class CompanionSignal {
       other.detail == detail &&
       other.progress == progress &&
       other.simulated == simulated &&
-      other.sourceName == sourceName;
+      other.sourceName == sourceName &&
+      other.headline == headline;
 
   @override
   int get hashCode =>
-      Object.hash(state, detail, progress, simulated, sourceName);
+      Object.hash(state, detail, progress, simulated, sourceName, headline);
 
   @override
   String toString() =>
-      'CompanionSignal(${state.name}, detail: $detail, progress: $progress, '
+      'CompanionSignal(${state.name}, headline: $headline, detail: $detail, progress: $progress, '
       'simulated: $simulated, source: $sourceName)';
 }
