@@ -1,0 +1,119 @@
+[
+  {
+    "utc": "2026-10-15T04:58:13.348048Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput",
+    "pointer": "Flutter tester taps on the real window",
+    "physical_input_qualified": false,
+    "Brain_Core_worker_mocked": false
+  },
+  {
+    "utc": "2026-10-15T04:58:13.358632Z",
+    "label": "0 preferences before start",
+    "mode": "first",
+    "stored_choice": null
+  },
+  {
+    "utc": "2026-10-15T04:58:22.851748Z",
+    "label": "1 start",
+    "seconds_to_shell": 9.49,
+    "manifest": "C:\\Users\\cheta\\Development\\uri-fire-companion-v2-rt\\work\\c1\\ws-firev2\\client\\client-manifest.json",
+    "default_companion": "solar",
+    "orb_state": "unavailable",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792040297.9136295,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T04:58:37.414412Z",
+    "label": "2 select ember",
+    "choice": "ember",
+    "ember_widgets": 1,
+    "stored_choice": "ember"
+  },
+  {
+    "utc": "2026-10-15T04:58:39.450127Z",
+    "label": "3 companion mode before brain",
+    "orb_state": "unavailable",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792040313.7107496,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T04:58:54.716460Z",
+    "label": "3b blinks before the Brain (15 s)",
+    "seconds": 15,
+    "blink_starts_s": [
+      2.925,
+      5.813,
+      11.483
+    ],
+    "gaps_s": [
+      2.89,
+      5.67
+    ],
+    "fully_closed_samples": 8
+  },
+  {
+    "utc": "2026-10-15T04:58:54.718656Z",
+    "label": "4 wake phrase",
+    "result": "NOT AVAILABLE",
+    "reason": "no wake-word recogniser in canonical URI; HOTWORDS only biases push-to-talk"
+  },
+  {
+    "utc": "2026-10-15T05:28:56.810002Z",
+    "label": "BRAIN BLOCKED",
+    "waited_minutes": 30,
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792042136.33804,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 19204,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    },
+    "state_sequence_while_waiting": [
+      "unavailable",
+      "idle",
+      "unavailable",
+      "idle"
+    ],
+    "journeys_not_run": [
+      "5 conversation",
+      "7-8 task",
+      "coexistence",
+      "9-10 error and recovery"
+    ]
+  }
+]

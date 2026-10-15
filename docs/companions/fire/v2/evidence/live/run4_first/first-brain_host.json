@@ -1,0 +1,115 @@
+{
+ "detail": "HOST_EXIT",
+ "explain": "The Brain host has exited.",
+ "gpu": {
+  "census_s": 3.82,
+  "census_t": 1792042283.417,
+  "explain": "The Brain needs 15.3 GB of GPU memory but only 14.5 GB is free. In use by: uri_ui.exe from dartvm.exe (0.4 GB), dwm.exe (desktop compositor, 0.4 GB). Close those or wait; URI will not stop them.",
+  "fit": {
+   "card_mib": 16368,
+   "consumers": [
+    {
+     "dedicated_mib": 421.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 8924,
+     "role": null
+    },
+    {
+     "dedicated_mib": 395.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1792,
+     "role": "desktop compositor"
+    }
+   ],
+   "free_mib": 14891.0,
+   "margin_mib": -735.0,
+   "others_mib": 1477.0,
+   "owner_mib": 0,
+   "required_mib": 15626,
+   "unattributed_mib": 0.0,
+   "verdict": "CONTENDED"
+  }
+ },
+ "heartbeat_at": 1792042448.515,
+ "history": [
+  {
+   "detail": null,
+   "state": "STARTING",
+   "t": 1792042287.239
+  },
+  {
+   "detail": null,
+   "state": "LOADING",
+   "t": 1792042293.329
+  },
+  {
+   "detail": null,
+   "state": "CALIBRATING",
+   "t": 1792042383.81
+  },
+  {
+   "detail": null,
+   "state": "READY",
+   "t": 1792042389.305
+  },
+  {
+   "detail": null,
+   "state": "STOPPING",
+   "t": 1792042459.701
+  },
+  {
+   "detail": "HOST_EXIT",
+   "state": "STOPPED",
+   "t": 1792042459.71
+  }
+ ],
+ "host_pid": 19144,
+ "host_started": 1792042283.388,
+ "lease": {
+  "held": false
+ },
+ "override": {
+  "at": 1792042283.388,
+  "by": "--override-contention"
+ },
+ "residency": {
+  "consumers": [
+   {
+    "dedicated_mib": 392.1,
+    "name": "dwm.exe",
+    "parent": "winlogon.exe",
+    "pid": 1792,
+    "role": "desktop compositor"
+   },
+   {
+    "dedicated_mib": 373.0,
+    "name": "uri_ui.exe",
+    "parent": "dartvm.exe",
+    "pid": 8924,
+    "role": null
+   },
+   {
+    "dedicated_mib": 325.0,
+    "name": "uri_ui.exe",
+    "parent": "dartvm.exe",
+    "pid": 5204,
+    "role": null
+   }
+  ],
+  "dedicated_mib": 14596.4,
+  "non_local_mib": 2143.5,
+  "others_mib": 1673.9,
+  "t": 1792042449.37,
+  "verdict_now": "CONTENDED"
+ },
+ "schema": "uri.ws.brain_host.v1",
+ "server": {
+  "owned": false,
+  "pid": null,
+  "stopped_clean": true
+ },
+ "state": "STOPPED",
+ "updated_at": 1792042459.71
+}

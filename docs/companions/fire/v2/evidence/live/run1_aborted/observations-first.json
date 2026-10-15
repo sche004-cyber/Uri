@@ -1,0 +1,87 @@
+[
+  {
+    "utc": "2026-10-15T04:52:38.992226Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput",
+    "pointer": "Flutter tester taps on the real window",
+    "physical_input_qualified": false,
+    "Brain_Core_worker_mocked": false
+  },
+  {
+    "utc": "2026-10-15T04:52:39.009310Z",
+    "label": "0 preferences before start",
+    "mode": "first",
+    "stored_choice": null
+  },
+  {
+    "utc": "2026-10-15T04:52:47.163070Z",
+    "label": "1 start",
+    "seconds_to_shell": 8.153,
+    "manifest": "C:\\Users\\cheta\\Development\\uri-fire-companion-v2-rt\\work\\c1\\ws-firev2\\client\\client-manifest.json",
+    "default_companion": "solar",
+    "orb_state": "unavailable",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792039964.2068028,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T04:53:02.063806Z",
+    "label": "2 select ember",
+    "choice": "ember",
+    "ember_widgets": 1,
+    "stored_choice": "ember"
+  },
+  {
+    "utc": "2026-10-15T04:53:04.112967Z",
+    "label": "3 companion mode before brain",
+    "orb_state": "unavailable",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792039981.9519074,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 5964,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "LOADING",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T04:53:19.386716Z",
+    "label": "3b blinks before the Brain (15 s)",
+    "seconds": 15,
+    "blink_starts_s": [
+      2.462,
+      7.617,
+      12.878
+    ],
+    "gaps_s": [
+      5.15,
+      5.26
+    ],
+    "fully_closed_samples": 10
+  },
+  {
+    "utc": "2026-10-15T04:53:19.388054Z",
+    "label": "4 wake phrase",
+    "result": "NOT AVAILABLE",
+    "reason": "no wake-word recogniser in canonical URI; HOTWORDS only biases push-to-talk"
+  }
+]

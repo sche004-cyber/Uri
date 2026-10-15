@@ -1,0 +1,68 @@
+[
+ {
+  "utc": "2026-10-15T05:29:20.826021+00:00",
+  "event": "start",
+  "manifest": "C:\\Users\\cheta\\Development\\uri-fire-companion-v2-rt\\work\\c1\\ws-firev2\\client\\client-manifest.json",
+  "port": 18300
+ },
+ {
+  "utc": "2026-10-15T05:31:18.504949+00:00",
+  "event": "ui ready -> launcher -NoUi -OverrideGpu",
+  "lease": {
+   "state": "FREE",
+   "last": {
+    "acquired_at": 1792040591.309,
+    "create_time": 1792040590.963,
+    "expected_vram_mib": 15626,
+    "heartbeat_at": 1792042134.51,
+    "label": "WS Brain host",
+    "max_hold_s": null,
+    "override": {
+     "at": 1792040591.285,
+     "by": "--override-contention"
+    },
+    "pid": 17180,
+    "process": "python.exe",
+    "purpose": "runtime_v1_brain",
+    "release_reason": "host exit",
+    "released_at": 1792042140.027,
+    "schema": "uri.gpu.lease.v1",
+    "session": "C:\\Users\\cheta\\Development\\uri-fire-companion-v2-rt",
+    "state": "released"
+   },
+   "stale_record": false
+  }
+ },
+ {
+  "utc": "2026-10-15T05:31:23.109627+00:00",
+  "event": "launcher",
+  "rc": 0,
+  "out": "Integrated server: port 18300, identity proven\nGPU override: owner-authorized start next to other GPU processes (recorded)\nBrain host: starting (GPU check, load and speed check run in the background; URI shows the state)\n",
+  "err": ""
+ },
+ {
+  "utc": "2026-10-15T05:34:21.405097+00:00",
+  "event": "brain host stop",
+  "reason": "recoverable-error journey",
+  "pids": [
+   18224,
+   19144
+  ],
+  "killed_after_wait": []
+ },
+ {
+  "utc": "2026-10-15T05:34:45.888133+00:00",
+  "event": "brain host restarted",
+  "rc": 0,
+  "out": "Integrated server: port 18300, identity proven\nRuntime v1: health 503 (attach; identity verified by the worker)\n"
+ },
+ {
+  "utc": "2026-10-15T05:35:03.070240+00:00",
+  "event": "flutter test finished",
+  "rc": 15
+ },
+ {
+  "utc": "2026-10-15T05:35:03.092125+00:00",
+  "event": "driver removed"
+ }
+]

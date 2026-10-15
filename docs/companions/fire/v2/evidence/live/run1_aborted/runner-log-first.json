@@ -1,0 +1,28 @@
+[
+ {
+  "utc": "2026-10-15T04:51:35.205530+00:00",
+  "event": "start",
+  "manifest": "C:\\Users\\cheta\\Development\\uri-fire-companion-v2-rt\\work\\c1\\ws-firev2\\client\\client-manifest.json",
+  "port": 18300
+ },
+ {
+  "utc": "2026-10-15T04:53:24.008298+00:00",
+  "event": "ui ready -> launcher -NoUi -OverrideGpu"
+ },
+ {
+  "utc": "2026-10-15T04:53:31.958964+00:00",
+  "event": "launcher",
+  "rc": 0,
+  "out": "Integrated server: port 18300, identity proven\nRuntime v1: health 503 (attach; identity verified by the worker)\n",
+  "err": ""
+ },
+ {
+  "utc": "2026-10-15T04:54:11.068160+00:00",
+  "event": "flutter test finished",
+  "rc": 15
+ },
+ {
+  "utc": "2026-10-15T04:54:11.090480+00:00",
+  "event": "driver removed"
+ }
+]

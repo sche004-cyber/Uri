@@ -40,7 +40,7 @@ if nuget.exists() and not dest.exists():
 env = dict(os.environ, URI_CLIENT_MANIFEST=current["client_manifest"], URI_LIVING_SKIP_ONBOARDING="1",
            URI_QUAL_PREFS=str(FX / "prefs"), URI_QUAL_UI_OUT=str(OUT), LOCALAPPDATA=str(FX / "local"),
            APPDATA=str(FX / "local/roaming"), TEMP=str(FX / "local/temp"), TMP=str(FX / "local/temp"),
-           URI_QUAL_MODE=MODE, URI_QUAL_BRAIN_WAIT_MIN=os.environ.get("URI_QUAL_BRAIN_WAIT_MIN", "30"),
+           URI_QUAL_MODE=MODE, URI_QUAL_BRAIN_HOST=str(pathlib.Path(current["client_root"]) / "control/oi/brain_host.json"), URI_QUAL_BRAIN_WAIT_MIN=os.environ.get("URI_QUAL_BRAIN_WAIT_MIN", "30"),
            PATH=str(nuget.parent) + os.pathsep + os.environ["PATH"], PYTHONDONTWRITEBYTECODE="1")
 launcher = ["powershell", "-NoProfile", "-File", str(SRC / "scripts/launch_uri_working_system.ps1"),
             "-RuntimeRoot", str(RT), "-UiRoot", str(SRC), "-NoUi", "-OverrideGpu", "-BrainMinutes", "90"]
@@ -90,6 +90,24 @@ def brain_hosts():
     return out
 
 
+GUARD_WAIT_MIN = float(os.environ.get("URI_QUAL_BRAIN_WAIT_MIN", "30"))
+
+
+def lease_state():
+    r = subprocess.run([str(RT / ".venv/Scripts/python.exe"), "-m", "uri_operational_intelligence.gpu_lease", "status"],
+                       cwd=RT, capture_output=True, text=True, timeout=120)
+    try:
+        return json.loads(r.stdout)
+    except ValueError:
+        return {"state": "UNKNOWN", "raw": r.stdout[-300:]}
+
+
+def lease_free_and_no_brain():
+    if any((p.info["name"] or "").lower() == "llama-server.exe" for p in psutil.process_iter(["name"])):
+        return False
+    return lease_state().get("state") == "FREE"
+
+
 def gpu_sample(pids):
     ps = (r"$c=Get-Counter '\GPU Process Memory(*)\Dedicated Usage','\GPU Engine(*engtype_3D)\Utilization Percentage' -EA 0;"
           r"$c.CounterSamples | ? { $_.CookedValue -gt 0 } | % { $_.InstanceName + '|' + $_.Path + '|' + $_.CookedValue }")
@@ -125,7 +143,17 @@ try:
             proc.kill()
             break
         if MODE == "first" and not started_brain and (OUT / "ui-ready.json").exists():
-            note("ui ready -> launcher -NoUi -OverrideGpu")
+            # OD-8 guard (live run 1, 2026-10-15): the launcher ATTACHES to any Runtime v1 server already
+            # listening, so with another session's Brain running our turns would go to that session's Brain.
+            # Start only when the lease is FREE and no llama-server runs; otherwise wait, then give up (the
+            # driver records BLOCKED because the Brain is not ours).
+            if not lease_free_and_no_brain():
+                if time.monotonic() - t0 < 60 * GUARD_WAIT_MIN:
+                    continue
+                note("Brain not started: lease held or another session's llama-server running", lease=lease_state())
+                started_brain = True
+                continue
+            note("ui ready -> launcher -NoUi -OverrideGpu", lease=lease_state())
             r = subprocess.run(launcher, capture_output=True, text=True, timeout=600)
             note("launcher", rc=r.returncode, out=r.stdout[-1500:], err=r.stderr[-800:])
             started_brain = True

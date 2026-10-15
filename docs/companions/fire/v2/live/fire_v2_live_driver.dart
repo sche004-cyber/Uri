@@ -237,6 +237,21 @@ void main() {
       if (states.isEmpty || states.last != s) states.add(s);
     }
 
+    bool ourBrain() {
+      final path = Platform.environment['URI_QUAL_BRAIN_HOST'];
+      if (path == null || !File(path).existsSync()) return false;
+      try {
+        final host = jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
+        final server = host['server'] as Map<String, dynamic>?;
+        return server != null &&
+            server['owned'] == true &&
+            server['pid'] != null &&
+            '${server['pid']}' == '${conv.brainStatus['pid']}';
+      } on Object {
+        return false;
+      }
+    }
+
     // The Brain host waits for the GPU lease (OD-8: never taken from another session). If it does not become
     // ready in time, the Brain journeys are recorded BLOCKED, not simulated.
     final end = DateTime.now().add(Duration(minutes: brainWaitMin));
@@ -244,7 +259,10 @@ void main() {
     while (true) {
       await t.runAsync(conv.refreshStatus);
       sample();
-      if (conv.brainReady) break;
+      // Only a Brain started by this run's own Brain host counts (OD-8). The worker's 'owned' flag is about the
+      // worker, not the run (live run 3: it reads false for our own host too), so the server pid the worker
+      // reports must equal the pid this runtime's host records in its brain_host.json.
+      if (conv.brainReady && ourBrain()) break;
       if (DateTime.now().isAfter(end)) {
         brainBlocked = true;
         break;

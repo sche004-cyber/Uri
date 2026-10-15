@@ -1,0 +1,383 @@
+[
+  {
+    "utc": "2026-10-15T05:30:23.662801Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput",
+    "pointer": "Flutter tester taps on the real window",
+    "physical_input_qualified": false,
+    "Brain_Core_worker_mocked": false
+  },
+  {
+    "utc": "2026-10-15T05:30:23.680381Z",
+    "label": "0 preferences before start",
+    "mode": "first",
+    "stored_choice": null
+  },
+  {
+    "utc": "2026-10-15T05:30:38.773389Z",
+    "label": "1 start",
+    "seconds_to_shell": 15.092,
+    "manifest": "C:\\Users\\cheta\\Development\\uri-fire-companion-v2-rt\\work\\c1\\ws-firev2\\client\\client-manifest.json",
+    "default_companion": "solar",
+    "orb_state": "unavailable",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792042233.7035358,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T05:30:53.771582Z",
+    "label": "2 select ember",
+    "choice": "ember",
+    "ember_widgets": 1,
+    "stored_choice": "ember"
+  },
+  {
+    "utc": "2026-10-15T05:30:55.804607Z",
+    "label": "3 companion mode before brain",
+    "orb_state": "unavailable",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792042249.3895543,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T05:31:11.080001Z",
+    "label": "3b blinks before the Brain (15 s)",
+    "seconds": 15,
+    "blink_starts_s": [
+      5.872,
+      11.2,
+      11.67
+    ],
+    "gaps_s": [
+      5.33,
+      0.47
+    ],
+    "fully_closed_samples": 9
+  },
+  {
+    "utc": "2026-10-15T05:31:11.081076Z",
+    "label": "4 wake phrase",
+    "result": "NOT AVAILABLE",
+    "reason": "no wake-word recogniser in canonical URI; HOTWORDS only biases push-to-talk"
+  },
+  {
+    "utc": "2026-10-15T05:33:05.933048Z",
+    "label": "brain ready",
+    "state_sequence_while_loading": [
+      "unavailable"
+    ],
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792042385.3626058,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 9676,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T05:33:09.454625Z",
+    "label": "5 single click",
+    "mode": "companion"
+  },
+  {
+    "utc": "2026-10-15T05:33:11.364287Z",
+    "label": "turn",
+    "scenario": "greeting",
+    "request": "Hello URI",
+    "text": "Hello! How can I help you today?",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": 6,
+      "draft_n_accepted": 6,
+      "first_answer_s": 0.7619,
+      "predicted_n": 10,
+      "predicted_per_second": 136.33884748227595,
+      "prompt_n": 215,
+      "prompt_per_second": 634.4746992147269,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.8279,
+      "ttft_s": 0.7619
+    },
+    "application_seconds": 1.908,
+    "companion_states": [
+      "thinking",
+      "speaking",
+      "success"
+    ],
+    "identity": "ember"
+  },
+  {
+    "utc": "2026-10-15T05:33:11.365795Z",
+    "label": "5b after greeting",
+    "orb_state": "success"
+  },
+  {
+    "utc": "2026-10-15T05:33:13.556262Z",
+    "label": "6 double click",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T05:33:21.025157Z",
+    "label": "turn",
+    "scenario": "task request",
+    "request": "remember that the science lab is closed on Friday",
+    "text": "",
+    "answer_status": null,
+    "core_code": "APPROVAL_REQUIRED",
+    "metrics": {},
+    "application_seconds": 5.138,
+    "companion_states": [
+      "thinking",
+      "awaitingApproval"
+    ],
+    "identity": "ember"
+  },
+  {
+    "utc": "2026-10-15T05:33:23.081255Z",
+    "label": "7 approval shown",
+    "orb_state": "awaitingApproval",
+    "arguments": {
+      "action": "remember_fact",
+      "inputs": {
+        "request_text": "remember that the science lab is closed on Friday"
+      }
+    }
+  },
+  {
+    "utc": "2026-10-15T05:33:29.119083Z",
+    "label": "8 task completed",
+    "core_code": "SETTLED_VERIFIED",
+    "text": "",
+    "companion_states_after_approve": [
+      "success",
+      "idle"
+    ]
+  },
+  {
+    "utc": "2026-10-15T05:33:34.136257Z",
+    "label": "8b after the success hold",
+    "orb_state": "idle"
+  },
+  {
+    "utc": "2026-10-15T05:33:54.405572Z",
+    "label": "8c blinks in idle (20 s)",
+    "seconds": 20,
+    "blink_starts_s": [
+      1.244,
+      6.039,
+      11.527,
+      12.028,
+      16.065
+    ],
+    "gaps_s": [
+      4.79,
+      5.49,
+      0.5,
+      4.04
+    ],
+    "fully_closed_samples": 16
+  },
+  {
+    "utc": "2026-10-15T05:33:58.259719Z",
+    "label": "turn",
+    "scenario": "coexistence ember 0",
+    "request": "Write four sentences about how lanterns were used in old villages.",
+    "text": "In old villages, lanterns were essential for illuminating the dark streets and pathways after sunset. They were often hung outside homes and shops to provide a warm, inviting glow for residents and visitors alike. Lanterns also played a significant role in festivals and celebrations, adding a magical ambiance to the festivities. Additionally, they served as a symbol of safety and community, guiding people through the night and fostering a sense of togetherness.",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "metrics": {
+      "cache_n": 224,
+      "draft_n": 78,
+      "draft_n_accepted": 48,
+      "first_answer_s": 0.4026,
+      "predicted_n": 88,
+      "predicted_per_second": 111.80176903810641,
+      "prompt_n": 41,
+      "prompt_per_second": 169.0421904569499,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 1.1814,
+      "ttft_s": 0.4026
+    },
+    "application_seconds": 2.293,
+    "companion_states": [
+      "thinking",
+      "speaking",
+      "success"
+    ],
+    "identity": "ember"
+  },
+  {
+    "utc": "2026-10-15T05:34:02.111047Z",
+    "label": "turn",
+    "scenario": "coexistence ember 1",
+    "request": "Write four sentences about how lanterns were used in old villages.",
+    "text": "In old villages, lanterns were essential for illuminating the dark streets and pathways after sunset. They were often hung outside homes and shops to provide a warm, inviting glow for residents and visitors alike. Lanterns also played a significant role in festivals and celebrations, adding a magical ambiance to the festivities. Additionally, they served as a symbol of safety and community, guiding people through the night and fostering a sense of togetherness.",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "metrics": {
+      "cache_n": 352,
+      "draft_n": 58,
+      "draft_n_accepted": 58,
+      "first_answer_s": 0.9145,
+      "predicted_n": 88,
+      "predicted_per_second": 49.81633804107272,
+      "prompt_n": 27,
+      "prompt_per_second": 34.12977911712582,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 2.6614,
+      "ttft_s": 0.9145
+    },
+    "application_seconds": 3.85,
+    "companion_states": [
+      "success",
+      "thinking",
+      "speaking",
+      "success"
+    ],
+    "identity": "ember"
+  },
+  {
+    "utc": "2026-10-15T05:34:07.391881Z",
+    "label": "turn",
+    "scenario": "coexistence solar 0",
+    "request": "Write four sentences about how lanterns were used in old villages.",
+    "text": "In old villages, lanterns were essential for illuminating the dark streets and pathways after sunset. They were often hung outside homes and shops to provide a warm, inviting glow for residents and visitors alike. Lanterns also played a significant role in festivals and celebrations, adding a magical ambiance to the festivities. Additionally, they served as a symbol of safety and community, guiding people through the night and fostering a sense of togetherness.",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "metrics": {
+      "cache_n": 466,
+      "draft_n": 58,
+      "draft_n_accepted": 58,
+      "first_answer_s": 0.4519,
+      "predicted_n": 88,
+      "predicted_per_second": 48.32530596306503,
+      "prompt_n": 27,
+      "prompt_per_second": 96.29994222003467,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 2.2527,
+      "ttft_s": 0.4519
+    },
+    "application_seconds": 3.271,
+    "companion_states": [
+      "thinking",
+      "speaking",
+      "success"
+    ],
+    "identity": "solar"
+  },
+  {
+    "utc": "2026-10-15T05:34:10.935196Z",
+    "label": "turn",
+    "scenario": "coexistence solar 1",
+    "request": "Write four sentences about how lanterns were used in old villages.",
+    "text": "In old villages, lanterns were essential for illuminating the dark streets and pathways after sunset. They were often hung outside homes and shops to provide a warm, inviting glow for residents and visitors alike. Lanterns also played a significant role in festivals and celebrations, adding a magical ambiance to the festivities. Additionally, they served as a symbol of safety and community, guiding people through the night and fostering a sense of togetherness.",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "metrics": {
+      "cache_n": 580,
+      "draft_n": 58,
+      "draft_n_accepted": 58,
+      "first_answer_s": 0.6676,
+      "predicted_n": 88,
+      "predicted_per_second": 48.797615535365935,
+      "prompt_n": 27,
+      "prompt_per_second": 73.78500688660064,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 2.4509,
+      "ttft_s": 0.6676
+    },
+    "application_seconds": 3.542,
+    "companion_states": [
+      "thinking",
+      "speaking",
+      "success"
+    ],
+    "identity": "solar"
+  },
+  {
+    "utc": "2026-10-15T05:34:37.166512Z",
+    "label": "9 brain stopped",
+    "orb_state": "unavailable",
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792042467.4370525,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    },
+    "states": [
+      "success",
+      "idle",
+      "unavailable"
+    ]
+  },
+  {
+    "utc": "2026-10-15T05:34:38.515992Z",
+    "label": "turn",
+    "scenario": "request while Brain unavailable",
+    "request": "What is 2 plus 3?",
+    "text": "",
+    "answer_status": null,
+    "core_code": null,
+    "metrics": {},
+    "application_seconds": 1.084,
+    "companion_states": [
+      "thinking",
+      "error"
+    ],
+    "identity": "ember"
+  },
+  {
+    "utc": "2026-10-15T05:34:38.515992Z",
+    "label": "9b request outcome",
+    "answer_status": null,
+    "core_code": null
+  }
+]
