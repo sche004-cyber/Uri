@@ -133,3 +133,25 @@ def test_prompt_states_the_status_rule_and_the_overwrite_rule(tmp_path):
     system = client.bodies[0]["messages"][0]["content"]
     assert "status to 'propose' only when" in system and "'clarify'" in system and "'cannot'" in system
     assert "never write over cells that already hold data unless the owner asked" in system
+
+
+# ---- NOOP-1 (readiness run r3): restated cells are not changes ------------------------------------------------------
+def test_restated_cells_are_not_drafted(session):
+    """The shape of the live r3 answer: the whole row is restated while only the amount changes."""
+    o, wid, _ = session({"message": "I will update the Digitization row.", "status": "propose",
+                         "ops": [op(op="set_values", sheet="Budget", range="A5:B5", values=[["Digitization", 25000]])]})
+    r = o.instruct(wid, {"text": "Set Digitization to 25000", "active_sheet": "Budget"})
+    assert [c["cell"] for c in r["draft"]["changes"]] == ["B5"]
+    assert r["proposed"] and len(r["proposed"]) == 1
+
+
+def test_unchanged_helper():
+    from uri_office.brain import _unchanged
+    cur = {("S", "A1"): {"v": "Travel"}, ("S", "B1"): {"v": 60000}, ("S", "C1"): {"f": "=B1*2", "v": 120000}}
+    assert _unchanged({"sheet": "S", "cell": "A1", "value": "Travel"}, cur)
+    assert _unchanged({"sheet": "S", "cell": "B1", "value": 60000.0}, cur)
+    assert not _unchanged({"sheet": "S", "cell": "B1", "value": 25000}, cur)
+    assert not _unchanged({"sheet": "S", "cell": "C1", "value": 120000}, cur)      # a value over a formula is a change
+    assert _unchanged({"sheet": "S", "cell": "C1", "formula": "=B1*2"}, cur)
+    assert not _unchanged({"sheet": "S", "cell": "D1", "value": "x"}, cur)        # unseen cell
+    assert not _unchanged({"sheet": "S", "cell": "B1", "value": True}, {("S", "B1"): {"v": 1}})
