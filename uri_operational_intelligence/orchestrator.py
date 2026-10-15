@@ -28,6 +28,7 @@ from .task_ledger import LedgerError, TaskLedger
 class CoreGateway(Protocol):
     def begin(self, text: str, session_id: str, selection: dict) -> dict: ...
     def confirm(self, session_id: str, selection: dict, turn: dict) -> dict: ...
+    def abandon(self, session_id: str, selection: dict, turn: dict) -> dict: ...
     def decide(self, text: str, session_id: str, selection: dict, turn: dict, approve: bool) -> dict: ...
     def continue_waiting(self, session_id: str, turn_id: str, selection: dict, approve: Callable) -> dict: ...
 
@@ -43,6 +44,9 @@ class PairedCoreGateway:
 
     def confirm(self, session_id, selection, turn):
         return self.runner.confirm(session_id, selection, turn)
+
+    def abandon(self, session_id, selection, turn):
+        return self.runner.abandon(session_id, selection, turn)
 
     def decide(self, text, session_id, selection, turn, approve):
         return self.runner.decide(text, session_id, selection, turn, approve)
@@ -335,6 +339,16 @@ class Orchestrator:
         env = self.core.confirm(session_id, self.brain_selection, turn)
         return self._relay_core(env, "Confirm", session_id, T.Triage(T.ACTION, ["user_confirmed"]), RP.decide(T.ACTION),
                                 lambda t, **d: sink.emit(turn.get("turn_id"), t, **d), turn.get("turn_id"), (), None)
+
+    def abandon(self, session_id, turn, sink: EventSink | None = None):
+        """The user's explicit "No" on a SINGLE-turn Core confirmation or clarification: Core's own structured
+        abandon decision (digest/revision-bound by the frozen TurnRunner), never typed text."""
+        self._require_single(turn)
+        sink = sink or EventSink()
+        env = self.core.abandon(session_id, self.brain_selection, turn)
+        sink.emit(turn.get("turn_id"), "core.result", state=env.get("state"), code=env.get("code"),
+                  message=env.get("message"), needs=core_needs(env))
+        return env
 
     def decide(self, text, session_id, turn, approve: bool, sink: EventSink | None = None):
         """Approval decision for a SINGLE-turn Core request issued by this orchestrator (allowlist). Plan steps can

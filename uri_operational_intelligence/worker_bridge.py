@@ -484,13 +484,33 @@ class IntegratedTurns:
             pass        # the server's own idle expiry is the backstop
 
     def _oi_abandon(self, c):
+        turn_id = c["turn_id"]
         with self._lock:
-            p = self.pending.pop(c["turn_id"], None)
+            p = self.pending.pop(turn_id, None)
         if p is None:
             raise BridgeRefused("TURN_NOT_PENDING")
         if p["env"].get("state") == "approval_required":
             self._release(p)
-        return {"abandoned": True}
+            return {"abandoned": True}
+        if not (p["env"].get("confirmation") or p["env"].get("clarification")):
+            return {"abandoned": True}
+
+        def run():
+            # FCVR-01: dropping the card locally left Core's intent open, so every later action request in the
+            # session was answered with that old request. "No" now reaches Core as its structured abandon.
+            sink = self._sink(turn_id)
+            try:
+                env = self.o.abandon(p["session_id"], p["env"], sink=sink)
+            except Exception as exc:
+                self._fail(sink, turn_id, exc)
+                return
+            from .orchestrator import core_needs, core_turn_status
+            status = core_turn_status(env, core_needs(env))
+            sink.emit(turn_id, "turn.finished", status=status, route="core", total_s=0)
+            sink.emit(turn_id, "companion.state", state="error" if status == "error" else "idle")
+
+        self._start(turn_id, run)
+        return {"turn_id": turn_id, "accepted": True, "abandoned": True}
 
     # ---- Brain / memory / cloud -----------------------------------------------------------------
     def _brain_status(self, _c):

@@ -91,3 +91,34 @@ def test_unreadable_store_never_invents_the_saved_text():
     request = {"approval_request": {"capability_id": "remember_fact"}}
     out = completion_outcome(request, {"code": "SETTLED_VERIFIED", "state": "reply"}, None, None)
     assert out["saved"] == [] and "“" not in out["summary"]
+
+
+def confirmation_core():
+    return FakeCore([{"turn_id": "c1", "state": "reply", "code": "INTENT_CONFIRMATION_REQUIRED", "message": "Confirm?",
+                      "confirmation": {"intent_id": "i1", "revision": 2, "digest": "d" * 64,
+                                       "arguments": {"request_text": "remember that the staff meeting is on Tuesday"}}}])
+
+
+def test_no_on_a_confirmation_reaches_core_as_its_structured_abandon(fake, tmp_path):
+    """FCVR-01 (live): "No" only dropped the card in the worker; Core kept the intent open and answered every later
+    action request in the session with it. The decision now reaches Core (frozen TurnRunner.abandon)."""
+    core = confirmation_core()
+    b, frames, _ = make(fake, tmp_path, core)
+    r = turn(b, "remember that the staff meeting is on Tuesday")
+    assert frames.data("core.result")[-1]["needs"] == "confirmation"
+    out = b.handle("oi_abandon", {"command": "oi_abandon", "turn_id": r["turn_id"]})
+    b.wait(10)
+    assert out["abandoned"] is True
+    assert ("abandon", "c1") in core.calls
+    assert frames.data("core.result")[-1]["code"] == "INTENT_ABANDONED"
+    assert frames.data("turn.finished")[-1]["status"] != "ok"          # an abandon is never reported as success
+    with pytest.raises(Exception):
+        b.handle("oi_confirm", {"command": "oi_confirm", "turn_id": r["turn_id"]})   # the card is gone
+
+
+def test_no_on_an_approval_still_releases_it_as_a_denial(fake, tmp_path):
+    core = approval_core()
+    b, _, _ = make(fake, tmp_path, core)
+    r = turn(b, "remember that x")
+    assert b.handle("oi_abandon", {"command": "oi_abandon", "turn_id": r["turn_id"]}) == {"abandoned": True}
+    assert ("decide", False) in core.calls and not any(c[0] == "abandon" for c in core.calls)
