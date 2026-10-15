@@ -85,3 +85,14 @@ Carried into implementation, as the plan already places them:
 - spikes S1–S8;
 - the Brain rows and the owner rows, which stay BLOCKED;
 - OD-U3 and OD-U7, which must be ruled before G1.
+
+## Amendment A1 review, at `62cdb877`
+
+**Verdict: REVISE (narrow). Licensing resolved for G1.** No AGPL or GPL library is in any Office code path.
+- 7 major findings, A1-M1 to A1-M7. A1-M7 was classed MINOR in the table but is treated as major (an enforcement AC).
+- 8 minor findings, A1-m1 to A1-m8.
+- 3 notes.
+
+All of them are repaired in A1 rev 2. The table is in `03_O2_AMENDMENT_A1_PDF_PRINT_DEVICES.md`, sections A2, A3, A4,
+A7 and A12. A1-M4 was answered by measurement: the WinRT worker used 0 bytes of GPU memory and 0 % of the GPU engine
+over 40 samples, and the dwm.exe positive control read 389 MB (`evidence/pdf_print_probe_20261015/`).

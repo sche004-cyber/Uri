@@ -167,6 +167,11 @@ Notes on the measurements:
 
 ### 2.2 Engine comparison
 
+> **Superseded in part on 2026-10-15 by amendment A1** (`03_O2_AMENDMENT_A1_PDF_PRINT_DEVICES.md`). Office does not use
+> PyMuPDF. Every PyMuPDF role in this section moves to Windows.Data.Pdf (page images), pypdf (text, outline, fonts) or
+> Tesseract on WinRT rasters (OCR). PDF editing, annotation, assembly and forms are removed. Tables to Excel waits for
+> OD-U11. The text below is kept for history.
+
 | Candidate | Role | License | Windows / headless | Fidelity | Already in URI | Verdict |
 |---|---|---|---|---|---|---|
 | **python-docx** 1.2 | DOCX create, edit, structure | MIT | yes / yes | Keeps unknown XML. Run-level edits keep formatting. No layout engine. | yes (`requirements.txt`; Core writer) | **Select** for DOCX authoring and editing |
@@ -175,7 +180,7 @@ Notes on the measurements:
 | PptxGenJS | PPTX create (JS) | MIT | Node | Good create, no edit of existing files | no | Reject: duplicates python-pptx and adds a Node runtime path |
 | docx4j / Apache POI | DOCX/PPTX (Java) | Apache-2.0 | needs a JRE | Strong | no | Reject: adds a JVM for no proven gain over python-docx plus lxml |
 | **PyMuPDF** 1.28 | PDF read, text, `find_tables`, render, annotate, redact, generate | **AGPL-3.0** or commercial ([Artifex](https://github.com/pymupdf/pymupdf)) | yes | High for PDF | yes (Core `PDFReader`, writer) | **Select** for PDF. OD-U3 records the AGPL acknowledgement. |
-| **pypdf** 6.19 | Merge, split, rotate, form fields | BSD-3 | yes | Lossless page assembly | yes | **Select** for page assembly and AcroForm fill (keeps the AGPL surface small) |
+| **pypdf** 6.19 | ~~Merge, split, rotate, form fields~~ reading only: text, outline, fonts and images (amendment A1) | BSD-3 | yes | Lossless page assembly | yes | **Select** for page assembly and AcroForm fill (keeps the AGPL surface small) |
 | **Tesseract** 5.5 | OCR | Apache-2.0 | installed at `C:\Program Files\Tesseract-OCR` | Good on clean scans | yes (Core) | **Select** (existing) |
 | **LibreOffice** headless (`soffice --headless --convert-to pdf`) | DOCX/PPTX to PDF for preview, Word-to-PDF output, visual qualification | MPL-2.0 | Windows supported; console use via `soffice.com`; one instance per profile ([ask.libreoffice.org](https://ask.libreoffice.org/t/file-format-conversion/90964/3)) | The only free high-fidelity OOXML layout engine found | **installed 2026-10-15** as a user-folder extract (`%LOCALAPPDATA%\URI\engines\libreoffice-26.8.1`). See `evidence/libreoffice_probe_20261015/`. | **Selected (OD-U2).** Fidelity verified on the probe documents. (download and install about 350 MB). Rasterize its PDF with PyMuPDF, because direct PNG export renders only the first page ([LibreOffice bug 157425](https://www.libreoffice.org/bugzilla/show_bug.cgi?id=157425)). |
 | Univer docs preset | Rich in-app DOCX editing | Apache-2.0 core | WebView2 | DOCX import and export need the Univer Pro server; unlicensed use has a watermark and a 1 MB cap ([Univer import/export](https://docs.univer.ai/guides/docs/features/import-export)) | Univer sheets already bundled | Reject for now: a paid path, or a custom DOCX-to-IDocumentData converter with fidelity loss |
@@ -211,6 +216,11 @@ Without it, those items are BLOCKED rather than approximated.
 
 ## 3. Proposed capability matrix
 
+> **Superseded in part on 2026-10-15 by amendment A1** (`03_O2_AMENDMENT_A1_PDF_PRINT_DEVICES.md`). Office does not use
+> PyMuPDF. Every PyMuPDF role in this section moves to Windows.Data.Pdf (page images), pypdf (text, outline, fonts) or
+> Tesseract on WinRT rasters (OCR). PDF editing, annotation, assembly and forms are removed. Tables to Excel waits for
+> OD-U11. The text below is kept for history.
+
 Codes:
 - **D**: deterministic code.
 - **B**: Brain needed.
@@ -229,9 +239,9 @@ Codes:
 | Mail merge from Excel rows | yes | (one slide per row) | via conversion | — | D | python-docx | O7 |
 | Text, tables, fields extraction | yes | yes | yes, OCR fallback | — | D | readers + Tesseract | O4 |
 | Page-cited Q&A over documents | yes | yes | yes | — | D retrieve + B answer with citations | PyMuPDF + Brain | O4 |
-| Merge, split, rotate, reorder, assemble | — | — | yes | — | D | pypdf | O4 |
-| Highlight and annotate | — | — | yes | — | D | PyMuPDF | O4 |
-| Form analysis and assisted fill | — | — | AcroForm | — | D fields + B suggest values from sources | pypdf | O4 |
+| ~~Merge, split, rotate, reorder, assemble~~ **removed 2026-10-15 (D-PDF, amendment A1)** | — | — | yes | — | D | pypdf | O4 |
+| ~~Highlight and annotate~~ **removed 2026-10-15 (D-PDF, amendment A1)** | — | — | yes | — | D | PyMuPDF | O4 |
+| ~~Form analysis and assisted fill~~ **removed 2026-10-15 (D-PDF, amendment A1)** | — | — | AcroForm | — | D fields + B suggest values from sources | pypdf | O4 |
 | Related notices and corrigenda detection | yes | — | yes | — | D (reference numbers, dates) + B confirm | readers | O4/O8 |
 | Slides from document, PDF or Excel (outline, charts, notes) | — | yes | — | — | B outline → D layout | python-pptx | O5/O7 |
 | Overcrowding and readability check | — | yes | — | — | D (text box fit, font size, contrast) | pptx + render | O5 |
@@ -371,6 +381,11 @@ Rules:
 
 ## 6. Cross-application integration strategy
 
+> **Superseded in part on 2026-10-15 by amendment A1** (`03_O2_AMENDMENT_A1_PDF_PRINT_DEVICES.md`). Office does not use
+> PyMuPDF. Every PyMuPDF role in this section moves to Windows.Data.Pdf (page images), pypdf (text, outline, fonts) or
+> Tesseract on WinRT rasters (OCR). PDF editing, annotation, assembly and forms are removed. Tables to Excel waits for
+> OD-U11. The text below is kept for history.
+
 | Workflow | Readers | Deterministic core | Brain role | Writer |
 |---|---|---|---|---|
 | Excel → Word (letters, report) | openpyxl (existing reader) | mail merge, table placement | narrative paragraphs (optional) | python-docx |
@@ -386,6 +401,11 @@ Rules:
 PDF tables → Excel reuses the M2 new-workbook flow: the extracted tables become `copy_range`-like ops into a new workbook, so the existing approval and save path is used unchanged.
 
 ## 7. Architecture (Phase 7, smallest that meets the requirements)
+
+> **Superseded in part on 2026-10-15 by amendment A1** (`03_O2_AMENDMENT_A1_PDF_PRINT_DEVICES.md`). Office does not use
+> PyMuPDF. Every PyMuPDF role in this section moves to Windows.Data.Pdf (page images), pypdf (text, outline, fonts) or
+> Tesseract on WinRT rasters (OCR). PDF editing, annotation, assembly and forms are removed. Tables to Excel waits for
+> OD-U11. The text below is kept for history.
 
 ```
 Living Workspace (Flutter, existing)
@@ -442,7 +462,7 @@ Each phase:
 | **O1** Foundation readiness (governance, not code) | Owner decides OD-U1 (base), the frozen-checker reconciliation (W-8) and Office M1/M2 integration status. Record the Excel baseline numbers (latency, RSS, Brain tok/s with the panel: the missing AC11). | owner | Baseline evidence file. Canonical or stacked base pinned. |
 | **O2** Unified workspace and shared engine layer | Office Home, secondary navigation, recent work, `content.py`, `render.py` (LibreOffice), `PagePreview`, status strip, `capabilities.py`, `workflows.py`, grants for new formats, `DocumentsRegion` replaced | O1, OD-U2, OD-U5 | Open DOCX, PPTX and PDF read-only with faithful previews. Render sandbox has no network (canary test as in M1). Excel unchanged (M1/M2 suites pass). |
 | **O3** Word | Templates (letter, office order, notice, memo, minutes, report), NL edit change cards, headers, footers, numbering, format correction, proofreading, compare and tracked-change draft, Word→PDF | O2 | Each template validates and renders without clipping. Edits keep unrelated XML parts byte-identical. Originals never written without Edit role plus approval. |
-| **O4** PDF | Extraction with OCR fallback, cited Q&A, tables→Excel (M2 path), assemble (merge, split, rotate, reorder), annotate, AcroForm assisted fill, related-notice detection | O2 (parallel with O3 after O2) | Page citations resolve to the right page. Original PDF byte-identical. Scanned fixture is OCR'd. |
+| **O4** PDF (reduced 2026-10-15, amendment A1) | Extraction with OCR fallback (pypdf, Tesseract on WinRT rasters), cited Q&A, summarization, related-notice detection. ~~tables→Excel (M2 path)~~ waits for OD-U11. ~~assemble, annotate, AcroForm assisted fill~~ removed (D-PDF). | O2 (parallel with O3 after O2) | Page citations resolve to the right page. Original PDF byte-identical. Scanned fixture is OCR'd. |
 | **O5** PowerPoint | Slides from outline or document, templates and themes from a master, charts and tables, notes, overcrowding and readability checks, reorganize, shorten, expand | O2 (parallel with O3/O4) | No text overflow in rendered slides. Native charts open in LibreOffice. Readability detector catches seeded defects. |
 | **O6** Google Docs and Slides | Copy, upload-convert, export, read-only sharing view; in-place edit only if OD-U4 grants scopes | O3, O5, OD-U4 | No upload without a card naming the cloud destination. `drive.file` behaviour verified live. |
 | **O7** Cross-application workflows | Excel→Word mail merge, Excel→PPT, PDF→Word, Word→PPT, multi-document summary, Excel+PDF→report | O3, O4, O5 | Every output fact traces to a source block. Batch of 40 letters validated per item. |
