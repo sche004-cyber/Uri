@@ -25,8 +25,10 @@ letter shuffle is seeded, so the letters match CP7.
 
 | | CP2 | CP3 | CP4 | CP5 | CP6 | CP7 | CP8 |
 |---|---|---|---|---|---|---|---|
-| V2 mean range | 74-85 | 77-80 | 74-78 | 72-77 | 74-77 (card) | 84-86 | 80.5-83.5 |
+| V2 mean range | 74-85 | 77-80 | 74-78 | 71-75 | 72-79 (card) | 83.5-85.8 | 80.5-83.5 |
 | Format | strip | strip | strip | strip | strip | single | single |
+
+Correction (review R2-03): the "V2 mean range" row first read CP5 "72-77", CP6 "74-77" and CP7 "84-86". The values above are the two-reviewer means recomputed by `decode_raw_scores.py`.
 
 From CP7 to CP8, with almost unchanged art, the scores moved by -1 to -4. The two changes (sparks, robe) are within
 the spread between reviewers. They were still repaired, because they were concrete defects.

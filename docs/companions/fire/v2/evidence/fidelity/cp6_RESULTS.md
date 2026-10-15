@@ -21,7 +21,7 @@ Pack: `critique_pack_v2.py --tag cp6 --card`. Two new fresh reviewers. Key: `cp6
 
 ## Findings
 
-1. **The card presentation does not lift V2.** It scored 70-79, the same as the cut-out V2 in CP3 and CP4. The CP5
+1. **The card presentation does not lift V2.** It scored 70-79 per reviewer, 72-79 as two-reviewer means, the same as the cut-out V2 in CP3 and CP4. The CP5
    explanation, "presentation alone", is therefore **corrected**: presentation is not the whole cost.
 
 2. **The pose and stretch claims were real.** Both reviewers reported body or leg changes between frames: joyful

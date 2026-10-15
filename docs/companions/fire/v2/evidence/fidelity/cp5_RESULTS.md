@@ -22,7 +22,7 @@ reviewers. Key: `cp5_key/key.json`.
 The presentation, not the animation, holds V2 below 90:
 - The unanimated painting, shown the way the app shows Ember, scores **69-81**.
 - The same painting on its own background scores **100**.
-- Animation costs 0-10 points (mean 3.3) on top of that.
+- Animation costs 0-10 points (mean 3.4; first published as 3.3 and corrected in review R2-03) on top of that.
 
 Because the presentation alone costs 20-30 points, the cut-out presentation cannot reach the >= 90 target with
 any animation. A perfect, motionless cut-out does not reach it either.

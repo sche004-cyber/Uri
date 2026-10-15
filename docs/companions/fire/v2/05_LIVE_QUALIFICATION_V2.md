@@ -52,7 +52,7 @@ Guards added to the harness after runs 1 and 3 (OD-8):
 | 3 | Idle with the Brain ready | PASS | `first-05` |
 | 4 | Wake phrase | NOT AVAILABLE: canonical URI has no wake-word recogniser. Not simulated. | observations |
 | 5 | Conversation | PASS: single click shows the prompt bubble; "Hello URI" -> COMPLETE at 136 tok/s; companion **thinking -> speaking -> success** | `first-06..08` |
-| 5b | **Success signalling (F-SUCCESS)** | **PASS, repaired**: the joyful expression shows after an `ok` turn ("Done"). In V1 it was never reached. | `first-08` |
+| 5b | **Success signalling (F-SUCCESS)** | **PASS, repaired**: the joyful expression shows after an `ok` turn ("Done"). In V1 it was never reached. This live run used the UI at `a86ed350`. The later R1-01 refinement, which ends the hold on a failed or new turn, is covered by widget tests only and was not re-run live (review R2-05). | `first-08` |
 | 6 | Conversation <-> dashboard | PASS | `first-09`, `first-10` |
 | 7 | Real task with approval | PASS: "remember that the science lab is closed on Friday" -> APPROVAL_REQUIRED; companion awaitingApproval | `first-11`, `first-12` |
 | 8 | Task completed | PASS: Core **SETTLED_VERIFIED**; companion **success -> idle** after the 4 s hold | `first-13`, `first-14` |
