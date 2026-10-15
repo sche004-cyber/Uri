@@ -163,6 +163,7 @@ because anything sensitive was exposed.
 | `providers/` | Model/Brain and provider management patterns — connection/health status, configuration forms. |
 | `tasks/` | Pending-action / approval-queue / task-list patterns. |
 | `settings/` | Settings navigation and forms patterns (tabs vs. nested list vs. sectioned page). |
+| `office/` | URI Office workspace patterns: file and workflow navigation, page previews, companion pane (added 2026-10-15). |
 | `approved/` | Decision records for a screen design that has been selected — what was chosen, from which reference, and why. |
 | `rejected/` | Decision records for a screen design that was considered and turned down — kept so the same idea isn't re-proposed without knowing it was already rejected, and why. |
 

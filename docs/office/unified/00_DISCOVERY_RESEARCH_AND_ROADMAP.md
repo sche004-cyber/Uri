@@ -3,7 +3,7 @@
 Date: 2026-10-14. Milestone family id `URI-OFFICE-U`. Process: `uri-development-lifecycle` (explore, plan, owner vision
 check, independent plan review, freeze, then one isolated branch and worktree per phase).
 Planning branch: `phase/uri-office-unified-plan` from `5b958da0`, worktree `C:\Users\cheta\Development\uri-office-unified`.
-Status: **DRAFT, NOT FROZEN.** Owner decided OD-U1, OD-U2 and OD-U6, and chose O2 as the first milestone (2026-10-14, section 12a). OD-U3, OD-U4, OD-U5 and OD-U7 are open. No production code has changed.
+Status: **DRAFT, NOT FROZEN.** Owner decided OD-U1, OD-U2 and OD-U6, and chose O2 as the first milestone (2026-10-14, section 12a). OD-U5 was decided on 2026-10-15 (B1 with refinements). OD-U3, OD-U4 and OD-U7 are open. No production code has changed.
 
 ## 0. Acceptance criteria for this document
 
@@ -244,7 +244,7 @@ The `docs/design_library/` index had no Office or document pattern, so these ext
 - AFFiNE and Stirling-PDF: MIT core with proprietary portions;
 - Paperless-ngx: GPL-3.0.
 
-They are structural references only; no code is used. The owner chooses (OD-U5) before O2 freezes. The `approved/` or `rejected/` record follows that choice.
+They are structural references only; no code is used. **Owner decision 2026-10-15 (OD-U5): B1, with B2's goal grouping and 10 refinements.** See section 12a and `01_O2_PLAN_AND_ACCEPTANCE_CRITERIA.md` section 4.
 
 ### 4.2 Concept B behaviour
 
@@ -400,7 +400,7 @@ Core: imported read-only (PDFReader, load_usable_credentials); uri_core unchange
   - no network; enforcement method to be proved in O2: profile proxy to an unreachable port and update checks off;
   - output only into the working folder.
 
-**Resources:** CPU-only engines (section 2.1). LibreOffice is started on demand and exits after an idle timeout. There is no GPU use other than the existing Brain. Measured: 7–26 s and about 360–420 MB per conversion, process per call. O2 must measure a persistent listener (`soffice --accept`, UNO) and choose it if it is materially faster. Previews are cached by input SHA-256.
+**Resources:** CPU-only engines (section 2.1). LibreOffice is started on demand and exits after an idle timeout. **Update 2026-10-15 (`evidence/lo_qualify_20261015/`):** a persistent listener converts a warm DOCX in 0.36 s against 6.1 s per call, so O2 uses the listener. The default LibreOffice profile fetched an external-link canary; the hardened profile did not. There is no GPU use other than the existing Brain. Measured: 7–26 s and about 360–420 MB per conversion, process per call. O2 must measure a persistent listener (`soffice --accept`, UNO) and choose it if it is materially faster. Previews are cached by input SHA-256.
 
 **Recovery:**
 - working copies and atomic writes;
@@ -503,6 +503,7 @@ The recommendation is to start O2, not Word first. A Word milestone without the 
 | OD-U2 | LibreOffice download and install approved: official package, pinned version, run only as a sandboxed headless subprocess. |
 | OD-U6 | GPU override: one logged override window per phase qualification. No process is killed without asking. |
 | First milestone | O2 (shared workspace and render layer). |
+| OD-U5 (2026-10-15) | **B1 approved with refinements**: three panes (files and workflows, workbench, URI), plus B2's goal-based task grouping, plus 10 refinements. Records: `docs/design_library/approved/office_workspace_2026-10-15.md`, `rejected/office_workspace_b2_layout_2026-10-15.md`. Detailed O2 plan: `01_O2_PLAN_AND_ACCEPTANCE_CRITERIA.md`. |
 
 ## 13. Self-review against section 0 (draft 1)
 

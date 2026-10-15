@@ -1,0 +1,122 @@
+{
+ "started": "2026-10-15T08:21:21+0530",
+ "fixtures": {
+  "order.docx": "1bdbe67126ef8defaf8e36d1b14811f430c8b083b9acdf26fffdfdd1a95353ba",
+  "deck.pptx": "140e59c86ca4102e831e53016398bc51377067be511555a3d644be94eba7806e",
+  "canary.docx": "283f587e64d8cb5ab7d0c9990c4e253bfb3269d30284a2960b626c73af88c3ff"
+ },
+ "soffice": {
+  "path": "C:\\Users\\cheta\\AppData\\Local\\URI\\engines\\libreoffice-26.8.1\\program\\soffice.com",
+  "sha256_soffice_bin": "cb08cffda137256a95e3802c13476dd96f0f6310cb6f3e186621d8f73d7c2fa1",
+  "version": "LibreOffice 26.8.1.1 bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1"
+ },
+ "per_call_hardened_profile": {
+  "order.docx#1": {
+   "rc": 0,
+   "seconds": 18.36,
+   "peak_rss_mb": 345.6,
+   "pages": 1
+  },
+  "order.docx#2": {
+   "rc": 0,
+   "seconds": 6.06,
+   "peak_rss_mb": 345.2,
+   "pages": 1
+  },
+  "deck.pptx#1": {
+   "rc": 0,
+   "seconds": 6.52,
+   "peak_rss_mb": 355.5,
+   "pages": 11
+  },
+  "deck.pptx#2": {
+   "rc": 0,
+   "seconds": 5.73,
+   "peak_rss_mb": 352.7,
+   "pages": 11
+  }
+ },
+ "listener_hardened": {
+  "files": [
+   {
+    "file": "order.docx",
+    "seconds": 1.307,
+    "ok": true
+   },
+   {
+    "file": "order.docx",
+    "seconds": 0.362,
+    "ok": true
+   },
+   {
+    "file": "order.docx",
+    "seconds": 0.359,
+    "ok": true
+   },
+   {
+    "file": "deck.pptx",
+    "seconds": 0.531,
+    "ok": true
+   },
+   {
+    "file": "deck.pptx",
+    "seconds": 0.417,
+    "ok": true
+   }
+  ],
+  "client_rc": 0,
+  "client_stderr_tail": "",
+  "wall_total_s_incl_startup": 12.6,
+  "peak_tree_rss_mb": 408.6,
+  "idle_tree_rss_mb_after": 389.8,
+  "child_pids_before_job_close": 1,
+  "pids_alive_after_job_close": [],
+  "pdf_pages": {
+   "deck.pdf": 11,
+   "order.pdf": 1
+  }
+ },
+ "canary_percall_default": {
+  "convert": {
+   "rc": 0,
+   "seconds": 14.21,
+   "peak_rss_mb": 385.5,
+   "pages": 1
+  },
+  "canary_hits": [
+   "/canary.png"
+  ]
+ },
+ "canary_listener_default": {
+  "convert": [
+   {
+    "file": "canary.docx",
+    "seconds": 0.985,
+    "ok": true
+   }
+  ],
+  "canary_hits": [
+   "/canary.png"
+  ]
+ },
+ "canary_percall_hardened": {
+  "convert": {
+   "rc": 0,
+   "seconds": 11.74,
+   "peak_rss_mb": 342.6,
+   "pages": 1
+  },
+  "canary_hits": []
+ },
+ "canary_listener_hardened": {
+  "convert": [
+   {
+    "file": "canary.docx",
+    "seconds": 1.328,
+    "ok": true
+   }
+  ],
+  "canary_hits": []
+ },
+ "finished": "2026-10-15T08:23:21+0530"
+}
