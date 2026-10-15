@@ -441,6 +441,35 @@ void main() {
       answer = 'running';                    // a late answer read before the cancel took effect
       await c.cancelWorkflow();
       expect(c.workflowView?['state'], 'cancelled');
+      expect(c.conversation.lines.last.text, startsWith('Cancelled'), reason: 'Codex R6-1: no "Stopping" after it');
+    });
+
+    test('Codex R6-4: a cancel outcome is still said after the owner moved to another task', () async {
+      late OfficeWorkspaceController c;
+      final mock = MockClient((req) async {
+        c.activeWorkflow = 'b' * 20;          // the owner opened task B while A's cancel was in flight
+        c.workflowView = {'state': 'ready_to_save', 'steps': [], 'findings': []};
+        return http.Response(jsonEncode({'state': 'cancelled', 'steps': [], 'findings': []}), 200);
+      });
+      c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', mock))
+        ..activeWorkflow = 'a' * 20
+        ..workflowView = {'state': 'running', 'steps': [], 'findings': []};
+      await c.cancelWorkflow();
+      expect(c.conversation.lines.last.text, startsWith('Cancelled'));
+      expect(c.workflowView?['state'], 'ready_to_save', reason: "task B's view is not replaced");
+    });
+
+    test('Codex R6-3: a resume that settles at once is announced', () async {
+      final mock = MockClient((req) async => http.Response(
+          jsonEncode({'state': 'ready_to_save', 'steps': [], 'findings': []}), 200));
+      final c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', mock),
+          environment: _env(docPath: r'C:\Users\me\report.docx'))
+        ..activeWorkflow = 'a' * 20
+        ..workflowView = {'state': 'interrupted', 'steps': [], 'findings': [], 'inputs': ['report.docx']};
+      await c.resumeWorkflow();
+      expect(c.workflowView?['state'], 'ready_to_save');
+      expect(c.stepLabel, 'Ready to save');
+      expect(c.conversation.lines.last.text, contains('The PDF is ready'));
     });
 
     testWidgets('Codex R4-1: a saved task requests no output pages (its work files are gone)', (tester) async {
