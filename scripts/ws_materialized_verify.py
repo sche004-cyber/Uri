@@ -359,7 +359,7 @@ def verify(source, runtime, *, strict_extras=True):
                 path = (rel / name).as_posix()
                 if path in expected or path in (".git", "OI_MATERIALIZATION_RECEIPT.json"):
                     continue
-                if generated_by_gates(rel, name, expected):
+                if generated_by_gates(rel, name, expected, runtime):
                     generated.append(path)
                     continue
                 extras.append(path)
@@ -384,19 +384,76 @@ def verify(source, runtime, *, strict_extras=True):
     return result
 
 
-_PYC = re.compile(r"^(?P<stem>[A-Za-z0-9_]+)\.cpython-\d+(?:-pytest-[0-9.]+)?(?:\.opt-[12])?\.pyc$")
+_PYC = re.compile(r"^(?P<stem>[A-Za-z0-9_]+)\.(?P<tag>cpython-\d+)(?:-pytest-(?P<pytest>[0-9.]+))?"
+                  r"(?:\.opt-(?P<opt>[12]))?\.pyc$")
 
 
-def generated_by_gates(rel, name, expected):
+_CODE_FIELDS = ("co_argcount", "co_posonlyargcount", "co_kwonlyargcount", "co_nlocals", "co_stacksize", "co_flags",
+                "co_code", "co_names", "co_varnames", "co_freevars", "co_cellvars", "co_name", "co_qualname",
+                "co_firstlineno", "co_linetable", "co_exceptiontable")
+
+
+def _same_code(a, b):
+    """Structural equality of two code objects, ignoring only co_filename (the loader rewrites it on import)."""
+    import types
+    if any(getattr(a, f) != getattr(b, f) for f in _CODE_FIELDS) or len(a.co_consts) != len(b.co_consts):
+        return False
+    for x, y in zip(a.co_consts, b.co_consts):
+        if isinstance(x, types.CodeType) or isinstance(y, types.CodeType):
+            if not (isinstance(x, types.CodeType) and isinstance(y, types.CodeType) and _same_code(x, y)):
+                return False
+        elif type(x) is not type(y) or x != y:
+            return False
+    return True
+
+
+def _expected_code(source_path, name, m):
+    """What CPython (or pytest's assertion rewriter, for '-pytest-' caches) compiles from the verified source."""
+    import ast
+    data = source_path.read_bytes()
+    opt = m.group("opt")
+    if m.group("pytest"):
+        import _pytest
+        from _pytest.assertion import rewrite as RW
+        if m.group("pytest") != _pytest.__version__:
+            raise VerificationError("BYTECODE_TOOL_VERSION:" + name)
+        tree = ast.parse(data, filename=str(source_path))
+        RW.rewrite_asserts(tree, data, str(source_path), None)
+        return compile(tree, str(source_path), "exec", dont_inherit=True)
+    return compile(data, str(source_path), "exec", dont_inherit=True, optimize=int(opt) if opt else 0)
+
+
+def generated_by_gates(rel, name, expected, runtime=None):
     """Files the accepted gates themselves write into the runtime (they run Python with -I, which ignores
     PYTHONDONTWRITEBYTECODE): bytecode beside an expected source, and pytest's root cache. Nothing else, and never a
-    source, script or data file. Expected files are still compared byte for byte."""
+    source, script or data file. Expected files are still compared byte for byte.
+
+    Review R1-01: CPython executes a cached .pyc whose header matches the source's mtime and size, so bytecode is
+    accepted only when its code is exactly what this interpreter (or the pinned pytest rewriter) compiles from the
+    verified source. Anything else is unknown output."""
+    import importlib.util
+    import marshal
     if rel.parts and rel.parts[0] == ".pytest_cache":
         return not name.endswith((".py", ".pyc", ".pyd", ".dll", ".exe", ".pth"))
-    if rel.parts and rel.parts[-1] == "__pycache__":
-        m = _PYC.match(name)
-        return bool(m) and (PurePosixPath(*rel.parts[:-1]) / (m.group("stem") + ".py")).as_posix() in expected
-    return False
+    if not (rel.parts and rel.parts[-1] == "__pycache__"):
+        return False
+    m = _PYC.match(name)
+    if not m:
+        return False
+    source_rel = (PurePosixPath(*rel.parts[:-1]) / (m.group("stem") + ".py")).as_posix()
+    if source_rel not in expected or runtime is None:
+        return False
+    if m.group("tag") != "cpython-%d%d" % sys.version_info[:2]:
+        return False
+    data = raw(runtime, (rel / name).as_posix())
+    if len(data) < 16 or data[:4] != importlib.util.MAGIC_NUMBER:     # header flags/mtime: the code is compared below
+        return False
+    try:
+        cached = marshal.loads(data[16:])            # data only: marshal never executes code
+        wanted = _expected_code(Path(runtime) / source_rel, name, m)
+    except (ValueError, EOFError, TypeError, SyntaxError, ImportError):
+        return False
+    return _same_code(cached, wanted)
 
 
 def verified_transitions(runtime):

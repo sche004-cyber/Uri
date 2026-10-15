@@ -237,19 +237,44 @@ def test_materializer_always_reconciles_and_verifies_security_transitions():
 M_APPROVED_KEYS = {"uri_core/app/server.py", "uri_core/tools/fetch_url.py"}
 
 
+def _pyc_for(source_file, code):
+    import importlib._bootstrap_external as BE
+    st = source_file.stat()
+    return bytes(BE._code_to_timestamp_pyc(code, st.st_mtime, st.st_size))
+
+
 def test_gate_generated_bytecode_beside_expected_source_is_not_unknown_output(output):
     """FCV-R chain: the accepted gates run Python with -I (bytecode on); their .pyc beside an expected source and
-    pytest's root cache are generated artifacts. Anything else stays UNKNOWN_OUTPUT."""
+    pytest's root cache are generated artifacts, accepted only as the exact compile of the verified source."""
+    import importlib.util
     source, runtime, _ = output
     cache = runtime / "__pycache__"
     cache.mkdir()
-    (cache / "worker.cpython-313.pyc").write_bytes(b"bytecode")
-    (cache / "worker.cpython-313-pytest-9.1.1.pyc").write_bytes(b"bytecode")
+    worker = runtime / "worker.py"
+    tag = importlib.util.cache_from_source(str(worker)).rsplit("\\", 1)[-1].rsplit("/", 1)[-1]
+    (cache / tag).write_bytes(_pyc_for(worker, compile(worker.read_bytes(), str(worker), "exec", dont_inherit=True)))
     (runtime / ".pytest_cache/v/cache").mkdir(parents=True)
     (runtime / ".pytest_cache/v/cache/lastfailed").write_text("{}")
     result = V.verify(source, runtime)
     assert result["ok"], result
-    assert result["generated_files_ignored"] == 3
+    assert result["generated_files_ignored"] == 2
+
+
+def test_crafted_bytecode_with_a_valid_header_is_refused(output):
+    """Review R1-01: CPython runs a cached .pyc whose header matches the source's mtime and size. Bytecode whose code
+    differs from the verified source is unknown output, in strict and historical-gate verification alike."""
+    import importlib.util
+    source, runtime, _ = output
+    cache = runtime / "__pycache__"
+    cache.mkdir()
+    worker = runtime / "worker.py"
+    tag = importlib.util.cache_from_source(str(worker)).rsplit("\\", 1)[-1].rsplit("/", 1)[-1]
+    evil = compile("import os\nPAYLOAD = 'not the verified source'\n", str(worker), "exec", dont_inherit=True)
+    (cache / tag).write_bytes(_pyc_for(worker, evil))
+    result = V.verify(source, runtime)
+    assert not result["ok"] and "UNKNOWN_OUTPUT" in result["error"]
+    (cache / tag).write_bytes(b"bytecode")
+    assert not V.verify(source, runtime)["ok"]
 
 
 @pytest.mark.parametrize("rel", ["__pycache__/unknown.cpython-313.pyc", "__pycache__/worker.py", "worker.cpython-313.pyc",
