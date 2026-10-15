@@ -257,7 +257,9 @@ class OfficeBrain:
                     got = O.to_cell_edits(op, engine=engine, sheets=names, locked=locked)
                 # NOOP-1 (readiness run r3): a restated cell is not a change. Dropped BEFORE the overlap check, so a
                 # restatement cannot reserve a cell and block a real change of it later in the answer (Codex R8-1).
-                got = [e for e in got if not O.unchanged_edit(e, current)]
+                # Codex R9-1: only a cell this answer has not written yet; a later write of a written cell still meets
+                # the overlap check below (B5 = 25000, then B5 = 60000 stays OVERLAPS_EARLIER_OP).
+                got = [e for e in got if (e.get("sheet"), e.get("cell")) in written or not O.unchanged_edit(e, current)]
                 # An op that would overwrite a cell an earlier op of the same answer wrote is a planning slip (for example
                 # a total placed on a copied row): it is refused and reported, never merged or moved.
                 hit = next((e for e in got if "cell" in e and (e["sheet"], e["cell"]) in written), None)

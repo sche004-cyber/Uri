@@ -182,3 +182,13 @@ def test_a_restatement_does_not_block_a_later_change_of_the_same_cell(session):
     r = o.instruct(wid, {"text": "Set Digitization to 25000", "active_sheet": "Budget"})
     assert r["refused"] == []
     assert [(c["cell"], c["after"]) for c in r["draft"]["changes"]] == [("B5", {"v": 25000})]
+
+
+def test_a_later_write_back_to_the_old_value_is_still_an_overlap(session):
+    """Codex R9-1: B5 = 25000, then B5 = 60000 (the original) in one answer is a planning slip, refused as before."""
+    o, wid, _ = session({"message": "Set B5.", "status": "propose", "ops": [
+        op(op="set_values", sheet="Budget", range="B5", values=[[25000]]),
+        op(op="set_values", sheet="Budget", range="B5", values=[[60000]])]})
+    r = o.instruct(wid, {"text": "Set Digitization to 25000", "active_sheet": "Budget"})
+    assert [x["code"] for x in r["refused"]] == ["OVERLAPS_EARLIER_OP"]
+    assert [(c["cell"], c["after"]) for c in r["draft"]["changes"]] == [("B5", {"v": 25000})]
