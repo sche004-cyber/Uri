@@ -120,8 +120,9 @@ candidate SHA is not a config field: it is the candidate worktree's HEAD when th
 
 Implement in the candidate worktree only (or give the task to a `claude_cli` implementer). Commit there. Run the
 targeted tests. Never edit the canonical checkout, protected paths, or other sessions' worktrees.
-One milestone has one branch, one worktree, one config and one `state_dir`; its findings, decisions and evidence
-stay in that milestone's records. Never cherry-pick, rebase, reset or merge another thread's branch into a
+One milestone has one branch and one worktree; each of its driver runs has its own config, milestone id and
+`state_dir` (a revision, see "Revision configs"). Its findings, decisions and evidence stay in that milestone's
+records. Never cherry-pick, rebase, reset or merge another thread's branch into a
 milestone, never run another thread's gates and never use its GPU reservation. A fix the milestone needs in shared
 tooling (for example the driver) is its own milestone with its own branch, review and integration; a milestone may
 be based on such a prerequisite milestone of the same thread only when its plan says so, and the two are integrated
