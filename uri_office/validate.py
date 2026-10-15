@@ -72,7 +72,9 @@ def sha256(p: Path) -> str:
 
 
 def _theme_fonts(z) -> dict:
-    """{"major": name, "minor": name} from the first theme part, for theme font references."""
+    """Theme fonts for theme references: {"major": latin, "minor": latin, "major_cs": .., "minor_cs": ..,
+    "major_ea": .., "minor_ea": .., "major_scripts": {script: name}, "minor_scripts": {...}} from the first theme
+    part. Empty typefaces are left out (Word then uses the per-script font for the text's language)."""
     for n in z.namelist():
         if n.lower().endswith(".xml") and "/theme/" in n.lower():
             try:
@@ -81,11 +83,23 @@ def _theme_fonts(z) -> dict:
                 continue
             out = {}
             for which in ("major", "minor"):
-                el = root.find(f".//{{{A_NS}}}{which}Font/{{{A_NS}}}latin")
-                if el is not None and el.get("typeface"):
-                    out[which] = el.get("typeface")
+                for tag, key in (("latin", which), ("cs", f"{which}_cs"), ("ea", f"{which}_ea")):
+                    el = root.find(f".//{{{A_NS}}}{which}Font/{{{A_NS}}}{tag}")
+                    if el is not None and el.get("typeface"):
+                        out[key] = el.get("typeface")
+                out[f"{which}_scripts"] = {el.get("script"): el.get("typeface")
+                                           for el in root.findall(f".//{{{A_NS}}}{which}Font/{{{A_NS}}}font")
+                                           if el.get("script") and el.get("typeface")}
             return out
     return {}
+
+
+# Language (w:lang w:bidi / w:eastAsia, primary subtag) -> theme script code, for theme fonts whose cs or ea typeface
+# is empty (review round 4 m6: Hindi text in a theme font was checked against the Latin theme font).
+_LANG_SCRIPT = {"hi": "Deva", "mr": "Deva", "ne": "Deva", "sa": "Deva", "kok": "Deva", "bn": "Beng", "as": "Beng",
+                "ta": "Taml", "te": "Telu", "gu": "Gujr", "pa": "Guru", "kn": "Knda", "ml": "Mlym", "or": "Orya",
+                "ar": "Arab", "ur": "Arab", "fa": "Arab", "he": "Hebr", "th": "Thai", "ja": "Jpan", "zh": "Hans",
+                "ko": "Hang"}
 
 
 def _word_used_fonts(z) -> set:
@@ -95,6 +109,27 @@ def _word_used_fonts(z) -> set:
     not available" and "Courier was not available" for fonts it never used)."""
     w = f"{{{W_NS}}}"
     theme = _theme_fonts(z)
+    langs = {"cs": set(), "ea": set()}                 # languages the document marks for complex and East Asian text
+    for n in z.namelist():
+        low = n.lower()
+        if low.startswith("word/") and low.endswith(".xml"):
+            try:
+                for el in etree.fromstring(z.read(n), _PARSER).iter(f"{w}lang"):
+                    for attr, key in (("bidi", "cs"), ("eastAsia", "ea")):
+                        v = el.get(f"{w}{attr}")
+                        if v:
+                            langs[key].add(v.split("-")[0].lower())
+            except etree.XMLSyntaxError:
+                continue
+
+    def theme_font(which: str, kind: str) -> set:
+        if kind == "latin":
+            return {theme[which]} if theme.get(which) else set()
+        named = theme.get(f"{which}_{kind}")
+        if named:
+            return {named}
+        scripts = theme.get(f"{which}_scripts", {})
+        return {scripts[_LANG_SCRIPT[lg]] for lg in langs[kind] if _LANG_SCRIPT.get(lg) in scripts}
 
     def fonts_of(rfonts) -> set:
         out = set()
@@ -104,12 +139,10 @@ def _word_used_fonts(z) -> set:
             v = rfonts.get(f"{w}{a}")
             if v:
                 out.add(v)
-        for a in ("asciiTheme", "hAnsiTheme", "eastAsiaTheme", "cstheme"):
+        for a, kind in (("asciiTheme", "latin"), ("hAnsiTheme", "latin"), ("eastAsiaTheme", "ea"), ("cstheme", "cs")):
             v = rfonts.get(f"{w}{a}") or ""
-            if v.startswith("major") and theme.get("major"):
-                out.add(theme["major"])
-            elif v.startswith("minor") and theme.get("minor"):
-                out.add(theme["minor"])
+            if v.startswith(("major", "minor")):
+                out |= theme_font(v[:5], kind)
         return out
 
     used_styles, names = set(), set()

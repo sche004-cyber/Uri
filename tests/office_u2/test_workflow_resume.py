@@ -386,3 +386,33 @@ def test_repair_interface_has_no_rules_in_o2_and_keeps_findings():
     fs.add("blank_page", "visual", "warning", "Page 1 is blank.", page=1)
     changes, remaining = V.repair(fs)
     assert changes == [] and len(remaining) == 1 and V.REPAIR_RULES == {}
+
+
+def test_hindi_text_in_a_theme_font_resolves_to_the_theme_script_font(tmp_path):
+    """Review round 4 m6: a run with w:cstheme="minorBidi" and Hindi marked as its complex-script language uses the
+    theme's Devanagari font (empty <a:cs>, <a:font script="Deva">), not the theme's Latin font."""
+    import re
+    import zipfile
+    import docx
+    src = tmp_path / "hi.docx"
+    d = docx.Document()
+    d.add_paragraph().add_run("नमस्ते")
+    d.save(src)
+    with zipfile.ZipFile(src) as z:
+        parts = {n: z.read(n) for n in z.namelist()}
+    theme = next(n for n in parts if "/theme/" in n)
+    t = parts[theme].decode()
+    t = re.sub(r"(<a:minorFont>.*?<a:cs typeface=)\"[^\"]*\"", r'\1""', t, count=1, flags=re.S)
+    t = t.replace("<a:minorFont>", '<a:minorFont><a:font script="Deva" typeface="URI Test Devanagari"/>', 1) \
+        if 'script="Deva"' not in t.split("<a:minorFont>", 1)[1].split("</a:minorFont>", 1)[0] else \
+        re.sub(r'(<a:minorFont>.*?<a:font script="Deva" typeface=)"[^"]*"', r'\1"URI Test Devanagari"', t, count=1,
+               flags=re.S)
+    parts[theme] = t.encode()
+    doc = parts["word/document.xml"].decode()
+    doc = doc.replace("<w:r>", '<w:r><w:rPr><w:rFonts w:cstheme="minorBidi"/><w:lang w:bidi="hi-IN"/></w:rPr>', 1)
+    parts["word/document.xml"] = doc.encode()
+    with zipfile.ZipFile(src, "w", zipfile.ZIP_DEFLATED) as z:
+        for n, b in parts.items():
+            z.writestr(n, b)
+    fonts = V.source_fonts(src, "docx")
+    assert "URI Test Devanagari" in fonts
