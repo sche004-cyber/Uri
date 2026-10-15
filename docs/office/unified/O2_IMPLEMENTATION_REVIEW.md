@@ -50,3 +50,41 @@ probes (each now cleaned, `removed={'field': 1}`); and one further case through 
 **Status:** WS-A backend accepted at exact commit `c974a655` (ACCEPT WITH FINDINGS, no open blocker or major). The
 contract `o2.1` is the interface O2P builds on (A5 freeze condition: contract tests pass and independent review
 accepts).
+
+## Round 3: Flutter B1 workspace, O2P printing and live-run repairs at `63e0e73f` (2026-10-15)
+
+**Verdict: REVISE (narrow)**, 2 major in the opt-in print path, no blocker. Reviewer ran: `tests/office_u2 tests/devices`
+not engine 179 passed (incl. the real Microsoft Print to PDF job); `tests/office tests/a2ui` 483 passed, 5 skipped;
+`flutter test` 587 passed, 5 skipped; engine subset (canaries, chart, hardened profile) 8 passed; `Get-PrintJob` 0 jobs;
+tallied the live JSON (run 7: 36 PASS, 4 NOT VERIFIED, 0 FAIL; UI run 2: 17 steps) against the README. It diffed the
+extracted sheet companion against the removed code: textually identical.
+
+| # | Severity | Finding | Disposition |
+|---|---|---|---|
+| M1 | major | OneNote (`nul:`) and fax queues offered; printing to them opens another program's window | **Repaired.** Devices carry `supported` / `unsupported_reason`; `nul:`, `NEnn:`, `XPSPORT:`, fax ports or drivers, and `PORTPROMPT:` queues that are not PDF writers are listed as "not used by URI" and refused with `PRINTER_NOT_SUPPORTED`; they do not count as physical printers. Test `test_queue_that_opens_another_program_is_refused`. |
+| M2 | major | "Fit to page" fitted inside default 1-inch margins (pages at about 76 %), and the card did not say so | **Repaired.** Fit uses the printable area (rotated for landscape). Measured on the same page: leftmost ink 0.21 of the width with the old worker, 0.118 with the new (expected 0.118) — `o2p_s11_20261015/s11_rerun_result.json`; PR-5 test now asserts it. |
+| m1 | minor | Cancel races; a cancel during printing did not stop the worker | **Repaired.** The runner takes the job lock at start; a cancel while printing sets the flag and closes the worker's Job Object; the runner finishes as `cancelled` and deletes any spooled job by its token. |
+| m2 | minor | Print error codes missing from the catalogue; `status` could return 500 | **Repaired.** 10 print codes with messages and recovery (`check_printers`, `choose_printer`) in `contracts.ERRORS` and the Dart table; `find_job` errors become "status unavailable". |
+| m3 | minor | Invalid page range silently became "all"; totals and thumbnails from the wrong PDF for a task output | **Repaired.** Totals come from the PDF being printed; an invalid range is never sent (buttons disabled); task-output thumbnails come from the output PDF. |
+| m4 | minor | `uri office <view>` from a document/task/sheet view did not move the centre | **Repaired**, test added (from a document view). |
+| m5 | minor | Absolute blank rule missed "page number only" pages | **Repaired.** Ink in the top 5 % and bottom 8 % bands is ignored; tests for both cases. |
+| m6 | minor | Used-fonts logic missed bullets and East Asian / complex-script theme references | **Partly repaired** (`numbering.xml`, `eastAsia`, `eastAsiaTheme`, `cstheme`). Theme script fonts (e.g. Deva) still not resolved; false negatives only. |
+| m7 | minor | Device descriptors described as used by the routes; two copies could drift | **Repaired** (docstring corrected; test keeps effects, approval and inputs in agreement). |
+| m8 | minor | Evidence statements not backed by recorded data | **Repaired** with corrections: `Get-PrintJob` is now recorded by `s11_rerun.py` (0 jobs); the chart comparison is recorded (`chart_disableactivecontent_check.json`); "no dialog" is labelled inferred; S11's first-run claims corrected. A1's GPU statement gets a correction note on the planning branch. |
+| m9 | minor | Print worker GPU use not measured | **Measured:** 53 MB at 300 dpi, 146 MB at 600 dpi dedicated GPU memory while printing, engine ≤ 2 %; released when the job's process exits. Added to the owner GPU decision. |
+| n1 | note | Hardened profile alone covered DOCX only | **Added** unsanitized PPTX and XLSX canaries under the profile alone: 0 connections. |
+| n4 | note | Workspace polls every 700 ms for the session | Accepted for O2 (cheap); recorded. |
+
+**Found while repairing (author):**
+- The first attempt to re-check the chart cause appended `DisableActiveContent` at the end of the profile; LibreOffice
+  dropped it silently, so that attempt showed nothing. With the exact profile of `c974a655` the setting is applied
+  and charts break (single-slide and deck); without it both render (`chart_disableactivecontent_check.json`).
+- That led to checking every hardened setting: **4 of 20 were not in effect.** The FTP proxy keys and
+  `CollectUsageInformation` do not exist in LibreOffice 26.8 (removed), and the update-check switch needed
+  `oor:type` (LibreOffice had reset it to `true`; headless never runs that job, and the proxy blocks it, but the
+  claim "update checks disabled" was not true before this repair). Now 17 of 17 are in effect
+  (`hardened_profile_effective.json`) and engine test `test_every_hardened_setting_is_in_effect` guards it.
+
+After repair (author's runs): `tests/office_u2 tests/devices` not engine **182 passed**; `tests/office_u2 -m engine`
+(render engine file) **15 passed**; `tests/office tests/a2ui` **483 passed, 5 skipped**; `flutter test` **587 passed,
+5 skipped**.

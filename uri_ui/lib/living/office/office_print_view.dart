@@ -32,8 +32,8 @@ class _OfficePrintViewState extends State<OfficePrintView> {
     final caps = (p?['capabilities'] as Map?)?.cast<String, dynamic>() ?? const {};
     final papers = [for (final x in (caps['papers'] as List? ?? const [])) '${(x as Map)['name']}'];
     final s = c.printSettings;
-    final total = c.documents[c.activeDocument]?.pages ?? 0;
-    final pagesValid = c.printPages == 'all' || OfficeWorkspaceController.parsePages(c.printPages, total) != null;
+    final total = c.printTotalPages;
+    final pagesValid = c.printPagesValid;
     final job = c.printJobView;
     return ListView(key: const ValueKey('office-print'), padding: const EdgeInsets.all(UriSpace.md), children: [
       Text('Print', style: Theme.of(context).textTheme.titleLarge),
@@ -50,11 +50,13 @@ class _OfficePrintViewState extends State<OfficePrintView> {
             for (final pr in c.printers)
               DropdownMenuItem(
                 value: '${pr['id']}',
+                enabled: pr['supported'] != false,
                 child: Text(
                   '${pr['name']}${pr['is_default'] == true ? ' (default)' : ''}'
                   '${pr['connection'] == 'virtual' ? ' · virtual' : ''}'
                   '${pr['connection'] == 'network' ? ' · network' : ''}'
-                  '${pr['status'] == 'ready' ? '' : ' · ${pr['status']}'}${pr['new'] == true ? ' · New' : ''}',
+                  '${pr['status'] == 'ready' ? '' : ' · ${pr['status']}'}${pr['new'] == true ? ' · New' : ''}'
+                  '${pr['supported'] == false ? ' · not used by URI' : ''}',
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -174,12 +176,13 @@ class _OfficePrintViewState extends State<OfficePrintView> {
       SizedBox(
         height: 230,
         child: ListView(scrollDirection: Axis.horizontal, children: [
-          if (c.activeDocument != null)
-            for (final n in pages.take(12))
+          for (final n in pages.take(12))
               Padding(
                 padding: const EdgeInsets.all(6),
                 child: FutureBuilder(
-                  future: c.pageImage(c.activeDocument!, n, 160),
+                  future: c.printSource?['workflow_id'] != null
+                      ? c.outputPage('${c.printSource!['workflow_id']}', n, 160)
+                      : c.pageImage('${c.printSource?['document_id'] ?? c.activeDocument}', n, 160),
                   builder: (context, snap) => snap.data == null
                       ? const SizedBox(width: 160, child: Center(child: CircularProgressIndicator(strokeWidth: 2)))
                       : Image.memory(snap.data!, width: 160),
@@ -263,6 +266,7 @@ class OfficePrintersView extends StatelessWidget {
           leading: Icon(p['connection'] == 'virtual' ? Icons.picture_as_pdf_outlined : Icons.print_outlined),
           title: Text('${p['name']}', overflow: TextOverflow.ellipsis),
           subtitle: Text([
+            if (p['supported'] == false) '${p['unsupported_reason']}',
             '${p['connection']}',
             '${p['status']}',
             if (p['is_default'] == true) 'default',

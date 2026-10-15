@@ -39,6 +39,10 @@ BRIDGE_MEMORY = 512 * 2**20
 # main.xcd/onlineupdate.xcd schema on 2026-10-15:
 #   Writer Content/Update/Link: 0 always, 1 on request, 2 never.  Calc Content/Update/Link: 0 always, 1 never,
 #   2 on request.  Calc Formula/Load *RecalcMode: 0 always, 1 never, 2 prompt.
+# Checked on 2026-10-15 that every item below is in effect (it appears in the live profile after start-up; engine test
+# test_every_hardened_setting_is_in_effect). Removed then: the FTP proxy keys and Common/Misc/CollectUsageInformation,
+# which this LibreOffice version does not have (ignored), and the update-check item now carries its type (without it
+# LibreOffice silently reset it to true).
 # Not set: Common/Security/Scripting/DisableActiveContent. Added in review round 1, it was removed after the live run
 # of 2026-10-15 showed it stops LibreOffice drawing native charts (a chart slide printed as a broken-object icon).
 # What it guarded (DDE and active OLE) is removed from the render copy by the sanitizer and covered by the canaries.
@@ -52,18 +56,15 @@ HARDENED_XCU = """<?xml version="1.0" encoding="UTF-8"?>
 <item oor:path="/org.openoffice.Inet/Settings"><prop oor:name="ooInetHTTPProxyPort" oor:op="fuse"><value>9</value></prop></item>
 <item oor:path="/org.openoffice.Inet/Settings"><prop oor:name="ooInetHTTPSProxyName" oor:op="fuse"><value>127.0.0.1</value></prop></item>
 <item oor:path="/org.openoffice.Inet/Settings"><prop oor:name="ooInetHTTPSProxyPort" oor:op="fuse"><value>9</value></prop></item>
-<item oor:path="/org.openoffice.Inet/Settings"><prop oor:name="ooInetFTPProxyName" oor:op="fuse"><value>127.0.0.1</value></prop></item>
-<item oor:path="/org.openoffice.Inet/Settings"><prop oor:name="ooInetFTPProxyPort" oor:op="fuse"><value>9</value></prop></item>
 <item oor:path="/org.openoffice.Inet/Settings"><prop oor:name="ooInetNoProxy" oor:op="fuse"><value></value></prop></item>
 <item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="UseOpenCL" oor:op="fuse"><value>false</value></prop></item>
-<item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="CollectUsageInformation" oor:op="fuse"><value>false</value></prop></item>
 <item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="CrashReport" oor:op="fuse"><value>false</value></prop></item>
 <item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="ShowTipOfTheDay" oor:op="fuse"><value>false</value></prop></item>
 <item oor:path="/org.openoffice.Office.Writer/Content/Update"><prop oor:name="Link" oor:op="fuse"><value>2</value></prop></item>
 <item oor:path="/org.openoffice.Office.Calc/Content/Update"><prop oor:name="Link" oor:op="fuse"><value>1</value></prop></item>
 <item oor:path="/org.openoffice.Office.Calc/Formula/Load"><prop oor:name="OOXMLRecalcMode" oor:op="fuse"><value>1</value></prop></item>
 <item oor:path="/org.openoffice.Office.Calc/Formula/Load"><prop oor:name="ODFRecalcMode" oor:op="fuse"><value>1</value></prop></item>
-<item oor:path="/org.openoffice.Office.Jobs/Jobs/org.openoffice.Office.Jobs:Job['UpdateCheck']/Arguments"><prop oor:name="AutoCheckEnabled" oor:op="fuse"><value>false</value></prop></item>
+<item oor:path="/org.openoffice.Office.Jobs/Jobs/org.openoffice.Office.Jobs:Job['UpdateCheck']/Arguments"><prop oor:name="AutoCheckEnabled" oor:op="fuse" oor:type="xs:boolean"><value>false</value></prop></item>
 </oor:items>
 """
 

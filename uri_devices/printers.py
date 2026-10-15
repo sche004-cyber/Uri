@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import ctypes
 import os
+import re
 import time
 
 from .model import Device, device_id
@@ -39,6 +40,18 @@ def _status(attrs: int, status: int) -> tuple[str, str]:
     if status & (ST_BUSY | ST_PRINTING):
         return "busy", "The printer is busy."
     return "ready", ""
+
+
+def _support(port: str, driver: str, name: str) -> tuple:
+    """(supported, reason). A queue that would open another program's window is not offered for printing."""
+    p = (port or "").upper()
+    if p.startswith("SHRFAX") or "FAX" in (driver or "").upper():
+        return False, "This is a fax queue. Fax sending opens its own wizard, so URI does not print to it."
+    if p in ("NUL:", "XPSPORT:") or re.fullmatch(r"NE\d\d:", p):
+        return False, "This printer hands the pages to another program, which opens its own window."
+    if p == "PORTPROMPT:" and "PDF" not in (driver or "").upper() and "PDF" not in (name or "").upper():
+        return False, "This printer asks where to save in its own window."
+    return True, ""
 
 
 def _connection(port: str, attrs: int, server: str) -> str:
@@ -157,10 +170,11 @@ class PrinterProvider:
         out = []
         for p in self._enum():
             st, detail = _status(p["attributes"], p["status"])
+            ok, why = _support(p["port"], p.get("driver", ""), p["name"])
             d = Device(id=device_id("printer", p["name"]), kind="printer", name=p["name"],
                        connection=_connection(p["port"], p["attributes"], p["server"]),
                        is_default=(p["name"] == default), status=st, status_detail=detail, port=p["port"],
-                       server=p["server"])
+                       server=p["server"], supported=ok, unsupported_reason=why)
             out.append(d)
         if self.known is not None:
             self.known.mark(out)

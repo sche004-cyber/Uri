@@ -10,7 +10,7 @@ looks at page images it rendered itself. No finding carries document text.
 | pdf_risky_content    | structural  | error    | output contains JavaScript, launch, remote go-to, non-web links or attachments |
 | placeholders         | structural  | error    | «…», {{…}}, [NAME] tokens left in an output |
 | page_count           | render      | error    | PPTX: pages == slides; DOCX: pages == preview pages (same engine: consistency, not fidelity) |
-| blank_page           | visual      | warning  | fewer than 20 ink pixels on the 440 px page image |
+| blank_page           | visual      | warning  | fewer than 20 ink pixels outside the header and footer bands (440 px image) |
 | text_outside_page    | visual      | warning  | pypdf span origins left of, below or above the page box |
 | edge_ink_right       | visual      | warning  | ink within 2 mm of the right edge (weak: cannot tell text from graphics) |
 | font_substitution    | visual      | warning  | a font named in the source is not in the PDF |
@@ -100,11 +100,11 @@ def _word_used_fonts(z) -> set:
         out = set()
         if rfonts is None:
             return out
-        for a in ("ascii", "hAnsi", "cs"):
+        for a in ("ascii", "hAnsi", "cs", "eastAsia"):
             v = rfonts.get(f"{w}{a}")
             if v:
                 out.add(v)
-        for a in ("asciiTheme", "hAnsiTheme"):
+        for a in ("asciiTheme", "hAnsiTheme", "eastAsiaTheme", "cstheme"):
             v = rfonts.get(f"{w}{a}") or ""
             if v.startswith("major") and theme.get("major"):
                 out.add(theme["major"])
@@ -116,7 +116,7 @@ def _word_used_fonts(z) -> set:
     for n in z.namelist():
         low = n.lower()
         if not (low.startswith("word/") and low.endswith(".xml") and
-                any(k in low for k in ("document", "header", "footer", "footnotes", "endnotes"))):
+                any(k in low for k in ("document", "header", "footer", "footnotes", "endnotes", "numbering"))):
             continue
         try:
             root = etree.fromstring(z.read(n), _PARSER)
@@ -199,7 +199,7 @@ def _norm_font(n: str) -> str:
 
 
 def ink_stats(png: Path, edge_px: int) -> tuple:
-    """(coverage fraction, ink pixels in the right `edge_px` columns, ink pixels) of a page image."""
+    """(coverage fraction, ink pixels in the right `edge_px` columns, body ink pixels) of a page image."""
     from PIL import Image
     with Image.open(png) as im:
         g = im.convert("L")
@@ -207,7 +207,10 @@ def ink_stats(png: Path, edge_px: int) -> tuple:
         mask = g.point(lambda v: 255 if v < INK_THRESHOLD else 0)
         ink = mask.histogram()[255]
         edge_hist = mask.crop((max(0, w - edge_px), 0, w, h)).histogram()
-        return ink / float(w * h or 1), edge_hist[255], ink
+        # Body ink leaves out the top 5 % and bottom 8 % of the page, where headers, footers and page numbers sit
+        # (review round 3, m5: a page holding only a page number is still a blank page).
+        body = mask.crop((0, int(h * 0.05), w, int(h * 0.92))).histogram()[255]
+        return ink / float(w * h or 1), edge_hist[255], body
 
 
 class Validator:

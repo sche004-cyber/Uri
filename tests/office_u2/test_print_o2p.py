@@ -63,6 +63,15 @@ def count_bars(png: Path) -> int:
         return bars
 
 
+def ink_left_fraction(png: Path) -> float:
+    """Leftmost ink column as a fraction of the page width (fit-to-page check, review round 3 M2)."""
+    from PIL import Image
+    with Image.open(png) as im:
+        g = im.convert("L")
+        bbox = g.point(lambda v: 255 if v < 128 else 0).getbbox()
+        return bbox[0] / g.size[0]
+
+
 def call(port, token, method, path, body=None):
     c = http.client.HTTPConnection("127.0.0.1", port, timeout=120)
     c.request(method, path, body=json.dumps(body).encode() if body is not None else None,
@@ -111,6 +120,36 @@ def open_pdf(port, token, path):
     return did
 
 
+def test_queue_that_opens_another_program_is_refused(running, monkeypatch):
+    """Review round 3, M1: OneNote (nul:) and fax queues open their own windows; URI lists them but never prints."""
+    office, port, token, root = running
+    from uri_devices import printers as P
+    rows = [{"name": "OneNote (Desktop)", "port": "nul:", "server": "", "driver": "Send to Microsoft OneNote 16 Driver",
+             "attributes": 0, "status": 0, "jobs": 0},
+            {"name": "Fax", "port": "SHRFAX:", "server": "", "driver": "Microsoft Shared Fax Driver", "attributes": 0,
+             "status": 0, "jobs": 0}]
+    pr = office.printing
+    pr.provider = P.PrinterProvider(enum=lambda: rows, default=lambda: "Fax",
+                                    caps=lambda n, p: {"papers": [{"id": 9, "name": "A4"}], "max_copies": 1})
+    listing = pr.printers()
+    assert [p["supported"] for p in listing["printers"]] == [False, False] and listing["physical"] is False
+    did = open_pdf(port, token, bars_pdf(root / "x.pdf", 1))
+    for p in listing["printers"]:
+        st, r = call(port, token, "POST", "/print/propose", {"source": {"document_id": did}, "printer_id": p["id"],
+                                                             "settings": {"paper": "A4"}})
+        assert st == 409 and r["error"] == "PRINTER_NOT_SUPPORTED" and "message" in r
+
+
+def test_device_descriptor_agrees_with_office_registry():
+    """Review round 3, m7: one meaning for printing in both descriptor sets."""
+    from uri_devices import capability as DC
+    from uri_office import capabilities as CAP
+    office = CAP.get("print_document")
+    dev = DC.get("print_document")
+    assert office["effects"] == dev["effects"] and office["approval"] == dev["approval"]
+    assert set(dev["inputs"]) <= set(office["inputs"])
+
+
 def test_printing_is_planned_until_enabled(tmp_path):
     office, srv, token = svc(tmp_path, printing=False)
     try:
@@ -155,7 +194,7 @@ def test_card_binding_offline_and_no_print_without_approval(running, monkeypatch
     fake = FakeProvider()
     pr.provider = fake
     submitted = []
-    monkeypatch.setattr(pr, "_run_worker", lambda req, timeout, on_line=None: (
+    monkeypatch.setattr(pr, "_run_worker", lambda req, timeout, on_line=None, holder=None: (
         submitted.append(req) or ([{"ok": True, "pages": 1}] if req["op"] == "print" else
                                   [{"ok": True, "printable_mm": [4, 4, 202, 289], "paper_mm": [210, 297]}])))
     body = {"source": {"document_id": did}, "printer_id": fake.d.id, "pages": [2],
@@ -241,6 +280,10 @@ def test_virtual_printer_job_writes_the_approved_pages(running):
     rr = office.hub.raster_request("render", pdf=str(png_dir / "printed.pdf"), out_dir=str(png_dir), pages=[1],
                                    width=440)
     assert count_bars(png_dir / rr["rendered"][0]["file"]) == 2
+    # Fit to page uses the printable area (Microsoft Print to PDF: the whole A4 page), not 1-inch margins: the first
+    # bar starts at 72/612 of a Letter page, scaled to A4 -> about 0.118 of the width (1-inch margins gave about 0.21).
+    left = ink_left_fraction(png_dir / rr["rendered"][0]["file"])
+    assert 0.09 < left < 0.15, left
     # a second job to the same file is refused: an existing file is never replaced
     st, r = call(port, token, "POST", "/print/propose", body)
     assert st == 409 and r["error"] == "DESTINATION_EXISTS"

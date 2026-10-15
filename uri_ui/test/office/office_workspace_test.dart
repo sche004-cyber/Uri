@@ -199,7 +199,7 @@ void main() {
   });
 
   testWidgets('U9: OfficeView commands move the view and Back returns within Office', (tester) async {
-    final pc = UiPresentationController();
+    final pc = UiPresentationController(commandCooldown: Duration.zero);
     SharedPreferences.setMockInitialValues({});
     await tester.binding.setSurfaceSize(const Size(1440, 900));
     final fake = FakeOffice();
@@ -215,6 +215,12 @@ void main() {
     expect(c.view, OfficeView.pdfs);
     expect(pc.history, [UiPresentationMode.companion]);  // mode history holds the mode change only, no Office views
     expect((parseLocalUiCommand('uri documents') as ShowModeCommand).focus, WorkspaceFocus.documents);
+    // review round 3, m4: a command moves the centre from a document view too
+    await c.openDocumentPath(r'C:\Users\me\order.docx');
+    expect(c.centre, OfficeCentre.document);
+    expect(pc.apply(parseLocalUiCommand('uri office presentations')!), isTrue);
+    expect(c.view, OfficeView.presentations);
+    expect(c.centre, OfficeCentre.list);
     c.dispose();
     pc.dispose();
   });

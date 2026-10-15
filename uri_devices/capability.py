@@ -1,8 +1,9 @@
 """Reusable, transport-free capability descriptors for devices (owner OD-U12, contract §7).
 
-The Office service's routes call these today. A later registration with the Brain and wider orchestration would wrap
-the same descriptors (for example as a Core external-capability descriptor that calls the Office service) without a
-redesign. That registration touches frozen Core and needs separate owner authorization; nothing here registers.
+Today the Office service's printing routes implement these; the Office capability registry entry `print_document`
+(`uri_office/capabilities.py`) is the one the UI reads, and a test keeps the two in agreement (effects, approval,
+inputs). A later registration with the Brain and wider orchestration would wrap these descriptors (for example as a
+Core external-capability descriptor that calls the Office service) without a redesign. That registration touches frozen Core and needs separate owner authorization; nothing here registers.
 `effects` and `approval` use the same closed vocabularies as the Office capability registry.
 """
 from __future__ import annotations

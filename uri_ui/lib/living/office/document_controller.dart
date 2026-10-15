@@ -41,6 +41,16 @@ const officeErrorText = <String, String>{
   'WRITE_FAILED': 'The file could not be written. Nothing was left half-written.',
   'DISK_FULL': 'The disk is full. Nothing was saved.',
   'INTERRUPTED': 'This task was interrupted.',
+  'UNKNOWN_PRINTER': 'That printer is no longer installed.',
+  'PRINTER_NOT_SUPPORTED': 'URI cannot print to this printer without opening another program.',
+  'PRINTER_UNAVAILABLE': 'The printer is not ready (offline, out of paper or needing attention).',
+  'SETTING_NOT_SUPPORTED': 'The printer cannot do one of the chosen settings.',
+  'PRINT_TOO_LARGE': 'Print fewer pages at a time.',
+  'UNKNOWN_PRINT_JOB': 'That print job no longer exists.',
+  'PRINT_TIMEOUT': 'Printing took too long and was stopped.',
+  'PRINT_FAILED': 'Printing failed. Nothing more will be sent.',
+  'PAPER_NOT_SUPPORTED': 'The printer does not have that paper size.',
+  'PRINTER_NOT_FOUND': 'Windows could not find that printer.',
 };
 
 String officeErrorMessage(Object e) {
@@ -120,6 +130,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     hub.registry['office.reject_change'] = _action;
     hub.registry['office.run_plan'] = _action;
     hub.registry['office.discard_plan'] = _action;
+    _lastView = presentation?.officeView;
     presentation?.addListener(_onPresentation);
   }
 
@@ -255,9 +266,14 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     _notify();
   }
 
+  OfficeView? _lastView;
+
   void _onPresentation() {
     final v = presentation!.officeView;
-    if (centre == OfficeCentre.home || centre == OfficeCentre.list) {
+    // Review round 3, m4: a new Office view (a command such as "uri office pdfs", or Back) moves the centre from
+    // any view, not only from Home and the lists.
+    if (v != _lastView) {
+      _lastView = v;
       centre = v == OfficeView.home ? OfficeCentre.home : OfficeCentre.list;
     }
     _notify();
@@ -665,9 +681,9 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       final r = refresh ? await client.refreshPrinters() : await client.printers();
       printers = [for (final p in (r['printers'] as List? ?? const [])) (p as Map).cast<String, dynamic>()];
       physicalPrinter = r['physical'] == true;
-      if (printerId == null || selectedPrinter == null) {
-        printerId = (printers.where((p) => p['is_default'] == true).firstOrNull ?? printers.firstOrNull)?['id']
-            as String?;
+      if (printerId == null || selectedPrinter == null || selectedPrinter!['supported'] == false) {
+        final usable = printers.where((p) => p['supported'] != false);
+        printerId = (usable.where((p) => p['is_default'] == true).firstOrNull ?? usable.firstOrNull)?['id'] as String?;
       }
       if (printerId != null) {
         final full = await client.printer(printerId!);
@@ -720,13 +736,24 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     return out.isEmpty ? null : (out.toList()..sort());
   }
 
+  /// Pages of the PDF being printed: the task's output or the open document (review round 3, m3).
+  int get printTotalPages {
+    final s = printSource;
+    if (s != null && s['workflow_id'] != null) {
+      return ((workflowView?['outputs'] as List?)?.firstOrNull as Map?)?['pages'] as int? ?? 0;
+    }
+    return documents[s?['document_id'] ?? activeDocument]?.pages ?? 0;
+  }
+
+  bool get printPagesValid => printPages == 'all' || parsePages(printPages, printTotalPages) != null;
+
   Map<String, dynamic> _printBody({String? outputPath}) {
-    final total = documents[activeDocument]?.pages ?? 2000;
-    final pages = parsePages(printPages, total);
+    final pages = parsePages(printPages, printTotalPages);
+    if (pages == null) throw StateError('invalid page range');      // the buttons are disabled before this
     return {
       'source': printSource,
       'printer_id': printerId,
-      'pages': pages ?? 'all',
+      'pages': pages,
       'settings': printSettings,
       'output_path': ?outputPath,
     };

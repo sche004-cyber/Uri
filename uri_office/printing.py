@@ -88,7 +88,7 @@ class Printing:
     def printers(self) -> dict:
         devs = self.provider.list()
         return {"printers": [d.view() for d in devs],
-                "physical": any(d.connection in ("usb", "network", "unknown") for d in devs)}
+                "physical": any(d.connection in ("usb", "network", "unknown") and d.supported for d in devs)}
 
     def printer(self, did: str) -> dict:
         d = self.provider.get(did)
@@ -102,6 +102,8 @@ class Printing:
         d = self.provider.get(body.get("printer_id") or "")
         if d is None:
             raise OfficeError("UNKNOWN_PRINTER", "", 404)
+        if not getattr(d, "supported", True):
+            raise OfficeError("PRINTER_NOT_SUPPORTED", d.unsupported_reason, 409)
         caps = self.provider.capabilities(d.id)
         st, detail = self.provider.status(d.id)
         s = body.get("settings") or {}
@@ -232,9 +234,12 @@ class Printing:
             self._cleanup(job)
 
     # ---- the print worker ------------------------------------------------------------------------------------------
-    def _run_worker(self, req: dict, timeout: float, on_line=None) -> list:
+    def _run_worker(self, req: dict, timeout: float, on_line=None, holder=None) -> list:
+        """`holder` (a PrintJob) gets the worker's Job Object, so a cancel can kill the worker (review round 3, m1)."""
         copy = E.run_copy("print_job.ps1", self.state)
         job = J.Job(memory_limit=PRINT_MEMORY)
+        if holder is not None:
+            holder.worker_job = job
         lines: list = []
         try:
             p = J.spawn([powershell_exe(), "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File",
@@ -293,13 +298,15 @@ class Printing:
 
     def _print(self, job: PrintJob):
         r = job.record
-        if job.cancel.is_set():
-            r["state"] = "cancelled"
+        with job.lock:                                   # a cancel cannot slip between the check and the start
+            if job.cancel.is_set() or r["state"] != "queued":
+                if r["state"] == "queued":
+                    r["state"] = "cancelled"
+                    job.save()
+                return
+            r["state"] = "printing"
+            r["document_name"] = f"URI Office {job.token}"
             job.save()
-            return
-        r["state"] = "printing"
-        r["document_name"] = f"URI Office {job.token}"
-        job.save()
         s = r["settings"]
         req = {"op": "print", "pdf": str(job.folder / "print.pdf"), "pages": r["pages"], "printer": r["printer"],
                "document_name": r["document_name"], "copies": s["copies"], "collate": s["collate"],
@@ -311,8 +318,16 @@ class Printing:
                 if obj.get("event") == "page":
                     r["events"].append({"page": obj["n"], "at": time.time()})
                     job.save()
-        lines = self._run_worker(req, JOB_TIMEOUT, on_line)
+        lines = self._run_worker(req, JOB_TIMEOUT, on_line, holder=job)
         last = lines[-1] if lines else {}
+        if job.cancel.is_set():
+            with job.lock:
+                r["state"] = "cancelled"
+                if r.get("document_name"):
+                    r["cancel_result"] = "deleted" if P.cancel_job(r["printer"], r["document_name"]) else \
+                        "stopped_before_spooler"
+                job.save()
+            return
         if not last.get("ok"):
             raise OfficeError(last.get("error") or "PRINT_FAILED", "", 500)
         r["worker"] = {k: last.get(k) for k in ("pages", "ms", "peak_ws_mb")}
@@ -350,7 +365,10 @@ class Printing:
         job = self.get(token)
         v = job.view()
         if job.record.get("document_name") and job.record["state"] in ("printing", "sent"):
-            v["spooler_now"] = P.find_job(job.record["printer"], job.record["document_name"])
+            try:
+                v["spooler_now"] = P.find_job(job.record["printer"], job.record["document_name"])
+            except OSError:
+                v["spooler_now"] = None                  # the printer went away: status unavailable, not an error
         return v
 
     def cancel(self, token: str) -> dict:
@@ -363,8 +381,18 @@ class Printing:
                 job.record["state"] = "cancelled"
                 job.save()
                 self._cleanup(job)
-            elif st in ("printing", "sent", "printer_problem") and job.record.get("document_name"):
-                ok = P.cancel_job(job.record["printer"], job.record["document_name"])
+            elif st == "printing":
+                job.cancel.set()                         # the runner finishes the cancel when the worker stops
+                wj = getattr(job, "worker_job", None)
+                if wj is not None:
+                    wj.close()                           # kills the print worker and anything it started
+                job.record["cancel_requested"] = True
+                job.save()
+            elif st in ("sent", "printer_problem") and job.record.get("document_name"):
+                try:
+                    ok = P.cancel_job(job.record["printer"], job.record["document_name"])
+                except OSError:
+                    ok = False
                 job.record["state"] = "cancelled" if ok else job.record["state"]
                 job.record["cancel_result"] = "deleted" if ok else "not_in_queue"
                 job.save()

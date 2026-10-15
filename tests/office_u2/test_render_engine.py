@@ -149,6 +149,22 @@ def test_hardened_profile_alone_blocks_unsanitized_canaries(lo, tmp_path):
     assert can.hits == [] and census.smb == set(), (can.hits, census.smb)
 
 
+@pytest.mark.parametrize("kind,maker", [("pptx", CN.pptx_canary), ("xlsx", CN.xlsx_canary)])
+def test_hardened_profile_alone_blocks_unsanitized_pptx_and_xlsx(lo, tmp_path, kind, maker):
+    """Review round 3, n1: what the hardened profile alone does for PPTX and XLSX canaries (the sanitizer is the
+    first layer; this states the second layer exactly)."""
+    can = Canary()
+    census = Census(lo.pids)
+    try:
+        src = maker(tmp_path / f"raw.{kind}", can.base)
+        _convert(lo, src, kind, sanitize=False)
+        time.sleep(1.0)
+    finally:
+        census.stop()
+        can.close()
+    assert can.hits == [] and census.smb == set(), (can.hits, census.smb)
+
+
 def test_positive_control_default_profile_does_fetch(tmp_path, integrity, monkeypatch):
     """Without the hardened profile and without the sanitizer, LibreOffice fetches the canary. This proves the canary
     server can see a fetch, so the zero results above are meaningful."""
@@ -324,3 +340,19 @@ def test_native_chart_is_drawn(lo, tmp_path):
     out = _convert(lo, p, "pptx")
     text = pypdf.PdfReader(str(out)).pages[0].extract_text() or ""
     assert "Junexample" in text and "Julyexample" in text, text
+
+
+def test_every_hardened_setting_is_in_effect(lo, tmp_path):
+    """Review round 3 follow-up: LibreOffice silently drops profile items it does not know or cannot type. Every
+    seeded hardening item must appear in the live profile after start-up."""
+    import re
+    import docx
+    p = tmp_path / "a.docx"
+    docx.Document().save(p)
+    _convert(lo, p, "docx")
+    reg = (lo.profile / "user" / "registrymodifications.xcu").read_text(encoding="utf-8", errors="replace")
+    rx = r'oor:path="([^"]+)"><prop oor:name="([^"]+)" oor:op="fuse"(?: oor:type="[^"]+")?><value>([^<]*)</value>'
+    want = re.findall(rx, R.HARDENED_XCU)
+    got = set(re.findall(rx, reg))
+    assert len(want) >= 16
+    assert [w for w in want if w not in got] == []

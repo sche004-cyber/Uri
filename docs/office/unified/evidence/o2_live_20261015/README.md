@@ -12,7 +12,7 @@ Run by Claude. **This is not the owner's check.** The owner rows (E, K2) stay BL
 All documents are synthetic (`fixtures.py`): an official letter with letterhead, a 41-row office order, a notice and
 corrigendum pair, a memorandum, minutes, a bilingual English and Hindi letter, a 20-page report, an 11-slide deck with a
 native chart, a budget workbook with a print area, a 60-page tender PDF, a scanned PDF (image only), hostile PDFs and
-the F1 canary files. The virtual-printer folder was emptied after each run (OD-U13); `Get-PrintJob` showed no job left.
+the F1 canary files. The virtual-printer folder was emptied after each run (OD-U13; recorded as `virtual_print_dir_empty`). Correction (review round 3, m8): `Get-PrintJob` was not run by this harness; it was checked by hand after S11, by the round-3 reviewer, and by `s11_rerun.py` (0 jobs).
 
 ## Final results (service run 7, UI run 2)
 
@@ -37,7 +37,7 @@ the F1 canary files. The virtual-printer folder was emptied after each run (OD-U
 | PR-2 capabilities read | PASS | 54 papers, no duplex, colour, 1 copy |
 | PR-3 print preview: exactly the chosen pages, printable area | PASS | |
 | PR-4 tampered and replayed print approvals refused | PASS | `BOUND_VALUE_MISMATCH`, `UNKNOWN_SURFACE` |
-| PR-5 virtual printer job (OD-U13) | PASS | 2 approved pages written, no dialog; **virtual only, not physical qualification** |
+| PR-5 virtual printer job (OD-U13) | PASS | 2 approved pages written; "no dialog" is inferred from the job completing unattended; **virtual only, not physical qualification**. The fit-to-page scale was wrong in this run (1-inch margins; review round 3 M2), repaired and measured in `o2p_s11_20261015` re-run |
 | PR-5b same output file refused | PASS | |
 | PR-6 physical print, PR-7 physical progress and cancel, PR-8 real offline printer, PR-9 printer error | **NOT VERIFIED** | no physical printer on this PC; needs one and the owner's authorization |
 | F3 / AC-O2-5 / AC-O2-9 kill mid-run: no orphan, interrupted, resumed | PASS | 0 orphans; "interrupted at step 2"; resumed to ready |
@@ -56,12 +56,13 @@ with the existing Excel companion; the sheet kept after switching to a document 
 | L-1 | service run 2 | The 9th open document is refused (`TOO_MANY_OPEN`, limit 8). Product behaviour, not a crash; the harness never closed documents. | Harness closes documents it is done with. UX note for the owner: the limit is 8 open documents. |
 | L-2 | service run 3 | **Blank-page false positive:** a page with a two-line signature block (0.13 % ink) was called blank. | Rule changed to an absolute count (fewer than 20 ink pixels at 440 px); regression test. |
 | L-3 | service run 4 | P-6 check failed on "Digitization": the fixture's default column width clips the text, and the PDF reproduces the sheet as laid out. Fixture defect, not a conversion defect. | Fixture column widths set. UX note: clipped cell text prints clipped, as in Excel; no validation check exists for it. |
-| L-4 | service run 5 (visual inspection) | **The deck's native chart rendered as a broken-object icon.** Cause: `DisableActiveContent=true`, added to the hardened profile in review round 1. | Setting removed (verified: chart slide text 28 chars with it, 81 without); its protection is already in the sanitizer and canaries; engine regression test `test_native_chart_is_drawn`. |
+| L-4 | service run 5 (visual inspection) | **The deck's native chart rendered as a broken-object icon.** Cause: `DisableActiveContent=true`, added to the hardened profile in review round 1. | Setting removed. The 28-against-81 character comparison was an ad-hoc script whose output was not saved (review round 3, m8); the recorded evidence is `test_native_chart_is_drawn` (fails with the setting, passes without) and run 7's chart row. Its protection is in the sanitizer; unsanitized DOCX, PPTX and XLSX canaries under the hardened profile alone also make 0 connections (engine tests). |
 | L-5 | service run 5 (census) | **GPU:** the WinRT raster worker holds 30–41 MB of dedicated GPU memory while alive (engine use 0 %). The A1 probe (one PDF, fresh process) had measured 0. **AC-O2-16 "no GPU use" is not met as written.** | Idle PDF workers stop after 60 s: run 7 shows 40.6 MB while working and **0 after 70 s idle**. Owner decision needed (below). |
 | L-6 | UI run 1 | Conversation pane did not follow new lines; the clarification and the print card were off-screen. | The list follows the newest line or card. |
 | L-7 | UI run 1 | Composer said "Ask URI to change this sheet" on Home, documents and tasks. | Hint follows the view. |
 | L-8 | UI run 1 | A saved PDF did not appear under PDFs. | Saved outputs join the recent list. |
 | L-9 | UI run 1 / service run 6 | **Font-substitution false positives** (Calibri, Courier, Times) for fonts named only in unused styles or the theme. | Word fonts now come from the runs and the styles actually used (with basedOn), the default style and document defaults. |
+| L-11 | review round 3 | OneNote (port `nul:`) and fax queues were offered; printing to them opens another program's window. | Such queues are listed as "not used by URI" and refused (`PRINTER_NOT_SUPPORTED`). |
 | L-10 | UI run 1 | Sheet step failed: the harness did not point at the Univer page bundle (`URI_OFFICE_PAGE_DIR`). Setup only. | Harness sets it; UI run 2 passed the sheet steps. |
 
 ## Measurements (service run 7)

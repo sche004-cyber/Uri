@@ -105,11 +105,16 @@ try {
                 $w = $pg.Size.Width / 96.0 * 100; $h = $pg.Size.Height / 96.0 * 100
                 $e.Graphics.DrawImage($img, [single](-$e.PageSettings.HardMarginX), [single](-$e.PageSettings.HardMarginY), [single]$w, [single]$h)
             } else {
-                $area = $e.MarginBounds
-                $scale = [math]::Min($area.Width / $img.Width, $area.Height / $img.Height)
-                $w = $img.Width * $scale; $h = $img.Height * $scale
-                $x = $area.X + ($area.Width - $w) / 2 - $e.PageSettings.HardMarginX
-                $y = $area.Y + ($area.Height - $h) / 2 - $e.PageSettings.HardMarginY
+                # Fit to the printer's printable area, not to default 1-inch margins (review round 3, M2). The graphics
+                # origin is the printable area's top-left corner; PrintableArea is not rotated for landscape.
+                $pa = $e.PageSettings.PrintableArea
+                $pw = $pa.Width; $ph = $pa.Height
+                if ($e.PageSettings.Landscape) { $pw = $pa.Height; $ph = $pa.Width }
+                $iw = $pg.Size.Width; $ih = $pg.Size.Height
+                $scale = [math]::Min($pw / $iw, $ph / $ih)
+                $w = $iw * $scale; $h = $ih * $scale
+                $x = ($pw - $w) / 2
+                $y = ($ph - $h) / 2
                 $e.Graphics.DrawImage($img, [single]$x, [single]$y, [single]$w, [single]$h)
             }
         } finally { $img.Dispose(); $net.Dispose(); $stream.Dispose(); $pg.Dispose() }

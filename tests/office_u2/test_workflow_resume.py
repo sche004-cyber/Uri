@@ -370,6 +370,16 @@ def test_two_short_lines_are_not_a_blank_page(tmp_path):
     assert V.ink_stats(blank, 4)[2] == 0
 
 
+def test_page_with_only_a_page_number_is_blank(tmp_path):
+    """Review round 3, m5: ink only in the footer band (a page number) still counts as a blank page."""
+    from PIL import Image, ImageDraw
+    p = tmp_path / "num.png"
+    im = Image.new("RGB", (440, 568), "white")
+    ImageDraw.Draw(im).text((210, 545), "12", fill="black")
+    im.save(p)
+    assert V.ink_stats(p, 4)[2] < V.BLANK_MAX_INK_PIXELS
+
+
 def test_repair_interface_has_no_rules_in_o2_and_keeps_findings():
     from uri_office.contracts import Findings
     fs = Findings()

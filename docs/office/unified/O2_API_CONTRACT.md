@@ -174,6 +174,11 @@ Every code has a fixed message and a recovery action; the UI shows both. The ful
 | `CAPABILITY_PLANNED` | This is not available yet. | none |
 | `CLM_ACTIVE` | Windows security policy blocks the PDF renderer on this PC. | "Learn more" |
 
+O2P print codes (catalogued, review round 3): `UNKNOWN_PRINTER`, `PRINTER_NOT_SUPPORTED`, `PRINTER_UNAVAILABLE`,
+`SETTING_NOT_SUPPORTED`, `PRINT_TOO_LARGE`, `UNKNOWN_PRINT_JOB`, `PRINT_TIMEOUT`, `PRINT_FAILED`, `PAPER_NOT_SUPPORTED`,
+`PRINTER_NOT_FOUND`. A printer entry carries `supported` and `unsupported_reason` (queues that would open another
+program's window are listed but never printed to).
+
 Other codes the O2 routes return, without a catalogue entry because they need no owner action: `UNKNOWN_PAGE`
 (404), `CANCELLED` (a queued engine job dropped because its document or task closed), `NOT_FOUND`.
 

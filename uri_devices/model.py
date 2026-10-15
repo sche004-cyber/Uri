@@ -24,6 +24,10 @@ class Device:
     first_seen: float | None = None
     last_seen: float | None = None
     new: bool = False
+    # Review round 3, M1: some queues start another program when printed to (OneNote's location picker, the Fax
+    # wizard). URI prints only to queues that print silently: real ports, or a port that writes a file URI names.
+    supported: bool = True
+    unsupported_reason: str = ""
 
     def __post_init__(self):
         if self.kind not in KINDS or self.connection not in CONNECTIONS or self.status not in STATUSES:

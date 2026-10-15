@@ -88,10 +88,24 @@ ERRORS: dict[str, ErrorInfo] = {
     "DISK_FULL": ErrorInfo("The disk is full. Nothing was left half-written.", ("choose_location",)),
     "INTERRUPTED": ErrorInfo("This task was interrupted.", ("resume", "discard")),
     "BAD_REQUEST": ErrorInfo("The request was not understood.", ()),
+    # O2P printing (review round 3, m2)
+    "UNKNOWN_PRINTER": ErrorInfo("That printer is no longer installed.", ("check_printers",)),
+    "PRINTER_NOT_SUPPORTED": ErrorInfo("URI cannot print to this printer without opening another program.",
+                                       ("choose_printer",)),
+    "PRINTER_UNAVAILABLE": ErrorInfo("The printer is not ready (offline, out of paper or needing attention).",
+                                     ("check_printers", "choose_printer")),
+    "SETTING_NOT_SUPPORTED": ErrorInfo("The printer cannot do one of the chosen settings.", ("choose_printer",)),
+    "PRINT_TOO_LARGE": ErrorInfo("Print fewer pages at a time.", ()),
+    "UNKNOWN_PRINT_JOB": ErrorInfo("That print job no longer exists.", ()),
+    "PRINT_TIMEOUT": ErrorInfo("Printing took too long and was stopped.", ("retry",)),
+    "PRINT_FAILED": ErrorInfo("Printing failed. Nothing more will be sent.", ("retry", "check_printers")),
+    "PAPER_NOT_SUPPORTED": ErrorInfo("The printer does not have that paper size.", ("choose_printer",)),
+    "PRINTER_NOT_FOUND": ErrorInfo("Windows could not find that printer.", ("check_printers",)),
 }
 
 RECOVERY_ACTIONS = ("help_engine", "verify_engine", "retry", "open_other", "close_one", "choose_location", "open_again",
-                    "save", "discard", "choose_name", "show_findings", "start_again", "show_plan", "resume")
+                    "save", "discard", "choose_name", "show_findings", "start_again", "show_plan", "resume",
+                    "check_printers", "choose_printer")
 
 
 def error_view(code: str, detail: str = "") -> dict:
