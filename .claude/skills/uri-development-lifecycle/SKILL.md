@@ -1,13 +1,37 @@
 ---
 name: uri-development-lifecycle
-description: Default process for URI DEVELOPMENT milestones in this repository - new features, development milestones, significant bug fixes, security repairs, runtime changes, UI changes and multi-component integrations. Drives Plan -> Implement -> Test -> Independent Audit (separate Claude process) -> Repair -> Re-audit -> Qualify -> Integrate -> Receipt automatically, so the owner never has to ask for an audit or relay findings. Invoke as `/uri-development-lifecycle <milestone-id>`. Do NOT use for URI user conversations, URI runtime office or document tasks, or anything the URI Brain does at runtime; URI Office development milestones are in scope. For milestones it supersedes the older `uri-development` skill.
+description: Default process for URI DEVELOPMENT milestones in this repository - new features, development milestones, significant bug fixes, security repairs, runtime changes, UI changes and multi-component integrations. Drives Research -> Plan -> Implement -> Test -> Independent Audit (Codex first, else a separate Claude process) -> Repair -> Re-audit -> Live UI qualification on Windows with a UX and onboarding loop -> Final independent acceptance -> Integrate -> Receipt and qualification record automatically, so the owner never has to ask for an audit, a live test or relay findings. Invoke as `/uri-development-lifecycle <milestone-id>`. Do NOT use for URI user conversations, URI runtime office or document tasks, or anything the URI Brain does at runtime; URI Office development milestones are in scope. For milestones it supersedes the older `uri-development` skill.
 ---
 
 # uri-development-lifecycle
 
 The deterministic engine is `scripts/dev_workflow/lifecycle.py` (an extension of AO-4 `scripts/dev_workflow`).
 You — the coordinator — plan, configure, start it and report. You never review your own work and you never
-transcribe a verdict into ACCEPT. Reference: `docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md`.
+transcribe a verdict into ACCEPT. Reference: `docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md` (section 8 holds
+the UI-first live qualification rules in full).
+
+## The lifecycle (owner directive 2026-10-15, DEV-LIFECYCLE-3)
+
+One lifecycle; stages may iterate, and independent review runs throughout, not only at the end. No stage bypasses
+security, owner-approval, frozen-file, stop or repair rules.
+
+| # | Lifecycle stage | Where it happens (skill section) |
+|---|---|---|
+| 1 | Research and discovery | you, Stage 1 (inspect real code, services and earlier evidence first) |
+| 2 | Plan and acceptance criteria | you, Stage 1 — UI journey criteria included for user-facing work |
+| 3 | Owner approval where required | Stage 1 owner-only decisions; driver `OWNER_*` blocks |
+| 4 | Isolated implementation | Stage 2, candidate branch + worktree |
+| 5 | Automated functional testing | targeted tests (you) + driver gates |
+| 6 | Independent code and security audit | driver rounds (auditor selection below) |
+| 7 | Live end-to-end UI verification | you, Stage 8 below, on the Windows runtime |
+| 8 | UX and onboarding improvement | Stage 8 UX loop |
+| 9 | Live retest and regression | Stage 8 loop: driver revision run on the repaired SHA + live retest |
+| 10 | Final independent acceptance | final driver run on the SHA that holds the qualification record |
+| 11 | Controlled canonical integration | driver integration, only with owner authorisation |
+| 12 | Integration receipt and qualification record | driver receipt + UI qualification record |
+
+The skill's own section headings (Stage 1, Stage 2, Stages 3–7, Stage 8) are steps of this skill, not the
+lifecycle numbers in the first column.
 
 ## When it applies
 
@@ -15,7 +39,9 @@ transcribe a verdict into ACCEPT. Reference: `docs/dev_workflow/URI_DEVELOPMENT_
   multi-component integrations.
 - Lightweight path (no driver run): documentation-only changes with no code, test, config or governance-rule
   change. Still verify links and facts you assert, and say that the light path was used.
-- In scope: development milestones for any URI component, URI Office included.
+- In scope: development milestones for any URI component — URI Core integrations, URI Office, Web and Social
+  Intelligence, Browser Assistance, URI Companion, A2UI, Voice, Skills and Mods, Mission Control, Skill Command
+  Center, hardware integrations and every future module.
 - Never: user conversations, URI runtime office or document tasks (what URI does for a user at runtime), URI
   runtime skills (this skill is not in
   `uri_workspace/skill_registry.json` and must not be added there).
@@ -28,7 +54,11 @@ transcribe a verdict into ACCEPT. Reference: `docs/dev_workflow/URI_DEVELOPMENT_
    branch), then `git ls-remote <that remote> integration/git-sync-20261008`. Empty output, no matching remote or
    several matching remotes is BLOCKED, never "no baseline".
 2. Write the plan with acceptance criteria FIRST (CLAUDE.md Verification-First standard), e.g.
-   `docs/<area>/00_PLAN_AND_ACCEPTANCE_CRITERIA.md`.
+   `docs/<area>/00_PLAN_AND_ACCEPTANCE_CRITERIA.md`. Classify each capability: `USER_FACING` (has its own UI),
+   `INDIRECT` (no own UI; qualified through the user-facing workflow or consumer that exposes it) or `INTERNAL`
+   (pure infrastructure; say why there is no UI and how it is verified instead). For `USER_FACING` and `INDIRECT`
+   work the criteria include the UI journeys of reference section 8 (discover, navigate, operate, see progress,
+   recover from errors, inspect output, repeat), first-time and returning user.
 3. List owner-only decisions now (frozen-path changes, new dependencies, credentials, production, push rights).
    Do not start work that needs one; record it as a blocker.
 4. Create the milestone config from `docs/dev_workflow/lifecycle/TEMPLATE.json` → `docs/dev_workflow/lifecycle/<milestone>.json`:
@@ -36,7 +66,29 @@ transcribe a verdict into ACCEPT. Reference: `docs/dev_workflow/URI_DEVELOPMENT_
    candidate branch + worktree (outside the main checkout), criteria file, `review_focus`,
    `protected_paths` (`"ws_frozen_check"` = the frozen list), `permitted_paths`, gates, reviewer/implementer
    providers, limits, integration policy (`authorized: false` unless the owner granted it for this target).
-   Put `state_dir` OUTSIDE the candidate worktree.
+   Put `state_dir` OUTSIDE the candidate worktree. Keep the template's UX `review_focus` lines and its
+   `environment_notes` (auditor evidence classes) for user-facing work.
+5. Select the auditor now (section "Auditor selection"); a provider change after the first run is a config change
+   (BLOCKED CONFIG), so choose before it.
+
+## Auditor selection (owner directive 2026-10-15)
+
+1. **Primary: Codex** (`"reviewer": {"provider": "codex_cli", ...}`). Before the first run check that it can
+   really work: `codex --version`, `codex login status` ("Logged in"), and that one `codex` resolves on PATH (the driver's
+   `provider_available` and reviewer binding). Then confirm from the first round's record that the reviewer read
+   the exact candidate SHA (`candidate` in its result). An invocation that was only attempted is not an audit.
+2. **Fallback: a separate Claude process** (`"provider": "claude_cli"`; needs `claude auth status` loggedIn true).
+   Use it when Codex is missing, logged out, out of quota, cannot reach the repository or exact candidate commit,
+   or fails to finish. Record the fallback reason and the reviewer identity in the plan and the qualification
+   record. Do not retry a Codex failure that is already established for this run.
+3. **Outside-driver fallback**: if neither CLI can run, a separate Claude session (new thread, agent or cloud
+   session; read-only; no implementation or repair authority; given requirements, repository state, diff and
+   evidence — never the implementer's conclusion) may review. Record its result with `import-review`. It routes
+   findings to repair and counts as the stage-6 audit for reporting, but under owner decision D1 it does not by
+   itself allow VERIFIED or canonical integration; a driver-counted round still does.
+4. Nothing independent available ⇒ report `INDEPENDENT AUDIT: BLOCKED`. Never self-review instead.
+5. If Codex fails during a run (WAITING_FOR_MODEL), do not edit the bound config: start a fresh revision config
+   (`<milestone>-c`, same baseline, the current candidate SHA) with `claude_cli` and a full audit from round 1.
 
 ## Stage 2 — Implement
 
@@ -62,6 +114,50 @@ Run it in the background; it can take hours. It will, without you:
 
 Each stop also writes the visual report (see below). Exit codes: 0 COMPLETE/VERIFIED, 3 BLOCKED, 4 NOT_VERIFIED, 5 WAITING_FOR_MODEL (reviewer unavailable — never an
 ACCEPT). Re-running `run` resumes from `state.json`; it cannot skip a stage (evidence is bound to SHAs).
+Keep `integration.authorized: false` in these runs: for user-facing work driver VERIFIED is a source-code result,
+not phase qualification.
+
+## Stage 8 — Live UI qualification and UX loop (you, Windows runtime)
+
+Mandatory for `USER_FACING` and `INDIRECT` capabilities, after a driver VERIFIED (or ACCEPT WITH FINDINGS) round on
+the code commit. Full rules: reference section 8.
+
+1. Run the real journeys through the actual URI Windows app with the real Core and services (Brain, permissions,
+   approval cards and document/automation engines where they apply). Mock UI tests, widget tests, harness-only
+   calls and CLI runs support but never replace this. Drive the real app (a scripted run of the built app, or
+   computer use) and keep screenshots/recordings and logs.
+2. Check function and UX together: discoverability, visibility, usability, feedback (operation, progress,
+   success, failure, approval needed, recovery), functional gaps, consistency with Workspace, Companion, A2UI,
+   navigation, visual design and approval flows. Test a first-time user and a returning user.
+3. Classify each issue: `MATERIAL` (a user cannot discover, understand, complete or recover an essential
+   journey; or output is wrong) or `MINOR`. Repair material issues with the smallest effective change inside the
+   approved scope (no redesign, no feature growth, no frozen path without owner authorisation). Add onboarding
+   only where the live evidence shows it helps; it is minimal, contextual, dismissible, can be opened again and is
+   not repeated to returning users.
+4. Commit the repair, run the regressions, and re-audit it with a fresh driver revision config
+   (`<milestone>-u<n>`, same baseline, new candidate SHA). Then repeat the full live journey. Loop until no
+   material issue is left. A `MINOR` item may stay open only if the independent auditor confirms in writing that it
+   does not compromise an essential journey.
+5. Write the qualification record from `docs/dev_workflow/lifecycle/UI_QUALIFICATION_TEMPLATE.json` (JSON is
+   authoritative; any Markdown summary or dashboard is generated from it) bound to the exact code commit tested.
+   Status: PASS only when every mandatory journey has COMPLETED_WITH_RESULT live evidence on that commit; any
+   failed journey = FAIL; any mandatory journey not run = NOT VERIFIED or BLOCKED (with what is missing). Never
+   report a capability as qualified while a mandatory UI or live check is open.
+6. Final independent acceptance (lifecycle stage 10): commit the record (evidence-only commit: only evidence/record paths
+   may differ from the tested code commit) and run a final driver revision whose `review_focus` asks the auditor to
+   check the record against the code commit, the live evidence and the UX criteria.
+
+Purely `INTERNAL` work skips steps 1–4, uses integration and operational verification, and records why it has no
+UI in the plan and the record.
+
+## Verdicts
+
+Auditors and reports use: **ACCEPT** (criteria met with verified evidence), **ACCEPT WITH FINDINGS** (no blocking
+issue; non-blocking findings documented), **REVISE** (correctable issues; repair and re-review — the driver's
+REJECT that it routes to repair), **REJECT** (material failure invalidates the candidate — driver REJECT it cannot
+repair: STALLED, RETRY_LIMIT, a fix outside scope or needing the owner), **BLOCKED** (evidence, permission,
+runtime or independent reviewer missing — driver BLOCKED, WAITING_FOR_MODEL, NOT_VERIFIED). An ACCEPT on source
+code alone never means the phase is qualified: live UI, security, regression and owner gates must also pass.
 
 ## Reporting (you)
 
@@ -75,6 +171,29 @@ ACCEPT). Re-running `run` resumes from `state.json`; it cannot skip a stage (evi
   `authorized_protected_changes` on your own.
 - A review made by another channel (e.g. a separate cloud session) may be recorded with `import-review`; it can
   route findings to repair but never counts as an ACCEPT.
+- Report the auditor used (Codex or Claude, fallback reason), the reviewed SHA, the verdict in the words above and
+  the UI qualification status (PASS / FAIL / NOT VERIFIED / BLOCKED). Say which claims the auditor only read
+  about and which it ran or observed itself.
+- Owner decision D18: every summary to the owner is short and in plain words; detail stays in the linked evidence.
+
+## Integration preconditions (stage 11)
+
+Ask the owner for integration authorisation only when all of these hold, and give them in the request:
+the exact accepted commits; a final driver-counted independent ACCEPT/ACCEPT WITH FINDINGS on that SHA; a PASS UI
+qualification record for each user-facing capability (or the owner's explicit acceptance of the named
+NOT VERIFIED items); frozen-file integrity (`protected_paths` diff); provenance; combined regression gates;
+security and approval boundaries checked. Never merge unqualified work silently. Development-branch acceptance
+is never authorisation for production deployment.
+
+## Current application: URI Office (owner directive 2026-10-15)
+
+Priorities: O2 Unified Office Workspace, O3 Word automation, O4 PDF intelligence, O5 PowerPoint automation. O2P
+(printing and hardware discovery) is DEFERRED: printing stays off by default; its code and evidence are kept for
+later; it does not block other Office qualification. O2 live qualification must cover, through the real UI:
+Office navigation; Word, PowerPoint and PDF previews; Save as PDF; Excel workspace continuity; natural-language
+tasks; approval cards; document validation; file integrity; error recovery; discoverability; first-time onboarding;
+contextual automation suggestions; responsiveness; Brain integration where it applies. Repair material UX issues
+and re-run the live tests. Do not freeze O2 while a mandatory live check is open.
 
 ## Continuation policy (owner directive 2026-10-11)
 
@@ -113,6 +232,9 @@ closes, give the owner a visual report without being asked:
    (`summary.owner_actions` / `owner` rows). If `summary.evidence_ok` is false, say "not qualified" plainly.
 4. A program-level view across milestones (like the W1/A0 + skill dashboard of 2026-10-11) is updated the same way
    when several milestones run together.
+5. Structured evidence is authoritative (`events.jsonl`, `round.json`, `receipt.json`, the UI qualification JSON).
+   Reports and dashboards are views generated from it; they show the UI qualification status next to the driver
+   stage and never replace or round up either.
 
 ## Containment
 

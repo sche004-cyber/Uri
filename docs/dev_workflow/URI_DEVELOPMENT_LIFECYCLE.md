@@ -1,7 +1,8 @@
 # URI development lifecycle (skill `uri-development-lifecycle`)
 
 Status: implemented 2026-10-11 as an extension of AO-4 (`scripts/dev_workflow`). Plan and acceptance criteria:
-`LIFECYCLE_PLAN_AND_ACCEPTANCE.md`. Qualification record: `LIFECYCLE_QUALIFICATION.md`.
+`LIFECYCLE_PLAN_AND_ACCEPTANCE.md`. Qualification record: `LIFECYCLE_QUALIFICATION.md`. Revised 2026-10-15
+(DEV-LIFECYCLE-3): Codex-first auditor selection and UI-first live qualification (section 8).
 
 ## 1. What it is
 
@@ -9,7 +10,8 @@ Status: implemented 2026-10-11 as an extension of AO-4 (`scripts/dev_workflow`).
 |---|---|---|
 | Skill | `.claude/skills/uri-development-lifecycle/SKILL.md` (pointer in `.agents/skills/`) | tells the coordinating Claude session when and how to run it |
 | Driver | `scripts/dev_workflow/lifecycle.py` | deterministic state machine, evidence, gates, integration, receipts |
-| Workers | `scripts/dev_workflow/lifecycle_providers.py` | separate reviewer / implementer processes (`claude_cli`, optional `codex_cli`, `command` for tests) |
+| Workers | `scripts/dev_workflow/lifecycle_providers.py` | separate reviewer / implementer processes (`codex_cli` preferred reviewer since DEV-LIFECYCLE-3, `claude_cli` fallback, `command` for tests) |
+| UI qualification | `docs/dev_workflow/lifecycle/UI_QUALIFICATION_TEMPLATE.json` | live Windows UI qualification record (section 8) |
 | Config | `docs/dev_workflow/lifecycle/<milestone>.json` (template `TEMPLATE.json`) | milestone scope |
 | Tests | `tests/dev_workflow/test_lifecycle.py`, fixture worker `tests/dev_workflow/lifecycle_fixture/worker.py` | DEVTEST scenarios |
 | Live demo | `scripts/dev_workflow/lifecycle_demo.py` | real separate Claude processes on a DEVTEST fixture |
@@ -93,7 +95,92 @@ parsed result, `round.json` with worker identity and integrity check), `repairs/
 - The retry fingerprint relies on the reviewer's `prior_findings` and on file+title similarity; `max_rounds` is the
   hard bound.
 - The A2UI status surface is produced and validated; it is not wired into the Developer Console UI.
-- `codex_cli` adapter is untested (Codex not installed where this was built).
+- `codex_cli` adapter is untested (Codex not installed where this was built). Since DEV-LIFECYCLE-3 it is the
+  preferred reviewer; its first real use is recorded in that milestone's evidence.
+- The UI qualification of section 8 is enforced by the skill and the auditor, not by the driver: the driver does not
+  read the qualification record. Integration authorisation is the control (SKILL.md "Integration preconditions").
+
+## 8. UI-first live qualification (owner directive 2026-10-15, DEV-LIFECYCLE-3)
+
+Plan and criteria: `DEV_LIFECYCLE_3_PLAN_AND_ACCEPTANCE.md`. Record template:
+`lifecycle/UI_QUALIFICATION_TEMPLATE.json`.
+
+### 8.1 Rule
+
+Every new or changed user-facing capability must be discoverable and must work through the actual URI interface on
+the intended Windows runtime: the URI Windows app, URI Core, the Brain where it applies, the real service
+interfaces, the real permission and approval mechanisms and the real document or automation engines. Backend
+behaviour alone is not enough. Mock UI tests, widget tests and CLI runs are supporting evidence only.
+
+| Class | Qualification |
+|---|---|
+| `USER_FACING` | live journeys in the real app (8.2) |
+| `INDIRECT` (no own UI) | live journeys of the user-facing workflow or consumer that exposes it |
+| `INTERNAL` (pure infrastructure) | integration and operational verification; the record says why there is no UI |
+
+### 8.2 What each live journey shows
+
+The feature can be found; the user can navigate to it; its controls are understandable; natural-language
+interaction works where it applies; it runs through the real URI services; the output is correct; progress and
+status are visible; errors give understandable recovery options; the output can be inspected; the action can be
+repeated reliably. Run it once as a first-time user (clean profile / no prior state) and once as a returning user.
+
+Example (a Word automation capability): open URI Office, create or select a document, describe the operation,
+review URI's proposed changes, approve, inspect the resulting document, save or export it.
+
+### 8.3 UX investigation (not only "does it work")
+
+- **A Discoverability** — can a first-time user find it; are navigation controls well placed; would a contextual
+  suggestion help.
+- **B Visibility** — are tools and actions clearly shown; are important controls hidden; does the UI say what each
+  tool does.
+- **C Usability** — can the task be done without developer commands or implementation knowledge; are workflows
+  longer than needed; are common actions quick.
+- **D Feedback** — current operation, progress, success, failure, approval needed, recovery options.
+- **E Functional gaps** — missing or incomplete function that stops the intended workflow; recommendations come from
+  the test evidence.
+- **F Consistency** — fits URI Workspace, Companion, A2UI, existing navigation, URI visual design, permissions and
+  approval flows; no disconnected interface.
+
+### 8.4 Onboarding
+
+Add guidance only where live evidence shows it improves discovery or task completion — not to fill a checklist.
+Options: contextual hints, clear action labels, short workflow explanations, example requests, tooltips, guided
+first-use steps, empty-state instructions, recovery guidance, discoverable help, automation suggestions. Guidance is
+minimal, contextual, non-intrusive, dismissible where appropriate, can be opened again, and is not repeated to
+returning users. Both journeys (first-time, returning) are re-run after an onboarding change.
+
+### 8.5 UX improvement loop
+
+```
+LIVE TEST -> IDENTIFY FUNCTIONAL AND UX ISSUES -> CLASSIFY (MATERIAL / MINOR) AND PRIORITISE
+  -> SMALLEST EFFECTIVE REPAIR (approved scope) -> REGRESSION TESTS -> LIVE RETEST
+  -> INDEPENDENT REVIEW (driver revision <milestone>-u<n>) -> ACCEPT or ITERATE
+```
+
+Material discoverability, usability, onboarding or functional defects are fixed before qualification. A minor item
+may be deferred only when the independent auditor confirms it does not compromise an essential journey. No
+redesign or feature growth; frozen components only with owner authorisation.
+
+### 8.6 Record and status
+
+The JSON record is authoritative and bound to `code_commit`. Status:
+
+| Status | Meaning |
+|---|---|
+| PASS | every mandatory journey PASS with COMPLETED_WITH_RESULT live evidence on `code_commit`; no open MATERIAL issue |
+| FAIL | a mandatory journey failed, or a MATERIAL issue is open |
+| NOT VERIFIED | a mandatory journey was not run (e.g. needs the owner, hardware or a GPU window) |
+| BLOCKED | the runtime, permission or independent review needed is unavailable |
+
+The final independent revision reviews the committed record; commits after `code_commit` may touch only evidence
+paths. A record that is corrected later keeps the earlier entry in `corrections`.
+
+### 8.7 Auditor duties for live work
+
+The auditor states separately what it inspected, what it executed, what evidence it only reviewed, what live
+behaviour it observed itself and what it could not verify (template `environment_notes`). Reviewing screenshots or
+reports is never reported as independent live observation.
 
 ## 7. Repository note
 

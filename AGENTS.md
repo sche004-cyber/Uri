@@ -123,6 +123,8 @@ CLAUDE PLANS → CLAUDE PRE-AUDITS → USER ACCEPTS → ANTIGRAVITY INITIATES TA
 
 Development milestones are driven by `uri-development-lifecycle` (`.claude/skills/uri-development-lifecycle/SKILL.md`,
 engine `scripts/dev_workflow/lifecycle.py`, reference `docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md`). It extends
-AO-4: independent review by a separate Claude (or, when available, Codex) process; Codex is optional, never required.
+AO-4: independent review by Codex first, or by a separate Claude process when Codex is unavailable (owner directive
+2026-10-15; Codex is preferred but never a reason to stop when a valid Claude fallback exists). User-facing work is
+qualified live through the real URI Windows UI with a UX and onboarding loop (skill Stage 8).
 It is a development skill only and is not part of the runtime skill registry.
 
