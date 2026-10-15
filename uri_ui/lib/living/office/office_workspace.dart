@@ -13,6 +13,7 @@ import 'office_companion_pane.dart';
 import 'office_home.dart';
 import 'office_nav_pane.dart';
 import 'office_panel.dart';
+import 'office_print_view.dart';
 import 'office_status_strip.dart';
 import 'page_preview.dart';
 
@@ -278,7 +279,7 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
       if (c.available('print_document'))
         TextButton.icon(
           key: const ValueKey('office-print'),
-          onPressed: null,
+          onPressed: c.busy || c.centre == OfficeCentre.sheet ? null : c.startPrint,
           icon: const Icon(Icons.print_outlined, size: 18),
           label: const Text('Print'),
         ),
@@ -300,6 +301,8 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
         OfficeCentre.sheet => 'Spreadsheet',
         OfficeCentre.document => c.documents[c.activeDocument]?.name ?? 'Document',
         OfficeCentre.workflow => 'Task',
+        OfficeCentre.print => 'Print',
+        OfficeCentre.devices => 'Printers',
       };
 
   Widget _centre(BuildContext context, OfficeWorkspaceController c) {
@@ -335,6 +338,8 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
             OfficeCentre.list => OfficeFileList(controller: c, environment: env, onOpenSheet: _openSheet),
             OfficeCentre.document => PagePreview(controller: c),
             OfficeCentre.workflow => OfficeWorkflowView(controller: c),
+            OfficeCentre.print => OfficePrintView(controller: c),
+            OfficeCentre.devices => OfficePrintersView(controller: c),
             OfficeCentre.sheet => const SizedBox.shrink(),
           },
         ),

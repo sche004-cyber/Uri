@@ -45,6 +45,7 @@ class OfficeEnvironment {
     this.pickSourcePaths,
     this.pickDocumentPath,
     this.pickPdfSavePath,
+    this.openPrinterSettings,
   });
 
   final OfficeSurface Function() surfaceFactory;
@@ -69,6 +70,10 @@ class OfficeEnvironment {
   /// O2: where to save a new PDF; returns a path that did not exist when chosen, or null. The service checks again
   /// and never replaces a file.
   final Future<String?> Function(String suggestedName)? pickPdfSavePath;
+
+  /// O2P "Connect a printer": opens Windows Settings › Printers & scanners after the owner's explicit click. Windows
+  /// does any discovery, driver install or elevation in its own UI; URI installs and changes nothing.
+  final Future<void> Function()? openPrinterSettings;
 }
 
 final RegExp _cellRef = RegExp(r'^[A-Z]{1,3}[1-9][0-9]{0,6}$');

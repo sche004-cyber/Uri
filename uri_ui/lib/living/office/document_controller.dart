@@ -49,7 +49,7 @@ String officeErrorMessage(Object e) {
   return 'URI Office could not do that.';
 }
 
-enum OfficeCentre { home, list, sheet, document, workflow }
+enum OfficeCentre { home, list, sheet, document, workflow, print, devices }
 
 /// An open, read-only document (DOCX, PPTX or PDF) as the service shows it.
 class OfficeDocument {
@@ -205,6 +205,10 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         if (d.previewState == 'ready') _kindHint(d.kind);
         _notify();
       }
+      if (printJob != null &&
+          (printJobView == null || const {'queued', 'printing', 'waiting_approval'}.contains(printJobView!['state']))) {
+        await _pollPrint();
+      }
       final w = activeWorkflow;
       if (w != null && (workflowView == null || workflowView!['state'] == 'running')) {
         workflowView = await client.workflow(w);
@@ -273,6 +277,12 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     _notify();
   }
 
+  void showDevices() {
+    centre = OfficeCentre.devices;
+    unawaited(loadPrinters(refresh: true));
+    _notify();
+  }
+
   void showWorkflow(String id) {
     activeWorkflow = id;
     workflowView = null;
@@ -281,7 +291,13 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   }
 
   void back() {
-    if (centre == OfficeCentre.document || centre == OfficeCentre.workflow || centre == OfficeCentre.sheet) {
+    if (centre == OfficeCentre.print) {
+      centre = activeDocument != null ? OfficeCentre.document : OfficeCentre.home;
+      _notify();
+      return;
+    }
+    if (centre == OfficeCentre.document || centre == OfficeCentre.workflow || centre == OfficeCentre.sheet ||
+        centre == OfficeCentre.devices) {
       centre = view == OfficeView.home ? OfficeCentre.home : OfficeCentre.list;
       _notify();
       return;
@@ -294,6 +310,8 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         OfficeCentre.document => '${documents[activeDocument]?.kindLabel ?? 'Document'} · '
             '${documents[activeDocument]?.name ?? ''}',
         OfficeCentre.workflow => 'Task',
+        OfficeCentre.print => 'Print',
+        OfficeCentre.devices => 'Printers',
         _ => 'Home',
       };
 
@@ -486,6 +504,14 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         stepLabel = null;
         conversation.say(OfficeSpeaker.notice, 'Plan discarded. Nothing was done.', 'Task');
       }
+    } else if (kind == 'print_job') {
+      if (result['status'] == 'applied') {
+        stepLabel = 'Printing…';
+        conversation.say(OfficeSpeaker.uri, 'Sent to Windows for printing.', targetLabel);
+      } else {
+        conversation.say(OfficeSpeaker.notice, 'Not printed.', targetLabel);
+        printJob = null;
+      }
     } else if (kind == 'output_files') {
       if (result['status'] == 'applied') {
         stepLabel = 'Saved';
@@ -588,6 +614,163 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       default:
         conversation.say(OfficeSpeaker.uri, 'That is not available yet.', targetLabel);
     }
+  }
+
+  // ---- O2P printing (A1 §A4, §A6) --------------------------------------------------------------------------------
+  List<Map<String, dynamic>> printers = const [];
+  bool physicalPrinter = false;
+  String? printerId;
+  Map<String, dynamic> printSettings = {'copies': 1, 'landscape': false, 'duplex': 'simplex', 'fit': 'fit', 'dpi': 300};
+  String printPages = 'all';                     // "all" or a range like "1-3,5"
+  Map<String, dynamic>? printPreviewResult;
+  Map<String, dynamic>? printSource;             // {document_id} or {workflow_id}
+  String? printJob;
+  Map<String, dynamic>? printJobView;
+  String? printNotice;
+
+  Map<String, dynamic>? get selectedPrinter => printers.where((p) => p['id'] == printerId).firstOrNull;
+
+  /// Opens the print panel for the document in the centre (or the task's output PDF).
+  Future<void> startPrint() => _guard(() async {
+        if (centre == OfficeCentre.workflow && activeWorkflow != null) {
+          printSource = {'workflow_id': activeWorkflow};
+        } else if (activeDocument != null && documents[activeDocument]!.previewState == 'ready') {
+          printSource = {'document_id': activeDocument};
+        } else {
+          conversation.say(OfficeSpeaker.uri, 'Open a document first, or make a PDF of the workbook and print that.',
+              targetLabel);
+          return;
+        }
+        printPreviewResult = null;
+        printJob = null;
+        printJobView = null;
+        await loadPrinters();
+        centre = OfficeCentre.print;
+      });
+
+  Future<void> loadPrinters({bool refresh = false}) async {
+    try {
+      final r = refresh ? await client.refreshPrinters() : await client.printers();
+      printers = [for (final p in (r['printers'] as List? ?? const [])) (p as Map).cast<String, dynamic>()];
+      physicalPrinter = r['physical'] == true;
+      if (printerId == null || selectedPrinter == null) {
+        printerId = (printers.where((p) => p['is_default'] == true).firstOrNull ?? printers.firstOrNull)?['id']
+            as String?;
+      }
+      if (printerId != null) {
+        final full = await client.printer(printerId!);
+        printers = [for (final p in printers) p['id'] == printerId ? full : p];
+        final papers = ((full['capabilities'] as Map?)?['papers'] as List?) ?? const [];
+        final names = [for (final x in papers) (x as Map)['name']];
+        if (!names.contains(printSettings['paper'])) {
+          printSettings = {...printSettings, 'paper': names.contains('A4') ? 'A4' : names.firstOrNull};
+        }
+        printSettings = {...printSettings, 'color': (full['capabilities'] as Map?)?['color'] == true};
+      }
+    } catch (e) {
+      printNotice = officeErrorMessage(e);
+    }
+    _notify();
+  }
+
+  void choosePrinter(String id) {
+    printerId = id;
+    printPreviewResult = null;
+    unawaited(loadPrinters());
+  }
+
+  void setPrintSetting(String key, Object value) {
+    printSettings = {...printSettings, key: value};
+    printPreviewResult = null;
+    _notify();
+  }
+
+  void setPrintPages(String pages) {
+    printPages = pages.trim().isEmpty ? 'all' : pages.trim();
+    printPreviewResult = null;
+    _notify();
+  }
+
+  /// "1-3, 5" -> [1, 2, 3, 5]; null when the text is not a page list within 1..total.
+  static List<int>? parsePages(String text, int total) {
+    if (text == 'all') return [for (var i = 1; i <= total; i++) i];
+    final out = <int>{};
+    for (final part in text.split(',')) {
+      final m = RegExp(r'^(\d+)(?:\s*-\s*(\d+))?$').firstMatch(part.trim());
+      if (m == null) return null;
+      final a = int.parse(m.group(1)!);
+      final b = m.group(2) == null ? a : int.parse(m.group(2)!);
+      if (a < 1 || b > total || a > b) return null;
+      for (var i = a; i <= b; i++) {
+        out.add(i);
+      }
+    }
+    return out.isEmpty ? null : (out.toList()..sort());
+  }
+
+  Map<String, dynamic> _printBody({String? outputPath}) {
+    final total = documents[activeDocument]?.pages ?? 2000;
+    final pages = parsePages(printPages, total);
+    return {
+      'source': printSource,
+      'printer_id': printerId,
+      'pages': pages ?? 'all',
+      'settings': printSettings,
+      'output_path': ?outputPath,
+    };
+  }
+
+  Future<void> previewPrint() => _guard(() async {
+        printPreviewResult = await client.printPreview(_printBody());
+      });
+
+  /// Shows the print card. Nothing is printed until the owner presses Print on it.
+  Future<void> proposePrint() => _guard(() async {
+        final p = selectedPrinter;
+        if (p == null) return;
+        String? out;
+        final port = '${p['port']}'.toUpperCase();
+        if (port.startsWith('PORTPROMPT') || port == 'FILE:') {
+          final pick = environment?.pickPdfSavePath;
+          if (pick == null) return;
+          out = await pick('${documents[activeDocument]?.name ?? 'printed'} (printed)');
+          if (out == null) return;
+        }
+        final r = await client.printPropose(_printBody(outputPath: out));
+        hub.apply((r['messages'] as List?) ?? const []);
+        printJob = r['job'] as String?;
+        printPreviewResult = (r['preview'] as Map?)?.cast<String, dynamic>();
+        conversation.say(OfficeSpeaker.uri, 'Check the print card. Nothing is printed until you press Print.',
+            targetLabel);
+      });
+
+  Future<void> cancelPrint() => _guard(() async {
+        if (printJob == null) return;
+        printJobView = await client.printCancel(printJob!);
+        _clearCards(printJob!);
+      });
+
+  Future<void> _pollPrint() async {
+    final j = printJob;
+    if (j == null) return;
+    try {
+      printJobView = await client.printStatus(j);
+      final st = printJobView!['state'];
+      if (st == 'sent') {
+        stepLabel = 'Sent to the printer';
+      } else if (st == 'printer_problem') {
+        stepLabel = 'The printer reported a problem';
+      } else if (st == 'failed') {
+        stepLabel = 'Printing failed';
+      }
+      _notify();
+    } catch (_) {}
+  }
+
+  Future<void> openPrinterSettings() async {
+    final open = environment?.openPrinterSettings;
+    if (open == null) return;
+    await open();                                 // Windows Settings; URI installs and changes nothing
   }
 
   // ---- hints (plan §4.6; one at a time, dismissible, U6/U8) -----------------------------------------------------

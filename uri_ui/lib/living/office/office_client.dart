@@ -131,6 +131,15 @@ class OfficeClient {
   Future<Map<String, dynamic>> recentRemove(String path) => _post('/recent/remove', {'path': path});
   Future<Map<String, dynamic>> recentClear() => _post('/recent/clear');
 
+  // ---- O2P printing (A1 §A4, §A6) ----
+  Future<Map<String, dynamic>> printers() => _get('/devices/printers');
+  Future<Map<String, dynamic>> refreshPrinters() => _post('/devices/refresh');
+  Future<Map<String, dynamic>> printer(String id) => _get('/devices/printers/$id');
+  Future<Map<String, dynamic>> printPreview(Map<String, dynamic> body) => _post('/print/preview', body);
+  Future<Map<String, dynamic>> printPropose(Map<String, dynamic> body) => _post('/print/propose', body);
+  Future<Map<String, dynamic>> printStatus(String job) => _get('/print/$job');
+  Future<Map<String, dynamic>> printCancel(String job) => _post('/print/$job/cancel');
+
   /// A page image (PNG bytes), or null while the page is still being prepared (HTTP 202).
   Future<Uint8List?> documentPage(String id, int page, int width) => _png('/document/$id/page/$page?w=$width');
   Future<Uint8List?> outputPage(String workflowId, int page, int width) =>

@@ -60,6 +60,9 @@ OfficeEnvironment platformOfficeEnvironment() => OfficeEnvironment(
         }
         return null;
       },
+      openPrinterSettings: () async {
+        await launchUrl(Uri.parse('ms-settings:printers'), mode: LaunchMode.externalApplication);
+      },
       openExternalLink: (url) async {
         // Only Google Sheets links reach here (the service builds them from a validated sheet id).
         if (url.scheme == 'https' && url.host == 'docs.google.com' && url.path.startsWith('/spreadsheets/d/')) {

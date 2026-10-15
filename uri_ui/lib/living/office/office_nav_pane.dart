@@ -105,6 +105,18 @@ class OfficeNavPane extends StatelessWidget {
               ),
           ],
         ],
+        if (c.available('print_document')) ...[
+          const SizedBox(height: UriSpace.sm),
+          const Eyebrow('Devices'),
+          ListTile(
+            key: const ValueKey('office-nav-printers'),
+            dense: true,
+            leading: const Icon(Icons.print_outlined, size: 18),
+            title: const Text('Printers'),
+            selected: c.centre == OfficeCentre.devices,
+            onTap: c.showDevices,
+          ),
+        ],
         if (c.documents.isNotEmpty) ...[
           const SizedBox(height: UriSpace.sm),
           const Eyebrow('Open'),
