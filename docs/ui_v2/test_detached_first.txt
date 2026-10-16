@@ -1,0 +1,1848 @@
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.0.1 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.2.0 available)
+  file_picker_linux 1.1.0 (2.0.2 available)
+  file_picker_platform_interface 3.3.0 (4.1.0 available)
+  file_picker_web 3.1.0 (4.1.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  screen_retriever 0.2.2 (0.3.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+19 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart
+00:00 +0: every accepted design is represented once with original renderer and theme
+00:00 +1: all design/theme combinations preserve renderer identity; original follows
+00:00 +2: restart persistence, legacy Classic migration and unknown reference fallback
+00:00 +3: Ivory Foundry: text, focus and status contrast
+00:00 +4: Snow Archive: text, focus and status contrast
+00:00 +5: Ash & Limestone: text, focus and status contrast
+00:00 +6: single click acknowledges once; floating Chat opens shared Workspace
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+BoxConstraints forces an infinite height.
+These invalid constraints were provided to RenderSemanticsAnnotations's layout() function by the
+following function, which probably computed the invalid constraints in question:
+  RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+The offending constraints were:
+  BoxConstraints(w=88.0, h=Infinity)
+
+The relevant error-causing widget was:
+  SizedBox.expand
+  SizedBox:file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/lib/living/a2ui/a2ui_view.dart:68:27
+
+When the exception was thrown, this was the stack:
+#0      BoxConstraints.debugAssertIsValid.<anonymous closure>.throwError (package:flutter/src/rendering/box.dart:549:9)
+#1      BoxConstraints.debugAssertIsValid.<anonymous closure> (package:flutter/src/rendering/box.dart:614:11)
+#2      BoxConstraints.debugAssertIsValid (package:flutter/src/rendering/box.dart:619:6)
+#3      RenderObject.layout (package:flutter/src/rendering/object.dart:2823:19)
+#4      RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+#5      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#6      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#7      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#8      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#9      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#10     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#11     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#12     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#13     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#14     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#15     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#16     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#17     _RenderLayoutSurrogateProxyBox.performLayout (package:flutter/src/widgets/overlay.dart:2769:11)
+#18     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#19     _RenderSingleChildViewport.performLayout (package:flutter/src/widgets/single_child_scroll_view.dart:502:14)
+#20     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#21     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#22     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#23     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2434:27)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#31     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#32     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#35     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#36     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#37     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:198:20)
+<asynchronous suspension>
+#38     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#39     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: RenderConstrainedBox#2049b relayoutBoundary=up7 NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE:
+  creator: SizedBox.expand ← ListenableBuilder ← A2uiSurfaceView ← MouseRegion ← Semantics ← Listener
+    ← _ExclusiveMouseRegion ← Semantics ← _OverlayPortal ← OverlayPortal ←
+    RawTooltip-[LabeledGlobalKey<RawTooltipState>#e4644] ← Tooltip ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=88.0, 0.0<=h<=Infinity)
+  size: Size(88.0, 0.0)
+  additionalConstraints: BoxConstraints(biggest)
+This RenderObject had the following descendants (showing up to depth 5):
+    child: RenderSemanticsAnnotations#97233 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+      child: _RenderInputPadding#d4850 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+        child: RenderConstrainedBox#fbff0 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+          child: RenderPhysicalShape#36496 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+            child: RenderCustomPaint#fd716 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+BoxConstraints forces an infinite height.
+These invalid constraints were provided to RenderSemanticsAnnotations's layout() function by the
+following function, which probably computed the invalid constraints in question:
+  RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+The offending constraints were:
+  BoxConstraints(w=88.0, h=Infinity)
+
+The relevant error-causing widget was:
+  SizedBox.expand
+  SizedBox:file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/lib/living/a2ui/a2ui_view.dart:68:27
+
+When the exception was thrown, this was the stack:
+#0      BoxConstraints.debugAssertIsValid.<anonymous closure>.throwError (package:flutter/src/rendering/box.dart:549:9)
+#1      BoxConstraints.debugAssertIsValid.<anonymous closure> (package:flutter/src/rendering/box.dart:614:11)
+#2      BoxConstraints.debugAssertIsValid (package:flutter/src/rendering/box.dart:619:6)
+#3      RenderObject.layout (package:flutter/src/rendering/object.dart:2823:19)
+#4      RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+#5      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#6      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#7      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#8      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#9      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#10     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#11     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#12     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#13     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#14     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#15     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#16     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#17     _RenderLayoutSurrogateProxyBox.performLayout (package:flutter/src/widgets/overlay.dart:2769:11)
+#18     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#19     _RenderSingleChildViewport.performLayout (package:flutter/src/widgets/single_child_scroll_view.dart:502:14)
+#20     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#21     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#22     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#23     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2434:27)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#31     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#32     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#35     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#36     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#37     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:198:20)
+<asynchronous suspension>
+#38     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#39     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: RenderConstrainedBox#6e920 relayoutBoundary=up7 NEEDS-LAYOUT NEEDS-COMPOSITING-BITS-UPDATE:
+  creator: SizedBox.expand ← ListenableBuilder ← A2uiSurfaceView ← MouseRegion ← Semantics ← Listener
+    ← _ExclusiveMouseRegion ← Semantics ← _OverlayPortal ← OverlayPortal ←
+    RawTooltip-[LabeledGlobalKey<RawTooltipState>#93996] ← Tooltip ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=88.0, 0.0<=h<=Infinity)
+  size: Size(88.0, 0.0)
+  additionalConstraints: BoxConstraints(biggest)
+This RenderObject had the following descendants (showing up to depth 5):
+    child: RenderSemanticsAnnotations#8438d NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+      child: _RenderInputPadding#9eb4b NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+        child: RenderConstrainedBox#b12dc NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+          child: RenderPhysicalShape#1f269 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+            child: RenderCustomPaint#5fb94 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+BoxConstraints forces an infinite height.
+These invalid constraints were provided to RenderSemanticsAnnotations's layout() function by the
+following function, which probably computed the invalid constraints in question:
+  RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+The offending constraints were:
+  BoxConstraints(w=88.0, h=Infinity)
+
+The relevant error-causing widget was:
+  SizedBox.expand
+  SizedBox:file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/lib/living/a2ui/a2ui_view.dart:68:27
+
+When the exception was thrown, this was the stack:
+#0      BoxConstraints.debugAssertIsValid.<anonymous closure>.throwError (package:flutter/src/rendering/box.dart:549:9)
+#1      BoxConstraints.debugAssertIsValid.<anonymous closure> (package:flutter/src/rendering/box.dart:614:11)
+#2      BoxConstraints.debugAssertIsValid (package:flutter/src/rendering/box.dart:619:6)
+#3      RenderObject.layout (package:flutter/src/rendering/object.dart:2823:19)
+#4      RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+#5      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#6      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#7      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#8      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#9      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#10     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#11     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#12     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#13     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#14     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#15     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#16     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#17     _RenderLayoutSurrogateProxyBox.performLayout (package:flutter/src/widgets/overlay.dart:2769:11)
+#18     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#19     _RenderSingleChildViewport.performLayout (package:flutter/src/widgets/single_child_scroll_view.dart:502:14)
+#20     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#21     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#22     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#23     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2434:27)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#31     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#32     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#35     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#36     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#37     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:198:20)
+<asynchronous suspension>
+#38     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#39     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: RenderConstrainedBox#58480 relayoutBoundary=up7 NEEDS-LAYOUT NEEDS-COMPOSITING-BITS-UPDATE:
+  creator: SizedBox.expand ← ListenableBuilder ← A2uiSurfaceView ← MouseRegion ← Semantics ← Listener
+    ← _ExclusiveMouseRegion ← Semantics ← _OverlayPortal ← OverlayPortal ←
+    RawTooltip-[LabeledGlobalKey<RawTooltipState>#c37e4] ← Tooltip ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=88.0, 0.0<=h<=Infinity)
+  size: Size(88.0, 0.0)
+  additionalConstraints: BoxConstraints(biggest)
+This RenderObject had the following descendants (showing up to depth 5):
+    child: RenderSemanticsAnnotations#bdf80 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+      child: _RenderInputPadding#a27a3 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+        child: RenderConstrainedBox#97538 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+          child: RenderPhysicalShape#26432 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+            child: RenderCustomPaint#cd48c NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 6018 pos 14:
+'!childSemantics.renderObject._needsLayout': is not true.
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6018:14)
+#3      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#4      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#5      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#6      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#7      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#8      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#9      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#10     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#11     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#12     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#13     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#14     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#15     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#16     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#17     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#18     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#19     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#20     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#21     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#22     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#23     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#24     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#25     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#26     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#27     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#28     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#29     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#30     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#31     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#32     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#33     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#34     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#35     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#36     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#37     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#38     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#39     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#40     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#41     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#42     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#43     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1489:25)
+#44     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#45     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#46     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#47     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#48     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#49     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#52     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#53     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#54     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#57     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#58     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#59     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:198:20)
+<asynchronous suspension>
+#60     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#61     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+RenderBox was not laid out: RenderSemanticsAnnotations#97233 NEEDS-LAYOUT NEEDS-PAINT
+'package:flutter/src/rendering/box.dart':
+Failed assertion: line 2251 pos 12: 'hasSize'
+
+When the exception was thrown, this was the stack:
+#2      RenderBox.size (package:flutter/src/rendering/box.dart:2251:12)
+#3      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2119:63)
+#4      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#5      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#6      main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:208:20)
+<asynchronous suspension>
+#7      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#8      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 3 frames from class _AssertionError and package:stack_trace)
+
+The test description was:
+  single click acknowledges once; floating Chat opens shared Workspace
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (5) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +6 -1: single click acknowledges once; floating Chat opens shared Workspace [E]
+  Test failed. See exception logs above.
+  The test description was: single click acknowledges once; floating Chat opens shared Workspace
+  
+00:00 +6 -1: double click suppresses single click and preserves shared draft
+00:01 +7 -1: gallery Cancel isolates identity, theme and active conversation; Apply persists
+00:02 +8 -1: dashboard responsive 1440.0x1000.0
+00:02 +9 -1: dashboard responsive 1920.0x1080.0
+00:02 +10 -1: dashboard responsive 1024.0x768.0
+00:02 +11 -1: dashboard responsive 390.0x844.0
+00:02 +12 -1: dashboard responsive 360.0x560.0
+00:03 +13 -1: floating controls fit both sizes without covering the Companion
+00:03 +14 -1: text-sized controls keep click targets and separate at 200% text
+00:03 +15 -1: viewer exposes every existing design and state with one isolated renderer
+00:06 +16 -1: 200 percent text keeps dashboard navigation and chat reachable
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 70 pixels on the bottom.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:444:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart line 444
+The test description was:
+  200 percent text keeps dashboard navigation and chat reachable
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:06 +16 -2: 200 percent text keeps dashboard navigation and chat reachable [E]
+  Test failed. See exception logs above.
+  The test description was: 200 percent text keeps dashboard navigation and chat reachable
+  
+00:06 +16 -2: local A2UI catalog is isolated from runtime authority
+00:06 +17 -2: floating controls omit unavailable actions and preserve shared draft
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+BoxConstraints forces an infinite height.
+These invalid constraints were provided to RenderSemanticsAnnotations's layout() function by the
+following function, which probably computed the invalid constraints in question:
+  RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+The offending constraints were:
+  BoxConstraints(w=88.0, h=Infinity)
+
+The relevant error-causing widget was:
+  SizedBox.expand
+  SizedBox:file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/lib/living/a2ui/a2ui_view.dart:68:27
+
+When the exception was thrown, this was the stack:
+#0      BoxConstraints.debugAssertIsValid.<anonymous closure>.throwError (package:flutter/src/rendering/box.dart:549:9)
+#1      BoxConstraints.debugAssertIsValid.<anonymous closure> (package:flutter/src/rendering/box.dart:614:11)
+#2      BoxConstraints.debugAssertIsValid (package:flutter/src/rendering/box.dart:619:6)
+#3      RenderObject.layout (package:flutter/src/rendering/object.dart:2823:19)
+#4      RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+#5      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#6      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#7      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#8      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#9      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#10     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#11     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#12     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#13     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#14     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#15     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#16     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#17     _RenderLayoutSurrogateProxyBox.performLayout (package:flutter/src/widgets/overlay.dart:2769:11)
+#18     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#19     _RenderSingleChildViewport.performLayout (package:flutter/src/widgets/single_child_scroll_view.dart:502:14)
+#20     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#21     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#22     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#23     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2434:27)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#31     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#32     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#35     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#36     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#37     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:479:20)
+<asynchronous suspension>
+#38     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#39     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: RenderConstrainedBox#bb65f relayoutBoundary=up7 NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE:
+  creator: SizedBox.expand ← ListenableBuilder ← A2uiSurfaceView ← MouseRegion ← Semantics ← Listener
+    ← _ExclusiveMouseRegion ← Semantics ← _OverlayPortal ← OverlayPortal ←
+    RawTooltip-[LabeledGlobalKey<RawTooltipState>#39e26] ← Tooltip ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=88.0, 0.0<=h<=Infinity)
+  size: Size(88.0, 0.0)
+  additionalConstraints: BoxConstraints(biggest)
+This RenderObject had the following descendants (showing up to depth 5):
+    child: RenderSemanticsAnnotations#ddc54 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+      child: _RenderInputPadding#d97d9 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+        child: RenderConstrainedBox#891d8 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+          child: RenderPhysicalShape#32ae1 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+            child: RenderCustomPaint#a2c7d NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+BoxConstraints forces an infinite height.
+These invalid constraints were provided to RenderSemanticsAnnotations's layout() function by the
+following function, which probably computed the invalid constraints in question:
+  RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+The offending constraints were:
+  BoxConstraints(w=88.0, h=Infinity)
+
+The relevant error-causing widget was:
+  SizedBox.expand
+  SizedBox:file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/lib/living/a2ui/a2ui_view.dart:68:27
+
+When the exception was thrown, this was the stack:
+#0      BoxConstraints.debugAssertIsValid.<anonymous closure>.throwError (package:flutter/src/rendering/box.dart:549:9)
+#1      BoxConstraints.debugAssertIsValid.<anonymous closure> (package:flutter/src/rendering/box.dart:614:11)
+#2      BoxConstraints.debugAssertIsValid (package:flutter/src/rendering/box.dart:619:6)
+#3      RenderObject.layout (package:flutter/src/rendering/object.dart:2823:19)
+#4      RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+#5      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#6      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#7      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#8      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#9      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#10     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#11     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#12     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#13     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#14     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#15     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#16     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#17     _RenderLayoutSurrogateProxyBox.performLayout (package:flutter/src/widgets/overlay.dart:2769:11)
+#18     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#19     _RenderSingleChildViewport.performLayout (package:flutter/src/widgets/single_child_scroll_view.dart:502:14)
+#20     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#21     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#22     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#23     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2434:27)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#31     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#32     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#35     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#36     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#37     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:479:20)
+<asynchronous suspension>
+#38     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#39     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: RenderConstrainedBox#808c4 relayoutBoundary=up7 NEEDS-LAYOUT NEEDS-COMPOSITING-BITS-UPDATE:
+  creator: SizedBox.expand ← ListenableBuilder ← A2uiSurfaceView ← MouseRegion ← Semantics ← Listener
+    ← _ExclusiveMouseRegion ← Semantics ← _OverlayPortal ← OverlayPortal ←
+    RawTooltip-[LabeledGlobalKey<RawTooltipState>#ae817] ← Tooltip ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=88.0, 0.0<=h<=Infinity)
+  size: Size(88.0, 0.0)
+  additionalConstraints: BoxConstraints(biggest)
+This RenderObject had the following descendants (showing up to depth 5):
+    child: RenderSemanticsAnnotations#00292 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+      child: _RenderInputPadding#74589 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+        child: RenderConstrainedBox#efc8b NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+          child: RenderPhysicalShape#3f5d7 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+            child: RenderCustomPaint#8904f NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 6018 pos 14:
+'!childSemantics.renderObject._needsLayout': is not true.
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6018:14)
+#3      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#4      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#5      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#6      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#7      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#8      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#9      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#10     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#11     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#12     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#13     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#14     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#15     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#16     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#17     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#18     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#19     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#20     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#21     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#22     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#23     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#24     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#25     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#26     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#27     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#28     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#29     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#30     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#31     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#32     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#33     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#34     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#35     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#36     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#37     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#38     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#39     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#40     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#41     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#42     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#43     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1489:25)
+#44     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#45     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#46     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#47     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#48     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#49     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#52     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#53     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#54     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#57     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#58     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#59     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:479:20)
+<asynchronous suspension>
+#60     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#61     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+RenderBox was not laid out: RenderSemanticsAnnotations#ddc54 NEEDS-LAYOUT NEEDS-PAINT
+'package:flutter/src/rendering/box.dart':
+Failed assertion: line 2251 pos 12: 'hasSize'
+
+When the exception was thrown, this was the stack:
+#2      RenderBox.size (package:flutter/src/rendering/box.dart:2251:12)
+#3      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2119:63)
+#4      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#5      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#6      main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:493:20)
+<asynchronous suspension>
+#7      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#8      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 3 frames from class _AssertionError and package:stack_trace)
+
+The test description was:
+  floating controls omit unavailable actions and preserve shared draft
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (4) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:06 +17 -3: floating controls omit unavailable actions and preserve shared draft [E]
+  Test failed. See exception logs above.
+  The test description was: floating controls omit unavailable actions and preserve shared draft
+  
+00:06 +17 -3: existing voice visual follows listening, user speech and URI speech
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+BoxConstraints forces an infinite height.
+These invalid constraints were provided to RenderSemanticsAnnotations's layout() function by the
+following function, which probably computed the invalid constraints in question:
+  RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+The offending constraints were:
+  BoxConstraints(w=88.0, h=Infinity)
+
+The relevant error-causing widget was:
+  SizedBox.expand
+  SizedBox:file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/lib/living/a2ui/a2ui_view.dart:68:27
+
+When the exception was thrown, this was the stack:
+#0      BoxConstraints.debugAssertIsValid.<anonymous closure>.throwError (package:flutter/src/rendering/box.dart:549:9)
+#1      BoxConstraints.debugAssertIsValid.<anonymous closure> (package:flutter/src/rendering/box.dart:614:11)
+#2      BoxConstraints.debugAssertIsValid (package:flutter/src/rendering/box.dart:619:6)
+#3      RenderObject.layout (package:flutter/src/rendering/object.dart:2823:19)
+#4      RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+#5      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#6      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#7      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#8      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#9      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#10     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#11     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#12     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#13     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#14     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#15     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#16     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#17     _RenderLayoutSurrogateProxyBox.performLayout (package:flutter/src/widgets/overlay.dart:2769:11)
+#18     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#19     _RenderSingleChildViewport.performLayout (package:flutter/src/widgets/single_child_scroll_view.dart:502:14)
+#20     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#21     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#22     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#23     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2434:27)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#31     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#32     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#35     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#36     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#37     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:509:20)
+<asynchronous suspension>
+#38     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#39     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: RenderConstrainedBox#6f374 relayoutBoundary=up7 NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE:
+  creator: SizedBox.expand ← ListenableBuilder ← A2uiSurfaceView ← MouseRegion ← Semantics ← Listener
+    ← _ExclusiveMouseRegion ← Semantics ← _OverlayPortal ← OverlayPortal ←
+    RawTooltip-[LabeledGlobalKey<RawTooltipState>#93659] ← Tooltip ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=88.0, 0.0<=h<=Infinity)
+  size: Size(88.0, 0.0)
+  additionalConstraints: BoxConstraints(biggest)
+This RenderObject had the following descendants (showing up to depth 5):
+    child: RenderSemanticsAnnotations#8cb4b NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+      child: _RenderInputPadding#9df5a NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+        child: RenderConstrainedBox#831c1 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+          child: RenderPhysicalShape#430c5 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+            child: RenderCustomPaint#e06fd NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+BoxConstraints forces an infinite height.
+These invalid constraints were provided to RenderSemanticsAnnotations's layout() function by the
+following function, which probably computed the invalid constraints in question:
+  RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+The offending constraints were:
+  BoxConstraints(w=88.0, h=Infinity)
+
+The relevant error-causing widget was:
+  SizedBox.expand
+  SizedBox:file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/lib/living/a2ui/a2ui_view.dart:68:27
+
+When the exception was thrown, this was the stack:
+#0      BoxConstraints.debugAssertIsValid.<anonymous closure>.throwError (package:flutter/src/rendering/box.dart:549:9)
+#1      BoxConstraints.debugAssertIsValid.<anonymous closure> (package:flutter/src/rendering/box.dart:614:11)
+#2      BoxConstraints.debugAssertIsValid (package:flutter/src/rendering/box.dart:619:6)
+#3      RenderObject.layout (package:flutter/src/rendering/object.dart:2823:19)
+#4      RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+#5      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#6      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#7      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#8      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#9      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#10     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#11     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#12     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#13     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#14     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#15     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#16     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#17     _RenderLayoutSurrogateProxyBox.performLayout (package:flutter/src/widgets/overlay.dart:2769:11)
+#18     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#19     _RenderSingleChildViewport.performLayout (package:flutter/src/widgets/single_child_scroll_view.dart:502:14)
+#20     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#21     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#22     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#23     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2434:27)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#31     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#32     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#35     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#36     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#37     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:509:20)
+<asynchronous suspension>
+#38     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#39     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: RenderConstrainedBox#61681 relayoutBoundary=up7 NEEDS-LAYOUT NEEDS-COMPOSITING-BITS-UPDATE:
+  creator: SizedBox.expand ← ListenableBuilder ← A2uiSurfaceView ← MouseRegion ← Semantics ← Listener
+    ← _ExclusiveMouseRegion ← Semantics ← _OverlayPortal ← OverlayPortal ←
+    RawTooltip-[LabeledGlobalKey<RawTooltipState>#ce89b] ← Tooltip ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=88.0, 0.0<=h<=Infinity)
+  size: Size(88.0, 0.0)
+  additionalConstraints: BoxConstraints(biggest)
+This RenderObject had the following descendants (showing up to depth 5):
+    child: RenderSemanticsAnnotations#ac0ca NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+      child: _RenderInputPadding#baff3 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+        child: RenderConstrainedBox#bdd5f NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+          child: RenderPhysicalShape#4f931 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+            child: RenderCustomPaint#36c55 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 6018 pos 14:
+'!childSemantics.renderObject._needsLayout': is not true.
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6018:14)
+#3      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#4      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#5      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#6      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#7      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#8      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#9      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#10     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#11     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#12     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#13     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#14     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#15     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#16     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#17     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#18     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#19     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#20     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#21     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#22     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#23     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#24     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#25     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#26     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#27     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#28     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#29     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#30     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#31     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#32     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#33     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#34     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#35     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#36     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#37     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#38     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#39     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#40     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#41     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#42     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#43     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1489:25)
+#44     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#45     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#46     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#47     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#48     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#49     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#52     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#53     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#54     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#57     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#58     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#59     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:509:20)
+<asynchronous suspension>
+#60     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#61     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 6018 pos 14:
+'!childSemantics.renderObject._needsLayout': is not true.
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6018:14)
+#3      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#4      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#5      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#6      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#7      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#8      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#9      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#10     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#11     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#12     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#13     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#14     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#15     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#16     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#17     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#18     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#19     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#20     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#21     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#22     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#23     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#24     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#25     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#26     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#27     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#28     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#29     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#30     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#31     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#32     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#33     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#34     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#35     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#36     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#37     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#38     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#39     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#40     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#41     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#42     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#43     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1489:25)
+#44     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#45     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#46     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#47     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#48     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#49     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#52     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#53     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#54     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#57     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#58     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#59     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:515:20)
+<asynchronous suspension>
+#60     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#61     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 5724 pos 14:
+'!semantics.parentDataDirty': is not true.
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5724:14)
+#3      List.forEach (dart:core-patch/growable_array.dart:428:8)
+#4      _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#5      List.forEach (dart:core-patch/growable_array.dart:428:8)
+#6      _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#7      List.forEach (dart:core-patch/growable_array.dart:428:8)
+#8      _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#9      List.forEach (dart:core-patch/growable_array.dart:428:8)
+#10     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#11     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#12     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#13     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#14     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#15     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#16     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#17     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#18     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#19     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#20     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#21     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#22     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#23     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#24     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#25     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#26     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#27     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#28     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#29     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#30     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#31     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#32     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#33     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#34     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#35     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#36     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#37     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#38     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#39     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#40     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#41     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#42     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#43     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#44     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#45     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#46     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#47     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#48     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#49     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#50     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#51     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#52     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#53     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#54     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#55     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#56     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#57     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#58     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#59     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#60     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#61     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#62     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#63     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#64     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#65     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#66     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#67     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#68     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#69     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#70     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#71     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#72     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#73     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#74     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#75     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#76     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#77     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#78     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#79     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#80     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#81     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#82     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#83     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#84     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#85     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#86     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#87     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#88     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#89     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#90     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#91     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#92     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#93     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#94     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#95     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#96     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#97     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#98     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#99     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#100    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#101    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#102    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#103    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#104    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#105    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#106    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#107    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#108    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#109    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#110    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#111    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#112    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#113    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#114    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#115    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#116    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#117    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#118    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#119    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#120    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#121    _RenderObjectSemantics.debugCheckForParentData (package:flutter/src/rendering/object.dart:5728:5)
+#122    PipelineOwner.flushSemantics.<anonymous closure> (package:flutter/src/rendering/object.dart:1498:34)
+#123    PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1501:8)
+#124    PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#125    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#126    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#127    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#128    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#129    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#132    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#133    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#134    WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#137    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#138    WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#139    main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:516:20)
+<asynchronous suspension>
+#140    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#141    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 6018 pos 14:
+'!childSemantics.renderObject._needsLayout': is not true.
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6018:14)
+#3      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#4      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#5      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#6      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#7      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#8      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#9      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#10     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#11     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#12     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#13     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#14     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#15     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#16     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#17     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#18     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#19     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#20     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#21     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#22     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#23     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#24     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#25     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#26     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#27     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#28     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#29     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#30     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#31     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#32     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#33     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#34     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#35     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#36     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#37     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#38     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#39     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#40     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#41     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#42     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#43     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1489:25)
+#44     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#45     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#46     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#47     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#48     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#49     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#52     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#53     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#54     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#57     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#58     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#59     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:522:20)
+<asynchronous suspension>
+#60     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#61     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 6018 pos 14:
+'!childSemantics.renderObject._needsLayout': is not true.
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6018:14)
+#3      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#4      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#5      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#6      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#7      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#8      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#9      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#10     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#11     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#12     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#13     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#14     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#15     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#16     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#17     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#18     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#19     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#20     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#21     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#22     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#23     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#24     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#25     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#26     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#27     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#28     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#29     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#30     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#31     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#32     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#33     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#34     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#35     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#36     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#37     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#38     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#39     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#40     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#41     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#42     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#43     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1489:25)
+#44     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#45     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#46     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#47     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#48     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#49     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#52     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#53     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#54     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#57     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#58     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#59     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:528:20)
+<asynchronous suspension>
+#60     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#61     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 5724 pos 14:
+'!semantics.parentDataDirty': is not true.
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5724:14)
+#3      List.forEach (dart:core-patch/growable_array.dart:428:8)
+#4      _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#5      List.forEach (dart:core-patch/growable_array.dart:428:8)
+#6      _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#7      List.forEach (dart:core-patch/growable_array.dart:428:8)
+#8      _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#9      List.forEach (dart:core-patch/growable_array.dart:428:8)
+#10     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#11     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#12     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#13     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#14     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#15     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#16     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#17     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#18     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#19     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#20     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#21     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#22     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#23     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#24     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#25     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#26     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#27     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#28     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#29     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#30     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#31     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#32     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#33     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#34     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#35     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#36     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#37     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#38     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#39     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#40     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#41     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#42     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#43     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#44     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#45     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#46     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#47     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#48     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#49     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#50     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#51     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#52     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#53     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#54     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#55     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#56     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#57     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#58     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#59     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#60     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#61     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#62     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#63     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#64     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#65     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#66     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#67     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#68     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#69     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#70     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#71     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#72     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#73     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#74     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#75     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#76     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#77     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#78     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#79     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#80     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#81     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#82     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#83     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#84     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#85     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#86     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#87     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#88     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#89     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#90     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#91     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#92     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#93     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#94     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#95     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#96     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#97     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#98     _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#99     List.forEach (dart:core-patch/growable_array.dart:428:8)
+#100    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#101    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#102    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#103    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#104    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#105    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#106    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#107    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#108    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#109    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#110    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#111    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#112    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#113    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#114    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#115    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#116    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#117    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#118    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#119    List.forEach (dart:core-patch/growable_array.dart:428:8)
+#120    _RenderObjectSemantics.debugCheckForParentData.debugCheckParentDataNotDirty (package:flutter/src/rendering/object.dart:5725:42)
+#121    _RenderObjectSemantics.debugCheckForParentData (package:flutter/src/rendering/object.dart:5728:5)
+#122    PipelineOwner.flushSemantics.<anonymous closure> (package:flutter/src/rendering/object.dart:1498:34)
+#123    PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1501:8)
+#124    PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#125    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#126    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#127    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#128    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#129    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#132    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#133    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#134    WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#137    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#138    WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#139    main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:529:20)
+<asynchronous suspension>
+#140    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#141    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 6018 pos 14:
+'!childSemantics.renderObject._needsLayout': is not true.
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6018:14)
+#3      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#4      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#5      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#6      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#7      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#8      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#9      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#10     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#11     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#12     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#13     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#14     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#15     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#16     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#17     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#18     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#19     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#20     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#21     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#22     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#23     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#24     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#25     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#26     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#27     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#28     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#29     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#30     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#31     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#32     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#33     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#34     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#35     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#36     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#37     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#38     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#39     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#40     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#41     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#42     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#43     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1489:25)
+#44     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#45     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#46     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#47     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#48     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#49     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#52     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#53     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#54     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#57     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#58     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#59     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:532:20)
+<asynchronous suspension>
+#60     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#61     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 6018 pos 14:
+'!childSemantics.renderObject._needsLayout': is not true.
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6018:14)
+#3      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#4      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#5      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#6      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#7      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#8      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#9      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#10     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#11     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#12     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#13     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#14     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#15     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#16     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#17     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#18     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#19     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#20     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#21     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#22     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#23     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#24     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#25     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#26     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#27     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#28     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#29     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#30     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#31     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#32     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#33     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#34     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#35     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#36     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#37     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#38     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#39     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#40     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#41     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#42     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#43     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1489:25)
+#44     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#45     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#46     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#47     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#48     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#49     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#52     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#53     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#54     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#57     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#58     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#59     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:537:20)
+<asynchronous suspension>
+#60     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#61     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (10) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:07 +17 -4: existing voice visual follows listening, user speech and URI speech [E]
+  Test failed. See exception logs above.
+  The test description was: existing voice visual follows listening, user speech and URI speech
+  
+00:07 +17 -4: generated voice actions require a click and start or cancel once
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+BoxConstraints forces an infinite height.
+These invalid constraints were provided to RenderSemanticsAnnotations's layout() function by the
+following function, which probably computed the invalid constraints in question:
+  RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+The offending constraints were:
+  BoxConstraints(w=88.0, h=Infinity)
+
+The relevant error-causing widget was:
+  SizedBox.expand
+  SizedBox:file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/lib/living/a2ui/a2ui_view.dart:68:27
+
+When the exception was thrown, this was the stack:
+#0      BoxConstraints.debugAssertIsValid.<anonymous closure>.throwError (package:flutter/src/rendering/box.dart:549:9)
+#1      BoxConstraints.debugAssertIsValid.<anonymous closure> (package:flutter/src/rendering/box.dart:614:11)
+#2      BoxConstraints.debugAssertIsValid (package:flutter/src/rendering/box.dart:619:6)
+#3      RenderObject.layout (package:flutter/src/rendering/object.dart:2823:19)
+#4      RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+#5      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#6      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#7      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#8      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#9      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#10     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#11     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#12     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#13     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#14     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#15     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#16     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#17     _RenderLayoutSurrogateProxyBox.performLayout (package:flutter/src/widgets/overlay.dart:2769:11)
+#18     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#19     _RenderSingleChildViewport.performLayout (package:flutter/src/widgets/single_child_scroll_view.dart:502:14)
+#20     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#21     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#22     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#23     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2434:27)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#31     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#32     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#35     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#36     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#37     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:553:20)
+<asynchronous suspension>
+#38     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#39     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: RenderConstrainedBox#b9f7f relayoutBoundary=up7 NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE:
+  creator: SizedBox.expand ← ListenableBuilder ← A2uiSurfaceView ← MouseRegion ← Semantics ← Listener
+    ← _ExclusiveMouseRegion ← Semantics ← _OverlayPortal ← OverlayPortal ←
+    RawTooltip-[LabeledGlobalKey<RawTooltipState>#e72ee] ← Tooltip ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=88.0, 0.0<=h<=Infinity)
+  size: Size(88.0, 0.0)
+  additionalConstraints: BoxConstraints(biggest)
+This RenderObject had the following descendants (showing up to depth 5):
+    child: RenderSemanticsAnnotations#be57c NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+      child: _RenderInputPadding#a2c30 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+        child: RenderConstrainedBox#d6bfc NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+          child: RenderPhysicalShape#b5e0d NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+            child: RenderCustomPaint#752df NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+BoxConstraints forces an infinite height.
+These invalid constraints were provided to RenderSemanticsAnnotations's layout() function by the
+following function, which probably computed the invalid constraints in question:
+  RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+The offending constraints were:
+  BoxConstraints(w=88.0, h=Infinity)
+
+The relevant error-causing widget was:
+  SizedBox.expand
+  SizedBox:file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/lib/living/a2ui/a2ui_view.dart:68:27
+
+When the exception was thrown, this was the stack:
+#0      BoxConstraints.debugAssertIsValid.<anonymous closure>.throwError (package:flutter/src/rendering/box.dart:549:9)
+#1      BoxConstraints.debugAssertIsValid.<anonymous closure> (package:flutter/src/rendering/box.dart:614:11)
+#2      BoxConstraints.debugAssertIsValid (package:flutter/src/rendering/box.dart:619:6)
+#3      RenderObject.layout (package:flutter/src/rendering/object.dart:2823:19)
+#4      RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+#5      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#6      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#7      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#8      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#9      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#10     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#11     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#12     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#13     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#14     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#15     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#16     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#17     _RenderLayoutSurrogateProxyBox.performLayout (package:flutter/src/widgets/overlay.dart:2769:11)
+#18     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#19     _RenderSingleChildViewport.performLayout (package:flutter/src/widgets/single_child_scroll_view.dart:502:14)
+#20     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#21     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#22     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#23     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2434:27)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#31     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#32     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#35     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#36     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#37     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:553:20)
+<asynchronous suspension>
+#38     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#39     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: RenderConstrainedBox#29bcc relayoutBoundary=up7 NEEDS-LAYOUT NEEDS-COMPOSITING-BITS-UPDATE:
+  creator: SizedBox.expand ← ListenableBuilder ← A2uiSurfaceView ← MouseRegion ← Semantics ← Listener
+    ← _ExclusiveMouseRegion ← Semantics ← _OverlayPortal ← OverlayPortal ←
+    RawTooltip-[LabeledGlobalKey<RawTooltipState>#3462a] ← Tooltip ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=88.0, 0.0<=h<=Infinity)
+  size: Size(88.0, 0.0)
+  additionalConstraints: BoxConstraints(biggest)
+This RenderObject had the following descendants (showing up to depth 5):
+    child: RenderSemanticsAnnotations#e0924 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+      child: _RenderInputPadding#69752 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+        child: RenderConstrainedBox#c2ae6 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+          child: RenderPhysicalShape#bc2c0 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+            child: RenderCustomPaint#16868 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+BoxConstraints forces an infinite height.
+These invalid constraints were provided to RenderSemanticsAnnotations's layout() function by the
+following function, which probably computed the invalid constraints in question:
+  RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+The offending constraints were:
+  BoxConstraints(w=88.0, h=Infinity)
+
+The relevant error-causing widget was:
+  SizedBox.expand
+  SizedBox:file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/lib/living/a2ui/a2ui_view.dart:68:27
+
+When the exception was thrown, this was the stack:
+#0      BoxConstraints.debugAssertIsValid.<anonymous closure>.throwError (package:flutter/src/rendering/box.dart:549:9)
+#1      BoxConstraints.debugAssertIsValid.<anonymous closure> (package:flutter/src/rendering/box.dart:614:11)
+#2      BoxConstraints.debugAssertIsValid (package:flutter/src/rendering/box.dart:619:6)
+#3      RenderObject.layout (package:flutter/src/rendering/object.dart:2823:19)
+#4      RenderConstrainedBox.performLayout (package:flutter/src/rendering/proxy_box.dart:296:14)
+#5      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#6      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#7      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#8      RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#9      RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#10     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#11     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#12     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#13     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#14     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#15     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#16     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#17     _RenderLayoutSurrogateProxyBox.performLayout (package:flutter/src/widgets/overlay.dart:2769:11)
+#18     RenderObject.layout (package:flutter/src/rendering/object.dart:2923:7)
+#19     _RenderSingleChildViewport.performLayout (package:flutter/src/widgets/single_child_scroll_view.dart:502:14)
+#20     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2771:7)
+#21     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#22     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#23     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2434:27)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#31     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#32     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#35     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#36     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#37     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:553:20)
+<asynchronous suspension>
+#38     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#39     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: RenderConstrainedBox#85b76 relayoutBoundary=up7 NEEDS-LAYOUT NEEDS-COMPOSITING-BITS-UPDATE:
+  creator: SizedBox.expand ← ListenableBuilder ← A2uiSurfaceView ← MouseRegion ← Semantics ← Listener
+    ← _ExclusiveMouseRegion ← Semantics ← _OverlayPortal ← OverlayPortal ←
+    RawTooltip-[LabeledGlobalKey<RawTooltipState>#ab318] ← Tooltip ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=88.0, 0.0<=h<=Infinity)
+  size: Size(88.0, 0.0)
+  additionalConstraints: BoxConstraints(biggest)
+This RenderObject had the following descendants (showing up to depth 5):
+    child: RenderSemanticsAnnotations#7381f NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+      child: _RenderInputPadding#bf6cc NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+        child: RenderConstrainedBox#f3348 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+          child: RenderPhysicalShape#90d11 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+            child: RenderCustomPaint#7d32f NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+'package:flutter/src/rendering/object.dart': Failed assertion: line 6018 pos 14:
+'!childSemantics.renderObject._needsLayout': is not true.
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+
+When the exception was thrown, this was the stack:
+#2      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6018:14)
+#3      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#4      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#5      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#6      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#7      _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#8      _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#9      _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#10     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#11     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#12     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#13     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#14     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#15     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#16     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#17     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#18     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#19     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#20     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#21     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#22     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#23     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#24     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#25     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#26     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#27     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#28     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#29     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#30     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#31     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#32     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#33     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#34     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#35     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#36     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#37     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#38     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#39     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#40     _RenderObjectSemantics._didUpdateParentData (package:flutter/src/rendering/object.dart:6095:5)
+#41     _RenderObjectSemantics._collectChildMergeUpAndSiblingGroup (package:flutter/src/rendering/object.dart:6019:22)
+#42     _RenderObjectSemantics.updateChildren (package:flutter/src/rendering/object.dart:5844:50)
+#43     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1489:25)
+#44     PipelineOwner.flushSemantics (package:flutter/src/rendering/object.dart:1653:15)
+#45     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2445:35)
+#46     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#47     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#48     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#49     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#52     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#53     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#54     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#57     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#58     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#59     main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:553:20)
+<asynchronous suspension>
+#60     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#61     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+RenderBox was not laid out: RenderSemanticsAnnotations#e0924 NEEDS-LAYOUT NEEDS-PAINT
+'package:flutter/src/rendering/box.dart':
+Failed assertion: line 2251 pos 12: 'hasSize'
+
+When the exception was thrown, this was the stack:
+#2      RenderBox.size (package:flutter/src/rendering/box.dart:2251:12)
+#3      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2119:63)
+#4      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#5      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#6      main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:555:20)
+<asynchronous suspension>
+#7      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#8      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 3 frames from class _AssertionError and package:stack_trace)
+
+The test description was:
+  generated voice actions require a click and start or cancel once
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (5) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:07 +17 -5: generated voice actions require a click and start or cancel once [E]
+  Test failed. See exception logs above.
+  The test description was: generated voice actions require a click and start or cancel once
+  
+00:07 +17 -5: login guards duplicate submits, obscures password and shows real errors
+00:07 +18 -5: Some tests failed.
+
+Failing tests:
+  C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart: 200 percent text keeps dashboard navigation and chat reachable
+  C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart: existing voice visual follows listening, user speech and URI speech
+  C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart: floating controls omit unavailable actions and preserve shared draft
+  C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart: generated voice actions require a click and start or cancel once
+  C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart: single click acknowledges once; floating Chat opens shared Workspace

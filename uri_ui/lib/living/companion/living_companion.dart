@@ -1,4 +1,6 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+
+import '../../theme/uri_theme.dart';
 
 import '../voice/companion_presence.dart' show SoftDisc, presenceScale;
 import 'companion_orb.dart';
@@ -30,6 +32,8 @@ class LivingCompanion extends StatelessWidget {
     this.palette,
     this.interactive = true,
     this.semanticsLabel,
+    this.preserveIdentityTheme = false,
+    this.presentationScale = 1,
   });
 
   final CompanionState state;
@@ -44,6 +48,11 @@ class LivingCompanion extends StatelessWidget {
   final OrbPalette? palette;
   final bool interactive;
   final String? semanticsLabel;
+  final bool preserveIdentityTheme;
+
+  /// View framing only. The existing renderer, state and saved look stay intact;
+  /// the same soft disc still bounds its visible atmosphere to this layout box.
+  final double presentationScale;
 
   /// Cross-fade between two companions when the user switches.
   static const Duration switchDuration = Duration(milliseconds: 450);
@@ -54,7 +63,7 @@ class LivingCompanion extends StatelessWidget {
     final choice = prefs.choice;
     final look = prefs.lookFor(choice);
     final id = choice.identity;
-    final classic = EnergyOrb(
+    Widget classic = EnergyOrb(
       state: state,
       progress: progress,
       size: size,
@@ -64,6 +73,17 @@ class LivingCompanion extends StatelessWidget {
       interactive: interactive,
       semanticsLabel: semanticsLabel,
     );
+    if (preserveIdentityTheme) {
+      classic = Theme(
+        data: buildUriTheme(
+          resolveUriColors(
+            CompanionPreferences.themeFor(choice, UriThemeChoice.graphite),
+            Brightness.dark,
+          ),
+        ),
+        child: classic,
+      );
+    }
     final effects = EffectsSettings.of(context);
     final Widget child;
     if (id == null) {
@@ -83,7 +103,7 @@ class LivingCompanion extends StatelessWidget {
       // Rendered larger than its square so the body fills about half of it
       // (the owner's "in proportion to the space"), then faded to a disc that
       // ends at the square's edge. The size preference scales the same way.
-      final scale = presenceScale(id) * look.size;
+      final scale = presenceScale(id) * look.size * presentationScale;
       child = KeyedSubtree(
         key: ValueKey('companion-${id.name}'),
         child: Semantics(

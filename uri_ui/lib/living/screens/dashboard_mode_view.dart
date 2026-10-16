@@ -11,6 +11,7 @@ import '../presentation/presentation_controller.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/status_badge.dart';
 import 'scheduler/scheduler_view.dart';
+import 'frost_dashboard.dart';
 import 'workspace_mode_view.dart'
     show HarnessRow, PermissionRow, pendingDecisionCount;
 
@@ -18,8 +19,13 @@ import 'workspace_mode_view.dart'
 /// made of. Every tile names its data source; mock-backed tiles carry
 /// the Simulated badge. No tile shows a metric with no source.
 class DashboardModeView extends StatefulWidget {
-  const DashboardModeView({super.key, required this.orbRect});
+  const DashboardModeView({
+    super.key,
+    required this.orbRect,
+    this.showDetails = false,
+  });
   final Rect orbRect;
+  final bool showDetails;
 
   @override
   State<DashboardModeView> createState() => _DashboardModeViewState();
@@ -49,6 +55,12 @@ class _DashboardModeViewState extends State<DashboardModeView> {
     final services = LivingScope.of(context);
     final appState = AppStateScope.of(context);
     final c = UriColors.of(context);
+    if (services.visualV2 && !widget.showDetails) {
+      return FrostDashboard(
+        orbRect: widget.orbRect,
+        details: const DashboardModeView(orbRect: Rect.zero, showDetails: true),
+      );
+    }
     return ListenableBuilder(
       listenable: Listenable.merge([
         services.companion,
@@ -238,42 +250,45 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                           ),
                         )
                       else
-                      _Tile(
-                        title: 'Brain & models',
-                        source: 'GET /providers/active-brain',
-                        simulated: mock,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              appState.activeBrain?.displayName ??
-                                  appState.activeBrain?.providerId ??
-                                  'No Brain selected',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: c.ink,
+                        _Tile(
+                          title: 'Brain & models',
+                          source: 'GET /providers/active-brain',
+                          simulated: mock,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                appState.activeBrain?.displayName ??
+                                    appState.activeBrain?.providerId ??
+                                    'No Brain selected',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: c.ink,
+                                ),
                               ),
-                            ),
-                            Text(
-                              appState.activeBrain?.model ?? '—',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                color: c.inkSoft,
+                              Text(
+                                appState.activeBrain?.model ?? '—',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: c.inkSoft,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              appState.activeBrain == null
-                                  ? 'Choose a provider in Settings.'
-                                  : (appState.activeBrain!.isConfigured
-                                        ? 'Configured'
-                                        : 'Not configured'),
-                              style: TextStyle(fontSize: 12, color: c.inkFaint),
-                            ),
-                          ],
+                              const SizedBox(height: 10),
+                              Text(
+                                appState.activeBrain == null
+                                    ? 'Choose a provider in Settings.'
+                                    : (appState.activeBrain!.isConfigured
+                                          ? 'Configured'
+                                          : 'Not configured'),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: c.inkFaint,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
                       _Tile(
                         title: 'Harnesses',
                         source: 'harness_discover (mock)',
@@ -556,7 +571,6 @@ class _BigNumber extends StatelessWidget {
     );
   }
 }
-
 
 /// Scheduled-tasks tile: counts from the scheduler service and the way in.
 /// Without a configured service it says so instead of showing numbers.

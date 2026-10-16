@@ -1,0 +1,144 @@
+{
+ "milestone": "UI-V2-COMPLETION-r2",
+ "repo": "C:/Users/cheta/Development/uri-ui-v2c",
+ "canonical_url": "https://github.com/sche004-cyber/Uri",
+ "baseline": {
+  "remote_branch": "integration/git-sync-20261008",
+  "expect": "85f6a0ec4ea18a31521c5a41afe43a5cdc5332f4"
+ },
+ "candidate": {
+  "branch": "milestone/ui-v2-completion-20261015",
+  "worktree": "C:/Users/cheta/Development/uri-ui-v2c"
+ },
+ "state_dir": "C:/Users/cheta/Development/uri-ui-v2c-run/lifecycle/r2",
+ "acceptance_criteria_file": "docs/ui_v2/completion/00_COMPLETION_PLAN_AND_ACCEPTANCE.md",
+ "python": "C:/Users/cheta/Development/uri-ui-v2c-run/runtime/.venv/Scripts/python.exe",
+ "review_focus": [
+  "The WHOLE candidate baseline..HEAD, not only the latest commits. It holds the earlier UI V2 candidate (four commits rebased unchanged from 316e6475: commits 49dcc391, a3f538e9, 5fb975bc, 18a91f0a) and this milestone's completion commits after 18a91f0a, including the merge of canonical 85f6a0ec and the manual repair d4a48317 of round 1 findings R1-01..R1-04 (driver revision UI-V2-COMPLETION, state lifecycle/r1, blocked REPAIR_FAILED after three refused worker repairs) (2b3bd36f; conflict resolution with FCV-R must keep FCV-R's plain wording and V2's behaviour). Check every acceptance criterion AC-1..AC-14 in docs/ui_v2/completion/00_COMPLETION_PLAN_AND_ACCEPTANCE.md",
+  "Preservation: no accepted feature, route, keyboard shortcut, setting, data contract or integration removed or disabled; the earlier living composition (URI_UI_VISUAL=living) and the classic interface stay reachable; unpaired installations unchanged",
+  "Production wiring in uri_ui/lib/main.dart: V2 on the integrated path only; the companion window adapter (frameless window, SetWindowRgn regions in windows/runner/flutter_window.cpp, drag, clamp, cursor) is correct, restores the normal window when leaving Companion or opening the classic interface, and cannot trap the user",
+  "Security and authority: no approval or permission bypass; typed text is never a decision; Start new work sends ordinary turns only; the dashboard review count is honest; the native channel validates its arguments; no new dependency",
+  "Blocker register docs/ui_v2/completion/01_BLOCKER_REGISTER.json: each classification and status is supported by evidence; UI V2-owned blockers repaired; nothing claimed verified that is not",
+  "user-facing work: every capability is reachable and operable through the real URI Windows UI (no backend-only or mock-UI qualification)",
+  "user-facing work: discoverability, visible controls, clear feedback (progress, success, failure, approval, recovery), first-time and returning-user onboarding",
+  "Performance: no expensive new effects (blur, saveLayer on large areas, extra shader passes, persistent timers) in the changed widgets",
+  "final revision: the UI qualification record docs/ui_v2/completion/UI_QUALIFICATION_UI_V2.json matches the tested code commit d4a48317 and its live evidence under docs/ui_v2/completion/evidence/; only evidence/record/report paths changed after that commit; the completion report 03_COMPLETION_REPORT.md makes no claim the evidence does not support"
+ ],
+ "environment_notes": [
+  "Evidence classes (owner directive 2026-10-15). If you are the reviewer, add these keys to your AUDIT_RESULT JSON: \"inspected\" (code and documents you read yourself), \"evidence_reviewed_only\" (reports, screenshots, logs you read but did not reproduce), \"live_observed\" (live behaviour you observed yourself; [] if none); tests you executed go in tests_run and claims you could not verify in unverified. Never present reviewed screenshots or reports as your own live observation. If you are an implementer or diagnosis worker, make the same distinction in your notes.",
+  "Your read-only sandbox may not create temporary folders, so flutter test and pytest may not run for you; the driver runs them as gates (flutter analyze, the full Flutter suite, and the Python ssrf/web/a2ui/ws suites). Say what you ran yourself.",
+  "docs/ui_v2/ before docs/ui_v2/completion/ is historical evidence from the 2026-10-13 candidate (screenshots, logs, tools); it is not current proof and contains no executable product code.",
+  "Live evidence was produced on the owner's Windows PC by the coordinator (synthesized input through integration_test of the production main(), real worker, Core and Runtime v1 Brain). You did not observe it live: list it under evidence_reviewed_only.",
+  "Earlier round (not this run): Codex UI-V2-COMPLETION R1 REJECT with R1-01 HIGH (Connections mock results), R1-02 MEDIUM (size claim), R1-03 MEDIUM (native region validation), R1-04 LOW (ready colour). Verify each repair yourself and look for new defects anywhere in the whole candidate."
+ ],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": [
+  "uri_ui/**",
+  "docs/ui_v2/**",
+  "docs/dev_workflow/lifecycle/UI-V2-COMPLETION*.json"
+ ],
+ "test_globs": [
+  "uri_ui/test/**",
+  "uri_ui/integration_test/**",
+  "tests/**"
+ ],
+ "allowed_flaky": [],
+ "gates": [
+  {
+   "id": "flutter-analyze",
+   "kind": "command",
+   "cwd": "uri_ui",
+   "cmd": [
+    "C:/Users/cheta/flutter/bin/flutter.bat",
+    "analyze",
+    "--no-fatal-infos",
+    "--no-pub"
+   ],
+   "timeout_s": 1200
+  },
+  {
+   "id": "flutter",
+   "kind": "flutter",
+   "cwd": "uri_ui",
+   "cmd": [
+    "C:/Users/cheta/flutter/bin/flutter.bat",
+    "test",
+    "--no-pub"
+   ],
+   "timeout_s": 3600
+  },
+  {
+   "id": "python",
+   "kind": "pytest",
+   "cmd": [
+    "{python}",
+    "-B",
+    "-m",
+    "pytest",
+    "-c",
+    "scripts/phase2d_pytest.ini",
+    "--rootdir=.",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "tests/ssrf",
+    "tests/web",
+    "tests/a2ui",
+    "tests/ws"
+   ],
+   "timeout_s": 3600
+  }
+ ],
+ "regression_runner": [
+  "{python}",
+  "-B",
+  "-m",
+  "pytest",
+  "-q",
+  "-p",
+  "no:cacheprovider"
+ ],
+ "regression_runners": [
+  {
+   "suffix": "_test.dart",
+   "cwd": "uri_ui",
+   "cmd": [
+    "C:/Users/cheta/flutter/bin/flutter.bat",
+    "test",
+    "--no-pub"
+   ]
+  }
+ ],
+ "repair_nonblocking_severities": [],
+ "reviewer": {
+  "provider": "codex_cli",
+  "model": "gpt-6-sol",
+  "timeout_s": 5400
+ },
+ "implementer": {
+  "provider": "codex_cli",
+  "model": "gpt-6-sol",
+  "timeout_s": 5400
+ },
+ "limits": {
+  "max_repair_attempts": 3
+ },
+ "continuation": {
+  "stall_rounds": 2,
+  "diagnose_after": 2,
+  "budget": {
+   "max_rounds": 10,
+   "max_cost_usd": 150,
+   "max_hours": 12
+  }
+ },
+ "integration": {
+  "mode": "fast-forward",
+  "target_ref": "integration/git-sync-20261008",
+  "authorized": false
+ },
+ "commit_trailers": [
+  "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+ ]
+}

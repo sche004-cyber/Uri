@@ -382,16 +382,19 @@ class _OccRow extends StatelessWidget {
         : '';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Text(
-              '$name$date · due ${occ['due_local']} · ${occ['state']}'
-              '${occ['reason'] != null ? ' (${occ['reason']})' : ''}',
-              style: TextStyle(fontSize: 12.5, color: c.ink),
-            ),
+          Text(
+            '$name$date · due ${occ['due_local']} · ${occ['state']}'
+            '${occ['reason'] != null ? ' (${occ['reason']})' : ''}',
+            style: TextStyle(fontSize: 12.5, color: c.ink),
           ),
-          ...actions,
+          if (actions.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Wrap(spacing: 8, runSpacing: 8, children: actions),
+            ),
         ],
       ),
     );
@@ -407,29 +410,35 @@ class _JobRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = UriColors.of(context);
     final state = '${job['state']}';
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: Text(
-            '${job['title']} · $state\n${job['interpretation']}',
-            style: TextStyle(fontSize: 12.5, color: c.ink),
-          ),
+        Text(
+          '${job['title']} · $state\n${job['interpretation']}',
+          style: TextStyle(fontSize: 12.5, color: c.ink),
         ),
-        if (state == 'ACTIVE')
-          TextButton(
-            onPressed: () => onAction('pause'),
-            child: const Text('Pause'),
-          ),
-        if (state == 'PAUSED')
-          TextButton(
-            onPressed: () => onAction('resume'),
-            child: const Text('Resume'),
-          ),
-        if (state != 'CANCELLED')
-          TextButton(
-            onPressed: () => onAction('cancel'),
-            child: const Text('Cancel'),
-          ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            if (state == 'ACTIVE')
+              TextButton(
+                onPressed: () => onAction('pause'),
+                child: const Text('Pause'),
+              ),
+            if (state == 'PAUSED')
+              TextButton(
+                onPressed: () => onAction('resume'),
+                child: const Text('Resume'),
+              ),
+            if (state != 'CANCELLED')
+              TextButton(
+                onPressed: () => onAction('cancel'),
+                child: const Text('Cancel'),
+              ),
+          ],
+        ),
       ],
     );
   }

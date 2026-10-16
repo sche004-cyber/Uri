@@ -1,0 +1,24 @@
+{
+ "label": "p6-v2",
+ "port": 18342,
+ "started_utc": "2026-10-15T18:51:49.309617+00:00",
+ "no_brain": false,
+ "verified": {
+  "ok": true,
+  "mismatched": [],
+  "checked_files": 242,
+  "runtime_head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "materialized_from": "56dbc003855811834b3c45ebe474f84267cafd2e",
+  "source_head": "56dbc003855811834b3c45ebe474f84267cafd2e"
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "override": false,
+ "server_pid": 6664,
+ "server_listener_pid": 7644,
+ "server_listen_s": 2.051,
+ "server_listening": true
+}

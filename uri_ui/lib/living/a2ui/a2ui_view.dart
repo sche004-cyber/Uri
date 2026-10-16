@@ -18,11 +18,21 @@ class A2uiSurfaceView extends StatelessWidget {
     required this.hub,
     required this.surfaceId,
     this.compact = false,
+    this.bare = false,
+    this.rootId = 'root',
+    this.hostIcon,
   });
 
   final A2uiHub hub;
   final String surfaceId;
   final bool compact;
+
+  /// Host-selected presentation only; definitions cannot request this style.
+  final bool bare;
+  final String rootId;
+
+  /// Local host presentation; never read from untrusted surface definitions.
+  final IconData? hostIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -33,31 +43,67 @@ class A2uiSurfaceView extends StatelessWidget {
         if (s == null || !s.ready) return const SizedBox.shrink();
         final c = UriColors.of(context);
         final err = hub.errors[surfaceId];
+        final content = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _Node(hub: hub, s: s, id: rootId, compact: compact),
+            if (hub.busy.contains(surfaceId))
+              const Padding(
+                padding: EdgeInsets.only(top: UriSpace.sm),
+                child: LinearProgressIndicator(minHeight: 2),
+              ),
+            if (err != null)
+              Padding(
+                padding: const EdgeInsets.only(top: UriSpace.sm),
+                child: Text(
+                  err,
+                  key: ValueKey('a2ui.$surfaceId.error'),
+                  style: TextStyle(color: c.danger, fontSize: 13),
+                ),
+              ),
+          ],
+        );
+        if (hostIcon != null) {
+          return SizedBox.expand(
+            child: _Node(
+              hub: hub,
+              s: s,
+              id: rootId,
+              compact: compact,
+              hostIcon: hostIcon,
+            ),
+          );
+        }
+        if (bare) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              outlinedButtonTheme: OutlinedButtonThemeData(
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide.none,
+                  backgroundColor: c.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  minimumSize: const Size(0, 44),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.standard,
+                  textStyle: const TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
+            child: content,
+          );
+        }
         return GlassPanel(
           key: ValueKey('a2ui.$surfaceId'),
           padding: EdgeInsets.all(compact ? UriSpace.md : UriSpace.lg),
           strong: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _Node(hub: hub, s: s, id: 'root', compact: compact),
-              if (hub.busy.contains(surfaceId))
-                const Padding(
-                  padding: EdgeInsets.only(top: UriSpace.sm),
-                  child: LinearProgressIndicator(minHeight: 2),
-                ),
-              if (err != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: UriSpace.sm),
-                  child: Text(
-                    err,
-                    key: ValueKey('a2ui.$surfaceId.error'),
-                    style: TextStyle(color: c.danger, fontSize: 13),
-                  ),
-                ),
-            ],
-          ),
+          child: content,
         );
       },
     );
@@ -71,6 +117,7 @@ class _Node extends StatelessWidget {
     required this.id,
     required this.compact,
     this.scope,
+    this.hostIcon,
   });
 
   final A2uiHub hub;
@@ -78,6 +125,7 @@ class _Node extends StatelessWidget {
   final String id;
   final bool compact;
   final String? scope;
+  final IconData? hostIcon;
 
   Object? _v(Object? prop) => (prop is Map && prop.containsKey('path'))
       ? s.read(prop['path'] as String, scope: scope)
@@ -229,7 +277,39 @@ class _Node extends StatelessWidget {
       case 'Button':
         final enabled =
             (_v(comp['enabled']) ?? true) == true && !hub.busy.contains(s.id);
-        final label = Text(_text(comp['label']));
+        final label = Text(_text(comp['label']), textAlign: TextAlign.center);
+        if (hostIcon != null) {
+          return LayoutBuilder(
+            builder: (context, box) => OutlinedButton(
+              key: _key(),
+              style: OutlinedButton.styleFrom(
+                shape: const CircleBorder(),
+                side: BorderSide.none,
+                backgroundColor: c.surface,
+                foregroundColor: c.ink,
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: TextStyle(
+                  fontSize: box.maxWidth < 96 ? 13 : 16,
+                  height: 1.2,
+                ),
+              ),
+              onPressed: enabled ? () => hub.act(s.id, id, scope: scope) : null,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    hostIcon,
+                    size: (box.maxWidth * .38).clamp(24.0, 38.0),
+                    color: c.accent,
+                  ),
+                  const SizedBox(height: 5),
+                  label,
+                ],
+              ),
+            ),
+          );
+        }
         void onTap() => hub.act(s.id, id, scope: scope);
         return switch (comp['variant']) {
           'primary' => FilledButton(
@@ -310,6 +390,7 @@ class _Choice extends StatelessWidget {
   final A2uiSurface s;
   final Map comp;
   final String? scope;
+
   final String keyBase;
   final bool compact;
 
@@ -387,6 +468,7 @@ class _DateTime extends StatelessWidget {
   final A2uiSurface s;
   final Map comp;
   final String? scope;
+
   final String keyBase;
 
   @override
@@ -468,6 +550,7 @@ class _Field extends StatefulWidget {
   final A2uiSurface s;
   final Map comp;
   final String? scope;
+
   final String keyBase;
 
   @override

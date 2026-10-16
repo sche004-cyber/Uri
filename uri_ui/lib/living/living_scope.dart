@@ -13,6 +13,7 @@ import 'contracts/work_items.dart';
 import '../services/live_voice_service.dart';
 import 'integration/oi_conversation.dart';
 import 'presentation/presentation_controller.dart';
+import 'presentation/companion_window_layout.dart';
 import 'voice/voice_catalog.dart';
 import 'voice/voice_interaction.dart';
 import 'voice/voice_session.dart';
@@ -48,7 +49,10 @@ class LivingServices {
     this.oi,
     this.a2ui,
     this.assist,
-  });
+    this.visualV2 = false,
+    CompanionPreferences? companionPreferences,
+  }) : companionPrefs = companionPreferences ?? CompanionPreferences(),
+       _ownsCompanionPrefs = companionPreferences == null;
 
   /// URI Assist + Web Intelligence over the integrated worker (docs/assist).
   /// Null in the mock preview, where the Assist view says it needs the worker.
@@ -82,6 +86,14 @@ class LivingServices {
   /// True while `AppState` is backed by `MockUriClient`: regions that
   /// render AppState data then carry the Simulated badge too.
   final bool appDataIsMock;
+  final bool visualV2;
+
+  /// Transient Companion disclosure; never an identity, theme or authority.
+  Future<void> Function(CompanionWindowLayout)? updateCompanionWindow;
+  Future<void> Function()? moveCompanionWindow;
+  Future<Offset?> Function()? readCompanionPointer;
+  WidgetBuilder? classicInterfaceBuilder;
+  final ValueNotifier<String?> windowNotice = ValueNotifier(null);
 
   /// Executor selection (harness id) and reasoning depth. Selection is a
   /// UI preference here; a real run would bind it into an execution
@@ -112,7 +124,8 @@ class LivingServices {
   /// (Companion Settings). The app root restores them in place from
   /// `uri.living.companion.*` at start-up; the selected companion decides
   /// the theme.
-  final CompanionPreferences companionPrefs = CompanionPreferences();
+  final CompanionPreferences companionPrefs;
+  final bool _ownsCompanionPrefs;
 
   /// The one clock the companion and the voice waveform animate on.
   final CompanionFrameClock frameClock = CompanionFrameClock();
@@ -232,10 +245,11 @@ class LivingServices {
     composerInsert.dispose();
     officeTarget.dispose();
     officeWorkspace?.dispose();
+    windowNotice.dispose();
     voice.dispose();
     frameGovernor.dispose();
     frameClock.dispose();
-    companionPrefs.dispose();
+    if (_ownsCompanionPrefs) companionPrefs.dispose();
   }
 }
 

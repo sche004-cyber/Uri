@@ -1,0 +1,776 @@
+{
+ "schema": "uri-ui-qualification/1",
+ "task": {
+  "task_id": "UI-V2-COMPLETION",
+  "capability": "URI UI V2 presentation over the integrated worker, Core and Brain",
+  "classification": "USER_FACING",
+  "no_ui_reason": null,
+  "phase": "UI V2 completion",
+  "candidate_branch": "milestone/ui-v2-completion-20261015",
+  "code_commit": "d4a48317e4a20d672bd5bd436e3c11e51ddc22c6",
+  "acceptance_criteria_file": "docs/ui_v2/completion/00_COMPLETION_PLAN_AND_ACCEPTANCE.md",
+  "acceptance_criteria": [
+   "AC-1",
+   "AC-2",
+   "AC-3",
+   "AC-4",
+   "AC-5",
+   "AC-6",
+   "AC-7",
+   "AC-8",
+   "AC-9",
+   "AC-10",
+   "AC-11",
+   "AC-12",
+   "AC-13",
+   "AC-14"
+  ]
+ },
+ "environment": {
+  "windows": "Windows-11-10.0.26200-SP0",
+  "app_build": {
+   "commit": "d4a48317e4a20d672bd5bd436e3c11e51ddc22c6",
+   "tree": "9d5f6dd89e1f1066407fb98cf300b39298c690bf",
+   "build": "flutter test integration_test (debug, Windows) of production main()",
+   "binary_sha256": "c509c6914b54100c088babfc5fc608b8dfb60d0ad215a3ee85735e1f5bb1b40f",
+   "returning_run_commit": "d4a48317e4a20d672bd5bd436e3c11e51ddc22c6"
+  },
+  "core": "materialized test runtime (e8e3b65 + Phase 2 OQ overlay + candidate new paths), receipt evidence/runtime/materialize2.json",
+  "brain": "Runtime v1 llama-server b11425, Qwen3.6-35B-A3B UD-IQ3_S + MTP, started under the machine-wide GPU lease",
+  "dependencies": [
+   "Flutter 3.47.2 / Dart 3.13.2"
+  ],
+  "gpu_override": "none (lease without override)",
+  "input": "synthesized (flutter_test TestTextInput, key events, taps); physical input not qualified"
+ },
+ "functional": [
+  {
+   "journey_id": "J1",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Start the production app on a paired installation (first-time user, onboarding)"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J1-v2-is-default": "PASS",
+    "J1-dashboard-first": "PASS",
+    "J1-brain-ready": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j1-onboarding-first.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j1-ready.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j1-start.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1024x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1280x800.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1366x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-800x600.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-900x640.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1024x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1280x800.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1366x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-800x600.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-900x640.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j12-dashboard-brain-stopped.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j12-turn-without-brain.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J2",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Navigate Dashboard, Workspace, Assist and Companion by Ctrl+1..4 and by the Dashboard navigation"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J2-ctrl-workspace": "PASS",
+    "J2-ctrl-dashboard": "PASS",
+    "J2-ctrl-assist": "PASS",
+    "J2-nav-Conversation": "PASS",
+    "J2-nav-Tasks": "PASS",
+    "J2-nav-Documents": "PASS",
+    "J2-nav-Settings": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-assist.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-dashboard.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-nav-conversation.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-nav-documents.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-nav-settings.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-nav-tasks.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j2-workspace.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J3",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Conversation with the real Brain from the V2 Workspace"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J3-greeting-replied": "PASS",
+    "J3-fact": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j3-conversation.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J4",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Ambiguous request: clarification, then confirmation card"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J4-clarification-asked": "PASS",
+    "J4-confirmation-asked": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j4-confirmation.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J5",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Supported tool through the UI (remember_fact): approval card, approve, verified result, recall"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J5-tool-settled": "PASS",
+    "J5-memory-written": "PASS",
+    "J5-recall": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j5-after-approve.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j5-approval-card.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J6",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Documents entry point: Start new work (Letter) sends a real turn"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J6-letter-opens-conversation": "PASS",
+    "J6-letter-real-turn": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j6-documents.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j6-letter-reply.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J7",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Companion: frameless 440x680 shaped window, single click actions, detached chat with a real reply, Escape, double click back with the window restored"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J7-window-440x680": "PASS",
+    "J7-shaped-region": "PASS",
+    "J7-single-click-controls": "PASS",
+    "J7-detached-chat": "PASS",
+    "J7-chat-reply": "PASS",
+    "J7-stays-companion": "PASS",
+    "J7-escape-closes-chat": "PASS",
+    "J7-double-click-dashboard": "PASS",
+    "J7-window-restored": "PASS",
+    "J7-native-rejects-nan": "PASS",
+    "J7-native-rejects-infinite": "PASS",
+    "J7-native-rejects-inverted": "PASS",
+    "J7-region-kept-after-reject": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j7-after-escape.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j7-back-dashboard.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j7-companion-chat.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j7-companion-controls.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j7-companion-idle.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J8",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Settings: companion gallery preview isolation and Apply; interface theme"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J8-gallery-opens": "PASS",
+    "J8-preview-isolated": "PASS",
+    "J8-apply": "PASS",
+    "J8-theme": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j8-after-theme.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j8-dashboard-snow-lunar.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j8-gallery.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J9",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Approval visibility on the Dashboard; review opens Tasks; Deny is honoured"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J9-dashboard-counts-decision": "PASS",
+    "J9-review-opens-tasks": "PASS",
+    "J9-deny-honoured": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j9-after-deny.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j9-dashboard-review-count.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j9-tasks-review.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J10",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Responsiveness while the Brain works: navigate during a turn"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J10-navigation-while-busy": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J11",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Window sizes 1366x768, 1280x800, 1024x768, 900x640, 800x600: no layout error; composer and destinations in view where the content area is at least 900x640 (smaller windows use the scrolling column by design)"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J11-no-layout-error-1366": "PASS",
+    "J11-no-layout-error-1280": "PASS",
+    "J11-no-layout-error-1024": "PASS",
+    "J11-no-layout-error-900": "PASS",
+    "J11-no-layout-error-800": "PASS",
+    "J11-composer-in-view-1366": "PASS",
+    "J11-composer-in-view-1280": "PASS",
+    "J11-composer-in-view-1024": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1024x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1280x800.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-1366x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-800x600.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-dashboard-900x640.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1024x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1280x800.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-1366x768.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-800x600.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j11-workspace-900x640.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J12",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Failure and recovery: Brain stops; UI shows it; a turn fails with a plain message and recovery options"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J12-brain-not-ready-seen": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j12-dashboard-brain-stopped.png",
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/main-j12-turn-without-brain.png"
+   ],
+   "failure_and_recovery": "{\"utc\": \"2026-10-15T19:53:08.611541Z\", \"label\": \"turn without brain\", \"text\": \"\", \"error_code\": \"BRAIN_UNAVAILABLE\", \"error_message\": \"The local Brain is not ready (STOPPED).\", \"recovery\": [\"start_brain\", \"retry\", \"choose_other_source\"]}",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J13",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Regression: classic interface entry still offered"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J13-classic-entry-present": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l13-v2-first/observations-main.json"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "R1",
+   "user": "returning",
+   "mandatory": true,
+   "steps": [
+    "Returning user: no onboarding repeat; companion and theme persisted; conversation works"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "R-no-onboarding": "PASS",
+    "R-companion-persisted": "PASS",
+    "R-theme-persisted": "PASS",
+    "R-conversation": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l14-v2-returning/observations-returning.json",
+    "docs/ui_v2/completion/evidence/live/l14-v2-returning/returning-r-connections.png",
+    "docs/ui_v2/completion/evidence/live/l14-v2-returning/returning-r-start.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "R2",
+   "user": "returning",
+   "mandatory": true,
+   "steps": [
+    "Connections destination on the integrated worker says plainly that accounts are not managed here; Open Settings works"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "R-connections-card-plain": "PASS",
+    "R-connections-page-plain": "PASS",
+    "R-connections-open-settings": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/completion/evidence/live/l14-v2-returning/observations-returning.json",
+    "docs/ui_v2/completion/evidence/live/l14-v2-returning/returning-r-connections.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "NV-physical",
+   "user": "first_time",
+   "mandatory": false,
+   "steps": [
+    "physical mouse, keyboard and window drag"
+   ],
+   "expected": "observed by a person on this PC",
+   "actual": "not observed",
+   "outputs": [],
+   "evidence": [],
+   "failure_and_recovery": "n/a",
+   "evidence_status": "NOT_RUN",
+   "result": "NOT VERIFIED"
+  },
+  {
+   "journey_id": "NV-microphone",
+   "user": "first_time",
+   "mandatory": false,
+   "steps": [
+    "microphone and speaker (voice journeys)"
+   ],
+   "expected": "observed by a person on this PC",
+   "actual": "not observed",
+   "outputs": [],
+   "evidence": [],
+   "failure_and_recovery": "n/a",
+   "evidence_status": "NOT_RUN",
+   "result": "NOT VERIFIED"
+  },
+  {
+   "journey_id": "NV-other",
+   "user": "first_time",
+   "mandatory": false,
+   "steps": [
+    "other DPI scaling and a second monitor"
+   ],
+   "expected": "observed by a person on this PC",
+   "actual": "not observed",
+   "outputs": [],
+   "evidence": [],
+   "failure_and_recovery": "n/a",
+   "evidence_status": "NOT_RUN",
+   "result": "NOT VERIFIED"
+  }
+ ],
+ "ux": {
+  "discoverability": [
+   "V-4: Dashboard navigation items carry one-line hover hints; Companion explains click for Chat and double-click to return (c31516fd). First-time live run l6 shows the onboarding flow (8 steps) then the Dashboard.",
+   "Documents tiles in the integrated V2 now start real work (BLK-INT-2, live J6)."
+  ],
+  "navigation": [
+   "LV-2: Ctrl+1..4 / Escape stopped working after sending a message (focus fell to the page scope); repaired a9959714, live J2/J7/J9/J11 key log shows every switch."
+  ],
+  "tool_visibility": [
+   "Dashboard review button and Tasks card count the worker's open approval/confirmation (BLK-INT-3, live J9 '1 review needed')."
+  ],
+  "control_usability": [
+   "V-2: common laptop windows (1366x768, 1280x800, 1024x768, 900x640) keep the six destinations and the composer in view (medium layout, live J11 screenshots)."
+  ],
+  "feedback": [
+   "V-1: plain review labels ('Nothing to review', '1 review needed'). Approval/confirmation card wording and chips come from FCV-R (canonical 85f6a0ec)."
+  ],
+  "consistency": [
+   "V2 status lines use the same Brain startup headline as the rest of the app (signal.title, merge 2b3bd36f)."
+  ],
+  "accessibility": [
+   "Companion activation keeps its semantics label; 200% text keeps the scrolling layout (existing test)."
+  ],
+  "onboarding_needed": [
+   "None beyond hover hints: the existing living setup flow already explains Connect, Harness, Brain and Permissions (live J1)."
+  ]
+ },
+ "improvements": [
+  {
+   "issue_id": "BLK-INT-1",
+   "class": "MATERIAL",
+   "issue": "V2 not reachable from the production app",
+   "repair": "production integrated entry opens V2",
+   "repair_commit": "ca9803c1",
+   "onboarding_change": "none",
+   "retest": "J1 PASS",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "BLK-INT-2",
+   "class": "MATERIAL",
+   "issue": "Start new work tiles created simulated items in the integrated V2",
+   "repair": "real turn",
+   "repair_commit": "ca9803c1",
+   "onboarding_change": "none",
+   "retest": "J6 PASS",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "BLK-INT-3",
+   "class": "MATERIAL",
+   "issue": "Dashboard said '0 review needed' while an approval waited",
+   "repair": "count worker decisions",
+   "repair_commit": "c31516fd",
+   "onboarding_change": "none",
+   "retest": "J9 PASS",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "LV-2",
+   "class": "MATERIAL",
+   "issue": "Mode keys dead after sending (focus fell to page scope)",
+   "repair": "keyboard fallback handler",
+   "repair_commit": "a9959714",
+   "onboarding_change": "none",
+   "retest": "J2, J7, J9, J11 PASS",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "LV-1",
+   "class": "MINOR",
+   "issue": "Opening Settings raised 14 framework errors (voice status notified during build)",
+   "repair": "start voice check after first frame",
+   "repair_commit": "a9959714",
+   "onboarding_change": "none",
+   "retest": "J8 PASS, no such error",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "V-2",
+   "class": "MINOR",
+   "issue": "Destinations and composer below the fold on common laptop windows",
+   "repair": "medium dashboard layout",
+   "repair_commit": "c31516fd",
+   "onboarding_change": "none",
+   "retest": "J11 PASS",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "V-1",
+   "class": "MINOR",
+   "issue": "'0 review needed' / '1 pending decisions' wording",
+   "repair": "plain labels",
+   "repair_commit": "c31516fd",
+   "onboarding_change": "none",
+   "retest": "J9 PASS",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "V-3",
+   "class": "MINOR",
+   "issue": "Detached chat cut a previous bubble into a thin sliver under its header",
+   "repair": "top fade",
+   "repair_commit": "c31516fd",
+   "onboarding_change": "none",
+   "retest": "J7 screenshot",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "V-4",
+   "class": "MINOR",
+   "issue": "No hint how to return from the floating Companion",
+   "repair": "navigation hover hints",
+   "repair_commit": "c31516fd",
+   "onboarding_change": "hover hints",
+   "retest": "widget tests",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "UX-D1",
+   "class": "MINOR",
+   "issue": "Transient RenderFlex overflow (draft panel, composer row) for one frame while the window shrinks into Companion; conversation header overflow (34 px) when an open draft and the Brain-unavailable banner stack in a 681 px window",
+   "repair": "deferred",
+   "repair_commit": null,
+   "onboarding_change": "none",
+   "retest": "recorded in l6",
+   "deferral_confirmed_by_auditor": "pending"
+  },
+  {
+   "issue_id": "UX-D2",
+   "class": "MINOR",
+   "issue": "Lunar renderer leaves two faint 1 px lines (3/255) at its square bounds on light themes",
+   "repair": "deferred to the companion renderer milestone",
+   "repair_commit": null,
+   "onboarding_change": "none",
+   "retest": "l5 screenshot",
+   "deferral_confirmed_by_auditor": "pending"
+  },
+  {
+   "issue_id": "UX-D3",
+   "class": "MINOR",
+   "issue": "Composer shows testing affordances (simulated transcript, dictation) to every user",
+   "repair": "deferred (accepted WS/Text Intelligence features; owner decision whether to hide)",
+   "repair_commit": null,
+   "onboarding_change": "none",
+   "retest": "n/a",
+   "deferral_confirmed_by_auditor": "pending"
+  },
+  {
+   "issue_id": "UX-D4",
+   "class": "MINOR",
+   "issue": "While a draft is open (Text Intelligence draft desk), a message typed in the detached Companion chat is taken as an edit of that draft (live l9: 'Say hello in three words' became 'Letter (version 2 of 2)'); the Companion chat does not show that a draft is open",
+   "repair": "deferred (Text Intelligence behaviour; owner decision whether the Companion chat should show the open draft)",
+   "repair_commit": null,
+   "onboarding_change": "none",
+   "retest": "l11 with draft closed: ordinary reply",
+   "deferral_confirmed_by_auditor": "pending"
+  },
+  {
+   "issue_id": "R1-01",
+   "class": "MATERIAL",
+   "issue": "Connections destination showed made-up accounts on the integrated path (Codex)",
+   "repair": "plain page",
+   "repair_commit": "d4a48317",
+   "onboarding_change": "none",
+   "retest": "R2 live",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "R1-03",
+   "class": "MINOR",
+   "issue": "Native region channel accepted malformed numbers (Codex)",
+   "repair": "validation",
+   "repair_commit": "d4a48317",
+   "onboarding_change": "none",
+   "retest": "J7 native rejection checks",
+   "deferral_confirmed_by_auditor": null
+  }
+ ],
+ "performance": {
+  "method": "alternating runs, same commit, same view and prompt x5; harness forces continuous frames (debug build), so CPU is comparative only",
+  "living_composition": {
+   "brain_tokens_per_s": [
+    122.8,
+    150.5,
+    148.8,
+    147.6,
+    150.8
+   ],
+   "brain_tokens_per_s_median": 148.8,
+   "ui_gpu_dedicated_mib_median": 308.2,
+   "ui_cpu_pct_median": 62.2,
+   "ui_rss_mib_median": 342.1,
+   "frames": {
+    "idle-companion": {
+     "frames": 1434,
+     "total_ms_p95": 4.607,
+     "over_16ms": 0
+    },
+    "idle-workspace-30s": {
+     "frames": 3613,
+     "total_ms_p95": 5.219,
+     "over_16ms": 8
+    },
+    "idle-dashboard-30s": {
+     "frames": 4306,
+     "total_ms_p95": 4.651,
+     "over_16ms": 0
+    },
+    "idle-companion-30s": {
+     "frames": 4336,
+     "total_ms_p95": 4.315,
+     "over_16ms": 0
+    }
+   }
+  },
+  "v2": {
+   "brain_tokens_per_s": [
+    124.0,
+    150.8,
+    149.8,
+    148.1,
+    150.4
+   ],
+   "brain_tokens_per_s_median": 149.8,
+   "ui_gpu_dedicated_mib_median": 208.5,
+   "ui_cpu_pct_median": 61.8,
+   "ui_rss_mib_median": 344.6,
+   "frames": {
+    "idle-dashboard": {
+     "frames": 1323,
+     "total_ms_p95": 4.987,
+     "over_16ms": 3
+    },
+    "idle-workspace-30s": {
+     "frames": 3203,
+     "total_ms_p95": 4.906,
+     "over_16ms": 7
+    },
+    "idle-dashboard-30s": {
+     "frames": 4544,
+     "total_ms_p95": 4.61,
+     "over_16ms": 8
+    },
+    "idle-companion-30s": {
+     "frames": 4567,
+     "total_ms_p95": 3.376,
+     "over_16ms": 0
+    }
+   }
+  },
+  "measured_at_commit": "56dbc003855811834b3c45ebe474f84267cafd2e",
+  "note": "Measured before the round 1 repairs (d4a48317). Those repairs add one page, native argument checks and one colour condition; no rendering path of the measured views changed."
+ },
+ "remaining_limitations": [
+  "Physical mouse, keyboard and window drag: NOT VERIFIED (synthesized input only). Does not change the status of the mandatory journeys, which were defined for automated native input.",
+  "Microphone and speaker: NOT VERIFIED (no audio device test).",
+  "Other DPI scaling and a second monitor: NOT VERIFIED (96 DPI single monitor).",
+  "Debug build; release-build frame timings not measured."
+ ],
+ "independent_audit": {
+  "auditor": "codex_cli",
+  "fallback_reason": null,
+  "reviewer_identity": "see lifecycle receipt",
+  "reviewed_commit": null,
+  "lifecycle_state_dirs": [],
+  "repair_iterations": 0,
+  "findings": [],
+  "verdict": "BLOCKED",
+  "auditor_observed_live": false,
+  "auditor_inspected": [],
+  "auditor_tests_run": [],
+  "auditor_evidence_reviewed_only": [],
+  "auditor_live_observed": [],
+  "auditor_unverified": [
+   "filled from the driver receipt after the final review"
+  ]
+ },
+ "status": "PASS",
+ "status_reason": "Every mandatory journey PASS with COMPLETED_WITH_RESULT live evidence on code_commit; no MATERIAL issue open.",
+ "recorded_at": "2026-10-15T19:55:41.770498+00:00",
+ "corrections": [
+  {
+   "at": "2026-10-16",
+   "what": "Earlier record at 0263e61b (code 56dbc003) said the medium Dashboard keeps the composer in view on common laptop windows without the size limit; Codex R1-02 showed 900x640 and 800x600 windows (601/561 px content) use the scrolling column. J11 now checks composer visibility only where the medium layout applies (content >= 900x640)."
+  }
+ ]
+}

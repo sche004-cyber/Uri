@@ -12,6 +12,7 @@ import '../../voice/companion_presence.dart' show SoftDisc, presenceScale;
 import '../../voice/voice_catalog.dart';
 import '../../widgets/status_badge.dart';
 import 'voice_input_settings.dart';
+import 'companion_gallery.dart';
 
 /// Companion Settings: which companion, how it looks, how it is rendered,
 /// and how URI sounds.
@@ -26,6 +27,20 @@ class CompanionSettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prefs = CompanionPreferences.of(context);
+    if (LivingScope.of(context).visualV2) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const CompanionsSection(),
+          const SizedBox(height: 24),
+          if (!prefs.choice.isClassic) _LivingAppearance(choice: prefs.choice),
+          const SizedBox(height: 24),
+          const _PerformanceSettings(),
+          const SizedBox(height: 24),
+          const _VoiceSettings(),
+        ],
+      );
+    }
     return Column(
       key: const ValueKey('companion-settings'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -464,7 +479,10 @@ class _ClassicAppearance extends StatelessWidget {
               runSpacing: 8,
               children: [
                 for (final t in UriThemeChoice.values)
-                  if (t != UriThemeChoice.system)
+                  if (t != UriThemeChoice.system &&
+                      t != UriThemeChoice.ivoryFoundry &&
+                      t != UriThemeChoice.snowArchive &&
+                      t != UriThemeChoice.ashLimestone)
                     ChoiceChip(
                       key: ValueKey('theme-${t.name}'),
                       avatar: CircleAvatar(

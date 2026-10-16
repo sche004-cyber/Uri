@@ -1,0 +1,30 @@
+{
+  "status": "NOT_READY_NOT_VERIFIED",
+  "parent_snapshot": "15a322d17aa54a4aec8316c6fc6628f70bf617ff",
+  "accepted_cached_baseline": "1b5423bc15fd7e5da9161c862cf839925da9f2eb",
+  "candidate_commit": "Containing Git commit; use git log -1 -- docs/ui_v2/REFINEMENT_STATE.json",
+  "source_sha256": {
+    "uri_ui/lib/living/presentation/living_shell.dart": "90c94ff06feeb7f86658ed48c1534b6217764aa9cc4df85a0f27297121a5a4ee",
+    "uri_ui/lib/living/screens/companion_mode_view.dart": "23263898cf7584ab7036d74e73260c51d717b3bc974878e71a06552bbb3bc21a",
+    "uri_ui/lib/living/screens/frost_dashboard.dart": "74c8bdf5bc613b2a9504de324ac9b5edcae281c0670e30b72da305b7c9e45c75",
+    "uri_ui/lib/living/widgets/living_composer.dart": "0bdbec43e299ef1b56a5709204a19528c4ea7112b0805dc90cba10a6cbd8b97d",
+    "uri_ui/test/living/ui_v2_test.dart": "3e9ec667e9f97c5efa75c13b33ad3fa104ea5d62730ab76350fcf4712a4c04e9"
+  },
+  "flutter_analysis": "NOT RUN: Dart launcher fails before analysis; refinement_analysis_attempt.txt",
+  "flutter_tests": "NOT RUN: Dart launcher fails before tests; refinement_before.txt",
+  "new_tests_authored": 2,
+  "html_preview": "SIMULATED: JavaScript syntax checked separately, browser appearance NOT VERIFIED",
+  "new_visual_capture": "NONE",
+  "reference_target_80_percent": "NOT ESTABLISHED",
+  "prior_test_evidence": {
+    "source_commit": "15a322d17aa54a4aec8316c6fc6628f70bf617ff",
+    "passed": 567,
+    "skipped": 5,
+    "current_refinement_covered": false
+  },
+  "native_transparency_hit_testing_voice_live_chat_performance": "NOT VERIFIED",
+  "canonical_refresh": "BLOCKED: github.com could not be resolved",
+  "independent_acceptance": "NONE for refinement; prior candidate WAITING_FOR_MODEL",
+  "integration": "NONE",
+  "deployment": "NONE"
+}

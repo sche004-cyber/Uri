@@ -1,0 +1,71 @@
+{
+  "method": "Six equal-weight local luminance SSIM regions; approved reference resampled in memory to 440x680; RGBA composited in memory over comparison gray #72726f",
+  "regions": {
+    "solar": {
+      "bounds": [
+        105,
+        85,
+        335,
+        315
+      ],
+      "ssim": 0.5907615165238014
+    },
+    "chat_button": {
+      "bounds": [
+        25,
+        165,
+        110,
+        240
+      ],
+      "ssim": 0.3419937903412501
+    },
+    "dashboard_button": {
+      "bounds": [
+        330,
+        165,
+        415,
+        240
+      ],
+      "ssim": 0.30976164471004924
+    },
+    "voice_button": {
+      "bounds": [
+        175,
+        310,
+        265,
+        400
+      ],
+      "ssim": 0.38880980277971056
+    },
+    "waveform": {
+      "bounds": [
+        135,
+        382,
+        305,
+        468
+      ],
+      "ssim": 0.4191202696829848
+    },
+    "detached_chat": {
+      "bounds": [
+        70,
+        445,
+        370,
+        670
+      ],
+      "ssim": 0.4628558332675156
+    }
+  },
+  "mean_ssim": 0.4188838095508853,
+  "screenshot_checkpoint": 0.8,
+  "meets_screenshot_checkpoint": false,
+  "reference_sha256": "97e61a056cb7c06fdf16e324817f493eec0754e6a6832464856e128651c228ce",
+  "candidate_sha256": "efc59187a6b643c2243d16a1b53fee90cc0e051c4d60631726a6f65f4974546a",
+  "limitations": [
+    "Not a literal design-accuracy percentage or acceptance",
+    "Actual procedural texture/phase differs from generated reference",
+    "Readable labels/buttons/panel are physically larger than scaled reference",
+    "Background/reference JPEG and simulated audio level differ",
+    "Native compositor/runtime/device effects not verified"
+  ]
+}

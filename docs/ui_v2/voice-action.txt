@@ -1,0 +1,51 @@
+00:00 +0: loading C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart
+00:00 +0: generated voice actions require a click and start or cancel once
+
+Warning: A call to tap() with finder "Found 1 widget with key [<'a2ui.companion-controls.voiceCancel'>]: [
+  OutlinedButton-[<'a2ui.companion-controls.voiceCancel'>](dependencies: [IconTheme, InheritedCupertinoTheme, MediaQuery, _InheritedTheme, _LocalizationsScope-[GlobalKey#2c065]], state: _ButtonStyleState#65bba),
+]" derived an Offset (Offset(158.0, 460.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderSemanticsAnnotations#43c4e relayoutBoundary=up4
+The hit test result at that offset is: HitTestResult(RenderCustomPaint#9cd69@Offset(95.9, 81.9), RenderShaderMask#eb20c@Offset(95.9, 81.9), RenderConstrainedBox#6279f@Offset(95.9, 81.9), RenderConstrainedOverflowBox#334fd@Offset(58.0, 44.0), RenderSemanticsAnnotations#ca550@Offset(58.0, 44.0), RenderAnimatedOpacity#271ad@Offset(58.0, 44.0), RenderStack#f51d3@Offset(58.0, 44.0), RenderConstrainedBox#9db2a@Offset(58.0, 44.0), RenderSemanticsAnnotations#eb944@Offset(58.0, 44.0), RenderSemanticsAnnotations#701df@Offset(58.0, 44.0), RenderMouseRegion#26deb@Offset(58.0, 44.0), RenderPointerListener#4dd2a@Offset(58.0, 44.0), RenderStack#10eb0@Offset(158.0, 460.0), _RenderInkFeatures#abe3c@Offset(158.0, 460.0), RenderCustomPaint#b62b4@Offset(158.0, 460.0), RenderClipPath#426cf@Offset(158.0, 460.0), RenderCustomMultiChildLayoutBox#a7ba6@Offset(158.0, 460.0), _RenderInkFeatures#01008@Offset(158.0, 460.0), RenderPhysicalModel#f2278@Offset(158.0, 460.0), RenderSemanticsAnnotations#78d42@Offset(158.0, 460.0), RenderSemanticsAnnotations#75368@Offset(158.0, 460.0), _RenderLayoutBuilder#8d907@Offset(158.0, 460.0), RenderSemanticsAnnotations#ffe64@Offset(158.0, 460.0), RenderRepaintBoundary#7b21c@Offset(158.0, 460.0), RenderIgnorePointer#d805b@Offset(158.0, 460.0), RenderAnimatedOpacity#4e45c@Offset(158.0, 460.0), RenderAnimatedOpacity#03a0d@Offset(158.0, 460.0), _RenderColoredBox#ead93@Offset(158.0, 460.0), RenderAnimatedOpacity#0c5c0@Offset(158.0, 460.0), RenderIgnorePointer#f2cf7@Offset(158.0, 460.0), RenderAnimatedOpacity#0984f@Offset(158.0, 460.0), RenderRepaintBoundary#a8112@Offset(158.0, 460.0), RenderSemanticsAnnotations#f0c63@Offset(158.0, 460.0), RenderOffstage#a7c59@Offset(158.0, 460.0), RenderSemanticsAnnotations#98da8@Offset(158.0, 460.0), _RenderTheater#cf551@Offset(158.0, 460.0), RenderAbsorbPointer#2de56@Offset(158.0, 460.0), RenderPointerListener#cb324@Offset(158.0, 460.0), RenderSemanticsAnnotations#41cd5@Offset(158.0, 460.0), RenderSemanticsAnnotations#4f2d5@Offset(158.0, 460.0), RenderSemanticsAnnotations#e06bf@Offset(158.0, 460.0), RenderSemanticsAnnotations#9e892@Offset(158.0, 460.0), RenderTapRegionSurface#755ca@Offset(158.0, 460.0), RenderSemanticsAnnotations#b1bc4@Offset(158.0, 460.0), RenderSemanticsAnnotations#c527e@Offset(158.0, 460.0), HitTestEntry<HitTestTarget>#50630(_ReusableRenderView#9d401), HitTestEntry<HitTestTarget>#27794(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:550:20)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#6      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: <1>
+  Actual: <0>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart:554:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart line 554
+The test description was:
+  generated voice actions require a click and start or cancel once
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -1: generated voice actions require a click and start or cancel once [E]
+  Test failed. See exception logs above.
+  The test description was: generated voice actions require a click and start or cancel once
+  
+00:01 +0 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart: generated voice actions require a click and start or cancel once

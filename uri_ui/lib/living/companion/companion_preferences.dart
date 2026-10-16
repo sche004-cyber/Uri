@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/uri_theme.dart';
 import 'companion_orb.dart';
 import 'companion_theme.dart';
+import 'energy_orb.dart' show OrbVariant;
 
 /// The companion the user chose: one of the living identities, or the
 /// accepted classic Energy Orb (kept so no accepted functionality is lost).
@@ -446,6 +447,32 @@ class CompanionPreferences extends ChangeNotifier {
   static const String keyStats = '${prefix}statsOverlay';
   static const String keyLookPrefix = '${prefix}look.';
   static const String keyVoice = '${prefix}voice';
+  static const String keyInterfaceTheme = '${prefix}interfaceTheme';
+  static const String keyClassicVariant = '${prefix}classicVariant';
+  UriThemeChoice? _interfaceTheme;
+  OrbVariant _classicVariant = OrbVariant.nebula;
+  UriThemeChoice? get interfaceTheme => _interfaceTheme;
+  OrbVariant get classicVariant => _classicVariant;
+  UriThemeChoice effectiveTheme([
+    UriThemeChoice legacyClassic = UriThemeChoice.graphite,
+  ]) => _interfaceTheme ?? themeFor(choice, legacyClassic);
+
+  Future<void> setInterfaceTheme(UriThemeChoice? value) async {
+    if (_interfaceTheme == value) return;
+    _interfaceTheme = value;
+    _changed(
+      () => _write(
+        (p) => p.setString(keyInterfaceTheme, value?.name ?? 'original'),
+      ),
+    );
+    await pendingWrite;
+  }
+
+  void setClassicVariant(OrbVariant value) {
+    if (_classicVariant == value) return;
+    _classicVariant = value;
+    _changed(() => _write((p) => p.setString(keyClassicVariant, value.name)));
+  }
 
   /// False in harnesses and tests that must never write the shared file.
   final bool persist;
@@ -561,6 +588,21 @@ class CompanionPreferences extends ChangeNotifier {
     }
 
     _looks.clear();
+    final themeKey = _safeString(prefs, keyInterfaceTheme);
+    _interfaceTheme = UriThemeChoice.values
+        .where((t) => t.name == themeKey)
+        .firstOrNull;
+    if (themeKey == null && _safeString(prefs, keyChoice) == 'classic') {
+      final legacy = _safeString(prefs, 'uri.living.themeChoice');
+      _interfaceTheme = UriThemeChoice.values
+          .where((t) => t.name == legacy)
+          .firstOrNull;
+    }
+    _classicVariant = pick(
+      OrbVariant.values,
+      keyClassicVariant,
+      OrbVariant.nebula,
+    );
     for (final c in CompanionChoice.all) {
       final raw = _safeString(prefs, '$keyLookPrefix${c.key}');
       if (raw == null) continue;
