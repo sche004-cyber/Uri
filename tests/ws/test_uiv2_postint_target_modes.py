@@ -100,3 +100,15 @@ def test_draft_target_never_lets_an_action_bypass_core(fake, tmp_path):
 def test_unknown_mode_is_refused():
     with pytest.raises(TI.InputRejected):
         TI.parse({"schema": TI.SCHEMA, "source": "typed", "mode": "edit"}, "x")
+
+
+def test_draft_target_name_placeholder_edit(fake, tmp_path):
+    """R4-02: 'Replace my name with Ravi in the draft' said to the draft is an edit of it."""
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    sign = {"action": "edit", "clarification": None, "fact_updates": [], "exclusions_add": [],
+            "edits": [{"op": "replace", "block_id": "b8", "role": "signature", "text": "Ravi, Warden's office"}],
+            "summary": "Signed as Ravi."}
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(sign)}]
+    turn(b, WARDEN)
+    turn(b, "Replace my name with Ravi in the draft", input=DRAFT)
+    assert _draft(b)["version"] == 2
