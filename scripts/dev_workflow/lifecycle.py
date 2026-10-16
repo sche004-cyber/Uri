@@ -180,6 +180,21 @@ def policy(cfg) -> dict:
     return out
 
 
+NO_INDEPENDENT_REVIEWER = "NO_INDEPENDENT_REVIEWER"   # a block the next run re-checks itself
+
+
+def chained_blocker(st: "State") -> dict | None:
+    """The current blocker as the hash-chained events record it (never state.json, which anyone can edit)."""
+    blocker = None
+    for ev in _chained_events(st):
+        d, k = ev["data"], ev["kind"]
+        if k == "STAGE" and d.get("stage") == S.BLOCKED.value:
+            blocker = d.get("blocker")
+        elif k in ("OWNER_UNBLOCK", "REVIEWER_RECHECK"):
+            blocker = None
+    return blocker
+
+
 def reviewer_chain(cfg) -> list[dict]:
     """The reviewers in order of preference: ``reviewer`` (preferred), then ``reviewer_fallbacks``. Owner policy
     2026-10-16: independent review is mandatory, a particular provider never is."""
@@ -1016,14 +1031,15 @@ def reviewer_anchor(st: State, idx: int) -> dict | None:
 
 def attempt_counts(cfg, st: State) -> dict:
     """Per-reviewer attempts without an independent result, derived from the hash-chained events (R2-01: decisions
-    never come from state.json). They reset after an independent result, an owner unblock, or a wait for a reviewer
-    to come back; an attempt that showed retrying cannot help (quota, sign-in, not found) uses up the reviewer."""
+    never come from state.json). They reset after an independent result, an owner unblock, or the next run's
+    availability re-check; an attempt that showed retrying cannot help (quota, sign-in, not found) uses up the
+    reviewer."""
     n = cfg["reviewer_selection"]["max_attempts"]
     used = {}
     for ev in _chained_events(st):
         d, k = ev["data"], ev["kind"]
         if (k == "REVIEW_RECORDED" and d.get("status") == "COMPLETED_WITH_RESULT") or \
-                k in ("OWNER_UNBLOCK", "REVIEWER_WAIT"):
+                k in ("OWNER_UNBLOCK", "REVIEWER_RECHECK"):
             used = {}
         elif k == "REVIEWER_ATTEMPT_FAILED":
             a = used.setdefault(str(d["index"]), {"count": 0})
@@ -1597,6 +1613,12 @@ def run(cfg, max_steps: int = 50) -> S:
         st.event("CONTROL_ANCHORED", control=control_state(cfg))
     elif "reviewer_policy" not in anchor:  # planned before R7-01: bind only the new key, the others stay as bound
         st.event("CONTROL_ANCHORED", control={**anchor, "reviewer_policy": control_state(cfg)["reviewer_policy"]})
+    b = chained_blocker(st)
+    if st.stage == S.BLOCKED and not errs and (b or {}).get("kind") == NO_INDEPENDENT_REVIEWER and             (st.d.get("blocker") or {}).get("kind") == NO_INDEPENDENT_REVIEWER:
+        # not an owner matter: re-check reviewer availability now, preferred reviewer first
+        st.event("REVIEWER_RECHECK", blocker=b)
+        st.d["blocker"] = None
+        st.to(S.READY_TO_RESUME, "re-checking independent reviewer availability")
     wt = Path(cfg["candidate"]["worktree"])
     for _ in range(max_steps):
         stage = st.stage
@@ -1647,14 +1669,14 @@ def run(cfg, max_steps: int = 50) -> S:
                 idx, why = select_reviewer(cfg, st)
                 if idx is None:  # never invent a review
                     used = attempt_counts(cfg, st)
-                    if all(str(a.get("last", "")).startswith("UNAVAILABLE") for a in used.values()):
-                        # routine availability (quota, sign-in, not found): wait; the next `run` tries the preferred
-                        # reviewer first again, without an owner unblock
-                        st.event("REVIEWER_WAIT", reason="NO_INDEPENDENT_REVIEWER", detail=why)
-                        st.event("CHECKPOINT", stage="AUDITING", reason="NO_INDEPENDENT_REVIEWER")
-                        st.d["resume_to"] = S.AUDITING.value
-                        st.to(S.WAITING_FOR_MODEL, "no independent reviewer available: " + why)
-                        return st.stage
+                    if all(str(a.get("last", "")).startswith(("UNAVAILABLE", "FAILURE")) for a in used.values()):
+                        # Owner policy 2026-10-16: neither reviewer available -> preserve progress, report BLOCKED,
+                        # await availability; routine availability needs no owner action: the next `run` re-checks
+                        # it (preferred reviewer first) by itself
+                        st.block(NO_INDEPENDENT_REVIEWER, "no independent reviewer available: " + why,
+                                 "none: the next `run` re-checks reviewer availability (Codex first); the owner may "
+                                 "restore a reviewer (Codex quota, `claude` sign-in)")
+                        continue
                     st.block("NO_REVIEWER", "no independent reviewer produced a usable result: " + why,
                              "owner: look at the failed rounds, then `unblock --note` (resets the attempt counters)")
                     continue
@@ -1666,8 +1688,11 @@ def run(cfg, max_steps: int = 50) -> S:
                 exe = reviewer_anchor(st, idx) or {}
                 if reviewer_chain(cfg)[idx].get("provider") in INDEPENDENT_PROVIDERS and not exe.get("path") \
                         and not exe.get("ambiguous") and not exe.get("unlaunchable"):
-                    st.block("REVIEWER_EXEC", f"reviewer {reviewer_chain(cfg)[idx].get('provider')} has no CLI bound "
-                             "at the plan", "owner: install the CLI, then `unblock --note` (re-binds it)")
+                    # not installed when the plan bound the CLIs: unavailable; select the next reviewer
+                    st.event("REVIEWER_ATTEMPT_FAILED", round=None, index=idx,
+                             provider=reviewer_chain(cfg)[idx].get("provider"), outcome="UNAVAILABLE",
+                             last="UNAVAILABLE (NOT_FOUND)", exhausted=True,
+                             basis=f"no {exe.get('name') or 'reviewer'} CLI bound at the plan: {exe.get('error')}")
                     continue
             else:
                 exe = (control_anchor(st) or {}).get("reviewer_exec") or {}
@@ -1945,7 +1970,8 @@ def _review_text_errors(d: dict, rec: dict, rdir: Path) -> list[str]:
     return errs
 
 
-ROUND_STARTED_KEYS ={"round", "candidate", "baseline", "started_at", "audit_worktree"}
+ROUND_STARTED_KEYS ={"round", "candidate", "baseline", "started_at", "audit_worktree", "reviewer_index",
+                      "reviewer_spec"}
 REPAIR_STARTED_KEYS = {"repair", "pre", "addresses", "started_at", "worker", "report", "changed", "regression"}
 
 
@@ -1983,7 +2009,7 @@ def verify(cfg) -> list[str]:
             resume_to = d["resume_to"]
         if k == "STAGE" and d.get("stage") == S.BLOCKED.value:
             blocker = d.get("blocker")
-        if k == "OWNER_UNBLOCK":
+        if k in ("OWNER_UNBLOCK", "REVIEWER_RECHECK"):
             blocker = None
         if k == "REVIEW_STARTED":
             started.add(d["round"])

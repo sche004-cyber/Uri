@@ -96,41 +96,85 @@ def test_sha_mismatch_never_accepts_and_moves_on(tmp_path):
 
 # ---------------------------------------------------------------- no reviewer: BLOCKED, never invented
 
-def test_no_reviewer_available_blocks_and_restart_preserves_the_state(tmp_path):
+def test_no_reviewer_available_blocks_and_the_next_run_rechecks_without_the_owner(tmp_path):
+    """Owner policy: neither reviewer available -> preserve progress, report BLOCKED, await availability; routine
+    availability failures need no manual owner action."""
     repo, wt, base, remote = make_fixture(tmp_path, defect=False)
     cfg = chain_config(tmp_path, repo, wt, "disconnect", ["auth"])
     assert L.run(cfg) == S.BLOCKED
     s = L.status(cfg)
-    assert s["blocker"]["kind"] == "NO_REVIEWER" and "command" in s["blocker"]["reason"]
+    assert s["blocker"]["kind"] == "NO_INDEPENDENT_REVIEWER" and "command" in s["blocker"]["reason"]
     assert [r["outcome"] for r in s["reviewers"]] == ["FAILURE", "FAILURE", "UNAVAILABLE"]
     assert all(r["verdict"] is None for r in s["reviewers"]) and remote_tip(remote) == base
     assert not s["evidence_ok_for_candidate"]
-    # restart: a fresh load derives the counters from the hash-chained events and launches no reviewer
+    # restart: a fresh load derives the counters from the hash-chained events
     cfg2 = L.load_config(tmp_path / "cfg.json")
     expect = {"0": {"count": 2, "last": "FAILURE"}, "1": {"count": 2, "last": "UNAVAILABLE (AUTH)"}}
     assert L.attempt_counts(cfg2, L.State(cfg2)) == expect
     st = L.State(cfg2)
     st.d["reviewer_attempts"] = {}                                # editing state.json changes no decision
     st.save()
-    assert L.run(cfg2) == S.BLOCKED and L.status(cfg2)["rounds"] == 3
-    # the owner restores a reviewer and unblocks: the counters reset and review resumes (still unavailable here)
-    assert L.unblock(cfg2, "owner: claude signed in") == S.READY_TO_RESUME
-    assert L.attempt_counts(cfg2, L.State(cfg2)) == {}
-    assert L.run(cfg2) == S.BLOCKED and L.status(cfg2)["rounds"] == 6
+    # the next run re-checks availability itself, preferred reviewer first, and reports BLOCKED again
+    assert L.run(cfg2) == S.BLOCKED
+    s = L.status(cfg2)
+    assert s["rounds"] == 6 and [r["reviewer_index"] for r in s["reviewers"]][3:] == [0, 0, 1]
+    assert len(events(cfg2, "REVIEWER_RECHECK")) == 1 and not events(cfg2, "OWNER_UNBLOCK")
     assert not L.verify(cfg2)
 
 
-def test_routine_unavailability_waits_and_the_next_run_tries_the_preferred_reviewer_first(tmp_path):
+def test_routine_unavailability_is_rechecked_with_the_preferred_reviewer_first(tmp_path):
     repo, wt, base, remote = make_fixture(tmp_path, defect=False)
     cfg = chain_config(tmp_path, repo, wt, "quota", ["auth"])
-    assert L.run(cfg) == S.WAITING_FOR_MODEL                     # no owner action needed for quota / sign-in
+    assert L.run(cfg) == S.BLOCKED
     s = L.status(cfg)
-    assert s["blocker"] is None and [(r["reviewer_index"], r["outcome"]) for r in s["reviewers"]] ==         [(0, "UNAVAILABLE"), (1, "UNAVAILABLE")]
-    assert events(cfg, "REVIEWER_WAIT")[0]["reason"] == "NO_INDEPENDENT_REVIEWER"
-    assert L.attempt_counts(cfg, L.State(cfg)) == {}
-    assert L.run(cfg) == S.WAITING_FOR_MODEL
+    assert s["blocker"]["kind"] == "NO_INDEPENDENT_REVIEWER"
+    assert [(r["reviewer_index"], r["outcome"]) for r in s["reviewers"]] == [(0, "UNAVAILABLE"), (1, "UNAVAILABLE")]
+    assert L.run(cfg) == S.BLOCKED
     assert [r["reviewer_index"] for r in L.status(cfg)["reviewers"]] == [0, 1, 0, 1]
     assert remote_tip(remote) == base and not L.verify(cfg)
+
+
+def test_reviewers_that_return_unusable_results_need_the_owner(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = chain_config(tmp_path, repo, wt, "wrong_sha", ["wrong_sha"])
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "NO_REVIEWER" and s["rounds"] == 4
+    assert L.run(cfg) == S.BLOCKED and L.status(cfg)["rounds"] == 4    # no self-recheck
+    # a forged state.json blocker cannot turn the owner block into a self-recheck
+    st = L.State(cfg)
+    st.d["blocker"]["kind"] = "NO_INDEPENDENT_REVIEWER"
+    st.save()
+    assert L.run(cfg) == S.BLOCKED and L.status(cfg)["rounds"] == 4
+    assert not events(cfg, "REVIEWER_RECHECK")
+
+
+def test_a_reviewer_cli_missing_at_the_plan_is_unavailable_and_skipped(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = chain_config(tmp_path, repo, wt, "check", ["check"])
+    raw = json.loads((tmp_path / "cfg.json").read_text())
+    raw["reviewer"] = {"provider": "codex_cli", "binary": str(tmp_path / "no-such-codex")}
+    (tmp_path / "cfg.json").write_text(json.dumps(raw))
+    cfg = L.load_config(tmp_path / "cfg.json")
+    assert L.run(cfg) == S.COMPLETE
+    s = L.status(cfg)
+    assert [(r["reviewer_index"], r["outcome"]) for r in s["reviewers"]] == [(1, "ACCEPT")]
+    failed = events(cfg, "REVIEWER_ATTEMPT_FAILED")
+    assert failed[0]["index"] == 0 and failed[0]["last"] == "UNAVAILABLE (NOT_FOUND)"
+
+
+def test_an_interrupted_review_is_a_valid_started_round_on_restart(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = chain_config(tmp_path, repo, wt, "quota", ["auth"])
+    assert L.run(cfg) == S.BLOCKED
+    st = L.State(cfg)
+    n = len(st.d["rounds"]) + 1
+    st.d["rounds"].append({"round": n, "candidate": st.d["candidate"], "baseline": st.d["baseline"],
+                           "started_at": "x", "audit_worktree": "x", "reviewer_index": 0,
+                           "reviewer_spec": cfg["reviewer"]})
+    st.event("REVIEW_STARTED", round=n, candidate=st.d["candidate"], provider="command", reviewer_index=0)
+    assert not L.verify(cfg)                                       # the process died before REVIEW_RECORDED
+    assert L.accepted_review(cfg, st, st.d["candidate"]) is None
 
 
 # ---------------------------------------------------------------- independence is verified, not named

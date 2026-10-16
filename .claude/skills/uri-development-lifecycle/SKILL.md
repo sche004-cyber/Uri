@@ -105,9 +105,10 @@ lifecycle numbers in the first column.
    independence are retried within `max_attempts`. Every reviewer in the chain is bound at PLAN and must pass the
    same independence checks (bound CLI, driver-made config, containment, distinct session, integrity); acceptance
    never depends on the provider name (the Claude Code session running the driver, repair and diagnosis sessions are
-   never the reviewer). Every reviewer only unavailable (quota, sign-in, not found) ⇒ WAITING_FOR_MODEL
-   (`NO_INDEPENDENT_REVIEWER`); the next `run` tries the preferred reviewer first again, no owner unblock needed.
-   Reviewers that ran but gave no usable result ⇒ BLOCKED `NO_REVIEWER`; `unblock --note` resets the counters.
+   never the reviewer). Every reviewer unavailable or failing (quota, sign-in, not found, disconnect) ⇒ BLOCKED
+   `NO_INDEPENDENT_REVIEWER` with the reasons; progress is kept and the next `run` re-checks availability itself
+   (preferred reviewer first, `REVIEWER_RECHECK` event) — no owner unblock. Reviewers that returned results for
+   another commit or whose independence could not be verified ⇒ BLOCKED `NO_REVIEWER`, an owner matter.
    Signing in (Codex, `claude`) is never done by the driver or the coordinator. Attempt counters are derived from
    the hash-chained events.
    Each round records `reviewer_index` and an `outcome` (ACCEPT, ACCEPT_WITH_FINDINGS, REJECT, UNAVAILABLE, FAILURE,
