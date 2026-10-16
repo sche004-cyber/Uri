@@ -33,6 +33,10 @@ from scripts.dev_workflow import containment
 INDEPENDENT_PROVIDERS = ("claude_cli", "codex_cli")
 # A worker that failed for one of these reasons is resumable later; the attempt is not counted against the repair.
 QUOTA_RE = re.compile(r"rate.?limit|usage limit|quota|overloaded|too many requests|\b429\b|\b529\b|credit balance")
+# A reviewer that cannot sign in is unavailable (owner action: log in), not a failed review (auditor fallback policy,
+# 2026-10-16). The driver never signs in or recovers credentials itself.
+AUTH_RE = re.compile(r"failed to authenticate|oauth (session|token)|not logged in|please (run .{0,20})?log ?in|"
+                     r"unauthori[sz]ed|\b401\b|invalid api key|authentication (failed|required)")
 
 # Tool policy per role. Prefix rules are a convenience, not the boundary: the driver re-checks the checkout and
 # every ref after the run and discards the result if anything changed.
@@ -653,6 +657,8 @@ def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) ->
         blob = " ".join([text[-2000:], (err or "")[-2000:], str(rec.get("detail", ""))]).lower()
         if QUOTA_RE.search(blob):
             rec["unavailable_reason"] = "QUOTA"
+        elif AUTH_RE.search(blob):
+            rec["unavailable_reason"] = "AUTH"
         elif rec["status"] == "TIMED_OUT":
             rec["unavailable_reason"] = "TIMEOUT"
     rec["result_text"] = text

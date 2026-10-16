@@ -48,11 +48,27 @@ if mode == "quota_once":  # out of quota once (flag next to the worktree), then 
 if mode == "quota":
     sys.stderr.write("API Error: 429 rate limit exceeded, retry later\n")
     sys.exit(1)
+if mode == "auth":  # a CLI whose sign-in expired (auditor fallback policy)
+    sys.stderr.write("Failed to authenticate: OAuth session expired and could not be refreshed\n")
+    sys.exit(1)
+if mode == "disconnect":  # the connection drops mid-review: partial output, no result block
+    print("reviewing", head)
+    sys.exit(1)
+if mode == "disconnect_once":  # drops once (flag next to the worktree), then reviews like "check"
+    flag = Path("..") / "disconnect_used"
+    if not flag.exists():
+        flag.write_text("x")
+        print("reviewing", head)
+        sys.exit(1)
+    mode = "check"
 
 if role == "reviewer":
     src = Path("pkg/calc.py").read_text()
     if mode == "check":
         review("ACCEPT", []) if "b == 0" in src else review("REJECT", [finding()])
+    elif mode == "wrong_sha":  # a result for another commit
+        head = "0" * 40
+        review("ACCEPT", [])
     elif mode == "accept_with_high":
         review("ACCEPT", [finding()])
     elif mode == "always_reject":

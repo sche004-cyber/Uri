@@ -143,10 +143,21 @@ def load_config(path) -> dict:
     cand["worktree"] = str((base / cand["worktree"]).resolve())
     if cfg.get("protected_paths", "ws_frozen_check") == "ws_frozen_check":
         cfg["protected_paths"] = list(_ws_protected(cfg["repo"]))
-    if cfg["reviewer"].get("counts_as_independent") and not is_devtest(cfg["milestone"]):
-        raise LifecycleError("counts_as_independent is allowed only for DEVTEST milestones")
-    if not is_devtest(cfg["milestone"]) and cfg["reviewer"].get("binary"):
-        raise LifecycleError("a reviewer binary override is allowed only for DEVTEST milestones")
+    fb = cfg.get("reviewer_fallbacks")
+    if fb is not None:
+        if not isinstance(fb, list) or not all(isinstance(s, dict) for s in fb):
+            raise LifecycleError("reviewer_fallbacks must be a list of reviewer specs")
+        sel = cfg.setdefault("reviewer_selection", {})
+        sel.setdefault("max_attempts", 2)
+        if not isinstance(sel["max_attempts"], int) or isinstance(sel["max_attempts"], bool) or sel["max_attempts"] < 1:
+            raise LifecycleError("reviewer_selection.max_attempts must be a positive integer")
+        if not is_devtest(cfg["milestone"]) and any(s.get("provider") not in INDEPENDENT_PROVIDERS for s in fb):
+            raise LifecycleError(f"a reviewer fallback must be one of {INDEPENDENT_PROVIDERS}")
+    for spec in reviewer_chain(cfg):
+        if spec.get("counts_as_independent") and not is_devtest(cfg["milestone"]):
+            raise LifecycleError("counts_as_independent is allowed only for DEVTEST milestones")
+        if not is_devtest(cfg["milestone"]) and spec.get("binary"):
+            raise LifecycleError("a reviewer binary override is allowed only for DEVTEST milestones")
     cfg["_config_sha256"] = sha256(path.read_bytes())
     cfg["_config_path"] = str(path)
     return cfg
@@ -158,9 +169,21 @@ POLICY_KEYS = ("baseline", "candidate", "protected_paths", "authorized_protected
                "regression_test_patterns", "canonical_url", "test_setup")
 
 
+# Bound only when present, so a run planned before the auditor fallback policy keeps its policy hash.
+OPTIONAL_POLICY_KEYS = ("reviewer_fallbacks", "reviewer_selection")
+
+
 def policy(cfg) -> dict:
     """The policy-relevant part of the milestone config, recorded in the event chain (R3-04)."""
-    return {k: cfg.get(k) for k in POLICY_KEYS}
+    out = {k: cfg.get(k) for k in POLICY_KEYS}
+    out.update({k: cfg[k] for k in OPTIONAL_POLICY_KEYS if k in cfg})
+    return out
+
+
+def reviewer_chain(cfg) -> list[dict]:
+    """The reviewers in order of preference: ``reviewer`` (preferred), then ``reviewer_fallbacks``. Owner policy
+    2026-10-16: independent review is mandatory, a particular provider never is."""
+    return [cfg["reviewer"]] + list(cfg.get("reviewer_fallbacks") or [])
 
 
 def policy_sha256(cfg) -> str:
@@ -310,13 +333,16 @@ def effective_verdict(result: dict) -> tuple[str | None, list]:
 
 
 def is_independent(cfg, round_rec: dict, impl_sids=frozenset()) -> tuple[bool, str]:
+    """Independence is decided from what the driver itself observed of the reviewer process, never from the
+    provider's name alone: the same checks apply to every provider in the reviewer chain."""
     w = round_rec.get("worker") or {}
+    spec = round_rec.get("reviewer_spec") or cfg["reviewer"]
     if round_rec.get("integrity", {}).get("ok") is not True:
         return False, "audit checkout, implementation worktree, candidate refs or git hooks/config changed during review"
     if w.get("status") != "COMPLETED":
         return False, f"reviewer status {w.get('status')}"
     if w.get("provider") not in INDEPENDENT_PROVIDERS:
-        if is_devtest(cfg["milestone"]) and cfg["reviewer"].get("counts_as_independent"):
+        if is_devtest(cfg["milestone"]) and spec.get("counts_as_independent"):
             return True, "scripted reviewer accepted for DEVTEST only"
         return False, f"provider {w.get('provider')} is not an independent reviewer"
     if not is_devtest(cfg["milestone"]) and not (w.get("binary_is_default") and w.get("binary_anchor_ok") is True):
@@ -426,7 +452,10 @@ def control_state(cfg) -> dict:
             "replace_refs": sha256(git(cfg["repo"], "for-each-ref", "--format=%(refname) %(objectname)", "refs/replace/",
                                        check=False)),
             "reviewer_exec": reviewer_executable(cfg["reviewer"]),
-            "reviewer_policy": sha256("\n".join(managed_policy_state()))}
+            "reviewer_policy": sha256("\n".join(managed_policy_state())),
+            # only with a fallback chain, so earlier runs keep an unchanged control state
+            **({"reviewer_exec_fallbacks": [reviewer_executable(s) for s in cfg["reviewer_fallbacks"]]}
+               if cfg.get("reviewer_fallbacks") is not None else {})}
 
 
 def control_anchor(st: State) -> dict | None:
@@ -912,14 +941,17 @@ def do_review(cfg, st: State, sha: str) -> dict:
     before = snap()
     rec = {"round": rnd, "candidate": sha, "baseline": st.d["baseline"], "started_at": now(), "audit_worktree": str(awt)}
     st.d["rounds"].append(rec)
-    st.event("REVIEW_STARTED", round=rnd, candidate=sha, provider=cfg["reviewer"].get("provider"))
+    idx = st.d.get("reviewer_index", 0) if cfg.get("reviewer_fallbacks") is not None else 0
+    chosen = reviewer_chain(cfg)[idx]
+    rec["reviewer_index"], rec["reviewer_spec"] = idx, chosen
+    st.event("REVIEW_STARTED", round=rnd, candidate=sha, provider=chosen.get("provider"), reviewer_index=idx)
     try:
-        spec = dict(cfg["reviewer"])
-        anchor = (control_anchor(st) or {}).get("reviewer_exec")
+        spec = dict(chosen)
+        anchor = reviewer_anchor(st, idx)
         if spec.get("provider") in INDEPENDENT_PROVIDERS:  # launch the PLAN-bound absolute path, never a PATH lookup
             spec.update(binary=(anchor or {}).get("path") or spec.get("binary"), _anchor=anchor or {})
         w = run_worker(spec, "reviewer", review_prompt(cfg, st, rnd, sha), awt, rdir,
-                       protected=cfg["protected_paths"], timeout_s=cfg["reviewer"].get("timeout_s", 5400))
+                       protected=cfg["protected_paths"], timeout_s=chosen.get("timeout_s", 5400))
         after = snap()
     finally:
         drop_worktree(cfg["repo"], awt)
@@ -944,11 +976,53 @@ def do_review(cfg, st: State, sha: str) -> dict:
         rec["effective_verdict"], blocking = effective_verdict(result)
         rec["blocking_ids"] = [f.get("id") for f in blocking]
         rec["status"] = "COMPLETED_WITH_RESULT" if ok else "NOT_INDEPENDENT"
+    rec["outcome"] = review_outcome(rec)
     round_sha = write_json(rdir / "round.json", rec)
     st.event("REVIEW_RECORDED", round=rnd, candidate=sha, status=rec["status"], verdict=rec["effective_verdict"],
              reviewer_label=(result or {}).get("verdict"), independent=ok, session_id=w.get("session_id"),
-             stdout_sha256=w.get("stdout_sha256"), result_sha256=sha256(text), round_sha256=round_sha)
+             stdout_sha256=w.get("stdout_sha256"), result_sha256=sha256(text), round_sha256=round_sha,
+             provider=w.get("provider"), outcome=rec["outcome"])
     return rec
+
+
+def review_outcome(rec: dict) -> str:
+    """One of ACCEPT, ACCEPT_WITH_FINDINGS, REJECT (independent results), UNAVAILABLE (not started, quota, sign-in,
+    timeout), FAILURE (ran but returned no usable result, e.g. a disconnect mid-review), SHA_MISMATCH (reviewed
+    another commit) or INDEPENDENCE_UNVERIFIED (a result the driver could not verify as independent)."""
+    w = rec.get("worker") or {}
+    if rec.get("status") == "COMPLETED_WITH_RESULT":
+        return (rec.get("effective_verdict") or "").replace(" WITH ", "_WITH_").replace(" ", "_")
+    if w.get("unavailable_reason"):
+        return "UNAVAILABLE"
+    if rec.get("status") == "WRONG_CANDIDATE":
+        return "SHA_MISMATCH"
+    if rec.get("status") == "NOT_INDEPENDENT":
+        return "INDEPENDENCE_UNVERIFIED"
+    return "FAILURE"
+
+
+def reviewer_anchor(st: State, idx: int) -> dict | None:
+    """The PLAN-bound executable identity of reviewer ``idx`` in the chain."""
+    a = control_anchor(st) or {}
+    if idx == 0:
+        return a.get("reviewer_exec")
+    fb = a.get("reviewer_exec_fallbacks") or []
+    return fb[idx - 1] if idx - 1 < len(fb) else None
+
+
+def select_reviewer(cfg, st: State) -> tuple[int | None, str]:
+    """The first reviewer in the chain that has not used up its bounded attempts, or (None, why) when none is left.
+    Attempts count reviews that produced no independent result; they reset after one does and on an owner unblock.
+    The counters live in state.json, so a restart resumes the same selection."""
+    n = cfg["reviewer_selection"]["max_attempts"]
+    used = st.d.setdefault("reviewer_attempts", {})
+    why = []
+    for i, spec in enumerate(reviewer_chain(cfg)):
+        a = used.get(str(i), {"count": 0})
+        if a["count"] < n:
+            return i, ""
+        why.append(f"{spec.get('provider')}: {a['count']} attempt(s), last {a.get('last')}")
+    return None, "; ".join(why)
 
 
 def _fingerprint(f: dict) -> str:
@@ -1547,7 +1621,26 @@ def run(cfg, max_steps: int = 50) -> S:
             if over_budget:
                 st.block("BUDGET", over_budget, "owner: raise continuation.budget (config change) and `unblock --note`")
                 continue
-            exe = (control_anchor(st) or {}).get("reviewer_exec") or {}
+            if cfg.get("reviewer_fallbacks") is not None:
+                idx, why = select_reviewer(cfg, st)
+                if idx is None:  # never invent a review: no reviewer left is an owner matter
+                    st.block("NO_REVIEWER", "no independent reviewer available: " + why,
+                             "owner: restore a reviewer (e.g. Codex quota reset or `claude` sign-in), then "
+                             "`unblock --note` (resets the attempt counters)")
+                    continue
+                if st.d.get("reviewer_index") != idx:
+                    st.event("REVIEWER_SELECTED", index=idx, provider=reviewer_chain(cfg)[idx].get("provider"),
+                             preferred=idx == 0)
+                    st.d["reviewer_index"] = idx
+                    st.save()
+                exe = reviewer_anchor(st, idx) or {}
+                if reviewer_chain(cfg)[idx].get("provider") in INDEPENDENT_PROVIDERS and not exe.get("path") \
+                        and not exe.get("ambiguous") and not exe.get("unlaunchable"):
+                    st.block("REVIEWER_EXEC", f"reviewer {reviewer_chain(cfg)[idx].get('provider')} has no CLI bound "
+                             "at the plan", "owner: install the CLI, then `unblock --note` (re-binds it)")
+                    continue
+            else:
+                exe = (control_anchor(st) or {}).get("reviewer_exec") or {}
             if exe.get("ambiguous"):  # which of several CLIs is the real one is the owner's call (R6-01)
                 st.block("REVIEWER_EXEC", "several different reviewer executables named "
                          f"'{exe.get('name')}' on PATH: {', '.join(exe['ambiguous'])}",
@@ -1566,6 +1659,22 @@ def run(cfg, max_steps: int = 50) -> S:
             stricter =rec["status"] == "NOT_INDEPENDENT" and rec["effective_verdict"] == "REJECT" and rec.get("blocking_ids")
             if stricter:  # a non-independent review may only make the outcome stricter
                 st.event("NON_INDEPENDENT_REJECT_ROUTED", round=rec["round"], basis=rec["independence_basis"])
+            if cfg.get("reviewer_fallbacks") is not None:
+                used = st.d.setdefault("reviewer_attempts", {})
+                if rec["status"] == "COMPLETED_WITH_RESULT":
+                    st.d["reviewer_attempts"] = {}
+                elif not stricter:
+                    a = used.setdefault(str(rec["reviewer_index"]), {"count": 0})
+                    a["count"] += 1
+                    if (rec.get("worker") or {}).get("unavailable_reason") in ("QUOTA", "AUTH", "UNAVAILABLE"):
+                        a["count"] = cfg["reviewer_selection"]["max_attempts"]  # retrying now cannot help
+                    a["last"] = rec["outcome"] + (f" ({rec['worker'].get('unavailable_reason')})"
+                                                  if (rec.get("worker") or {}).get("unavailable_reason") else "")
+                    st.event("REVIEWER_ATTEMPT_FAILED", round=rec["round"], index=rec["reviewer_index"],
+                             provider=(rec.get("worker") or {}).get("provider"), outcome=rec["outcome"],
+                             count=a["count"], basis=rec["independence_basis"])
+                    st.save()
+                    continue  # the next pass selects the same reviewer again, the next one, or blocks
             if rec["status"] != "COMPLETED_WITH_RESULT" and not stricter:
                 st.event("CHECKPOINT", stage="AUDITING", round=rec["round"],
                          reason=(rec.get("worker") or {}).get("unavailable_reason") or rec["status"])
@@ -1782,6 +1891,9 @@ def unblock(cfg, note: str) -> S:
     st.event("OWNER_UNBLOCK", note=note, blocker=st.d["blocker"], config_sha256=cfg["_config_sha256"],
              policy_sha256=policy_sha256(cfg), **extra)
     st.d["blocker"] = None
+    if b.get("kind") == "NO_REVIEWER":
+        st.d["reviewer_attempts"] = {}
+        st.d.pop("reviewer_index", None)
     st.to(S.READY_TO_RESUME, "owner: " + note)
     return st.stage
 
@@ -1950,7 +2062,9 @@ def status(cfg) -> dict:
                            "session_id": (r.get("worker") or {}).get("session_id"),
                            "models": (r.get("worker") or {}).get("models_used"), "candidate": r["candidate"],
                            "verdict": r.get("effective_verdict"), "reviewer_label": (r.get("result") or {}).get("verdict"),
-                           "independent": r.get("independent"), "status": r.get("status")} for r in d["rounds"]],
+                           "independent": r.get("independent"), "status": r.get("status"),
+                           "outcome": r.get("outcome"), "reviewer_index": r.get("reviewer_index")} for r in d["rounds"]],
+            "reviewer_attempts": d.get("reviewer_attempts"),
             "repairs": [{"repair": r["repair"], "status": r.get("status"), "commit": r.get("commit"),
                          "addresses": r.get("addresses"), "reason": r.get("reason")} for r in d["repairs"]],
             "open_findings": [{"id": f.get("id"), "severity": f.get("severity"), "blocking": f.get("blocking"),
