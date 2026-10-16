@@ -222,14 +222,16 @@ class DraftDesk:
             if reply in _CHOICE_ACTION:
                 # The original request goes to the ordinary path unchanged; Core decides and asks for approval.
                 return TX.TextIntent(TX.NONE, ["ambiguity_action"], payload=pend["original"], instruction=text)
-            plain = TX.classify(text, has_draft=d is not None and d.current is not None, draft_text=_draft_text(d))
+            plain = TX.classify(text, has_draft=d is not None and d.current is not None,
+                                draft_text=_draft_text(d), draft_type=d.doc_type if d is not None else None)
             own_question = (text or "").rstrip().endswith("?") or bool(_OWN_QUESTION.match(text or ""))
             if plain.kind == TX.NONE and plain.reasons[:1] in (["not_a_text_task"], ["trivial"], ["unanchored_with_draft"]) \
                     and not own_question:
                 # "yes", "no", "dont do it", "hmm": not a choice and not a new request -> asked again, never guessed
                 return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_unclear"], instruction=text)
             # anything else is a new request: the question is dropped (one-turn lifetime) and it routes as usual
-        intent = TX.classify(text, has_draft=d is not None and d.current is not None, draft_text=_draft_text(d))
+        intent = TX.classify(text, has_draft=d is not None and d.current is not None,
+                             draft_text=_draft_text(d), draft_type=d.doc_type if d is not None else None)
         # An open draft question accepts elliptical answers, but a new imperative request is not an answer.
         answers = ("not_a_text_task", "foreign_object", "unanchored_with_draft")
         if intent.reasons[:1] == ["trivial"] and _SHORT_ANSWER.match(text or ""):
