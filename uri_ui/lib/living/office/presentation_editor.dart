@@ -115,7 +115,8 @@ class PresentationEditController extends ChangeNotifier {
   String get stateLine {
     if (state != null) return state!;
     final n = changes.length;
-    return n == 0 ? 'Editing · no unsaved changes' : 'Editing · $n unsaved change${n == 1 ? '' : 's'}';
+    // "a copy": the URI pane (which says so) is a side sheet while editing, so the editor says it itself
+    return n == 0 ? 'Editing a copy · no unsaved changes' : 'Editing a copy · $n unsaved change${n == 1 ? '' : 's'}';
   }
 
   int get selectedIndex {

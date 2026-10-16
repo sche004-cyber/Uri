@@ -243,7 +243,9 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
           key: ValueKey('office-contract-mismatch')));
     }
     final narrow = width < 720;
-    final sheetMode = width < 1000;
+    // Live run a1 (1264x681 with the V2 rail): beside the URI pane the editor's preview was about 170 px wide. While
+    // editing, the URI pane is a side sheet like in narrow windows: it opens by itself when a card needs the owner.
+    final sheetMode = width < 1000 || c.centre == OfficeCentre.edit;
     final iconStrip = width < 1280 || c.prefs.leftCollapsed;
     final rightHidden = sheetMode || c.prefs.rightCollapsed;
     if (c.centre == OfficeCentre.sheet) _sheetOpen = true;

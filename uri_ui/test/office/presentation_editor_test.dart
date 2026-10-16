@@ -178,8 +178,7 @@ void main() {
     expect(fake.calls, contains('POST /authoring/edit'));
     expect(find.byKey(const ValueKey('authoring-slide-1')), findsOneWidget);
     expect(find.byKey(const ValueKey('authoring-slide-2')), findsOneWidget);
-    expect(find.text('Editing · no unsaved changes'), findsOneWidget);
-    expect(find.textContaining('Your file changes only when you approve Save'), findsWidgets);
+    expect(find.text('Editing a copy · no unsaved changes'), findsOneWidget);
 
     // change the title: nothing is sent until Apply
     await tester.enterText(find.byKey(const ValueKey('authoring-title')), 'Quarterly Review 2026');
@@ -189,12 +188,12 @@ void main() {
     await _settle(tester);
     expect(fake.bodies['/authoring/${fake.aid}/op']!.last['op'],
         {'op': 'set_title', 'slide': 256, 'text': 'Quarterly Review 2026'});
-    expect(find.text('Editing · 1 unsaved change'), findsOneWidget);
+    expect(find.text('Editing a copy · 1 unsaved change'), findsOneWidget);
 
     // undo restores the earlier copy
     await tester.tap(find.byKey(const ValueKey('authoring-undo')));
     await _settle(tester);
-    expect(find.text('Editing · no unsaved changes'), findsOneWidget);
+    expect(find.text('Editing a copy · no unsaved changes'), findsOneWidget);
 
     // add a slide after the selected one; the new slide is selected
     await tester.tap(find.byKey(const ValueKey('authoring-add-slide')));
@@ -205,9 +204,14 @@ void main() {
         'after': 256});
     expect(find.text('Slide 3 of 3 · preview drawn by LibreOffice'), findsOneWidget);
 
+    // While editing the URI pane gives its width to the editor; the save card opens it as a side sheet
+    expect(find.byKey(const ValueKey('office-uri-pane')), findsNothing);
+    expect(find.byKey(const ValueKey('office-side-sheet')), findsNothing);
+
     // Save shows the real card; the file is written only through the card
     await tester.tap(find.byKey(const ValueKey('authoring-save')));
     await _settle(tester);
+    expect(find.byKey(const ValueKey('office-side-sheet')), findsOneWidget);
     expect(find.text('Save this presentation?'), findsOneWidget);
     expect(find.textContaining("title 'Quarterly Review 2026'"), findsOneWidget);
     expect(find.textContaining('replaces the file you opened'), findsOneWidget);
@@ -217,7 +221,7 @@ void main() {
     await _settle(tester);
     expect(fake.calls, contains('POST /a2ui/action'));
     expect(find.text('Saved as Quarterly Review.pptx'), findsOneWidget);
-    expect(find.textContaining('Saved Quarterly Review.pptx.'), findsWidgets);
+    expect(find.byKey(const ValueKey('office-side-sheet')), findsNothing, reason: 'the card is answered');
 
     // Done after a save: the saved file is opened again in the viewer
     await tester.tap(find.byKey(const ValueKey('authoring-done')));
@@ -250,7 +254,7 @@ void main() {
     expect(find.textContaining('1 change is not saved. Your file has not been changed.'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('authoring-leave-keep')));
     await tester.pumpAndSettle();
-    expect(find.text('Editing · 1 unsaved change'), findsOneWidget);
+    expect(find.text('Editing a copy · 1 unsaved change'), findsOneWidget);
     expect(fake.calls.where((c) => c.endsWith('/close') && c.contains('authoring')), isEmpty);
 
     // Back asks the same way
