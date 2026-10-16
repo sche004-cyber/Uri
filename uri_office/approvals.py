@@ -104,8 +104,9 @@ def _chunks(lines: list, limit: int) -> list:
 
 
 class Approvals:
-    def __init__(self, state_dir: Path, owner: str):
+    def __init__(self, state_dir: Path, owner: str, on_close=None):
         self.owner = owner
+        self.on_close = on_close
         self.lock = threading.RLock()
         self.db = sqlite3.connect(str(Path(state_dir) / "office.db"), check_same_thread=False, isolation_level=None)
         self.db.row_factory = sqlite3.Row
@@ -298,14 +299,6 @@ class Approvals:
         return Surface(sid, kind, comps, data={}, bound={key: sha}, actions=(yes_action, no_action),
                        placement="workspace", title=label)
 
-    def is_open(self, surface_id) -> bool:
-        """Whether this approval card can still be answered (C1-05: its save-as grant is kept only while it can)."""
-        if not isinstance(surface_id, str):
-            return False
-        with self.lock:
-            r = self.db.execute("SELECT state FROM surface WHERE surface_id=?", (surface_id,)).fetchone()
-        return bool(r) and r["state"] == "OPEN"
-
     def subject_of(self, surface_id):
         """(subject_kind, subject_id) of an approval, or (None, None). Lets the caller take the subject's own lock
         before `action` takes this one."""
@@ -380,7 +373,15 @@ class Approvals:
                        title="Office change")
 
     def _close(self, sid):
+        row = self.db.execute("SELECT state, body_json FROM surface WHERE surface_id=?", (sid,)).fetchone()
+        if row is None or row["state"] != "OPEN":
+            return
         self.db.execute("UPDATE surface SET state='CLOSED', updated_at=? WHERE surface_id=?", (time.time(), sid))
+        if self.on_close is not None:
+            target = json.loads(row["body_json"]).get("target", {})
+            if (target.get("save_as") or target.get("kind") == "new_file" or
+                    target.get("kind") == "authoring_save" and not target.get("replaces")):
+                self.on_close(target["grant_id"])
 
     def open_messages(self, workbook_id=None) -> list:
         q = "SELECT record_json FROM surface WHERE owner=? AND state='OPEN'"
@@ -404,8 +405,9 @@ class Approvals:
 
     def close_workbook(self, workbook_id):
         with self.lock:
-            self.db.execute("UPDATE surface SET state='CLOSED', updated_at=? WHERE workbook_id=? AND state='OPEN'",
-                            (time.time(), workbook_id))
+            for row in self.db.execute("SELECT surface_id FROM surface WHERE workbook_id=? AND state='OPEN'",
+                                       (workbook_id,)).fetchall():
+                self._close(row["surface_id"])
 
     def action(self, msg: dict, apply_fn) -> dict:
         """Gate one client action message. `apply_fn(body)` performs the write after every check passed."""

@@ -159,7 +159,7 @@ def test_save_as_grants_are_released_when_superseded_and_when_the_edit_closes(tm
     grants = Grants([home], folders_file=tmp_path / "state" / "folders.json")
     grants.add_folder(str(extra))
     docs = FakeDocuments(grants)
-    appr = Approvals(tmp_path / "state", "owner")
+    appr = Approvals(tmp_path / "state", "owner", on_close=grants.revoke)      # as Office wires it
     a = Authoring(tmp_path / "state", docs, grants, appr)
     aid = a.new_presentation()["authoring_id"]
     a.propose_save(aid, str(extra / "Deck.pptx"))
@@ -261,3 +261,23 @@ def test_inserts_after_a_block_check_its_address():
     W.OPS["insert_paragraph"](d, {"op": "insert_paragraph", "after": 1, "after_expect": v["blocks"][1]["expect"],
                                   "text": "x"})
     assert [p.text for p in d.paragraphs] == ["a", "b", "x", "c"]
+
+
+# ---- driver review R2-02: a preview that could not be refreshed never authorizes Save ----------------------------
+def test_a_failed_preview_refresh_does_not_leave_the_older_preview_authorizing_save(tmp_path):
+    (tmp_path / "state").mkdir()
+    grants = Grants([tmp_path])
+    docs = FakeDocuments(grants)
+    a = Authoring(tmp_path / "state", docs, grants, Approvals(tmp_path / "state", "owner", on_close=grants.revoke))
+    v = a.new_presentation()
+    aid = v["authoring_id"]
+
+    def broken(*args, **kwargs):
+        raise OfficeError("ENGINE_UNAVAILABLE", "")
+    docs.open_bytes = broken
+    with pytest.raises(OfficeError):
+        a.apply(aid, {"op": "add_slide", "layout": "Blank"})
+    with pytest.raises(OfficeError) as e:
+        a.propose_save(aid, str(tmp_path / "Deck.pptx"))
+    assert e.value.code == "PREVIEW_NOT_READY"
+

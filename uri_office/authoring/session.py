@@ -141,7 +141,7 @@ class AuthSession:
     changes: list = field(default_factory=list)        # [{"op", "text", "sha256"}]: changes[i] made version i+1
     dropped: int = 0                                   # versions dropped from the front (undo depth cap)
     preview_doc: str | None = None
-    pending_grant: str | None = None                  # the save-as grant of the open save card (C1-05)
+    preview_sha256: str | None = None                  # the working copy the preview shows (driver review R2-02)
     lock: threading.RLock = field(default_factory=threading.RLock)
 
     @property
@@ -323,13 +323,20 @@ class Authoring:
                     "preview_document_id": s.preview_doc, "sha256_prefix": _sha(s.data)[:12]}
 
     def _preview(self, s: AuthSession):
+        """The preview of exactly the current working copy. Driver review R2-02: when a new preview cannot be made,
+        the previous one must not keep authorizing Save for different bytes, so it is dropped first."""
         old = s.preview_doc
-        s.preview_doc = self.documents.open_bytes(s.name, s.kind, s.data, owner=s.aid).document_id
-        if old:
-            try:
-                self.documents.close(old)
-            except OfficeError:
-                pass
+        s.preview_doc, s.preview_sha256 = None, None
+        data = s.data
+        try:
+            preview = self.documents.open_bytes(s.name, s.kind, data, owner=s.aid)
+        finally:
+            if old:
+                try:
+                    self.documents.close(old)
+                except OfficeError:
+                    pass
+        s.preview_doc, s.preview_sha256 = preview.document_id, _sha(data)
 
     # ---- save --------------------------------------------------------------------------------------------------
     def propose_save(self, aid, save_as_path=None) -> dict:
@@ -341,11 +348,9 @@ class Authoring:
             if save_as_path is None and s.origin is None:
                 raise OfficeError("SAVE_AS_REQUIRED", f"a new {KIND_WORDS[s.kind]} is saved as a new file")
             self._check_rendered(s)
-            self.release_pending(aid)                 # a newer card supersedes the older one (C1-05)
             if save_as_path is not None:
                 g = self.grants.grant_save_as(save_as_path, kind=s.kind)
                 dest, replaces, grant_id = g.path, False, g.grant_id
-                s.pending_grant = grant_id
             else:
                 dest, replaces, grant_id = s.origin, True, s.grant_id
             body = {"subject_kind": "authoring_save", "authoring_id": aid, "kind": s.kind,
@@ -355,16 +360,10 @@ class Authoring:
             try:
                 surface = self.approvals.propose_authoring_save(aid, body)
             except BaseException:
-                self.release_pending(aid)
+                if not replaces:
+                    self.grants.revoke(grant_id)
                 raise
             return {"messages": surface.messages(), "surface_id": surface.surface_id}
-
-    def release_pending(self, aid):
-        """Revoke the save-as grant of this edit's open card, if any (independent review C1-05)."""
-        s = self.sessions.get(aid) if isinstance(aid, str) else None
-        if s is not None and s.pending_grant is not None:
-            self.grants.revoke(s.pending_grant)
-            s.pending_grant = None
 
     def apply_save(self, body) -> dict:
         """The approved card: write exactly the working copy the card named."""
@@ -406,7 +405,7 @@ class Authoring:
     def _check_rendered(self, s: AuthSession):
         """Plan 11 section 2: a working copy LibreOffice cannot open is never saved. The save card is offered only
         once the preview of exactly this working copy has rendered."""
-        if s.preview_doc is None:
+        if s.preview_doc is None or s.preview_sha256 != _sha(s.data):
             raise OfficeError("PREVIEW_NOT_READY", "the preview is not ready yet", 409)
         try:
             d = self.documents.get(s.preview_doc)
@@ -424,6 +423,7 @@ class Authoring:
             s = self.sessions.pop(aid, None)
         if s is None:
             raise OfficeError("UNKNOWN_EDIT", "", 404)
+        self.approvals.close_workbook(aid)
         if s.preview_doc:
             try:
                 self.documents.close(s.preview_doc)
@@ -431,6 +431,4 @@ class Authoring:
                 pass
         if s.grant_id is not None:
             self.grants.revoke(s.grant_id)
-        if s.pending_grant is not None:
-            self.grants.revoke(s.pending_grant)
         return {"closed": True, "unsaved_changes": len(self._live_changes(s))}

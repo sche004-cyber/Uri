@@ -82,7 +82,7 @@ class Office:
         self.owner = owner
         # OD-R1: folders the owner added are kept in the state folder (restricted to this user) and survive restarts.
         self.grants = Grants(allowed_roots, folders_file=self.state / "folders.json")
-        self.approvals = Approvals(self.state, owner)
+        self.approvals = Approvals(self.state, owner, on_close=self.grants.revoke)
         self.history = History(self.state)
         self.google = google or G.GoogleSheets(self.state, None)
         self.brain = brain
@@ -401,7 +401,6 @@ class Office:
         with self.lock:
             self.sessions.pop(wid, None)
         self.approvals.close_workbook(wid)
-        self._hold_save_as(s, None)
         for src in s.sources:
             self.grants.revoke(src.grant_id)
         if s.grant_id:
@@ -585,55 +584,48 @@ class Office:
             return out
 
     # ---- approvals -----------------------------------------------------------------------------------------------
-    def _hold_save_as(self, s, grant_id):
-        """Independent review C1-05: a save-as grant lives only while its card is open. A newer card replaces the
-        older one (the service closes it), so the older grant is released; `None` releases the current one."""
-        old = getattr(s, "pending_save_as", None)
-        if old and old != grant_id:
-            self.grants.revoke(old)
-        s.pending_save_as = grant_id
-
     def propose_save(self, wid, body) -> dict:
         s = self._session(wid)
         with s.lock:
+            self._refresh(s)
+            pending = s.draft.pending()
+            if s.engine == "local" and pending.get("formats"):
+                from .xlsx_styles import check_visible_fills
+                check_visible_fills(s.path, pending["formats"])
+            new_grant = None
             try:
-                return self._propose_save(s, wid, body)
+                if s.engine == "local":
+                    dest = None
+                    if body.get("save_as_path"):
+                        g = self.grants.grant_save_as(body["save_as_path"])
+                        new_grant = g.grant_id
+                        if g.path.exists():
+                            raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
+                        dest = g
+                    target = {"kind": "local", "label": str(dest.path if dest else s.path),
+                              "grant_id": dest.grant_id if dest else s.grant_id, "save_as": bool(dest),
+                              "source_sha256": s.open_sha, "draft_version": s.draft.version}
+                elif s.engine == "new":
+                    if not body.get("save_as_path"):
+                        raise OfficeError("SAVE_AS_REQUIRED", "choose where to create the new file")
+                    g = self.grants.grant_save_as(body["save_as_path"])
+                    new_grant = g.grant_id
+                    if g.path.exists():
+                        raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
+                    if not xlsx_new.content(s.draft.sheets(), pending["edits"]):
+                        raise OfficeError("NOTHING_TO_SAVE", "the new workbook has no cells")
+                    target = {"kind": "new_file", "label": str(g.path), "grant_id": g.grant_id,
+                              "draft_version": s.draft.version, "sheets": s.draft.sheets(),
+                              "sources": [src.label for src in s.sources]}
+                else:
+                    target = {"kind": "google", "label": s.label, "file_id": s.file_id,
+                              "draft_version": s.draft.version}
+                surface = self.approvals.propose(wid, target, pending)
             except BaseException:
-                self._hold_save_as(s, None)
+                if new_grant is not None:
+                    self.grants.revoke(new_grant)
                 raise
-
-    def _propose_save(self, s, wid, body) -> dict:
-        self._refresh(s)
-        pending = s.draft.pending()
-        if s.engine == "local":
-            dest = None
-            if body.get("save_as_path"):
-                g = self.grants.grant_save_as(body["save_as_path"])
-                self._hold_save_as(s, g.grant_id)
-                if g.path.exists():
-                    raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
-                dest = g
-            target = {"kind": "local", "label": str(dest.path if dest else s.path),
-                      "grant_id": dest.grant_id if dest else s.grant_id, "save_as": bool(dest),
-                      "source_sha256": s.open_sha, "draft_version": s.draft.version}
-        elif s.engine == "new":
-            if not body.get("save_as_path"):
-                raise OfficeError("SAVE_AS_REQUIRED", "choose where to create the new file")
-            g = self.grants.grant_save_as(body["save_as_path"])
-            self._hold_save_as(s, g.grant_id)
-            if g.path.exists():
-                raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
-            if not xlsx_new.content(s.draft.sheets(), pending["edits"]):
-                raise OfficeError("NOTHING_TO_SAVE", "the new workbook has no cells")
-            target = {"kind": "new_file", "label": str(g.path), "grant_id": g.grant_id,
-                      "draft_version": s.draft.version, "sheets": s.draft.sheets(),
-                      "sources": [src.label for src in s.sources]}
-        else:
-            target = {"kind": "google", "label": s.label, "file_id": s.file_id, "draft_version": s.draft.version}
-        if not target.get("save_as") and target.get("kind") != "new_file":
-            self._hold_save_as(s, None)           # a Save in place supersedes an earlier Save-as card
-        surface = self.approvals.propose(wid, target, pending)
-        return {"messages": surface.messages(), "surface_id": surface.surface_id}
+            return {"messages": surface.messages(), "surface_id": surface.surface_id}
 
     def propose_share(self, wid) -> dict:
         """'Share via Google': upload the saved local file (as on disk now) and convert it. Hash-bound approval."""
@@ -641,7 +633,6 @@ class Office:
         if s.engine != "local":
             raise OfficeError("NOT_LOCAL")
         with s.lock:
-            self._hold_save_as(s, None)              # this card supersedes an open Save-as card (C1-05)
             target = {"kind": "google_upload", "label": str(s.path), "grant_id": s.grant_id, "source_sha256": s.open_sha}
             surface = self.approvals.propose(wid, target, {"edits": [], "struct_ops": []})
             return {"messages": surface.messages(), "surface_id": surface.surface_id}
@@ -763,11 +754,7 @@ class Office:
             if ed is None:
                 return self.approvals.action(msg, self._apply)
             with ed.lock:
-                try:
-                    return self.approvals.action(msg, self._apply)
-                finally:
-                    if not self.approvals.is_open(msg.get("surfaceId")):
-                        self.authoring.release_pending(subject)   # C1-05: the card was answered or closed
+                return self.approvals.action(msg, self._apply)
         if kind in ("plan", "output_files"):
             # Lock order: workflow lock, then approvals lock (plan §5.1, review N9).
             lock = self.workflows.lock_of(subject)
@@ -785,11 +772,7 @@ class Office:
             r = self.approvals.action(msg, self._apply)
         else:
             with s.lock:
-                try:
-                    r = self.approvals.action(msg, self._apply)
-                finally:
-                    if not self.approvals.is_open(msg.get("surfaceId")):
-                        self._hold_save_as(s, None)   # C1-05: the card was answered or closed
+                r = self.approvals.action(msg, self._apply)
         if r.get("workbook_id") in self.sessions:
             s = self.sessions[r["workbook_id"]]
             r["draft"] = s.draft.snapshot()
@@ -816,10 +799,10 @@ class Office:
             if g.path.exists():
                 raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
             r = self.google.export_xlsx(s.file_id, g.path)
+            self.approvals.audit("office.exported", {"workbook_id": wid})
+            return r
         finally:
-            self.grants.revoke(g.grant_id)            # C1-05: used once
-        self.approvals.audit("office.exported", {"workbook_id": wid})
-        return r
+            self.grants.revoke(g.grant_id)
 
     # ---- history -------------------------------------------------------------------------------------------------
     def history_op(self, wid, body) -> dict:

@@ -169,6 +169,15 @@ def test_grant_kinds_are_not_interchangeable(tmp_path):
     assert e.value.code == "NO_GRANT"
 
 
+@pytest.mark.parametrize("contents", ["[]", "null", '{"folders": null}'])
+def test_damaged_folder_list_grants_no_added_roots(tmp_path, contents):
+    folders_file = tmp_path / "folders.json"
+    folders_file.write_text(contents, encoding="utf-8")
+    grants = Grants([], folders_file)
+    assert grants.folders() == []
+    assert grants.roots == []
+
+
 def _directory_link(link, target):
     try:
         os.symlink(target, link, target_is_directory=True)
