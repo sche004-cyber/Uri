@@ -38,6 +38,7 @@ class _Service {
       : roles = {'S1': role, 'S2': role, 'S3': role};
   List<Map<String, dynamic>> proposed;
   final bool reopenNeeded;
+  int saves = 0;
   Map<String, String?> roles;
   String? get working => roles.entries.where((e) => e.value == 'check' || e.value == 'edit').map((e) => e.key).firstOrNull;
   dynamic findings;
@@ -77,10 +78,11 @@ class _Service {
             proposed = [for (final c in proposed) {...c, 'state': d}];
             return http.Response(jsonEncode({'draft': _draft(proposed, version: 4)}), 200);
           case '/workbook/w1/propose_save':
+            final sid = saves++ == 0 ? 'new-w1' : 'office.w1.n$saves';
             return http.Response(jsonEncode({'messages': [
-              {'version': 'v0.9', 'createSurface': {'surfaceId': 'new-w1', 'catalogId': 'uri:a2ui/catalog/v1',
+              {'version': 'v0.9', 'createSurface': {'surfaceId': sid, 'catalogId': 'uri:a2ui/catalog/v1',
                 'theme': {'agentDisplayName': 'URI', 'placement': 'workspace'}}},
-              {'version': 'v0.9', 'updateComponents': {'surfaceId': 'new-w1', 'components': [
+              {'version': 'v0.9', 'updateComponents': {'surfaceId': sid, 'components': [
                 {'id': 'root', 'component': 'Column', 'children': ['t']},
                 {'id': 't', 'component': 'Text', 'text': 'Create this new file?'},
               ]}},
@@ -301,5 +303,17 @@ void main() {
     final texts = [for (final t in c.conversation) t.text];
     expect(texts, containsAllInOrder(['Check: 2 issue(s) found.', 'Data!B4: Total is 1200 but the rows add up to 1300.',
       'Dates use two formats.']));
+  });
+
+  test('live run a5: a newer save card replaces the older one (the service closes the older)', () async {
+    final svc = _Service();
+    final c = OfficeController(client: svc.client(), surface: FakeSurface());
+    addTearDown(c.dispose);
+    await c.openNew([r'C:\Users\me\north.xlsx']);
+    await c.proposeSave(saveAsPath: r'C:\Users\me\out\a.xlsx');
+    await c.proposeSave(saveAsPath: r'C:\Users\me\out\b.xlsx');
+    await c.proposeSave(saveAsPath: r'C:\Users\me\out\c.xlsx');
+    final ids = c.hub.surfaces.map((s) => s.id).where((i) => i.startsWith('office.w1.')).toList();
+    expect(ids, ['office.w1.n3'], reason: 'one save card at a time');
   });
 }

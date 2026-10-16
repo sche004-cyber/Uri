@@ -458,13 +458,22 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
 
   Future<void> proposeSave({String? saveAsPath}) => _guard(() async {
         final r = await client.proposeSave(workbookId!, saveAsPath: saveAsPath);
+        _dropOlderCards();
         hub.apply((r['messages'] as List?) ?? const []);
       });
 
   Future<void> proposeShare() => _guard(() async {
         final r = await client.proposeShare(workbookId!);
+        _dropOlderCards();
         hub.apply((r['messages'] as List?) ?? const []);
       });
+
+  /// The service keeps one open approval per workbook and closes the older one when a new one is proposed; the app
+  /// drops the older card too, so it never shows a card that can only be refused (live run a5: two save cards).
+  void _dropOlderCards() {
+    final ids = [for (final s in hub.surfaces) if (s.id.startsWith('office.$workbookId.')) s.id];
+    if (ids.isNotEmpty) hub.apply([for (final id in ids) {'version': 'v0.9', 'deleteSurface': {'surfaceId': id}}]);
+  }
 
   Future<void> editCopy() => _guard(() async => _apply(await client.editCopy(workbookId!)));
 

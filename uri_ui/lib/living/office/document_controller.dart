@@ -554,6 +554,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     }
     final messages = await e.proposeSave(saveAsPath: path);
     if (messages == null) return;
+    _clearCards(e.id);                           // a newer save card supersedes the older one (service closes it)
     hub.apply(messages);
     conversation.say(OfficeSpeaker.uri, 'Review the changes on the card. Nothing is saved until you press Save.',
         targetLabel);
