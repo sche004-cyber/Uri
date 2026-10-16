@@ -1,0 +1,25 @@
+{
+ "run": "a3",
+ "mode": "brain",
+ "source_head": "54b3ce6bdc4f430f3a1a55c66e9ad75a3a2220fe",
+ "source_tree": "3f6349d9321321a5666128b9bd6971d728a3529a",
+ "source_status_before": "",
+ "port": 18331,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/o2q_native_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "b562ffd51d3c667f26d6088bb06a540dd4818cb3384f47c1c107cd5716337768",
+ "entry": "original production main() via integration_test (debug build); pointer and text through Flutter WidgetTester; file dialogs are the real Windows dialogs filled by dialog_helper.py",
+ "physical_input_qualified": false,
+ "page_dir": "D:\\uri-dev\\uri-auth-live\\candidate\\uri_ui\\assets\\office",
+ "started_utc": "2026-10-16T04:14:32.529089+00:00",
+ "exit_code": 1,
+ "seconds": 522.7,
+ "finished_utc": "2026-10-16T04:23:15.263781+00:00",
+ "source_status_after": ""
+}
