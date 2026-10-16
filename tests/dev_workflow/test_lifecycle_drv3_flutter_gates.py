@@ -234,6 +234,20 @@ def test_drv3_zero_tests_with_written_justification_is_allowed(tmp_path):
     assert L.run(cfg) == S.VERIFIED
 
 
+@pytest.mark.parametrize("exit_code,done_success", [(1, False), (0, False), (1, True)])
+def test_c3_r101_justified_zero_test_flutter_failure_cannot_pass(monkeypatch, exit_code, done_success):
+    gate = {"id": "flutter", "kind": "flutter", "cmd": [sys.executable, "-c", "pass"],
+            "allow_zero_tests": "no Flutter tests in this package"}
+    report = json.dumps({"type": "done", "success": done_success})
+    monkeypatch.setattr(L, "run_cmd", lambda *_args: (exit_code, report, "", "DONE"))
+    monkeypatch.setattr(L, "git", lambda *_args: "candidate-sha")
+    monkeypatch.setattr(Path, "write_bytes", lambda _path, data: len(data))
+    result = L.run_gate({"repo": str(Path(__file__).parent)}, gate, Path(__file__).parent, Path(__file__).parent)
+    assert result["evidence"] == "ZERO_TESTS"
+    assert "flutter::__run__" in result["failures"]
+    assert L.compare(result, result, [])["ok"] is False  # an identical failed baseline cannot excuse this run
+
+
 def test_drv3_pytest_gate_with_no_tests_is_not_a_pass(tmp_path):
     make_dart_fixture(tmp_path)
     cfg = run_cfg(tmp_path, [{"id": "unit", "kind": "pytest", "cmd": ["{python}", "-m", "pytest", "-q", "app"]}])
@@ -382,3 +396,36 @@ def test_r103_preparation_rejects_tracked_mutations_and_keeps_log(tmp_path, muta
     g(tmp_path / "impl", "checkout", "--", ".")
     gate = L.run_gate({"repo": str(tmp_path / "repo")}, flutter_gate(tool), tmp_path / "impl", logs)
     assert gate["status"] == "BLOCKED" and "INFRA" in gate["detail"]
+
+
+def test_c3_r102_preparation_rejects_second_change_to_already_dirty_tracked_file(tmp_path):
+    make_dart_fixture(tmp_path)
+    tool = fake_tool(tmp_path)
+    gate_dir = tmp_path / "impl/app"
+    (gate_dir / "tests.txt").write_text("changed by test_setup\n")
+    flag(tool, "change_tracked")  # pub get changes this same tracked path again
+    logs = tmp_path / "logs"
+    logs.mkdir()
+    rec = L.prepare_dart_dependencies(flutter_gate(tool), tool, gate_dir, logs)
+    assert "dependency preparation changed tracked files: app/tests.txt" in rec["error"]
+    assert (logs / "flutter.prepare.log").is_file()
+
+
+def test_c3_r102_preparation_compares_dirty_file_contents(monkeypatch):
+    # The path list is identical before and after pub get; only its tracked diff changes.
+    patches = iter(("tracked.txt: test_setup version", "tracked.txt: pub get version"))
+
+    def fake_git(_repo, *args):
+        if args[0] == "rev-parse":
+            return str(Path(__file__).parent)
+        if "--binary" in args:
+            return next(patches)
+        return "tracked.txt"
+
+    monkeypatch.setattr(L, "git", fake_git)
+    monkeypatch.setattr(L, "run_cmd", lambda *_args: (0, "Got dependencies!", "", "DONE"))
+    monkeypatch.setattr(Path, "write_bytes", lambda _path, data: len(data))
+    original_is_file = Path.is_file
+    monkeypatch.setattr(Path, "is_file", lambda path: path.name == "package_config.json" or original_is_file(path))
+    rec = L.prepare_dart_dependencies({"id": "flutter"}, "flutter", Path(__file__).parent, Path(__file__).parent)
+    assert "dependency preparation changed tracked files: tracked.txt" in rec["error"]

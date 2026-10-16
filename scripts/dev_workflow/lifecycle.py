@@ -649,7 +649,7 @@ def parse_junit(path: Path) -> dict:
 
 def parse_flutter_machine(text: str) -> dict:
     names, res, errs = {}, {"failures": {}, "passed": 0, "skipped": 0, "executed": 0,
-                            "ids": [], "parsed": False}, {}
+                            "ids": [], "parsed": False, "done_success": None}, {}
     for line in text.splitlines():
         try:
             ev = json.loads(line)
@@ -667,6 +667,7 @@ def parse_flutter_machine(text: str) -> dict:
             errs.setdefault(ev.get("testID"), _cause(ev.get("error") or ""))
         elif t == "done":
             res["parsed"] = True
+            res["done_success"] = ev.get("success") is True
         elif t == "testDone":
             n = names.get(ev.get("testID"), str(ev.get("testID")))
             if not ev.get("hidden"):
@@ -686,7 +687,7 @@ NOBYTECODE = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
 GPU_LEASE_BUSY = 75  # uri_operational_intelligence.gpu_lease `run` exit code on GpuBusy
 # Gate result semantics version: part of the baseline cache key, so a baseline result recorded under older rules
 # (e.g. a Flutter run without packages, DRV-3) is never reused.
-GATE_SCHEMA = 5
+GATE_SCHEMA = 6
 # Evidence classes that count as a real run for comparison (a justified zero-test run is labelled as such, C1-04).
 RAN = ("EXECUTED", "ZERO_TESTS_JUSTIFIED")
 FLUTTER_TOOLS = ("flutter", "flutter.bat", "dart", "dart.bat", "dart.exe")
@@ -725,13 +726,17 @@ def prepare_dart_dependencies(gate: dict, tool: str, gate_dir: Path, log_dir: Pa
     lock = gate_dir / "pubspec.lock"
     before_lock = lock.read_bytes() if lock.is_file() else None
     top = git(gate_dir, "rev-parse", "--show-toplevel")
+    diff_args = ("diff", "--no-ext-diff", "--no-textconv", "--binary", "HEAD", "--")
+    before_diff = git(top, *diff_args)
     before_changed = set(git(top, "diff", "--name-only", "HEAD", "--").splitlines())
     cmd = [tool, "pub", "get", "--enforce-lockfile"] + ([] if gate.get("pub_offline") is False else ["--offline"])
     rc, o, e, state = run_cmd(cmd, gate_dir, gate.get("prepare_timeout_s", 900))
     (log_dir / f"{gate['id']}.prepare.log").write_bytes((o + "\n--- stderr ---\n" + e).encode("utf-8"))
     after_lock = lock.read_bytes() if lock.is_file() else None
-    # only what preparation itself changed (a test_setup step's own changes are not attributed to it, C1-03)
-    changed = ", ".join(sorted(set(git(top, "diff", "--name-only", "HEAD", "--").splitlines()) - before_changed))
+    # Compare contents of the HEAD-relative patch, including paths already dirty from test_setup (C1-03).
+    after_diff = git(top, *diff_args)
+    after_changed = set(git(top, "diff", "--name-only", "HEAD", "--").splitlines())
+    changed = ", ".join(sorted(before_changed | after_changed)) if before_diff != after_diff else ""
     rec = {"cmd": cmd, "exit_code": rc, "state": state,
            "pubspec_lock_sha256": sha256(after_lock) if after_lock is not None else None}
     if before_lock != after_lock:
@@ -822,7 +827,7 @@ def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
         out.update(parse_junit(junit) if kind == "pytest" else parse_flutter_machine(stdout))
         justified = isinstance(gate.get("allow_zero_tests"), str) and bool(gate["allow_zero_tests"].strip())
         # pytest exits 5 when it collected no test: the expected result of a justified zero-test gate (C1-04)
-        normal = (0, 1, 5) if justified and kind == "pytest" else (0, 1)
+        normal = (0, 1)
         # A crashed run, an unusable report or a failing exit with no recorded failure is itself a failure.
         executed = out["executed"] if kind == "flutter" else out["passed"] + len(out["failures"])
         out["executed"] = executed
@@ -836,9 +841,12 @@ def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
             out["evidence"] = "ZERO_TESTS"
             out["failures"][run_id] = f"exit {rc}: zero tests executed"
         elif executed == 0:
-            out["evidence"] = "ZERO_TESTS_JUSTIFIED"
-            if rc not in normal:
-                out["failures"][run_id] = f"exit {rc}"
+            zero_exit_ok = rc in ((0, 5) if kind == "pytest" else (0,))
+            done_failed = kind == "flutter" and out["done_success"] is not True
+            if not zero_exit_ok or done_failed:
+                out["failures"][run_id] = f"exit {rc}" + ("; Flutter done unsuccessful" if done_failed else "")
+            # A justification permits a successful empty run, never an unsuccessful one.
+            out["evidence"] = "ZERO_TESTS" if out["failures"] else "ZERO_TESTS_JUSTIFIED"
         else:
             out["evidence"] = "EXECUTED"
             if rc not in normal or (rc != 0 and not out["failures"]):
