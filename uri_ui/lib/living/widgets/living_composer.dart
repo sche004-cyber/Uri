@@ -141,11 +141,15 @@ class _LivingComposerState extends State<LivingComposer> {
     final services = LivingScope.of(context);
     final OiConversation? oi = services.oi;
     final voice = services.voiceInteraction;
+    // Codex integration review R1-01: the Office controller is claimed after the composer's first build, so the
+    // merged listenable is rebuilt whenever the target changes (outer builder) and then also follows that
+    // controller's own changes (busy, request hint).
     return ListenableBuilder(
+      listenable: services.officeTarget,
+      builder: (context, _) => ListenableBuilder(
       listenable: Listenable.merge([
         appState,
         ?oi,
-        services.officeTarget,
         ?services.officeTarget.value,
         services.presentation,
       ]),
@@ -333,6 +337,7 @@ class _LivingComposerState extends State<LivingComposer> {
           child: content,
         );
       },
+      ),
     );
   }
 }

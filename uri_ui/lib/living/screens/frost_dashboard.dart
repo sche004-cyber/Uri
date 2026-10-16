@@ -22,6 +22,7 @@ const _navHints = {
   'Conversation': 'Talk with URI',
   'Tasks': 'Decisions waiting for you and work in progress',
   'Documents': 'Start a letter, sheet, document or research',
+  'Office': 'Open a workbook, document or presentation from your folders',
   'Assist': 'Let URI help in the apps you allow',
   'Scheduler': 'Reminders and scheduled jobs',
   'Connections': 'Accounts and tools URI can use',
@@ -186,6 +187,12 @@ class FrostDashboard extends StatelessWidget {
             'Documents',
             Icons.description_outlined,
             () => focus(WorkspaceFocus.documents),
+          ),
+          // URI Office (integration live run i1, finding INT-L1): the V2 landing lists Office like the Workspace rail.
+          (
+            'Office',
+            Icons.table_chart_outlined,
+            () => focus(WorkspaceFocus.office),
           ),
           (
             'Assist',
