@@ -10,6 +10,7 @@ import 'office_bridge.dart';
 import 'office_client.dart';
 import 'office_controller.dart';
 import 'office_conversation.dart';
+import 'presentation_editor.dart';
 
 /// Contract o2.1 error texts (uri_office/contracts.py ERRORS), shown with their recovery actions (refinement 7).
 const officeErrorText = <String, String>{
@@ -60,7 +61,7 @@ String officeErrorMessage(Object e) {
   return 'URI Office could not do that.';
 }
 
-enum OfficeCentre { home, list, sheet, document, workflow, print, devices }
+enum OfficeCentre { home, list, sheet, document, workflow, print, devices, edit }
 
 /// An open, read-only document (DOCX, PPTX or PDF) as the service shows it.
 class OfficeDocument {
@@ -143,6 +144,8 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   final OfficeConversation conversation = OfficeConversation();
 
   OfficeController? sheet;                       // set by the sheet view while a workbook is open
+  PresentationEditController? editor;            // authoring (A/B): the open presentation edit
+  bool _editSaved = false;                       // the open edit saved a file at least once
   OfficeCentre centre = OfficeCentre.home;
   Map<String, dynamic> capabilities = const {};
   List<Map<String, dynamic>> engines = const [];
@@ -367,6 +370,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       _notify();
       return;
     }
+    if (centre == OfficeCentre.edit) return;      // the editor's Done asks about unsaved changes (finishEditing)
     if (centre == OfficeCentre.document || centre == OfficeCentre.workflow || centre == OfficeCentre.sheet ||
         centre == OfficeCentre.devices) {
       centre = view == OfficeView.home ? OfficeCentre.home : OfficeCentre.list;
@@ -383,6 +387,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         OfficeCentre.workflow => 'Task',
         OfficeCentre.print => 'Print',
         OfficeCentre.devices => 'Printers',
+        OfficeCentre.edit => 'Editing · ${editor?.name ?? ''}',
         _ => 'Home',
       };
 
@@ -465,6 +470,92 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       searchNotice = officeErrorMessage(e);
     }
     _notify();
+  }
+
+  // ---- authoring (milestones A/B) -----------------------------------------------------------------------------
+  void _startEditor(Map<String, dynamic> v) {
+    editor?.dispose();
+    editor = PresentationEditController(client, v);
+    _editSaved = false;
+    centre = OfficeCentre.edit;
+    _leaveView();
+  }
+
+  /// Edit the presentation in the centre. The edit works on a copy; the file changes only through an approved save.
+  Future<void> editDocument() => _guard(() async {
+        final d = documents[activeDocument];
+        if (d == null || d.kind != 'pptx') return;
+        _startEditor(await client.authoringEdit(d.id));
+        conversation.say(OfficeSpeaker.uri,
+            'Editing a copy of ${d.name}. Your file changes only when you approve Save.', targetLabel);
+      });
+
+  /// A new presentation: blank (16:9) or from the owner's presentation or template.
+  Future<void> newPresentation({bool fromTemplate = false}) async {
+    String? template;
+    if (fromTemplate) {
+      final pick = environment?.pickTemplatePath;
+      if (pick == null) return;
+      template = await pick();
+      if (template == null) return;
+    }
+    await _guard(() async {
+      _startEditor(await client.authoringNew(templatePath: template));
+      conversation.say(OfficeSpeaker.uri, 'New presentation. Use Save as to choose where it goes.', targetLabel);
+    });
+  }
+
+  /// Save (replace the opened file, with a backup) or Save as (a new file). Shows the save card.
+  Future<void> saveEdit({bool saveAs = false}) async {
+    final e = editor;
+    if (e == null) return;
+    String? path;
+    if (saveAs || e.isNew) {
+      final pick = environment?.pickPresentationSavePath;
+      if (pick == null) return;
+      path = await pick(e.name);
+      if (path == null) return;
+    }
+    final messages = await e.proposeSave(saveAsPath: path);
+    if (messages == null) return;
+    hub.apply(messages);
+    conversation.say(OfficeSpeaker.uri, 'Review the changes on the card. Nothing is saved until you press Save.',
+        targetLabel);
+    _notify();
+  }
+
+  Future<void> insertPicture(int slideId) async {
+    final e = editor;
+    final pick = environment?.pickImagePath;
+    if (e == null || pick == null) return;
+    final path = await pick();
+    if (path == null) return;
+    await e.op({'op': 'insert_image', 'slide': slideId, 'box': {'x': 0.3, 'y': 0.3, 'w': 0.4, 'h': 0.4}},
+        imagePath: path);
+  }
+
+  /// Leaves the editor (unsaved changes are discarded; finishEditing asked first). After a save the saved file is
+  /// opened again so the viewer shows what is on disk.
+  Future<void> closeEdit() async {
+    final e = editor;
+    if (e == null) return;
+    final path = e.savedPath;
+    final saved = _editSaved;
+    editor = null;
+    _clearCards(e.id);
+    await e.close();
+    e.dispose();
+    centre = activeDocument != null && documents.containsKey(activeDocument) ? OfficeCentre.document
+        : OfficeCentre.home;
+    _notify();
+    if (saved && path != null) {
+      final old = documents.values.where((d) => d.kind == 'pptx' && d.name == path.split(RegExp(r'[\\/]')).last)
+          .map((d) => d.id).toList();
+      for (final id in old) {
+        await closeDocument(id);
+      }
+      await openDocumentPath(path);
+    }
   }
 
   // ---- workflows -------------------------------------------------------------------------------------------------
@@ -631,6 +722,15 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         stepLabel = null;
         conversation.say(OfficeSpeaker.notice, 'Plan discarded. Nothing was done.', 'Task');
       }
+    } else if (kind == 'authoring_save') {
+      final e = editor;
+      if (result['status'] == 'applied') {
+        _editSaved = true;
+        conversation.say(OfficeSpeaker.uri, 'Saved ${result['saved_to']}.', targetLabel);
+      } else {
+        conversation.say(OfficeSpeaker.notice, 'Not saved. Your changes are still here.', targetLabel);
+      }
+      if (e != null && (result['authoring_id'] ?? result['subject_id'] ?? e.id) == e.id) await e.saveAnswered(result);
     } else if (kind == 'print_job') {
       if (result['status'] == 'applied') {
         stepLabel = 'Printing…';
@@ -999,6 +1099,11 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     presentation?.removeListener(_onPresentation);
     for (final id in documents.keys.toList()) {
       unawaited(client.closeDocument(id).then((_) {}, onError: (_) {}));
+    }
+    final e = editor;
+    if (e != null) {
+      unawaited(e.close());
+      e.dispose();
     }
     hub.dispose();
     conversation.dispose();

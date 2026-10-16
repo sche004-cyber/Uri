@@ -311,7 +311,8 @@ def describe(prs) -> dict:
         title = s.shapes.title.text if s.shapes.title is not None else ""
         notes = s.notes_slide.notes_text_frame.text if s.has_notes_slide and \
             s.notes_slide.notes_text_frame is not None else ""
-        out.append({"id": s.slide_id, "index": i, "layout": s.slide_layout.name, "title": title, "items": items,
+        out.append({"id": s.slide_id, "index": i, "layout": s.slide_layout.name, "title": title,
+                    "title_id": s.shapes.title.shape_id if s.shapes.title is not None else None, "items": items,
                     "notes": notes})
     return {"slides": out, "layouts": layouts(prs), "aspect": round(W / H, 4)}
 

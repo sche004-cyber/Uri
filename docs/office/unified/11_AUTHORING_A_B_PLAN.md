@@ -71,6 +71,12 @@ Office document view gains an **Edit** mode for a .pptx (and "New presentation" 
 - top: change counter, Undo/Redo, Save…, Save as…; leaving edit mode with unsaved changes asks (keep, discard).
 States shown in words: Viewing / Editing (n unsaved changes) / Saving / Saved as … / Cancelled / Failed (reason).
 
+Implementation note (2026-10-16): the slide's editable items are a column inside the editor, not the URI pane, so the
+URI pane keeps showing the conversation and the save card beside the editor (the card must stay visible while the
+owner reviews what they changed). After an approved save, Done opens the saved file again in the viewer so it shows
+what is on disk. Save as continues the edit on the new file. A refused change is shown in words above the slides with
+the reason the service names (for example video that cannot be copied).
+
 ## 5. Acceptance criteria
 
 | ID | Criterion | Evidence |

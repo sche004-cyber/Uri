@@ -47,6 +47,9 @@ class OfficeEnvironment {
     this.pickPdfSavePath,
     this.openPrinterSettings,
     this.startService,
+    this.pickPresentationSavePath,
+    this.pickTemplatePath,
+    this.pickImagePath,
   });
 
   final OfficeSurface Function() surfaceFactory;
@@ -80,6 +83,16 @@ class OfficeEnvironment {
   /// voice service). Returns null once the process is started, or a sentence for the owner saying why it cannot be.
   /// Null where the platform cannot start it; the workspace then asks the owner to start URI Office.
   final Future<String?> Function()? startService;
+
+  /// Authoring (A/B): where to save a presentation as a new file; returns a path that did not exist when chosen, or
+  /// null. The service checks again and never replaces a file.
+  final Future<String?> Function(String suggestedName)? pickPresentationSavePath;
+
+  /// Authoring (OD-A5): the owner's presentation or template (.pptx, .potx) to start a new presentation from.
+  final Future<String?> Function()? pickTemplatePath;
+
+  /// Authoring (B): a picture to insert (.png, .jpg, .gif, .bmp).
+  final Future<String?> Function()? pickImagePath;
 }
 
 final RegExp _cellRef = RegExp(r'^[A-Z]{1,3}[1-9][0-9]{0,6}$');

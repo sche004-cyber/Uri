@@ -713,6 +713,13 @@ class Office:
             if r.get("status") == "declined":
                 self.printing.declined(subject)
             return r
+        if kind == "authoring_save":
+            # Lock order: the edit's lock, then approvals lock (propose_save takes them that way).
+            ed = self.authoring.sessions.get(subject)
+            if ed is None:
+                return self.approvals.action(msg, self._apply)
+            with ed.lock:
+                return self.approvals.action(msg, self._apply)
         if kind in ("plan", "output_files"):
             # Lock order: workflow lock, then approvals lock (plan §5.1, review N9).
             lock = self.workflows.lock_of(subject)

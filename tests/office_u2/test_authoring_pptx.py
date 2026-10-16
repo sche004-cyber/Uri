@@ -168,6 +168,8 @@ def test_describe_lists_slides_items_and_layouts():
     kinds = {it["kind"] for s in d["slides"] for it in s["items"]}
     assert {"text", "chart", "table"} <= kinds
     assert d["slides"][1]["notes"] == "Say thanks"
+    title = next(it for it in d["slides"][1]["items"] if it["id"] == d["slides"][1]["title_id"])
+    assert title["paragraphs"] == ["Highlights"]
     assert "Title and Content" in d["layouts"]
 
 

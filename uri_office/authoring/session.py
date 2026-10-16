@@ -230,7 +230,9 @@ class Authoring:
         with s.lock:
             deck = P.describe(self._load(s.data))
             live = self._live_changes(s)
+            # path: the file this edit saves to (picked or approved by the owner), so the app can open it again
             return {"authoring_id": s.aid, "kind": s.kind, "name": s.name, "new": s.origin is None,
+                    "path": str(s.origin) if s.origin is not None else None,
                     "deck": deck, "changes": [{"text": c["text"]} for c in live],
                     "can_undo": s.pos > 0, "can_redo": s.pos < len(s.versions) - 1,
                     "preview_document_id": s.preview_doc, "sha256_prefix": _sha(s.data)[:12]}

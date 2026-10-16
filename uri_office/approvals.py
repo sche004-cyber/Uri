@@ -437,6 +437,8 @@ class Approvals:
                     counts = {"steps": len(body["plan"]["steps"])}
                 elif kind == "print_job":
                     counts = {"pages": len(body["print"]["pages"]), "copies": body["print"]["settings"]["copies"]}
+                elif kind == "authoring_save":
+                    counts = {"changes": len(body["changes"])}
                 else:
                     counts = {"outputs": len(body.get("outputs", []))}
                 self.audit("office.change_applied", {"surface_id": sid, "change_sha256": r["change_sha256"],
