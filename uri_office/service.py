@@ -894,6 +894,9 @@ def make_handler(office: Office, token: str):
                     return office.hub.status()
                 if parts == ["recent"]:
                     return office.recent.listing()
+                if parts == ["authoring", "layouts"]:
+                    from .authoring.docx_templates import layout_list
+                    return {"docx": layout_list()}
                 if len(parts) == 2 and parts[0] == "authoring" and _ok_id(parts[1]):
                     return office.authoring.view(parts[1])
                 if parts == ["workflows"]:
@@ -938,6 +941,8 @@ def make_handler(office: Office, token: str):
                 if parts == ["authoring", "edit"]:
                     return office.authoring.edit_document(b.get("document_id"))
                 if parts == ["authoring", "new"]:
+                    if b.get("kind") == "docx":
+                        return office.authoring.new_document(b.get("layout"), b.get("template_path"))
                     return office.authoring.new_presentation(b.get("template_path"))
                 if len(parts) == 3 and parts[0] == "authoring" and _ok_id(parts[1]):
                     aid, verb = parts[1], parts[2]

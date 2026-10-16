@@ -33,11 +33,12 @@ MAX_BYTES = 50 * 1024 * 1024
 # O2 (plan §5 grants.py): per-kind suffixes and size caps. The `.xlsx` default and its messages are unchanged.
 KIND_SUFFIX = {"xlsx": ".xlsx", "docx": ".docx", "pptx": ".pptx", "pdf": ".pdf",
                # authoring (OD-A5): a presentation template, and a picture to insert
-               "pptx_template": (".pptx", ".potx"), "image": (".png", ".jpg", ".jpeg", ".gif", ".bmp")}
+               "pptx_template": (".pptx", ".potx"), "image": (".png", ".jpg", ".jpeg", ".gif", ".bmp"),
+               "docx_template": (".docx", ".dotx")}
 KIND_MAX_BYTES = {"xlsx": MAX_BYTES, "docx": 50 * 1024 * 1024, "pptx": 50 * 1024 * 1024, "pdf": 100 * 1024 * 1024,
-                  "pptx_template": 50 * 1024 * 1024, "image": 20 * 1024 * 1024}
+                  "pptx_template": 50 * 1024 * 1024, "image": 20 * 1024 * 1024, "docx_template": 50 * 1024 * 1024}
 KIND_LABEL = {"xlsx": "workbook", "docx": "document", "pptx": "presentation", "pdf": "PDF",
-              "pptx_template": "template", "image": "picture"}
+              "pptx_template": "template", "image": "picture", "docx_template": "template"}
 
 
 def _suffixes(kind) -> tuple:

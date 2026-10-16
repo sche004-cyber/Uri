@@ -232,7 +232,8 @@ class Approvals:
             lines = list(body["changes"]) or ["A new file with the content shown."]
             lines.append("This replaces the file you opened (a backup is kept)." if t["replaces"]
                          else "A new file is written. An existing file is never replaced.")
-            return self._card(sid, "Save this presentation?", dest, lines, "Save", "Not now", "office.apply_change",
+            title = "Save this document?" if body.get("kind") == "docx" else "Save this presentation?"
+            return self._card(sid, title, dest, lines, "Save", "Not now", "office.apply_change",
                               "office.reject_change", "change_sha256", sha, "office_change", "Office save")
         return self._propose_subject(authoring_id, "authoring_save", body, card, {"changes": len(body["changes"])})
 

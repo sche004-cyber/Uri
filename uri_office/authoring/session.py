@@ -1,4 +1,4 @@
-"""Authoring sessions (milestone A): a working copy, an ordered change list, undo/redo, a live preview and a
+"""Authoring sessions (milestone A; Word added in milestone C): a working copy, an ordered change list, undo/redo, a live preview and a
 hash-bound save card. Plan: docs/office/unified/11_AUTHORING_A_B_PLAN.md section 2.
 
 The working copy starts as the original's exact bytes (re-read from the owner's open grant and checked against the
@@ -18,6 +18,7 @@ from pathlib import Path
 
 from ..errors import OfficeError
 from ..xlsx_patch import atomic_write
+from . import docx_ops as D
 from . import pptx_ops as P
 
 MAX_VERSIONS = 40
@@ -57,8 +58,53 @@ def from_template(data: bytes) -> bytes:
     return out.getvalue()
 
 
+KIND_WORDS = {"pptx": "presentation", "docx": "document"}
+
+
+def describe_docx_change(op: dict, view: dict | None = None) -> str:
+    """Plain words for one Word change: the block by its position and the start of its text."""
+    blocks = (view or {}).get("blocks", [])
+
+    def where(i):
+        b = blocks[i] if isinstance(i, int) and 0 <= i < len(blocks) else None
+        if b is None:
+            return "a paragraph"
+        if b["kind"] == "table":
+            return f"the table at block {i + 1}"
+        t = (b.get("text") or "").strip()
+        return f"paragraph {i + 1}" + (f" ('{t[:40]}{'...' if len(t) > 40 else ''}')" if t else " (empty)")
+
+    def after(op):
+        return "at the start" if op.get("after") is None else f"after {where(op.get('after'))}"
+
+    k = op.get("op")
+    b = where(op.get("block"))
+    texts = {
+        "insert_paragraph": f"Add a paragraph {after(op)}: '{str(op.get('text'))[:60]}'",
+        "set_paragraph_text": f"Change the text of {b} to '{str(op.get('text'))[:60]}'",
+        "delete_block": f"Delete {b}",
+        "move_block": f"Move {b} to position {(op.get('to') or 0) + 1}",
+        "set_style": f"{b[0].upper() + b[1:]}: style '{op.get('style')}'",
+        "format_text": f"{b[0].upper() + b[1:]}: format text",
+        "insert_page_break": f"Add a page break {after(op)}",
+        "replace_text": f"Replace '{str(op.get('find'))[:40]}' with '{str(op.get('replace'))[:40]}'",
+        "insert_table": f"Add a table {after(op)}",
+        "set_table_cell": f"Change a cell in {b}",
+        "add_table_row": f"Add a row to {b}",
+        "delete_table_row": f"Delete a row from {b}",
+        "insert_image": f"Add a picture {after(op)}",
+        "set_header_text": f"Header: '{str(op.get('text'))[:60]}'",
+        "set_footer_text": f"Footer: '{str(op.get('text'))[:60]}'",
+        "insert_page_number": f"Add page numbers in the {op.get('where', 'footer')}",
+        "set_page_setup": "Change the page setup" + (f" ({op.get('orientation')})" if op.get("orientation") else ""),
+    }
+    return texts.get(k, str(k))
+
+
 def describe_change(op: dict, deck: dict | None = None) -> str:
     """Plain words for one change (the change list and the save card)."""
+    if deck is not None and "blocks" in deck:
+        return describe_docx_change(op, deck)
     names = {s["id"]: f"slide {s['index'] + 1}" for s in (deck or {}).get("slides", [])}
     sl = names.get(op.get("slide"), "a slide")
     k = op.get("op")
@@ -112,11 +158,11 @@ class Authoring:
 
     # ---- start -------------------------------------------------------------------------------------------------
     def _new(self, kind, name, data, origin=None, origin_sha=None, grant_id=None) -> AuthSession:
-        if kind != "pptx":
-            raise OfficeError("AUTHORING_NOT_SUPPORTED", "editing Word documents comes in milestone C")
+        if kind not in KIND_WORDS:
+            raise OfficeError("AUTHORING_NOT_SUPPORTED", "URI edits presentations and Word documents")
         if len(data) > MAX_BYTES:
             raise OfficeError("FILE_TOO_LARGE", "")
-        self._load(data)                                  # refuses what python-pptx cannot read
+        self._load(data, kind)                            # refuses what python-pptx / python-docx cannot read
         with self._lock:
             if len(self.sessions) >= MAX_SESSIONS:
                 raise OfficeError("TOO_MANY_OPEN", "finish or close an edit first")
@@ -128,17 +174,17 @@ class Authoring:
 
     def edit_document(self, document_id: str) -> dict:
         d = self.documents.get(document_id)
-        if d.kind != "pptx":
-            raise OfficeError("AUTHORING_NOT_SUPPORTED", "only presentations can be edited in this version")
+        if d.kind not in KIND_WORDS:
+            raise OfficeError("AUTHORING_NOT_SUPPORTED", "URI edits presentations and Word documents")
         path = self.grants.get(d.grant_id, "open").path
         # The edit holds its own grant on the same file (revoked at close), so closing the viewer that opened it does
         # not take Save away from the edit.
-        g = self.grants.grant_open(str(path), kind="pptx")
+        g = self.grants.grant_open(str(path), kind=d.kind)
         try:
             data = g.path.read_bytes()
             if _sha(data) != d.sha256:
                 raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; open it again", 409)
-            s = self._new("pptx", d.name, data, origin=g.path, origin_sha=d.sha256, grant_id=g.grant_id)
+            s = self._new(d.kind, d.name, data, origin=g.path, origin_sha=d.sha256, grant_id=g.grant_id)
         except BaseException:
             self.grants.revoke(g.grant_id)
             raise
@@ -156,6 +202,22 @@ class Authoring:
             data, name = blank_pptx(), "New presentation.pptx"
         return self.view(self._new("pptx", name, data).aid)
 
+    def new_document(self, layout=None, template_path=None) -> dict:
+        """Milestone C: a new Word document from a built-in layout (default blank) or the owner's .docx/.dotx."""
+        from . import docx_templates as T
+        if template_path:
+            g = self.grants.grant_open(template_path, kind="docx_template")
+            try:
+                data = T.from_docx_template(g.path.read_bytes())
+            finally:
+                self.grants.revoke(g.grant_id)
+            name = Path(g.path).stem + " (new).docx"
+        else:
+            lid = layout or "blank"
+            data = T.from_layout(lid)
+            name = ("New document" if lid == "blank" else T.LAYOUTS[lid][0]) + ".docx"
+        return self.view(self._new("docx", name, data).aid)
+
     # ---- editing -----------------------------------------------------------------------------------------------
     def get(self, aid) -> AuthSession:
         s = self.sessions.get(aid) if isinstance(aid, str) else None
@@ -164,26 +226,37 @@ class Authoring:
         return s
 
     @staticmethod
-    def _load(data: bytes):
-        from pptx import Presentation
+    def _load(data: bytes, kind: str = "pptx"):
         try:
+            if kind == "docx":
+                from docx import Document
+                return Document(io.BytesIO(data))
+            from pptx import Presentation
             return Presentation(io.BytesIO(data))
         except Exception as e:  # noqa: BLE001 - any parse failure is one refusal
-            raise OfficeError("NOT_A_PRESENTATION", type(e).__name__) from None
+            raise OfficeError("NOT_A_DOCUMENT" if kind == "docx" else "NOT_A_PRESENTATION", type(e).__name__) from None
+
+    @staticmethod
+    def _ops(kind):
+        return D if kind == "docx" else P
 
     def apply(self, aid, op: dict, image_grant: str | None = None) -> dict:
         s = self.get(aid)
         with s.lock:
-            if not isinstance(op, dict) or (op.get("op") not in P.OPS and op.get("op") != "insert_image"):
+            M = self._ops(s.kind)
+            if not isinstance(op, dict) or (op.get("op") not in M.OPS and op.get("op") != "insert_image"):
                 raise OfficeError("UNKNOWN_OP", str(op.get("op") if isinstance(op, dict) else op)[:32])
-            prs = self._load(s.data)
-            before = P.describe(prs)
+            prs = self._load(s.data, s.kind)
+            before = M.describe(prs)
             try:
                 if op["op"] == "insert_image":
                     path = self.grants.get(image_grant, "open").path
-                    result = P.insert_image(prs, op["slide"], path, op["box"])
+                    if s.kind == "docx":
+                        result = D.insert_image(prs, op.get("after"), path, op.get("width", 0.5))
+                    else:
+                        result = P.insert_image(prs, op["slide"], path, op["box"])
                 else:
-                    result = P.OPS[op["op"]](prs, op)
+                    result = M.OPS[op["op"]](prs, op)
             except KeyError as e:
                 raise OfficeError("BAD_OP", f"missing {e.args[0]}") from None
             except (TypeError, ValueError, IndexError, AttributeError) as e:     # a value of the wrong shape
@@ -228,12 +301,13 @@ class Authoring:
     def view(self, aid) -> dict:
         s = self.get(aid)
         with s.lock:
-            deck = P.describe(self._load(s.data))
+            content = self._ops(s.kind).describe(self._load(s.data, s.kind))
             live = self._live_changes(s)
             # path: the file this edit saves to (picked or approved by the owner), so the app can open it again
             return {"authoring_id": s.aid, "kind": s.kind, "name": s.name, "new": s.origin is None,
                     "path": str(s.origin) if s.origin is not None else None,
-                    "deck": deck, "changes": [{"text": c["text"]} for c in live],
+                    ("doc" if s.kind == "docx" else "deck"): content,
+                    "changes": [{"text": c["text"]} for c in live],
                     "can_undo": s.pos > 0, "can_redo": s.pos < len(s.versions) - 1,
                     "preview_document_id": s.preview_doc, "sha256_prefix": _sha(s.data)[:12]}
 
@@ -254,13 +328,14 @@ class Authoring:
             if not live and s.origin is not None and save_as_path is None:
                 raise OfficeError("NOTHING_TO_SAVE", "there are no changes")
             if save_as_path is None and s.origin is None:
-                raise OfficeError("SAVE_AS_REQUIRED", "a new presentation is saved as a new file")
+                raise OfficeError("SAVE_AS_REQUIRED", f"a new {KIND_WORDS[s.kind]} is saved as a new file")
+            self._check_rendered(s)
             if save_as_path is not None:
-                g = self.grants.grant_save_as(save_as_path, kind="pptx")
+                g = self.grants.grant_save_as(save_as_path, kind=s.kind)
                 dest, replaces, grant_id = g.path, False, g.grant_id
             else:
                 dest, replaces, grant_id = s.origin, True, s.grant_id
-            body = {"subject_kind": "authoring_save", "authoring_id": aid,
+            body = {"subject_kind": "authoring_save", "authoring_id": aid, "kind": s.kind,
                     "target": {"kind": "authoring_save", "destination": str(dest), "grant_id": grant_id,
                                "replaces": replaces, "origin_sha256": s.origin_sha},
                     "changes": [c["text"] for c in live], "working_sha256": _sha(s.data)}
@@ -272,12 +347,12 @@ class Authoring:
         s = self.get(body["authoring_id"])
         with s.lock:
             if _sha(s.data) != body["working_sha256"]:
-                raise OfficeError("STALE_CHANGE", "the presentation changed after this card was shown; review the save "
-                                                  "again", 409)
+                raise OfficeError("STALE_CHANGE", f"the {KIND_WORDS[s.kind]} changed after this card was shown; review "
+                                                  "the save again", 409)
             t = body["target"]
             kind = "open" if t["replaces"] else "save_as"
             dest = self.grants.get(t["grant_id"], kind).path
-            self._load(s.data)                              # still a presentation (it was loaded at every change)
+            self._load(s.data, s.kind)                      # still readable (it was loaded at every change)
             if t["replaces"]:
                 if _sha(dest.read_bytes()) != t["origin_sha256"]:
                     raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new "
@@ -294,7 +369,7 @@ class Authoring:
             else:
                 # after Save as the edit continues on the new file: the next Save replaces it (with a backup)
                 self.grants.revoke(t["grant_id"])
-                g = self.grants.grant_open(str(dest), kind="pptx")
+                g = self.grants.grant_open(str(dest), kind=s.kind)
                 if s.grant_id is not None:
                     self.grants.revoke(s.grant_id)
                 s.origin, s.origin_sha, s.grant_id, s.name = g.path, _sha(data), g.grant_id, g.path.name
@@ -305,6 +380,22 @@ class Authoring:
             s.dropped = 0
             self.audit("office.authoring_saved", {"authoring_id": s.aid, "replaced": t["replaces"]})
             return {"saved_to": dest.name, "authoring_id": s.aid}
+
+    def _check_rendered(self, s: AuthSession):
+        """Plan 11 section 2: a working copy LibreOffice cannot open is never saved. The save card is offered only
+        once the preview of exactly this working copy has rendered."""
+        if s.preview_doc is None:
+            raise OfficeError("PREVIEW_NOT_READY", "the preview is not ready yet", 409)
+        try:
+            d = self.documents.get(s.preview_doc)
+        except OfficeError:
+            raise OfficeError("PREVIEW_NOT_READY", "the preview is not ready yet", 409) from None
+        state = getattr(d, "state", "ready")
+        if state == "rendering":
+            raise OfficeError("PREVIEW_NOT_READY", "wait until the preview shows your changes, then save", 409)
+        if state != "ready":
+            raise OfficeError("PREVIEW_FAILED", "LibreOffice could not show the changed file, so it is not saved; "
+                                                "undo the last change or try again", 409)
 
     def close(self, aid) -> dict:
         with self._lock:
