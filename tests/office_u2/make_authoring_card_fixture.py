@@ -40,5 +40,30 @@ def main():
     print(out, aid)
 
 
+def main_docx():
+    """The Word card (milestone C): authoring_save_card_docx.json."""
+    from test_authoring_docx import FakeDocs, report_bytes
+    with tempfile.TemporaryDirectory() as t:
+        tmp = Path(t)
+        p = tmp / "Annual Report.docx"
+        p.write_bytes(report_bytes())
+        (tmp / "state").mkdir()
+        grants = Grants([tmp])
+        docs = FakeDocs(grants)
+        appr = Approvals(tmp / "state", "owner")
+        a = Authoring(tmp / "state", docs, grants, appr)
+        v = a.edit_document(docs.add_opened(p, grants))
+        aid = v["authoring_id"]
+        b = v["doc"]["blocks"][3]
+        a.apply(aid, {"op": "set_paragraph_text", "block": 3, "expect": b["expect"], "text": "Costs fell."})
+        msgs = a.propose_save(aid)["messages"]
+        appr.db.close()
+        text = json.dumps(msgs, ensure_ascii=False, indent=1)
+        text = text.replace(json.dumps(str(tmp))[1:-1], json.dumps("C:\\Users\\me\\Documents")[1:-1])
+    out = ROOT / "uri_ui" / "test" / "office" / "fixtures" / "authoring_save_card_docx.json"
+    out.write_text(text + "\n", encoding="utf-8", newline="\n")
+    print(out, aid)
+
+
 if __name__ == "__main__":
-    main()
+    main_docx() if sys.argv[1:] == ["docx"] else main()

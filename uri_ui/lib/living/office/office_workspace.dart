@@ -17,6 +17,7 @@ import 'office_panel.dart';
 import 'office_print_view.dart';
 import 'office_status_strip.dart';
 import 'presentation_editor.dart';
+import 'word_editor.dart';
 import 'page_preview.dart';
 
 /// The B1 Office workspace (approved 2026-10-15, docs/design_library/approved/office_workspace_2026-10-15.md):
@@ -392,10 +393,13 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
         (c.centre == OfficeCentre.document && d != null && d.kind != 'pdf');
     return [
       // Authoring (A/B, AB-10): Edit is where the presentation is viewed.
-      if (c.centre == OfficeCentre.document && d != null && d.kind == 'pptx')
+      if (c.centre == OfficeCentre.document && d != null && (d.kind == 'pptx' || d.kind == 'docx'))
         Tooltip(
-          message: 'Change slides, text, notes, pictures and tables. URI works on a copy; your file changes only when '
-              'you approve Save.',
+          message: d.kind == 'docx'
+              ? 'Change text, styles, tables, pictures, header, footer and page setup. URI works on a copy; your file '
+                  'changes only when you approve Save.'
+              : 'Change slides, text, notes, pictures and tables. URI works on a copy; your file changes only when '
+                  'you approve Save.',
           child: FilledButton.tonalIcon(
             key: const ValueKey('office-edit'),
             onPressed: c.busy ? null : c.editDocument,
@@ -440,7 +444,7 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
         OfficeCentre.workflow => 'Task',
         OfficeCentre.print => 'Print',
         OfficeCentre.devices => 'Printers',
-        OfficeCentre.edit => 'Editing ${c.editor?.name ?? 'presentation'}',
+        OfficeCentre.edit => 'Editing ${c.editor?.name ?? ''}',
       };
 
   Widget _centre(BuildContext context, OfficeWorkspaceController c) {
@@ -481,7 +485,10 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
             OfficeCentre.devices => OfficePrintersView(controller: c),
             OfficeCentre.edit => c.editor == null
                 ? const SizedBox.shrink()
-                : PresentationEditor(key: ValueKey('office-editor-${c.editor!.id}'), workspace: c, editor: c.editor!),
+                : c.editor!.isWord
+                    ? WordEditor(key: ValueKey('office-editor-${c.editor!.id}'), workspace: c, editor: c.editor!)
+                    : PresentationEditor(key: ValueKey('office-editor-${c.editor!.id}'), workspace: c,
+                        editor: c.editor!),
             OfficeCentre.sheet => const SizedBox.shrink(),
           },
         ),

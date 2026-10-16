@@ -138,9 +138,9 @@ OfficeEnvironment _env({String? saveAs}) => OfficeEnvironment(
       pickImagePath: () async => null,
     );
 
-Future<FakeAuthoringOffice> _pump(WidgetTester tester, {String? saveAs}) async {
+Future<FakeAuthoringOffice> _pump(WidgetTester tester, {String? saveAs, Size size = const Size(1600, 1000)}) async {
   SharedPreferences.setMockInitialValues({});
-  await tester.binding.setSurfaceSize(const Size(1600, 1000));
+  await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
   final fake = FakeAuthoringOffice();
   final client = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', fake.client());
@@ -280,4 +280,18 @@ void main() {
     expect(tester.takeException(), isNull);
     await _unmount(tester);
   });
+
+  for (final size in const [Size(1064, 640), Size(900, 640), Size(760, 600)]) {
+    testWidgets('the presentation editor fits a ${size.width.toInt()}x${size.height.toInt()} Office region',
+        (tester) async {
+      await _pump(tester, size: size);
+      await tester.tap(find.byKey(const ValueKey('office-home-open')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('office-edit')));
+      await _settle(tester);
+      expect(find.byKey(const ValueKey('authoring-slides')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await _unmount(tester);
+    });
+  }
 }

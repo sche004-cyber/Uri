@@ -1,0 +1,109 @@
+[
+ {
+  "version": "v0.9",
+  "createSurface": {
+   "surfaceId": "office.authoring_save.f9677af50a8d4754.f986b763",
+   "catalogId": "uri:a2ui/catalog/v1",
+   "theme": {
+    "agentDisplayName": "URI",
+    "placement": "workspace"
+   }
+  }
+ },
+ {
+  "version": "v0.9",
+  "updateComponents": {
+   "surfaceId": "office.authoring_save.f9677af50a8d4754.f986b763",
+   "components": [
+    {
+     "id": "root",
+     "component": "Column",
+     "children": [
+      "title",
+      "target",
+      "lines0",
+      "buttons"
+     ],
+     "gap": "medium"
+    },
+    {
+     "id": "title",
+     "component": "Text",
+     "variant": "title",
+     "text": "Save this document?"
+    },
+    {
+     "id": "target",
+     "component": "Text",
+     "variant": "caption",
+     "text": "C:\\Users\\me\\Documents\\Annual Report.docx"
+    },
+    {
+     "id": "lines0",
+     "component": "Text",
+     "variant": "body",
+     "text": "Change the text of paragraph 4 ('Costs were flat across the year.') to 'Costs fell.'\nThis replaces the file you opened (a backup is kept)."
+    },
+    {
+     "id": "apply",
+     "component": "Button",
+     "variant": "primary",
+     "label": "Save",
+     "action": {
+      "event": {
+       "name": "office.apply_change",
+       "context": {
+        "change_sha256": {
+         "path": "/bound/change_sha256"
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "reject",
+     "component": "Button",
+     "variant": "secondary",
+     "label": "Not now",
+     "action": {
+      "event": {
+       "name": "office.reject_change",
+       "context": {
+        "change_sha256": {
+         "path": "/bound/change_sha256"
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "buttons",
+     "component": "Row",
+     "children": [
+      "apply",
+      "reject"
+     ],
+     "gap": "small"
+    }
+   ]
+  }
+ },
+ {
+  "version": "v0.9",
+  "updateDataModel": {
+   "surfaceId": "office.authoring_save.f9677af50a8d4754.f986b763",
+   "path": "/",
+   "value": {
+    "bound": {
+     "change_sha256": "22604c7d8c75d560a3fbb28cc8496461c5281a35b45f05e43a12fc9f1e3063bb",
+     "surface": {
+      "digest": "97facc8dbaa378ddb28bb68b729fff737767d1d14e63679e3ec196b047fc7ed4",
+      "revision": 1,
+      "kind": "office_change",
+      "title": "Office save"
+     }
+    }
+   }
+  }
+ }
+]

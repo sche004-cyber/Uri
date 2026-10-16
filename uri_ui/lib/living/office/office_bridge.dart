@@ -50,6 +50,8 @@ class OfficeEnvironment {
     this.pickPresentationSavePath,
     this.pickTemplatePath,
     this.pickImagePath,
+    this.pickDocumentSavePath,
+    this.pickWordTemplatePath,
   });
 
   final OfficeSurface Function() surfaceFactory;
@@ -90,6 +92,12 @@ class OfficeEnvironment {
 
   /// Authoring (OD-A5): the owner's presentation or template (.pptx, .potx) to start a new presentation from.
   final Future<String?> Function()? pickTemplatePath;
+
+  /// Authoring (C): where to save a Word document as a new file; same rules as [pickPresentationSavePath].
+  final Future<String?> Function(String suggestedName)? pickDocumentSavePath;
+
+  /// Authoring (C, OD-A5): the owner's Word document or template (.docx, .dotx) to start a new document from.
+  final Future<String?> Function()? pickWordTemplatePath;
 
   /// Authoring (B): a picture to insert (.png, .jpg, .gif, .bmp).
   final Future<String?> Function()? pickImagePath;

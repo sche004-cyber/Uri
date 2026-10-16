@@ -81,6 +81,25 @@ OfficeEnvironment platformOfficeEnvironment() => OfficeEnvironment(
         );
         return f?.path;
       },
+      pickDocumentSavePath: (suggested) async {
+        final dir = await FilePicker.getDirectoryPath(dialogTitle: 'Save the document in this folder');
+        if (dir == null) return null;
+        final base = suggested.replaceAll(RegExp(r'\.(docx|dotx)$', caseSensitive: false), '');
+        for (var n = 1; n < 100; n++) {
+          final name = n == 1 ? '$base.docx' : '$base ($n).docx';
+          final path = '$dir${Platform.pathSeparator}$name';
+          if (!File(path).existsSync()) return path;
+        }
+        return null;
+      },
+      pickWordTemplatePath: () async {
+        final f = await FilePicker.pickFile(
+          dialogTitle: 'Start from a document or template',
+          type: FileType.custom,
+          allowedExtensions: const ['docx', 'dotx'],
+        );
+        return f?.path;
+      },
       pickImagePath: () async {
         final f = await FilePicker.pickFile(
           dialogTitle: 'Insert a picture',

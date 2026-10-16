@@ -144,7 +144,8 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   final OfficeConversation conversation = OfficeConversation();
 
   OfficeController? sheet;                       // set by the sheet view while a workbook is open
-  PresentationEditController? editor;            // authoring (A/B): the open presentation edit
+  PresentationEditController? editor;            // authoring (A/B/C): the open presentation or Word edit
+  List<Map<String, dynamic>> wordLayouts = const [];   // built-in Word layouts (GET /authoring/layouts)
   bool _editSaved = false;                       // the open edit saved a file at least once
   OfficeCentre centre = OfficeCentre.home;
   Map<String, dynamic> capabilities = const {};
@@ -201,6 +202,12 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     try {
       workflows = await client.workflows();
     } catch (_) {}
+    if (wordLayouts.isEmpty) {
+      try {
+        wordLayouts = [for (final l in ((await client.authoringLayouts())['docx'] as List? ?? const []))
+          (l as Map).cast<String, dynamic>()];
+      } catch (_) {}                               // an older service: New document offers nothing
+    }
     _notify();
   }
 
@@ -484,7 +491,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   /// Edit the presentation in the centre. The edit works on a copy; the file changes only through an approved save.
   Future<void> editDocument() => _guard(() async {
         final d = documents[activeDocument];
-        if (d == null || d.kind != 'pptx') return;
+        if (d == null || (d.kind != 'pptx' && d.kind != 'docx')) return;
         _startEditor(await client.authoringEdit(d.id));
         conversation.say(OfficeSpeaker.uri,
             'Editing a copy of ${d.name}. Your file changes only when you approve Save.', targetLabel);
@@ -505,13 +512,29 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     });
   }
 
+  /// A new Word document from a built-in layout or the owner's .docx/.dotx (milestone C).
+  Future<void> newWordDocument({String? layout, bool fromTemplate = false}) async {
+    String? template;
+    if (fromTemplate) {
+      final pick = environment?.pickWordTemplatePath;
+      if (pick == null) return;
+      template = await pick();
+      if (template == null) return;
+    }
+    await _guard(() async {
+      _startEditor(await client.authoringNew(kind: 'docx', layout: template == null ? (layout ?? 'blank') : null,
+          templatePath: template));
+      conversation.say(OfficeSpeaker.uri, 'New document. Use Save as to choose where it goes.', targetLabel);
+    });
+  }
+
   /// Save (replace the opened file, with a backup) or Save as (a new file). Shows the save card.
   Future<void> saveEdit({bool saveAs = false}) async {
     final e = editor;
     if (e == null) return;
     String? path;
     if (saveAs || e.isNew) {
-      final pick = environment?.pickPresentationSavePath;
+      final pick = e.isWord ? environment?.pickDocumentSavePath : environment?.pickPresentationSavePath;
       if (pick == null) return;
       path = await pick(e.name);
       if (path == null) return;
@@ -524,14 +547,16 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     _notify();
   }
 
-  Future<void> insertPicture(int slideId) async {
+  /// A picture from the owner's picker: on slide [at] (presentation) or after block [at] (Word).
+  Future<void> insertPicture(int at) async {
     final e = editor;
     final pick = environment?.pickImagePath;
     if (e == null || pick == null) return;
     final path = await pick();
     if (path == null) return;
-    await e.op({'op': 'insert_image', 'slide': slideId, 'box': {'x': 0.3, 'y': 0.3, 'w': 0.4, 'h': 0.4}},
-        imagePath: path);
+    await e.op(e.isWord
+        ? {'op': 'insert_image', 'after': at, 'width': 0.5}
+        : {'op': 'insert_image', 'slide': at, 'box': {'x': 0.3, 'y': 0.3, 'w': 0.4, 'h': 0.4}}, imagePath: path);
   }
 
   /// Leaves the editor (unsaved changes are discarded; finishEditing asked first). After a save the saved file is
@@ -549,7 +574,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         : OfficeCentre.home;
     _notify();
     if (saved && path != null) {
-      final old = documents.values.where((d) => d.kind == 'pptx' && d.name == path.split(RegExp(r'[\\/]')).last)
+      final old = documents.values.where((d) => d.kind == e.kind && d.name == path.split(RegExp(r'[\\/]')).last)
           .map((d) => d.id).toList();
       for (final id in old) {
         await closeDocument(id);

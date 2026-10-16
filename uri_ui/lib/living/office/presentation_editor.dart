@@ -28,6 +28,14 @@ const authoringErrorText = <String, String>{
   'UNKNOWN_LAYOUT': 'That slide layout is not in this presentation.',
   'UNKNOWN_SHAPE': 'That item is no longer on the slide.',
   'UNKNOWN_SLIDE': 'That slide is no longer in the presentation.',
+  'UNKNOWN_BLOCK': 'That paragraph is no longer in the document.',
+  'STALE_BLOCK': 'The document changed since this was shown. Look again and retry.',
+  'UNKNOWN_STYLE': 'That style is not in this document.',
+  'NOT_A_DOCUMENT': 'This file is not a Word document URI can edit.',
+  'NOT_FOUND': 'No matches.',
+  'BAD_IMAGE': 'That picture could not be read.',
+  'PREVIEW_NOT_READY': 'Wait until the preview shows your changes, then save.',
+  'PREVIEW_FAILED': 'The changed file could not be shown, so it is not saved. Undo the last change or try again.',
   'DESTINATION_EXISTS': 'A file with that name already exists. URI never replaces files with Save as.',
 };
 
@@ -42,8 +50,9 @@ String authoringErrorMessage(Object e) {
   return officeErrorMessage(e);
 }
 
-/// One open edit of a presentation (milestones A/B): the service's working copy, its change list, undo/redo and the
-/// preview of the working copy. Nothing reaches a file until the owner approves the save card.
+/// One open edit of a presentation (milestones A/B) or a Word document (milestone C): the service's working copy, its
+/// change list, undo/redo and the preview of the working copy. Nothing reaches a file until the owner approves the
+/// save card.
 class PresentationEditController extends ChangeNotifier {
   PresentationEditController(this.client, Map<String, dynamic> view) : _view = view {
     _selected = slides.isEmpty ? null : slides.first['id'] as int;
@@ -63,9 +72,32 @@ class PresentationEditController extends ChangeNotifier {
   String get id => _view['authoring_id'] as String;
   String get name => _view['name'] as String? ?? 'Presentation';
   bool get isNew => _view['new'] == true;
+  String get kind => _view['kind'] as String? ?? 'pptx';
+  bool get isWord => kind == 'docx';
+  /// Word (milestone C): the document's blocks, styles, page setup, header and footer.
+  Map<String, dynamic> get doc => ((_view['doc'] as Map?) ?? const {}).cast<String, dynamic>();
+  List<Map<String, dynamic>> get blocks =>
+      [for (final b in (doc['blocks'] as List? ?? const [])) (b as Map).cast<String, dynamic>()];
+  List<String> get styles => [for (final s in (doc['styles'] as List? ?? const [])) '$s'];
+  int _block = 0;
+  int get selectedBlock => blocks.isEmpty ? 0 : _block.clamp(0, blocks.length - 1);
+  Map<String, dynamic>? get selectedBlockView => blocks.isEmpty ? null : blocks[selectedBlock];
+  void selectBlock(int i) {
+    _block = i;
+    _notify();
+  }
+  /// The address of block [i] as the last view showed it (the service refuses it if the block moved).
+  Map<String, dynamic> at(int i) => {'block': i, 'expect': blocks[i]['expect']};
+  int previewPage = 1;
+  /// What the last op answered (Word find and replace reports its counts here).
+  Object? lastResult;
+  void showPage(int p) {
+    previewPage = p;
+    _notify();
+  }
   /// The file this edit saves to (the opened file, or the file chosen with Save as); null for a new presentation.
   String? get savedPath => _view['path'] as String?;
-  Map<String, dynamic> get deck => (_view['deck'] as Map).cast<String, dynamic>();
+  Map<String, dynamic> get deck => ((_view['deck'] as Map?) ?? const {}).cast<String, dynamic>();
   List<Map<String, dynamic>> get slides =>
       [for (final s in (deck['slides'] as List? ?? const [])) (s as Map).cast<String, dynamic>()];
   List<String> get layouts => [for (final l in (deck['layouts'] as List? ?? const [])) '$l'];
@@ -101,6 +133,8 @@ class PresentationEditController extends ChangeNotifier {
   void _take(Map<String, dynamic> v) {
     final before = slides.map((s) => s['id']).toSet();
     _view = v;
+    lastResult = v['result'];
+    if (isWord && v['result'] is int) _block = v['result'] as int;       // an inserted block is selected
     final ids = slides.map((s) => s['id'] as int).toList();
     final added = ids.where((i) => !before.contains(i)).toList();
     if (added.length == 1) {
@@ -241,7 +275,18 @@ class PresentationEditor extends StatelessWidget {
     );
   }
 
-  Widget _bar(BuildContext context, PresentationEditController e) {
+  Widget _bar(BuildContext context, PresentationEditController e) => AuthoringBar(workspace: workspace, editor: e);
+}
+
+/// The editor's top bar (both kinds): state line, Undo, Redo, Save..., Save as..., Done.
+class AuthoringBar extends StatelessWidget {
+  const AuthoringBar({super.key, required this.workspace, required this.editor});
+  final OfficeWorkspaceController workspace;
+  final PresentationEditController editor;
+
+  @override
+  Widget build(BuildContext context) {
+    final e = editor;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: UriSpace.sm, vertical: UriSpace.xs),
       child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: UriSpace.xs, children: [
@@ -344,7 +389,7 @@ class _SlideStrip extends StatelessWidget {
                   child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                     AspectRatio(
                       aspectRatio: e.aspect,
-                      child: _Thumb(workspace: workspace, editor: e, page: i + 1, width: 200),
+                      child: AuthoringPage(workspace: workspace, editor: e, page: i + 1, width: 200),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(4),
@@ -405,8 +450,8 @@ class _SlideStrip extends StatelessWidget {
 }
 
 /// One page of the working copy's preview, or words while it is being drawn.
-class _Thumb extends StatelessWidget {
-  const _Thumb({required this.workspace, required this.editor, required this.page, required this.width});
+class AuthoringPage extends StatelessWidget {
+  const AuthoringPage({super.key, required this.workspace, required this.editor, required this.page, required this.width});
   final OfficeWorkspaceController workspace;
   final PresentationEditController editor;
   final int page;
@@ -450,7 +495,7 @@ class _SlidePreview extends StatelessWidget {
               child: DecoratedBox(
                 key: const ValueKey('authoring-slide-preview'),
                 decoration: BoxDecoration(border: Border.all(color: UriColors.of(context).inkSoft.withValues(alpha: .3))),
-                child: _Thumb(workspace: workspace, editor: e, page: e.selectedIndex + 1, width: 1100),
+                child: AuthoringPage(workspace: workspace, editor: e, page: e.selectedIndex + 1, width: 1100),
               ),
             ),
           ),
@@ -482,7 +527,7 @@ class _ItemsPanel extends StatelessWidget {
         Text('SLIDE ${e.selectedIndex + 1}', style: const TextStyle(fontSize: 11, letterSpacing: 1.2)),
         const SizedBox(height: UriSpace.xs),
         if (titleId != null)
-          _TextItem(
+          AuthoringTextField(
             key: ValueKey('authoring-title-$sid-${s['title']}'),
             fieldKey: const ValueKey('authoring-title'),
             label: 'Title',
@@ -492,7 +537,7 @@ class _ItemsPanel extends StatelessWidget {
           ),
         for (final it in items)
           if (it['id'] != titleId) _item(context, e, sid, it),
-        _TextItem(
+        AuthoringTextField(
           key: ValueKey('authoring-notes-$sid-${s['notes']}'),
           fieldKey: const ValueKey('authoring-notes'),
           label: 'Speaker notes',
@@ -546,7 +591,7 @@ class _ItemsPanel extends StatelessWidget {
       case 'text':
         final paras = [for (final p in (it['paragraphs'] as List? ?? const [])) '$p'];
         return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          _TextItem(
+          AuthoringTextField(
             key: ValueKey('authoring-text-$sid-$shape-${paras.join('\n')}'),
             fieldKey: ValueKey('authoring-text-$shape'),
             label: it['placeholder'] == true ? 'Text' : 'Text box',
@@ -605,7 +650,7 @@ class _ItemsPanel extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(2),
-                    child: _TextItem(
+                    child: AuthoringTextField(
                       key: ValueKey('authoring-cell-$sid-$shape-$r-$col-${cells[r][col]}'),
                       fieldKey: ValueKey('authoring-cell-$shape-$r-$col'),
                       label: '',
@@ -632,8 +677,8 @@ class _ItemsPanel extends StatelessWidget {
 }
 
 /// A text field that sends its text when the owner presses Apply (or Enter on a one-line field).
-class _TextItem extends StatefulWidget {
-  const _TextItem({super.key, required this.fieldKey, required this.label, required this.initial,
+class AuthoringTextField extends StatefulWidget {
+  const AuthoringTextField({super.key, required this.fieldKey, required this.label, required this.initial,
       required this.onApply, this.multiline = false, this.dense = false, this.enabled = true});
   final Key fieldKey;
   final String label;
@@ -644,10 +689,10 @@ class _TextItem extends StatefulWidget {
   final Future<bool> Function(String) onApply;
 
   @override
-  State<_TextItem> createState() => _TextItemState();
+  State<AuthoringTextField> createState() => _AuthoringTextFieldState();
 }
 
-class _TextItemState extends State<_TextItem> {
+class _AuthoringTextFieldState extends State<AuthoringTextField> {
   late final TextEditingController _t = TextEditingController(text: widget.initial);
 
   @override
