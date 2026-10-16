@@ -104,8 +104,12 @@ lifecycle numbers in the first column.
    sign-in (AUTH) and not-found move to the next reviewer at once; failures, timeouts, SHA mismatch and unverified
    independence are retried within `max_attempts`. Every reviewer in the chain is bound at PLAN and must pass the
    same independence checks (bound CLI, driver-made config, containment, distinct session, integrity); acceptance
-   never depends on the provider name. No reviewer left ⇒ BLOCKED `NO_REVIEWER`; the owner restores one (Codex
-   quota, `claude` sign-in — never done by the driver or the coordinator) and `unblock --note` resets the counters.
+   never depends on the provider name (the Claude Code session running the driver, repair and diagnosis sessions are
+   never the reviewer). Every reviewer only unavailable (quota, sign-in, not found) ⇒ WAITING_FOR_MODEL
+   (`NO_INDEPENDENT_REVIEWER`); the next `run` tries the preferred reviewer first again, no owner unblock needed.
+   Reviewers that ran but gave no usable result ⇒ BLOCKED `NO_REVIEWER`; `unblock --note` resets the counters.
+   Signing in (Codex, `claude`) is never done by the driver or the coordinator. Attempt counters are derived from
+   the hash-chained events.
    Each round records `reviewer_index` and an `outcome` (ACCEPT, ACCEPT_WITH_FINDINGS, REJECT, UNAVAILABLE, FAILURE,
    SHA_MISMATCH, INDEPENDENCE_UNVERIFIED).
 3. **Outside-driver fallback**: if neither CLI can run, a separate Claude session (new thread, agent or cloud

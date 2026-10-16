@@ -353,7 +353,10 @@ def is_independent(cfg, round_rec: dict, impl_sids=frozenset()) -> tuple[bool, s
         return False, ("a process left by an earlier worker could have run alongside the reviewer: no verified "
                        "orphan containment before and after it (R8-01)")
     sid = w.get("session_id")
-    if not sid or sid == cfg.get("coordinator_session_id") or sid in impl_sids:
+    # The Claude Code session running the driver is the coordinator too, whatever the config says (DL3C review note).
+    coord = {cfg.get("coordinator_session_id"), os.environ.get("CLAUDE_CODE_SESSION_ID"),
+             os.environ.get("CLAUDE_CODE_HOST_SESSION_ID")} - {None, ""}
+    if not sid or sid in coord or sid in impl_sids:
         return False, "reviewer session id missing or shared with coordinator/implementer"
     return True, "separate process, fresh session, clean checkout, integrity verified"
 
@@ -966,7 +969,8 @@ def do_review(cfg, st: State, sha: str) -> dict:
     rec.update(worker=w, integrity=integrity, result=result, ended_at=now())
     if problem:
         rec["result_problem"] = problem
-    ok, why = is_independent(cfg, rec, {(r.get("worker") or {}).get("session_id") for r in st.d["repairs"]})
+    ok, why = is_independent(cfg, rec, {(r.get("worker") or {}).get("session_id")
+                                        for r in st.d["repairs"] + (st.d.get("diagnoses") or [])})
     rec["independent"], rec["independence_basis"] = ok, why
     if result is None:
         rec["effective_verdict"], rec["status"] = None, "NO_RESULT"
@@ -1010,12 +1014,30 @@ def reviewer_anchor(st: State, idx: int) -> dict | None:
     return fb[idx - 1] if idx - 1 < len(fb) else None
 
 
+def attempt_counts(cfg, st: State) -> dict:
+    """Per-reviewer attempts without an independent result, derived from the hash-chained events (R2-01: decisions
+    never come from state.json). They reset after an independent result, an owner unblock, or a wait for a reviewer
+    to come back; an attempt that showed retrying cannot help (quota, sign-in, not found) uses up the reviewer."""
+    n = cfg["reviewer_selection"]["max_attempts"]
+    used = {}
+    for ev in _chained_events(st):
+        d, k = ev["data"], ev["kind"]
+        if (k == "REVIEW_RECORDED" and d.get("status") == "COMPLETED_WITH_RESULT") or \
+                k in ("OWNER_UNBLOCK", "REVIEWER_WAIT"):
+            used = {}
+        elif k == "REVIEWER_ATTEMPT_FAILED":
+            a = used.setdefault(str(d["index"]), {"count": 0})
+            a["count"] = n if d.get("exhausted") else a["count"] + 1
+            a["last"] = d.get("last")
+    return used
+
+
 def select_reviewer(cfg, st: State) -> tuple[int | None, str]:
     """The first reviewer in the chain that has not used up its bounded attempts, or (None, why) when none is left.
-    Attempts count reviews that produced no independent result; they reset after one does and on an owner unblock.
-    The counters live in state.json, so a restart resumes the same selection."""
+    A restart resumes the same selection (the events are durable)."""
     n = cfg["reviewer_selection"]["max_attempts"]
-    used = st.d.setdefault("reviewer_attempts", {})
+    used = attempt_counts(cfg, st)
+    st.d["reviewer_attempts"] = used                  # a display copy only
     why = []
     for i, spec in enumerate(reviewer_chain(cfg)):
         a = used.get(str(i), {"count": 0})
@@ -1623,10 +1645,18 @@ def run(cfg, max_steps: int = 50) -> S:
                 continue
             if cfg.get("reviewer_fallbacks") is not None:
                 idx, why = select_reviewer(cfg, st)
-                if idx is None:  # never invent a review: no reviewer left is an owner matter
-                    st.block("NO_REVIEWER", "no independent reviewer available: " + why,
-                             "owner: restore a reviewer (e.g. Codex quota reset or `claude` sign-in), then "
-                             "`unblock --note` (resets the attempt counters)")
+                if idx is None:  # never invent a review
+                    used = attempt_counts(cfg, st)
+                    if all(str(a.get("last", "")).startswith("UNAVAILABLE") for a in used.values()):
+                        # routine availability (quota, sign-in, not found): wait; the next `run` tries the preferred
+                        # reviewer first again, without an owner unblock
+                        st.event("REVIEWER_WAIT", reason="NO_INDEPENDENT_REVIEWER", detail=why)
+                        st.event("CHECKPOINT", stage="AUDITING", reason="NO_INDEPENDENT_REVIEWER")
+                        st.d["resume_to"] = S.AUDITING.value
+                        st.to(S.WAITING_FOR_MODEL, "no independent reviewer available: " + why)
+                        return st.stage
+                    st.block("NO_REVIEWER", "no independent reviewer produced a usable result: " + why,
+                             "owner: look at the failed rounds, then `unblock --note` (resets the attempt counters)")
                     continue
                 if st.d.get("reviewer_index") != idx:
                     st.event("REVIEWER_SELECTED", index=idx, provider=reviewer_chain(cfg)[idx].get("provider"),
@@ -1660,21 +1690,16 @@ def run(cfg, max_steps: int = 50) -> S:
             if stricter:  # a non-independent review may only make the outcome stricter
                 st.event("NON_INDEPENDENT_REJECT_ROUTED", round=rec["round"], basis=rec["independence_basis"])
             if cfg.get("reviewer_fallbacks") is not None:
-                used = st.d.setdefault("reviewer_attempts", {})
                 if rec["status"] == "COMPLETED_WITH_RESULT":
                     st.d["reviewer_attempts"] = {}
                 elif not stricter:
-                    a = used.setdefault(str(rec["reviewer_index"]), {"count": 0})
-                    a["count"] += 1
-                    if (rec.get("worker") or {}).get("unavailable_reason") in ("QUOTA", "AUTH", "UNAVAILABLE"):
-                        a["count"] = cfg["reviewer_selection"]["max_attempts"]  # retrying now cannot help
-                    a["last"] = rec["outcome"] + (f" ({rec['worker'].get('unavailable_reason')})"
-                                                  if (rec.get("worker") or {}).get("unavailable_reason") else "")
+                    why_un = (rec.get("worker") or {}).get("unavailable_reason")
                     st.event("REVIEWER_ATTEMPT_FAILED", round=rec["round"], index=rec["reviewer_index"],
                              provider=(rec.get("worker") or {}).get("provider"), outcome=rec["outcome"],
-                             count=a["count"], basis=rec["independence_basis"])
-                    st.save()
-                    continue  # the next pass selects the same reviewer again, the next one, or blocks
+                             last=rec["outcome"] + (f" ({why_un})" if why_un else ""),
+                             exhausted=why_un in ("QUOTA", "AUTH", "UNAVAILABLE"),  # retrying now cannot help
+                             basis=rec["independence_basis"])
+                    continue  # the next pass selects the same reviewer again, the next one, or waits/blocks
             if rec["status"] != "COMPLETED_WITH_RESULT" and not stricter:
                 st.event("CHECKPOINT", stage="AUDITING", round=rec["round"],
                          reason=(rec.get("worker") or {}).get("unavailable_reason") or rec["status"])

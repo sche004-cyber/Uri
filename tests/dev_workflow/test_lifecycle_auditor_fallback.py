@@ -80,7 +80,7 @@ def test_mid_review_disconnect_is_retried_within_the_bound(tmp_path):
     assert L.run(cfg) == S.COMPLETE
     s = L.status(cfg)
     assert [(r["reviewer_index"], r["outcome"]) for r in s["reviewers"]] == [(0, "FAILURE"), (0, "ACCEPT")]
-    assert L.State(cfg).d["reviewer_attempts"] == {}               # reset once an independent result exists
+    assert L.attempt_counts(cfg, L.State(cfg)) == {}             # reset once an independent result exists
     assert events(cfg, "REVIEWER_ATTEMPT_FAILED")[0]["outcome"] == "FAILURE"
 
 
@@ -105,16 +105,32 @@ def test_no_reviewer_available_blocks_and_restart_preserves_the_state(tmp_path):
     assert [r["outcome"] for r in s["reviewers"]] == ["FAILURE", "FAILURE", "UNAVAILABLE"]
     assert all(r["verdict"] is None for r in s["reviewers"]) and remote_tip(remote) == base
     assert not s["evidence_ok_for_candidate"]
-    # restart: a fresh load resumes from the persisted counters and launches no reviewer
+    # restart: a fresh load derives the counters from the hash-chained events and launches no reviewer
     cfg2 = L.load_config(tmp_path / "cfg.json")
-    assert L.State(cfg2).d["reviewer_attempts"] == {"0": {"count": 2, "last": "FAILURE"},
-                                                    "1": {"count": 2, "last": "UNAVAILABLE (AUTH)"}}
+    expect = {"0": {"count": 2, "last": "FAILURE"}, "1": {"count": 2, "last": "UNAVAILABLE (AUTH)"}}
+    assert L.attempt_counts(cfg2, L.State(cfg2)) == expect
+    st = L.State(cfg2)
+    st.d["reviewer_attempts"] = {}                                # editing state.json changes no decision
+    st.save()
     assert L.run(cfg2) == S.BLOCKED and L.status(cfg2)["rounds"] == 3
     # the owner restores a reviewer and unblocks: the counters reset and review resumes (still unavailable here)
     assert L.unblock(cfg2, "owner: claude signed in") == S.READY_TO_RESUME
-    assert L.State(cfg2).d["reviewer_attempts"] == {}
+    assert L.attempt_counts(cfg2, L.State(cfg2)) == {}
     assert L.run(cfg2) == S.BLOCKED and L.status(cfg2)["rounds"] == 6
     assert not L.verify(cfg2)
+
+
+def test_routine_unavailability_waits_and_the_next_run_tries_the_preferred_reviewer_first(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = chain_config(tmp_path, repo, wt, "quota", ["auth"])
+    assert L.run(cfg) == S.WAITING_FOR_MODEL                     # no owner action needed for quota / sign-in
+    s = L.status(cfg)
+    assert s["blocker"] is None and [(r["reviewer_index"], r["outcome"]) for r in s["reviewers"]] ==         [(0, "UNAVAILABLE"), (1, "UNAVAILABLE")]
+    assert events(cfg, "REVIEWER_WAIT")[0]["reason"] == "NO_INDEPENDENT_REVIEWER"
+    assert L.attempt_counts(cfg, L.State(cfg)) == {}
+    assert L.run(cfg) == S.WAITING_FOR_MODEL
+    assert [r["reviewer_index"] for r in L.status(cfg)["reviewers"]] == [0, 1, 0, 1]
+    assert remote_tip(remote) == base and not L.verify(cfg)
 
 
 # ---------------------------------------------------------------- independence is verified, not named
@@ -144,6 +160,23 @@ def test_a_claude_reviewer_that_shares_the_implementer_or_coordinator_session_is
     cfg = {"milestone": "URI-REAL", "reviewer": {"provider": "codex_cli"}, "coordinator_session_id": "coord"}
     assert not L.is_independent(cfg, good_cli_round(sid="impl-1"), {"impl-1"})[0]
     assert not L.is_independent(cfg, good_cli_round(sid="coord"))[0]
+
+
+@pytest.mark.parametrize("var", ["CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_HOST_SESSION_ID"])
+def test_the_claude_code_session_running_the_driver_is_never_the_reviewer(monkeypatch, var):
+    cfg = {"milestone": "URI-REAL", "reviewer": {"provider": "codex_cli"}}
+    monkeypatch.setenv(var, "claude-reviewer-1")
+    ok, why = L.is_independent(cfg, good_cli_round())
+    assert not ok and "coordinator" in why
+
+
+def test_a_diagnosis_worker_session_is_never_the_reviewer(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = chain_config(tmp_path, repo, wt, "check", [])
+    st = L.State(cfg)
+    st.d["diagnoses"] = [{"worker": {"session_id": "diag-1"}}]
+    sids = {(r.get("worker") or {}).get("session_id") for r in st.d["repairs"] + st.d["diagnoses"]}
+    assert not L.is_independent(cfg, good_cli_round(sid="diag-1"), sids)[0]
 
 
 def test_a_relayed_claude_review_never_satisfies_the_gate(tmp_path):
