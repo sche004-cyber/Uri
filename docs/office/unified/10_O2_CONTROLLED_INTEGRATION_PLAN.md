@@ -68,3 +68,30 @@ Not in scope: production deployment, Office freeze (OD-R4 says so).
 
 Every row names its evidence. The owner's authorization is conditional (OD-R4); the driver's integration step uses
 it only after I-AC1..I-AC6 hold. A moved canonical before integration means a new merge and new review (I-AC1).
+
+## 5. Requalification record (2026-10-16)
+
+Driver rounds (Codex gpt-6-sol, lifecycle driver): r1 on `3e329140` REJECT (R1-01 MEDIUM: composer did not follow an
+Office controller claimed after its first build), repaired `07de3219`; r2 on `07de3219` ACCEPT (r2 gates were stopped
+unfinished because the worktree was edited during them; superseded); r3 on `dc8f976f` ACCEPT WITH FINDINGS (R1-02 LOW:
+Documents focus still routed composer requests to Office), repaired `3acf5f32`.
+
+Live runs (production `main()` through `integration_test`, real Core, real Office service and engines, Runtime v1
+Brain under the GPU lease without override; pointer and keys by Flutter WidgetTester, real Windows file dialogs;
+physical input NOT qualified). Evidence: `evidence/o2_integration_20261016/runs/`.
+
+| Run | Commit | Mode | Result | Finding / note |
+|---|---|---|---|---|
+| i1 | `3e329140` | Brain | 1/2, ABORT | **INT-L1**: the UI V2 landing (frost dashboard) rail had no Office entry, so Office was unreachable from the first screen. Fixed `dc8f976f` (failing-first widget test). |
+| i2 | `dc8f976f` | Brain host, main journeys | 5 PASS, app stopped | **INT-L2**: `uri_ui.exe` access violation 0xc0000005 in `explorerframe.dll_unloaded` (Windows Application log, event 1000) about 1 s after a file dialog closed |
+| i3 | `dc8f976f` | same | 14 PASS, app stopped | INT-L2 again, after the dialog-cancel journey. Fixed `a5f23cd7`: the app loads ExplorerFrame.dll once and keeps it (the picker plugin shows dialogs on worker isolate threads that uninitialise COM) |
+| i4 | `a5f23cd7` | same | 23/24 | no crash. J03 could not find Recent: the Office icon strip had scrolled (lazily built icons) - harness now scrolls the strip as a user would; product note **INT-UX-1** (minor): at 1264x681 with the V2 rail the icon strip needs scrolling once several files are open |
+| i5 | `3acf5f32` | same | **24/24 PASS** | no crash |
+| i6 | `3acf5f32` | **Brain (B5 journeys)** | **34/34 PASS** (= r4's 34) | no crash. Brain tok/s median: alone 116, app open 121, with Office 113, after exit 124 (no demotion in this run) |
+
+i2-i5 were started without the harness's mode argument, so they ran the main journeys with the Brain host up but
+without the B5 Brain journeys; i6 is the full Brain-mode run. Every run's session verified the runtime's source head
+equals the run's commit.
+
+I-AC6: met by i6 on `3acf5f32` (no regression against r4: same 34 journeys, all PASS). The integration tip after
+this record is `3acf5f32` plus this documentation commit only.
