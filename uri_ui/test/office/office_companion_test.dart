@@ -369,5 +369,29 @@ void main() {
       expect(target.asks, isEmpty);
       expect(find.text('Sum column B'), findsOneWidget);
     });
+
+    testWidgets('integration review R1-01: a workbook claimed after the composer is built still drives its Send state',
+        (tester) async {
+      final appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
+      final services = _services();
+      addTearDown(services.dispose);
+      services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.office);
+      await tester.pumpWidget(_scoped(appState, services, const Align(
+          alignment: Alignment.bottomCenter, child: LivingComposer())));
+      await tester.pumpAndSettle();
+      final target = _FakeTarget();
+      services.officeTarget.value = target;            // the Office workspace claims it after the first build
+      await tester.pumpAndSettle();
+      InkWell send() => tester.widget<InkWell>(find.byKey(const ValueKey('living-composer-send')));
+      expect(send().onTap, isNotNull);
+      target.busy = true;
+      target.notifyListeners();                        // the controller's own change, not the target's
+      await tester.pumpAndSettle();
+      expect(send().onTap, isNull, reason: 'Send is disabled while URI works on the sheet');
+      target.busy = false;
+      target.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(send().onTap, isNotNull);
+    });
   });
 }
