@@ -31,7 +31,11 @@ const officeErrorText = <String, String>{
   'FILE_TOO_LARGE': 'This file is larger than URI Office accepts.',
   'TOO_MANY_PAGES': 'This PDF has more pages than URI Office accepts.',
   'TOO_MANY_OPEN': 'Too many files are open. Close one first.',
-  'PATH_REFUSED': 'URI cannot use that location.',
+  // OD-R1: say why and what to do (the default is the user folder; other folders are the owner's to add).
+  'PATH_REFUSED': 'URI may not use files in that folder yet. Choose "Folders" in the Office side bar, add the folder, '
+      'then open the file again.',
+  'FOLDER_IN_USE': 'Close the files from that folder first.',
+  'FOLDER_NOT_ADDED': 'Only folders you added can be removed.',
   'UNSAVED_CHANGES': 'Save your changes first, or discard them.',
   'CAPABILITY_PLANNED': 'This is not available yet.',
   'DESTINATION_EXISTS': 'A file with that name already exists. URI never replaces files.',

@@ -80,7 +80,8 @@ class Office:
         self.state = Path(state)
         self.state.mkdir(parents=True, exist_ok=True)
         self.owner = owner
-        self.grants = Grants(allowed_roots)
+        # OD-R1: folders the owner added are kept in the state folder (restricted to this user) and survive restarts.
+        self.grants = Grants(allowed_roots, folders_file=self.state / "folders.json")
         self.approvals = Approvals(self.state, owner)
         self.history = History(self.state)
         self.google = google or G.GoogleSheets(self.state, None)
@@ -877,6 +878,8 @@ def make_handler(office: Office, token: str):
                     return office.hub.status()
                 if parts == ["recent"]:
                     return office.recent.listing()
+                if parts == ["folders"]:
+                    return {"folders": office.grants.folders()}
                 if parts == ["workflows"]:
                     return office.workflows.listing()
                 if parts == ["devices", "printers"]:
@@ -915,6 +918,14 @@ def make_handler(office: Office, token: str):
                     return office.open_new(b.get("paths"))
                 if parts == ["a2ui", "action"]:
                     return office.action(b.get("action"))
+                if parts == ["folders", "add"]:          # OD-R1: a folder the owner picked in the folder dialog
+                    r = office.grants.add_folder(b.get("path"))
+                    office.approvals.audit("office.folder_added", {"added": r["added"]})
+                    return r
+                if parts == ["folders", "remove"]:
+                    r = office.grants.remove_folder(b.get("path"))
+                    office.approvals.audit("office.folder_removed", {})
+                    return r
                 # ---- O2 (contract o2.1) ----
                 if parts == ["engines", "verify"]:
                     return office.hub.verify()

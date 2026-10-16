@@ -45,6 +45,7 @@ class OfficeEnvironment {
     this.pickSourcePaths,
     this.pickDocumentPath,
     this.pickPdfSavePath,
+    this.pickFolderPath,
     this.openPrinterSettings,
     this.startService,
   });
@@ -71,6 +72,9 @@ class OfficeEnvironment {
   /// O2: where to save a new PDF; returns a path that did not exist when chosen, or null. The service checks again
   /// and never replaces a file.
   final Future<String?> Function(String suggestedName)? pickPdfSavePath;
+
+  /// OD-R1: a folder the owner chooses to let URI use (Windows folder dialog); null when cancelled.
+  final Future<String?> Function()? pickFolderPath;
 
   /// O2P "Connect a printer": opens Windows Settings › Printers & scanners after the owner's explicit click. Windows
   /// does any discovery, driver install or elevation in its own UI; URI installs and changes nothing.
