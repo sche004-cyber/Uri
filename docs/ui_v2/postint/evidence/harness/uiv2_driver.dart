@@ -531,6 +531,48 @@ void main() {
           }
           record('draft for later journeys', {'id': conv.draft?.draftId, 'version': conv.draft?.current.n});
         });
+        // J16. Imported review C1-02/C1-04: a "Start new work" tile never revises the open draft, even with the draft
+        // as composer target; closing a draft that replaced another brings that one back.
+        await step('J16-new-work-and-close', () async {
+          await key(LogicalKeyboardKey.digit2, control: true);
+          services.presentation.setFocus(WorkspaceFocus.conversation);
+          await settle(600);
+          final open = conv.draft;
+          if (open == null) {
+            check('J16-precondition-draft-open', false);
+            return;
+          }
+          conv.setDraftTarget(true);
+          services.presentation.setFocus(WorkspaceFocus.documents);
+          await settle(1000);
+          final count = conv.messages.length;
+          await t.tap(find.byKey(const ValueKey('template-Letter')));
+          await settle(500);
+          await until(() => conv.messages.length > count, 'tile submitted');
+          await until(() => !conv.busy, 'tile terminal');
+          final after = conv.draft;
+          final last = rows.lastWhere((r) => r['label'] == 'check', orElse: () => const {});
+          record('tile with draft target', {'before': '${open.draftId}:${open.current.n}',
+            'after': '${after?.draftId}:${after?.current.n}', 'last_check': '${last['id']}'});
+          final sameDraftChanged = after != null && after.draftId == open.draftId && after.current.n != open.current.n;
+          check('J16-tile-never-revises-open-draft', !sameDraftChanged,
+              {'before': open.current.n, 'after': after?.current.n, 'same_draft': after?.draftId == open.draftId});
+          await shot('j16-after-tile');
+          if (after != null && after.draftId != open.draftId) {
+            services.presentation.setFocus(WorkspaceFocus.conversation);
+            await settle(800);
+            final close = find.byKey(const ValueKey('draft-close'));
+            await t.ensureVisible(close.first);
+            await t.tap(close.first);
+            await until(() => conv.draft?.draftId == open.draftId, 'close brings the replaced draft back', seconds: 30);
+            check('J16-close-restores-replaced', conv.draft?.draftId == open.draftId &&
+                conv.draft?.current.text == open.current.text, {'version': conv.draft?.current.n});
+            await shot('j16-close-restored');
+          } else {
+            record('J16 close step skipped', {'reason': 'the tile did not start a new draft (e.g. a question was asked)'});
+          }
+          conv.setDraftTarget(false);
+        });
       }
       // J10. Responsiveness while the Brain works: navigate during a turn.
       await step('J10-responsive-during-turn', () async {
