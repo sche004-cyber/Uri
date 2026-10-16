@@ -97,7 +97,7 @@ def _section_break(el) -> bool:
 
 
 def _foreign(el) -> str | None:
-    """The first content in a paragraph that URI does not rewrite, named, or None."""
+    """The first unsupported content in an XML element and its descendants, named, or None."""
     for child in el.iter():
         name = child.tag.replace(_W, "") if isinstance(child.tag, str) else ""
         if child is el:
@@ -187,10 +187,10 @@ def delete_block(doc, index, expect):
     el = block(doc, index, expect)
     if el.tag == _W + "p" and _section_break(el):
         _refuse("this paragraph ends a section (page layout); it is kept")
-    if el.tag == _W + "p":
-        why = _foreign(el)
-        if why:
-            _refuse(f"this paragraph has {why}, which URI does not remove")
+    why = _foreign(el)
+    if why:
+        kind = "paragraph" if el.tag == _W + "p" else "table"
+        _refuse(f"this {kind} has {why}, which URI does not remove")
     if len(blocks(doc)) == 1:
         _refuse("a document keeps at least one paragraph")
     el.getparent().remove(el)
@@ -370,6 +370,9 @@ def delete_table_row(doc, index, expect, row: int):
     tr = t.rows[row]._tr
     if tr.find(".//" + _W + "vMerge") is not None:
         _refuse("this row has merged cells")
+    why = _foreign(tr)
+    if why:
+        _refuse(f"this row has {why}, which URI does not remove")
     tr.getparent().remove(tr)
 
 

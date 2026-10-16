@@ -154,14 +154,16 @@ class Grants:
                 for f in data.get("folders", []):
                     if isinstance(f, str) and Path(f).is_dir():
                         check_folder_shape(f)
-                        self.added.append(f)
+                        if _norm(os.path.realpath(f)) == _norm(f):
+                            self.added.append(f)
             except (ValueError, OfficeError, OSError):
                 self.added = []                          # a damaged list grants nothing extra
         self._by_id: dict[str, Grant] = {}
 
     @property
     def roots(self) -> list:
-        return self.base_roots + [_norm(os.path.realpath(f)) for f in self.added if Path(f).is_dir()]
+        return self.base_roots + [_norm(f) for f in self.added
+                                  if Path(f).is_dir() and _norm(os.path.realpath(f)) == _norm(f)]
 
     def folders(self) -> list:
         return ([{"path": r, "kind": "default", "removable": False} for r in self.base_roots] +

@@ -179,6 +179,37 @@ def test_delete_block_refuses_a_field_and_preserves_the_paragraph():
     assert d.element.body.xml == before
 
 
+def test_delete_table_block_refuses_a_field_and_preserves_the_table():
+    d = Document()
+    cell = d.add_table(rows=1, cols=1).cell(0, 0)
+    field = OxmlElement("w:fldSimple")
+    field.set(qn("w:instr"), "DATE")
+    cell.paragraphs[0]._p.append(field)
+    d.add_paragraph("Keep a second block")
+    expect = ex(d, 0)
+    before = d.element.body.xml
+    with pytest.raises(OfficeError) as error:
+        W.delete_block(d, 0, expect)
+    assert error.value.code == "AUTHORING_NOT_SUPPORTED"
+    assert "field" in error.value.detail
+    assert d.element.body.xml == before
+
+
+def test_delete_table_row_refuses_a_field_and_preserves_the_row():
+    d = Document()
+    t = d.add_table(rows=2, cols=1)
+    field = OxmlElement("w:fldSimple")
+    field.set(qn("w:instr"), "DATE")
+    t.cell(0, 0).paragraphs[0]._p.append(field)
+    expect = ex(d, 0)
+    before = d.element.body.xml
+    with pytest.raises(OfficeError) as error:
+        W.delete_table_row(d, 0, expect, 0)
+    assert error.value.code == "AUTHORING_NOT_SUPPORTED"
+    assert "field" in error.value.detail
+    assert d.element.body.xml == before
+
+
 def test_table_ops():
     d = load(report_bytes())
     W.set_table_cell(d, 4, ex(d, 4), 1, 1, "150")

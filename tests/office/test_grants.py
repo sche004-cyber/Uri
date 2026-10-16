@@ -1,5 +1,8 @@
 """AC7 path rule. Shape rules for BOTH platforms run on every OS (pure); filesystem rules run on the current OS."""
 import os
+import json
+import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -164,3 +167,44 @@ def test_grant_kinds_are_not_interchangeable(tmp_path):
     with pytest.raises(OfficeError) as e:
         g.get(gid, "save_as")
     assert e.value.code == "NO_GRANT"
+
+
+def _directory_link(link, target):
+    try:
+        os.symlink(target, link, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(target)], check=True, capture_output=True)
+
+
+def test_added_root_is_rechecked_after_its_realpath_changes(monkeypatch):
+    grants = Grants([])
+    added = str(Path.home())
+    destination = str(Path.home().parent)
+    grants.added = [added]
+    realpath = os.path.realpath
+    monkeypatch.setattr(os.path, "realpath", lambda p: destination if str(p) == added else realpath(p))
+    assert grants.roots == []
+
+
+@pytest.mark.parametrize("when", ["restored", "replaced"])
+def test_added_folder_link_never_expands_allowed_roots(tmp_path, when):
+    outside = _book(tmp_path / "outside")
+    added = tmp_path / "chosen"
+    folders_file = tmp_path / "folders.json"
+    if when == "restored":
+        _directory_link(added, outside.parent)
+        folders_file.write_text(json.dumps({"folders": [str(added)]}), encoding="utf-8")
+        grants = Grants([], folders_file)
+    else:
+        added.mkdir()
+        grants = Grants([], folders_file)
+        grants.add_folder(str(added))
+        added.rmdir()
+        _directory_link(added, outside.parent)
+    assert os.path.normcase(os.path.abspath(str(outside.parent))) not in grants.roots
+    with pytest.raises(OfficeError) as error:
+        grants.grant_open(str(outside))
+    assert error.value.code == "PATH_REFUSED"
+    with pytest.raises(OfficeError) as error:
+        grants.grant_save_as(str(outside.parent / "new.xlsx"))
+    assert error.value.code == "PATH_REFUSED"
