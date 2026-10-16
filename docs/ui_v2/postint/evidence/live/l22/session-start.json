@@ -1,0 +1,24 @@
+{
+ "label": "l22",
+ "port": 18301,
+ "started_utc": "2026-10-16T13:44:32.684637+00:00",
+ "no_brain": false,
+ "verified": {
+  "ok": true,
+  "mismatched": [],
+  "checked_files": 329,
+  "runtime_head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "materialized_from": "165dac8ac15e09dc7132b2185d5497cb858ab4af",
+  "source_head": "165dac8ac15e09dc7132b2185d5497cb858ab4af"
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "override": false,
+ "server_pid": 18400,
+ "server_listener_pid": 15616,
+ "server_listen_s": 5.177,
+ "server_listening": true
+}
