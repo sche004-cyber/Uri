@@ -69,6 +69,52 @@ OfficeEnvironment _environment() => OfficeEnvironment(
         }
         return null;
       },
+      pickPresentationSavePath: (suggested) async {
+        final dir = await FilePicker.getDirectoryPath(dialogTitle: 'Save the presentation in this folder');
+        if (dir == null) return null;
+        final base = suggested.replaceAll(RegExp(r'\.(pptx|potx)$', caseSensitive: false), '');
+        for (var n = 1; n < 100; n++) {
+          final name = n == 1 ? '$base.pptx' : '$base ($n).pptx';
+          final path = '$dir${Platform.pathSeparator}$name';
+          if (!File(path).existsSync()) return path;
+        }
+        return null;
+      },
+      pickTemplatePath: () async {
+        final f = await FilePicker.pickFile(
+          dialogTitle: 'Start from a presentation or template',
+          type: FileType.custom,
+          allowedExtensions: const ['pptx', 'potx'],
+        );
+        return f?.path;
+      },
+      pickDocumentSavePath: (suggested) async {
+        final dir = await FilePicker.getDirectoryPath(dialogTitle: 'Save the document in this folder');
+        if (dir == null) return null;
+        final base = suggested.replaceAll(RegExp(r'\.(docx|dotx)$', caseSensitive: false), '');
+        for (var n = 1; n < 100; n++) {
+          final name = n == 1 ? '$base.docx' : '$base ($n).docx';
+          final path = '$dir${Platform.pathSeparator}$name';
+          if (!File(path).existsSync()) return path;
+        }
+        return null;
+      },
+      pickWordTemplatePath: () async {
+        final f = await FilePicker.pickFile(
+          dialogTitle: 'Start from a document or template',
+          type: FileType.custom,
+          allowedExtensions: const ['docx', 'dotx'],
+        );
+        return f?.path;
+      },
+      pickImagePath: () async {
+        final f = await FilePicker.pickFile(
+          dialogTitle: 'Insert a picture',
+          type: FileType.custom,
+          allowedExtensions: const ['png', 'jpg', 'jpeg', 'gif', 'bmp'],
+        );
+        return f?.path;
+      },
       openPrinterSettings: () async {
         await launchUrl(Uri.parse('ms-settings:printers'), mode: LaunchMode.externalApplication);
       },

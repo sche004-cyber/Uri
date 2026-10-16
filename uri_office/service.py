@@ -127,6 +127,28 @@ class Office:
                                             on_saved=self.recent.add)
             return self._workflows
 
+    @property
+    def authoring(self):
+        """Milestone A/B: authoring sessions start on first use, like the O2 parts."""
+        documents = self.documents                      # resolved outside the lock (it takes the lock itself)
+        with self._o2_lock:
+            if getattr(self, "_authoring", None) is None:
+                from .authoring.session import Authoring
+                self._authoring = Authoring(self.state, documents, self.grants, self.approvals,
+                                            audit=self.approvals.audit)
+            return self._authoring
+
+    def authoring_op(self, aid, body) -> dict:
+        """One authoring op; a picture comes from the owner's picker (an open grant of kind image, used once)."""
+        op = body.get("op")
+        if isinstance(op, dict) and op.get("op") == "insert_image":
+            g = self.grants.grant_open(body.get("image_path"), kind="image")
+            try:
+                return self.authoring.apply(aid, op, image_grant=g.grant_id)
+            finally:
+                self.grants.revoke(g.grant_id)
+        return self.authoring.apply(aid, op)
+
     def capabilities(self) -> dict:
         # Before the engines start, nothing that needs them is reported ready (review round 1, finding 9).
         states = self._hub.states() if self._hub is not None else {
@@ -601,6 +623,8 @@ class Office:
             return self.workflows.apply(body)
         if body.get("target", {}).get("kind") == "print_job":
             return self.printing.apply(body)
+        if body.get("target", {}).get("kind") == "authoring_save":
+            return self.authoring.apply_save(body)
         s = self._session(body["workbook_id"])
         with s.lock:
             t = body["target"]
@@ -704,6 +728,13 @@ class Office:
             if r.get("status") == "declined":
                 self.printing.declined(subject)
             return r
+        if kind == "authoring_save":
+            # Lock order: the edit's lock, then approvals lock (propose_save takes them that way).
+            ed = self.authoring.sessions.get(subject)
+            if ed is None:
+                return self.approvals.action(msg, self._apply)
+            with ed.lock:
+                return self.approvals.action(msg, self._apply)
         if kind in ("plan", "output_files"):
             # Lock order: workflow lock, then approvals lock (plan §5.1, review N9).
             lock = self.workflows.lock_of(subject)
@@ -878,6 +909,11 @@ def make_handler(office: Office, token: str):
                     return office.hub.status()
                 if parts == ["recent"]:
                     return office.recent.listing()
+                if parts == ["authoring", "layouts"]:
+                    from .authoring.docx_templates import layout_list
+                    return {"docx": layout_list()}
+                if len(parts) == 2 and parts[0] == "authoring" and _ok_id(parts[1]):
+                    return office.authoring.view(parts[1])
                 if parts == ["folders"]:
                     return {"folders": office.grants.folders()}
                 if parts == ["workflows"]:
@@ -918,6 +954,23 @@ def make_handler(office: Office, token: str):
                     return office.open_new(b.get("paths"))
                 if parts == ["a2ui", "action"]:
                     return office.action(b.get("action"))
+                # ---- authoring (milestones A/B) ----
+                if parts == ["authoring", "edit"]:
+                    return office.authoring.edit_document(b.get("document_id"))
+                if parts == ["authoring", "new"]:
+                    if b.get("kind") == "docx":
+                        return office.authoring.new_document(b.get("layout"), b.get("template_path"))
+                    return office.authoring.new_presentation(b.get("template_path"))
+                if len(parts) == 3 and parts[0] == "authoring" and _ok_id(parts[1]):
+                    aid, verb = parts[1], parts[2]
+                    if verb == "op":
+                        return office.authoring_op(aid, b)
+                    if verb in ("undo", "redo"):
+                        return office.authoring.undo(aid, redo=verb == "redo")
+                    if verb == "save":
+                        return office.authoring.propose_save(aid, b.get("save_as_path"))
+                    if verb == "close":
+                        return office.authoring.close(aid)
                 if parts == ["folders", "add"]:          # OD-R1: a folder the owner picked in the folder dialog
                     r = office.grants.add_folder(b.get("path"))
                     office.approvals.audit("office.folder_added", {"added": r["added"]})

@@ -223,6 +223,23 @@ class Approvals:
         return self._propose_subject(workflow_id, "output_files", body, card, {"outputs": len(outputs),
                                                                                "warnings": len(warnings)})
 
+    def propose_authoring_save(self, authoring_id: str, body: dict) -> Surface:
+        """Authoring (milestone A): `office.apply_change` on an `authoring_save` subject. The hash binds every change
+        in plain words, the working copy's SHA-256, the full destination and whether it replaces the opened file."""
+        t = body["target"]
+
+        def card(sid, sha):
+            dest = t["destination"]
+            if u16(dest) > C.MAX_STRING:
+                raise OfficeError("CHANGE_TOO_LARGE_TO_SHOW", "the destination path is too long to show")
+            lines = list(body["changes"]) or ["A new file with the content shown."]
+            lines.append("This replaces the file you opened (a backup is kept)." if t["replaces"]
+                         else "A new file is written. An existing file is never replaced.")
+            title = "Save this document?" if body.get("kind") == "docx" else "Save this presentation?"
+            return self._card(sid, title, dest, lines, "Save", "Not now", "office.apply_change",
+                              "office.reject_change", "change_sha256", sha, "office_change", "Office save")
+        return self._propose_subject(authoring_id, "authoring_save", body, card, {"changes": len(body["changes"])})
+
     def propose_print(self, job: str, p: dict) -> Surface:
         """The print card (O2P, A1 §A4): `office.apply_change` on a `print_job` subject. The hash binds the PDF's
         SHA-256, the page list, the printer name, every setting, the capability snapshot, the printer status and the
@@ -427,6 +444,8 @@ class Approvals:
                     counts = {"steps": len(body["plan"]["steps"])}
                 elif kind == "print_job":
                     counts = {"pages": len(body["print"]["pages"]), "copies": body["print"]["settings"]["copies"]}
+                elif kind == "authoring_save":
+                    counts = {"changes": len(body["changes"])}
                 else:
                     counts = {"outputs": len(body.get("outputs", []))}
                 self.audit("office.change_applied", {"surface_id": sid, "change_sha256": r["change_sha256"],

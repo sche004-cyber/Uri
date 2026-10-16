@@ -124,6 +124,23 @@ class OfficeClient {
   // ---- O2 (contract o2.1, docs/office/unified/O2_API_CONTRACT.md) ----------------------------------------------
   Future<Map<String, dynamic>> contract() => _get('/contract');
 
+  // ---- authoring (milestones A/B): structured editing of a presentation ----
+  Future<Map<String, dynamic>> authoringEdit(String documentId) =>
+      _post('/authoring/edit', {'document_id': documentId});
+  /// A new presentation (default) or, with [kind] 'docx', a Word document from a built-in [layout] or a template.
+  Future<Map<String, dynamic>> authoringNew({String? templatePath, String? kind, String? layout}) =>
+      _post('/authoring/new', {'template_path': ?templatePath, 'kind': ?kind, 'layout': ?layout});
+  Future<Map<String, dynamic>> authoringLayouts() => _get('/authoring/layouts');
+  Future<Map<String, dynamic>> authoringView(String aid) => _get('/authoring/$aid');
+  /// One change; a picture's path comes from the owner's picker only.
+  Future<Map<String, dynamic>> authoringOp(String aid, Map<String, dynamic> op, {String? imagePath}) =>
+      _post('/authoring/$aid/op', {'op': op, 'image_path': ?imagePath});
+  Future<Map<String, dynamic>> authoringUndo(String aid, {bool redo = false}) =>
+      _post('/authoring/$aid/${redo ? 'redo' : 'undo'}');
+  /// The save card (A2UI messages); nothing is written until the owner approves it.
+  Future<Map<String, dynamic>> authoringSave(String aid, {String? saveAsPath}) =>
+      _post('/authoring/$aid/save', {'save_as_path': ?saveAsPath});
+  Future<Map<String, dynamic>> authoringClose(String aid) => _post('/authoring/$aid/close');
   // OD-R1: folders URI may use (the user folder plus folders the owner added).
   Future<Map<String, dynamic>> folders() => _get('/folders');
   Future<Map<String, dynamic>> addFolder(String path) => _post('/folders/add', {'path': path});

@@ -34,6 +34,35 @@ class OfficeHome extends StatelessWidget {
                 label: const Text('Open a Word, PowerPoint or PDF file'), onPressed: c.busy ? null : c.pickAndOpenDocument),
           ActionChip(key: const ValueKey('office-home-sheet'), avatar: const Icon(Icons.grid_on_rounded, size: 18),
               label: const Text('Work on a spreadsheet'), onPressed: onOpenSheet),
+          // Authoring (C): a new Word document from a built-in layout or the owner's template.
+          if (environment?.pickDocumentSavePath != null && c.wordLayouts.isNotEmpty)
+            PopupMenuButton<String>(
+              key: const ValueKey('office-home-new-document'),
+              tooltip: 'New document',
+              enabled: !c.busy,
+              itemBuilder: (_) => [
+                for (final l in c.wordLayouts)
+                  PopupMenuItem(value: '${l['id']}', child: Text('${l['title']}', key: ValueKey('office-layout-${l['id']}'))),
+                if (environment?.pickWordTemplatePath != null)
+                  const PopupMenuItem(value: '@template', child: Text('From my template…',
+                      key: ValueKey('office-layout-template'))),
+              ],
+              onSelected: (v) => v == '@template'
+                  ? c.newWordDocument(fromTemplate: true)
+                  : c.newWordDocument(layout: v),
+              child: const Chip(avatar: Icon(Icons.note_add_outlined, size: 18), label: Text('New document')),
+            ),
+          // Authoring (A/B, AB-10): a new presentation, blank or from the owner's presentation or template.
+          if (environment?.pickPresentationSavePath != null) ...[
+            ActionChip(key: const ValueKey('office-home-new-presentation'),
+                avatar: const Icon(Icons.slideshow_rounded, size: 18), label: const Text('New presentation'),
+                onPressed: c.busy ? null : () => c.newPresentation()),
+            if (environment?.pickTemplatePath != null)
+              ActionChip(key: const ValueKey('office-home-new-from-template'),
+                  avatar: const Icon(Icons.dashboard_customize_outlined, size: 18),
+                  label: const Text('New from a template'),
+                  onPressed: c.busy ? null : () => c.newPresentation(fromTemplate: true)),
+          ],
           for (final (g, caps) in c.availableGroups())
             for (final cap in caps)
               if (cap['id'] != 'open_workbook')
