@@ -278,6 +278,12 @@ def _shift_formulas_everywhere(parts: dict, by_sheet: dict, target: str, sh: _Sh
 
 def _shift_sheet(root, sh: _Shift, target: str):
     sd = root.find(M + "sheetData")
+    if sh.op == "delete_rows":
+        for f in sd.iter(M + "f"):
+            if f.get("ref"):
+                _, r1, _, r2 = refs.parse_range(f.get("ref"))
+                if r1 <= sh.last and r2 >= sh.at and not (sh.at <= r1 and r2 <= sh.last):
+                    _refuse("a deletion cuts through an array formula")
     for row in list(sd.iterfind(M + "row")):
         n = sh.row(int(row.get("r")))
         if n is None:
@@ -289,9 +295,6 @@ def _shift_sheet(root, sh: _Shift, target: str):
             c.set("r", refs.cell_ref(col, n))
             f = c.find(M + "f")
             if f is not None and f.get("ref"):              # array formulas (shared ones were written out above)
-                c1, r1, c2, r2 = refs.parse_range(f.get("ref"))
-                if sh.op == "delete_rows" and r1 <= sh.last and r2 >= sh.at and not (sh.at <= r1 and r2 <= sh.last):
-                    _refuse("a deletion cuts through an array formula")
                 f.set("ref", _shift_area(f.get("ref"), sh))
     if sh.op == "insert_rows":
         rows = sorted(sd.iterfind(M + "row"), key=lambda r: int(r.get("r")))

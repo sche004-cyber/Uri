@@ -6,6 +6,7 @@ import pytest
 from openpyxl import Workbook, load_workbook
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.worksheet.formula import ArrayFormula
 
 from uri_office import xlsx_struct as S
 from uri_office.errors import OfficeError
@@ -190,6 +191,19 @@ def test_a_deletion_through_merged_cells_is_refused():
     with pytest.raises(OfficeError) as e:
         S.apply_row_op(parts, {"op": "delete_rows", "sheet": "Budget", "at": 5, "count": 1})
     assert "merged" in e.value.detail
+
+
+def test_deleting_array_master_row_with_surviving_array_cells_is_refused():
+    def with_array(wb, ws):
+        ws["A2"] = ArrayFormula("A2:A4", "=B2:B4*2")
+
+    parts = parts_of(budget_bytes(with_array))
+    before = dict(parts)
+    with pytest.raises(OfficeError) as e:
+        S.apply_row_op(parts, {"op": "delete_rows", "sheet": "Budget", "at": 2, "count": 1})
+    assert e.value.code == "STRUCTURE_NOT_SUPPORTED"
+    assert "array formula" in e.value.detail
+    assert parts == before
 
 
 def test_shift_formula_unit_cases():
