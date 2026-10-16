@@ -7,6 +7,7 @@ import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
 import '../integration/oi_conversation.dart';
 import '../living_scope.dart';
+import '../office/office_bridge.dart' show OfficeRequestHint;
 import '../presentation/presentation_controller.dart';
 import '../testing_tools.dart';
 import '../voice/voice_controls.dart';
@@ -100,6 +101,16 @@ class _LivingComposerState extends State<LivingComposer> {
       appState.clearComposerDraft();
       return;
     }
+    final office = services.officeInFocus();
+    if (office != null) {
+      // Office focus: the request is about the sheet. It only asks URI to suggest changes; accepting and saving stay
+      // buttons in the Office pane. With no workbook open nothing is sent (the text stays here).
+      if (office.busy || !office.acceptsRequests) return;
+      _controller.clear();
+      appState.clearComposerDraft();
+      await office.instruct(text);
+      return;
+    }
     final oi = services.oi;
     if (oi != null ? oi.busy : appState.isSendingAsk) return;
     _controller.clear();
@@ -130,14 +141,31 @@ class _LivingComposerState extends State<LivingComposer> {
     final appState = AppStateScope.of(context);
     final c = UriColors.of(context);
     final glass = UriGlass.of(context);
-    final OiConversation? oi = LivingScope.of(context).oi;
-    final voice = LivingScope.of(context).voiceInteraction;
+    final services = LivingScope.of(context);
+    final OiConversation? oi = services.oi;
+    final voice = services.voiceInteraction;
+    // Codex integration review R1-01: the Office controller is claimed after the composer's first build, so the
+    // merged listenable is rebuilt whenever the target changes (outer builder) and then also follows that
+    // controller's own changes (busy, request hint).
     return ListenableBuilder(
-      listenable: oi == null ? appState : Listenable.merge([appState, oi]),
+      listenable: services.officeTarget,
+      builder: (context, _) => ListenableBuilder(
+      listenable: Listenable.merge([
+        appState,
+        ?oi,
+        ?services.officeTarget.value,
+        services.presentation,
+      ]),
       builder: (context, _) {
-        final sending = oi != null ? oi.busy : appState.isSendingAsk;
+        final office = services.officeInFocus();
+        final sending = office != null
+            ? office.busy
+            : oi != null
+                ? oi.busy
+                : appState.isSendingAsk;
         final presentation = LivingScope.of(context).presentation;
-        final draft = oi?.draft;
+        // UIV2-F1: the draft target applies to the conversation, not to an Office request.
+        final draft = office == null ? oi?.draft : null;
         final content = Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -191,7 +219,7 @@ class _LivingComposerState extends State<LivingComposer> {
                       );
                     },
                   ),
-                if (testing)
+                if (testing && office == null)
                   IconButton(
                     key: const ValueKey('living-composer-transcript'),
                     tooltip: oi.transcriptMode
@@ -210,7 +238,7 @@ class _LivingComposerState extends State<LivingComposer> {
                     color: c.inkSoft,
                     onPressed: () => oi.setTranscriptMode(!oi.transcriptMode),
                   ),
-                if (testing)
+                if (testing && office == null)
                   IconButton(
                     key: const ValueKey('living-composer-dictation'),
                     tooltip: oi.dictationMode
@@ -243,7 +271,11 @@ class _LivingComposerState extends State<LivingComposer> {
                       style: TextStyle(color: c.ink, fontSize: 14),
                       decoration: InputDecoration(
                         isDense: widget.floating,
-                        hintText: oi != null && oi.dictationMode
+                        hintText: office is OfficeRequestHint
+                            ? (office as OfficeRequestHint).requestHint
+                            : office != null
+                            ? (office.acceptsRequests ? 'Ask URI to change this sheet' : 'Open a workbook first')
+                            : oi != null && oi.dictationMode
                             ? 'Dictation — written as draft text, never carried out'
                             : oi != null && oi.transcriptMode
                             ? 'Type what was said — sent as a SIMULATED transcript'
@@ -346,6 +378,7 @@ class _LivingComposerState extends State<LivingComposer> {
           child: content,
         );
       },
+      ),
     );
   }
 }

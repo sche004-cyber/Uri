@@ -50,6 +50,13 @@ Limits (docs/assist/03_PERMISSION_AND_DATA_FLOW.md): the page's own scripts run 
 page between the shots; glyphs a font draws more than three line heights outside their own box can be credited to a
 same-colour unit of the same group; text the highlight does not repaint (SVG text) is never kept; a web font that
 draws other glyphs than the characters (glyph substitution) passes the check (owner decision).
+
+Windows ClearType uses separate RGB subpixel coverage. When scalar coverage fails, a coloured edge can instead be
+bound channel by channel to both independent paints, with the same contrast/residual/coverage bounds. Each credited
+channel must be measurable in BOTH paints; a weak channel has zero weight. No competing group colour may explain the
+credited subset. Verified channels contribute one third of a tinted pixel each; they contribute ink only when those
+same subpixels are visibly drawn and undecorated. The complete verified tint mask stays in the visibility denominator.
+Original stability, decoration, density and per-cell requirements still apply.
 """
 from __future__ import annotations
 
@@ -205,6 +212,58 @@ class Probe:
             ok = MIN_ALPHA <= al <= MAX_ALPHA and max(abs(d0 - al * p0), abs(d1 - al * p1),
                                                       abs(d2 - al * p2)) <= MAX_RESIDUAL
             return al if ok else None
+
+        # Fixed sRGB transfer (W3C CSS Color 4), never a per-pixel fitted gamma.
+        linear = tuple(v / 255 / 12.92 if v / 255 <= 0.04045 else ((v / 255 + 0.055) / 1.055) ** 2.4
+                       for v in range(256))
+        def encoded(v):
+            return 255 * (12.92 * v if v <= 0.0031308 else 1.055 * v ** (1 / 2.4) - 0.055)
+
+        def channel_coverage(colour, ch, k, background):
+            clear = background[ch]
+            pa, pb = self.palettes[0][colour][ch], self.palettes[1][colour][ch]
+            if pa == clear or pb == clear:
+                return None
+            ta, tb = a_px[k + ch], b_px[k + ch]
+            bg = linear[clear]
+            p1, p2 = linear[pa] - bg, linear[pb] - bg
+            a1, a2 = (linear[ta] - bg) / p1, (linear[tb] - bg) / p2
+            if not 0 <= a1 <= MAX_ALPHA or not 0 <= a2 <= MAX_ALPHA or abs(a1 - a2) > MAX_ALPHA_GAP:
+                return None
+            al = (a1 + a2) / 2
+            if max(abs(ta - encoded(bg + al * p1)), abs(tb - encoded(bg + al * p2))) > MAX_RESIDUAL:
+                return None
+            return min(a1, a2)
+
+        def subpixel_channels(colour, k, background):
+            # Each credited channel supplies its OWN signal in both paints.
+            # Weak channels receive zero credit, and cannot establish a match.
+            channels = []
+            floor = math.ceil(MIN_PROBE_CONTRAST * MIN_ALPHA / 2)
+            for ch in range(3):
+                clear = background[ch]
+                pa, pb = self.palettes[0][colour][ch], self.palettes[1][colour][ch]
+                ta, tb = a_px[k + ch], b_px[k + ch]
+                if pa == clear or pb == clear:
+                    return ()                             # retain strict refusal of a flat probe paint
+                bg = linear[clear]
+                a1, a2 = (linear[ta] - bg) / (linear[pa] - bg), (linear[tb] - bg) / (linear[pb] - bg)
+                if not 0 <= a1 <= MAX_ALPHA or not 0 <= a2 <= MAX_ALPHA:
+                    return ()                             # even weak data cannot claim impossible coverage
+                if min(abs(pa - clear), abs(pb - clear), abs(ta - clear), abs(tb - clear)) < floor:
+                    continue                              # no credit from this weak channel
+                al = channel_coverage(colour, ch, k, background)
+                if al is None:
+                    return ()                             # contradictory measurable data
+                if al >= MIN_ALPHA:
+                    channels.append(ch)
+            if len(channels) < 2:
+                return ()                                 # sparse evidence cannot establish a match
+            # Independent gamma-corrected channel proofs remain valid when
+            # their coverages happen to agree. Requiring a spread discards
+            # real glyph interiors/edges according to the random palette.
+            return tuple(channels)
+
         for m in re.finditer(rb"[^\x00]", cand.tobytes()):
             k = 3 * m.start()
             c0, c1, c2 = c_px[k], c_px[k + 1], c_px[k + 2]
@@ -217,14 +276,23 @@ class Probe:
                 if al is None or any(alpha(Q, c0, c1, c2, d0, d1, d2) is not None for Q in others):
                     break
                 alphas.append(al)
+            weight = ink_weight = 1.0
             if len(alphas) != 2 or abs(alphas[0] - alphas[1]) > MAX_ALPHA_GAP:
-                continue
-            tinted += 1
+                channels = subpixel_channels(ci, k, (c0, c1, c2))
+                # Compare competing colours on EXACTLY the credited channels:
+                # an unmeasured component must not create false uniqueness.
+                if not channels or any(all(channel_coverage(other, ch, k, (c0, c1, c2)) is not None
+                                           for ch in channels) for other in g["used"] if other != ci):
+                    continue
+                weight = len(channels) / 3
+                ink_weight = sum(abs(p_px[k + ch] - c_px[k + ch]) >= OWN_DELTA and
+                                 abs(n_px[k + ch] - p_px[k + ch]) < OWN_DELTA for ch in channels) / 3
+            tinted += weight
             # R2-03: the glyph shows with decorations off (plain vs clear) and nothing paints over it (base = plain).
             if max(abs(p_px[k] - c0), abs(p_px[k + 1] - c1), abs(p_px[k + 2] - c2)) >= OWN_DELTA and max(
                     abs(n_px[k] - p_px[k]), abs(n_px[k + 1] - p_px[k + 1]), abs(n_px[k + 2] - p_px[k + 2])) < OWN_DELTA:
-                inked += 1
-                per[min(cells - 1, ((k // 3) % bw) * cells // bw)] += 1
+                inked += ink_weight
+                per[min(cells - 1, ((k // 3) % bw) * cells // bw)] += ink_weight
         return tinted, inked, unstable, [p / (bh * bh) for p in per], decorated
 
     def verify(self, i: int) -> Optional[str]:

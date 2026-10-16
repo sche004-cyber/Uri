@@ -1,0 +1,32 @@
+[
+ {
+  "state": "STARTING_HOST",
+  "t": 0.0,
+  "explain": null,
+  "utc": "2026-10-16T01:18:55.766378+00:00"
+ },
+ {
+  "state": "STARTING",
+  "t": 10.03,
+  "explain": "Starting the Brain (Runtime v1).",
+  "utc": "2026-10-16T01:19:05.800648+00:00"
+ },
+ {
+  "state": "LOADING",
+  "t": 40.17,
+  "explain": "Starting the Brain (Runtime v1).",
+  "utc": "2026-10-16T01:19:35.936936+00:00"
+ },
+ {
+  "state": "CALIBRATING",
+  "t": 60.21,
+  "explain": "Measuring Brain speed.",
+  "utc": "2026-10-16T01:19:55.978304+00:00"
+ },
+ {
+  "state": "READY",
+  "t": 70.12,
+  "explain": "Brain ready (154 tok/s).",
+  "utc": "2026-10-16T01:20:05.890638+00:00"
+ }
+]

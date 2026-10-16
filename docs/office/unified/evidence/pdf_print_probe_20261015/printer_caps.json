@@ -1,0 +1,55 @@
+{
+    "ms":  934,
+    "printers":  [
+                     {
+                         "name":  "OneNote (Desktop)",
+                         "is_valid":  true,
+                         "is_default":  false,
+                         "can_duplex":  false,
+                         "supports_color":  true,
+                         "max_copies":  1,
+                         "landscape_angle":  270,
+                         "paper_sizes":  [
+                                             "Letter",
+                                             "Tabloid",
+                                             "Legal",
+                                             "Executive",
+                                             "A3",
+                                             "A4"
+                                         ],
+                         "paper_count":  10,
+                         "resolutions":  [
+                                             "High -4x-1",
+                                             "Medium -3x-1",
+                                             "Low -2x-1",
+                                             "Draft -1x-1"
+                                         ],
+                         "print_to_file_port":  false
+                     },
+                     {
+                         "name":  "Microsoft Print to PDF",
+                         "is_valid":  true,
+                         "is_default":  true,
+                         "can_duplex":  false,
+                         "supports_color":  true,
+                         "max_copies":  1,
+                         "landscape_angle":  90,
+                         "paper_sizes":  [
+                                             "Letter",
+                                             "Tabloid",
+                                             "Legal",
+                                             "Statement",
+                                             "Executive",
+                                             "A3"
+                                         ],
+                         "paper_count":  54,
+                         "resolutions":  [
+                                             "High -4x-1",
+                                             "Medium -3x-1",
+                                             "Low -2x-1",
+                                             "Draft -1x-1"
+                                         ],
+                         "print_to_file_port":  false
+                     }
+                 ]
+}

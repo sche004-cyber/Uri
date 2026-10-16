@@ -1,0 +1,73 @@
+[
+ {
+  "utc": "2026-10-15T15:47:50.002590+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "D:\\uri-dev\\uri-o2r-live-20261015\\fixtures\\r1b\\docs\\Annual Report 2025-26.docx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T15:48:22.438349+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "D:\\uri-dev\\uri-o2r-live-20261015\\fixtures\\r1b\\docs\\Quarterly Review.pptx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T15:48:53.853003+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "D:\\uri-dev\\uri-o2r-live-20261015\\fixtures\\r1b\\docs\\Tender Document 2026-07.pdf"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T15:49:57.592341+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "D:\\uri-dev\\uri-o2r-live-20261015\\fixtures\\r1b\\docs\\Damaged minutes.docx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T15:50:30.007569+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "cancel": true
+  },
+  "found": true,
+  "cancel_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T15:50:39.143110+00:00",
+  "request": {
+   "title": "Open a workbook in URI Office",
+   "path": "D:\\uri-dev\\uri-o2r-live-20261015\\fixtures\\r1b\\docs\\Budget 2026-27.xlsx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ }
+]

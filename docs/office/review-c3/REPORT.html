@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>URI-OFFICE-M1-c3 report</title>
+<style>
+:root{--bg:#f7f8fa;--panel:#fff;--fg:#1d232b;--muted:#5d6774;--line:#dde1e7;--good:#1f7a4d;--bad:#b3261e;--warn:#9a6200;
+--goodf:#2e9e66;--badf:#d0453b;--mutedf:#a9b1bc;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14171b;--panel:#1c2026;--fg:#e6e9ee;--muted:#9aa4b1;
+--line:#2d333b;--good:#5fd19a;--bad:#ff8a80;--warn:#f2b84b;--goodf:#3fb37d;--badf:#e5675d;--mutedf:#59626e;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#14171b;--panel:#1c2026;--fg:#e6e9ee;--muted:#9aa4b1;--line:#2d333b;--good:#5fd19a;--bad:#ff8a80;
+--warn:#f2b84b;--goodf:#3fb37d;--badf:#e5675d;--mutedf:#59626e;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;
+padding-block:24px;padding-inline:16px}
+.wrap{max-width:1100px;margin-inline:auto;display:grid;gap:20px}
+h1{font:400 1.8rem/1.2 Georgia,"Times New Roman",serif;margin:0;text-wrap:balance}h2{font-size:1.05rem;margin:0}
+.sub,.note{color:var(--muted);margin:0}.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr))}
+.card,.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;display:grid;gap:8px;align-content:start}
+.tile .n{font:400 1.9rem/1.1 Georgia,serif;font-variant-numeric:tabular-nums}.tile .l{color:var(--muted);font-size:.85rem}
+.tile.bad .n{color:var(--bad)}.tile.warn .n{color:var(--warn)}.tile.good .n{color:var(--good)}
+.grid2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr))}
+.tbl{overflow:auto;max-height:28rem}table{border-collapse:collapse;width:100%;font-size:.85rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{position:sticky;top:0;background:var(--panel);color:var(--muted);font-weight:600}
+.pill{display:inline-block;padding:0 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.pill.good{color:var(--good);border-color:currentColor}.pill.bad{color:var(--bad);border-color:currentColor}
+.pill.warn{color:var(--warn);border-color:currentColor}.stage{font-size:.95rem;padding:2px 12px}
+svg .grid{stroke:var(--line)}svg .tick{fill:var(--muted);font-size:11px}svg .bar.good{fill:var(--goodf)}
+svg .bar.bad{fill:var(--badf)}svg .bar.muted{fill:var(--mutedf)}svg .bar.light{opacity:.35}
+code{font-size:.85em;word-break:break-all}
+</style></head><body><div class="wrap">
+<header><h1>URI-OFFICE-M1-c3</h1>
+<p class="sub"><span class="pill stage good">VERIFIED</span> Independently accepted and qualified; integration not performed (policy or waiting).
+Independent ACCEPT and passing gates are recorded on this exact commit. Receipt chain verified.</p>
+<p class="note">Baseline <code>ce1a90c046d2e9566a86d8dccf25df0e2bc98c80</code> · candidate <code>6348b1b11eeefbea9299fabf06c5f3815475cd76</code> ·
+integration NOT_INTEGRATED_BY_POLICY · written 2026-10-12T01:42:15Z</p></header>
+<section class="tiles"><div class="tile "><span class="l">Review rounds</span><span class="n">1</span></div><div class="tile good"><span class="l">Findings repaired</span><span class="n">0 / 7</span></div><div class="tile good"><span class="l">Open blocking findings</span><span class="n">0</span></div><div class="tile "><span class="l">Repairs committed</span><span class="n">0</span></div><div class="tile good"><span class="l">Needs you</span><span class="n">0</span></div></section>
+<section class="card"><h2>Needs you</h2><p class="note">None.</p></section>
+<div class="grid2">
+<section class="card"><h2>Review rounds</h2><p class="note">Findings per round, darker part blocking; red rejected,
+green accepted. Each round is a separate reviewer process.</p><svg viewBox="0 0 640 200" width="100%" role="img" aria-label="Findings per review round"><line x1="30" x2="632" y1="172.0" y2="172.0" class="grid"/><text x="24" y="176.0" text-anchor="end" class="tick">0</text><line x1="30" x2="632" y1="148.6" y2="148.6" class="grid"/><text x="24" y="152.6" text-anchor="end" class="tick">1</text><line x1="30" x2="632" y1="125.1" y2="125.1" class="grid"/><text x="24" y="129.1" text-anchor="end" class="tick">2</text><line x1="30" x2="632" y1="101.7" y2="101.7" class="grid"/><text x="24" y="105.7" text-anchor="end" class="tick">3</text><line x1="30" x2="632" y1="78.3" y2="78.3" class="grid"/><text x="24" y="82.3" text-anchor="end" class="tick">4</text><line x1="30" x2="632" y1="54.9" y2="54.9" class="grid"/><text x="24" y="58.9" text-anchor="end" class="tick">5</text><line x1="30" x2="632" y1="31.4" y2="31.4" class="grid"/><text x="24" y="35.4" text-anchor="end" class="tick">6</text><line x1="30" x2="632" y1="8.0" y2="8.0" class="grid"/><text x="24" y="12.0" text-anchor="end" class="tick">7</text><g><title>R1 6348b1b11eee: ACCEPT WITH FINDINGS, 0 blocking of 7</title><rect x="303.0" width="56.0" y="8.0" height="164.0" rx="4" class="bar good light"/><rect x="303.0" width="56.0" y="172.0" height="0.0" rx="4" class="bar good"/></g><text x="331.0" y="190" text-anchor="middle" class="tick">R1</text></svg></section>
+<section class="card"><h2>Qualification gates</h2><div class="tbl"><table><thead><tr><th>Commit</th><th>Gate</th><th>OK</th><th>Passed</th><th>Failed</th><th>New</th><th>Vanished</th></tr></thead><tbody><tr><td>6348b1b11eee</td><td>python-office</td><td><span class="pill good">True</span></td><td>249</td><td>0</td><td>0</td><td>0</td></tr><tr><td>6348b1b11eee</td><td>python-a2ui</td><td><span class="pill good">True</span></td><td>106</td><td>1</td><td>0</td><td>0</td></tr></tbody></table></div></section>
+</div>
+<section class="card"><h2>Reviewer log</h2><div class="tbl"><table><thead><tr><th>Round</th><th>Commit</th><th>Reviewer</th><th>Session</th><th>Verdict</th><th>Blocking</th><th>Findings</th><th>Independent</th><th>Finished</th></tr></thead><tbody><tr><td>R1</td><td>6348b1b11eee</td><td>claude_cli</td><td>c45aa89c-ebd6-4862-9846-e97b886a6fb9</td><td><span class="pill good">ACCEPT WITH FINDINGS</span></td><td>0</td><td>7</td><td><span class="pill good">True</span></td><td>2026-10-12T01:41:44Z</td></tr></tbody></table></div></section>
+<section class="card"><h2>Findings</h2><div class="tbl"><table><thead><tr><th>Round</th><th>Id</th><th>Severity</th><th>Status</th><th>Finding</th></tr></thead><tbody><tr><td>R1</td><td>R1-01</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>WebView2 request filter fails open on COM errors, contrary to the &#x27;fail-closed&#x27; claim</td></tr><tr><td>R1</td><td>R1-02</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>@grpc/grpc-js override still resolves to a nonexistent path; committed stub never installed (prior M1-c2 R1-03 still open)</td></tr><tr><td>R1</td><td>R1-03</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>AC18 Python and Dart bundle-hash algorithms diverge for non-ASCII names, sort order and symlinked files</td></tr><tr><td>R1</td><td>R1-04</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>Voice drafting mode in Office focus sends push-to-talk to the hidden draft desk instead of the workbook or a refusal</td></tr><tr><td>R1</td><td>R1-05</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>Windows reserved-name check misses names with spaces before the extension (e.g. &#x27;C:\CON .xlsx&#x27;)</td></tr><tr><td>R1</td><td>R1-06</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>serve() accepts any loopback address and a negative Content-Length bypasses MAX_BODY</td></tr><tr><td>R1</td><td>R1-07</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>Companion live-check evidence predates the final repair commit and the ledger does not name its commit; resume() drops the kept workbook on any other service error</td></tr></tbody></table></div></section>
+<section class="card"><h2>Repairs</h2><p class="note">None.</p></section>
+<p class="note">Generated by scripts/dev_workflow/lifecycle_report.py from the milestone's recorded state.</p>
+</div></body></html>

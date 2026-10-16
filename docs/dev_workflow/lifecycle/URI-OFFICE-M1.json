@@ -1,0 +1,51 @@
+{
+ "milestone": "URI-OFFICE-M1",
+ "_note": "Run in a Linux cloud clone of github.com/sche004-cyber/Uri (origin = canonical). Owner direction 2026-10-11: independent review by a fresh claude_cli reviewer at the exact candidate commit; Windows PC results are gate evidence (docs/office/STATUS_LEDGER.md), not the review. Integration is none: canonical is not touched.",
+ "repo": "../../..",
+ "baseline": {"ref": "origin/integration/git-sync-20261008", "expect": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80"},
+ "candidate": {"branch": "phase/uri-office", "worktree": "../../../../uri-wt/office-impl"},
+ "state_dir": "../uri-wt/lifecycle-runs/URI-OFFICE-M1",
+ "acceptance_criteria_file": "docs/office/00_PLAN_AND_ACCEPTANCE_CRITERIA.md",
+ "review_focus": [
+  "AC15 network-block layers: vendored webview_flutter_windows patch (uri_ui/packages/webview_flutter_windows/windows/uri_security.cc, webview.cc, webview_host.cc, webview_bridge.cc; PATCHES.md) - fail-closed request filter, navigation and frame-navigation cancel, external schemes, popups, downloads, permissions, web-message source-origin check, WebRTC/WebTransport removal, proxy kill switch, dev tools off in release, user-data folder exclusivity",
+  "every change in the vendored package is listed in PATCHES.md and the diff from the unmodified baseline commit 9765e780 matches it; LICENSE kept",
+  "the @grpc/grpc-js placeholder npm override (uri_ui/office_web/package.json, stubs/) and that no runtime code needs gRPC",
+  "page lockdown: uri_ui/office_web/index.html CSP, src/no-network.js first-module network block, formula functions removed, Univer-internal writes not reported as edits",
+  "AC18 build-hash check: uri_office/page_build.py (build, verify, install) and the Dart check in uri_ui/lib/living/office/office_page_hash.dart use the same algorithm and refuse any other bundle",
+  "AC17 worker isolation: the guarded worker never imports uri_office (tests/office/test_worker_isolation.py)",
+  "AC7 path rule refusal cases on Windows and POSIX (uri_office/grants.py, tests/office/test_grants.py)",
+  "AC6 service transport: 127.0.0.1 only, user-only token and state folder, Host check, Origin refusal, no state-changing GET",
+  "AC3 approvals bound to the SHA-256 of the exact change shown, re-checked against the target, closed after use",
+  "Flutter bridge: only validated page messages reach the panel (uri_ui/lib/living/office/office_bridge.dart); the panel never writes files",
+  "evidence integrity: docs/office/evidence/webview2_security_probe_run*.json and STATUS_LEDGER.md claims match the code"
+ ],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": [
+  "uri_office/**", "tests/office/**", "docs/office/**", "docs/dev_workflow/lifecycle/URI-OFFICE-M1.json",
+  "research/uri_office_spikes/**", "uri_a2ui/actions.py",
+  "uri_ui/lib/living/office/**", "uri_ui/lib/living/webview_host/**", "uri_ui/lib/office_security_probe.dart",
+  "uri_ui/lib/services/platform_office_environment.dart", "uri_ui/lib/living/a2ui/a2ui_contract.dart",
+  "uri_ui/lib/living/living_scope.dart", "uri_ui/lib/living/presentation/presentation_controller.dart",
+  "uri_ui/lib/living/screens/workspace_mode_view.dart", "uri_ui/lib/main.dart",
+  "uri_ui/office_web/**", "uri_ui/packages/webview_flutter_windows/**", "uri_ui/test/office/**",
+  "uri_ui/pubspec.yaml", "uri_ui/pubspec.lock", "uri_ui/analysis_options.yaml", "uri_ui/windows/flutter/**"
+ ],
+ "test_globs": ["tests/**", "**/test/**"],
+ "allowed_flaky": [],
+ "gates": [
+  {"id": "python-office", "kind": "pytest", "cmd": ["{python}", "-m", "pytest", "-c", "scripts/phase2d_pytest.ini", "--rootdir=.", "-q", "tests/office"]},
+  {"id": "python-a2ui", "kind": "pytest", "cmd": ["{python}", "-m", "pytest", "-c", "scripts/phase2d_pytest.ini", "--rootdir=.", "-q", "tests/a2ui"]}
+ ],
+ "regression_runner": ["{python}", "-m", "pytest", "-q", "-p", "no:cacheprovider"],
+ "regression_runners": [],
+ "test_setup": [{"cmd": ["npm", "ci", "--no-audit", "--no-fund"], "cwd": "uri_ui/office_web", "timeout_s": 1800}],
+ "_test_setup_note": "Owner approval 2026-10-11: fresh test worktrees (regression proof, qualify, baseline) install the page's npm dependencies first; without them the real-engine tests in tests/office/test_page.py skip and no repair can show fail-before (run 1, P2-P4). The driver change (scripts/dev_workflow/lifecycle.py test_setup) is tooling, not part of the office milestone.",
+ "repair_nonblocking_severities": [],
+ "reviewer": {"provider": "claude_cli", "model": "claude-opus-5-5", "timeout_s": 5400},
+ "implementer": {"provider": "claude_cli", "model": "claude-opus-5-5", "timeout_s": 5400},
+ "limits": {"max_repair_attempts": 3},
+ "continuation": {"stall_rounds": 2, "diagnose_after": 2, "budget": {"max_rounds": 12, "max_cost_usd": 200, "max_hours": 12}},
+ "integration": {"mode": "none"},
+ "commit_trailers": []
+}

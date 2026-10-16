@@ -1,0 +1,121 @@
+[
+ {
+  "utc": "2026-10-15T13:11:19.895734+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\r6\\docs\\Annual Report 2025-26.docx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T13:13:56.165646+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\r6\\docs\\Quarterly Review.pptx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T13:14:05.408828+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\r6\\docs\\Tender Document 2026-07.pdf"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T13:14:23.677403+00:00",
+  "request": {
+   "title": "Save the PDF in this folder",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\r6\\saved"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T13:14:34.137488+00:00",
+  "request": {
+   "title": "Save the PDF in this folder",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\r6\\saved"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T13:14:38.587076+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\r6\\saved\\Annual Report 2025-26.pdf"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T13:14:46.127763+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\r6\\docs\\Damaged minutes.docx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T13:14:50.861121+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "cancel": true
+  },
+  "found": true,
+  "cancel_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T13:14:58.184696+00:00",
+  "request": {
+   "title": "Open a workbook in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\r6\\docs\\Budget 2026-27.xlsx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T13:15:07.731480+00:00",
+  "request": {
+   "title": "Save the PDF in this folder",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\r6\\saved"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ }
+]

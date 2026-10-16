@@ -1,0 +1,432 @@
+{
+  "started": "2026-10-11T12:54:16.765254Z",
+  "lan_address_used": "<lan-ipv4>",
+  "page_dir": "C:\\Users\\cheta\\Development\\uri-office\\uri_ui\\assets\\office",
+  "webview2_version": "154.0.4258.62",
+  "office_page": {
+    "location": "https://office.uri.local/index.html",
+    "ready_received": true,
+    "rtc_peer_connection": "undefined",
+    "host_object_use": "refused Access is denied. (0x80070005)",
+    "attempts": [
+      {
+        "name": "fetch",
+        "page_result": "rejected NetworkDisabledError URI Office: network access is disabled (fetch http://127.0.0.1:62401/fetch)",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "fetch_loopback_service_port",
+        "page_result": "rejected NetworkDisabledError URI Office: network access is disabled (fetch http://127.0.0.1:18530/status)",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "xhr",
+        "page_result": "refused NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "websocket",
+        "page_result": "refused NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "eventsource",
+        "page_result": "refused NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "sendbeacon",
+        "page_result": "false",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "image",
+        "page_result": "error",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "css_url",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "prefetch",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_canary",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_file",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_custom_scheme",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_data_html",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "window_open",
+        "page_result": "null",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "worker_fetch",
+        "page_result": "refused NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "webrtc_stun_loopback",
+        "page_result": "no RTCPeerConnection",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "webrtc_stun_lan",
+        "page_result": "no RTCPeerConnection",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "webrtc_via_blank_iframe",
+        "page_result": "no RTCPeerConnection",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "download_anchor",
+        "page_result": "clicked",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "fetch_file",
+        "page_result": "rejected NetworkDisabledError URI Office: network access is disabled (fetch file:///C:/Windows/win.ini)",
+        "canary_hits": [],
+        "blocked": true
+      }
+    ],
+    "bridge_misuse_delivered_to_panel": 0
+  },
+  "raw_page": {
+    "location": "https://probe.uri.local/raw.html",
+    "host_object_use": "refused Access is denied. (0x80070005)",
+    "attempts": [
+      {
+        "name": "fetch",
+        "page_result": "rejected TypeError Failed to fetch",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "fetch_loopback_service_port",
+        "page_result": "rejected TypeError Failed to fetch",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "xhr",
+        "page_result": "error",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "websocket",
+        "page_result": "error",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "eventsource",
+        "page_result": "error",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "sendbeacon",
+        "page_result": "true",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "image",
+        "page_result": "error",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "css_url",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "prefetch",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_canary",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_file",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_custom_scheme",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_data_html",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "window_open",
+        "page_result": "null",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "worker_fetch",
+        "page_result": "worker started",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "webrtc_stun_loopback",
+        "page_result": "no RTCPeerConnection",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "webrtc_stun_lan",
+        "page_result": "no RTCPeerConnection",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "webrtc_via_blank_iframe",
+        "page_result": "no RTCPeerConnection",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "download_anchor",
+        "page_result": "clicked",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "fetch_file",
+        "page_result": "rejected TypeError Failed to fetch",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "data_url_image_works",
+        "page_result": "loaded",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "blob_fetch_works",
+        "page_result": "ok",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "permission_geolocation",
+        "page_result": "denied code 1",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "permission_notifications",
+        "page_result": "denied",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "permission_camera",
+        "page_result": "rejected NotAllowedError Permission denied",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "clipboard_read",
+        "page_result": "rejected NotAllowedError Failed to execute 'readText' on 'Clipboard': Document is not focused.",
+        "canary_hits": [],
+        "blocked": true
+      }
+    ],
+    "wrong_origin_messages_delivered_to_panel": 0
+  },
+  "navigations": [
+    {
+      "name": "nav_canary",
+      "target": "http://127.0.0.1:62401/nav",
+      "location_after": "https://probe.uri.local/raw.html",
+      "hits": [],
+      "escaped_to_canary": false,
+      "target_loaded": false
+    },
+    {
+      "name": "nav_file",
+      "target": "file:///C:/Windows/win.ini",
+      "location_after": "https://probe.uri.local/raw.html",
+      "hits": [],
+      "escaped_to_canary": false,
+      "target_loaded": false
+    },
+    {
+      "name": "nav_data_html",
+      "target": "data:text/html,<b>x</b>",
+      "location_after": "https://probe.uri.local/raw.html",
+      "hits": [],
+      "escaped_to_canary": false,
+      "target_loaded": false
+    },
+    {
+      "name": "nav_blob_like",
+      "target": "blob:https://probe.uri.local/00000000-0000-0000-0000-000000000000",
+      "location_after": "https://probe.uri.local/raw.html",
+      "hits": [],
+      "escaped_to_canary": false,
+      "target_loaded": false
+    },
+    {
+      "name": "nav_custom_scheme",
+      "target": "uri-office-probe:test",
+      "location_after": "https://probe.uri.local/raw.html",
+      "hits": [],
+      "escaped_to_canary": false,
+      "target_loaded": false
+    },
+    {
+      "name": "nav_redirect_to_canary",
+      "target": "http://127.0.0.1:62402/to-canary",
+      "location_after": "chrome-error://chromewebdata/",
+      "hits": [],
+      "escaped_to_canary": false,
+      "target_loaded": false
+    },
+    {
+      "name": "nav_redirect_to_file",
+      "target": "http://127.0.0.1:62402/to-file",
+      "location_after": "chrome-error://chromewebdata/",
+      "hits": [],
+      "escaped_to_canary": false,
+      "target_loaded": false
+    },
+    {
+      "name": "nav_download",
+      "target": "http://127.0.0.1:62401/download",
+      "location_after": "https://probe.uri.local/raw.html",
+      "hits": [],
+      "escaped_to_canary": false,
+      "target_loaded": false
+    },
+    {
+      "name": "nav_from_script",
+      "hits": [],
+      "escaped_to_canary": false,
+      "location_after": "https://probe.uri.local/raw.html"
+    }
+  ],
+  "open_dev_tools": "refused: PlatformException(method_failed, null, null, null)",
+  "downloads_written": [],
+  "security_report": {
+    "configured": true,
+    "blocked_requests": 13,
+    "cancelled_navigations": 7,
+    "cancelled_frame_navigations": 6,
+    "cancelled_external_schemes": 0,
+    "denied_windows": 1,
+    "cancelled_downloads": 1,
+    "dropped_messages": 2,
+    "denied_permissions": 3,
+    "settings": {
+      "dev_tools": false,
+      "host_objects": false,
+      "script_dialogs": false,
+      "browser_accelerator_keys": false,
+      "password_autosave": false,
+      "general_autofill": false
+    },
+    "recent": [
+      "frame_navigation http://127.0.0.1:62401/iframe",
+      "frame_navigation uri-office-probe:frame",
+      "frame_navigation data:text/html,<script>fetch(\"http://127.0.0.1:62401/from-data-frame\")</script>",
+      "request http://127.0.0.1:62401/fetch",
+      "request http://127.0.0.1:18530/status",
+      "request http://127.0.0.1:62401/xhr",
+      "request http://127.0.0.1:62401/sse",
+      "request http://127.0.0.1:62401/beacon",
+      "request http://127.0.0.1:62401/img",
+      "request http://127.0.0.1:62401/css",
+      "request http://127.0.0.1:62401/prefetch",
+      "frame_navigation http://127.0.0.1:62401/iframe",
+      "request http://127.0.0.1:62401/iframe",
+      "frame_navigation uri-office-probe:frame",
+      "frame_navigation data:text/html,<script>fetch(\"http://127.0.0.1:62401/from-data-frame\")</script>",
+      "window http://127.0.0.1:62401/open",
+      "request http://127.0.0.1:62401/worker",
+      "download blob:https://probe.uri.local/0a48f84a-506a-41c3-b181-8d027de44cb1",
+      "permission https://probe.uri.local/",
+      "permission https://probe.uri.local/",
+      "permission https://probe.uri.local/",
+      "message https://probe.uri.local/raw.html",
+      "message https://probe.uri.local/raw.html",
+      "navigation http://127.0.0.1:62401/nav",
+      "request http://127.0.0.1:62401/nav",
+      "navigation file:///C:/Windows/win.ini",
+      "navigation data:text/html,<b>x</b>",
+      "navigation blob:https://probe.uri.local/00000000-0000-0000-0000-000000000000",
+      "navigation uri-office-probe:test",
+      "navigation http://127.0.0.1:62401/download",
+      "request http://127.0.0.1:62401/download",
+      "navigation http://127.0.0.1:62401/script-nav",
+      "request http://127.0.0.1:62401/script-nav"
+    ],
+    "dropped_by_dart": 3
+  },
+  "all_hits": [],
+  "user_data_folder": "C:\\Users\\cheta\\AppData\\Local\\Temp\\uri-office-probe-1791723256774",
+  "user_data_folder_acl": "C:\\Users\\cheta\\AppData\\Local\\Temp\\uri-office-probe-1791723256774 CHETANPC\\cheta:(OI)(CI)(F)\n\nSuccessfully processed 1 files; Failed processing 0 files",
+  "result": "COMPLETED_WITH_RESULT",
+  "finished": "2026-10-11T12:56:30.794488Z"
+}

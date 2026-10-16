@@ -1,0 +1,91 @@
+{
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocker": null,
+ "candidate": "e6a4dcd501089d4889d08a7e5f3425179d8246c6",
+ "config_sha256": "23bc0c3562baabccfbc0ca4f61f9b13449a594a50b9f7c1fc6b3bafc57923c96",
+ "events": 13,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "e6a4dcd50108": {
+   "blocked": null,
+   "new_failures": {
+    "python-a2ui": [],
+    "python-office": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-12T00:54:14Z",
+  "candidate": "e6a4dcd501089d4889d08a7e5f3425179d8246c6",
+  "mode": "none",
+  "status": "NOT_INTEGRATED_BY_POLICY"
+ },
+ "milestone": "URI-OFFICE-M1-c",
+ "open_findings": [
+  {
+   "blocking": false,
+   "id": "R1-01",
+   "severity": "LOW",
+   "title": "Office companion conversation is not cleared when another workbook is opened"
+  },
+  {
+   "blocking": false,
+   "id": "R1-02",
+   "severity": "LOW",
+   "title": "Host request filter fails open on internal errors; lockdown install cannot report failure"
+  },
+  {
+   "blocking": false,
+   "id": "R1-03",
+   "severity": "LOW",
+   "title": "Host filter and RTC/WebTransport removal do not cover workers"
+  },
+  {
+   "blocking": false,
+   "id": "R1-04",
+   "severity": "LOW",
+   "title": "Bundle-hash checks ignore symlinks; Python/Dart algorithms diverge for non-ASCII names"
+  },
+  {
+   "blocking": false,
+   "id": "R1-05",
+   "severity": "LOW",
+   "title": "@grpc/grpc-js override resolves to a nonexistent path; committed stub is never used"
+  },
+  {
+   "blocking": false,
+   "id": "R1-06",
+   "severity": "LOW",
+   "title": "Shared overlap files converted LF->CRLF, turning additive edits into whole-file rewrites"
+  },
+  {
+   "blocking": false,
+   "id": "R1-07",
+   "severity": "LOW",
+   "title": "Minor page/service hardening gaps"
+  }
+ ],
+ "repairs": [],
+ "reviewers": [
+  {
+   "candidate": "e6a4dcd501089d4889d08a7e5f3425179d8246c6",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "round": 1,
+   "session_id": "244f828e-dbf7-4490-86ef-3cbf75311380",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "rounds": 1,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "VERIFIED",
+ "verify_errors": [],
+ "written_at": "2026-10-12T00:54:14Z"
+}

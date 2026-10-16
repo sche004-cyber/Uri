@@ -1,0 +1,17 @@
+{
+ "note": "Exact profile text from commit c974a655 (with DisableActiveContent) against the profile at the round-3 repair commit (without). A first attempt that appended the setting at the end of the profile was silently dropped by LibreOffice and is not evidence.",
+ "results": {
+  "profile_c974a655_with_DisableActiveContent": {
+   "setting_in_profile_during_run": true,
+   "single_slide_chart_labels_present": false,
+   "deck_slide11_chars": 28,
+   "deck_slide11_has_months": false
+  },
+  "profile_now_without": {
+   "setting_in_profile_during_run": false,
+   "single_slide_chart_labels_present": true,
+   "deck_slide11_chars": 81,
+   "deck_slide11_has_months": true
+  }
+ }
+}

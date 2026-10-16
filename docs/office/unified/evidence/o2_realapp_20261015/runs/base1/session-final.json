@@ -1,0 +1,65 @@
+{
+ "run": "base1",
+ "brain_mode": false,
+ "port": 18327,
+ "started_utc": "2026-10-15T10:15:08.273255+00:00",
+ "verified": {
+  "ok": true,
+  "source_head": "ee2f2f3481ccae15242a82530e3ebdcbc8898476",
+  "source_tree": "498412c7f88d8ad80a058062b9c04c5e0e520e13",
+  "checked_files": 1413
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "gpu_authority": "owner directive 2026-10-15 B5: Brain/GPU testing under the existing GPU lease, runtime safety and permission controls; no contention override",
+ "server_pid": 13680,
+ "server_listener_pid": 15056,
+ "server_listen_s": 5.887,
+ "server_listening": true,
+ "office_started_by_harness": {
+  "utc": "2026-10-15T10:18:31.014956+00:00",
+  "reason": "app showed: The URI Office service is not running (no way to start it from the app)",
+  "args": [
+   "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+   "-B",
+   "-m",
+   "uri_office.service",
+   "run",
+   "--state",
+   "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\base1\\local\\URI\\office"
+  ],
+  "pid": 20756
+ },
+ "ui_finished_utc": "2026-10-15T10:25:40.860250+00:00",
+ "finished_utc": "2026-10-15T10:27:26.237270+00:00",
+ "server_exit": 1,
+ "brain_config_sha256_after": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_after": {
+  "state": "HELD",
+  "holder": {
+   "acquired_at": 1792059438.412,
+   "create_time": 1792059288.719,
+   "expected_vram_mib": 15626,
+   "heartbeat_at": 1792059438.412,
+   "label": "WS Brain host",
+   "max_hold_s": null,
+   "override": {
+    "at": 1792059378.127,
+    "by": "--override-contention"
+   },
+   "pid": 8544,
+   "process": "python.exe",
+   "purpose": "runtime_v1_brain",
+   "schema": "uri.gpu.lease.v1",
+   "session": "C:\\Users\\cheta\\Development\\uri-fcv-recovery-20261014\\candidate",
+   "state": "held"
+  }
+ },
+ "brain_listener_after_3s": null,
+ "server_listener_after": null,
+ "host_final": null,
+ "office_left": []
+}

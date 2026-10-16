@@ -1,0 +1,124 @@
+{
+ "run": "r5",
+ "brain_mode": true,
+ "port": 18327,
+ "started_utc": "2026-10-15T12:14:29.447310+00:00",
+ "verified": {
+  "ok": true,
+  "source_head": "44ddbbe3e6e636a053271bf4f0715fbe2b007eae",
+  "source_tree": "767ec8660daa3283abcc4d6d8fa6ac97bafe89bf",
+  "checked_files": 1413
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "gpu_authority": "owner directive 2026-10-15 B5: Brain/GPU testing under the existing GPU lease, runtime safety and permission controls; no contention override",
+ "server_pid": 3456,
+ "server_listener_pid": 9928,
+ "server_listen_s": 3.742,
+ "server_listening": true,
+ "ui_finished_utc": "2026-10-15T12:27:11.344339+00:00",
+ "finished_utc": "2026-10-15T12:28:55.045993+00:00",
+ "server_exit": 1,
+ "brain_config_sha256_after": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_listener_after_3s": null,
+ "server_listener_after": null,
+ "host_final": {
+  "schema": "uri.ws.brain_host.v1",
+  "host_pid": 16572,
+  "host_started": 1792066473.195,
+  "state": "STOPPED",
+  "history": [
+   {
+    "t": 1792066479.084,
+    "state": "STARTING",
+    "detail": null
+   },
+   {
+    "t": 1792066594.184,
+    "state": "LOADING",
+    "detail": null
+   },
+   {
+    "t": 1792066679.603,
+    "state": "CALIBRATING",
+    "detail": null
+   },
+   {
+    "t": 1792066687.123,
+    "state": "READY",
+    "detail": null
+   },
+   {
+    "t": 1792067332.031,
+    "state": "STOPPING",
+    "detail": null
+   },
+   {
+    "t": 1792067332.037,
+    "state": "STOPPED",
+    "detail": "HOST_EXIT"
+   }
+  ],
+  "override": null,
+  "lease": {
+   "held": false
+  },
+  "gpu": {
+   "fit": {
+    "verdict": "AT_RISK",
+    "card_mib": 16368,
+    "required_mib": 15626,
+    "others_mib": 847.3,
+    "unattributed_mib": 0.0,
+    "owner_mib": 0,
+    "free_mib": 15520.7,
+    "margin_mib": -105.3,
+    "consumers": [
+     {
+      "pid": 1792,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 365.5,
+      "role": "desktop compositor"
+     }
+    ]
+   },
+   "explain": "GPU memory is 105 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading.",
+   "census_t": 1792066473.203,
+   "census_s": 3.51
+  },
+  "detail": "HOST_EXIT",
+  "explain": "The Brain host has exited.",
+  "updated_at": 1792067332.037,
+  "heartbeat_at": 1792067328.931,
+  "server": {
+   "pid": null,
+   "owned": false,
+   "stopped_clean": true
+  },
+  "residency": {
+   "t": 1792067275.73,
+   "dedicated_mib": 14907.7,
+   "non_local_mib": 1798.8,
+   "others_mib": 850.4,
+   "verdict_now": "AT_RISK",
+   "consumers": [
+    {
+     "pid": 1792,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "dedicated_mib": 361.8,
+     "role": "desktop compositor"
+    }
+   ]
+  }
+ },
+ "office_left": []
+}

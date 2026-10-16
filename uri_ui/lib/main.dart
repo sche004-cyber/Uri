@@ -1,7 +1,8 @@
 /// Real application entry point.
 ///
 /// This file is deliberately thin, and is the ONLY place that touches a
-/// platform plugin (`package:file_picker`, via platform_file_picker.dart).
+/// platform plugin (`package:file_picker`, via platform_file_picker.dart;
+/// the WebView2 Office surface, via platform_office_environment.dart).
 /// The widget tree itself lives in app.dart so that widget tests can
 /// import it without pulling the plugin in — which hangs `flutter test`.
 library;
@@ -18,6 +19,7 @@ import 'services/companion_window_adapter.dart';
 import 'services/device_identity.dart';
 import 'services/http_uri_client.dart';
 import 'services/platform_attachment_opener.dart';
+import 'services/platform_office_environment.dart';
 import 'services/platform_file_picker.dart';
 import 'services/platform_window_controller.dart';
 import 'services/integrated_runtime.dart';
@@ -81,6 +83,8 @@ void main() async {
           }
           if (Platform.isWindows) {
             services.voiceCatalog = WindowsVoiceCatalog();
+            // URI Office: WebView2 sheet view (vendored, URI-patched webview_flutter_windows) and path pickers.
+            services.office = platformOfficeEnvironment();
             // Live voice: push-to-talk recognition on the CPU and reply
             // speech. The service process starts a few seconds after launch
             // so the model is warm before the first press; it holds no GPU

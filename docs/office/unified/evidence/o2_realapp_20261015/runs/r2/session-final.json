@@ -1,0 +1,51 @@
+{
+ "run": "r2",
+ "brain_mode": false,
+ "port": 18327,
+ "started_utc": "2026-10-15T11:16:42.292088+00:00",
+ "verified": {
+  "ok": true,
+  "source_head": "f27f6bbf987da574829ce4410d45f47f384f7521",
+  "source_tree": "50453af60550bbcf4fd60f9a525765c7ba05157d",
+  "checked_files": 1413
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "gpu_authority": "owner directive 2026-10-15 B5: Brain/GPU testing under the existing GPU lease, runtime safety and permission controls; no contention override",
+ "server_pid": 17376,
+ "server_listener_pid": 2724,
+ "server_listen_s": 3.87,
+ "server_listening": true,
+ "ui_finished_utc": "2026-10-15T11:26:46.144433+00:00",
+ "finished_utc": "2026-10-15T11:28:31.935776+00:00",
+ "server_exit": 1,
+ "brain_config_sha256_after": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_after": {
+  "state": "HELD",
+  "holder": {
+   "acquired_at": 1792063113.737,
+   "create_time": 1792063033.893,
+   "expected_vram_mib": 15626,
+   "heartbeat_at": 1792063113.737,
+   "label": "WS Brain host",
+   "max_hold_s": null,
+   "override": {
+    "at": 1792063113.715,
+    "by": "--override-contention"
+   },
+   "pid": 21804,
+   "process": "python.exe",
+   "purpose": "runtime_v1_brain",
+   "schema": "uri.gpu.lease.v1",
+   "session": "C:\\Users\\cheta\\Development\\uri-fcv-recovery-20261014\\candidate",
+   "state": "held"
+  }
+ },
+ "brain_listener_after_3s": null,
+ "server_listener_after": null,
+ "host_final": null,
+ "office_left": []
+}

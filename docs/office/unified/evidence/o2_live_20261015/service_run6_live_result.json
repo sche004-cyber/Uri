@@ -1,0 +1,736 @@
+{
+ "started": "2026-10-15T12:20:13+0530",
+ "rows": {
+  "contract": {
+   "verdict": "PASS",
+   "contract": "o2.1"
+  },
+  "AC-O2-6/19 engine verified at first start": {
+   "verdict": "PASS",
+   "engine": {
+    "id": "libreoffice",
+    "state": "ready",
+    "version": "26.8.1.1",
+    "pinned": true,
+    "reason": null,
+    "last_verified": 1792047124.3526895,
+    "queued": 0,
+    "last_start_seconds": null,
+    "starts": 0
+   }
+  },
+  "K1 open+preview letter": {
+   "verdict": "PASS",
+   "pages": 1,
+   "first_ready_s": 13.74,
+   "page1_ms": 1962,
+   "findings": 0,
+   "outline": 0,
+   "error": null
+  },
+  "K1 open+preview order": {
+   "verdict": "PASS",
+   "pages": 2,
+   "first_ready_s": 0.62,
+   "page1_ms": 44,
+   "findings": 0,
+   "outline": 1,
+   "error": null
+  },
+  "K1 open+preview notice": {
+   "verdict": "PASS",
+   "pages": 1,
+   "first_ready_s": 0.6,
+   "page1_ms": 58,
+   "findings": 0,
+   "outline": 1,
+   "error": null
+  },
+  "K1 open+preview corr": {
+   "verdict": "PASS",
+   "pages": 1,
+   "first_ready_s": 0.6,
+   "page1_ms": 34,
+   "findings": 0,
+   "outline": 1,
+   "error": null
+  },
+  "K1 open+preview memo": {
+   "verdict": "PASS",
+   "pages": 1,
+   "first_ready_s": 0.59,
+   "page1_ms": 34,
+   "findings": 0,
+   "outline": 1,
+   "error": null
+  },
+  "K1 open+preview minutes": {
+   "verdict": "PASS",
+   "pages": 1,
+   "first_ready_s": 0.63,
+   "page1_ms": 52,
+   "findings": 0,
+   "outline": 3,
+   "error": null
+  },
+  "K1 open+preview bilingual": {
+   "verdict": "PASS",
+   "pages": 1,
+   "first_ready_s": 1.41,
+   "page1_ms": 45,
+   "findings": 0,
+   "outline": 1,
+   "error": null
+  },
+  "K1 open+preview report": {
+   "verdict": "PASS",
+   "pages": 20,
+   "first_ready_s": 0.76,
+   "page1_ms": 39,
+   "findings": 0,
+   "outline": 21,
+   "error": null
+  },
+  "K1 open+preview deck": {
+   "verdict": "PASS",
+   "pages": 11,
+   "first_ready_s": 0.83,
+   "page1_ms": 31,
+   "findings": 0,
+   "outline": 11,
+   "error": null
+  },
+  "AC-O2 deck slide count": {
+   "verdict": "PASS",
+   "pages": 11,
+   "slides": 11
+  },
+  "U12/H1 warm 20-page DOCX first page visible": {
+   "verdict": "PASS",
+   "seconds": [
+    0.19,
+    0.16,
+    0.18
+   ],
+   "median": 0.18,
+   "threshold_s": 2.0,
+   "note": "cache hit after the first conversion of the same content (preview cache); see cold_conversion_s"
+  },
+  "P-1/D1 Save as PDF letter": {
+   "verdict": "PASS",
+   "state": "ready_to_save",
+   "seconds": 0.89,
+   "pages": 1,
+   "findings": [
+    "warning:font_substitution",
+    "warning:font_substitution"
+   ]
+  },
+  "P-1/D1 Save as PDF order": {
+   "verdict": "PASS",
+   "state": "ready_to_save",
+   "seconds": 0.84,
+   "pages": 2,
+   "findings": [
+    "warning:font_substitution"
+   ]
+  },
+  "P-1/D1 Save as PDF bilingual": {
+   "verdict": "PASS",
+   "state": "ready_to_save",
+   "seconds": 0.58,
+   "pages": 1,
+   "findings": [
+    "warning:font_substitution"
+   ]
+  },
+  "P-1/D1 Save as PDF deck": {
+   "verdict": "PASS",
+   "state": "ready_to_save",
+   "seconds": 0.88,
+   "pages": 11,
+   "findings": []
+  },
+  "P-1/D1 Save as PDF report": {
+   "verdict": "PASS",
+   "state": "ready_to_save",
+   "seconds": 1.65,
+   "pages": 20,
+   "findings": [
+    "warning:font_substitution"
+   ]
+  },
+  "D1 no overwrite of an existing name": {
+   "verdict": "PASS",
+   "response": "DESTINATION_EXISTS"
+  },
+  "P-1 reopen saved PDF letter": {
+   "verdict": "PASS",
+   "pages": 1,
+   "renderer": "Windows"
+  },
+  "P-1 reopen saved PDF deck": {
+   "verdict": "PASS",
+   "pages": 11,
+   "renderer": "Windows"
+  },
+  "P-2 PDF view: pages, zoom 440/880/1240, search": {
+   "verdict": "PASS",
+   "pages": 60,
+   "page_ms_by_width": {
+    "440": [
+     30,
+     26,
+     45
+    ],
+    "880": [
+     39,
+     39,
+     39
+    ],
+    "1240": [
+     58,
+     59,
+     56
+    ]
+   },
+   "first_match": [
+    {
+     "page": 37,
+     "context": "Tender clause 37 Clause 37. The bidder shall c"
+    }
+   ],
+   "no_match": {
+    "matches": [],
+    "truncated": false
+   }
+  },
+  "P-2 scanned PDF: preview and honest 'no searchable text'": {
+   "verdict": "PASS",
+   "search": {
+    "error": "NO_TEXT_LAYER",
+    "detail": "",
+    "message": "This PDF has no searchable text (it may be a scan).",
+    "recovery": []
+   }
+  },
+  "P-4/AC-O2-20 hostile PDFs: worker fails alone, service survives": {
+   "verdict": "PASS",
+   "results": {
+    "zero": "unavailable",
+    "garbage": "unavailable",
+    "truncated": "unavailable",
+    "deep_nesting": "unavailable"
+   }
+  },
+  "P-6 Excel: refused with unsaved changes; saved file -> PDF with the print-area values": {
+   "verdict": "PASS",
+   "refused": "UNSAVED_CHANGES",
+   "values_present": {
+    "Salaries": true,
+    "Digitization": true,
+    "Total": true,
+    "Spent to date": true
+   },
+   "pages": 1
+  },
+  "F1 canaries (HTTP, SMB) through the live service": {
+   "verdict": "PASS",
+   "http_hits": [],
+   "smb_ports": [],
+   "xlsx_opened": true
+  },
+  "L2 five repeats of Save as PDF give identical outcomes": {
+   "verdict": "PASS",
+   "runs": [
+    [
+     "ready_to_save",
+     2,
+     0.84
+    ],
+    [
+     "ready_to_save",
+     2,
+     0.83
+    ],
+    [
+     "ready_to_save",
+     2,
+     0.82
+    ],
+    [
+     "ready_to_save",
+     2,
+     0.79
+    ],
+    [
+     "ready_to_save",
+     2,
+     0.8
+    ]
+   ]
+  },
+  "PR-1 discovery matches Windows (virtual printers only on this PC)": {
+   "verdict": "PASS",
+   "ours": [
+    "Microsoft Print to PDF",
+    "OneNote (Desktop)"
+   ],
+   "windows": [
+    "Microsoft Print to PDF",
+    "OneNote (Desktop)"
+   ],
+   "default": [
+    "Microsoft Print to PDF"
+   ],
+   "windows_default": "Microsoft Print to PDF",
+   "physical": false
+  },
+  "PR-2 capabilities read (virtual)": {
+   "verdict": "PASS",
+   "duplex": false,
+   "color": true,
+   "papers": 54,
+   "max_copies": 1
+  },
+  "PR-3 print preview: exactly the chosen pages, printable area": {
+   "verdict": "PASS",
+   "pages": [
+    1,
+    2
+   ],
+   "printable": {
+    "ok": true,
+    "hard_mm": [
+     0,
+     0
+    ],
+    "printable_mm": [
+     0,
+     0,
+     210,
+     297
+    ],
+    "paper_mm": [
+     210.1,
+     296.9
+    ]
+   }
+  },
+  "PR-4 tampered and replayed print approvals refused": {
+   "verdict": "PASS",
+   "tampered": "BOUND_VALUE_MISMATCH",
+   "replay": "UNKNOWN_SURFACE"
+  },
+  "PR-5 virtual printer job (OD-U13): approved pages only, no dialog, file written": {
+   "verdict": "PASS",
+   "state": "sent",
+   "pages_out": 2,
+   "worker": null,
+   "spooler": null,
+   "note": "virtual printer evidence only; NOT physical qualification"
+  },
+  "PR-5b same output file refused (never replaced)": {
+   "verdict": "PASS",
+   "response": "DESTINATION_EXISTS"
+  },
+  "PR-6 physical print": {
+   "verdict": "NOT VERIFIED",
+   "reason": "no physical printer on this PC (2026-10-15); needs owner authorization"
+  },
+  "PR-7 physical progress and cancel": {
+   "verdict": "NOT VERIFIED",
+   "reason": "no physical printer on this PC (2026-10-15); needs owner authorization"
+  },
+  "PR-8 real offline printer": {
+   "verdict": "NOT VERIFIED",
+   "reason": "no physical printer on this PC (2026-10-15); needs owner authorization"
+  },
+  "PR-9 printer error mid-job": {
+   "verdict": "NOT VERIFIED",
+   "reason": "no physical printer on this PC (2026-10-15); needs owner authorization"
+  },
+  "B1 native chart drawn in the deck's PDF (slide 11)": {
+   "verdict": "PASS",
+   "chart_text": "Registers scanned per month\nJun Jul Aug Sep\n0\n100\n200\n300\n400\n500\n600\n700\nScanned"
+  },
+  "F3/AC-O2-5/AC-O2-9 kill mid-run: no orphan engine, interrupted, resumed": {
+   "verdict": "PASS",
+   "orphans": [],
+   "after_restart": "interrupted",
+   "interrupted_at": 2,
+   "resumed": "ready_to_save"
+  },
+  "G1 originals byte-identical after every item": {
+   "verdict": "PASS",
+   "changed": [],
+   "files": 12
+  }
+ },
+ "timings": {
+  "service_start_s": 0.8,
+  "first_engine_verification_s": 109.04
+ },
+ "census": {
+  "idle_after_start": {
+   "processes": [
+    {
+     "pid": 7420,
+     "name": "python.exe",
+     "rss_mb": 60.5,
+     "cpu_s": 20.66
+    }
+   ],
+   "gpu": [
+    {
+     "gpu_engine_max": 0,
+     "pid": 7420,
+     "gpu_dedicated_bytes": 0
+    }
+   ]
+  },
+  "after_previews": {
+   "processes": [
+    {
+     "pid": 7420,
+     "name": "python.exe",
+     "rss_mb": 72.3,
+     "cpu_s": 23.14
+    },
+    {
+     "pid": 12332,
+     "name": "soffice.com",
+     "rss_mb": 6.4,
+     "cpu_s": 0.02
+    },
+    {
+     "pid": 21112,
+     "name": "python.exe",
+     "rss_mb": 4.2,
+     "cpu_s": 0.0
+    },
+    {
+     "pid": 7604,
+     "name": "python.exe",
+     "rss_mb": 31.6,
+     "cpu_s": 0.36
+    },
+    {
+     "pid": 21280,
+     "name": "powershell.exe",
+     "rss_mb": 159.0,
+     "cpu_s": 3.45
+    },
+    {
+     "pid": 8480,
+     "name": "conhost.exe",
+     "rss_mb": 7.2,
+     "cpu_s": 0.0
+    },
+    {
+     "pid": 20948,
+     "name": "conhost.exe",
+     "rss_mb": 7.2,
+     "cpu_s": 0.02
+    },
+    {
+     "pid": 20676,
+     "name": "conhost.exe",
+     "rss_mb": 7.1,
+     "cpu_s": 0.02
+    },
+    {
+     "pid": 18236,
+     "name": "python.exe",
+     "rss_mb": 29.7,
+     "cpu_s": 0.28
+    },
+    {
+     "pid": 19216,
+     "name": "conhost.exe",
+     "rss_mb": 7.0,
+     "cpu_s": 0.0
+    },
+    {
+     "pid": 5972,
+     "name": "soffice.bin",
+     "rss_mb": 418.0,
+     "cpu_s": 6.41
+    }
+   ],
+   "gpu": [
+    {
+     "gpu_engine_max": 0,
+     "pid": 7420,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 12332,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 21112,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 7604,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 21280,
+     "gpu_dedicated_bytes": 29634560
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 8480,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 20948,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 20676,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 18236,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 19216,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 5972,
+     "gpu_dedicated_bytes": 0
+    }
+   ]
+  },
+  "after_conversions": {
+   "processes": [
+    {
+     "pid": 7420,
+     "name": "python.exe",
+     "rss_mb": 95.9,
+     "cpu_s": 27.25
+    },
+    {
+     "pid": 12332,
+     "name": "soffice.com",
+     "rss_mb": 6.3,
+     "cpu_s": 0.02
+    },
+    {
+     "pid": 21112,
+     "name": "python.exe",
+     "rss_mb": 4.2,
+     "cpu_s": 0.0
+    },
+    {
+     "pid": 7604,
+     "name": "python.exe",
+     "rss_mb": 36.2,
+     "cpu_s": 7.05
+    },
+    {
+     "pid": 21280,
+     "name": "powershell.exe",
+     "rss_mb": 170.8,
+     "cpu_s": 5.72
+    },
+    {
+     "pid": 8480,
+     "name": "conhost.exe",
+     "rss_mb": 7.2,
+     "cpu_s": 0.0
+    },
+    {
+     "pid": 20948,
+     "name": "conhost.exe",
+     "rss_mb": 7.2,
+     "cpu_s": 0.02
+    },
+    {
+     "pid": 20676,
+     "name": "conhost.exe",
+     "rss_mb": 7.0,
+     "cpu_s": 0.02
+    },
+    {
+     "pid": 18236,
+     "name": "python.exe",
+     "rss_mb": 29.8,
+     "cpu_s": 0.33
+    },
+    {
+     "pid": 19216,
+     "name": "conhost.exe",
+     "rss_mb": 7.0,
+     "cpu_s": 0.0
+    },
+    {
+     "pid": 5972,
+     "name": "soffice.bin",
+     "rss_mb": 453.6,
+     "cpu_s": 11.28
+    }
+   ],
+   "gpu": [
+    {
+     "gpu_engine_max": 0,
+     "pid": 7420,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 12332,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 21112,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 7604,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 21280,
+     "gpu_dedicated_bytes": 40644608
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 8480,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 20948,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 20676,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 18236,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 19216,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 5972,
+     "gpu_dedicated_bytes": 0
+    }
+   ]
+  },
+  "after_70s_idle": {
+   "processes": [
+    {
+     "pid": 7420,
+     "name": "python.exe",
+     "rss_mb": 95.8,
+     "cpu_s": 27.27
+    },
+    {
+     "pid": 12332,
+     "name": "soffice.com",
+     "rss_mb": 6.3,
+     "cpu_s": 0.02
+    },
+    {
+     "pid": 21112,
+     "name": "python.exe",
+     "rss_mb": 4.2,
+     "cpu_s": 0.0
+    },
+    {
+     "pid": 20676,
+     "name": "conhost.exe",
+     "rss_mb": 7.0,
+     "cpu_s": 0.02
+    },
+    {
+     "pid": 18236,
+     "name": "python.exe",
+     "rss_mb": 29.8,
+     "cpu_s": 0.33
+    },
+    {
+     "pid": 19216,
+     "name": "conhost.exe",
+     "rss_mb": 7.0,
+     "cpu_s": 0.0
+    },
+    {
+     "pid": 5972,
+     "name": "soffice.bin",
+     "rss_mb": 453.4,
+     "cpu_s": 11.28
+    }
+   ],
+   "gpu": [
+    {
+     "gpu_engine_max": 0,
+     "pid": 7420,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 12332,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 21112,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 20676,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 18236,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 19216,
+     "gpu_dedicated_bytes": 0
+    },
+    {
+     "gpu_engine_max": 0,
+     "pid": 5972,
+     "gpu_dedicated_bytes": 0
+    }
+   ]
+  }
+ },
+ "temp_new_entries": [
+  "uri_o2_live_ui1"
+ ],
+ "virtual_print_dir_empty": true,
+ "finished": "2026-10-15T12:25:16+0530",
+ "error": null
+}

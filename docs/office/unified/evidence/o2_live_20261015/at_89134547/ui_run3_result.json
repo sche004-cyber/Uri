@@ -1,0 +1,798 @@
+{
+  "started": "2026-10-15T07:59:36.950174Z",
+  "kind": "scripted live check run by Claude, not the owner check",
+  "ui": "app OfficeWorkspace (B1) inside LivingScope, Office focus, real Office service, real engines",
+  "result": "COMPLETED_WITH_RESULT",
+  "steps": [
+    {
+      "step": "01_home",
+      "at": "2026-10-15T07:59:37.201094Z",
+      "goals": [
+        {
+          "pdfs": [
+            "view_pdf",
+            "save_as_pdf",
+            "print_document"
+          ]
+        },
+        {
+          "data": [
+            "open_workbook",
+            "new_workbook_from_files"
+          ]
+        }
+      ],
+      "hint": null,
+      "engines": [
+        {
+          "id": "libreoffice",
+          "state": "verifying",
+          "version": "26.8.1.1",
+          "pinned": true,
+          "reason": null,
+          "last_verified": null,
+          "queued": 0,
+          "last_start_seconds": null,
+          "starts": 0
+        },
+        {
+          "id": "winrt_pdf",
+          "state": "ready",
+          "version": "Windows.Data.Pdf",
+          "pinned": true,
+          "reason": null,
+          "starts": 0
+        },
+        {
+          "id": "pdf_text",
+          "state": "ready",
+          "version": "pypdf",
+          "pinned": true,
+          "reason": null,
+          "starts": 0
+        }
+      ]
+    },
+    {
+      "step": "02_docx_preview",
+      "at": "2026-10-15T08:00:44.412980Z",
+      "seconds_to_ready": 65.669,
+      "doc": {
+        "document_id": "b10189157d894a34",
+        "kind": "docx",
+        "name": "official_letter.docx",
+        "pages": 1,
+        "slides": null,
+        "outline": [],
+        "preview": {
+          "state": "ready",
+          "reason": null,
+          "seconds": 65.1
+        },
+        "findings": [],
+        "sha256_prefix": "7c3155198d92",
+        "read_only": true,
+        "renderer": "LibreOffice"
+      },
+      "hint": null
+    },
+    {
+      "step": "03_plan_card",
+      "at": "2026-10-15T08:00:45.965544Z",
+      "cards": 1
+    },
+    {
+      "pressed": "apply",
+      "surface": "office.plan.585b0c39a75e42609707.3a508058",
+      "ms": 7,
+      "hub_errors": {}
+    },
+    {
+      "step": "04_task_done",
+      "at": "2026-10-15T08:00:48.531588Z",
+      "seconds": 1.006,
+      "workflow": {
+        "workflow_id": "585b0c39a75e42609707",
+        "contract": "o2.1",
+        "capability": "save_as_pdf",
+        "state": "ready_to_save",
+        "created_at": 1792051245.9565737,
+        "updated_at": 1792051248.0573463,
+        "steps": [
+          {
+            "id": "prepare",
+            "kind": "D",
+            "engine": null,
+            "engine_version": null,
+            "state": "done",
+            "started_at": 1792051247.524764,
+            "ended_at": 1792051247.571296,
+            "finding_ids": []
+          },
+          {
+            "id": "convert",
+            "kind": "E",
+            "engine": "libreoffice",
+            "engine_version": "26.8.1.1",
+            "state": "done",
+            "started_at": 1792051247.572216,
+            "ended_at": 1792051247.9199436,
+            "finding_ids": [],
+            "seconds": 0.345
+          },
+          {
+            "id": "validate",
+            "kind": "D",
+            "engine": null,
+            "engine_version": null,
+            "state": "done",
+            "started_at": 1792051247.9209418,
+            "ended_at": 1792051248.05398,
+            "finding_ids": [
+              "f-1"
+            ]
+          },
+          {
+            "id": "preview",
+            "kind": "E",
+            "engine": "winrt_pdf",
+            "engine_version": "Windows.Data.Pdf",
+            "state": "done",
+            "started_at": 1792051248.054821,
+            "ended_at": 1792051248.0556912,
+            "finding_ids": []
+          }
+        ],
+        "outputs": [
+          {
+            "name": "official_letter.pdf",
+            "sha256": "6cab25764a4c5a126789d244350cdaa367b714e37c51df8350b3a892eb3c030d",
+            "pages": 1,
+            "size": 40431
+          }
+        ],
+        "errors": [],
+        "warnings_accepted": false,
+        "interrupted_at_step": null,
+        "inputs": [
+          {
+            "kind": "docx",
+            "name": "official_letter.docx"
+          }
+        ],
+        "findings": [
+          {
+            "id": "f-1",
+            "check": "font_substitution",
+            "kind": "visual",
+            "severity": "warning",
+            "location": {
+              "file": "output",
+              "page": null
+            },
+            "message": "Font Symbol was not available and another font was used.",
+            "repair": {
+              "kind": "owner",
+              "rule_id": null
+            },
+            "weak": false
+          }
+        ]
+      }
+    },
+    {
+      "step": "05_output_card",
+      "at": "2026-10-15T08:00:50.092274Z",
+      "cards": 1
+    },
+    {
+      "pressed": "apply",
+      "surface": "office.output_files.585b0c39a75e42609707.f9615ded",
+      "ms": 14,
+      "hub_errors": {}
+    },
+    {
+      "step": "06_saved",
+      "at": "2026-10-15T08:00:51.651040Z",
+      "workflow": {
+        "workflow_id": "585b0c39a75e42609707",
+        "contract": "o2.1",
+        "capability": "save_as_pdf",
+        "state": "saved",
+        "created_at": 1792051245.9565737,
+        "updated_at": 1792051251.6438017,
+        "steps": [
+          {
+            "id": "prepare",
+            "kind": "D",
+            "engine": null,
+            "engine_version": null,
+            "state": "done",
+            "started_at": 1792051247.524764,
+            "ended_at": 1792051247.571296,
+            "finding_ids": []
+          },
+          {
+            "id": "convert",
+            "kind": "E",
+            "engine": "libreoffice",
+            "engine_version": "26.8.1.1",
+            "state": "done",
+            "started_at": 1792051247.572216,
+            "ended_at": 1792051247.9199436,
+            "finding_ids": [],
+            "seconds": 0.345
+          },
+          {
+            "id": "validate",
+            "kind": "D",
+            "engine": null,
+            "engine_version": null,
+            "state": "done",
+            "started_at": 1792051247.9209418,
+            "ended_at": 1792051248.05398,
+            "finding_ids": [
+              "f-1"
+            ]
+          },
+          {
+            "id": "preview",
+            "kind": "E",
+            "engine": "winrt_pdf",
+            "engine_version": "Windows.Data.Pdf",
+            "state": "done",
+            "started_at": 1792051248.054821,
+            "ended_at": 1792051248.0556912,
+            "finding_ids": []
+          }
+        ],
+        "outputs": [
+          {
+            "name": "official_letter.pdf",
+            "sha256": "6cab25764a4c5a126789d244350cdaa367b714e37c51df8350b3a892eb3c030d",
+            "pages": 1,
+            "size": 40431
+          }
+        ],
+        "errors": [],
+        "warnings_accepted": true,
+        "interrupted_at_step": null,
+        "inputs": [
+          {
+            "kind": "docx",
+            "name": "official_letter.docx"
+          }
+        ],
+        "findings": [
+          {
+            "id": "f-1",
+            "check": "font_substitution",
+            "kind": "visual",
+            "severity": "warning",
+            "location": {
+              "file": "output",
+              "page": null
+            },
+            "message": "Font Symbol was not available and another font was used.",
+            "repair": {
+              "kind": "owner",
+              "rule_id": null
+            },
+            "weak": false
+          }
+        ]
+      },
+      "lines": [
+        "Document · official_letter.docx: Opened official_letter.docx.",
+        "Document · official_letter.docx: Here is the plan. Nothing happens until you press Run.",
+        "Task: Working on it. Your original file is not changed.",
+        "Task: The PDF is ready with 1 warning(s). Review them, then accept and save.",
+        "Task: Saved official_letter-live1.pdf."
+      ]
+    },
+    {
+      "step": "07_navigate_pdfs",
+      "at": "2026-10-15T08:00:53.199341Z",
+      "view": "pdfs",
+      "centre": "list"
+    },
+    {
+      "step": "08_clarify",
+      "at": "2026-10-15T08:00:54.743203Z",
+      "last": "I'm not sure what you need. Choose one:",
+      "chips": [
+        "Open a document",
+        "Read a PDF",
+        "Make a PDF",
+        "New workbook from files"
+      ]
+    },
+    {
+      "step": "09_pdf_search",
+      "at": "2026-10-15T08:00:58.744789Z",
+      "matches": [
+        {
+          "page": 37,
+          "context": "Tender clause 37 Clause 37. The bidder shall c"
+        }
+      ],
+      "page": 37,
+      "notice": null
+    },
+    {
+      "step": "10_print_panel",
+      "at": "2026-10-15T08:01:02.851229Z",
+      "printers": [
+        "OneNote (Desktop)",
+        "Microsoft Print to PDF"
+      ],
+      "physical": false,
+      "preview": {
+        "printer": {
+          "id": "8d12ebc24e3ae773",
+          "kind": "printer",
+          "name": "Microsoft Print to PDF",
+          "connection": "virtual",
+          "is_default": true,
+          "status": "ready",
+          "status_detail": "",
+          "capabilities": {
+            "papers": [
+              {
+                "id": 1,
+                "name": "Letter",
+                "width_mm": 215.9,
+                "height_mm": 279.4
+              },
+              {
+                "id": 3,
+                "name": "Tabloid",
+                "width_mm": 279.4,
+                "height_mm": 431.8
+              },
+              {
+                "id": 5,
+                "name": "Legal",
+                "width_mm": 215.9,
+                "height_mm": 355.6
+              },
+              {
+                "id": 6,
+                "name": "Statement",
+                "width_mm": 139.7,
+                "height_mm": 215.9
+              },
+              {
+                "id": 7,
+                "name": "Executive",
+                "width_mm": 184.1,
+                "height_mm": 266.7
+              },
+              {
+                "id": 8,
+                "name": "A3",
+                "width_mm": 297.0,
+                "height_mm": 420.0
+              },
+              {
+                "id": 9,
+                "name": "A4",
+                "width_mm": 210.0,
+                "height_mm": 297.0
+              },
+              {
+                "id": 11,
+                "name": "A5",
+                "width_mm": 148.0,
+                "height_mm": 210.0
+              },
+              {
+                "id": 12,
+                "name": "B4 (JIS)",
+                "width_mm": 257.0,
+                "height_mm": 364.0
+              },
+              {
+                "id": 13,
+                "name": "B5 (JIS)",
+                "width_mm": 182.0,
+                "height_mm": 257.0
+              },
+              {
+                "id": 19,
+                "name": "Envelope #9",
+                "width_mm": 98.4,
+                "height_mm": 225.4
+              },
+              {
+                "id": 20,
+                "name": "Envelope #10",
+                "width_mm": 104.7,
+                "height_mm": 241.3
+              },
+              {
+                "id": 24,
+                "name": "C size sheet",
+                "width_mm": 431.8,
+                "height_mm": 558.8
+              },
+              {
+                "id": 25,
+                "name": "D size sheet",
+                "width_mm": 558.8,
+                "height_mm": 863.6
+              },
+              {
+                "id": 26,
+                "name": "E size sheet",
+                "width_mm": 863.6,
+                "height_mm": 1117.6
+              },
+              {
+                "id": 27,
+                "name": "Envelope DL",
+                "width_mm": 110.0,
+                "height_mm": 220.0
+              },
+              {
+                "id": 28,
+                "name": "Envelope C5",
+                "width_mm": 162.0,
+                "height_mm": 229.0
+              },
+              {
+                "id": 30,
+                "name": "Envelope C4",
+                "width_mm": 229.0,
+                "height_mm": 324.0
+              },
+              {
+                "id": 34,
+                "name": "Envelope B5",
+                "width_mm": 176.0,
+                "height_mm": 250.0
+              },
+              {
+                "id": 37,
+                "name": "Envelope Monarch",
+                "width_mm": 98.4,
+                "height_mm": 190.5
+              },
+              {
+                "id": 43,
+                "name": "Japanese Postcard",
+                "width_mm": 100.0,
+                "height_mm": 148.0
+              },
+              {
+                "id": 58,
+                "name": "Super B",
+                "width_mm": 305.0,
+                "height_mm": 487.0
+              },
+              {
+                "id": 66,
+                "name": "A2",
+                "width_mm": 420.0,
+                "height_mm": 594.0
+              },
+              {
+                "id": 70,
+                "name": "A6",
+                "width_mm": 105.0,
+                "height_mm": 148.0
+              },
+              {
+                "id": 71,
+                "name": "Japanese Envelope Kaku #2",
+                "width_mm": 240.0,
+                "height_mm": 332.0
+              },
+              {
+                "id": 73,
+                "name": "Japanese Envelope Chou #3",
+                "width_mm": 120.0,
+                "height_mm": 235.0
+              },
+              {
+                "id": 74,
+                "name": "Japanese Envelope Chou #4",
+                "width_mm": 90.0,
+                "height_mm": 205.0
+              },
+              {
+                "id": 91,
+                "name": "Japan Envelope You #4",
+                "width_mm": 105.0,
+                "height_mm": 235.0
+              },
+              {
+                "id": 119,
+                "name": "ASMEFSheet",
+                "width_mm": 711.2,
+                "height_mm": 1016.0
+              },
+              {
+                "id": 120,
+                "name": "Architecture ASheet",
+                "width_mm": 228.6,
+                "height_mm": 304.8
+              },
+              {
+                "id": 121,
+                "name": "Architecture BSheet",
+                "width_mm": 304.8,
+                "height_mm": 457.2
+              },
+              {
+                "id": 122,
+                "name": "Architecture CSheet",
+                "width_mm": 457.2,
+                "height_mm": 609.6
+              },
+              {
+                "id": 123,
+                "name": "Architecture DSheet",
+                "width_mm": 609.6,
+                "height_mm": 914.4
+              },
+              {
+                "id": 124,
+                "name": "Architecture E1Sheet",
+                "width_mm": 762.0,
+                "height_mm": 1066.8
+              },
+              {
+                "id": 125,
+                "name": "Architecture ESheet",
+                "width_mm": 914.4,
+                "height_mm": 1219.2
+              },
+              {
+                "id": 126,
+                "name": "Business Card 2x 3 5",
+                "width_mm": 50.8,
+                "height_mm": 88.9
+              },
+              {
+                "id": 127,
+                "name": "Business Card 55x 85mm",
+                "width_mm": 55.0,
+                "height_mm": 85.0
+              },
+              {
+                "id": 128,
+                "name": "Business Card 55x 91mm",
+                "width_mm": 55.0,
+                "height_mm": 91.0
+              },
+              {
+                "id": 129,
+                "name": "English 14x 17",
+                "width_mm": 355.6,
+                "height_mm": 431.8
+              },
+              {
+                "id": 130,
+                "name": "English Photo L",
+                "width_mm": 88.9,
+                "height_mm": 127.0
+              },
+              {
+                "id": 131,
+                "name": "Japan Chou 40 Envelope",
+                "width_mm": 90.0,
+                "height_mm": 225.0
+              },
+              {
+                "id": 132,
+                "name": "Metric Photo L",
+                "width_mm": 89.0,
+                "height_mm": 119.0
+              },
+              {
+                "id": 133,
+                "name": "North America 3x 5",
+                "width_mm": 76.2,
+                "height_mm": 127.0
+              },
+              {
+                "id": 134,
+                "name": "North America 5x 8",
+                "width_mm": 127.0,
+                "height_mm": 203.2
+              },
+              {
+                "id": 135,
+                "name": "Photo 10x 12",
+                "width_mm": 254.0,
+                "height_mm": 304.8
+              },
+              {
+                "id": 136,
+                "name": "Photo 4x 4",
+                "width_mm": 101.6,
+                "height_mm": 101.6
+              },
+              {
+                "id": 137,
+                "name": "Photo 5x 5",
+                "width_mm": 127.0,
+                "height_mm": 127.0
+              },
+              {
+                "id": 138,
+                "name": "Photo 89x 89mm",
+                "width_mm": 89.0,
+                "height_mm": 89.0
+              },
+              {
+                "id": 139,
+                "name": "Credit Card",
+                "width_mm": 54.0,
+                "height_mm": 86.0
+              },
+              {
+                "id": 140,
+                "name": "ISOA0",
+                "width_mm": 841.0,
+                "height_mm": 1189.0
+              },
+              {
+                "id": 141,
+                "name": "ISOA1",
+                "width_mm": 594.0,
+                "height_mm": 841.0
+              },
+              {
+                "id": 142,
+                "name": "North America 4x 6",
+                "width_mm": 101.6,
+                "height_mm": 152.4
+              },
+              {
+                "id": 143,
+                "name": "North America 5x 7",
+                "width_mm": 127.0,
+                "height_mm": 177.8
+              },
+              {
+                "id": 144,
+                "name": "North America 8x 10",
+                "width_mm": 203.2,
+                "height_mm": 254.0
+              }
+            ],
+            "duplex": false,
+            "color": true,
+            "max_copies": 1,
+            "collate": false,
+            "landscape": true
+          },
+          "port": "PORTPROMPT:",
+          "server": "",
+          "first_seen": 1792051260.3310277,
+          "last_seen": 1792051260.3310277,
+          "new": false,
+          "supported": true,
+          "unsupported_reason": ""
+        },
+        "status": "ready",
+        "status_detail": "",
+        "settings": {
+          "copies": 1,
+          "collate": false,
+          "landscape": false,
+          "paper": "A4",
+          "duplex": "simplex",
+          "color": true,
+          "fit": "fit",
+          "dpi": 300
+        },
+        "pages": [
+          1,
+          2
+        ],
+        "total_pages": 60,
+        "printable_area": {
+          "ok": true,
+          "hard_mm": [
+            0,
+            0
+          ],
+          "printable_mm": [
+            0,
+            0,
+            210,
+            297
+          ],
+          "paper_mm": [
+            210.1,
+            296.9
+          ]
+        },
+        "warnings": [],
+        "label": "tender60.pdf"
+      }
+    },
+    {
+      "step": "11_print_card",
+      "at": "2026-10-15T08:01:06.796330Z",
+      "job": "287529bbe4f54e08"
+    },
+    {
+      "pressed": "apply",
+      "surface": "office.print_job.287529bbe4f54e08.c7a193db",
+      "ms": 295,
+      "hub_errors": {}
+    },
+    {
+      "step": "12_printed_virtual",
+      "at": "2026-10-15T08:01:12.412642Z",
+      "job": {
+        "job": "287529bbe4f54e08",
+        "state": "sent",
+        "printer": "Microsoft Print to PDF",
+        "pages": [
+          1,
+          2
+        ],
+        "settings": {
+          "copies": 1,
+          "collate": false,
+          "landscape": false,
+          "paper": "A4",
+          "duplex": "simplex",
+          "color": true,
+          "fit": "fit",
+          "dpi": 300
+        },
+        "connection": "virtual",
+        "events": [
+          {
+            "page": 1,
+            "at": 1792051271.0776114
+          },
+          {
+            "page": 2,
+            "at": 1792051271.5295255
+          }
+        ],
+        "error": null,
+        "spooler": null,
+        "created_at": 1792051266.7883925,
+        "updated_at": 1792051271.968957,
+        "output_written": true,
+        "spooler_now": null
+      }
+    },
+    {
+      "step": "13_width_1100",
+      "at": "2026-10-15T08:01:14.562632Z",
+      "width": 1100.0
+    },
+    {
+      "step": "13_width_900",
+      "at": "2026-10-15T08:01:16.708569Z",
+      "width": 900.0
+    },
+    {
+      "step": "13_width_700",
+      "at": "2026-10-15T08:01:18.854434Z",
+      "width": 700.0
+    },
+    {
+      "step": "14_sheet",
+      "at": "2026-10-15T08:01:22.425080Z",
+      "workbook": "budget.xlsx",
+      "page_ready": true
+    },
+    {
+      "step": "15_sheet_kept",
+      "at": "2026-10-15T08:01:25.968711Z",
+      "same_workbook": true,
+      "page_ready": true
+    }
+  ],
+  "finished": "2026-10-15T08:01:27.509908Z"
+}

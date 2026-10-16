@@ -1,0 +1,24 @@
+{
+ "expected_mib": 480,
+ "lease": "HELD",
+ "holder": {
+  "pid": 9336,
+  "purpose": "runtime_v1_brain",
+  "label": "WS Brain host"
+ },
+ "own_lease": false,
+ "other_large": [],
+ "free_mib": 839.2,
+ "margin_mib": 359.2,
+ "brain": [
+  {
+   "pid": 9440,
+   "name": "llama-server.exe",
+   "dedicated_mib": 14971.9
+  }
+ ],
+ "verdict": "GO",
+ "reason": "MARGIN_OK",
+ "explain": "The window fits next to the Brain (margin 359 MB).",
+ "t": 1791764704.81
+}
