@@ -155,11 +155,35 @@ void main() {
     SharedPreferencesStorePlatform.instance = SharedPreferencesWindows()..pathProvider = QualificationPaths();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(wsShellPref, 'living');
-    await prefs.setBool('uri.living.onboardingDone', true);
+    final onboarding = env['URI_QUAL_ONBOARDING'] == '1';
+    await prefs.setBool('uri.living.onboardingDone', !onboarding);   // onboarding runs: a first-time owner
     final sw = Stopwatch()..start();
     app.main();
     await until(() => find.byType(WorkingSystemRoot).evaluate().isNotEmpty, 'production manifest opt-in');
     await until(() => find.byType(LivingScope).evaluate().isNotEmpty, 'real integrated worker bootstrap');
+    if (onboarding) {
+      // O01: first-time onboarding through its own buttons, then the app opens and Office is reachable.
+      final s = Stopwatch()..start();
+      try {
+        await until(() => find.byKey(const ValueKey('onboarding-next')).evaluate().isNotEmpty, 'onboarding shown',
+            seconds: 120);
+        final titles = <String>[];
+        for (var i = 0; i < 15 && find.byKey(const ValueKey('onboarding-next')).evaluate().isNotEmpty; i++) {
+          final title = find.byKey(const ValueKey('onboarding-step-title'));
+          if (title.evaluate().isNotEmpty) titles.add('${(title.evaluate().first.widget as Text).data}');
+          await shot('onboarding-${i + 1}');
+          await tapFinder(find.byKey(const ValueKey('onboarding-next')), 'onboarding: Next / Start using URI');
+          await settle(1200);
+        }
+        await until(() => find.byKey(const ValueKey('onboarding-next')).evaluate().isEmpty, 'onboarding finished',
+            seconds: 60);
+        record('onboarding', {'steps': titles});
+        verdict('O01-onboarding', 'PASS', {'seconds': s.elapsedMilliseconds / 1000, 'steps': titles.length});
+      } catch (e) {
+        await shot('O01-onboarding-failure');
+        verdict('O01-onboarding', 'FAIL', {'error': '$e'});
+      }
+    }
     final services = t.widget<LivingScope>(find.byType(LivingScope).first).services;
     record('production main connected', {'seconds': sw.elapsedMilliseconds / 1000, 'real_worker': services.oi != null,
       'office_environment': services.office != null});

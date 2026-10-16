@@ -58,3 +58,29 @@ structural proposal in plain words -> Accept -> card -> saved; the file on disk 
 totals moved to row 9 as `=SUM(B2:B7)`.
 
 OC-4 met on `a80f83aa`. The candidate after this record is `a80f83aa` plus this documentation commit only.
+
+## Requalification after the review repairs (2026-10-16 afternoon)
+
+Revision r2 of the driver ran 8 review rounds (Codex): R1-01..R7-01 repaired by the driver with failing-first proofs
+and judged FIXED by the reviewer; R8-01/R8-02 repaired in `87f54e3a` (with the no-hard-link Save publishing and the
+exact Office paths in the frozen-scope guard, found by FCV-R's materialized gate on canonical), `09d58be8` (three
+FCV-R test paths, at FCV-R's request) and `d8a491c9` (first-visit New document, live run a9). In a runtime
+materialized at `09d58be8` with tests, `tests/phase2a` + `tests/phase2b`: 261 passed, 0 failed.
+
+| Run | Commit | Result |
+|---|---|---|
+| a9 | `09d58be8` | 12/12 Office journeys PASS; O01 onboarding not run (the harness forced onboarding off) |
+| o3 | `09d58be8` | 34/34 PASS (O2 regression, Brain mode) |
+| a10 | `09d58be8` | **13/13 PASS** incl. O01 first-time onboarding (8 steps) |
+| **a11** | **`d8a491c9`** | **13/13 PASS, exit 0** (onboarding, PowerPoint, Word, folder on D:, Excel row through the Brain) |
+| **o4** | **`d8a491c9`** | **34/34 PASS, exit 0** (O2 regression, Brain mode); Brain tok/s median: alone 119, app 122, with Office 115, after exit 124 |
+
+First-time-user findings: a9 showed no Word "New document" on the first Office visit (layouts not yet listed) ->
+fixed in `d8a491c9`; "New from a template" renamed "New presentation from a template". Not fixed (outside this
+candidate, UI V2 onboarding): onboarding offers "Document drafting / Spreadsheets & records" focus choices but does
+not point to Office (Office is on the dashboard rail); at 681 px height the "Reduced visual effects" line is clipped.
+The Office icon strip at 1264x681 scrolls once several files are open; every view stays reachable (not changed).
+
+Resources (a8/o2/o4): Brain resident 14993 MiB dedicated + 1730 MiB shared (no demotion); URI app 340-390 MiB GPU,
+about 525 MB RAM; LibreOffice about 395 MB RAM while rendering; Office service about 200 MB; Office state after a full
+run 19 MB, no temporary or hold files left.
