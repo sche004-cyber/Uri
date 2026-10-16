@@ -32,11 +32,9 @@ def sha12(b):
 
 
 def _hold(dst: Path, content: bytes, recorded: bytes | None = None, age: float = 0.0) -> Path:
-    h = dst.parent / f".{dst.name}.{sha12(recorded if recorded is not None else content)}-0123abcd{X.HOLD_SUFFIX}"
+    """A hold as atomic_write names it: hash of what it should hold, creation time in the name (C3-03)."""
+    h = X._hold_name(dst, sha12(recorded if recorded is not None else content), int(time.time() - age), "0123abcd")
     h.write_bytes(content)
-    if age:
-        t = time.time() - age
-        os.utime(h, (t, t))
     return h
 
 

@@ -352,43 +352,60 @@ def _write_durably(path: Path, data: bytes):
 STALE_SECONDS = 60          # leftovers younger than this may belong to a Save still in progress
 
 
+KEEP_SUFFIX = ".uri-office.keep"
+
+
+def _stem(dst: Path) -> str:
+    """The name part of this file's holds. Independent review C3-02: a hold name is 37 characters longer than the
+    file name, so a long name uses a fixed hash of the name instead (Windows names stop at 255 characters)."""
+    if len(dst.name) + 40 <= 250:
+        return dst.name
+    return "h" + hashlib.sha256(dst.name.encode("utf-8")).hexdigest()[:24]
+
+
+def _hold_name(dst: Path, sha12: str, created: int, rand: str, suffix: str = HOLD_SUFFIX) -> Path:
+    return dst.parent / f".{_stem(dst)}.{sha12}-{created:08x}{rand}{suffix}"
+
+
 def _ours(dst: Path):
-    """This file's own hold and temp files, matched by EXACT name (independent review C2-01: a prefix glob also
-    matched 'Plan.pptx.v2.pptx' when looking for 'Plan.pptx'). Holds carry the first 12 hex digits of the SHA-256 of
-    the original they hold, so a wrong or empty hold is never put back (C2-04)."""
-    hold_re = re.compile(re.escape("." + dst.name + ".") + r"([0-9a-f]{12})-[0-9a-f]{8}" + re.escape(HOLD_SUFFIX))
+    """This file's own holds and temp files, matched by EXACT name (independent review C2-01: a prefix glob also
+    matched 'Plan.pptx.v2.pptx' when looking for 'Plan.pptx'). A hold name carries the first 12 hex digits of the
+    SHA-256 of the bytes it holds (C2-04: a wrong or empty hold is never put back) and its creation time (C3-03: a
+    rename keeps the original's modification time, so that cannot tell a fresh hold from an old one). '.keep' files
+    hold bytes that are not a URI original (another program's, C3-04): they are put back but never removed."""
+    stem = re.escape("." + _stem(dst) + ".")
+    hold_re = re.compile(stem + r"([0-9a-f]{12})-([0-9a-f]{8})[0-9a-f]{8}(" + re.escape(HOLD_SUFFIX) + "|"
+                         + re.escape(KEEP_SUFFIX) + ")")
     tmp_re = re.compile(re.escape("." + dst.name + ".") + r"[a-z0-9_]{8}" + re.escape(".uri-office.tmp"))
     holds, tmps = [], []
     for entry in os.scandir(dst.parent):
         m = hold_re.fullmatch(entry.name)
         if m:
-            holds.append((Path(entry.path), m.group(1)))
+            holds.append((Path(entry.path), m.group(1), int(m.group(2), 16), m.group(3) == KEEP_SUFFIX))
         elif tmp_re.fullmatch(entry.name):
             tmps.append(Path(entry.path))
     return holds, tmps
 
 
 def recover_held(dst: Path, *, restore_min_age: float = 0.0, cleanup_min_age: float = STALE_SECONDS) -> Path | None:
-    """Independent reviews C1-01, C2-01, C2-04: a Save interrupted after the original was moved aside leaves it as
-    '.<name>.<sha12>-<rand>.uri-office.hold'. When `dst` is missing, the newest hold whose bytes match its recorded
-    hash is put back under its own name (never replacing anything). When `dst` exists the holds are stale (the
-    backup in the Office state keeps the original) and are removed, as are this file's leftover temp files.
-    A hold younger than `restore_min_age` is not put back (during a Save it may belong to another Save in progress;
-    at service start nothing is in progress); leftovers younger than `cleanup_min_age` are not removed. Returns the
-    restored path or None."""
+    """Independent reviews C1-01, C2-01, C2-04, C3-03, C3-04: a Save interrupted after the original was moved aside
+    leaves it as a hold. When `dst` is missing, the newest hold whose bytes match its recorded hash is put back under
+    its own name (never replacing anything). When `dst` exists, holds of URI originals are stale (the backup in the
+    Office state keeps the original) and are removed, as are this file's leftover temp files; '.keep' files are never
+    removed. A hold created less than `restore_min_age` seconds ago is not put back (during a Save it may belong to
+    another Save in progress; at service start nothing is in progress); leftovers younger than `cleanup_min_age` are
+    not removed. Returns the restored path or None."""
     dst = Path(dst)
     now = time.time()
     try:
         holds, tmps = _ours(dst)
     except OSError:
         return None
-    def older(f, age):
-        return now - f.stat().st_mtime >= age
     restored = None
     try:
         if not os.path.lexists(dst):
-            for h, prefix in sorted(holds, key=lambda x: x[0].stat().st_mtime, reverse=True):
-                if not older(h, restore_min_age) or hashlib.sha256(h.read_bytes()).hexdigest()[:12] != prefix:
+            for h, prefix, created, _keep in sorted(holds, key=lambda x: x[2], reverse=True):
+                if now - created < restore_min_age or hashlib.sha256(h.read_bytes()).hexdigest()[:12] != prefix:
                     continue
                 try:
                     _publish_no_replace(h, dst)
@@ -400,11 +417,11 @@ def recover_held(dst: Path, *, restore_min_age: float = 0.0, cleanup_min_age: fl
                 restored = dst
                 break
         if os.path.lexists(dst):
-            for h, _ in holds:
-                if os.path.lexists(h) and older(h, cleanup_min_age):
+            for h, _, created, keep in holds:
+                if not keep and os.path.lexists(h) and now - created >= cleanup_min_age:
                     _unlink_quietly(h)
             for t in tmps:
-                if older(t, cleanup_min_age):
+                if now - t.stat().st_mtime >= cleanup_min_age:
                     _unlink_quietly(t)
     except OSError:
         pass
@@ -453,7 +470,8 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only
         if expected_sha256 is not None:
             # C2-04: the hold name is created only by the rename below (no empty placeholder) and records the hash of
             # the original it will hold
-            hold = dst.parent / f".{dst.name}.{expected_sha256[:12]}-{secrets.token_hex(4)}{HOLD_SUFFIX}"
+            created, rand = int(time.time()), secrets.token_hex(4)
+            hold = _hold_name(dst, expected_sha256[:12], created, rand)
             claimed = False
             published = False
             try:
@@ -474,10 +492,18 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only
                 if claimed and not published:
                     try:
                         _publish_no_replace(hold, dst)
-                    except FileExistsError:
-                        pass  # the other file wins; the claimed original stays in hold (and in the backup)
                     except OSError:
-                        pass  # left in hold; recover_held puts it back on the next Save of this file
+                        # Left aside: the other file won the name, or putting it back failed. Independent review
+                        # C3-04: when these bytes are not the original URI checked (another program wrote the file
+                        # just before), they are in no backup, so the hold is renamed '.keep' under their own hash:
+                        # recover_held puts it back if the name is free and never removes it.
+                        try:
+                            data = hold.read_bytes()
+                            actual = hashlib.sha256(data).hexdigest()
+                            if actual != expected_sha256:
+                                os.replace(hold, _hold_name(dst, actual[:12], created, rand, KEEP_SUFFIX))
+                        except OSError:
+                            pass
                     else:
                         _unlink_quietly(hold)
                 elif not claimed and os.path.lexists(hold):

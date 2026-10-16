@@ -202,6 +202,14 @@ def _mentions(root, target: str) -> bool:
     return False
 
 
+def _names_sheet(root, target: str) -> bool:
+    """True when a formula in the parsed element refers to the sheet: its quoted or unquoted name followed by '!' at
+    a reference boundary. Independent review C3-05: a plain substring test also matched 'MySheet1!' for 'Sheet1'."""
+    alts = "|".join(re.escape(n.rstrip("!")) for n in _quoted_names(target))
+    pat = re.compile(r"(?<![A-Za-z0-9_.'\]])(?:" + alts + r")!", re.IGNORECASE)
+    return any(pat.search(el.text or "") for el in root.iter())
+
+
 def _check_supported(parts: dict, by_sheet: dict, target: str, root):
     part = by_sheet[target]
     for typ, _ in _rels(parts, part):
@@ -217,7 +225,7 @@ def _check_supported(parts: dict, by_sheet: dict, target: str, root):
         if sname == target or other not in parts:
             continue
         ext = _xml(parts[other]).find(M + "extLst")
-        if ext is not None and _mentions(ext, target):
+        if ext is not None and _names_sheet(ext, target):
             _refuse(f"'{sname}' has a validation or conditional format (Excel 2010 form) that refers to '{target}'")
     for p, data in parts.items():
         if not p.endswith(".xml"):

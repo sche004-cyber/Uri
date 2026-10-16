@@ -43,8 +43,23 @@ _FOREIGN_RUN = {"footnoteReference": "a footnote", "endnoteReference": "an endno
                 "cellMerge": "a tracked change"}
 _M = "{http://schemas.openxmlformats.org/officeDocument/2006/math}"
 # Run children that a text replacement keeps; a run with anything else is not rewritten (C1-08: w:sym was dropped).
-_PLAIN_RUN = {_W + "rPr", _W + "t", _W + "tab", _W + "br", _W + "cr", _W + "noBreakHyphen", _W + "softHyphen",
-              _W + "lastRenderedPageBreak"}
+# Independent review C3-01: only what a text rewrite writes back the same (python-docx turns tabs and line breaks
+# into w:tab / w:br and back); page and column breaks and special hyphens are not plain text.
+_PLAIN_RUN = {_W + "rPr", _W + "t", _W + "tab", _W + "br", _W + "cr", _W + "lastRenderedPageBreak"}
+_BREAK_NAMES = {"page": "a page break", "column": "a column break"}
+
+
+def _plain_run_child(rc) -> str | None:
+    """None when a run child is plain text a rewrite keeps; otherwise what it is, named."""
+    if not isinstance(rc.tag, str):
+        return None
+    if rc.tag == _W + "br":
+        kind = rc.get(_W + "type")
+        return _BREAK_NAMES.get(kind) if kind not in (None, "textWrapping") else None
+    if rc.tag in _PLAIN_RUN:
+        return None
+    return {"noBreakHyphen": "a non-breaking hyphen", "softHyphen": "an optional hyphen"}.get(
+        rc.tag.rsplit("}", 1)[-1], f"content URI does not edit ({rc.tag.rsplit('}', 1)[-1]})")
 
 
 def _refuse(why: str):
@@ -130,8 +145,9 @@ def _not_plain(el) -> str | None:
                 return f"content URI does not edit ({_local(child.tag)})"
             if child.tag == _W + "r":
                 for rc in child:
-                    if isinstance(rc.tag, str) and rc.tag not in _PLAIN_RUN:
-                        return f"content URI does not edit ({_local(rc.tag)})"
+                    why = _plain_run_child(rc)
+                    if why:
+                        return why
     return None
 
 
@@ -236,6 +252,8 @@ def delete_block(doc, index, expect):
     if el.tag == _W + "p" and _section_break(el):
         _refuse("this paragraph ends a section (page layout); it is kept")
     why = _foreign(el)
+    if why in _BREAK_NAMES.values() and el.tag == _W + "p":
+        why = None                                    # deleting a page or column break is what the owner asked for
     if why:
         kind = "paragraph" if el.tag == _W + "p" else "table"
         _refuse(f"this {kind} has {why}, which URI does not remove")
@@ -336,7 +354,7 @@ def replace_text(doc, find: str, replace: str, match_case: bool = True) -> dict:
             n = len(pat.findall(r.text))
             if not n:
                 continue
-            if any(c.tag not in _PLAIN_RUN for c in r._r):
+            if any(_plain_run_child(c) for c in r._r):
                 skipped += 1                          # C1-08: never rewrite a run that holds more than text;
                 total -= n                            # C2-05: and never count it as replaced
                 continue
