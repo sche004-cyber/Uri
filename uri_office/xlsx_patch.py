@@ -20,9 +20,12 @@ from __future__ import annotations
 import hashlib
 import os
 import posixpath
+import re
+import secrets
 import shutil
 import stat
 import tempfile
+import time
 import zipfile
 from pathlib import Path
 
@@ -346,28 +349,66 @@ def _write_durably(path: Path, data: bytes):
         os.fsync(fh.fileno())
 
 
-def recover_held(dst: Path) -> Path | None:
-    """Independent review C1-01: a Save interrupted after the original was moved aside leaves it under a hidden
-    '.<name>.*.uri-office.hold' name. When `dst` is missing and such a file exists, the newest one is put back under
-    its own name (never replacing anything). Returns the restored path or None."""
+STALE_SECONDS = 60          # leftovers younger than this may belong to a Save still in progress
+
+
+def _ours(dst: Path):
+    """This file's own hold and temp files, matched by EXACT name (independent review C2-01: a prefix glob also
+    matched 'Plan.pptx.v2.pptx' when looking for 'Plan.pptx'). Holds carry the first 12 hex digits of the SHA-256 of
+    the original they hold, so a wrong or empty hold is never put back (C2-04)."""
+    hold_re = re.compile(re.escape("." + dst.name + ".") + r"([0-9a-f]{12})-[0-9a-f]{8}" + re.escape(HOLD_SUFFIX))
+    tmp_re = re.compile(re.escape("." + dst.name + ".") + r"[a-z0-9_]{8}" + re.escape(".uri-office.tmp"))
+    holds, tmps = [], []
+    for entry in os.scandir(dst.parent):
+        m = hold_re.fullmatch(entry.name)
+        if m:
+            holds.append((Path(entry.path), m.group(1)))
+        elif tmp_re.fullmatch(entry.name):
+            tmps.append(Path(entry.path))
+    return holds, tmps
+
+
+def recover_held(dst: Path, *, restore_min_age: float = 0.0, cleanup_min_age: float = STALE_SECONDS) -> Path | None:
+    """Independent reviews C1-01, C2-01, C2-04: a Save interrupted after the original was moved aside leaves it as
+    '.<name>.<sha12>-<rand>.uri-office.hold'. When `dst` is missing, the newest hold whose bytes match its recorded
+    hash is put back under its own name (never replacing anything). When `dst` exists the holds are stale (the
+    backup in the Office state keeps the original) and are removed, as are this file's leftover temp files.
+    A hold younger than `restore_min_age` is not put back (during a Save it may belong to another Save in progress;
+    at service start nothing is in progress); leftovers younger than `cleanup_min_age` are not removed. Returns the
+    restored path or None."""
     dst = Path(dst)
+    now = time.time()
     try:
-        if os.path.lexists(dst):
-            return None
-        held = sorted(dst.parent.glob("." + glob_escape(dst.name) + ".*" + HOLD_SUFFIX),
-                      key=lambda f: f.stat().st_mtime, reverse=True)
+        holds, tmps = _ours(dst)
     except OSError:
         return None
-    for h in held:
-        try:
-            _publish_no_replace(h, dst)
-        except FileExistsError:
-            return None
-        except OSError:
-            continue
-        _unlink_quietly(h)
-        return dst
-    return None
+    def older(f, age):
+        return now - f.stat().st_mtime >= age
+    restored = None
+    try:
+        if not os.path.lexists(dst):
+            for h, prefix in sorted(holds, key=lambda x: x[0].stat().st_mtime, reverse=True):
+                if not older(h, restore_min_age) or hashlib.sha256(h.read_bytes()).hexdigest()[:12] != prefix:
+                    continue
+                try:
+                    _publish_no_replace(h, dst)
+                except FileExistsError:
+                    break
+                except OSError:
+                    continue
+                _unlink_quietly(h)                    # restored by a hard link: this name goes
+                restored = dst
+                break
+        if os.path.lexists(dst):
+            for h, _ in holds:
+                if os.path.lexists(h) and older(h, cleanup_min_age):
+                    _unlink_quietly(h)
+            for t in tmps:
+                if older(t, cleanup_min_age):
+                    _unlink_quietly(t)
+    except OSError:
+        pass
+    return restored
 
 
 def glob_escape(name: str) -> str:
@@ -388,7 +429,7 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only
     if expected_sha256 is not None:
         if backup is None:
             raise ValueError("a conditional replacement requires a backup path")
-        recover_held(dst)
+        recover_held(dst, restore_min_age=STALE_SECONDS)
         try:
             st = os.stat(dst)
         except FileNotFoundError:
@@ -410,9 +451,9 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only
         if ref is not None and ref.exists():
             shutil.copymode(ref, tmp)
         if expected_sha256 is not None:
-            hold_fd, hold_name = tempfile.mkstemp(dir=dst.parent, prefix="." + dst.name + ".", suffix=HOLD_SUFFIX)
-            os.close(hold_fd)
-            hold = Path(hold_name)
+            # C2-04: the hold name is created only by the rename below (no empty placeholder) and records the hash of
+            # the original it will hold
+            hold = dst.parent / f".{dst.name}.{expected_sha256[:12]}-{secrets.token_hex(4)}{HOLD_SUFFIX}"
             claimed = False
             published = False
             try:
@@ -439,7 +480,7 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only
                         pass  # left in hold; recover_held puts it back on the next Save of this file
                     else:
                         _unlink_quietly(hold)
-                elif not claimed:
+                elif not claimed and os.path.lexists(hold):
                     _unlink_quietly(hold)
             _unlink_quietly(hold)                     # published: the old bytes are in the backup
         elif create_only:

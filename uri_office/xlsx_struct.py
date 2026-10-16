@@ -211,6 +211,14 @@ def _check_supported(parts: dict, by_sheet: dict, target: str, root):
         _refuse("the sheet is protected")
     if root.find(M + "extLst") is not None:
         _refuse("the sheet uses Excel extensions (for example data bars, sparklines or extended validations)")
+    for sname, other in by_sheet.items():
+        # Independent review C2-02: Excel 2010+ writes cross-sheet validations and conditional formats in the other
+        # sheet's x14 extension list; URI does not move those, so the change is refused instead of left stale.
+        if sname == target or other not in parts:
+            continue
+        ext = _xml(parts[other]).find(M + "extLst")
+        if ext is not None and _mentions(ext, target):
+            _refuse(f"'{sname}' has a validation or conditional format (Excel 2010 form) that refers to '{target}'")
     for p, data in parts.items():
         if not p.endswith(".xml"):
             continue

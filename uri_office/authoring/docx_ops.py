@@ -110,6 +110,31 @@ def _section_break(el) -> bool:
     return ppr is not None and ppr.find(_W + "sectPr") is not None
 
 
+# Independent review C2-03: what a paragraph URI rewrites may contain. Anything else is kept and refused by name
+# (an allow-list: unknown content is never dropped silently).
+_PLAIN_PARA = {_W + "pPr", _W + "r", _W + "bookmarkStart", _W + "bookmarkEnd", _W + "proofErr", _W + "permStart",
+               _W + "permEnd"}
+
+
+def _local(tag) -> str:
+    return tag.rsplit("}", 1)[-1] if isinstance(tag, str) else "?"
+
+
+def _not_plain(el) -> str | None:
+    paras = [el] if el.tag == _W + "p" else list(el.iter(_W + "p"))
+    for p in paras:
+        for child in p:
+            if not isinstance(child.tag, str):
+                continue
+            if child.tag not in _PLAIN_PARA:
+                return f"content URI does not edit ({_local(child.tag)})"
+            if child.tag == _W + "r":
+                for rc in child:
+                    if isinstance(rc.tag, str) and rc.tag not in _PLAIN_RUN:
+                        return f"content URI does not edit ({_local(rc.tag)})"
+    return None
+
+
 def _foreign(el) -> str | None:
     """The first unsupported content in an XML element and its descendants, named, or None."""
     for child in el.iter():
@@ -127,7 +152,7 @@ def _foreign(el) -> str | None:
             return _FOREIGN_RUN[name]
         if name in ("hyperlink",):
             return "a link"
-    return None
+    return _not_plain(el)
 
 
 def _insert_at(doc, after, new_el, after_expect=None):
@@ -306,12 +331,17 @@ def replace_text(doc, find: str, replace: str, match_case: bool = True) -> dict:
             skipped += 1
             continue
         total = len(pat.findall(p.text))
-        inside = sum(len(pat.findall(r.text)) for r in p.runs)
+        inside = 0
         for r in p.runs:
-            if pat.search(r.text):
-                if any(c.tag not in _PLAIN_RUN for c in r._r):
-                    continue                          # C1-08: never rewrite a run that holds more than text
-                r.text = pat.sub(lambda m: replace, r.text)
+            n = len(pat.findall(r.text))
+            if not n:
+                continue
+            if any(c.tag not in _PLAIN_RUN for c in r._r):
+                skipped += 1                          # C1-08: never rewrite a run that holds more than text;
+                total -= n                            # C2-05: and never count it as replaced
+                continue
+            r.text = pat.sub(lambda m: replace, r.text)
+            inside += n
         changed += inside
         split += max(0, total - inside)
     if changed == 0 and split == 0 and skipped == 0:

@@ -66,7 +66,8 @@ def check_visible_fills(path, formats: list) -> None:
         raise OfficeError("NOT_AN_XLSX", type(exc).__name__) from None
     try:
         for f in changed:
-            pattern = wb[f["sheet"]][refs.canonical_cell(f["cell"])].fill.patternType
+            fill = wb[f["sheet"]][refs.canonical_cell(f["cell"])].fill
+            pattern = getattr(fill, "patternType", "gradient")   # C2-07: a GradientFill has no patternType
             if pattern not in (None, "none", "solid"):
                 raise OfficeError("STYLE_NOT_SUPPORTED", "a patterned or gradient fill cannot be shown as a solid fill")
     finally:

@@ -114,15 +114,12 @@ _CHART_PART_TEMPLATES = {
 }
 
 
-def _copy_chart(prs, old):
-    """A chart part copy with its own copy of the embedded workbook and of every other part the chart uses (style,
-    colours, user shapes, theme override); external links kept. Independent review C1-06: only the workbook was copied
-    before, so a chart with user shapes kept an r:id with no relationship. A related part that has relationships of
-    its own (for example user shapes with pictures) is refused by name instead of half-copied."""
-    from pptx.opc.package import Part, XmlPart
-    package = prs.part.package
+def _chart_copy_plan(old) -> list:
+    """What copying a chart part needs, or a named refusal (checked before any change)."""
     plan = []
     for rId, rel in old.rels.items():
+        if rel.reltype in (RT.PACKAGE, RT.OLE_OBJECT) and rel.is_external:
+            _refuse("the chart's data is linked to another file")      # independent review C2-06
         if rel.reltype == RT.PACKAGE:
             continue                                  # the embedded workbook: copied through chart_workbook below
         if rel.is_external:
@@ -135,6 +132,17 @@ def _copy_chart(prs, old):
         if template is None:
             _refuse("the chart has content URI cannot copy yet (" + rel.reltype.rsplit("/", 1)[-1] + ")")
         plan.append((rId, rel, (template, part)))
+    return plan
+
+
+def _copy_chart(prs, old):
+    """A chart part copy with its own copy of the embedded workbook and of every other part the chart uses (style,
+    colours, user shapes, theme override); external links kept. Independent review C1-06: only the workbook was copied
+    before, so a chart with user shapes kept an r:id with no relationship. A related part that has relationships of
+    its own (for example user shapes with pictures) is refused by name instead of half-copied."""
+    from pptx.opc.package import Part, XmlPart
+    package = prs.part.package
+    plan = _chart_copy_plan(old)
     pn = package.next_partname(ChartPart.partname_template)
     chart = ChartPart.load(pn, old.content_type, package, old.blob)
     for ed in chart._element.findall(qn("c:externalData")):
@@ -166,6 +174,9 @@ def duplicate_slide(prs, sid) -> int:
     for rel in src.part.rels.values():
         if rel.reltype not in allowed:
             _refuse("the slide has content URI cannot copy yet (" + rel.reltype.rsplit("/", 1)[-1] + ")")
+    for rel in src.part.rels.values():               # every refusal before anything changes (all or nothing)
+        if rel.reltype == RT.CHART:
+            _chart_copy_plan(rel.target_part)
     new = prs.slides.add_slide(src.slide_layout)
     tree = new.shapes._spTree
     for el in list(tree)[2:]:
