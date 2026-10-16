@@ -188,7 +188,12 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
     holders?.remove(this);
     if (holders != null && holders.isEmpty) _claims.remove(key);
     _whenSafe(() {
-      if (identical(t.value, c) && (_claims[key]?.isEmpty ?? true)) t.value = null;
+      try {
+        if (identical(t.value, c) && (_claims[key]?.isEmpty ?? true)) t.value = null;
+      } on FlutterError {
+        // Live run a7: when the app closes with Office open, the living scope disposes its target before this
+        // deferred release runs; there is nothing left to release.
+      }
     });
   }
 
