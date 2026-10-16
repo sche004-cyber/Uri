@@ -67,7 +67,7 @@ section (header, footer, page numbers, orientation, margins) and Find and replac
 |---|---|---|
 | C-1 | Working copy byte-identical to the original at start; the original written only through an approved Save | tests (hash) |
 | C-2 | Every op in section 3 works on synthetic fixtures (letter with header/footer, report with tables and a picture, a document with comments and tracked changes) and the result reopens in python-docx and converts in LibreOffice | unit + real-engine tests |
-| C-3 | Untouched parts stay byte-identical (comments, footnotes, media, numbering, theme) after any op set | part-hash tests |
+| C-3 | Untouched parts keep their content (comments, footnotes, media, numbering, theme) after any op set: binary parts byte-identical; XML parts byte-identical when the file was written by python-docx, otherwise re-serialized with the same content (independent review C1-10) | part-hash tests |
 | C-4 | A stale address is refused (`STALE_BLOCK`), never applied to another block | tests |
 | C-5 | Undo/redo restore the exact earlier working copy; the save card lists every change in plain words | tests |
 | C-6 | Built-in layouts and the owner's .dotx produce documents that open, render and save | tests + real engine |

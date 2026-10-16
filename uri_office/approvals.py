@@ -298,6 +298,14 @@ class Approvals:
         return Surface(sid, kind, comps, data={}, bound={key: sha}, actions=(yes_action, no_action),
                        placement="workspace", title=label)
 
+    def is_open(self, surface_id) -> bool:
+        """Whether this approval card can still be answered (C1-05: its save-as grant is kept only while it can)."""
+        if not isinstance(surface_id, str):
+            return False
+        with self.lock:
+            r = self.db.execute("SELECT state FROM surface WHERE surface_id=?", (surface_id,)).fetchone()
+        return bool(r) and r["state"] == "OPEN"
+
     def subject_of(self, surface_id):
         """(subject_kind, subject_id) of an approval, or (None, None). Lets the caller take the subject's own lock
         before `action` takes this one."""
@@ -454,7 +462,7 @@ class Approvals:
             except OfficeError as exc:
                 self.audit("office.action_refused", {"surface_id": sid if isinstance(sid, str) else None,
                                                      "code": exc.code})
-                if exc.code in ("TARGET_CHANGED", "STALE_CHANGE", "STALE_PLAN", "INPUT_CHANGED") and r is not None:
+                if exc.code in ("TARGET_CHANGED", "STALE_CHANGE", "STALE_PLAN", "INPUT_CHANGED", "FILE_READ_ONLY") and r is not None:
                     self._close(sid)
                 raise
 

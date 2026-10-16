@@ -106,6 +106,58 @@ def delete_slide(prs, sid):
     lst.remove(el)
 
 
+_CHART_PART_TEMPLATES = {
+    "application/vnd.ms-office.chartstyle+xml": "/ppt/charts/style%d.xml",
+    "application/vnd.ms-office.chartcolorstyle+xml": "/ppt/charts/colors%d.xml",
+    "application/vnd.openxmlformats-officedocument.drawingml.chartshapes+xml": "/ppt/drawings/drawing%d.xml",
+    "application/vnd.openxmlformats-officedocument.themeOverride+xml": "/ppt/theme/themeOverride%d.xml",
+}
+
+
+def _copy_chart(prs, old):
+    """A chart part copy with its own copy of the embedded workbook and of every other part the chart uses (style,
+    colours, user shapes, theme override); external links kept. Independent review C1-06: only the workbook was copied
+    before, so a chart with user shapes kept an r:id with no relationship. A related part that has relationships of
+    its own (for example user shapes with pictures) is refused by name instead of half-copied."""
+    from pptx.opc.package import Part, XmlPart
+    package = prs.part.package
+    plan = []
+    for rId, rel in old.rels.items():
+        if rel.reltype == RT.PACKAGE:
+            continue                                  # the embedded workbook: copied through chart_workbook below
+        if rel.is_external:
+            plan.append((rId, rel, None))
+            continue
+        part = rel.target_part
+        if len(part.rels):
+            _refuse("the chart has " + rel.reltype.rsplit("/", 1)[-1] + " content with its own links")
+        template = _CHART_PART_TEMPLATES.get(part.content_type)
+        if template is None:
+            _refuse("the chart has content URI cannot copy yet (" + rel.reltype.rsplit("/", 1)[-1] + ")")
+        plan.append((rId, rel, (template, part)))
+    pn = package.next_partname(ChartPart.partname_template)
+    chart = ChartPart.load(pn, old.content_type, package, old.blob)
+    for ed in chart._element.findall(qn("c:externalData")):
+        chart._element.remove(ed)                    # named the old chart's workbook; a copy is attached below
+    ids = {}
+    for rId, rel, copy_of in plan:
+        if copy_of is None:
+            ids[rId] = chart.relate_to(rel.target_ref, rel.reltype, is_external=True)
+            continue
+        template, part = copy_of
+        cls = XmlPart if part.content_type.endswith("+xml") else Part
+        new_part = cls.load(package.next_partname(template), part.content_type, package, part.blob)
+        ids[rId] = chart.relate_to(new_part, rel.reltype)
+    for e in chart._element.iter():                   # one pass, old id -> new id
+        for a, v in list(e.attrib.items()):
+            if a.startswith(_R) and v in ids:
+                e.set(a, ids[v])
+    xl = old.chart_workbook.xlsx_part
+    if xl is not None:
+        chart.chart_workbook.update_from_xlsx_blob(xl.blob)
+    return chart
+
+
 def duplicate_slide(prs, sid) -> int:
     """A copy right after the original: shapes, tables, pictures (image parts shared, they are never edited in place),
     hyperlinks, notes text, and charts with their own copy of the chart part and its embedded workbook."""
@@ -125,24 +177,40 @@ def duplicate_slide(prs, sid) -> int:
         if rel.is_external:
             remap[rId] = new.part.relate_to(rel.target_ref, rel.reltype, is_external=True)
         elif rel.reltype == RT.CHART:
-            old = rel.target_part
-            pn = prs.part.package.next_partname(ChartPart.partname_template)
-            chart = ChartPart.load(pn, old.content_type, prs.part.package, old.blob)
-            for ed in chart._element.findall(qn("c:externalData")):
-                chart._element.remove(ed)            # named the old chart's workbook; a copy is attached below
-            xl = old.chart_workbook.xlsx_part
-            if xl is not None:
-                chart.chart_workbook.update_from_xlsx_blob(xl.blob)
-            remap[rId] = new.part.relate_to(chart, RT.CHART)
+            remap[rId] = new.part.relate_to(_copy_chart(prs, rel.target_part), RT.CHART)
         else:
             remap[rId] = new.part.relate_to(rel.target_part, rel.reltype)
-    for el in list(src.shapes._spTree)[2:]:
+    def remapped(el):
         c = copy.deepcopy(el)
         for e in c.iter():
             for a, v in list(e.attrib.items()):
                 if a.startswith(_R) and v in remap:
                     e.set(a, remap[v])
-        tree.append(c)
+        return c
+
+    for el in list(src.shapes._spTree)[2:]:
+        tree.append(remapped(el))
+    # Independent review C1-09: the slide's own background, colour map override, transition and animation timing.
+    # Timing refers to shapes by id, and the copied shapes keep their ids.
+    src_sld, new_sld = src._element, new._element
+    bg = src_sld.cSld.find(qn("p:bg"))
+    if bg is not None:
+        old_bg = new_sld.cSld.find(qn("p:bg"))
+        if old_bg is not None:
+            new_sld.cSld.remove(old_bg)
+        new_sld.cSld.insert(0, remapped(bg))
+    for tag in ("p:clrMapOvr", "p:transition", "p:timing"):
+        el = src_sld.find(qn(tag))
+        if el is None:
+            continue
+        mine = new_sld.find(qn(tag))
+        if mine is not None:
+            new_sld.remove(mine)
+        ext = new_sld.find(qn("p:extLst"))
+        if ext is not None:
+            ext.addprevious(remapped(el))
+        else:
+            new_sld.append(remapped(el))
     if src.has_notes_slide and src.notes_slide.notes_text_frame is not None:
         new.notes_slide.notes_text_frame.text = src.notes_slide.notes_text_frame.text
     move_slide(prs, new.slide_id, _index(prs, sid) + 1)

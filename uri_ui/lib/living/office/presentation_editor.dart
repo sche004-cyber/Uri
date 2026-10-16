@@ -24,6 +24,7 @@ const authoringErrorText = <String, String>{
   'SAVE_AS_REQUIRED': 'Choose where to save the new presentation (Save as).',
   'STALE_CHANGE': 'The presentation changed after the save card was shown. Save again to review it.',
   'TARGET_CHANGED': 'The file changed on disk since it was opened. Save as a new file instead.',
+  'FILE_READ_ONLY': 'The file is read-only. Save as a new file instead.',
   'UNKNOWN_EDIT': 'This edit is no longer open.',
   'UNKNOWN_LAYOUT': 'That slide layout is not in this presentation.',
   'UNKNOWN_SHAPE': 'That item is no longer on the slide.',

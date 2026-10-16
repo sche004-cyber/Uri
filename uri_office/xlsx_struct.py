@@ -272,8 +272,29 @@ def _shift_formulas_everywhere(parts: dict, by_sheet: dict, target: str, sh: _Sh
                 v = c.find(M + "v")
                 if v is not None:            # cached value of a changed formula is stale; Excel recalculates
                     c.remove(v)
+        if sname != target:
+            # Independent review C1-03: conditional formats and validations on other sheets that refer to this
+            # sheet move with it like cell formulas do (the target sheet's own are moved in _shift_sheet).
+            for fe in [*root.iter(M + "formula"), *root.iter(M + "formula1"), *root.iter(M + "formula2")]:
+                if fe.text:
+                    new = shift_formula(fe.text, sh, target, sname)
+                    if new != fe.text:
+                        fe.text = new
+                        changed = True
         if changed:
             parts[part] = _ser(root)
+
+
+def _anchor_deleted(sqref: str, sh: _Shift) -> bool:
+    """True when a deletion removes the first row of a range list's anchor (its first cell) while rows of the range
+    survive. Conditional-format and validation formulas are relative to that anchor (independent review C1-04)."""
+    first = sqref.split()[0] if sqref.split() else ""
+    if not first:
+        return False
+    _, r1, _, r2 = refs.parse_range(first if ":" in first else f"{first}:{first}")
+    rows = [refs.parse_range(t if ":" in t else f"{t}:{t}") for t in sqref.split()]
+    survives = any(not (sh.at <= a[1] and a[3] <= sh.last) for a in rows)
+    return sh.at <= r1 <= sh.last and survives
 
 
 def _shift_sheet(root, sh: _Shift, target: str):
@@ -284,6 +305,17 @@ def _shift_sheet(root, sh: _Shift, target: str):
                 _, r1, _, r2 = refs.parse_range(f.get("ref"))
                 if r1 <= sh.last and r2 >= sh.at and not (sh.at <= r1 and r2 <= sh.last):
                     _refuse("a deletion cuts through an array formula")
+        for el in [*root.iterfind(M + "conditionalFormatting"), *root.iter(M + "dataValidation")]:
+            has_formula = any(fe.text for fe in el.iter() if fe.tag in (M + "formula", M + "formula1", M + "formula2"))
+            if has_formula and _anchor_deleted(el.get("sqref", ""), sh):
+                _refuse("a deletion removes the first row of a conditional format or validation range")
+    else:
+        # Independent review C1-07: as in Excel, rows cannot be inserted inside an array formula's range
+        for f in sd.iter(M + "f"):
+            if f.get("ref"):
+                _, r1, _, r2 = refs.parse_range(f.get("ref"))
+                if r1 < sh.at <= r2:
+                    _refuse("an insertion inside an array formula")
     for row in list(sd.iterfind(M + "row")):
         n = sh.row(int(row.get("r")))
         if n is None:

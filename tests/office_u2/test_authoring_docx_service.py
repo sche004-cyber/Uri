@@ -38,7 +38,8 @@ def test_edit_a_word_document_preview_and_save_end_to_end(svc, verified_manifest
     st, v = call(port, token, "POST", f"/authoring/{aid}/op",
                  {"op": {"op": "set_paragraph_text", "block": 3, "expect": b3["expect"], "text": "Costs fell."}})
     assert st == 200
-    st, v = call(port, token, "POST", f"/authoring/{aid}/op", {"op": {"op": "insert_page_break", "after": 3}})
+    st, v = call(port, token, "POST", f"/authoring/{aid}/op", {"op": {"op": "insert_page_break", "after": 3,
+                                                                     "after_expect": v["doc"]["blocks"][3]["expect"]}})
     st, v = call(port, token, "POST", f"/authoring/{aid}/op", {"op": {"op": "insert_page_number"}})
     assert st == 200 and len(v["changes"]) == 3
     # a stale address is refused through the service too

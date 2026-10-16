@@ -462,12 +462,12 @@ def test_a_working_copy_that_did_not_render_is_not_saved(env):
     v = a.edit_document(docs.add_opened(p, grants))
     aid = v["authoring_id"]
     docs.preview_state = "unavailable"
-    a.apply(aid, {"op": "insert_page_break", "after": 0})
+    a.apply(aid, {"op": "insert_page_break", "after": None})
     with pytest.raises(OfficeError) as e:
         a.propose_save(aid)
     assert e.value.code == "PREVIEW_FAILED"
     docs.preview_state = "rendering"
-    a.apply(aid, {"op": "insert_page_break", "after": 0})
+    a.apply(aid, {"op": "insert_page_break", "after": None})
     with pytest.raises(OfficeError) as e:
         a.propose_save(aid)
     assert e.value.code == "PREVIEW_NOT_READY"

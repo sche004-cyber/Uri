@@ -141,6 +141,7 @@ class AuthSession:
     changes: list = field(default_factory=list)        # [{"op", "text", "sha256"}]: changes[i] made version i+1
     dropped: int = 0                                   # versions dropped from the front (undo depth cap)
     preview_doc: str | None = None
+    pending_grant: str | None = None                  # the save-as grant of the open save card (C1-05)
     lock: threading.RLock = field(default_factory=threading.RLock)
 
     @property
@@ -255,7 +256,7 @@ class Authoring:
                 if op["op"] == "insert_image":
                     path = self.grants.get(image_grant, "open").path
                     if s.kind == "docx":
-                        result = D.insert_image(prs, op.get("after"), path, op.get("width", 0.5))
+                        result = D.insert_image(prs, D.check_after(prs, op), path, op.get("width", 0.5))
                     else:
                         result = P.insert_image(prs, op["slide"], path, op["box"])
                 else:
@@ -340,17 +341,30 @@ class Authoring:
             if save_as_path is None and s.origin is None:
                 raise OfficeError("SAVE_AS_REQUIRED", f"a new {KIND_WORDS[s.kind]} is saved as a new file")
             self._check_rendered(s)
+            self.release_pending(aid)                 # a newer card supersedes the older one (C1-05)
             if save_as_path is not None:
                 g = self.grants.grant_save_as(save_as_path, kind=s.kind)
                 dest, replaces, grant_id = g.path, False, g.grant_id
+                s.pending_grant = grant_id
             else:
                 dest, replaces, grant_id = s.origin, True, s.grant_id
             body = {"subject_kind": "authoring_save", "authoring_id": aid, "kind": s.kind,
                     "target": {"kind": "authoring_save", "destination": str(dest), "grant_id": grant_id,
                                "replaces": replaces, "origin_sha256": s.origin_sha},
                     "changes": [c["text"] for c in live], "working_sha256": _sha(s.data)}
-            surface = self.approvals.propose_authoring_save(aid, body)
+            try:
+                surface = self.approvals.propose_authoring_save(aid, body)
+            except BaseException:
+                self.release_pending(aid)
+                raise
             return {"messages": surface.messages(), "surface_id": surface.surface_id}
+
+    def release_pending(self, aid):
+        """Revoke the save-as grant of this edit's open card, if any (independent review C1-05)."""
+        s = self.sessions.get(aid) if isinstance(aid, str) else None
+        if s is not None and s.pending_grant is not None:
+            self.grants.revoke(s.pending_grant)
+            s.pending_grant = None
 
     def apply_save(self, body) -> dict:
         """The approved card: write exactly the working copy the card named."""
@@ -417,4 +431,6 @@ class Authoring:
                 pass
         if s.grant_id is not None:
             self.grants.revoke(s.grant_id)
+        if s.pending_grant is not None:
+            self.grants.revoke(s.pending_grant)
         return {"closed": True, "unsaved_changes": len(self._live_changes(s))}

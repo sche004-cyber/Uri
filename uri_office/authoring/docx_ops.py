@@ -35,7 +35,16 @@ _FOREIGN = {"ins": "a tracked change", "del": "a tracked change", "moveFrom": "a
             "customXml": "custom content", "oMath": "an equation", "oMathPara": "an equation"}
 _FOREIGN_RUN = {"footnoteReference": "a footnote", "endnoteReference": "an endnote", "fldChar": "a field",
                 "object": "an embedded object", "commentReference": "a comment", "drawing": "a picture or shape",
-                "pict": "a picture or shape"}
+                "pict": "a picture or shape", "sym": "a symbol",
+                # Independent review C1-08: tracked formatting and table changes are tracked changes too
+                "rPrChange": "a tracked change", "pPrChange": "a tracked change", "sectPrChange": "a tracked change",
+                "tblPrChange": "a tracked change", "trPrChange": "a tracked change", "tcPrChange": "a tracked change",
+                "numberingChange": "a tracked change", "cellIns": "a tracked change", "cellDel": "a tracked change",
+                "cellMerge": "a tracked change"}
+_M = "{http://schemas.openxmlformats.org/officeDocument/2006/math}"
+# Run children that a text replacement keeps; a run with anything else is not rewritten (C1-08: w:sym was dropped).
+_PLAIN_RUN = {_W + "rPr", _W + "t", _W + "tab", _W + "br", _W + "cr", _W + "noBreakHyphen", _W + "softHyphen",
+              _W + "lastRenderedPageBreak"}
 
 
 def _refuse(why: str):
@@ -104,8 +113,13 @@ def _section_break(el) -> bool:
 def _foreign(el) -> str | None:
     """The first unsupported content in an XML element and its descendants, named, or None."""
     for child in el.iter():
-        name = child.tag.replace(_W, "") if isinstance(child.tag, str) else ""
-        if child is el:
+        if child is el or not isinstance(child.tag, str):
+            continue
+        # C1-08: compare by namespace and local name (equations are in the math namespace, not the Word one)
+        if child.tag.startswith(_M):
+            return "an equation"
+        name = child.tag[len(_W):] if child.tag.startswith(_W) else ""
+        if not name:
             continue
         if name in _FOREIGN:
             return _FOREIGN[name]
@@ -116,8 +130,11 @@ def _foreign(el) -> str | None:
     return None
 
 
-def _insert_at(doc, after, new_el):
-    """Insert a block after block `after` (an index; None = at the start)."""
+def _insert_at(doc, after, new_el, after_expect=None):
+    """Insert a block after block `after` (an index; None = at the start). With `after_expect` the block is checked
+    against its address like any other op (independent review C1-11; the op map requires it)."""
+    if after is not None and after_expect is not None:
+        block(doc, after, after_expect)
     body = _body(doc)
     bl = blocks(doc)
     if after is None:
@@ -292,6 +309,8 @@ def replace_text(doc, find: str, replace: str, match_case: bool = True) -> dict:
         inside = sum(len(pat.findall(r.text)) for r in p.runs)
         for r in p.runs:
             if pat.search(r.text):
+                if any(c.tag not in _PLAIN_RUN for c in r._r):
+                    continue                          # C1-08: never rewrite a run that holds more than text
                 r.text = pat.sub(lambda m: replace, r.text)
         changed += inside
         split += max(0, total - inside)
@@ -532,16 +551,25 @@ def describe(doc) -> dict:
     return result
 
 
+def check_after(doc, op) -> int | None:
+    """An insert names the block it goes after with that block's address, like every other op that names a block
+    (plan 12 section 2; independent review C1-11). None means at the start of the document."""
+    after = op.get("after")
+    if after is not None:
+        block(doc, after, op["after_expect"])
+    return after
+
+
 OPS = {
-    "insert_paragraph": lambda d, op: insert_paragraph(d, op.get("after"), op["text"], op.get("style")),
+    "insert_paragraph": lambda d, op: insert_paragraph(d, check_after(d, op), op["text"], op.get("style")),
     "set_paragraph_text": lambda d, op: set_paragraph_text(d, op["block"], op["expect"], op["text"]),
     "delete_block": lambda d, op: delete_block(d, op["block"], op["expect"]),
     "move_block": lambda d, op: move_block(d, op["block"], op["expect"], op["to"]),
     "set_style": lambda d, op: set_style(d, op["block"], op["expect"], op["style"]),
     "format_text": lambda d, op: format_text(d, op["block"], op["expect"], op["format"]),
-    "insert_page_break": lambda d, op: insert_page_break(d, op.get("after")),
+    "insert_page_break": lambda d, op: insert_page_break(d, check_after(d, op)),
     "replace_text": lambda d, op: replace_text(d, op["find"], op["replace"], op.get("match_case", True)),
-    "insert_table": lambda d, op: insert_table(d, op.get("after"), op["cells"]),
+    "insert_table": lambda d, op: insert_table(d, check_after(d, op), op["cells"]),
     "set_table_cell": lambda d, op: set_table_cell(d, op["block"], op["expect"], op["row"], op["col"], op["text"]),
     "add_table_row": lambda d, op: add_table_row(d, op["block"], op["expect"], op["after_row"]),
     "delete_table_row": lambda d, op: delete_table_row(d, op["block"], op["expect"], op["row"]),

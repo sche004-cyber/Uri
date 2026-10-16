@@ -569,7 +569,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     final path = await pick();
     if (path == null) return;
     await e.op(e.isWord
-        ? {'op': 'insert_image', 'after': at, 'width': 0.5}
+        ? {'op': 'insert_image', 'after': at, 'after_expect': e.blocks[at]['expect'], 'width': 0.5}
         : {'op': 'insert_image', 'slide': at, 'box': {'x': 0.3, 'y': 0.3, 'w': 0.4, 'h': 0.4}}, imagePath: path);
   }
 

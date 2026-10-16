@@ -83,7 +83,7 @@ the reason the service names (for example video that cannot be copied).
 |---|---|---|
 | AB-1 | A working copy is byte-identical to the original at start; the original is never written except by an approved Save | unit + service tests (hash before/after) |
 | AB-2 | Every op in section 3 except charts works on synthetic fixtures (11-slide deck with chart, blank, user template) and the result reopens in python-pptx and converts in LibreOffice | unit + real-engine tests |
-| AB-3 | Untouched parts stay byte-identical (charts, media, unrelated slides) after any op set | part-hash tests |
+| AB-3 | Untouched parts keep their content (charts, media, unrelated slides) after any op set: binary parts byte-identical; XML parts byte-identical when the file was written by python-pptx, otherwise re-serialized with the same content (independent review C1-10: Office-written XML declarations are rewritten) | part-hash tests |
 | AB-4 | Undo/redo restore exactly the earlier working copy (hash) | tests |
 | AB-5 | Save card lists every change in plain words and binds them with the destination (hash); a later edit makes it stale | service tests |
 | AB-6 | Save replaces only after a backup; refused when the original changed on disk; Save as never replaces | tests |

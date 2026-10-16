@@ -21,6 +21,7 @@ import hashlib
 import os
 import posixpath
 import shutil
+import stat
 import tempfile
 import zipfile
 from pathlib import Path
@@ -321,14 +322,83 @@ def _publish_no_replace(src: Path, dst: Path):
         os.rename(src, dst)
 
 
+HOLD_SUFFIX = ".uri-office.hold"
+
+
+def _unlink_quietly(path: Path):
+    """Remove a temp or hold file of ours; a read-only bit copied from the original is cleared first. Used only after
+    the outcome is decided: a cleanup error never changes what the owner is told (independent review C1-02)."""
+    try:
+        if os.path.lexists(path):
+            try:
+                os.chmod(path, stat.S_IWRITE | stat.S_IREAD)
+            except OSError:
+                pass
+            path.unlink()
+    except OSError:
+        pass
+
+
+def _write_durably(path: Path, data: bytes):
+    with open(path, "wb") as fh:
+        fh.write(data)
+        fh.flush()
+        os.fsync(fh.fileno())
+
+
+def recover_held(dst: Path) -> Path | None:
+    """Independent review C1-01: a Save interrupted after the original was moved aside leaves it under a hidden
+    '.<name>.*.uri-office.hold' name. When `dst` is missing and such a file exists, the newest one is put back under
+    its own name (never replacing anything). Returns the restored path or None."""
+    dst = Path(dst)
+    try:
+        if os.path.lexists(dst):
+            return None
+        held = sorted(dst.parent.glob("." + glob_escape(dst.name) + ".*" + HOLD_SUFFIX),
+                      key=lambda f: f.stat().st_mtime, reverse=True)
+    except OSError:
+        return None
+    for h in held:
+        try:
+            _publish_no_replace(h, dst)
+        except FileExistsError:
+            return None
+        except OSError:
+            continue
+        _unlink_quietly(h)
+        return dst
+    return None
+
+
+def glob_escape(name: str) -> str:
+    import glob
+    return glob.escape(name)
+
+
 def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only=False,
                  expected_sha256: str | None = None, backup: Path | None = None):
     """Write through `write(fileobj)` into a new temp file next to `dst` and move it into place. The temp file is
     created exclusively with a random name (mkstemp: O_EXCL, so a planted file or symlink is never followed), synced,
     given the permission bits of the file it replaces (or of `mode_from` for a new file), then published at `dst`.
     On Windows only the read-only bit is carried over; the folder's inherited ACL applies to the new file.
-    Authoring uses a no-replace hard link for Save as. For Save it first moves the old name aside, checks the
-    claimed bytes, and publishes without replacing a name another application may have created meanwhile."""
+    Authoring uses a no-replace publish for Save as. For Save (`expected_sha256` + `backup`): a read-only original is
+    refused; the backup is written and synced from the checked original first; then the original name is moved aside,
+    its bytes checked again, and the new file published without replacing a name another program may have created
+    meanwhile; an interrupted Save is undone by `recover_held` (independent review C1-01, C1-02)."""
+    if expected_sha256 is not None:
+        if backup is None:
+            raise ValueError("a conditional replacement requires a backup path")
+        recover_held(dst)
+        try:
+            st = os.stat(dst)
+        except FileNotFoundError:
+            raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new file", 409) from None
+        if not (st.st_mode & stat.S_IWRITE):
+            raise OfficeError("FILE_READ_ONLY", "the file is read-only; save as a new file", 409)
+        current = Path(dst).read_bytes()
+        if hashlib.sha256(current).hexdigest() != expected_sha256:
+            raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new file", 409)
+        _write_durably(backup, current)               # the backup exists before the original name is touched
     fd, name = tempfile.mkstemp(dir=dst.parent, prefix="." + dst.name + ".", suffix=".uri-office.tmp")
     tmp = Path(name)
     try:
@@ -340,10 +410,7 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only
         if ref is not None and ref.exists():
             shutil.copymode(ref, tmp)
         if expected_sha256 is not None:
-            if backup is None:
-                raise ValueError("a conditional replacement requires a backup path")
-            hold_fd, hold_name = tempfile.mkstemp(dir=dst.parent, prefix="." + dst.name + ".",
-                                                   suffix=".uri-office.hold")
+            hold_fd, hold_name = tempfile.mkstemp(dir=dst.parent, prefix="." + dst.name + ".", suffix=HOLD_SUFFIX)
             os.close(hold_fd)
             hold = Path(hold_name)
             claimed = False
@@ -354,10 +421,8 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only
                     claimed = True
                 except FileNotFoundError:
                     raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new file", 409) from None
-                old = hold.read_bytes()
-                if hashlib.sha256(old).hexdigest() != expected_sha256:
+                if hashlib.sha256(hold.read_bytes()).hexdigest() != expected_sha256:
                     raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new file", 409)
-                backup.write_bytes(old)
                 # A second process can create dst while the old name is held aside. Never replace that new file.
                 try:
                     _publish_no_replace(tmp, dst)
@@ -369,12 +434,14 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only
                     try:
                         _publish_no_replace(hold, dst)
                     except FileExistsError:
-                        pass  # the other file wins; keep the claimed original in hold for recovery
+                        pass  # the other file wins; the claimed original stays in hold (and in the backup)
+                    except OSError:
+                        pass  # left in hold; recover_held puts it back on the next Save of this file
                     else:
-                        if hold.exists():
-                            hold.unlink()
-                elif hold.exists():
-                    hold.unlink()
+                        _unlink_quietly(hold)
+                elif not claimed:
+                    _unlink_quietly(hold)
+            _unlink_quietly(hold)                     # published: the old bytes are in the backup
         elif create_only:
             try:
                 _publish_no_replace(tmp, dst)
@@ -383,5 +450,4 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only
         else:
             os.replace(tmp, dst)
     finally:
-        if os.path.lexists(tmp):
-            tmp.unlink()
+        _unlink_quietly(tmp)

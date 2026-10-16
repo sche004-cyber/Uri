@@ -187,12 +187,12 @@ class _BlockPanel extends StatelessWidget {
           Wrap(spacing: UriSpace.xs, runSpacing: UriSpace.xs, children: [
             OutlinedButton(
               key: const ValueKey('authoring-insert-paragraph'),
-              onPressed: e.busy ? null : () => e.op({'op': 'insert_paragraph', 'after': i, 'text': ''}),
+              onPressed: e.busy ? null : () => e.op({'op': 'insert_paragraph', 'after': i, 'after_expect': b['expect'], 'text': ''}),
               child: const Text('Paragraph'),
             ),
             OutlinedButton(
               key: const ValueKey('authoring-insert-table'),
-              onPressed: e.busy ? null : () => e.op({'op': 'insert_table', 'after': i, 'cells': [['', ''], ['', '']]}),
+              onPressed: e.busy ? null : () => e.op({'op': 'insert_table', 'after': i, 'after_expect': b['expect'], 'cells': [['', ''], ['', '']]}),
               child: const Text('Table'),
             ),
             if (workspace.environment?.pickImagePath != null)
@@ -203,7 +203,7 @@ class _BlockPanel extends StatelessWidget {
               ),
             OutlinedButton(
               key: const ValueKey('authoring-insert-page-break'),
-              onPressed: e.busy ? null : () => e.op({'op': 'insert_page_break', 'after': i}),
+              onPressed: e.busy ? null : () => e.op({'op': 'insert_page_break', 'after': i, 'after_expect': b['expect']}),
               child: const Text('Page break'),
             ),
           ]),
