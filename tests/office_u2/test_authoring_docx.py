@@ -214,6 +214,23 @@ def test_table_cell_with_field_in_later_paragraph_is_preserved_on_refusal():
     assert d.element.body.xml == before
 
 
+def test_add_table_row_refuses_source_field_without_duplication():
+    d = Document()
+    cell = d.add_table(rows=1, cols=1).cell(0, 0)
+    cell.paragraphs[0].add_run("Date: ")
+    field = OxmlElement("w:fldSimple")
+    field.set(qn("w:instr"), "DATE")
+    cell.paragraphs[0]._p.append(field)
+    expect = ex(d, 0)
+    before = d.element.body.xml
+    with pytest.raises(OfficeError) as error:
+        W.add_table_row(d, 0, expect, 0)
+    assert error.value.code == "AUTHORING_NOT_SUPPORTED"
+    assert "field" in error.value.detail
+    assert d.element.body.xml == before
+    assert len(d.tables[0].rows) == 1
+
+
 def test_table_cell_with_nested_table_is_preserved_on_refusal():
     d = Document()
     cell = d.add_table(rows=1, cols=1).cell(0, 0)
@@ -262,6 +279,23 @@ def test_replace_text_inside_runs_counts_split_matches():
     assert e.value.code == "NOT_FOUND"
     r = W.replace_text(d, "inserted", "x")
     assert r["skipped"] == 1 and r["replaced"] == 0                  # a tracked change is not rewritten
+
+
+def test_replace_text_skips_text_in_run_with_inline_drawing():
+    from PIL import Image
+
+    d = Document()
+    run = d.add_paragraph().add_run("Revenue ")
+    picture = io.BytesIO()
+    Image.new("RGB", (2, 2), (200, 30, 30)).save(picture, format="PNG")
+    picture.seek(0)
+    run.add_picture(picture, width=Cm(2))
+    run.add_text(" rose")
+    before = d.element.body.xml
+    result = W.replace_text(d, "Revenue", "Sales")
+    assert result == {"replaced": 0, "split_across_formatting": 0, "skipped": 1}
+    assert d.element.body.xml == before
+    assert len(d.element.body.findall(".//" + qn("w:drawing"))) == 1
 
 
 def test_untouched_parts_stay_byte_identical(png):

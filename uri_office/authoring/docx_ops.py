@@ -271,7 +271,7 @@ def replace_text(doc, find: str, replace: str, match_case: bool = True) -> dict:
     for p in paras:
         if not pat.search(block_text(p._p)):          # all text, including tracked insertions
             continue
-        if _foreign(p._p) not in (None, "a picture or shape"):
+        if _foreign(p._p) is not None:
             skipped += 1
             continue
         total = len(pat.findall(p.text))
@@ -341,6 +341,17 @@ def add_table_row(doc, index, expect, after_row: int):
     src = t.rows[after_row]._tr
     if src.find(".//" + _W + "vMerge") is not None or src.find(".//" + _W + "gridSpan") is not None:
         _refuse("this row has merged cells")
+    if any(child.tag not in (_W + "trPr", _W + "tc") for child in src):
+        _refuse("this row has other content, which URI does not clone")
+    for tc in src.iter(_W + "tc"):
+        if any(child.tag not in (_W + "tcPr", _W + "p") for child in tc):
+            _refuse("this row has other cell content, which URI does not clone")
+        for p in tc.findall(_W + "p"):
+            why = _foreign(p)
+            if why:
+                _refuse(f"this row has {why}, which URI does not clone")
+            if any(child.tag not in (_W + "pPr", _W + "r") for child in p):
+                _refuse("this row has other paragraph content, which URI does not clone")
     new = copy.deepcopy(src)
     for tc in new.iter(_W + "tc"):
         for p in tc.findall(_W + "p")[1:]:
