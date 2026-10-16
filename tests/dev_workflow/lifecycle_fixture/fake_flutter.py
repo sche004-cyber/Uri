@@ -19,6 +19,8 @@ cfg = here / ".dart_tool" / "package_config.json"
 flags = Path(os.environ.get("FAKE_FLAGS", here))
 
 if args[:2] == ["--version", "--machine"]:
+    if (flags / "version_fail").is_file():
+        sys.exit(1)
     rev = (flags / "rev").read_text().strip() if (flags / "rev").is_file() else "rev1"
     print(json.dumps({"frameworkRevision": rev, "engineRevision": "eng1", "dartSdkVersion": "3.0.0"}))
     sys.exit(0)
@@ -29,6 +31,10 @@ if args[:2] == ["pub", "get"]:
         sys.exit(69)
     cfg.parent.mkdir(exist_ok=True)
     cfg.write_text("{}")
+    if (flags / "change_lock").is_file():
+        (here / "pubspec.lock").write_text("packages: changed\n")
+    if (flags / "change_tracked").is_file():
+        (here / "tests.txt").write_text("changed=pass\n")
     print("Got dependencies!")
     sys.exit(0)
 if args[:1] == ["analyze"]:

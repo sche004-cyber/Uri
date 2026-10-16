@@ -11,6 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from scripts.dev_workflow import lifecycle as L
 from scripts.dev_workflow.state_machine import WorkflowState as S
 
@@ -80,10 +82,6 @@ def flutter_gate(tool, **extra):
 def run_cfg(tmp, gates):
     repo, wt = tmp / "repo", tmp / "impl"
     return config(tmp, repo, wt, implementer="noop", integration={"mode": "none"}, gates=gates)
-
-
-def setup_function():
-    getattr(L, "_TOOLCHAIN", {}).clear()
 
 
 def test_drv3_original_false_pass_is_now_blocked(tmp_path):
@@ -205,7 +203,6 @@ def test_drv3_baseline_cache_follows_toolchain_and_gate_schema(tmp_path, monkeyp
     L.qualify(cfg, st, sha)  # same toolchain, same schema: cached baseline reused
     assert baseline_runs() == 1
     flag(tool, "rev", "rev2")
-    L._TOOLCHAIN.clear()
     st = L.State(cfg)
     L.qualify(cfg, st, sha)
     assert baseline_runs() == 2
@@ -223,3 +220,69 @@ def test_drv3_python_and_command_gates_keep_their_behaviour(tmp_path):
     c = list(L.status(cfg)["gates"].values())[0]["counts"]
     assert c["unit"]["candidate"]["evidence"] == "EXECUTED" and c["unit"]["candidate"]["passed"] == 1
     assert c["unit"]["candidate"]["prepared"] is False and c["cmd"]["candidate"]["exit_code"] == 0
+
+
+@pytest.mark.parametrize("required", [True, False])
+@pytest.mark.parametrize("evidence", ["ZERO_TESTS", "NO_TEST_REPORT"])
+def test_r101_missing_execution_cannot_be_filtered_or_made_optional(tmp_path, monkeypatch, required, evidence):
+    make_dart_fixture(tmp_path)
+    tool = fake_tool(tmp_path)
+    cfg = run_cfg(tmp_path, [flutter_gate(tool, required=required)])
+    assert L.run(cfg) == S.VERIFIED
+    st = L.State(cfg)
+    st.d["baseline_gates"].clear()
+    passed_id = "test/a_test.dart::a"
+
+    def gate_result(_cfg, _gate, wt, _logs):
+        base = wt.name == "baseline"
+        return {"status": "COMPLETED_WITH_RESULT", "evidence": "EXECUTED" if base else evidence,
+                "executed": 1 if base else 0, "passed": 1 if base else 0,
+                "skipped": 0 if base else 1, "ids": [passed_id],
+                "failures": {} if base else {"flutter::__run__": "zero tests executed"}}
+
+    monkeypatch.setattr(L, "run_gate", gate_result)
+    cfg["allowed_flaky"] = ["flutter::__run__"]
+    result = L.qualify(cfg, st, st.d["candidate"], wt=tmp_path / "impl")
+    assert result["ok"] is False
+    assert result["gates"]["flutter"]["ok"] is False
+
+
+def test_r102_failed_version_probe_cannot_reuse_baseline_cache(tmp_path):
+    make_dart_fixture(tmp_path)
+    tool = fake_tool(tmp_path)
+    cfg = run_cfg(tmp_path, [flutter_gate(tool)])
+    assert L.run(cfg) == S.VERIFIED
+    st = L.State(cfg)
+    flag(tool, "version_fail")
+    before = len([e for e in L._chained_events(st) if e["kind"] == "BASELINE_GATE"])
+    L.qualify(cfg, st, st.d["candidate"])
+    L.qualify(cfg, st, st.d["candidate"])
+    after = len([e for e in L._chained_events(st) if e["kind"] == "BASELINE_GATE"])
+    assert after == before + 2
+
+
+def test_r102_fingerprint_is_independent_of_preparation_and_refreshes(tmp_path):
+    make_dart_fixture(tmp_path)
+    tool = fake_tool(tmp_path)
+    gate = flutter_gate(tool, prepare=False)
+    assert L._flutter_tool(gate, gate["cmd"], tmp_path / "impl/app") == tool
+    assert L.flutter_toolchain(tool, tmp_path / "impl") is not None
+    flag(tool, "rev", "rev2")
+    assert "rev2" in L.flutter_toolchain(tool, tmp_path / "impl")
+    flag(tool, "version_fail")
+    assert L.flutter_toolchain(tool, tmp_path / "impl") is None
+
+
+@pytest.mark.parametrize("mutation,expected", [("change_lock", "pubspec.lock"),
+                                                ("change_tracked", "tracked")])
+def test_r103_preparation_rejects_tracked_mutations_and_keeps_log(tmp_path, mutation, expected):
+    make_dart_fixture(tmp_path)
+    tool = fake_tool(tmp_path)
+    flag(tool, mutation)
+    logs = tmp_path / "logs"
+    logs.mkdir()
+    rec = L.prepare_dart_dependencies(flutter_gate(tool), tool, tmp_path / "impl/app", logs)
+    assert expected in rec["error"]
+    assert (logs / "flutter.prepare.log").is_file()
+    gate = L.run_gate({"repo": str(tmp_path / "repo")}, flutter_gate(tool), tmp_path / "impl", logs)
+    assert gate["status"] == "BLOCKED" and "INFRA" in gate["detail"]
