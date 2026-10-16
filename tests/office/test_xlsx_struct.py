@@ -234,6 +234,29 @@ def test_shared_formula_sheet_name_must_match_at_a_reference_boundary(reference,
         assert parts[part] == before
 
 
+def test_shared_formula_sheet_name_only_in_string_leaves_other_sheet_byte_identical():
+    wb = Workbook()
+    wb.active.title = "Sheet1"
+    other = wb.create_sheet("Other")
+    other["A1"] = '="Sheet1!"&B1'
+    other["A2"] = '="Sheet1!"&B2'
+    out = io.BytesIO()
+    wb.save(out)
+    parts = parts_of(out.getvalue())
+    part = "xl/worksheets/sheet2.xml"
+    root = S._xml(parts[part])
+    formulas = list(root.iter(S.M + "f"))
+    formulas[0].attrib.update({"t": "shared", "si": "0", "ref": "A1:A2"})
+    formulas[1].attrib.update({"t": "shared", "si": "0"})
+    formulas[1].text = None
+    parts[part] = S._ser(root)
+    before = parts[part]
+
+    S.apply_row_op(parts, {"op": "insert_rows", "sheet": "Sheet1", "at": 1, "count": 1})
+
+    assert parts[part] == before
+
+
 @pytest.mark.parametrize("extra,why", [
     (lambda wb, ws: ws.protection.__setattr__("sheet", True), "protected"),
 ])

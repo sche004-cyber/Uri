@@ -6,6 +6,7 @@ import zipfile
 from pathlib import Path
 
 import pytest
+from lxml import etree
 from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_CHART_TYPE
@@ -123,6 +124,40 @@ def test_text_ops_keep_formatting():
     assert paras[0].runs[0].font.bold and paras[0].runs[0].font.size == Pt(28)       # first run's format kept
     assert s.shapes.title.text == "Highlights 2026"
     assert s.notes_slide.notes_text_frame.text == "Thank the team"
+
+
+def test_set_text_refuses_link_in_later_run_without_changing_presentation():
+    prs = load(deck_bytes())
+    s = prs.slides[1]
+    body = s.placeholders[1]
+    linked = body.text_frame.paragraphs[0].add_run()
+    linked.text = " details"
+    linked.hyperlink.address = "https://example.com"
+    before = save(prs)
+
+    with pytest.raises(OfficeError) as e:
+        P.set_text(prs, s.slide_id, body.shape_id, ["Replacement"])
+
+    assert e.value.code == "AUTHORING_NOT_SUPPORTED" and "hyperlink" in e.value.detail
+    assert save(prs) == before
+    reopened = load(save(prs)).slides[1].placeholders[1]
+    assert reopened.text_frame.paragraphs[0].runs[1].hyperlink.address == "https://example.com"
+
+
+def test_set_text_refuses_inline_field_without_changing_presentation():
+    prs = load(deck_bytes())
+    s = prs.slides[1]
+    body = s.placeholders[1]
+    body.text_frame.paragraphs[0]._p.append(etree.fromstring(
+        '<a:fld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+        'id="{00000000-0000-0000-0000-000000000001}" type="slidenum"><a:t>2</a:t></a:fld>'))
+    before = save(prs)
+
+    with pytest.raises(OfficeError) as e:
+        P.set_text(prs, s.slide_id, body.shape_id, ["Replacement"])
+
+    assert e.value.code == "AUTHORING_NOT_SUPPORTED" and "inline text" in e.value.detail
+    assert save(prs) == before
 
 
 def test_format_box_table_and_shape_ops():

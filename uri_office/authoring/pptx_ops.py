@@ -236,6 +236,13 @@ def _set_paragraphs(tf, paragraphs: list):
     paras = list(tf.paragraphs)
     templates = []
     for p in paras:
+        if any(el.tag in (qn("a:hlinkClick"), qn("a:hlinkMouseOver")) for el in p._p.iter()):
+            _refuse("a text hyperlink cannot be preserved by replacement")
+        for el in p._p:
+            if el.tag not in (qn("a:pPr"), qn("a:r"), qn("a:endParaRPr")):
+                _refuse("an inline text item cannot be preserved by replacement")
+            if el.tag == qn("a:r") and any(child.tag not in (qn("a:rPr"), qn("a:t")) for child in el):
+                _refuse("an inline text item cannot be preserved by replacement")
         r = p.runs[0]._r if p.runs else None
         templates.append((copy.deepcopy(p._p.pPr) if p._p.pPr is not None else None,
                           copy.deepcopy(r.rPr) if r is not None and r.rPr is not None else None))

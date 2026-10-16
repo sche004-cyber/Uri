@@ -24,7 +24,7 @@ import posixpath
 import re
 
 from lxml import etree
-from openpyxl.formula.tokenizer import Tokenizer, TokenizerError
+from openpyxl.formula.tokenizer import Tokenizer
 from openpyxl.formula.translate import Translator
 
 from . import refs
@@ -116,17 +116,23 @@ def _shift_area(ref: str, sh: _Shift):
     return ":".join(out)
 
 
+def _formula_tokens(formula: str):
+    """Read formula tokens without treating quoted text as references."""
+    text = formula if formula.startswith("=") else "=" + formula
+    try:
+        items = Tokenizer(text).items
+    except Exception:  # noqa: BLE001 - any tokenizer failure is a refusal, never a guess
+        _refuse("a formula could not be read: " + text[:80])
+    if "=" + "".join(t.value for t in items) != text:
+        _refuse("a formula could not be rewritten exactly: " + text[:80])
+    return items
+
+
 def shift_formula(formula: str, sh: _Shift, target: str, here: str) -> str:
     """Rewrite references to sheet `target` in `formula` (text without or with a leading '='), written on sheet
     `here`. Refuses what it cannot parse."""
     eq = formula.startswith("=")
-    text = formula if eq else "=" + formula
-    try:
-        items = Tokenizer(text).items
-    except (TokenizerError, Exception):  # noqa: BLE001 - any tokenizer failure is a refusal, never a guess
-        _refuse("a formula could not be read: " + text[:80])
-    if "=" + "".join(t.value for t in items) != text:
-        _refuse("a formula could not be rewritten exactly: " + text[:80])
+    items = _formula_tokens(formula)
     out = []
     for t in items:
         v = t.value
@@ -245,7 +251,20 @@ def _check_supported(parts: dict, by_sheet: dict, target: str, root):
 
 def _unshare(parts: dict, by_sheet: dict, target: str):
     """Write shared formulas whose master refers to the target sheet as ordinary formulas."""
-    target_ref = _sheet_ref_pattern(target)
+    def references_target(formula: str) -> bool:
+        for token in _formula_tokens(formula):
+            if token.type != "OPERAND" or token.subtype != "RANGE" or token.value.startswith("["):
+                continue
+            value = token.value
+            if value.count("!") == 2 and ":" in value:
+                left, right = value.split(":", 1)
+                sheets = (_split_sheet(left)[0], _split_sheet(right)[0])
+            else:
+                sheets = (_split_sheet(value)[0],)
+            if any(sheet is not None and sheet.casefold() == target.casefold() for sheet in sheets):
+                return True
+        return False
+
     for sname, part in by_sheet.items():
         if part not in parts:
             continue
@@ -256,7 +275,7 @@ def _unshare(parts: dict, by_sheet: dict, target: str):
             if f is not None and f.get("t") == "shared" and f.text:
                 masters[f.get("si")] = (c.get("r"), f.text)
         hit = {si for si, (_, txt) in masters.items()
-               if sname.casefold() == target.casefold() or target_ref.search(txt)}
+               if sname.casefold() == target.casefold() or references_target(txt)}
         if not hit:
             continue
         for c in root.iter(M + "c"):
