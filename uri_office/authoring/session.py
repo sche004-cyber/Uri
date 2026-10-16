@@ -137,6 +137,7 @@ class AuthSession:
     grant_id: str | None
     versions: list = field(default_factory=list)       # bytes, versions[pos] is current
     pos: int = 0
+    revision: int = 0                              # monotonic address epoch, including undo and redo
     changes: list = field(default_factory=list)        # [{"op", "text", "sha256"}]: changes[i] made version i+1
     dropped: int = 0                                   # versions dropped from the front (undo depth cap)
     preview_doc: str | None = None
@@ -247,6 +248,8 @@ class Authoring:
             if not isinstance(op, dict) or (op.get("op") not in M.OPS and op.get("op") != "insert_image"):
                 raise OfficeError("UNKNOWN_OP", str(op.get("op") if isinstance(op, dict) else op)[:32])
             prs = self._load(s.data, s.kind)
+            if s.kind == "docx":
+                prs._uri_edit_revision = s.revision
             before = M.describe(prs)
             try:
                 if op["op"] == "insert_image":
@@ -269,6 +272,8 @@ class Authoring:
             s.versions.append(data)
             s.changes.append({"op": op, "text": describe_change(op, before), "sha256": _sha(data)})
             s.pos += 1
+            if s.kind == "docx":
+                s.revision += 1
             # oldest undo steps go (count and memory caps; the current and one earlier step stay); the change list
             # is kept
             while len(s.versions) > 2 and (len(s.versions) > MAX_VERSIONS
@@ -290,6 +295,8 @@ class Authoring:
                 if s.pos == 0:
                     raise OfficeError("NOTHING_TO_UNDO")
                 s.pos -= 1
+            if s.kind == "docx":
+                s.revision += 1
             self._preview(s)
             return self.view(aid)
 
@@ -301,7 +308,10 @@ class Authoring:
     def view(self, aid) -> dict:
         s = self.get(aid)
         with s.lock:
-            content = self._ops(s.kind).describe(self._load(s.data, s.kind))
+            loaded = self._load(s.data, s.kind)
+            if s.kind == "docx":
+                loaded._uri_edit_revision = s.revision
+            content = self._ops(s.kind).describe(loaded)
             live = self._live_changes(s)
             # path: the file this edit saves to (picked or approved by the owner), so the app can open it again
             return {"authoring_id": s.aid, "kind": s.kind, "name": s.name, "new": s.origin is None,

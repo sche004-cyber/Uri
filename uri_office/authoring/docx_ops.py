@@ -1,8 +1,8 @@
 """Word ops on a python-docx Document (milestone C; plan 12_AUTHORING_C_WORD_PLAN.md section 3).
 
 Body blocks (paragraphs and tables, in document order) are addressed by index, and every op that names a block also
-carries `expect`: a short SHA-256 address bound to the body version, block index and block XML as viewed. A mismatch
-is refused (STALE_BLOCK), so an op never lands on a block that moved. Ops touch only the XML they are about; other parts
+carries `expect`: a short SHA-256 address bound to the edit revision, body version, block index and block XML as viewed.
+A mismatch is refused (STALE_BLOCK), so an op never lands on a block that moved. Ops touch only the XML they are about; other parts
 of the package (comments, footnotes, media, numbering, theme) are left as python-docx loaded them. An op that would
 need content it does not handle is refused with AUTHORING_NOT_SUPPORTED and a named reason, before anything changes.
 """
@@ -61,7 +61,12 @@ def _body(doc):
 
 
 def _body_version(doc) -> bytes:
-    return hashlib.sha256(_body(doc).xml.encode("utf-8")).digest()
+    revision = getattr(doc, "_uri_edit_revision", 0)
+    return hashlib.sha256(str(revision).encode("ascii") + b"\0" + _body(doc).xml.encode("utf-8")).digest()
+
+
+def _advance_revision(doc):
+    doc._uri_edit_revision = getattr(doc, "_uri_edit_revision", 0) + 1
 
 
 def blocks(doc) -> list:
@@ -171,6 +176,7 @@ def insert_paragraph(doc, after, text: str, style=None) -> int:
         p.style = _style(doc, style)
     if _text(text):
         p.add_run(text)
+    _advance_revision(doc)
     return i
 
 
@@ -194,6 +200,7 @@ def delete_block(doc, index, expect):
     if len(blocks(doc)) == 1:
         _refuse("a document keeps at least one paragraph")
     el.getparent().remove(el)
+    _advance_revision(doc)
 
 
 def move_block(doc, index, expect, to: int):
@@ -213,6 +220,7 @@ def move_block(doc, index, expect, to: int):
         rest[-1].addnext(el)
     else:
         rest[to].addprevious(el)
+    _advance_revision(doc)
 
 
 def set_style(doc, index, expect, style: str):
@@ -249,6 +257,7 @@ def insert_page_break(doc, after) -> int:
     el = OxmlElement("w:p")
     i = _insert_at(doc, after, el)
     Paragraph(el, doc._body).add_run().add_break(WD_BREAK.PAGE)
+    _advance_revision(doc)
     return i
 
 
@@ -307,7 +316,9 @@ def insert_table(doc, after, cells) -> int:
             t.cell(r, c).text = v
     el = t._tbl
     el.getparent().remove(el)
-    return _insert_at(doc, after, el)
+    i = _insert_at(doc, after, el)
+    _advance_revision(doc)
+    return i
 
 
 def _cell(doc, index, expect, row, col):
@@ -359,6 +370,7 @@ def add_table_row(doc, index, expect, after_row: int):
         for r in tc.findall(_W + "p")[0].findall(_W + "r"):
             r.getparent().remove(r)
     src.addnext(new)
+    _advance_revision(doc)
 
 
 def delete_table_row(doc, index, expect, row: int):
@@ -374,6 +386,7 @@ def delete_table_row(doc, index, expect, row: int):
     if why:
         _refuse(f"this row has {why}, which URI does not remove")
     tr.getparent().remove(tr)
+    _advance_revision(doc)
 
 
 # ---- pictures ------------------------------------------------------------------------------------------------------
@@ -389,6 +402,7 @@ def insert_image(doc, after, image_path: Path, width: float = 0.5) -> int:
     except Exception as e:  # noqa: BLE001 - an image python-docx cannot read is one refusal
         el.getparent().remove(el)
         raise OfficeError("BAD_IMAGE", type(e).__name__) from None
+    _advance_revision(doc)
     return i
 
 

@@ -146,6 +146,25 @@ def test_moving_equal_text_with_different_styles_invalidates_the_old_address():
     assert d.element.body.xml == before
 
 
+def test_moving_byte_identical_paragraphs_invalidates_the_old_address():
+    d = Document()
+    first = d.add_paragraph("same")._p
+    second = d.add_paragraph("same")._p
+    assert first.xml == second.xml
+    stale = ex(d, 0)
+    original_xml = d.element.body.xml
+
+    W.move_block(d, 1, ex(d, 1), 0)
+    assert d.element.body.xml == original_xml
+    assert W.blocks(d)[0] is second
+    before = d.element.body.xml
+    with pytest.raises(OfficeError) as error:
+        W.set_paragraph_text(d, 0, stale, "Changed")
+    assert error.value.code == "STALE_BLOCK"
+    assert d.element.body.xml == before
+    assert [p.text for p in d.paragraphs] == ["same", "same"]
+
+
 def test_content_uri_does_not_own_is_refused_by_name(png):
     d = load(report_bytes(png))
     for i, why in ((5, "a comment"), (6, "a tracked change")):
@@ -409,6 +428,33 @@ def test_word_edit_change_list_undo_and_save(env):
     assert p.read_bytes() == original
     a.apply_save(act_body(appr, prop))
     assert load(p.read_bytes()).paragraphs[3].text == "Costs fell."
+
+
+def test_identical_paragraph_move_invalidates_session_addresses_across_undo_redo(env):
+    a, docs, grants, _, p, _ = env
+    d = Document()
+    d.add_paragraph("same")
+    d.add_paragraph("same")
+    p.write_bytes(save(d))
+    v = a.edit_document(docs.add_opened(p, grants))
+    aid = v["authoring_id"]
+    stale = v["doc"]["blocks"][0]["expect"]
+
+    moved = a.apply(aid, {"op": "move_block", "block": 1,
+                          "expect": v["doc"]["blocks"][1]["expect"], "to": 0})
+    assert moved["doc"]["blocks"][0]["expect"] != stale
+    before = a.get(aid).data
+    with pytest.raises(OfficeError) as error:
+        a.apply(aid, {"op": "set_paragraph_text", "block": 0, "expect": stale, "text": "Changed"})
+    assert error.value.code == "STALE_BLOCK"
+    assert a.get(aid).data == before
+
+    undone = a.undo(aid)
+    assert undone["doc"]["blocks"][0]["expect"] != stale
+    assert undone["doc"]["blocks"][0]["expect"] != moved["doc"]["blocks"][0]["expect"]
+    redone = a.undo(aid, redo=True)
+    assert redone["doc"]["blocks"][0]["expect"] != moved["doc"]["blocks"][0]["expect"]
+    assert [p.text for p in load(a.get(aid).data).paragraphs] == ["same", "same"]
 
 
 def test_a_working_copy_that_did_not_render_is_not_saved(env):
