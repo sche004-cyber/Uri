@@ -127,8 +127,16 @@ def test_drv3_dependencies_are_prepared_and_tests_really_execute(tmp_path):
     q = st.d["gates"][s["candidate"]]["gates"]["flutter"]["candidate"]
     assert q["prepare"]["cmd"][1:] == ["pub", "get", "--enforce-lockfile", "--offline"]
     assert q["prepare"]["pubspec_lock_sha256"] == L.sha256((tmp_path / "impl/app/pubspec.lock").read_bytes())
+    expected_preparation = {
+        side: {"cmd": st.d["gates"][s["candidate"]]["gates"]["flutter"][side]["prepare"]["cmd"],
+               "pubspec_lock_sha256": q["prepare"]["pubspec_lock_sha256"]}
+        for side in ("candidate", "baseline")
+    }
+    receipt = json.loads((Path(cfg["state_dir"]) / "receipt.json").read_text(encoding="utf-8"))
+    assert list(receipt["gates"].values())[0]["preparation"]["flutter"] == expected_preparation
     ev = [e for e in L._chained_events(st) if e["kind"] == "QUALIFICATION"][-1]
     assert ev["data"]["counts"]["flutter"]["candidate"]["executed"] == 2  # counts are in the hash chain
+    assert ev["data"]["preparation"]["flutter"] == expected_preparation
     assert L.verify(cfg) == []
 
 

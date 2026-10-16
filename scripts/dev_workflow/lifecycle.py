@@ -924,6 +924,20 @@ def gate_counts(q: dict) -> dict:
             for k, v in (q.get("gates") or {}).items()}
 
 
+def gate_preparations(q: dict) -> dict:
+    """Dependency preparation commands and lock hashes for each applicable gate side."""
+    preparations = {}
+    for gate_id, gate in (q.get("gates") or {}).items():
+        sides = {}
+        for side in ("candidate", "baseline"):
+            prep = (gate.get(side) or {}).get("prepare")
+            if prep:
+                sides[side] = {key: prep.get(key) for key in ("cmd", "pubspec_lock_sha256")}
+        if sides:
+            preparations[gate_id] = sides
+    return preparations
+
+
 # --------------------------------------------------------------------------- evidence guards
 
 def _chained_events(st: State) -> list[dict]:
@@ -1741,7 +1755,7 @@ def run(cfg, max_steps: int = 50) -> S:
             st.event("QUALIFICATION", sha=sha, ok=q["ok"], blocked=q["blocked"], protected=q["protected_changed"],
                      qual_sha256=chash(q),
                      gates={k: (v.get("comparison") or {}).get("new_failures") for k, v in q["gates"].items()},
-                     counts=gate_counts(q))
+                     counts=gate_counts(q), preparation=gate_preparations(q))
             if q["blocked"]:
                 st.block("RESOURCE", q["blocked"], "provide the resource and re-run")
                 continue
@@ -2038,7 +2052,8 @@ def status(cfg) -> dict:
             "gates": {sha[:12]: {"ok": q.get("ok"), "blocked": q.get("blocked"),
                                  "new_failures": {k: (v.get("comparison") or {}).get("new_failures")
                                                   for k, v in q["gates"].items()},
-                                 "counts": gate_counts(q)} for sha, q in d["gates"].items()},
+                                 "counts": gate_counts(q), "preparation": gate_preparations(q)}
+                      for sha, q in d["gates"].items()},
             "integration": d.get("integration"), "blocker": d.get("blocker"), "events": len(d["history"]),
             "evidence_ok_for_candidate": evidence_ok(cfg, st, d["candidate"])[0] if d["candidate"] else False}
 
