@@ -22,7 +22,8 @@
   "UIV2-F4: companion_lunar.frag change keeps premultiplied alpha, true transparency and renderer identity; no extra pass; the shader pin change is limited to Lunar",
   "Preservation and security: no approval or permission bypass, typed text never a decision, no protected path, no new dependency; URI_UI_VISUAL=living and the classic interface still reachable",
   "user-facing work: every capability reachable and operable through the real URI Windows UI; discoverability, feedback, recovery, first-time and returning user",
-  "Performance: no expensive new effects (saveLayer, blur, extra shader passes, persistent timers)"
+  "Performance: no expensive new effects (saveLayer, blur, extra shader passes, persistent timers)",
+  "final revision: the UI qualification record docs/ui_v2/postint/UI_QUALIFICATION_UI_V2_POSTINT.json must match the tested code commit 1a19c804 and the live evidence under docs/ui_v2/postint/evidence/ (l13 first-time, l14 returning, l15 perf); only evidence, record, register and config paths changed after 1a19c804; the record carries no verdict of its own (this run's receipt is authoritative); the plan, legacy review and findings register make no claim the evidence does not support"
  ],
  "environment_notes": [
   "Evidence classes (owner directive 2026-10-15). If you are the reviewer, add these keys to your AUDIT_RESULT JSON: \"inspected\" (code and documents you read yourself), \"evidence_reviewed_only\" (reports, screenshots, logs you read but did not reproduce), \"live_observed\" (live behaviour you observed yourself; [] if none); tests you executed go in tests_run and claims you could not verify in unverified. Never present reviewed screenshots or reports as your own live observation. If you are an implementer or diagnosis worker, make the same distinction in your notes.",
@@ -143,7 +144,9 @@
   }
  },
  "integration": {
-  "mode": "none"
+  "mode": "fast-forward",
+  "target_ref": "integration/git-sync-20261008",
+  "authorized": false
  },
  "commit_trailers": [
   "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"

@@ -1,0 +1,8 @@
+{"label": "l14", "port": 18301, "server_pid": 22416, "server_listen_s": 1.816, "server_listening": true}
+STATE STARTING 
+STATE LOADING 
+STATE CALIBRATING 
+STATE READY 
+STATE STOPPING 
+STATE STOPPED HOST_EXIT
+{"label": "l14", "server_exit": 1, "brain_exit_code": 0, "lease_after": {"state": "HELD", "holder": {"acquired_at": 1792140634.938, "create_time": 1792140483.501, "expected_vram_mib": 15626, "heartbeat_at": 1792140634.938, "label": "WS Brain host", "max_hold_s": null, "override": null, "pid": 1052, "process": "python.exe", "purpose": "runtime_v1_brain", "schema": "uri.gpu.lease.v1", "session": "D:\\uri-dev\\uri-auth-live\\candidate", "state": "held"}}, "brain_listener_after_3s": null, "server_listener_after": null}
