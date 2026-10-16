@@ -89,6 +89,10 @@ class Draft:
         self._next = 0
         self._vn = 0                          # version numbers are never reused, even after undo + new edit
         self.pending_question = None          # clarification awaiting the user's answer
+        # UIV2-F1: a new document never silently discards the open one. The draft this one replaced is kept (one
+        # level): Undo on this draft's first version brings it back, Redo returns here (DraftDesk.op).
+        self.replaced: "Draft | None" = None
+        self.replaced_by: "Draft | None" = None
 
     # ---- ids --------------------------------------------------------------------------------------
     def new_id(self):
@@ -102,11 +106,12 @@ class Draft:
 
     @property
     def can_undo(self):
-        return self.cursor > 0
+        return self.cursor > 0 or (self.cursor == 0 and self.replaced is not None)
 
     @property
     def can_redo(self):
-        return 0 <= self.cursor < len(self.versions) - 1
+        return 0 <= self.cursor < len(self.versions) - 1 or \
+            (self.cursor == len(self.versions) - 1 and self.replaced_by is not None)
 
     def push(self, *, blocks, facts, exclusions, missing, op, instruction, summary, changed, removed, flags):
         if len(blocks) > MAX_BLOCKS:
@@ -114,6 +119,7 @@ class Draft:
         for b in blocks:
             _check_block(b.role, b.text)
         del self.versions[self.cursor + 1:]
+        self.replaced_by = None               # a new edit ends the way forward, like any redo
         self._vn += 1
         n = self._vn
         v = Version(n, tuple(blocks), tuple(dict(f) for f in facts), tuple(exclusions), tuple(missing), op,
@@ -127,14 +133,14 @@ class Draft:
         return v
 
     def undo(self):
-        if not self.can_undo:
+        if self.cursor <= 0:                  # going back to a replaced draft is DraftDesk.op's switch
             raise DraftError("NOTHING_TO_UNDO")
         self.cursor -= 1
         self.pending_question = None
         return self.current
 
     def redo(self):
-        if not self.can_redo:
+        if not 0 <= self.cursor < len(self.versions) - 1:
             raise DraftError("NOTHING_TO_REDO")
         self.cursor += 1
         self.pending_question = None
@@ -161,6 +167,8 @@ class Draft:
                "position": self.cursor + 1, "count": len(self.versions), "can_undo": self.can_undo,
                "can_redo": self.can_redo, "current": cur.to_dict() if cur else None,
                "pending_question": self.pending_question}
+        if self.cursor == 0 and self.replaced is not None and self.replaced.current is not None:
+            out["replaced"] = {"doc_type": self.replaced.doc_type, "version": self.replaced.current.n}
         if include_history:
             first = self.versions[0] if self.versions else None
             prev = self.versions[self.cursor - 1] if self.cursor > 0 else None

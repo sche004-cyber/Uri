@@ -161,6 +161,11 @@ def _split_paragraphs(text):
     return parts
 
 
+def _draft_text(d):
+    """The open draft's current text, for anchoring revisions to the document (UIV2-F1); None without one."""
+    return d.current.text() if d is not None and d.current is not None else None
+
+
 class DraftDesk:
     def __init__(self, orchestrator):
         self.o = orchestrator
@@ -175,6 +180,11 @@ class DraftDesk:
 
     def _set(self, session_id, draft):
         with self._lock:
+            old = self.drafts.get(session_id)
+            if old is not None and old is not draft and old.current is not None:
+                # UIV2-F1: keep the replaced draft (one level, its own older chain dropped) so Undo can bring it back.
+                old.replaced, old.replaced_by = None, None
+                draft.replaced = old
             self.drafts[session_id] = draft
             while len(self.drafts) > MAX_SESSIONS:
                 self.drafts.pop(next(iter(self.drafts)))
@@ -212,14 +222,16 @@ class DraftDesk:
             if reply in _CHOICE_ACTION:
                 # The original request goes to the ordinary path unchanged; Core decides and asks for approval.
                 return TX.TextIntent(TX.NONE, ["ambiguity_action"], payload=pend["original"], instruction=text)
-            plain = TX.classify(text, has_draft=d is not None and d.current is not None)
+            plain = TX.classify(text, has_draft=d is not None and d.current is not None, draft_text=_draft_text(d))
             own_question = (text or "").rstrip().endswith("?") or bool(_OWN_QUESTION.match(text or ""))
-            if plain.kind == TX.NONE and plain.reasons[:1] in (["not_a_text_task"], ["trivial"]) and not own_question:
+            if plain.kind == TX.NONE and plain.reasons[:1] in (["not_a_text_task"], ["trivial"], ["unanchored_with_draft"]) \
+                    and not own_question:
                 # "yes", "no", "dont do it", "hmm": not a choice and not a new request -> asked again, never guessed
                 return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_unclear"], instruction=text)
             # anything else is a new request: the question is dropped (one-turn lifetime) and it routes as usual
-        intent = TX.classify(text, has_draft=d is not None and d.current is not None)
-        answers = ("not_a_text_task", "foreign_object")
+        intent = TX.classify(text, has_draft=d is not None and d.current is not None, draft_text=_draft_text(d))
+        # An open draft question is answered in the draft's own context, so an unanchored reply is still an answer.
+        answers = ("not_a_text_task", "foreign_object", "unanchored_with_draft")
         if intent.reasons[:1] == ["trivial"] and _SHORT_ANSWER.match(text or ""):
             answers += ("trivial",)            # "yes" / "no" / "okay" answer an open question
         # A question of the user's own ("what is ...?") is not an answer to URI's question.
@@ -243,8 +255,21 @@ class DraftDesk:
             raise DeskError("NO_ACTIVE_DRAFT", "There is no draft in this conversation yet.")
         try:
             if op == "undo":
+                if d.cursor == 0 and d.replaced is not None:
+                    back = d.replaced                 # UIV2-F1: back to the draft this one replaced
+                    back.replaced_by = d
+                    with self._lock:
+                        self.drafts[session_id] = back
+                    back.pending_question = None
+                    return back.to_dict()
                 d.undo()
             elif op == "redo":
+                if d.cursor == len(d.versions) - 1 and d.replaced_by is not None:
+                    fwd = d.replaced_by
+                    with self._lock:
+                        self.drafts[session_id] = fwd
+                    fwd.pending_question = None
+                    return fwd.to_dict()
                 d.redo()
             elif op == "restore":
                 if not isinstance(n, int) or isinstance(n, bool):

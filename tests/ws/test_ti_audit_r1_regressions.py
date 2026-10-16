@@ -77,7 +77,8 @@ def test_f5_fallback_is_one_coherent_turn(fake, tmp_path):
                                           "exclusions_add": [], "edits": [], "summary": ""})},
                      {"chunks": [("answer", "Registers record exits.")], "finish": "stop"}]
     turn(b, WARDEN)
-    tid = turn(b, "Make sense of why hostels keep registers")
+    # Anchored to the draft (UIV2-F1: unanchored chat no longer reaches the desk); the model says it is no edit.
+    tid = turn(b, "Make sense of why the letter mentions registers")
     types = [e["type"] for e in frames.events if e["turn_id"] == tid]
     assert types.count("turn.started") == 1 and types.count("turn.finished") == 1
     routed = [e["data"] for e in frames.events if e["turn_id"] == tid and e["type"] == "turn.routed"]

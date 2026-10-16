@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/uri_theme.dart';
 import '../widgets/glass_panel.dart';
+import '../widgets/scroll_when_short.dart';
 import 'oi_conversation.dart';
 import 'oi_health_widgets.dart';
 import 'oi_markdown.dart';
@@ -63,6 +64,17 @@ class _OiConversationPaneState extends State<OiConversationPane> {
                 ),
               for (final message in conv.messages)
                 _MessageTile(message: message),
+              // UIV2-F1: the compact (Companion) chat never changes an open
+              // draft; it says so, so an edit request is not silently answered.
+              if (conv.draft != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    'A draft is open in Workspace. Messages here do not change it.',
+                    key: const ValueKey('companion-draft-note'),
+                    style: TextStyle(color: c.inkSoft, fontSize: 11),
+                  ),
+                ),
               if (conv.busy)
                 TextButton.icon(
                   key: const ValueKey('oi-cancel'),
@@ -73,12 +85,16 @@ class _OiConversationPaneState extends State<OiConversationPane> {
             ],
           );
         }
-        return Column(
+        // UIV2-F3: banners, cards and the Stop button never push the pane
+        // past a short window; it scrolls instead (l13: 34 px overflow).
+        return ScrollWhenShort(
+          child: Column(
           children: [
             OiBrainBar(conversation: conv),
             OiWorkerBanner(conversation: conv),
             OiHealthBanner(conversation: conv),
             Expanded(
+              child: ShortIntrinsic(
               child: conv.messages.isEmpty
                   ? Center(
                       child: Text(
@@ -96,6 +112,7 @@ class _OiConversationPaneState extends State<OiConversationPane> {
                       itemBuilder: (context, i) =>
                           _MessageTile(message: conv.messages[i]),
                     ),
+              ),
             ),
             if (conv.pendingConfirmation != null)
               OiConfirmationCard(conversation: conv),
@@ -112,6 +129,7 @@ class _OiConversationPaneState extends State<OiConversationPane> {
                 ),
               ),
           ],
+          ),
         );
       },
     );
@@ -488,7 +506,14 @@ class OiBrainBar extends StatelessWidget {
         UriSpace.md,
         0,
       ),
-      child: Wrap(
+      // UIV2-F3: a picker never grows past its line; in a narrow pane it
+      // ellipsizes instead of overflowing (96 / 156 px in the shrink test).
+      child: Builder(builder: (context) {
+      Widget fit(Widget picker) => ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 260),
+            child: picker,
+          );
+      return Wrap(
         spacing: 8,
         runSpacing: 6,
         crossAxisAlignment: WrapCrossAlignment.center,
@@ -509,50 +534,53 @@ class OiBrainBar extends StatelessWidget {
           ),
           if (health != null) OiHealthChip(conversation: conv),
           if (selectable.length > 1)
-            DropdownButton<String>(
+            fit(DropdownButton<String>(
               key: const ValueKey('oi-brain-picker'),
               value: conv.selectedRowId,
               isDense: true,
+              isExpanded: true,
               underline: const SizedBox.shrink(),
               style: TextStyle(color: c.ink, fontSize: 12),
               items: [
                 for (final r in selectable)
                   DropdownMenuItem(
                     value: r['id'] as String,
-                    child: Text('${r['display']}'),
+                    child: Text('${r['display']}', overflow: TextOverflow.ellipsis),
                   ),
               ],
               onChanged: conv.busy
                   ? null
                   : (v) => v == null ? null : conv.selectBrain(v),
-            ),
-          DropdownButton<OiDepth>(
+            )),
+          fit(DropdownButton<OiDepth>(
             key: const ValueKey('oi-depth'),
             value: conv.depth,
             isDense: true,
+            isExpanded: true,
             underline: const SizedBox.shrink(),
             style: TextStyle(color: c.ink, fontSize: 12),
             items: const [
-              DropdownMenuItem(value: OiDepth.auto, child: Text('Depth: auto')),
-              DropdownMenuItem(value: OiDepth.fast, child: Text('Depth: fast')),
+              DropdownMenuItem(value: OiDepth.auto, child: Text('Depth: auto', overflow: TextOverflow.ellipsis)),
+              DropdownMenuItem(value: OiDepth.fast, child: Text('Depth: fast', overflow: TextOverflow.ellipsis)),
               DropdownMenuItem(
                 value: OiDepth.normal,
-                child: Text('Depth: thinking'),
+                child: Text('Depth: thinking', overflow: TextOverflow.ellipsis),
               ),
               DropdownMenuItem(
                 value: OiDepth.deep,
-                child: Text('Depth: deep (offer a stronger tool)'),
+                child: Text('Depth: deep (offer a stronger tool)', overflow: TextOverflow.ellipsis),
               ),
             ],
             onChanged: (v) => v == null ? null : conv.setDepth(v),
-          ),
+          )),
           IconButton(
             tooltip: 'Refresh Brain status',
             icon: const Icon(Icons.refresh_rounded, size: 16),
             onPressed: conv.refreshStatus,
           ),
         ],
-      ),
+      );
+      }),
     );
   }
 }

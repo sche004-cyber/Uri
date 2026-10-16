@@ -715,8 +715,20 @@ void main() {
   col = aces(col);
   col += dither(fc);
 
+  // UIV2-F4: the faint sky and the dither never reach exactly zero, so on a
+  // light theme the square's bounds showed as a faint frame. Fade the output
+  // to exactly zero before the edge and drop the sub-1/255 haze; true alpha
+  // and the borderless window are kept (no background, no extra pass).
+  vec2 en = abs(fc / uSize * 2.0 - 1.0);
+  float edge = 1.0 - smoothstep(0.90, 0.985, max(en.x, en.y));
+  col = max(col, vec3(0.0)) * edge;
+
   // Premultiplied emissive output: bright material occludes what is behind it,
   // dark sky lets the UI through, so the companion sits on any background.
   float a = clamp(max(max(col.r, col.g), col.b), 0.0, 1.0);
+  if (a < 1.5 / 255.0) {
+    col = vec3(0.0);
+    a = 0.0;
+  }
   fragColor = vec4(col, a);
 }

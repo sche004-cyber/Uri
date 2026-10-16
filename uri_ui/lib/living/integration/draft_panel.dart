@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/uri_theme.dart';
+import '../widgets/scroll_when_short.dart';
 import '../widgets/glass_panel.dart';
 import 'oi_conversation.dart';
 import 'oi_draft.dart';
@@ -47,7 +48,10 @@ class _DraftPanelState extends State<DraftPanel> {
         return GlassPanel(
           key: const ValueKey('draft-panel'),
           padding: const EdgeInsets.all(UriSpace.md),
-          child: Column(
+          // UIV2-F3: a panel squeezed below its natural height (the one-frame
+          // shrink into Companion, a short window) scrolls instead of overflowing.
+          child: ScrollWhenShort(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
@@ -61,10 +65,14 @@ class _DraftPanelState extends State<DraftPanel> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Text(
-                    'Version ${d.position} of ${d.count}',
-                    key: const ValueKey('draft-version'),
-                    style: TextStyle(color: c.inkSoft, fontSize: 12),
+                  Flexible(
+                    child: Text(
+                      'Version ${d.position} of ${d.count}',
+                      key: const ValueKey('draft-version'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: c.inkSoft, fontSize: 12),
+                    ),
                   ),
                 ],
               ),
@@ -77,6 +85,9 @@ class _DraftPanelState extends State<DraftPanel> {
                       tone: d.simulatedTranscript ? c.warning : c.inkSoft),
                   _Tag(_opLabel(cur.op)),
                   _Tag('Not sent · not saved', tone: c.inkSoft),
+                  if (d.replacedDocType != null)
+                    _Tag('Replaced your earlier ${d.replacedDocType} · Undo brings it back',
+                        key: const ValueKey('draft-replaced'), tone: c.warning),
                 ],
               ),
               if (cur.summary.isNotEmpty)
@@ -104,6 +115,9 @@ class _DraftPanelState extends State<DraftPanel> {
               // Everything between the header and the toolbar scrolls together, so many checks or missing
               // items can never overflow the panel (live UI finding, TI live run 2026-10-09).
               Expanded(
+                child: ShortIntrinsic(
+                // a few lines of the draft stay visible even when the panel scrolls
+                height: 140,
                 child: SingleChildScrollView(
                   key: const ValueKey('draft-scroll'),
                   child: Column(
@@ -140,6 +154,7 @@ class _DraftPanelState extends State<DraftPanel> {
                     ],
                   ),
                 ),
+                ),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -172,6 +187,7 @@ class _DraftPanelState extends State<DraftPanel> {
                 ],
               ),
             ],
+          ),
           ),
         );
       },
@@ -354,3 +370,4 @@ class _Tag extends StatelessWidget {
     );
   }
 }
+

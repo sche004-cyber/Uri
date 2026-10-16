@@ -442,14 +442,26 @@ class OiConversation extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// UIV2-F1: an open draft is changed only from a surface that shows it
+  /// (Workspace). From anywhere else ([draftInView] false: Companion,
+  /// dashboard, voice while the draft is not on screen) a turn goes as
+  /// mode "command": the ordinary path, never a draft edit.
+  bool _scopeToCommand(bool draftInView) => draft != null && !draftInView;
+
   /// Sends the user's words as a turn. Never a decision, whatever it says.
   /// With [transcriptMode] on, the words are sent as a simulated transcript.
-  Future<void> send(String text) async {
+  Future<void> send(String text, {bool draftInView = true}) async {
     if (transcriptMode) {
-      return sendTranscript(text, engine: 'simulated', simulated: true, dictation: dictationMode);
+      return sendTranscript(text,
+          engine: 'simulated', simulated: true, dictation: dictationMode, draftInView: draftInView);
     }
     if (dictationMode) {
+      // Dictation is explicit content the user chose to write; it starts its own draft (the replaced one is kept
+      // and Undo brings it back).
       return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': 'dictation'}, 'Dictation');
+    }
+    if (_scopeToCommand(draftInView)) {
+      return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': 'command'}, null);
     }
     return _turn(text.trim(), null, null);
   }
@@ -466,10 +478,12 @@ class OiConversation extends ChangeNotifier {
     String? language,
     List<String> uncertain = const [],
     bool dictation = false,
+    bool draftInView = true,
   }) {
     // The raw transcript is kept byte for byte (contract: turn text == transcript.raw); only emptiness is
     // judged on a trimmed copy.
     final t = raw;
+    final command = !dictation && _scopeToCommand(draftInView);
     final input = {
       'schema': 'uri.text_input.v1',
       'source': 'transcript',
@@ -481,6 +495,7 @@ class OiConversation extends ChangeNotifier {
         if (uncertain.isNotEmpty) 'uncertain': uncertain,
       },
       if (dictation) 'mode': 'dictation',
+      if (command) 'mode': 'command',
     };
     final label = simulated ? 'Simulated transcript' : 'Transcript · $engine';
     return _turn(t, input, dictation ? '$label · Dictation' : label);

@@ -26,6 +26,7 @@ import '../presentation/living_shell.dart';
 import '../presentation/presentation_controller.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/living_composer.dart';
+import '../widgets/scroll_when_short.dart';
 import '../widgets/status_badge.dart';
 import 'intelligence/intelligence_overview_view.dart';
 import 'settings/companion_settings_section.dart';
@@ -198,7 +199,10 @@ class _Rail extends StatelessWidget {
         border: Border(right: BorderSide(color: glass.border)),
         color: glass.fill,
       ),
-      child: Column(
+      // UIV2-F3: in a short window (the shrink into Companion) the rail
+      // scrolls instead of overflowing (l13 evidence; 90 px at 300 px high).
+      child: ScrollWhenShort(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Orb dock (the shell draws the orb here, centred in the rail).
@@ -258,6 +262,7 @@ class _Rail extends StatelessWidget {
           ),
           const SizedBox(height: 10),
         ],
+      ),
       ),
     );
   }
