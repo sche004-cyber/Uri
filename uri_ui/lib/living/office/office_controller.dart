@@ -167,8 +167,11 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
   Future<void> _sendLoad() async {
     final v = view;
     if (!pageReady || v == null) return;
-    await surface.post({'type': 'load', 'workbook': v['workbook'], 'marks': marks()});
+    await surface.post({'type': 'load', 'workbook': v['workbook'], 'marks': marks(), 'formatting': savesFormatting});
   }
+
+  /// OD-R3 / XF-1: the service saves the owner's formatting for local workbooks (not Google Sheets, not a new one).
+  bool get savesFormatting => view?['engine'] == 'local';
 
   Future<void> _refreshDraft(Map<String, dynamic> r) async {
     final d = r['draft'];
@@ -178,7 +181,10 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       final w = r['workbook'];
       final lv = r['layout_version'];
       view = {...view!, 'draft': d, if (w is Map) 'workbook': w, 'layout_version': ?lv};
-      if (pageReady) await surface.post({'type': 'load', 'workbook': view!['workbook'], 'marks': marks()});
+      if (pageReady) {
+        await surface.post({'type': 'load', 'workbook': view!['workbook'], 'marks': marks(),
+          'formatting': savesFormatting});
+      }
     }
   }
 
@@ -198,6 +204,12 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
           'layout_version': ?lv};
         _pageEdits.add((wid, body));
         await _sendPageEdits();
+      case 'format':                                      // OD-R3: the owner's formatting, saved with the next save
+        final wid = workbookId;
+        if (wid == null || !savesFormatting) return;
+        final lv = view?['layout_version'];
+        _pageEdits.add((wid, {'sheet': m['sheet'], 'cell': m['cell'], 'style': m['style'], 'layout_version': ?lv}));
+        await _sendPageEdits();
       case 'error':
         notice = switch (m['code']) {
           'STRUCTURE_CHANGE_NOT_SUPPORTED' =>
@@ -208,6 +220,10 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
           'FORMAT_CHANGE_NOT_SAVED' => 'Formatting (bold, colours, number formats, borders, merged cells) and '
               'column widths or row heights are not saved by this panel yet, so they were not applied. Values and '
               'formulas are kept.',
+          // OD-R3: bold, italic, underline, colours, fill, number formats, alignment and wrap are saved now.
+          'FORMAT_PARTLY_NOT_SAVED' => 'Bold, italic, underline, text colour, fill, number formats, alignment and '
+              'wrap are saved. Font size and family, borders, merged cells and column widths or row heights are not '
+              'saved by this panel yet, so those parts were not applied.',
           _ => 'The sheet view reported a problem (${m['code']}).',
         };
         notifyListeners();

@@ -212,11 +212,11 @@ def locked_cells(path: Path) -> dict:
     return out
 
 
-def patch(src: Path, dst: Path, edits: list, struct_ops=()) -> dict:
+def patch(src: Path, dst: Path, edits: list, struct_ops=(), formats=()) -> dict:
     """Apply `edits` to the package at `src` and write the result to `dst` (may equal `src`). Cell edits name cells
     as shown (before any row moves), as for Google; then `struct_ops` (local row insert/delete, OD-R3) run in order,
     each insert followed by the values it carries, written into its new rows."""
-    if not edits and not struct_ops:
+    if not edits and not struct_ops and not formats:
         raise OfficeError("NOTHING_TO_SAVE")
     try:
         zin = zipfile.ZipFile(src)
@@ -250,6 +250,9 @@ def patch(src: Path, dst: Path, edits: list, struct_ops=()) -> dict:
         _extend_dimension(root, [e["cell"] for e in es])
         parts[part] = _ser(root)
         changed.add(part)
+    if formats:                                     # XF-1: formatting as shown, before any row moves
+        from . import xlsx_styles
+        changed |= xlsx_styles.apply_formats(parts, list(formats))
     if struct_ops:
         from . import xlsx_struct
         for op in struct_ops:

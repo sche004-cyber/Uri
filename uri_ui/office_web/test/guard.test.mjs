@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 import { BLOCKED_FUNCTIONS, FORMAT_COMMANDS, blockFunctions, guardFormatting, guardStructure, isStructural,
-  stripCellStyles } from '../src/guard.js';
+  stripCellStyles, keepSavedStyles, fromUniverStyle } from '../src/guard.js';
 
 // Same shape as Univer 1.0.3's FunctionService: executors keyed by `name`, descriptions by `functionName`.
 class FakeFunctionService {
@@ -106,4 +106,22 @@ test('XF-1: guardFormatting refuses merges, strips user styles, leaves page writ
   l(mark);
   assert.ok(mark.params.cellValue[0][0].s);
   assert.deepEqual(refused, ['sheet.command.add-worksheet-merge', 'sheet.mutation.set-range-values']);
+});
+
+test('OD-R3: keepSavedStyles keeps the saved subset and removes the rest', () => {
+  const p = { cellValue: { 0: { 0: { v: 1, s: { bl: 1, fs: 20, ul: { s: 1, cl: { rgb: '#f00' } } } }, 1: { s: 'id7' },
+    2: { s: null }, 3: { s: { it: 1 } } } } };
+  assert.equal(keepSavedStyles(p), 3);
+  assert.deepEqual(p.cellValue[0][0], { v: 1, s: { bl: 1, ul: { s: 1 } } });
+  assert.equal('s' in p.cellValue[0][1], false);
+  assert.equal('s' in p.cellValue[0][2], false);
+  assert.deepEqual(p.cellValue[0][3], { s: { it: 1 } });
+});
+
+test('OD-R3: fromUniverStyle maps Univer styles to URI styles and normalises colours', () => {
+  assert.deepEqual(fromUniverStyle({ bl: 1, it: 1, ul: { s: 1 }, cl: { rgb: 'rgb(192, 0, 0)' }, bg: { rgb: '#abc' },
+    n: { pattern: '0.0%' }, ht: 3, tb: 3 }),
+  { b: true, i: true, u: true, fc: '#C00000', bg: '#AABBCC', nf: '0.0%', ha: 'right', wrap: true });
+  assert.deepEqual(fromUniverStyle({ cl: { rgb: '#000000' }, n: { pattern: 'General' }, ht: 0 }), {});
+  assert.deepEqual(fromUniverStyle(null), {});
 });

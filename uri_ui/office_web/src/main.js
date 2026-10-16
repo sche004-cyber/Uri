@@ -14,11 +14,11 @@ import './no-network.js';        // must stay the first import: runs before any 
 import { createUniver, LocaleType, mergeLocales } from '@univerjs/presets';
 import { UniverSheetsCorePreset } from '@univerjs/preset-sheets-core';
 import sheetsCoreEnUS from '@univerjs/preset-sheets-core/locales/en-US';
-import { CanceledError, ICommandService } from '@univerjs/core';
+import { CanceledError, ICommandService, IUniverInstanceService } from '@univerjs/core';
 import { FormulaDataModel, IFunctionService } from '@univerjs/engine-formula';
 import '@univerjs/preset-sheets-core/lib/index.css';
-import { editsFromMutation, parseCell, toUniver } from './convert.js';
-import { blockFunctions, guardFormatting, guardStructure } from './guard.js';
+import { cellRef, editsFromMutation, parseCell, toUniver } from './convert.js';
+import { blockFunctions, fromUniverStyle, guardFormatting, guardStructure } from './guard.js';
 
 // user: owner's own edits are applied without a mark.
 const MARK_BG = { proposed: '#FFF2B3', accepted: '#D9F2D9', user: null };
@@ -41,7 +41,8 @@ guardStructure(injector.get(ICommandService), CanceledError,
   () => send({ type: 'error', code: 'STRUCTURE_CHANGE_NOT_SUPPORTED' }));
 // XF-1: formatting is not saved yet, so it is not applied either; the owner is told (see guard.js).
 guardFormatting(injector.get(ICommandService), CanceledError, () => applying > 0,
-  () => send({ type: 'error', code: 'FORMAT_CHANGE_NOT_SAVED' }));
+  () => send({ type: 'error', code: savedStyles ? 'FORMAT_PARTLY_NOT_SAVED' : 'FORMAT_CHANGE_NOT_SAVED' }),
+  () => savedStyles);
 // Read-only diagnostics for the Edge/WebView2 probe: which blocked functions the engine still has (must be none).
 Object.defineProperty(window, 'uriOfficeGuard', {
   value: Object.freeze({ blockedFunctionsPresent: () => functionGuard.present() }),
@@ -50,6 +51,7 @@ Object.defineProperty(window, 'uriOfficeGuard', {
 let workbook = null;
 let sheetNameById = {};
 let applying = 0;           // > 0 while the page itself changes cells (marks, loads): not user edits
+let savedStyles = false;    // OD-R3: true for a local workbook (the host says so on load)
 let marked = [];            // [{sheet, cell}] currently shown with a mark
 
 function load(wb) {
@@ -114,13 +116,33 @@ univerAPI.addEvent(univerAPI.Event.CommandExecuted, (ev) => {
     if (e.error) send({ type: 'error', code: e.error, detail: `${e.sheet}!${e.cell}` });
     else send({ type: 'edit', ...e });
   }
+  // OD-R3 / XF-1: a cell whose style the owner changed reports its whole saved-subset style as it is now shown.
+  if (savedStyles && p.cellValue && sheetNameById[p.subUnitId]) {
+    const wbm = injector.get(IUniverInstanceService).getUnit(p.unitId);
+    const ws = wbm && wbm.getSheetBySheetId(p.subUnitId);
+    if (!ws) return;
+    const sheet = sheetNameById[p.subUnitId];
+    for (const [r, cols] of Object.entries(p.cellValue)) {
+      for (const [c, cell] of Object.entries(cols || {})) {
+        if (!cell || !('s' in cell)) continue;
+        const ref = cellRef(Number(r), Number(c));
+        const mark = marked.find((m) => m.sheet === sheet && m.cell === ref);
+        const st = wbm.getStyles().getStyleByCell(ws.getCellRaw(Number(r), Number(c)));
+        send({ type: 'format', sheet, cell: ref, style: fromUniverStyle(st, mark ? (mark.restore || null) : undefined) });
+      }
+    }
+  }
 });
 
 if (host) {
   host.addEventListener('message', (ev) => {
     const msg = ev.data;
     try {
-      if (msg && msg.type === 'load') { load(msg.workbook); setMarks(msg.marks); }
+      if (msg && msg.type === 'load') {
+        savedStyles = msg.formatting === true;
+        load(msg.workbook);
+        setMarks(msg.marks);
+      }
       else if (msg && msg.type === 'marks') setMarks(msg.marks);
     } catch (err) {
       send({ type: 'error', code: 'PAGE_ERROR', detail: String(err && err.message || err).slice(0, 200) });

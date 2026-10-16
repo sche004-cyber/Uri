@@ -137,3 +137,40 @@ def test_the_local_prompt_explains_real_row_operations(session):
     o.instruct(wid, {"text": "x", "active_sheet": "Budget"})
     system = o.brain.client.bodies[0]["messages"][0]["content"]
     assert "insert_rows" in system and "ABOVE row `at`" in system and "never imitate an insert" in system
+
+
+# ---- XF-1 (OD-R3): formatting the owner applies is saved -----------------------------------------------------------
+def test_owner_formatting_is_saved_with_plain_words_on_the_card(session):
+    o, wid, p = session()
+    o.edit(wid, {"sheet": "Budget", "cell": "A1", "style": {"b": True, "bg": "#FFFF00"}})
+    o.edit(wid, {"sheet": "Budget", "cell": "B2", "style": {"nf": "#,##0"}})
+    o.edit(wid, {"sheet": "Budget", "cell": "B2", "value": 1300000})
+    prop = o.propose_save(wid, {})
+    text = card_text(prop)
+    assert "Budget!A1 formatting: plain -> bold, fill #FFFF00" in text
+    assert "Budget!B2 formatting: plain -> number format #,##0" in text
+    o.action(act(prop))
+    ws = load_workbook(p)["Budget"]
+    assert ws["A1"].font.b and ws["A1"].fill.fgColor.rgb == "FFFFFF00"
+    assert ws["B2"].number_format == "#,##0" and ws["B2"].value == 1300000
+    v = o.view(wid)
+    st = v["workbook"]["styles"][v["workbook"]["sheets"][0]["cells"]["A1"]["s"]]
+    assert st == {"b": True, "bg": "#FFFF00"}
+    assert v["draft"]["changes"] == []
+
+
+def test_formatting_back_to_what_was_shown_is_not_a_change(session):
+    o, wid, p = session()
+    o.edit(wid, {"sheet": "Budget", "cell": "A1", "style": {"b": True}})
+    o.edit(wid, {"sheet": "Budget", "cell": "A1", "style": {}})
+    with pytest.raises(OfficeError) as e:
+        o.propose_save(wid, {})
+    assert e.value.code == "NOTHING_TO_SAVE"
+
+
+def test_bad_or_unsupported_formatting_is_refused(session):
+    o, wid, p = session()
+    for st in ({"sz": 14}, {"b": "yes"}, {"fc": "blue"}):
+        with pytest.raises(OfficeError):
+            o.edit(wid, {"sheet": "Budget", "cell": "A1", "style": st})
+    assert o.view(wid)["draft"]["changes"] == []

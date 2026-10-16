@@ -38,6 +38,7 @@ class Draft:
         self.base = {s["name"]: {ref: {k: c.get(k) for k in ("v", "f") if k in c} for ref, c in s["cells"].items()}
                      for s in workbook["sheets"]}
         self.locked = {s["name"]: set(s.get("locked", ())) for s in workbook["sheets"]}
+        self.styles = _styles_of(workbook)               # XF-1: the formatting URI showed, per cell
         self.changes: list[dict] = []
         self._undo: list[list] = []
         self._redo: list[list] = []
@@ -228,6 +229,25 @@ class Draft:
                                       before=self.before(edit["sheet"], cell), after=self._after(edit)))
         return events
 
+    def style_now(self, sheet, cell) -> dict:
+        cur = dict(self.styles.get(sheet, {}).get(cell, {}))
+        for ch in self.changes:
+            if ch["kind"] == "format" and ch["sheet"] == sheet and ch["cell"] == cell and ch["state"] == "user":
+                cur = dict(ch["after"])
+        return cur
+
+    def user_format(self, sheet: str, cell: str, style: dict) -> None:
+        """XF-1 (OD-R3): the owner formatted a cell in the panel. Recorded as the owner's own change, saved with the
+        next approved save (local files only; checked by the caller)."""
+        if sheet not in self.base:
+            raise OfficeError("UNKNOWN_SHEET", str(sheet)[:64])
+        cell = refs.canonical_cell(cell)
+        before = self.style_now(sheet, cell)
+        if before == style:
+            return
+        self._push()
+        self.changes.append(self._new("user", "format", "user", sheet=sheet, cell=cell, before=before, after=style))
+
     def decide(self, cid: str, decision: str, sha: str) -> list:
         """Accept or reject one proposed URI change. `sha` must equal the hash of the change the owner saw."""
         if decision not in ("accept", "reject"):
@@ -253,11 +273,14 @@ class Draft:
         """What an approval would commit, in a stable order. `before` is the value in the file as opened."""
         latest: dict = {}
         structs = []
+        fmt: dict = {}
         for ch in self.changes:
             if ch["state"] not in ("accepted", "user"):
                 continue
             if ch["kind"] == "struct":
                 structs.append(ch["op"])
+            elif ch["kind"] == "format":
+                fmt[(ch["sheet"], ch["cell"])] = ch["after"]
             else:
                 latest[(ch["sheet"], ch["cell"])] = ch["after"]
         edits = []
@@ -269,12 +292,20 @@ class Draft:
                 continue
             edits.append({"sheet": sheet, "cell": cell, "before": base, "after": after})
         edits.sort(key=lambda e: (list(self.base).index(e["sheet"]) if e["sheet"] in self.base else 0, e["cell"]))
-        return {"edits": edits, "struct_ops": structs}
+        out = {"edits": edits, "struct_ops": structs}
+        formats = [{"sheet": sh, "cell": c, "before": self.styles.get(sh, {}).get(c, {}), "after": a}
+                   for (sh, c), a in fmt.items() if self.styles.get(sh, {}).get(c, {}) != a]
+        if formats:                                    # only when present, so earlier change sets hash as before
+            formats.sort(key=lambda f: (list(self.base).index(f["sheet"]) if f["sheet"] in self.base else 0, f["cell"]))
+            out["formats"] = formats
+        return out
 
     def committed(self, pending: dict):
         """After a successful save: the saved values become the new base, decided changes are cleared."""
         for e in pending["edits"]:
             self.base.setdefault(e["sheet"], {})[e["cell"]] = dict(e["after"])
+        for f in pending.get("formats", ()):
+            self.styles.setdefault(f["sheet"], {})[f["cell"]] = dict(f["after"])
         self.changes = [c for c in self.changes if c["state"] == "proposed"]
         for c in self.changes:
             if c["kind"] == "cell":
@@ -292,6 +323,7 @@ class Draft:
         self.base = {s["name"]: {ref: {k: c.get(k) for k in ("v", "f") if k in c} for ref, c in s["cells"].items()}
                      for s in workbook["sheets"]}
         self.locked = {s["name"]: set(s.get("locked", ())) for s in workbook["sheets"]}
+        self.styles = _styles_of(workbook)
         kept, dropped = [], 0
         for c in self.changes:
             if c["sheet"] in moved and (c["kind"] == "cell" or c["op"]["op"] in ROW_OPS):
@@ -314,6 +346,12 @@ class Draft:
 
 
 ROW_OPS = ("insert_rows", "delete_rows")
+
+
+def _styles_of(workbook: dict) -> dict:
+    table = workbook.get("styles") or {}
+    return {s["name"]: {ref: dict(table.get(c["s"], {})) for ref, c in s["cells"].items() if c.get("s")}
+            for s in workbook["sheets"]}
 
 
 def layout_moves(struct_ops: list) -> tuple:

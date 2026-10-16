@@ -419,6 +419,11 @@ class Office:
         s.draft.committed(pending)
         s.workbook = {**s.workbook, "sheets": self._overlay(
             s.workbook["sheets"], [(e["sheet"], e["cell"], e["after"]) for e in pending["edits"]])}
+        if pending.get("formats") and not pending["struct_ops"] and s.engine == "local":
+            try:                                         # XF-1: the snapshot shows the saved formatting too
+                s.workbook = xlsx_model.read(s.path)
+            except OfficeError:
+                pass
         if pending["struct_ops"]:
             s.stale_ops = list(s.stale_ops) + list(pending["struct_ops"])
             try:
@@ -466,6 +471,12 @@ class Office:
             if s.engine in ("google", "local") and stale_grid:
                 raise OfficeError("RELOAD_REQUIRED", "the sheet's rows moved since this grid was loaded; reload it "
                                                      "and edit again", 409)
+            if "style" in body:                          # XF-1 (OD-R3): the owner formatted a cell
+                if s.engine != "local":
+                    raise OfficeError("FORMAT_NOT_SUPPORTED", "formatting is saved for local workbooks only")
+                from .xlsx_styles import check_style
+                s.draft.user_format(body.get("sheet"), body.get("cell"), check_style(body["style"]))
+                return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
             op = ({"op": "set_formula", "sheet": body.get("sheet"), "cell": body.get("cell"), "formula": body["formula"]}
                   if "formula" in body else
                   {"op": "set_values", "sheet": body.get("sheet"), "range": body.get("cell"), "values": [[body.get("value")]]})
@@ -603,7 +614,7 @@ class Office:
             if s.draft.version != t.get("draft_version"):
                 raise OfficeError("STALE_CHANGE", "the draft changed after this approval was shown; review the save "
                                                   "again", 409)
-            pending = {"edits": body["edits"], "struct_ops": body["struct_ops"]}
+            pending = {"edits": body["edits"], "struct_ops": body["struct_ops"], "formats": body.get("formats", [])}
             if t["kind"] == "new_file":
                 return self._create_new_file(s, t, pending)
             if t["kind"] == "google":
@@ -625,7 +636,7 @@ class Office:
             backup.mkdir(parents=True, exist_ok=True)
             if not t["save_as"]:
                 shutil.copy2(src, backup / f"{int(time.time())}-{src.name}")
-            res = xlsx_patch.patch(src, dest, D.patch_edits(pending), pending["struct_ops"])
+            res = xlsx_patch.patch(src, dest, D.patch_edits(pending), pending["struct_ops"], pending["formats"])
             # A Save As writes a new file but the session keeps editing the original: the draft stays relative to the
             # original (its edits remain pending for it, and for any later Save As), so nothing is committed here.
             extra = {}

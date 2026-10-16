@@ -136,10 +136,13 @@ class Approvals:
 
     # ---- surfaces ------------------------------------------------------------------------------------------------
     def propose(self, workbook_id: str, target: dict, pending: dict) -> Surface:
-        if not pending["edits"] and not pending["struct_ops"] and target.get("kind") != "google_upload":
+        if not pending["edits"] and not pending["struct_ops"] and not pending.get("formats") and \
+                target.get("kind") != "google_upload":
             raise OfficeError("NOTHING_TO_SAVE", "there are no accepted or typed changes")
         body = {"workbook_id": workbook_id, "target": target, "edits": pending["edits"],
                 "struct_ops": pending["struct_ops"]}
+        if pending.get("formats"):                      # XF-1: only when present (earlier bodies hash as before)
+            body["formats"] = pending["formats"]
         sha = hashlib.sha256(canonical(body)).hexdigest()
         try:
             surface = self._surface(f"office.{workbook_id}.{uuid.uuid4().hex[:8]}", target, body, sha)
@@ -288,7 +291,7 @@ class Approvals:
                                 (surface_id,)).fetchone()
         return (r["subject_kind"], r["workbook_id"]) if r else (None, None)
 
-    def _surface(self, sid, target, body, sha) -> Surface:
+    def _surface(self, sid, target, body, sha) -> Surface:  # noqa: C901 - one card builder
         google = target.get("kind") == "google"
         upload = target.get("kind") == "google_upload"
         new_file = target.get("kind") == "new_file"
@@ -298,6 +301,8 @@ class Approvals:
         # OD-R2: structural changes in plain words, rows to be deleted with what they hold now.
         from .ops import describe_op
         lines += [describe_op(op) for op in body["struct_ops"]]
+        lines += [f"{f['sheet']}!{f['cell']} formatting: {_style_words(f['before'])} -> {_style_words(f['after'])}"
+                  for f in body.get("formats", ())]
         if new_file:
             # M2-D1: a new file changes no existing data and can hold far more cells than a card can show, so the card
             # summarises it; the hash still binds every cell, and a later draft change makes this approval stale.
@@ -433,3 +438,20 @@ class Approvals:
                 if exc.code in ("TARGET_CHANGED", "STALE_CHANGE", "STALE_PLAN", "INPUT_CHANGED") and r is not None:
                     self._close(sid)
                 raise
+
+
+def _style_words(st: dict) -> str:
+    """XF-1: formatting in plain words for the save card ("bold, fill #FFFF00, number format #,##0.00")."""
+    if not st:
+        return "plain"
+    words = {"b": "bold", "i": "italic", "u": "underlined", "wrap": "wrapped"}
+    out = [words[k] for k in ("b", "i", "u", "wrap") if st.get(k)]
+    if st.get("fc"):
+        out.append("text " + st["fc"])
+    if st.get("bg"):
+        out.append("fill " + st["bg"])
+    if st.get("ha"):
+        out.append("aligned " + st["ha"])
+    if st.get("nf"):
+        out.append("number format " + st["nf"])
+    return ", ".join(out)

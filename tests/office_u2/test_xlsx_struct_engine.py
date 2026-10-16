@@ -61,3 +61,23 @@ def test_deleted_row_leaves_the_total_and_a_ref_error_where_it_was_used(tmp_path
     (tmp_path / "n").mkdir()
     notes = calc_csv(tmp_path / "n", parts, sheet_index=2)
     assert notes[1][0] == "#REF!"
+
+
+def test_saved_formatting_survives_a_libreoffice_round_trip(tmp_path):
+    """XF-1: LibreOffice opens the restyled file without repair and keeps bold, fill and number format."""
+    from openpyxl import load_workbook
+    from uri_office import xlsx_styles as X
+    parts = parts_of(budget_bytes())
+    X.apply_formats(parts, [{"sheet": "Budget", "cell": "B2", "before": {}, "after": {"b": True, "bg": "#FFFF00",
+                                                                                   "nf": "#,##0.00"}}])
+    src = tmp_path / "styled.xlsx"
+    with zipfile.ZipFile(src, "w") as z:
+        for n, d in parts.items():
+            z.writestr(n, d)
+    out = tmp_path / "rt"
+    r = subprocess.run([str(SOFFICE), f"-env:UserInstallation={(tmp_path / 'prof').as_uri()}", "--headless",
+                        "--norestore", "--convert-to", "xlsx:Calc MS Excel 2007 XML", "--outdir", str(out), str(src)],
+                       capture_output=True, text=True, timeout=180)
+    assert r.returncode == 0, r.stderr
+    c = load_workbook(out / "styled.xlsx")["Budget"]["B2"]
+    assert c.font.b and c.fill.fgColor.rgb.endswith("FFFF00") and c.number_format == "#,##0.00"

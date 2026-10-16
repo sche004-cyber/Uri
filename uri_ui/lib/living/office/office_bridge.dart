@@ -83,6 +83,7 @@ class OfficeEnvironment {
 }
 
 final RegExp _cellRef = RegExp(r'^[A-Z]{1,3}[1-9][0-9]{0,6}$');
+final RegExp _hexColour = RegExp(r'^#[0-9A-F]{6}$');
 
 /// The only messages the panel accepts from the page. Everything else is dropped (returns null).
 ///
@@ -90,6 +91,8 @@ final RegExp _cellRef = RegExp(r'^[A-Z]{1,3}[1-9][0-9]{0,6}$');
 ///   {"type": "ready"}
 ///   {"type": "edit", "sheet": <1..31 chars>, "cell": "B3", "value": <string|number|bool|null>}
 ///   {"type": "edit", "sheet": ..., "cell": ..., "formula": "=..."}
+///   {"type": "format", "sheet": ..., "cell": ..., "style": {b, i, u, wrap: true; fc, bg: "#RRGGBB"; nf: <string>;
+///                                                        ha: left|center|right}}   (OD-R3, local workbooks)
 ///   {"type": "error", "code": <string>, "detail": <string>?}
 /// ```
 Map<String, dynamic>? parsePageMessage(Object? raw) {
@@ -98,6 +101,28 @@ Map<String, dynamic>? parsePageMessage(Object? raw) {
   switch (type) {
     case 'ready':
       return raw.length == 1 ? const {'type': 'ready'} : null;
+    case 'format':
+      final sheet = raw['sheet'];
+      final cell = raw['cell'];
+      final style = raw['style'];
+      if (sheet is! String || sheet.isEmpty || sheet.length > 31) return null;
+      if (cell is! String || !_cellRef.hasMatch(cell) || style is! Map || raw.length != 4) return null;
+      final out = <String, Object>{};
+      for (final e in style.entries) {
+        final k = e.key, v = e.value;
+        if (const {'b', 'i', 'u', 'wrap'}.contains(k) && v == true) {
+          out[k as String] = true;
+        } else if ((k == 'fc' || k == 'bg') && v is String && _hexColour.hasMatch(v)) {
+          out[k as String] = v;
+        } else if (k == 'nf' && v is String && v.isNotEmpty && v.length <= 255) {
+          out['nf'] = v;
+        } else if (k == 'ha' && const {'left', 'center', 'right'}.contains(v)) {
+          out['ha'] = v as String;
+        } else {
+          return null;
+        }
+      }
+      return {'type': 'format', 'sheet': sheet, 'cell': cell, 'style': out};
     case 'edit':
       final sheet = raw['sheet'];
       final cell = raw['cell'];
