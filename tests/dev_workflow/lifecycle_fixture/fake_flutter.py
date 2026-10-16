@@ -5,7 +5,7 @@ Flag files in the folder named by FAKE_FLAGS (set by the wrapper the test writes
 - ``pub get``: writes .dart_tool/package_config.json, unless flag ``offline_fail`` exists (offline cache miss).
 - ``test``: without .dart_tool/package_config.json prints the real Flutter error and exits 1 (the DRV-3 condition);
   with it prints ``--machine`` events for the tests listed in tests.txt (``name=pass|fail``), one per line. A missing
-  or empty tests.txt runs no test.
+  or empty tests.txt runs no test. Flag ``hidden_failure_only`` emits one hidden failing test and no visible tests.
 - ``analyze``: exits 1 without package_config.json, else 0.
 """
 import json
@@ -42,6 +42,12 @@ if args[:1] == ["analyze"]:
 if args[:1] == ["test"]:
     if not cfg.is_file():
         print('Error: cannot run without a dependency on either "package:flutter_test" or "package:test".')
+        sys.exit(1)
+    if (flags / "hidden_failure_only").is_file():
+        print(json.dumps({"type": "testStart", "test": {"id": 1, "name": "hidden", "url": "hidden.dart"}}))
+        print(json.dumps({"type": "error", "testID": 1, "error": "TestFailure: hidden failure"}))
+        print(json.dumps({"type": "testDone", "testID": 1, "result": "failure", "hidden": True}))
+        print(json.dumps({"type": "done", "success": False}))
         sys.exit(1)
     spec = here / "tests.txt"
     lines = [x.split("=") for x in spec.read_text().split() if "=" in x] if spec.is_file() else []

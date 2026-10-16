@@ -627,7 +627,8 @@ def parse_junit(path: Path) -> dict:
 
 
 def parse_flutter_machine(text: str) -> dict:
-    names, res, errs = {}, {"failures": {}, "passed": 0, "skipped": 0, "ids": [], "parsed": False}, {}
+    names, res, errs = {}, {"failures": {}, "passed": 0, "skipped": 0, "executed": 0,
+                            "ids": [], "parsed": False}, {}
     for line in text.splitlines():
         try:
             ev = json.loads(line)
@@ -649,6 +650,8 @@ def parse_flutter_machine(text: str) -> dict:
             n = names.get(ev.get("testID"), str(ev.get("testID")))
             if not ev.get("hidden"):
                 res["ids"].append(n)
+                if not ev.get("skipped"):
+                    res["executed"] += 1
             if ev.get("result") != "success":
                 res["failures"][n] = errs.get(ev.get("testID"), ev.get("result"))
             elif ev.get("skipped"):
@@ -662,7 +665,7 @@ NOBYTECODE = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
 GPU_LEASE_BUSY = 75  # uri_operational_intelligence.gpu_lease `run` exit code on GpuBusy
 # Gate result semantics version: part of the baseline cache key, so a baseline result recorded under older rules
 # (e.g. a Flutter run without packages, DRV-3) is never reused.
-GATE_SCHEMA = 3
+GATE_SCHEMA = 4
 FLUTTER_TOOLS = ("flutter", "flutter.bat", "dart", "dart.bat", "dart.exe")
 
 
@@ -786,7 +789,7 @@ def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
         out.update(parse_junit(junit) if kind == "pytest" else parse_flutter_machine(stdout))
         normal = (0, 1)
         # A crashed run, an unusable report or a failing exit with no recorded failure is itself a failure.
-        executed = out["passed"] + len(out["failures"])
+        executed = out["executed"] if kind == "flutter" else out["passed"] + len(out["failures"])
         out["executed"] = executed
         # Execution evidence (DRV-3): a run that produced no report, or executed no test, proves nothing. It is a
         # failure of this side; when the baseline has the same condition, qualify() blocks instead of comparing.
@@ -858,8 +861,10 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
                 tool = _flutter_tool(g, _expand(g["cmd"], cfg, wt), wt / g.get("cwd", "."))
                 fingerprint = flutter_toolchain(tool, wt) if tool else None
                 cacheable = not tool or fingerprint is not None
+                # Preparation can change whether the baseline runs any tests, even with the same SHA and command.
                 key = chash([st.d["baseline"], g["cmd"], g.get("kind"), g.get("cwd", "."), GATE_SCHEMA,
-                             fingerprint])
+                             fingerprint, g.get("prepare", True), g.get("pub_offline", True),
+                             g.get("prepare_timeout_s", 900)])
                 cached = st.d["baseline_gates"].get(g["id"])
                 # Only a completed baseline run is reused: a timeout, busy GPU lease or other BLOCKED result is
                 # re-tried on the next qualification, each attempt its own BASELINE_GATE event (R3-02).

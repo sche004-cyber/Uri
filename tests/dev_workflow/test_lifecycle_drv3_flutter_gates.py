@@ -84,6 +84,16 @@ def run_cfg(tmp, gates):
     return config(tmp, repo, wt, implementer="noop", integration={"mode": "none"}, gates=gates)
 
 
+def test_r201_hidden_failure_is_not_executed_in_machine_parser():
+    events = [{"type": "testStart", "test": {"id": 1, "name": "hidden", "url": "hidden.dart"}},
+              {"type": "error", "testID": 1, "error": "TestFailure: hidden failure"},
+              {"type": "testDone", "testID": 1, "result": "failure", "hidden": True},
+              {"type": "done", "success": False}]
+    result = L.parse_flutter_machine("\n".join(json.dumps(event) for event in events))
+    assert result["parsed"] is True and result["executed"] == 0
+    assert result["ids"] == [] and result["failures"] == {"hidden.dart::hidden": "TestFailure"}
+
+
 def test_drv3_original_false_pass_is_now_blocked(tmp_path):
     """The DRV-3 condition exactly: dependency preparation off, both sides cannot run -> BLOCKED, never ok."""
     make_dart_fixture(tmp_path)
@@ -173,6 +183,21 @@ def test_drv3_zero_tests_on_both_sides_blocks_unless_justified(tmp_path):
     assert "ZERO_TESTS" in L.status(cfg)["blocker"]["reason"]
 
 
+def test_r201_hidden_failure_does_not_supply_test_execution_evidence(tmp_path):
+    make_dart_fixture(tmp_path)
+    tool = fake_tool(tmp_path)
+    flag(tool, "hidden_failure_only")
+    cfg = run_cfg(tmp_path, [flutter_gate(tool)])
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    gate = list(s["gates"].values())[0]
+    counts = gate["counts"]["flutter"]
+    assert gate["ok"] is False and not s["evidence_ok_for_candidate"]
+    assert counts["candidate"]["evidence"] == counts["baseline"]["evidence"] == "ZERO_TESTS"
+    assert counts["candidate"]["executed"] == counts["baseline"]["executed"] == 0
+    assert counts["candidate"]["failed"] >= 1  # retain the hidden failure as a diagnostic
+
+
 def test_drv3_zero_tests_with_written_justification_is_allowed(tmp_path):
     make_dart_fixture(tmp_path, base_tests="", cand_tests="")
     tool = fake_tool(tmp_path)
@@ -210,6 +235,25 @@ def test_drv3_baseline_cache_follows_toolchain_and_gate_schema(tmp_path, monkeyp
     st = L.State(cfg)
     L.qualify(cfg, st, sha)
     assert baseline_runs() == 3
+
+
+def test_r202_enabling_preparation_invalidates_no_report_baseline_cache(tmp_path):
+    make_dart_fixture(tmp_path)
+    tool = fake_tool(tmp_path)
+    cfg = run_cfg(tmp_path, [flutter_gate(tool, prepare=False)])
+    assert L.run(cfg) == S.BLOCKED
+    st = L.State(cfg)
+    assert st.d["baseline_gates"]["flutter"]["result"]["evidence"] == "NO_TEST_REPORT"
+    before = len([e for e in L._chained_events(st) if e["kind"] == "BASELINE_GATE"])
+
+    cfg["gates"][0]["prepare"] = True
+    result = L.qualify(cfg, st, st.d["candidate"])
+    gate = result["gates"]["flutter"]
+    assert result["ok"] is True and gate["ok"] is True
+    assert gate["candidate"]["evidence"] == gate["baseline"]["evidence"] == "EXECUTED"
+    assert gate["candidate"]["executed"] == gate["baseline"]["executed"] == 2
+    assert gate["baseline"]["prepare"]["state"] == "DONE"
+    assert len([e for e in L._chained_events(st) if e["kind"] == "BASELINE_GATE"]) == before + 1
 
 
 def test_drv3_python_and_command_gates_keep_their_behaviour(tmp_path):
