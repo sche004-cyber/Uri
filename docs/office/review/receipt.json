@@ -1,0 +1,302 @@
+{
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocker": null,
+ "candidate": "25fce881bad918e32dbd732e8004dfabdfa41985",
+ "config_sha256": "0e7a085340173d278e78445c26ae4f7226c47dd0ccf71b413b4f8dad365fe0e0",
+ "events": 78,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "25fce881bad9": {
+   "blocked": null,
+   "new_failures": {
+    "python-a2ui": [],
+    "python-office": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-11T15:29:02Z",
+  "candidate": "25fce881bad918e32dbd732e8004dfabdfa41985",
+  "mode": "none",
+  "status": "NOT_INTEGRATED_BY_POLICY"
+ },
+ "milestone": "URI-OFFICE-M1",
+ "open_findings": [
+  {
+   "blocking": false,
+   "id": "R9-01",
+   "severity": "LOW",
+   "title": "The panel never shows how many proposed changes a reload dropped (proposals_dropped)"
+  },
+  {
+   "blocking": false,
+   "id": "R9-02",
+   "severity": "LOW",
+   "title": "No Dart test covers the controller reload path (RELOAD_REQUIRED, then POST /workbook/<id>/reload)"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": [
+    "R1-01",
+    "R1-02",
+    "R1-03",
+    "R1-04",
+    "R1-05",
+    "R1-06",
+    "R1-07",
+    "R1-08",
+    "R1-09",
+    "R1-10",
+    "R1-11"
+   ],
+   "commit": "68d60652e832c0a92aa1b1998da09cee308a16fa",
+   "reason": null,
+   "repair": 1,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R2-01",
+    "R2-02"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit",
+   "repair": 2,
+   "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R2-01",
+    "R2-02"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit",
+   "repair": 3,
+   "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R2-01",
+    "R2-02"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit",
+   "repair": 4,
+   "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R2-01",
+    "R2-02"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: no runnable regression test (a test file with a configured runner is required)",
+   "repair": 5,
+   "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R2-01",
+    "R2-02"
+   ],
+   "commit": "4743860bb104e49979ccbc016181facc3c440838",
+   "reason": null,
+   "repair": 6,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R3-01",
+    "R3-02",
+    "R3-03",
+    "R3-04"
+   ],
+   "commit": "dcab7e1b2138d73b5b0904137fa6a79af99945bd",
+   "reason": null,
+   "repair": 7,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R4-01"
+   ],
+   "commit": "a73daefef7336f0d17d0cc57e1687b9567d6a9b1",
+   "reason": null,
+   "repair": 8,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R5-01",
+    "R5-02"
+   ],
+   "commit": "ace76d3cae51d74009cc32b73f532fae02078d73",
+   "reason": null,
+   "repair": 9,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R6-01"
+   ],
+   "commit": "65180741ee24366b17ad6923ff8e85e7a3ff9e09",
+   "reason": null,
+   "repair": 10,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R7-01",
+    "R7-02"
+   ],
+   "commit": "02c91b85a99a0db74477ace08d1dfbed581c0885",
+   "reason": null,
+   "repair": 11,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R8-01"
+   ],
+   "commit": "25fce881bad918e32dbd732e8004dfabdfa41985",
+   "reason": null,
+   "repair": 12,
+   "status": "COMMITTED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "3599db6ecd8d020814496ce62c7288817518c091",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "7f03be1c-a804-4de6-853f-7594504d8ff4",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "68d60652e832c0a92aa1b1998da09cee308a16fa",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 2,
+   "session_id": "7ebe3be0-0341-4b06-8445-ed0e6aaa70bb",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "4743860bb104e49979ccbc016181facc3c440838",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 3,
+   "session_id": "9061675f-3ee6-49fd-9a19-d4b34c71cb89",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "dcab7e1b2138d73b5b0904137fa6a79af99945bd",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 4,
+   "session_id": "8711d217-fb8b-4199-97a3-39ce2e06636e",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "a73daefef7336f0d17d0cc57e1687b9567d6a9b1",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 5,
+   "session_id": "218370ce-9ed2-44e7-a3ac-53712861e18a",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "ace76d3cae51d74009cc32b73f532fae02078d73",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 6,
+   "session_id": "a95564d5-efa3-4a23-bc0e-97eba7320df0",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "65180741ee24366b17ad6923ff8e85e7a3ff9e09",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 7,
+   "session_id": "5931f0b4-2dd2-4da4-b2da-2f35ceccec98",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "02c91b85a99a0db74477ace08d1dfbed581c0885",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 8,
+   "session_id": "45120fde-bb79-459c-b1ce-e063232dd4e6",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "25fce881bad918e32dbd732e8004dfabdfa41985",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "round": 9,
+   "session_id": "fc4a852c-77d6-419f-9c4e-a3bbf5013925",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "rounds": 9,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "VERIFIED",
+ "verify_errors": [],
+ "written_at": "2026-10-11T15:29:02Z"
+}

@@ -1,0 +1,109 @@
+[
+ {
+  "version": "v0.9",
+  "createSurface": {
+   "surfaceId": "office.print_job.cccccccccccccccc.657e93aa",
+   "catalogId": "uri:a2ui/catalog/v1",
+   "theme": {
+    "agentDisplayName": "URI",
+    "placement": "workspace"
+   }
+  }
+ },
+ {
+  "version": "v0.9",
+  "updateComponents": {
+   "surfaceId": "office.print_job.cccccccccccccccc.657e93aa",
+   "components": [
+    {
+     "id": "root",
+     "component": "Column",
+     "children": [
+      "title",
+      "target",
+      "lines0",
+      "buttons"
+     ],
+     "gap": "medium"
+    },
+    {
+     "id": "title",
+     "component": "Text",
+     "variant": "title",
+     "text": "Print this?"
+    },
+    {
+     "id": "target",
+     "component": "Text",
+     "variant": "caption",
+     "text": "C:\\Users\\me\\order (printed).pdf"
+    },
+    {
+     "id": "lines0",
+     "component": "Text",
+     "variant": "body",
+     "text": "Printer: \"Microsoft Print to PDF\"\nWhat: \"order.docx\", pages 1-2 (2 page(s)), 1 copy\nPaper: \"A4\", portrait, colour, one-sided, fit to page, 300 dpi\nPages are sent to \"Microsoft Print to PDF\" through Windows.\nThis printer writes a file. It is saved as the file shown above; an existing file is never replaced."
+    },
+    {
+     "id": "apply",
+     "component": "Button",
+     "variant": "primary",
+     "label": "Print",
+     "action": {
+      "event": {
+       "name": "office.apply_change",
+       "context": {
+        "change_sha256": {
+         "path": "/bound/change_sha256"
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "reject",
+     "component": "Button",
+     "variant": "secondary",
+     "label": "Not now",
+     "action": {
+      "event": {
+       "name": "office.reject_change",
+       "context": {
+        "change_sha256": {
+         "path": "/bound/change_sha256"
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "buttons",
+     "component": "Row",
+     "children": [
+      "apply",
+      "reject"
+     ],
+     "gap": "small"
+    }
+   ]
+  }
+ },
+ {
+  "version": "v0.9",
+  "updateDataModel": {
+   "surfaceId": "office.print_job.cccccccccccccccc.657e93aa",
+   "path": "/",
+   "value": {
+    "bound": {
+     "change_sha256": "f02c044623b5475a2f2301bc3f9618bb01da198a0f55987efcfa9c6a3bb35085",
+     "surface": {
+      "digest": "92b491eefcf2220f114e123e7de3c40b0efe3d62666029b45b035493b4a6a850",
+      "revision": 1,
+      "kind": "office_change",
+      "title": "Office print"
+     }
+    }
+   }
+  }
+ }
+]

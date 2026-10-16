@@ -1,0 +1,46 @@
+[
+ {
+  "text": "I need it in a format I can email",
+  "kind": "docx",
+  "status": "COMPLETE",
+  "raw_text": "{\n  \"intent\": \"unclear\",\n  \"target_kind\": \"docx\",\n  \"output_kind\": \"pdf\",\n  \"missing\": [\n    \"output_format\"\n  ]\n}",
+  "error": null,
+  "http_status": 200,
+  "seconds": 1.46,
+  "classify": {
+   "intent": "unclear",
+   "missing": [
+    "output_format"
+   ]
+  }
+ },
+ {
+  "text": "make this ready to share",
+  "kind": "pptx",
+  "status": "COMPLETE",
+  "raw_text": "{\n  \"intent\": \"unclear\",\n  \"target_kind\": \"pptx\",\n  \"output_kind\": \"pptx\",\n  \"missing\": [\n    \"output_format\"\n  ]\n}",
+  "error": null,
+  "http_status": 200,
+  "seconds": 0.95,
+  "classify": {
+   "intent": "unclear",
+   "missing": [
+    "output_format",
+    "output_format"
+   ]
+  }
+ },
+ {
+  "text": "what is this about",
+  "kind": "pdf",
+  "status": "COMPLETE",
+  "raw_text": "{\n  \"intent\": \"unclear\",\n  \"target_kind\": \"pdf\",\n  \"output_kind\": \"pdf\",\n  \"missing\": [\n    \"input_file\"\n  ]\n}",
+  "error": null,
+  "http_status": 200,
+  "seconds": 0.93,
+  "classify": {
+   "intent": "unclear",
+   "missing": []
+  }
+ }
+]

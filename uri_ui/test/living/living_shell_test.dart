@@ -233,16 +233,32 @@ void main() {
   );
 
   testWidgets(
+    'R5-3: in Office the global context panel starts closed, so the Office URI pane has room (real-app run 2026-10-15)',
+    (tester) async {
+      final (_, services) = await pumpLiving(tester, size: const Size(1280, 800));
+      services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.tasks);
+      await tester.pumpAndSettle();
+      expect(find.text('EXECUTOR'), findsOneWidget, reason: 'other regions keep the context panel at this width');
+      services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.office);
+      await tester.pumpAndSettle();
+      expect(find.text('EXECUTOR'), findsNothing);
+    },
+  );
+
+  testWidgets(
     'A4: office workflow: template -> in progress -> approval card -> approve -> Done',
     (tester) async {
+      // O2 (plan §1.2, review F2): the simulated Documents region and its template tiles are retired; Documents is
+      // now Office › Documents. The simulated work flow this test covers (companion states, approval card) is
+      // started directly on the work simulator, which is what the retired "Letter" tile did.
       final (_, services) = await pumpLiving(tester);
       services.presentation.setMode(
         UiPresentationMode.workspace,
-        focus: WorkspaceFocus.documents,
+        focus: WorkspaceFocus.tasks,
       );
       await tester.pumpAndSettle();
       expect(find.byType(StatusBadge), findsWidgets);
-      await tester.tap(find.byKey(const ValueKey('template-Letter')));
+      services.work.create(title: 'Draft a letter', kind: WorkItemKind.letter);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
       expect(services.presentation.focus, WorkspaceFocus.tasks);
@@ -289,7 +305,6 @@ void main() {
     expect(find.text('CONTEXT & FILES'), findsOneWidget);
     for (final (focus, texts) in [
       (WorkspaceFocus.tasks, ['NEEDS YOUR DECISION', 'IN PROGRESS', 'HISTORY']),
-      (WorkspaceFocus.documents, ['START NEW WORK', 'RECENT DOCUMENTS']),
       (
         WorkspaceFocus.intelligence,
         ['REQUEST PIPELINE', 'MEMORY GRAPH', 'SIGNAL SOURCES'],
@@ -322,6 +337,11 @@ void main() {
         expect(find.text(t), findsOneWidget, reason: '${focus.name}: $t');
       }
     }
+    // O2 (U15): Documents opens the Office workspace; with no Office service in this test it says so.
+    services.presentation.setFocus(WorkspaceFocus.documents);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('office-start-error')), findsOneWidget);
+    expect(find.text('START NEW WORK'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

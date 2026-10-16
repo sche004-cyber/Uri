@@ -1,0 +1,12 @@
+{
+ "run": "2026-10-15 11:49 +0530, uri_office/workers/print_job.ps1 (pre-pin draft identical in print logic), Job Object limit 1536 MiB",
+ "authority": "owner OD-U13 (standing approval for Microsoft Print to PDF tests with synthetic documents)",
+ "document": "synthetic 3-page text PDF (tests/office_u2/conftest.py pdf_with_text), printed fit-to-A4",
+ "printer": "Microsoft Print to PDF (virtual, port PORTPROMPT:, output file set by the API: no dialog)",
+ "results": {
+  "300_color": {"rc": 0, "wall_s": 3.97, "peak_job_mb": 220.6, "worker_peak_ws_mb": 187.3, "worker_ms": 2370, "out_bytes": 406938, "out_pages": 3},
+  "300_mono":  {"rc": 0, "wall_s": 3.77, "peak_job_mb": 252.6, "worker_peak_ws_mb": 188.0, "worker_ms": 2267, "out_bytes": 406946, "out_pages": 3},
+  "600_color": {"rc": 0, "wall_s": 5.43, "peak_job_mb": 621.0, "worker_peak_ws_mb": 281.8, "worker_ms": 3936, "out_bytes": 1571329, "out_pages": 3},
+  "600_mono":  {"rc": 0, "wall_s": 5.57, "peak_job_mb": 496.6, "worker_peak_ws_mb": 281.1, "worker_ms": 4047, "out_bytes": 1571305, "out_pages": 3}
+ }
+}

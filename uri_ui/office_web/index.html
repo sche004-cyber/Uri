@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <!-- AC15: only this page's own origin (the WebView2 virtual host office.uri.local). No network, frames, workers or plugins.
+       worker-src is 'none' (stricter than 'self' blob:) because the page starts no workers: Univer's RPC worker plugin is
+       added by the preset only when a workerURL is passed, and none is. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'none'; manifest-src 'none'; worker-src 'none'; child-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <meta name="referrer" content="no-referrer" />
+  <title>URI Office</title>
+  <style>
+    html, body, #app { margin: 0; height: 100%; width: 100%; overflow: hidden; background: #fff; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

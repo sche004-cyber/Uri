@@ -1,0 +1,54 @@
+Consider using the pymupdf_layout package for a greatly improved page layout analysis.
+{
+ "docx_create_order_40rows": {
+  "ms": 50.0,
+  "rss_delta_mb": 7.5
+ },
+ "docx_mailmerge_40_letters": {
+  "ms": 880.7,
+  "rss_delta_mb": 70.9
+ },
+ "docx_edit_reopen_save": {
+  "ms": 19.7,
+  "rss_delta_mb": 5.2
+ },
+ "pptx_create_11_slides_chart": {
+  "ms": 84.0,
+  "rss_delta_mb": -53.1
+ },
+ "pdf_generate_20p": {
+  "ms": 435.1,
+  "rss_delta_mb": -23.3
+ },
+ "pdf_text_extract_20p": {
+  "ms": 35.4,
+  "rss_delta_mb": 0.5
+ },
+ "pdf_find_tables_p1": {
+  "ms": 14.0,
+  "rss_delta_mb": 0.1
+ },
+ "pypdf_merge_3x20p": {
+  "ms": 332.0,
+  "rss_delta_mb": 6.7
+ },
+ "tesseract_ocr_1page_200dpi": {
+  "ms": 649.1,
+  "rss_delta_mb": 2.8
+ },
+ "ocr_sample": "Notice 0 - Corrigendum to tender No. 55/2026\n\nName Designation Station Date of j",
+ "pymupdf_render_page_150dpi": {
+  "ms": 60.0,
+  "rss_delta_mb": -0.1
+ },
+ "render_pdf_page_png": "ok",
+ "pymupdf_open_docx": "9",
+ "peak_rss_mb": 102.3,
+ "versions": {
+  "python-docx": "1.2.0",
+  "python-pptx": "1.0.2",
+  "pymupdf": "1.28.2",
+  "pypdf": "6.19.0",
+  "tesseract": "5.5.3.20260724"
+ }
+}

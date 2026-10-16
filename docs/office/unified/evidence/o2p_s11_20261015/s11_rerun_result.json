@@ -1,0 +1,48 @@
+{
+ "run": "2026-10-15T12:54:48+0530",
+ "authority": "owner OD-U13",
+ "document": "synthetic 6-page bars PDF",
+ "pinned_worker_sha256": "a8481afce724cc91b27c17e19018965d5268483ade76974945b39ad6fc968627",
+ "pinned_300dpi": {
+  "rc": 0,
+  "wall_s": 6.7,
+  "peak_job_mb": 350.4,
+  "out_pages": 6,
+  "out_bytes": 892698,
+  "last": [
+   "{\"pages\":6,\"ok\":true,\"peak_ws_mb\":187.2,\"event\":\"done\",\"ms\":3518}"
+  ],
+  "gpu_samples": 1,
+  "gpu_dedicated_max_mb": 53.0,
+  "gpu_engine_max_pct": 0.392548261838741,
+  "left_ink_fraction_p1": 0.118
+ },
+ "pinned_600dpi": {
+  "rc": 0,
+  "wall_s": 8.66,
+  "peak_job_mb": 621.5,
+  "out_pages": 6,
+  "out_bytes": 3267363,
+  "last": [
+   "{\"pages\":6,\"ok\":true,\"peak_ws_mb\":282.1,\"event\":\"done\",\"ms\":6985}"
+  ],
+  "gpu_samples": 2,
+  "gpu_dedicated_max_mb": 146.0,
+  "gpu_engine_max_pct": 1.96317099362311,
+  "left_ink_fraction_p1": 0.118
+ },
+ "old_63e0e73f_300dpi": {
+  "rc": 0,
+  "wall_s": 5.53,
+  "peak_job_mb": 351.0,
+  "out_pages": 6,
+  "out_bytes": 892698,
+  "last": [
+   "{\"pages\":6,\"ok\":true,\"peak_ws_mb\":187.2,\"event\":\"done\",\"ms\":3885}"
+  ],
+  "left_ink_fraction_p1": 0.21
+ },
+ "expected_left_fraction_fit_printable_area": 0.118,
+ "print_queue_jobs_after": "0",
+ "test_dir_removed": true
+}

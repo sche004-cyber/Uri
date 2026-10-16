@@ -1,0 +1,93 @@
+{
+  "spike": "P1",
+  "cases": {
+    "excel_like_calcpr": {
+      "changed_parts": [
+        "xl/workbook.xml",
+        "xl/worksheets/sheet1.xml"
+      ],
+      "patcher_reported": [
+        "xl/workbook.xml",
+        "xl/worksheets/sheet1.xml"
+      ],
+      "unexpected_changes": [],
+      "values_ok": {
+        "B2": true
+      },
+      "other_sheet_ok": true,
+      "chart_image_parts_identical": {
+        "xl/drawings/drawing1.xml": true,
+        "xl/drawings/_rels/drawing1.xml.rels": true,
+        "xl/media/image1.png": true,
+        "xl/charts/chart1.xml": true
+      },
+      "calc_chain_removed": null,
+      "missing_required_changes": [],
+      "full_calc_on_load": true,
+      "pass": true
+    },
+    "values_only": {
+      "changed_parts": [
+        "xl/worksheets/sheet1.xml"
+      ],
+      "patcher_reported": [
+        "xl/worksheets/sheet1.xml"
+      ],
+      "unexpected_changes": [],
+      "values_ok": {
+        "B3": true,
+        "A4": true,
+        "C6": true,
+        "F40": true,
+        "B5": true
+      },
+      "other_sheet_ok": true,
+      "chart_image_parts_identical": {
+        "xl/drawings/drawing1.xml": true,
+        "xl/drawings/_rels/drawing1.xml.rels": true,
+        "xl/media/image1.png": true,
+        "xl/charts/chart1.xml": true
+      },
+      "calc_chain_removed": null,
+      "missing_required_changes": [],
+      "full_calc_on_load": true,
+      "pass": true
+    },
+    "formula_with_calcchain": {
+      "changed_parts": [
+        "[Content_Types].xml",
+        "xl/_rels/workbook.xml.rels",
+        "xl/calcChain.xml",
+        "xl/worksheets/sheet1.xml"
+      ],
+      "patcher_reported": [
+        "[Content_Types].xml",
+        "xl/_rels/workbook.xml.rels",
+        "xl/calcChain.xml",
+        "xl/worksheets/sheet1.xml"
+      ],
+      "unexpected_changes": [],
+      "values_ok": {
+        "B6": true,
+        "B5": true
+      },
+      "other_sheet_ok": true,
+      "chart_image_parts_identical": {
+        "xl/drawings/drawing1.xml": true,
+        "xl/drawings/_rels/drawing1.xml.rels": true,
+        "xl/media/image1.png": true,
+        "xl/charts/chart1.xml": true
+      },
+      "calc_chain_removed": true,
+      "missing_required_changes": [],
+      "full_calc_on_load": true,
+      "pass": true
+    }
+  },
+  "refusals": {
+    "merged_non_anchor": "refused: E1: inside a merged range (not its anchor)",
+    "unknown_sheet": "refused: unknown sheet 'Nope'",
+    "bad_ref": "refused: bad cell reference '1A'"
+  },
+  "result": "COMPLETED_WITH_RESULT"
+}

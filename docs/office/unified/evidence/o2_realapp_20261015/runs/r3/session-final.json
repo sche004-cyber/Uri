@@ -1,0 +1,34 @@
+{
+ "run": "r3",
+ "brain_mode": false,
+ "port": 18327,
+ "started_utc": "2026-10-15T11:38:29.873137+00:00",
+ "verified": {
+  "ok": true,
+  "source_head": "5973583b4b7eed76fd1858fae9ab67d7fa99dcf8",
+  "source_tree": "3a9c18e33f8f4afbefddaecf60162d87cd959b50",
+  "checked_files": 1413
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "gpu_authority": "owner directive 2026-10-15 B5: Brain/GPU testing under the existing GPU lease, runtime safety and permission controls; no contention override",
+ "server_pid": 14568,
+ "server_listener_pid": 19352,
+ "server_listen_s": 4.198,
+ "server_listening": true,
+ "ui_finished_utc": "2026-10-15T11:44:30.609975+00:00",
+ "finished_utc": "2026-10-15T11:46:15.111878+00:00",
+ "server_exit": 1,
+ "brain_config_sha256_after": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_listener_after_3s": null,
+ "server_listener_after": null,
+ "host_final": null,
+ "office_left": []
+}

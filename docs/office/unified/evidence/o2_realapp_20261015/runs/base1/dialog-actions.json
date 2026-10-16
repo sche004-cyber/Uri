@@ -1,0 +1,73 @@
+[
+ {
+  "utc": "2026-10-15T10:18:36.164248+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\base1\\docs\\Annual Report 2025-26.docx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T10:21:19.130059+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\base1\\docs\\Quarterly Review.pptx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T10:21:53.244498+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\base1\\docs\\Tender Document 2026-07.pdf"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T10:23:37.355644+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\base1\\docs\\Damaged minutes.docx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T10:24:10.662929+00:00",
+  "request": {
+   "title": "Open a document in URI Office",
+   "cancel": true
+  },
+  "found": true,
+  "cancel_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ },
+ {
+  "utc": "2026-10-15T10:24:18.189656+00:00",
+  "request": {
+   "title": "Open a workbook in URI Office",
+   "path": "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\base1\\docs\\Budget 2026-27.xlsx"
+  },
+  "found": true,
+  "name_box": true,
+  "ok_button": true,
+  "dialog_closed": true,
+  "method": "Win32 WM_SETTEXT + BM_CLICK to the real dialog controls (not physical input)"
+ }
+]

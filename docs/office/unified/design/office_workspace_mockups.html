@@ -1,0 +1,340 @@
+<title>URI Office Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a decision memo; each direction shows real-size desktop frames in their own horizontal scrollers.
+   Tokens follow uri_ui/lib/theme/uri_theme.dart (graphite + gold, Segoe UI). Dark-first, light mirrored. */
+:root{
+  --canvas:#0C0D0F; --surface:#17181B; --sunken:#1F2124; --border:#2A2C30;
+  --ink:#EEF0F1; --ink-soft:#AAACAD; --ink-faint:#727375;
+  --accent:#C8A25A; --accent-soft:#373126; --accent-ink:#DBC394;
+  --ok:#5FD6A0; --ok-soft:#123524; --warn:#E3AB4F; --warn-soft:#3A2C12; --bad:#FF8080; --bad-soft:#3B1E1E;
+  --paper:#F7F5F0; --paper-ink:#1D1E20; --paper-rule:#D9D5CC;
+  --f-ui:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-doc:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",Consolas,"Courier New",monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --canvas:#F3F2EF; --surface:#FFFFFF; --sunken:#ECEAE5; --border:#D8D5CE;
+  --ink:#1B1C1E; --ink-soft:#55575B; --ink-faint:#85878B;
+  --accent:#9A7432; --accent-soft:#F1E7D3; --accent-ink:#7A5A22;
+  --ok:#1E8A5C; --ok-soft:#DDF3E8; --warn:#A8701C; --warn-soft:#F7EAD2; --bad:#C23B3B; --bad-soft:#F8E0E0;
+  --paper:#FFFFFF; --paper-ink:#1D1E20; --paper-rule:#DEDBD3; color-scheme:light}}
+:root[data-theme="light"]{
+  --canvas:#F3F2EF; --surface:#FFFFFF; --sunken:#ECEAE5; --border:#D8D5CE;
+  --ink:#1B1C1E; --ink-soft:#55575B; --ink-faint:#85878B;
+  --accent:#9A7432; --accent-soft:#F1E7D3; --accent-ink:#7A5A22;
+  --ok:#1E8A5C; --ok-soft:#DDF3E8; --warn:#A8701C; --warn-soft:#F7EAD2; --bad:#C23B3B; --bad-soft:#F8E0E0;
+  --paper:#FFFFFF; --paper-ink:#1D1E20; --paper-rule:#DEDBD3; color-scheme:light}
+body{background:var(--canvas);color:var(--ink);font-family:var(--f-ui);line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 64px;display:grid;gap:40px}
+h1,h2,h3{text-wrap:balance;margin:0;font-weight:600}
+h1{font-size:1.9rem;letter-spacing:-.01em}
+h2{font-size:1.35rem}
+h3{font-size:1rem}
+p{margin:0;max-width:68ch;color:var(--ink-soft)}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+header.top{display:grid;gap:12px}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:.75rem;border:1px solid var(--border);border-radius:999px;padding:3px 10px;color:var(--ink-soft);background:var(--surface)}
+.chip.sim{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
+.chip.rec{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-soft)}
+section.dir{display:grid;gap:16px}
+.dirhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.screens{display:grid;gap:22px}
+.shot{display:grid;gap:8px}
+.shot figcaption{font-size:.85rem;color:var(--ink-soft);max-width:80ch}
+.shot figcaption b{color:var(--ink)}
+figure{margin:0}
+.scroller{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:var(--canvas)}
+/* ---- mock app frame (fixed desktop width, scrolls on phone) ---- */
+.app{width:1120px;height:620px;display:grid;grid-template-columns:76px 1fr;font-size:13px;background:var(--canvas)}
+.rail{border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:14px;background:var(--surface)}
+.orb{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--accent-ink),var(--accent) 45%,var(--accent-soft) 80%);box-shadow:0 0 18px var(--accent-soft)}
+.ri{width:46px;display:grid;justify-items:center;gap:2px;color:var(--ink-faint);font-size:10px}
+.ri i{width:22px;height:22px;border-radius:6px;border:1.5px solid currentColor;display:block}
+.ri.on{color:var(--accent-ink)}
+.ri.on i{background:var(--accent-soft)}
+.region{display:grid;grid-template-rows:1fr 30px;min-width:0}
+.panes{display:grid;min-height:0}
+.p3{grid-template-columns:196px 1fr 300px}
+.nav{border-right:1px solid var(--border);padding:12px 10px;display:flex;flex-direction:column;gap:2px;background:var(--surface)}
+.nav .grp{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);padding:10px 8px 4px}
+.nav a{display:flex;justify-content:space-between;padding:6px 8px;border-radius:6px;color:var(--ink-soft);text-decoration:none}
+.nav a.on{background:var(--accent-soft);color:var(--ink)}
+.nav a span{color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.centre{min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.bar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);color:var(--ink-soft)}
+.bar b{color:var(--ink);font-weight:600}
+.bar .sp{flex:1}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:6px;padding:4px 10px;font:inherit;font-size:12px;white-space:nowrap}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#1A1408}
+.btn.ghost{background:transparent;color:var(--ink-soft)}
+.side{border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;min-height:0}
+.side .hd{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.side .hd .mini{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--accent-ink),var(--accent) 60%)}
+.side .body{flex:1;overflow:hidden;padding:12px;display:flex;flex-direction:column;gap:10px}
+.msg{padding:8px 10px;border-radius:8px;max-width:92%}
+.msg.me{align-self:flex-end;background:var(--sunken);color:var(--ink)}
+.msg.uri{background:transparent;border:1px solid var(--border);color:var(--ink-soft)}
+.card{border:1px solid var(--border);border-radius:8px;background:var(--canvas);padding:10px;display:grid;gap:6px}
+.card.plan{border-color:var(--accent)}
+.card .t{font-weight:600;color:var(--ink);display:flex;justify-content:space-between;gap:6px}
+.card ol{margin:0;padding-left:18px;color:var(--ink-soft);display:grid;gap:3px}
+.tag{font-size:10px;border-radius:4px;padding:1px 5px;font-weight:600;letter-spacing:.03em}
+.tag.d{background:var(--sunken);color:var(--ink-soft)}
+.tag.b{background:var(--accent-soft);color:var(--accent-ink)}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.w{background:var(--warn-soft);color:var(--warn)}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.del{text-decoration:line-through;color:var(--bad)}
+.ins{color:var(--ok)}
+.composer{border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:8px;align-items:center}
+.composer .in{flex:1;border:1px solid var(--border);border-radius:18px;padding:6px 12px;color:var(--ink-faint);background:var(--canvas)}
+.mic{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;color:var(--ink-soft);font-size:11px}
+.status{border-top:1px solid var(--border);display:flex;align-items:center;gap:18px;padding:0 14px;font-size:11.5px;color:var(--ink-soft);background:var(--surface)}
+.status .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px;background:var(--ok)}
+.status .dot.w{background:var(--warn)}
+.status .sp{flex:1}
+/* home */
+.home{padding:28px 34px;display:grid;gap:22px;align-content:start;overflow:hidden}
+.ask{border:1px solid var(--accent);border-radius:12px;padding:14px 16px;background:var(--surface);display:grid;gap:10px}
+.ask .q{font-size:15px;color:var(--ink-faint)}
+.hint{font-size:12px;color:var(--ink-faint)}
+.tpl{display:flex;gap:8px;flex-wrap:wrap}
+.tpl span{border:1px solid var(--border);border-radius:999px;padding:4px 11px;color:var(--ink-soft);background:var(--canvas)}
+.cols2{display:grid;grid-template-columns:1.3fr 1fr;gap:18px}
+.list{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.li{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:9px 12px;border-top:1px solid var(--border)}
+.li:first-child{border-top:0}
+.ft{width:26px;height:30px;border-radius:3px;font-size:9px;font-weight:700;display:grid;place-items:end center;padding-bottom:3px;color:#fff}
+.ft.w{background:#3B6FB6}.ft.x{background:#2E8B57}.ft.p{background:#C0504D}.ft.s{background:#C9792B}
+.li small{display:block;color:var(--ink-faint)}
+.li .when{color:var(--ink-faint);font-variant-numeric:tabular-nums;font-size:12px}
+.prog{height:4px;border-radius:2px;background:var(--sunken);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent)}
+/* document page */
+.viewer{flex:1;display:grid;grid-template-columns:92px 1fr;min-height:0}
+.thumbs{border-right:1px solid var(--border);padding:12px 10px;display:grid;gap:10px;align-content:start;background:var(--sunken)}
+.thumb{height:84px;background:var(--paper);border-radius:2px;border:2px solid transparent;position:relative}
+.thumb.on{border-color:var(--accent)}
+.thumb::after{content:"";position:absolute;inset:12px 9px;background:repeating-linear-gradient(var(--paper-rule) 0 1px,transparent 1px 7px)}
+.stage{overflow:hidden;display:flex;justify-content:center;padding:18px;background:var(--sunken)}
+.page{width:470px;background:var(--paper);color:var(--paper-ink);font-family:var(--f-doc);padding:30px 40px;font-size:10.5px;line-height:1.45;box-shadow:0 2px 14px rgba(0,0,0,.35);display:grid;gap:7px;align-content:start}
+.page .c{text-align:center}
+.page h4{margin:4px 0 0;text-align:center;font-size:13px;letter-spacing:.06em}
+.page table{border-collapse:collapse;width:100%;font-size:9.5px}
+.page td,.page th{border:1px solid #8a8780;padding:2px 4px;text-align:left}
+.page .hl{background:#FCEFC9;outline:1px dashed #B8902F}
+.page .mark{background:#DDF0E3;box-shadow:inset 3px 0 0 #2E8B57;padding-left:4px}
+.page .ref{display:flex;justify-content:space-between}
+.cite{font-family:var(--f-mono);font-size:10.5px;color:var(--accent-ink);background:var(--accent-soft);border-radius:4px;padding:0 4px}
+/* B2 */
+.p2b{grid-template-columns:250px 1fr}
+.tools{border-right:1px solid var(--border);background:var(--surface);padding:12px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.tool{display:grid;grid-template-columns:22px 1fr;gap:8px;padding:7px 8px;border-radius:6px;color:var(--ink-soft)}
+.tool i{width:18px;height:18px;border:1.5px solid currentColor;border-radius:4px;margin-top:1px}
+.tool small{display:block;color:var(--ink-faint);font-size:11px}
+.tool.on{background:var(--accent-soft);color:var(--ink)}
+.drawer{border-top:1px solid var(--border);background:var(--surface);padding:10px 14px;display:grid;grid-template-columns:1fr 300px;gap:14px}
+/* comparison */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+table.cmp{border-collapse:collapse;width:100%;min-width:640px;font-size:.88rem}
+.cmp th,.cmp td{padding:9px 12px;border-top:1px solid var(--border);text-align:left;vertical-align:top}
+.cmp thead th{border-top:0;color:var(--ink-faint);font-weight:600;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;background:var(--surface)}
+.cmp td:first-child{color:var(--ink);font-weight:600;white-space:nowrap}
+.cmp td{color:var(--ink-soft)}
+.notes{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.note{border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--surface);display:grid;gap:6px;min-width:0}
+.note h3{font-size:.95rem}
+.note p{font-size:.88rem}
+code{font-family:var(--f-mono);font-size:.85em;color:var(--accent-ink)}
+@media (prefers-reduced-motion: no-preference){.orb{animation:breathe 4s ease-in-out infinite}@keyframes breathe{50%{box-shadow:0 0 26px var(--accent-soft)}}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <span class="eyebrow">URI Office Unified · O2 design decision OD-U5</span>
+  <h1>One Office workspace for sheets, documents, slides and PDFs</h1>
+  <p>Two layouts for the same capabilities. Both keep the URI rail, the orb and the companion you already use in Office (AC19). Both show changes as cards you accept or reject, and both write nothing until you approve. Pick one; the O2 plan freezes on your choice.</p>
+  <div class="meta">
+    <span class="chip">Draft 2026-10-15</span>
+    <span class="chip">Branch phase/uri-office-unified-plan</span>
+    <span class="chip sim">Static mockup: example content, not a running build</span>
+  </div>
+</header>
+
+<section class="dir" id="b1">
+  <div class="dirhead"><span class="eyebrow">Direction B1</span><h2>Three panes: files · page · companion</h2><span class="chip rec">Recommended</span></div>
+  <p>Left: your files grouped by type, plus Templates and Workflows. Centre: the open file (sheet editor or page preview). Right: the URI companion, which holds plans, change cards, findings and approvals. A thin status line shows what is running and whether originals are untouched. Structure adapted from AFFiNE's sidebar + document + AI panel and Paperless-ngx's list + document detail.</p>
+  <div class="screens">
+
+  <figure class="shot">
+    <div class="scroller"><div class="app">
+      <div class="rail"><div class="orb"></div><div class="ri"><i></i>Talk</div><div class="ri"><i></i>Tasks</div><div class="ri on"><i></i>Office</div><div class="ri"><i></i>Insight</div><div class="ri"><i></i>Settings</div></div>
+      <div class="region"><div class="panes p3">
+        <nav class="nav"><a class="on">Office home</a><a>Recent <span>12</span></a><div class="grp">Files</div><a>Documents <span>5</span></a><a>Spreadsheets <span>4</span></a><a>Presentations <span>2</span></a><a>PDFs <span>7</span></a><div class="grp">Reuse</div><a>Templates <span>6</span></a><a>Workflows <span>3</span></a></nav>
+        <div class="home">
+          <div class="ask"><div class="q">What do you want to make or check?</div>
+            <div class="tpl"><span>Letter</span><span>Office order</span><span>Notice</span><span>Meeting minutes</span><span>Report from Excel</span><span>Presentation</span><span>Extract PDF tables</span><span>Compare two documents</span></div>
+            <div class="hint">Tip: add the files first, then say what you need. URI shows a plan before it creates anything. <u>Hide tip</u></div></div>
+          <div class="cols2">
+            <div style="display:grid;gap:8px"><h3>Recent work</h3><div class="list">
+              <div class="li"><div class="ft w">DOCX</div><div>Transfer order A1-1234-2026<small>Draft · 3 changes waiting</small></div><div class="when">10:42</div></div>
+              <div class="li"><div class="ft x">XLSX</div><div>Postings Oct 2026<small>Saved · original backed up</small></div><div class="when">Yesterday</div></div>
+              <div class="li"><div class="ft p">PDF</div><div>Tender 55-2026 corrigendum<small>Read only</small></div><div class="when">Mon</div></div>
+              <div class="li"><div class="ft s">PPTX</div><div>Quarterly review<small>Preview ready</small></div><div class="when">12 Oct</div></div></div></div>
+            <div style="display:grid;gap:8px;align-content:start"><h3>In progress</h3><div class="list">
+              <div class="li" style="grid-template-columns:1fr auto"><div>40 posting letters from Excel<small>Step 3 of 5 · checking each letter</small><div class="prog" style="margin-top:6px"><i style="width:62%"></i></div></div><div class="when">25/40</div></div>
+              <div class="li" style="grid-template-columns:1fr auto"><div>Summary of 3 notices<small>Waiting for your approval</small></div><div class="when"><span class="tag w">Review</span></div></div></div></div>
+          </div>
+        </div>
+        <aside class="side"><div class="hd"><span class="mini"></span><b>URI</b><span style="flex:1"></span><span class="tag ok">Brain ready</span></div>
+          <div class="body"><div class="msg uri">Open or add files, then tell me the result you want. I suggest; you accept, reject and save.</div>
+          <div class="card"><div class="t">Suggestion<span class="tag d">dismiss</span></div><div style="color:var(--ink-soft)">"Tender 55-2026 corrigendum" has 2 tables. Extract them into a new Excel file?</div><div class="row"><span class="btn">Extract tables</span><span class="btn ghost">Not now</span><span class="btn ghost">Don't suggest for this file</span></div></div></div>
+          <div class="composer"><div class="in">Ask URI about Office…</div><div class="mic">mic</div></div></aside>
+      </div><div class="status"><span><i class="dot"></i>Idle</span><span>Originals untouched</span><span class="sp"></span><span>LibreOffice preview engine ready</span></div></div>
+    </div></div>
+    <figcaption><b>1 · Office home.</b> One request box with template chips, recent work and running workflows. The first-time tip appears until the first finished workflow and can be hidden. At most one suggestion is shown, always with "Not now" and a per-file mute.</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="scroller"><div class="app">
+      <div class="rail"><div class="orb"></div><div class="ri"><i></i>Talk</div><div class="ri"><i></i>Tasks</div><div class="ri on"><i></i>Office</div><div class="ri"><i></i>Insight</div><div class="ri"><i></i>Settings</div></div>
+      <div class="region"><div class="panes p3">
+        <nav class="nav"><a>Office home</a><a>Recent <span>12</span></a><div class="grp">Files</div><a class="on">Documents <span>5</span></a><a>Spreadsheets <span>4</span></a><a>Presentations <span>2</span></a><a>PDFs <span>7</span></a><div class="grp">Reuse</div><a>Templates <span>6</span></a><a>Workflows <span>3</span></a></nav>
+        <div class="centre"><div class="bar"><b>Transfer order A1-1234-2026.docx</b><span class="tag w">Working copy</span><span class="sp"></span><span class="btn ghost">Outline</span><span class="btn ghost">Pages</span><span class="btn">Undo</span><span class="btn">Open in default app</span></div>
+          <div class="viewer"><div class="thumbs"><div class="thumb on"></div><div class="thumb"></div></div>
+            <div class="stage"><div class="page">
+              <div class="c">GOVERNMENT OF EXAMPLE STATE<br>Office of the District Collector</div>
+              <div class="ref"><span>No. A1/1234/2026</span><span>Dated: 14-10-2026</span></div>
+              <h4>OFFICE ORDER</h4>
+              <div class="hl">Sub: Transfers and postings of Tahsildars and Deputy Tahsildars — orders issued.</div>
+              <div>In exercise of the powers conferred, the following officers are transferred and posted as shown below with immediate effect.</div>
+              <table><tr><th>Name</th><th>Designation</th><th>Station</th><th>Joining</th></tr><tr><td>Officer 0</td><td>Tahsildar</td><td>Taluk 0</td><td>10-01-2026</td></tr><tr class="mark"><td>Officer 1</td><td>Deputy Tahsildar</td><td>Taluk 1</td><td>11-02-2026</td></tr><tr><td>Officer 2</td><td>Clerk</td><td>Taluk 2</td><td>12-03-2026</td></tr><tr><td>Officer 3</td><td>Tahsildar</td><td>Taluk 3</td><td>13-04-2026</td></tr></table>
+              <div style="text-align:right;margin-top:8px">District Collector</div>
+            </div></div></div></div>
+        <aside class="side"><div class="hd"><span class="mini"></span><b>URI</b><span style="flex:1"></span><span class="tag d">this document</span></div>
+          <div class="body"><div class="msg me">Make the subject line specific and fix the date format in the table.</div>
+          <div class="msg uri">Two changes. The table dates were mixed (2026-02-11 and 11-02-2026); I used DD-MM-YYYY to match the order date.</div>
+          <div class="card"><div class="t">Subject line <span class="tag b">URI wrote</span></div><div><span class="del">Transfers and postings — orders issued.</span><br><span class="ins">Transfers and postings of Tahsildars and Deputy Tahsildars — orders issued.</span></div><div class="row"><span class="btn pri">Accept</span><span class="btn">Reject</span></div></div>
+          <div class="card"><div class="t">Table: 40 dates <span class="tag d">rule-based</span></div><div style="color:var(--ink-soft)">Column "Date of joining": 2026-02-11 → 11-02-2026, and 39 more. Marked in the page.</div><div class="row"><span class="btn pri">Accept</span><span class="btn">Reject</span></div></div></div>
+          <div class="composer"><div class="in">Ask about this document…</div><div class="mic">mic</div></div></aside>
+      </div><div class="status"><span><i class="dot w"></i>2 changes waiting</span><span>Unsaved draft · original untouched</span><span class="sp"></span><span>Checks: 0 problems</span><span class="btn" style="padding:1px 8px">Save as…</span></div></div>
+    </div></div>
+    <figcaption><b>2 · Document with change cards.</b> The page preview is rendered by LibreOffice, so it looks like the printed page. Changes are highlighted in the page and listed as cards that show before and after. Each card says whether URI wrote it or a fixed rule did it. Saving opens the approval card. <i>Rich typing directly on the page is not part of O2; "Open in default app" stays available.</i></figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="scroller"><div class="app">
+      <div class="rail"><div class="orb"></div><div class="ri"><i></i>Talk</div><div class="ri"><i></i>Tasks</div><div class="ri on"><i></i>Office</div><div class="ri"><i></i>Insight</div><div class="ri"><i></i>Settings</div></div>
+      <div class="region"><div class="panes p3">
+        <nav class="nav"><a>Office home</a><a>Recent <span>12</span></a><div class="grp">Files</div><a>Documents <span>5</span></a><a class="on">Spreadsheets <span>4</span></a><a>Presentations <span>2</span></a><a>PDFs <span>7</span></a><div class="grp">Reuse</div><a>Templates <span>6</span></a><a>Workflows <span>3</span></a></nav>
+        <div class="centre"><div class="bar"><b>Postings Oct 2026.xlsx</b><span class="tag d">Reference</span><span class="sp"></span><span>+ Letter template.docx</span><span class="tag d">Reference</span></div>
+          <div style="flex:1;padding:14px;overflow:hidden;background:var(--sunken)">
+            <div style="display:grid;grid-template-columns:40px repeat(4,1fr);font-size:12px;border:1px solid var(--border);background:var(--surface)">
+              <div style="padding:5px;color:var(--ink-faint)"></div><div style="padding:5px;color:var(--ink-faint)">A</div><div style="padding:5px;color:var(--ink-faint)">B</div><div style="padding:5px;color:var(--ink-faint)">C</div><div style="padding:5px;color:var(--ink-faint)">D</div>
+              <div style="padding:5px;color:var(--ink-faint)">1</div><div style="padding:5px;font-weight:600">Name</div><div style="padding:5px;font-weight:600">Designation</div><div style="padding:5px;font-weight:600">Station</div><div style="padding:5px;font-weight:600">Date of joining</div>
+              <div style="padding:5px;color:var(--ink-faint)">2</div><div style="padding:5px">Officer 0</div><div style="padding:5px">Tahsildar</div><div style="padding:5px">Taluk 0</div><div style="padding:5px">10-01-2026</div>
+              <div style="padding:5px;color:var(--ink-faint)">3</div><div style="padding:5px">Officer 1</div><div style="padding:5px">Deputy Tahsildar</div><div style="padding:5px">Taluk 1</div><div style="padding:5px">11-02-2026</div>
+              <div style="padding:5px;color:var(--ink-faint)">4</div><div style="padding:5px">Officer 2</div><div style="padding:5px">Clerk</div><div style="padding:5px">Taluk 2</div><div style="padding:5px">12-03-2026</div>
+              <div style="padding:5px;color:var(--ink-faint)">…</div><div style="padding:5px;color:var(--ink-faint)">40 rows</div><div></div><div></div><div></div>
+            </div>
+            <p style="margin-top:12px;font-size:12px">The sheet is shown in the existing Univer sheet view (unchanged from M1/M2).</p>
+          </div></div>
+        <aside class="side"><div class="hd"><span class="mini"></span><b>URI</b></div>
+          <div class="body"><div class="msg me">Use the Excel records to prepare individual letters.</div>
+          <div class="card plan"><div class="t">Plan: 40 posting letters<span class="tag b">needs your OK</span></div>
+            <div style="color:var(--ink-soft)">Reads <b style="color:var(--ink)">Postings Oct 2026.xlsx</b> (rows 2–41) and <b style="color:var(--ink)">Letter template.docx</b>.</div>
+            <ol><li>Match template fields to columns A–D <span class="tag d">rule</span></li><li>Fill one letter per row <span class="tag d">rule</span></li><li>Check: no empty fields, no leftover «placeholders» <span class="tag d">rule</span></li><li>Render previews <span class="tag d">rule</span></li></ol>
+            <div style="color:var(--ink-soft)">Creates 40 files in <code>Documents\Letters Oct 2026\</code>. Originals will not change. No Brain text is added.</div>
+            <div class="row"><span class="btn pri">Run</span><span class="btn">Change folder</span><span class="btn ghost">Cancel</span></div></div>
+          <div class="msg uri">One question first: the template has a field «Office». Your sheet has no such column. Use "Office of the District Collector" for every letter?</div>
+          <div class="row"><span class="btn">Yes, same for all</span><span class="btn">Leave it empty</span><span class="btn ghost">Pick a column</span></div></div>
+          <div class="composer"><div class="in">Ask URI about Office…</div><div class="mic">mic</div></div></aside>
+      </div><div class="status"><span><i class="dot"></i>Waiting for your OK</span><span>2 reference files · none will change</span><span class="sp"></span><span>Workflow record started</span></div></div>
+    </div></div>
+    <figcaption><b>3 · Plan card for a cross-app workflow (Excel → Word).</b> Before anything is created, URI lists the files it reads, each step and whether a fixed rule or URI's writing does it, plus what it will create and where. It asks one specific question when something is missing; it never guesses a value. Single small edits skip the plan card, as in Excel today.</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="scroller"><div class="app">
+      <div class="rail"><div class="orb"></div><div class="ri"><i></i>Talk</div><div class="ri"><i></i>Tasks</div><div class="ri on"><i></i>Office</div><div class="ri"><i></i>Insight</div><div class="ri"><i></i>Settings</div></div>
+      <div class="region"><div class="panes p3">
+        <nav class="nav"><a>Office home</a><a>Recent <span>12</span></a><div class="grp">Files</div><a>Documents <span>5</span></a><a>Spreadsheets <span>4</span></a><a>Presentations <span>2</span></a><a class="on">PDFs <span>7</span></a><div class="grp">Reuse</div><a>Templates <span>6</span></a><a>Workflows <span>3</span></a></nav>
+        <div class="centre"><div class="bar"><b>Tender 55-2026 corrigendum.pdf</b><span class="tag d">Read only</span><span class="sp"></span><span>Page 2 of 4</span><span class="btn ghost">Find</span><span class="btn">Highlight</span><span class="btn">Pages…</span></div>
+          <div class="viewer"><div class="thumbs"><div class="thumb"></div><div class="thumb on"></div><div class="thumb"></div></div>
+            <div class="stage"><div class="page">
+              <div class="c"><b>CORRIGENDUM No. 2</b><br>Tender Notice No. 55/2026</div>
+              <div>The following amendments are made to the tender notice dated 02-10-2026:</div>
+              <div class="hl">1. The last date for submission of bids is extended from 20-10-2026 to <b>27-10-2026, 15:00 hrs</b>.</div>
+              <div>2. The pre-bid meeting will be held on 18-10-2026 at 11:00 hrs in the Conference Hall.</div>
+              <div>3. All other terms and conditions remain unchanged.</div>
+              <div style="text-align:right;margin-top:10px">Executive Engineer</div>
+            </div></div></div></div>
+        <aside class="side"><div class="hd"><span class="mini"></span><b>URI</b><span style="flex:1"></span><span class="tag d">3 PDFs open</span></div>
+          <div class="body"><div class="msg me">What is the new last date for bids?</div>
+          <div class="msg uri" style="color:var(--ink)">27-10-2026 at 15:00. Corrigendum No. 2 moved it from 20-10-2026. <span class="cite">Corrigendum 2 · p.2</span></div>
+          <div class="card"><div class="t">Related documents found<span class="tag d">rule-based</span></div><div style="color:var(--ink-soft)">Same reference "Tender Notice No. 55/2026" in: Tender notice (02-10-2026) <span class="cite">p.1</span>, Corrigendum No. 1 <span class="cite">p.1</span>.</div><div class="row"><span class="btn">Compare all three</span><span class="btn ghost">Not now</span></div></div>
+          <div class="msg uri">Each answer cites the page. If the files do not say it, I say "not found in these files".</div></div>
+          <div class="composer"><div class="in">Ask about these PDFs…</div><div class="mic">mic</div></div></aside>
+      </div><div class="status"><span><i class="dot"></i>Idle</span><span>Read only · originals untouched</span><span class="sp"></span><span>Text layer: yes · OCR not needed</span></div></div>
+    </div></div>
+    <figcaption><b>4 · PDF questions with page citations.</b> Answers cite the file and page, and the cited text is highlighted in the page. Related notices and corrigenda are linked by their reference number, which is a fixed rule, not a guess. Scanned PDFs are read with OCR, and the status line says so.</figcaption>
+  </figure>
+  </div>
+</section>
+
+<section class="dir" id="b2">
+  <div class="dirhead"><span class="eyebrow">Direction B2</span><h2>Task panel · workbench · companion drawer</h2></div>
+  <p>Left: a panel of tasks grouped by outcome (Create, Edit, Convert, Check, Combine) instead of by file type. Centre: a workbench that holds several open files at once. The companion moves to a drawer under the workbench. Structure adapted from Stirling-PDF's quick-access tool panel and workbench (<code>frontend/editor/src/core/components/layout/Workbench.tsx</code>, <code>shared/quickAccessBar/</code>).</p>
+  <figure class="shot">
+    <div class="scroller"><div class="app">
+      <div class="rail"><div class="orb"></div><div class="ri"><i></i>Talk</div><div class="ri"><i></i>Tasks</div><div class="ri on"><i></i>Office</div><div class="ri"><i></i>Insight</div><div class="ri"><i></i>Settings</div></div>
+      <div class="region" style="grid-template-rows:1fr 150px 30px"><div class="panes p2b">
+        <div class="tools"><div class="eyebrow" style="padding:4px 8px">Create</div>
+          <div class="tool"><i></i><div>Letter or order<small>From a template</small></div></div>
+          <div class="tool on"><i></i><div>Letters from Excel<small>One per row</small></div></div>
+          <div class="tool"><i></i><div>Presentation<small>From a report or data</small></div></div>
+          <div class="eyebrow" style="padding:8px 8px 4px">Check and convert</div>
+          <div class="tool"><i></i><div>Fix formatting</div></div>
+          <div class="tool"><i></i><div>Compare documents</div></div>
+          <div class="tool"><i></i><div>PDF tables → Excel</div></div>
+          <div class="tool"><i></i><div>Convert to PDF</div></div>
+          <div class="eyebrow" style="padding:8px 8px 4px">Combine</div>
+          <div class="tool"><i></i><div>Summarize several files</div></div>
+          <div class="tool"><i></i><div>Merge or split PDFs</div></div></div>
+        <div class="centre"><div class="bar"><b>Workbench</b><span class="sp"></span><span class="tag d">Postings Oct 2026.xlsx</span><span class="tag d">Letter template.docx</span><span class="btn">+ Add files</span></div>
+          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px;background:var(--sunken)">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;color:var(--ink-soft)">Sheet: 40 rows · Name, Designation, Station, Date of joining</div>
+            <div style="display:flex;justify-content:center"><div class="page" style="width:300px;padding:20px 24px"><div class="c">Office of the District Collector</div><div>To «Name», «Designation»</div><div>You are posted to «Station» with effect from «Date of joining».</div></div></div>
+          </div></div>
+      </div>
+      <div class="drawer"><div style="display:grid;gap:6px;align-content:start"><div class="eyebrow">URI</div><div class="msg me" style="align-self:start">Use the Excel records to prepare individual letters.</div><div class="composer" style="border:0;padding:0"><div class="in">Ask URI…</div><div class="mic">mic</div></div></div>
+        <div class="card plan"><div class="t">Plan: 40 letters<span class="tag b">needs your OK</span></div><div style="color:var(--ink-soft)">4 steps, all rule-based. Creates 40 files. Originals will not change.</div><div class="row"><span class="btn pri">Run</span><span class="btn">Details</span></div></div></div>
+      <div class="status"><span><i class="dot"></i>Waiting for your OK</span><span class="sp"></span><span>Originals untouched</span></div></div>
+    </div></div>
+    <figcaption><b>B2 · Letters from Excel.</b> Tasks are discoverable without typing, which helps a first-time user. The cost is less room for the conversation and cards, and a second layout to learn: the M1/M2 spreadsheet companion pane would have to move from the right into the drawer.</figcaption>
+  </figure>
+</section>
+
+<section class="dir">
+  <h2>How the two compare</h2>
+  <div class="tbl-wrap"><table class="cmp">
+    <thead><tr><th>Measure</th><th>B1 · three panes</th><th>B2 · task panel + drawer</th></tr></thead>
+    <tbody>
+      <tr><td>Fits Excel today</td><td>Yes. Same right-hand companion as M1/M2 (AC19).</td><td>No. Companion pane moves to a drawer; M1/M2 widget tests change.</td></tr>
+      <tr><td>First-time discovery</td><td>Template chips on Home plus the suggestion line.</td><td>Stronger: every task visible as a list.</td></tr>
+      <tr><td>Room for review</td><td>Full-height pane for plans, cards, findings and approvals.</td><td>150 px drawer; long change lists need a pop-out.</td></tr>
+      <tr><td>Multiple files</td><td>One centre file at a time; others listed as references (M2 roles).</td><td>Side-by-side workbench.</td></tr>
+      <tr><td>Build effort for O2</td><td>Medium. Reuses office_panel layout and companion.</td><td>Medium-high. New task panel, drawer and workbench.</td></tr>
+      <tr><td>Phone / narrow window</td><td>Collapses to centre plus a companion sheet.</td><td>Task panel and drawer compete for height.</td></tr>
+    </tbody></table></div>
+  <div class="notes">
+    <div class="note"><h3>Recommendation</h3><p>B1. It keeps the companion where Excel users already find it, gives approvals full height, and adds one centre view per file type rather than a new layout. B2's task list can live inside B1 as the Templates and Workflows pages.</p></div>
+    <div class="note"><h3>What is real today</h3><p>Sheet view, change cards, approvals and the companion pane exist (M1/M2, not yet in canonical). LibreOffice page rendering was verified on this PC on 2026-10-15. Everything else on this page is the O2 to O8 plan.</p></div>
+    <div class="note"><h3>Not included</h3><p>Typing directly on a Word page. No free engine for that was found that runs inside URI. Mission Control and the Skill Command Center are separate milestones.</p></div>
+  </div>
+</section>
+</div>

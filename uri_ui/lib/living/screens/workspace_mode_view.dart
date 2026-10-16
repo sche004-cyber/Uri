@@ -20,6 +20,7 @@ import '../integration/oi_widgets.dart';
 import '../integration/ws_settings.dart';
 import '../living_app.dart';
 import '../living_scope.dart';
+import '../office/office_workspace.dart';
 import '../presentation/living_shell.dart';
 import '../presentation/presentation_controller.dart';
 import '../widgets/glass_panel.dart';
@@ -67,7 +68,8 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
           builder: (context, constraints) {
             final w = constraints.maxWidth;
             final railExpanded = w >= OrbDock.railExpandAt;
-            final contextDefault = w >= 1180;
+            final contextDefault = w >= 1180 &&
+                focus != WorkspaceFocus.office && focus != WorkspaceFocus.documents;
             final showContext = _contextOverride ?? contextDefault;
             return Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -98,8 +100,10 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
                                   attachmentOpener: widget.attachmentOpener,
                                 ),
                               WorkspaceFocus.tasks => const TasksRegion(),
-                              WorkspaceFocus.documents =>
-                                const DocumentsRegion(),
+                              // O2 (plan §1.2, U15): the simulated Documents region is gone; "documents" is
+                              // Office › Documents in the B1 Office workspace.
+                              WorkspaceFocus.documents || WorkspaceFocus.office =>
+                                OfficeWorkspace(environment: LivingScope.of(context).office),
                               WorkspaceFocus.intelligence =>
                                 const IntelligenceOverviewView(),
                               WorkspaceFocus.settings =>
@@ -151,7 +155,7 @@ class _Rail extends StatelessWidget {
         'Conversation',
       ),
       (WorkspaceFocus.tasks, Icons.check_circle_outline_rounded, 'Tasks'),
-      (WorkspaceFocus.documents, Icons.description_outlined, 'Documents'),
+      (WorkspaceFocus.office, Icons.table_chart_outlined, 'Office'),
       (WorkspaceFocus.intelligence, Icons.hub_outlined, 'Intelligence'),
       (WorkspaceFocus.settings, Icons.tune_rounded, 'Settings'),
     ];
@@ -308,6 +312,7 @@ class _FocusHeader extends StatelessWidget {
       WorkspaceFocus.conversation => 'Conversation',
       WorkspaceFocus.tasks => 'Tasks',
       WorkspaceFocus.documents => 'Documents',
+      WorkspaceFocus.office => 'Office',
       WorkspaceFocus.intelligence => 'Intelligence',
       WorkspaceFocus.settings => 'Settings',
     };
@@ -723,187 +728,6 @@ class _WorkHistoryRow extends StatelessWidget {
             const StatusBadge.simulated(compact: true),
           ],
         ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Documents / office workflows
-// ---------------------------------------------------------------------------
-
-class DocumentsRegion extends StatelessWidget {
-  const DocumentsRegion({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final services = LivingScope.of(context);
-    final c = UriColors.of(context);
-    const templates = [
-      (
-        WorkItemKind.letter,
-        Icons.mail_outline_rounded,
-        'Letter',
-        'Draft a letter',
-      ),
-      (
-        WorkItemKind.spreadsheet,
-        Icons.table_chart_outlined,
-        'Spreadsheet',
-        'Build a sheet',
-      ),
-      (
-        WorkItemKind.document,
-        Icons.article_outlined,
-        'Document',
-        'Write a document',
-      ),
-      (
-        WorkItemKind.research,
-        Icons.travel_explore_rounded,
-        'Research',
-        'Research a topic',
-      ),
-    ];
-    return ListenableBuilder(
-      listenable: services.work,
-      builder: (context, _) {
-        final docs = services.work.documents;
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(
-            UriSpace.md,
-            0,
-            UriSpace.md,
-            UriSpace.lg,
-          ),
-          children: [
-            Eyebrow(
-              'Start new work',
-              trailing: services.work.isSimulated
-                  ? const StatusBadge.simulated(compact: true)
-                  : null,
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (final (kind, icon, label, title) in templates)
-                  _TemplateTile(
-                    icon: icon,
-                    label: label,
-                    onTap: () {
-                      services.work.create(title: title, kind: kind);
-                      services.presentation.setFocus(WorkspaceFocus.tasks);
-                    },
-                  ),
-              ],
-            ),
-            const SizedBox(height: UriSpace.lg),
-            const Eyebrow('Recent documents'),
-            const SizedBox(height: 8),
-            if (docs.isEmpty) _EmptyLine('No documents yet.'),
-            for (final d in docs)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: GlassPanel(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(_iconFor(d.kind), size: 18, color: c.accentInk),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          d.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13, color: c.ink),
-                        ),
-                      ),
-                      Text(
-                        _relative(d.modifiedAt),
-                        style: TextStyle(fontSize: 11.5, color: c.inkFaint),
-                      ),
-                      if (d.simulated) ...[
-                        const SizedBox(width: 8),
-                        const StatusBadge.simulated(compact: true),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
-
-  static IconData _iconFor(WorkItemKind k) => switch (k) {
-    WorkItemKind.letter => Icons.mail_outline_rounded,
-    WorkItemKind.spreadsheet => Icons.table_chart_outlined,
-    WorkItemKind.document => Icons.article_outlined,
-    WorkItemKind.email => Icons.alternate_email_rounded,
-    WorkItemKind.research => Icons.travel_explore_rounded,
-    WorkItemKind.other => Icons.insert_drive_file_outlined,
-  };
-
-  static String _relative(DateTime t) {
-    final d = DateTime.now().difference(t);
-    if (d.inMinutes < 1) return 'just now';
-    if (d.inHours < 1) return '${d.inMinutes} min ago';
-    if (d.inDays < 1) return '${d.inHours} h ago';
-    return '${d.inDays} d ago';
-  }
-}
-
-class _TemplateTile extends StatelessWidget {
-  const _TemplateTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = UriColors.of(context);
-    final glass = UriGlass.of(context);
-    return Material(
-      color: glass.fill,
-      borderRadius: BorderRadius.circular(UriRadius.md),
-      child: InkWell(
-        key: ValueKey('template-$label'),
-        borderRadius: BorderRadius.circular(UriRadius.md),
-        onTap: onTap,
-        child: Container(
-          width: 132,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(UriRadius.md),
-            border: Border.all(color: glass.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, size: 20, color: c.accent),
-              const SizedBox(height: 10),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: c.ink,
-                ),
-              ),
-              Text('New', style: TextStyle(fontSize: 11, color: c.inkFaint)),
-            ],
-          ),
-        ),
       ),
     );
   }

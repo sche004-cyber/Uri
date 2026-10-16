@@ -1,0 +1,41 @@
+[PASS] contract {"contract": "o2.1"}
+[PASS] AC-O2-6/19 engine verified at first start {"engine": {"id": "libreoffice", "state": "ready", "version": "26.8.1.1", "pinned": true, "reason": null, "last_verified": 1792047813.270367, "queued": 0, "last_start_seconds": null, "starts": 0}}
+[PASS] K1 open+preview letter {"pages": 1, "first_ready_s": 13.89, "page1_ms": 1660, "findings": 0, "outline": 0, "error": null}
+[PASS] K1 open+preview order {"pages": 2, "first_ready_s": 0.61, "page1_ms": 45, "findings": 0, "outline": 1, "error": null}
+[PASS] K1 open+preview notice {"pages": 1, "first_ready_s": 0.62, "page1_ms": 47, "findings": 0, "outline": 1, "error": null}
+[PASS] K1 open+preview corr {"pages": 1, "first_ready_s": 0.6, "page1_ms": 48, "findings": 0, "outline": 1, "error": null}
+[PASS] K1 open+preview memo {"pages": 1, "first_ready_s": 0.62, "page1_ms": 36, "findings": 0, "outline": 1, "error": null}
+[PASS] K1 open+preview minutes {"pages": 1, "first_ready_s": 0.63, "page1_ms": 35, "findings": 0, "outline": 3, "error": null}
+[PASS] K1 open+preview bilingual {"pages": 1, "first_ready_s": 1.16, "page1_ms": 37, "findings": 0, "outline": 1, "error": null}
+[PASS] K1 open+preview report {"pages": 20, "first_ready_s": 0.7, "page1_ms": 52, "findings": 0, "outline": 21, "error": null}
+[PASS] K1 open+preview deck {"pages": 11, "first_ready_s": 0.78, "page1_ms": 32, "findings": 0, "outline": 11, "error": null}
+[PASS] AC-O2 deck slide count {"pages": 11, "slides": 11}
+[PASS] U12/H1 warm 20-page DOCX first page visible {"seconds": [0.18, 0.19, 0.17], "median": 0.18, "threshold_s": 2.0, "note": "cache hit after the first conversion of the same content (preview cache); see cold_conversion_s"}
+[PASS] P-1/D1 Save as PDF letter {"state": "ready_to_save", "seconds": 0.61, "pages": 1, "findings": []}
+[PASS] P-1/D1 Save as PDF order {"state": "ready_to_save", "seconds": 0.62, "pages": 2, "findings": []}
+[PASS] P-1/D1 Save as PDF bilingual {"state": "ready_to_save", "seconds": 0.56, "pages": 1, "findings": []}
+[PASS] P-1/D1 Save as PDF deck {"state": "ready_to_save", "seconds": 0.85, "pages": 11, "findings": []}
+[PASS] P-1/D1 Save as PDF report {"state": "ready_to_save", "seconds": 1.6, "pages": 20, "findings": []}
+[PASS] D1 no overwrite of an existing name {"response": "DESTINATION_EXISTS"}
+[PASS] P-1 reopen saved PDF letter {"pages": 1, "renderer": "Windows"}
+[PASS] P-1 reopen saved PDF deck {"pages": 11, "renderer": "Windows"}
+[PASS] P-2 PDF view: pages, zoom 440/880/1240, search {"pages": 60, "page_ms_by_width": {"440": [27, 25, 24], "880": [38, 38, 52], "1240": [58, 73, 57]}, "first_match": [{"page": 37, "context": "Tender clause 37 Clause 37. The bidder shall c"}], "no_match": {"matches": [], "truncated": false}}
+[PASS] P-2 scanned PDF: preview and honest 'no searchable text' {"search": {"error": "NO_TEXT_LAYER", "detail": "", "message": "This PDF has no searchable text (it may be a scan).", "recovery": []}}
+[PASS] P-4/AC-O2-20 hostile PDFs: worker fails alone, service survives {"results": {"zero": "unavailable", "garbage": "unavailable", "truncated": "unavailable", "deep_nesting": "unavailable"}}
+[PASS] P-6 Excel: refused with unsaved changes; saved file -> PDF with the print-area values {"refused": "UNSAVED_CHANGES", "values_present": {"Salaries": true, "Digitization": true, "Total": true, "Spent to date": true}, "pages": 1}
+[PASS] F1 canaries (HTTP, SMB) through the live service {"http_hits": [], "smb_ports": [], "xlsx_opened": true}
+[PASS] L2 five repeats of Save as PDF give identical outcomes {"runs": [["ready_to_save", 2, 0.59], ["ready_to_save", 2, 0.59], ["ready_to_save", 2, 0.81], ["ready_to_save", 2, 0.58], ["ready_to_save", 2, 0.6]]}
+[PASS] PR-1 discovery matches Windows (virtual printers only on this PC) {"ours": ["Microsoft Print to PDF", "OneNote (Desktop)"], "windows": ["Microsoft Print to PDF", "OneNote (Desktop)"], "default": ["Microsoft Print to PDF"], "windows_default": "Microsoft Print to PDF", "physical": false}
+[PASS] PR-2 capabilities read (virtual) {"duplex": false, "color": true, "papers": 54, "max_copies": 1}
+[PASS] PR-3 print preview: exactly the chosen pages, printable area {"pages": [1, 2], "printable": {"ok": true, "hard_mm": [0, 0], "printable_mm": [0, 0, 210, 297], "paper_mm": [210.1, 296.9]}}
+[PASS] PR-4 tampered and replayed print approvals refused {"tampered": "BOUND_VALUE_MISMATCH", "replay": "UNKNOWN_SURFACE"}
+[PASS] PR-5 virtual printer job (OD-U13): approved pages only, no dialog, file written {"state": "sent", "pages_out": 2, "worker": null, "spooler": null, "note": "virtual printer evidence only; NOT physical qualification"}
+[PASS] PR-5b same output file refused (never replaced) {"response": "DESTINATION_EXISTS"}
+[NOT VERIFIED] PR-6 physical print {"reason": "no physical printer on this PC (2026-10-15); needs owner authorization"}
+[NOT VERIFIED] PR-7 physical progress and cancel {"reason": "no physical printer on this PC (2026-10-15); needs owner authorization"}
+[NOT VERIFIED] PR-8 real offline printer {"reason": "no physical printer on this PC (2026-10-15); needs owner authorization"}
+[NOT VERIFIED] PR-9 printer error mid-job {"reason": "no physical printer on this PC (2026-10-15); needs owner authorization"}
+[PASS] B1 native chart drawn in the deck's PDF (slide 11) {"chart_text": "Registers scanned per month\nJun Jul Aug Sep\n0\n100\n200\n300\n400\n500\n600\n700\nScanned"}
+[PASS] F3/AC-O2-5/AC-O2-9 kill mid-run: no orphan engine, interrupted, resumed {"orphans": [], "after_restart": "interrupted", "interrupted_at": 2, "resumed": "ready_to_save"}
+[PASS] G1 originals byte-identical after every item {"changed": [], "files": 12}
+RESULT C:\Users\cheta\AppData\Local\Temp\uri_o2_live_run7\live_result.json

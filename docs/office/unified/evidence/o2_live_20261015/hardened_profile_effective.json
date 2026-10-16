@@ -1,0 +1,7 @@
+{
+ "run": "after the round-3 profile repair",
+ "seeded": 17,
+ "present_during_run": 17,
+ "missing": [],
+ "correction": "The first check (same day) found 4 of 20 items not in effect: ooInetFTPProxyName, ooInetFTPProxyPort and CollectUsageInformation do not exist in LibreOffice 26.8 (removed from the profile); UpdateCheck AutoCheckEnabled needed oor:type and had been reset to true by LibreOffice (type added)."
+}

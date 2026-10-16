@@ -1,0 +1,36 @@
+{
+ "run": "base1",
+ "brain_mode": false,
+ "port": 18327,
+ "started_utc": "2026-10-15T10:15:08.273255+00:00",
+ "verified": {
+  "ok": true,
+  "source_head": "ee2f2f3481ccae15242a82530e3ebdcbc8898476",
+  "source_tree": "498412c7f88d8ad80a058062b9c04c5e0e520e13",
+  "checked_files": 1413
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "gpu_authority": "owner directive 2026-10-15 B5: Brain/GPU testing under the existing GPU lease, runtime safety and permission controls; no contention override",
+ "server_pid": 13680,
+ "server_listener_pid": 15056,
+ "server_listen_s": 5.887,
+ "server_listening": true,
+ "office_started_by_harness": {
+  "utc": "2026-10-15T10:18:31.014956+00:00",
+  "reason": "app showed: The URI Office service is not running (no way to start it from the app)",
+  "args": [
+   "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+   "-B",
+   "-m",
+   "uri_office.service",
+   "run",
+   "--state",
+   "C:\\Users\\cheta\\Development\\uri-o2-live-20261015\\fixtures\\base1\\local\\URI\\office"
+  ],
+  "pid": 20756
+ }
+}
