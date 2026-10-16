@@ -85,10 +85,17 @@ void main() {
       rt.emit('t2', 'turn.finished', {'status': 'ok'});
       await pumpEventQueue();
 
-      // The Workspace shows the draft: an edit there is an ordinary auto turn the worker may route to the desk.
+      // The Workspace shows the draft: by default its composer talks to the conversation (as if no draft were
+      // open); only the explicit draft target makes the words an instruction for the draft.
       await conv.send('Make it shorter');
-      expect(rt.commands.last.containsKey('input'), isFalse);
+      expect((rt.commands.last['input'] as Map)['mode'], 'conversation');
       rt.emit('t3', 'turn.finished', {'status': 'ok'});
+      await pumpEventQueue();
+      conv.setDraftTarget(true);
+      await conv.send('Make it shorter');
+      expect((rt.commands.last['input'] as Map)['mode'], 'draft');
+      conv.setDraftTarget(false);
+      rt.emit('t4', 'turn.finished', {'status': 'ok'});
       await pumpEventQueue();
 
       // Speech away from the draft: the transcript envelope keeps the raw words and adds mode command.
@@ -96,7 +103,7 @@ void main() {
       final input = rt.commands.last['input'] as Map;
       expect(input['mode'], 'command');
       expect((input['transcript'] as Map)['raw'], 'make it shorter');
-      rt.emit('t4', 'turn.finished', {'status': 'ok'});
+      rt.emit('t5', 'turn.finished', {'status': 'ok'});
       await pumpEventQueue();
 
       // Dictation is explicit content the user chose; it keeps its own mode.
@@ -105,31 +112,30 @@ void main() {
       expect((rt.commands.last['input'] as Map)['mode'], 'dictation');
     });
 
-    test('the Workspace draft target: conversation means mode command; a new draft targets the draft again', () async {
+    test('the Workspace draft target: conversation by default, draft only when chosen, reset by a new draft', () async {
       final rt = FakeRuntime();
       final conv = OiConversation(rt);
       await conv.send('draft a letter');
+      expect(rt.commands.last.containsKey('input'), isFalse);   // no draft yet: routing as before
       await openDraft(rt, conv, 't1');
-      expect(conv.draftTarget, isTrue);
-      conv.setDraftTarget(false);
       expect(conv.draftTarget, isFalse);
-      await conv.send('Tell me a joke in a formal tone');   // typed in the Workspace, target conversation
-      expect((rt.commands.last['input'] as Map)['mode'], 'command');
+      await conv.send('Tell me a joke in a formal tone');
+      expect((rt.commands.last['input'] as Map)['mode'], 'conversation');
       rt.emit('t2', 'turn.finished', {'status': 'ok'});
       await pumpEventQueue();
       conv.setDraftTarget(true);
-      await conv.send('Make it shorter');
-      expect(rt.commands.last.containsKey('input'), isFalse);
-      rt.emit('t3', 'turn.finished', {'status': 'ok'});
-      await pumpEventQueue();
-      conv.setDraftTarget(false);
+      expect(conv.draftTarget, isTrue);
+      await conv.send('Make my letter shorter');
+      expect((rt.commands.last['input'] as Map)['mode'], 'draft');
+      expect(conv.messages.lastWhere((m) => m.role == OiRole.user).inputLabel, 'To the draft');
       rt.emit('t3', 'draft.updated', {
         'op': 'created',
         'draft': {...snapshot(current: v1, previous: null, position: 1, count: 1, simulated: false), 'draft_id': 'd2'},
       });
+      rt.emit('t3', 'turn.finished', {'status': 'ok'});
       await pumpEventQueue();
       expect(conv.draft!.draftId, 'd2');
-      expect(conv.draftTarget, isTrue, reason: 'a new draft starts with the draft as target');
+      expect(conv.draftTarget, isFalse, reason: 'a new draft starts with the conversation as target');
     });
 
     testWidgets('the Workspace composer shows the draft target chip and switches it', (tester) async {
@@ -142,11 +148,19 @@ void main() {
       await settle(tester);
       final chip = find.byKey(const ValueKey('composer-draft-target'));
       expect(chip, findsOneWidget);
+      expect(find.text('To: conversation'), findsOneWidget);
+      await tester.tap(chip);
+      await settle(tester);
+      expect(s.oi!.draftTarget, isTrue);
       expect(find.text('To: letter draft'), findsOneWidget);
       await tester.tap(chip);
       await settle(tester);
       expect(s.oi!.draftTarget, isFalse);
-      expect(find.text('To: conversation'), findsOneWidget);
+      // The draft panel offers the explicit way to address the draft.
+      await tester.ensureVisible(find.byKey(const ValueKey('draft-edit-with-uri')));
+      await tester.tap(find.byKey(const ValueKey('draft-edit-with-uri')));
+      await settle(tester);
+      expect(s.oi!.draftTarget, isTrue);
       s.presentation.setMode(UiPresentationMode.dashboard);
       await settle(tester);
       expect(find.byKey(const ValueKey('composer-draft-target')), findsNothing);

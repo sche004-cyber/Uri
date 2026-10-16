@@ -189,6 +189,32 @@ class DraftDesk:
             while len(self.drafts) > MAX_SESSIONS:
                 self.drafts.pop(next(iter(self.drafts)))
 
+    def classify_conversation(self, text, session_id) -> TX.TextIntent:
+        """Input mode "conversation" (UIV2-F1): as if no draft were open. Nothing can change the open draft; a new
+        document request starts a new draft (the open one is kept for Undo). An open draft question is dropped."""
+        d = self.active(session_id)
+        if d is not None and d.pending_question:
+            d.pending_question = None
+        intent = TX.classify(text, has_draft=False)
+        if intent.kind == TX.REVISE or intent.kind in TX.DETERMINISTIC:
+            return TX.TextIntent(TX.NONE, ["conversation_target"], instruction=text)   # cannot happen; fail closed
+        return intent
+
+    def classify_draft_target(self, text, session_id) -> TX.TextIntent:
+        """Input mode "draft" (UIV2-F1): the user addressed the open draft explicitly. Anything that is not a draft
+        operation, a new document or a Core-only request is an instruction for it; the model may still answer
+        that it is not an edit, and the ordinary path then answers."""
+        intent = self.classify(text, session_id)
+        d = self.active(session_id)
+        if d is not None and d.current is not None and intent.kind == TX.DRAFT_NEW and \
+                not re.search(r"\b(?:new|another|fresh|separate|second)\b", text or "", re.I):
+            # "Make my letter shorter" said to the draft is an edit of it, not a new document (R4-03)
+            return TX.TextIntent(TX.REVISE, ["draft_target"], instruction=text, targets=TX.targets_for(text))
+        if d is None or d.current is None or intent.is_text_task or intent.reasons[:1] in (
+                ["core_only_request"], ["code_work"], ["ambiguity_action"]):
+            return intent
+        return TX.TextIntent(TX.REVISE, ["draft_target"], instruction=text, targets=TX.targets_for(text))
+
     def classify(self, text, session_id) -> TX.TextIntent:
         """An open question (draft.pending_question or a pending create) lives for ONE user turn: the next turn either
         answers it, drops it explicitly ("never mind"), or goes elsewhere, which also drops it."""

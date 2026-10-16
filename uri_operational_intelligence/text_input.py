@@ -10,7 +10,7 @@ The same text intelligence serves typed text and transcribed speech. A turn may 
          "simulated": bool,               # True when the text was typed or scripted to stand in for speech
          "language": str | None,          # BCP-47 hint, e.g. "en-IN", "hi-IN"; None when unknown
          "uncertain": [str] },            # spans the recogniser marked low-confidence (possible mishearing)
-     "mode": "auto" | "dictation" | "command",   # optional, default "auto" (L-2)
+     "mode": "auto" | "dictation" | "command" | "conversation" | "draft",   # optional, default "auto"
      "scope": "grammar" | "rewrite"}             # optional, only with mode "dictation"; default "grammar"
 
 Modes (L-2, dictation versus commands):
@@ -18,6 +18,12 @@ Modes (L-2, dictation versus commands):
   * dictation: the words are CONTENT. They become a draft (grammar/punctuation only, or a professional rewrite when
     scope is "rewrite"); nothing in them is ever carried out, even sentences that start with "send" or "delete".
   * command: the words are an instruction for URI's ordinary path (intent discovery, Core, approvals), never a draft.
+  * conversation (UIV2-F1): the Workspace composer is set to the conversation while a draft is open. Routing as
+    if no draft were open: nothing in the turn can change the open draft (a new document request still starts
+    a new draft; the open one is kept and Undo brings it back). An open draft question is dropped.
+  * draft (UIV2-F1): the Workspace composer is explicitly set to the open draft. The words are an instruction
+    for that draft unless they are a deterministic draft operation, a new-document request or an action only
+    Core may take; the desk still answers ordinary questions instead of editing ("not an edit").
 
 Rules (validated here, fail closed):
   * For a transcript, the turn text must equal `transcript.raw`. The interpretation is produced by URI, never by
@@ -34,7 +40,7 @@ from dataclasses import dataclass, field
 
 SCHEMA = "uri.text_input.v1"
 SOURCES = ("typed", "transcript")
-MODES = ("auto", "dictation", "command")
+MODES = ("auto", "dictation", "command", "conversation", "draft")
 SCOPES = ("grammar", "rewrite")
 MAX_RAW = 20000
 MAX_UNCERTAIN = 32

@@ -1,0 +1,102 @@
+"""UIV2-F1 explicit target (2026-10-16): the Workspace composer sends input mode "conversation" by default while a
+draft is open (nothing can change it) and mode "draft" only after the user chose the draft. Bridge-level tests with the
+scripted fake Runtime v1; the UI side is uri_ui/test/living/uiv2_postint_test.dart.
+"""
+import json
+
+import pytest
+
+from tests.oi.fake_llama import FakeLlama
+from tests.oi.test_oi_orchestrator import FakeCore
+from tests.ws.test_ti_desk_bridge import CREATE, REVISE_2, WARDEN, turn
+from tests.ws.test_ws_worker_bridge import SID, make
+from uri_operational_intelligence import text_input as TI
+
+CONVERSATION = {"schema": TI.SCHEMA, "source": "typed", "mode": "conversation"}
+DRAFT = {"schema": TI.SCHEMA, "source": "typed", "mode": "draft"}
+NOT_AN_EDIT = {"action": "not_an_edit", "clarification": None, "fact_updates": [], "exclusions_add": [], "edits": [],
+               "summary": ""}
+
+
+@pytest.fixture
+def fake():
+    with FakeLlama() as f:
+        yield f
+
+
+def _draft(b):
+    return b.handle("draft_get", {"command": "draft_get", "session_id": SID})["draft"]
+
+
+@pytest.mark.parametrize("text", ["Make it more diplomatic and shorten the second paragraph.", "Make my letter shorter",
+                                  "Change the date to Tuesday", "Replace the name with Ravi", "undo",
+                                  "Say hello in three words"])
+def test_conversation_target_never_changes_the_open_draft(fake, tmp_path, text):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"chunks": [("answer", "Sure.")], "finish": "stop"}]
+    turn(b, WARDEN)
+    before = _draft(b)
+    n = len(frames.data("draft.updated"))
+    turn(b, text, input=CONVERSATION)
+    after = _draft(b)
+    assert after["draft_id"] == before["draft_id"] and after["version"] == before["version"]
+    assert after["current"] == before["current"] and len(frames.data("draft.updated")) == n
+
+
+def test_conversation_target_new_document_keeps_the_open_one(fake, tmp_path):
+    other = json.loads(json.dumps(CREATE))
+    other["blocks"] = [{"role": "body", "text": "The library opens at 8 am from Monday."}]
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(other)}]
+    turn(b, WARDEN)
+    letter = _draft(b)
+    turn(b, "Draft a new notice that the library will open at 8 am from Monday.", input=CONVERSATION)
+    new = _draft(b)
+    assert new["draft_id"] != letter["draft_id"] and new["replaced"]["doc_type"] == "letter"
+    back = b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "undo"})["draft"]
+    assert back["draft_id"] == letter["draft_id"] and back["current"] == letter["current"]
+
+
+def test_conversation_target_drops_an_open_draft_question(fake, tmp_path):
+    clar = {"action": "clarify", "clarification": "Which date should the letter use?", "fact_updates": [],
+            "exclusions_add": [], "edits": [], "summary": ""}
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(clar)},
+                     {"chunks": [("answer", "Tuesday is a weekday.")], "finish": "stop"}]
+    turn(b, WARDEN)
+    turn(b, "Change the date", input=DRAFT)
+    assert _draft(b)["pending_question"]
+    turn(b, "Tuesday", input=CONVERSATION)
+    d = _draft(b)
+    assert d["pending_question"] is None and d["version"] == 1
+
+
+def test_draft_target_makes_an_edit_explicit(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(REVISE_2)}]
+    turn(b, WARDEN)
+    turn(b, "Make my letter shorter", input=DRAFT)          # R4-03: an edit, not a new document
+    assert _draft(b)["version"] == 2
+
+
+def test_draft_target_still_answers_what_is_not_an_edit(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(NOT_AN_EDIT)},
+                     {"chunks": [("answer", "Here is one.")], "finish": "stop"}]
+    turn(b, WARDEN)
+    turn(b, "Tell me a joke", input=DRAFT)
+    assert frames.data("turn.routed")[-1]["route"] == "answer" and _draft(b)["version"] == 1
+
+
+def test_draft_target_never_lets_an_action_bypass_core(fake, tmp_path):
+    core = FakeCore([{"turn_id": "c1", "state": "failed", "code": "REFUSED_NO_CAPABILITY", "message": "No."}])
+    b, frames, _ = make(fake, tmp_path, core)
+    fake.scripts += [{"json": json.dumps(CREATE)}]
+    turn(b, WARDEN)
+    turn(b, "Send it to the warden", input=DRAFT)
+    assert core.calls and core.calls[-1][0] == "begin" and _draft(b)["version"] == 1
+
+
+def test_unknown_mode_is_refused():
+    with pytest.raises(TI.InputRejected):
+        TI.parse({"schema": TI.SCHEMA, "source": "typed", "mode": "edit"}, "x")

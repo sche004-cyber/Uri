@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/uri_theme.dart';
+import '../living_scope.dart';
 import '../widgets/scroll_when_short.dart';
 import '../widgets/glass_panel.dart';
 import 'oi_conversation.dart';
@@ -68,6 +69,20 @@ class _DraftPanelState extends State<DraftPanel> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  if (!conv.draftTarget)
+                    SizedBox(
+                      width: 28,
+                      height: 22,
+                      child: IconButton(
+                        key: const ValueKey('draft-edit-with-uri'),
+                        tooltip: 'Change this draft with URI: your next message goes to the draft',
+                        padding: EdgeInsets.zero,
+                        iconSize: 18,
+                        visualDensity: VisualDensity.compact,
+                        icon: Icon(Icons.edit_rounded, color: c.accent),
+                        onPressed: () => _targetDraft(context, conv),
+                      ),
+                    ),
                   Flexible(
                     child: Text(
                       'Version ${d.position} of ${d.count}',
@@ -127,7 +142,14 @@ class _DraftPanelState extends State<DraftPanel> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (conv.draftQuestion != null)
-                        _Banner(conv.draftQuestion!, tone: c.accent, icon: Icons.help_outline_rounded),
+                        _Banner(conv.draftQuestion!, tone: c.accent, icon: Icons.help_outline_rounded,
+                            action: conv.draftTarget
+                                ? null
+                                : TextButton(
+                                    key: const ValueKey('draft-answer'),
+                                    onPressed: () => _targetDraft(context, conv),
+                                    child: const Text('Answer'),
+                                  )),
                       for (final f in errors)
                         _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.danger, icon: Icons.error_outline_rounded),
                       for (final f in reviews)
@@ -195,6 +217,13 @@ class _DraftPanelState extends State<DraftPanel> {
         );
       },
     );
+  }
+
+  /// UIV2-F1: the explicit way to address the draft: the composer's target
+  /// becomes the draft and the composer takes the focus.
+  static void _targetDraft(BuildContext context, OiConversation conv) {
+    conv.setDraftTarget(true);
+    context.getInheritedWidgetOfExactType<LivingScope>()?.services.composerFocus.requestFocus();
   }
 
   static String _title(String docType) =>
@@ -333,10 +362,11 @@ class _OriginalView extends StatelessWidget {
 }
 
 class _Banner extends StatelessWidget {
-  const _Banner(this.text, {required this.tone, required this.icon});
+  const _Banner(this.text, {required this.tone, required this.icon, this.action});
   final String text;
   final Color tone;
   final IconData icon;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -348,6 +378,7 @@ class _Banner extends StatelessWidget {
           Icon(icon, size: 15, color: tone),
           const SizedBox(width: 6),
           Expanded(child: Text(text, style: TextStyle(color: tone, fontSize: 12))),
+          ?action,
         ],
       ),
     );

@@ -442,24 +442,30 @@ class OiConversation extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// UIV2-F1: an open draft is changed only from a surface that shows it
-  /// (Workspace). From anywhere else ([draftInView] false: Companion,
-  /// dashboard, voice while the draft is not on screen) a turn goes as
-  /// mode "command": the ordinary path, never a draft edit.
-  bool _scopeToCommand(bool draftInView) => draft != null && !(draftInView && _draftTargetFor(draft!));
+  /// UIV2-F1: the input mode a turn needs while a draft is open (null when
+  /// none is open: routing as before). The draft changes only on explicit
+  /// intent: from a surface that does not show it ([draftInView] false:
+  /// Companion, dashboard, voice away from the Workspace conversation) a turn
+  /// is "command" (the ordinary path, never a draft); in the Workspace it is
+  /// "conversation" (default: as if no draft were open) or, when the user set
+  /// the composer to the draft, "draft" (an instruction for it).
+  String? _draftMode(bool draftInView) {
+    final d = draft;
+    if (d == null) return null;
+    if (!draftInView) return 'command';
+    return _draftTargetFor(d) ? 'draft' : 'conversation';
+  }
 
-  /// UIV2-F1: the Workspace composer's explicit target while a draft is
-  /// open: the draft (default, the accepted drafting flow: "make it
-  /// shorter") or the conversation (mode "command": nothing can change the
-  /// draft). A new draft starts with the draft as target again.
-  bool get draftTarget => draft == null || _draftTargetFor(draft!);
-  bool _targetConversation = false;
+  /// UIV2-F1: the Workspace composer's explicit target while a draft is open.
+  /// The conversation by default (nothing can change the draft); the draft
+  /// only after the user chose it (composer chip, the draft panel's "Change
+  /// with URI" or "Answer"). A new draft starts with the conversation again.
+  bool get draftTarget => draft != null && _draftTargetFor(draft!);
   String? _targetDraftId;
-  bool _draftTargetFor(OiDraft d) => !(_targetConversation && _targetDraftId == d.draftId);
+  bool _draftTargetFor(OiDraft d) => _targetDraftId != null && _targetDraftId == d.draftId;
 
   void setDraftTarget(bool toDraft) {
-    _targetConversation = !toDraft;
-    _targetDraftId = draft?.draftId;
+    _targetDraftId = toDraft ? draft?.draftId : null;
     notifyListeners();
   }
 
@@ -475,8 +481,10 @@ class OiConversation extends ChangeNotifier {
       // and Undo brings it back).
       return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': 'dictation'}, 'Dictation');
     }
-    if (_scopeToCommand(draftInView)) {
-      return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': 'command'}, null);
+    final mode = _draftMode(draftInView);
+    if (mode != null) {
+      return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': mode},
+          mode == 'draft' ? 'To the draft' : null);
     }
     return _turn(text.trim(), null, null);
   }
@@ -498,7 +506,7 @@ class OiConversation extends ChangeNotifier {
     // The raw transcript is kept byte for byte (contract: turn text == transcript.raw); only emptiness is
     // judged on a trimmed copy.
     final t = raw;
-    final command = !dictation && _scopeToCommand(draftInView);
+    final mode = dictation ? null : _draftMode(draftInView);
     final input = {
       'schema': 'uri.text_input.v1',
       'source': 'transcript',
@@ -510,7 +518,7 @@ class OiConversation extends ChangeNotifier {
         if (uncertain.isNotEmpty) 'uncertain': uncertain,
       },
       if (dictation) 'mode': 'dictation',
-      if (command) 'mode': 'command',
+      'mode': ?mode,
     };
     final label = simulated ? 'Simulated transcript' : 'Transcript · $engine';
     return _turn(t, input, dictation ? '$label · Dictation' : label);
