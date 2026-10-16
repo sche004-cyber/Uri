@@ -14,6 +14,7 @@ import copy
 import re
 
 from lxml import etree
+from openpyxl import load_workbook
 from openpyxl.styles.numbers import BUILTIN_FORMATS
 
 from . import refs
@@ -52,6 +53,24 @@ def check_style(st) -> dict:
                 raise OfficeError("BAD_STYLE", k)
             out[k] = v
     return out
+
+
+def check_visible_fills(path, formats: list) -> None:
+    """Refuse a fill the grid would show as solid but the workbook would retain as a pattern."""
+    changed = [f for f in formats if f["before"].get("bg") != f["after"].get("bg")]
+    if not changed:
+        return
+    try:
+        wb = load_workbook(path)
+    except Exception as exc:  # noqa: BLE001 - a changed or damaged file cannot supply a trustworthy style
+        raise OfficeError("NOT_AN_XLSX", type(exc).__name__) from None
+    try:
+        for f in changed:
+            pattern = wb[f["sheet"]][refs.canonical_cell(f["cell"])].fill.patternType
+            if pattern not in (None, "none", "solid"):
+                raise OfficeError("STYLE_NOT_SUPPORTED", "a patterned or gradient fill cannot be shown as a solid fill")
+    finally:
+        wb.close()
 
 
 def _child(parent, tag):

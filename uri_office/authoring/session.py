@@ -349,7 +349,12 @@ class Authoring:
                     "target": {"kind": "authoring_save", "destination": str(dest), "grant_id": grant_id,
                                "replaces": replaces, "origin_sha256": s.origin_sha},
                     "changes": [c["text"] for c in live], "working_sha256": _sha(s.data)}
-            surface = self.approvals.propose_authoring_save(aid, body)
+            try:
+                surface = self.approvals.propose_authoring_save(aid, body)
+            except BaseException:
+                if not replaces:
+                    self.grants.revoke(grant_id)
+                raise
             return {"messages": surface.messages(), "surface_id": surface.surface_id}
 
     def apply_save(self, body) -> dict:
@@ -410,6 +415,7 @@ class Authoring:
             s = self.sessions.pop(aid, None)
         if s is None:
             raise OfficeError("UNKNOWN_EDIT", "", 404)
+        self.approvals.close_workbook(aid)
         if s.preview_doc:
             try:
                 self.documents.close(s.preview_doc)

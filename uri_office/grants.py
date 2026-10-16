@@ -151,6 +151,8 @@ class Grants:
         if self.folders_file and self.folders_file.is_file():
             try:
                 data = json.loads(self.folders_file.read_text(encoding="utf-8"))
+                if not isinstance(data, dict) or not isinstance(data.get("folders", []), list):
+                    raise ValueError("invalid folders list")
                 for f in data.get("folders", []):
                     if isinstance(f, str) and Path(f).is_dir():
                         check_folder_shape(f)
