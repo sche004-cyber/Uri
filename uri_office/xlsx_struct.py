@@ -32,7 +32,7 @@ from .errors import OfficeError
 from .xlsx_patch import M, NS_MAIN, NS_REL, _ser, _xml, sheet_parts
 
 MAX_ROWS_PER_OP = 1000
-_REF = re.compile(r"^(\$?)([A-Z]{1,3})?(\$?)([0-9]{1,7})?$")
+_REF = re.compile(r"^(\$?)([A-Za-z]{1,3})?(\$?)([0-9]{1,7})?$")
 DRAWING_TYPES = ("/drawing", "/comments", "/vmlDrawing", "/table", "/pivotTable", "/threadedComment", "/slicer",
                  "/timeline")
 

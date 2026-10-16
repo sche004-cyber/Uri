@@ -169,8 +169,8 @@ class Authoring:
             if len(self.sessions) >= MAX_SESSIONS:
                 raise OfficeError("TOO_MANY_OPEN", "finish or close an edit first")
             s = AuthSession(uuid.uuid4().hex[:16], kind, name, origin, origin_sha, grant_id, [data])
+            self._preview(s)
             self.sessions[s.aid] = s
-        self._preview(s)
         self.audit("office.authoring_started", {"authoring_id": s.aid, "kind": kind, "new": origin is None})
         return s
 

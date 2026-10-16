@@ -65,6 +65,30 @@ def test_insert_shifts_cells_and_every_reference():
     assert other["A4"].value == "=B5"               # another sheet's own cell is not moved
 
 
+def test_insert_shifts_lowercase_references_on_target_and_other_sheets():
+    def extra(wb, ws):
+        ws["D8"] = "=SUM(a2:a5)+$b$4"
+        wb["Notes & 'Plan'"]["A5"] = "=Budget!a4+Budget!$b$6"
+
+    parts = parts_of(budget_bytes(extra))
+    S.apply_row_op(parts, {"op": "insert_rows", "sheet": "Budget", "at": 3, "count": 1})
+    wb = to_wb(parts)
+    assert wb["Budget"]["D9"].value == "=SUM(a2:a6)+$b$5"
+    assert wb["Notes & 'Plan'"]["A5"].value == "=Budget!a5+Budget!$b$7"
+
+
+def test_delete_shifts_lowercase_references_and_marks_deleted_cells():
+    def extra(wb, ws):
+        ws["D8"] = "=SUM(a2:a5)+a4"
+        wb["Notes & 'Plan'"]["A5"] = "=Budget!a4+Budget!a5"
+
+    parts = parts_of(budget_bytes(extra))
+    S.apply_row_op(parts, {"op": "delete_rows", "sheet": "Budget", "at": 4, "count": 1})
+    wb = to_wb(parts)
+    assert wb["Budget"]["D7"].value == "=SUM(a2:a4)+#REF!"
+    assert wb["Notes & 'Plan'"]["A5"].value == "=Budget!#REF!+Budget!a4"
+
+
 def test_insert_refuses_to_push_a_cell_past_excel_last_row_without_changes():
     parts = parts_of(budget_bytes(lambda wb, ws: setattr(ws["A1048576"], "value", "Last row")))
     # A stale or absent dimension must not be the only thing guarding real row elements.

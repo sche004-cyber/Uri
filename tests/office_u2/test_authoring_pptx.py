@@ -219,6 +219,47 @@ def card_lines(prop):
     return json.dumps(prop["messages"], ensure_ascii=False)
 
 
+def test_failed_initial_preview_does_not_consume_authoring_capacity(env, monkeypatch):
+    a, docs, grants, appr, p, tmp = env
+    open_bytes = docs.open_bytes
+
+    def broken(*args, **kwargs):
+        raise OfficeError("ENGINE_UNAVAILABLE", "")
+
+    monkeypatch.setattr(docs, "open_bytes", broken)
+    for _ in range(4):
+        with pytest.raises(OfficeError) as error:
+            a.new_presentation()
+        assert error.value.code == "ENGINE_UNAVAILABLE"
+        assert not a.sessions
+
+    monkeypatch.setattr(docs, "open_bytes", open_bytes)
+    view = a.new_presentation()
+    assert view["authoring_id"] in a.sessions
+
+
+def test_failed_edit_preview_releases_its_grant_and_session(env, monkeypatch):
+    a, docs, grants, appr, p, tmp = env
+    did = docs.add_opened(p, grants)
+    prior_grants = set(grants._by_id)
+    open_bytes = docs.open_bytes
+
+    def broken(*args, **kwargs):
+        raise OfficeError("ENGINE_UNAVAILABLE", "")
+
+    monkeypatch.setattr(docs, "open_bytes", broken)
+    with pytest.raises(OfficeError) as error:
+        a.edit_document(did)
+    assert error.value.code == "ENGINE_UNAVAILABLE"
+    assert not a.sessions
+    assert set(grants._by_id) == prior_grants
+
+    monkeypatch.setattr(docs, "open_bytes", open_bytes)
+    view = a.edit_document(did)
+    assert view["authoring_id"] in a.sessions
+    assert grants.get(a.get(view["authoring_id"]).grant_id, "open").path == p
+
+
 def act_body(appr, prop):
     sid = prop["messages"][0]["createSurface"]["surfaceId"]
     row = appr.db.execute("SELECT body_json FROM surface WHERE surface_id=?", (sid,)).fetchone()
