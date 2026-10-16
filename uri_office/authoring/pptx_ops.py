@@ -282,7 +282,13 @@ def set_title(prs, sid, text: str):
 
 
 def set_notes(prs, sid, text: str):
-    slide(prs, sid).notes_slide.notes_text_frame.text = _text(text)
+    sl = slide(prs, sid)
+    if sl.has_notes_slide and any(
+        el.tag in (qn("a:hlinkClick"), qn("a:hlinkMouseOver"))
+        for el in sl.notes_slide._element.iter()
+    ):
+        _refuse("speaker notes contain a hyperlink URI cannot preserve")
+    sl.notes_slide.notes_text_frame.text = _text(text)
 
 
 def format_text(prs, sid, shid, fmt: dict, paragraph=None):

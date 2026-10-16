@@ -126,6 +126,24 @@ def test_duplicate_refuses_linked_speaker_notes_before_changing_deck():
     assert [s.slide_id for s in prs.slides] == ids(load(before))
 
 
+def test_set_notes_refuses_linked_speaker_notes_before_changing_deck():
+    prs = load(deck_bytes())
+    source = prs.slides[1]
+    linked = source.notes_slide.notes_text_frame.paragraphs[0].add_run()
+    linked.text = " Review"
+    linked.hyperlink.address = "https://example.org/review"
+    before = save(prs)
+
+    with pytest.raises(OfficeError) as error:
+        P.set_notes(prs, source.slide_id, "Replacement notes")
+
+    assert error.value.code == "AUTHORING_NOT_SUPPORTED"
+    assert "notes" in error.value.detail and "hyperlink" in error.value.detail
+    assert save(prs) == before
+    reopened = load(save(prs)).slides[1].notes_slide.notes_text_frame
+    assert reopened.paragraphs[0].runs[-1].hyperlink.address == "https://example.org/review"
+
+
 def test_text_ops_keep_formatting():
     prs = load(deck_bytes())
     b = ids(prs)[1]
