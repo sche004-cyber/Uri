@@ -529,15 +529,7 @@ class OiConversation extends ChangeNotifier {
   Future<void> _turn(String t, Map<String, dynamic>? input, String? label) async {
     // Nothing goes to a worker that is being replaced (WS hardening).
     if (t.trim().isEmpty || busy || restarting) return;
-    // The worker routes deep turns through the ordinary path. Keep an explicit draft target on the draft path.
-    final draftDepth = depth == OiDepth.deep && input?['mode'] == 'draft';
-    final turnDepth = draftDepth ? OiDepth.normal : depth;
     messages.add(OiMessage(role: OiRole.user, text: t)..inputLabel = label);
-    if (draftDepth) {
-      messages.add(OiMessage(
-          role: OiRole.system,
-          text: 'Deep depth cannot target a draft. This request was sent at Depth: thinking so it reaches the draft.'));
-    }
     lastError = null;
     draftProgress = 0;
     _sendingSince = DateTime.now();
@@ -549,7 +541,7 @@ class OiConversation extends ChangeNotifier {
         'command': 'oi_turn',
         'session_id': sessionId,
         'text': t,
-        'depth': turnDepth.name,
+        'depth': depth.name,
         'input': ?input,
       });
       // A late reply from a worker that was replaced by Restart URI changes nothing (Codex H-r2).

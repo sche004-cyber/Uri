@@ -179,3 +179,24 @@ def test_typed_close_emits_the_restored_draft_and_describes_it(fake, tmp_path):
     turn(b, "Close draft", input=DRAFT)
     assert _draft(b) is None
     assert frames.data("draft.updated")[-1] == {"op": "discard", "draft": None}
+
+
+
+def test_deep_depth_honours_an_explicit_draft_target(fake, tmp_path):
+    """c4 R2-01: at depth deep the worker still routes mode draft to the draft desk."""
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(REVISE_2)}]
+    turn(b, WARDEN)
+    turn(b, "Make my letter shorter", input=DRAFT, depth="deep")
+    assert _draft(b)["version"] == 2
+
+
+def test_deep_depth_honours_the_conversation_target(fake, tmp_path):
+    """c4 R2-01: at depth deep, mode conversation still cannot change the draft and still starts a new document."""
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(_notice("Library opens at 8 am."))}]
+    turn(b, WARDEN)
+    letter = _draft(b)
+    turn(b, "Draft a new notice that the library will open at 8 am from Monday.", input=CONVERSATION, depth="deep")
+    new = _draft(b)
+    assert new["draft_id"] != letter["draft_id"] and new["replaced"]["doc_type"] == "letter"

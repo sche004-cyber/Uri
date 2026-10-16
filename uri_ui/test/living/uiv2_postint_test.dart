@@ -138,7 +138,7 @@ void main() {
       expect(conv.draftTarget, isFalse, reason: 'a new draft starts with the conversation as target');
     });
 
-    test('deep depth on an explicit draft target uses draft-capable depth with feedback', () async {
+    test('deep depth keeps the explicit draft target and the chosen depth (the worker honours the target)', () async {
       final rt = FakeRuntime();
       final conv = OiConversation(rt);
       await conv.send('draft a letter');
@@ -149,17 +149,15 @@ void main() {
       await conv.send('Make my letter shorter');
       final typed = rt.commands.last;
       expect((typed['input'] as Map)['mode'], 'draft');
-      expect(typed['depth'], 'normal');
-      expect(conv.messages.where((m) => m.role == OiRole.system).last.text,
-          contains('sent at Depth: thinking so it reaches the draft'));
-      expect(conv.depth, OiDepth.deep, reason: 'ordinary turns keep the chosen depth');
+      expect(typed['depth'], 'deep');
+      expect(conv.messages.where((m) => m.role == OiRole.system), isEmpty);
       rt.emit('t2', 'turn.finished', {'status': 'ok'});
       await pumpEventQueue();
 
       await conv.sendTranscript('shorten the second paragraph', engine: 'simulated', simulated: true);
       final spoken = rt.commands.last;
       expect((spoken['input'] as Map)['mode'], 'draft');
-      expect(spoken['depth'], 'normal');
+      expect(spoken['depth'], 'deep');
     });
 
     testWidgets('the Workspace composer shows the draft target chip and switches it', (tester) async {
