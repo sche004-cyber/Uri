@@ -29,7 +29,7 @@ def _draft(b):
 
 
 @pytest.mark.parametrize("text", ["Make it more diplomatic and shorten the second paragraph.", "Make my letter shorter",
-                                  "Change the date to Tuesday", "Replace the name with Ravi", "undo",
+                                  "Change the date to Tuesday", "Replace the name with Ravi",
                                   "Say hello in three words"])
 def test_conversation_target_never_changes_the_open_draft(fake, tmp_path, text):
     b, frames, _ = make(fake, tmp_path, FakeCore())
@@ -198,5 +198,50 @@ def test_deep_depth_honours_the_conversation_target(fake, tmp_path):
     turn(b, WARDEN)
     letter = _draft(b)
     turn(b, "Draft a new notice that the library will open at 8 am from Monday.", input=CONVERSATION, depth="deep")
+    new = _draft(b)
+    assert new["draft_id"] != letter["draft_id"] and new["replaced"]["doc_type"] == "letter"
+
+
+
+def _ask_new(question):
+    return {"clarification": question, "facts": [], "exclusions": [], "doc_type": "notice", "tone": "",
+            "blocks": [], "missing": [], "summary": ""}
+
+
+@pytest.mark.parametrize("target", [CONVERSATION, DRAFT])
+def test_c2_01_answer_to_a_new_document_question_never_edits_the_open_draft(fake, tmp_path, target):
+    """c5 C2-01: with a letter open, 'Draft a notice ...' asks a question; the answer (in conversation or through the
+    draft target) continues the NEW document and never revises the letter."""
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(_ask_new("Who should the notice be addressed to?"))},
+                     {"json": json.dumps(_notice("To all students: the library opens at 8 am."))}]
+    turn(b, WARDEN)
+    letter = _draft(b)
+    turn(b, "Draft a notice about the library timings.", input=CONVERSATION)
+    assert frames.data("draft.clarify")[-1]["draft"] is None and _draft(b)["version"] == 1
+    turn(b, "The students", input=target)
+    new = _draft(b)
+    assert new["draft_id"] != letter["draft_id"], "the answer must start the new document"
+    back = b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "undo"})["draft"]
+    assert back["draft_id"] == letter["draft_id"] and back["current"] == letter["current"] and back["version"] == 1
+
+
+def test_c2_02_typed_draft_operations_work_in_conversation_mode(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(REVISE_2)}]
+    turn(b, WARDEN)
+    turn(b, "Make my letter shorter", input=DRAFT)
+    assert _draft(b)["version"] == 2
+    n = len(fake.requests)
+    turn(b, "undo", input=CONVERSATION)
+    assert _draft(b)["version"] == 1 and len(fake.requests) == n      # deterministic: no model call
+
+
+def test_c2_03_draft_target_with_a_different_document_type_starts_a_new_document(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(_notice("Fees are due on the 5th."))}]
+    turn(b, WARDEN)
+    letter = _draft(b)
+    turn(b, "Write a notice about the fee deadline", input=DRAFT)
     new = _draft(b)
     assert new["draft_id"] != letter["draft_id"] and new["replaced"]["doc_type"] == "letter"

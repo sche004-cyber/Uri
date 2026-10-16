@@ -200,6 +200,28 @@ void main() {
       expect((rt.commands.last['input'] as Map)['mode'], 'conversation');
     });
 
+    testWidgets('a question about a NEW document is labelled as such and has no Answer for the open draft (C2-01)',
+        (tester) async {
+      final rt = FakeRuntime();
+      final conv = OiConversation(rt);
+      await tester.runAsync(() async {
+        await conv.send('draft a letter');
+        await openDraft(rt, conv, 't1');
+        await conv.send('Draft a notice about the library timings.');
+        rt.emit('t2', 'draft.clarify', {'question': 'Who should the notice be addressed to?', 'draft': null});
+        rt.emit('t2', 'turn.finished', {'status': 'needs_user'});
+        await pumpEventQueue();
+      });
+      expect(conv.draftQuestionIsNew, isTrue);
+      tester.view.physicalSize = const Size(900, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      await tester.pumpWidget(host(SizedBox(height: 800, child: DraftPanel(conversation: conv))));
+      await tester.pump();
+      expect(find.textContaining('About your new document'), findsOneWidget);
+      expect(find.byKey(const ValueKey('draft-answer')), findsNothing);
+    });
+
     test('the draft is in view only in the Workspace conversation', () {
       final p = UiPresentationController(commandCooldown: Duration.zero);
       addTearDown(p.dispose);

@@ -62,18 +62,23 @@ Repairs:
   guarantee is therefore an explicit, visible target: while a draft is open the Workspace composer shows a chip,
   "To: conversation" (default) or "To: <type> draft"; one tap switches; the draft panel also offers "Change this
   draft with URI" (pencil) and "Answer" on its open question. Two new input modes carry the target to the worker:
-  `conversation` routes as if no draft were open (no revision, no draft operation can be produced; a new document
-  request still starts a new draft and the open one is kept for Undo; an open draft question is dropped), and
+  `conversation` routes as if no draft were open (no revision can be produced; a draft operation the user types
+  exactly, such as "undo" or "close the draft", is carried out deterministically (review C2-02); a new document
+  request still starts a new draft and the open one is kept for Undo; an answer to a pending new-document question
+  continues that new document (C2-01); an open draft question is dropped), and
   `draft` makes the message an instruction for the open draft unless it is a draft operation, an explicit new
-  document ("new", "another", "separate") or an action only Core may take; the desk's model can still answer that a
+  document ("new", "another", "separate", or a different document type than the open draft, C2-03), an answer to a
+  pending new-document question (C2-01; the panel then says "About your new document: ... Answer in the
+  conversation." and offers no Answer button) or an action only Core may take; the desk's model can still answer that a
   message is not an edit. After round R4 (BLOCKED RETRY_LIMIT, diagnosis: the default draft target let ordinary
   requests into the inference gate) the default is the conversation, so the classifier is no longer part of the
   safety boundary in either direction; the R4 classifier restructure (`eac2da0b`) was reverted (`git revert`) because
   it broke accepted auto-mode behaviour (TI lq13) and is not needed with explicit targets. Every draft change is
   visible (version, Changes view) and reversible (Undo). A new draft starts with the conversation as target.
   Owner preference recorded below: the default target.
-- Retention: a new document keeps the draft it replaced (one level). Undo on its first version brings the replaced
-  draft back unchanged; Redo returns; a new edit ends the way forward. The draft panel says "Replaced your earlier
+- Retention: a new document keeps the drafts it replaced as a chain of up to five (`DraftDesk.MAX_REPLACED`). Undo
+  on a first version brings the previous draft back unchanged; Redo returns; a new edit ends the way forward; Close on
+  a draft that replaced another brings that one back. The draft panel says "Replaced your earlier
   <type> · Undo brings it back". No confirmation prompt is added for conversation.
 
 ### UIV2-F2 (P2) — testing-only transcript and dictation controls visible to ordinary users
@@ -112,6 +117,22 @@ design), compact sizes keep 80 px controls, chat font/bubble padding/composer sp
 heading clip. This milestone repairs only differences that are defects shown by evidence (layout overflow, F3) and
 records the rest for the owner: a closer Companion match would replace the approved working renderer and controls
 with an imitation, which the owner rules exclude. F5 stays OPEN as an owner preference decision with the evidence.
+
+## Independent reviews
+
+Driver-counted reviews are Codex rounds inside the lifecycle states (`uri-ui-v2p-run/lifecycle/`). Codex hit its
+usage limit three times on 2026-10-16; per the owner ("If codex is unavailable use an independent claude agent"),
+independent read-only Claude agents reviewed in between. Their results are imported, not driver-counted (owner
+decision D1):
+
+- C1 on `cf97a1a8` (`review_C1_claude_agent_cf97a1a8.txt`): repaired in `0129f3b3`.
+- C2 on `486f8ba9` (`review_C2_claude_agent_486f8ba9.txt`): REJECT. C2-01 HIGH (an answer to a pending
+  new-document question edited the unrelated open draft through mode draft, and could not be answered in mode
+  conversation), C2-02 MEDIUM (typed draft operations under the conversation target went to the Brain), C2-03 LOW
+  (a different document type said to the draft revised it), C2-05 LOW (docs said one-level retention) and C2-07 LOW
+  (missing tests) are repaired with tests. C2-04 LOW (deep + conversation routes text tasks to the desk while deep +
+  auto does not) and C2-06 LOW informational (mode draft relies on the desk model's guard for non-text actions; no
+  bypass) stay open as recorded limitations.
 
 ## Acceptance criteria
 

@@ -186,6 +186,11 @@ class OiConversation extends ChangeNotifier {
   /// desk's open clarification question, and generation progress.
   OiDraft? draft;
   String? draftQuestion;
+
+  /// c5 C2-01: the open question is about a NEW document (the worker sent it
+  /// without a draft), not about the open draft: it is answered in the
+  /// conversation, never through the open draft's target.
+  bool draftQuestionIsNew = false;
   int draftProgress = 0;
 
   /// When on, typed text is sent as a SIMULATED transcript
@@ -805,6 +810,7 @@ class OiConversation extends ChangeNotifier {
         draftQuestion = draft?.pendingQuestion;
       case 'draft.clarify':
         draftQuestion = data['question'] as String?;
+        draftQuestionIsNew = data['draft'] == null && draft != null && draftQuestion != null;
         if (data['draft'] != null) draft = OiDraft.parse(data['draft']) ?? draft;
       case 'draft.progress':
         draftProgress = (data['chars'] as num?)?.toInt() ?? 0;

@@ -142,8 +142,13 @@ class _DraftPanelState extends State<DraftPanel> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (conv.draftQuestion != null)
-                        _Banner(conv.draftQuestion!, tone: c.accent, icon: Icons.help_outline_rounded,
-                            action: conv.draftTarget
+                        _Banner(
+                            conv.draftQuestionIsNew
+                                ? 'About your new document: ${conv.draftQuestion!} Answer in the conversation.'
+                                : conv.draftQuestion!,
+                            tone: c.accent,
+                            icon: Icons.help_outline_rounded,
+                            action: conv.draftTarget || conv.draftQuestionIsNew
                                 ? null
                                 : TextButton(
                                     key: const ValueKey('draft-answer'),

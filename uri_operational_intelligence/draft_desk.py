@@ -166,6 +166,18 @@ def _draft_text(d):
     return d.current.text() if d is not None and d.current is not None else None
 
 
+_DOC_NOUN = re.compile(r"\b(" + TX.DOC_NOUNS + r")\b", re.I)
+
+
+def _names_other_document(text, doc_type):
+    """True when the request names a document type different from the open draft's ("a notice" with a letter open)."""
+    m = _DOC_NOUN.search(text or "")
+    if m is None:
+        return False
+    named = m.group(1).lower().replace("-", "")
+    return named not in (doc_type or "").lower().replace("-", "") and named not in ("draft", "document")
+
+
 MAX_REPLACED = 5                      # UIV2-F1: replaced drafts kept for Undo per session
 
 
@@ -200,11 +212,22 @@ class DraftDesk:
                 self.drafts.pop(next(iter(self.drafts)))
 
     def classify_conversation(self, text, session_id) -> TX.TextIntent:
-        """Input mode "conversation" (UIV2-F1): as if no draft were open. Nothing can change the open draft; a new
-        document request starts a new draft (the open one is kept for Undo). An open draft question is dropped."""
+        """Input mode "conversation" (UIV2-F1): as if no draft were open. Nothing in the turn can revise the open
+        draft. A new document request starts a new draft (the open one is kept for Undo); an answer to a pending
+        new-document question is honoured (c5 C2-01); an exact draft operation the user typed ("undo", "close the
+        draft") is an explicit operation and is carried out deterministically (C2-02); an open draft question is
+        dropped (the user is talking to the conversation)."""
         d = self.active(session_id)
+        op = TX.classify(text, has_draft=d is not None and d.current is not None)
+        if op.kind in TX.DETERMINISTIC:
+            return op
         if d is not None and d.pending_question:
             d.pending_question = None
+        if session_id in self.pending_new:
+            intent = self.classify(text, session_id)    # the one-turn new-document question (answer, drop, or gone)
+            if intent.kind == TX.REVISE or intent.kind in TX.DETERMINISTIC:
+                return TX.TextIntent(TX.NONE, ["conversation_target"], instruction=text)
+            return intent
         intent = TX.classify(text, has_draft=False)
         if intent.kind == TX.REVISE or intent.kind in TX.DETERMINISTIC:
             return TX.TextIntent(TX.NONE, ["conversation_target"], instruction=text)   # cannot happen; fail closed
@@ -216,15 +239,20 @@ class DraftDesk:
 
     def classify_draft_target(self, text, session_id) -> TX.TextIntent:
         """Input mode "draft" (UIV2-F1): the user addressed the open draft explicitly. Anything that is not a draft
-        operation, a new document or a Core-only request is an instruction for it; the model may still answer
-        that it is not an edit, and the ordinary path then answers."""
+        operation, a new document, an answer to a pending new-document question or a Core-only request is an
+        instruction for it; the model may still answer that it is not an edit, and the ordinary path then answers."""
+        pending_new = session_id in self.pending_new
         intent = self.classify(text, session_id)
         d = self.active(session_id)
+        if pending_new and intent.reasons[:1] == ["answer_to_clarification"]:
+            return intent                       # c5 C2-01: an answer about the NEW document never edits the open one
         if d is not None and d.current is not None and intent.kind == TX.DRAFT_NEW and \
+                intent.reasons[:1] == ["create_document"] and not _names_other_document(text, d.doc_type) and \
                 not re.search(r"\b(?:new|another|fresh|separate|second)\b", text or "", re.I):
-            # "Make my letter shorter" said to the draft is an edit of it, not a new document (R4-03)
+            # "Make my letter shorter" said to the draft is an edit of it, not a new document (R4-03); a different
+            # document type ("write a notice" with a letter open) stays a new document (C2-03)
             return TX.TextIntent(TX.REVISE, ["draft_target"], instruction=text, targets=TX.targets_for(text))
-        if d is None or d.current is None or intent.is_text_task or intent.reasons[:1] in (
+        if d is None or d.current is None or intent.is_text_task or intent.kind == DROP or intent.reasons[:1] in (
                 ["core_only_request"], ["code_work"], ["ambiguity_action"]):
             return intent
         return TX.TextIntent(TX.REVISE, ["draft_target"], instruction=text, targets=TX.targets_for(text))
@@ -278,12 +306,14 @@ class DraftDesk:
         own_question = (text or "").rstrip().endswith("?") or bool(_OWN_QUESTION.match(text or ""))
         question = d.pending_question if d is not None and d.pending_question else \
             (pend or {}).get("question")
-        if intent.kind == TX.NONE and intent.reasons and intent.reasons[0] in answers \
-                and not own_question and _looks_like_answer(text, question):
+        if intent.kind == TX.NONE and intent.reasons and intent.reasons[0] in answers and not own_question:
+            # The relevance check guards the OPEN draft (an answer edits it). An answer to a new-document question
+            # only continues that new document, so any short non-request reply is accepted (c5 C2-01).
             if d is not None and d.pending_question:
-                return TX.TextIntent(TX.REVISE, ["answer_to_clarification"], instruction=text,
-                                     targets=TX.targets_for(text))
-            if session_id in self.pending_new:
+                if _looks_like_answer(text, question):
+                    return TX.TextIntent(TX.REVISE, ["answer_to_clarification"], instruction=text,
+                                         targets=TX.targets_for(text))
+            elif session_id in self.pending_new and not _NEW_REQUEST.match((text or "").strip()):
                 return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification"], instruction=text)
         return intent
 

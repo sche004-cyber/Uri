@@ -89,8 +89,8 @@ class Draft:
         self._next = 0
         self._vn = 0                          # version numbers are never reused, even after undo + new edit
         self.pending_question = None          # clarification awaiting the user's answer
-        # UIV2-F1: a new document never silently discards the open one. The draft this one replaced is kept (one
-        # level): Undo on this draft's first version brings it back, Redo returns here (DraftDesk.op).
+        # UIV2-F1: a new document never silently discards the open one. The drafts it replaced are kept as a
+        # chain (DraftDesk.MAX_REPLACED): Undo on a first version goes back to the previous one, Redo returns.
         self.replaced: "Draft | None" = None
         self.replaced_by: "Draft | None" = None
         self.replaced_by_cursor: int | None = None
