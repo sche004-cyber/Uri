@@ -153,11 +153,15 @@ class Grants:
                 data = json.loads(self.folders_file.read_text(encoding="utf-8"))
                 if not isinstance(data, dict) or not isinstance(data.get("folders", []), list):
                     raise ValueError("invalid folders list")
+                restored = []
                 for f in data.get("folders", []):
-                    if isinstance(f, str) and Path(f).is_dir():
-                        check_folder_shape(f)
-                        if _norm(os.path.realpath(f)) == _norm(f):
-                            self.added.append(f)
+                    if not isinstance(f, str) or not Path(f).is_dir():
+                        raise ValueError("invalid saved folder")
+                    check_folder_shape(f)
+                    if _norm(os.path.realpath(f)) != _norm(f):
+                        raise ValueError("invalid saved folder")
+                    restored.append(f)
+                self.added = restored
             except (ValueError, OfficeError, OSError):
                 self.added = []                          # a damaged list grants nothing extra
         self._by_id: dict[str, Grant] = {}

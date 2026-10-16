@@ -1,4 +1,5 @@
 """OD-R1 (2026-10-16): folders the owner adds (any drive), explicit, folder-scoped, remembered, revocable."""
+import json
 import os
 import subprocess
 
@@ -98,6 +99,22 @@ def test_a_damaged_list_grants_nothing_extra(tmp_path):
     store.write_text("{not json", encoding="utf-8")
     g = Grants([tmp_path / "home"], folders_file=store)
     assert [x for x in g.folders() if x["kind"] == "added"] == []
+
+
+@pytest.mark.parametrize("bad_entry", [123, "relative/folder"])
+def test_a_partly_damaged_list_restores_no_folder_grants(tmp_path, bad_entry):
+    allowed = tmp_path / "allowed"
+    allowed.mkdir()
+    workbook = book(allowed / "b.xlsx")
+    store = tmp_path / "folders.json"
+    store.write_text(json.dumps({"folders": [str(allowed), bad_entry]}), encoding="utf-8")
+
+    grants = Grants([], folders_file=store)
+    assert grants.added == []
+    assert grants.roots == []
+    with pytest.raises(OfficeError) as error:
+        grants.grant_open(str(workbook))
+    assert error.value.code == "PATH_REFUSED"
 
 
 def test_service_folders_routes_and_enforcement(tmp_path):
