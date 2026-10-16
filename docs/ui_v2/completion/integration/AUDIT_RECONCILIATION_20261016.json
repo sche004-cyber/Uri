@@ -1,0 +1,25 @@
+{
+ "schema": "uri-audit-reconciliation/1",
+ "append_only": true,
+ "recorded_at": "2026-10-16",
+ "original_record": {
+  "path": "docs/ui_v2/completion/UI_QUALIFICATION_UI_V2.json",
+  "commit": "2eff03d086e3cacbcd2682bf4f75b7e51d4fa919",
+  "git_blob": "f8fe142404ce7b48de9a0deb1c15fc99ecaf88a4",
+  "field": "independent_audit.verdict",
+  "value": "BLOCKED",
+  "note": "placeholder written before the final driver review (its auditor_unverified says 'filled from the driver receipt after the final review'); it is not an audit outcome"
+ },
+ "authoritative_evidence": {
+  "independent_accept": "lifecycle r2 round R1, codex_cli ACCEPT on 2eff03d086e3cacbcd2682bf4f75b7e51d4fa919 (session codex_cli-c15bf102-5491-4894-bb4a-447491a28cfd, result_sha256 c8050f3e0ccab45c4115afd735c6414c805c84b247eaec6626e781670d0a15b4)",
+  "integration_receipt": "docs/ui_v2/completion/integration/INTEGRATION_RECEIPT_UI-V2_20261016.json",
+  "driver_receipt": "docs/ui_v2/completion/integration/driver_receipt_UI-V2-COMPLETION-r2.json"
+ },
+ "accepted_commit": "2eff03d086e3cacbcd2682bf4f75b7e51d4fa919",
+ "resolution": "The stale value BLOCKED is superseded by the driver-counted independent ACCEPT on the exact accepted commit. The original record is not edited and the accepted commit is not rewritten. Take independent_audit from this reconciliation and the driver receipt.",
+ "audit_history": [
+  "UI-V2-COMPLETION (state lifecycle/r1): codex_cli REJECT (R1-01 HIGH, R1-02 MEDIUM, R1-03 MEDIUM, R1-04 LOW); worker repair REPAIR_FAILED 3 times; manual repair d4a48317",
+  "UI-V2-COMPLETION-r2 (state lifecycle/r2) R1: codex_cli ACCEPT on 2eff03d0; all four earlier findings FIXED"
+ ],
+ "correction": "The driver Flutter gate results in r1 and r2 carry no Flutter test evidence (finding DRV-3). The Flutter evidence for the integrated commit is the post-integration run in the integration receipt (636 passed, analyze 0 errors)."
+}

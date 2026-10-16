@@ -1,0 +1,59 @@
+{
+ "schema": "uri-findings-register/1",
+ "recorded_at": "2026-10-16",
+ "context": "open after UI V2 canonical integration at 2eff03d086e3cacbcd2682bf4f75b7e51d4fa919. None is re-classified as an integration blocker: they were not investigated in this task, and no safety, data-integrity, security or functional regression was established.",
+ "findings": [
+  {
+   "id": "UIV2-F1",
+   "priority": 1,
+   "owner": "UI V2 (Companion chat / document drafting)",
+   "status": "OPEN",
+   "title": "Companion chat may silently edit an open document draft",
+   "next": "investigate draft ownership; require explicit user intent before any document change; re-classify if data-integrity impact is confirmed"
+  },
+  {
+   "id": "UIV2-F2",
+   "priority": 2,
+   "owner": "UI V2",
+   "status": "OPEN",
+   "title": "Testing-only simulated transcript and dictation buttons are visible to ordinary users"
+  },
+  {
+   "id": "UIV2-F3",
+   "priority": 2,
+   "owner": "UI V2",
+   "status": "OPEN",
+   "title": "Brief layout overflow during the transition into Companion Mode"
+  },
+  {
+   "id": "UIV2-F4",
+   "priority": 3,
+   "owner": "UI V2 (companions)",
+   "status": "OPEN",
+   "title": "Faint rectangular edge around the Lunar companion on light themes"
+  },
+  {
+   "id": "UIV2-F5",
+   "priority": 3,
+   "owner": "UI V2 (design)",
+   "status": "OPEN",
+   "title": "UI V2 visual fidelity relative to the approved reference"
+  },
+  {
+   "id": "CORE-F1",
+   "priority": null,
+   "owner": "Core (separate ownership)",
+   "status": "OPEN",
+   "title": "Occasional refusal of single-sentence 'Remember that...' requests"
+  },
+  {
+   "id": "DRV-3",
+   "priority": 2,
+   "owner": "Lifecycle driver (scripts/dev_workflow/lifecycle.py)",
+   "status": "OPEN",
+   "title": "Flutter gates give no evidence in the driver's fresh qualify and baseline worktrees",
+   "detail": "the gates run with --no-pub in worktrees without .dart_tool/package_config.json; the baseline fails the same way, so the failure is 'historical' and the gate reports ok. An unparsed run on both sides should block (NO_OUTPUT), or the gate must run pub get first.",
+   "impact_on_this_integration": "none on the verdict: the independent post-integration Flutter analyze and test on the integrated commit passed"
+  }
+ ]
+}

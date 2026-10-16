@@ -1,0 +1,100 @@
+{
+ "schema": "uri-integration-receipt/1",
+ "milestones": [
+  "UI-V2-COMPLETION"
+ ],
+ "target": {
+  "repository": "https://github.com/sche004-cyber/Uri",
+  "remote": "uri-repo",
+  "ref": "integration/git-sync-20261008"
+ },
+ "previous_canonical_sha": "85f6a0ec4ea18a31521c5a41afe43a5cdc5332f4",
+ "new_canonical_sha": "2eff03d086e3cacbcd2682bf4f75b7e51d4fa919",
+ "mode": "fast-forward by the lifecycle driver push (no force, no merge, no squash, no cherry-pick)",
+ "integrated_at": "2026-10-16T00:12:47Z",
+ "push_record": "To https://github.com/sche004-cyber/Uri.git 85f6a0ec..2eff03d0 2eff03d0 -> integration/git-sync-20261008 (push_exit 0)",
+ "owner_authorisation": {
+  "decision": "OWNER DECISION: APPROVED - URI UI V2 OWNER-AUTHORIZED CANONICAL INTEGRATION (chat, 2026-10-16), reconfirmed in the same session with a one-time lifecycle execution authorization",
+  "scope": "canonical fast-forward integration of 2eff03d0 only; production deployment NOT approved; protected-file modifications NOT approved",
+  "mechanism": "driver config copy outside the repository with integration.authorized=true, expected_target_tip=85f6a0ec and owner_decision (config sha256 0224bf12...; the r2 config 6dd44447... in the candidate is unchanged); OWNER_UNBLOCK events seq 16 (OWNER_AUTHORIZATION) and seq 20 (CONFIG acknowledgement; resolved policy diff = integration block only) in lifecycle/r2/events.jsonl",
+  "permission_note": "the first attempts to write the config and to run the driver were denied by the Claude Code auto-mode classifier ([Security Weaken], [Auto-Mode Bypass]); no workaround was used; both ran after explicit owner instructions through the normal approval path"
+ },
+ "independent_acceptance": {
+  "run": "UI-V2-COMPLETION-r2",
+  "round": 1,
+  "provider": "codex_cli",
+  "model_config": "gpt-6-sol",
+  "session_id": "codex_cli-c15bf102-5491-4894-bb4a-447491a28cfd",
+  "candidate": "2eff03d086e3cacbcd2682bf4f75b7e51d4fa919",
+  "verdict": "ACCEPT",
+  "findings": [],
+  "prior_findings_fixed": [
+   "R1-01",
+   "R1-02",
+   "R1-03",
+   "R1-04"
+  ],
+  "status": "COMPLETED_WITH_RESULT",
+  "result_sha256": "c8050f3e0ccab45c4115afd735c6414c805c84b247eaec6626e781670d0a15b4",
+  "round_sha256": "79b09e7ac6892561e356ecb4ed4842862383f8970c0ee0057d1eb7e9e49a1d3d"
+ },
+ "driver": {
+  "state_dir": "C:/Users/cheta/Development/uri-ui-v2c-run/lifecycle/r2",
+  "stage": "COMPLETE",
+  "events": 26,
+  "verify": {
+   "ok": true,
+   "errors": []
+  },
+  "evidence_ok_for_candidate": true,
+  "receipt_sha256": "841e5d976048adc25114ab7eed4da48dab225149b5634b94e2f5bdac2dac238d",
+  "events_sha256": "adee1db563f3a92a600d3ab614061093f2cc70453ed1205ce14defb2dfc370d0",
+  "pre_push_checks": "QUALIFICATION event seq 23 re-ran the gates on 2eff03d0 on 2026-10-16; remote tip equal to expected_target_tip; 85f6a0ec is an ancestor of 2eff03d0; protected paths changed = []"
+ },
+ "gates": {
+  "driver_python": {
+   "status": "COMPLETED_WITH_RESULT",
+   "result": "4318 passed, 14 skipped (tests/ssrf, tests/web, tests/a2ui, tests/ws)"
+  },
+  "driver_flutter_and_flutter_analyze": {
+   "status": "COMPLETED_WITH_RESULT, but NO TEST EVIDENCE",
+   "detail": "in the driver's fresh qualify and baseline worktrees both gates failed the same way (no .dart_tool/package_config.json; --no-pub): flutter test 'cannot run without a dependency on either package:flutter_test or package:test'; analyze 21007 issues from unresolved packages. The driver classed the identical baseline failure as historical, so 'no new failures' is vacuous. Recorded as finding DRV-3."
+  },
+  "post_integration_flutter_analyze": {
+   "status": "COMPLETED_WITH_RESULT",
+   "commit": "2eff03d086e3cacbcd2682bf4f75b7e51d4fa919",
+   "worktree": "C:/Users/cheta/Development/uri-ui-v2c (clean, HEAD equal to canonical)",
+   "result": "exit 0; 3 issues, all info; 0 errors",
+   "log_sha256": "0ad8f5d536ac33721df372b7d584e261fdce518447548b8e9c16ed472bcd5d99"
+  },
+  "post_integration_flutter_test": {
+   "status": "COMPLETED_WITH_RESULT",
+   "commit": "2eff03d086e3cacbcd2682bf4f75b7e51d4fa919",
+   "result": "exit 0; 636 passed, 5 skipped (opt-in live suites); same as the completion report",
+   "log_sha256": "3f2db9961fd22fd85e2060354bc12e4cfdccef4528e4e4c060d07f9469e03e6c"
+  }
+ },
+ "frozen_integrity": {
+  "check": "scripts/ws_frozen_check.py on 2eff03d0",
+  "ok": true,
+  "recognized_exact_blobs": [
+   "scripts/phase1_offline_rollback.py (OWNER-FCV01)",
+   "scripts/uri_client.ps1 (OWNER-FCV05)",
+   "uri_core/app/server.py",
+   "uri_core/tools/fetch_url.py"
+  ],
+  "note": "all already present in canonical 85f6a0ec; diff 85f6a0ec..2eff03d0 touches only uri_ui/**, docs/ui_v2/** and docs/dev_workflow/lifecycle/UI-V2-COMPLETION*.json"
+ },
+ "post_integration_heads": {
+  "remote refs/heads/integration/git-sync-20261008": "2eff03d086e3cacbcd2682bf4f75b7e51d4fa919",
+  "local refs/heads/integration/git-sync-20261008 (uri-agent repository, fetch fast-forward f8de153b..2eff03d0)": "2eff03d086e3cacbcd2682bf4f75b7e51d4fa919",
+  "refs/remotes/uri-repo/integration/git-sync-20261008": "2eff03d086e3cacbcd2682bf4f75b7e51d4fa919"
+ },
+ "preservation": "the earlier living composition stays selectable with URI_UI_VISUAL=living (uri_ui/lib/main.dart:48-49); classic interface, routes, shortcuts, settings, companions and shaders were in the accepted review focus and are covered by the 636-test suite",
+ "not_done": [
+  "no production deployment",
+  "no protected-file change",
+  "no additional push (this receipt branch is local only)",
+  "UI V2 NOT declared frozen or production-ready"
+ ]
+}
