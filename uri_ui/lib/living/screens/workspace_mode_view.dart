@@ -889,7 +889,7 @@ class DocumentsRegion extends StatelessWidget {
                       final oi = services.oi;
                       if (realTurns && oi != null) {
                         // Same rule as the composer: one turn at a time.
-                        if (!oi.busy) unawaited(oi.send(title));
+                        if (!oi.busy) unawaited(oi.send(title, newWork: true));
                         services.presentation.setFocus(
                           WorkspaceFocus.conversation,
                         );

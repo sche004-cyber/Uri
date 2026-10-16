@@ -471,7 +471,9 @@ class OiConversation extends ChangeNotifier {
 
   /// Sends the user's words as a turn. Never a decision, whatever it says.
   /// With [transcriptMode] on, the words are sent as a simulated transcript.
-  Future<void> send(String text, {bool draftInView = true}) async {
+  /// [newWork]: a "Start new work" request (C1-02): it may start a new
+  /// document but never changes the open draft, whatever the target.
+  Future<void> send(String text, {bool draftInView = true, bool newWork = false}) async {
     if (transcriptMode) {
       return sendTranscript(text,
           engine: 'simulated', simulated: true, dictation: dictationMode, draftInView: draftInView);
@@ -481,7 +483,7 @@ class OiConversation extends ChangeNotifier {
       // and Undo brings it back).
       return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': 'dictation'}, 'Dictation');
     }
-    final mode = _draftMode(draftInView);
+    final mode = newWork && draft != null ? 'conversation' : _draftMode(draftInView);
     if (mode != null) {
       return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': mode},
           mode == 'draft' ? 'To the draft' : null);

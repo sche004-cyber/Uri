@@ -166,6 +166,9 @@ def _draft_text(d):
     return d.current.text() if d is not None and d.current is not None else None
 
 
+MAX_REPLACED = 5                      # UIV2-F1: replaced drafts kept for Undo per session
+
+
 class DraftDesk:
     def __init__(self, orchestrator):
         self.o = orchestrator
@@ -182,9 +185,16 @@ class DraftDesk:
         with self._lock:
             old = self.drafts.get(session_id)
             if old is not None and old is not draft and old.current is not None:
-                # UIV2-F1: keep the replaced draft (one level, its own older chain dropped) so Undo can bring it back.
-                old.replaced, old.replaced_by, old.replaced_by_cursor = None, None, None
+                # UIV2-F1: keep the replaced drafts (a chain of up to MAX_REPLACED) so Undo walks back through them;
+                # a new document ends the way forward, like any edit (C1-01: one level lost the older one).
+                old.replaced_by, old.replaced_by_cursor = None, None
                 draft.replaced = old
+                depth, x = 1, old
+                while x.replaced is not None:
+                    if depth >= MAX_REPLACED:
+                        x.replaced = None
+                        break
+                    depth, x = depth + 1, x.replaced
             self.drafts[session_id] = draft
             while len(self.drafts) > MAX_SESSIONS:
                 self.drafts.pop(next(iter(self.drafts)))
@@ -311,6 +321,13 @@ class DraftDesk:
                 d.restore(n)
             elif op == "discard":
                 with self._lock:
+                    back = d.replaced
+                    if back is not None and back.current is not None:
+                        # C1-04: closing a draft that replaced another brings that one back instead of losing it.
+                        back.replaced_by, back.replaced_by_cursor = None, None
+                        back.pending_question = None
+                        self.drafts[session_id] = back
+                        return back.to_dict()
                     self.drafts.pop(session_id, None)
                 return None
             elif op not in ("show", "original"):

@@ -14,7 +14,7 @@ import 'package:uri_ui/living/widgets/scroll_when_short.dart';
 import 'package:uri_ui/working_system_app.dart';
 
 import '../ws/ti_draft_test.dart' show snapshot, v1, v2;
-import '../ws/ws_integration_test.dart' show FakeRuntime, host;
+import '../ws/ws_integration_test.dart' show FakeRuntime, digest, host;
 
 /// UI-V2-POSTINT (2026-10-16): UIV2-F1 (a draft changes only from the surface
 /// that shows it), UIV2-F2 (testing-only composer controls hidden), UIV2-F3
@@ -168,6 +168,16 @@ void main() {
       await tester.pump();
     });
 
+    test('a Start new work request never changes the open draft, whatever the target (C1-02)', () async {
+      final rt = FakeRuntime();
+      final conv = OiConversation(rt);
+      await conv.send('draft a letter');
+      await openDraft(rt, conv, 't1');
+      conv.setDraftTarget(true);
+      await conv.send('Draft a letter', draftInView: false, newWork: true);
+      expect((rt.commands.last['input'] as Map)['mode'], 'conversation');
+    });
+
     test('the draft is in view only in the Workspace conversation', () {
       final p = UiPresentationController(commandCooldown: Duration.zero);
       addTearDown(p.dispose);
@@ -302,6 +312,52 @@ void main() {
         }
       }
       expect(find.byType(ScrollWhenShort), findsWidgets);
+    });
+
+    testWidgets('approval and confirmation cards never overflow the conversation pane (C1-03)', (tester) async {
+      for (final kind in ['approval', 'confirmation']) {
+        final rt = FakeRuntime();
+        final conv = OiConversation(rt);
+        await tester.runAsync(() async {
+          await conv.send('remember a qualification fixture');
+          if (kind == 'approval') {
+            rt.emit('t1', 'approval.required',
+                {'capability_id': 'remember_fact', 'arguments': {}, 'approval_digest': digest});
+          } else {
+            rt.emit('t1', 'core.result', {'code': 'INTENT_CONFIRMATION_REQUIRED', 'needs': 'confirmation',
+              'message': 'Shall I remember that the project room code is K123?'});
+          }
+          rt.emit('t1', 'turn.finished', {'status': 'needs_user'});
+          await pumpEventQueue();
+        });
+        expect(kind == 'approval' ? conv.pendingApproval : conv.pendingConfirmation, isNotNull);
+        tester.view.physicalSize = const Size(900, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        for (final w in [300.0, 420.0, 600.0, 900.0]) {
+          for (final h in [200.0, 320.0, 400.0, 500.0, 700.0]) {
+            await tester.pumpWidget(host(Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(width: w, height: h, child: OiConversationPane(conversation: conv)),
+            )));
+            await tester.pump();
+            expect(tester.takeException(), isNull, reason: '$kind $w x $h');
+          }
+        }
+      }
+    });
+
+    testWidgets('an active testing mode keeps its toggle in a narrow composer (C1-06)', (tester) async {
+      UriTestingTools.enabled = true;
+      final (_, s) = await pumpRoot(tester, const Size(1280, 860));
+      s.oi!.setTranscriptMode(true);
+      s.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.conversation);
+      await settle(tester);
+      tester.view.physicalSize = const Size(560, 700);
+      await settle(tester);
+      expect(find.byKey(const ValueKey('living-composer-transcript')), findsWidgets);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
     });
 
     testWidgets('at a normal size the draft toolbar is in view without scrolling (live l1)', (tester) async {

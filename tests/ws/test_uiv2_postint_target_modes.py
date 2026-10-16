@@ -124,3 +124,39 @@ def test_conversation_target_rewrite_without_text_is_answered_not_refused(fake, 
     turn(b, "Make it shorter and tell me a joke in a formal tone.", input=CONVERSATION)
     assert frames.data("turn.routed")[-1]["route"] == "answer"
     assert _draft(b)["current"] == before["current"]
+
+
+def _notice(text):
+    other = json.loads(json.dumps(CREATE))
+    other["blocks"] = [{"role": "body", "text": text}]
+    return other
+
+
+def test_two_new_documents_keep_both_earlier_drafts_reachable_by_undo(fake, tmp_path):
+    """C1-01: a second new document must not drop the first draft."""
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(_notice("Library opens at 8 am."))},
+                     {"json": json.dumps(_notice("Mess closed on Sunday."))}]
+    turn(b, WARDEN)
+    letter = _draft(b)
+    turn(b, "Draft a new notice that the library will open at 8 am from Monday.", input=CONVERSATION)
+    first_notice = _draft(b)
+    turn(b, "Draft a new notice that the mess will be closed on Sunday.", input=CONVERSATION)
+    back1 = b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "undo"})["draft"]
+    assert back1["draft_id"] == first_notice["draft_id"] and back1["can_undo"] is True
+    back2 = b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "undo"})["draft"]
+    assert back2["draft_id"] == letter["draft_id"] and back2["current"] == letter["current"]
+    fwd = b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "redo"})["draft"]
+    assert fwd["draft_id"] == first_notice["draft_id"]
+
+
+def test_closing_a_replacing_draft_brings_the_replaced_one_back(fake, tmp_path):
+    """C1-04: Close on a draft that replaced another must not lose that one."""
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(_notice("Library opens at 8 am."))}]
+    turn(b, WARDEN)
+    letter = _draft(b)
+    turn(b, "Draft a new notice that the library will open at 8 am from Monday.", input=CONVERSATION)
+    after = b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "discard"})["draft"]
+    assert after["draft_id"] == letter["draft_id"] and after["current"] == letter["current"]
+    assert b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "discard"})["draft"] is None

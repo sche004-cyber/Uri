@@ -102,7 +102,8 @@ class _OiConversationPaneState extends State<OiConversationPane> {
         // UIV2-F3: banners, cards and the Stop button never push the pane
         // past a short window; it scrolls instead (l13: 34 px overflow).
         return ScrollWhenShort(
-          minHeight: 300,
+          // an approval or confirmation card needs room of its own (C1-03)
+          minHeight: conv.pendingApproval != null || conv.pendingConfirmation != null ? 720 : 300,
           child: Column(
           children: [
             OiBrainBar(conversation: conv),
@@ -471,14 +472,16 @@ class OiConfirmationCard extends StatelessWidget {
             for (final e in args.entries)
               Text('${oiArgumentLabel('${e.key}')}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
             const SizedBox(height: 8),
-            Row(
+            // UIV2-F3 (C1-03): the buttons wrap in a narrow pane instead of overflowing.
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
               children: [
                 FilledButton(
                   key: const ValueKey('oi-confirm'),
                   onPressed: conversation.confirm,
                   child: const Text('Yes, continue'),
                 ),
-                const SizedBox(width: 8),
                 OutlinedButton(
                   onPressed: conversation.abandon,
                   child: const Text('No'),

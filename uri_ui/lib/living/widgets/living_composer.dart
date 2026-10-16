@@ -202,7 +202,9 @@ class _LivingComposerState extends State<LivingComposer> {
             // Companion: optional buttons step aside on narrow widths.
             LayoutBuilder(builder: (context, box) {
             final w = box.maxWidth;
-            final testing = oi != null && !widget.minimal && UriTestingTools.enabled && w >= 420;
+            // an active testing mode keeps its toggle even when narrow, so it can be switched off (C1-06)
+            final testing = oi != null && !widget.minimal && UriTestingTools.enabled &&
+                (w >= 420 || oi.transcriptMode || oi.dictationMode);
             return Row(
               children: [
                 if (widget.filePicker != null && w >= 260)
