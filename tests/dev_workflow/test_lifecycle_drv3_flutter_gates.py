@@ -101,12 +101,10 @@ def test_drv3_original_false_pass_is_now_blocked(tmp_path):
     cfg = run_cfg(tmp_path, [flutter_gate(tool, prepare=False)])
     assert L.run(cfg) == S.BLOCKED
     s = L.status(cfg)
-    assert s["blocker"]["kind"] == "RESOURCE" and "INFRA no test execution" in s["blocker"]["reason"]
+    # Since review C1-01 a Dart gate without dependencies does not run at all: INFRA, never a comparison.
+    assert s["blocker"]["kind"] == "RESOURCE" and "INFRA dependencies not available" in s["blocker"]["reason"]
     gate = list(s["gates"].values())[0]
-    assert gate["ok"] is False
-    c = gate["counts"]["flutter"]
-    assert c["candidate"]["evidence"] == "NO_TEST_REPORT" and c["baseline"]["evidence"] == "NO_TEST_REPORT"
-    assert c["candidate"]["executed"] == 0 and not s["evidence_ok_for_candidate"]
+    assert gate["ok"] is False and not s["evidence_ok_for_candidate"]
 
 
 def test_drv3_dependencies_are_prepared_and_tests_really_execute(tmp_path):
@@ -274,7 +272,7 @@ def test_r302_removing_zero_test_justification_invalidates_baseline_cache(tmp_pa
     cfg = run_cfg(tmp_path, [flutter_gate(tool, allow_zero_tests="no tests by design")])
     assert L.run(cfg) == S.VERIFIED
     st = L.State(cfg)
-    assert st.d["baseline_gates"]["flutter"]["result"]["evidence"] == "EXECUTED"
+    assert st.d["baseline_gates"]["flutter"]["result"]["evidence"] == "ZERO_TESTS_JUSTIFIED"
     before = len([e for e in L._chained_events(st) if e["kind"] == "BASELINE_GATE"])
 
     del cfg["gates"][0]["allow_zero_tests"]
@@ -289,10 +287,13 @@ def test_r302_removing_zero_test_justification_invalidates_baseline_cache(tmp_pa
 def test_r202_enabling_preparation_invalidates_no_report_baseline_cache(tmp_path):
     make_dart_fixture(tmp_path)
     tool = fake_tool(tmp_path)
+    # prepare:false with the dependencies supplied by test_setup (review C1-01: without them it blocks)
     cfg = run_cfg(tmp_path, [flutter_gate(tool, prepare=False)])
-    assert L.run(cfg) == S.BLOCKED
+    cfg["test_setup"] = [{"cmd": [tool, "pub", "get"], "cwd": "app"}]
+    assert L.run(cfg) == S.VERIFIED
     st = L.State(cfg)
-    assert st.d["baseline_gates"]["flutter"]["result"]["evidence"] == "NO_TEST_REPORT"
+    assert st.d["baseline_gates"]["flutter"]["result"]["evidence"] == "EXECUTED"
+    assert "prepare" not in st.d["baseline_gates"]["flutter"]["result"]
     before = len([e for e in L._chained_events(st) if e["kind"] == "BASELINE_GATE"])
 
     cfg["gates"][0]["prepare"] = True
@@ -377,5 +378,7 @@ def test_r103_preparation_rejects_tracked_mutations_and_keeps_log(tmp_path, muta
     rec = L.prepare_dart_dependencies(flutter_gate(tool), tool, tmp_path / "impl/app", logs)
     assert expected in rec["error"]
     assert (logs / "flutter.prepare.log").is_file()
+    # a fresh state: since review C1-03 only what preparation itself changes is attributed to it
+    g(tmp_path / "impl", "checkout", "--", ".")
     gate = L.run_gate({"repo": str(tmp_path / "repo")}, flutter_gate(tool), tmp_path / "impl", logs)
     assert gate["status"] == "BLOCKED" and "INFRA" in gate["detail"]

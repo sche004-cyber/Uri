@@ -6,7 +6,9 @@ driver tests that reproduce the defect, by the driver's own gates, and by its us
 next milestone (UI-V2-POSTINT), whose Flutter gates must now carry real execution evidence.
 
 Baseline: canonical `integration/git-sync-20261008` @ `2eff03d086e3cacbcd2682bf4f75b7e51d4fa919` (verified with
-`git ls-remote uri-repo` on 2026-10-16). Branch `milestone/dev-lifecycle-3b-flutter-gates-20261016`.
+`git ls-remote uri-repo` on 2026-10-16), then `eaeb10c126132b014751674a1fed7d734122e653` after canonical moved (URI Office
+O2 integration, which also added `test_setup` steps to the driver; merged in `1dbbfbe6`, revision config c3).
+Branch `milestone/dev-lifecycle-3b-flutter-gates-20261016`.
 
 ## Defect (DRV-3)
 
@@ -33,7 +35,7 @@ gate reported ok. The driver showed "no new failures" with zero tests executed.
    (`RESOURCE`, `INFRA no test execution on candidate (...) or baseline (...)`), never ok. A baseline without execution
    is no comparison base: every candidate failure counts as new. A candidate without execution against a baseline
    that executed stays a new failure (`<gate>::__run__`), routed to repair as before.
-4. **Cache validity.** The baseline cache key binds `GATE_SCHEMA` (4 after the review repairs; it was 2 in the first
+4. **Cache validity.** The baseline cache key binds `GATE_SCHEMA` (5 after the review repairs; it was 2 in the first
    commit) and, for Flutter/Dart gates, the toolchain fingerprint (`flutter --version --machine`: framework, engine,
    Dart revisions; `dart --version` for Dart), plus the preparation settings (`prepare`, `pub_offline`,
    `prepare_timeout_s`) and `allow_zero_tests`. A failed fingerprint probe makes the result uncacheable. Results
@@ -85,6 +87,19 @@ and toolchain, and the result rows already carry what a persistent store needs.
 Gates on `7ed88cc6`: `tests/dev_workflow` candidate 268 passed, 5 skipped, 1 historical failure (DRV-ENV-2);
 baseline 242 passed, 5 skipped, the same failure; no new failure. Stage VERIFIED, BLOCKED OWNER_AUTHORIZATION,
 `evidence_ok_for_candidate: true`, `verify` OK.
+
+## After canonical moved to eaeb10c1
+
+- Merge `1dbbfbe6` (one conflict: the baseline cache key keeps the DRV-3 inputs and adds `test_setup`). Revision c2
+  (`fd2b0713`) parked WAITING_FOR_MODEL (Codex usage limit).
+- Imported review C1 (independent read-only Claude agent, owner instruction while Codex was unavailable; NOT
+  driver-counted): ACCEPT WITH FINDINGS on `fd2b0713`, confirming the DRV-3 reproduction reaches VERIFIED on canonical
+  `eaeb10c1` and is blocked on the candidate. Repaired: C1-01 a Dart gate with `"prepare": false` and no
+  `.dart_tool/package_config.json` (e.g. `flutter analyze --no-pub`) is BLOCKED INFRA instead of comparing two
+  identical failures; C1-02 regression proofs prepare Dart runners and report a preparation failure as INFRA; C1-03
+  only tracked files changed by `pub get` itself are attributed to it; C1-04 a justified zero-test run is labelled
+  `ZERO_TESTS_JUSTIFIED` and pytest's "no tests collected" exit 5 is accepted only then (`GATE_SCHEMA` 5); C1-05 this
+  section; C1-06 tests `tests/dev_workflow/test_lifecycle_drv3_review_c1.py`. Revision c3 is the driver-counted review.
 
 ## Owner decisions
 
