@@ -167,9 +167,10 @@ class LivingServices {
   OfficeRequestTarget? officeInFocus() {
     final t = officeTarget.value;
     if (t == null) return null;
-    if (presentation.mode != UiPresentationMode.workspace ||
-        (presentation.focus != WorkspaceFocus.office && presentation.focus != WorkspaceFocus.documents)) {
-      return null;                                  // O2: "documents" is Office › Documents
+    // Office focus only. Since the reconciliation with UI V2 (plan 10 section 2b) Documents is its own region, so a
+    // request typed there during the switch away from Office must not reach the workbook (integration review R1-02).
+    if (presentation.mode != UiPresentationMode.workspace || presentation.focus != WorkspaceFocus.office) {
+      return null;
     }
     return t;
   }

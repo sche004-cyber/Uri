@@ -352,6 +352,26 @@ void main() {
       expect(target.asks, isEmpty);
     });
 
+    testWidgets('integration review R1-02: in Documents the composer keeps the ordinary conversation', (tester) async {
+      final appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
+      final services = _services();
+      addTearDown(services.dispose);
+      // The Office region still holds its target (as during the switch from Office to Documents).
+      services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.documents);
+      final target = _FakeTarget();
+      services.officeTarget.value = target;
+      expect(services.officeInFocus(), isNull);
+      await tester.pumpWidget(_scoped(appState, services, const Align(
+          alignment: Alignment.bottomCenter, child: LivingComposer())));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const ValueKey('living-composer-field')), 'Hello');
+      await tester.tap(find.byKey(const ValueKey('living-composer-send')));
+      await tester.pumpAndSettle();
+      expect(target.asks, isEmpty);
+      services.presentation.setFocus(WorkspaceFocus.office);
+      expect(services.officeInFocus(), same(target));
+    });
+
     testWidgets('a busy workbook keeps the typed request in the composer', (tester) async {
       final appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
       final services = _services();
