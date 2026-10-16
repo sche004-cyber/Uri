@@ -33,10 +33,13 @@ gate reported ok. The driver showed "no new failures" with zero tests executed.
    (`RESOURCE`, `INFRA no test execution on candidate (...) or baseline (...)`), never ok. A baseline without execution
    is no comparison base: every candidate failure counts as new. A candidate without execution against a baseline
    that executed stays a new failure (`<gate>::__run__`), routed to repair as before.
-4. **Cache validity.** The baseline cache key binds `GATE_SCHEMA` (2) and, for Flutter/Dart gates, the toolchain
-   fingerprint (`flutter --version --machine`: framework, engine, Dart revisions). Results cached under the old rules
-   are never reused; a toolchain change re-runs the baseline. Dependency changes are bound by the baseline SHA (its
-   lock file) and by `--enforce-lockfile`.
+4. **Cache validity.** The baseline cache key binds `GATE_SCHEMA` (4 after the review repairs; it was 2 in the first
+   commit) and, for Flutter/Dart gates, the toolchain fingerprint (`flutter --version --machine`: framework, engine,
+   Dart revisions; `dart --version` for Dart), plus the preparation settings (`prepare`, `pub_offline`,
+   `prepare_timeout_s`) and `allow_zero_tests`. A failed fingerprint probe makes the result uncacheable. Results
+   cached under the old rules are never reused; a toolchain change re-runs the baseline. Dependency changes are bound
+   by the baseline SHA (its lock file) and by `--enforce-lockfile`; preparation that changes `pubspec.lock` or any
+   tracked file blocks.
 5. **Recorded counts.** Per-gate counts for candidate and baseline go into the hash-chained `QUALIFICATION` event
    (`counts`) and into `receipt.json` gates.
 
@@ -68,6 +71,20 @@ and toolchain, and the result rows already carry what a persistent store needs.
   canonical `2eff03d0` and is not caused by this change: on this host a child process can break away from a Windows
   job (environment-dependent containment check). Recorded as finding DRV-ENV-2, owner: lifecycle driver; not repaired
   here.
+
+## Review history (driver run DEV-LIFECYCLE-3B, state `uri-dl3b-run/r1`, canonical driver at `2eff03d0`)
+
+| Round | Reviewer | Candidate | Verdict | Findings → repair (driver implementer) |
+|---|---|---|---|---|
+| R1 | codex_cli | `bea47154` | REJECT | R1-01 zero-test results could pass via `allowed_flaky`/`required: false`; R1-02 toolchain key collision on a failed probe, memoized by name; R1-03 lock/tracked files not proven unchanged → `146d3e42` |
+| R2 | codex_cli | `146d3e42` | REJECT | R2-01 hidden Flutter failure could make a zero-test gate pass; R2-02 baseline cache survived a preparation change → `dcbaf4ca` |
+| R3 | codex_cli | `dcbaf4ca` | REJECT | R3-01 falsy `pub_offline` allowed network; R3-02 `allow_zero_tests` change did not invalidate the cache → `b231231c` |
+| R4 | codex_cli | `b231231c` | REJECT | R4-01 receipt lacked the preparation command and lock hash (AC-2) → `7ed88cc6` |
+| R5 | codex_cli | `7ed88cc6` | ACCEPT WITH FINDINGS | R5-01 LOW: this plan named `GATE_SCHEMA` 2 (repaired in the final revision) |
+
+Gates on `7ed88cc6`: `tests/dev_workflow` candidate 268 passed, 5 skipped, 1 historical failure (DRV-ENV-2);
+baseline 242 passed, 5 skipped, the same failure; no new failure. Stage VERIFIED, BLOCKED OWNER_AUTHORIZATION,
+`evidence_ok_for_candidate: true`, `verify` OK.
 
 ## Owner decisions
 
