@@ -221,15 +221,18 @@ _WEAK_START = re.compile(
 _PRONOUN_OK = ("make", "keep", "add", "insert", "include", "write", "put", "address", "sign", "end", "start", "begin",
                "spell", "change", "move", "fix", "correct", "improve", "expand", "simplify", "polish", "cut", "refer")
 # A part of a document, named with a determiner ("the date", "a line", "that word"; never "in three words").
+# Time, name and report also name unrelated Workspace tasks; a quoted phrase only anchors when it occurs in the draft.
 _ANCHOR = re.compile(
     r"\b(?:the|that|this|these|those|a|an|another|one|each|every|my|our|its|first|second|third|last|final|"
     r"opening|closing|next|previous)\s+(?:[\w-]+\s+){0,2}?(?:line|lines|word|words|point|points|heading|title|date|"
-    r"time|day|name|names|recipient|greeting|ending|opening|subject|bullet|bullets|sentence|sentences|para|paragraph|"
-    r"paragraphs|wording|tone|version|draft|letter|e-?mail|note|notice|circular|memo|report|application|reply|"
-    r"message|document|text|amount|figure|number|deadline|venue|signature|details?)\b|"
-    r"\b(?:instead|rather)\b|[\"“‘]|(?:^|\s)'\S", re.I)
+    r"day|recipient|greeting|ending|opening|subject|bullet|bullets|sentence|sentences|para|paragraph|"
+    r"paragraphs|wording|tone|version|draft|letter|e-?mail|note|notice|circular|memo|application|reply|"
+    r"message|document|text|amount|figure|number|deadline|venue|signature|details?)\b", re.I)
 _CORRECTION = re.compile(r"\bnot\s+\w+\s+\w+[^,.;!?]{0,60},\s*(?:but\s+)?\w|"
                          r"\b(?:i meant|i mean|make that)\b", re.I)
+_CORRECTION_CONTEXT = re.compile(r"^\s*(?:actually|sorry|no[,!]?|wait|i mean|i meant|make that)\b", re.I)
+_SET_FIELD = re.compile(_PREFIX + r"set\s+(?:the|a|my|your)\s+(?:date|day|time)\b", re.I)
+_DOCUMENT_REF = re.compile(r"\b(?:draft|letter|document|e-?mail|note|notice|circular|memo|application)\b", re.I)
 _LANGUAGE_OBJECT = re.compile(r"(?:the\s+)?(?:grammar|spelling|punctuation|typos?|language|flow|clarity|style|"
                               r"formatting|wording|tone)\b", re.I)
 
@@ -244,9 +247,8 @@ def _content_tokens(s: str) -> set:
 
 
 def _shares_draft_content(t: str, draft_text: str | None) -> bool:
-    """'Actually Ravi paid 700 and Sita paid 500.' corrects a draft that names Ravi, Sita and the amounts: the message
-    reuses the document's own words (two content words, or one number)."""
-    if not draft_text:
+    """A correction reusing the document's own words can refer to it without saying "draft"."""
+    if not draft_text or not _CORRECTION_CONTEXT.match(t):
         return False
     shared = _content_tokens(t) & _content_tokens(draft_text)
     return len(shared) >= 2 or any(w.isdigit() for w in shared)
@@ -255,6 +257,10 @@ def _shares_draft_content(t: str, draft_text: str | None) -> bool:
 def _anchored(t: str, draft_text: str | None = None) -> bool:
     """True when a revision-looking message refers to the document (UIV2-F1)."""
     head = t[:400]
+    if re.search(r"\b(?:change|update|set)\s+your\s+name\b", head, re.I):
+        return False                        # "your name" addresses URI, even if the draft has [Your Name]
+    if _SET_FIELD.match(t) and not _DOCUMENT_REF.search(head):
+        return False                        # setting a date/time can be a Workspace command, not a draft edit
     if _KEEP_REST.search(head) or _CORRECTION.search(head):
         return True
     if _shares_draft_content(head, draft_text):
@@ -263,7 +269,20 @@ def _anchored(t: str, draft_text: str | None = None) -> bool:
     if correction and correction.group(1).lower() in _content_tokens(draft_text):
         return True
     tg = targets_for(t)
-    if tg["body"] or tg["roles"] or tg["phrases"]:
+    if tg["body"] or tg["roles"]:
+        return True
+    if tg["phrases"]:
+        # A phrase to replace is a reference only when it names text in this draft (or says "that"/"it").
+        # Otherwise even "replace X with Y" can refer to an unrelated Workspace object.
+        if any(p.lower() in ("it", "this", "that") or (draft_text and p.lower() in draft_text.lower())
+               for p in tg["phrases"]):
+            return True
+        if re.search(r"\b(?:don'?t|do not|dont)\s+(?:say|write|use|mention)\b", head, re.I):
+            return True
+        if not _ANCHOR.search(head):
+            return False
+    if draft_text and any(p.lower() in draft_text.lower()
+                          for p in re.findall(r"[\"'“‘]([^\"'”’]{2,})[\"'”’]", head)):
         return True
     if _HINGLISH_EDIT.search(head) and re.search(r"\b(?:isko|isse|poora|pura)\b", head, re.I):
         return True

@@ -233,11 +233,13 @@ class DraftDesk:
         # An open draft question accepts elliptical answers, but a new imperative request is not an answer.
         answers = ("not_a_text_task", "foreign_object", "unanchored_with_draft")
         if intent.reasons[:1] == ["trivial"] and _SHORT_ANSWER.match(text or ""):
-            answers += ("trivial",)            # "yes" / "no" / "okay" answer an open question
+            answers += ("trivial",)            # yes/no may answer a matching open question
         # A question of the user's own ("what is ...?") is not an answer to URI's question.
         own_question = (text or "").rstrip().endswith("?") or bool(_OWN_QUESTION.match(text or ""))
+        question = d.pending_question if d is not None and d.pending_question else \
+            (pend or {}).get("question")
         if intent.kind == TX.NONE and intent.reasons and intent.reasons[0] in answers \
-                and not own_question and _looks_like_answer(text):
+                and not own_question and _looks_like_answer(text, question):
             if d is not None and d.pending_question:
                 return TX.TextIntent(TX.REVISE, ["answer_to_clarification"], instruction=text,
                                      targets=TX.targets_for(text))
@@ -657,21 +659,32 @@ _OWN_QUESTION = re.compile(r"^\s*(?:what|why|how|who|whom|whose|when|where|which
 _NEW_REQUEST = re.compile(r"^\s*(?:(?:uri|please|could you|can you)\s+)*(?:tell me|show me|give me|help me|"
                           r"start|set (?:a|the)\b|play|open|launch|search|find|look up|explain|create|"
                           r"write|compose|make me|change your|update me|add|remove)\b", re.I)
-_CLAUSE_VERB = re.compile(r"\b(?:is|are|was|were|should|would|could|will|can|do|does|did|have|has|had)\b", re.I)
+_DATE_QUESTION = re.compile(r"\b(?:date|day)\b", re.I)
+_WEEKDAY = r"monday|tuesday|wednesday|thursday|friday|saturday|sunday"
+_MONTH = r"january|february|march|april|may|june|july|august|september|october|november|december"
+_DATE_REPLY = re.compile(
+    r"(?:(?:on|the|for)\s+)*(?:today|tomorrow|yesterday|(?:next|this)\s+(?:" + _WEEKDAY + r")|"
+    r"(?:" + _WEEKDAY + r")|\d{4}-\d{1,2}-\d{1,2}|\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?|"
+    r"\d{1,2}(?:st|nd|rd|th)?(?:\s+(?:of\s+)?(?:" + _MONTH + r"))?(?:,?\s+\d{4})?)",
+    re.I)
+_YES_NO_QUESTION = re.compile(r"^\s*(?:is|are|was|were|do|does|did|can|could|should|would|will|have|has)\b", re.I)
 
 
-def _looks_like_answer(text):
-    """Accept a short answer fragment (or yes/no), not a fresh request or unrelated full sentence.
+def _looks_like_answer(text, question):
+    """Accept an elliptical answer only when its content fits the pending question.
 
     A semicolon may follow the answer with more instructions; the desk's action guard still handles those.
     """
     reply = (text or "").strip()
-    if _NEW_REQUEST.match(reply):
+    if not question or _NEW_REQUEST.match(reply):
         return False
-    if _SHORT_ANSWER.fullmatch(reply.strip(" .!?")):
-        return True
     first = reply.split(";", 1)[0].strip(" .,!?\t\n")
-    return 0 < len(first.split()) <= 5 and not _CLAUSE_VERB.search(first)
+    if _DATE_QUESTION.search(question):
+        return bool(_DATE_REPLY.fullmatch(first))
+    if _YES_NO_QUESTION.match(question):
+        return bool(_SHORT_ANSWER.fullmatch(first))
+    # Unrecognized open questions require an explicit edit request; shape alone does not establish relevance.
+    return False
 
 
 _ORD_NAME = {0: "the first paragraph", 1: "the second paragraph", 2: "the third paragraph", 3: "the fourth paragraph",
