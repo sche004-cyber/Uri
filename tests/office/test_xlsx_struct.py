@@ -178,6 +178,36 @@ def test_shared_formulas_are_written_out_before_moving():
     assert b't="shared"' not in parts[sheet]
 
 
+@pytest.mark.parametrize("reference,should_unshare", [
+    ("MySheet1!B1", False),
+    ("Sheet1!B1", True),
+])
+def test_shared_formula_sheet_name_must_match_at_a_reference_boundary(reference, should_unshare):
+    wb = Workbook()
+    wb.active.title = "Sheet1"
+    other = wb.create_sheet("MySheet1")
+    other["A1"] = f"={reference}"
+    other["A2"] = f"={reference}"
+    out = io.BytesIO()
+    wb.save(out)
+    parts = parts_of(out.getvalue())
+    part = "xl/worksheets/sheet2.xml"
+    root = S._xml(parts[part])
+    formulas = list(root.iter(S.M + "f"))
+    assert len(formulas) == 2
+    formulas[0].attrib.update({"t": "shared", "si": "0", "ref": "A1:A2"})
+    formulas[1].attrib.update({"t": "shared", "si": "0"})
+    formulas[1].text = None
+    parts[part] = S._ser(root)
+    before = parts[part]
+
+    S.apply_row_op(parts, {"op": "insert_rows", "sheet": "Sheet1", "at": 1, "count": 1})
+    if should_unshare:
+        assert b't="shared"' not in parts[part]
+    else:
+        assert parts[part] == before
+
+
 @pytest.mark.parametrize("extra,why", [
     (lambda wb, ws: ws.protection.__setattr__("sheet", True), "protected"),
 ])

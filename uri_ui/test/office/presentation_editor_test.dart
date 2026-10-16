@@ -12,7 +12,9 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uri_ui/living/office/office_bridge.dart';
 import 'package:uri_ui/living/office/office_client.dart';
+import 'package:uri_ui/living/office/office_nav_pane.dart';
 import 'package:uri_ui/living/office/office_workspace.dart';
+import 'package:uri_ui/living/presentation/presentation_controller.dart';
 import 'package:uri_ui/theme/uri_theme.dart';
 
 final _png = base64Decode(
@@ -270,6 +272,41 @@ void main() {
     expect(tester.takeException(), isNull);
     await _unmount(tester);
   });
+
+  for (final destination in ['home', 'recent']) {
+    testWidgets('AB-9: $destination navigation asks before leaving an unsaved edit', (tester) async {
+      final fake = await _pump(tester);
+      await _openAndEdit(tester);
+      await tester.enterText(find.byKey(const ValueKey('authoring-title')), 'Draft');
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('authoring-title-apply')));
+      await _settle(tester);
+
+      await tester.tap(find.byKey(ValueKey('office-nav-$destination')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('authoring-leave-dialog')), findsOneWidget);
+      expect(fake.calls.where((c) => c == 'POST /authoring/${fake.aid}/close'), isEmpty);
+      await tester.tap(find.byKey(const ValueKey('authoring-leave-keep')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('authoring-done')), findsOneWidget);
+
+      final controller = tester.widget<OfficeNavPane>(find.byType(OfficeNavPane)).controller;
+      controller.showView(destination == 'home' ? OfficeView.home : OfficeView.recent);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('authoring-done')), findsOneWidget,
+          reason: 'a controller navigation without a dialog context cannot hide the editor');
+
+      await tester.tap(find.byKey(ValueKey('office-nav-$destination')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('authoring-leave-discard')));
+      await _settle(tester);
+      expect(fake.calls.where((c) => c == 'POST /authoring/${fake.aid}/close').length, 1);
+      expect(find.byKey(const ValueKey('authoring-done')), findsNothing);
+      expect(find.text(destination == 'home' ? 'Office' : 'Recent'), findsWidgets);
+      expect(tester.takeException(), isNull);
+      await _unmount(tester);
+    });
+  }
 
   testWidgets('AB-10: New presentation from Home needs Save as, which goes to the picked new file', (tester) async {
     final fake = await _pump(tester, saveAs: r'C:\Users\me\Documents\Plan.pptx');

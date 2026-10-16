@@ -6,6 +6,7 @@ import '../widgets/status_badge.dart';
 import 'document_controller.dart';
 import 'office_bridge.dart';
 import 'office_folders.dart';
+import 'presentation_editor.dart' show finishEditing;
 
 /// The B1 left pane: Home and Recent, goal groups built from the capability registry (only available capabilities,
 /// empty groups hidden: U4), files by kind (from the recent list; no folder crawling), and tasks. In compact mode
@@ -17,6 +18,11 @@ class OfficeNavPane extends StatelessWidget {
   final bool compact;
   final OfficeEnvironment? environment;
   final VoidCallback onOpenSheet;
+
+  Future<void> _navigate(BuildContext context, VoidCallback action) async {
+    if (controller.editor != null && !await finishEditing(context, controller)) return;
+    if (context.mounted) action();
+  }
 
   static const _views = [
     (OfficeView.home, Icons.home_outlined, 'Home'),
@@ -42,13 +48,15 @@ class OfficeNavPane extends StatelessWidget {
               key: ValueKey('office-nav-${v.name}'),
               tooltip: label,
               isSelected: c.view == v && (c.centre == OfficeCentre.home || c.centre == OfficeCentre.list),
-              onPressed: () => c.showView(v),
+              onPressed: () => _navigate(context, () => c.showView(v)),
               icon: Icon(icon, size: 20),
             ),
           if (environment?.pickDocumentPath != null)
             IconButton(key: const ValueKey('office-nav-open'), tooltip: 'Open a document',
-                onPressed: c.busy ? null : c.pickAndOpenDocument, icon: const Icon(Icons.folder_open_rounded)),
-          IconButton(key: const ValueKey('office-nav-sheet'), tooltip: 'Spreadsheet view', onPressed: onOpenSheet,
+                onPressed: c.busy ? null : () => _navigate(context, c.pickAndOpenDocument),
+                icon: const Icon(Icons.folder_open_rounded)),
+          IconButton(key: const ValueKey('office-nav-sheet'), tooltip: 'Spreadsheet view',
+              onPressed: () => _navigate(context, onOpenSheet),
               icon: const Icon(Icons.grid_on_rounded)),
           IconButton(key: const ValueKey('office-nav-folders'), tooltip: 'Folders URI may use',
               onPressed: () => OfficeFoldersDialog.show(context, c.client, environment, onAdded: c.folderAdded),
@@ -60,7 +68,7 @@ class OfficeNavPane extends StatelessWidget {
               key: ValueKey('office-open-doc-${d.id}'),
               tooltip: d.name,
               isSelected: c.activeDocument == d.id && c.centre == OfficeCentre.document,
-              onPressed: () => c.showDocument(d.id),
+              onPressed: () => _navigate(context, () => c.showDocument(d.id)),
               icon: Icon(switch (d.kind) {
                 'pdf' => Icons.picture_as_pdf_outlined,
                 'pptx' => Icons.slideshow_outlined,
@@ -79,13 +87,13 @@ class OfficeNavPane extends StatelessWidget {
           if (environment?.pickDocumentPath != null)
             FilledButton.icon(
               key: const ValueKey('office-open-document'),
-              onPressed: c.busy ? null : c.pickAndOpenDocument,
+              onPressed: c.busy ? null : () => _navigate(context, c.pickAndOpenDocument),
               icon: const Icon(Icons.folder_open_rounded, size: 18),
               label: const Text('Open'),
             ),
           OutlinedButton.icon(
             key: const ValueKey('office-open-sheet-view'),
-            onPressed: onOpenSheet,
+            onPressed: () => _navigate(context, onOpenSheet),
             icon: const Icon(Icons.grid_on_rounded, size: 18),
             label: const Text('Spreadsheet'),
           ),
@@ -98,7 +106,7 @@ class OfficeNavPane extends StatelessWidget {
             leading: Icon(icon, size: 18),
             title: Text(label),
             selected: c.view == v && (c.centre == OfficeCentre.home || c.centre == OfficeCentre.list),
-            onTap: () => c.showView(v),
+            onTap: () => _navigate(context, () => c.showView(v)),
           ),
         if (groups.isNotEmpty) ...[
           const SizedBox(height: UriSpace.sm),
@@ -119,7 +127,7 @@ class OfficeNavPane extends StatelessWidget {
                     ? null
                     : Text(officeErrorText['${cap['unready_reason']}'] ?? 'Not ready yet.',
                         style: TextStyle(color: colors.warning, fontSize: 11)),
-                onTap: c.busy ? null : () => c.chip('${cap['id']}'),
+                onTap: c.busy ? null : () => _navigate(context, () => c.chip('${cap['id']}')),
               ),
           ],
         ],
@@ -140,7 +148,7 @@ class OfficeNavPane extends StatelessWidget {
             leading: const Icon(Icons.print_outlined, size: 18),
             title: const Text('Printers'),
             selected: c.centre == OfficeCentre.devices,
-            onTap: c.showDevices,
+            onTap: () => _navigate(context, c.showDevices),
           ),
         ],
         if (c.documents.isNotEmpty) ...[
@@ -153,11 +161,13 @@ class OfficeNavPane extends StatelessWidget {
               leading: Icon(d.kind == 'pdf' ? Icons.picture_as_pdf_outlined : Icons.description_outlined, size: 18),
               title: Text(d.name, overflow: TextOverflow.ellipsis),
               selected: c.activeDocument == d.id && c.centre == OfficeCentre.document,
-              onTap: () => c.showDocument(d.id),
+              onTap: () => _navigate(context, () => c.showDocument(d.id)),
               trailing: IconButton(
                 tooltip: 'Close ${d.name}',
                 icon: const Icon(Icons.close_rounded, size: 16),
-                onPressed: () => c.closeDocument(d.id),
+                onPressed: () => _navigate(context, () {
+                  if (c.documents.containsKey(d.id)) c.closeDocument(d.id);
+                }),
               ),
             ),
         ],

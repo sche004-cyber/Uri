@@ -59,6 +59,19 @@ def test_a_line_break_still_round_trips_and_a_page_break_paragraph_can_be_delete
     assert not any(br.get(W._W + "type") == "page" for br in d.element.body.iter(W._W + "br"))
 
 
+def test_deleting_a_break_paragraph_refuses_other_unsupported_content():
+    d = _doc(f'<w:p {NS}><w:r><w:br w:type="page"/><w:softHyphen/></w:r></w:p>',
+             f'<w:p {NS}><w:r><w:t>Keep</w:t></w:r></w:p>')
+    b = W.describe(d)["blocks"][0]
+    assert b["locked"] == "a page break"
+    before = d.element.body.xml
+    with pytest.raises(OfficeError) as exc:
+        W.delete_block(d, 0, b["expect"])
+    assert exc.value.code == "AUTHORING_NOT_SUPPORTED"
+    assert "optional hyphen" in exc.value.detail
+    assert d.element.body.xml == before
+
+
 def test_replace_skips_a_run_with_a_page_break():
     d = _doc(f'<w:p {NS}><w:r><w:t>Intro</w:t><w:br w:type="page"/><w:t>Chapter Two</w:t></w:r></w:p>')
     r = W.replace_text(d, "Two", "X")

@@ -202,11 +202,15 @@ def _mentions(root, target: str) -> bool:
     return False
 
 
-def _names_sheet(root, target: str) -> bool:
-    """True when a formula in the parsed element refers to the sheet: its quoted or unquoted name followed by '!' at
-    a reference boundary. Independent review C3-05: a plain substring test also matched 'MySheet1!' for 'Sheet1'."""
+def _sheet_ref_pattern(target: str):
+    """Match a quoted or unquoted sheet name followed by '!' at a reference boundary."""
     alts = "|".join(re.escape(n.rstrip("!")) for n in _quoted_names(target))
-    pat = re.compile(r"(?<![A-Za-z0-9_.'\]])(?:" + alts + r")!", re.IGNORECASE)
+    return re.compile(r"(?<![A-Za-z0-9_.'\]])(?:" + alts + r")!", re.IGNORECASE)
+
+
+def _names_sheet(root, target: str) -> bool:
+    """True when a formula in the parsed element refers to the sheet at a reference boundary."""
+    pat = _sheet_ref_pattern(target)
     return any(pat.search(el.text or "") for el in root.iter())
 
 
@@ -241,7 +245,7 @@ def _check_supported(parts: dict, by_sheet: dict, target: str, root):
 
 def _unshare(parts: dict, by_sheet: dict, target: str):
     """Write shared formulas whose master refers to the target sheet as ordinary formulas."""
-    names = _quoted_names(target)
+    target_ref = _sheet_ref_pattern(target)
     for sname, part in by_sheet.items():
         if part not in parts:
             continue
@@ -251,9 +255,8 @@ def _unshare(parts: dict, by_sheet: dict, target: str):
             f = c.find(M + "f")
             if f is not None and f.get("t") == "shared" and f.text:
                 masters[f.get("si")] = (c.get("r"), f.text)
-        low = {n.casefold() for n in names}
         hit = {si for si, (_, txt) in masters.items()
-               if sname.casefold() == target.casefold() or any(n in txt.casefold() for n in low)}
+               if sname.casefold() == target.casefold() or target_ref.search(txt)}
         if not hit:
             continue
         for c in root.iter(M + "c"):

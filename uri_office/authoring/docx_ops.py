@@ -135,7 +135,7 @@ def _local(tag) -> str:
     return tag.rsplit("}", 1)[-1] if isinstance(tag, str) else "?"
 
 
-def _not_plain(el) -> str | None:
+def _not_plain(el, *, allow_breaks=False) -> str | None:
     paras = [el] if el.tag == _W + "p" else list(el.iter(_W + "p"))
     for p in paras:
         for child in p:
@@ -146,12 +146,12 @@ def _not_plain(el) -> str | None:
             if child.tag == _W + "r":
                 for rc in child:
                     why = _plain_run_child(rc)
-                    if why:
+                    if why and not (allow_breaks and why in _BREAK_NAMES.values()):
                         return why
     return None
 
 
-def _foreign(el) -> str | None:
+def _foreign(el, *, allow_breaks=False) -> str | None:
     """The first unsupported content in an XML element and its descendants, named, or None."""
     for child in el.iter():
         if child is el or not isinstance(child.tag, str):
@@ -168,7 +168,7 @@ def _foreign(el) -> str | None:
             return _FOREIGN_RUN[name]
         if name in ("hyperlink",):
             return "a link"
-    return _not_plain(el)
+    return _not_plain(el, allow_breaks=allow_breaks)
 
 
 def _insert_at(doc, after, new_el, after_expect=None):
@@ -251,9 +251,8 @@ def delete_block(doc, index, expect):
     el = block(doc, index, expect)
     if el.tag == _W + "p" and _section_break(el):
         _refuse("this paragraph ends a section (page layout); it is kept")
-    why = _foreign(el)
-    if why in _BREAK_NAMES.values() and el.tag == _W + "p":
-        why = None                                    # deleting a page or column break is what the owner asked for
+    # A whole break paragraph may be removed, but other unsupported content in it must still be refused.
+    why = _foreign(el, allow_breaks=el.tag == _W + "p")
     if why:
         kind = "paragraph" if el.tag == _W + "p" else "table"
         _refuse(f"this {kind} has {why}, which URI does not remove")

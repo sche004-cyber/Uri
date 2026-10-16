@@ -328,9 +328,9 @@ class AuthoringBar extends StatelessWidget {
 }
 
 /// Leaving the editor: with unsaved changes the owner chooses to keep editing or discard them.
-Future<void> finishEditing(BuildContext context, OfficeWorkspaceController c) async {
+Future<bool> finishEditing(BuildContext context, OfficeWorkspaceController c) async {
   final e = c.editor;
-  if (e == null) return;
+  if (e == null) return true;
   if (e.changes.isNotEmpty) {
     final discard = await showDialog<bool>(
       context: context,
@@ -353,9 +353,10 @@ Future<void> finishEditing(BuildContext context, OfficeWorkspaceController c) as
         ],
       ),
     );
-    if (discard != true) return;
+    if (discard != true) return false;
   }
   await c.closeEdit();
+  return true;
 }
 
 class _SlideStrip extends StatelessWidget {

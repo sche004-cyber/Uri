@@ -320,6 +320,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   OfficeView _localView = OfficeView.home;
 
   void showView(OfficeView v) {
+    if (editor != null) return;
     if (presentation != null) {
       presentation!.setOfficeView(v);
     } else {
@@ -338,7 +339,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     // any view, not only from Home and the lists.
     if (v != _lastView) {
       _lastView = v;
-      centre = v == OfficeView.home ? OfficeCentre.home : OfficeCentre.list;
+      if (editor == null) centre = v == OfficeView.home ? OfficeCentre.home : OfficeCentre.list;
     }
     _notify();
   }
@@ -347,12 +348,14 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   void sheetChanged() => _notify();
 
   void showSheet() {
+    if (editor != null) return;
     centre = OfficeCentre.sheet;
     _leaveView();
     _notify();
   }
 
   void showDocument(String id) {
+    if (editor != null) return;
     activeDocument = id;
     centre = OfficeCentre.document;
     selectedPage = 1;
@@ -363,12 +366,14 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   }
 
   void showDevices() {
+    if (editor != null) return;
     centre = OfficeCentre.devices;
     unawaited(loadPrinters(refresh: true));
     _notify();
   }
 
   void showWorkflow(String id) {
+    if (editor != null) return;
     activeWorkflow = id;
     workflowView = null;
     centre = OfficeCentre.workflow;
@@ -410,6 +415,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   // ---- documents -------------------------------------------------------------------------------------------------
   Future<void> openDocumentPath(String path) => _guard(() async {
+        if (editor != null) return;
         final v = await client.openDocument(path);
         final d = OfficeDocument(v);
         documents[d.id] = d;
@@ -419,6 +425,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       });
 
   Future<void> pickAndOpenDocument() async {
+    if (editor != null) return;
     final pick = environment?.pickDocumentPath;
     if (pick == null) return;
     final path = await pick();
@@ -426,6 +433,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   }
 
   Future<void> closeDocument(String id) => _guard(() async {
+        if (editor != null) return;
         await client.closeDocument(id);
         documents.remove(id);
         if (activeDocument == id) {
@@ -494,7 +502,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   // ---- authoring (milestones A/B) -----------------------------------------------------------------------------
   void _startEditor(Map<String, dynamic> v) {
-    editor?.dispose();
+    assert(editor == null);
     editor = PresentationEditController(client, v);
     _editSaved = false;
     centre = OfficeCentre.edit;
@@ -503,6 +511,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   /// Edit the presentation in the centre. The edit works on a copy; the file changes only through an approved save.
   Future<void> editDocument() => _guard(() async {
+        if (editor != null) return;
         final d = documents[activeDocument];
         if (d == null || (d.kind != 'pptx' && d.kind != 'docx')) return;
         _startEditor(await client.authoringEdit(d.id));
@@ -512,6 +521,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   /// A new presentation: blank (16:9) or from the owner's presentation or template.
   Future<void> newPresentation({bool fromTemplate = false}) async {
+    if (editor != null) return;
     String? template;
     if (fromTemplate) {
       final pick = environment?.pickTemplatePath;
@@ -520,6 +530,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       if (template == null) return;
     }
     await _guard(() async {
+      if (editor != null) return;
       _startEditor(await client.authoringNew(templatePath: template));
       conversation.say(OfficeSpeaker.uri, 'New presentation. Use Save as to choose where it goes.', targetLabel);
     });
@@ -527,6 +538,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   /// A new Word document from a built-in layout or the owner's .docx/.dotx (milestone C).
   Future<void> newWordDocument({String? layout, bool fromTemplate = false}) async {
+    if (editor != null) return;
     String? template;
     if (fromTemplate) {
       final pick = environment?.pickWordTemplatePath;
@@ -535,6 +547,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       if (template == null) return;
     }
     await _guard(() async {
+      if (editor != null) return;
       _startEditor(await client.authoringNew(kind: 'docx', layout: template == null ? (layout ?? 'blank') : null,
           templatePath: template));
       conversation.say(OfficeSpeaker.uri, 'New document. Use Save as to choose where it goes.', targetLabel);
@@ -848,6 +861,10 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
           case 'navigate':
             final v = OfficeView.values.where((x) => x.name == r['view']).firstOrNull;
             if (v != null) {
+              if (editor != null) {
+                conversation.say(OfficeSpeaker.uri, 'Finish editing before opening ${v.name}.', targetLabel);
+                break;
+              }
               // A Brain-originated move goes through the presentation controller's cooldown (plan §4.4); if refused,
               // the destination is offered as a chip instead of moving silently.
               final moved = presentation?.apply(
@@ -894,7 +911,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       case 'open_workbook':
       case 'new_workbook_from_files':
         conversation.say(OfficeSpeaker.uri, 'Use Open workbook in the sheet view.', targetLabel);
-        centre = OfficeCentre.sheet;
+        showSheet();
       default:
         conversation.say(OfficeSpeaker.uri, 'That is not available yet.', targetLabel);
     }
@@ -916,6 +933,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   /// Opens the print panel for the document in the centre (or the task's output PDF).
   Future<void> startPrint() => _guard(() async {
+        if (editor != null) return;
         if (centre == OfficeCentre.workflow && activeWorkflow != null) {
           printSource = {'workflow_id': activeWorkflow};
         } else if (activeDocument != null && documents[activeDocument]!.previewState == 'ready') {
