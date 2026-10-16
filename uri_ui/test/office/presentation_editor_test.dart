@@ -43,6 +43,7 @@ class FakeAuthoringOffice {
   List<String> changes = [];
   bool isNew = false;
   Map<String, dynamic>? opError;            // the next op answers this error (409) when set
+  Map<String, dynamic>? actionError;        // the card action answers this error (409) when set
   int previewN = 1;
 
   Map<String, dynamic> view() => {
@@ -104,6 +105,7 @@ class FakeAuthoringOffice {
         } else if (path == '/authoring/$aid/close') {
           out = {'closed': true, 'unsaved_changes': changes.length};
         } else if (path == '/a2ui/action') {
+          if (actionError != null) return http.Response(jsonEncode(actionError), 409);
           changes = [];
           out = {'status': 'applied', 'subject_kind': 'authoring_save', 'subject_id': aid,
                  'saved_to': 'Quarterly Review.pptx', 'authoring_id': aid};
@@ -298,4 +300,23 @@ void main() {
       await _unmount(tester);
     });
   }
+
+  testWidgets('AB-9: a refused save says why on the card and in the editor (live run a2)', (tester) async {
+    final fake = await _pump(tester);
+    await _openAndEdit(tester);
+    await tester.enterText(find.byKey(const ValueKey('authoring-title')), 'Draft');
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('authoring-title-apply')));
+    await _settle(tester);
+    await tester.tap(find.byKey(const ValueKey('authoring-save')));
+    await _settle(tester);
+    fake.actionError = {'error': 'TARGET_CHANGED', 'detail': 'the file changed on disk since it was opened'};
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await _settle(tester);
+    expect(find.textContaining('Refused: TARGET_CHANGED'), findsNothing);
+    expect(find.text('The file changed on disk since it was opened. Save as a new file instead.'), findsOneWidget);
+    expect(find.text('Waiting for your approval to save'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
 }

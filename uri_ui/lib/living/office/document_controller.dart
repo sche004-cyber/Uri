@@ -739,7 +739,16 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
   /// The one region-level handler for every office.* card (plan §4.3): sheet results go back to the sheet
   /// controller; plan and output results update the workflow.
   Future<Map<String, dynamic>> _action(Map<String, dynamic> action) async {
-    final r = await client.a2uiAction(action);
+    final Map<String, dynamic> r;
+    try {
+      r = await client.a2uiAction(action);
+    } catch (e) {
+      // A refused save card of the open edit (file changed on disk, stale card): the editor says so too, instead of
+      // still waiting for an approval that can no longer happen (live run a2).
+      final e2 = editor;
+      if (e2 != null && '${action['surfaceId']}'.contains('.authoring_save.${e2.id}.')) e2.failed(e);
+      rethrow;
+    }
     final result = (r['result'] as Map).cast<String, dynamic>();
     if (result['workbook_id'] != null && sheet != null) {
       await sheet!.handleApprovalResult(result);
