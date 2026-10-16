@@ -304,7 +304,9 @@ class VoiceInteractionController extends CompanionStateSource {
     // Real speech is sent as what it is (uri.text_input.v1, the recogniser's own engine and uncertain spans), never
     // through the typed path, so the composer's simulated-transcript and Dictation toggles cannot relabel it
     // (TI-AC6; Codex TIWS r12 INT-3). Conversation mode is an ordinary turn: dictation stays off here.
-    await conv.sendTranscript(f.text, engine: f.engine, simulated: false, uncertain: f.uncertain);
+    // UIV2-F1: spoken words change an open draft only while the Workspace conversation shows it.
+    await conv.sendTranscript(f.text,
+        engine: f.engine, simulated: false, uncertain: f.uncertain, draftInView: presentation.draftInView);
     if (_disposed) return;
     // R2-1: the voice process died while the turn was being sent. The turn is
     // URI's (it is shown on screen); there is nothing left to speak it with.

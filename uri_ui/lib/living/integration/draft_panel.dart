@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/uri_theme.dart';
+import '../living_scope.dart';
+import '../widgets/scroll_when_short.dart';
 import '../widgets/glass_panel.dart';
 import 'oi_conversation.dart';
 import 'oi_draft.dart';
@@ -47,7 +49,13 @@ class _DraftPanelState extends State<DraftPanel> {
         return GlassPanel(
           key: const ValueKey('draft-panel'),
           padding: const EdgeInsets.all(UriSpace.md),
-          child: Column(
+          // UIV2-F3: a panel squeezed below its natural height (the one-frame
+          // shrink into Companion, a short window) scrolls instead of overflowing.
+          child: ScrollWhenShort(
+            minHeight: 240,
+            // tags and toolbar wrap onto more lines in a narrow panel
+            minHeightForWidth: (w) => w >= 600 ? 240 : (w >= 420 ? 340 : 440),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
@@ -61,10 +69,28 @@ class _DraftPanelState extends State<DraftPanel> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Text(
-                    'Version ${d.position} of ${d.count}',
-                    key: const ValueKey('draft-version'),
-                    style: TextStyle(color: c.inkSoft, fontSize: 12),
+                  if (!conv.draftTarget)
+                    SizedBox(
+                      width: 28,
+                      height: 22,
+                      child: IconButton(
+                        key: const ValueKey('draft-edit-with-uri'),
+                        tooltip: 'Change this draft with URI: your next message goes to the draft',
+                        padding: EdgeInsets.zero,
+                        iconSize: 18,
+                        visualDensity: VisualDensity.compact,
+                        icon: Icon(Icons.edit_rounded, color: c.accent),
+                        onPressed: () => _targetDraft(context, conv),
+                      ),
+                    ),
+                  Flexible(
+                    child: Text(
+                      'Version ${d.position} of ${d.count}',
+                      key: const ValueKey('draft-version'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: c.inkSoft, fontSize: 12),
+                    ),
                   ),
                 ],
               ),
@@ -77,6 +103,9 @@ class _DraftPanelState extends State<DraftPanel> {
                       tone: d.simulatedTranscript ? c.warning : c.inkSoft),
                   _Tag(_opLabel(cur.op)),
                   _Tag('Not sent · not saved', tone: c.inkSoft),
+                  if (d.replacedDocType != null)
+                    _Tag('Replaced your earlier ${d.replacedDocType} · Undo brings it back',
+                        key: const ValueKey('draft-replaced'), tone: c.warning),
                 ],
               ),
               if (cur.summary.isNotEmpty)
@@ -104,13 +133,28 @@ class _DraftPanelState extends State<DraftPanel> {
               // Everything between the header and the toolbar scrolls together, so many checks or missing
               // items can never overflow the panel (live UI finding, TI live run 2026-10-09).
               Expanded(
+                child: ShortIntrinsic(
+                // a few lines of the draft stay visible even when the panel scrolls
+                height: 140,
                 child: SingleChildScrollView(
                   key: const ValueKey('draft-scroll'),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (conv.draftQuestion != null)
-                        _Banner(conv.draftQuestion!, tone: c.accent, icon: Icons.help_outline_rounded),
+                        _Banner(
+                            conv.draftQuestionIsNew
+                                ? 'About your new document: ${conv.draftQuestion!} Answer in the conversation.'
+                                : conv.draftQuestion!,
+                            tone: c.accent,
+                            icon: Icons.help_outline_rounded,
+                            action: conv.draftTarget || conv.draftQuestionIsNew
+                                ? null
+                                : TextButton(
+                                    key: const ValueKey('draft-answer'),
+                                    onPressed: () => _targetDraft(context, conv),
+                                    child: const Text('Answer'),
+                                  )),
                       for (final f in errors)
                         _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.danger, icon: Icons.error_outline_rounded),
                       for (final f in reviews)
@@ -139,6 +183,7 @@ class _DraftPanelState extends State<DraftPanel> {
                       },
                     ],
                   ),
+                ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -173,9 +218,17 @@ class _DraftPanelState extends State<DraftPanel> {
               ),
             ],
           ),
+          ),
         );
       },
     );
+  }
+
+  /// UIV2-F1: the explicit way to address the draft: the composer's target
+  /// becomes the draft and the composer takes the focus.
+  static void _targetDraft(BuildContext context, OiConversation conv) {
+    conv.setDraftTarget(true);
+    context.getInheritedWidgetOfExactType<LivingScope>()?.services.composerFocus.requestFocus();
   }
 
   static String _title(String docType) =>
@@ -314,10 +367,11 @@ class _OriginalView extends StatelessWidget {
 }
 
 class _Banner extends StatelessWidget {
-  const _Banner(this.text, {required this.tone, required this.icon});
+  const _Banner(this.text, {required this.tone, required this.icon, this.action});
   final String text;
   final Color tone;
   final IconData icon;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -329,6 +383,7 @@ class _Banner extends StatelessWidget {
           Icon(icon, size: 15, color: tone),
           const SizedBox(width: 6),
           Expanded(child: Text(text, style: TextStyle(color: tone, fontSize: 12))),
+          ?action,
         ],
       ),
     );
@@ -354,3 +409,4 @@ class _Tag extends StatelessWidget {
     );
   }
 }
+

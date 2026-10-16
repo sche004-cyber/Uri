@@ -350,10 +350,13 @@ void main() {
       () {
         // FNV-1a 64 of each file as committed at d7a052f (companions) and
         // 4c463e6 (waveform); the settings work must not edit a shader.
+        // Lunar: owner-requested repair UIV2-F4 (edge fade + haze floor at
+        // the end of main(); was 0x47b4269698f6914d), milestone
+        // UI-V2-POSTINT 2026-10-16. Every other shader is unchanged.
         const expected = {
           'companion_solar.frag': '0x67e9a80b5fe0c380',
           'companion_sakura.frag': '0x84ba67eccea09e6e',
-          'companion_lunar.frag': '0x47b4269698f6914d',
+          'companion_lunar.frag': '0x8968f53326c757ed',
           'companion_moonlit.frag': '0x5f773040ae1f9438',
           'orb_core.frag': '0xa652fd913ca061b9',
           'orb_solar.frag': '0x8db5a65ef6120b00',

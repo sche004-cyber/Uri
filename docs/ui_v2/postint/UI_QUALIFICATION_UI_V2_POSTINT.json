@@ -1,0 +1,752 @@
+{
+ "schema": "uri-ui-qualification/1",
+ "task": {
+  "task_id": "UI-V2-POSTINT",
+  "capability": "UI V2 post-integration repairs UIV2-F1..F4 (F5 evaluated)",
+  "classification": "USER_FACING (F1 routing INDIRECT)",
+  "no_ui_reason": null,
+  "phase": "UI V2 post-integration",
+  "candidate_branch": "milestone/ui-v2-postint-20261016",
+  "code_commit": "165dac8ac15e09dc7132b2185d5497cb858ab4af",
+  "acceptance_criteria_file": "docs/ui_v2/postint/00_PLAN_AND_ACCEPTANCE.md",
+  "acceptance_criteria": [
+   "AC-1",
+   "AC-2",
+   "AC-3",
+   "AC-4",
+   "AC-5",
+   "AC-6",
+   "AC-7",
+   "AC-8",
+   "AC-9",
+   "AC-10"
+  ]
+ },
+ "environment": {
+  "windows": "Windows-11-10.0.26200-SP0",
+  "app_build": {
+   "commit": "165dac8ac15e09dc7132b2185d5497cb858ab4af",
+   "tree": "bd3113701d402ce7d8c19d6c86a601fcae4095c8",
+   "build": "flutter test integration_test (debug, Windows) of production main()",
+   "binary_sha256": "e37f17243e733c02837aa8b8cc6f72106576de022e8cc1e9859607bccf3b1b0c",
+   "returning_run_commit": "165dac8ac15e09dc7132b2185d5497cb858ab4af"
+  },
+  "core": "materialized test runtime (e8e3b65 + Phase 2 OQ overlay + candidate new paths) from the code commit, receipt docs/ui_v2/postint/evidence/runtime/materialize.json; venv copied from D:/uri-dev/uri-o2i-live/runtime/.venv (Office O2 runtime dependencies)",
+  "brain": "Runtime v1 llama-server b11425, Qwen3.6-35B-A3B UD-IQ3_S + MTP, started under the machine-wide GPU lease",
+  "dependencies": [
+   "Flutter 3.47.2 / Dart 3.13.2"
+  ],
+  "gpu_override": "none (lease without override)",
+  "input": "synthesized (flutter_test TestTextInput, key events, taps); physical input not qualified"
+ },
+ "functional": [
+  {
+   "journey_id": "J1",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Start the production app on a paired installation (first-time user, onboarding)"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J1-v2-is-default": "PASS",
+    "J1-dashboard-first": "PASS",
+    "J1-brain-ready": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j1-onboarding-first.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j1-ready.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j1-start.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-dashboard-1024x768.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-dashboard-1280x800.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-dashboard-1366x768.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-dashboard-800x600.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-dashboard-900x640.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-workspace-1024x768.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-workspace-1280x800.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-workspace-1366x768.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-workspace-800x600.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-workspace-900x640.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j12-dashboard-brain-stopped.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j12-turn-without-brain.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-after-edit.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-chat-answered.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-draft-open.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-replaced.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-target-conversation.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-undo-restored.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j16-after-tile.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J2",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Navigate Dashboard, Workspace, Assist and Companion by Ctrl+1..4 and by the Dashboard navigation"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J2-ctrl-workspace": "PASS",
+    "J2-ctrl-dashboard": "PASS",
+    "J2-ctrl-assist": "PASS",
+    "J2-nav-Conversation": "PASS",
+    "J2-nav-Tasks": "PASS",
+    "J2-nav-Documents": "PASS",
+    "J2-nav-Settings": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j2-assist.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j2-dashboard.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j2-nav-conversation.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j2-nav-documents.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j2-nav-settings.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j2-nav-tasks.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j2-workspace.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J3",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Conversation with the real Brain from the V2 Workspace"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J3-greeting-replied": "PASS",
+    "J3-fact": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j3-conversation.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J4",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Ambiguous request: clarification, then confirmation card"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J4-clarification-asked": "PASS",
+    "J4-confirmation-asked": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j4-confirmation.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J5",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Supported tool through the UI (remember_fact): approval card, approve, verified result, recall"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J5-tool-settled": "PASS",
+    "J5-memory-written": "PASS",
+    "J5-recall": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j5-after-approve.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j5-approval-card.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J6",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Documents entry point: Start new work (Letter) sends a real turn (the draft now stays open for J14)"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J6-letter-opens-conversation": "PASS",
+    "J6-letter-real-turn": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j6-documents.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j6-letter-reply.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J7",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Companion: frameless 440x680 shaped window, single click actions, detached chat with a real reply while a draft is open (note shown, draft unchanged: live l9 repeated), Escape, double click back, window restored"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J7-window-440x680": "PASS",
+    "J7-shaped-region": "PASS",
+    "J7-single-click-controls": "PASS",
+    "J7-detached-chat": "PASS",
+    "J7-chat-reply": "PASS",
+    "J7-stays-companion": "PASS",
+    "J7-escape-closes-chat": "PASS",
+    "J7-double-click-dashboard": "PASS",
+    "J7-window-restored": "PASS",
+    "J7-native-rejects-nan": "PASS",
+    "J7-native-rejects-infinite": "PASS",
+    "J7-native-rejects-inverted": "PASS",
+    "J7-region-kept-after-reject": "PASS",
+    "J7-draft-note": "PASS",
+    "J7-draft-untouched": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j7-after-escape.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j7-back-dashboard.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j7-companion-chat.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j7-companion-controls.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j7-companion-idle.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J8",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Settings: companion gallery preview isolation and Apply; interface theme"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J8-gallery-opens": "PASS",
+    "J8-preview-isolated": "PASS",
+    "J8-apply": "PASS",
+    "J8-theme": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j8-after-theme.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j8-dashboard-snow-lunar.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j8-gallery.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j8-lunar-edge.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J9",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Approval visibility on the Dashboard; review opens Tasks; Deny is honoured"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J9-dashboard-counts-decision": "PASS",
+    "J9-review-opens-tasks": "PASS",
+    "J9-deny-honoured": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j9-after-deny.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j9-dashboard-review-count.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j9-tasks-review.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J10",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Responsiveness while the Brain works: navigate during a turn (with a draft open)"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J10-navigation-while-busy": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J11",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Window sizes 1366x768, 1280x800, 1024x768, 900x640, 800x600: no layout error; composer in view where the content area is at least 900x640"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J11-no-layout-error-1366": "PASS",
+    "J11-no-layout-error-1280": "PASS",
+    "J11-no-layout-error-1024": "PASS",
+    "J11-no-layout-error-900": "PASS",
+    "J11-no-layout-error-800": "PASS",
+    "J11-composer-in-view-1366": "PASS",
+    "J11-composer-in-view-1280": "PASS",
+    "J11-composer-in-view-1024": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-dashboard-1024x768.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-dashboard-1280x800.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-dashboard-1366x768.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-dashboard-800x600.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-dashboard-900x640.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-workspace-1024x768.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-workspace-1280x800.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-workspace-1366x768.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-workspace-800x600.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j11-workspace-900x640.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J12",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Failure and recovery: Brain stops; UI shows it; a turn fails with a plain message and recovery options"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J12-brain-not-ready-seen": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j12-dashboard-brain-stopped.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j12-turn-without-brain.png"
+   ],
+   "failure_and_recovery": "{\"utc\": \"2026-10-16T13:50:04.772470Z\", \"label\": \"turn without brain\", \"text\": \"\", \"error_code\": \"BRAIN_UNAVAILABLE\", \"error_message\": \"The local Brain is not ready (STOPPED).\", \"recovery\": [\"start_brain\", \"retry\", \"choose_other_source\"]}",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J13",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Regression: classic interface entry still offered"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J13-classic-entry-present": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J14",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "UIV2-F1/F2 in the Workspace with a draft open: no testing-only controls; 'Say hello in three words' answered and the draft unchanged; 'Make it shorter' edits; a new document keeps the replaced draft (tag shown); Undo restores it, Redo returns"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J14-no-testing-controls": "PASS",
+    "J14-draft-open": "PASS",
+    "J14-chat-answered": "PASS",
+    "J14-chat-does-not-edit": "PASS",
+    "J14-explicit-edit-applies": "PASS",
+    "J14-new-document-keeps-old": "PASS",
+    "J14-undo-restores": "PASS",
+    "J14-redo-returns": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-after-edit.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-chat-answered.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-draft-open.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-replaced.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-target-conversation.png",
+    "docs/ui_v2/postint/evidence/live/l22/main-j14-undo-restored.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J15",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "UIV2-F4: Lunar on the light Snow Archive theme; renderer bounds invisible (max channel difference <= 1/255 between pixels inside the bounds and the background outside)"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J15-lunar-edge-invisible-light-theme": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j8-lunar-edge.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "J16",
+   "user": "first_time",
+   "mandatory": true,
+   "steps": [
+    "Imported review C1-02: a Start new work tile with the draft as composer target never revises the open draft"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "J16-tile-never-revises-open-draft": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l22/observations-main.json",
+    "docs/ui_v2/postint/evidence/live/l22/main-j16-after-tile.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "R1",
+   "user": "returning",
+   "mandatory": true,
+   "steps": [
+    "Returning user: no onboarding repeat; companion and theme persisted; Lunar bounds invisible on the light theme; conversation works"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "R-no-onboarding": "PASS",
+    "R-companion-persisted": "PASS",
+    "R-theme-persisted": "PASS",
+    "R-lunar-edge-invisible-light-theme": "PASS",
+    "R-conversation": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l23/observations-returning.json",
+    "docs/ui_v2/postint/evidence/live/l23/returning-r-connections.png",
+    "docs/ui_v2/postint/evidence/live/l23/returning-r-lunar-edge-companion.png",
+    "docs/ui_v2/postint/evidence/live/l23/returning-r-lunar-edge.png",
+    "docs/ui_v2/postint/evidence/live/l23/returning-r-start.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "R2",
+   "user": "returning",
+   "mandatory": true,
+   "steps": [
+    "Connections destination says plainly that accounts are not managed here; Open Settings works"
+   ],
+   "expected": "every listed check PASS",
+   "checks": {
+    "R-connections-card-plain": "PASS",
+    "R-connections-page-plain": "PASS",
+    "R-connections-open-settings": "PASS"
+   },
+   "actual": "all checks PASS",
+   "outputs": [],
+   "evidence": [
+    "docs/ui_v2/postint/evidence/live/l23/observations-returning.json",
+    "docs/ui_v2/postint/evidence/live/l23/returning-r-connections.png"
+   ],
+   "failure_and_recovery": "see J12",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "NV-physical",
+   "user": "first_time",
+   "mandatory": false,
+   "steps": [
+    "physical mouse, keyboard and window drag"
+   ],
+   "expected": "observed by a person on this PC",
+   "actual": "not observed",
+   "outputs": [],
+   "evidence": [],
+   "failure_and_recovery": "n/a",
+   "evidence_status": "NOT_RUN",
+   "result": "NOT VERIFIED"
+  },
+  {
+   "journey_id": "NV-microphone",
+   "user": "first_time",
+   "mandatory": false,
+   "steps": [
+    "microphone and speaker (voice journeys)"
+   ],
+   "expected": "observed by a person on this PC",
+   "actual": "not observed",
+   "outputs": [],
+   "evidence": [],
+   "failure_and_recovery": "n/a",
+   "evidence_status": "NOT_RUN",
+   "result": "NOT VERIFIED"
+  },
+  {
+   "journey_id": "NV-other",
+   "user": "first_time",
+   "mandatory": false,
+   "steps": [
+    "other DPI scaling and a second monitor"
+   ],
+   "expected": "observed by a person on this PC",
+   "actual": "not observed",
+   "outputs": [],
+   "evidence": [],
+   "failure_and_recovery": "n/a",
+   "evidence_status": "NOT_RUN",
+   "result": "NOT VERIFIED"
+  }
+ ],
+ "ux": {
+  "discoverability": [
+   "J14: the draft panel says when a new document replaced an earlier one and that Undo brings it back",
+   "J7: the Companion chat says a draft is open in Workspace and that messages there do not change it"
+  ],
+  "navigation": [
+   "J2, J10, J11 unchanged and PASS"
+  ],
+  "tool_visibility": [
+   "J14: testing-only transcript/dictation toggles absent for ordinary users (URI_UI_TESTING_TOOLS)"
+  ],
+  "control_usability": [
+   "l1 finding repaired: the draft toolbar (Undo/Redo) stays in view at 1264x681"
+  ],
+  "feedback": [
+   "J14: replies to chat with a draft open are ordinary answers; edits show the new version"
+  ],
+  "consistency": [
+   "Brain pickers keep their natural width (l1 screenshot showed them stretched; repaired)"
+  ],
+  "accessibility": [
+   "no change to sizes, contrast or focus order; overflow-free layouts at 1-2x pixel ratio (Flutter tests)"
+  ],
+  "onboarding_needed": []
+ },
+ "improvements": [
+  {
+   "issue_id": "L1-1",
+   "class": "MATERIAL",
+   "issue": "Live l1 at 66912fbf: draft toolbar below the fold at 1264x681 (ScrollWhenShort scrolled the whole panel at a normal size); J14 Undo timed out",
+   "repair": "scroll mode only below a per-panel height (width-aware for the draft panel)",
+   "repair_commit": "76af6a81",
+   "onboarding_change": "none",
+   "retest": "l2 J14-undo-restores PASS, J14-redo-returns PASS",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "L1-2",
+   "class": "MINOR",
+   "issue": "Live l1: Companion draft note not built (last item of a lazy list under a long chat)",
+   "repair": "note pinned under the messages",
+   "repair_commit": "76af6a81",
+   "onboarding_change": "note text",
+   "retest": "l2 J7-draft-note PASS",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "L8-1",
+   "class": "MINOR",
+   "issue": "Live l8: a rewrite request without text in conversation mode reached the desk (TEXT_MISSING); the draft was unchanged",
+   "repair": "conversation-target rewrite without text goes to the ordinary path",
+   "repair_commit": "4e656674",
+   "onboarding_change": "none",
+   "retest": "l10/l13 J14-target-conversation-never-edits PASS",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "C1-02",
+   "class": "MATERIAL",
+   "issue": "Imported review: a Start new work tile with a sticky draft target could revise the open draft",
+   "repair": "tiles send as new work (mode conversation)",
+   "repair_commit": "0129f3b3",
+   "onboarding_change": "none",
+   "retest": "l16 J16-tile-never-revises-open-draft PASS",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "C4-R2-01",
+   "class": "MINOR",
+   "issue": "Codex c4: depth deep ignored the explicit conversation/draft target in the worker (driver P1 had worked around it in the UI by changing the depth)",
+   "repair": "worker honours explicit targets at every depth; UI workaround removed",
+   "repair_commit": "d272d452",
+   "onboarding_change": "none",
+   "retest": "l19/l20 PASS; Python deep-depth tests",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "C2-01",
+   "class": "MATERIAL",
+   "issue": "Imported review C2 of 486f8ba9: an answer to a pending new-document question, given while another draft was open, edited that draft (mode draft) or could not be answered (mode conversation)",
+   "repair": "new-document answers continue the new document in both targets; panel names the new document; typed draft operations work under the conversation target (C2-02); a different document type said to the draft starts a new document (C2-03)",
+   "repair_commit": "165dac8a",
+   "onboarding_change": "panel banner text for a new-document question",
+   "retest": "l22/l23 PASS; Python test_c2_01/02/03; Flutter new-document question",
+   "deferral_confirmed_by_auditor": null
+  },
+  {
+   "issue_id": "L1-3",
+   "class": "MINOR",
+   "issue": "Live l1: the rail's always-present scroll view became the first Scrollable (J8 harness lookup failed); Brain pickers stretched to 260 px",
+   "repair": "no scroll view at normal sizes; pickers IntrinsicWidth",
+   "repair_commit": "76af6a81",
+   "onboarding_change": "none",
+   "retest": "l2 J8 PASS",
+   "deferral_confirmed_by_auditor": null
+  }
+ ],
+ "performance": {
+  "method": "perf mode: same view (Workspace conversation), same prompt x5, then idle windows; debug build",
+  "v2": {
+   "brain_tokens_per_s": [
+    124.9,
+    148.0,
+    140.4,
+    147.1,
+    147.8
+   ],
+   "brain_tokens_per_s_median": 147.1,
+   "ui_gpu_dedicated_mib_median": 215.7,
+   "brain_gpu_dedicated_mib_median": 14997.4,
+   "frames": {
+    "idle-dashboard": {
+     "frames": 1425,
+     "total_ms_p95": 5.21,
+     "over_16ms": 3
+    },
+    "idle-workspace-30s": {
+     "frames": 3614,
+     "total_ms_p95": 5.104,
+     "over_16ms": 8
+    },
+    "idle-dashboard-30s": {
+     "frames": 4377,
+     "total_ms_p95": 4.903,
+     "over_16ms": 9
+    },
+    "idle-companion-30s": {
+     "frames": 4452,
+     "total_ms_p95": 7.258,
+     "over_16ms": 1
+    }
+   },
+   "earlier_record_for_comparison": "docs/ui_v2/completion/UI_QUALIFICATION_UI_V2.json performance (V2: Brain ~149 tok/s, UI GPU ~208 MiB)"
+  }
+ },
+ "remaining_limitations": [
+  "Physical mouse, keyboard and window drag: NOT VERIFIED (synthesized input only).",
+  "Microphone and speaker: NOT VERIFIED (no audio device test); voice turns use the same draft-scope rule (unit tested).",
+  "Other DPI scaling and a second monitor: NOT VERIFIED live (96 DPI single monitor); pixel ratios 1-2 covered by Flutter widget tests.",
+  "J16 Close step not exercised live (the tile asked a clarifying question, so no new draft replaced the open one); C1-04 is covered by tests/ws/test_uiv2_postint_target_modes.py.",
+  "UIV2-F4 pre-repair live measurement with the same metric was not repeated; the pre-repair artifact is the recorded UX-D2 (3/255 lines, l5 screenshot of the UI V2 completion run).",
+  "UIV2-F5 visual fidelity: evaluated, not changed (owner preference decision).",
+  "Debug build; release-build frame timings not measured."
+ ],
+ "independent_audit": {
+  "auditor": "codex_cli (driver-counted)",
+  "verdict": null,
+  "authoritative_source": "driver receipt of the final revision UI-V2-POSTINT-c6 (C:/Users/cheta/Development/uri-ui-v2p-run/lifecycle/c6/receipt.json), which reviews this record",
+  "earlier_runs": [
+   "UI-V2-POSTINT (lifecycle/c1): R1-R4 REJECT on classifier precision, BLOCKED RETRY_LIMIT",
+   "UI-V2-POSTINT-c2 (lifecycle/c2): not started, canonical moved to eaeb10c1",
+   "UI-V2-POSTINT-c3: config only; superseded after the imported review",
+   "Imported review C1 of cf97a1a8 (independent read-only Claude agent, owner instruction while Codex was out of quota; NOT driver-counted): ACCEPT WITH FINDINGS; C1-01..C1-04 and C1-06 repaired in 0129f3b3, C1-05 recorded",
+   "UI-V2-POSTINT-c4 (lifecycle/c4): R1 repaired by the driver (e1db7d2a); R2-01 BLOCKED REPAIR_FAILED (implementer made no change), repaired manually in d272d452",
+   "UI-V2-POSTINT-c5 (lifecycle/c5): WAITING_FOR_MODEL (Codex usage limit)",
+   "Imported review C2 of 486f8ba9 (independent read-only Claude agent; NOT driver-counted): REJECT; C2-01/02/03/05/07 repaired in 165dac8a, C2-04 and C2-06 recorded"
+  ],
+  "note": "this record deliberately carries no verdict; it is never updated with one (no stale placeholder)"
+ },
+ "status": "PASS",
+ "status_reason": "Every mandatory journey PASS with COMPLETED_WITH_RESULT live evidence on code_commit; no MATERIAL issue open.",
+ "recorded_at": "2026-10-16T13:57:07.924228+00:00",
+ "corrections": [
+  {
+   "at": "2026-10-16",
+   "supersedes": "record committed in cf97a1a8 (code commit 1a19c804, live l13-l15, PASS)",
+   "reason": "imported independent review C1 repairs (0129f3b3); live l16-l18 on e7933e2b"
+  },
+  {
+   "at": "2026-10-16",
+   "supersedes": "record committed in 3d87f22e (code commit e7933e2b, live l16-l18, PASS)",
+   "reason": "Codex UI-V2-POSTINT-c4 R1 (driver repair e1db7d2a: typed Close shows the restored draft) and R2-01 (manual repair d272d452: explicit targets at every depth); live l19-l21 on d272d452. Earlier evidence stays under docs/ui_v2/postint/evidence/live/."
+  },
+  {
+   "at": "2026-10-16",
+   "supersedes": "record committed before 165dac8a (code commit d272d452, live l19-l21, PASS)",
+   "reason": "imported independent Claude review C2 of 486f8ba9 (REJECT) repaired in 165dac8a; live l22-l24 on 165dac8a. Earlier evidence stays under docs/ui_v2/postint/evidence/live/."
+  }
+ ]
+}

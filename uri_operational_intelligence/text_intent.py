@@ -178,7 +178,7 @@ _REVISE_START = re.compile(
 _REVISE_ANY = re.compile(
     r"\b(?:paragraph|para|sentence|subject line|salutation|closing|sign-?off|signature|tone|wording|phrase|"
     r"the letter|the email|the draft|the note|the notice|more formal|less formal|more polite|more diplomatic|"
-    r"shorter|longer|concise|instead of|rather than|replace .* with|change .* to|"
+    r"shorter|longer|concise|instead of|rather than|replace .* with|change (?!of\b)[^.!?;]{1,60}? to|"
     r"karo|kar do|kijiye|rakho|hatao|hata do|badlo|badal do|chhota|chota|lamba|formal)\b", re.I)
 _HINGLISH_EDIT = re.compile(r"\b(?:karo|kar do|kijiye|rakho|hatao|hata do|badlo|badal do|likho|daalo|daal do|"
                             r"jodo|jod do|nikalo|nikal do|chhota|chota|lamba)\b", re.I)
@@ -205,8 +205,117 @@ _CLAUSE_SPLIT = re.compile(r"[,;.!?]+|\b(?:and|but|also|then)\b", re.I)
 _PHRASE_SWAP = re.compile(
     r"(?:don'?t|do not|dont)\s+(?:say|write|use|mention)\s+[\"'“‘]?(.{2,120}?)[\"'”’]?\s*[.,;]\s*(?:instead\s+)?(?:say|write|use|put)|"
     r"replace\s+[\"'“‘]?(.{2,120}?)[\"'”’]?\s+with\b|"
-    r"change\s+[\"'“‘]?(.{2,120}?)[\"'”’]?\s+to\b|"
+    r"change\s+(?!of\b)[\"'“‘]?(.{2,120}?)[\"'”’]?\s+to\b|"
     r"instead of\s+[\"'“‘]?(.{2,120}?)[\"'”’]?\s*[,]?\s*(?:say|write|use|put)\b", re.I | re.S)
+
+# UIV2-F1 (2026-10-16): with a draft open, ordinary conversation must never be taken as an edit. Openers that are
+# just as common in plain chat ("say hello", "write a haiku", "call me Ravi", "it's raining", "not now", "make me a
+# plan", "add milk to the list") count as a revision only when the message is ANCHORED to the document. Strong edit
+# verbs ("remove", "replace", "rephrase", "don't ...") and explicit corrections ("I meant Tuesday") need no anchor.
+_PREFIX = r"^\s*(?:(?:uri|ok|okay|no|also|and|but|now|please|pls|kindly|sorry|hmm|actually|wait|then|oh)[,!.]?\s+)*" \
+          r"(?:(?:can|could|would) you\s+(?:please\s+)?)?"
+_WEAK_START = re.compile(
+    _PREFIX + r"(?P<verb>make|keep|add|insert|include|use|say|call|write|set|update|start|begin|end|put|address|sign|"
+    r"mark|leave|skip|spell|refer|drop|cut|fix|correct|improve|expand|simplify|polish|change|move|it'?s|its|not|"
+    r"instead|actually|it should|that should|should|i meant|i mean|it was|make that)\b", re.I)
+_PRONOUN_OK = ("make", "keep", "add", "insert", "include", "write", "put", "address", "sign", "end", "start", "begin",
+               "spell", "change", "move", "fix", "correct", "improve", "expand", "simplify", "polish", "cut", "refer")
+# A part of a document, named with a determiner ("the date", "a line", "that word"; never "in three words").
+# Time, name and report also name unrelated Workspace tasks; a quoted phrase only anchors when it occurs in the draft.
+_ANCHOR = re.compile(
+    r"\b(?:the|that|this|these|those|a|an|another|one|each|every|my|our|its|first|second|third|last|final|"
+    r"opening|closing|next|previous)\s+(?:[\w-]+\s+){0,2}?(?:line|lines|word|words|point|points|heading|title|date|"
+    r"day|recipient|greeting|ending|opening|subject|bullet|bullets|sentence|sentences|para|paragraph|"
+    r"paragraphs|wording|tone|version|draft|letter|e-?mail|note|notice|circular|memo|application|reply|"
+    r"message|document|text|amount|figure|number|deadline|venue|signature|details?)\b", re.I)
+_CORRECTION = re.compile(r"\bnot\s+\w+\s+\w+[^,.;!?]{0,60},\s*(?:but\s+)?\w|"
+                         r"\b(?:i meant|i mean)\b(?!\s+to\b)|\bmake that\b", re.I)
+# "my appointment", "my last message": the user's own thing, not the open draft (unless the draft names it).
+_MY_OBJECT = re.compile(r"\b(?:my|your)\s+(?:last\s+|previous\s+|next\s+|own\s+)?(?P<noun>[a-z]+)", re.I)
+_DRAFT_WORDS = frozenset("draft letter note notice email mail document text application circular memo reply "
+                         "signature".split())
+_CORRECTION_CONTEXT = re.compile(r"^\s*(?:actually|sorry|no[,!]?|wait|i mean|i meant|make that)\b", re.I)
+_SET_FIELD = re.compile(_PREFIX + r"set\s+(?:the|a|my|your)\s+(?:date|day|time)\b", re.I)
+_DOCUMENT_REF = re.compile(r"\b(?:draft|letter|document|e-?mail|note|notice|circular|memo|application)\b", re.I)
+_LANGUAGE_OBJECT = re.compile(r"(?:the\s+)?(?:grammar|spelling|punctuation|typos?|language|flow|clarity|style|"
+                              r"formatting|wording|tone)\b", re.I)
+
+
+_STOP = frozenset("the and for with that this from have has had was were are you your our their them they she him "
+                  "her his its not but all any can could would should will shall about into onto over under then than "
+                  "also just very more less some what when where which who why how please actually instead".split())
+
+
+def _content_tokens(s: str) -> set:
+    return {w for w in re.findall(r"[a-z]{3,}|\d+", (s or "").lower()) if w not in _STOP}
+
+
+def _shares_draft_content(t: str, draft_text: str | None) -> bool:
+    """A correction reusing the document's own words can refer to it without saying "draft"."""
+    if not draft_text or not _CORRECTION_CONTEXT.match(t):
+        return False
+    shared = _content_tokens(t) & _content_tokens(draft_text)
+    return len(shared) >= 2 or any(w.isdigit() for w in shared)
+
+
+def _anchored(t: str, draft_text: str | None = None) -> bool:
+    """True when a revision-looking message refers to the document (UIV2-F1)."""
+    head = t[:400]
+    mine = _MY_OBJECT.search(head)
+    if mine and mine.group("noun").lower() not in _DRAFT_WORDS and \
+            mine.group("noun").lower() not in _content_tokens(draft_text):
+        return False                        # "change the date of my appointment", "delete my last message"
+    if re.search(r"\b(?:change|update|set)\s+your\s+name\b", head, re.I):
+        return False                        # "your name" addresses URI, even if the draft has [Your Name]
+    if _SET_FIELD.match(t) and not _DOCUMENT_REF.search(head):
+        return False                        # setting a date/time can be a Workspace command, not a draft edit
+    if _KEEP_REST.search(head) or _CORRECTION.search(head):
+        return True
+    if _shares_draft_content(head, draft_text):
+        return True
+    correction = re.search(r",\s*not\s+(\w+)\b", head, re.I)
+    if correction and correction.group(1).lower() in _content_tokens(draft_text):
+        return True
+    tg = targets_for(t)
+    if tg["body"] or tg["roles"]:
+        return True
+    if tg["phrases"]:
+        # A phrase to replace is a reference only when it names text in this draft (or says "that"/"it").
+        # Otherwise even "replace X with Y" can refer to an unrelated Workspace object.
+        if any(p.lower() in ("it", "this", "that") or (draft_text and p.lower() in draft_text.lower())
+               for p in tg["phrases"]):
+            return True
+        if any(_content_tokens(p) & _content_tokens(draft_text) for p in tg["phrases"]):
+            return True                     # "replace the name with Ravi" where the draft has "[Your Name]"
+        if re.search(r"\b(?:don'?t|do not|dont)\s+(?:say|write|use|mention)\b", head, re.I):
+            return True
+        if not _ANCHOR.search(head):
+            return False
+    if draft_text and any(p.lower() in draft_text.lower()
+                          for p in re.findall(r"[\"'“‘]([^\"'”’]{2,})[\"'”’]", head)):
+        return True
+    if _HINGLISH_EDIT.search(head) and re.search(r"\b(?:isko|isse|poora|pura)\b", head, re.I):
+        return True
+    w = _WEAK_START.match(t)
+    if w is None:
+        return True                        # a strong edit verb: remove, replace, rephrase, don't ...
+    if w.group("verb").lower() in _PRONOUN_OK and re.match(r"\s+(?:it|this|that)\b", t[w.end():], re.I):
+        return True                        # "address it to the principal", "make it warmer"
+    return bool(_ANCHOR.search(head))
+
+
+def _object_is_draft(t: str) -> bool:
+    """'Shorten it' / 'Simplify' / 'Summarise the letter' / 'Polish it a bit' act on the draft; 'Simplify my life',
+    'Summarise the news' and 'Polish my shoes' do not (UIV2-F1)."""
+    m = re.match(_LEAD + r"[\w'-]+", t, re.I)
+    rest = t[m.end():].strip(" .!?") if m else t
+    if not rest or re.match(r"(?:it|this|that)\b", rest, re.I) or _LANGUAGE_OBJECT.match(rest):
+        return True
+    if _ANCHOR.search(rest) or _REVISE_ANY.search(rest):
+        return True
+    # only manner words left: "a bit", "more formally", "politely please"
+    return bool(re.fullmatch(r"(?:(?:a|bit|little|slightly|much|more|less|please|pls|again|further|now)\b\s*|"
+                             r"\w+ly\b\s*)+", rest, re.I))
 
 
 @dataclass
@@ -320,7 +429,9 @@ def targets_for(instruction: str) -> dict:
     return {"body": sorted(set(body)), "roles": sorted(set(roles)), "phrases": phrases, "global": is_global}
 
 
-def classify(text: str, *, has_draft: bool) -> TextIntent:
+def classify(text: str, *, has_draft: bool, draft_text: str | None = None) -> TextIntent:
+    """``draft_text`` (the open draft's current text, optional) lets a correction that reuses the document's own words
+    count as anchored (UIV2-F1)."""
     t = (text or "").strip()
     if not t:
         return TextIntent(NONE, ["empty"])
@@ -347,11 +458,15 @@ def classify(text: str, *, has_draft: bool) -> TextIntent:
     if _CORRECT_BARE.match(t) or (_CORRECT.match(t) and not _FOREIGN_OBJECT.search(split_payload(t)[0])):
         ins, payload = split_payload(t)
         if payload is None and has_draft:
+            if not _object_is_draft(t):
+                return TextIntent(NONE, ["not_the_draft"])     # UIV2-F1: "fix my wifi" is not an edit
             return TextIntent(REVISE, ["correct_active_draft"], instruction=t, targets=targets_for(t))
         return TextIntent(CORRECT, ["correct_text"], payload=payload, instruction=ins)
     if _REWRITE.match(t) and not _FOREIGN_OBJECT.search(split_payload(t)[0]):
         ins, payload = split_payload(t)
         if payload is None and has_draft:
+            if not _object_is_draft(t):
+                return TextIntent(NONE, ["not_the_draft"])     # UIV2-F1: "summarise the news" is not an edit
             return TextIntent(REVISE, ["rewrite_active_draft"], instruction=t, targets=targets_for(t))
         return TextIntent(REWRITE, ["rewrite_text"], payload=payload, instruction=ins)
     if _DRAFT_NEW.match(t) or _DRAFT_WANT.match(t) or _DRAFT_HINGLISH.search(head):
@@ -367,7 +482,12 @@ def classify(text: str, *, has_draft: bool) -> TextIntent:
         question = t.rstrip().endswith("?")
         starts = bool(_REVISE_START.match(t))
         mentions = bool(_REVISE_ANY.search(head)) or bool(_HINGLISH_EDIT.search(head))
-        if (starts and (not question or mentions or re.search(r"\b(?:it|this)\b", head, re.I))) or (mentions and not question):
+        targets = targets_for(t)
+        revision_cue = starts or (mentions and (_EDIT_VERB.search(head) or targets["body"] or targets["roles"]
+                                         or targets["phrases"]))
+        if revision_cue and (not question or mentions or re.search(r"\b(?:it|this)\b", head, re.I)):
             if not re.match(r"^\s*(?:what|why|how|who|when|where|which|is|are|does|do you|did)\b", t, re.I) or mentions:
-                return TextIntent(REVISE, ["draft_revision"], instruction=t, targets=targets_for(t))
+                if not _anchored(t, draft_text):
+                    return TextIntent(NONE, ["unanchored_with_draft"])   # UIV2-F1: ordinary chat, draft untouched
+                return TextIntent(REVISE, ["draft_revision"], instruction=t, targets=targets)
     return TextIntent(NONE, ["not_a_text_task"])
