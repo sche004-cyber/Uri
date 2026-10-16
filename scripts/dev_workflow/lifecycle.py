@@ -134,6 +134,9 @@ def load_config(path) -> dict:
     missing = [k for k in ("milestone", "repo", "baseline", "candidate", "reviewer") if k not in cfg]
     if missing:
         raise LifecycleError(f"config missing {missing}")
+    for gate in cfg["gates"]:
+        if "pub_offline" in gate and not isinstance(gate["pub_offline"], bool):
+            raise LifecycleError(f"gate {gate['id']}: pub_offline must be a boolean")
     base = path.parent
     cfg["repo"] = str((base / cfg["repo"]).resolve())
     cfg["state_dir"] = str((Path(cfg["repo"]) / cfg.get("state_dir", f"docs/dev_workflow/lifecycle_runs/"
@@ -627,7 +630,8 @@ def parse_junit(path: Path) -> dict:
 
 
 def parse_flutter_machine(text: str) -> dict:
-    names, res, errs = {}, {"failures": {}, "passed": 0, "skipped": 0, "ids": [], "parsed": False}, {}
+    names, res, errs = {}, {"failures": {}, "passed": 0, "skipped": 0, "executed": 0,
+                            "ids": [], "parsed": False}, {}
     for line in text.splitlines():
         try:
             ev = json.loads(line)
@@ -649,6 +653,8 @@ def parse_flutter_machine(text: str) -> dict:
             n = names.get(ev.get("testID"), str(ev.get("testID")))
             if not ev.get("hidden"):
                 res["ids"].append(n)
+                if not ev.get("skipped"):
+                    res["executed"] += 1
             if ev.get("result") != "success":
                 res["failures"][n] = errs.get(ev.get("testID"), ev.get("result"))
             elif ev.get("skipped"):
@@ -662,34 +668,33 @@ NOBYTECODE = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
 GPU_LEASE_BUSY = 75  # uri_operational_intelligence.gpu_lease `run` exit code on GpuBusy
 # Gate result semantics version: part of the baseline cache key, so a baseline result recorded under older rules
 # (e.g. a Flutter run without packages, DRV-3) is never reused.
-GATE_SCHEMA = 2
+GATE_SCHEMA = 4
 FLUTTER_TOOLS = ("flutter", "flutter.bat", "dart", "dart.bat", "dart.exe")
 
 
 def _flutter_tool(gate: dict, cmd: list[str], gate_dir: Path) -> str | None:
-    """The flutter/dart executable of a gate that runs in a Dart package (pubspec.yaml in its cwd), else None.
-    ``"prepare": false`` on the gate turns dependency preparation off."""
-    if gate.get("prepare") is False or not cmd or not (gate_dir / "pubspec.yaml").is_file():
+    """Identify a Flutter/Dart gate independently of whether dependency preparation is requested."""
+    if not cmd:
         return None
     return cmd[0] if Path(cmd[0]).name.lower() in FLUTTER_TOOLS else None
 
 
-_TOOLCHAIN: dict[str, str] = {}
-
-
-def flutter_toolchain(tool: str, cwd: Path) -> str:
+def flutter_toolchain(tool: str, cwd: Path) -> str | None:
     """Fingerprint of the Flutter/Dart toolchain (framework, engine and Dart revisions); bound into the baseline cache
-    key so a toolchain change re-runs the baseline (DRV-3)."""
-    if tool not in _TOOLCHAIN:
-        rc, o, e, state = run_cmd([tool, "--version", "--machine"], cwd, 300)
-        try:
-            v = json.loads(o[o.index("{"):o.rindex("}") + 1]) if rc == 0 and state == "DONE" else {}
-        except ValueError:
-            v = {}
-        keys = ("frameworkRevision", "engineRevision", "dartSdkVersion")
-        _TOOLCHAIN[tool] = "|".join(str(v.get(k, "")) for k in keys) if all(v.get(k) for k in keys) else \
-            "unknown:" + sha256((o or "") + (e or ""))[:16]
-    return _TOOLCHAIN[tool]
+    key so a toolchain change re-runs the baseline (DRV-3). A failed probe cannot identify a toolchain."""
+    is_dart = Path(tool).name.lower().startswith("dart")
+    rc, o, e, state = run_cmd([tool, "--version"] + ([] if is_dart else ["--machine"]), cwd, 300)
+    if rc != 0 or state != "DONE":
+        return None
+    if is_dart:
+        version = (o + e).strip()
+        return "dart:" + sha256(version) if version else None
+    try:
+        v = json.loads(o[o.index("{"):o.rindex("}") + 1])
+    except (ValueError, IndexError):
+        return None
+    keys = ("frameworkRevision", "engineRevision", "dartSdkVersion")
+    return "flutter:" + "|".join(str(v[k]) for k in keys) if all(v.get(k) for k in keys) else None
 
 
 def prepare_dart_dependencies(gate: dict, tool: str, gate_dir: Path, log_dir: Path) -> dict:
@@ -697,13 +702,20 @@ def prepare_dart_dependencies(gate: dict, tool: str, gate_dir: Path, log_dir: Pa
     shared pub cache (`--offline` unless the gate sets ``"pub_offline": false``) with `--enforce-lockfile`, so the
     committed pubspec.lock is used as-is and a lock that would change fails. Any failure is an infrastructure
     failure of the gate, never a test result."""
-    cmd = [tool, "pub", "get", "--enforce-lockfile"] + (["--offline"] if gate.get("pub_offline", True) else [])
+    lock = gate_dir / "pubspec.lock"
+    before_lock = lock.read_bytes() if lock.is_file() else None
+    cmd = [tool, "pub", "get", "--enforce-lockfile"] + ([] if gate.get("pub_offline") is False else ["--offline"])
     rc, o, e, state = run_cmd(cmd, gate_dir, gate.get("prepare_timeout_s", 900))
     (log_dir / f"{gate['id']}.prepare.log").write_bytes((o + "\n--- stderr ---\n" + e).encode("utf-8"))
-    lock = gate_dir / "pubspec.lock"
+    after_lock = lock.read_bytes() if lock.is_file() else None
+    changed = git(git(gate_dir, "rev-parse", "--show-toplevel"), "diff", "--name-only", "HEAD", "--")
     rec = {"cmd": cmd, "exit_code": rc, "state": state,
-           "pubspec_lock_sha256": sha256(lock.read_bytes()) if lock.is_file() else None}
-    if state != "DONE" or rc != 0:
+           "pubspec_lock_sha256": sha256(after_lock) if after_lock is not None else None}
+    if before_lock != after_lock:
+        rec["error"] = "dependency preparation changed pubspec.lock"
+    elif changed:
+        rec["error"] = "dependency preparation changed tracked files: " + changed.replace("\n", ", ")[:300]
+    elif state != "DONE" or rc != 0:
         rec["error"] = f"dependency preparation failed ({state}, exit {rc}): " + (e or o).strip()[-300:]
     elif not (gate_dir / ".dart_tool" / "package_config.json").is_file():
         rec["error"] = "dependency preparation wrote no .dart_tool/package_config.json"
@@ -759,7 +771,7 @@ def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
     if junit.exists():
         junit.unlink()
     tool = _flutter_tool(gate, _expand(gate["cmd"], cfg, wt), wt / gate.get("cwd", "."))
-    if tool:
+    if tool and gate.get("prepare") is not False and (wt / gate.get("cwd", ".") / "pubspec.yaml").is_file():
         prep = prepare_dart_dependencies(gate, tool, wt / gate.get("cwd", "."), log_dir)
         out["prepare"] = prep
         if prep.get("error"):
@@ -780,7 +792,7 @@ def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
         out.update(parse_junit(junit) if kind == "pytest" else parse_flutter_machine(stdout))
         normal = (0, 1)
         # A crashed run, an unusable report or a failing exit with no recorded failure is itself a failure.
-        executed = out["passed"] + len(out["failures"])
+        executed = out["executed"] if kind == "flutter" else out["passed"] + len(out["failures"])
         out["executed"] = executed
         # Execution evidence (DRV-3): a run that produced no report, or executed no test, proves nothing. It is a
         # failure of this side; when the baseline has the same condition, qualify() blocks instead of comparing.
@@ -811,7 +823,7 @@ def compare(cand: dict, base: dict | None, flaky) -> dict:
     vanished = sorted(t for t in base_passed - cand_ids if not match_any(t, flaky))
     return {"new_failures": new, "changed_cause": changed, "vanished": vanished,
             "historical_failures": sorted(set(cf) & set(bf)), "fixed": sorted(set(bf) - set(cf)),
-            "ok": not new and not changed and not vanished}
+            "ok": cand.get("evidence", "EXECUTED") == "EXECUTED" and not new and not changed and not vanished}
 
 
 def _test_file(test_id: str, wt: Path, cwd: str = ".") -> str:
@@ -850,12 +862,16 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
                 res["blocked"] = res["blocked"] or f"gate {g['id']}: {r.get('status')} {r.get('detail', '')}"
             else:
                 tool = _flutter_tool(g, _expand(g["cmd"], cfg, wt), wt / g.get("cwd", "."))
+                fingerprint = flutter_toolchain(tool, wt) if tool else None
+                cacheable = not tool or fingerprint is not None
+                # Preparation can change whether the baseline runs any tests, even with the same SHA and command.
                 key = chash([st.d["baseline"], g["cmd"], g.get("kind"), g.get("cwd", "."), GATE_SCHEMA,
-                             flutter_toolchain(tool, wt) if tool else None])
+                             fingerprint, g.get("prepare", True), g.get("pub_offline", True),
+                             g.get("prepare_timeout_s", 900), g.get("allow_zero_tests")])
                 cached = st.d["baseline_gates"].get(g["id"])
                 # Only a completed baseline run is reused: a timeout, busy GPU lease or other BLOCKED result is
                 # re-tried on the next qualification, each attempt its own BASELINE_GATE event (R3-02).
-                if not cached or cached.get("key") != key or \
+                if not cacheable or not cached or cached.get("key") != key or \
                         (cached.get("result") or {}).get("status") != "COMPLETED_WITH_RESULT":
                     base_wt = base_wt or add_worktree(cfg["repo"], Path(cfg["work_dir"]) / "baseline", st.d["baseline"])
                     b = run_gate(cfg, g, base_wt, Path(cfg["state_dir"]) / "gates" / "baseline")
@@ -878,6 +894,8 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
                     base = cached["result"] if cached["result"].get("evidence", "EXECUTED") == "EXECUTED" else None
                     entry["comparison"] = compare(r, base, cfg["allowed_flaky"])
                     entry["ok"] = entry["comparison"]["ok"] or not g.get("required", True)
+                    if r.get("evidence", "EXECUTED") != "EXECUTED":
+                        entry["ok"] = False  # candidate execution evidence is mandatory, even for optional gates
             if r.get("status") == "COMPLETED_WITH_RESULT" and cached:
                 entry["baseline"] = {k: cached["result"].get(k) for k in
                                      ("status", "exit_code", "evidence", "executed", "passed", "skipped", "failures",
@@ -904,6 +922,20 @@ def gate_counts(q: dict) -> dict:
                 "failed": len(r.get("failures") or {}), "prepared": bool(r.get("prepare"))}
     return {k: {"candidate": one(v.get("candidate")), "baseline": one(v.get("baseline"))}
             for k, v in (q.get("gates") or {}).items()}
+
+
+def gate_preparations(q: dict) -> dict:
+    """Dependency preparation commands and lock hashes for each applicable gate side."""
+    preparations = {}
+    for gate_id, gate in (q.get("gates") or {}).items():
+        sides = {}
+        for side in ("candidate", "baseline"):
+            prep = (gate.get(side) or {}).get("prepare")
+            if prep:
+                sides[side] = {key: prep.get(key) for key in ("cmd", "pubspec_lock_sha256")}
+        if sides:
+            preparations[gate_id] = sides
+    return preparations
 
 
 # --------------------------------------------------------------------------- evidence guards
@@ -1723,7 +1755,7 @@ def run(cfg, max_steps: int = 50) -> S:
             st.event("QUALIFICATION", sha=sha, ok=q["ok"], blocked=q["blocked"], protected=q["protected_changed"],
                      qual_sha256=chash(q),
                      gates={k: (v.get("comparison") or {}).get("new_failures") for k, v in q["gates"].items()},
-                     counts=gate_counts(q))
+                     counts=gate_counts(q), preparation=gate_preparations(q))
             if q["blocked"]:
                 st.block("RESOURCE", q["blocked"], "provide the resource and re-run")
                 continue
@@ -2020,7 +2052,8 @@ def status(cfg) -> dict:
             "gates": {sha[:12]: {"ok": q.get("ok"), "blocked": q.get("blocked"),
                                  "new_failures": {k: (v.get("comparison") or {}).get("new_failures")
                                                   for k, v in q["gates"].items()},
-                                 "counts": gate_counts(q)} for sha, q in d["gates"].items()},
+                                 "counts": gate_counts(q), "preparation": gate_preparations(q)}
+                      for sha, q in d["gates"].items()},
             "integration": d.get("integration"), "blocker": d.get("blocker"), "events": len(d["history"]),
             "evidence_ok_for_candidate": evidence_ok(cfg, st, d["candidate"])[0] if d["candidate"] else False}
 

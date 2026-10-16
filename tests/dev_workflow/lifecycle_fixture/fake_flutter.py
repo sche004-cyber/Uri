@@ -5,7 +5,7 @@ Flag files in the folder named by FAKE_FLAGS (set by the wrapper the test writes
 - ``pub get``: writes .dart_tool/package_config.json, unless flag ``offline_fail`` exists (offline cache miss).
 - ``test``: without .dart_tool/package_config.json prints the real Flutter error and exits 1 (the DRV-3 condition);
   with it prints ``--machine`` events for the tests listed in tests.txt (``name=pass|fail``), one per line. A missing
-  or empty tests.txt runs no test.
+  or empty tests.txt runs no test. Flag ``hidden_failure_only`` emits one hidden failing test and no visible tests.
 - ``analyze``: exits 1 without package_config.json, else 0.
 """
 import json
@@ -19,6 +19,8 @@ cfg = here / ".dart_tool" / "package_config.json"
 flags = Path(os.environ.get("FAKE_FLAGS", here))
 
 if args[:2] == ["--version", "--machine"]:
+    if (flags / "version_fail").is_file():
+        sys.exit(1)
     rev = (flags / "rev").read_text().strip() if (flags / "rev").is_file() else "rev1"
     print(json.dumps({"frameworkRevision": rev, "engineRevision": "eng1", "dartSdkVersion": "3.0.0"}))
     sys.exit(0)
@@ -29,6 +31,10 @@ if args[:2] == ["pub", "get"]:
         sys.exit(69)
     cfg.parent.mkdir(exist_ok=True)
     cfg.write_text("{}")
+    if (flags / "change_lock").is_file():
+        (here / "pubspec.lock").write_text("packages: changed\n")
+    if (flags / "change_tracked").is_file():
+        (here / "tests.txt").write_text("changed=pass\n")
     print("Got dependencies!")
     sys.exit(0)
 if args[:1] == ["analyze"]:
@@ -36,6 +42,12 @@ if args[:1] == ["analyze"]:
 if args[:1] == ["test"]:
     if not cfg.is_file():
         print('Error: cannot run without a dependency on either "package:flutter_test" or "package:test".')
+        sys.exit(1)
+    if (flags / "hidden_failure_only").is_file():
+        print(json.dumps({"type": "testStart", "test": {"id": 1, "name": "hidden", "url": "hidden.dart"}}))
+        print(json.dumps({"type": "error", "testID": 1, "error": "TestFailure: hidden failure"}))
+        print(json.dumps({"type": "testDone", "testID": 1, "result": "failure", "hidden": True}))
+        print(json.dumps({"type": "done", "success": False}))
         sys.exit(1)
     spec = here / "tests.txt"
     lines = [x.split("=") for x in spec.read_text().split() if "=" in x] if spec.is_file() else []
