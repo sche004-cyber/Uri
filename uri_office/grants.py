@@ -19,6 +19,7 @@ Path rule, in two steps:
 """
 from __future__ import annotations
 
+import json
 import ntpath
 import os
 import posixpath
@@ -102,15 +103,94 @@ def _inside(path: str, root: str) -> bool:
         return False
 
 
+def check_folder_shape(raw, flavor: str | None = None) -> str:
+    """OD-R1: a folder the owner may add. Same shape rules as files (absolute local drive path, no network, device,
+    stream or relative names), and never a whole drive or a system folder: permission stays folder-scoped."""
+    flavor = flavor or ("nt" if os.name == "nt" else "posix")
+    if not isinstance(raw, str) or not raw.strip():
+        _refuse("not a folder")
+    raw = raw.rstrip("\\/") if len(raw.rstrip("\\/")) > 2 else raw
+    check_shape(raw + ("\\x.xlsx" if flavor == "nt" else "/x.xlsx"), flavor)
+    if flavor == "nt":
+        if re.fullmatch(r"[A-Za-z]:[\\/]?", raw):
+            _refuse("a whole drive cannot be added; choose a folder on it")
+        low = raw.replace("/", "\\").casefold()
+        for env in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData", "ProgramW6432"):
+            sysdir = os.environ.get(env)
+            if sysdir and (low == sysdir.casefold() or low.startswith(sysdir.casefold().rstrip("\\") + "\\")):
+                _refuse("system folders cannot be added")
+    else:
+        if raw == "/" or raw.count("/") < 2 and raw in ("/usr", "/bin", "/etc", "/var", "/opt", "/boot", "/lib"):
+            _refuse("system folders cannot be added")
+    return raw
+
+
 class Grants:
-    def __init__(self, allowed_roots=None):
+    """Open and save-as grants for files the owner picked, inside the allowed folders: the user home (or the service's
+    --allow-root folders) plus folders the owner added (OD-R1, kept in `folders_file`, revocable)."""
+
+    def __init__(self, allowed_roots=None, folders_file: Path | None = None):
         roots = [Path.home()] if allowed_roots is None else list(allowed_roots)
-        self.roots = []
+        self.base_roots = []
         for r in roots:
             rp = Path(r)
             if rp.is_dir():
-                self.roots.append(_norm(os.path.realpath(rp)))
+                self.base_roots.append(_norm(os.path.realpath(rp)))
+        self.folders_file = Path(folders_file) if folders_file else None
+        self.added: list[str] = []                       # as the owner chose them (display spelling)
+        if self.folders_file and self.folders_file.is_file():
+            try:
+                data = json.loads(self.folders_file.read_text(encoding="utf-8"))
+                for f in data.get("folders", []):
+                    if isinstance(f, str) and Path(f).is_dir():
+                        check_folder_shape(f)
+                        self.added.append(f)
+            except (ValueError, OfficeError, OSError):
+                self.added = []                          # a damaged list grants nothing extra
         self._by_id: dict[str, Grant] = {}
+
+    @property
+    def roots(self) -> list:
+        return self.base_roots + [_norm(os.path.realpath(f)) for f in self.added if Path(f).is_dir()]
+
+    def folders(self) -> list:
+        return ([{"path": r, "kind": "default", "removable": False} for r in self.base_roots] +
+                [{"path": f, "kind": "added", "removable": True} for f in self.added])
+
+    def _save(self):
+        if self.folders_file is None:
+            return
+        tmp = self.folders_file.with_suffix(".tmp")
+        tmp.write_text(json.dumps({"folders": self.added}, indent=1), encoding="utf-8")
+        os.replace(tmp, self.folders_file)
+
+    def add_folder(self, raw) -> dict:
+        path = check_folder_shape(raw)
+        p = Path(path)
+        if not p.is_dir():
+            _refuse("the folder does not exist")
+        if _norm(os.path.realpath(p)) != _norm(p):
+            _refuse("links, junctions and shortcuts are not followed")
+        n = _norm(p)
+        if any(n == r or _inside(n, r) for r in self.roots):
+            return {"added": False, "already_allowed": True, "folders": self.folders()}
+        # A new folder that contains added ones replaces them (one entry per tree).
+        self.added = [f for f in self.added if not _inside(_norm(f), n)] + [path]
+        self._save()
+        return {"added": True, "folders": self.folders()}
+
+    def remove_folder(self, raw) -> dict:
+        """Stop allowing an added folder. Refused while a file from it is open or waiting to be saved (close it or
+        finish the save first), so nothing is left half-granted."""
+        match = next((f for f in self.added if _norm(f) == _norm(raw)), None) if isinstance(raw, str) else None
+        if match is None:
+            raise OfficeError("FOLDER_NOT_ADDED", "only folders you added can be removed")
+        root = _norm(os.path.realpath(match))
+        if any(_inside(_norm(gr.path), root) for gr in self._by_id.values()):
+            raise OfficeError("FOLDER_IN_USE", "close the files from this folder first", 409)
+        self.added = [f for f in self.added if f is not match]
+        self._save()
+        return {"removed": True, "folders": self.folders()}
 
     def _real_inside(self, p: Path, *, must_exist: bool) -> Path:
         if not self.roots:

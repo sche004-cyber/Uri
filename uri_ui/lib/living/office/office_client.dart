@@ -123,6 +123,11 @@ class OfficeClient {
 
   // ---- O2 (contract o2.1, docs/office/unified/O2_API_CONTRACT.md) ----------------------------------------------
   Future<Map<String, dynamic>> contract() => _get('/contract');
+
+  // OD-R1: folders URI may use (the user folder plus folders the owner added).
+  Future<Map<String, dynamic>> folders() => _get('/folders');
+  Future<Map<String, dynamic>> addFolder(String path) => _post('/folders/add', {'path': path});
+  Future<Map<String, dynamic>> removeFolder(String path) => _post('/folders/remove', {'path': path});
   Future<Map<String, dynamic>> capabilities() => _get('/capabilities');
   Future<Map<String, dynamic>> engines() => _get('/engines');
   Future<Map<String, dynamic>> verifyEngine() => _post('/engines/verify', {'engine': 'libreoffice'});

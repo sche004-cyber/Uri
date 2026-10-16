@@ -5,6 +5,7 @@ import '../presentation/presentation_controller.dart';
 import '../widgets/status_badge.dart';
 import 'document_controller.dart';
 import 'office_bridge.dart';
+import 'office_folders.dart';
 
 /// The B1 left pane: Home and Recent, goal groups built from the capability registry (only available capabilities,
 /// empty groups hidden: U4), files by kind (from the recent list; no folder crawling), and tasks. In compact mode
@@ -49,6 +50,9 @@ class OfficeNavPane extends StatelessWidget {
                 onPressed: c.busy ? null : c.pickAndOpenDocument, icon: const Icon(Icons.folder_open_rounded)),
           IconButton(key: const ValueKey('office-nav-sheet'), tooltip: 'Spreadsheet view', onPressed: onOpenSheet,
               icon: const Icon(Icons.grid_on_rounded)),
+          IconButton(key: const ValueKey('office-nav-folders'), tooltip: 'Folders URI may use',
+              onPressed: () => OfficeFoldersDialog.show(context, c.client, environment),
+              icon: const Icon(Icons.folder_shared_outlined)),
           // Real-app run 2026-10-15: in the icon strip an open document could not be reached again.
           if (c.documents.isNotEmpty) const Divider(height: UriSpace.md),
           for (final d in c.documents.values)
@@ -119,6 +123,14 @@ class OfficeNavPane extends StatelessWidget {
               ),
           ],
         ],
+        // OD-R1: where URI may open and save files.
+        ListTile(
+          key: const ValueKey('office-nav-folders'),
+          dense: true,
+          leading: const Icon(Icons.folder_shared_outlined, size: 18),
+          title: const Text('Folders'),
+          onTap: () => OfficeFoldersDialog.show(context, c.client, environment),
+        ),
         if (c.available('print_document')) ...[
           const SizedBox(height: UriSpace.sm),
           const Eyebrow('Devices'),

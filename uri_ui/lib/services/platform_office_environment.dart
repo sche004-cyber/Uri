@@ -51,6 +51,7 @@ OfficeEnvironment platformOfficeEnvironment() => OfficeEnvironment(
         );
         return f?.path;
       },
+      pickFolderPath: () => FilePicker.getDirectoryPath(dialogTitle: 'Allow URI to use this folder'),
       pickPdfSavePath: (suggested) async {
         final dir = await FilePicker.getDirectoryPath(dialogTitle: 'Save the PDF in this folder');
         if (dir == null) return null;
