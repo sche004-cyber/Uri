@@ -1,0 +1,9 @@
+{
+  "candidate_attempted": "157942d09e24080a11aef995c56ad81378a36102",
+  "note": "Source hashes unchanged by subsequent documentation/log normalization amendment",
+  "command": "python -m scripts.dev_workflow.lifecycle run docs/ui_v2/lifecycle_buttons.json",
+  "exit_code": 1,
+  "error": "Could not resolve host: github.com",
+  "stage": "Initialization failed before PLAN; no review/gate/acceptance receipt",
+  "integration": "NONE"
+}

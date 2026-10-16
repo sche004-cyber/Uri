@@ -9,6 +9,7 @@ library;
 import 'package:file_picker/file_picker.dart';
 
 import 'file_picker_service.dart';
+import 'windows_shell_dialog_module.dart';
 
 /// Opens the real platform file dialog. Returns null when the user
 /// cancels.
@@ -19,6 +20,7 @@ import 'file_picker_service.dart';
 /// rejection rather than a client-side rule that could drift out of
 /// step with it.
 Future<PickedFile?> pickPlatformFile() async {
+  keepShellDialogModuleLoaded();        // INT-L2 (see windows_shell_dialog_module.dart)
   final file = await FilePicker.pickFile();
   if (file == null) return null;
 

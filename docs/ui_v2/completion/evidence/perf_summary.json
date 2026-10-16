@@ -1,0 +1,600 @@
+{
+ "l1-living-before": {
+  "visual": "living",
+  "source_head": "64cc507b3e04d6037eea532cc409b301e6c47ff7",
+  "ui_gpu_dedicated_mib": {
+   "n": 17,
+   "median": 326.7,
+   "p95": 343.7,
+   "max": 344.0
+  },
+  "ui_cpu_pct": {
+   "n": 17,
+   "median": 91.7,
+   "p95": 118.1,
+   "max": 119.0
+  },
+  "ui_rss_mib": {
+   "n": 18,
+   "median": 335.5,
+   "p95": 389.2,
+   "max": 390.0
+  },
+  "brain_gpu_dedicated_mib": {
+   "n": 24,
+   "median": 14946.2,
+   "p95": 15008.2,
+   "max": 15008.2
+  },
+  "brain_tokens_per_s": {
+   "n": 1,
+   "median": 123.9,
+   "p95": 123.9,
+   "max": 123.9
+  },
+  "frame_windows": {
+   "idle-companion": {
+    "frames": 1440,
+    "build_ms_p95": 0.809,
+    "raster_ms_p95": 2.845,
+    "total_ms_p95": 4.85,
+    "over_16ms": 1
+   },
+   "brain-turn-with-navigation": {
+    "frames": 386,
+    "build_ms_p95": 17.212,
+    "raster_ms_p95": 4.662,
+    "total_ms_p95": 22.158,
+    "over_16ms": 21
+   }
+  }
+ },
+ "l4-v2-first": {
+  "visual": "v2",
+  "source_head": "64cc507b3e04d6037eea532cc409b301e6c47ff7",
+  "ui_gpu_dedicated_mib": {
+   "n": 22,
+   "median": 196.2,
+   "p95": 225.7,
+   "max": 273.5
+  },
+  "ui_cpu_pct": {
+   "n": 21,
+   "median": 99.0,
+   "p95": 137.8,
+   "max": 142.8
+  },
+  "ui_rss_mib": {
+   "n": 22,
+   "median": 394.7,
+   "p95": 419.5,
+   "max": 451.6
+  },
+  "brain_gpu_dedicated_mib": {
+   "n": 30,
+   "median": 14946.2,
+   "p95": 15008.2,
+   "max": 15008.2
+  },
+  "brain_tokens_per_s": {
+   "n": 2,
+   "median": 103.1,
+   "p95": 89.7,
+   "max": 116.4
+  },
+  "frame_windows": {
+   "idle-dashboard": {
+    "frames": 1426,
+    "build_ms_p95": 0.768,
+    "raster_ms_p95": 3.15,
+    "total_ms_p95": 5.206,
+    "over_16ms": 2
+   },
+   "brain-turn-with-navigation": {
+    "frames": 436,
+    "build_ms_p95": 1.256,
+    "raster_ms_p95": 3.798,
+    "total_ms_p95": 6.561,
+    "over_16ms": 10
+   },
+   "idle-companion": {
+    "frames": 1392,
+    "build_ms_p95": 0.56,
+    "raster_ms_p95": 4.225,
+    "total_ms_p95": 5.927,
+    "over_16ms": 3
+   }
+  }
+ },
+ "l6-v2-first": {
+  "visual": "v2",
+  "source_head": "a99597145efc7ed05863767f5f5c78259ccab6e2",
+  "ui_gpu_dedicated_mib": {
+   "n": 24,
+   "median": 203.6,
+   "p95": 247.5,
+   "max": 283.2
+  },
+  "ui_cpu_pct": {
+   "n": 23,
+   "median": 98.1,
+   "p95": 107.5,
+   "max": 125.7
+  },
+  "ui_rss_mib": {
+   "n": 24,
+   "median": 375.2,
+   "p95": 422.2,
+   "max": 432.4
+  },
+  "brain_gpu_dedicated_mib": {
+   "n": 33,
+   "median": 14946.2,
+   "p95": 15008.2,
+   "max": 15008.2
+  },
+  "brain_tokens_per_s": {
+   "n": 3,
+   "median": 92.9,
+   "p95": 92.9,
+   "max": 112.4
+  },
+  "frame_windows": {
+   "idle-dashboard": {
+    "frames": 1471,
+    "build_ms_p95": 0.887,
+    "raster_ms_p95": 3.168,
+    "total_ms_p95": 5.309,
+    "over_16ms": 3
+   },
+   "brain-turn-with-navigation": {
+    "frames": 391,
+    "build_ms_p95": 3.53,
+    "raster_ms_p95": 4.74,
+    "total_ms_p95": 9.612,
+    "over_16ms": 15
+   },
+   "idle-companion": {
+    "frames": 1276,
+    "build_ms_p95": 0.513,
+    "raster_ms_p95": 2.136,
+    "total_ms_p95": 3.947,
+    "over_16ms": 0
+   }
+  }
+ },
+ "l8-living-before": {
+  "visual": "living",
+  "source_head": "a99597145efc7ed05863767f5f5c78259ccab6e2",
+  "ui_gpu_dedicated_mib": {
+   "n": 32,
+   "median": 344.5,
+   "p95": 354.5,
+   "max": 358.5
+  },
+  "ui_cpu_pct": {
+   "n": 32,
+   "median": 87.8,
+   "p95": 119.6,
+   "max": 130.6
+  },
+  "ui_rss_mib": {
+   "n": 33,
+   "median": 360.0,
+   "p95": 378.7,
+   "max": 380.7
+  },
+  "brain_gpu_dedicated_mib": {
+   "n": 38,
+   "median": 15008.2,
+   "p95": 15008.2,
+   "max": 15008.2
+  },
+  "brain_tokens_per_s": {
+   "n": 1,
+   "median": 121.5,
+   "p95": 121.5,
+   "max": 121.5
+  },
+  "frame_windows": {
+   "idle-companion": {
+    "frames": 1323,
+    "build_ms_p95": 1.073,
+    "raster_ms_p95": 3.122,
+    "total_ms_p95": 5.217,
+    "over_16ms": 1
+   },
+   "brain-turn-with-navigation": {
+    "frames": 392,
+    "build_ms_p95": 10.766,
+    "raster_ms_p95": 6.438,
+    "total_ms_p95": 15.939,
+    "over_16ms": 17
+   }
+  }
+ },
+ "p1-living": {
+  "visual": "living",
+  "source_head": "a99597145efc7ed05863767f5f5c78259ccab6e2",
+  "ui_gpu_dedicated_mib": {
+   "n": 20,
+   "median": 307.4,
+   "p95": 405.0,
+   "max": 405.0
+  },
+  "ui_cpu_pct": {
+   "n": 19,
+   "median": 68.9,
+   "p95": 99.8,
+   "max": 101.3
+  },
+  "ui_rss_mib": {
+   "n": 20,
+   "median": 346.8,
+   "p95": 399.8,
+   "max": 419.5
+  },
+  "brain_gpu_dedicated_mib": {
+   "n": 30,
+   "median": 14982.7,
+   "p95": 14982.7,
+   "max": 14982.7
+  },
+  "brain_tokens_per_s": {
+   "n": 5,
+   "median": 148.2,
+   "p95": 149.8,
+   "max": 151.2
+  },
+  "frame_windows": {
+   "idle-companion": {
+    "frames": 1438,
+    "build_ms_p95": 0.882,
+    "raster_ms_p95": 3.004,
+    "total_ms_p95": 5.097,
+    "over_16ms": 1
+   },
+   "idle-workspace-30s": {
+    "frames": 3268,
+    "build_ms_p95": 0.655,
+    "raster_ms_p95": 4.011,
+    "total_ms_p95": 5.829,
+    "over_16ms": 8
+   },
+   "idle-dashboard-30s": {
+    "frames": 4236,
+    "build_ms_p95": 0.589,
+    "raster_ms_p95": 3.118,
+    "total_ms_p95": 4.984,
+    "over_16ms": 1
+   },
+   "idle-companion-30s": {
+    "frames": 4188,
+    "build_ms_p95": 0.455,
+    "raster_ms_p95": 2.9,
+    "total_ms_p95": 4.649,
+    "over_16ms": 0
+   }
+  }
+ },
+ "p2-v2": {
+  "visual": "v2",
+  "source_head": "a99597145efc7ed05863767f5f5c78259ccab6e2",
+  "ui_gpu_dedicated_mib": {
+   "n": 19,
+   "median": 217.5,
+   "p95": 241.5,
+   "max": 241.5
+  },
+  "ui_cpu_pct": {
+   "n": 19,
+   "median": 67.3,
+   "p95": 100.5,
+   "max": 101.6
+  },
+  "ui_rss_mib": {
+   "n": 20,
+   "median": 353.0,
+   "p95": 362.2,
+   "max": 389.5
+  },
+  "brain_gpu_dedicated_mib": {
+   "n": 29,
+   "median": 14982.7,
+   "p95": 14982.7,
+   "max": 14982.7
+  },
+  "brain_tokens_per_s": {
+   "n": 5,
+   "median": 149.2,
+   "p95": 150.4,
+   "max": 151.2
+  },
+  "frame_windows": {
+   "idle-dashboard": {
+    "frames": 1337,
+    "build_ms_p95": 0.934,
+    "raster_ms_p95": 2.903,
+    "total_ms_p95": 5.063,
+    "over_16ms": 3
+   },
+   "idle-workspace-30s": {
+    "frames": 2963,
+    "build_ms_p95": 0.661,
+    "raster_ms_p95": 3.452,
+    "total_ms_p95": 5.282,
+    "over_16ms": 8
+   },
+   "idle-dashboard-30s": {
+    "frames": 4042,
+    "build_ms_p95": 0.514,
+    "raster_ms_p95": 3.121,
+    "total_ms_p95": 4.861,
+    "over_16ms": 6
+   },
+   "idle-companion-30s": {
+    "frames": 4342,
+    "build_ms_p95": 0.445,
+    "raster_ms_p95": 1.892,
+    "total_ms_p95": 3.677,
+    "over_16ms": 0
+   }
+  }
+ },
+ "p3-living": {
+  "visual": "living",
+  "source_head": "a99597145efc7ed05863767f5f5c78259ccab6e2",
+  "ui_gpu_dedicated_mib": {
+   "n": 20,
+   "median": 308.2,
+   "p95": 397.2,
+   "max": 631.7
+  },
+  "ui_cpu_pct": {
+   "n": 19,
+   "median": 69.5,
+   "p95": 103.1,
+   "max": 118.1
+  },
+  "ui_rss_mib": {
+   "n": 20,
+   "median": 348.5,
+   "p95": 496.7,
+   "max": 566.2
+  },
+  "brain_gpu_dedicated_mib": {
+   "n": 30,
+   "median": 14982.7,
+   "p95": 14982.7,
+   "max": 14982.7
+  },
+  "brain_tokens_per_s": {
+   "n": 5,
+   "median": 149.4,
+   "p95": 149.6,
+   "max": 150.5
+  },
+  "frame_windows": {
+   "idle-companion": {
+    "frames": 1299,
+    "build_ms_p95": 1.05,
+    "raster_ms_p95": 2.788,
+    "total_ms_p95": 5.025,
+    "over_16ms": 3
+   },
+   "idle-workspace-30s": {
+    "frames": 2927,
+    "build_ms_p95": 0.706,
+    "raster_ms_p95": 3.89,
+    "total_ms_p95": 5.742,
+    "over_16ms": 7
+   },
+   "idle-dashboard-30s": {
+    "frames": 4000,
+    "build_ms_p95": 0.646,
+    "raster_ms_p95": 3.108,
+    "total_ms_p95": 4.891,
+    "over_16ms": 0
+   },
+   "idle-companion-30s": {
+    "frames": 4332,
+    "build_ms_p95": 0.486,
+    "raster_ms_p95": 2.974,
+    "total_ms_p95": 4.634,
+    "over_16ms": 0
+   }
+  }
+ },
+ "p4-v2": {
+  "visual": "v2",
+  "source_head": "a99597145efc7ed05863767f5f5c78259ccab6e2",
+  "ui_gpu_dedicated_mib": {
+   "n": 20,
+   "median": 213.3,
+   "p95": 238.5,
+   "max": 422.5
+  },
+  "ui_cpu_pct": {
+   "n": 19,
+   "median": 67.0,
+   "p95": 88.3,
+   "max": 99.2
+  },
+  "ui_rss_mib": {
+   "n": 20,
+   "median": 348.5,
+   "p95": 371.3,
+   "max": 390.8
+  },
+  "brain_gpu_dedicated_mib": {
+   "n": 30,
+   "median": 14982.7,
+   "p95": 14982.7,
+   "max": 14982.7
+  },
+  "brain_tokens_per_s": {
+   "n": 5,
+   "median": 149.9,
+   "p95": 150.2,
+   "max": 152.0
+  },
+  "frame_windows": {
+   "idle-dashboard": {
+    "frames": 1321,
+    "build_ms_p95": 0.998,
+    "raster_ms_p95": 3.114,
+    "total_ms_p95": 5.313,
+    "over_16ms": 3
+   },
+   "idle-workspace-30s": {
+    "frames": 2953,
+    "build_ms_p95": 0.656,
+    "raster_ms_p95": 3.296,
+    "total_ms_p95": 5.154,
+    "over_16ms": 8
+   },
+   "idle-dashboard-30s": {
+    "frames": 4042,
+    "build_ms_p95": 0.518,
+    "raster_ms_p95": 3.038,
+    "total_ms_p95": 4.849,
+    "over_16ms": 5
+   },
+   "idle-companion-30s": {
+    "frames": 4329,
+    "build_ms_p95": 0.447,
+    "raster_ms_p95": 1.806,
+    "total_ms_p95": 3.574,
+    "over_16ms": 0
+   }
+  }
+ },
+ "p5-living": {
+  "visual": "living",
+  "source_head": "56dbc003855811834b3c45ebe474f84267cafd2e",
+  "ui_gpu_dedicated_mib": {
+   "n": 20,
+   "median": 308.2,
+   "p95": 402.5,
+   "max": 402.5
+  },
+  "ui_cpu_pct": {
+   "n": 19,
+   "median": 62.2,
+   "p95": 98.0,
+   "max": 99.4
+  },
+  "ui_rss_mib": {
+   "n": 20,
+   "median": 342.1,
+   "p95": 434.3,
+   "max": 465.9
+  },
+  "brain_gpu_dedicated_mib": {
+   "n": 28,
+   "median": 14997.4,
+   "p95": 14997.4,
+   "max": 14997.4
+  },
+  "brain_tokens_per_s": {
+   "n": 5,
+   "median": 148.8,
+   "p95": 150.5,
+   "max": 150.8
+  },
+  "frame_windows": {
+   "idle-companion": {
+    "frames": 1434,
+    "build_ms_p95": 0.805,
+    "raster_ms_p95": 2.628,
+    "total_ms_p95": 4.607,
+    "over_16ms": 0
+   },
+   "idle-workspace-30s": {
+    "frames": 3613,
+    "build_ms_p95": 0.62,
+    "raster_ms_p95": 3.433,
+    "total_ms_p95": 5.219,
+    "over_16ms": 8
+   },
+   "idle-dashboard-30s": {
+    "frames": 4306,
+    "build_ms_p95": 0.508,
+    "raster_ms_p95": 2.941,
+    "total_ms_p95": 4.651,
+    "over_16ms": 0
+   },
+   "idle-companion-30s": {
+    "frames": 4336,
+    "build_ms_p95": 0.41,
+    "raster_ms_p95": 2.711,
+    "total_ms_p95": 4.315,
+    "over_16ms": 0
+   }
+  }
+ },
+ "p6-v2": {
+  "visual": "v2",
+  "source_head": "56dbc003855811834b3c45ebe474f84267cafd2e",
+  "ui_gpu_dedicated_mib": {
+   "n": 20,
+   "median": 208.5,
+   "p95": 238.5,
+   "max": 238.5
+  },
+  "ui_cpu_pct": {
+   "n": 19,
+   "median": 61.8,
+   "p95": 96.7,
+   "max": 104.8
+  },
+  "ui_rss_mib": {
+   "n": 20,
+   "median": 344.6,
+   "p95": 356.4,
+   "max": 357.5
+  },
+  "brain_gpu_dedicated_mib": {
+   "n": 28,
+   "median": 14997.4,
+   "p95": 14997.4,
+   "max": 14997.4
+  },
+  "brain_tokens_per_s": {
+   "n": 5,
+   "median": 149.8,
+   "p95": 150.4,
+   "max": 150.8
+  },
+  "frame_windows": {
+   "idle-dashboard": {
+    "frames": 1323,
+    "build_ms_p95": 0.848,
+    "raster_ms_p95": 2.97,
+    "total_ms_p95": 4.987,
+    "over_16ms": 3
+   },
+   "idle-workspace-30s": {
+    "frames": 3203,
+    "build_ms_p95": 0.597,
+    "raster_ms_p95": 3.157,
+    "total_ms_p95": 4.906,
+    "over_16ms": 7
+   },
+   "idle-dashboard-30s": {
+    "frames": 4544,
+    "build_ms_p95": 0.439,
+    "raster_ms_p95": 2.896,
+    "total_ms_p95": 4.61,
+    "over_16ms": 8
+   },
+   "idle-companion-30s": {
+    "frames": 4567,
+    "build_ms_p95": 0.394,
+    "raster_ms_p95": 1.746,
+    "total_ms_p95": 3.376,
+    "over_16ms": 0
+   }
+  }
+ }
+}

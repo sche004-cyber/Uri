@@ -337,11 +337,14 @@ void main() {
         expect(find.text(t), findsOneWidget, reason: '${focus.name}: $t');
       }
     }
-    // O2 (U15): Documents opens the Office workspace; with no Office service in this test it says so.
+    // Reconciliation with UI V2 (2026-10-16): Documents keeps its 'Start new work' tiles (real turns in the integrated
+    // V2, BLK-INT-2); Office is its own region. With no Office service in this test it says so.
     services.presentation.setFocus(WorkspaceFocus.documents);
     await tester.pumpAndSettle();
+    expect(find.text('START NEW WORK'), findsOneWidget);
+    services.presentation.setFocus(WorkspaceFocus.office);
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('office-start-error')), findsOneWidget);
-    expect(find.text('START NEW WORK'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

@@ -25,7 +25,10 @@ import '../../widgets/server_address_section.dart';
 class BootstrapScreen extends StatelessWidget {
   const BootstrapScreen({super.key});
 
-  Future<bool> _testAndApplyIfReachable(BuildContext context, String address) async {
+  Future<bool> _testAndApplyIfReachable(
+    BuildContext context,
+    String address,
+  ) async {
     final state = AppStateScope.of(context);
     final reachable = await state.checkConnection(addressOverride: address);
     if (reachable) {
@@ -51,29 +54,36 @@ class BootstrapScreen extends StatelessWidget {
           body: SafeArea(
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
+                constraints: const BoxConstraints(maxWidth: 520),
                 child: Padding(
                   padding: const EdgeInsets.all(UriSpace.xl),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Connect to your URI server', style: theme.textTheme.headlineMedium),
-                      const SizedBox(height: UriSpace.xs),
-                      const Text(
-                        "Before signing in, tell this device where your URI backend is running. "
-                        "On a phone, this is your PC's address on the same network — not "
-                        'localhost, which means this phone itself.',
-                      ),
-                      const SizedBox(height: UriSpace.lg),
-                      ServerAddressSection(
-                        baseUrl: state.baseUrl,
-                        connectionStatus: state.connectionStatus,
-                        connectionErrorDetail: state.lastConnectionErrorDetail,
-                        onSave: (url) => state.setBaseUrl(url),
-                        onTestConnection: (address) => _testAndApplyIfReachable(context, address),
-                      ),
-                    ],
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Connect to your URI server',
+                          style: theme.textTheme.headlineMedium,
+                        ),
+                        const SizedBox(height: UriSpace.xs),
+                        const Text(
+                          "Before signing in, tell this device where your URI backend is running. "
+                          "On a phone, this is your PC's address on the same network — not "
+                          'localhost, which means this phone itself.',
+                        ),
+                        const SizedBox(height: UriSpace.lg),
+                        ServerAddressSection(
+                          baseUrl: state.baseUrl,
+                          connectionStatus: state.connectionStatus,
+                          connectionErrorDetail:
+                              state.lastConnectionErrorDetail,
+                          onSave: (url) => state.setBaseUrl(url),
+                          onTestConnection: (address) =>
+                              _testAndApplyIfReachable(context, address),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

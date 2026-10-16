@@ -1,0 +1,28 @@
+00:00 +0: loading C:/Users/cheta/Development/uri-ui-v2/uri_ui/test/living/ui_v2_test.dart
+00:00 +0: every accepted design is represented once with original renderer and theme
+00:00 +1: all design/theme combinations preserve renderer identity; original follows
+00:00 +2: restart persistence, legacy Classic migration and unknown reference fallback
+00:00 +3: Ivory Foundry: text, focus and status contrast
+00:00 +4: Snow Archive: text, focus and status contrast
+00:00 +5: Ash & Limestone: text, focus and status contrast
+00:00 +6: single click acknowledges once; detached Chat sends through shared service
+00:01 +7: double click suppresses single click and preserves shared draft
+00:01 +8: gallery Cancel isolates identity, theme and active conversation; Apply persists
+00:02 +9: dashboard responsive 1440.0x1000.0
+00:02 +10: dashboard responsive 1920.0x1080.0
+00:02 +11: dashboard responsive 1024.0x768.0
+00:02 +12: dashboard responsive 390.0x844.0
+00:02 +13: dashboard responsive 360.0x560.0
+00:03 +14: floating controls fit both sizes without covering the Companion
+00:03 +15: text-sized controls keep click targets and separate at 200% text
+00:03 +16: full orbit preserves circular clearance and detached panel separation
+00:03 +17: detached chat at 200 percent text Size(360.0, 560.0)
+00:03 +18: detached chat at 200 percent text Size(440.0, 680.0)
+00:03 +19: viewer exposes every existing design and state with one isolated renderer
+00:06 +20: 200 percent text keeps dashboard navigation and chat reachable
+00:06 +21: local A2UI catalog is isolated from runtime authority
+00:06 +22: floating controls omit unavailable actions and preserve shared draft
+00:06 +23: existing voice visual follows listening, user speech and URI speech
+00:06 +24: generated voice actions require a click and start or cancel once
+00:07 +25: login guards duplicate submits, obscures password and shows real errors
+00:07 +26: All tests passed!

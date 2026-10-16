@@ -1,0 +1,8 @@
+from pathlib import Path
+p=Path('uri_ui/lib/living/screens/companion_mode_view.dart');s=p.read_text(encoding='utf-8');s=s.replace('(size.width * .20).clamp(68.0, 88.0)', '80.0');s=s.replace('((size.width - buttonDiameter(size)) / 2 - 12).clamp(0.0, 164.0)', '((size.width - buttonDiameter(size)) / 2 - 20).clamp(0.0, 150.0)');s=s.replace('math.min(320.0, size.width - 24)', 'math.min(300.0, size.width - 24)');s=s.replace("for (final angle in [-1.38, .23, 1.78, 3.36]) {\n      canvas.drawArc(bounds, angle, .65, false, paint);", "for (final arc in [(-2.87, .58), (-.84, .57), (.24, .41), (.86, .45), (2.28, .62)]) {\n      final angle = arc.$1;\n      canvas.drawArc(bounds, angle, arc.$2, false, paint);")
+p.write_text(s,encoding='utf-8')
+p=Path('uri_ui/lib/living/presentation/living_shell.dart');s=p.read_text(encoding='utf-8').replace('(shell.width * .46).clamp(140.0, 220.0)', '(shell.width - 240).clamp(140.0, 194.0)');p.write_text(s,encoding='utf-8')
+p=Path('uri_ui/lib/living/a2ui/a2ui_view.dart');s=p.read_text(encoding='utf-8').replace('padding: const EdgeInsets.all(8),\n              tapTargetSize:', 'padding: const EdgeInsets.all(5),\n              tapTargetSize:');p.write_text(s,encoding='utf-8')
+p=Path('uri_ui/windows/runner/flutter_window.cpp');s=p.read_text(encoding='utf-8').replace('      for (double a : {-1.38, .23, 1.78, 3.36}) {', '''      const double arcs[][2] = {{-2.87,.58},{-.84,.57},{.24,.41},{.86,.45},{2.28,.62}};
+      for (const auto& arc : arcs) {
+        const double a=arc[0];''').replace('const double t=a+.65*n/16;', 'const double t=a+arc[1]*n/16;');p.write_bytes(s.encode('utf-8'))

@@ -1,0 +1,32 @@
+{
+  "status": "NOT_READY_NOT_VERIFIED",
+  "parent_commit": "d51517cb1de741970e94ed17a14cb5381419939e",
+  "candidate_commit": "Containing Git commit; use git log -1 -- docs/ui_v2/BUTTON_LAYOUT_STATE.json",
+  "branch": "ui/companion-v2-visual-qualification",
+  "worktree": "C:\\Users\\cheta\\Development\\uri-ui-v2",
+  "source_sha256": {
+    "uri_ui/lib/living/a2ui/a2ui_view.dart": "db1f8ab4fa29f3f4b0fc1a980b9ad5cdc3937bb507a670842592c2ffb7ccdcdf",
+    "uri_ui/lib/living/assist/assist_mode_view.dart": "718f78f965a3d81566dbe5ea1ec94df65944ff7dbabfffbe20481a071e920e59",
+    "uri_ui/lib/living/screens/companion_mode_view.dart": "64c82739f393e6228116167b9629d6fb70d38ff516f846077bf374d6b142ab32",
+    "uri_ui/lib/living/screens/onboarding/living_onboarding_flow.dart": "a01485314174540e1f0b319331759d0d544e350b1c78b493f53c33c1686e00b6",
+    "uri_ui/lib/living/screens/scheduler/scheduler_view.dart": "2ecbd4491b61f907bbc40f4bc1c4e4aa49c8ff7f76547ac63d6189030f4ac14e",
+    "uri_ui/lib/living/screens/settings/companion_gallery.dart": "f8848286b2b022e47f3f483fa932b6cd6913964117ac857c5a3863b7b1611bc8",
+    "uri_ui/lib/living/screens/workspace_mode_view.dart": "bace687a03c0b11c336707d3dbcca0a31693c018d16c1c09c7fd3fbccc17935a",
+    "uri_ui/lib/living/widgets/living_composer.dart": "10799db352d3b16a4ff19da20e79ed2643f7f4dadd6e5535ae8f0585ab18ea3a",
+    "uri_ui/lib/screens/auth/login_screen.dart": "5f60d48b958dc72b88f1deadea5613ea45f1c50dd8993d41db7ae2de2b488daa",
+    "uri_ui/lib/screens/bootstrap/bootstrap_screen.dart": "a40c2dbab20e0f2a5f016ae947ad565edd2a66526c548de39edb6c653675dce5",
+    "uri_ui/lib/theme/uri_theme.dart": "5ee350f6755748cba9126be513c279f701dae7a2afcc8f06219a386a4ec24c90",
+    "uri_ui/test/living/ui_v2_test.dart": "b3eb8717f6f26d26f31123e7087f3949b5d8686e04d8a42d2a4ed4ed9acf2b63",
+    "uri_ui/test/button_proportions_test.dart": "6416fd7b88fb88caebd555994aacf9574841bed8b449706fbc1e84695984ce08"
+  },
+  "widget_cases_authored": 5,
+  "flutter_tests": "LAUNCH FAILED BEFORE TESTS",
+  "flutter_analysis": "LAUNCH FAILED BEFORE ANALYSIS",
+  "javascript_syntax": "PASS; not browser visual verification",
+  "new_visual_capture": "NONE",
+  "80_percent_reference_target": "NOT ESTABLISHED",
+  "previous_567_pass_capture_source": "15a322d17aa54a4aec8316c6fc6628f70bf617ff",
+  "independent_acceptance": "NONE",
+  "integration": "NONE",
+  "deployment": "NONE"
+}

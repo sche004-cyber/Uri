@@ -116,6 +116,7 @@ typedef A2uiAuthorityCall = Future<Map<String, dynamic>> Function(
 ///   authority refuses a stale one.
 class A2uiHub extends ChangeNotifier {
   A2uiHub({
+    this.policy = const A2uiPolicy(),
     this.scheduler,
     Stream<Map<String, dynamic>>? handoffs,
     this.onHandoffFailed,
@@ -134,6 +135,7 @@ class A2uiHub extends ChangeNotifier {
   }
 
   final SchedulerClient? scheduler;
+  final A2uiPolicy policy;
 
   /// Called when a handoff produced no proposal (no scheduler, refused,
   /// unreachable), so whoever showed "waiting for you" can stop doing so:
@@ -190,7 +192,7 @@ class A2uiHub extends ChangeNotifier {
     final batches = <String, List<Map>>{};
     final refused = <String, String>{};
     for (final m in messages) {
-      final errs = validateMessage(m, jsonEncode);
+      final errs = validateMessage(m, jsonEncode, null, policy);
       final sid = _sid(m);
       if (errs.isNotEmpty) {
         refused[sid ?? '?'] = errs.first.code;
@@ -317,7 +319,7 @@ class A2uiHub extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    final schema = a2uiActions[name]!;
+    final schema = policy.actions[name]!;
     final ctx = <String, dynamic>{'surface_digest': s.digest};
     final declared = (ev['context'] as Map?) ?? const {};
     for (final e in declared.entries) {

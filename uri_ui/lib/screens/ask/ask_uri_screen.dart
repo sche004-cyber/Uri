@@ -13,6 +13,7 @@ import '../../widgets/supervised_handoff_action.dart';
 import '../../widgets/turn_card.dart';
 import '../activity/activity_screen.dart';
 import '../history/history_screen.dart';
+import '../connections/connections_providers_screen.dart';
 
 /// The canonical Chat destination (§4.3). Hosts the live conversation
 /// (Conversation tab) plus two internal, non-navigational tabs —
@@ -132,9 +133,16 @@ class _UriConversationPaneState extends State<UriConversationPane> {
   }
 
   void _openConnections() {
-    context.findAncestorStateOfType<AppShellState>()?.goTo(
-      ShellIndex.connections,
-    );
+    final shell = context.findAncestorStateOfType<AppShellState>();
+    if (shell != null) {
+      shell.goTo(ShellIndex.connections);
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const ConnectionsProvidersScreen(),
+        ),
+      );
+    }
   }
 
   Future<void> _openAttachment(AppState state, Attachment attachment) async {
@@ -195,6 +203,17 @@ class _UriConversationPaneState extends State<UriConversationPane> {
         final state = AppStateScope.of(context);
         final horizontal = widget.compact ? UriSpace.md : UriSpace.xl;
         if (state.conversation.isEmpty) {
+          if (widget.compact) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  'Ask URI anything to begin.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(UriSpace.xl),
@@ -477,9 +496,7 @@ class _ComposerBody extends StatelessWidget {
                     keyboardType: TextInputType.multiline,
                     textInputAction: TextInputAction.newline,
                     enabled: !sending,
-                    decoration: const InputDecoration(
-                      hintText: 'Message URI…',
-                    ),
+                    decoration: const InputDecoration(hintText: 'Message URI…'),
                   ),
                 ),
               ),
@@ -503,7 +520,8 @@ class _ComposerBody extends StatelessWidget {
                   value: modelOverride,
                   providers: providers,
                   onChanged: onChooseModel,
-                  onOpen: () => AppStateScope.of(context).loadProviderInventory(),
+                  onOpen: () =>
+                      AppStateScope.of(context).loadProviderInventory(),
                 ),
               ),
               const SizedBox(width: UriSpace.sm),
@@ -621,63 +639,61 @@ class _ModelSelectorChip extends StatelessWidget {
   Widget build(BuildContext context) => Listener(
     onPointerDown: (_) => onOpen(),
     child: PopupMenuButton<Object?>(
-    tooltip: 'Choose conversation model',
-    onSelected: onChanged,
-    itemBuilder: (context) => [
-      const PopupMenuItem<Object?>(
-        value: 'auto',
-        child: _ModelChoice(
-          label: 'URI Auto',
-          detail: 'Auto routing',
-          enabled: true,
+      tooltip: 'Choose conversation model',
+      onSelected: onChanged,
+      itemBuilder: (context) => [
+        const PopupMenuItem<Object?>(
+          value: 'auto',
+          child: _ModelChoice(
+            label: 'URI Auto',
+            detail: 'Auto routing',
+            enabled: true,
+          ),
         ),
-      ),
-      const PopupMenuDivider(),
-      const PopupMenuItem<Object?>(
-        enabled: false,
-        child: Text(
-          'Model choice can be changed from conversation without rewriting global defaults.',
+        const PopupMenuDivider(),
+        const PopupMenuItem<Object?>(
+          enabled: false,
+          child: Text(
+            'Model choice can be changed from conversation without rewriting global defaults.',
+          ),
         ),
-      ),
-      for (final provider in providers)
-        for (final model in provider.models)
-          PopupMenuItem<Object?>(
-            value: model.verified
-                ? {'provider_id': provider.providerId, 'model': model.modelId}
-                : null,
-            enabled: model.verified,
-            child: _ModelChoice(
-              label: model.displayName,
-              detail: model.verified ? provider.displayName : 'Not verified',
+        for (final provider in providers)
+          for (final model in provider.models)
+            PopupMenuItem<Object?>(
+              value: model.verified
+                  ? {'provider_id': provider.providerId, 'model': model.modelId}
+                  : null,
               enabled: model.verified,
+              child: _ModelChoice(
+                label: model.displayName,
+                detail: model.verified ? provider.displayName : 'Not verified',
+                enabled: model.verified,
+              ),
             ),
-          ),
-    ],
-    // RawChip (not Chip) so this control has a distinct widget type from
-    // the attachment strip's Chip widgets below — attachment_ui_test.dart
-    // asserts on find.byType(Chip) as a regression guard for the attach
-    // flow, and this selector must never be counted as an attachment chip.
-    // Hybrid composer spec (§4.3): "label + chevron, opens a dropdown
-    // menu" — RawChip (not Chip) so attachment_ui_test.dart's
-    // find.byType(Chip) regression guard for the attach strip still
-    // counts only attachment chips, never this selector.
-    child: RawChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Flexible, not a bare Text: an unbounded-width Row gives its
-          // children their full natural size regardless of `overflow`,
-          // so without this the ellipsis above never actually had
-          // anything to clip against - the label just kept demanding
-          // its full width and overflowed once this chip was measured
-          // inside the Compact window's narrower composer (§4.4).
-          Flexible(
-            child: Text(_label, overflow: TextOverflow.ellipsis),
-          ),
-          const Icon(Icons.expand_more_rounded, size: 16),
-        ],
+      ],
+      // RawChip (not Chip) so this control has a distinct widget type from
+      // the attachment strip's Chip widgets below — attachment_ui_test.dart
+      // asserts on find.byType(Chip) as a regression guard for the attach
+      // flow, and this selector must never be counted as an attachment chip.
+      // Hybrid composer spec (§4.3): "label + chevron, opens a dropdown
+      // menu" — RawChip (not Chip) so attachment_ui_test.dart's
+      // find.byType(Chip) regression guard for the attach strip still
+      // counts only attachment chips, never this selector.
+      child: RawChip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Flexible, not a bare Text: an unbounded-width Row gives its
+            // children their full natural size regardless of `overflow`,
+            // so without this the ellipsis above never actually had
+            // anything to clip against - the label just kept demanding
+            // its full width and overflowed once this chip was measured
+            // inside the Compact window's narrower composer (§4.4).
+            Flexible(child: Text(_label, overflow: TextOverflow.ellipsis)),
+            const Icon(Icons.expand_more_rounded, size: 16),
+          ],
+        ),
       ),
-    ),
     ),
   );
 }

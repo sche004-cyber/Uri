@@ -70,16 +70,22 @@ class UriGlass extends ThemeExtension<UriGlass> {
     final dark =
         ThemeData.estimateBrightnessForColor(p.canvas) == Brightness.dark;
     final veil = dark ? Colors.white : p.ink;
+    final frost =
+        p.canvas == UriColors.ivoryFoundry.canvas ||
+        p.canvas == UriColors.snowArchive.canvas ||
+        p.canvas == UriColors.ashLimestone.canvas;
     return UriGlass(
-      fill: veil.withValues(alpha: dark ? 0.045 : 0.035),
-      fillStrong: veil.withValues(alpha: dark ? 0.08 : 0.06),
-      border: veil.withValues(alpha: dark ? 0.10 : 0.12),
+      fill: frost ? p.surface : veil.withValues(alpha: dark ? 0.045 : 0.035),
+      fillStrong: frost
+          ? p.surface
+          : veil.withValues(alpha: dark ? 0.08 : 0.06),
+      border: frost ? p.border : veil.withValues(alpha: dark ? 0.10 : 0.12),
       highlight: veil.withValues(alpha: dark ? 0.20 : 0.35),
       glow: p.accent,
       glowSoft: p.accent.withValues(alpha: 0.18),
       ambientTop: Color.lerp(p.canvas, p.accent, dark ? 0.06 : 0.03)!,
       ambientBottom: p.canvas,
-      blurSigma: 18,
+      blurSigma: frost ? 0 : 18,
       isDark: dark,
       specular: dark ? const Color(0xFFFFFFFF) : const Color(0xFFF4FAFF),
     );

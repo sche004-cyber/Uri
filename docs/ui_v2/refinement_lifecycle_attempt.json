@@ -1,0 +1,8 @@
+{
+  "command": "python -m scripts.dev_workflow.lifecycle run docs/ui_v2/lifecycle_refinement.json",
+  "exit_code": 1,
+  "error": "git ls-remote uri-repo refs/heads/integration/git-sync-20261008: Could not resolve host: github.com",
+  "stage_reached": "Initialization failed before PLAN; no new review, gate results or acceptance receipt",
+  "integration": "NONE",
+  "deployment": "NONE"
+}

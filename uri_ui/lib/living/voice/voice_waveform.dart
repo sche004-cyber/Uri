@@ -62,6 +62,7 @@ class VoiceWaveformFrame extends StatefulWidget {
     required this.flux,
     this.presence = 1,
     this.motion = 1,
+    this.bars = false,
   });
 
   final double seconds;
@@ -69,6 +70,7 @@ class VoiceWaveformFrame extends StatefulWidget {
   final double flux;
   final double presence;
   final double motion;
+  final bool bars;
 
   @override
   State<VoiceWaveformFrame> createState() => _VoiceWaveformFrameState();
@@ -100,6 +102,12 @@ class _VoiceWaveformFrameState extends State<VoiceWaveformFrame> {
   @override
   Widget build(BuildContext context) {
     final c = UriColors.of(context);
+    if (widget.bars) {
+      return CustomPaint(
+        size: Size.infinite,
+        painter: VoiceBarsPainter(widget.level, c.accentSoft, widget.presence),
+      );
+    }
     final shader = _shader;
     if (shader == null || EffectsSettings.of(context).reducedEffects) {
       return CustomPaint(
@@ -138,11 +146,13 @@ class VoiceWaveform extends StatefulWidget {
     required this.level,
     required this.flux,
     this.presence = 1,
+    this.bars = false,
   });
 
   final ValueListenable<double> level;
   final ValueListenable<double> flux;
   final double presence;
+  final bool bars;
 
   @override
   State<VoiceWaveform> createState() => _VoiceWaveformState();
@@ -187,6 +197,7 @@ class _VoiceWaveformState extends State<VoiceWaveform>
       flux: _flux,
       presence: widget.presence,
       motion: reduced ? 0 : 1,
+      bars: widget.bars,
     );
   }
 }
@@ -341,4 +352,38 @@ class VoiceWaveformFallbackPainter extends CustomPainter {
       old.presence != presence ||
       old.line != line ||
       old.rim != rim;
+}
+
+/// RMS-level display, not a frequency spectrum or fabricated audio recording.
+/// Silent listening stays at short marks; only the real controller level grows
+/// the bars. It uses the existing paced/hidden-window waveform driver.
+class VoiceBarsPainter extends CustomPainter {
+  const VoiceBarsPainter(this.level, this.color, this.presence);
+  final double level, presence;
+  final Color color;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final amplitude = math.sqrt(level.clamp(0, 1));
+    final paint = Paint()
+      ..color = color.withValues(alpha: presence.clamp(0, 1))
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 33; i++) {
+      final x = (i + .5) * size.width / 33;
+      final envelope = math
+          .pow(math.sin((i + 1) * math.pi / 34), 1.4)
+          .toDouble();
+      final shape = .55 + .45 * math.cos(i * 1.73).abs();
+      final h = 2 + amplitude * (size.height - 2) * envelope * shape;
+      canvas.drawLine(
+        Offset(x, (size.height - h) / 2),
+        Offset(x, (size.height + h) / 2),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(VoiceBarsPainter old) =>
+      old.level != level || old.color != color || old.presence != presence;
 }

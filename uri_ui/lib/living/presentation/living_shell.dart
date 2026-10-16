@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:math' as math;
+
+import '../companion/frame_clock.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,15 +11,21 @@ import '../../services/file_picker_service.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
 import '../companion/living_companion.dart';
+import '../companion/companion_orb.dart' show CompanionIdentity;
+import '../companion/companion_state.dart';
 import '../living_scope.dart';
 import '../voice/voice_stage.dart';
+import '../voice/voice_session.dart' show VoicePhase;
 import '../widgets/frame_stats_overlay.dart';
-import '../widgets/glass_panel.dart';
 import '../assist/assist_mode_view.dart';
 import '../screens/companion_mode_view.dart';
+import '../screens/legacy_companion_mode_view.dart';
+import '../widgets/glass_panel.dart';
 import '../screens/dashboard_mode_view.dart';
 import '../screens/workspace_mode_view.dart';
 import 'presentation_controller.dart';
+import 'companion_window_layout.dart';
+import 'companion_activation_target.dart';
 
 /// Where the one orb sits in each form, as a fraction of the shell.
 ///
@@ -47,14 +56,54 @@ class OrbDock {
   static double railOrbSpace(double shellWidth) =>
       railOrbTop + railOrbSize(shellWidth) + 12;
 
+  /// Dashboard geometry, shared with FrostDashboard so the companion and the
+  /// destinations around it always agree. Wide: the full composition (tall
+  /// windows). Medium: the six destinations beside a smaller companion with
+  /// the composer kept in view (common laptop windows such as 1366x768 and
+  /// 1536x864). Otherwise one scrolling column.
+  static bool dashboardWide(Size shell, double textScale) =>
+      shell.width >= 1100 && shell.height >= 960 && textScale <= 22 / 14;
+  static bool dashboardMedium(Size shell, double textScale) =>
+      !dashboardWide(shell, textScale) &&
+      shell.width >= 900 &&
+      shell.height >= 640 &&
+      textScale <= 1.2;
+  static double dashboardRail(Size shell, double textScale) =>
+      dashboardWide(shell, textScale) ||
+          (dashboardMedium(shell, textScale) && shell.width >= 1100)
+      ? 208
+      : 0;
+  static const double dashboardHeader = 196;
+  static const double dashboardFooter = 150;
+
   /// Assist geometry, shared with the Assist header so they always agree.
   static const double assistOrbSize = 84;
   static const double assistOrbLeft = 20;
   static const double assistOrbTop = 16;
 
-  static OrbDock forMode(UiPresentationMode mode, Size shell) {
+  static OrbDock forMode(
+    UiPresentationMode mode,
+    Size shell, {
+    bool visualV2 = false,
+    double textScale = 1,
+    bool expanded = false,
+  }) {
     switch (mode) {
       case UiPresentationMode.companion:
+        if (visualV2 && expanded) {
+          final size = shell.width > 480
+              ? math.min(shell.width * .495, shell.height * .36)
+              : (shell.width - 220).clamp(140.0, 220.0);
+          return OrbDock(
+            rect: Rect.fromLTWH(
+              (shell.width - size) / 2,
+              shell.height * (shell.width > 480 ? .297 : .31) - size / 2,
+              size,
+              size,
+            ),
+            lightAt: const Alignment(0, -1),
+          );
+        }
         final size = (shell.shortestSide * 0.58).clamp(180.0, 320.0);
         final cx = shell.width / 2;
         final cy = shell.height * 0.36;
@@ -78,15 +127,57 @@ class OrbDock {
           lightAt: const Alignment(-0.95, -0.95),
         );
       case UiPresentationMode.dashboard:
-        const size = 128.0;
+        if (!visualV2) {
+          return OrbDock(
+            rect: Rect.fromLTWH(shell.width / 2 - 64, 18, 128, 128),
+            lightAt: const Alignment(0, -1),
+          );
+        }
+        if (dashboardMedium(shell, textScale)) {
+          final rail = dashboardRail(shell, textScale);
+          final middle = shell.height - dashboardHeader - dashboardFooter;
+          final size = (middle - 56).clamp(120.0, 200.0);
+          return OrbDock(
+            rect: Rect.fromCenter(
+              center: Offset(
+                rail + (shell.width - rail) / 2,
+                dashboardHeader + (middle - 36) / 2,
+              ),
+              width: size,
+              height: size,
+            ),
+            lightAt: const Alignment(0, -1),
+          );
+        }
+        final wide = dashboardWide(shell, textScale);
+        final size = wide ? 360.0 : 180.0;
         return OrbDock(
-          rect: Rect.fromLTWH(shell.width / 2 - size / 2, 18, size, size),
+          rect: Rect.fromCenter(
+            center: Offset(
+              wide ? (shell.width + 208) / 2 : shell.width / 2,
+              wide
+                  ? shell.height * .45
+                  : math.min(
+                          shell.height * .5,
+                          (shell.width < 500 ? 320.0 : 260.0) +
+                              math.max(0, textScale - 1) * 100,
+                        ) +
+                        (shell.height * .35).clamp(0, 220) / 2,
+            ),
+            width: size,
+            height: size,
+          ),
           lightAt: const Alignment(0, -1),
         );
       case UiPresentationMode.assist:
         // Top-left, beside the Assist header (AssistModeView.orbSpace).
         return OrbDock(
-          rect: Rect.fromLTWH(assistOrbLeft, assistOrbTop, assistOrbSize, assistOrbSize),
+          rect: Rect.fromLTWH(
+            assistOrbLeft,
+            assistOrbTop,
+            assistOrbSize,
+            assistOrbSize,
+          ),
           lightAt: const Alignment(-0.8, -1),
         );
     }
@@ -225,6 +316,111 @@ class LivingShell extends StatefulWidget {
 class _LivingShellState extends State<LivingShell> {
   Timer? _bubbleTimer;
   String? _bubbleText;
+  bool _panelExpanded = false;
+  bool _chatOpen = false;
+  CompanionWindowLayout? _windowLayout;
+  CompanionFrameClock? _orbitClock;
+  double _orbitAngle = 0, _lastOrbitFrame = 0, _holdOrbitUntil = 0;
+  bool _readingPointer = false;
+  Rect? _orbitBounds;
+
+  // Mode keys (Ctrl+1..4, Escape). The CallbackShortcuts below handles them
+  // while focus is inside the shell. When a focused control goes away (the
+  // composer is disabled while URI works), focus falls to the page's scope,
+  // above the shell, and those keys stopped working; the keyboard handler
+  // applies the same bindings then, and only while this page is on top.
+  final FocusNode _shellFocus = FocusNode(debugLabel: 'living-shell');
+  Map<ShortcutActivator, VoidCallback> _bindings = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_onKey);
+  }
+
+  bool _onKey(KeyEvent event) {
+    if (!mounted || event is KeyUpEvent) return false;
+    if (ModalRoute.of(context)?.isCurrent == false) return false;
+    final primary = FocusManager.instance.primaryFocus;
+    if (primary != null &&
+        (primary == _shellFocus || primary.ancestors.contains(_shellFocus))) {
+      return false; // inside the shell: the CallbackShortcuts handles it
+    }
+    for (final entry in _bindings.entries) {
+      if (entry.key.accepts(event, HardwareKeyboard.instance)) {
+        entry.value();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _orbitListening = false;
+  void _configureOrbit(LivingServices services, bool enabled) {
+    final clock = services.frameClock;
+    if (!identical(clock, _orbitClock)) {
+      if (_orbitListening) _orbitClock?.removeListener(_orbitTick);
+      _orbitListening = false;
+      _orbitClock = clock;
+    }
+    if (enabled == _orbitListening) return;
+    _orbitListening = enabled;
+    if (enabled) {
+      clock.addListener(_orbitTick);
+    } else {
+      clock.removeListener(_orbitTick);
+    }
+  }
+
+  void _holdOrbit() {
+    _holdOrbitUntil = (_orbitClock?.seconds ?? 0) + 1.5;
+  }
+
+  void _orbitTick() {
+    if (!mounted) return;
+    final s = LivingScope.of(context);
+    final now = s.frameClock.seconds;
+    final delta = now - _lastOrbitFrame;
+    if (delta < .1) return;
+    _lastOrbitFrame = now;
+    if (!s.visualV2 ||
+        !_panelExpanded ||
+        _chatOpen ||
+        s.presentation.mode != UiPresentationMode.companion ||
+        s.frameClock.hidden ||
+        s.effects.reducedMotion ||
+        MediaQuery.disableAnimationsOf(context) ||
+        MediaQuery.textScalerOf(context).scale(14) / 14 > 1.2 ||
+        s.composerFocus.hasFocus ||
+        s.voice.session.phase != VoicePhase.off ||
+        CompanionModeView.actions(
+              s,
+              CompanionModeView.reviewCount(s, context),
+            ).length >
+            4) {
+      return;
+    }
+    final read = s.readCompanionPointer;
+    if (read != null && !_readingPointer) {
+      _readingPointer = true;
+      read()
+          .then((point) {
+            if (!mounted) return;
+            // Missing native cursor support fails static, never evasive controls.
+            if (point == null ||
+                _orbitBounds?.inflate(80).contains(point) == true) {
+              _holdOrbit();
+            }
+          })
+          .whenComplete(() => _readingPointer = false);
+    }
+    if (now < _holdOrbitUntil) return;
+    setState(
+      () => _orbitAngle =
+          (_orbitAngle + math.min(delta, .15) * math.pi * 2 / 180) %
+          (math.pi * 2),
+    );
+  }
 
   static const List<String> _questions = [
     'Yes? What should I do?',
@@ -236,17 +432,41 @@ class _LivingShellState extends State<LivingShell> {
   void _onOrbTap(LivingServices services) {
     final n = services.orbPokes.value + 1;
     services.orbPokes.value = n;
-    setState(() => _bubbleText = _questions[n % _questions.length]);
+    final acknowledgement = _questions[n % _questions.length];
+    setState(() {
+      _bubbleText = acknowledgement;
+      if (services.visualV2) {
+        _panelExpanded = true;
+      }
+    });
+    // Local acknowledgement only: never submit a Brain request or interrupt
+    // an ongoing utterance. Use the installed live voice service when ready.
+    if (services.visualV2 &&
+        services.liveVoice?.status.value.ready == true &&
+        services.voice.session.phase == VoicePhase.off) {
+      services.liveVoice!.speak(
+        'companion-ack-$n',
+        acknowledgement,
+        services.companionPrefs.voice,
+      );
+    }
     _bubbleTimer?.cancel();
     _bubbleTimer = Timer(const Duration(seconds: 4), () {
       if (mounted) setState(() => _bubbleText = null);
     });
-    services.composerFocus.requestFocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !services.visualV2) {
+        services.composerFocus.requestFocus();
+      }
+    });
   }
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onKey);
+    _shellFocus.dispose();
     _bubbleTimer?.cancel();
+    _orbitClock?.removeListener(_orbitTick);
     super.dispose();
   }
 
@@ -256,10 +476,17 @@ class _LivingShellState extends State<LivingShell> {
     return ListenableBuilder(
       listenable: Listenable.merge([
         services.presentation,
+        services.effects,
         services.companion,
         services.orbVariant,
         services.orbPalette,
         services.companionPrefs,
+        services.voice,
+        ?services.voiceInteraction,
+        ?services.liveVoice?.status,
+        ?services.oi,
+        services.work,
+        ?services.a2ui,
       ]),
       builder: (context, _) {
         final mode = services.presentation.mode;
@@ -267,51 +494,146 @@ class _LivingShellState extends State<LivingShell> {
         return LayoutBuilder(
           builder: (context, constraints) {
             final shellSize = Size(constraints.maxWidth, constraints.maxHeight);
-            final dock = OrbDock.forMode(mode, shellSize);
+            _configureOrbit(
+              services,
+              services.visualV2 &&
+                  _panelExpanded &&
+                  !_chatOpen &&
+                  mode == UiPresentationMode.companion &&
+                  CompanionModeView.usesOrbit(shellSize) &&
+                  !services.effects.reducedMotion &&
+                  !MediaQuery.disableAnimationsOf(context) &&
+                  MediaQuery.textScalerOf(context).scale(14) / 14 <= 1.2,
+            );
+            final dock = OrbDock.forMode(
+              mode,
+              shellSize,
+              visualV2: services.visualV2,
+              textScale: MediaQuery.textScalerOf(context).scale(14) / 14,
+              expanded: _panelExpanded,
+            );
+            _orbitBounds = Rect.fromCircle(
+              center: dock.rect.center,
+              radius:
+                  CompanionModeView.orbitRadius(shellSize) +
+                  CompanionModeView.buttonDiameter(shellSize) / 2,
+            );
             final voiceDock = VoiceDock.forMode(mode, shellSize, dock.rect);
             final prefs = services.companionPrefs;
-            return CallbackShortcuts(
-              // Keyboard: Esc -> Companion, Ctrl+1/2/3/4 -> the four forms.
-              bindings: {
-                const SingleActivator(LogicalKeyboardKey.escape): () =>
-                    services.presentation.setMode(UiPresentationMode.companion),
-                const SingleActivator(
-                  LogicalKeyboardKey.digit1,
-                  control: true,
-                ): () =>
-                    services.presentation.setMode(UiPresentationMode.companion),
-                const SingleActivator(
-                  LogicalKeyboardKey.digit2,
-                  control: true,
-                ): () =>
-                    services.presentation.setMode(UiPresentationMode.workspace),
-                const SingleActivator(
-                  LogicalKeyboardKey.digit3,
-                  control: true,
-                ): () =>
-                    services.presentation.setMode(UiPresentationMode.dashboard),
-                const SingleActivator(
-                  LogicalKeyboardKey.digit4,
-                  control: true,
-                ): () =>
-                    services.presentation.setMode(UiPresentationMode.assist),
+            final duration = services.visualV2
+                ? (mode == UiPresentationMode.companion ||
+                          services.effects.reducedMotion ||
+                          MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 240))
+                : UriMotion.mode;
+            final buttonRects = _panelExpanded
+                ? CompanionModeView.buttonRects(
+                    shellSize,
+                    dock.rect,
+                    CompanionModeView.actions(
+                      services,
+                      CompanionModeView.reviewCount(services, context),
+                    ),
+                    textScale: MediaQuery.textScalerOf(context).scale(14) / 14,
+                    angle: _orbitAngle,
+                  ).values.toList()
+                : <Rect>[];
+            final layout = CompanionWindowLayout(
+              active: mode == UiPresentationMode.companion,
+              orb: dock.rect,
+              buttons: buttonRects,
+              orbit: _panelExpanded
+                  ? Rect.fromCircle(
+                      center: dock.rect.center,
+                      radius: CompanionModeView.orbitRadius(shellSize),
+                    )
+                  : null,
+              controls:
+                  _panelExpanded &&
+                      services.voice.session.phase != VoicePhase.off
+                  ? CompanionModeView.voiceRect(
+                      shellSize,
+                      dock.rect,
+                      buttons: buttonRects,
+                      textScale:
+                          MediaQuery.textScalerOf(context).scale(14) / 14,
+                    )
+                  : null,
+              panel: _panelExpanded && _chatOpen
+                  ? CompanionModeView.chatRect(
+                      shellSize,
+                      dock.rect,
+                      voiceVisible:
+                          services.voice.session.phase != VoicePhase.off,
+                      textScale:
+                          MediaQuery.textScalerOf(context).scale(14) / 14,
+                      buttons: buttonRects,
+                    )
+                  : null,
+            );
+            if (layout != _windowLayout) {
+              _windowLayout = layout;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) services.updateCompanionWindow?.call(layout);
+              });
+            }
+            _bindings = {
+              const SingleActivator(LogicalKeyboardKey.escape): () {
+                if (services.visualV2 &&
+                    mode == UiPresentationMode.companion &&
+                    (_chatOpen || _panelExpanded)) {
+                  setState(() {
+                    if (_chatOpen) {
+                      _chatOpen = false;
+                    } else {
+                      _panelExpanded = false;
+                    }
+                  });
+                } else {
+                  services.presentation.setMode(UiPresentationMode.companion);
+                }
               },
+              const SingleActivator(
+                LogicalKeyboardKey.digit1,
+                control: true,
+              ): () =>
+                  services.presentation.setMode(UiPresentationMode.companion),
+              const SingleActivator(
+                LogicalKeyboardKey.digit2,
+                control: true,
+              ): () =>
+                  services.presentation.setMode(UiPresentationMode.workspace),
+              const SingleActivator(
+                LogicalKeyboardKey.digit3,
+                control: true,
+              ): () =>
+                  services.presentation.setMode(UiPresentationMode.dashboard),
+              const SingleActivator(
+                LogicalKeyboardKey.digit4,
+                control: true,
+              ): () =>
+                  services.presentation.setMode(UiPresentationMode.assist),
+            };
+            return CallbackShortcuts(
+              // Escape dismisses transient Companion UI before changing forms.
+              bindings: _bindings,
               child: Focus(
+                focusNode: _shellFocus,
                 autofocus: true,
                 child: Scaffold(
                   backgroundColor: Colors.transparent,
-                  body: AmbientBackground(
-                    lightAt: dock.lightAt,
-                    lightStrength: mode == UiPresentationMode.companion
-                        ? 1
-                        : 0.6,
+                  body: _ShellCanvas(
+                    mode: mode,
+                    v2: services.visualV2,
+                    dock: dock,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
                         // Mode content, cross-faded with a small drift so it
                         // feels like the space re-arranging, not a page flip.
                         AnimatedSwitcher(
-                          duration: UriMotion.mode,
+                          duration: duration,
                           switchInCurve: UriMotion.enter,
                           switchOutCurve: Curves.easeIn,
                           transitionBuilder: (child, animation) {
@@ -334,10 +656,28 @@ class _LivingShellState extends State<LivingShell> {
                           child: KeyedSubtree(
                             key: ValueKey(mode),
                             child: switch (mode) {
-                              UiPresentationMode.companion => CompanionModeView(
-                                orbRect: dock.rect,
-                                filePicker: widget.filePicker,
-                              ),
+                              UiPresentationMode.companion =>
+                                services.visualV2
+                                    ? CompanionModeView(
+                                        orbRect: dock.rect,
+                                        filePicker: widget.filePicker,
+                                        attachmentOpener:
+                                            widget.attachmentOpener,
+                                        expanded: _panelExpanded,
+                                        chatOpen: _chatOpen,
+                                        angle: _orbitAngle,
+                                        onPointerNear: _holdOrbit,
+                                        onChatChanged: (value) =>
+                                            setState(() => _chatOpen = value),
+                                        acknowledgement: _bubbleText,
+                                        onCollapse: () => setState(
+                                          () => _panelExpanded = false,
+                                        ),
+                                      )
+                                    : LegacyCompanionModeView(
+                                        orbRect: dock.rect,
+                                        filePicker: widget.filePicker,
+                                      ),
                               UiPresentationMode.workspace => WorkspaceModeView(
                                 filePicker: widget.filePicker,
                                 attachmentOpener: widget.attachmentOpener,
@@ -353,33 +693,60 @@ class _LivingShellState extends State<LivingShell> {
                         ),
                         // The travelling orb.
                         AnimatedPositioned.fromRect(
-                          duration: UriMotion.mode,
+                          duration: duration,
                           curve: UriMotion.move,
                           rect: dock.rect,
                           child: GestureDetector(
                             behavior: HitTestBehavior.opaque,
+                            excludeFromSemantics: services.visualV2,
+                            onPanStart:
+                                mode == UiPresentationMode.companion &&
+                                    services.moveCompanionWindow != null
+                                ? (_) => services.moveCompanionWindow!()
+                                : null,
                             onTap: () => _onOrbTap(services),
                             onDoubleTap: () => services.presentation.setMode(
-                              UiPresentationMode.workspace,
+                              services.visualV2
+                                  ? UiPresentationMode.dashboard
+                                  : UiPresentationMode.workspace,
                             ),
                             // The user's companion (Companion Settings): a
                             // living identity, or the classic orb with its
                             // style and palette.
-                            child: LivingCompanion(
-                              key: LivingShell.orbKey,
-                              state: signal.state,
-                              progress: signal.progress,
-                              size: dock.rect.width,
-                              variant: services.orbVariant.value,
-                              palette: services.orbPalette.value,
-                              pokes: services.orbPokes,
+                            child: CompanionActivationTarget(
+                              onActivate: () => _onOrbTap(services),
+                              label:
+                                  'URI Companion: ${signal.state == CompanionState.success ? 'Reply received' : signal.title}. Activate to open chat; Control 3 opens dashboard.',
+                              child: LivingCompanion(
+                                key: LivingShell.orbKey,
+                                preserveIdentityTheme: services.visualV2,
+                                presentationScale:
+                                    services.visualV2 &&
+                                        mode == UiPresentationMode.companion &&
+                                        prefs.choice.identity ==
+                                            CompanionIdentity.solar
+                                    ? 1.85
+                                    : 1,
+                                state: signal.state,
+                                progress: signal.progress,
+                                size: dock.rect.width,
+                                variant:
+                                    services.visualV2 && prefs.choice.isClassic
+                                    ? prefs.classicVariant
+                                    : services.orbVariant.value,
+                                palette: services.orbPalette.value,
+                                pokes: services.orbPokes,
+                              ),
                             ),
                           ),
                         ),
                         // The voice exchange, beside the companion.
-                        if (!voiceDock.hidden)
+                        if (!voiceDock.hidden &&
+                            (!services.visualV2 ||
+                                mode == UiPresentationMode.workspace ||
+                                mode == UiPresentationMode.assist))
                           AnimatedPositioned.fromRect(
-                            duration: UriMotion.mode,
+                            duration: duration,
                             curve: UriMotion.move,
                             rect: voiceDock.rect,
                             child: IgnorePointer(
@@ -390,11 +757,13 @@ class _LivingShellState extends State<LivingShell> {
                               ),
                             ),
                           ),
-                        _QuestionBubble(
-                          text: _bubbleText,
-                          orbRect: dock.rect,
-                          shellSize: shellSize,
-                        ),
+                        if (!services.visualV2 ||
+                            mode != UiPresentationMode.companion)
+                          _QuestionBubble(
+                            text: _bubbleText,
+                            orbRect: dock.rect,
+                            shellSize: shellSize,
+                          ),
                         _CommandNotice(services: services),
                         if (prefs.statsOverlay)
                           Positioned(
@@ -420,6 +789,35 @@ class _LivingShellState extends State<LivingShell> {
 /// "URI opened Dashboard · Back": shown only after a command (not a
 /// user gesture) moved the presentation, so the user always knows why
 /// the UI changed and can undo it with one tap.
+class _ShellCanvas extends StatelessWidget {
+  const _ShellCanvas({
+    required this.mode,
+    required this.v2,
+    required this.dock,
+    required this.child,
+  });
+  final UiPresentationMode mode;
+  final bool v2;
+  final OrbDock dock;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => v2
+      ? Material(
+          type: mode == UiPresentationMode.companion
+              ? MaterialType.transparency
+              : MaterialType.canvas,
+          color: mode == UiPresentationMode.companion
+              ? null
+              : UriColors.of(context).canvas,
+          child: child,
+        )
+      : AmbientBackground(
+          lightAt: dock.lightAt,
+          lightStrength: mode == UiPresentationMode.companion ? 1 : .6,
+          child: child,
+        );
+}
+
 class _CommandNotice extends StatelessWidget {
   const _CommandNotice({required this.services});
   final LivingServices services;

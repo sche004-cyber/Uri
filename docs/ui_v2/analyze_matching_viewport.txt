@@ -1,0 +1,7 @@
+Analyzing uri_ui...                                             
+
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\screens\settings\providers_screen.dart:730:5 - deprecated_member_use
+   info - The import of 'dart:async' is unnecessary because all of the used elements are also provided by the import of 'package:flutter_test/flutter_test.dart'. Try removing the import directive - test\chat_supervised_handoff_test.dart:5:8 - unnecessary_import
+   info - Unnecessary use of string interpolation. Try replacing the string literal with the variable name - test\living\assist_mode_test.dart:277:43 - unnecessary_string_interpolations
+
+3 issues found. (ran in 3.9s)

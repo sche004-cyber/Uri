@@ -2,7 +2,9 @@
 
 Milestone `URI-OFFICE-O2-INTEG`. Branch `milestone/office-o2-integration-20261016` (worktree
 `D:\uri-dev\uri-office-integ`). Baseline: canonical `integration/git-sync-20261008` on `uri-repo`
-(`https://github.com/sche004-cyber/Uri`), verified tip **`85f6a0ec`** on 2026-10-16.
+(`https://github.com/sche004-cyber/Uri`), verified tip **`85f6a0ec`** on 2026-10-16; it moved to **`2eff03d0`**
+(UI V2 completion integrated) the same day, before the first driver run, so the branch was reconciled again
+(section 2b).
 
 ## 1. What is integrated
 
@@ -34,11 +36,25 @@ streaming fixes). Six files conflicted; all are governance or materializer tooli
 - `scripts/oi_materialize_test_runtime.py`: canonical's version plus the Office additions (Office paths in the
   materialized runtime, RUNTIME_MODULES check, declared-wheel install).
 
+## 2b. Second reconciliation (merge `b744c9b8`, canonical `2eff03d0`)
+
+UI V2 completion (15 commits) changed the shared Flutter shell. Three conflicts:
+- `living_scope.dart`: both sides' dispose lines kept.
+- `living_composer.dart`: canonical's V2 composer with the Office hunks re-applied (Office-focus routing and busy
+  state, Office hints, transcript and dictation buttons hidden in Office focus).
+- `workspace_mode_view.dart`: canonical's version plus the Office region and rail entry. **Decision recorded for the
+  owner:** O2 had replaced the Documents region with Office because its tiles were simulated; UI V2 then made those
+  tiles send real turns in the integrated V2 (BLK-INT-2, live journey J6). Both are kept: Documents stays as UI V2 left
+  it, Office is its own region. When Word authoring (OD-A3 C) lands, "Start new work: Letter" can become an Office
+  draft; that is a later owner-visible change, not part of this integration.
+UI V2 renders `WorkspaceModeView` from `LivingShell` in both the living and the V2 presentation, so Office is
+reachable in the production entry.
+
 ## 3. Acceptance criteria
 
 | ID | Criterion | Evidence |
 |---|---|---|
-| I-AC1 | The integration commit descends from canonical `85f6a0ec` (fast-forward possible) and contains `76b0f600`, `e92265aa`, `9b3209d0` | `git merge-base --is-ancestor` |
+| I-AC1 | The integration commit descends from the current canonical tip (`2eff03d0`) (fast-forward possible) and contains `76b0f600`, `e92265aa`, `9b3209d0` | `git merge-base --is-ancestor` |
 | I-AC2 | Frozen boundary intact: `scripts/ws_frozen_check.py` ok, no unapproved protected change versus canonical | checker JSON |
 | I-AC3 | Every conflict resolved as in section 2; nothing from canonical lost (diff of the merge against canonical touches only Office paths, the Office line's accepted non-Office parts listed in section 1, and the materializer additions) | `git diff 85f6a0ec <tip>` file list |
 | I-AC4 | Combined regressions: every `tests/` suite on the candidate has no new failure against canonical `85f6a0ec` (by test id); Flutter suite passes; page JS passes | regression summaries, driver gates |

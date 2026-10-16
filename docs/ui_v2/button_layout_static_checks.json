@@ -1,0 +1,52 @@
+{
+  "dart_lexical_sanity": {
+    "uri_ui/lib/living/a2ui/a2ui_view.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/lib/living/assist/assist_mode_view.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/lib/living/screens/companion_mode_view.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/lib/living/screens/onboarding/living_onboarding_flow.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/lib/living/screens/scheduler/scheduler_view.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/lib/living/screens/settings/companion_gallery.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/lib/living/screens/workspace_mode_view.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/lib/living/widgets/living_composer.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/lib/screens/auth/login_screen.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/lib/screens/bootstrap/bootstrap_screen.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/lib/theme/uri_theme.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/test/living/ui_v2_test.dart": "balanced lexical delimiters; NOT Dart parse/type analysis",
+    "uri_ui/test/button_proportions_test.dart": "balanced lexical delimiters; NOT Dart parse/type analysis"
+  },
+  "primary_label_contrast_source_calculation": {
+    "ivoryFoundry": {
+      "source_accent": "#77603C",
+      "white_label_contrast": 5.961,
+      "text_color_source_only": "Not rendered/disabled/focus-state qualification"
+    },
+    "snowArchive": {
+      "source_accent": "#776541",
+      "white_label_contrast": 5.642,
+      "text_color_source_only": "Not rendered/disabled/focus-state qualification"
+    },
+    "ashLimestone": {
+      "source_accent": "#55462D",
+      "white_label_contrast": 9.13,
+      "text_color_source_only": "Not rendered/disabled/focus-state qualification"
+    }
+  },
+  "html_literal_assets": {
+    "BUTTON_PLACEMENT_PLAN.md": true,
+    "companion-refinement.html": true,
+    "evidence/final/companion-approved-828.png": true
+  },
+  "flutter_compiler_analysis": "NOT VERIFIED",
+  "visual_browser_render": "NOT VERIFIED",
+  "javascript_syntax": {
+    "command": "node --check docs/ui_v2/tools/page_proportions_preview.js",
+    "exit_code": 0,
+    "extracted_script_matches_html": true
+  },
+  "recorded_capture_assets": {
+    "dashboard-ivoryFoundry-1440.png": true,
+    "login-ivoryFoundry.png": true,
+    "companions-gallery.png": true,
+    "chat-workspace.png": true
+  }
+}

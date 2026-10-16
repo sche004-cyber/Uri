@@ -1,0 +1,212 @@
+[
+  {
+    "utc": "2026-10-15T19:02:20.881121Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput + synthesized key events",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "first_run": "0",
+    "visual": "v2"
+  },
+  {
+    "utc": "2026-10-15T19:02:20.893546Z",
+    "label": "preferences at start",
+    "keys": [
+      "uri.clientDeviceId",
+      "uri.living.companion.choice",
+      "uri.living.companion.interfaceTheme",
+      "uri.living.onboardingDone",
+      "uri.living.prefs.autonomyLevel",
+      "uri.living.prefs.communicationStyle",
+      "uri.living.prefs.completedOnboarding",
+      "uri.living.prefs.focusAreas"
+    ]
+  },
+  {
+    "utc": "2026-10-15T19:02:24.848291Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 3.952,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792090944.4590926,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 11000,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T19:02:25.035027Z",
+    "label": "memory at start",
+    "facts": [
+      "the project room code is K90193"
+    ],
+    "run_fact": "the project room code is K44849"
+  },
+  {
+    "utc": "2026-10-15T19:02:28.241373Z",
+    "label": "onboarding shown",
+    "shown": false
+  },
+  {
+    "utc": "2026-10-15T19:02:28.243388Z",
+    "label": "check",
+    "id": "J1-v2-is-default",
+    "result": "PASS",
+    "visualV2": true,
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-15T19:02:28.250922Z",
+    "label": "check",
+    "id": "J1-dashboard-first",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-15T19:02:28.731520Z",
+    "label": "raw-codes-on-screen",
+    "where": "start",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-15T19:02:28.733031Z",
+    "label": "check",
+    "id": "J1-brain-ready",
+    "result": "PASS",
+    "brain": {
+      "artifacts": "MATCH",
+      "checked_at": 1792090944.4590926,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 11000,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T19:02:39.215965Z",
+    "label": "perf-window",
+    "window": "idle-dashboard",
+    "seconds": 10,
+    "frames": 1381,
+    "build_ms_p50": 0.475,
+    "build_ms_p95": 0.794,
+    "build_ms_max": 24.886,
+    "raster_ms_p50": 1.898,
+    "raster_ms_p95": 2.257,
+    "raster_ms_max": 2.836,
+    "total_ms_p95": 4.241,
+    "over_16ms": 2
+  },
+  {
+    "utc": "2026-10-15T19:02:39.217476Z",
+    "label": "check",
+    "id": "R-no-onboarding",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-15T19:02:39.223537Z",
+    "label": "check",
+    "id": "R-companion-persisted",
+    "result": "PASS",
+    "choice": "lunar"
+  },
+  {
+    "utc": "2026-10-15T19:02:39.224542Z",
+    "label": "check",
+    "id": "R-theme-persisted",
+    "result": "PASS",
+    "theme": "snowArchive"
+  },
+  {
+    "utc": "2026-10-15T19:02:40.389007Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#b4337(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-15T19:02:45.288027Z",
+    "label": "turn",
+    "scenario": "returning conversation",
+    "request": "Reply with exactly the word ready.",
+    "text": "ready",
+    "core_message": "I can only act on an explicit request in this mode (for example: 'remember that ...').",
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": "CONVERSATION",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": 2,
+      "draft_n_accepted": 0,
+      "first_answer_s": 0.8301,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 2,
+      "predicted_per_second": 43.07745326096322,
+      "prompt_n": 761,
+      "prompt_per_second": 1442.850967335826,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.8535,
+      "ttft_s": 0.8301
+    },
+    "application_seconds": 4.895,
+    "frames_during_turn": {
+      "frames": 671,
+      "build_ms_p50": 0.543,
+      "build_ms_p95": 1.49,
+      "build_ms_max": 46.202,
+      "raster_ms_p50": 1.904,
+      "raster_ms_p95": 2.444,
+      "raster_ms_max": 3.382,
+      "total_ms_p95": 5.085,
+      "over_16ms": 6
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T19:02:45.289155Z",
+    "label": "check",
+    "id": "R-conversation",
+    "result": "PASS",
+    "text": "ready"
+  },
+  {
+    "utc": "2026-10-15T19:02:50.307158Z",
+    "label": "check",
+    "id": "R-restored",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-15T19:02:50.307158Z",
+    "label": "summary",
+    "failures": [],
+    "flutter_errors": 0,
+    "elapsed_s": 29.412
+  }
+]
