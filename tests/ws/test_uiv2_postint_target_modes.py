@@ -160,3 +160,22 @@ def test_closing_a_replacing_draft_brings_the_replaced_one_back(fake, tmp_path):
     after = b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "discard"})["draft"]
     assert after["draft_id"] == letter["draft_id"] and after["current"] == letter["current"]
     assert b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "discard"})["draft"] is None
+
+
+def test_typed_close_emits_the_restored_draft_and_describes_it(fake, tmp_path):
+    """A typed Close must give the UI the same draft the worker now holds."""
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(_notice("Library opens at 8 am."))}]
+    turn(b, WARDEN)
+    letter = _draft(b)
+    turn(b, "Draft a new notice that the library will open at 8 am from Monday.", input=CONVERSATION)
+
+    turn(b, "Close draft", input=DRAFT)
+    restored = _draft(b)
+    assert restored["draft_id"] == letter["draft_id"]
+    assert frames.data("draft.updated")[-1] == {"op": "discard", "draft": restored}
+    assert "earlier letter draft is back" in frames.data("answer.delta")[-1]["text"]
+
+    turn(b, "Close draft", input=DRAFT)
+    assert _draft(b) is None
+    assert frames.data("draft.updated")[-1] == {"op": "discard", "draft": None}

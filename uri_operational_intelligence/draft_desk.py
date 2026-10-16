@@ -396,9 +396,13 @@ class DraftDesk:
             return {"status": "ok", "draft": snap}
         snap = self.op(session_id, op)
         if op == "discard":
-            emit("draft.updated", op="discard", draft=None)
-            self._say(emit, "Draft closed. Nothing was saved or sent.")
-            return {"status": "ok", "draft": None}
+            emit("draft.updated", op="discard", draft=snap)
+            if snap is None:
+                self._say(emit, "Draft closed. Nothing was saved or sent.")
+            else:
+                self._say(emit, "Draft closed. Your earlier %s draft is back. Nothing was saved or sent."
+                          % snap["doc_type"])
+            return {"status": "ok", "draft": snap}
         emit("draft.updated", op=op, draft=snap)
         cur = snap["current"]
         msg = {"undo": "Undone. Showing version %d of %d (%s).", "redo": "Redone. Showing version %d of %d (%s).",
