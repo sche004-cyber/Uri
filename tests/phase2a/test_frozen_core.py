@@ -130,6 +130,11 @@ ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "d
                "tests/web/test_w1_r6_review_regressions.py",
                "tests/web/test_w1_r9_review_regressions.py",
                "tests/ws/test_ws_flake_1_request_stamp.py",
+               # FCV-R tests added 2026-10-14 (1ad57c69, ee484938, 580c748c), missed in this list; FCV-R session asked
+               # for them here (2026-10-16) so both candidates do not edit the list separately.
+               "tests/ws/test_fcv_ux_repairs.py",
+               "tests/ws/test_ws_answer_context.py",
+               "tests/ws/test_ws_clarification_context.py",
                "uri_assist/browser_extension/probe.js",
                "uri_assist/onscreen.py",
                "uri_web/confusables_ascii.py",
