@@ -55,6 +55,17 @@ Repairs:
 - UI: the draft changes only from the Workspace conversation (`UiPresentationController.draftInView`). Elsewhere a
   turn goes as input mode `command` (existing TI L-2 contract: the ordinary path, never a draft). The Companion chat
   says "A draft is open in Workspace. Messages here do not change it." Dictation stays explicit content.
+- Explicit target (revision after review rounds R1–R3, 2026-10-16): three Codex rounds each found new
+  counterexamples for the classifier in both directions ("Change the date of my appointment to Friday" taken as an
+  edit; "Replace the name with Ravi" missed). A deterministic classifier cannot decide intent for every
+  conversational sentence, and "make it shorter" is genuinely ambiguous between the last answer and the draft. The
+  guarantee is therefore an explicit, visible target: while a draft is open the Workspace composer shows a chip,
+  "To: <type> draft" or "To: conversation"; one tap switches. With "To: conversation" every turn is mode `command`,
+  enforced by the worker contract: nothing can change the draft. With "To: <type> draft" (the default, so the
+  accepted drafting flow keeps working without an extra step) the message is addressed to the draft and the
+  classifier still answers ordinary chat instead of editing (best effort, R1–R3 cases as regression tests). Every
+  draft change is visible (version, Changes view) and reversible (Undo). A new draft starts with the draft as target.
+  Owner preference recorded below: the default target.
 - Retention: a new document keeps the draft it replaced (one level). Undo on its first version brings the replaced
   draft back unchanged; Redo returns; a new edit ends the way forward. The draft panel says "Replaced your earlier
   <type> · Undo brings it back". No confirmation prompt is added for conversation.
@@ -98,8 +109,12 @@ with an imitation, which the owner rules exclude. F5 stays OPEN as an owner pref
 
 ## Acceptance criteria
 
-- AC-1 (F1) Ordinary chat with a draft open never changes it, in the Workspace and in the Companion (live l9 repeated:
-  J14-chat-does-not-edit, J7-draft-untouched); Python regression `tests/ws/test_uiv2_f1_draft_integrity.py`.
+- AC-1 (F1) Deterministic boundary: no turn from a surface that does not show the draft (Companion, dashboard, voice
+  outside the Workspace conversation) and no Workspace turn with the target "To: conversation" can change the draft
+  (mode `command`; Python bridge test, Flutter tests, live J7-draft-untouched, J14-target-conversation). Best effort
+  within "To: draft": ordinary chat is answered, not applied (live l9 repeated: J14-chat-does-not-edit; classifier
+  regression tables `tests/ws/test_uiv2_f1_draft_integrity.py`, `test_uiv2_postint_r2_regressions.py`,
+  `test_uiv2_postint_r3_regressions.py`). Every draft change is visible and reversible.
 - AC-2 (F1) Explicit edits still work (J14-explicit-edit-applies; existing TI suites unchanged except two tests whose
   trigger message was chat-like and is now anchored).
 - AC-3 (F1) A new document keeps the replaced draft; Undo restores it unchanged, Redo returns (J14, Python tests).
@@ -123,4 +138,6 @@ with an imitation, which the owner rules exclude. F5 stays OPEN as an owner pref
 
 - Canonical integration of DEV-LIFECYCLE-3B and of this milestone (not authorized).
 - F5: whether any further Companion resemblance work is wanted, given the rule not to replace the working renderer.
+- F1: the Workspace composer's default target while a draft is open: the draft (chosen: keeps the accepted drafting
+  flow) or the conversation (strictest: every edit needs one tap first).
 - `\URIServer` legacy task disable (privileged; evidence in `01_LEGACY_AND_RECEIPTS.md`).

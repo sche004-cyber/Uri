@@ -446,7 +446,22 @@ class OiConversation extends ChangeNotifier {
   /// (Workspace). From anywhere else ([draftInView] false: Companion,
   /// dashboard, voice while the draft is not on screen) a turn goes as
   /// mode "command": the ordinary path, never a draft edit.
-  bool _scopeToCommand(bool draftInView) => draft != null && !draftInView;
+  bool _scopeToCommand(bool draftInView) => draft != null && !(draftInView && _draftTargetFor(draft!));
+
+  /// UIV2-F1: the Workspace composer's explicit target while a draft is
+  /// open: the draft (default, the accepted drafting flow: "make it
+  /// shorter") or the conversation (mode "command": nothing can change the
+  /// draft). A new draft starts with the draft as target again.
+  bool get draftTarget => draft == null || _draftTargetFor(draft!);
+  bool _targetConversation = false;
+  String? _targetDraftId;
+  bool _draftTargetFor(OiDraft d) => !(_targetConversation && _targetDraftId == d.draftId);
+
+  void setDraftTarget(bool toDraft) {
+    _targetConversation = !toDraft;
+    _targetDraftId = draft?.draftId;
+    notifyListeners();
+  }
 
   /// Sends the user's words as a turn. Never a decision, whatever it says.
   /// With [transcriptMode] on, the words are sent as a simulated transcript.

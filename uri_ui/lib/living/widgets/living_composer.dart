@@ -136,9 +136,40 @@ class _LivingComposerState extends State<LivingComposer> {
       listenable: oi == null ? appState : Listenable.merge([appState, oi]),
       builder: (context, _) {
         final sending = oi != null ? oi.busy : appState.isSendingAsk;
+        final presentation = LivingScope.of(context).presentation;
+        final draft = oi?.draft;
         final content = Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // UIV2-F1: while a draft is open the Workspace composer shows where
+            // the message goes; one tap switches it to the conversation, where
+            // nothing can change the draft.
+            if (oi != null && draft != null && !widget.minimal && presentation.draftInView)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Tooltip(
+                    message: oi.draftTarget
+                        ? 'Messages are instructions for the open draft. Tap to talk to URI without changing it.'
+                        : 'Messages go to the conversation and never change the draft. Tap to edit the draft again.',
+                    child: ActionChip(
+                      key: const ValueKey('composer-draft-target'),
+                      visualDensity: VisualDensity.compact,
+                      avatar: Icon(
+                        oi.draftTarget ? Icons.edit_note_rounded : Icons.chat_bubble_outline_rounded,
+                        size: 16,
+                        color: oi.draftTarget ? c.accent : c.inkSoft,
+                      ),
+                      label: Text(
+                        oi.draftTarget ? 'To: ${draft.docType} draft' : 'To: conversation',
+                        style: TextStyle(fontSize: 12, color: c.ink),
+                      ),
+                      onPressed: () => oi.setDraftTarget(!oi.draftTarget),
+                    ),
+                  ),
+                ),
+              ),
             // UIV2-F3: the row never overflows while the window shrinks into
             // Companion: optional buttons step aside on narrow widths.
             LayoutBuilder(builder: (context, box) {

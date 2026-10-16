@@ -217,7 +217,7 @@ _PREFIX = r"^\s*(?:(?:uri|ok|okay|no|also|and|but|now|please|pls|kindly|sorry|hm
 _WEAK_START = re.compile(
     _PREFIX + r"(?P<verb>make|keep|add|insert|include|use|say|call|write|set|update|start|begin|end|put|address|sign|"
     r"mark|leave|skip|spell|refer|drop|cut|fix|correct|improve|expand|simplify|polish|change|move|it'?s|its|not|"
-    r"instead|actually|it should|that should|should)\b", re.I)
+    r"instead|actually|it should|that should|should|i meant|i mean|it was|make that)\b", re.I)
 _PRONOUN_OK = ("make", "keep", "add", "insert", "include", "write", "put", "address", "sign", "end", "start", "begin",
                "spell", "change", "move", "fix", "correct", "improve", "expand", "simplify", "polish", "cut", "refer")
 # A part of a document, named with a determiner ("the date", "a line", "that word"; never "in three words").
@@ -229,7 +229,11 @@ _ANCHOR = re.compile(
     r"paragraphs|wording|tone|version|draft|letter|e-?mail|note|notice|circular|memo|application|reply|"
     r"message|document|text|amount|figure|number|deadline|venue|signature|details?)\b", re.I)
 _CORRECTION = re.compile(r"\bnot\s+\w+\s+\w+[^,.;!?]{0,60},\s*(?:but\s+)?\w|"
-                         r"\b(?:i meant|i mean|make that)\b", re.I)
+                         r"\b(?:i meant|i mean)\b(?!\s+to\b)|\bmake that\b", re.I)
+# "my appointment", "my last message": the user's own thing, not the open draft (unless the draft names it).
+_MY_OBJECT = re.compile(r"\b(?:my|your)\s+(?:last\s+|previous\s+|next\s+|own\s+)?(?P<noun>[a-z]+)", re.I)
+_DRAFT_WORDS = frozenset("draft letter note notice email mail document text application circular memo reply "
+                         "signature".split())
 _CORRECTION_CONTEXT = re.compile(r"^\s*(?:actually|sorry|no[,!]?|wait|i mean|i meant|make that)\b", re.I)
 _SET_FIELD = re.compile(_PREFIX + r"set\s+(?:the|a|my|your)\s+(?:date|day|time)\b", re.I)
 _DOCUMENT_REF = re.compile(r"\b(?:draft|letter|document|e-?mail|note|notice|circular|memo|application)\b", re.I)
@@ -257,6 +261,10 @@ def _shares_draft_content(t: str, draft_text: str | None) -> bool:
 def _anchored(t: str, draft_text: str | None = None) -> bool:
     """True when a revision-looking message refers to the document (UIV2-F1)."""
     head = t[:400]
+    mine = _MY_OBJECT.search(head)
+    if mine and mine.group("noun").lower() not in _DRAFT_WORDS and \
+            mine.group("noun").lower() not in _content_tokens(draft_text):
+        return False                        # "change the date of my appointment", "delete my last message"
     if re.search(r"\b(?:change|update|set)\s+your\s+name\b", head, re.I):
         return False                        # "your name" addresses URI, even if the draft has [Your Name]
     if _SET_FIELD.match(t) and not _DOCUMENT_REF.search(head):
@@ -277,6 +285,8 @@ def _anchored(t: str, draft_text: str | None = None) -> bool:
         if any(p.lower() in ("it", "this", "that") or (draft_text and p.lower() in draft_text.lower())
                for p in tg["phrases"]):
             return True
+        if any(_content_tokens(p) & _content_tokens(draft_text) for p in tg["phrases"]):
+            return True                     # "replace the name with Ravi" where the draft has "[Your Name]"
         if re.search(r"\b(?:don'?t|do not|dont)\s+(?:say|write|use|mention)\b", head, re.I):
             return True
         if not _ANCHOR.search(head):

@@ -105,6 +105,55 @@ void main() {
       expect((rt.commands.last['input'] as Map)['mode'], 'dictation');
     });
 
+    test('the Workspace draft target: conversation means mode command; a new draft targets the draft again', () async {
+      final rt = FakeRuntime();
+      final conv = OiConversation(rt);
+      await conv.send('draft a letter');
+      await openDraft(rt, conv, 't1');
+      expect(conv.draftTarget, isTrue);
+      conv.setDraftTarget(false);
+      expect(conv.draftTarget, isFalse);
+      await conv.send('Tell me a joke in a formal tone');   // typed in the Workspace, target conversation
+      expect((rt.commands.last['input'] as Map)['mode'], 'command');
+      rt.emit('t2', 'turn.finished', {'status': 'ok'});
+      await pumpEventQueue();
+      conv.setDraftTarget(true);
+      await conv.send('Make it shorter');
+      expect(rt.commands.last.containsKey('input'), isFalse);
+      rt.emit('t3', 'turn.finished', {'status': 'ok'});
+      await pumpEventQueue();
+      conv.setDraftTarget(false);
+      rt.emit('t3', 'draft.updated', {
+        'op': 'created',
+        'draft': {...snapshot(current: v1, previous: null, position: 1, count: 1, simulated: false), 'draft_id': 'd2'},
+      });
+      await pumpEventQueue();
+      expect(conv.draft!.draftId, 'd2');
+      expect(conv.draftTarget, isTrue, reason: 'a new draft starts with the draft as target');
+    });
+
+    testWidgets('the Workspace composer shows the draft target chip and switches it', (tester) async {
+      final (rt, s) = await pumpRoot(tester, const Size(1280, 860));
+      await tester.runAsync(() async {
+        await s.oi!.send('draft a letter');
+        await openDraft(rt, s.oi!, 't1');
+      });
+      s.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.conversation);
+      await settle(tester);
+      final chip = find.byKey(const ValueKey('composer-draft-target'));
+      expect(chip, findsOneWidget);
+      expect(find.text('To: letter draft'), findsOneWidget);
+      await tester.tap(chip);
+      await settle(tester);
+      expect(s.oi!.draftTarget, isFalse);
+      expect(find.text('To: conversation'), findsOneWidget);
+      s.presentation.setMode(UiPresentationMode.dashboard);
+      await settle(tester);
+      expect(find.byKey(const ValueKey('composer-draft-target')), findsNothing);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    });
+
     test('the draft is in view only in the Workspace conversation', () {
       final p = UiPresentationController(commandCooldown: Duration.zero);
       addTearDown(p.dispose);
