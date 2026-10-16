@@ -604,15 +604,17 @@ class _ItemsPanel extends StatelessWidget {
             IconButton(
               key: ValueKey('authoring-bold-$shape'),
               tooltip: 'Bold',
+              isSelected: it['bold'] == true,
               onPressed: e.busy ? null : () => e.op({'op': 'format_text', 'slide': sid, 'shape': shape,
-                  'format': {'b': true}}),
+                  'format': {'b': it['bold'] != true}}),
               icon: const Icon(Icons.format_bold_rounded, size: 16),
             ),
             IconButton(
               key: ValueKey('authoring-italic-$shape'),
               tooltip: 'Italic',
+              isSelected: it['italic'] == true,
               onPressed: e.busy ? null : () => e.op({'op': 'format_text', 'slide': sid, 'shape': shape,
-                  'format': {'i': true}}),
+                  'format': {'i': it['italic'] != true}}),
               icon: const Icon(Icons.format_italic_rounded, size: 16),
             ),
             PopupMenuButton<int>(

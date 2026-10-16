@@ -305,6 +305,10 @@ def describe(prs) -> dict:
                                                          "w": round(sh.width / W, 4), "h": round(sh.height / H, 4)}}
             if sh.has_text_frame:
                 it["paragraphs"] = [p.text for p in sh.text_frame.paragraphs]
+                runs = [r for p in sh.text_frame.paragraphs for r in p.runs if r.text.strip()]
+                # every run bold / italic (explicitly); the buttons turn it off again
+                it["bold"] = bool(runs) and all(r.font.bold is True for r in runs)
+                it["italic"] = bool(runs) and all(r.font.italic is True for r in runs)
             if sh.has_table:
                 it["cells"] = [[c.text for c in r.cells] for r in sh.table.rows][:MAX_TABLE]
             items.append(it)

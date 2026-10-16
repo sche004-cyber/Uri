@@ -458,7 +458,10 @@ def describe(doc) -> dict:
                 level = int(style[8:])
             elif style == "Title":
                 level = 0
+            runs = [r for r in p.runs if r.text.strip()]
             it.update(kind="paragraph", style=style, level=level, text=p.text[:4000],
+                      bold=bool(runs) and all(r.bold is True for r in runs),
+                      italic=bool(runs) and all(r.italic is True for r in runs),
                       picture=el.find(".//" + _W + "drawing") is not None,
                       page_break=any(b.get(qn("w:type")) == "page" for b in el.iter(_W + "br")),
                       section_break=_section_break(el), locked=_foreign(el))

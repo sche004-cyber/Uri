@@ -170,6 +170,8 @@ def test_describe_lists_slides_items_and_layouts():
     assert d["slides"][1]["notes"] == "Say thanks"
     title = next(it for it in d["slides"][1]["items"] if it["id"] == d["slides"][1]["title_id"])
     assert title["paragraphs"] == ["Highlights"]
+    body = next(it for it in d["slides"][1]["items"] if it.get("paragraphs") == ["Revenue up", "Costs flat"])
+    assert body["bold"] is False                                   # only the first paragraph is bold
     assert "Title and Content" in d["layouts"]
 
 

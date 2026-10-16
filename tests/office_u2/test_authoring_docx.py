@@ -95,6 +95,7 @@ def test_describe_lists_blocks_styles_page_and_header(png):
     assert v["blocks"][4]["cells"] == [["Item", "Cost"], ["Paper", "100"]]
     assert v["blocks"][5]["locked"] == "a comment" and v["blocks"][6]["locked"] == "a tracked change"
     assert v["blocks"][7]["picture"] is True
+    assert v["blocks"][2]["bold"] is True and v["blocks"][3]["bold"] is False      # the Bold button can turn it off
     assert v["header"] == "Department of Records" and v["footer"] == "Internal"
     assert {"Normal", "Heading 1", "Title"} <= set(v["styles"])
     assert v["page"]["sections"] == 1

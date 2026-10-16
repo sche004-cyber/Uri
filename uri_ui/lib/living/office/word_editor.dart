@@ -290,13 +290,15 @@ class _BlockPanel extends StatelessWidget {
         IconButton(
           key: const ValueKey('authoring-para-bold'),
           tooltip: 'Bold',
-          onPressed: e.busy ? null : () => e.op({'op': 'format_text', ...e.at(i), 'format': {'b': true}}),
+          isSelected: b['bold'] == true,
+          onPressed: e.busy ? null : () => e.op({'op': 'format_text', ...e.at(i), 'format': {'b': b['bold'] != true}}),
           icon: const Icon(Icons.format_bold_rounded, size: 16),
         ),
         IconButton(
           key: const ValueKey('authoring-para-italic'),
           tooltip: 'Italic',
-          onPressed: e.busy ? null : () => e.op({'op': 'format_text', ...e.at(i), 'format': {'i': true}}),
+          isSelected: b['italic'] == true,
+          onPressed: e.busy ? null : () => e.op({'op': 'format_text', ...e.at(i), 'format': {'i': b['italic'] != true}}),
           icon: const Icon(Icons.format_italic_rounded, size: 16),
         ),
         PopupMenuButton<String>(

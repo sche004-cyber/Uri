@@ -193,6 +193,11 @@ void main() {
     await _settle(tester);
     expect(fake.ops.last, {'op': 'set_style', 'block': 2, 'expect': 'b22222222222', 'style': 'Quote'});
 
+    // Bold turns on, and the button shows it so a second press turns it off
+    await tester.tap(find.byKey(const ValueKey('authoring-para-bold')));
+    await _settle(tester);
+    expect(fake.ops.last['format'], {'b': true});
+
     // insert a table after it; the new block is selected
     await tester.tap(find.byKey(const ValueKey('authoring-insert-table')));
     await _settle(tester);
