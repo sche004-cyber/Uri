@@ -383,9 +383,12 @@ def _shift_defined_names(parts: dict, target: str, sh: _Shift):
     dns = wb.find(M + "definedNames")
     changed = False
     if dns is not None:
+        sheet_names = [s.get("name") for s in wb.find(M + "sheets").iterfind(M + "sheet")]
+        target_local_id = str(sheet_names.index(target))
         for dn in dns:
-            if dn.text and any(n.casefold() in dn.text.casefold() for n in _quoted_names(target)):
-                new = shift_formula(dn.text, sh, target, "\0no-sheet")
+            local_on_target = dn.get("localSheetId") == target_local_id
+            if dn.text and (local_on_target or any(n.casefold() in dn.text.casefold() for n in _quoted_names(target))):
+                new = shift_formula(dn.text, sh, target, target if local_on_target else "\0no-sheet")
                 if new != dn.text:
                     dn.text = new
                     changed = True

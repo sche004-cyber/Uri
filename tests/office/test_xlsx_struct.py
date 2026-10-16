@@ -114,6 +114,24 @@ def test_merges_conditional_formats_validation_hyperlinks_and_names_move():
     assert wb.defined_names["Amounts"].attr_text == "Budget!$B$2:$B$8"
 
 
+@pytest.mark.parametrize("sheet, budget_ref, notes_ref", [
+    ("Budget", "$A$6", "$A$5"),
+    ("Notes & 'Plan'", "$A$5", "$A$6"),
+])
+def test_insert_shifts_unqualified_name_only_on_its_local_sheet(sheet, budget_ref, notes_ref):
+    from openpyxl.workbook.defined_name import DefinedName
+
+    def extra(wb, ws):
+        ws.defined_names.add(DefinedName("BudgetLocal", attr_text="$A$5"))
+        wb["Notes & 'Plan'"].defined_names.add(DefinedName("NotesLocal", attr_text="$A$5"))
+
+    parts = parts_of(budget_bytes(extra))
+    S.apply_row_op(parts, {"op": "insert_rows", "sheet": sheet, "at": 3, "count": 1})
+    wb = to_wb(parts)
+    assert wb["Budget"].defined_names["BudgetLocal"].attr_text == budget_ref
+    assert wb["Notes & 'Plan'"].defined_names["NotesLocal"].attr_text == notes_ref
+
+
 def test_shared_formulas_are_written_out_before_moving():
     parts = parts_of(budget_bytes())
     sheet = "xl/worksheets/sheet1.xml"
