@@ -132,6 +132,29 @@ def test_drv3_dependencies_are_prepared_and_tests_really_execute(tmp_path):
     assert L.verify(cfg) == []
 
 
+@pytest.mark.parametrize("invalid", [None, 0, ""])
+def test_r301_pub_offline_requires_explicit_boolean_false(tmp_path, invalid):
+    make_dart_fixture(tmp_path)
+    tool = fake_tool(tmp_path)
+    gate = flutter_gate(tool, pub_offline=invalid)
+    logs = tmp_path / "logs"
+    logs.mkdir()
+    prep = L.prepare_dart_dependencies(gate, tool, tmp_path / "impl/app", logs)
+    assert prep["cmd"][1:] == ["pub", "get", "--enforce-lockfile", "--offline"]
+    with pytest.raises(L.LifecycleError, match="pub_offline"):
+        run_cfg(tmp_path, [gate])
+
+
+def test_r301_explicit_false_allows_online_pub_get(tmp_path):
+    make_dart_fixture(tmp_path)
+    tool = fake_tool(tmp_path)
+    cfg = run_cfg(tmp_path, [flutter_gate(tool, pub_offline=False)])
+    assert L.run(cfg) == S.VERIFIED
+    st = L.State(cfg)
+    prep = st.d["gates"][st.d["candidate"]]["gates"]["flutter"]["candidate"]["prepare"]
+    assert prep["cmd"][1:] == ["pub", "get", "--enforce-lockfile"]
+
+
 def test_drv3_offline_dependency_failure_blocks_transparently(tmp_path):
     make_dart_fixture(tmp_path)
     tool = fake_tool(tmp_path)
@@ -235,6 +258,24 @@ def test_drv3_baseline_cache_follows_toolchain_and_gate_schema(tmp_path, monkeyp
     st = L.State(cfg)
     L.qualify(cfg, st, sha)
     assert baseline_runs() == 3
+
+
+def test_r302_removing_zero_test_justification_invalidates_baseline_cache(tmp_path):
+    make_dart_fixture(tmp_path, base_tests="", cand_tests="")
+    tool = fake_tool(tmp_path)
+    cfg = run_cfg(tmp_path, [flutter_gate(tool, allow_zero_tests="no tests by design")])
+    assert L.run(cfg) == S.VERIFIED
+    st = L.State(cfg)
+    assert st.d["baseline_gates"]["flutter"]["result"]["evidence"] == "EXECUTED"
+    before = len([e for e in L._chained_events(st) if e["kind"] == "BASELINE_GATE"])
+
+    del cfg["gates"][0]["allow_zero_tests"]
+    result = L.qualify(cfg, st, st.d["candidate"])
+    gate = result["gates"]["flutter"]
+    assert result["ok"] is False
+    assert "INFRA no test execution" in result["blocked"]
+    assert gate["candidate"]["evidence"] == gate["baseline"]["evidence"] == "ZERO_TESTS"
+    assert len([e for e in L._chained_events(st) if e["kind"] == "BASELINE_GATE"]) == before + 1
 
 
 def test_r202_enabling_preparation_invalidates_no_report_baseline_cache(tmp_path):

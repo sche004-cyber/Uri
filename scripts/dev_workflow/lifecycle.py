@@ -134,6 +134,9 @@ def load_config(path) -> dict:
     missing = [k for k in ("milestone", "repo", "baseline", "candidate", "reviewer") if k not in cfg]
     if missing:
         raise LifecycleError(f"config missing {missing}")
+    for gate in cfg["gates"]:
+        if "pub_offline" in gate and not isinstance(gate["pub_offline"], bool):
+            raise LifecycleError(f"gate {gate['id']}: pub_offline must be a boolean")
     base = path.parent
     cfg["repo"] = str((base / cfg["repo"]).resolve())
     cfg["state_dir"] = str((Path(cfg["repo"]) / cfg.get("state_dir", f"docs/dev_workflow/lifecycle_runs/"
@@ -701,7 +704,7 @@ def prepare_dart_dependencies(gate: dict, tool: str, gate_dir: Path, log_dir: Pa
     failure of the gate, never a test result."""
     lock = gate_dir / "pubspec.lock"
     before_lock = lock.read_bytes() if lock.is_file() else None
-    cmd = [tool, "pub", "get", "--enforce-lockfile"] + (["--offline"] if gate.get("pub_offline", True) else [])
+    cmd = [tool, "pub", "get", "--enforce-lockfile"] + ([] if gate.get("pub_offline") is False else ["--offline"])
     rc, o, e, state = run_cmd(cmd, gate_dir, gate.get("prepare_timeout_s", 900))
     (log_dir / f"{gate['id']}.prepare.log").write_bytes((o + "\n--- stderr ---\n" + e).encode("utf-8"))
     after_lock = lock.read_bytes() if lock.is_file() else None
@@ -864,7 +867,7 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
                 # Preparation can change whether the baseline runs any tests, even with the same SHA and command.
                 key = chash([st.d["baseline"], g["cmd"], g.get("kind"), g.get("cwd", "."), GATE_SCHEMA,
                              fingerprint, g.get("prepare", True), g.get("pub_offline", True),
-                             g.get("prepare_timeout_s", 900)])
+                             g.get("prepare_timeout_s", 900), g.get("allow_zero_tests")])
                 cached = st.d["baseline_gates"].get(g["id"])
                 # Only a completed baseline run is reused: a timeout, busy GPU lease or other BLOCKED result is
                 # re-tried on the next qualification, each attempt its own BASELINE_GATE event (R3-02).
