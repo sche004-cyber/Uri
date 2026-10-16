@@ -109,6 +109,23 @@ def test_duplicate_refuses_content_it_cannot_copy_and_changes_nothing():
     assert ids(prs) == before
 
 
+def test_duplicate_refuses_linked_speaker_notes_before_changing_deck():
+    prs = load(deck_bytes())
+    source = prs.slides[1]
+    linked = source.notes_slide.notes_text_frame.paragraphs[0].add_run()
+    linked.text = " Review"
+    linked.hyperlink.address = "https://example.org/review"
+    before = save(prs)
+
+    with pytest.raises(OfficeError) as error:
+        P.duplicate_slide(prs, source.slide_id)
+
+    assert error.value.code == "AUTHORING_NOT_SUPPORTED"
+    assert "notes" in error.value.detail and "hyperlink" in error.value.detail
+    assert save(prs) == before
+    assert [s.slide_id for s in prs.slides] == ids(load(before))
+
+
 def test_text_ops_keep_formatting():
     prs = load(deck_bytes())
     b = ids(prs)[1]

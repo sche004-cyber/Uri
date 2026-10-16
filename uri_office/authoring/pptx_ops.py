@@ -177,6 +177,11 @@ def duplicate_slide(prs, sid) -> int:
     for rel in src.part.rels.values():               # every refusal before anything changes (all or nothing)
         if rel.reltype == RT.CHART:
             _chart_copy_plan(rel.target_part)
+    if src.has_notes_slide and any(
+        el.tag in (qn("a:hlinkClick"), qn("a:hlinkMouseOver"))
+        for el in src.notes_slide._element.iter()
+    ):
+        _refuse("speaker notes contain a hyperlink URI cannot preserve")
     new = prs.slides.add_slide(src.slide_layout)
     tree = new.shapes._spTree
     for el in list(tree)[2:]:
