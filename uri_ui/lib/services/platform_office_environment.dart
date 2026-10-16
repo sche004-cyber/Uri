@@ -11,8 +11,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../living/office/office_bridge.dart';
 import '../living/office/office_client.dart';
 import '../living/webview_host/webview2_office_surface.dart';
+import 'windows_shell_dialog_module.dart';
 
-OfficeEnvironment platformOfficeEnvironment() => OfficeEnvironment(
+OfficeEnvironment platformOfficeEnvironment() {
+  keepShellDialogModuleLoaded();        // INT-L2: file dialogs must not unload the shell module under the app
+  return _environment();
+}
+
+OfficeEnvironment _environment() => OfficeEnvironment(
       surfaceFactory: WebView2OfficeSurface.new,
       pickWorkbookPath: () async {
         final f = await FilePicker.pickFile(
