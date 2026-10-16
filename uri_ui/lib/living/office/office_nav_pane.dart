@@ -51,7 +51,7 @@ class OfficeNavPane extends StatelessWidget {
           IconButton(key: const ValueKey('office-nav-sheet'), tooltip: 'Spreadsheet view', onPressed: onOpenSheet,
               icon: const Icon(Icons.grid_on_rounded)),
           IconButton(key: const ValueKey('office-nav-folders'), tooltip: 'Folders URI may use',
-              onPressed: () => OfficeFoldersDialog.show(context, c.client, environment),
+              onPressed: () => OfficeFoldersDialog.show(context, c.client, environment, onAdded: c.folderAdded),
               icon: const Icon(Icons.folder_shared_outlined)),
           // Real-app run 2026-10-15: in the icon strip an open document could not be reached again.
           if (c.documents.isNotEmpty) const Divider(height: UriSpace.md),
@@ -129,7 +129,7 @@ class OfficeNavPane extends StatelessWidget {
           dense: true,
           leading: const Icon(Icons.folder_shared_outlined, size: 18),
           title: const Text('Folders'),
-          onTap: () => OfficeFoldersDialog.show(context, c.client, environment),
+          onTap: () => OfficeFoldersDialog.show(context, c.client, environment, onAdded: c.folderAdded),
         ),
         if (c.available('print_document')) ...[
           const SizedBox(height: UriSpace.sm),

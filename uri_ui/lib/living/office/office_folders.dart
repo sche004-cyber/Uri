@@ -9,13 +9,16 @@ import 'office_client.dart';
 /// folders (any drive, never a whole drive or a system folder) with the Windows folder dialog and removes them here.
 /// The service is the authority: it checks every folder and refuses a removal while a file from it is open.
 class OfficeFoldersDialog extends StatefulWidget {
-  const OfficeFoldersDialog({super.key, required this.client, this.environment});
+  const OfficeFoldersDialog({super.key, required this.client, this.environment, this.onAdded});
   final OfficeClient client;
   final OfficeEnvironment? environment;
+  /// Called after a folder was added (the workspace clears its "not allowed yet" message; live run a1).
+  final VoidCallback? onAdded;
 
-  static Future<void> show(BuildContext context, OfficeClient client, OfficeEnvironment? environment) =>
+  static Future<void> show(BuildContext context, OfficeClient client, OfficeEnvironment? environment,
+          {VoidCallback? onAdded}) =>
       showDialog<void>(context: context,
-          builder: (_) => OfficeFoldersDialog(client: client, environment: environment));
+          builder: (_) => OfficeFoldersDialog(client: client, environment: environment, onAdded: onAdded));
 
   @override
   State<OfficeFoldersDialog> createState() => _OfficeFoldersDialogState();
@@ -58,6 +61,7 @@ class _OfficeFoldersDialogState extends State<OfficeFoldersDialog> {
     final path = await pick();
     if (path == null) return;
     await _run(() => widget.client.addFolder(path), done: 'Added. URI can now open and save files in that folder.');
+    if (mounted && _message == 'Added. URI can now open and save files in that folder.') widget.onAdded?.call();
   }
 
   @override

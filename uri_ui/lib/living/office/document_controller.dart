@@ -458,6 +458,15 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     return bytes;
   }
 
+  /// OD-R1: a folder was added; a "not allowed yet" message about it is no longer true.
+  void folderAdded() {
+    if (lastErrorCode == 'PATH_REFUSED') {
+      lastError = null;
+      lastErrorCode = null;
+      _notify();
+    }
+  }
+
   void selectPage(int p) {
     selectedPage = p;
     _notify();

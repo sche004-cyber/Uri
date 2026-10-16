@@ -44,9 +44,10 @@ void main() {
       openExternalLink: (_) async {},
       pickFolderPath: () async => r'D:\Work\Budgets',
     );
+    var addedCalls = 0;
     await tester.pumpWidget(MaterialApp(
       theme: ThemeData(extensions: const [UriColors.graphite]),
-      home: Scaffold(body: OfficeFoldersDialog(client: client, environment: env)),
+      home: Scaffold(body: OfficeFoldersDialog(client: client, environment: env, onAdded: () => addedCalls++)),
     ));
     await tester.pumpAndSettle();
     expect(find.text(r'C:\Users\me'), findsOneWidget);
@@ -56,6 +57,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(r'D:\Work\Budgets'), findsOneWidget);
     expect(find.textContaining('Added.'), findsOneWidget);
+    expect(addedCalls, 1, reason: 'live run a1: the workspace clears its "not allowed yet" message');
 
     await tester.tap(find.byKey(const ValueKey(r'office-folder-remove-D:\Work\Budgets')));
     await tester.pumpAndSettle();
