@@ -20,7 +20,7 @@ from uri_a2ui.surface import canonical
 
 from . import refs
 from .errors import OfficeError
-from .ops import _XML_INVALID
+from .ops import _XML_INVALID, describe_op
 
 MAX_VERSIONS = 50
 MAX_CHANGES = 20_000
@@ -142,7 +142,11 @@ class Draft:
                 self._sheet_op(e)
                 ch = self._new("uri", "struct", "accepted", op=e, sheet=e.get("sheet") or e.get("name"))
             elif "op" in e:
-                ch = self._new("uri", "struct", "proposed", op=e, sheet=e.get("sheet"))
+                op = dict(e)
+                if op["op"] == "delete_rows":           # the card shows what the rows hold now (OD-R2: before values)
+                    op["shown"] = self._rows_now(op["sheet"], op["at"], op["count"])
+                ch = self._new("uri", "struct", "proposed", op=op, sheet=e.get("sheet"))
+                ch["text"] = describe_op(op)
             else:
                 cell = self._check_cell(e["sheet"], e["cell"])
                 ch = self._new("uri", "cell", "proposed", sheet=e["sheet"], cell=cell,
@@ -150,6 +154,23 @@ class Draft:
             self.changes.append(ch)
             new.append(ch)
         return new
+
+    def _rows_now(self, sheet: str, at: int, count: int) -> list:
+        """Values of rows at..at+count-1 as the draft holds them (accepted and own changes included), columns A to the
+        last used one, at most 50 rows."""
+        cells = dict(self.base.get(sheet, {}))
+        for ch in self.changes:
+            if ch["kind"] == "cell" and ch["sheet"] == sheet and ch["state"] in ("accepted", "user"):
+                cells[ch["cell"]] = ch["after"]
+        out = []
+        for r in range(at, at + min(count, 50)):
+            row = {}
+            for ref, c in cells.items():
+                col, rr = refs.parse_cell(ref)
+                if rr == r and (c.get("f") or c.get("v") not in (None, "")):
+                    row[col] = {"f": c["f"]} if c.get("f") else {"v": c.get("v")}
+            out.append([row.get(col, {"v": None}) for col in range(1, max(row) + 1)] if row else [])
+        return out
 
     def _sheet_op(self, op: dict):
         """New workbook only: add a sheet now. Undo and redo restore the sheets with the changes."""

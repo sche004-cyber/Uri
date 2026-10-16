@@ -295,8 +295,9 @@ class Approvals:
         # The card shows the whole change set the hash binds (every edit with its full before/after, every structural
         # op, the full destination). A set too large for one card is refused, never shortened.
         lines = [f"{e['sheet']}!{e['cell']}: {_shown(e['before'])} -> {_shown(e['after'])}" for e in body["edits"]]
-        lines += [" ".join(f"{k}={json.dumps(op[k], ensure_ascii=False)}" for k in sorted(op))
-                  for op in body["struct_ops"]]
+        # OD-R2: structural changes in plain words, rows to be deleted with what they hold now.
+        from .ops import describe_op
+        lines += [describe_op(op) for op in body["struct_ops"]]
         if new_file:
             # M2-D1: a new file changes no existing data and can hold far more cells than a card can show, so the card
             # summarises it; the hash still binds every cell, and a later draft change makes this approval stale.

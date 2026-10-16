@@ -325,7 +325,7 @@ class _OfficeSheetCompanionState extends State<OfficeSheetCompanion> {
   }
 
   static String _describe(Map<String, dynamic> ch) {
-    if (ch['kind'] == 'struct') return 'Structure: ${ch['op']}';
+    if (ch['kind'] == 'struct') return (ch['text'] as String?) ?? 'Structure: ${ch['op']}';
     final after = (ch['after'] as Map?) ?? const {};
     final v = after['f'] ?? after['v'];
     return '${ch['sheet']}!${ch['cell']} -> ${v ?? '(empty)'}';

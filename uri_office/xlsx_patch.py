@@ -212,9 +212,11 @@ def locked_cells(path: Path) -> dict:
     return out
 
 
-def patch(src: Path, dst: Path, edits: list) -> dict:
-    """Apply `edits` to the package at `src` and write the result to `dst` (may equal `src`)."""
-    if not edits:
+def patch(src: Path, dst: Path, edits: list, struct_ops=()) -> dict:
+    """Apply `edits` to the package at `src` and write the result to `dst` (may equal `src`). Cell edits name cells
+    as shown (before any row moves), as for Google; then `struct_ops` (local row insert/delete, OD-R3) run in order,
+    each insert followed by the values it carries, written into its new rows."""
+    if not edits and not struct_ops:
         raise OfficeError("NOTHING_TO_SAVE")
     try:
         zin = zipfile.ZipFile(src)
@@ -223,6 +225,7 @@ def patch(src: Path, dst: Path, edits: list) -> dict:
     with zin:
         order = zin.infolist()
         parts = {i.filename: zin.read(i.filename) for i in order}
+    orig = dict(parts)
     by_sheet = sheet_parts(parts)
     grouped: dict[str, list] = {}
     for e in edits:
@@ -247,6 +250,28 @@ def patch(src: Path, dst: Path, edits: list) -> dict:
         _extend_dimension(root, [e["cell"] for e in es])
         parts[part] = _ser(root)
         changed.add(part)
+    if struct_ops:
+        from . import xlsx_struct
+        for op in struct_ops:
+            xlsx_struct.apply_row_op(parts, op)
+            if op.get("values"):
+                part = sheet_parts(parts)[op["sheet"]]
+                root = _xml(parts[part])
+                sd = root.find(M + "sheetData")
+                cells = []
+                for dr, row in enumerate(op["values"]):
+                    for dc, cell in enumerate(row):
+                        if cell.get("v") in (None, "") and not cell.get("f"):
+                            continue
+                        ref = refs.cell_ref(1 + dc, op["at"] + dr)
+                        if _in_merged_non_anchor(root, 1 + dc, op["at"] + dr):
+                            raise OfficeError("CELL_NOT_EDITABLE", f"{ref}: inside a merged range")
+                        formulas |= _set_cell(_get_cell(sd, ref), {"formula": cell["f"]} if cell.get("f")
+                                              else {"value": cell["v"]})
+                        cells.append(ref)
+                _extend_dimension(root, cells)
+                parts[part] = _ser(root)
+        changed |= {n for n in parts if parts[n] != orig.get(n)} | {n for n in orig if n not in parts}
     wb = _xml(parts["xl/workbook.xml"])
     calc = wb.find(M + "calcPr")
     if calc is None:
