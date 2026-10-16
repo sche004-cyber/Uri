@@ -660,6 +660,54 @@ def parse_flutter_machine(text: str) -> dict:
 
 NOBYTECODE = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
 GPU_LEASE_BUSY = 75  # uri_operational_intelligence.gpu_lease `run` exit code on GpuBusy
+# Gate result semantics version: part of the baseline cache key, so a baseline result recorded under older rules
+# (e.g. a Flutter run without packages, DRV-3) is never reused.
+GATE_SCHEMA = 2
+FLUTTER_TOOLS = ("flutter", "flutter.bat", "dart", "dart.bat", "dart.exe")
+
+
+def _flutter_tool(gate: dict, cmd: list[str], gate_dir: Path) -> str | None:
+    """The flutter/dart executable of a gate that runs in a Dart package (pubspec.yaml in its cwd), else None.
+    ``"prepare": false`` on the gate turns dependency preparation off."""
+    if gate.get("prepare") is False or not cmd or not (gate_dir / "pubspec.yaml").is_file():
+        return None
+    return cmd[0] if Path(cmd[0]).name.lower() in FLUTTER_TOOLS else None
+
+
+_TOOLCHAIN: dict[str, str] = {}
+
+
+def flutter_toolchain(tool: str, cwd: Path) -> str:
+    """Fingerprint of the Flutter/Dart toolchain (framework, engine and Dart revisions); bound into the baseline cache
+    key so a toolchain change re-runs the baseline (DRV-3)."""
+    if tool not in _TOOLCHAIN:
+        rc, o, e, state = run_cmd([tool, "--version", "--machine"], cwd, 300)
+        try:
+            v = json.loads(o[o.index("{"):o.rindex("}") + 1]) if rc == 0 and state == "DONE" else {}
+        except ValueError:
+            v = {}
+        keys = ("frameworkRevision", "engineRevision", "dartSdkVersion")
+        _TOOLCHAIN[tool] = "|".join(str(v.get(k, "")) for k in keys) if all(v.get(k) for k in keys) else \
+            "unknown:" + sha256((o or "") + (e or ""))[:16]
+    return _TOOLCHAIN[tool]
+
+
+def prepare_dart_dependencies(gate: dict, tool: str, gate_dir: Path, log_dir: Path) -> dict:
+    """Resolve the package's dependencies in a fresh gate worktree before the gate runs (DRV-3): `pub get` from the
+    shared pub cache (`--offline` unless the gate sets ``"pub_offline": false``) with `--enforce-lockfile`, so the
+    committed pubspec.lock is used as-is and a lock that would change fails. Any failure is an infrastructure
+    failure of the gate, never a test result."""
+    cmd = [tool, "pub", "get", "--enforce-lockfile"] + (["--offline"] if gate.get("pub_offline", True) else [])
+    rc, o, e, state = run_cmd(cmd, gate_dir, gate.get("prepare_timeout_s", 900))
+    (log_dir / f"{gate['id']}.prepare.log").write_bytes((o + "\n--- stderr ---\n" + e).encode("utf-8"))
+    lock = gate_dir / "pubspec.lock"
+    rec = {"cmd": cmd, "exit_code": rc, "state": state,
+           "pubspec_lock_sha256": sha256(lock.read_bytes()) if lock.is_file() else None}
+    if state != "DONE" or rc != 0:
+        rec["error"] = f"dependency preparation failed ({state}, exit {rc}): " + (e or o).strip()[-300:]
+    elif not (gate_dir / ".dart_tool" / "package_config.json").is_file():
+        rec["error"] = "dependency preparation wrote no .dart_tool/package_config.json"
+    return rec
 
 
 def run_cmd(cmd, cwd, timeout) -> tuple:
@@ -710,6 +758,13 @@ def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
     out["cmd"] = cmd
     if junit.exists():
         junit.unlink()
+    tool = _flutter_tool(gate, _expand(gate["cmd"], cfg, wt), wt / gate.get("cwd", "."))
+    if tool:
+        prep = prepare_dart_dependencies(gate, tool, wt / gate.get("cwd", "."), log_dir)
+        out["prepare"] = prep
+        if prep.get("error"):
+            out.update(status="BLOCKED", detail="INFRA " + prep["error"])
+            return out
     rc, stdout, stderr, state = run_cmd(cmd, wt / gate.get("cwd", "."), gate.get("timeout_s", 3600))
     (log_dir / f"{gate['id']}.log").write_bytes((stdout + "\n--- stderr ---\n" + stderr).encode("utf-8"))
     if state != "DONE":
@@ -725,10 +780,21 @@ def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
         out.update(parse_junit(junit) if kind == "pytest" else parse_flutter_machine(stdout))
         normal = (0, 1)
         # A crashed run, an unusable report or a failing exit with no recorded failure is itself a failure.
+        executed = out["passed"] + len(out["failures"])
+        out["executed"] = executed
+        # Execution evidence (DRV-3): a run that produced no report, or executed no test, proves nothing. It is a
+        # failure of this side; when the baseline has the same condition, qualify() blocks instead of comparing.
         if not out["parsed"]:
+            out["evidence"] = "NO_TEST_REPORT"
             out["failures"][run_id] = f"exit {rc}: no test report"
-        elif rc not in normal or (rc != 0 and not out["failures"]):
-            out["failures"][run_id] = f"exit {rc}"
+        elif executed == 0 and not (isinstance(gate.get("allow_zero_tests"), str) and gate["allow_zero_tests"].strip()):
+            # allow_zero_tests must be the written justification, not a bare flag
+            out["evidence"] = "ZERO_TESTS"
+            out["failures"][run_id] = f"exit {rc}: zero tests executed"
+        else:
+            out["evidence"] = "EXECUTED"
+            if rc not in normal or (rc != 0 and not out["failures"]):
+                out["failures"][run_id] = f"exit {rc}"
     else:
         out.update({"failures": {run_id: f"exit {rc}"} if rc else {}, "passed": int(not rc), "skipped": 0,
                     "ids": [run_id], "parsed": True})
@@ -783,7 +849,9 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
                 entry["ok"] = False
                 res["blocked"] = res["blocked"] or f"gate {g['id']}: {r.get('status')} {r.get('detail', '')}"
             else:
-                key = chash([st.d["baseline"], g["cmd"], g.get("kind"), g.get("cwd", ".")])
+                tool = _flutter_tool(g, _expand(g["cmd"], cfg, wt), wt / g.get("cwd", "."))
+                key = chash([st.d["baseline"], g["cmd"], g.get("kind"), g.get("cwd", "."), GATE_SCHEMA,
+                             flutter_toolchain(tool, wt) if tool else None])
                 cached = st.d["baseline_gates"].get(g["id"])
                 # Only a completed baseline run is reused: a timeout, busy GPU lease or other BLOCKED result is
                 # re-tried on the next qualification, each attempt its own BASELINE_GATE event (R3-02).
@@ -797,9 +865,23 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
                 if cached["result"].get("status") != "COMPLETED_WITH_RESULT":
                     entry["ok"] = False
                     res["blocked"] = res["blocked"] or f"baseline gate {g['id']}: {cached['result'].get('status')}"
+                elif cached["result"].get("evidence", "EXECUTED") != "EXECUTED" and \
+                        r.get("evidence", "EXECUTED") != "EXECUTED":
+                    # Neither side executed its tests (DRV-3): matching "failures" prove nothing. Infrastructure,
+                    # not a test result, and never a pass.
+                    entry["ok"] = False
+                    res["blocked"] = res["blocked"] or (
+                        f"gate {g['id']}: INFRA no test execution on candidate ({r['evidence']}) or baseline "
+                        f"({cached['result']['evidence']}): " + "; ".join(r.get("failures", {}).values())[:200])
                 else:
-                    entry["comparison"] = compare(r, cached["result"], cfg["allowed_flaky"])
+                    # A baseline that did not execute is no comparison base: every candidate failure counts as new.
+                    base = cached["result"] if cached["result"].get("evidence", "EXECUTED") == "EXECUTED" else None
+                    entry["comparison"] = compare(r, base, cfg["allowed_flaky"])
                     entry["ok"] = entry["comparison"]["ok"] or not g.get("required", True)
+            if r.get("status") == "COMPLETED_WITH_RESULT" and cached:
+                entry["baseline"] = {k: cached["result"].get(k) for k in
+                                     ("status", "exit_code", "evidence", "executed", "passed", "skipped", "failures",
+                                      "prepare")}
             res["gates"][g["id"]] = entry
             res["ok"] = res["ok"] and entry["ok"]
     finally:
@@ -810,6 +892,18 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
     if res["blocked"]:
         res["ok"] = False
     return res
+
+
+def gate_counts(q: dict) -> dict:
+    """Per-gate execution evidence of a qualification (DRV-3): exit code, executed/passed/skipped/failed counts and
+    the evidence class of the candidate run and of the baseline it was compared with."""
+    def one(r):
+        r = r or {}
+        return {"status": r.get("status"), "exit_code": r.get("exit_code"), "evidence": r.get("evidence"),
+                "executed": r.get("executed"), "passed": r.get("passed"), "skipped": r.get("skipped"),
+                "failed": len(r.get("failures") or {}), "prepared": bool(r.get("prepare"))}
+    return {k: {"candidate": one(v.get("candidate")), "baseline": one(v.get("baseline"))}
+            for k, v in (q.get("gates") or {}).items()}
 
 
 # --------------------------------------------------------------------------- evidence guards
@@ -1628,7 +1722,8 @@ def run(cfg, max_steps: int = 50) -> S:
             st.d["gates"][sha] = q
             st.event("QUALIFICATION", sha=sha, ok=q["ok"], blocked=q["blocked"], protected=q["protected_changed"],
                      qual_sha256=chash(q),
-                     gates={k: (v.get("comparison") or {}).get("new_failures") for k, v in q["gates"].items()})
+                     gates={k: (v.get("comparison") or {}).get("new_failures") for k, v in q["gates"].items()},
+                     counts=gate_counts(q))
             if q["blocked"]:
                 st.block("RESOURCE", q["blocked"], "provide the resource and re-run")
                 continue
@@ -1924,7 +2019,8 @@ def status(cfg) -> dict:
                                "title": f.get("title")} for f in open_f],
             "gates": {sha[:12]: {"ok": q.get("ok"), "blocked": q.get("blocked"),
                                  "new_failures": {k: (v.get("comparison") or {}).get("new_failures")
-                                                  for k, v in q["gates"].items()}} for sha, q in d["gates"].items()},
+                                                  for k, v in q["gates"].items()},
+                                 "counts": gate_counts(q)} for sha, q in d["gates"].items()},
             "integration": d.get("integration"), "blocker": d.get("blocker"), "events": len(d["history"]),
             "evidence_ok_for_candidate": evidence_ok(cfg, st, d["candidate"])[0] if d["candidate"] else False}
 
