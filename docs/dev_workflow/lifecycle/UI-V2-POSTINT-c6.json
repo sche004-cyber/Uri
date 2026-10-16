@@ -31,8 +31,7 @@
   "docs/ui_v2/ before docs/ui_v2/completion/ is historical evidence from the 2026-10-13 candidate (screenshots, logs, tools); it is not current proof and contains no executable product code.",
   "Live evidence for this milestone is produced after this code-commit review on the owner's Windows PC (harness in C:/Users/cheta/Development/uri-ui-v2p-run, not in the repository); this round reviews code and tests. Report what you ran yourself.",
   "Known environmental failure on this host, identical on canonical: tests/dev_workflow/test_lifecycle_platform.py::test_win_breakaway_is_refused (DRV-ENV-2). Known test hygiene issue: uri_ui/test/reference_render_test.dart writes the tracked file .tmp_m26_render/rebuilt_dashboard.png (pre-existing).",
-  "History: run UI-V2-POSTINT (lifecycle/c1) BLOCKED RETRY_LIMIT on classifier precision; c2 not started (canonical moved to eaeb10c1); c3 config superseded after the imported review; c4 BLOCKED REPAIR_FAILED on R2-01 (implementer made no change), repaired manually in d272d452; c5 WAITING_FOR_MODEL (Codex usage limit), its imported Claude review C2 repaired in 165dac8a. Live runs are evidence you only review. Known pre-existing failures identical on canonical: tests/office/test_page.py::test_page_blocks_every_network_attempt_in_edge (no built Office bundle in a fresh checkout); tests/dev_workflow/test_lifecycle_platform.py::test_win_breakaway_is_refused (DRV-ENV-2).",
-  "Run with the DEV-LIFECYCLE-3C driver (provider-independent auditing, owner policy 2026-10-16): Codex preferred, the driver-launched Claude CLI as fallback under the same independence rules."
+  "History: run UI-V2-POSTINT (lifecycle/c1) BLOCKED RETRY_LIMIT on classifier precision; c2 not started (canonical moved to eaeb10c1); c3 config superseded after the imported review; c4 BLOCKED REPAIR_FAILED on R2-01 (implementer made no change), repaired manually in d272d452; c5 WAITING_FOR_MODEL (Codex usage limit), its imported Claude review C2 repaired in 165dac8a. Live runs are evidence you only review. Known pre-existing failures identical on canonical: tests/office/test_page.py::test_page_blocks_every_network_attempt_in_edge (no built Office bundle in a fresh checkout); tests/dev_workflow/test_lifecycle_platform.py::test_win_breakaway_is_refused (DRV-ENV-2)."
  ],
  "protected_paths": "ws_frozen_check",
  "authorized_protected_changes": [],
@@ -151,12 +150,5 @@
  },
  "commit_trailers": [
   "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
- ],
- "reviewer_fallback": {
-  "provider": "claude_cli",
-  "timeout_s": 5400
- },
- "reviewer_selection": {
-  "preferred_attempts": 2
- }
+ ]
 }
