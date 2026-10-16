@@ -88,6 +88,7 @@ class OiDraft {
     this.first,
     this.previous,
     this.pendingQuestion,
+    this.replacedDocType,
   });
 
   final String draftId;
@@ -107,6 +108,10 @@ class OiDraft {
   final OiDraftVersion? first;
   final OiDraftVersion? previous;
   final String? pendingQuestion;
+
+  /// UIV2-F1: set on the first version of a draft that replaced an open
+  /// one; Undo brings that one back (worker `replaced`).
+  final String? replacedDocType;
 
   bool get fromTranscript => source['source'] == 'transcript';
   bool get simulatedTranscript => fromTranscript && source['simulated'] == true;
@@ -139,6 +144,7 @@ class OiDraft {
       first: OiDraftVersion.parse(d['first']),
       previous: OiDraftVersion.parse(d['previous']),
       pendingQuestion: d['pending_question'] as String?,
+      replacedDocType: d['replaced'] is Map ? ((d['replaced'] as Map)['doc_type'] as String? ?? 'document') : null,
     );
   }
 }

@@ -1,0 +1,98 @@
+{
+ "milestone": "DEV-LIFECYCLE-3B-final",
+ "repo": "C:/Users/cheta/Development/uri-dl3b",
+ "canonical_url": "https://github.com/sche004-cyber/Uri",
+ "baseline": {
+  "remote_branch": "integration/git-sync-20261008",
+  "expect": "2eff03d086e3cacbcd2682bf4f75b7e51d4fa919"
+ },
+ "candidate": {
+  "branch": "milestone/dev-lifecycle-3b-flutter-gates-20261016",
+  "worktree": "C:/Users/cheta/Development/uri-dl3b"
+ },
+ "state_dir": "C:/Users/cheta/Development/uri-dl3b-run/final",
+ "acceptance_criteria_file": "docs/dev_workflow/DEV_LIFECYCLE_3B_PLAN_AND_ACCEPTANCE.md",
+ "python": "C:/Users/cheta/Development/uri-ui-v2c-run/runtime/.venv/Scripts/python.exe",
+ "review_focus": [
+  "Every change in baseline..candidate against AC-1..AC-8 of docs/dev_workflow/DEV_LIFECYCLE_3B_PLAN_AND_ACCEPTANCE.md (defect DRV-3: Flutter gates that executed no test reported ok because the baseline failed the same way)",
+  "Fail-closed: no path through run_gate/qualify/compare/evidence_ok lets a gate pass when the candidate (or both sides) executed zero tests or produced no report; infrastructure failures are BLOCKED, test failures are failures; a baseline that did not execute never excuses the candidate",
+  "Dependency preparation: pub get --enforce-lockfile --offline only for Dart packages with a flutter/dart tool; cannot modify tracked files, cannot change the lock, failure is transparent; no network unless pub_offline false",
+  "Cache validity: GATE_SCHEMA and toolchain fingerprint in the baseline cache key; old cached results never reused; flutter_toolchain failures cannot make two different toolchains share a key silently",
+  "No weakening: existing pytest/command/gpu gate behaviour, regression proof, containment, tamper checks, receipts and event-chain verification unchanged; the QUALIFICATION event and receipt only gain fields",
+  "Tests: tests/dev_workflow/test_lifecycle_drv3_flutter_gates.py really reproduces the original false pass and each AC; the fake flutter cannot hide a real defect",
+  "final revision: the whole candidate again; the only change after the r1 ACCEPT WITH FINDINGS on 7ed88cc6 is the plan text (R5-01 repair and review history) - confirm it and that no code changed after 7ed88cc6"
+ ],
+ "environment_notes": [
+  "Report what you did yourself, separately: code inspected, tests you executed, evidence you only reviewed, and claims you could not verify (list them in unverified). This milestone changes driver code and tests only; there is no UI to observe.",
+  "Your read-only sandbox may not create temporary folders, so pytest may not run for you; the driver runs tests/dev_workflow as its gate. Say what you ran yourself.",
+  "Known environmental failure, identical on the canonical baseline: tests/dev_workflow/test_lifecycle_platform.py::test_win_breakaway_is_refused (a Windows child can break away from the job on this host); recorded as DRV-ENV-2 in the plan, not part of this change."
+ ],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": [
+  "scripts/dev_workflow/**",
+  "tests/dev_workflow/**",
+  "docs/dev_workflow/**"
+ ],
+ "test_globs": [
+  "tests/**"
+ ],
+ "allowed_flaky": [],
+ "gates": [
+  {
+   "id": "python",
+   "kind": "pytest",
+   "cmd": [
+    "{python}",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "tests/dev_workflow"
+   ],
+   "timeout_s": 5400
+  }
+ ],
+ "regression_runner": [
+  "{python}",
+  "-B",
+  "-m",
+  "pytest",
+  "-q",
+  "-p",
+  "no:cacheprovider"
+ ],
+ "repair_nonblocking_severities": [],
+ "reviewer": {
+  "provider": "codex_cli",
+  "model": "gpt-6-sol",
+  "timeout_s": 5400
+ },
+ "implementer": {
+  "provider": "codex_cli",
+  "model": "gpt-6-sol",
+  "timeout_s": 5400
+ },
+ "limits": {
+  "max_repair_attempts": 3
+ },
+ "continuation": {
+  "stall_rounds": 2,
+  "diagnose_after": 2,
+  "budget": {
+   "max_rounds": 8,
+   "max_cost_usd": 100,
+   "max_hours": 12
+  }
+ },
+ "integration": {
+  "mode": "fast-forward",
+  "target_ref": "integration/git-sync-20261008",
+  "authorized": false
+ },
+ "commit_trailers": [
+  "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+ ]
+}

@@ -1,0 +1,154 @@
+{
+ "milestone": "UI-V2-POSTINT-c3",
+ "repo": "C:/Users/cheta/Development/uri-ui-v2p",
+ "canonical_url": "https://github.com/sche004-cyber/Uri",
+ "baseline": {
+  "remote_branch": "integration/git-sync-20261008",
+  "expect": "eaeb10c126132b014751674a1fed7d734122e653"
+ },
+ "candidate": {
+  "branch": "milestone/ui-v2-postint-20261016",
+  "worktree": "C:/Users/cheta/Development/uri-ui-v2p"
+ },
+ "state_dir": "C:/Users/cheta/Development/uri-ui-v2p-run/lifecycle/c3",
+ "acceptance_criteria_file": "docs/ui_v2/postint/00_PLAN_AND_ACCEPTANCE.md",
+ "python": "C:/Users/cheta/Development/uri-ui-v2p-run/runtime2/.venv/Scripts/python.exe",
+ "review_focus": [
+  "The WHOLE candidate baseline..HEAD against canonical eaeb10c1 (URI Office O2 integrated after UI V2). It contains DEV-LIFECYCLE-3B (driver: scripts/dev_workflow/**, tests/dev_workflow/**, docs/dev_workflow/DEV_LIFECYCLE_3B*, its configs; reviewed in its own runs) and UI-V2-POSTINT (everything else). Review UI-V2-POSTINT against AC-1..AC-10 of docs/ui_v2/postint/00_PLAN_AND_ACCEPTANCE.md; the merge 1a19c804 resolved conflicts in uri_ui/lib/living/widgets/living_composer.dart with Office's composer (Office focus keeps its own path; the draft target applies to conversation turns only) and raised the rail scroll threshold for Office's new rail item - check that Office behaviour is unchanged",
+  "UIV2-F1 data integrity, as decided after run UI-V2-POSTINT (state lifecycle/c1, BLOCKED RETRY_LIMIT after four REJECT rounds on classifier precision): the safety boundary is the explicit target, not the classifier. Verify that while a draft is open no turn can change it unless the user explicitly targeted the draft: Companion, dashboard and voice away from the Workspace conversation send input mode command; the Workspace composer defaults to mode conversation (worker routes as if no draft were open); only after the chip, the draft panel pencil or Answer does it send mode draft. Check the worker side (text_input modes, worker_bridge, DraftDesk.classify_conversation/classify_draft_target) and the UI side (OiConversation._draftMode, draftTarget reset per draft, LivingComposer chip, draft panel). Also: retention of a replaced draft (Undo/Redo, a new edit ends the way forward), open draft questions, dictation, the L-2 command contract, Core-only requests still go to Core. The auto-mode classifier (text_intent anchoring) is kept for older clients and is not the boundary; report regressions of accepted TI behaviour, not classifier imprecision within mode auto",
+  "Classifier: no regression of the accepted Text Intelligence suites in mode auto; the P4 restructure eac2da0b was reverted on purpose (1dd59060) because it broke TI lq13",
+  "UIV2-F2: testing-only controls hidden for ordinary users; URI_UI_TESTING_TOOLS gate; no accepted feature removed",
+  "UIV2-F3: ScrollWhenShort/ShortIntrinsic correctness (intrinsics, nested scrolling, approval/confirmation cards and Stop reachable, draft toolbar reachable, no layout change at normal sizes); Brain pickers; composer row",
+  "UIV2-F4: companion_lunar.frag change keeps premultiplied alpha, true transparency and renderer identity; no extra pass; the shader pin change is limited to Lunar",
+  "Preservation and security: no approval or permission bypass, typed text never a decision, no protected path, no new dependency; URI_UI_VISUAL=living and the classic interface still reachable",
+  "user-facing work: every capability reachable and operable through the real URI Windows UI; discoverability, feedback, recovery, first-time and returning user",
+  "Performance: no expensive new effects (saveLayer, blur, extra shader passes, persistent timers)",
+  "final revision: the UI qualification record docs/ui_v2/postint/UI_QUALIFICATION_UI_V2_POSTINT.json must match the tested code commit 1a19c804 and the live evidence under docs/ui_v2/postint/evidence/ (l13 first-time, l14 returning, l15 perf); only evidence, record, register and config paths changed after 1a19c804; the record carries no verdict of its own (this run's receipt is authoritative); the plan, legacy review and findings register make no claim the evidence does not support"
+ ],
+ "environment_notes": [
+  "Evidence classes (owner directive 2026-10-15). If you are the reviewer, add these keys to your AUDIT_RESULT JSON: \"inspected\" (code and documents you read yourself), \"evidence_reviewed_only\" (reports, screenshots, logs you read but did not reproduce), \"live_observed\" (live behaviour you observed yourself; [] if none); tests you executed go in tests_run and claims you could not verify in unverified. Never present reviewed screenshots or reports as your own live observation. If you are an implementer or diagnosis worker, make the same distinction in your notes.",
+  "Your read-only sandbox may not create temporary folders, so flutter test and pytest may not run for you; the driver runs them as gates (flutter analyze, the full Flutter suite, and the Python ssrf/web/a2ui/ws suites). Say what you ran yourself.",
+  "docs/ui_v2/ before docs/ui_v2/completion/ is historical evidence from the 2026-10-13 candidate (screenshots, logs, tools); it is not current proof and contains no executable product code.",
+  "Live evidence for this milestone is produced after this code-commit review on the owner's Windows PC (harness in C:/Users/cheta/Development/uri-ui-v2p-run, not in the repository); this round reviews code and tests. Report what you ran yourself.",
+  "Known environmental failure on this host, identical on canonical: tests/dev_workflow/test_lifecycle_platform.py::test_win_breakaway_is_refused (DRV-ENV-2). Known test hygiene issue: uri_ui/test/reference_render_test.dart writes the tracked file .tmp_m26_render/rebuilt_dashboard.png (pre-existing).",
+  "History: run UI-V2-POSTINT (lifecycle/c1) BLOCKED RETRY_LIMIT on classifier precision; run c2 never started (canonical moved to eaeb10c1). Live runs l13 (67/67), l14 returning (12/12) and l15 perf on code commit 1a19c804 are evidence you only review. Known pre-existing failures identical on canonical: tests/office/test_page.py::test_page_blocks_every_network_attempt_in_edge (no built Office bundle in a fresh checkout); tests/dev_workflow/test_lifecycle_platform.py::test_win_breakaway_is_refused (DRV-ENV-2)."
+ ],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": [
+  "uri_ui/**",
+  "docs/ui_v2/**",
+  "docs/dev_workflow/lifecycle/UI-V2-POSTINT*.json",
+  "uri_operational_intelligence/text_intent.py",
+  "uri_operational_intelligence/draft_desk.py",
+  "uri_operational_intelligence/draft_store.py",
+  "tests/ws/**",
+  "scripts/dev_workflow/**",
+  "tests/dev_workflow/**",
+  "docs/dev_workflow/**"
+ ],
+ "test_globs": [
+  "uri_ui/test/**",
+  "uri_ui/integration_test/**",
+  "tests/**"
+ ],
+ "allowed_flaky": [],
+ "gates": [
+  {
+   "id": "flutter-analyze",
+   "kind": "command",
+   "cwd": "uri_ui",
+   "cmd": [
+    "C:/Users/cheta/flutter/bin/flutter.bat",
+    "analyze",
+    "--no-fatal-infos",
+    "--no-pub"
+   ],
+   "timeout_s": 1200
+  },
+  {
+   "id": "flutter",
+   "kind": "flutter",
+   "cwd": "uri_ui",
+   "cmd": [
+    "C:/Users/cheta/flutter/bin/flutter.bat",
+    "test",
+    "--no-pub"
+   ],
+   "timeout_s": 3600
+  },
+  {
+   "id": "python",
+   "kind": "pytest",
+   "cmd": [
+    "{python}",
+    "-B",
+    "-m",
+    "pytest",
+    "-c",
+    "scripts/phase2d_pytest.ini",
+    "--rootdir=.",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "tests/ssrf",
+    "tests/web",
+    "tests/a2ui",
+    "tests/ws",
+    "tests/oi"
+   ],
+   "timeout_s": 3600
+  }
+ ],
+ "regression_runner": [
+  "{python}",
+  "-B",
+  "-m",
+  "pytest",
+  "-q",
+  "-p",
+  "no:cacheprovider"
+ ],
+ "regression_runners": [
+  {
+   "suffix": "_test.dart",
+   "cwd": "uri_ui",
+   "cmd": [
+    "C:/Users/cheta/flutter/bin/flutter.bat",
+    "test",
+    "--no-pub"
+   ]
+  }
+ ],
+ "repair_nonblocking_severities": [],
+ "reviewer": {
+  "provider": "codex_cli",
+  "model": "gpt-6-sol",
+  "timeout_s": 5400
+ },
+ "implementer": {
+  "provider": "codex_cli",
+  "model": "gpt-6-sol",
+  "timeout_s": 5400
+ },
+ "limits": {
+  "max_repair_attempts": 3
+ },
+ "continuation": {
+  "stall_rounds": 2,
+  "diagnose_after": 2,
+  "budget": {
+   "max_rounds": 8,
+   "max_cost_usd": 150,
+   "max_hours": 12
+  }
+ },
+ "integration": {
+  "mode": "fast-forward",
+  "target_ref": "integration/git-sync-20261008",
+  "authorized": false
+ },
+ "commit_trailers": [
+  "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+ ]
+}

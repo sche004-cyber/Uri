@@ -250,7 +250,8 @@ def test_not_an_edit_falls_back_to_the_ordinary_answer(fake, tmp_path):
                                           "exclusions_add": [], "edits": [], "summary": ""})},
                      {"chunks": [("answer", "Hostel registers record entry and exit.")], "finish": "stop"}]
     turn(b, WARDEN)
-    turn(b, "Make sense of why hostels keep registers")
+    # Anchored to the draft (UIV2-F1: unanchored chat no longer reaches the desk); the model says it is no edit.
+    turn(b, "Make sense of why the letter mentions registers")
     assert frames.data("turn.routed")[-1]["route"] == "answer"            # the ordinary path took over
     assert frames.data("turn.finished")[-1]["route"] in ("answer", "core+answer")
     assert b.handle("draft_get", {"command": "draft_get", "session_id": SID})["draft"]["version"] == 1

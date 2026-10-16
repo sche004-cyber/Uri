@@ -161,6 +161,26 @@ def _split_paragraphs(text):
     return parts
 
 
+def _draft_text(d):
+    """The open draft's current text, for anchoring revisions to the document (UIV2-F1); None without one."""
+    return d.current.text() if d is not None and d.current is not None else None
+
+
+_DOC_NOUN = re.compile(r"\b(" + TX.DOC_NOUNS + r")\b", re.I)
+
+
+def _names_other_document(text, doc_type):
+    """True when the request names a document type different from the open draft's ("a notice" with a letter open)."""
+    m = _DOC_NOUN.search(text or "")
+    if m is None:
+        return False
+    named = m.group(1).lower().replace("-", "")
+    return named not in (doc_type or "").lower().replace("-", "") and named not in ("draft", "document")
+
+
+MAX_REPLACED = 5                      # UIV2-F1: replaced drafts kept for Undo per session
+
+
 class DraftDesk:
     def __init__(self, orchestrator):
         self.o = orchestrator
@@ -175,9 +195,67 @@ class DraftDesk:
 
     def _set(self, session_id, draft):
         with self._lock:
+            old = self.drafts.get(session_id)
+            if old is not None and old is not draft and old.current is not None:
+                # UIV2-F1: keep the replaced drafts (a chain of up to MAX_REPLACED) so Undo walks back through them;
+                # a new document ends the way forward, like any edit (C1-01: one level lost the older one).
+                old.replaced_by, old.replaced_by_cursor = None, None
+                draft.replaced = old
+                depth, x = 1, old
+                while x.replaced is not None:
+                    if depth >= MAX_REPLACED:
+                        x.replaced = None
+                        break
+                    depth, x = depth + 1, x.replaced
             self.drafts[session_id] = draft
             while len(self.drafts) > MAX_SESSIONS:
                 self.drafts.pop(next(iter(self.drafts)))
+
+    def classify_conversation(self, text, session_id) -> TX.TextIntent:
+        """Input mode "conversation" (UIV2-F1): as if no draft were open. Nothing in the turn can revise the open
+        draft. A new document request starts a new draft (the open one is kept for Undo); an answer to a pending
+        new-document question is honoured (c5 C2-01); an exact draft operation the user typed ("undo", "close the
+        draft") is an explicit operation and is carried out deterministically (C2-02); an open draft question is
+        dropped (the user is talking to the conversation)."""
+        d = self.active(session_id)
+        op = TX.classify(text, has_draft=d is not None and d.current is not None)
+        if op.kind in TX.DETERMINISTIC:
+            return op
+        if d is not None and d.pending_question:
+            d.pending_question = None
+        if session_id in self.pending_new:
+            intent = self.classify(text, session_id)    # the one-turn new-document question (answer, drop, or gone)
+            if intent.kind == TX.REVISE or intent.kind in TX.DETERMINISTIC:
+                return TX.TextIntent(TX.NONE, ["conversation_target"], instruction=text)
+            return intent
+        intent = TX.classify(text, has_draft=False)
+        if intent.kind == TX.REVISE or intent.kind in TX.DETERMINISTIC:
+            return TX.TextIntent(TX.NONE, ["conversation_target"], instruction=text)   # cannot happen; fail closed
+        if intent.kind in (TX.CORRECT, TX.REWRITE, TX.EXPAND) and intent.payload is None:
+            # "Make it shorter" without text refers to the conversation (e.g. the last answer): the ordinary path,
+            # which has the history, answers (live l8: the desk asked for text instead).
+            return TX.TextIntent(TX.NONE, ["conversation_target"], instruction=text)
+        return intent
+
+    def classify_draft_target(self, text, session_id) -> TX.TextIntent:
+        """Input mode "draft" (UIV2-F1): the user addressed the open draft explicitly. Anything that is not a draft
+        operation, a new document, an answer to a pending new-document question or a Core-only request is an
+        instruction for it; the model may still answer that it is not an edit, and the ordinary path then answers."""
+        pending_new = session_id in self.pending_new
+        intent = self.classify(text, session_id)
+        d = self.active(session_id)
+        if pending_new and intent.reasons[:1] == ["answer_to_clarification"]:
+            return intent                       # c5 C2-01: an answer about the NEW document never edits the open one
+        if d is not None and d.current is not None and intent.kind == TX.DRAFT_NEW and \
+                intent.reasons[:1] == ["create_document"] and not _names_other_document(text, d.doc_type) and \
+                not re.search(r"\b(?:new|another|fresh|separate|second)\b", text or "", re.I):
+            # "Make my letter shorter" said to the draft is an edit of it, not a new document (R4-03); a different
+            # document type ("write a notice" with a letter open) stays a new document (C2-03)
+            return TX.TextIntent(TX.REVISE, ["draft_target"], instruction=text, targets=TX.targets_for(text))
+        if d is None or d.current is None or intent.is_text_task or intent.kind == DROP or intent.reasons[:1] in (
+                ["core_only_request"], ["code_work"], ["ambiguity_action"]):
+            return intent
+        return TX.TextIntent(TX.REVISE, ["draft_target"], instruction=text, targets=TX.targets_for(text))
 
     def classify(self, text, session_id) -> TX.TextIntent:
         """An open question (draft.pending_question or a pending create) lives for ONE user turn: the next turn either
@@ -212,23 +290,30 @@ class DraftDesk:
             if reply in _CHOICE_ACTION:
                 # The original request goes to the ordinary path unchanged; Core decides and asks for approval.
                 return TX.TextIntent(TX.NONE, ["ambiguity_action"], payload=pend["original"], instruction=text)
-            plain = TX.classify(text, has_draft=d is not None and d.current is not None)
+            plain = TX.classify(text, has_draft=d is not None and d.current is not None, draft_text=_draft_text(d))
             own_question = (text or "").rstrip().endswith("?") or bool(_OWN_QUESTION.match(text or ""))
-            if plain.kind == TX.NONE and plain.reasons[:1] in (["not_a_text_task"], ["trivial"]) and not own_question:
+            if plain.kind == TX.NONE and plain.reasons[:1] in (["not_a_text_task"], ["trivial"], ["unanchored_with_draft"]) \
+                    and not own_question:
                 # "yes", "no", "dont do it", "hmm": not a choice and not a new request -> asked again, never guessed
                 return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_unclear"], instruction=text)
             # anything else is a new request: the question is dropped (one-turn lifetime) and it routes as usual
-        intent = TX.classify(text, has_draft=d is not None and d.current is not None)
-        answers = ("not_a_text_task", "foreign_object")
+        intent = TX.classify(text, has_draft=d is not None and d.current is not None, draft_text=_draft_text(d))
+        # An open draft question accepts elliptical answers, but a new imperative request is not an answer.
+        answers = ("not_a_text_task", "foreign_object", "unanchored_with_draft")
         if intent.reasons[:1] == ["trivial"] and _SHORT_ANSWER.match(text or ""):
-            answers += ("trivial",)            # "yes" / "no" / "okay" answer an open question
+            answers += ("trivial",)            # yes/no may answer a matching open question
         # A question of the user's own ("what is ...?") is not an answer to URI's question.
         own_question = (text or "").rstrip().endswith("?") or bool(_OWN_QUESTION.match(text or ""))
+        question = d.pending_question if d is not None and d.pending_question else \
+            (pend or {}).get("question")
         if intent.kind == TX.NONE and intent.reasons and intent.reasons[0] in answers and not own_question:
+            # The relevance check guards the OPEN draft (an answer edits it). An answer to a new-document question
+            # only continues that new document, so any short non-request reply is accepted (c5 C2-01).
             if d is not None and d.pending_question:
-                return TX.TextIntent(TX.REVISE, ["answer_to_clarification"], instruction=text,
-                                     targets=TX.targets_for(text))
-            if session_id in self.pending_new:
+                if _looks_like_answer(text, question):
+                    return TX.TextIntent(TX.REVISE, ["answer_to_clarification"], instruction=text,
+                                         targets=TX.targets_for(text))
+            elif session_id in self.pending_new and not _NEW_REQUEST.match((text or "").strip()):
                 return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification"], instruction=text)
         return intent
 
@@ -243,8 +328,22 @@ class DraftDesk:
             raise DeskError("NO_ACTIVE_DRAFT", "There is no draft in this conversation yet.")
         try:
             if op == "undo":
+                if d.cursor == 0 and d.replaced is not None:
+                    back = d.replaced                 # UIV2-F1: back to the draft this one replaced
+                    back.replaced_by = d
+                    back.replaced_by_cursor = back.cursor
+                    with self._lock:
+                        self.drafts[session_id] = back
+                    back.pending_question = None
+                    return back.to_dict()
                 d.undo()
             elif op == "redo":
+                if d.replaced_by is not None and d.cursor == d.replaced_by_cursor:
+                    fwd = d.replaced_by
+                    with self._lock:
+                        self.drafts[session_id] = fwd
+                    fwd.pending_question = None
+                    return fwd.to_dict()
                 d.redo()
             elif op == "restore":
                 if not isinstance(n, int) or isinstance(n, bool):
@@ -252,6 +351,13 @@ class DraftDesk:
                 d.restore(n)
             elif op == "discard":
                 with self._lock:
+                    back = d.replaced
+                    if back is not None and back.current is not None:
+                        # C1-04: closing a draft that replaced another brings that one back instead of losing it.
+                        back.replaced_by, back.replaced_by_cursor = None, None
+                        back.pending_question = None
+                        self.drafts[session_id] = back
+                        return back.to_dict()
                     self.drafts.pop(session_id, None)
                 return None
             elif op not in ("show", "original"):
@@ -320,9 +426,13 @@ class DraftDesk:
             return {"status": "ok", "draft": snap}
         snap = self.op(session_id, op)
         if op == "discard":
-            emit("draft.updated", op="discard", draft=None)
-            self._say(emit, "Draft closed. Nothing was saved or sent.")
-            return {"status": "ok", "draft": None}
+            emit("draft.updated", op="discard", draft=snap)
+            if snap is None:
+                self._say(emit, "Draft closed. Nothing was saved or sent.")
+            else:
+                self._say(emit, "Draft closed. Your earlier %s draft is back. Nothing was saved or sent."
+                          % snap["doc_type"])
+            return {"status": "ok", "draft": snap}
         emit("draft.updated", op=op, draft=snap)
         cur = snap["current"]
         msg = {"undo": "Undone. Showing version %d of %d (%s).", "redo": "Redone. Showing version %d of %d (%s).",
@@ -627,6 +737,37 @@ class DraftDesk:
 
 _SHORT_ANSWER = re.compile(r"^\s*(?:yes|yeah|yep|yup|no|nope|nah|ok(?:ay)?|sure|haan|ha|nahi|theek hai)\b", re.I)
 _OWN_QUESTION = re.compile(r"^\s*(?:what|why|how|who|whom|whose|when|where|which|can you|could you|do you|does|is there)\b", re.I)
+_NEW_REQUEST = re.compile(r"^\s*(?:(?:uri|please|could you|can you)\s+)*(?:tell me|show me|give me|help me|"
+                          r"start|set (?:a|the)\b|play|open|launch|search|find|look up|explain|create|"
+                          r"write|compose|make me|change your|update me|add|remove)\b", re.I)
+_DATE_QUESTION = re.compile(r"\b(?:date|day)\b", re.I)
+_WEEKDAY = r"monday|tuesday|wednesday|thursday|friday|saturday|sunday"
+_MONTH = r"january|february|march|april|may|june|july|august|september|october|november|december"
+_DATE_REPLY = re.compile(
+    r"(?:(?:on|the|for)\s+)*(?:today|tomorrow|yesterday|(?:next|this)\s+(?:" + _WEEKDAY + r")|"
+    r"(?:" + _WEEKDAY + r")|\d{4}-\d{1,2}-\d{1,2}|\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?|"
+    r"\d{1,2}(?:st|nd|rd|th)?(?:\s+(?:of\s+)?(?:" + _MONTH + r"))?(?:,?\s+\d{4})?)",
+    re.I)
+_YES_NO_QUESTION = re.compile(r"^\s*(?:is|are|was|were|do|does|did|can|could|should|would|will|have|has)\b", re.I)
+
+
+def _looks_like_answer(text, question):
+    """Accept an elliptical answer only when its content fits the pending question.
+
+    A semicolon may follow the answer with more instructions; the desk's action guard still handles those.
+    """
+    reply = (text or "").strip()
+    if not question or _NEW_REQUEST.match(reply):
+        return False
+    first = reply.split(";", 1)[0].strip(" .,!?\t\n")
+    if _DATE_QUESTION.search(question):
+        return bool(_DATE_REPLY.fullmatch(first))
+    if _YES_NO_QUESTION.match(question):
+        return bool(_SHORT_ANSWER.fullmatch(first))
+    # Unrecognized open questions require an explicit edit request; shape alone does not establish relevance.
+    return False
+
+
 _ORD_NAME = {0: "the first paragraph", 1: "the second paragraph", 2: "the third paragraph", 3: "the fourth paragraph",
              4: "the fifth paragraph", -1: "the last paragraph"}
 

@@ -186,6 +186,11 @@ class OiConversation extends ChangeNotifier {
   /// desk's open clarification question, and generation progress.
   OiDraft? draft;
   String? draftQuestion;
+
+  /// c5 C2-01: the open question is about a NEW document (the worker sent it
+  /// without a draft), not about the open draft: it is answered in the
+  /// conversation, never through the open draft's target.
+  bool draftQuestionIsNew = false;
   int draftProgress = 0;
 
   /// When on, typed text is sent as a SIMULATED transcript
@@ -442,14 +447,51 @@ class OiConversation extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// UIV2-F1: the input mode a turn needs while a draft is open (null when
+  /// none is open: routing as before). The draft changes only on explicit
+  /// intent: from a surface that does not show it ([draftInView] false:
+  /// Companion, dashboard, voice away from the Workspace conversation) a turn
+  /// is "command" (the ordinary path, never a draft); in the Workspace it is
+  /// "conversation" (default: as if no draft were open) or, when the user set
+  /// the composer to the draft, "draft" (an instruction for it).
+  String? _draftMode(bool draftInView) {
+    final d = draft;
+    if (d == null) return null;
+    if (!draftInView) return 'command';
+    return _draftTargetFor(d) ? 'draft' : 'conversation';
+  }
+
+  /// UIV2-F1: the Workspace composer's explicit target while a draft is open.
+  /// The conversation by default (nothing can change the draft); the draft
+  /// only after the user chose it (composer chip, the draft panel's "Change
+  /// with URI" or "Answer"). A new draft starts with the conversation again.
+  bool get draftTarget => draft != null && _draftTargetFor(draft!);
+  String? _targetDraftId;
+  bool _draftTargetFor(OiDraft d) => _targetDraftId != null && _targetDraftId == d.draftId;
+
+  void setDraftTarget(bool toDraft) {
+    _targetDraftId = toDraft ? draft?.draftId : null;
+    notifyListeners();
+  }
+
   /// Sends the user's words as a turn. Never a decision, whatever it says.
   /// With [transcriptMode] on, the words are sent as a simulated transcript.
-  Future<void> send(String text) async {
+  /// [newWork]: a "Start new work" request (C1-02): it may start a new
+  /// document but never changes the open draft, whatever the target.
+  Future<void> send(String text, {bool draftInView = true, bool newWork = false}) async {
     if (transcriptMode) {
-      return sendTranscript(text, engine: 'simulated', simulated: true, dictation: dictationMode);
+      return sendTranscript(text,
+          engine: 'simulated', simulated: true, dictation: dictationMode, draftInView: draftInView);
     }
     if (dictationMode) {
+      // Dictation is explicit content the user chose to write; it starts its own draft (the replaced one is kept
+      // and Undo brings it back).
       return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': 'dictation'}, 'Dictation');
+    }
+    final mode = newWork && draft != null ? 'conversation' : _draftMode(draftInView);
+    if (mode != null) {
+      return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': mode},
+          mode == 'draft' ? 'To the draft' : null);
     }
     return _turn(text.trim(), null, null);
   }
@@ -466,10 +508,12 @@ class OiConversation extends ChangeNotifier {
     String? language,
     List<String> uncertain = const [],
     bool dictation = false,
+    bool draftInView = true,
   }) {
     // The raw transcript is kept byte for byte (contract: turn text == transcript.raw); only emptiness is
     // judged on a trimmed copy.
     final t = raw;
+    final mode = dictation ? null : _draftMode(draftInView);
     final input = {
       'schema': 'uri.text_input.v1',
       'source': 'transcript',
@@ -481,6 +525,7 @@ class OiConversation extends ChangeNotifier {
         if (uncertain.isNotEmpty) 'uncertain': uncertain,
       },
       if (dictation) 'mode': 'dictation',
+      'mode': ?mode,
     };
     final label = simulated ? 'Simulated transcript' : 'Transcript · $engine';
     return _turn(t, input, dictation ? '$label · Dictation' : label);
@@ -765,6 +810,7 @@ class OiConversation extends ChangeNotifier {
         draftQuestion = draft?.pendingQuestion;
       case 'draft.clarify':
         draftQuestion = data['question'] as String?;
+        draftQuestionIsNew = data['draft'] == null && draft != null && draftQuestion != null;
         if (data['draft'] != null) draft = OiDraft.parse(data['draft']) ?? draft;
       case 'draft.progress':
         draftProgress = (data['chars'] as num?)?.toInt() ?? 0;

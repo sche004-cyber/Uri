@@ -345,6 +345,12 @@ class IntegratedTurns:
                     self.desk.drop_open_question(session_id)
                     intent = TX.TextIntent(TX.REWRITE if inp.scope == "rewrite" else TX.CORRECT, ["dictation_mode"],
                                            payload=plain, instruction=plain)
+                # UIV2-F1 (c4 R2-01): an explicit target is honoured at every depth. Deep keeps routing ordinary
+                # requests through the ordinary path; it never bypasses the target the user chose.
+                elif inp.mode == "conversation":
+                    intent = self.desk.classify_conversation(plain, session_id)
+                elif inp.mode == "draft":
+                    intent = self.desk.classify_draft_target(plain, session_id)
                 else:
                     intent = self.desk.classify(plain, session_id) if depth != "deep" else None
                 if intent is not None and intent.reasons[:1] == ["ambiguity_action"]:

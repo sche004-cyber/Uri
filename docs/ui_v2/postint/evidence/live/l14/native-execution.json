@@ -1,0 +1,146 @@
+{
+ "label": "l14",
+ "mode": "returning",
+ "visual": "v2",
+ "fresh_prefs": false,
+ "source_head": "1a19c80459079e8eeacbb2af2a521533c1305707",
+ "source_tree": "8b4d3742a80ed3d5b464d90684fa167cc19bea51",
+ "source_status_before": "",
+ "port": 18301,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/uiv2_native_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "e3c1740a4f61beeb7b64d1bab6a76cef2e9727bbb3f39bc10c72095bc2344a3f",
+ "brain_ready": {
+  "state": "READY",
+  "load_s": 54.12,
+  "utc": "2026-10-16T08:49:22.546022+00:00",
+  "host": {
+   "schema": "uri.ws.brain_host.v1",
+   "host_pid": 14152,
+   "host_started": 1792140508.419,
+   "state": "READY",
+   "history": [
+    {
+     "t": 1792140511.933,
+     "state": "STARTING",
+     "detail": null
+    },
+    {
+     "t": 1792140540.962,
+     "state": "LOADING",
+     "detail": null
+    },
+    {
+     "t": 1792140557.549,
+     "state": "CALIBRATING",
+     "detail": null
+    },
+    {
+     "t": 1792140562.486,
+     "state": "READY",
+     "detail": null
+    }
+   ],
+   "override": null,
+   "lease": {
+    "held": true,
+    "acquired_at": 1792140508.427,
+    "recovered_from": null
+   },
+   "gpu": {
+    "fit": {
+     "verdict": "AT_RISK",
+     "card_mib": 16368,
+     "required_mib": 15626,
+     "others_mib": 991.0,
+     "unattributed_mib": 0.0,
+     "owner_mib": 0,
+     "free_mib": 15377.0,
+     "margin_mib": -249.0,
+     "consumers": [
+      {
+       "pid": 1792,
+       "name": "dwm.exe",
+       "parent": "winlogon.exe",
+       "dedicated_mib": 493.8,
+       "role": "desktop compositor"
+      }
+     ]
+    },
+    "explain": "GPU memory is 249 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading.",
+    "census_t": 1792140508.429,
+    "census_s": 3.5
+   },
+   "detail": null,
+   "explain": "Brain ready (158 tok/s).",
+   "updated_at": 1792140562.486,
+   "heartbeat_at": 1792140553.447,
+   "server": {
+    "pid": 21440,
+    "owned": true,
+    "load_seconds": 19.6,
+    "model_id": "qwen3.6-35b-a3b-ud-iq3_s"
+   },
+   "residency": {
+    "t": 1792140558.99,
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1,
+    "others_mib": 991.0,
+    "verdict_now": "AT_RISK",
+    "consumers": [
+     {
+      "pid": 1792,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 493.8,
+      "role": "desktop compositor"
+     }
+    ]
+   },
+   "calibration": {
+    "t": 1792140557.554,
+    "tokens": 160,
+    "threshold_tps": 60.0,
+    "server_pid": 21440,
+    "server_create_time": 1792140537.956944,
+    "reason": "START",
+    "decode_tps": 157.6,
+    "predicted_n": 160,
+    "prompt_ms": 174.14,
+    "residency": {
+     "t": 1792140558.99,
+     "dedicated_mib": 14946.2,
+     "non_local_mib": 1730.1,
+     "others_mib": 991.0,
+     "verdict_now": "AT_RISK",
+     "consumers": [
+      {
+       "pid": 1792,
+       "name": "dwm.exe",
+       "parent": "winlogon.exe",
+       "dedicated_mib": 493.8,
+       "role": "desktop compositor"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "entry": "original production main() via integration_test; keyboard via Flutter TestTextInput and synthesized key events",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "microphone_qualified": false,
+ "started_utc": "2026-10-16T08:49:24.478932+00:00",
+ "runner_pid": 17680,
+ "exit_code": 0,
+ "elapsed_s": 68.0,
+ "finished_utc": "2026-10-16T08:50:32.480319+00:00",
+ "source_status_after": "",
+ "ui_binary_sha256": "e37f17243e733c02837aa8b8cc6f72106576de022e8cc1e9859607bccf3b1b0c"
+}

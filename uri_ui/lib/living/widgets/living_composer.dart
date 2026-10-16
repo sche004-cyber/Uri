@@ -9,6 +9,7 @@ import '../integration/oi_conversation.dart';
 import '../living_scope.dart';
 import '../office/office_bridge.dart' show OfficeRequestHint;
 import '../presentation/presentation_controller.dart';
+import '../testing_tools.dart';
 import '../voice/voice_controls.dart';
 import 'glass_panel.dart';
 
@@ -113,6 +114,8 @@ class _LivingComposerState extends State<LivingComposer> {
     final oi = services.oi;
     if (oi != null ? oi.busy : appState.isSendingAsk) return;
     _controller.clear();
+    // UIV2-F1: judged where the user typed, before the mode switch below.
+    final draftInView = services.presentation.draftInView;
     if (services.presentation.mode == UiPresentationMode.dashboard ||
         (!services.visualV2 &&
             services.presentation.mode == UiPresentationMode.companion)) {
@@ -127,7 +130,7 @@ class _LivingComposerState extends State<LivingComposer> {
       // Working system: the real Core/OI turn. Text is only ever a turn,
       // never a decision (approvals are buttons on the card).
       appState.clearComposerDraft();
-      await oi.send(text);
+      await oi.send(text, draftInView: draftInView);
       return;
     }
     await appState.ask(text);
@@ -160,12 +163,51 @@ class _LivingComposerState extends State<LivingComposer> {
             : oi != null
                 ? oi.busy
                 : appState.isSendingAsk;
+        final presentation = LivingScope.of(context).presentation;
+        // UIV2-F1: the draft target applies to the conversation, not to an Office request.
+        final draft = office == null ? oi?.draft : null;
         final content = Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
+            // UIV2-F1: while a draft is open the Workspace composer shows where
+            // the message goes; one tap switches it to the conversation, where
+            // nothing can change the draft.
+            if (oi != null && draft != null && !widget.minimal && presentation.draftInView)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Tooltip(
+                    message: oi.draftTarget
+                        ? 'Messages are instructions for the open draft. Tap to talk to URI without changing it.'
+                        : 'Messages go to the conversation and never change the draft. Tap to edit the draft again.',
+                    child: ActionChip(
+                      key: const ValueKey('composer-draft-target'),
+                      visualDensity: VisualDensity.compact,
+                      avatar: Icon(
+                        oi.draftTarget ? Icons.edit_note_rounded : Icons.chat_bubble_outline_rounded,
+                        size: 16,
+                        color: oi.draftTarget ? c.accent : c.inkSoft,
+                      ),
+                      label: Text(
+                        oi.draftTarget ? 'To: ${draft.docType} draft' : 'To: conversation',
+                        style: TextStyle(fontSize: 12, color: c.ink),
+                      ),
+                      onPressed: () => oi.setDraftTarget(!oi.draftTarget),
+                    ),
+                  ),
+                ),
+              ),
+            // UIV2-F3: the row never overflows while the window shrinks into
+            // Companion: optional buttons step aside on narrow widths.
+            LayoutBuilder(builder: (context, box) {
+            final w = box.maxWidth;
+            // an active testing mode keeps its toggle even when narrow, so it can be switched off (C1-06)
+            final testing = oi != null && !widget.minimal && UriTestingTools.enabled &&
+                (w >= 420 || oi.transcriptMode || oi.dictationMode);
+            return Row(
               children: [
-                if (widget.filePicker != null)
+                if (widget.filePicker != null && w >= 260)
                   IconButton(
                     tooltip: 'Attach a file',
                     icon: const Icon(Icons.attach_file_rounded, size: 18),
@@ -179,7 +221,7 @@ class _LivingComposerState extends State<LivingComposer> {
                       );
                     },
                   ),
-                if (oi != null && !widget.minimal && office == null)
+                if (testing && office == null)
                   IconButton(
                     key: const ValueKey('living-composer-transcript'),
                     tooltip: oi.transcriptMode
@@ -198,7 +240,7 @@ class _LivingComposerState extends State<LivingComposer> {
                     color: c.inkSoft,
                     onPressed: () => oi.setTranscriptMode(!oi.transcriptMode),
                   ),
-                if (oi != null && !widget.minimal && office == null)
+                if (testing && office == null)
                   IconButton(
                     key: const ValueKey('living-composer-dictation'),
                     tooltip: oi.dictationMode
@@ -277,7 +319,7 @@ class _LivingComposerState extends State<LivingComposer> {
                     ),
                   ),
                 ),
-                if (voice != null && !widget.minimal) ...[
+                if (voice != null && !widget.minimal && w >= 200) ...[
                   const SizedBox(width: 6),
                   VoiceTalkButton(controller: voice),
                 ],
@@ -316,7 +358,8 @@ class _LivingComposerState extends State<LivingComposer> {
                   ),
                 ),
               ],
-            ),
+            );
+            }),
             if (voice != null && !widget.minimal)
               VoiceNoticeLine(controller: voice),
           ],

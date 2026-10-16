@@ -1,0 +1,1316 @@
+[
+ {
+  "utc": "2026-10-16T09:01:20.148618+00:00",
+  "adapter_dedicated_mib": 663.9,
+  "card_mib": 16368,
+  "gpu": {
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.1,
+    "cpu_pct": null
+   }
+  ],
+  "ram_available_mib": 9029,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:01:26.748055+00:00",
+  "adapter_dedicated_mib": 663.9,
+  "card_mib": 16368,
+  "gpu": {
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.1,
+    "cpu_pct": 0.0
+   }
+  ],
+  "ram_available_mib": 9006,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:01:33.286668+00:00",
+  "adapter_dedicated_mib": 663.9,
+  "card_mib": 16368,
+  "gpu": {
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.1,
+    "cpu_pct": 0.0
+   }
+  ],
+  "ram_available_mib": 9113,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:01:39.862906+00:00",
+  "adapter_dedicated_mib": 663.9,
+  "card_mib": 16368,
+  "gpu": {
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.1,
+    "cpu_pct": 0.0
+   }
+  ],
+  "ram_available_mib": 9127,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:01:46.413695+00:00",
+  "adapter_dedicated_mib": 783.5,
+  "card_mib": 16368,
+  "gpu": {
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   },
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 117.6,
+    "non_local_mib": 0.4
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   }
+  ],
+  "ram_available_mib": 8937,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:01:53.324050+00:00",
+  "adapter_dedicated_mib": 13945.4,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13187.0,
+    "non_local_mib": 402.5
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 814.4,
+    "cpu_pct": null
+   }
+  ],
+  "ram_available_mib": 8097,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:01:59.978749+00:00",
+  "adapter_dedicated_mib": 15337.2,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14517.0,
+    "non_local_mib": 768.6
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2044.8,
+    "cpu_pct": 30.8
+   }
+  ],
+  "ram_available_mib": 6986,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:02:06.525430+00:00",
+  "adapter_dedicated_mib": 15610.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2195.0,
+    "cpu_pct": 26.5
+   }
+  ],
+  "ram_available_mib": 6728,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:02:13.142754+00:00",
+  "adapter_dedicated_mib": 15610.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.0,
+    "cpu_pct": 0.5
+   }
+  ],
+  "ram_available_mib": 7066,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:02:19.895827+00:00",
+  "adapter_dedicated_mib": 15610.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.1,
+    "cpu_pct": 0.0
+   }
+  ],
+  "ram_available_mib": 6301,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:02:26.466614+00:00",
+  "adapter_dedicated_mib": 15610.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.1,
+    "cpu_pct": 0.0
+   }
+  ],
+  "ram_available_mib": 5883,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:02:33.141909+00:00",
+  "adapter_dedicated_mib": 15610.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.1,
+    "cpu_pct": 0.0
+   }
+  ],
+  "ram_available_mib": 5837,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:02:39.693267+00:00",
+  "adapter_dedicated_mib": 15610.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.1,
+    "cpu_pct": 0.0
+   }
+  ],
+  "ram_available_mib": 5800,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:02:46.244129+00:00",
+  "adapter_dedicated_mib": 15610.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.0,
+    "cpu_pct": 0.2
+   }
+  ],
+  "ram_available_mib": 5276,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:02:52.773919+00:00",
+  "adapter_dedicated_mib": 15610.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 499.8,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.0,
+    "cpu_pct": 0.0
+   }
+  ],
+  "ram_available_mib": 6097,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:02:59.358186+00:00",
+  "adapter_dedicated_mib": 15690.6,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 80.4,
+    "non_local_mib": 3.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.0,
+    "cpu_pct": 0.2
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 276.6,
+    "cpu_pct": null
+   }
+  ],
+  "ram_available_mib": 6035,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:03:06.040249+00:00",
+  "adapter_dedicated_mib": 15788.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 177.9,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.1,
+    "cpu_pct": 0.5
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 318.2,
+    "cpu_pct": 101.0
+   }
+  ],
+  "ram_available_mib": 6057,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:03:12.610704+00:00",
+  "adapter_dedicated_mib": 15791.8,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 181.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.1,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 324.6,
+    "cpu_pct": 72.5
+   }
+  ],
+  "ram_available_mib": 6134,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:03:19.199833+00:00",
+  "adapter_dedicated_mib": 15813.6,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 199.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 2178.1,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 336.8,
+    "cpu_pct": 78.0
+   }
+  ],
+  "ram_available_mib": 6081,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:03:25.954745+00:00",
+  "adapter_dedicated_mib": 15871.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 207.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 3310.0,
+    "cpu_pct": 17.3
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 345.2,
+    "cpu_pct": 95.1
+   }
+  ],
+  "ram_available_mib": 4963,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:03:32.565026+00:00",
+  "adapter_dedicated_mib": 15880.8,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 219.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 20.6
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 334.0,
+    "cpu_pct": 84.6
+   }
+  ],
+  "ram_available_mib": 4231,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:03:39.121152+00:00",
+  "adapter_dedicated_mib": 15880.8,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 219.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 340.0,
+    "cpu_pct": 42.9
+   }
+  ],
+  "ram_available_mib": 4218,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:03:45.766964+00:00",
+  "adapter_dedicated_mib": 15880.8,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 215.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 342.9,
+    "cpu_pct": 42.3
+   }
+  ],
+  "ram_available_mib": 4207,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:03:52.337591+00:00",
+  "adapter_dedicated_mib": 15880.8,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 219.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 342.4,
+    "cpu_pct": 49.2
+   }
+  ],
+  "ram_available_mib": 4259,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:03:58.919757+00:00",
+  "adapter_dedicated_mib": 15880.8,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 215.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.2
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 343.1,
+    "cpu_pct": 55.1
+   }
+  ],
+  "ram_available_mib": 4183,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:04:05.612048+00:00",
+  "adapter_dedicated_mib": 15899.3,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 241.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 349.2,
+    "cpu_pct": 64.2
+   }
+  ],
+  "ram_available_mib": 4158,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:04:12.193822+00:00",
+  "adapter_dedicated_mib": 15903.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 241.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 348.4,
+    "cpu_pct": 49.1
+   }
+  ],
+  "ram_available_mib": 4568,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:04:18.875455+00:00",
+  "adapter_dedicated_mib": 15903.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 241.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.2
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 343.7,
+    "cpu_pct": 68.5
+   }
+  ],
+  "ram_available_mib": 4027,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:04:25.601678+00:00",
+  "adapter_dedicated_mib": 15899.3,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 241.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 342.4,
+    "cpu_pct": 59.5
+   }
+  ],
+  "ram_available_mib": 4029,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:04:32.193145+00:00",
+  "adapter_dedicated_mib": 15903.1,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 503.6,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 241.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.5
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 351.0,
+    "cpu_pct": 65.9
+   }
+  ],
+  "ram_available_mib": 4171,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:04:38.801653+00:00",
+  "adapter_dedicated_mib": 15811.3,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 501.3,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 153.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 357.8,
+    "cpu_pct": 53.4
+   }
+  ],
+  "ram_available_mib": 4140,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:04:45.510306+00:00",
+  "adapter_dedicated_mib": 15811.3,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 501.3,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 153.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 356.0,
+    "cpu_pct": 39.1
+   }
+  ],
+  "ram_available_mib": 4140,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:04:52.093061+00:00",
+  "adapter_dedicated_mib": 15811.3,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 501.3,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 153.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.2
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 353.4,
+    "cpu_pct": 36.3
+   }
+  ],
+  "ram_available_mib": 4193,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:04:58.687278+00:00",
+  "adapter_dedicated_mib": 15811.3,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 501.3,
+    "non_local_mib": 9.1
+   },
+   "25096": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 153.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.2
+   },
+   {
+    "name": "uri_ui",
+    "pid": 25096,
+    "rss_mib": 356.3,
+    "cpu_pct": 38.1
+   }
+  ],
+  "ram_available_mib": 4147,
+  "lease": "HELD"
+ },
+ {
+  "utc": "2026-10-16T09:05:05.378337+00:00",
+  "adapter_dedicated_mib": 15664.9,
+  "card_mib": 16368,
+  "gpu": {
+   "24692": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14997.4,
+    "non_local_mib": 1730.1
+   },
+   "1792": {
+    "name": "dwm.exe",
+    "dedicated_mib": 501.3,
+    "non_local_mib": 9.1
+   }
+  },
+  "owned": [
+   {
+    "name": "server",
+    "pid": 7588,
+    "rss_mib": 4.0,
+    "cpu_pct": 0.0
+   },
+   {
+    "name": "llama-server",
+    "pid": 24692,
+    "rss_mib": 4089.7,
+    "cpu_pct": 0.0
+   }
+  ],
+  "ram_available_mib": 4809,
+  "lease": "HELD"
+ }
+]

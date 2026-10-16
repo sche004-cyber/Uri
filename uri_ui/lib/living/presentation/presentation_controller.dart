@@ -178,6 +178,12 @@ class UiPresentationController extends ChangeNotifier {
 
   UiPresentationMode get mode => _mode;
   WorkspaceFocus get focus => _focus;
+
+  /// UIV2-F1: the open Text Intelligence draft is on screen only in the
+  /// Workspace conversation; a turn from anywhere else must not change it.
+  bool get draftInView =>
+      _mode == UiPresentationMode.workspace &&
+      _focus == WorkspaceFocus.conversation;
   UiCommandOrigin get lastCommandOrigin => _lastOrigin;
 
   /// Previous modes, most recent last; lets "back" return to where the
