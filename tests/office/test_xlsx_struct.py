@@ -64,6 +64,21 @@ def test_insert_shifts_cells_and_every_reference():
     assert other["A4"].value == "=B5"               # another sheet's own cell is not moved
 
 
+def test_insert_refuses_to_push_a_cell_past_excel_last_row_without_changes():
+    parts = parts_of(budget_bytes(lambda wb, ws: setattr(ws["A1048576"], "value", "Last row")))
+    # A stale or absent dimension must not be the only thing guarding real row elements.
+    from uri_office.xlsx_patch import M, _ser, _xml
+    sheet = "xl/worksheets/sheet1.xml"
+    root = _xml(parts[sheet])
+    root.remove(root.find(M + "dimension"))
+    parts[sheet] = _ser(root)
+    before = dict(parts)
+    with pytest.raises(OfficeError) as error:
+        S.apply_row_op(parts, {"op": "insert_rows", "sheet": "Budget", "at": 1, "count": 1})
+    assert error.value.code == "STRUCTURE_NOT_SUPPORTED"
+    assert parts == before
+
+
 def test_delete_shrinks_ranges_and_breaks_references_to_deleted_cells():
     parts = parts_of(budget_bytes())
     S.apply_row_op(parts, {"op": "delete_rows", "sheet": "Budget", "at": 5, "count": 1})   # Travel

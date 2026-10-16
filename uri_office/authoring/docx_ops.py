@@ -1,8 +1,8 @@
 """Word ops on a python-docx Document (milestone C; plan 12_AUTHORING_C_WORD_PLAN.md section 3).
 
 Body blocks (paragraphs and tables, in document order) are addressed by index, and every op that names a block also
-carries `expect`: the first 12 hex characters of the SHA-256 of the block's text as the view showed it. A mismatch is
-refused (STALE_BLOCK), so an op never lands on a block that moved. Ops touch only the XML they are about; other parts
+carries `expect`: a short SHA-256 address bound to the body version, block index and block XML as viewed. A mismatch
+is refused (STALE_BLOCK), so an op never lands on a block that moved. Ops touch only the XML they are about; other parts
 of the package (comments, footnotes, media, numbering, theme) are left as python-docx loaded them. An op that would
 need content it does not handle is refused with AUTHORING_NOT_SUPPORTED and a named reason, before anything changes.
 """
@@ -52,12 +52,16 @@ def block_text(el) -> str:
     return "".join(t.text or "" for t in el.iter(_W + "t"))
 
 
-def block_sha(el) -> str:
-    return hashlib.sha256(block_text(el).encode("utf-8")).hexdigest()[:12]
+def block_sha(el, version: bytes, index: int) -> str:
+    return hashlib.sha256(version + str(index).encode("ascii") + el.xml.encode("utf-8")).hexdigest()[:12]
 
 
 def _body(doc):
     return doc.element.body
+
+
+def _body_version(doc) -> bytes:
+    return hashlib.sha256(_body(doc).xml.encode("utf-8")).digest()
 
 
 def blocks(doc) -> list:
@@ -70,7 +74,7 @@ def block(doc, index, expect):
     if not isinstance(index, int) or not 0 <= index < len(bl):
         raise OfficeError("UNKNOWN_BLOCK", str(index)[:16])
     el = bl[index]
-    if expect != block_sha(el):
+    if expect != block_sha(el, _body_version(doc), index):
         raise OfficeError("STALE_BLOCK", "the document changed since this was shown; look again", 409)
     return el
 
@@ -316,13 +320,18 @@ def _cell(doc, index, expect, row, col):
 
 def set_table_cell(doc, index, expect, row, col, text: str):
     _, c = _cell(doc, index, expect, row, col)
+    text = _text(text)
+    for child in c._tc:
+        if child.tag not in (_W + "tcPr", _W + "p"):
+            _refuse("this cell has other content, which URI does not rewrite")
     ps = c.paragraphs
+    for p in ps:
+        why = _foreign(p._p)
+        if why:
+            _refuse(f"this cell has {why}, which URI does not rewrite")
     for extra in ps[1:]:
         extra._p.getparent().remove(extra._p)
-    why = _foreign(ps[0]._p)
-    if why:
-        _refuse(f"this cell has {why}, which URI does not rewrite")
-    _set_runs(ps[0], _text(text))
+    _set_runs(ps[0], text)
 
 
 def add_table_row(doc, index, expect, after_row: int):
@@ -449,7 +458,7 @@ def describe(doc) -> dict:
     footer text. No file paths and no binary data."""
     out = []
     for i, el in enumerate(blocks(doc)[:MAX_BLOCKS_SHOWN]):
-        it = {"index": i, "expect": block_sha(el)}
+        it = {"index": i}
         if el.tag == _W + "p":
             p = Paragraph(el, doc._body)
             style = p.style.name if p.style is not None else "Normal"
@@ -476,7 +485,7 @@ def describe(doc) -> dict:
         h = getattr(sec, which)
         hf[which] = "" if h.is_linked_to_previous and len(doc.sections) == 1 and not h.paragraphs else \
             "\n".join(p.text for p in h.paragraphs).strip()
-    return {"blocks": out, "truncated": len(blocks(doc)) > MAX_BLOCKS_SHOWN, "styles": paragraph_styles(doc),
+    result = {"blocks": out, "truncated": len(blocks(doc)) > MAX_BLOCKS_SHOWN, "styles": paragraph_styles(doc),
             "page": {"orientation": "landscape" if sec.orientation == WD_ORIENT.LANDSCAPE else "portrait",
                      "margins_cm": {k: round(getattr(sec, f"{k}_margin").cm, 2) if getattr(sec, f"{k}_margin")
                                     is not None else None for k in ("top", "bottom", "left", "right")},
@@ -484,6 +493,10 @@ def describe(doc) -> dict:
                      "height_cm": round(sec.page_height.cm, 2) if sec.page_height else None,
                      "sections": len(doc.sections)},
             "header": hf["header"], "footer": hf["footer"]}
+    version = _body_version(doc)
+    for i, (it, el) in enumerate(zip(out, blocks(doc))):
+        it["expect"] = block_sha(el, version, i)
+    return result
 
 
 OPS = {

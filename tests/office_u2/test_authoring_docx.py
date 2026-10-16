@@ -133,6 +133,19 @@ def test_a_stale_or_unknown_address_is_refused_and_nothing_changes():
     assert save(d) == before
 
 
+def test_moving_equal_text_with_different_styles_invalidates_the_old_address():
+    d = Document()
+    d.add_paragraph("Same", style="Heading 1")
+    d.add_paragraph("Same", style="Normal")
+    stale = ex(d, 0)
+    W.move_block(d, 0, stale, 1)
+    before = d.element.body.xml
+    with pytest.raises(OfficeError) as error:
+        W.set_paragraph_text(d, 0, stale, "Changed")
+    assert error.value.code == "STALE_BLOCK"
+    assert d.element.body.xml == before
+
+
 def test_content_uri_does_not_own_is_refused_by_name(png):
     d = load(report_bytes(png))
     for i, why in ((5, "a comment"), (6, "a tracked change")):
@@ -182,6 +195,35 @@ def test_table_ops():
     for bad in ([], [[]], [["x"] * 21]):
         with pytest.raises(OfficeError):
             W.insert_table(d, 0, bad)
+
+
+def test_table_cell_with_field_in_later_paragraph_is_preserved_on_refusal():
+    d = Document()
+    cell = d.add_table(rows=1, cols=1).cell(0, 0)
+    cell.paragraphs[0].add_run("First")
+    second = cell.add_paragraph("Page: ")
+    field = OxmlElement("w:fldSimple")
+    field.set(qn("w:instr"), "PAGE")
+    second._p.append(field)
+    expect = ex(d, 0)
+    before = d.element.body.xml
+    with pytest.raises(OfficeError) as error:
+        W.set_table_cell(d, 0, expect, 0, 0, "Replacement")
+    assert error.value.code == "AUTHORING_NOT_SUPPORTED"
+    assert "field" in error.value.detail
+    assert d.element.body.xml == before
+
+
+def test_table_cell_with_nested_table_is_preserved_on_refusal():
+    d = Document()
+    cell = d.add_table(rows=1, cols=1).cell(0, 0)
+    cell.add_table(rows=1, cols=1).cell(0, 0).text = "Nested"
+    expect = ex(d, 0)
+    before = d.element.body.xml
+    with pytest.raises(OfficeError) as error:
+        W.set_table_cell(d, 0, expect, 0, 0, "Replacement")
+    assert error.value.code == "AUTHORING_NOT_SUPPORTED"
+    assert d.element.body.xml == before
 
 
 def test_picture_page_header_footer_and_setup(png):

@@ -52,7 +52,10 @@ class _Shift:
     def row(self, r: int):
         """New row number of a single cell row, or None when the row is deleted."""
         if self.op == "insert_rows":
-            return r + self.count if r >= self.at else r
+            n = r + self.count if r >= self.at else r
+            if n > refs.MAX_ROW:
+                _refuse("rows would be pushed past the last row of the sheet")
+            return n
         if self.at <= r <= self.last:
             return None
         return r - self.count if r > self.last else r
@@ -60,7 +63,10 @@ class _Shift:
     def span(self, r1: int, r2: int):
         """New (r1, r2) of a row span, or None when every row of it is deleted."""
         if self.op == "insert_rows":
-            return (r1 + self.count if r1 >= self.at else r1, r2 + self.count if r2 >= self.at else r2)
+            n1, n2 = r1 + self.count if r1 >= self.at else r1, r2 + self.count if r2 >= self.at else r2
+            if n1 > refs.MAX_ROW or n2 > refs.MAX_ROW:
+                _refuse("rows would be pushed past the last row of the sheet")
+            return n1, n2
         if self.at <= r1 and r2 <= self.last:
             return None
         n1 = r1 if r1 < self.at else (self.at if r1 <= self.last else r1 - self.count)
