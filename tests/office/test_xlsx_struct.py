@@ -65,6 +65,32 @@ def test_insert_shifts_cells_and_every_reference():
     assert other["A4"].value == "=B5"               # another sheet's own cell is not moved
 
 
+def test_insert_above_single_cell_updates_read_only_dimension():
+    wb = Workbook()
+    wb.active["A1"] = 7
+    source = io.BytesIO()
+    wb.save(source)
+    parts = parts_of(source.getvalue())
+    sheet = "xl/worksheets/sheet1.xml"
+    root = S._xml(parts[sheet])
+    root.find(S.M + "dimension").set("ref", "A1")
+    parts[sheet] = S._ser(root)
+
+    S.apply_row_op(parts, {"op": "insert_rows", "sheet": "Sheet", "at": 1, "count": 1})
+
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w") as archive:
+        for name, data in parts.items():
+            archive.writestr(name, data)
+    read_only = load_workbook(io.BytesIO(output.getvalue()), read_only=True)
+    try:
+        ws = read_only.active
+        assert ws.calculate_dimension() == "A2:A2"
+        assert list(ws.values) == [(None,), (7,)]
+    finally:
+        read_only.close()
+
+
 def test_insert_shifts_lowercase_references_on_target_and_other_sheets():
     def extra(wb, ws):
         ws["D8"] = "=SUM(a2:a5)+$b$4"

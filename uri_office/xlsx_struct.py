@@ -353,7 +353,7 @@ def _shift_sheet(root, sh: _Shift, target: str):
             sd.remove(r)
             sd.append(r)
     dim = root.find(M + "dimension")
-    if dim is not None and ":" in dim.get("ref", ""):
+    if dim is not None and dim.get("ref"):
         new = _shift_area(dim.get("ref"), sh)
         if new not in (None, "#REF!"):
             dim.set("ref", new)
