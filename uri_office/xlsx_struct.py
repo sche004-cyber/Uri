@@ -125,6 +125,23 @@ def shift_formula(formula: str, sh: _Shift, target: str, here: str) -> str:
     for t in items:
         v = t.value
         if t.type == "OPERAND" and t.subtype == "RANGE" and not v.startswith("["):
+            if v.count("!") == 2 and ":" in v:
+                left, right = v.split(":", 1)
+                left_sheet, left_ref = _split_sheet(left)
+                right_sheet, right_ref = _split_sheet(right)
+                if left_sheet is not None and right_sheet is not None:
+                    if left_sheet.casefold() != right_sheet.casefold():
+                        _refuse("3-D references across several sheets are not supported")
+                    if left_sheet.casefold() == target.casefold():
+                        shifted = _shift_area(left_ref + ":" + right_ref, sh)
+                        if shifted is not None:
+                            if shifted == "#REF!":
+                                v = left[: len(left) - len(left_ref)] + shifted
+                            else:
+                                a, b = shifted.split(":", 1)
+                                v = left[: len(left) - len(left_ref)] + a + ":" + right[: len(right) - len(right_ref)] + b
+                    out.append(v)
+                    continue
             sheet, ref = _split_sheet(v)
             if (sheet if sheet is not None else here).casefold() == target.casefold() and "[" not in ref:
                 new = _shift_area(ref, sh)

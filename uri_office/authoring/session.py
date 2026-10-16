@@ -354,16 +354,14 @@ class Authoring:
             dest = self.grants.get(t["grant_id"], kind).path
             self._load(s.data, s.kind)                      # still readable (it was loaded at every change)
             if t["replaces"]:
-                if _sha(dest.read_bytes()) != t["origin_sha256"]:
-                    raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new "
-                                                        "file", 409)
                 backup = self.root / "backups" / s.aid
                 backup.mkdir(parents=True, exist_ok=True)
-                (backup / f"{int(time.time())}-{dest.name}").write_bytes(dest.read_bytes())
             elif dest.exists():
                 raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
             data = s.data
-            atomic_write(dest, lambda fh: fh.write(data))
+            atomic_write(dest, lambda fh: fh.write(data), create_only=not t["replaces"],
+                         expected_sha256=t["origin_sha256"] if t["replaces"] else None,
+                         backup=backup / f"{time.time_ns()}-{dest.name}" if t["replaces"] else None)
             if t["replaces"]:
                 s.origin_sha = _sha(data)
             else:

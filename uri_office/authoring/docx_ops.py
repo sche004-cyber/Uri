@@ -185,7 +185,7 @@ def delete_block(doc, index, expect):
         _refuse("this paragraph ends a section (page layout); it is kept")
     if el.tag == _W + "p":
         why = _foreign(el)
-        if why in ("a comment", "a tracked change", "a footnote", "an endnote"):
+        if why:
             _refuse(f"this paragraph has {why}, which URI does not remove")
     if len(blocks(doc)) == 1:
         _refuse("a document keeps at least one paragraph")

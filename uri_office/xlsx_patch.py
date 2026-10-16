@@ -17,6 +17,7 @@ Rules
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import posixpath
 import shutil
@@ -306,11 +307,14 @@ def patch(src: Path, dst: Path, edits: list, struct_ops=(), formats=()) -> dict:
     return {"changed_parts": sorted(changed)}
 
 
-def atomic_write(dst: Path, write, mode_from: Path | None = None):
+def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only=False,
+                 expected_sha256: str | None = None, backup: Path | None = None):
     """Write through `write(fileobj)` into a new temp file next to `dst` and move it into place. The temp file is
     created exclusively with a random name (mkstemp: O_EXCL, so a planted file or symlink is never followed), synced,
-    given the permission bits of the file it replaces (or of `mode_from` for a new file), then renamed over `dst`.
-    On Windows only the read-only bit is carried over; the folder's inherited ACL applies to the new file."""
+    given the permission bits of the file it replaces (or of `mode_from` for a new file), then published at `dst`.
+    On Windows only the read-only bit is carried over; the folder's inherited ACL applies to the new file.
+    Authoring uses a no-replace hard link for Save as. For Save it first moves the old name aside, checks the
+    claimed bytes, and publishes without replacing a name another application may have created meanwhile."""
     fd, name = tempfile.mkstemp(dir=dst.parent, prefix="." + dst.name + ".", suffix=".uri-office.tmp")
     tmp = Path(name)
     try:
@@ -321,7 +325,48 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None):
         ref = dst if dst.exists() else mode_from
         if ref is not None and ref.exists():
             shutil.copymode(ref, tmp)
-        os.replace(tmp, dst)
+        if expected_sha256 is not None:
+            if backup is None:
+                raise ValueError("a conditional replacement requires a backup path")
+            hold_fd, hold_name = tempfile.mkstemp(dir=dst.parent, prefix="." + dst.name + ".",
+                                                   suffix=".uri-office.hold")
+            os.close(hold_fd)
+            hold = Path(hold_name)
+            claimed = False
+            published = False
+            try:
+                try:
+                    os.replace(dst, hold)
+                    claimed = True
+                except FileNotFoundError:
+                    raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new file", 409) from None
+                old = hold.read_bytes()
+                if hashlib.sha256(old).hexdigest() != expected_sha256:
+                    raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new file", 409)
+                backup.write_bytes(old)
+                # A second process can create dst while the old name is held aside. Never replace that new file.
+                try:
+                    os.link(tmp, dst)
+                except FileExistsError:
+                    raise OfficeError("TARGET_CHANGED", "the file changed on disk during Save; save as a new file", 409) from None
+                published = True
+            finally:
+                if claimed and not published:
+                    try:
+                        os.link(hold, dst)
+                    except FileExistsError:
+                        pass  # the other file wins; keep the claimed original in hold for recovery
+                    else:
+                        hold.unlink()
+                elif hold.exists():
+                    hold.unlink()
+        elif create_only:
+            try:
+                os.link(tmp, dst)
+            except FileExistsError:
+                raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409) from None
+        else:
+            os.replace(tmp, dst)
     finally:
         if os.path.lexists(tmp):
             tmp.unlink()

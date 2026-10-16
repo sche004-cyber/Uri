@@ -116,6 +116,31 @@ def _fill(bg):
     return fill
 
 
+def _set_fill(fill, bg):
+    """Change the requested colour without discarding an existing pattern or its other colours."""
+    if fill.find(M + "gradientFill") is not None:
+        raise OfficeError("STYLE_NOT_SUPPORTED", "a gradient fill cannot be changed as a background colour")
+    pf = fill.find(M + "patternFill")
+    if pf is None:
+        if bg is None:
+            return fill
+        pf = etree.SubElement(fill, M + "patternFill", patternType="solid")
+    pattern = pf.get("patternType")
+    if bg is None and pattern == "solid":
+        pf.set("patternType", "none")
+    elif bg is not None:
+        if not pattern or pattern == "none":
+            pf.set("patternType", "solid")
+            pattern = "solid"
+        tag = "fgColor" if pattern == "solid" else "bgColor"
+        color = pf.find(M + tag)
+        if color is None:
+            color = etree.SubElement(pf, M + tag)
+        color.attrib.clear()
+        color.set("rgb", "FF" + bg[1:])
+    return fill
+
+
 def _numfmt_id(styles, code) -> int:
     if code is None:
         return 0
@@ -146,7 +171,9 @@ def _new_xf(styles, base_xf, changed: dict) -> int:
         xf.set("fontId", str(_add_unique(fonts, font)))
         xf.set("applyFont", "1")
     if "bg" in changed:
-        xf.set("fillId", str(_add_unique(fills, _fill(changed["bg"]))))
+        fill_id = int(xf.get("fillId", "0"))
+        fill = copy.deepcopy(fills[fill_id]) if fill_id < len(fills) else _fill(None)
+        xf.set("fillId", str(_add_unique(fills, _set_fill(fill, changed["bg"]))))
         xf.set("applyFill", "1")
     if "nf" in changed:
         xf.set("numFmtId", str(_numfmt_id(styles, changed["nf"])))

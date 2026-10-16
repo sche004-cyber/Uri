@@ -175,6 +175,17 @@ def test_shift_formula_unit_cases():
         S.shift_formula("=SUM(Sheet1:Sheet3!A1)", dele, "S", "S")
 
 
+def test_repeated_same_sheet_range_shifts_both_qualified_endpoints():
+    shift = S._Shift("insert_rows", 3, 1)
+    assert S.shift_formula("SUM(Sheet1!A1:Sheet1!A5)", shift, "Sheet1", "Other") == \
+        "SUM(Sheet1!A1:Sheet1!A6)"
+    assert S.shift_formula("SUM(Sheet1!A1:Sheet1!A5)", shift, "Sheet2", "Other") == \
+        "SUM(Sheet1!A1:Sheet1!A5)"
+    with pytest.raises(OfficeError) as error:
+        S.shift_formula("SUM(Sheet1!A1:Sheet2!A5)", shift, "Sheet1", "Other")
+    assert error.value.code == "STRUCTURE_NOT_SUPPORTED" and "3-D" in error.value.detail
+
+
 @pytest.mark.parametrize("op", [{"op": "insert_rows", "sheet": "Budget", "at": 0, "count": 1},
                                 {"op": "insert_rows", "sheet": "Budget", "at": 2, "count": 0},
                                 {"op": "insert_rows", "sheet": "Budget", "at": 2, "count": 5000},

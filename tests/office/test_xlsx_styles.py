@@ -4,7 +4,7 @@ import zipfile
 
 import pytest
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.styles import Alignment, Border, Font, GradientFill, PatternFill, Side
 
 from uri_office import xlsx_model
 from uri_office import xlsx_styles as X
@@ -63,6 +63,35 @@ def test_fill_number_format_alignment_wrap_and_new_cell():
     assert ws["B2"].value == 1234.5
     assert ws["D9"].font.i is True and ws["D9"].alignment.wrap_text and ws["D9"].number_format == "0.0%"
     assert ws["B3"].number_format == 'dd-mmm-yyyy hh:mm "custom"'
+
+
+def test_changing_background_colour_preserves_an_existing_pattern():
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "S"
+    ws["A1"].fill = PatternFill(patternType="darkGrid", fgColor="FF112233", bgColor="FF445566")
+    buf = io.BytesIO()
+    wb.save(buf)
+    parts = parts_of(buf.getvalue())
+    X.apply_formats(parts, [{"sheet": "S", "cell": "A1", "before": {}, "after": {"bg": "#ABCDEF"}}])
+    fill = reopen(parts)["S"]["A1"].fill
+    assert fill.patternType == "darkGrid"
+    assert fill.fgColor.rgb == "FF112233"
+    assert fill.bgColor.rgb == "FFABCDEF"
+
+
+def test_background_colour_change_refuses_a_gradient_fill():
+    wb = Workbook()
+    wb.active.title = "S"
+    wb.active["A1"].fill = GradientFill(stop=["FF112233", "FF445566"])
+    buf = io.BytesIO()
+    wb.save(buf)
+    parts = parts_of(buf.getvalue())
+    before = dict(parts)
+    with pytest.raises(OfficeError) as error:
+        X.apply_formats(parts, [{"sheet": "S", "cell": "A1", "before": {}, "after": {"bg": "#ABCDEF"}}])
+    assert error.value.code == "STYLE_NOT_SUPPORTED"
+    assert parts == before
 
 
 def test_removing_bold_and_fill():

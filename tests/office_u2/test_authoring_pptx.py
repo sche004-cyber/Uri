@@ -287,6 +287,62 @@ def test_a_later_change_makes_the_card_stale_and_a_changed_file_is_not_replaced(
     assert e.value.code == "TARGET_CHANGED"
 
 
+@pytest.mark.parametrize("save_as", [False, True])
+def test_save_does_not_replace_a_file_changed_during_publication(env, monkeypatch, save_as):
+    from uri_office import xlsx_patch
+
+    a, docs, grants, appr, source, tmp = env
+    did = docs.add_opened(source, grants)
+    aid = a.edit_document(did)["authoring_id"]
+    a.apply(aid, {"op": "add_slide", "layout": "Blank"})
+    dest = tmp / "new.pptx" if save_as else source
+    body = act_body(appr, a.propose_save(aid, str(dest) if save_as else None))
+    actual_mkstemp = xlsx_patch.tempfile.mkstemp
+    raced = False
+
+    def create_then_race(*args, **kwargs):
+        nonlocal raced
+        result = actual_mkstemp(*args, **kwargs)
+        if kwargs.get("suffix") == ".uri-office.tmp" and not raced:
+            raced = True
+            dest.write_bytes(b"external edit")
+        return result
+
+    monkeypatch.setattr(xlsx_patch.tempfile, "mkstemp", create_then_race)
+    with pytest.raises(OfficeError) as error:
+        a.apply_save(body)
+    assert error.value.code == ("DESTINATION_EXISTS" if save_as else "TARGET_CHANGED")
+    assert raced and dest.read_bytes() == b"external edit"
+    assert a.get(aid).changes  # a failed Save keeps the working copy and its pending change
+
+
+def test_save_does_not_replace_a_name_created_after_the_old_file_is_claimed(env, monkeypatch):
+    from uri_office import xlsx_patch
+
+    a, docs, grants, appr, dest, tmp = env
+    original = dest.read_bytes()
+    aid = a.edit_document(docs.add_opened(dest, grants))["authoring_id"]
+    a.apply(aid, {"op": "add_slide", "layout": "Blank"})
+    body = act_body(appr, a.propose_save(aid))
+    actual_link = xlsx_patch.os.link
+    raced = False
+
+    def create_before_publish(source, target, *args, **kwargs):
+        nonlocal raced
+        if not raced and str(source).endswith(".uri-office.tmp") and target == dest:
+            raced = True
+            dest.write_bytes(b"new external file")
+        return actual_link(source, target, *args, **kwargs)
+
+    monkeypatch.setattr(xlsx_patch.os, "link", create_before_publish)
+    with pytest.raises(OfficeError) as error:
+        a.apply_save(body)
+    assert error.value.code == "TARGET_CHANGED"
+    assert raced and dest.read_bytes() == b"new external file"
+    backups = list((tmp / "state" / "authoring" / "backups").rglob("*.pptx"))
+    assert len(backups) == 1 and backups[0].read_bytes() == original
+
+
 def test_new_presentation_needs_save_as_and_never_replaces(env):
     a, docs, grants, appr, p, tmp = env
     v = a.new_presentation()

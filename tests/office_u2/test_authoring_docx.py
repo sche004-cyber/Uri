@@ -150,6 +150,22 @@ def test_content_uri_does_not_own_is_refused_by_name(png):
         W.set_style(d, 2, ex(d, 2), "No Such Style")
 
 
+def test_delete_block_refuses_a_field_and_preserves_the_paragraph():
+    d = Document()
+    d.add_paragraph("A field follows")
+    d.add_paragraph("A second paragraph")
+    field = OxmlElement("w:fldSimple")
+    field.set(qn("w:instr"), "PAGE")
+    d.paragraphs[0]._p.append(field)
+    expect = ex(d, 0)
+    before = d.element.body.xml
+    with pytest.raises(OfficeError) as error:
+        W.delete_block(d, 0, expect)
+    assert error.value.code == "AUTHORING_NOT_SUPPORTED"
+    assert "field" in error.value.detail
+    assert d.element.body.xml == before
+
+
 def test_table_ops():
     d = load(report_bytes())
     W.set_table_cell(d, 4, ex(d, 4), 1, 1, "150")
