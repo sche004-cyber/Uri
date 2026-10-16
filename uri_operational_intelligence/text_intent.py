@@ -217,7 +217,7 @@ _PREFIX = r"^\s*(?:(?:uri|ok|okay|no|also|and|but|now|please|pls|kindly|sorry|hm
 _WEAK_START = re.compile(
     _PREFIX + r"(?P<verb>make|keep|add|insert|include|use|say|call|write|set|update|start|begin|end|put|address|sign|"
     r"mark|leave|skip|spell|refer|drop|cut|fix|correct|improve|expand|simplify|polish|change|move|it'?s|its|not|"
-    r"instead|actually)\b", re.I)
+    r"instead|actually|it should|that should|should)\b", re.I)
 _PRONOUN_OK = ("make", "keep", "add", "insert", "include", "write", "put", "address", "sign", "end", "start", "begin",
                "spell", "change", "move", "fix", "correct", "improve", "expand", "simplify", "polish", "cut", "refer")
 # A part of a document, named with a determiner ("the date", "a line", "that word"; never "in three words").
@@ -228,8 +228,8 @@ _ANCHOR = re.compile(
     r"paragraphs|wording|tone|version|draft|letter|e-?mail|note|notice|circular|memo|report|application|reply|"
     r"message|document|text|amount|figure|number|deadline|venue|signature|details?)\b|"
     r"\b(?:instead|rather)\b|[\"“‘]|(?:^|\s)'\S", re.I)
-_CORRECTION = re.compile(r"\bnot\b[^,.;!?]{1,60},\s*(?:but\s+)?\w|,\s*not\s+\w|\b(?:i meant|i mean|that should be|"
-                         r"it should be|should be|make that)\b", re.I)
+_CORRECTION = re.compile(r"\bnot\s+\w+\s+\w+[^,.;!?]{0,60},\s*(?:but\s+)?\w|"
+                         r"\b(?:i meant|i mean|make that)\b", re.I)
 _LANGUAGE_OBJECT = re.compile(r"(?:the\s+)?(?:grammar|spelling|punctuation|typos?|language|flow|clarity|style|"
                               r"formatting|wording|tone)\b", re.I)
 
@@ -255,12 +255,17 @@ def _shares_draft_content(t: str, draft_text: str | None) -> bool:
 def _anchored(t: str, draft_text: str | None = None) -> bool:
     """True when a revision-looking message refers to the document (UIV2-F1)."""
     head = t[:400]
-    if _REVISE_ANY.search(head) or _HINGLISH_EDIT.search(head) or _KEEP_REST.search(head) or _CORRECTION.search(head):
+    if _KEEP_REST.search(head) or _CORRECTION.search(head):
         return True
     if _shares_draft_content(head, draft_text):
         return True
+    correction = re.search(r",\s*not\s+(\w+)\b", head, re.I)
+    if correction and correction.group(1).lower() in _content_tokens(draft_text):
+        return True
     tg = targets_for(t)
     if tg["body"] or tg["roles"] or tg["phrases"]:
+        return True
+    if _HINGLISH_EDIT.search(head) and re.search(r"\b(?:isko|isse|poora|pura)\b", head, re.I):
         return True
     w = _WEAK_START.match(t)
     if w is None:
@@ -448,9 +453,12 @@ def classify(text: str, *, has_draft: bool, draft_text: str | None = None) -> Te
         question = t.rstrip().endswith("?")
         starts = bool(_REVISE_START.match(t))
         mentions = bool(_REVISE_ANY.search(head)) or bool(_HINGLISH_EDIT.search(head))
-        if (starts and (not question or mentions or re.search(r"\b(?:it|this)\b", head, re.I))) or (mentions and not question):
+        targets = targets_for(t)
+        revision_cue = starts or (mentions and (_EDIT_VERB.search(head) or targets["body"] or targets["roles"]
+                                         or targets["phrases"]))
+        if revision_cue and (not question or mentions or re.search(r"\b(?:it|this)\b", head, re.I)):
             if not re.match(r"^\s*(?:what|why|how|who|when|where|which|is|are|does|do you|did)\b", t, re.I) or mentions:
-                if not (mentions or _anchored(t, draft_text)):
+                if not _anchored(t, draft_text):
                     return TextIntent(NONE, ["unanchored_with_draft"])   # UIV2-F1: ordinary chat, draft untouched
-                return TextIntent(REVISE, ["draft_revision"], instruction=t, targets=targets_for(t))
+                return TextIntent(REVISE, ["draft_revision"], instruction=t, targets=targets)
     return TextIntent(NONE, ["not_a_text_task"])

@@ -93,6 +93,7 @@ class Draft:
         # level): Undo on this draft's first version brings it back, Redo returns here (DraftDesk.op).
         self.replaced: "Draft | None" = None
         self.replaced_by: "Draft | None" = None
+        self.replaced_by_cursor: int | None = None
 
     # ---- ids --------------------------------------------------------------------------------------
     def new_id(self):
@@ -111,7 +112,7 @@ class Draft:
     @property
     def can_redo(self):
         return 0 <= self.cursor < len(self.versions) - 1 or \
-            (self.cursor == len(self.versions) - 1 and self.replaced_by is not None)
+            (self.replaced_by is not None and self.cursor == self.replaced_by_cursor)
 
     def push(self, *, blocks, facts, exclusions, missing, op, instruction, summary, changed, removed, flags):
         if len(blocks) > MAX_BLOCKS:
@@ -120,6 +121,7 @@ class Draft:
             _check_block(b.role, b.text)
         del self.versions[self.cursor + 1:]
         self.replaced_by = None               # a new edit ends the way forward, like any redo
+        self.replaced_by_cursor = None
         self._vn += 1
         n = self._vn
         v = Version(n, tuple(blocks), tuple(dict(f) for f in facts), tuple(exclusions), tuple(missing), op,

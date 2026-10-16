@@ -183,7 +183,7 @@ class DraftDesk:
             old = self.drafts.get(session_id)
             if old is not None and old is not draft and old.current is not None:
                 # UIV2-F1: keep the replaced draft (one level, its own older chain dropped) so Undo can bring it back.
-                old.replaced, old.replaced_by = None, None
+                old.replaced, old.replaced_by, old.replaced_by_cursor = None, None, None
                 draft.replaced = old
             self.drafts[session_id] = draft
             while len(self.drafts) > MAX_SESSIONS:
@@ -230,13 +230,14 @@ class DraftDesk:
                 return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_unclear"], instruction=text)
             # anything else is a new request: the question is dropped (one-turn lifetime) and it routes as usual
         intent = TX.classify(text, has_draft=d is not None and d.current is not None, draft_text=_draft_text(d))
-        # An open draft question is answered in the draft's own context, so an unanchored reply is still an answer.
+        # An open draft question accepts elliptical answers, but a new imperative request is not an answer.
         answers = ("not_a_text_task", "foreign_object", "unanchored_with_draft")
         if intent.reasons[:1] == ["trivial"] and _SHORT_ANSWER.match(text or ""):
             answers += ("trivial",)            # "yes" / "no" / "okay" answer an open question
         # A question of the user's own ("what is ...?") is not an answer to URI's question.
         own_question = (text or "").rstrip().endswith("?") or bool(_OWN_QUESTION.match(text or ""))
-        if intent.kind == TX.NONE and intent.reasons and intent.reasons[0] in answers and not own_question:
+        if intent.kind == TX.NONE and intent.reasons and intent.reasons[0] in answers \
+                and not own_question and _looks_like_answer(text):
             if d is not None and d.pending_question:
                 return TX.TextIntent(TX.REVISE, ["answer_to_clarification"], instruction=text,
                                      targets=TX.targets_for(text))
@@ -258,13 +259,14 @@ class DraftDesk:
                 if d.cursor == 0 and d.replaced is not None:
                     back = d.replaced                 # UIV2-F1: back to the draft this one replaced
                     back.replaced_by = d
+                    back.replaced_by_cursor = back.cursor
                     with self._lock:
                         self.drafts[session_id] = back
                     back.pending_question = None
                     return back.to_dict()
                 d.undo()
             elif op == "redo":
-                if d.cursor == len(d.versions) - 1 and d.replaced_by is not None:
+                if d.replaced_by is not None and d.cursor == d.replaced_by_cursor:
                     fwd = d.replaced_by
                     with self._lock:
                         self.drafts[session_id] = fwd
@@ -652,6 +654,26 @@ class DraftDesk:
 
 _SHORT_ANSWER = re.compile(r"^\s*(?:yes|yeah|yep|yup|no|nope|nah|ok(?:ay)?|sure|haan|ha|nahi|theek hai)\b", re.I)
 _OWN_QUESTION = re.compile(r"^\s*(?:what|why|how|who|whom|whose|when|where|which|can you|could you|do you|does|is there)\b", re.I)
+_NEW_REQUEST = re.compile(r"^\s*(?:(?:uri|please|could you|can you)\s+)*(?:tell me|show me|give me|help me|"
+                          r"start|set (?:a|the)\b|play|open|launch|search|find|look up|explain|create|"
+                          r"write|compose|make me|change your|update me|add|remove)\b", re.I)
+_CLAUSE_VERB = re.compile(r"\b(?:is|are|was|were|should|would|could|will|can|do|does|did|have|has|had)\b", re.I)
+
+
+def _looks_like_answer(text):
+    """Accept a short answer fragment (or yes/no), not a fresh request or unrelated full sentence.
+
+    A semicolon may follow the answer with more instructions; the desk's action guard still handles those.
+    """
+    reply = (text or "").strip()
+    if _NEW_REQUEST.match(reply):
+        return False
+    if _SHORT_ANSWER.fullmatch(reply.strip(" .!?")):
+        return True
+    first = reply.split(";", 1)[0].strip(" .,!?\t\n")
+    return 0 < len(first.split()) <= 5 and not _CLAUSE_VERB.search(first)
+
+
 _ORD_NAME = {0: "the first paragraph", 1: "the second paragraph", 2: "the third paragraph", 3: "the fourth paragraph",
              4: "the fifth paragraph", -1: "the last paragraph"}
 
