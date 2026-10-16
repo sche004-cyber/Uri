@@ -98,6 +98,16 @@ lifecycle numbers in the first column.
    Use it when Codex is missing, logged out, out of quota, cannot reach the repository or exact candidate commit,
    or fails to finish. Record the fallback reason and the reviewer identity in the plan and the qualification
    record. Do not retry a Codex failure that is already established for this run.
+   **In-driver chain (owner policy clarification 2026-10-16: independent auditing is mandatory, a provider never
+   is):** set `"reviewer_fallbacks": [{"provider": "claude_cli", ...}]` and optionally
+   `"reviewer_selection": {"max_attempts": 2}`. The driver tries the preferred reviewer first in every round; quota,
+   sign-in (AUTH) and not-found move to the next reviewer at once; failures, timeouts, SHA mismatch and unverified
+   independence are retried within `max_attempts`. Every reviewer in the chain is bound at PLAN and must pass the
+   same independence checks (bound CLI, driver-made config, containment, distinct session, integrity); acceptance
+   never depends on the provider name. No reviewer left ⇒ BLOCKED `NO_REVIEWER`; the owner restores one (Codex
+   quota, `claude` sign-in — never done by the driver or the coordinator) and `unblock --note` resets the counters.
+   Each round records `reviewer_index` and an `outcome` (ACCEPT, ACCEPT_WITH_FINDINGS, REJECT, UNAVAILABLE, FAILURE,
+   SHA_MISMATCH, INDEPENDENCE_UNVERIFIED).
 3. **Outside-driver fallback**: if neither CLI can run, a separate Claude session (new thread, agent or cloud
    session; read-only; no implementation or repair authority; given requirements, repository state, diff and
    evidence — never the implementer's conclusion) may review. Record its result with `import-review`. It routes
