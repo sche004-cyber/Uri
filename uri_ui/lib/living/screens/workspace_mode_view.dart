@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 
 import '../../models/task_item.dart';
@@ -50,6 +52,8 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      final services = LivingScope.of(context);
+      if (services.visualV2 && services.oi != null) return;
       final s = AppStateScope.of(context);
       s.loadTasks();
       if (s.activeBrain == null) s.loadActiveBrain();
@@ -68,9 +72,11 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
           builder: (context, constraints) {
             final w = constraints.maxWidth;
             final railExpanded = w >= OrbDock.railExpandAt;
-            final contextDefault = w >= 1180 &&
-                focus != WorkspaceFocus.office && focus != WorkspaceFocus.documents;
-            final showContext = _contextOverride ?? contextDefault;
+            // O2 (real-app run base1, R5-3): the context panel starts closed in Office, whose own panes need the width.
+            final contextDefault = w >= 1180 && focus != WorkspaceFocus.office;
+            final inlineContext = w >= 960;
+            final showContext =
+                inlineContext && (_contextOverride ?? contextDefault);
             return Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -85,8 +91,35 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
                       _FocusHeader(
                         focus: focus,
                         contextOpen: showContext,
-                        onToggleContext: () =>
-                            setState(() => _contextOverride = !showContext),
+                        onToggleContext: () {
+                          if (inlineContext) {
+                            setState(() => _contextOverride = !showContext);
+                            return;
+                          }
+                          showDialog<void>(
+                            context: context,
+                            builder: (context) => Dialog(
+                              child: SizedBox(
+                                width: 320,
+                                height: MediaQuery.sizeOf(context).height * .8,
+                                child: Column(
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: IconButton(
+                                        tooltip: 'Close context',
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
+                                        icon: const Icon(Icons.close),
+                                      ),
+                                    ),
+                                    const Expanded(child: _ContextPanel()),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       Expanded(
                         child: AnimatedSwitcher(
@@ -100,9 +133,12 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
                                   attachmentOpener: widget.attachmentOpener,
                                 ),
                               WorkspaceFocus.tasks => const TasksRegion(),
-                              // O2 (plan §1.2, U15): the simulated Documents region is gone; "documents" is
-                              // Office › Documents in the B1 Office workspace.
-                              WorkspaceFocus.documents || WorkspaceFocus.office =>
+                              WorkspaceFocus.documents =>
+                                const DocumentsRegion(),
+                              // URI Office (O2): the Office workspace. Reconciliation 2026-10-16 with UI V2: the
+                              // Documents region stays (its 'Start new work' tiles send real turns in the integrated
+                              // V2, BLK-INT-2) and Office is its own rail entry.
+                              WorkspaceFocus.office =>
                                 OfficeWorkspace(environment: LivingScope.of(context).office),
                               WorkspaceFocus.intelligence =>
                                 const IntelligenceOverviewView(),
@@ -155,6 +191,7 @@ class _Rail extends StatelessWidget {
         'Conversation',
       ),
       (WorkspaceFocus.tasks, Icons.check_circle_outline_rounded, 'Tasks'),
+      (WorkspaceFocus.documents, Icons.description_outlined, 'Documents'),
       (WorkspaceFocus.office, Icons.table_chart_outlined, 'Office'),
       (WorkspaceFocus.intelligence, Icons.hub_outlined, 'Intelligence'),
       (WorkspaceFocus.settings, Icons.tune_rounded, 'Settings'),
@@ -316,21 +353,25 @@ class _FocusHeader extends StatelessWidget {
       WorkspaceFocus.intelligence => 'Intelligence',
       WorkspaceFocus.settings => 'Settings',
     };
-    return SizedBox(
-      height: 48,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 56),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: UriSpace.md),
+        padding: const EdgeInsets.symmetric(
+          horizontal: UriSpace.md,
+          vertical: 4,
+        ),
         child: Row(
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: c.ink,
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: c.ink,
+                ),
               ),
             ),
-            const Spacer(),
             IconButton(
               tooltip: contextOpen ? 'Hide context' : 'Show context',
               icon: Icon(
@@ -410,7 +451,13 @@ class _OiWithDraft extends StatelessWidget {
                 const SizedBox(width: UriSpace.sm),
                 SizedBox(
                   width: (box.maxWidth * 0.45).clamp(360.0, 560.0),
-                  child: Padding(padding: const EdgeInsets.only(top: UriSpace.sm, bottom: UriSpace.sm), child: panel),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      top: UriSpace.sm,
+                      bottom: UriSpace.sm,
+                    ),
+                    child: panel,
+                  ),
                 ),
               ],
             );
@@ -418,7 +465,10 @@ class _OiWithDraft extends StatelessWidget {
           return Column(
             children: [
               Expanded(child: pane),
-              ConstrainedBox(constraints: BoxConstraints(maxHeight: box.maxHeight * 0.55), child: panel),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: box.maxHeight * 0.55),
+                child: panel,
+              ),
             ],
           );
         },
@@ -463,6 +513,21 @@ class TasksRegion extends StatelessWidget {
             UriSpace.lg,
           ),
           children: [
+            if (services.visualV2 &&
+                services.oi == null &&
+                appState.isLoadingTasks)
+              const Text('Loading pending decisions…'),
+            if (services.visualV2 &&
+                services.oi == null &&
+                appState.tasksError != null)
+              ListTile(
+                title: const Text('Pending decisions unavailable'),
+                subtitle: Text(appState.tasksError!),
+                trailing: TextButton(
+                  onPressed: appState.loadTasks,
+                  child: const Text('Retry'),
+                ),
+              ),
             if (services.a2ui != null)
               A2uiDock(
                 hub: services.a2ui!,
@@ -473,13 +538,23 @@ class TasksRegion extends StatelessWidget {
             Eyebrow(
               'Needs your decision',
               trailing: Text(
-                '${waiting.length + pending.length}',
+                '${waiting.length + pending.length + (services.visualV2 && services.oi?.pendingApproval != null ? 1 : 0) + (services.visualV2 && services.oi?.pendingConfirmation != null ? 1 : 0)}',
                 style: TextStyle(fontSize: 11, color: c.inkFaint),
               ),
             ),
             const SizedBox(height: 8),
-            if (waiting.isEmpty && pending.isEmpty)
+            if (waiting.isEmpty &&
+                pending.isEmpty &&
+                (!services.visualV2 ||
+                    (services.oi?.pendingApproval == null &&
+                        services.oi?.pendingConfirmation == null)) &&
+                (!services.visualV2 ||
+                    (!appState.isLoadingTasks && appState.tasksError == null)))
               _EmptyLine('Nothing is waiting for you.'),
+            if (services.visualV2 && services.oi?.pendingConfirmation != null)
+              OiConfirmationCard(conversation: services.oi!),
+            if (services.visualV2 && services.oi?.pendingApproval != null)
+              OiApprovalCard(conversation: services.oi!),
             for (final w in waiting) _WorkApprovalCard(item: w),
             for (final t in pending) _PendingTaskCard(task: t),
             const SizedBox(height: UriSpace.lg),
@@ -553,14 +628,15 @@ class _WorkApprovalCard extends StatelessWidget {
               style: TextStyle(fontSize: 13, color: c.inkSoft),
             ),
             const SizedBox(height: 10),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 FilledButton(
                   key: ValueKey('approve-${item.id}'),
                   onPressed: () => services.work.approve(item.id),
                   child: const Text('Approve'),
                 ),
-                const SizedBox(width: 8),
                 OutlinedButton(
                   key: ValueKey('cancel-${item.id}'),
                   onPressed: () => services.work.cancel(item.id),
@@ -614,13 +690,14 @@ class _PendingTaskCard extends StatelessWidget {
               style: TextStyle(fontSize: 12, color: c.inkFaint),
             ),
             const SizedBox(height: 10),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 FilledButton(
                   onPressed: () => appState.approveTask(task.id),
                   child: const Text('Approve'),
                 ),
-                const SizedBox(width: 8),
                 OutlinedButton(
                   onPressed: () => appState.cancelTask(task.id),
                   child: const Text('Cancel'),
@@ -734,6 +811,206 @@ class _WorkHistoryRow extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Documents / office workflows
+// ---------------------------------------------------------------------------
+
+class DocumentsRegion extends StatelessWidget {
+  const DocumentsRegion({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final services = LivingScope.of(context);
+    final c = UriColors.of(context);
+    const templates = [
+      (
+        WorkItemKind.letter,
+        Icons.mail_outline_rounded,
+        'Letter',
+        'Draft a letter',
+      ),
+      (
+        WorkItemKind.spreadsheet,
+        Icons.table_chart_outlined,
+        'Spreadsheet',
+        'Build a sheet',
+      ),
+      (
+        WorkItemKind.document,
+        Icons.article_outlined,
+        'Document',
+        'Write a document',
+      ),
+      (
+        WorkItemKind.research,
+        Icons.travel_explore_rounded,
+        'Research',
+        'Research a topic',
+      ),
+    ];
+    return ListenableBuilder(
+      listenable: services.work,
+      builder: (context, _) {
+        final docs = services.work.documents;
+        final realTurns = services.visualV2 && services.oi != null;
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(
+            UriSpace.md,
+            0,
+            UriSpace.md,
+            UriSpace.lg,
+          ),
+          children: [
+            Eyebrow(
+              'Start new work',
+              // In the integrated V2 the tiles start a real turn (below), so
+              // they are not simulated even though the document list is.
+              trailing: services.work.isSimulated && !realTurns
+                  ? const StatusBadge.simulated(compact: true)
+                  : null,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (final (kind, icon, label, title) in templates)
+                  _TemplateTile(
+                    icon: icon,
+                    label: label,
+                    onTap: () {
+                      final oi = services.oi;
+                      if (realTurns && oi != null) {
+                        // Same rule as the composer: one turn at a time.
+                        if (!oi.busy) unawaited(oi.send(title));
+                        services.presentation.setFocus(
+                          WorkspaceFocus.conversation,
+                        );
+                        return;
+                      }
+                      if (services.visualV2 && !services.appDataIsMock) {
+                        AppStateScope.of(context).ask(title);
+                        services.presentation.setFocus(
+                          WorkspaceFocus.conversation,
+                        );
+                        return;
+                      }
+                      services.work.create(title: title, kind: kind);
+                      services.presentation.setFocus(WorkspaceFocus.tasks);
+                    },
+                  ),
+              ],
+            ),
+            const SizedBox(height: UriSpace.lg),
+            const Eyebrow('Recent documents'),
+            const SizedBox(height: 8),
+            if (docs.isEmpty) _EmptyLine('No documents yet.'),
+            for (final d in docs)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: GlassPanel(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(_iconFor(d.kind), size: 18, color: c.accentInk),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          d.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 13, color: c.ink),
+                        ),
+                      ),
+                      Text(
+                        _relative(d.modifiedAt),
+                        style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                      ),
+                      if (d.simulated) ...[
+                        const SizedBox(width: 8),
+                        const StatusBadge.simulated(compact: true),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  static IconData _iconFor(WorkItemKind k) => switch (k) {
+    WorkItemKind.letter => Icons.mail_outline_rounded,
+    WorkItemKind.spreadsheet => Icons.table_chart_outlined,
+    WorkItemKind.document => Icons.article_outlined,
+    WorkItemKind.email => Icons.alternate_email_rounded,
+    WorkItemKind.research => Icons.travel_explore_rounded,
+    WorkItemKind.other => Icons.insert_drive_file_outlined,
+  };
+
+  static String _relative(DateTime t) {
+    final d = DateTime.now().difference(t);
+    if (d.inMinutes < 1) return 'just now';
+    if (d.inHours < 1) return '${d.inMinutes} min ago';
+    if (d.inDays < 1) return '${d.inHours} h ago';
+    return '${d.inDays} d ago';
+  }
+}
+
+class _TemplateTile extends StatelessWidget {
+  const _TemplateTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = UriColors.of(context);
+    final glass = UriGlass.of(context);
+    return Material(
+      color: glass.fill,
+      borderRadius: BorderRadius.circular(UriRadius.md),
+      child: InkWell(
+        key: ValueKey('template-$label'),
+        borderRadius: BorderRadius.circular(UriRadius.md),
+        onTap: onTap,
+        child: Container(
+          width: 132,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(UriRadius.md),
+            border: Border.all(color: glass.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, size: 20, color: c.accent),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: c.ink,
+                ),
+              ),
+              Text('New', style: TextStyle(fontSize: 11, color: c.inkFaint)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Settings (executor, Brain, reasoning, permissions, appearance)
 // ---------------------------------------------------------------------------
 
@@ -785,6 +1062,20 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
             if (services.oi != null) ...[
               WorkingSystemSettingsSection(conversation: services.oi!),
             ],
+            if (services.classicInterfaceBuilder != null)
+              ListTile(
+                title: const Text('All settings and diagnostics'),
+                subtitle: const Text(
+                  'Open existing authentication, devices, connections and operational screens',
+                ),
+                trailing: const Icon(Icons.open_in_new),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: services.classicInterfaceBuilder!,
+                  ),
+                ),
+              ),
+            if (services.visualV2) const CompanionSettingsSection(),
             Eyebrow(
               'Harness',
               trailing: services.readiness.isSimulated
@@ -877,7 +1168,7 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
             const SizedBox(height: UriSpace.lg),
             // Companion, appearance, performance and voice: one section, in
             // the selected companion's own theme.
-            const CompanionSettingsSection(),
+            if (!services.visualV2) const CompanionSettingsSection(),
           ],
         );
       },
@@ -1159,11 +1450,24 @@ class _ContextPanel extends StatelessWidget {
               _KeyValue('Harness', harness?.displayName ?? 'None selected'),
               // Working system: the real Brain selection and state from the integrated worker.
               if (oi != null) ...[
-                _KeyValue('Brain', oi.selectedRowId == 'runtime-v1' ? 'Runtime v1 (local)' : (oi.selectedRowId == 'deterministic' ? 'No Brain (deterministic rules)' : oi.selectedRowId)),
-                _KeyValue('Model', '${oi.brainStatus['model_id'] ?? '—'} · ${oiBrainStateLabel(oi.brainStatus['state'] as String?)}'),
+                _KeyValue(
+                  'Brain',
+                  oi.selectedRowId == 'runtime-v1'
+                      ? 'Runtime v1 (local)'
+                      : (oi.selectedRowId == 'deterministic'
+                            ? 'No Brain (deterministic rules)'
+                            : oi.selectedRowId),
+                ),
+                _KeyValue(
+                  'Model',
+                  '${oi.brainStatus['model_id'] ?? '—'} · ${oiBrainStateLabel(oi.brainStatus['state'] as String?)}',
+                ),
                 _KeyValue('Reasoning', 'Depth ${oi.depth.name}'),
                 // Core requires an explicit approval for every action; nothing here is a preference.
-                _KeyValue('Approvals', 'Every action needs your approval (Core)'),
+                _KeyValue(
+                  'Approvals',
+                  'Every action needs your approval (Core)',
+                ),
               ] else ...[
                 _KeyValue(
                   'Brain',
@@ -1177,7 +1481,8 @@ class _ContextPanel extends StatelessWidget {
               if (oi == null)
                 _KeyValue(
                   'Approvals',
-                  appState.preferences.autonomyLevel == AutonomyLevel.askEveryTime
+                  appState.preferences.autonomyLevel ==
+                          AutonomyLevel.askEveryTime
                       ? 'Ask every time'
                       : 'Routine auto-approve',
                 ),

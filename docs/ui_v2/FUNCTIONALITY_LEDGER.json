@@ -1,0 +1,292 @@
+{
+  "baseline": "1b5423bc15fd7e5da9161c862cf839925da9f2eb",
+  "revision": "local candidate Git HEAD / external lifecycle receipt",
+  "scope": "35 major implementation surfaces; exhaustive legacy per-control audit incomplete",
+  "test_evidence": "FUNCTIONAL_COVERAGE_MATRIX.md and raw gate logs",
+  "recorded_verification": "CURRENT_UI_EVIDENCE.md and evidence/final",
+  "independently_accepted": false,
+  "integration": "none",
+  "deployment": "none",
+  "rows": [
+    {
+      "id": "UI-001",
+      "entry_controls": "Bootstrap: Server address / validation / connection test",
+      "source": "[bootstrap_screen.dart](../../uri_ui/lib/screens/bootstrap/bootstrap_screen.dart#L25) line 25",
+      "dependency": "Existing HTTP bootstrap",
+      "implementation": "preserved themed candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-002",
+      "entry_controls": "Login: Login / password / submit / errors / signup",
+      "source": "[login_screen.dart](../../uri_ui/lib/screens/auth/login_screen.dart#L12) line 12",
+      "dependency": "Existing auth callbacks / AppState",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-003",
+      "entry_controls": "Classic onboarding: Focus / style / approval preference / skip",
+      "source": "[onboarding_screen.dart](../../uri_ui/lib/screens/onboarding/onboarding_screen.dart#L10) line 10",
+      "dependency": "Existing user preferences; UX-only approval preference",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-004",
+      "entry_controls": "Brain setup: Provider / model / next / skip",
+      "source": "[brain_onboarding_screen.dart](../../uri_ui/lib/screens/onboarding/brain_onboarding_screen.dart#L15) line 15",
+      "dependency": "Existing provider APIs",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-005",
+      "entry_controls": "Living setup: Connect / Harness / Brain / Permissions / ready",
+      "source": "[living_onboarding_flow.dart](../../uri_ui/lib/living/screens/onboarding/living_onboarding_flow.dart#L25) line 25",
+      "dependency": "Readiness source; existing authority unchanged",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-006",
+      "entry_controls": "Dashboard: Six destination cards / composer / navigation",
+      "source": "[frost_dashboard.dart](../../uri_ui/lib/living/screens/frost_dashboard.dart#L18) line 18",
+      "dependency": "Shared AppState, readiness, work, presentation",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-007",
+      "entry_controls": "Artwork: Unframed engraving / responsive reservation",
+      "source": "[frost_dashboard.dart](../../uri_ui/lib/living/screens/frost_dashboard.dart#L437) line 437",
+      "dependency": "Local cutout image; no actions",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-008",
+      "entry_controls": "Companion click: Single acknowledgement / reveal; double Dashboard",
+      "source": "[living_shell.dart](../../uri_ui/lib/living/presentation/living_shell.dart#L362) line 362",
+      "dependency": "Existing speech service; no Brain ask",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-009",
+      "entry_controls": "Companion buttons: Chat / Dashboard / available Voice / contextual Review",
+      "source": "[companion_mode_view.dart](../../uri_ui/lib/living/screens/companion_mode_view.dart#L48) line 48",
+      "dependency": "Separate local A2UI catalog, guarded voice controller",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-010",
+      "entry_controls": "Detached chat: Conversation / scroll / close / submit",
+      "source": "[companion_mode_view.dart](../../uri_ui/lib/living/screens/companion_mode_view.dart#L437) line 437",
+      "dependency": "Same AppState or OI, LivingComposer",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-011",
+      "entry_controls": "Orbital layout: Circular targets / safe paths / large-text fallback",
+      "source": "[companion_mode_view.dart](../../uri_ui/lib/living/screens/companion_mode_view.dart#L62) line 62",
+      "dependency": "Host geometry; no runtime state mutation",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-012",
+      "entry_controls": "Orbit pause: Pointer approach / focus / hidden / reduced motion",
+      "source": "[living_shell.dart](../../uri_ui/lib/living/presentation/living_shell.dart#L309) line 309",
+      "dependency": "Existing paced frame clock; own-window cursor only",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-013",
+      "entry_controls": "Native overlay: Frameless / restore bounds / move / clamp",
+      "source": "[companion_window_adapter.dart](../../uri_ui/lib/services/companion_window_adapter.dart#L14) line 14",
+      "dependency": "Windows window_manager + own native channel",
+      "implementation": "implemented; desktop behavior unverified",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-014",
+      "entry_controls": "Native hit regions: Companion ellipse / circles / narrow arcs / chat / waveform",
+      "source": "[flutter_window.cpp](../../uri_ui/windows/runner/flutter_window.cpp#L96) line 96",
+      "dependency": "Native SetWindowRgn; target-window DPI",
+      "implementation": "implemented; 96 DPI region inspection only",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-015",
+      "entry_controls": "Audio level bars: RMS bars; silent listening marks",
+      "source": "[voice_waveform.dart](../../uri_ui/lib/living/voice/voice_waveform.dart#L360) line 360",
+      "dependency": "Existing live level/flux; existing hidden/paced clock",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-016",
+      "entry_controls": "Voice activation: Start / finish / cancel only when available",
+      "source": "[companion_mode_view.dart](../../uri_ui/lib/living/screens/companion_mode_view.dart#L255) line 255",
+      "dependency": "Existing VoiceInteractionController; no wake detector",
+      "implementation": "implemented clicks; wake phrase unsupported",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-017",
+      "entry_controls": "Companion catalog: Eleven existing renderer identities",
+      "source": "[companion_design.dart](../../uri_ui/lib/living/companion/companion_design.dart#L8) line 8",
+      "dependency": "Four Living + seven Classic; procedural 2D",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-018",
+      "entry_controls": "Theme independence: Explicit theme / original follow / persistence / fallback",
+      "source": "[companion_preferences.dart](../../uri_ui/lib/living/companion/companion_preferences.dart#L424) line 424",
+      "dependency": "Existing preference store; no runtime schema",
+      "implementation": "implemented candidate",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-019",
+      "entry_controls": "Gallery: Select / preview states / zoom / larger / Apply / Cancel",
+      "source": "[companion_gallery.dart](../../uri_ui/lib/living/screens/settings/companion_gallery.dart#L80) line 80",
+      "dependency": "One isolated renderer; no active request/audio mutation",
+      "implementation": "implemented candidate; no true 3D rotation",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-020",
+      "entry_controls": "Shared composer: Draft / attachments / enter / send / busy",
+      "source": "[living_composer.dart](../../uri_ui/lib/living/widgets/living_composer.dart#L90) line 90",
+      "dependency": "AppState.ask OR OI.send; UI commands intercepted",
+      "implementation": "preserved service path / compact view",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-021",
+      "entry_controls": "Workspace: Conversation / tasks / drafts / intelligence / settings",
+      "source": "[workspace_mode_view.dart](../../uri_ui/lib/living/screens/workspace_mode_view.dart#L34) line 34",
+      "dependency": "Existing Classic HTTP and OI paths remain distinct",
+      "implementation": "preserved candidate navigation",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-022",
+      "entry_controls": "OI stream: Messages / busy / errors / confirmations / approval review",
+      "source": "[oi_widgets.dart](../../uri_ui/lib/living/integration/oi_widgets.dart#L13) line 13",
+      "dependency": "Integrated OI event stream; digest-bound explicit decisions",
+      "implementation": "preserved; compact transcript reused",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-023",
+      "entry_controls": "Task review: Task list / details / status",
+      "source": "[tasks_screen.dart](../../uri_ui/lib/screens/tasks/tasks_screen.dart#L24) line 24",
+      "dependency": "Classic HTTP AppState tasks",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-024",
+      "entry_controls": "Supervised task: Approve / cancel / checkpoints / receipts",
+      "source": "[supervised_execution_screen.dart](../../uri_ui/lib/screens/tasks/supervised_execution_screen.dart#L23) line 23",
+      "dependency": "Paired/supervised worker; frozen file unchanged",
+      "implementation": "preserved frozen baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-025",
+      "entry_controls": "Draft desk: Current / changes / original / undo / redo / copy",
+      "source": "[draft_panel.dart](../../uri_ui/lib/living/integration/draft_panel.dart#L23) line 23",
+      "dependency": "Existing OI draft model",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-026",
+      "entry_controls": "Providers: Credentials / model / subscription / local / fallback",
+      "source": "[providers_screen.dart](../../uri_ui/lib/screens/settings/providers_screen.dart#L13) line 13",
+      "dependency": "Existing provider APIs; no automatic auth grant",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-027",
+      "entry_controls": "Connections: Connect / reconnect / disconnect / Brain",
+      "source": "[connections_providers_screen.dart](../../uri_ui/lib/screens/connections/connections_providers_screen.dart#L28) line 28",
+      "dependency": "Existing services and classic navigation",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-028",
+      "entry_controls": "Memory: Remember / edit / forget / context preferences",
+      "source": "[memory_context_settings_screen.dart](../../uri_ui/lib/screens/settings/memory_context_settings_screen.dart#L10) line 10",
+      "dependency": "Existing memory APIs",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-029",
+      "entry_controls": "Intelligence: Budgets / facts / sources / memory views",
+      "source": "[intelligence_overview_view.dart](../../uri_ui/lib/living/screens/intelligence/intelligence_overview_view.dart#L172) line 172",
+      "dependency": "Existing intelligence sources",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-030",
+      "entry_controls": "Settings: Profile / preferences / devices / runtime / about",
+      "source": "[settings_shell.dart](../../uri_ui/lib/screens/settings/settings_shell.dart#L155) line 155",
+      "dependency": "Frozen settings shell / existing service contracts",
+      "implementation": "preserved frozen baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-031",
+      "entry_controls": "Diagnostics: Health / runtime facts / diagnostic details",
+      "source": "[diagnostics_settings_screen.dart](../../uri_ui/lib/screens/settings/diagnostics_settings_screen.dart#L12) line 12",
+      "dependency": "Existing diagnostics APIs",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-032",
+      "entry_controls": "Admin grants: Review grant changes / explicit submission",
+      "source": "[admin_grants_screen.dart](../../uri_ui/lib/screens/settings/admin_grants_screen.dart#L18) line 18",
+      "dependency": "Existing authorization APIs; never UX auto-grants",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-033",
+      "entry_controls": "Scheduler: Jobs / upcoming / executions / review",
+      "source": "[scheduler_view.dart](../../uri_ui/lib/living/screens/scheduler/scheduler_view.dart#L16) line 16",
+      "dependency": "Existing scheduler service, distinct from OI/HTTP",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-034",
+      "entry_controls": "Assist: Scope / suggest / pause / resume / revoke / research",
+      "source": "[assist_mode_view.dart](../../uri_ui/lib/living/assist/assist_mode_view.dart#L13) line 13",
+      "dependency": "Existing Assist adapter permissions; unavailable tabs stay unavailable",
+      "implementation": "preserved baseline",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    },
+    {
+      "id": "UI-035",
+      "entry_controls": "Runtime A2UI: Validated panels / actions / notices / reject",
+      "source": "[a2ui_hub.dart](../../uri_ui/lib/living/a2ui/a2ui_hub.dart#L117) line 117",
+      "dependency": "Existing runtime catalog vs separate host-local catalog",
+      "implementation": "preserved validation / host-local extension",
+      "acceptance_scenario": "Exercise controls, retain context, report unavailable/errors truthfully; no implicit decision"
+    }
+  ]
+}

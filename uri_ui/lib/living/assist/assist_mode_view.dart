@@ -331,6 +331,28 @@ class _AssistModeViewState extends State<AssistModeView> {
 
   Widget _research(AssistController a, UriColors c) {
     final results = a.results;
+    final query = TextField(
+      key: const ValueKey('assist-research-query'),
+      controller: _query,
+      maxLength: 400,
+      decoration: const InputDecoration(hintText: 'What should URI look up?'),
+    );
+    final action = a.researching
+        ? OutlinedButton(
+            key: const ValueKey('assist-research-cancel'),
+            onPressed: a.cancelResearch,
+            child: const Text('Cancel'),
+          )
+        : FilledButton(
+            key: const ValueKey('assist-research-go'),
+            onPressed: a.busy
+                ? null
+                : () {
+                    final q = _query.text.trim();
+                    if (q.isNotEmpty) a.research(q);
+                  },
+            child: const Text('Research'),
+          );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -339,35 +361,27 @@ class _AssistModeViewState extends State<AssistModeView> {
           style: TextStyle(color: c.inkSoft, fontSize: 12),
         ),
         const SizedBox(height: UriSpace.xs),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                key: const ValueKey('assist-research-query'),
-                controller: _query,
-                maxLength: 400,
-                decoration: const InputDecoration(hintText: 'What should URI look up?'),
-              ),
-            ),
-            const SizedBox(width: UriSpace.sm),
-            if (a.researching)
-              OutlinedButton(
-                key: const ValueKey('assist-research-cancel'),
-                onPressed: a.cancelResearch,
-                child: const Text('Cancel'),
-              )
-            else
-              FilledButton(
-                key: const ValueKey('assist-research-go'),
-                onPressed: a.busy
-                    ? null
-                    : () {
-                        final q = _query.text.trim();
-                        if (q.isNotEmpty) a.research(q);
-                      },
-                child: const Text('Research'),
-              ),
-          ],
+        LayoutBuilder(
+          builder: (context, box) {
+            if (box.maxWidth < 520 ||
+                MediaQuery.textScalerOf(context).scale(14) > 18) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  query,
+                  const SizedBox(height: 8),
+                  Align(alignment: Alignment.centerRight, child: action),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: query),
+                const SizedBox(width: 12),
+                action,
+              ],
+            );
+          },
         ),
         if (a.researching)
           Padding(

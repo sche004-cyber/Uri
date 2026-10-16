@@ -23,6 +23,7 @@ class GlassPanel extends StatelessWidget {
     this.glowBorder = false,
     this.clip = true,
     this.blur = false,
+    this.borderless = false,
   });
 
   final Widget child;
@@ -42,6 +43,7 @@ class GlassPanel extends StatelessWidget {
   /// 22 ms raster p95 on the dashboard). Enable only for a panel that
   /// floats over moving content, e.g. the composer over the conversation.
   final bool blur;
+  final bool borderless;
 
   @override
   Widget build(BuildContext context) {
@@ -53,19 +55,24 @@ class GlassPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: strong ? glass.fillStrong : glass.fill,
         borderRadius: border,
-        border: Border.all(
-          color: glowBorder ? glass.glow.withValues(alpha: 0.45) : glass.border,
-        ),
+        border: borderless
+            ? null
+            : Border.all(
+                color: glowBorder
+                    ? glass.glow.withValues(alpha: 0.45)
+                    : glass.border,
+              ),
       ),
       child: Stack(
         children: [
           // Top-edge light catch.
-          Positioned(
-            left: radius,
-            right: radius,
-            top: 0,
-            child: Container(height: 1, color: glass.highlight),
-          ),
+          if (!borderless)
+            Positioned(
+              left: radius,
+              right: radius,
+              top: 0,
+              child: Container(height: 1, color: glass.highlight),
+            ),
           // Transparent Material so ListTiles/ink inside a panel paint
           // correctly (they need a Material between them and the fill).
           Material(

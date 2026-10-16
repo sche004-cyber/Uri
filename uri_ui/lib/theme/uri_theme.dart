@@ -248,6 +248,63 @@ class UriColors extends ThemeExtension<UriColors> {
     dangerSoft: Color(0xFF3A1C1C),
   );
 
+  // Approved Concept C material, ink and brass values. Semantic status
+  // tones are derived; the existing companion renderer is unaffected.
+  static const ivoryFoundry = UriColors(
+    ink: Color(0xFF292821),
+    inkSoft: Color(0xFF5C574C),
+    inkFaint: Color(0xFF5C574C),
+    canvas: Color(0xFFE9E3D5),
+    surface: Color(0xFFF2EDE2),
+    surfaceSunken: Color(0xFFDCD2BF),
+    border: Color(0xFF89795F),
+    accent: Color(0xFF77603C),
+    accentSoft: Color(0xFFE0D0AD),
+    accentInk: Color(0xFF554329),
+    success: Color(0xFF36513A),
+    successSoft: Color(0xFFDEE5D9),
+    warning: Color(0xFF735117),
+    warningSoft: Color(0xFFF1E2BE),
+    danger: Color(0xFF933D33),
+    dangerSoft: Color(0xFFF0DED8),
+  );
+  static const snowArchive = UriColors(
+    ink: Color(0xFF292A27),
+    inkSoft: Color(0xFF5B5C56),
+    inkFaint: Color(0xFF5B5C56),
+    canvas: Color(0xFFF5F4EF),
+    surface: Color(0xFFFFFEFA),
+    surfaceSunken: Color(0xFFE7E4DA),
+    border: Color(0xFF858674),
+    accent: Color(0xFF776541),
+    accentSoft: Color(0xFFE4D9C1),
+    accentInk: Color(0xFF554329),
+    success: Color(0xFF36513A),
+    successSoft: Color(0xFFDEE5D9),
+    warning: Color(0xFF735117),
+    warningSoft: Color(0xFFF1E2BE),
+    danger: Color(0xFF933D33),
+    dangerSoft: Color(0xFFF0DED8),
+  );
+  static const ashLimestone = UriColors(
+    ink: Color(0xFF262824),
+    inkSoft: Color(0xFF43473E),
+    inkFaint: Color(0xFF43473E),
+    canvas: Color(0xFFBABBB5),
+    surface: Color(0xFFD1D0C7),
+    surfaceSunken: Color(0xFFA5A69D),
+    border: Color(0xFF62665A),
+    accent: Color(0xFF55462D),
+    accentSoft: Color(0xFFD6C8A6),
+    accentInk: Color(0xFF443820),
+    success: Color(0xFF29432D),
+    successSoft: Color(0xFFBCC9B6),
+    warning: Color(0xFF59400F),
+    warningSoft: Color(0xFFD6C8A6),
+    danger: Color(0xFF793128),
+    dangerSoft: Color(0xFFD8BCB5),
+  );
+
   /// The active palette for [context], resolved through the current
   /// theme exactly like `Theme.of(context).textTheme` — never a bare
   /// static field, so it always tracks the selected theme correctly.
@@ -397,6 +454,9 @@ class UriBreakpoints {
 /// this app's old binary dark/light default mapped to — until the user
 /// makes an explicit 4-theme choice; see [ThemeStore]).
 enum UriThemeChoice {
+  ivoryFoundry,
+  snowArchive,
+  ashLimestone,
   system,
   graphite,
   deepNavy,
@@ -415,6 +475,9 @@ enum UriThemeChoice {
 
 extension UriThemeChoiceLabel on UriThemeChoice {
   String get label => switch (this) {
+    UriThemeChoice.ivoryFoundry => 'Ivory Foundry',
+    UriThemeChoice.snowArchive => 'Snow Archive',
+    UriThemeChoice.ashLimestone => 'Ash & Limestone',
     UriThemeChoice.system => 'System',
     UriThemeChoice.graphite => 'Graphite',
     UriThemeChoice.deepNavy => 'Deep Navy',
@@ -430,6 +493,9 @@ extension UriThemeChoiceLabel on UriThemeChoice {
   /// the Appearance picker — the same accent hex named in Blueprint
   /// §4.1 for the 4 real themes; `system` has no swatch of its own.
   Color? get swatch => switch (this) {
+    UriThemeChoice.ivoryFoundry => UriColors.ivoryFoundry.accent,
+    UriThemeChoice.snowArchive => UriColors.snowArchive.accent,
+    UriThemeChoice.ashLimestone => UriColors.ashLimestone.accent,
     UriThemeChoice.system => null,
     UriThemeChoice.graphite => UriColors.graphite.accent,
     UriThemeChoice.deepNavy => UriColors.deepNavy.accent,
@@ -444,8 +510,17 @@ extension UriThemeChoiceLabel on UriThemeChoice {
 
 /// Resolves a [UriThemeChoice] to the actual palette to render.
 /// [platformBrightness] only matters for [UriThemeChoice.system].
-UriColors resolveUriColors(UriThemeChoice choice, Brightness platformBrightness) {
+UriColors resolveUriColors(
+  UriThemeChoice choice,
+  Brightness platformBrightness,
+) {
   switch (choice) {
+    case UriThemeChoice.ivoryFoundry:
+      return UriColors.ivoryFoundry;
+    case UriThemeChoice.snowArchive:
+      return UriColors.snowArchive;
+    case UriThemeChoice.ashLimestone:
+      return UriColors.ashLimestone;
     case UriThemeChoice.system:
       return platformBrightness == Brightness.dark
           ? UriColors.graphite
@@ -558,29 +633,74 @@ ThemeData buildUriTheme(UriColors palette) {
             ? palette.canvas
             : Colors.white,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        minimumSize: const Size(64, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        visualDensity: VisualDensity.standard,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(UriRadius.sm),
         ),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          height: 1.25,
+        ),
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: palette.accent,
+        foregroundColor: brightness == Brightness.dark
+            ? palette.canvas
+            : Colors.white,
+        minimumSize: const Size(64, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        visualDensity: VisualDensity.standard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(UriRadius.sm),
+        ),
+        textStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          height: 1.25,
+        ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: palette.ink,
         side: BorderSide(color: palette.border),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        minimumSize: const Size(64, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        visualDensity: VisualDensity.standard,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(UriRadius.sm),
         ),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          height: 1.25,
+        ),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: palette.inkSoft,
+        minimumSize: const Size(48, 48),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        visualDensity: VisualDensity.standard,
+        textStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          height: 1.25,
+        ),
+      ),
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(
+        minimumSize: const Size(48, 48),
+        iconSize: 20,
+        padding: const EdgeInsets.all(12),
+        visualDensity: VisualDensity.standard,
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(

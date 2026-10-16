@@ -19,7 +19,20 @@ import 'voice_waveform.dart';
 /// retargeting one tween, so barge-in, cancellation and a lost signal glide
 /// rather than jump. While fading out it keeps the last speaker's text.
 class VoiceStage extends StatefulWidget {
-  const VoiceStage({super.key, required this.voice, this.compact = false});
+  const VoiceStage({
+    super.key,
+    required this.voice,
+    this.compact = false,
+    this.borderless = false,
+    this.showListening = false,
+    this.vertical = false,
+    this.visualScale = 1,
+  });
+
+  final bool borderless;
+  final bool showListening;
+  final bool vertical;
+  final double visualScale;
 
   final VoiceSessionController voice;
 
@@ -55,6 +68,7 @@ class _VoiceStageState extends State<VoiceStage> {
       builder: (context, _) {
         final session = widget.voice.session;
         final speaker = switch (session.phase) {
+          VoicePhase.listening when widget.showListening => VoiceSpeaker.user,
           VoicePhase.userSpeaking => VoiceSpeaker.user,
           VoicePhase.uriSpeaking => VoiceSpeaker.uri,
           _ => null,
@@ -76,7 +90,40 @@ class _VoiceStageState extends State<VoiceStage> {
             return Opacity(
               key: const ValueKey('voice-stage'),
               opacity: v,
-              child: widget.compact
+              child: widget.vertical
+                  ? Column(
+                      children: [
+                        if (prefs.voice.waveform)
+                          SizedBox(
+                            width: 170 * widget.visualScale,
+                            height: 34 * widget.visualScale,
+                            child: _waveform(v),
+                          ),
+                        Text(
+                          session.phase == VoicePhase.listening
+                              ? 'Listening'
+                              : speaker == VoiceSpeaker.user
+                              ? 'You'
+                              : 'URI speaking',
+                          style: TextStyle(
+                            fontSize: 14 * widget.visualScale,
+                            color: const Color(0xFFF1EEE5),
+                            shadows: const [
+                              Shadow(color: Color(0xCC000000), blurRadius: 4),
+                            ],
+                          ),
+                        ),
+                        if (widget.voice.simulated)
+                          const Text(
+                            'SIMULATED',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Color(0xFFF1EEE5),
+                            ),
+                          ),
+                      ],
+                    )
+                  : widget.compact
                   ? _compact(context, session, shown, prefs.voice.waveform, v)
                   : _full(session, shown, prefs.voice.waveform, v),
             );
@@ -91,6 +138,7 @@ class _VoiceStageState extends State<VoiceStage> {
     level: widget.voice.level,
     flux: widget.voice.flux,
     presence: presence,
+    bars: widget.vertical,
   );
 
   Widget _transcript(
@@ -100,7 +148,12 @@ class _VoiceStageState extends State<VoiceStage> {
     required double fontSize,
   }) => VoiceTranscript(
     speaker: speaker,
-    text: session.transcript,
+    text:
+        widget.showListening &&
+            session.phase == VoicePhase.listening &&
+            session.transcript.isEmpty
+        ? 'Listening…'
+        : session.transcript,
     spokenChars: session.spokenChars,
     isFinal: session.transcriptFinal,
     simulated: widget.voice.simulated,
@@ -163,7 +216,7 @@ class _VoiceStageState extends State<VoiceStage> {
       decoration: BoxDecoration(
         color: glass.fillStrong,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: glass.border),
+        border: widget.borderless ? null : Border.all(color: glass.border),
       ),
       child: Row(
         children: [

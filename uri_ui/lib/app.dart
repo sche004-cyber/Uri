@@ -27,6 +27,7 @@ import 'services/file_picker_service.dart';
 import 'theme/uri_theme.dart';
 import 'widgets/app_shell.dart';
 import 'widgets/compact_overlay.dart';
+import 'living/companion/companion_preferences.dart';
 
 /// Real native-window resize hook for a Compact/Workspace transition.
 /// Defined here (not in a plugin file) so this plugin-free file can
@@ -43,9 +44,13 @@ class UriApp extends StatefulWidget {
     this.filePicker,
     this.attachmentOpener,
     this.onCompactModeChanged,
+    this.authenticatedHome,
+    this.companionPreferences,
   });
 
   final AppState appState;
+  final Widget? authenticatedHome;
+  final CompanionPreferences? companionPreferences;
 
   /// M16: how the user picks a file to attach. Supplied by main.dart in
   /// the real app; null in tests, where the attach control is simply
@@ -109,12 +114,13 @@ class _UriAppState extends State<UriApp> with WidgetsBindingObserver {
     return AppStateScope(
       state: appState,
       child: ListenableBuilder(
-        listenable: appState,
+        listenable: Listenable.merge([appState, ?widget.companionPreferences]),
         builder: (context, _) {
           final platformBrightness =
               WidgetsBinding.instance.platformDispatcher.platformBrightness;
           final activeColors = resolveUriColors(
-            appState.themeChoice,
+            widget.companionPreferences?.effectiveTheme() ??
+                appState.themeChoice,
             platformBrightness,
           );
           return MaterialApp(
@@ -134,6 +140,7 @@ class _UriAppState extends State<UriApp> with WidgetsBindingObserver {
               filePicker: widget.filePicker,
               attachmentOpener: widget.attachmentOpener,
               onCompactModeChanged: widget.onCompactModeChanged,
+              authenticatedHome: widget.authenticatedHome,
             ),
           );
         },
@@ -148,12 +155,14 @@ class _RootGate extends StatefulWidget {
     required this.filePicker,
     required this.attachmentOpener,
     required this.onCompactModeChanged,
+    this.authenticatedHome,
   });
 
   final AppState appState;
   final FilePickerFn? filePicker;
   final AttachmentOpenerFn? attachmentOpener;
   final CompactWindowModeFn? onCompactModeChanged;
+  final Widget? authenticatedHome;
 
   @override
   State<_RootGate> createState() => _RootGateState();
@@ -202,11 +211,12 @@ class _RootGateState extends State<_RootGate> {
     if (appState.needsBrainSetup && !appState.brainSetupDismissed) {
       return BrainOnboardingScreen(onSkip: appState.dismissBrainSetup);
     }
-    return UriHome(
-      filePicker: widget.filePicker,
-      attachmentOpener: widget.attachmentOpener,
-      onCompactModeChanged: widget.onCompactModeChanged,
-    );
+    return widget.authenticatedHome ??
+        UriHome(
+          filePicker: widget.filePicker,
+          attachmentOpener: widget.attachmentOpener,
+          onCompactModeChanged: widget.onCompactModeChanged,
+        );
   }
 }
 
@@ -290,10 +300,7 @@ class _UriHomeState extends State<UriHome> {
             // IgnorePointer, so no state is lost and switching back is
             // instant - it is simply not painted or hit-tested while
             // Compact has the (now genuinely small) window instead.
-            Offstage(
-              offstage: isCompact,
-              child: _buildShell(),
-            ),
+            Offstage(offstage: isCompact, child: _buildShell()),
             if (isCompact)
               CompactOverlay(
                 filePicker: widget.filePicker,
@@ -345,8 +352,11 @@ class _UriHomeState extends State<UriHome> {
   // Phase 2 UI/operations: the supervised execution entry sits on Tasks and
   // renders nothing unless the paired installation opted in (no cutover).
   static Widget _buildTasks(BuildContext context) => const Column(
-        children: [SupervisedExecutionEntry(), Expanded(child: TasksScreen())],
-      );
+    children: [
+      SupervisedExecutionEntry(),
+      Expanded(child: TasksScreen()),
+    ],
+  );
   static Widget _buildConnections(BuildContext context) =>
       const ConnectionsProvidersScreen();
   static Widget _buildSettings(BuildContext context) => const SettingsShell();

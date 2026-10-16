@@ -1,0 +1,112 @@
+{
+  "milestone": "URI-UI-V2-button-placement-20261013",
+  "repo": "C:\\Users\\cheta\\Development\\uri-ui-v2",
+  "canonical_url": "https://github.com/sche004-cyber/Uri",
+  "baseline": {
+    "remote_branch": "integration/git-sync-20261008",
+    "expect": "1b5423bc15fd7e5da9161c862cf839925da9f2eb"
+  },
+  "candidate": {
+    "branch": "ui/companion-v2-visual-qualification",
+    "worktree": "C:\\Users\\cheta\\Development\\uri-ui-v2"
+  },
+  "state_dir": "C:/Users/cheta/Development/uri-ui-v2-buttons-lifecycle-20261013",
+  "acceptance_criteria_file": "docs/ui_v2/BUTTON_PLACEMENT_PLAN.md",
+  "review_focus": [
+    "Preserve auth/runtime/approval boundaries and existing Companion renderer",
+    "Shared detached chat, circular A2UI controls, theme independence and native motion",
+    "Validate truthful source and screenshot evidence; no integration/deployment",
+    "New compact spacing and hidden waveform geometry require fresh tests and visual captures; previous exports do not cover this candidate",
+    "Shared control proportions, wrapped page actions, narrow context overlay and Gallery footer; preserve callbacks and active conversation/task/permission state"
+  ],
+  "protected_paths": "ws_frozen_check",
+  "authorized_protected_changes": [],
+  "permitted_paths": [
+    "uri_ui/**",
+    "docs/ui_v2/**"
+  ],
+  "test_globs": [
+    "tests/**",
+    "**/test/**"
+  ],
+  "allowed_flaky": [],
+  "gates": [
+    {
+      "id": "flutter",
+      "kind": "flutter",
+      "cwd": "uri_ui",
+      "cmd": [
+        "C:/Users/cheta/flutter/bin/flutter.bat",
+        "test",
+        "--no-pub"
+      ],
+      "timeout_s": 3600
+    },
+    {
+      "id": "analysis",
+      "kind": "command",
+      "cwd": "uri_ui",
+      "cmd": [
+        "C:/Users/cheta/flutter/bin/flutter.bat",
+        "analyze",
+        "--no-pub",
+        "--no-fatal-infos"
+      ],
+      "timeout_s": 600
+    },
+    {
+      "id": "frozen",
+      "kind": "command",
+      "cmd": [
+        "{python}",
+        "scripts/ws_frozen_check.py"
+      ],
+      "timeout_s": 600
+    }
+  ],
+  "regression_runner": [
+    "{python}",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "regression_runners": [
+    {
+      "suffix": "_test.dart",
+      "cwd": "uri_ui",
+      "cmd": [
+        "C:/Users/cheta/flutter/bin/flutter.bat",
+        "test",
+        "--no-pub"
+      ]
+    }
+  ],
+  "repair_nonblocking_severities": [],
+  "reviewer": {
+    "provider": "claude_cli",
+    "timeout_s": 180
+  },
+  "implementer": {
+    "provider": "claude_cli",
+    "timeout_s": 180
+  },
+  "limits": {
+    "max_repair_attempts": 3
+  },
+  "continuation": {
+    "stall_rounds": 2,
+    "diagnose_after": 2,
+    "budget": {
+      "max_rounds": 30,
+      "max_cost_usd": 200,
+      "max_hours": 24
+    }
+  },
+  "integration": {
+    "mode": "none",
+    "authorized": false
+  },
+  "commit_trailers": []
+}

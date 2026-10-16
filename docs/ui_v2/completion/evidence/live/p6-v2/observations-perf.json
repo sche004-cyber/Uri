@@ -1,0 +1,461 @@
+[
+  {
+    "utc": "2026-10-15T18:53:13.102226Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput + synthesized key events",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "first_run": "0",
+    "visual": "v2"
+  },
+  {
+    "utc": "2026-10-15T18:53:13.114776Z",
+    "label": "preferences at start",
+    "keys": [
+      "uri.clientDeviceId",
+      "uri.living.onboardingDone",
+      "uri.living.prefs.autonomyLevel",
+      "uri.living.prefs.communicationStyle",
+      "uri.living.prefs.completedOnboarding",
+      "uri.living.prefs.focusAreas"
+    ]
+  },
+  {
+    "utc": "2026-10-15T18:53:17.063417Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 3.947,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792090396.1238902,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 2796,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T18:53:17.158026Z",
+    "label": "memory at start",
+    "facts": [],
+    "run_fact": "the project room code is K97064"
+  },
+  {
+    "utc": "2026-10-15T18:53:22.775367Z",
+    "label": "onboarding shown",
+    "shown": false
+  },
+  {
+    "utc": "2026-10-15T18:53:22.776871Z",
+    "label": "check",
+    "id": "J1-v2-is-default",
+    "result": "PASS",
+    "visualV2": true,
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-15T18:53:22.783504Z",
+    "label": "check",
+    "id": "J1-dashboard-first",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-15T18:53:23.263659Z",
+    "label": "raw-codes-on-screen",
+    "where": "start",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-15T18:53:23.264663Z",
+    "label": "check",
+    "id": "J1-brain-ready",
+    "result": "PASS",
+    "brain": {
+      "artifacts": "MATCH",
+      "checked_at": 1792090396.8494713,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 2796,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T18:53:33.751690Z",
+    "label": "perf-window",
+    "window": "idle-dashboard",
+    "seconds": 10,
+    "frames": 1323,
+    "build_ms_p50": 0.511,
+    "build_ms_p95": 0.848,
+    "build_ms_max": 23.631,
+    "raster_ms_p50": 2.437,
+    "raster_ms_p95": 2.97,
+    "raster_ms_max": 3.677,
+    "total_ms_p95": 4.987,
+    "over_16ms": 3
+  },
+  {
+    "utc": "2026-10-15T18:53:34.423381Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#1d13f(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-15T18:53:37.801123Z",
+    "label": "turn",
+    "scenario": "perf sky 0",
+    "request": "Write four short sentences about why the sky looks blue.",
+    "text": "Sunlight reaches Earth's atmosphere and scatters in all directions because of the gases and particles in the air. Blue light is scattered more than other colors because it travels as shorter, smaller waves. This is why we see the sky as blue most of the time, especially on a clear day.",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": 50,
+      "draft_n_accepted": 34,
+      "first_answer_s": 0.9039,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 60,
+      "predicted_per_second": 123.97953287033631,
+      "prompt_n": 753,
+      "prompt_per_second": 1346.104341856873,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 1.3795,
+      "ttft_s": 0.9039
+    },
+    "application_seconds": 1.801,
+    "frames_during_turn": {
+      "frames": 171,
+      "build_ms_p50": 0.606,
+      "build_ms_p95": 24.899,
+      "build_ms_max": 46.748,
+      "raster_ms_p50": 2.373,
+      "raster_ms_p95": 3.318,
+      "raster_ms_max": 4.047,
+      "total_ms_p95": 28.73,
+      "over_16ms": 18
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T18:53:37.801123Z",
+    "label": "perf-turn",
+    "i": 0,
+    "tps": 123.97953287033631,
+    "n": 60,
+    "ttft_s": 0.9039,
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T18:53:40.377814Z",
+    "label": "turn",
+    "scenario": "perf sky 1",
+    "request": "Write four short sentences about why the sky looks blue.",
+    "text": "Sunlight reaches Earth's atmosphere and scatters in all directions because of the gases and particles in the air. Blue light is scattered more than other colors because it travels as shorter, smaller waves. This is why we see the sky as blue most of the time, especially on a clear day.",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 812,
+      "draft_n": 40,
+      "draft_n_accepted": 40,
+      "first_answer_s": 0.2708,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 60,
+      "predicted_per_second": 150.805660068706,
+      "prompt_n": 25,
+      "prompt_per_second": 126.91321674239155,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.6623,
+      "ttft_s": 0.2708
+    },
+    "application_seconds": 0.998,
+    "frames_during_turn": {
+      "frames": 94,
+      "build_ms_p50": 0.967,
+      "build_ms_p95": 20.835,
+      "build_ms_max": 24.0,
+      "raster_ms_p50": 2.594,
+      "raster_ms_p95": 3.592,
+      "raster_ms_max": 4.471,
+      "total_ms_p95": 24.625,
+      "over_16ms": 14
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T18:53:40.378319Z",
+    "label": "perf-turn",
+    "i": 1,
+    "tps": 150.805660068706,
+    "n": 60,
+    "ttft_s": 0.2708,
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T18:53:43.053642Z",
+    "label": "turn",
+    "scenario": "perf sky 2",
+    "request": "Write four short sentences about why the sky looks blue.",
+    "text": "Sunlight reaches Earth's atmosphere and scatters in all directions because of the gases and particles in the air. Blue light is scattered more than other colors because it travels as shorter, smaller waves. This is why we see the sky as blue most of the time, especially on a clear day.",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 897,
+      "draft_n": 40,
+      "draft_n_accepted": 40,
+      "first_answer_s": 0.3365,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 60,
+      "predicted_per_second": 149.787631603667,
+      "prompt_n": 24,
+      "prompt_per_second": 113.3101676990482,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.7307,
+      "ttft_s": 0.3365
+    },
+    "application_seconds": 1.093,
+    "frames_during_turn": {
+      "frames": 111,
+      "build_ms_p50": 1.007,
+      "build_ms_p95": 20.16,
+      "build_ms_max": 28.33,
+      "raster_ms_p50": 3.006,
+      "raster_ms_p95": 3.925,
+      "raster_ms_max": 4.467,
+      "total_ms_p95": 23.926,
+      "over_16ms": 20
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T18:53:43.055147Z",
+    "label": "perf-turn",
+    "i": 2,
+    "tps": 149.787631603667,
+    "n": 60,
+    "ttft_s": 0.3365,
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T18:53:45.830927Z",
+    "label": "turn",
+    "scenario": "perf sky 3",
+    "request": "Write four short sentences about why the sky looks blue.",
+    "text": "Sunlight reaches Earth's atmosphere and scatters in all directions because of the gases and particles in the air. Blue light is scattered more than other colors because it travels as shorter, smaller waves. This is why we see the sky as blue most of the time, especially on a clear day.",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 981,
+      "draft_n": 40,
+      "draft_n_accepted": 40,
+      "first_answer_s": 0.3889,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 60,
+      "predicted_per_second": 148.07638733771205,
+      "prompt_n": 24,
+      "prompt_per_second": 115.19963136117964,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.7877,
+      "ttft_s": 0.3889
+    },
+    "application_seconds": 1.198,
+    "frames_during_turn": {
+      "frames": 123,
+      "build_ms_p50": 0.857,
+      "build_ms_p95": 18.822,
+      "build_ms_max": 23.25,
+      "raster_ms_p50": 2.986,
+      "raster_ms_p95": 4.146,
+      "raster_ms_max": 4.987,
+      "total_ms_p95": 23.673,
+      "over_16ms": 19
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T18:53:45.832431Z",
+    "label": "perf-turn",
+    "i": 3,
+    "tps": 148.07638733771205,
+    "n": 60,
+    "ttft_s": 0.3889,
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T18:53:48.696573Z",
+    "label": "turn",
+    "scenario": "perf sky 4",
+    "request": "Write four short sentences about why the sky looks blue.",
+    "text": "Sunlight reaches Earth's atmosphere and scatters in all directions because of the gases and particles in the air. Blue light is scattered more than other colors because it travels as shorter, smaller waves. This is why we see the sky as blue most of the time, especially on a clear day.",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 1065,
+      "draft_n": 40,
+      "draft_n_accepted": 40,
+      "first_answer_s": 0.4285,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 60,
+      "predicted_per_second": 150.40852484927282,
+      "prompt_n": 24,
+      "prompt_per_second": 118.53666487215328,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.8211,
+      "ttft_s": 0.4285
+    },
+    "application_seconds": 1.288,
+    "frames_during_turn": {
+      "frames": 122,
+      "build_ms_p50": 0.71,
+      "build_ms_p95": 18.353,
+      "build_ms_max": 22.35,
+      "raster_ms_p50": 3.101,
+      "raster_ms_p95": 3.873,
+      "raster_ms_max": 4.796,
+      "total_ms_p95": 22.245,
+      "over_16ms": 16
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T18:53:48.697677Z",
+    "label": "perf-turn",
+    "i": 4,
+    "tps": 150.40852484927282,
+    "n": 60,
+    "ttft_s": 0.4285,
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-15T18:54:20.288537Z",
+    "label": "perf-window",
+    "window": "idle-workspace-30s",
+    "seconds": 30,
+    "frames": 3203,
+    "build_ms_p50": 0.347,
+    "build_ms_p95": 0.597,
+    "build_ms_max": 17.262,
+    "raster_ms_p50": 2.667,
+    "raster_ms_p95": 3.157,
+    "raster_ms_max": 4.406,
+    "total_ms_p95": 4.906,
+    "over_16ms": 7
+  },
+  {
+    "utc": "2026-10-15T18:54:20.932197Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#ff2a1(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-15T18:54:50.940556Z",
+    "label": "perf-window",
+    "window": "idle-dashboard-30s",
+    "seconds": 30,
+    "frames": 4544,
+    "build_ms_p50": 0.259,
+    "build_ms_p95": 0.439,
+    "build_ms_max": 16.329,
+    "raster_ms_p50": 2.39,
+    "raster_ms_p95": 2.896,
+    "raster_ms_max": 3.66,
+    "total_ms_p95": 4.61,
+    "over_16ms": 8
+  },
+  {
+    "utc": "2026-10-15T18:54:51.624163Z",
+    "label": "key",
+    "key": "ctrl+1",
+    "focus_before": "FocusScopeNode#ff2a1(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "companion",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-15T18:55:21.635981Z",
+    "label": "perf-window",
+    "window": "idle-companion-30s",
+    "seconds": 30,
+    "frames": 4567,
+    "build_ms_p50": 0.226,
+    "build_ms_p95": 0.394,
+    "build_ms_max": 7.51,
+    "raster_ms_p50": 1.375,
+    "raster_ms_p95": 1.746,
+    "raster_ms_max": 3.159,
+    "total_ms_p95": 3.376,
+    "over_16ms": 0
+  },
+  {
+    "utc": "2026-10-15T18:55:21.636984Z",
+    "label": "summary",
+    "failures": [],
+    "flutter_errors": 0,
+    "elapsed_s": 128.52
+  }
+]

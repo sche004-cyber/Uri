@@ -1,0 +1,7 @@
+# Transparent engraving asset
+
+Built-in image generation tool, edit mode, transparent background requested. The original user-supplied image is preserved in `uri_ui/assets/uri_portrait_original.png`. The generated derivative is `uri_ui/assets/uri_engraving_cutout_v2.png`. This is a generative edit, not a lossless background segmentation. Flutter applies the theme-derived tones and 46% opacity; the asset itself retains alpha.
+
+## Exact prompt
+
+Edit target: the supplied Renaissance puppy pencil study. Remove only the background: ALL parchment/paper colour and texture, stains, page edges, handwritten notes, anatomical study diagrams and surrounding geometry. Isolate the SAME puppy as a transparent-background graphite engraving asset. Preserve the puppy's exact identity, face, expression, markings, floppy ears, pose, paws, proportions and existing pencil/crosshatching style; do not invent a different dog, paint a photograph, add a frame, plate, logo or text. The puppy's light interior areas should remain delicately shaded graphite with translucent highlights, suitable for a subtle etched engraving on a theme-coloured steel UI surface. Keep fine linework and softly feathered pencil edges, complete paws and original portrait composition, with a little transparent margin. Output genuine transparent alpha, with no white, grey, cream or checkerboard background baked in. This is an asset edit, not a dashboard mockup. The Flutter interface will handle fading and steel material separately.
