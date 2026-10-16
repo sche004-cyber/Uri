@@ -35,13 +35,16 @@ class OfficeHome extends StatelessWidget {
           ActionChip(key: const ValueKey('office-home-sheet'), avatar: const Icon(Icons.grid_on_rounded, size: 18),
               label: const Text('Work on a spreadsheet'), onPressed: onOpenSheet),
           // Authoring (C): a new Word document from a built-in layout or the owner's template.
-          if (environment?.pickDocumentSavePath != null && c.wordLayouts.isNotEmpty)
+          // Live run a9 (first visit): the layouts were not loaded yet, so a first-time owner saw no way to start a
+          // Word document. The chip is always there; until the service lists its layouts it offers a blank one.
+          if (environment?.pickDocumentSavePath != null)
             PopupMenuButton<String>(
               key: const ValueKey('office-home-new-document'),
-              tooltip: 'New document',
+              tooltip: 'New Word document',
               enabled: !c.busy,
               itemBuilder: (_) => [
-                for (final l in c.wordLayouts)
+                for (final l in (c.wordLayouts.isNotEmpty ? c.wordLayouts : const [{'id': 'blank',
+                    'title': 'Blank document'}]))
                   PopupMenuItem(value: '${l['id']}', child: Text('${l['title']}', key: ValueKey('office-layout-${l['id']}'))),
                 if (environment?.pickWordTemplatePath != null)
                   const PopupMenuItem(value: '@template', child: Text('From my template…',
@@ -60,7 +63,7 @@ class OfficeHome extends StatelessWidget {
             if (environment?.pickTemplatePath != null)
               ActionChip(key: const ValueKey('office-home-new-from-template'),
                   avatar: const Icon(Icons.dashboard_customize_outlined, size: 18),
-                  label: const Text('New from a template'),
+                  label: const Text('New presentation from a template'),
                   onPressed: c.busy ? null : () => c.newPresentation(fromTemplate: true)),
           ],
           for (final (g, caps) in c.availableGroups())

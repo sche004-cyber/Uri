@@ -275,6 +275,7 @@ void main() {
     final fake = await _pump(tester, saveAs: r'C:\Users\me\Documents\Plan.pptx');
     expect(find.byKey(const ValueKey('office-home-new-presentation')), findsOneWidget);
     expect(find.byKey(const ValueKey('office-home-new-from-template')), findsOneWidget);
+    expect(find.text('New presentation from a template'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('office-home-new-presentation')));
     await _settle(tester);
     expect(fake.calls, contains('POST /authoring/new'));

@@ -32,6 +32,7 @@ class FakeWordOffice {
   final ops = <Map<String, dynamic>>[];
   final bodies = <String, List<Map<String, dynamic>>>{};
   bool isNew = false;
+  bool noLayouts = false;                   // GET /authoring/layouts fails (layouts not loaded yet)
   Object? result;
   List<Map<String, dynamic>> blocks = [
     {'index': 0, 'expect': 'a00000000000', 'kind': 'paragraph', 'style': 'Title', 'level': 0, 'text': 'Annual Report',
@@ -80,6 +81,7 @@ class FakeWordOffice {
           isNew = path == '/authoring/new';
           out = view();
         } else if (path == '/authoring/layouts') {
+          if (noLayouts) return http.Response(jsonEncode({'error': 'UNAVAILABLE'}), 503);
           out = {'docx': [{'id': 'blank', 'title': 'Blank document'}, {'id': 'letter', 'title': 'Letter'}]};
         } else if (path == '/authoring/$aid/op') {
           final op = (body['op'] as Map).cast<String, dynamic>();
@@ -135,11 +137,12 @@ OfficeEnvironment _env({String? saveAs}) => OfficeEnvironment(
       pickWordTemplatePath: () async => null,
     );
 
-Future<FakeWordOffice> _pump(WidgetTester tester, {String? saveAs, Size size = const Size(1600, 1000)}) async {
+Future<FakeWordOffice> _pump(WidgetTester tester, {String? saveAs, Size size = const Size(1600, 1000),
+    bool noLayouts = false}) async {
   SharedPreferences.setMockInitialValues({});
   await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
-  final fake = FakeWordOffice();
+  final fake = FakeWordOffice()..noLayouts = noLayouts;
   final client = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', fake.client());
   await tester.pumpWidget(MaterialApp(
     theme: ThemeData(extensions: const [UriColors.graphite]),
@@ -266,4 +269,17 @@ void main() {
       await _unmount(tester);
     });
   }
+
+  testWidgets('live run a9: a first-time owner can start a Word document before the layouts are listed',
+      (tester) async {
+    final fake = await _pump(tester, saveAs: r'C:\Users\me\Documents\Note.docx', noLayouts: true);
+    expect(find.byKey(const ValueKey('office-home-new-document')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('office-home-new-document')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('office-layout-blank')).last);
+    await _settle(tester);
+    expect(fake.bodies['/authoring/new']!.last, {'kind': 'docx', 'layout': 'blank'});
+    expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
 }
