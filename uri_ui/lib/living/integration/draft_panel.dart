@@ -51,6 +51,9 @@ class _DraftPanelState extends State<DraftPanel> {
           // UIV2-F3: a panel squeezed below its natural height (the one-frame
           // shrink into Companion, a short window) scrolls instead of overflowing.
           child: ScrollWhenShort(
+            minHeight: 240,
+            // tags and toolbar wrap onto more lines in a narrow panel
+            minHeightForWidth: (w) => w >= 600 ? 240 : (w >= 420 ? 340 : 440),
             child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

@@ -48,10 +48,11 @@ class _OiConversationPaneState extends State<OiConversationPane> {
         final conv = widget.conversation;
         _follow();
         if (widget.compact) {
-          return ListView(
+          final list = ListView(
             controller: _scroll,
             key: const ValueKey('oi-compact-messages'),
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            // room under the last message for the pinned draft note
+            padding: EdgeInsets.only(top: 8, bottom: conv.draft != null ? 30 : 8),
             children: [
               OiWorkerBanner(conversation: conv),
               OiHealthBanner(conversation: conv),
@@ -64,17 +65,6 @@ class _OiConversationPaneState extends State<OiConversationPane> {
                 ),
               for (final message in conv.messages)
                 _MessageTile(message: message),
-              // UIV2-F1: the compact (Companion) chat never changes an open
-              // draft; it says so, so an edit request is not silently answered.
-              if (conv.draft != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(
-                    'A draft is open in Workspace. Messages here do not change it.',
-                    key: const ValueKey('companion-draft-note'),
-                    style: TextStyle(color: c.inkSoft, fontSize: 11),
-                  ),
-                ),
               if (conv.busy)
                 TextButton.icon(
                   key: const ValueKey('oi-cancel'),
@@ -84,10 +74,35 @@ class _OiConversationPaneState extends State<OiConversationPane> {
                 ),
             ],
           );
+          if (conv.draft == null) return list;
+          // UIV2-F1: the compact (Companion) chat never changes an open draft;
+          // a note pinned under the messages says so (no added fixed height).
+          return Stack(
+            children: [
+              Positioned.fill(child: list),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  color: c.surface.withValues(alpha: .85),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    'A draft is open in Workspace. Messages here do not change it.',
+                    key: const ValueKey('companion-draft-note'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: c.inkSoft, fontSize: 11),
+                  ),
+                ),
+              ),
+            ],
+          );
         }
         // UIV2-F3: banners, cards and the Stop button never push the pane
         // past a short window; it scrolls instead (l13: 34 px overflow).
         return ScrollWhenShort(
+          minHeight: 300,
           child: Column(
           children: [
             OiBrainBar(conversation: conv),
@@ -511,7 +526,7 @@ class OiBrainBar extends StatelessWidget {
       child: Builder(builder: (context) {
       Widget fit(Widget picker) => ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 260),
-            child: picker,
+            child: IntrinsicWidth(child: picker),
           );
       return Wrap(
         spacing: 8,

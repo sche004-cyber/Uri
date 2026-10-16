@@ -241,6 +241,52 @@ void main() {
       expect(find.byType(ScrollWhenShort), findsWidgets);
     });
 
+    testWidgets('at a normal size the draft toolbar is in view without scrolling (live l1)', (tester) async {
+      final rt = FakeRuntime();
+      final conv = OiConversation(rt);
+      await tester.runAsync(() async {
+        await conv.send('draft a letter');
+        await openDraft(rt, conv, 't1');
+      });
+      tester.view.physicalSize = const Size(1264, 681);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      // l1: stacked layout, the panel gets 0.55 of a ~560 px region.
+      await tester.pumpWidget(host(Align(
+        alignment: Alignment.topLeft,
+        child: SizedBox(width: 760, height: 308, child: DraftPanel(conversation: conv)),
+      )));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(const ValueKey('scroll-when-short')), findsNothing);
+      final undo = tester.getRect(find.byKey(const ValueKey('draft-undo')));
+      expect(undo.bottom <= 308, isTrue, reason: '$undo');
+    });
+
+    testWidgets('the Companion note stays visible under a long chat', (tester) async {
+      final rt = FakeRuntime();
+      final conv = OiConversation(rt);
+      await tester.runAsync(() async {
+        for (var i = 1; i <= 12; i++) {
+          await conv.send('message $i');
+          rt.emit('t$i', 'answer.delta', {'text': 'reply $i'});
+          rt.emit('t$i', 'turn.finished', {'status': 'ok'});
+          await pumpEventQueue();
+        }
+        await conv.send('draft a letter');
+        await openDraft(rt, conv, 't13');
+      });
+      tester.view.physicalSize = const Size(440, 680);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      await tester.pumpWidget(
+          host(SizedBox(width: 400, height: 260, child: OiConversationPane(conversation: conv, compact: true))));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(const ValueKey('companion-draft-note')), findsOneWidget);
+      expect(tester.getRect(find.byKey(const ValueKey('companion-draft-note'))).bottom <= 260 + 0.5, isTrue);
+    });
+
     for (final ui in [UiPresentationMode.workspace, UiPresentationMode.dashboard]) {
       testWidgets('${ui.name} -> Companion across window sizes and scale, testing tools on', (tester) async {
         UriTestingTools.enabled = true;

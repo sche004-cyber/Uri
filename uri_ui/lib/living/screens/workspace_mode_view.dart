@@ -202,6 +202,7 @@ class _Rail extends StatelessWidget {
       // UIV2-F3: in a short window (the shrink into Companion) the rail
       // scrolls instead of overflowing (l13 evidence; 90 px at 300 px high).
       child: ScrollWhenShort(
+        minHeight: orbSpace + 400,
         child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
