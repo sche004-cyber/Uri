@@ -431,6 +431,8 @@ def apply_row_op(parts: dict, op: dict) -> None:
         raise OfficeError("BAD_ROW", str(at)[:16])
     if not isinstance(count, int) or isinstance(count, bool) or not 1 <= count <= MAX_ROWS_PER_OP:
         raise OfficeError("BAD_COUNT", str(count)[:16])
+    if kind == "insert_rows" and at + count - 1 > refs.MAX_ROW:            # R8-02: the new rows must fit
+        raise OfficeError("STRUCTURE_NOT_SUPPORTED", "the inserted rows would go past the last row of a sheet")
     by_sheet = sheet_parts(parts)
     if sheet not in by_sheet or by_sheet[sheet] not in parts:
         raise OfficeError("UNKNOWN_SHEET", str(sheet)[:64])

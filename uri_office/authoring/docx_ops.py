@@ -273,9 +273,14 @@ def replace_text(doc, find: str, replace: str, match_case: bool = True) -> dict:
     pat = re.compile(re.escape(find), 0 if match_case else re.IGNORECASE)
     changed = split = skipped = 0
     paras = list(doc.paragraphs)
+    seen = set()
     for t in doc.tables:
         for row in t.rows:
             for c in row.cells:
+                # R8-01: a merged cell is returned once per grid position; replace in each underlying cell once
+                if id(c._tc) in seen:
+                    continue
+                seen.add(id(c._tc))
                 paras.extend(c.paragraphs)
     for p in paras:
         if not pat.search(block_text(p._p)):          # all text, including tracked insertions

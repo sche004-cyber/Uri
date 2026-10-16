@@ -307,6 +307,20 @@ def patch(src: Path, dst: Path, edits: list, struct_ops=(), formats=()) -> dict:
     return {"changed_parts": sorted(changed)}
 
 
+def _publish_no_replace(src: Path, dst: Path):
+    """Give `src`'s file the name `dst` only if `dst` does not exist (FileExistsError otherwise). A hard link where the
+    file system has them; on Windows without hard links (FAT, exFAT, some shares) a rename, which never replaces an
+    existing name there. Elsewhere a missing hard link is an error, never a replacing rename."""
+    try:
+        os.link(src, dst)
+    except FileExistsError:
+        raise
+    except OSError:
+        if os.name != "nt":
+            raise
+        os.rename(src, dst)
+
+
 def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only=False,
                  expected_sha256: str | None = None, backup: Path | None = None):
     """Write through `write(fileobj)` into a new temp file next to `dst` and move it into place. The temp file is
@@ -346,23 +360,24 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only
                 backup.write_bytes(old)
                 # A second process can create dst while the old name is held aside. Never replace that new file.
                 try:
-                    os.link(tmp, dst)
+                    _publish_no_replace(tmp, dst)
                 except FileExistsError:
                     raise OfficeError("TARGET_CHANGED", "the file changed on disk during Save; save as a new file", 409) from None
                 published = True
             finally:
                 if claimed and not published:
                     try:
-                        os.link(hold, dst)
+                        _publish_no_replace(hold, dst)
                     except FileExistsError:
                         pass  # the other file wins; keep the claimed original in hold for recovery
                     else:
-                        hold.unlink()
+                        if hold.exists():
+                            hold.unlink()
                 elif hold.exists():
                     hold.unlink()
         elif create_only:
             try:
-                os.link(tmp, dst)
+                _publish_no_replace(tmp, dst)
             except FileExistsError:
                 raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409) from None
         else:

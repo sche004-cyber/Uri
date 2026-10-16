@@ -161,6 +161,8 @@ def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
         at, count = op.get("at"), op.get("count")
         if not (isinstance(at, int) and isinstance(count, int) and 1 <= at <= refs.MAX_ROW and 1 <= count <= 1000):
             raise OfficeError("BAD_ROWS", "row position or count out of range")
+        if kind == "insert_rows" and at + count - 1 > refs.MAX_ROW:      # R8-02: the new rows must fit
+            raise OfficeError("BAD_ROWS", "the inserted rows would go past the last row of a sheet")
         out.append({k: op[k] for k in ("op", "sheet", "at", "count")})
         vals = op.get("values")
         if vals is not None:
