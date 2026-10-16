@@ -198,6 +198,10 @@ class DraftDesk:
         intent = TX.classify(text, has_draft=False)
         if intent.kind == TX.REVISE or intent.kind in TX.DETERMINISTIC:
             return TX.TextIntent(TX.NONE, ["conversation_target"], instruction=text)   # cannot happen; fail closed
+        if intent.kind in (TX.CORRECT, TX.REWRITE, TX.EXPAND) and intent.payload is None:
+            # "Make it shorter" without text refers to the conversation (e.g. the last answer): the ordinary path,
+            # which has the history, answers (live l8: the desk asked for text instead).
+            return TX.TextIntent(TX.NONE, ["conversation_target"], instruction=text)
         return intent
 
     def classify_draft_target(self, text, session_id) -> TX.TextIntent:

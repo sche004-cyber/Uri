@@ -112,3 +112,15 @@ def test_draft_target_name_placeholder_edit(fake, tmp_path):
     turn(b, WARDEN)
     turn(b, "Replace my name with Ravi in the draft", input=DRAFT)
     assert _draft(b)["version"] == 2
+
+
+def test_conversation_target_rewrite_without_text_is_answered_not_refused(fake, tmp_path):
+    """Live l8: 'Make it shorter and tell me a joke' in conversation mode reached the desk without text
+    (TEXT_MISSING). Without text it refers to the conversation: the ordinary path answers; the draft is unchanged."""
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"chunks": [("answer", "A short joke.")], "finish": "stop"}]
+    turn(b, WARDEN)
+    before = _draft(b)
+    turn(b, "Make it shorter and tell me a joke in a formal tone.", input=CONVERSATION)
+    assert frames.data("turn.routed")[-1]["route"] == "answer"
+    assert _draft(b)["current"] == before["current"]
