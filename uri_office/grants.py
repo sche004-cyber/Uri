@@ -31,9 +31,18 @@ from .errors import OfficeError
 
 MAX_BYTES = 50 * 1024 * 1024
 # O2 (plan §5 grants.py): per-kind suffixes and size caps. The `.xlsx` default and its messages are unchanged.
-KIND_SUFFIX = {"xlsx": ".xlsx", "docx": ".docx", "pptx": ".pptx", "pdf": ".pdf"}
-KIND_MAX_BYTES = {"xlsx": MAX_BYTES, "docx": 50 * 1024 * 1024, "pptx": 50 * 1024 * 1024, "pdf": 100 * 1024 * 1024}
-KIND_LABEL = {"xlsx": "workbook", "docx": "document", "pptx": "presentation", "pdf": "PDF"}
+KIND_SUFFIX = {"xlsx": ".xlsx", "docx": ".docx", "pptx": ".pptx", "pdf": ".pdf",
+               # authoring (OD-A5): a presentation template, and a picture to insert
+               "pptx_template": (".pptx", ".potx"), "image": (".png", ".jpg", ".jpeg", ".gif", ".bmp")}
+KIND_MAX_BYTES = {"xlsx": MAX_BYTES, "docx": 50 * 1024 * 1024, "pptx": 50 * 1024 * 1024, "pdf": 100 * 1024 * 1024,
+                  "pptx_template": 50 * 1024 * 1024, "image": 20 * 1024 * 1024}
+KIND_LABEL = {"xlsx": "workbook", "docx": "document", "pptx": "presentation", "pdf": "PDF",
+              "pptx_template": "template", "image": "picture"}
+
+
+def _suffixes(kind) -> tuple:
+    v = KIND_SUFFIX[kind]
+    return v if isinstance(v, tuple) else (v,)
 MAX_PATH = 1024
 _WIN_ABS = re.compile(r"^[A-Za-z]:[\\/]")
 _WIN_RESERVED = re.compile(r"^(CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[0-9¹²³]|LPT[0-9¹²³])(\..*)?$", re.IGNORECASE)
@@ -123,7 +132,7 @@ class Grants:
         return p
 
     def grant_open(self, raw, *, kind: str = "xlsx") -> Grant:
-        p = Path(check_shape(raw, suffixes=(KIND_SUFFIX[kind],)))
+        p = Path(check_shape(raw, suffixes=_suffixes(kind)))
         try:
             self._real_inside(p, must_exist=True)
         except OSError:
@@ -136,7 +145,7 @@ class Grants:
         return self._add("open", p)
 
     def grant_save_as(self, raw, *, kind: str = "xlsx") -> Grant:
-        p = Path(check_shape(raw, suffixes=(KIND_SUFFIX[kind],)))
+        p = Path(check_shape(raw, suffixes=_suffixes(kind)))
         if not p.parent.is_dir():
             _refuse("the folder does not exist")
         self._real_inside(p.parent, must_exist=True)
