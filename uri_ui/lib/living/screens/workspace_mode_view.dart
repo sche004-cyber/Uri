@@ -22,6 +22,7 @@ import '../integration/oi_widgets.dart';
 import '../integration/ws_settings.dart';
 import '../living_app.dart';
 import '../living_scope.dart';
+import '../office/office_workspace.dart';
 import '../presentation/living_shell.dart';
 import '../presentation/presentation_controller.dart';
 import '../widgets/glass_panel.dart';
@@ -71,7 +72,8 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
           builder: (context, constraints) {
             final w = constraints.maxWidth;
             final railExpanded = w >= OrbDock.railExpandAt;
-            final contextDefault = w >= 1180;
+            // O2 (real-app run base1, R5-3): the context panel starts closed in Office, whose own panes need the width.
+            final contextDefault = w >= 1180 && focus != WorkspaceFocus.office;
             final inlineContext = w >= 960;
             final showContext =
                 inlineContext && (_contextOverride ?? contextDefault);
@@ -133,6 +135,11 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
                               WorkspaceFocus.tasks => const TasksRegion(),
                               WorkspaceFocus.documents =>
                                 const DocumentsRegion(),
+                              // URI Office (O2): the Office workspace. Reconciliation 2026-10-16 with UI V2: the
+                              // Documents region stays (its 'Start new work' tiles send real turns in the integrated
+                              // V2, BLK-INT-2) and Office is its own rail entry.
+                              WorkspaceFocus.office =>
+                                OfficeWorkspace(environment: LivingScope.of(context).office),
                               WorkspaceFocus.intelligence =>
                                 const IntelligenceOverviewView(),
                               WorkspaceFocus.settings =>
@@ -185,6 +192,7 @@ class _Rail extends StatelessWidget {
       ),
       (WorkspaceFocus.tasks, Icons.check_circle_outline_rounded, 'Tasks'),
       (WorkspaceFocus.documents, Icons.description_outlined, 'Documents'),
+      (WorkspaceFocus.office, Icons.table_chart_outlined, 'Office'),
       (WorkspaceFocus.intelligence, Icons.hub_outlined, 'Intelligence'),
       (WorkspaceFocus.settings, Icons.tune_rounded, 'Settings'),
     ];
@@ -341,6 +349,7 @@ class _FocusHeader extends StatelessWidget {
       WorkspaceFocus.conversation => 'Conversation',
       WorkspaceFocus.tasks => 'Tasks',
       WorkspaceFocus.documents => 'Documents',
+      WorkspaceFocus.office => 'Office',
       WorkspaceFocus.intelligence => 'Intelligence',
       WorkspaceFocus.settings => 'Settings',
     };

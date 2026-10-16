@@ -28,18 +28,42 @@ sealed class UiCommand {
 }
 
 class ShowModeCommand extends UiCommand {
-  const ShowModeCommand(this.mode, {this.focus});
+  const ShowModeCommand(this.mode, {this.focus, this.officeView});
   final UiPresentationMode mode;
 
   /// Workspace region to bring forward, e.g. `tasks`, `documents`,
   /// `intelligence`. Ignored by other modes and by unknown values.
   final WorkspaceFocus? focus;
 
+  /// O2: the view inside the Office region (refinement 9). A view only; it never opens a file or acts on one.
+  final OfficeView? officeView;
+
   @override
-  String toString() => 'ShowModeCommand(${mode.name}, focus: ${focus?.name})';
+  String toString() =>
+      'ShowModeCommand(${mode.name}, focus: ${focus?.name}${officeView == null ? '' : ', office: ${officeView!.name}'})';
 }
 
-enum WorkspaceFocus { conversation, tasks, documents, intelligence, settings }
+enum WorkspaceFocus { conversation, tasks, documents, office, intelligence, settings }
+
+/// O2 (plan §4.4): the closed set of views inside the Office region. `documents` is also where the retired
+/// Documents rail item leads.
+enum OfficeView { home, recent, documents, spreadsheets, presentations, pdfs, templates, workflows }
+
+const _officeViewWords = {
+  'home': OfficeView.home,
+  'recent': OfficeView.recent,
+  'documents': OfficeView.documents,
+  'docs': OfficeView.documents,
+  'spreadsheets': OfficeView.spreadsheets,
+  'sheets': OfficeView.spreadsheets,
+  'workbooks': OfficeView.spreadsheets,
+  'presentations': OfficeView.presentations,
+  'slides': OfficeView.presentations,
+  'pdfs': OfficeView.pdfs,
+  'pdf': OfficeView.pdfs,
+  'templates': OfficeView.templates,
+  'workflows': OfficeView.workflows,
+};
 
 /// Parses the demo phrases the brief asks for, from local text only.
 ///
@@ -58,6 +82,17 @@ UiCommand? parseLocalUiCommand(String text) {
   final t = text.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
   if (!t.startsWith('uri ')) return null;
   final word = t.substring(4).replaceAll(RegExp(r'[.!,]+$'), '').trim();
+  // O2: "uri office" and "uri office <view>" (plan §4.4).
+  if (word == 'office') {
+    return const ShowModeCommand(UiPresentationMode.workspace, focus: WorkspaceFocus.office,
+        officeView: OfficeView.home);
+  }
+  if (word.startsWith('office ')) {
+    final v = _officeViewWords[word.substring(7).trim()];
+    return v == null
+        ? null
+        : ShowModeCommand(UiPresentationMode.workspace, focus: WorkspaceFocus.office, officeView: v);
+  }
   return switch (word) {
     'dashboard' ||
     'overview' => const ShowModeCommand(UiPresentationMode.dashboard),
@@ -75,6 +110,7 @@ UiCommand? parseLocalUiCommand(String text) {
     'documents' || 'docs' => const ShowModeCommand(
       UiPresentationMode.workspace,
       focus: WorkspaceFocus.documents,
+      officeView: OfficeView.documents,
     ),
     'intelligence' || 'brain' => const ShowModeCommand(
       UiPresentationMode.workspace,
@@ -116,6 +152,29 @@ class UiPresentationController extends ChangeNotifier {
   UiCommandOrigin _lastOrigin = UiCommandOrigin.user;
   DateTime? _lastCommandAt;
   final List<UiPresentationMode> _history = [];
+  OfficeView _officeView = OfficeView.home;
+  final List<OfficeView> _officeHistory = [];
+
+  /// O2: the view inside the Office region, and its own Back history (plan §4.4, review F3/N6).
+  OfficeView get officeView => _officeView;
+  List<OfficeView> get officeHistory => List.unmodifiable(_officeHistory);
+
+  /// User gesture inside the Office region. Always honoured.
+  void setOfficeView(OfficeView view) {
+    if (view == _officeView) return;
+    _officeHistory.add(_officeView);
+    if (_officeHistory.length > 20) _officeHistory.removeAt(0);
+    _officeView = view;
+    notifyListeners();
+  }
+
+  /// Back inside the Office region; false when there is no earlier Office view.
+  bool officeBack() {
+    if (_officeHistory.isEmpty) return false;
+    _officeView = _officeHistory.removeLast();
+    notifyListeners();
+    return true;
+  }
 
   UiPresentationMode get mode => _mode;
   WorkspaceFocus get focus => _focus;
@@ -147,8 +206,14 @@ class UiPresentationController extends ChangeNotifier {
     if (last != null && now.difference(last) < commandCooldown) return false;
     _lastCommandAt = now;
     switch (command) {
-      case ShowModeCommand(:final mode, :final focus):
+      case ShowModeCommand(:final mode, :final focus, :final officeView):
         _transition(mode, focus, origin);
+        if (officeView != null && officeView != _officeView) {
+          _officeHistory.add(_officeView);
+          if (_officeHistory.length > 20) _officeHistory.removeAt(0);
+          _officeView = officeView;
+          notifyListeners();
+        }
         return true;
     }
   }

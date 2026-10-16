@@ -1,0 +1,199 @@
+{
+  "tool": "edge_probe.mjs",
+  "engine": "Edg/155.0.4283.45",
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+  "headless": true,
+  "gpu": "disabled",
+  "network": "loopback only (page server + canary)",
+  "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'none'; manifest-src 'none'; worker-src 'none'; child-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+  "full": {
+    "page_loaded_and_patched": "{\"univer_dom\":true,\"host_messages\":[\"ready\"],\"only_ready_sent\":true,\"canvas\":true,\"patched\":true,\"data_url_fetch\":\"refused: TypeError\"}",
+    "results": {
+      "fetch": {
+        "page_result": "refused: NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "xhr": {
+        "page_result": "refused: NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "websocket": {
+        "page_result": "refused: NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "eventsource": {
+        "page_result": "refused: NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "sendbeacon": {
+        "page_result": "false",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "image": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "css_url": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "bundled_css_class": {
+        "page_result": "url(\"https://example.com/a-b.svg\")",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "prefetch": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "iframe": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "window_open": {
+        "page_result": "null",
+        "canary_hits": [],
+        "blocked": true,
+        "note": "headless Edge blocks pop-ups without a user gesture, so a null here does not prove the CSP blocks window.open; in the full page the patch replaces window.open; the WebView2 host must refuse new windows"
+      },
+      "worker": {
+        "page_result": "refused: NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "font": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "form_post": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "navigation": {
+        "canary_hits": [
+          "/nav",
+          "/favicon.ico"
+        ],
+        "blocked": false,
+        "note": "top-level navigation is not covered by CSP or the page patch; the WebView2 host must cancel it"
+      }
+    }
+  },
+  "csp_only": {
+    "page_loaded_and_patched": "n/a",
+    "results": {
+      "fetch": {
+        "page_result": "refused: TypeError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "xhr": {
+        "page_result": "SENT",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "websocket": {
+        "page_result": "SENT",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "eventsource": {
+        "page_result": "SENT",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "sendbeacon": {
+        "page_result": "true",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "image": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "css_url": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "bundled_css_class": {
+        "page_result": "none",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "prefetch": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "iframe": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "window_open": {
+        "page_result": "null",
+        "canary_hits": [],
+        "blocked": true,
+        "note": "headless Edge blocks pop-ups without a user gesture, so a null here does not prove the CSP blocks window.open; in the full page the patch replaces window.open; the WebView2 host must refuse new windows"
+      },
+      "worker": {
+        "page_result": "SENT",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "font": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "form_post": {
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      "navigation": {
+        "canary_hits": [
+          "/nav",
+          "/favicon.ico"
+        ],
+        "blocked": false,
+        "note": "top-level navigation is not covered by CSP or the page patch; the WebView2 host must cancel it"
+      }
+    }
+  },
+  "console_sample": [
+    "{\"entry\":{\"source\":\"network\",\"level\":\"error\",\"text\":\"Failed to load resource: the server responded with a status of 404 (Not Found)\",\"timestamp\":1791715669108.501,\"url\":\"http://127.0.0.1:57277/favicon.ico\",\"networkRequestId\":\"9564.5\"}}",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Connecting to 'data:,ok' violates the following Content Security Policy directive: \\\"connect-src 'self'\\\". The action has been blocked.\",\"timestamp\":1791715672547.452,\"url\":\"http://127.0.0.1:57277/assets/index-qNa08Mb9.js\",\"lineNumber\":0,\"stackTr",
+    "{\"entry\":{\"source\":\"javascript\",\"level\":\"error\",\"text\":\"Fetch API cannot load data:,ok. Refused to connect because it violates the document's Content Security Policy.\",\"timestamp\":1791715672547.563,\"url\":\"http://127.0.0.1:57277/assets/index-qNa08Mb9.js\",\"lineNumber\":0,\"stackTrace\":{\"callFrames\":[{\"f",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Loading the image 'http://127.0.0.1:57278/img' violates the following Content Security Policy directive: \\\"img-src 'self' data: blob:\\\". The action has been blocked.\",\"timestamp\":1791715676081.414,\"url\":\"http://127.0.0.1:57277/index.html\"}}",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Loading the image 'http://127.0.0.1:57278/css' violates the following Content Security Policy directive: \\\"img-src 'self' data: blob:\\\". The action has been blocked.\",\"timestamp\":1791715676801.23,\"url\":\"http://127.0.0.1:57277/index.html\"}}",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Loading the image 'https://example.com/a-b.svg' violates the following Content Security Policy directive: \\\"img-src 'self' data: blob:\\\". The action has been blocked.\",\"timestamp\":1791715677500.361,\"lineNumber\":0,\"stackTrace\":{\"callFrames\":[{\"fun",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Fetching content from 'http://127.0.0.1:57278/prefetch' violates the following Content Security Policy directive: \\\"default-src 'self'\\\". The action has been blocked.\",\"timestamp\":1791715678210.182,\"lineNumber\":0,\"stackTrace\":{\"callFrames\":[{\"fun",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Framing 'http://127.0.0.1:57278/' violates the following Content Security Policy directive: \\\"frame-src 'none'\\\". The request has been blocked.\\n\",\"timestamp\":1791715678920.165}}",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Loading the font 'http://127.0.0.1:57278/font' violates the following Content Security Policy directive: \\\"font-src 'self' data:\\\". The action has been blocked.\",\"timestamp\":1791715681042.08,\"lineNumber\":0,\"stackTrace\":{\"callFrames\":[{\"functionNa",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Sending form data to 'http://127.0.0.1:57278/form' violates the following Content Security Policy directive: \\\"form-action 'none'\\\". The request has been blocked.\\n\",\"timestamp\":1791715681752}}",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Connecting to 'http://127.0.0.1:57278/fetch' violates the following Content Security Policy directive: \\\"connect-src 'self'\\\". The action has been blocked.\",\"timestamp\":1791715684480.462,\"lineNumber\":0,\"stackTrace\":{\"callFrames\":[{\"functionName\":",
+    "{\"entry\":{\"source\":\"javascript\",\"level\":\"error\",\"text\":\"Fetch API cannot load http://127.0.0.1:57278/fetch. Refused to connect because it violates the document's Content Security Policy.\",\"timestamp\":1791715684480.538,\"lineNumber\":0,\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\",\"scriptId\":\"6\",\"url\"",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Connecting to 'http://127.0.0.1:57278/xhr' violates the following Content Security Policy directive: \\\"connect-src 'self'\\\". The action has been blocked.\",\"timestamp\":1791715685193.035,\"lineNumber\":0,\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\"",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Connecting to 'ws://127.0.0.1:57278/ws' violates the following Content Security Policy directive: \\\"connect-src 'self'\\\". The action has been blocked.\",\"timestamp\":1791715685904.287,\"lineNumber\":0,\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\",\"s",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Connecting to 'http://127.0.0.1:57278/sse' violates the following Content Security Policy directive: \\\"connect-src 'self'\\\". The action has been blocked.\",\"timestamp\":1791715686616.183,\"url\":\"http://127.0.0.1:57277/csp-only.html\"}}",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Connecting to 'http://127.0.0.1:57278/beacon' violates the following Content Security Policy directive: \\\"connect-src 'self'\\\". The action has been blocked.\",\"timestamp\":1791715687329.534,\"lineNumber\":0,\"stackTrace\":{\"callFrames\":[{\"functionName\"",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Loading the image 'http://127.0.0.1:57278/img' violates the following Content Security Policy directive: \\\"img-src 'self' data: blob:\\\". The action has been blocked.\",\"timestamp\":1791715688037.856,\"url\":\"http://127.0.0.1:57277/csp-only.html\"}}",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Loading the image 'http://127.0.0.1:57278/css' violates the following Content Security Policy directive: \\\"img-src 'self' data: blob:\\\". The action has been blocked.\",\"timestamp\":1791715688739.65,\"url\":\"http://127.0.0.1:57277/csp-only.html\"}}",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Fetching content from 'http://127.0.0.1:57278/prefetch' violates the following Content Security Policy directive: \\\"default-src 'self'\\\". The action has been blocked.\",\"timestamp\":1791715690158.335,\"lineNumber\":0,\"stackTrace\":{\"callFrames\":[{\"fun",
+    "{\"entry\":{\"source\":\"security\",\"level\":\"error\",\"text\":\"Framing 'http://127.0.0.1:57278/' violates the following Content Security Policy directive: \\\"frame-src 'none'\\\". The request has been blocked.\\n\",\"timestamp\":1791715690866.281}}"
+  ]
+}

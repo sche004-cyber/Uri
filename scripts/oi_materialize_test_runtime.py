@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -47,8 +48,17 @@ OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration",
             "docs/governance/windows_restoration/EXACT_RUNTIME_SECURITY_TRANSITIONS.patch",
             "scripts/oi_materialize_test_runtime.py", "scripts/ws_materialized_verify.py",
             # Owner 2026-10-15 (FCV-05): the authorization record for the runtime amendment of scripts/uri_client.ps1.
-            "docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md"]
-TEST_PATHS = ("tests/oi", "tests/ws", "tests/scheduler", "tests/a2ui", "tests/web", "tests/assist")
+            "docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md",
+            # URI Office (docs/office/unified/01_O2_PLAN_AND_ACCEPTANCE_CRITERIA.md) and its device provider: new
+            # paths only. Without them the app's Office start (manifest source_root) finds no service (finding B4).
+            "uri_office", "uri_devices", "scripts/run_uri_office_service.py",
+            "tests/office", "tests/office_u2", "tests/devices"]
+TEST_PATHS = ("tests/oi", "tests/ws", "tests/scheduler", "tests/a2ui", "tests/web", "tests/assist", "tests/office",
+              "tests/office_u2", "tests/devices")
+# Third-party modules the copied paths need at run time. requirements.txt has declared all of them since the first
+# commit, but venvs on the PC drifted (pypdf was missing from every runtime venv: finding O2-RT-1). A runtime missing
+# one is refused instead of starting an Office service that loses PDF text and search.
+RUNTIME_MODULES = ("pypdf", "docx", "pptx", "openpyxl", "lxml")
 # Accepted files the owner authorized to extend (WS-D3: exact-path scope guards). They replace the overlay copy; the
 # receipt records both digests so the replacement is auditable.
 REPLACED_PATHS = ("tests/phase2a/test_frozen_core.py", "scripts/phase2close_chain.py")
@@ -63,10 +73,79 @@ def sha(p):
     return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 
 
+def venv_python(venv: Path) -> Path:
+    return venv / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+
+
+def _dist(name: str) -> str:
+    """PEP 503 normalized distribution name."""
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def declared_requirements(path: Path = SRC / "requirements.txt") -> dict:
+    """{normalized distribution name: version specifier} declared in requirements.txt (comments and option lines
+    ignored; environment markers dropped)."""
+    try:
+        from packaging.requirements import Requirement
+    except ImportError:                                  # pip always vendors it
+        from pip._vendor.packaging.requirements import Requirement
+    out = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if not line or line.startswith("-"):
+            continue
+        r = Requirement(line)
+        out[_dist(r.name)] = r.specifier
+    return out
+
+
+def _wheel_name_version(file_name: str) -> tuple:
+    """(distribution, version) from a wheel file name: name-version(-build)?-python-abi-platform.whl."""
+    parts = file_name[:-len(".whl")].split("-")
+    if len(parts) not in (5, 6):
+        sys.exit("WHEEL_REFUSED:" + file_name)
+    return _dist(parts[0]), parts[1]
+
+
+def install_wheels(venv: Path, wheels, declared=None) -> dict:
+    """Install local wheels of DECLARED requirements into the runtime's venv copy: no index, no dependencies.
+    A wheel whose distribution is not in requirements.txt, or whose version is outside the declared specifier, is
+    refused (Codex reviews R1-3, R2-3). Returns {file: sha256}."""
+    done = {}
+    declared = declared_requirements() if declared is None else declared
+    for w in wheels:
+        w = Path(w).resolve()
+        if w.suffix != ".whl" or not w.is_file():
+            sys.exit("WHEEL_REFUSED:" + w.name)
+        name, version = _wheel_name_version(w.name)
+        if name not in declared:
+            sys.exit("WHEEL_NOT_DECLARED:" + w.name)
+        # Codex review R2-3: the version must satisfy the declared specifier (pypdf>=5.0 refuses pypdf 1.0).
+        if declared[name] is not None and not declared[name].contains(version, prereleases=False):
+            sys.exit("WHEEL_VERSION_NOT_DECLARED:" + w.name)
+        done[w.name] = sha(w)
+        subprocess.run([str(venv_python(venv)), "-m", "pip", "install", "--no-index", "--no-deps",
+                        "--disable-pip-version-check", str(w)], check=True, capture_output=True, text=True)
+    return done
+
+
+def missing_modules(venv: Path, modules=RUNTIME_MODULES) -> list:
+    """Modules the runtime's own interpreter cannot import (checked in a separate, isolated process)."""
+    out = []
+    for m in modules:
+        r = subprocess.run([str(venv_python(venv)), "-I", "-c", "import " + m], capture_output=True, text=True)
+        if r.returncode != 0:
+            out.append(m)
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("dest")
     ap.add_argument("--venv", default=str(SRC / ".venv"))
+    ap.add_argument("--wheel", action="append", default=[],
+                    help="a local wheel of a declared requirement to install into the runtime's own venv copy "
+                         "(offline, no dependencies; the source venv is never changed). May be repeated.")
     ap.add_argument("--exclude-oi-tests", action="store_true",
                     help="regression-gate checkout: copy the OI package but not tests/oi, so the accepted Phase 1/2 "
                          "gates collect exactly their accepted test set in the presence of the OI package")
@@ -115,6 +194,10 @@ def main(argv=None):
         replaced[rel]["integration_sha256"] = sha(d_)
     transitions = V.reconcile(SRC, dest)
     shutil.copytree(a.venv, dest / ".venv")
+    wheels = install_wheels(dest / ".venv", a.wheel)
+    missing = missing_modules(dest / ".venv")
+    if missing:
+        sys.exit("RUNTIME_DEPENDENCY_MISSING:" + ",".join(missing))
     head = git("rev-parse", "HEAD", cwd=dest).strip()
     status = git("status", "--porcelain", cwd=dest).splitlines()
     receipt = {"dest": str(dest), "head": head, "head_is_base": head == BASE, "overlay_commit": OVERLAY_COMMIT,
@@ -123,7 +206,8 @@ def main(argv=None):
                "candidate_tree": git("rev-parse", "HEAD^{tree}").strip(),
                "security_patch_sha256": V.PATCH_SHA256, "security_transitions": transitions,
                "porcelain_entries": len(status), "venv_source": a.venv,
-               "oi_tests_included": not a.exclude_oi_tests, "replaced_accepted_files": replaced}
+               "oi_tests_included": not a.exclude_oi_tests, "replaced_accepted_files": replaced,
+               "installed_wheels": wheels, "runtime_modules_checked": list(RUNTIME_MODULES)}
     (dest / "OI_MATERIALIZATION_RECEIPT.json").write_text(json.dumps(receipt, indent=1), encoding="utf-8")
     verified = V.verify(SRC, dest)
     if not verified["ok"]:

@@ -1,0 +1,62 @@
+{
+ "budget_after": [
+  [
+   "Item",
+   "Amount"
+  ],
+  [
+   "Rent",
+   1000
+  ],
+  [
+   "Food",
+   350
+  ],
+  [
+   "Power",
+   120
+  ],
+  [
+   "Total",
+   1500
+  ]
+ ],
+ "new_file": {
+  "Summary": [
+   [
+    "Region",
+    "Amount"
+   ],
+   [
+    "North",
+    120
+   ],
+   [
+    "North-East",
+    95
+   ],
+   [
+    "Hills",
+    143
+   ],
+   [
+    "South",
+    88
+   ],
+   [
+    "Coast",
+    61
+   ],
+   [
+    "Total",
+    "=SUM(B2:B6)"
+   ]
+  ]
+ },
+ "sha256_after": {
+  "budget.xlsx": "53642958bf616dee5ee4827b74c57d99199df113805d50806abbc7721ab8d20b",
+  "rates.xlsx": "598037f62fe1bf21c403b87917c4efb2f21e5ba313fe588f773d370afa1a9ac3",
+  "north_sales.xlsx": "0fcad13e27e7035c777f1915581b3656ec66fa6337d1dce85170c09d1757969f",
+  "south_sales.xlsx": "cb06977525ac999b20e8fd00b6b65efd4ccbf6284e5a6a8d8613ef17466cbd66"
+ }
+}

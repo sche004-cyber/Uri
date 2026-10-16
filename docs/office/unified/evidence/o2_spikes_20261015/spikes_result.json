@@ -1,0 +1,215 @@
+{
+ "started": "2026-10-15T10:00:55+0530",
+ "S1_plain_-I_import_uno": {
+  "rc": 1,
+  "stderr_tail": " \"<string>\", line 1, in <module>\n    import uno\nModuleNotFoundError: No module named 'uno'"
+ },
+ "S1_uno_under_-I": {
+  "rc": 0,
+  "rows": [
+   {
+    "file": "report25.docx",
+    "seconds": 2.064,
+    "ok": true
+   }
+  ],
+  "stderr_tail": "",
+  "first_result_s_fresh_profile": 13.35
+ },
+ "S3_assigned_with_ctypes": true,
+ "S3_job_close": {
+  "children_before": 1,
+  "alive_after": []
+ },
+ "S4_persistent_profile_first_result_s": 5.7,
+ "S4_rows": [
+  {
+   "file": "report25.docx",
+   "seconds": 1.536,
+   "ok": true
+  }
+ ],
+ "S7": {
+  "pages": {
+   "report25.pdf": 37,
+   "tender60.pdf": 60
+  },
+  "runs": {
+   "report25.docx": [
+    {
+     "bridge_reported_s": 0.709,
+     "wall_incl_bridge_start_s": 0.854
+    },
+    {
+     "bridge_reported_s": 0.731,
+     "wall_incl_bridge_start_s": 0.869
+    },
+    {
+     "bridge_reported_s": 0.709,
+     "wall_incl_bridge_start_s": 0.848
+    },
+    {
+     "bridge_reported_s": 0.724,
+     "wall_incl_bridge_start_s": 0.863
+    },
+    {
+     "bridge_reported_s": 0.7,
+     "wall_incl_bridge_start_s": 0.839
+    }
+   ],
+   "tender60.docx": [
+    {
+     "bridge_reported_s": 0.77,
+     "wall_incl_bridge_start_s": 0.913
+    },
+    {
+     "bridge_reported_s": 0.77,
+     "wall_incl_bridge_start_s": 0.908
+    },
+    {
+     "bridge_reported_s": 0.784,
+     "wall_incl_bridge_start_s": 0.923
+    },
+    {
+     "bridge_reported_s": 0.76,
+     "wall_incl_bridge_start_s": 0.9
+    },
+    {
+     "bridge_reported_s": 0.747,
+     "wall_incl_bridge_start_s": 0.884
+    }
+   ]
+  },
+  "median_bridge_s": {
+   "report25.docx": 0.709,
+   "tender60.docx": 0.77
+  },
+  "median_wall_s": {
+   "report25.docx": 0.854,
+   "tender60.docx": 0.908
+  }
+ },
+ "S6_manifest": {
+  "files": 19458,
+  "bytes": 1597925383,
+  "full_s": 107.24,
+  "exe_dll_files": 244,
+  "exe_dll_s": 4.33
+ },
+ "S9": {
+  "page_box": [
+   0.0,
+   0.0,
+   612.0,
+   792.0
+  ],
+  "spans": 37,
+  "sample": [
+   {
+    "t": "1. Section 1",
+    "x": 90.1,
+    "y": 682.4,
+    "size": 14.0
+   },
+   {
+    "t": "Paragraph 1 of section 1",
+    "x": 90.1,
+    "y": 665.9,
+    "size": 11.0
+   },
+   {
+    "t": "taken at each meeting, w",
+    "x": 90.1,
+    "y": 651.1,
+    "size": 11.0
+   },
+   {
+    "t": "The department reviewed ",
+    "x": 90.1,
+    "y": 636.3,
+    "size": 11.0
+   },
+   {
+    "t": "the actions due before t",
+    "x": 90.1,
+    "y": 621.5,
+    "size": 11.0
+   },
+   {
+    "t": "the files and recorded t",
+    "x": 90.1,
+    "y": 606.7,
+    "size": 11.0
+   }
+  ],
+  "x_range": [
+   90.1,
+   90.1
+  ],
+  "y_range": [
+   97.9,
+   682.4
+  ],
+  "sizes": [
+   11.0,
+   14.0
+  ]
+ },
+ "S10": {
+  "powershell_language_mode": "FullLanguage",
+  "corpus": {
+   "deep_nesting.pdf": {
+    "rc": 1,
+    "seconds": 1.71,
+    "pngs": 0,
+    "peak_process_mb": 66.0,
+    "stderr_head": "Exception calling \"Wait\" with \"0\" argument(s): \"One or more errors occurred.\"\nAt C:\\Users\\cheta\\Development\\uri-office-u2-a\\docs\\office\\unified\\evidence\\pdf_pri"
+   },
+   "garbage.pdf": {
+    "rc": 1,
+    "seconds": 1.35,
+    "pngs": 0,
+    "peak_process_mb": 66.2,
+    "stderr_head": "Exception calling \"Wait\" with \"0\" argument(s): \"One or more errors occurred.\"\nAt C:\\Users\\cheta\\Development\\uri-office-u2-a\\docs\\office\\unified\\evidence\\pdf_pri"
+   },
+   "truncated.pdf": {
+    "rc": 1,
+    "seconds": 1.36,
+    "pngs": 0,
+    "peak_process_mb": 65.9,
+    "stderr_head": "Exception calling \"Wait\" with \"0\" argument(s): \"One or more errors occurred.\"\nAt C:\\Users\\cheta\\Development\\uri-office-u2-a\\docs\\office\\unified\\evidence\\pdf_pri"
+   },
+   "valid60.pdf": {
+    "rc": 0,
+    "seconds": 4.14,
+    "pngs": 60,
+    "peak_process_mb": 143.9,
+    "stderr_head": ""
+   },
+   "zero.pdf": {
+    "rc": 1,
+    "seconds": 1.45,
+    "pngs": 0,
+    "peak_process_mb": 66.2,
+    "stderr_head": "Exception calling \"Wait\" with \"0\" argument(s): \"One or more errors occurred.\"\nAt C:\\Users\\cheta\\Development\\uri-office-u2-a\\docs\\office\\unified\\evidence\\pdf_pri"
+   }
+  }
+ },
+ "S10_ocr_winrt_300dpi": {
+  "raster_wall_s": 1.81,
+  "pages": [
+   {
+    "page": "winrt_p1.png",
+    "ocr_ms": 616,
+    "head": "NOTICE No. 55/2026\nCorrigendum to tender No. 55/2026\n\nPage 1: the last"
+   },
+   {
+    "page": "winrt_p2.png",
+    "ocr_ms": 534,
+    "head": "NOTICE No. 55/2026\nCorrigendum to tender No. 55/2026\n\nPage 2: the last"
+   }
+  ]
+ },
+ "pymupdf_imported": false,
+ "finished": "2026-10-15T10:03:33+0530"
+}

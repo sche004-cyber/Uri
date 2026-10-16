@@ -158,7 +158,7 @@ def load_config(path) -> dict:
 POLICY_KEYS = ("baseline", "candidate", "protected_paths", "authorized_protected_changes", "permitted_paths",
                "test_globs", "allowed_flaky", "gates", "integration", "reviewer", "implementer", "limits",
                "regression_runner", "regression_runners", "repair_nonblocking_severities", "continuation",
-               "regression_test_patterns", "canonical_url")
+               "regression_test_patterns", "canonical_url", "test_setup")
 
 
 def policy(cfg) -> dict:
@@ -481,6 +481,24 @@ def add_worktree(repo, path: Path, sha: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     git(repo, "worktree", "add", "--detach", str(path), sha)
     return path
+
+
+def prepare_worktree(cfg, wt: Path, log_dir: Path) -> str | None:
+    """Run the config's ``test_setup`` steps (e.g. ``npm ci``) in a fresh test worktree, so tests that need ignored,
+    installed files run there instead of skipping. A step whose ``cwd`` does not exist at this commit is skipped (the
+    baseline may predate it). Returns None when ready, else why the setup failed."""
+    for i, step in enumerate(cfg.get("test_setup") or []):
+        cwd = wt / step.get("cwd", ".")
+        if not cwd.is_dir():
+            continue
+        rc, o, e, state = run_cmd(_expand(step["cmd"], cfg, wt), cwd, step.get("timeout_s", 1800))
+        log_dir.mkdir(parents=True, exist_ok=True)
+        with (log_dir / "test_setup.log").open("a", encoding="utf-8", newline="") as f:
+            f.write(f"=== {wt.name} step {i} {step['cmd']} in {step.get('cwd', '.')}: {state} exit {rc}\n"
+                    f"{o[-3000:]}{e[-3000:]}\n")
+        if state != "DONE" or rc != 0:
+            return f"test setup step {i} ({' '.join(step['cmd'])}) in {wt.name}: {state} exit {rc}: {(e or o)[-300:]}"
+    return None
 
 
 def drop_worktree(repo, path: Path) -> None:
@@ -854,6 +872,10 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
     log_root = Path(cfg["state_dir"]) / "gates" / sha[:12]
     base_wt = None
     try:
+        setup = prepare_worktree(cfg, wt, log_root)
+        if setup:
+            res.update(ok=False, blocked=setup)
+            return res
         for g in cfg["gates"]:
             r = run_gate(cfg, g, wt, log_root)
             entry = {"candidate": r}
@@ -867,13 +889,21 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
                 # Preparation can change whether the baseline runs any tests, even with the same SHA and command.
                 key = chash([st.d["baseline"], g["cmd"], g.get("kind"), g.get("cwd", "."), GATE_SCHEMA,
                              fingerprint, g.get("prepare", True), g.get("pub_offline", True),
-                             g.get("prepare_timeout_s", 900), g.get("allow_zero_tests")])
+                             g.get("prepare_timeout_s", 900), g.get("allow_zero_tests"), cfg.get("test_setup") or []])
                 cached = st.d["baseline_gates"].get(g["id"])
                 # Only a completed baseline run is reused: a timeout, busy GPU lease or other BLOCKED result is
                 # re-tried on the next qualification, each attempt its own BASELINE_GATE event (R3-02).
                 if not cacheable or not cached or cached.get("key") != key or \
                         (cached.get("result") or {}).get("status") != "COMPLETED_WITH_RESULT":
-                    base_wt = base_wt or add_worktree(cfg["repo"], Path(cfg["work_dir"]) / "baseline", st.d["baseline"])
+                    if base_wt is None:
+                        base_wt = add_worktree(cfg["repo"], Path(cfg["work_dir"]) / "baseline", st.d["baseline"])
+                        setup = prepare_worktree(cfg, base_wt, Path(cfg["state_dir"]) / "gates" / "baseline")
+                        if setup:
+                            entry["ok"] = False
+                            res["blocked"] = res["blocked"] or "baseline " + setup
+                            res["gates"][g["id"]] = entry
+                            res["ok"] = False
+                            break
                     b = run_gate(cfg, g, base_wt, Path(cfg["state_dir"]) / "gates" / "baseline")
                     cached = {"key": key, "result": b}
                     st.d["baseline_gates"][g["id"]] = cached
@@ -1145,6 +1175,9 @@ def regression_proof(cfg, pre_sha: str, post_sha: str, tests: list[str], log_dir
     pre = add_worktree(cfg["repo"], Path(cfg["work_dir"]) / "pre_repair", pre_sha)
     post = add_worktree(cfg["repo"], Path(cfg["work_dir"]) / "post_repair", post_sha)
     try:
+        setup = prepare_worktree(cfg, pre, log_dir) or prepare_worktree(cfg, post, log_dir)
+        if setup:
+            return {"ok": False, "tests": per, "need_fail_before": need_fail_before, "reason": setup}
         for t, _ in runnable:
             (pre / t).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(post / t, pre / t)

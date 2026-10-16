@@ -1,0 +1,73 @@
+{
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocker": null,
+ "candidate": "0dbb7bda7abae0c3f0dcce20faaa5fdac922ddd0",
+ "config_sha256": "20f7494a4d8f619f374bf891c99b3adfd94b9663b4d865d476c5b23766e0bfd3",
+ "events": 13,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "0dbb7bda7aba": {
+   "blocked": null,
+   "new_failures": {
+    "python-a2ui": [],
+    "python-office": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-12T01:19:20Z",
+  "candidate": "0dbb7bda7abae0c3f0dcce20faaa5fdac922ddd0",
+  "mode": "none",
+  "status": "NOT_INTEGRATED_BY_POLICY"
+ },
+ "milestone": "URI-OFFICE-M1-c2",
+ "open_findings": [
+  {
+   "blocking": false,
+   "id": "R1-01",
+   "severity": "LOW",
+   "title": "Office-pane composer invites sheet requests before a workbook is open and silently sends them to the hidden ordinary conversation"
+  },
+  {
+   "blocking": false,
+   "id": "R1-02",
+   "severity": "LOW",
+   "title": "Leaving Office focus (rail, or a spoken or typed 'URI dashboard'/'URI chat' in the companion) closes the workbook and discards unsaved accepted changes without warning"
+  },
+  {
+   "blocking": false,
+   "id": "R1-03",
+   "severity": "LOW",
+   "title": "@grpc/grpc-js override still resolves to a nonexistent path; committed stub is unused (prior M1-c R1-05, still open)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-04",
+   "severity": "LOW",
+   "title": "Lifecycle test_setup runs npm ci with install scripts enabled, unlike the AC18 build discipline"
+  }
+ ],
+ "repairs": [],
+ "reviewers": [
+  {
+   "candidate": "0dbb7bda7abae0c3f0dcce20faaa5fdac922ddd0",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "round": 1,
+   "session_id": "7c6b6bdb-6670-41d6-ae4c-fe0bc0fdb369",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "rounds": 1,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "VERIFIED",
+ "verify_errors": [],
+ "written_at": "2026-10-12T01:19:20Z"
+}

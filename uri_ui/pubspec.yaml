@@ -44,6 +44,9 @@ dependencies:
   open_filex: ^4.7.0
   url_launcher: ^6.3.1
   window_manager: ^0.5.2
+  # URI Office sheet view: vendored and URI-patched (packages/webview_flutter_windows/PATCHES.md, OFF-O6).
+  webview_flutter_windows:
+    path: packages/webview_flutter_windows
 
 dev_dependencies:
   flutter_test:

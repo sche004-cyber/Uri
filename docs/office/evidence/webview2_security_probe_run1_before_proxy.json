@@ -1,0 +1,342 @@
+{
+  "started": "2026-10-11T12:44:32.300991Z",
+  "page_dir": "C:\\Users\\cheta\\Development\\uri-office\\uri_ui\\assets\\office",
+  "webview2_version": "154.0.4258.62",
+  "office_page": {
+    "location": "https://office.uri.local/index.html",
+    "ready_received": true,
+    "host_objects": "function",
+    "bridge_misuse_delivered": 0,
+    "attempts": [
+      {
+        "name": "fetch",
+        "page_result": "{}",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "xhr",
+        "page_result": "refused NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "websocket",
+        "page_result": "refused NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "eventsource",
+        "page_result": "refused NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "sendbeacon",
+        "page_result": "false",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "image",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "css_url",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "prefetch",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_canary",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_file",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_custom_scheme",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "window_open",
+        "page_result": "null",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "worker_fetch",
+        "page_result": "refused NetworkDisabledError",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "download_anchor",
+        "page_result": "clicked",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "fetch_file",
+        "page_result": "{}",
+        "canary_hits": [],
+        "blocked": true
+      }
+    ]
+  },
+  "raw_page": {
+    "location": "http://127.0.0.1:62818/raw.html",
+    "attempts": [
+      {
+        "name": "fetch",
+        "page_result": "{}",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "xhr",
+        "page_result": "sent",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "websocket",
+        "page_result": "sent",
+        "canary_hits": [
+          "GET /ws"
+        ],
+        "blocked": false
+      },
+      {
+        "name": "eventsource",
+        "page_result": "sent",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "sendbeacon",
+        "page_result": "true",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "image",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "css_url",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "prefetch",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_canary",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_file",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "iframe_custom_scheme",
+        "page_result": "attempted",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "window_open",
+        "page_result": "null",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "worker_fetch",
+        "page_result": "started",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "download_anchor",
+        "page_result": "clicked",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "fetch_file",
+        "page_result": "{}",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "data_url_image_allowed",
+        "page_result": "{}",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "blob_fetch_allowed",
+        "page_result": "{}",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "permission_geolocation",
+        "page_result": "{}",
+        "canary_hits": [],
+        "blocked": true
+      },
+      {
+        "name": "permission_notifications",
+        "page_result": "{}",
+        "canary_hits": [],
+        "blocked": true
+      }
+    ],
+    "wrong_origin_messages_delivered": 0
+  },
+  "navigations": [
+    {
+      "name": "nav_canary",
+      "target": "http://127.0.0.1:62817/nav",
+      "location_after": "http://127.0.0.1:62818/raw.html",
+      "canary_hits": [],
+      "blocked": true
+    },
+    {
+      "name": "nav_file",
+      "target": "file:///C:/Windows/win.ini",
+      "location_after": "http://127.0.0.1:62818/raw.html",
+      "canary_hits": [],
+      "blocked": true
+    },
+    {
+      "name": "nav_data_html",
+      "target": "data:text/html,<b>x</b>",
+      "location_after": "http://127.0.0.1:62818/raw.html",
+      "canary_hits": [],
+      "blocked": true
+    },
+    {
+      "name": "nav_custom_scheme",
+      "target": "uri-office-probe:test",
+      "location_after": "http://127.0.0.1:62818/raw.html",
+      "canary_hits": [],
+      "blocked": true
+    },
+    {
+      "name": "nav_redirect_to_canary",
+      "target": "http://127.0.0.1:62818/redirect-canary",
+      "location_after": "http://127.0.0.1:62818/raw.html",
+      "canary_hits": [],
+      "blocked": true
+    },
+    {
+      "name": "nav_redirect_to_file",
+      "target": "http://127.0.0.1:62818/redirect-file",
+      "location_after": "chrome-error://chromewebdata/",
+      "canary_hits": [],
+      "blocked": true
+    },
+    {
+      "name": "nav_download",
+      "target": "http://127.0.0.1:62817/download",
+      "location_after": "http://127.0.0.1:62818/raw.html",
+      "canary_hits": [],
+      "blocked": true
+    },
+    {
+      "name": "nav_from_script",
+      "canary_hits": [],
+      "blocked": true,
+      "location_after": "http://127.0.0.1:62818/raw.html"
+    }
+  ],
+  "open_dev_tools": "refused: PlatformException(method_failed, null, null, null)",
+  "downloads_folder_has_canary_file": false,
+  "security_report": {
+    "configured": true,
+    "blocked_requests": 13,
+    "cancelled_navigations": 7,
+    "cancelled_frame_navigations": 4,
+    "cancelled_external_schemes": 0,
+    "denied_windows": 1,
+    "cancelled_downloads": 1,
+    "dropped_messages": 2,
+    "denied_permissions": 2,
+    "settings": {
+      "dev_tools": false,
+      "host_objects": false,
+      "script_dialogs": false,
+      "browser_accelerator_keys": false,
+      "password_autosave": false,
+      "general_autofill": false
+    },
+    "recent": [
+      "frame_navigation http://127.0.0.1:62817/iframe",
+      "frame_navigation uri-office-probe:frame",
+      "request http://127.0.0.1:62817/fetch",
+      "request http://127.0.0.1:62817/xhr",
+      "request http://127.0.0.1:62817/sse",
+      "request http://127.0.0.1:62817/beacon",
+      "request http://127.0.0.1:62817/img",
+      "request http://127.0.0.1:62817/css",
+      "request http://127.0.0.1:62817/prefetch",
+      "frame_navigation http://127.0.0.1:62817/iframe",
+      "request http://127.0.0.1:62817/iframe",
+      "frame_navigation uri-office-probe:frame",
+      "window http://127.0.0.1:62817/open",
+      "request http://127.0.0.1:62817/worker",
+      "download blob:http://127.0.0.1:62818/e0dd7c3e-824d-4c7e-9336-5340b9982264",
+      "permission http://127.0.0.1:62818/",
+      "permission http://127.0.0.1:62818/",
+      "message http://127.0.0.1:62818/raw.html",
+      "message http://127.0.0.1:62818/raw.html",
+      "navigation http://127.0.0.1:62817/nav",
+      "request http://127.0.0.1:62817/nav",
+      "navigation file:///C:/Windows/win.ini",
+      "navigation data:text/html,<b>x</b>",
+      "navigation uri-office-probe:test",
+      "navigation http://127.0.0.1:62817/redirected",
+      "request http://127.0.0.1:62817/redirected",
+      "navigation http://127.0.0.1:62817/download",
+      "request http://127.0.0.1:62817/download",
+      "navigation http://127.0.0.1:62817/script-nav",
+      "request http://127.0.0.1:62817/script-nav"
+    ],
+    "dropped_by_dart": 3
+  },
+  "canary_total_hits": [
+    "GET /ws"
+  ],
+  "user_data_folder": "C:\\Users\\cheta\\AppData\\Local\\Temp\\uri-office-probe-1791722672302",
+  "result": "COMPLETED_WITH_RESULT",
+  "finished": "2026-10-11T12:46:01.193067Z"
+}

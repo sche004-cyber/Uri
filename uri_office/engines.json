@@ -1,0 +1,42 @@
+{
+ "_comment": "Pinned engines and worker scripts (plan section 3, A1 section A7). Recorded 2026-10-15 from the user-folder extract under LOCALAPPDATA/URI/engines/libreoffice-26.8.1. Provenance: the downloaded MSI (winget cache) SHA-256 c6298b10...5312 equals the winget manifest; the extract was made with msiexec /a (no elevation); soffice.bin equals the qualified pin and is Authenticode-signed by The Document Foundation (status Valid on 2026-10-15). The MSI kept in the folder is the administrative-image copy written by msiexec /a (19,836,928 bytes) and is excluded from the manifest. Update workers with: python -m uri_office.engines pin-workers Correction 2026-10-15: the first pin (root 70a9c1e1..., 19,457 files) included 40 Python bytecode files (__pycache__) that LibreOffice's embedded Python wrote during the day-1 spikes; the MSI ships no .pyc. All __pycache__ folders were removed and the pin re-recorded (19,417 files). The engine now runs with PYTHONDONTWRITEBYTECODE=1 and the bridge with -B, and any added file fails the integrity check.",
+ "libreoffice": {
+  "dir": "libreoffice-26.8.1",
+  "version": "26.8.1.1",
+  "soffice_bin_sha256": "cb08cffda137256a95e3802c13476dd96f0f6310cb6f3e186621d8f73d7c2fa1",
+  "manifest_root_sha256": "95ea5a485b0b4c9ac22e2f5ce06d2913191e53b9d1ccb8fd7653958098a54a7b",
+  "manifest_files": 19417,
+  "installer_name": "LibreOffice_26.8.1_Win_x86-64.msi",
+  "source_msi_sha256": "c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312",
+  "signer": "CN=The Document Foundation, O=The Document Foundation, L=Berlin, S=Berlin, C=DE",
+  "signers_allowed": [
+   "CN=Microsoft Windows Software Compatibility Publisher, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+   "CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+   "CN=The Document Foundation, O=The Document Foundation, L=Berlin, S=Berlin, C=DE"
+  ],
+  "unsigned_allowed": [
+   "program/intl/fbintl.dll",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/t32.exe",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/t64-arm.exe",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/t64.exe",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/w32.exe",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/w64-arm.exe",
+   "program/python-core-3.13.15/lib/pip/_vendor/distlib/w64.exe",
+   "program/python-core-3.13.15/lib/setuptools/cli-32.exe",
+   "program/python-core-3.13.15/lib/setuptools/cli-64.exe",
+   "program/python-core-3.13.15/lib/setuptools/cli-arm64.exe",
+   "program/python-core-3.13.15/lib/setuptools/cli.exe",
+   "program/python-core-3.13.15/lib/setuptools/gui-32.exe",
+   "program/python-core-3.13.15/lib/setuptools/gui-64.exe",
+   "program/python-core-3.13.15/lib/setuptools/gui-arm64.exe",
+   "program/python-core-3.13.15/lib/setuptools/gui.exe"
+  ],
+  "signed_files": 229
+ },
+ "workers": {
+  "lo_bridge.py": "101af4e3ebe89067c5c6464b45e64a7a1ac1e7a6953959770e966e612e0845f3",
+  "pdf_text.py": "7ec9ebca09b31ea32dde3fed7e993dbda9e88046a555fbebd195de3a77034642",
+  "print_job.ps1": "a8481afce724cc91b27c17e19018965d5268483ade76974945b39ad6fc968627",
+  "winrt_raster.ps1": "c027d07b4e16cee1b3032b1b4f58ae510a91025a17a7e66134a68aab83ee191c"
+ }
+}

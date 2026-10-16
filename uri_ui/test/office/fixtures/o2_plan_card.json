@@ -1,0 +1,109 @@
+[
+ {
+  "version": "v0.9",
+  "createSurface": {
+   "surfaceId": "office.plan.aaaaaaaaaaaaaaaaaaaa.1f14b05f",
+   "catalogId": "uri:a2ui/catalog/v1",
+   "theme": {
+    "agentDisplayName": "URI",
+    "placement": "workspace"
+   }
+  }
+ },
+ {
+  "version": "v0.9",
+  "updateComponents": {
+   "surfaceId": "office.plan.aaaaaaaaaaaaaaaaaaaa.1f14b05f",
+   "components": [
+    {
+     "id": "root",
+     "component": "Column",
+     "children": [
+      "title",
+      "target",
+      "lines0",
+      "buttons"
+     ],
+     "gap": "medium"
+    },
+    {
+     "id": "title",
+     "component": "Text",
+     "variant": "title",
+     "text": "Save order.docx as PDF?"
+    },
+    {
+     "id": "target",
+     "component": "Text",
+     "variant": "caption",
+     "text": ""
+    },
+    {
+     "id": "lines0",
+     "component": "Text",
+     "variant": "body",
+     "text": "1. Convert to PDF with LibreOffice (Engine)\nReads: \"order.docx\"\nMakes: \"order.pdf\"\nYour original files will not change."
+    },
+    {
+     "id": "apply",
+     "component": "Button",
+     "variant": "primary",
+     "label": "Run",
+     "action": {
+      "event": {
+       "name": "office.run_plan",
+       "context": {
+        "plan_sha256": {
+         "path": "/bound/plan_sha256"
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "reject",
+     "component": "Button",
+     "variant": "secondary",
+     "label": "Not now",
+     "action": {
+      "event": {
+       "name": "office.discard_plan",
+       "context": {
+        "plan_sha256": {
+         "path": "/bound/plan_sha256"
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "buttons",
+     "component": "Row",
+     "children": [
+      "apply",
+      "reject"
+     ],
+     "gap": "small"
+    }
+   ]
+  }
+ },
+ {
+  "version": "v0.9",
+  "updateDataModel": {
+   "surfaceId": "office.plan.aaaaaaaaaaaaaaaaaaaa.1f14b05f",
+   "path": "/",
+   "value": {
+    "bound": {
+     "plan_sha256": "172dda978c1de44af96d431bc7fc42e37a289c288025b8a727414bca86192096",
+     "surface": {
+      "digest": "a82e92bd97c2df4c69e53bf121d945a9b741904d9b7c0e6e82e7601431a60388",
+      "revision": 1,
+      "kind": "office_plan",
+      "title": "Office plan"
+     }
+    }
+   }
+  }
+ }
+]

@@ -399,6 +399,24 @@ void main() {
       },
     );
   }
+  // Office integration live run i1 (INT-L1): the landing rail had no Office entry, so Office was out of reach from
+  // the first screen.
+  testWidgets('the dashboard rail opens Office', (tester) async {
+    final (_, _, services) = await pumpV2(tester, size: const Size(1440, 1000));
+    services.presentation.setMode(UiPresentationMode.dashboard);
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    final office = find.widgetWithText(ListTile, 'Office');
+    expect(office, findsOneWidget);
+    await tester.tap(office);
+    await tester.pumpAndSettle();
+    expect(services.presentation.mode, UiPresentationMode.workspace);
+    expect(services.presentation.focus, WorkspaceFocus.office);
+    expect(tester.takeException(), isNull);
+    await tester.pump(const Duration(seconds: 5)); // let the hover hint and region start timers finish
+    await tester.pumpAndSettle();
+  });
   test(
     'dashboard layouts: wide only for tall windows, medium never at large text',
     () {

@@ -25,6 +25,14 @@ ACTIONS = {
     "calendar.correct_record": {"authority": "scheduler", "confirms": False,
                                 "context": {"record": "str", "start": "date?", "note": "str?",
                                             "correction": "enum:set_date|dispute|accept"}},
+    # URI Office: commit or decline one shown change set (authority: uri_office service; owner check + change SHA-256,
+    # the target is re-read and must still hold the shown "before" state)
+    "office.apply_change": {"authority": "office", "confirms": True, "context": {"change_sha256": "sha256"}},
+    "office.reject_change": {"authority": "office", "confirms": True, "context": {"change_sha256": "sha256"}},
+    # URI Office O2: run or discard one shown workflow plan (authority: uri_office service; owner check + plan SHA-256;
+    # apply only records the decision and queues the run)
+    "office.run_plan": {"authority": "office", "confirms": True, "context": {"plan_sha256": "sha256"}},
+    "office.discard_plan": {"authority": "office", "confirms": True, "context": {"plan_sha256": "sha256"}},
     # Presentation only
     "surface.dismiss": {"authority": "renderer", "confirms": False, "context": {}},
 }

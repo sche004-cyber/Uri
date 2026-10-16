@@ -1,0 +1,8 @@
+{
+  "name": "@grpc/grpc-js",
+  "version": "1.14.4-uri-unused",
+  "private": true,
+  "description": "Placeholder. @univerjs/protocol lists @grpc/grpc-js as a dependency but its runtime JavaScript never imports it (only server-API .d.ts files do). URI Office never talks gRPC; anything that loads this fails loudly.",
+  "main": "index.js",
+  "license": "Apache-2.0"
+}

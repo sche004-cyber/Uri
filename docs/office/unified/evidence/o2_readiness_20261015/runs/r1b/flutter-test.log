@@ -1,0 +1,97 @@
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.1.1 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.3.2 available)
+  file_picker_linux 1.1.0 (2.0.2 available)
+  file_picker_platform_interface 3.3.0 (4.2.0 available)
+  file_picker_web 3.1.0 (4.2.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  screen_retriever 0.2.2 (0.3.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+19 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading D:/uri-dev/uri-o2r-live-20261015/candidate/uri_ui/integration_test/o2q_native_test.dart
+Building Windows application...                                   133.7s
+√ Built build\windows\x64\runner\Debug\uri_ui.exe
+00:00 +0: O2 qualification: production main, real Core, real Office service
+══╡ EXCEPTION CAUGHT BY FOUNDATION LIBRARY ╞════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for
+ValueNotifier<OfficeRequestTarget?>:
+setState() or markNeedsBuild() called when widget tree was locked.
+This ListenableBuilder widget cannot be marked as needing to build because the framework is locked.
+The widget on which setState() or markNeedsBuild() was called was:
+  ListenableBuilder
+
+When the exception was thrown, this was the stack:
+#0      Element.markNeedsBuild.<anonymous closure> (package:flutter/src/widgets/framework.dart:5388:9)
+#1      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5398:6)
+#2      State.setState (package:flutter/src/widgets/framework.dart:1221:15)
+#3      _AnimatedState._handleChange (package:flutter/src/widgets/transitions.dart:133:5)
+#4      ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#5      ValueNotifier.value= (package:flutter/src/foundation/change_notifier.dart:563:5)
+#6      _OfficeWorkspaceState._release (package:uri_ui/living/office/office_workspace.dart:158:48)
+#7      _OfficeWorkspaceState.dispose (package:uri_ui/living/office/office_workspace.dart:164:5)
+#8      StatefulElement.unmount (package:flutter/src/widgets/framework.dart:6043:11)
+#9      _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2119:13)
+#10     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2117:7)
+#11     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5884:14)
+#12     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2115:13)
+#13     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2117:7)
+#14     SingleChildRenderObjectElement.visitChildren (package:flutter/src/widgets/framework.dart:7114:14)
+#15     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2115:13)
+#16     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2117:7)
+#17     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5884:14)
+#18     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2115:13)
+#19     ListIterable.forEach (dart:_internal/iterable.dart:49:13)
+#20     _InactiveElements._unmountAll (package:flutter/src/widgets/framework.dart:2128:25)
+#21     BuildOwner.lockState (package:flutter/src/widgets/framework.dart:3033:15)
+#22     BuildOwner.finalizeTree (package:flutter/src/widgets/framework.dart:3357:7)
+#23     WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1578:19)
+#24     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#25     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#26     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#27     LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:2812:13)
+#28     SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#32     _invoke (dart:ui/hooks.dart:443:10)
+#33     PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#34     _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 3 frames from dart:async)
+
+The ValueNotifier<OfficeRequestTarget?> sending notification was:
+  ValueNotifier<OfficeRequestTarget?>#f904a(null)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+08:53 +0 -1: O2 qualification: production main, real Core, real Office service [E]
+  Test failed. See exception logs above.
+  The test description was: O2 qualification: production main, real Core, real Office service
+  
+08:53 +0 -1: (tearDownAll)
+08:53 +0 -1: Some tests failed.
+
+Failing tests:
+  D:/uri-dev/uri-o2r-live-20261015/candidate/uri_ui/integration_test/o2q_native_test.dart: O2 qualification: production main, real Core, real Office service
+The Flutter CLI developer tool uses Google Analytics to report usage and diagnostic
+data along with package dependencies, and crash reporting to send basic crash
+reports. This data is used to help improve the Dart platform, Flutter framework,
+and related tools.
+
+Telemetry is not sent on the very first run. To disable reporting of telemetry,
+run this terminal command:
+
+    flutter --disable-analytics
+
+If you opt out of telemetry, an opt-out event will be sent, and then no further
+information will be sent. This data is collected in accordance with the Google
+Privacy Policy (https://policies.google.com/privacy).
+

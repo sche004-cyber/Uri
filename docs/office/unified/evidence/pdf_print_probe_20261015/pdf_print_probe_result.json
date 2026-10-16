@@ -1,0 +1,187 @@
+{
+ "started": "2026-10-15T09:45:10+0530",
+ "pymupdf_imported": false,
+ "fixtures": {
+  "report20.docx": "a037be187baa81611a1ef0223fbe53f179e435be295a83d42ce557e6db43dd5c",
+  "deck.pptx": "aae23c867d1d15b156e8ac1fcb0c42ddaf41e32b3dc05eadcbe246de6731acb3",
+  "budget.xlsx": "e82f8518141844c730219d29b3a0598bed1708de685bb66cf478a69bf7ba2a5d",
+  "scan.pdf": "be32f0e7da3a6ff49884d21f36a4d32bc479ee1be8eef0e88efad6f82dcb9551"
+ },
+ "lo_listener": {
+  "wall_s_incl_startup": 23.92,
+  "client_rc": 0,
+  "rows": [
+   {
+    "file": "report20.docx",
+    "load_s": 4.087,
+    "pdf_s": 0.166,
+    "pages": 10,
+    "png_pages": 10,
+    "png_s": 0.822,
+    "ok": true
+   },
+   {
+    "file": "deck.pptx",
+    "load_s": 0.517,
+    "pdf_s": 0.109,
+    "pages": 11,
+    "png_pages": 11,
+    "png_s": 0.968,
+    "ok": true
+   },
+   {
+    "file": "budget.xlsx",
+    "load_s": 0.328,
+    "pdf_s": 0.294,
+    "pages": null,
+    "png_pages": 1,
+    "png_s": 0.06,
+    "ok": true
+   }
+  ],
+  "stderr_tail": ""
+ },
+ "lo_listener_warm_repeat": [
+  {
+   "file": "report20.docx",
+   "load_s": 0.435,
+   "pdf_s": 0.071,
+   "pages": 10,
+   "png_pages": 10,
+   "png_s": 0.686,
+   "ok": true
+  }
+ ],
+ "lo_pngs": [
+  "budget_p1.png",
+  "deck_p1.png",
+  "deck_p10.png",
+  "deck_p11.png",
+  "deck_p2.png",
+  "deck_p3.png",
+  "deck_p4.png",
+  "deck_p5.png",
+  "deck_p6.png",
+  "deck_p7.png",
+  "deck_p8.png",
+  "deck_p9.png",
+  "report20_p1.png",
+  "report20_p10.png",
+  "report20_p2.png",
+  "report20_p3.png",
+  "report20_p4.png",
+  "report20_p5.png",
+  "report20_p6.png",
+  "report20_p7.png",
+  "report20_p8.png",
+  "report20_p9.png"
+ ],
+ "pypdf": {
+  "report20.pdf": {
+   "pages": 10,
+   "open_ms": 3.9,
+   "extract_all_ms": 279.0,
+   "chars": 22494,
+   "fonts": [
+    "/BAAAAA+Calibri-Bold",
+    "/CAAAAA+Cambria"
+   ],
+   "outline_items": 10,
+   "search_Section7_pages": [
+    6
+   ]
+  },
+  "deck.pdf": {
+   "pages": 11,
+   "open_ms": 2.3,
+   "extract_all_ms": 21.6,
+   "chars": 538,
+   "fonts": [
+    "/BAAAAA+Calibri",
+    "/CAAAAA+ArialMT",
+    "/DAAAAA+Calibri",
+    "/EAAAAA+Calibri",
+    "/FAAAAA+Calibri-Bold"
+   ],
+   "outline_items": 11,
+   "search_Section7_pages": [
+    7
+   ]
+  },
+  "budget.pdf": {
+   "pages": 1,
+   "open_ms": 1.8,
+   "extract_all_ms": 13.3,
+   "chars": 989,
+   "fonts": [
+    "/BAAAAA+Calibri"
+   ],
+   "outline_items": 1,
+   "search_Section7_pages": []
+  }
+ },
+ "pypdf_scan_ocr": {
+  "rows": [
+   {
+    "page": 1,
+    "text_layer_chars": 0,
+    "images": 1,
+    "ocr_ms": 553.6,
+    "ocr_text_head": "NOTICE No. 55/2026\nCorrigendum to tender No. 55/2026\n\nPage 1: the last date for bids is extended to 30 October 2026."
+   },
+   {
+    "page": 2,
+    "text_layer_chars": 0,
+    "images": 1,
+    "ocr_ms": 223.4,
+    "ocr_text_head": "NOTICE No. 55/2026\nCorrigendum to tender No. 55/2026\n\nPage 2: the last date for bids is extended to 30 October 2026."
+   }
+  ],
+  "total_ms": 832.3
+ },
+ "printers": {
+  "enum_ok": true,
+  "count": 2,
+  "default": "Microsoft Print to PDF",
+  "list": [
+   {
+    "name": "OneNote (Desktop)",
+    "port": "nul:",
+    "driver": "Send to Microsoft OneNote 16 Driver",
+    "attributes_hex": "0x240",
+    "status_hex": "0x0",
+    "jobs": 0,
+    "work_offline": false,
+    "network": false,
+    "caps": {
+     "DC_DUPLEX": 0,
+     "DC_COPIES": 1,
+     "DC_COLORDEVICE": 1,
+     "DC_PAPERS": 10,
+     "DC_ORIENTATION": 270,
+     "DC_COLLATE": 0
+    }
+   },
+   {
+    "name": "Microsoft Print to PDF",
+    "port": "PORTPROMPT:",
+    "driver": "Microsoft Print To PDF",
+    "attributes_hex": "0x240",
+    "status_hex": "0x0",
+    "jobs": 0,
+    "work_offline": false,
+    "network": false,
+    "caps": {
+     "DC_DUPLEX": 0,
+     "DC_COPIES": 1,
+     "DC_COLORDEVICE": 1,
+     "DC_PAPERS": 54,
+     "DC_ORIENTATION": 90,
+     "DC_COLLATE": 0
+    }
+   }
+  ],
+  "enum_and_caps_ms": 167.1
+ },
+ "finished": "2026-10-15T09:45:39+0530"
+}

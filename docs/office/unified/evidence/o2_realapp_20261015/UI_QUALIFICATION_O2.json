@@ -1,0 +1,462 @@
+{
+ "schema": "uri-ui-qualification/1",
+ "task": {
+  "task_id": "URI-OFFICE-O2",
+  "capability": "Office workspace: Word/PowerPoint/PDF viewing, Save as PDF, Excel in workspace, Office requests",
+  "classification": "USER_FACING",
+  "phase": "O2",
+  "candidate_branch": "phase/uri-office-u-2-a",
+  "code_commit": "b4ea0fae711c6d398493e71d0571905e7727bcb1",
+  "acceptance_criteria_file": "docs/office/unified/01_O2_PLAN_AND_ACCEPTANCE_CRITERIA.md + owner directive 2026-10-15 B1-B7",
+  "acceptance_criteria": [
+   "B2 journeys 1-22",
+   "B3",
+   "B4",
+   "B5",
+   "B7"
+  ]
+ },
+ "environment": {
+  "windows": "Windows 11 Pro 10.0.26200",
+  "app_build": "uri_ui production main() at b4ea0fae via flutter test integration_test (debug build)",
+  "core": "runtime materialized from b4ea0fae (oi_materialize_test_runtime + ws_provision o2q-a, verified by ws_materialized_verify)",
+  "brain": "Runtime v1 frozen config sha256 e7d5de94...ee via WS Brain host, machine-wide lease, no override",
+  "dependencies": [
+   "LibreOffice 26.8.1.1 pinned + Authenticode signer check",
+   "Python 3.13 base interpreter with pypdf 6.19 (O2-RT-1)"
+  ],
+  "gpu_override": "none"
+ },
+ "functional": [
+  {
+   "journey_id": "J01-start",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J02-open-office",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J04-word-open",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J05-word-navigate",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J06-pptx-open",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J07-pptx-navigate",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J08-pdf-open",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J09-pdf-search-zoom-navigate",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J12-word-to-pdf",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J13-pptx-to-pdf",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J18-reopen-saved",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J20a-discard-plan",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J20b-damaged-file",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J20c-dialog-cancel",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J10-excel-open",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J11-excel-companion",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J14-excel-to-pdf",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J03-navigate-views",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J21-state-preserved",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J15-composer-requests",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "B5-ambiguous-to-plan",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "B5-ambiguous-pptx",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "B5-unclear-clarifies",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "B5-unsupported-said-plainly",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "B5-pdf-planned",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "B5-continuity",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "B5-excel-brain",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "FAIL",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "B5-brain-speed-with-office",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "B5-C1-corpus-http",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "B5-concurrent",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J-print-off",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J-keyboard",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  },
+  {
+   "journey_id": "J22-return-main",
+   "user": "first_time",
+   "mandatory": true,
+   "result": "PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "evidence": [
+    "docs/office/unified/evidence/o2_realapp_20261015/runs/r7/observations.json"
+   ]
+  }
+ ],
+ "improvements": [
+  {
+   "issue_id": "R5-1",
+   "class": "MATERIAL",
+   "repair_commit": "7752469a"
+  },
+  {
+   "issue_id": "R5-2",
+   "class": "MATERIAL",
+   "repair_commit": "fe7ed88a"
+  },
+  {
+   "issue_id": "R5-3",
+   "class": "MATERIAL",
+   "repair_commit": "fe7ed88a"
+  },
+  {
+   "issue_id": "R5-4",
+   "class": "MATERIAL",
+   "repair_commit": "fe7ed88a"
+  },
+  {
+   "issue_id": "R5-6",
+   "class": "MATERIAL",
+   "repair_commit": "fe7ed88a"
+  },
+  {
+   "issue_id": "SEC-1",
+   "class": "MATERIAL",
+   "repair_commit": "b84062cf"
+  },
+  {
+   "issue_id": "R6-1",
+   "class": "MATERIAL",
+   "repair_commit": "5973583b"
+  },
+  {
+   "issue_id": "R6-2",
+   "class": "MATERIAL",
+   "repair_commit": "6de5b32f"
+  },
+  {
+   "issue_id": "R7-1",
+   "class": "MATERIAL",
+   "repair_commit": "b4ea0fae"
+  },
+  {
+   "issue_id": "R5-5",
+   "class": "MINOR",
+   "repair_commit": "fe7ed88a"
+  },
+  {
+   "issue_id": "R5-7",
+   "class": "MINOR",
+   "repair_commit": "fe7ed88a"
+  },
+  {
+   "issue_id": "R6-3",
+   "class": "MINOR",
+   "repair_commit": "5973583b"
+  },
+  {
+   "issue_id": "R6-4",
+   "class": "MINOR",
+   "repair_commit": "5973583b"
+  }
+ ],
+ "remaining_limitations": [
+  "M2-XB-1 Excel Brain message/draft disagreement (outside O2 scope)",
+  "B5-PERF app+Runtime v1 VRAM demotion 123->39 tok/s (not Office)",
+  "AC-O2-16",
+  "O2-RT-1 pypdf missing from runtime venvs",
+  "physical input NOT VERIFIED",
+  "owner check BLOCKED",
+  "running-task cancel not driven in UI",
+  "Office not in runtime materialization"
+ ],
+ "independent_audit": {
+  "auditor": "codex_cli",
+  "fallback_reason": null,
+  "reviewer_identity": "codex exec gpt-6-sol via codex-exec bridge, thread 01a13ff2-bf58-72c0-85b0-b521f43af687 (round 7)",
+  "reviewed_commit": "b4ea0fae",
+  "repair_iterations": 6,
+  "verdict": "ACCEPT",
+  "auditor_observed_live": false,
+  "auditor_tests_run": [
+   "pytest blocked by read-only sandbox temp dir (rounds 1-5, 7); round 6 ran test_intent.py 63 passed"
+  ],
+  "auditor_unverified": [
+   "author's suite totals",
+   "live journeys",
+   "Brain measurements"
+  ]
+ },
+ "status": "NOT VERIFIED",
+ "status_reason": "All automated real-app journeys PASS at b4ea0fae except B5-excel-brain (M2-XB-1, outside O2 scope); physical input NOT VERIFIED and owner check BLOCKED, so the PASS condition is not met.",
+ "recorded_at": "2026-10-15",
+ "corrections": [
+  "Supersedes the UI part of evidence/o2_live_20261015 (harness with MockUriClient), per 06_O2_UI_FIRST_QUALIFICATION_GAP.md"
+ ]
+}
