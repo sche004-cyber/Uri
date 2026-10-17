@@ -2,7 +2,7 @@
  "id": "UIV2P-SCOPE-1",
  "recorded": "2026-10-17",
  "severity": "MEDIUM",
- "status": "REPAIRED IN OFFICE CANDIDATE 3e202efc - not yet in canonical",
+ "status": "CLOSED - verified on canonical 7893aaed (scope tests 15/15 in a runtime materialized from the canonical tip)",
  "found_by": "URI Office session, materialized runtime at 375ee2be (= 25048709 + Office); verified by this session on 25048709",
  "defect": "tests/phase2a/test_frozen_core.py ALLOWED_NEW does not list four new UI-V2-POSTINT tests, so tests/phase2a/test_frozen_core.py::test_nothing_changed_outside_checkpoint_and_phase2a_paths and tests/phase2b/test_boundary.py::test_phase2a_frozen_core_tests_still_hold fail",
  "paths": [
@@ -31,6 +31,12 @@
    "event": "CORRECTION",
    "detail": "Measured in a runtime materialized from 25048709: the frozen-scope guard reports 89 stray paths on canonical, not only the 4 UI-V2-POSTINT tests. The other 85 are Office O2/devices (82, since eaeb10c1) and FCV-R (3) paths, owned by those milestones. All 89 are covered by ALLOWED_NEW in Office candidate 3e202efc. UIV2P-SCOPE-1 itself stays limited to the 4 UI-V2-POSTINT paths; the freeze criterion is the whole guard passing on canonical.",
    "evidence": "evidence_post_integration_20261017/scope_unlisted_25048709.txt"
+  },
+  {
+   "at": "2026-10-17",
+   "event": "CLOSED",
+   "canonical": "7893aaed2b7ef3be71ac044bf4d432281c8f066b",
+   "evidence": "evidence_freeze_20261017/scope_7893aaed.log"
   }
  ]
 }

@@ -1,0 +1,119 @@
+{
+ "state": "READY",
+ "load_s": 59.83,
+ "utc": "2026-10-17T14:04:55.675449+00:00",
+ "host": {
+  "schema": "uri.ws.brain_host.v1",
+  "host_pid": 22548,
+  "host_started": 1792245835.831,
+  "state": "READY",
+  "history": [
+   {
+    "t": 1792245839.865,
+    "state": "STARTING",
+    "detail": null
+   },
+   {
+    "t": 1792245869.666,
+    "state": "LOADING",
+    "detail": null
+   },
+   {
+    "t": 1792245890.11,
+    "state": "CALIBRATING",
+    "detail": null
+   },
+   {
+    "t": 1792245895.402,
+    "state": "READY",
+    "detail": null
+   }
+  ],
+  "override": {
+   "by": "--override-contention",
+   "at": 1792245835.831
+  },
+  "lease": {
+   "held": true,
+   "acquired_at": 1792245835.853,
+   "recovered_from": null
+  },
+  "gpu": {
+   "fit": {
+    "verdict": "CONTENDED",
+    "card_mib": 16368,
+    "required_mib": 15626,
+    "others_mib": 1600.2,
+    "unattributed_mib": 0.0,
+    "owner_mib": 0,
+    "free_mib": 14767.8,
+    "margin_mib": -858.2,
+    "consumers": [
+     {
+      "pid": 1792,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 1100.8,
+      "role": "desktop compositor"
+     }
+    ]
+   },
+   "explain": "The Brain needs 15.3 GB of GPU memory but only 14.4 GB is free. In use by: dwm.exe (desktop compositor, 1.1 GB). Close those or wait; URI will not stop them.",
+   "census_t": 1792245835.855,
+   "census_s": 4.01
+  },
+  "detail": null,
+  "explain": "Brain ready (155 tok/s).",
+  "updated_at": 1792245895.402,
+  "heartbeat_at": 1792245880.989,
+  "server": {
+   "pid": 20852,
+   "owned": true,
+   "load_seconds": 23.5,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s"
+  },
+  "residency": {
+   "t": 1792245891.616,
+   "dedicated_mib": 14946.2,
+   "non_local_mib": 1730.1,
+   "others_mib": 1588.2,
+   "verdict_now": "CONTENDED",
+   "consumers": [
+    {
+     "pid": 1792,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "dedicated_mib": 1100.8,
+     "role": "desktop compositor"
+    }
+   ]
+  },
+  "calibration": {
+   "t": 1792245890.161,
+   "tokens": 160,
+   "threshold_tps": 60.0,
+   "server_pid": 20852,
+   "server_create_time": 1792245866.6179357,
+   "reason": "START",
+   "decode_tps": 154.7,
+   "predicted_n": 160,
+   "prompt_ms": 178.472,
+   "residency": {
+    "t": 1792245891.616,
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1,
+    "others_mib": 1588.2,
+    "verdict_now": "CONTENDED",
+    "consumers": [
+     {
+      "pid": 1792,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 1100.8,
+      "role": "desktop compositor"
+     }
+    ]
+   }
+  }
+ }
+}

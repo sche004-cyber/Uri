@@ -1,0 +1,56 @@
+{
+ "schema": "uri.freeze.receipt.v1",
+ "milestone": "URI UI V2",
+ "status": "FROZEN",
+ "date": "2026-10-17",
+ "frozen_commit": "7893aaed2b7ef3be71ac044bf4d432281c8f066b",
+ "tree": "3787090cff4e16dc89c85ea983dd79ecb980c35f",
+ "uri_ui_subtree": "ca6005bd49d29195bd3f4c8d41e7a075acf9b7ca",
+ "canonical": {
+  "remote": "uri-repo",
+  "ref": "integration/git-sync-20261008",
+  "tip_at_freeze": "7893aaed2b7ef3be71ac044bf4d432281c8f066b",
+  "ls_remote_verified": true
+ },
+ "tag": "accepted/ui-v2-freeze-20261017 (annotated, on 7893aaed)",
+ "owner_authorization": [
+  "OWNER DECISION \u2014 UI V2 CONDITIONAL FREEZE APPROVAL (2026-10-17): freeze UI V2 once UIV2P-SCOPE-1 is fixed and verified on canonical, and the scope tests pass with no relevant regressions",
+  "Owner goal directive 2026-10-17: complete the UI V2 freeze; issue the freeze receipt and annotated tag accepted/ui-v2-freeze-<date> when all recorded freeze conditions pass"
+ ],
+ "criteria": {
+  "1_canonical_contains_repair": {
+   "result": "PASS",
+   "evidence": "canonical tip 7893aaed; 25048709 and 3e202efc are ancestors"
+  },
+  "2_scope_tests_zero_failures": {
+   "result": "PASS",
+   "evidence": "runtime materialized from 7893aaed (oi_materialize_test_runtime.py): tests/phase2a/test_frozen_core.py + tests/phase2b/test_boundary.py 15 passed, 0 failed (evidence_freeze_20261017/scope_7893aaed.log); baseline 25048709 had 89 stray paths, all now covered; UIV2P-SCOPE-1 CLOSED"
+  },
+  "3_independent_acceptance_exact_tip": {
+   "result": "PASS",
+   "evidence": "Office review S2 ACCEPT WITH FINDINGS on 7893aaed, 0 blocking (office_independent_review/S2); UI V2 itself: Codex ACCEPT on 25048709 (UI-V2-POSTINT-c6, driver receipt); owner integration approval 'Intregation approved' + '7893aaed now'"
+  },
+  "4_no_relevant_regression": {
+   "result": "PASS",
+   "evidence": "on 7893aaed: Flutter 758 passed, analyze 0 errors; Python ssrf/web/a2ui/ws/oi 4597 passed (= accepted gate); office 480 (+1 known page-bundle env failure); office_u2 320 (+1 env failure identical on 25048709); devices 21; ws_frozen_check ok (office_independent_review/OFFICE_QUALIFICATION_SUMMARY_7893aaed.json)"
+  },
+  "5_ui_v2_live_evidence": {
+   "result": "PASS",
+   "impact_analysis": "25048709..7893aaed outside Office paths changes only uri_ui/lib/living/a2ui/a2ui_hub.dart (4 additive Office refusal texts); no change to main/app, pubspec, Windows runner, companions, settings or Brain wiring",
+   "rerun": "pf1 main first-time journey on canonical 7893aaed (runtime materialized from 7893aaed, installation uiv2f-a, frozen Brain under the owner's UI V2 override): 68/68 PASS, Flutter 'All tests passed', Brain READY 59.8 s, calibration 154.7 tok/s, turns 59-151 tok/s, brain config sha256 unchanged",
+   "reused": "pi5 returning 12/12 and pi6 perf 3/3 on 25048709 (unaffected by the diff)",
+   "office_surfaces": "Office live a15 13/13 and o8 34/34 on 7893aaed code (Office session, 64K profile)"
+  },
+  "6_receipt_and_tag": {
+   "result": "this file + annotated tag"
+  }
+ },
+ "preserved": "UI V2 shell, navigation, companions (J7 frameless shaped window), settings/themes (J8), conversation, approvals (J5/J9), Documents (J6) - all checks PASS on the frozen commit; frozen Runtime v1 Brain configuration unchanged",
+ "limitations": [
+  "Frozen Brain does not fit by budget on the current desktop; UI V2 live passes ran under the owner's override (UI V2 only) and depended on GPU placement",
+  "Automation input only: physical keyboard, mouse and microphone not qualified",
+  "Independent reviews of Office were fresh read-only subagents verified from their own transcripts, not driver-chained",
+  "Open, outside this freeze: Office LOW follow-up 0d9b20dd (review S3 AwF incl. S3-01 MEDIUM non-blocking; needs its own owner approval); Thinking/Vision/Context quick controls; UIV2-F5 visual fidelity; DRV-4"
+ ],
+ "next": "Ember V2.1 integration qualification may start (UI V2 qualified)"
+}
