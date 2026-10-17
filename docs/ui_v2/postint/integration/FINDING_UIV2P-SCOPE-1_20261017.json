@@ -2,7 +2,7 @@
  "id": "UIV2P-SCOPE-1",
  "recorded": "2026-10-17",
  "severity": "MEDIUM",
- "status": "OPEN - repair routed to the Office candidate (canonical stays 25048709 by owner direction)",
+ "status": "REPAIRED IN OFFICE CANDIDATE 3e202efc - not yet in canonical",
  "found_by": "URI Office session, materialized runtime at 375ee2be (= 25048709 + Office); verified by this session on 25048709",
  "defect": "tests/phase2a/test_frozen_core.py ALLOWED_NEW does not list four new UI-V2-POSTINT tests, so tests/phase2a/test_frozen_core.py::test_nothing_changed_outside_checkpoint_and_phase2a_paths and tests/phase2b/test_boundary.py::test_phase2a_frozen_core_tests_still_hold fail",
  "paths": [
@@ -14,5 +14,17 @@
  "why_missed": "UI-V2-POSTINT-c6 python gate ran tests/ssrf tests/web tests/a2ui tests/ws tests/oi only; phase2a/phase2b scope tests were not in the gate set. The guard file is not a protected path.",
  "correction_to_earlier_claims": "INTEGRATION_RECEIPT_UI-V2-POSTINT_20261016.json reports the driver gates correctly but they did not cover the frozen-scope guard; 'no regressions' therefore did not include phase2a/phase2b scope. Same class as the FCV-R finding on eaeb10c1 (fixed in Office 09d58be8).",
  "repair": "Office candidate adds exactly the four paths (as 09d58be8), CRLF preserved; reaches canonical with the Office milestone's reviewed, owner-authorized integration",
- "follow_up": "future UI milestone gate sets should include tests/phase2a/test_frozen_core.py and tests/phase2b/test_boundary.py"
+ "follow_up": "future UI milestone gate sets should include tests/phase2a/test_frozen_core.py and tests/phase2b/test_boundary.py",
+ "history": [
+  {
+   "at": "2026-10-17",
+   "event": "REPAIR_COMMITTED_IN_OFFICE_CANDIDATE",
+   "commit": "3e202efc",
+   "branch": "candidate/office-completion-20261016",
+   "parent": "375ee2bec8a769e775fe1073ffd092f11680539d",
+   "diff": "tests/phase2a/test_frozen_core.py +4 lines (the four paths), nothing else; verified by this session",
+   "office_reported": "materialized runtime at 3e202efc: phase2a+phase2b 261 passed, 2 skipped, 0 failed (not re-run by this session)",
+   "still_needed": "independent review of 3e202efc and owner-authorized Office integration; canonical 25048709 unchanged"
+  }
+ ]
 }
