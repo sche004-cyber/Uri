@@ -113,6 +113,10 @@ def main():
         # The frozen Runtime v1 configuration is read once, before the guard (it lives under the source root's
         # model_lab/, outside the guard's read roots). The worker only ever READS Runtime v1 state.
         cfg = R.load_config()
+        # Resource profile (RUNTIME-PROFILES-INTEG): verify the Brain against the same derived config its host was
+        # started with, named by control/oi/brain_profile.json. Absent or invalid file = the frozen config.
+        from uri_operational_intelligence import runtime_profile_selection as PS
+        cfg, brain_profile = PS.select(cfg, PS.selection_path(root))
         oi_state = root / "control" / "oi"
         safe = child_environment(root, Path(m["interpreter"]))
         os.environ.clear()
@@ -165,7 +169,7 @@ def main():
                 "phase2_source_digest": hashlib.sha256(canonical(source_digests())).hexdigest(),
                 "qualified": composition.qualified(), "fixture_allowed": bool(args.allow_fixture_qualification),
                 "cli_homes_pinned": sorted(client_cli_homes(root, create=False)),
-                "execution_lifecycle": True, "oi": True})
+                "execution_lifecycle": True, "oi": True, "brain_profile": brain_profile})
             guard.starting = False
             harnesses = composition.registry
             turns = SupervisedWorkerService(manifest, persistence, bridge, harness=harnesses, composition=composition)
