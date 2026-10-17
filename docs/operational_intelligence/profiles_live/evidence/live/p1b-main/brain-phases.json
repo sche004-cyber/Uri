@@ -1,0 +1,38 @@
+[
+ {
+  "state": "STARTING_HOST",
+  "t": 0.5,
+  "explain": null,
+  "detail": null
+ },
+ {
+  "state": "STARTING",
+  "t": 4.06,
+  "explain": "Starting the Brain (Runtime v1).",
+  "detail": null
+ },
+ {
+  "state": "LOADING",
+  "t": 31.0,
+  "explain": "Starting the Brain (Runtime v1).",
+  "detail": null
+ },
+ {
+  "state": "CALIBRATING",
+  "t": 56.41,
+  "explain": "Measuring Brain speed.",
+  "detail": null
+ },
+ {
+  "state": "READY",
+  "t": 62.49,
+  "explain": "Brain ready (102 tok/s).",
+  "detail": null
+ },
+ {
+  "state": "FAILED",
+  "t": 213.49,
+  "explain": "The Brain process exited unexpectedly. Use Restart Brain.",
+  "detail": "LOCAL_BRAIN_EXITED:3221226505"
+ }
+]

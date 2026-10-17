@@ -1,0 +1,100 @@
+{
+ "detail": "HOST_EXIT",
+ "explain": "The Brain host has exited.",
+ "gpu": {
+  "census_s": 3.99,
+  "census_t": 1792230733.738,
+  "explain": "The Brain fits in GPU memory (margin 1258 MB).",
+  "fit": {
+   "card_mib": 16368,
+   "consumers": [
+    {
+     "dedicated_mib": 970.8,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1792,
+     "role": "desktop compositor"
+    }
+   ],
+   "free_mib": 14916.1,
+   "margin_mib": 1258.1,
+   "others_mib": 1451.9,
+   "owner_mib": 0,
+   "required_mib": 13658,
+   "unattributed_mib": 0.0,
+   "verdict": "FITS"
+  }
+ },
+ "heartbeat_at": 1792234360.445,
+ "history": [
+  {
+   "detail": null,
+   "state": "STARTING",
+   "t": 1792230737.731
+  },
+  {
+   "detail": null,
+   "state": "LOADING",
+   "t": 1792230743.434
+  },
+  {
+   "detail": null,
+   "state": "CALIBRATING",
+   "t": 1792230757.798
+  },
+  {
+   "detail": null,
+   "state": "READY",
+   "t": 1792230764.357
+  },
+  {
+   "detail": null,
+   "state": "STOPPING",
+   "t": 1792234366.894
+  },
+  {
+   "detail": "HOST_EXIT",
+   "state": "STOPPED",
+   "t": 1792234366.992
+  }
+ ],
+ "host_pid": 24648,
+ "host_started": 1792230733.704,
+ "lease": {
+  "held": false
+ },
+ "override": null,
+ "profile": {
+  "ctx": 65536,
+  "frozen": false,
+  "id": "c64k-visoff-mtpoff",
+  "mtp": false,
+  "qualified": false,
+  "required_mib": 13658,
+  "vision": "off"
+ },
+ "residency": {
+  "consumers": [
+   {
+    "dedicated_mib": 1018.6,
+    "name": "dwm.exe",
+    "parent": "winlogon.exe",
+    "pid": 1792,
+    "role": "desktop compositor"
+   }
+  ],
+  "dedicated_mib": 13876.4,
+  "non_local_mib": 561.8,
+  "others_mib": 1578.3,
+  "t": 1792234351.221,
+  "verdict_now": "FITS"
+ },
+ "schema": "uri.ws.brain_host.v1",
+ "server": {
+  "owned": false,
+  "pid": null,
+  "stopped_clean": true
+ },
+ "state": "STOPPED",
+ "updated_at": 1792234366.992
+}

@@ -1,0 +1,1231 @@
+[
+  {
+    "utc": "2026-10-17T07:20:17.773236Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput + synthesized key events",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "first_run": "1",
+    "visual": "v2"
+  },
+  {
+    "utc": "2026-10-17T07:20:17.781760Z",
+    "label": "preferences at start",
+    "keys": []
+  },
+  {
+    "utc": "2026-10-17T07:20:26.193729Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 8.408,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792221626.1066039,
+      "detail": "ARGV_MISMATCH",
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 7264,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "FOREIGN_INSTANCE",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-17T07:20:26.679420Z",
+    "label": "memory at start",
+    "facts": [],
+    "run_fact": "the project room code is K26194"
+  },
+  {
+    "utc": "2026-10-17T07:20:32.413578Z",
+    "label": "onboarding shown",
+    "shown": true
+  },
+  {
+    "utc": "2026-10-17T07:20:43.264704Z",
+    "label": "onboarding steps",
+    "titles": [
+      "What URI is",
+      "Connect",
+      "Harness",
+      "Brain",
+      "Permissions",
+      "Sign-in & qualification",
+      "Your workspace",
+      "Ready?"
+    ]
+  },
+  {
+    "utc": "2026-10-17T07:20:43.265704Z",
+    "label": "check",
+    "id": "J1-v2-is-default",
+    "result": "PASS",
+    "visualV2": true,
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-17T07:20:43.272623Z",
+    "label": "check",
+    "id": "J1-dashboard-first",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:20:43.748561Z",
+    "label": "raw-codes-on-screen",
+    "where": "start",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-17T07:23:37.613820Z",
+    "label": "check",
+    "id": "J1-brain-ready",
+    "result": "FAIL",
+    "brain": {
+      "artifacts": null,
+      "checked_at": 1792221816.545289,
+      "detail": "ARGV_MISMATCH",
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 7264,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "FOREIGN_INSTANCE",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-17T07:23:48.094992Z",
+    "label": "perf-window",
+    "window": "idle-dashboard",
+    "seconds": 10,
+    "frames": 1468,
+    "build_ms_p50": 0.296,
+    "build_ms_p95": 0.423,
+    "build_ms_max": 11.606,
+    "raster_ms_p50": 2.558,
+    "raster_ms_p95": 3.008,
+    "raster_ms_max": 3.539,
+    "total_ms_p95": 4.707,
+    "over_16ms": 0
+  },
+  {
+    "utc": "2026-10-17T07:23:48.761761Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#fac64(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:23:48.763189Z",
+    "label": "check",
+    "id": "J2-ctrl-workspace",
+    "result": "PASS",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T07:23:49.227747Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode workspace",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-17T07:23:49.873348Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#fac64(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:23:49.873348Z",
+    "label": "check",
+    "id": "J2-ctrl-dashboard",
+    "result": "PASS",
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-17T07:23:50.348991Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode dashboard",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-17T07:23:50.984690Z",
+    "label": "key",
+    "key": "ctrl+4",
+    "focus_before": "FocusNode#fac64(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "assist",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:23:50.985697Z",
+    "label": "check",
+    "id": "J2-ctrl-assist",
+    "result": "PASS",
+    "mode": "assist"
+  },
+  {
+    "utc": "2026-10-17T07:23:51.454029Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode assist",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-17T07:23:52.090388Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#fac64(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:23:52.090388Z",
+    "label": "check",
+    "id": "J2-ctrl-dashboard",
+    "result": "PASS",
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-17T07:23:52.559577Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode dashboard",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-17T07:23:53.187403Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#fac64(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:23:54.270475Z",
+    "label": "check",
+    "id": "J2-nav-Conversation",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "conversation"
+  },
+  {
+    "utc": "2026-10-17T07:23:55.377644Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#fac64(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:23:56.445644Z",
+    "label": "check",
+    "id": "J2-nav-Tasks",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "tasks"
+  },
+  {
+    "utc": "2026-10-17T07:23:57.551907Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#fac64(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:23:58.613222Z",
+    "label": "check",
+    "id": "J2-nav-Documents",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "documents"
+  },
+  {
+    "utc": "2026-10-17T07:23:59.719687Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#fac64(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:24:01.023856Z",
+    "label": "check",
+    "id": "J2-nav-Settings",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "settings"
+  },
+  {
+    "utc": "2026-10-17T07:24:02.156427Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#fac64(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:24:03.422542Z",
+    "label": "turn",
+    "scenario": "greeting",
+    "request": "Hello URI",
+    "text": "",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (FOREIGN_INSTANCE).",
+    "metrics": {},
+    "application_seconds": 0.423,
+    "frames_during_turn": {
+      "frames": 47,
+      "build_ms_p50": 1.987,
+      "build_ms_p95": 12.699,
+      "build_ms_max": 35.457,
+      "raster_ms_p50": 3.095,
+      "raster_ms_p95": 3.592,
+      "raster_ms_max": 3.648,
+      "total_ms_p95": 16.664,
+      "over_16ms": 2
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T07:24:03.423541Z",
+    "label": "check",
+    "id": "J3-greeting-replied",
+    "result": "FAIL",
+    "text": "",
+    "code": null
+  },
+  {
+    "utc": "2026-10-17T07:24:03.791511Z",
+    "label": "turn",
+    "scenario": "fact question",
+    "request": "In one short sentence: what is the capital of France?",
+    "text": "",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (FOREIGN_INSTANCE).",
+    "metrics": {},
+    "application_seconds": 0.368,
+    "frames_during_turn": {
+      "frames": 35,
+      "build_ms_p50": 2.648,
+      "build_ms_p95": 12.345,
+      "build_ms_max": 28.97,
+      "raster_ms_p50": 3.352,
+      "raster_ms_p95": 3.804,
+      "raster_ms_max": 4.155,
+      "total_ms_p95": 16.769,
+      "over_16ms": 3
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T07:24:03.792755Z",
+    "label": "check",
+    "id": "J3-fact",
+    "result": "FAIL",
+    "text": ""
+  },
+  {
+    "utc": "2026-10-17T07:24:04.266753Z",
+    "label": "raw-codes-on-screen",
+    "where": "conversation",
+    "codes": [
+      "FOREIGN_INSTANCE"
+    ]
+  },
+  {
+    "utc": "2026-10-17T07:24:04.633516Z",
+    "label": "turn",
+    "scenario": "missing fact clarification",
+    "request": "remember that",
+    "text": "",
+    "core_message": null,
+    "route": "core",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The selected Brain is not ready (FOREIGN_INSTANCE); nothing was done.",
+    "metrics": {},
+    "application_seconds": 0.366,
+    "frames_during_turn": {
+      "frames": 38,
+      "build_ms_p50": 2.386,
+      "build_ms_p95": 6.474,
+      "build_ms_max": 26.31,
+      "raster_ms_p50": 3.451,
+      "raster_ms_p95": 4.169,
+      "raster_ms_max": 4.664,
+      "total_ms_p95": 10.527,
+      "over_16ms": 1
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T07:24:04.634521Z",
+    "label": "check",
+    "id": "J4-clarification-asked",
+    "result": "FAIL",
+    "code": null,
+    "text": ""
+  },
+  {
+    "utc": "2026-10-17T07:24:05.008543Z",
+    "label": "turn",
+    "scenario": "clarification answer",
+    "request": "the project room code is K26194",
+    "text": "",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (FOREIGN_INSTANCE).",
+    "metrics": {},
+    "application_seconds": 0.374,
+    "frames_during_turn": {
+      "frames": 39,
+      "build_ms_p50": 2.204,
+      "build_ms_p95": 12.247,
+      "build_ms_max": 21.387,
+      "raster_ms_p50": 3.021,
+      "raster_ms_p95": 3.722,
+      "raster_ms_max": 4.156,
+      "total_ms_p95": 15.851,
+      "over_16ms": 2
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T07:24:05.010046Z",
+    "label": "check",
+    "id": "J4-confirmation-asked",
+    "result": "FAIL",
+    "code": null,
+    "text": ""
+  },
+  {
+    "utc": "2026-10-17T07:24:06.133777Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:24:06.135909Z",
+    "label": "check",
+    "id": "J9-dashboard-counts-decision",
+    "result": "FAIL",
+    "texts": [
+      "Nothing to review",
+      "No pending decisions reported",
+      "Shared context and pending decisions stay with you."
+    ]
+  },
+  {
+    "utc": "2026-10-17T07:24:06.616213Z",
+    "label": "check",
+    "id": "J4-clarify-confirm-decline",
+    "result": "FAIL",
+    "exception": "The finder \"Found 0 widgets with text \"1 review needed\": []\" (used in a call to \"tap()\") could not find any matching widgets.",
+    "stack": "#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2095:7) | #1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12) | #2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7) | #3      main.<anonymous closure>.<anonymous closure> (file:///D:/uri-dev/uri-runtime-profiles-integ/uri_ui/integration_test/uiv2_native_test.dart:399:19) | <asynchronous suspension> | #4      main.<anonymous closure>.step (file:///D:/uri-dev/uri-runtime-profiles-integ/uri_ui/integration_test/uiv2_native_test.dart:171:9)"
+  },
+  {
+    "utc": "2026-10-17T07:24:07.002823Z",
+    "label": "turn",
+    "scenario": "remember again",
+    "request": "remember that",
+    "text": "",
+    "core_message": null,
+    "route": "core",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The selected Brain is not ready (FOREIGN_INSTANCE); nothing was done.",
+    "metrics": {},
+    "application_seconds": 0.385,
+    "frames_during_turn": {
+      "frames": 36,
+      "build_ms_p50": 0.787,
+      "build_ms_p95": 13.801,
+      "build_ms_max": 67.208,
+      "raster_ms_p50": 3.359,
+      "raster_ms_p95": 7.149,
+      "raster_ms_max": 9.839,
+      "total_ms_p95": 21.14,
+      "over_16ms": 4
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T07:24:07.451937Z",
+    "label": "turn",
+    "scenario": "remember again: the fact",
+    "request": "the project room code is K26194",
+    "text": "",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (FOREIGN_INSTANCE).",
+    "metrics": {},
+    "application_seconds": 0.448,
+    "frames_during_turn": {
+      "frames": 48,
+      "build_ms_p50": 2.636,
+      "build_ms_p95": 20.282,
+      "build_ms_max": 23.261,
+      "raster_ms_p50": 3.111,
+      "raster_ms_p95": 3.702,
+      "raster_ms_max": 4.156,
+      "total_ms_p95": 26.831,
+      "over_16ms": 4
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T07:26:07.458494Z",
+    "label": "check",
+    "id": "J5-approve-tool",
+    "result": "FAIL",
+    "exception": "Bad state: Timeout: memory approval",
+    "stack": "#0      main.<anonymous closure>.until (file:///D:/uri-dev/uri-runtime-profiles-integ/uri_ui/integration_test/uiv2_native_test.dart:67:42) | <asynchronous suspension> | #1      main.<anonymous closure>.<anonymous closure> (file:///D:/uri-dev/uri-runtime-profiles-integ/uri_ui/integration_test/uiv2_native_test.dart:423:9) | <asynchronous suspension> | #2      main.<anonymous closure>.step (file:///D:/uri-dev/uri-runtime-profiles-integ/uri_ui/integration_test/uiv2_native_test.dart:171:9) | <asynchronous suspension>"
+  },
+  {
+    "utc": "2026-10-17T07:26:08.105729Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:10.220409Z",
+    "label": "check",
+    "id": "J6-letter-opens-conversation",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:10.221917Z",
+    "label": "turn",
+    "scenario": "start new work: letter",
+    "request": "Draft a letter",
+    "text": "",
+    "core_code": null,
+    "route": "draft",
+    "metrics": {}
+  },
+  {
+    "utc": "2026-10-17T07:26:10.230154Z",
+    "label": "check",
+    "id": "J6-letter-real-turn",
+    "result": "PASS",
+    "simulated_items": 0
+  },
+  {
+    "utc": "2026-10-17T07:26:10.709992Z",
+    "label": "draft open after letter",
+    "open": false,
+    "question": null
+  },
+  {
+    "utc": "2026-10-17T07:26:11.341160Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#c0c10(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:12.189877Z",
+    "label": "check",
+    "id": "J14-no-testing-controls",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:12.656661Z",
+    "label": "turn",
+    "scenario": "create warden letter",
+    "request": "Draft a short formal letter to the hostel warden saying that seven students left the hostel on Monday without permission.",
+    "text": "",
+    "core_message": null,
+    "route": "draft",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (FOREIGN_INSTANCE); the draft was not changed. Undo, redo and the original still work.",
+    "metrics": {},
+    "application_seconds": 0.466,
+    "frames_during_turn": {
+      "frames": 57,
+      "build_ms_p50": 1.902,
+      "build_ms_p95": 16.61,
+      "build_ms_max": 30.36,
+      "raster_ms_p50": 3.613,
+      "raster_ms_p95": 4.272,
+      "raster_ms_max": 5.182,
+      "total_ms_p95": 22.477,
+      "over_16ms": 4
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T07:26:12.658168Z",
+    "label": "check",
+    "id": "J14-draft-open",
+    "result": "FAIL",
+    "question": null
+  },
+  {
+    "utc": "2026-10-17T07:26:12.669243Z",
+    "label": "check",
+    "id": "J14-draft-integrity",
+    "result": "FAIL",
+    "exception": "Null check operator used on a null value",
+    "stack": "#0      main.<anonymous closure>.<anonymous closure> (file:///D:/uri-dev/uri-runtime-profiles-integ/uri_ui/integration_test/uiv2_native_test.dart:473:32) | <asynchronous suspension> | #1      main.<anonymous closure>.step (file:///D:/uri-dev/uri-runtime-profiles-integ/uri_ui/integration_test/uiv2_native_test.dart:171:9) | <asynchronous suspension> | #2      main.<anonymous closure> (file:///D:/uri-dev/uri-runtime-profiles-integ/uri_ui/integration_test/uiv2_native_test.dart:459:9) | <asynchronous suspension>"
+  },
+  {
+    "utc": "2026-10-17T07:26:13.301297Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:13.931870Z",
+    "label": "check",
+    "id": "J16-precondition-draft-open",
+    "result": "FAIL"
+  },
+  {
+    "utc": "2026-10-17T07:26:14.565758Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:18.927795Z",
+    "label": "check",
+    "id": "J10-navigation-while-busy",
+    "result": "PASS",
+    "nav_ms": {
+      "3": 68.215,
+      "2": 59.72
+    },
+    "busy_seen": true
+  },
+  {
+    "utc": "2026-10-17T07:26:18.929300Z",
+    "label": "perf-window",
+    "window": "brain-turn-with-navigation",
+    "frames": 428,
+    "build_ms_p50": 0.449,
+    "build_ms_p95": 2.979,
+    "build_ms_max": 62.886,
+    "raster_ms_p50": 2.848,
+    "raster_ms_p95": 4.656,
+    "raster_ms_max": 8.391,
+    "total_ms_p95": 8.754,
+    "over_16ms": 6,
+    "metrics": {},
+    "answer_chars": 0
+  },
+  {
+    "utc": "2026-10-17T07:26:19.608130Z",
+    "label": "key",
+    "key": "ctrl+1",
+    "focus_before": "FocusNode#c0c10(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "companion",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:21.173600Z",
+    "label": "check",
+    "id": "J7-window-440x680",
+    "result": "PASS",
+    "size": "Size(440.0, 680.0)"
+  },
+  {
+    "utc": "2026-10-17T07:26:21.173600Z",
+    "label": "check",
+    "id": "J7-shaped-region",
+    "result": "PASS",
+    "facts": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 255
+    }
+  },
+  {
+    "utc": "2026-10-17T07:26:21.626528Z",
+    "label": "check",
+    "id": "J7-native-rejects-nan",
+    "result": "PASS",
+    "code": "INVALID_LAYOUT"
+  },
+  {
+    "utc": "2026-10-17T07:26:21.628033Z",
+    "label": "check",
+    "id": "J7-native-rejects-infinite",
+    "result": "PASS",
+    "code": "INVALID_LAYOUT"
+  },
+  {
+    "utc": "2026-10-17T07:26:21.635580Z",
+    "label": "check",
+    "id": "J7-native-rejects-inverted",
+    "result": "PASS",
+    "code": "INVALID_LAYOUT"
+  },
+  {
+    "utc": "2026-10-17T07:26:21.642110Z",
+    "label": "check",
+    "id": "J7-region-kept-after-reject",
+    "result": "PASS",
+    "before": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 255
+    },
+    "after": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 255
+    }
+  },
+  {
+    "utc": "2026-10-17T07:26:31.669353Z",
+    "label": "perf-window",
+    "window": "idle-companion",
+    "seconds": 10,
+    "frames": 1425,
+    "build_ms_p50": 0.36,
+    "build_ms_p95": 0.481,
+    "build_ms_max": 3.227,
+    "raster_ms_p50": 1.738,
+    "raster_ms_p95": 2.286,
+    "raster_ms_max": 3.12,
+    "total_ms_p95": 4.022,
+    "over_16ms": 0
+  },
+  {
+    "utc": "2026-10-17T07:26:32.668441Z",
+    "label": "check",
+    "id": "J7-single-click-controls",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:32.669447Z",
+    "label": "companion region with controls",
+    "facts": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 397
+    }
+  },
+  {
+    "utc": "2026-10-17T07:26:34.100176Z",
+    "label": "check",
+    "id": "J7-detached-chat",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:34.101176Z",
+    "label": "check",
+    "id": "J7-draft-note",
+    "result": "PASS",
+    "draft_open": false
+  },
+  {
+    "utc": "2026-10-17T07:26:34.475149Z",
+    "label": "turn",
+    "scenario": "companion chat",
+    "request": "Say hello in three words.",
+    "text": "",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (FOREIGN_INSTANCE).",
+    "metrics": {},
+    "application_seconds": 0.365,
+    "frames_during_turn": {
+      "frames": 37,
+      "build_ms_p50": 0.876,
+      "build_ms_p95": 6.08,
+      "build_ms_max": 15.166,
+      "raster_ms_p50": 3.713,
+      "raster_ms_p95": 4.367,
+      "raster_ms_max": 4.754,
+      "total_ms_p95": 11.156,
+      "over_16ms": 1
+    },
+    "mode": "companion"
+  },
+  {
+    "utc": "2026-10-17T07:26:34.477256Z",
+    "label": "check",
+    "id": "J7-chat-reply",
+    "result": "FAIL",
+    "text": ""
+  },
+  {
+    "utc": "2026-10-17T07:26:34.484730Z",
+    "label": "check",
+    "id": "J7-draft-untouched",
+    "result": "PASS",
+    "before": null,
+    "after": null,
+    "route": "answer",
+    "note": "UIV2-F1, live l9 repeat"
+  },
+  {
+    "utc": "2026-10-17T07:26:34.492909Z",
+    "label": "check",
+    "id": "J7-stays-companion",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:35.607241Z",
+    "label": "key",
+    "key": "Escape",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "companion",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:35.608746Z",
+    "label": "check",
+    "id": "J7-escape-closes-chat",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:37.810987Z",
+    "label": "check",
+    "id": "J7-double-click-dashboard",
+    "result": "PASS",
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-17T07:26:37.812142Z",
+    "label": "check",
+    "id": "J7-window-restored",
+    "result": "PASS",
+    "before": "Size(1280.0, 720.0)",
+    "after": "Size(1280.0, 720.0)"
+  },
+  {
+    "utc": "2026-10-17T07:26:38.972009Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:39.847083Z",
+    "label": "draft closed after J7",
+    "open": false
+  },
+  {
+    "utc": "2026-10-17T07:26:40.501144Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#c0c10(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:43.280373Z",
+    "label": "gallery open attempts",
+    "attempts": 1
+  },
+  {
+    "utc": "2026-10-17T07:26:43.283884Z",
+    "label": "check",
+    "id": "J8-gallery-opens",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:46.688296Z",
+    "label": "check",
+    "id": "J8-preview-isolated",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:48.169771Z",
+    "label": "check",
+    "id": "J8-apply",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:50.492664Z",
+    "label": "check",
+    "id": "J8-theme",
+    "result": "PASS",
+    "theme": "snowArchive"
+  },
+  {
+    "utc": "2026-10-17T07:26:51.602385Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:52.751198Z",
+    "label": "lunar edge (UIV2-F4)",
+    "found": true,
+    "rect": "Rect.fromLTRB(596.0, 205.5, 876.0, 485.5)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 1020,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-17T07:26:52.752820Z",
+    "label": "check",
+    "id": "J15-lunar-edge-invisible-light-theme",
+    "result": "PASS",
+    "found": true,
+    "rect": "Rect.fromLTRB(596.0, 205.5, 876.0, 485.5)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 1020,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-17T07:26:52.761875Z",
+    "label": "check",
+    "id": "J13-classic-reachable",
+    "result": "PASS",
+    "note": "checked below"
+  },
+  {
+    "utc": "2026-10-17T07:26:53.424371Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:54.486546Z",
+    "label": "check",
+    "id": "J13-classic-entry-present",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:56.428267Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:26:56.912664Z",
+    "label": "resize",
+    "requested": "Size(1366.0, 768.0)",
+    "view": "Size(1350.0, 729.0)",
+    "composer_visible_without_scroll": true,
+    "expected_layout": "medium (composer in view)",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-17T07:26:56.914170Z",
+    "label": "check",
+    "id": "J11-composer-in-view-1366",
+    "result": "PASS",
+    "view": "Size(1350.0, 729.0)"
+  },
+  {
+    "utc": "2026-10-17T07:26:56.915176Z",
+    "label": "check",
+    "id": "J11-no-layout-error-1366",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:26:57.594540Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:00.067529Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:00.542754Z",
+    "label": "resize",
+    "requested": "Size(1280.0, 800.0)",
+    "view": "Size(1264.0, 761.0)",
+    "composer_visible_without_scroll": true,
+    "expected_layout": "medium (composer in view)",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-17T07:27:00.544187Z",
+    "label": "check",
+    "id": "J11-composer-in-view-1280",
+    "result": "PASS",
+    "view": "Size(1264.0, 761.0)"
+  },
+  {
+    "utc": "2026-10-17T07:27:00.549722Z",
+    "label": "check",
+    "id": "J11-no-layout-error-1280",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:27:01.216703Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:03.763650Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:04.239746Z",
+    "label": "resize",
+    "requested": "Size(1024.0, 768.0)",
+    "view": "Size(1008.0, 729.0)",
+    "composer_visible_without_scroll": true,
+    "expected_layout": "medium (composer in view)",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-17T07:27:04.240256Z",
+    "label": "check",
+    "id": "J11-composer-in-view-1024",
+    "result": "PASS",
+    "view": "Size(1008.0, 729.0)"
+  },
+  {
+    "utc": "2026-10-17T07:27:04.241260Z",
+    "label": "check",
+    "id": "J11-no-layout-error-1024",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:27:04.905118Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:07.343748Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:07.795251Z",
+    "label": "resize",
+    "requested": "Size(900.0, 640.0)",
+    "view": "Size(884.0, 601.0)",
+    "composer_visible_without_scroll": false,
+    "expected_layout": "scrolling column",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-17T07:27:07.796757Z",
+    "label": "check",
+    "id": "J11-no-layout-error-900",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:27:08.448261Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:10.825808Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:11.271639Z",
+    "label": "resize",
+    "requested": "Size(800.0, 600.0)",
+    "view": "Size(784.0, 561.0)",
+    "composer_visible_without_scroll": false,
+    "expected_layout": "scrolling column",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-17T07:27:11.272644Z",
+    "label": "check",
+    "id": "J11-no-layout-error-800",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T07:27:11.937911Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:13.606607Z",
+    "label": "check",
+    "id": "J12-brain-not-ready-seen",
+    "result": "PASS",
+    "brain": {
+      "artifacts": null,
+      "checked_at": 1792222031.942461,
+      "detail": "ARGV_MISMATCH",
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 7264,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "FOREIGN_INSTANCE",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-17T07:27:14.279527Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:15.448163Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#5f646(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T07:27:16.770287Z",
+    "label": "turn",
+    "scenario": "turn without Brain",
+    "request": "Hello again URI",
+    "text": "",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (STOPPED).",
+    "metrics": {},
+    "application_seconds": 0.411,
+    "frames_during_turn": {
+      "frames": 35,
+      "build_ms_p50": 1.815,
+      "build_ms_p95": 17.557,
+      "build_ms_max": 32.725,
+      "raster_ms_p50": 2.869,
+      "raster_ms_p95": 3.17,
+      "raster_ms_max": 3.888,
+      "total_ms_p95": 20.974,
+      "over_16ms": 3
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T07:27:16.771792Z",
+    "label": "turn without brain",
+    "text": "",
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (STOPPED).",
+    "recovery": [
+      "start_brain",
+      "retry",
+      "choose_other_source"
+    ]
+  },
+  {
+    "utc": "2026-10-17T07:27:17.256906Z",
+    "label": "raw-codes-on-screen",
+    "where": "brain stopped",
+    "codes": [
+      "FOREIGN_INSTANCE"
+    ]
+  },
+  {
+    "utc": "2026-10-17T07:27:17.257415Z",
+    "label": "summary",
+    "failures": [
+      "J1-brain-ready",
+      "J3-greeting-replied",
+      "J3-fact",
+      "J4-clarification-asked",
+      "J4-confirmation-asked",
+      "J9-dashboard-counts-decision",
+      "J4-clarify-confirm-decline",
+      "J5-approve-tool",
+      "J14-draft-open",
+      "J14-draft-integrity",
+      "J16-precondition-draft-open",
+      "J7-chat-reply"
+    ],
+    "flutter_errors": 0,
+    "elapsed_s": 419.472
+  }
+]

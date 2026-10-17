@@ -1,0 +1,34 @@
+{
+ "label": "p1-main",
+ "port": 18338,
+ "started_utc": "2026-10-17T07:16:41.984482+00:00",
+ "no_brain": false,
+ "profile_arg": "65536,gpu,0",
+ "profile": {
+  "id": "c64k-visgpu-mtpoff",
+  "ctx": 65536,
+  "vision": "gpu",
+  "mtp": false,
+  "required_mib": 14764,
+  "qualified": false,
+  "frozen": false
+ },
+ "verified": {
+  "ok": true,
+  "mismatched": [],
+  "checked_files": 331,
+  "runtime_head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "materialized_from": "84ef1a39645efa73bceeb2bb3a67d7a0473a88c0",
+  "source_head": "84ef1a39645efa73bceeb2bb3a67d7a0473a88c0"
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "override": false,
+ "server_pid": 19584,
+ "server_listener_pid": 6788,
+ "server_listen_s": 2.03,
+ "server_listening": true
+}
