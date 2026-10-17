@@ -159,3 +159,48 @@ def test_health_backend_names_the_profile():
     b = BH.backend(RP.derive_config(frozen(), 32768, "gpu", False))
     assert b["profile"]["id"] == "c32k-visgpu-mtpoff" and b["profile"]["qualified"] is False
     assert b["provider"] == "Runtime v1 (local)" and b["context"] == 32768 and b["speculative"] is None
+
+
+def test_equal_size_rewrite_without_mtime_change_is_seen(tmp_path):
+    """R2-06: 65536/off/false and 32768/gpu/false are the same length; a rewrite in one timestamp tick is detected."""
+    import os
+    FakeManager.made = []
+    p = PS.write(tmp_path, 65536, "off", False)
+    fol = PS.ProfileFollower(frozen(), p, FakeManager)
+    st = p.stat()
+    size = st.st_size
+    PS.write(tmp_path, 32768, "gpu", False)
+    assert p.stat().st_size == size
+    os.utime(p, ns=(st.st_atime_ns, st.st_mtime_ns))        # same mtime as before the rewrite
+    assert fol.status() == ("status", "c32k-visgpu-mtpoff")
+
+
+def test_on_change_is_delivered_in_order_under_concurrency(tmp_path):
+    """R2-05: changes are delivered under the follower's lock, so the last delivered profile is the active one."""
+    import threading
+    import time
+    seen = []
+
+    def slow_sink(cfg, _note):
+        time.sleep(0.01)
+        seen.append(RP.describe(cfg)["id"])
+    p = PS.selection_path(tmp_path)
+    fol = PS.ProfileFollower(frozen(), p, FakeManager, on_change=slow_sink)
+    combos = [(65536, "off", False), (32768, "gpu", False), (16384, "off", False), (131072, "off", False)]
+    for i in range(20):
+        PS.write(tmp_path, *combos[i % len(combos)])
+        ts = [threading.Thread(target=fol.status) for _ in range(4)]
+        [t.start() for t in ts]
+        [t.join() for t in ts]
+        assert seen[-1] == RP.describe(fol.cfg)["id"]
+    gens = [c["generation"] for c in fol.changes]
+    assert gens == sorted(gens)
+
+
+def test_unreadable_selection_reports_and_keeps_frozen(tmp_path):
+    p = PS.selection_path(tmp_path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.mkdir()                                                 # a directory where the file should be
+    cfg, note = PS.select(frozen(), p)
+    assert cfg is frozen() or R.config_digest(cfg) == R.config_digest(frozen())
+    assert note.get("error") == "PROFILE_SELECTION_UNREADABLE"

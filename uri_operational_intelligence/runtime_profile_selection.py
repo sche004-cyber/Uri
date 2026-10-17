@@ -15,8 +15,8 @@ Rules:
     locally from the frozen config, so the file can only select another measured launch shape of the same pinned
     binary and model, never a different binary, model, port or flag;
   * an invalid or unreadable file keeps the frozen config and is reported (`error`), never guessed;
-  * the file is read at worker start (before the file guard) and then re-read by `ProfileFollower` whenever its
-    stat signature changes, so a profile switch is a Brain host restart only: the worker process, and with it the
+  * the file is read at worker start (before the file guard) and then re-read by `ProfileFollower` on every
+    readiness check (content comparison), so a profile switch is a Brain host restart only: the worker process, and with it the
     answer-channel conversation history it keeps in memory, survives the switch (live finding CONTEXT-1);
   * the file lives in the client's own control directory (the worker guard's state root): anything that can write
     there can change the selection, effective at the next readiness check. Impact is bounded to the measured
@@ -40,25 +40,40 @@ def selection_path(client_root) -> Path:
     return Path(client_root) / "control" / "oi" / SELECTION_FILE
 
 
-def select(frozen_cfg: dict, path) -> tuple:
-    """(cfg, note). cfg is the frozen config object itself unless a valid selection names a measured profile."""
-    p = Path(path)
-    if not p.exists():
+def _read(path: Path):
+    """The file's bytes, or None when it does not exist (or cannot be opened)."""
+    try:
+        return path.read_bytes()
+    except FileNotFoundError:
+        return None
+    except OSError:
+        return b""                       # exists but unreadable: reported as PROFILE_SELECTION_UNREADABLE
+
+
+def select_bytes(frozen_cfg: dict, raw, path) -> tuple:
+    """(cfg, note) from the file's bytes as read once (no second read: no time-of-check/time-of-use gap)."""
+    if raw is None:
         return frozen_cfg, {"source": "frozen", "file": None}
     try:
-        data = json.loads(p.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return frozen_cfg, {"source": "frozen", "file": str(p), "error": "PROFILE_SELECTION_UNREADABLE"}
+        data = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return frozen_cfg, {"source": "frozen", "file": str(path), "error": "PROFILE_SELECTION_UNREADABLE"}
     if not isinstance(data, dict) or data.get("schema") != SCHEMA:
-        return frozen_cfg, {"source": "frozen", "file": str(p), "error": "PROFILE_SELECTION_SCHEMA"}
+        return frozen_cfg, {"source": "frozen", "file": str(path), "error": "PROFILE_SELECTION_SCHEMA"}
     ctx, vision, mtp = data.get("ctx"), data.get("vision"), data.get("mtp")
     if not isinstance(ctx, int) or isinstance(ctx, bool) or not isinstance(vision, str) or not isinstance(mtp, bool):
-        return frozen_cfg, {"source": "frozen", "file": str(p), "error": "PROFILE_SELECTION_INVALID"}
+        return frozen_cfg, {"source": "frozen", "file": str(path), "error": "PROFILE_SELECTION_INVALID"}
     try:
         cfg = RP.derive_config(frozen_cfg, ctx, vision, mtp)
     except RP.ProfileError as exc:
-        return frozen_cfg, {"source": "frozen", "file": str(p), "error": exc.code}
-    return cfg, {"source": "selection", "file": str(p), "profile": RP.describe(cfg)}
+        return frozen_cfg, {"source": "frozen", "file": str(path), "error": exc.code}
+    return cfg, {"source": "selection", "file": str(path), "profile": RP.describe(cfg)}
+
+
+def select(frozen_cfg: dict, path) -> tuple:
+    """(cfg, note). cfg is the frozen config object itself unless a valid selection names a measured profile."""
+    p = Path(path)
+    return select_bytes(frozen_cfg, _read(p), p)
 
 
 def write(client_root, ctx: int, vision: str, mtp: bool) -> Path:
@@ -75,7 +90,7 @@ def write(client_root, ctx: int, vision: str, mtp: bool) -> Path:
 class ProfileFollower:
     """The worker's Runtime v1 readiness, following the selection file.
 
-    `status()` re-checks the file's stat signature (one stat call when nothing changed). When the selection names a
+    `status()` re-reads the (tiny) selection file and compares its bytes. When the selection names a
     different derived config, a new readiness manager is made for it (`make_manager(cfg)`) and `on_change(cfg, note)`
     is called. The previous manager is dropped: the worker never owns the Brain server (the host does), so nothing is
     stopped. The same validation as `select()` applies; an invalid file means the frozen config."""
@@ -83,34 +98,33 @@ class ProfileFollower:
     def __init__(self, frozen_cfg: dict, path, make_manager, on_change=None):
         self.frozen, self.path, self._make, self._on_change = frozen_cfg, Path(path), make_manager, on_change
         self._lock = threading.Lock()
-        self.cfg, self.note = select(frozen_cfg, self.path)
-        self._sig = self._signature()
+        # Change detection by content (review R2-06): the file is a few dozen bytes, so it is read on every check.
+        # A rewrite of equal size within one timestamp tick is still seen; the bytes read are the bytes validated.
+        self._raw = _read(self.path)
+        self.cfg, self.note = select_bytes(frozen_cfg, self._raw, self.path)
         self.manager = make_manager(self.cfg)
+        self.generation = 0
         self.changes = []
-
-    def _signature(self):
-        try:
-            st = self.path.stat()
-            return (st.st_mtime_ns, st.st_size)
-        except OSError:
-            return None
 
     def refresh(self) -> bool:
         """True when the active config changed."""
         with self._lock:
-            sig = self._signature()
-            if sig == self._sig:
+            raw = _read(self.path)
+            if raw == self._raw:
                 return False
-            self._sig = sig
-            cfg, note = select(self.frozen, self.path)
+            self._raw = raw
+            cfg, note = select_bytes(self.frozen, raw, self.path)
             self.note = note
             if R.config_digest(cfg) == R.config_digest(self.cfg):
                 return False
             before = RP.describe(self.cfg)["id"]
             self.cfg, self.manager = cfg, self._make(cfg)
-            self.changes = (self.changes + [{"from": before, "to": RP.describe(cfg)["id"], "note": note}])[-16:]
-        if self._on_change is not None:
-            self._on_change(cfg, note)
+            self.generation += 1
+            self.changes = (self.changes + [{"generation": self.generation, "from": before,
+                                             "to": RP.describe(cfg)["id"], "note": note}])[-16:]
+            # Delivered under the lock (review R2-05): consumers see changes in order, never a stale profile last.
+            if self._on_change is not None:
+                self._on_change(cfg, note)
         return True
 
     def status(self):
