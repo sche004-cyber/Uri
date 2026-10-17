@@ -48,7 +48,18 @@ def backend(cfg) -> dict:
     return {"provider": "Runtime v1 (local)", "engine": rt.get("engine"), "model_id": model.get("id"),
             "model_repo": model.get("repo"), "context": rt.get("ctx"), "vision": bool(rt.get("vision_enabled")),
             "speculative": "MTP draft" if model.get("mtp_draft") else None,
-            "thinking_tiers": sorted((cfg.get("tiers") or {}).keys())}
+            "thinking_tiers": sorted((cfg.get("tiers") or {}).keys()),
+            # RUNTIME-PROFILES-INTEG (review R1-06): which launch profile is serving; a derived profile says so,
+            # with qualified False, instead of looking like the frozen Runtime v1.
+            "profile": _profile(cfg)}
+
+
+def _profile(cfg) -> dict:
+    p = cfg.get("profile")
+    if not p:
+        return {"id": "frozen", "frozen": True}
+    return {"id": p.get("id"), "frozen": False, "qualified": bool(p.get("qualified")), "ctx": p.get("ctx"),
+            "vision": p.get("vision"), "mtp": p.get("mtp")}
 
 
 def assess(*, readiness: dict, host: dict | None, host_alive: bool, perf: dict, busy: bool, selected: dict,

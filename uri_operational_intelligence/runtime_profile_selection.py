@@ -15,14 +15,22 @@ Rules:
     locally from the frozen config, so the file can only select another measured launch shape of the same pinned
     binary and model, never a different binary, model, port or flag;
   * an invalid or unreadable file keeps the frozen config and is reported (`error`), never guessed;
-  * the file is read once at worker start, before the worker's file guard is installed.
+  * the file is read at worker start (before the file guard) and then re-read by `ProfileFollower` whenever its
+    stat signature changes, so a profile switch is a Brain host restart only: the worker process, and with it the
+    answer-channel conversation history it keeps in memory, survives the switch (live finding CONTEXT-1);
+  * the file lives in the client's own control directory (the worker guard's state root): anything that can write
+    there can change the selection, effective at the next readiness check. Impact is bounded to the measured
+    profiles, and the host must have been started on the same profile, or the worker reports FOREIGN_INSTANCE
+    (fails closed). No product code writes the file; the launcher/harness does (reviewer finding R1-07).
 """
 from __future__ import annotations
 
 import json
+import threading
 from pathlib import Path
 
 from . import runtime_profiles as RP
+from . import runtime_v1 as R
 
 SCHEMA = "uri.runtime.profile_selection.v1"
 SELECTION_FILE = "brain_profile.json"
@@ -62,3 +70,49 @@ def write(client_root, ctx: int, vision: str, mtp: bool) -> Path:
     tmp.write_text(json.dumps({"schema": SCHEMA, "ctx": int(ctx), "vision": vision, "mtp": bool(mtp)}), encoding="utf-8")
     tmp.replace(p)
     return p
+
+
+class ProfileFollower:
+    """The worker's Runtime v1 readiness, following the selection file.
+
+    `status()` re-checks the file's stat signature (one stat call when nothing changed). When the selection names a
+    different derived config, a new readiness manager is made for it (`make_manager(cfg)`) and `on_change(cfg, note)`
+    is called. The previous manager is dropped: the worker never owns the Brain server (the host does), so nothing is
+    stopped. The same validation as `select()` applies; an invalid file means the frozen config."""
+
+    def __init__(self, frozen_cfg: dict, path, make_manager, on_change=None):
+        self.frozen, self.path, self._make, self._on_change = frozen_cfg, Path(path), make_manager, on_change
+        self._lock = threading.Lock()
+        self.cfg, self.note = select(frozen_cfg, self.path)
+        self._sig = self._signature()
+        self.manager = make_manager(self.cfg)
+        self.changes = []
+
+    def _signature(self):
+        try:
+            st = self.path.stat()
+            return (st.st_mtime_ns, st.st_size)
+        except OSError:
+            return None
+
+    def refresh(self) -> bool:
+        """True when the active config changed."""
+        with self._lock:
+            sig = self._signature()
+            if sig == self._sig:
+                return False
+            self._sig = sig
+            cfg, note = select(self.frozen, self.path)
+            self.note = note
+            if R.config_digest(cfg) == R.config_digest(self.cfg):
+                return False
+            before = RP.describe(self.cfg)["id"]
+            self.cfg, self.manager = cfg, self._make(cfg)
+            self.changes = (self.changes + [{"from": before, "to": RP.describe(cfg)["id"], "note": note}])[-16:]
+        if self._on_change is not None:
+            self._on_change(cfg, note)
+        return True
+
+    def status(self):
+        self.refresh()
+        return self.manager.status()

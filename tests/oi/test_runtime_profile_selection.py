@@ -86,8 +86,76 @@ def test_write_refuses_unmeasured(tmp_path):
 
 def test_worker_reads_selection_before_guard_and_records_it():
     src = (ROOT / "scripts" / "run_uri_integrated_worker.py").read_text(encoding="utf-8")
-    i_cfg = src.index("cfg = R.load_config()")
-    i_sel = src.index("cfg, brain_profile = PS.select(cfg, PS.selection_path(root))")
+    i_cfg = src.index("frozen_cfg = cfg = R.load_config()")
+    i_sel = src.index("profile = PS.ProfileFollower(frozen_cfg, PS.selection_path(root),")
     i_guard = src.index("sys.addaudithook(guard)")
     assert i_cfg < i_sel < i_guard
     assert '"brain_profile": brain_profile' in src
+    # the guard pins the frozen (superset) artifacts, readiness follows the profile, health follows the profile
+    assert "for art in R.pinned_artifacts(frozen_cfg):" in src
+    assert "manager = profile" in src and "readiness=manager.status" in src
+    assert "profile_sinks.append(oi)" in src
+
+
+class FakeManager:
+    made = []
+
+    def __init__(self, cfg):
+        self.cfg = cfg
+        FakeManager.made.append(cfg)
+
+    def status(self):
+        return ("status", RP.describe(self.cfg)["id"])
+
+
+def test_frozen_artifacts_are_a_superset_of_every_profile():
+    f = frozen()
+    allowed = {a["path"] for a in R.pinned_artifacts(f)}
+    for (ctx, vision, mtp) in RP.MEASURED_MIB:
+        cfg = RP.derive_config(f, ctx, vision, mtp)
+        assert {a["path"] for a in R.pinned_artifacts(cfg)} <= allowed
+
+
+def test_follower_switches_profile_without_a_new_worker(tmp_path):
+    FakeManager.made = []
+    seen = []
+    path = PS.selection_path(tmp_path)
+    fol = PS.ProfileFollower(frozen(), path, FakeManager, on_change=lambda c, n: seen.append(RP.describe(c)["id"]))
+    assert fol.status() == ("status", "frozen") and fol.note["source"] == "frozen"
+    PS.write(tmp_path, 65536, "off", False)
+    assert fol.status() == ("status", "c64k-visoff-mtpoff") and seen == ["c64k-visoff-mtpoff"]
+    import os
+    import time
+    PS.write(tmp_path, 32768, "gpu", False)
+    st = path.stat()
+    os.utime(path, ns=(st.st_atime_ns, st.st_mtime_ns + 1_000_000))   # stat signature changes even on coarse clocks
+    assert fol.status() == ("status", "c32k-visgpu-mtpoff") and seen[-1] == "c32k-visgpu-mtpoff"
+    assert fol.changes[-1]["from"] == "c64k-visoff-mtpoff" and fol.changes[-1]["to"] == "c32k-visgpu-mtpoff"
+    n = len(FakeManager.made)
+    fol.status()
+    assert len(FakeManager.made) == n          # unchanged file: no new manager
+    path.write_text("{broken", encoding="utf-8")
+    assert fol.status() == ("status", "frozen") and fol.note["error"] == "PROFILE_SELECTION_UNREADABLE"
+    path.unlink()
+    assert fol.status() == ("status", "frozen")
+
+
+def test_follower_same_profile_rewrite_keeps_manager(tmp_path):
+    FakeManager.made = []
+    PS.write(tmp_path, 65536, "off", False)
+    fol = PS.ProfileFollower(frozen(), PS.selection_path(tmp_path), FakeManager)
+    first = fol.manager
+    p = PS.selection_path(tmp_path)
+    PS.write(tmp_path, 65536, "off", False)
+    st = p.stat()
+    import os
+    os.utime(p, ns=(st.st_atime_ns, st.st_mtime_ns + 1_000_000))
+    assert fol.refresh() is False and fol.manager is first
+
+
+def test_health_backend_names_the_profile():
+    from uri_operational_intelligence import brain_health as BH
+    assert BH.backend(frozen())["profile"] == {"id": "frozen", "frozen": True}
+    b = BH.backend(RP.derive_config(frozen(), 32768, "gpu", False))
+    assert b["profile"]["id"] == "c32k-visgpu-mtpoff" and b["profile"]["qualified"] is False
+    assert b["provider"] == "Runtime v1 (local)" and b["context"] == 32768 and b["speculative"] is None
