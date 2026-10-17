@@ -52,5 +52,50 @@
   "branch": "phase/ember-v21-final-20261015 @4a70d9e7 (merge-base 1b5423bc)",
   "merge_tree_vs_canonical": "3 conflicts: uri_ui/lib/living/integration/oi_sources.dart, uri_ui/lib/living/screens/settings/voice_input_settings.dart, uri_ui/test/ws/ws_integration_test.dart (handoff doc expected 1, against 316e6475)",
   "reviewer_availability": "Codex weekly limit until 2026-10-22 14:03; Claude CLI login expired"
- }
+ },
+ "history": [
+  {
+   "at": "2026-10-17T11:10:13Z",
+   "event": "REMAINING_LIVE_JOURNEYS_RUN",
+   "owner_decision": "Owner chat answer 2026-10-17 to 'How should the UI V2 live checks proceed?': 'Owner override, frozen Brain' - start the unchanged frozen Brain with the lease's owner override despite the shortfall; each run records tok/s; any run below the healthy range is marked INVALID, not PASS. Scope: UI V2 only (not Office).",
+   "harness_change": "live_session.py passes --override-contention to the production Brain host (diff in evidence harness/live_session_override.diff); repository and frozen Brain unchanged; brain config sha256 e7d5de94053d before and after every run",
+   "gpu_order": "exclusive lease, agreed with the Office session (UI V2 first) and the VRAM research session (yield file D:/uri-dev/uri-vram-r1-yield); lease FREE after 16:40 IST",
+   "runs": {
+    "pi4": {
+     "mode": "main, first-time (fresh prefs)",
+     "result": "68/68 PASS, flutter 'All tests passed', exit 0",
+     "brain": "READY 67.5 s, calibration 138.8 tok/s (threshold 60), non-local 1,730 MiB, verdict at start CONTENDED (override)",
+     "turn_tps": "62-143"
+    },
+    "pi5": {
+     "mode": "returning",
+     "result": "12/12 PASS, exit 0",
+     "brain": "READY 69.3 s, calibration 148.7 tok/s"
+    },
+    "pi6": {
+     "mode": "perf",
+     "result": "3/3 PASS, exit 0",
+     "brain": "READY 64.8 s, calibration 144.9 tok/s",
+     "perf_turn_tps": [
+      123.3,
+      145.8,
+      143.1,
+      145.4,
+      140.6
+     ],
+     "reference": "l24 on 165dac8a 147.1 tok/s"
+    }
+   },
+   "validity": "all runs VALID: no calibration below threshold, no demotion pattern (25-39 tok/s) observed",
+   "checks_now": {
+    "1_ui_v2_startup_navigation_companion": "PASS (pi4 J1-J16)",
+    "2_uri_office": "UI V2 Office entry PASS in pi4; Office real-app journeys = Office session a14/o7 (separate owner decision on override)",
+    "3_brain_connectivity": "PASS under owner override",
+    "4_transparent_borderless_companion": "PASS (pi4 J7: 440x680, shaped region, native region validation, click behaviour, window restored)",
+    "5_live_windows_checks": "PASS (automation input)",
+    "6_hardware_limitations": "unchanged: frozen Brain does not fit by budget on the current desktop (margin -554 to -754 MiB); passes depended on placement luck under override; physical keyboard/mouse/microphone not qualified"
+   },
+   "freeze_assessment_update": "Remaining UI V2 live journeys PASS on canonical 25048709. Open before freeze: UIV2P-SCOPE-1 (frozen-scope guard fails on canonical; repaired in Office candidate 3e202efc, not yet integrated). Freeze is the owner's decision; recommendation: freeze after UIV2P-SCOPE-1 reaches canonical, with the override and the VRAM limitation recorded."
+  }
+ ]
 }

@@ -1,0 +1,149 @@
+{
+ "label": "pi6",
+ "mode": "perf",
+ "visual": "v2",
+ "fresh_prefs": false,
+ "source_head": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+ "source_tree": "bd4eeb15a952d1d23be53aaf5aa5f034704ad45b",
+ "source_status_before": "",
+ "port": 18301,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/uiv2_native_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "884902e27569099645ed1367e6ce9bf5a39c8588d734708d0ae86e67130a16e6",
+ "brain_ready": {
+  "state": "READY",
+  "load_s": 64.84,
+  "utc": "2026-10-17T11:06:55.020004+00:00",
+  "host": {
+   "schema": "uri.ws.brain_host.v1",
+   "host_pid": 15956,
+   "host_started": 1792235150.177,
+   "state": "READY",
+   "history": [
+    {
+     "t": 1792235154.064,
+     "state": "STARTING",
+     "detail": null
+    },
+    {
+     "t": 1792235184.842,
+     "state": "LOADING",
+     "detail": null
+    },
+    {
+     "t": 1792235208.878,
+     "state": "CALIBRATING",
+     "detail": null
+    },
+    {
+     "t": 1792235214.514,
+     "state": "READY",
+     "detail": null
+    }
+   ],
+   "override": {
+    "by": "--override-contention",
+    "at": 1792235150.177
+   },
+   "lease": {
+    "held": true,
+    "acquired_at": 1792235150.189,
+    "recovered_from": null
+   },
+   "gpu": {
+    "fit": {
+     "verdict": "CONTENDED",
+     "card_mib": 16368,
+     "required_mib": 15626,
+     "others_mib": 1497.7,
+     "unattributed_mib": 0.0,
+     "owner_mib": 0,
+     "free_mib": 14870.3,
+     "margin_mib": -755.7,
+     "consumers": [
+      {
+       "pid": 1792,
+       "name": "dwm.exe",
+       "parent": "winlogon.exe",
+       "dedicated_mib": 1016.8,
+       "role": "desktop compositor"
+      }
+     ]
+    },
+    "explain": "The Brain needs 15.3 GB of GPU memory but only 14.5 GB is free. In use by: dwm.exe (desktop compositor, 1.0 GB). Close those or wait; URI will not stop them.",
+    "census_t": 1792235150.192,
+    "census_s": 3.87
+   },
+   "detail": null,
+   "explain": "Brain ready (145 tok/s).",
+   "updated_at": 1792235214.514,
+   "heartbeat_at": 1792235210.25,
+   "server": {
+    "pid": 1372,
+    "owned": true,
+    "load_seconds": 27.1,
+    "model_id": "qwen3.6-35b-a3b-ud-iq3_s"
+   },
+   "residency": {
+    "t": 1792235210.565,
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1,
+    "others_mib": 1497.7,
+    "verdict_now": "CONTENDED",
+    "consumers": [
+     {
+      "pid": 1792,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 1016.8,
+      "role": "desktop compositor"
+     }
+    ]
+   },
+   "calibration": {
+    "t": 1792235208.886,
+    "tokens": 160,
+    "threshold_tps": 60.0,
+    "server_pid": 1372,
+    "server_create_time": 1792235181.7734056,
+    "reason": "START",
+    "decode_tps": 144.9,
+    "predicted_n": 160,
+    "prompt_ms": 260.751,
+    "residency": {
+     "t": 1792235210.565,
+     "dedicated_mib": 14946.2,
+     "non_local_mib": 1730.1,
+     "others_mib": 1497.7,
+     "verdict_now": "CONTENDED",
+     "consumers": [
+      {
+       "pid": 1792,
+       "name": "dwm.exe",
+       "parent": "winlogon.exe",
+       "dedicated_mib": 1016.8,
+       "role": "desktop compositor"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "entry": "original production main() via integration_test; keyboard via Flutter TestTextInput and synthesized key events",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "microphone_qualified": false,
+ "started_utc": "2026-10-17T11:06:55.918856+00:00",
+ "runner_pid": 14544,
+ "exit_code": 0,
+ "elapsed_s": 193.98,
+ "finished_utc": "2026-10-17T11:10:09.899951+00:00",
+ "source_status_after": "",
+ "ui_binary_sha256": "e37f17243e733c02837aa8b8cc6f72106576de022e8cc1e9859607bccf3b1b0c"
+}

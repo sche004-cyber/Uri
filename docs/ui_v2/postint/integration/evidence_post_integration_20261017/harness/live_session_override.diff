@@ -1,0 +1,11 @@
+17a18,19
+> # Owner decision 2026-10-17 ("Owner override, frozen Brain"): start the unchanged frozen Brain despite CONTENDED.
+> OVERRIDE = "--override-contention" in sys.argv
+62c64
+<                   brain_config_sha256_before=sha(R.CONFIG_PATH), lease_before=G.peek(), override=False)
+---
+>                   brain_config_sha256_before=sha(R.CONFIG_PATH), lease_before=G.peek(), override=OVERRIDE)
+147c149
+<             host = Host(pathlib.Path(CURRENT["client_root"]) / "control/oi", minutes=MINUTES, override=False, cfg=cfg,
+---
+>             host = Host(pathlib.Path(CURRENT["client_root"]) / "control/oi", minutes=MINUTES, override=OVERRIDE, cfg=cfg,
