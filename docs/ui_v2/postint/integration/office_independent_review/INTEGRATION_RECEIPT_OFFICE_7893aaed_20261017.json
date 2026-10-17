@@ -1,0 +1,50 @@
+{
+ "schema": "uri.integration.receipt.v1",
+ "milestone": "URI Office completion (candidate/office-completion-20261016)",
+ "date": "2026-10-17",
+ "owner_authorization": [
+  "Owner chat (UI V2 session) 2026-10-17: 'Intregation approved'",
+  "Clarifying answer to 'Which commit does the integration approval cover?': '7893aaed now (Recommended)' - fast-forward canonical 25048709 -> 7893aaed now; LOW repairs follow as a separate reviewed change"
+ ],
+ "earlier_owner_answer": "'Repair LOW findings first' (superseded by the explicit approval above)",
+ "target": {
+  "remote": "uri-repo",
+  "url": "https://github.com/sche004-cyber/Uri.git",
+  "ref": "integration/git-sync-20261008"
+ },
+ "candidate": "7893aaed2b7ef3be71ac044bf4d432281c8f066b",
+ "target_tip_before": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+ "target_tip_after": "7893aaed2b7ef3be71ac044bf4d432281c8f066b",
+ "mode": "fast-forward (manual, outside the lifecycle driver: the canonical driver does not record subagent reviews)",
+ "integrated_at": "2026-10-17T13:15:31Z",
+ "ls_remote_verified": true,
+ "pre_push_checks": [
+  "ls-remote tip == 25048709",
+  "branch candidate/office-completion-20261016 == 7893aaed",
+  "25048709 ancestor of 7893aaed",
+  "no change under ws_frozen_check PROTECTED paths",
+  "no url.*.insteadOf in git config; remote URL https://github.com/sche004-cyber/Uri.git"
+ ],
+ "independent_review": {
+  "round": "S2",
+  "verdict": "ACCEPT WITH FINDINGS",
+  "blocking": 0,
+  "record": "office_independent_review/S2/ROUND_RECORD.json",
+  "open_low": [
+   "S2-01",
+   "S2-02",
+   "S1-03",
+   "S1-04",
+   "S1-05",
+   "S1-06",
+   "S1-07"
+  ]
+ },
+ "gates": "office_independent_review/OFFICE_QUALIFICATION_SUMMARY_7893aaed.json",
+ "live": "Office session a15 13/13, o8 34/34 on test-only composite c076c4ad (7893aaed + runtime-profiles files), 64K main-only Brain profile (owner decision for Office)",
+ "not_claimed": [
+  "production deployment",
+  "Office freeze",
+  "LOW repairs (in progress, need review S3 and their own approval)"
+ ]
+}
