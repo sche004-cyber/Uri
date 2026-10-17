@@ -152,8 +152,8 @@ def load_config(path) -> dict:
             raise LifecycleError("reviewer_fallbacks must be a list of reviewer specs")
         sel = cfg.setdefault("reviewer_selection", {})
         sel.setdefault("max_attempts", 2)
-        if not isinstance(sel["max_attempts"], int) or isinstance(sel["max_attempts"], bool) or sel["max_attempts"] < 1:
-            raise LifecycleError("reviewer_selection.max_attempts must be a positive integer")
+        if not isinstance(sel["max_attempts"], int) or isinstance(sel["max_attempts"], bool) or                 not 1 <= sel["max_attempts"] <= 10:          # AF-S1-05: bounded
+            raise LifecycleError("reviewer_selection.max_attempts must be an integer from 1 to 10")
         if not is_devtest(cfg["milestone"]) and any(s.get("provider") not in INDEPENDENT_PROVIDERS for s in fb):
             raise LifecycleError(f"a reviewer fallback must be one of {INDEPENDENT_PROVIDERS}")
     for spec in reviewer_chain(cfg):

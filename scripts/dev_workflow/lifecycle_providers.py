@@ -654,11 +654,11 @@ def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) ->
     if "status" not in rec:
         rec["status"] = "COMPLETED" if rec.get("exit_code") == 0 else "FAILED"
     if rec["status"] != "COMPLETED":
-        blob = " ".join([text[-2000:], (err or "")[-2000:], str(rec.get("detail", ""))]).lower()
-        # Sign-in failures are read from the CLI's own error channels only (stderr, claude's is_error result), never
-        # from the reviewer's free text: a review that quotes "401 unauthorized" is an ordinary failure (S1-02).
+        # Quota and sign-in failures are read from the CLI's own error channels only (stderr, claude's is_error
+        # result), never from the reviewer's free text: a review that quotes "401 unauthorized" or "rate limit" is an
+        # ordinary failure and is retried (independent reviews S1-02, AF-S1-01).
         cli_err = " ".join([(err or "")[-2000:], str(rec.get("detail", ""))]).lower()
-        if QUOTA_RE.search(blob):
+        if QUOTA_RE.search(cli_err):
             rec["unavailable_reason"] = "QUOTA"
         elif AUTH_RE.search(cli_err):
             rec["unavailable_reason"] = "AUTH"

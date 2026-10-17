@@ -269,7 +269,7 @@ def test_new_gate_failure_still_prevents_integration_with_a_fallback_reviewer(tm
 
 def test_config_rules_for_the_chain(tmp_path):
     repo, wt, base, remote = make_fixture(tmp_path, defect=False)
-    with pytest.raises(L.LifecycleError, match="positive integer"):
+    with pytest.raises(L.LifecycleError, match="integer from 1 to 10"):
         chain_config(tmp_path, repo, wt, "check", ["x"], max_attempts=0)
     raw = json.loads((tmp_path / "cfg.json").read_text())
     raw["milestone"] = "URI-REAL-MILESTONE"
@@ -327,3 +327,20 @@ def test_s1_03_verify_refuses_a_recheck_that_clears_another_block(tmp_path):
     st = L.State(cfg)
     st.event("REVIEWER_RECHECK", blocker=st.d["blocker"])         # forged
     assert any("REVIEWER_RECHECK cleared a NO_REVIEWER block" in e for e in L.verify(cfg))
+
+
+# ---------------------------------------------------------------- independent review af-review-R1 (d47b4535)
+
+def test_af_s1_01_a_failed_review_mentioning_a_rate_limit_is_retried_not_treated_as_quota(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = chain_config(tmp_path, repo, wt, "fail_quota_text", ["check"])
+    assert L.run(cfg) == S.COMPLETE
+    s = L.status(cfg)
+    assert [(r["reviewer_index"], r["outcome"]) for r in s["reviewers"]] == [(0, "FAILURE"), (0, "FAILURE"), (1, "ACCEPT")]
+    assert all(not r["worker"].get("unavailable_reason") for r in L.State(cfg).d["rounds"][:2])
+
+
+def test_af_s1_05_max_attempts_is_bounded(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    with pytest.raises(L.LifecycleError, match="integer from 1 to 10"):
+        chain_config(tmp_path, repo, wt, "check", ["x"], max_attempts=11)
