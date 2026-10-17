@@ -46,6 +46,21 @@ TABS = ["https://www.youtube.com/watch?v=aqz-KE-bpKQ", "https://webglsamples.org
 OWNER_PREFS = pathlib.Path(os.environ["APPDATA"]) / "com.example" / "uri_ui" / "shared_preferences.json"
 
 
+def host_mem():
+    """Physical and commit headroom via GlobalMemoryStatusEx (psutil.swap_memory needs PDH counters, which fail here)."""
+    import ctypes
+
+    class MEM(ctypes.Structure):
+        _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong), ("ullTotalPhys", ctypes.c_ulonglong),
+                    ("ullAvailPhys", ctypes.c_ulonglong), ("ullTotalPageFile", ctypes.c_ulonglong),
+                    ("ullAvailPageFile", ctypes.c_ulonglong), ("ullTotalVirtual", ctypes.c_ulonglong),
+                    ("ullAvailVirtual", ctypes.c_ulonglong), ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+    m = MEM()
+    m.dwLength = ctypes.sizeof(MEM)
+    ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+    return {"avail_phys_mib": m.ullAvailPhys >> 20, "commit_free_mib": m.ullAvailPageFile >> 20}
+
+
 def report():
     try:
         return json.loads((REP / BH.REPORT_FILE).read_text(encoding="utf-8"))
@@ -157,6 +172,7 @@ def main():
             except Exception as exc:
                 row["turn"] = {"error": f"{type(exc).__name__}: {exc}"}
             row["gpu"] = gpu(chrome_pids())
+            row["host_mem"] = host_mem()                  # CRASH-1 research E0: host memory and commit headroom
             rec["samples"].append(row)
             (OUT / "soak.json").write_text(json.dumps(rec, indent=1, default=str), encoding="utf-8")
             i += 1

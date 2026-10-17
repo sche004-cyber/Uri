@@ -1,0 +1,159 @@
+{
+ "text": "Quick arithmetic game. The secret number is 4817. Reply with just OK.",
+ "events": [
+  {
+   "data": {
+    "depth": "fast",
+    "text_chars": 69
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 1,
+   "t": 1792246771.364,
+   "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+   "type": "turn.started"
+  },
+  {
+   "data": {
+    "state": "thinking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 2,
+   "t": 1792246771.364,
+   "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "route": "core",
+    "tier": {
+     "escalation_offer": false,
+     "reason": "core_decides_actions_on_fast_seams",
+     "selected_by": "core_seam",
+     "tier": "FAST"
+    },
+    "triage": {
+     "action_clauses": 1,
+     "kind": "ACTION",
+     "reasons": [
+      "imperative_action_verb"
+     ]
+    }
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 3,
+   "t": 1792246771.364,
+   "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+   "type": "turn.routed"
+  },
+  {
+   "data": {
+    "code": "CONVERSATION",
+    "message": "I can only act on an explicit request in this mode (for example: 'remember that ...').",
+    "needs": "none",
+    "state": "reply"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 4,
+   "t": 1792246783.189,
+   "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+   "type": "core.result"
+  },
+  {
+   "data": {
+    "route": "answer",
+    "tier": {
+     "escalation_offer": false,
+     "reason": "simple_language_task",
+     "selected_by": "policy",
+     "tier": "FAST"
+    },
+    "triage": {
+     "action_clauses": 0,
+     "kind": "QUESTION",
+     "reasons": [
+      "core_conversation"
+     ]
+    }
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 5,
+   "t": 1792246783.419,
+   "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+   "type": "turn.routed"
+  },
+  {
+   "data": {
+    "state": "speaking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 6,
+   "t": 1792246784.522,
+   "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "text": "OK"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 7,
+   "t": 1792246784.522,
+   "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "complete": true,
+    "escalation_candidate": false,
+    "flags": [],
+    "metrics": {
+     "cache_n": 0,
+     "draft_n": null,
+     "draft_n_accepted": null,
+     "first_answer_s": 0.8515,
+     "memory_context": {
+      "fact_count": 2,
+      "status": "available",
+      "truncated": false
+     },
+     "predicted_n": 2,
+     "predicted_per_second": 64.54527851287678,
+     "prompt_n": 785,
+     "prompt_per_second": 1519.85393913227,
+     "reasoning_chars": 0,
+     "retried": false,
+     "total_s": 0.8673,
+     "ttft_s": 0.8515
+    },
+    "status": "COMPLETE"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 8,
+   "t": 1792246784.539,
+   "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+   "type": "answer.done"
+  },
+  {
+   "data": {
+    "route": "core+answer",
+    "status": "ok",
+    "total_s": 13.1744
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 9,
+   "t": 1792246784.539,
+   "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+   "type": "turn.finished"
+  },
+  {
+   "data": {
+    "state": "idle"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 10,
+   "t": 1792246784.539,
+   "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+   "type": "companion.state"
+  }
+ ]
+}

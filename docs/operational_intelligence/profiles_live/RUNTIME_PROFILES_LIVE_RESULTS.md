@@ -1,112 +1,106 @@
-# RUNTIME-PROFILES-INTEG — live Windows qualification results (report to the owner before any default change)
+# RUNTIME-PROFILES-INTEG — live qualification results (v2, bound to code 4d782ef1)
 
-Date 2026-10-17. Candidate `milestone/runtime-profiles-integ-20261017`. Code tested live: `fa0a70e6`. Baseline
-canonical `25048709`. Plan and criteria: `../RUNTIME_PROFILES_INTEGRATION_PLAN.md`. Record (authoritative, JSON):
-`UI_QUALIFICATION_RUNTIME_PROFILES.json`, **status FAIL** (one P1 journey failed; see below).
+Date 2026-10-17. Candidate `milestone/runtime-profiles-integ-20261017`. Code tested live: `4d782ef1`. Baseline
+canonical `25048709`. Plan and criteria: `../RUNTIME_PROFILES_INTEGRATION_PLAN.md` (amendment A1 covers the scope
+beyond the accepted files). Authoritative record: `UI_QUALIFICATION_RUNTIME_PROFILES.json`, status **FAIL as a
+whole**, because P1 has mandatory failures. P2 and P3 are qualified on this commit (section 2).
 
-URI's default Brain configuration is unchanged: the frozen Runtime v1, used whenever no profile is selected.
-Nothing is integrated, deployed or frozen. Independent review is BLOCKED: Codex is over its usage limit until
-2026-10-22 14:03, and the claude_cli login is expired. This is a code-and-live result, not an operational
-qualification of any default.
+URI's default Brain is unchanged: the frozen Runtime v1, used whenever no profile is selected. Nothing is
+integrated, deployed or frozen. Independent review: fresh read-only subagent reviews (lifecycle tier 3, owner
+decision 2026-10-17), not driver-verified (section 7).
 
-## 1. What ran
+## 1. What changed since v1 of this report (fa0a70e6)
 
-- The real URI Windows app (UI V2 production `main()` via `integration_test`), driven by the canonical UI V2 driver
-  (`docs/ui_v2/postint/evidence/harness/uiv2_driver.dart`, unchanged), with the real Core, worker and Brain.
-  - Runtime: materialized from the candidate in `D:\uri-dev\uri-profiles-live\runtime-b`; installation `rp-b`,
-    port 18337.
-  - Brain: started by the production `scripts/ws_brain_host.py --profile`, port 18470, GPU lease, no override.
-  - The harness copy in `evidence/harness/` changes only paths, the `--profile` option and the selection file.
-- Profiles, all with MTP off (MTP stays an optional speed profile):
-  - P1: 64K + GPU vision, request 14,764 MiB;
-  - P2: 64K main only, request 13,658 MiB;
-  - P3: 32K + GPU vision, request 14,360 MiB.
-- Desktop: dwm 903-1006 MiB, ChatGPT, Claude, Edge WebView. Free for one process about 14,982 MiB.
+- **CONTEXT-1 (found after review R1-01, repaired in `4d782ef1`).** Before the repair, the worker read the profile
+  selection only at start, so a profile switch needed a worker restart and lost the in-memory conversation.
+  `ProfileFollower` now re-reads the selection on change and swaps only the readiness verifier. The guard pins the
+  frozen (superset) artifact set, and `brain_health` names the serving profile with `qualified: false` (R1-06).
+  Tests: 19 in `tests/oi/test_runtime_profile_selection.py`. Gates `tests/oi`, `tests/ws`, `tests/assist`,
+  `tests/web` and the worker isolation test give a failure set identical to canonical (25 pre-existing
+  Chromium-dependent Assist failures/errors).
+- The v1 report said "17 new tests"; the correct count for `fa0a70e6` was 15 (R1-05).
+- The v1 claim "conversation is kept by URI" across switches was not evidenced. The driver's `R-conversation`
+  check sends a new prompt only (R1-01). This is now verified at worker level (section 4).
+- Research subagents investigated CRASH-1 and the P1 demotion (section 5). One correction to the URI-RUNTIME-VRAM-R1
+  report: its 64K + MTP "stays slow after Chrome closed" was measured only 38 s after the close, so it does not show
+  process-lifetime stickiness.
+- `evidence/live/dry` was an empty folder created by an import check of the harness (no run). It was removed and is
+  listed here (R1-04).
 
-## 2. Integration finding fixed during the live run (beyond the accepted scope; needs its own review)
+## 2. Qualification by profile
 
-The first P1 run (`p1-main`, code `84ef1a39`) showed the app reporting the Brain as `FOREIGN_INSTANCE`, detail
-`ARGV_MISMATCH`. The product worker always verified the Brain against the frozen argv, so the accepted host-side
-code alone cannot serve the app. That check is correct as a safeguard.
-
-Repair `fa0a70e6`:
-- New module `uri_operational_intelligence/runtime_profile_selection.py`, plus 6 lines in
-  `scripts/run_uri_integrated_worker.py`.
-- The worker reads `control/oi/brain_profile.json` once, before its file guard, and verifies the Brain against the
-  same derived config.
-- Only a measured profile derived from the frozen config is accepted. Absent or invalid file means the frozen config,
-  and the reason is recorded in `worker-instance.json`.
-- 17 new tests. Gates: `tests/oi`, `tests/ws`, `tests/assist`, `tests/web` and the worker isolation test give
-  failure sets identical to canonical (25 pre-existing Chromium-dependent Assist failures/errors on this host).
-
-The five accepted files are still byte-identical to `7c7a7776`.
-
-## 3. UI V2 journeys (first-time = 68 driver checks, returning = 12)
-
-| Profile | First-time | Returning | Brain at start (fit, calibration) |
+| Profile | Status | Evidence on `4d782ef1` | Operating condition measured |
 |---|---|---|---|
-| P1 64K + GPU vision | `p1c-main` 68/68, `s4-p1-main` 68/68; **`p1b-main` FAIL 52/57 (CRASH-1)** | `p1c-ret` 12/12, `s2-p1-ret` 12/12 (after a switch from P2) | AT_RISK +218 MiB, 102-104 tok/s |
-| P2 64K main only | `p2-main` 68/68, `s1-p2-main` 68/68 | `s5-p2-ret` 12/12 (after a switch from P1) | FITS +1,324 MiB, 101-105 tok/s |
-| P3 32K + GPU vision | `p3-main` 68/68 | `p3-ret` 12/12 | FITS +622 MiB, 103-105 tok/s |
+| **P2 64K main only** (13,658 MiB) | **PASS** | `c-p2-main` 68/68, `c-p2-ret` 12/12; switch `sw4` PASS. Host-only evidence, with host code identical: `soak-p2` 60 min clean. History on `fa0a70e6`: 2 x 68/68, 12/12 | lease fit FITS +1,176..+1,324 MiB; dwm 0.8-1.06 GB; Chrome 6 tabs |
+| **P3 32K + GPU vision** (14,360 MiB) | **PASS** | `c-p3-main` 68/68, `c-p3-ret` 12/12; `soak-p3` 60 min with the app + Chrome: 120/120, median 99.3 / min 94.3 tok/s, never demoted; switch `sw4` PASS; Assist application path 3/3 | fit AT_RISK +474 (19:00 desktop, dwm 1.05 GB) .. FITS +622; one soak |
+| **P1 64K + GPU vision** (14,764 MiB) | **FAIL — unqualified** | history on `fa0a70e6`: `p1b-main` FAIL (CRASH-1), `soak-p1` FAIL (demotion 99 -> 21 tok/s for 12 min); also 2 x 68/68, 2 x 12/12, Assist 3/3. Not re-run on `4d782ef1` | fit AT_RISK +218; stays unqualified until CRASH-1 and DEMOTE-P1 are resolved and re-tested |
 
-Not counted:
-- `p1-main`: superseded (code before the worker repair).
-- `p2-ret`, `s3-p2-ret`: harness ordering artifact. A returning run that directly follows another returning run fails
-  `R-companion-persisted` / `R-theme-persisted`, because the previous run ends with `R-restore-defaults`. Every
-  other check passed, and the clean re-run `s5-p2-ret` passed 12/12.
+Also reported by the Office session, not part of this record: Office a15/o8 PASS (13/13, 34/34) on the 64K
+main-only profile.
 
-Profile switch and context preservation:
-- P2 first-time -> P1 returning, and P1 first-time -> P2 returning, both passed 12/12, including
-  `R-conversation`.
-- The switch is a host and app restart. The conversation is kept by URI; the KV cache is rebuilt.
+## 3. Journeys on the current commit
 
-## 4. Sustained operation (60 min each, URI app window + Chrome 6 tabs for minutes 20-40, a URI decision turn every 30 s)
+Every run is listed in the record: 17 journey runs, of which 13 are history on earlier commits and 4 are current.
+Failures are listed, never dropped. The ordering-artifact rule (R1-03) now applies only when all of these hold: the
+only failures are `R-companion-persisted` and `R-theme-persisted`; the observed values equal the defaults written by
+`R-restore-defaults`; and the run immediately before was a returning run.
 
-| Soak | Turns OK / valid JSON | Decode median / min | Brain residency |
-|---|---|---|---|
-| `soak-p2` (P2) | 120 / 120 | 99.3 / 96.2 tok/s | never demoted (non-local 562 MiB throughout) |
-| `soak-p1` (P1) | 120 / 120 | 99.2 / **20.5** tok/s | **demoted**: at minute 31 (11 min after Chrome opened) one 1 GiB block left VRAM (dedicated 14,985 -> 13,963, non-local 562 -> 1,584). Decode was 21 tok/s for about 12 min. The host raised its residency alert. The block came back about 3.5 min after Chrome closed. |
+## 4. Profile switch with conversation continuity (LQ-4)
 
-## 5. URI Assist (vision priority)
+Worker-level test (`tools/switch_live.py`). It uses the real integrated server, the production Brain host and the
+real worker spawned exactly as the app spawns it, driven with the app's commands. One worker process carried one
+conversation through P2 -> P3 -> P2.
 
-- Real-UI Assist: the Assist view opens (driver check `J2-ctrl-assist`, screenshot `j2-assist`). Assist cannot
-  capture anything yet: no browser channel, UI Automation or screen-capture adapter exists (Assist owner checklist
-  items 8-10), and the product worker keeps `vision_qualified=False` (item 7). **A real-UI Assist vision journey is
-  BLOCKED by unbuilt, owner-gated components, not by the runtime.**
-- Application path (checklist item 7) on the real Brain host, with the production `AssistCommands`, the test capture
-  adapter and `vision_qualified=True` in the harness only (`evidence/assist/*`):
-  - P1: 3/3 correct (error 401 and both toggles), cold ask 1.34 s, cached 0.5 s, decode 104 -> 103 tok/s;
-  - P3: 3/3 correct, cold 1.37 s, decode 105 -> 103 tok/s.
-
-## 6. Findings
-
-- **CRASH-1 (open).**
-  - What happened: llama-server b11425 exited with 0xC0000409 (fail-fast, no log message) in `p1b-main`, right
-    after a cancelled 4-token task at 36 ms/token, when the next request was selected.
-  - Rate: 1 crash in 8 P1-type Brain sessions; 0 in 9 P2/P3 sessions.
-  - A 150-cycle cancel-then-request lab reproduction on P1 did not crash.
-  - The frozen configuration's rate on the same pattern was not measured here.
-  - The production host does not log at debug level, so the triggering request is unknown.
-  - Next: a P1 soak with server debug logging in the lab, and the same journey sequence on the frozen config when it
-    fits.
-- **DEMOTE-P1 (open).** P1 leaves only about 200-300 MiB of real headroom next to the URI app on this desktop. An
-  ordinary browser session pushed one 1 GiB block out after 11 min. This is the same mechanism found in the
-  research (64K + MTP). P1 is therefore not a safe always-on profile on a 16 GB card during multitasking.
-- **HARNESS-ORDER-1 (harness, not product).** Consecutive returning runs share and reset the preference fixture.
-- **WORKER-PROFILE-1 (repaired in fa0a70e6, review pending).** Described in section 2.
-
-## 7. Recommendation (no default change proposed yet)
-
-| Owner item | Evidence-based answer |
+| Run | Result |
 |---|---|
-| 7. 64K + GPU vision as the preferred future startup profile "when resources permit" | Functionally good: 4 of 5 journey runs and Assist 3/3. **Not yet reliable as a startup profile.** Its margin next to the app is AT_RISK, a browser demoted it in the soak, and CRASH-1 occurred on it once. Use it only when the lease fit says FITS. It needs CRASH-1 resolved, and the host's residency alert must become an actionable "restart Brain" prompt, before it can be preferred. |
-| 8. 64K main only as fallback | **Strongest result:** 2 x 68/68 + 12/12, the switch test passed, a clean 60 min soak, FITS +1,324 MiB, accuracy parity with the frozen baseline (research). This is the candidate if the owner later decides to change the default. |
-| 9. 32K + vision as the reduced-memory Assist alternative | 68/68 + 12/12, Assist 3/3, FITS +622 MiB. Not soaked yet (gap). This is the better Vision choice than P1 on this card. |
-| 10. MTP optional with a VRAM warning | Kept optional; it was not used in these live runs. Research: 64K + MTP demotes next to Chrome; 32K + MTP coexisted once. |
+| `sw1` | NOT VERIFIED: my prompts routed to Core memory, not to the conversation |
+| `sw2` | NOT VERIFIED: harness bug (`TURN_IN_PROGRESS`, next turn sent too early); the post-switch recalls were already correct |
+| `sw3` | automated FAIL, kept. The prompt "plus 1 now" was ambiguous; the answers 4818 -> 4819 -> 4820 continued the conversation's own arithmetic, which shows the history was in context |
+| **`sw4`** | **PASS**: "4817" through the answer channel before the switch, after P2 -> P3 and after P3 -> P2. Switches reached READY on the new profile in 26-33 s; VRAM released in 3.8-3.9 s; same worker pid |
 
-Suggested next steps for the owner:
-1. Make one reviewer available (`claude login`, or wait for Codex on 2026-10-22). Then the driver review round of
-   candidate `fa0a70e6` plus this record's evidence commit can run.
-2. Decide whether worker profile selection (`fa0a70e6`, beyond the accepted scope) may be part of the integration.
-3. Approve a P3 soak, and a CRASH-1 investigation with debug logging.
-4. Only after that, decide on a default.
+## 5. Research (subagents; hypotheses are labelled)
+
+- **CRASH-1** (`evidence/research/CRASH1_RESEARCH.md`, crashed server log and reproduction script in
+  `evidence/crash1/`).
+  - Leading hypothesis, not verified: host commit exhaustion leads to an uncaught `std::bad_alloc` in the
+    prompt-cache save (an unprotected copy, upstream PR #27451, still open), which leads to `std::terminate` /
+    `abort` and 0xC0000409. There is no Windows log, because the terminate handler prints only on Linux/macOS.
+  - Task 841 was not a grammar request; its "cancel" came after it had already finished.
+  - **E0 measured in soak-p3:** free system commit was 386-1,600 MiB while 6-8 GB of physical RAM was available.
+    Two PowerShell processes of other sessions held about 4.2 GB private each (RAM-1). This risk applies to every
+    profile and to the frozen configuration.
+- **DEMOTE-P1** (`evidence/research/DEMOTION_RESEARCH.md`).
+  - What moved: a 1,021.7 MiB weight allocation (the first of 13 weight allocations), not the KV cache or the
+    projector. It happened at a Chrome memory burst, and the allocation returned 180-210 s after Chrome closed.
+  - Estimated margin needed with an ordinary browser: about +450-500 MiB fit. P1 at +218 is insufficient; P3 at
+    +474..+622 is near the boundary, but its soak passed.
+  - Recovery policy proposed: detect (residency alert plus a decode drop); offer a lighter profile; restart only when
+    the fit is FITS; any automatic restart is opt-in, idle-only and rate-limited.
+
+## 6. Remaining defects and unverified scenarios
+
+- CRASH-1 open (root cause unverified; reproduction E1 not run); it can affect any profile under commit pressure.
+- DEMOTE-P1 open. Its mitigations (vision on CPU at 64K, 256 MiB suballocation) are unmeasured.
+- P3 qualification rests on one soak near the estimated margin boundary.
+- URI Assist vision is verified only through the application path (no real capture adapter; owner-gated Assist
+  checklist items 8-10). The product keeps `vision_qualified=False`.
+- Automated input only; the soak UI window is the app's start screen; there are no Thinking/Vision/Context controls.
+
+## 7. Independent review and integration readiness
+
+- Round RPI-R1 (fresh read-only subagent, nonce `RPI-R1-7f3c91`, commit `3b77aabc`): ACCEPT WITH FINDINGS, 9
+  findings. Repairs:
+  - R1-01: CONTEXT-1 repair plus the worker-level test;
+  - R1-02: CRASH-1 log and reproduction committed;
+  - R1-03: classifier;
+  - R1-04: `dry` folder disclosed;
+  - R1-05: test count;
+  - R1-06: health profile;
+  - R1-07: documented;
+  - R1-08: `worker-instance.json` preserved for runs on the current commit;
+  - R1-09: plan amendment A1.
+- The next subagent round reviews this exact head.
+- **Driver-verified acceptance: not yet.** Codex is over its usage limit until 2026-10-22 and the claude CLI is
+  logged out. Subagent acceptance under the 2026-10-17 lifecycle policy is a different verification class and is
+  reported as such.
+- Integration into canonical needs your explicit authorisation. A default change needs a separate authorisation.

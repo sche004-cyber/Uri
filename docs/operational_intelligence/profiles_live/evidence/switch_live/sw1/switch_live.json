@@ -1,0 +1,149 @@
+{
+ "label": "sw1",
+ "session_id": "b9bf7e86-f9f1-451c-8018-65ac5b8ca21b",
+ "steps": [
+  {
+   "step": "ready-P2",
+   "state": "READY",
+   "seconds": 63.0,
+   "worker_profile": "c64k-visoff-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "tell",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "afcf3082-b241-4e33-ae70-b2f8c03f79fd",
+   "seconds": 5.83,
+   "answer": "",
+   "types": [
+    "companion.state",
+    "core.result",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "recall-P2",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "b9d58975-fd53-487b-87ca-cfe43a6bbd62",
+   "seconds": 1.24,
+   "answer": "Noted.",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "switch-to-P3",
+   "stop_s": 0.5,
+   "vram_release_s": 4.1,
+   "state": "READY",
+   "seconds": 29.9,
+   "worker_profile": "c32k-visgpu-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "recall-P3",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "adcfc180-ae6c-40b5-8a0b-6ea8c8fb2127",
+   "seconds": 6.23,
+   "answer": "",
+   "types": [
+    "companion.state",
+    "core.result",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "switch-to-P2-again",
+   "stop_s": 0.5,
+   "vram_release_s": 3.8,
+   "state": "READY",
+   "seconds": 24.1,
+   "worker_profile": "c64k-visoff-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "recall-P2-again",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "4256a296-d3b1-428e-ac27-a83a5bd79172",
+   "seconds": 6.73,
+   "answer": "",
+   "types": [
+    "companion.state",
+    "core.result",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  }
+ ],
+ "commit": [
+  {
+   "t": 1792240982.05,
+   "avail_phys_mib": 7303,
+   "commit_limit_mib": 53452,
+   "commit_free_mib": 1565
+  },
+  {
+   "t": 1792241023.67,
+   "avail_phys_mib": 6778,
+   "commit_limit_mib": 54043,
+   "commit_free_mib": 759
+  },
+  {
+   "t": 1792241058.26,
+   "avail_phys_mib": 7126,
+   "commit_limit_mib": 53453,
+   "commit_free_mib": 1168
+  }
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "preflight_ok": "ws-integrated",
+ "all_recalled": false,
+ "all_switches_ready_on_new_profile": true,
+ "worker_pid_constant": true,
+ "lease_after": "FREE",
+ "worker_instance": {
+  "brain_profile": {
+   "file": "D:\\uri-dev\\uri-profiles-live\\runtime-c\\work\\c1\\ws-rp-c\\client\\control\\oi\\brain_profile.json",
+   "profile": {
+    "ctx": 65536,
+    "frozen": false,
+    "id": "c64k-visoff-mtpoff",
+    "mtp": false,
+    "qualified": false,
+    "required_mib": 13658,
+    "vision": "off"
+   },
+   "source": "selection"
+  },
+  "cli_homes_pinned": [
+   "CODEX_HOME"
+  ],
+  "client_id": "9ee833d0-03f8-42a5-a2b3-662ebc71600c",
+  "create_time": 1792240916.6952536,
+  "execution_lifecycle": true,
+  "fixture_allowed": false,
+  "generation": "b54d63a4-966f-4b21-8367-f7c074742873",
+  "manifest_digest": "55d8fa7aa13aefe4d52d64821d6c3a9a3437b9c800281ba5a1993efc6a1aa25d",
+  "oi": true,
+  "phase2_source_digest": "933685f766ad71bf6f846044c6a8fa86e7d9f32b935593b11799e4a356eaea76",
+  "pid": 22552,
+  "profile": "ws-integrated",
+  "qualified": []
+ }
+}

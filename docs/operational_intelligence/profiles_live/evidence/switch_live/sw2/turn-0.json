@@ -1,0 +1,62 @@
+{
+ "text": "Quick arithmetic game. The secret number is 4817. Reply with just OK.",
+ "events": [
+  {
+   "data": {
+    "depth": "fast",
+    "text_chars": 69
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 1,
+   "t": 1792246413.356,
+   "turn_id": "024f5f82-6576-455b-953e-b82ab5fdb410",
+   "type": "turn.started"
+  },
+  {
+   "data": {
+    "state": "thinking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 2,
+   "t": 1792246413.356,
+   "turn_id": "024f5f82-6576-455b-953e-b82ab5fdb410",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "route": "core",
+    "tier": {
+     "escalation_offer": false,
+     "reason": "core_decides_actions_on_fast_seams",
+     "selected_by": "core_seam",
+     "tier": "FAST"
+    },
+    "triage": {
+     "action_clauses": 1,
+     "kind": "ACTION",
+     "reasons": [
+      "imperative_action_verb"
+     ]
+    }
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 3,
+   "t": 1792246413.356,
+   "turn_id": "024f5f82-6576-455b-953e-b82ab5fdb410",
+   "type": "turn.routed"
+  },
+  {
+   "data": {
+    "code": "CONVERSATION",
+    "message": "I can only act on an explicit request in this mode (for example: 'remember that ...').",
+    "needs": "none",
+    "state": "reply"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 4,
+   "t": 1792246418.994,
+   "turn_id": "024f5f82-6576-455b-953e-b82ab5fdb410",
+   "type": "core.result"
+  }
+ ]
+}

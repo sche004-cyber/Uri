@@ -18,7 +18,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 LABEL = sys.argv[1]
 MINUTES = float(sys.argv[sys.argv.index("--minutes") + 1]) if "--minutes" in sys.argv else 50
 NO_BRAIN = "--no-brain" in sys.argv
-SRC, RT = pathlib.Path(r"D:\uri-dev\uri-runtime-profiles-integ"), ROOT / "runtime-b"
+SRC, RT = pathlib.Path(r"D:\uri-dev\uri-runtime-profiles-integ"), ROOT / "runtime-c"
 PROFILE = sys.argv[sys.argv.index("--profile") + 1] if "--profile" in sys.argv else None
 sys.path.insert(0, str(SRC))
 import psutil  # noqa: E402
@@ -113,7 +113,14 @@ def main():
                 pass
         gpu = {str(x["pid"]): dict(name=x.get("name"), dedicated_mib=x["dedicated_mib"], non_local_mib=x.get("non_local_mib"))
                for x in c.get("processes", []) if x.get("name") in ("uri_ui.exe", "llama-server.exe", "dwm.exe")}
+        vm = psutil.virtual_memory()
+        try:
+            sw = psutil.swap_memory()
+            commit_free = round((vm.available + sw.free) / 2**20)
+        except Exception:
+            commit_free = None
         samples.append(dict(utc=now(), adapter_dedicated_mib=c.get("adapter_dedicated_mib"), card_mib=c.get("card_mib"),
+                            commit_free_est_mib=commit_free,
                             gpu=gpu, owned=procs, ram_available_mib=round(psutil.virtual_memory().available / 2**20),
                             lease=G.peek().get("state")))
         (OUT / "resource-samples.json").write_text(json.dumps(samples, indent=1, default=str))
@@ -209,6 +216,9 @@ def main():
         record.update(finished_utc=now(), server_exit=server.returncode, brain_config_sha256_after=sha(R.CONFIG_PATH),
                       lease_after=G.peek(), brain_listener_after_3s=R._listener_pid(cfg["runtime"]["port"]),
                       server_listener_after=R._listener_pid(port), host_final=host.report if host else None)
+        wi = pathlib.Path(CURRENT["client_root"]) / "control" / "worker-instance.json"
+        if wi.exists():
+            (OUT / "worker-instance.json").write_bytes(wi.read_bytes())
         (OUT / "session-final.json").write_text(json.dumps(record, indent=1, default=str))
         print(json.dumps({k: record.get(k) for k in ("label", "server_exit", "brain_exit_code", "lease_after",
                                                      "brain_listener_after_3s", "server_listener_after")}, default=str), flush=True)

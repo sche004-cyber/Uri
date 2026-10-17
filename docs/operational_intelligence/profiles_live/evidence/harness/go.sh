@@ -8,7 +8,7 @@ L=$1; M=$2; V=$3; P=$4; F=$5
 cd $R
 mkdir -p evidence/live/$L
 if [ -e D:/uri-dev/uri-vram-r1-yield ]; then echo "YIELD before start $(date +%T)" > evidence/live/$L/go.log; exit 9; fi
-PY=$R/runtime-b/.venv/Scripts/python.exe
+PY=$R/runtime-c/.venv/Scripts/python.exe
 until $PY -B -c "import sys; sys.path.insert(0, r'D:\uri-dev\uri-runtime-profiles-integ'); from uri_operational_intelligence import gpu_lease as G; sys.exit(0 if G.peek().get('state') == 'FREE' else 1)"; do sleep 30; done
 echo "lease free $(date +%T) profile=$P" > evidence/live/$L/go.log
 PROF=""; [ "$P" != "frozen" ] && PROF="--profile $P"
