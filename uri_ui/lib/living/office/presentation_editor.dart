@@ -40,9 +40,11 @@ const authoringErrorText = <String, String>{
   'DESTINATION_EXISTS': 'A file with that name already exists. URI never replaces files with Save as.',
 };
 
-String authoringErrorMessage(Object e) {
+/// Independent review S1-05 (3e202efc): a Word edit is told about "the document", never "the presentation".
+String authoringErrorMessage(Object e, {bool document = false}) {
   if (e is SchedulerApiError) {
-    final text = authoringErrorText[e.code];
+    final shared = authoringErrorText[e.code];
+    final text = document && shared != null ? shared.replaceAll('presentation', 'document') : shared;
     if (text != null) {
       // AUTHORING_NOT_SUPPORTED names what stopped it ("video", "embedded object").
       return e.code == 'AUTHORING_NOT_SUPPORTED' && (e.detail ?? '').isNotEmpty ? '$text (${e.detail})' : text;
@@ -156,7 +158,7 @@ class PresentationEditController extends ChangeNotifier {
       state = null;
       return true;
     } catch (e) {
-      error = authoringErrorMessage(e);
+      error = authoringErrorMessage(e, document: isWord);
       return false;
     } finally {
       busy = false;
@@ -181,7 +183,7 @@ class PresentationEditController extends ChangeNotifier {
       state = 'Waiting for your approval to save';
       return (r['messages'] as List?) ?? const [];
     } catch (e) {
-      error = authoringErrorMessage(e);
+      error = authoringErrorMessage(e, document: isWord);
       return null;
     } finally {
       busy = false;
@@ -201,7 +203,7 @@ class PresentationEditController extends ChangeNotifier {
   }
 
   void failed(Object e) {
-    error = authoringErrorMessage(e);
+    error = authoringErrorMessage(e, document: isWord);
     state = null;
     _notify();
   }

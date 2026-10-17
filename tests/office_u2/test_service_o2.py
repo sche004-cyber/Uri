@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 import canaries as CN
-from conftest import lo_present, needs_windows, pdf_with_text
+from tests.office_u2.conftest import lo_present, needs_windows, pdf_with_text
 from uri_office import contracts as K
 from uri_office.service import Office, serve
 

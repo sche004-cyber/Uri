@@ -64,7 +64,7 @@ class Brain:
     def __init__(self):
         self.ops, self.sheets = [], None
 
-    def plan(self, text, *, sheets, active, engine, locked, history_rows):
+    def plan(self, text, *, sheets, active, engine, locked, history_rows, **_):
         self.sheets = sheets
         edits = []
         for op in self.ops:

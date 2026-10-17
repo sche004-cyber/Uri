@@ -318,7 +318,12 @@ def patch(src: Path, dst: Path, edits: list, struct_ops=(), formats=(), *, creat
 def _publish_no_replace(src: Path, dst: Path):
     """Give `src`'s file the name `dst` only if `dst` does not exist (FileExistsError otherwise). A hard link where the
     file system has them; on Windows without hard links (FAT, exFAT, some shares) a rename, which never replaces an
-    existing name there. Elsewhere a missing hard link is an error, never a replacing rename."""
+    existing name there. Elsewhere a missing hard link is an error, never a replacing rename.
+    Independent review S3-03: on Windows always the rename. A hard link shares the file's attributes, so clearing the
+    read-only bit of the leftover name cleared it on the published file too."""
+    if os.name == "nt":
+        os.rename(src, dst)
+        return
     try:
         os.link(src, dst)
     except FileExistsError:
@@ -335,13 +340,18 @@ HOLD_SUFFIX = ".uri-office.hold"
 def _unlink_quietly(path: Path):
     """Remove a temp or hold file of ours; a read-only bit copied from the original is cleared first. Used only after
     the outcome is decided: a cleanup error never changes what the owner is told (independent review C1-02)."""
+    # Independent reviews S1-07 / S3-03: on POSIX a temp or hold file can be a hard link of the published name, and a
+    # mode change applies to both names, so it is unlinked as it is (that needs only write access to the folder). On
+    # Windows nothing is hard-linked (publish is a rename), and a read-only leftover is cleared after a failed unlink.
     try:
         if os.path.lexists(path):
             try:
+                path.unlink()
+            except PermissionError:
+                if os.name != "nt":
+                    raise
                 os.chmod(path, stat.S_IWRITE | stat.S_IREAD)
-            except OSError:
-                pass
-            path.unlink()
+                path.unlink()
     except OSError:
         pass
 

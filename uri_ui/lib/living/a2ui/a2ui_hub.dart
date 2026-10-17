@@ -370,7 +370,10 @@ class A2uiHub extends ChangeNotifier {
     _ => 'Check "$key" before continuing.',
   };
 
-  String _humanRefusal(String code, String? detail) => switch (code) {
+  String _humanRefusal(String code, String? detail) => humanRefusal(code, detail);
+
+  /// Plain words for a refused card action (public for tests; independent review S3-01).
+  static String humanRefusal(String code, String? detail) => switch (code) {
     'DRAFT_CHANGED' => 'You changed the choices. Press "Update proposal" first, then confirm the new proposal.',
     'STALE_SURFACE' => 'This view was out of date and has been refreshed. Please check it again.',
     'PROPOSAL_MISMATCH' => 'The proposal changed. Please review it again.',
@@ -384,6 +387,17 @@ class A2uiHub extends ChangeNotifier {
     'STALE_CHANGE' => 'The file was changed after this card was shown. Nothing was saved; review the save again.',
     'DESTINATION_EXISTS' => 'A file with that name already exists. Nothing was replaced; choose another name.',
     'FILE_READ_ONLY' => 'The file is read-only, so it was not replaced. Use Save as to keep your changes in a new file.',
+    // Independent review S1-03 (3e202efc): Office save-card codes in plain words; other codes keep the fallback.
+    'STRUCTURE_NOT_SUPPORTED' =>
+      'URI cannot add or remove rows in this sheet safely${detail == null || detail.isEmpty ? '' : ': $detail'}. '
+          'Nothing was saved.',
+    'FILE_OPEN_ELSEWHERE' => 'The file is open in another program. Close it there, then save again.',
+    'CELL_NOT_EDITABLE' => 'A cell in this change is part of a table header, shared formula or merged range, so '
+        'nothing was saved.',
+    'NOTHING_TO_SAVE' => 'There are no accepted changes to save.',
+    'RELOAD_REQUIRED' => 'The sheet changed with the last save and was reloaded. Nothing was saved; review it again.',
+    // S3-01: APPLY_FAILED also covers errors after the file was written, so it claims nothing about the file.
+    'APPLY_FAILED' => 'Something went wrong while saving. Check the file before saving again.',
     _ =>
       'Refused: $code${detail == null || detail.isEmpty ? '' : ' ($detail)'}',
   };

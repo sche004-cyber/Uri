@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import needs_windows
+from tests.office_u2.conftest import needs_windows
 from uri_office.service import Office, serve
 
 VIRTUAL = "Microsoft Print to PDF"

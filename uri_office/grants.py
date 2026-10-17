@@ -24,8 +24,10 @@ import ntpath
 import os
 import posixpath
 import re
+import threading
 import uuid
 from dataclasses import dataclass
+from functools import wraps
 from pathlib import Path
 
 from .errors import OfficeError
@@ -135,11 +137,22 @@ def check_folder_shape(raw, flavor: str | None = None) -> str:
     return raw
 
 
+def _locked(fn):
+    """Independent review S1-06 (3e202efc): grants and added folders change from several request threads; every
+    read and change of them holds the one lock, so a folder is never removed while a grant inside it is being made."""
+    @wraps(fn)
+    def run(self, *a, **kw):
+        with self._lock:
+            return fn(self, *a, **kw)
+    return run
+
+
 class Grants:
     """Open and save-as grants for files the owner picked, inside the allowed folders: the user home (or the service's
     --allow-root folders) plus folders the owner added (OD-R1, kept in `folders_file`, revocable)."""
 
     def __init__(self, allowed_roots=None, folders_file: Path | None = None):
+        self._lock = threading.RLock()
         roots = [Path.home()] if allowed_roots is None else list(allowed_roots)
         self.base_roots = []
         for r in roots:
@@ -168,12 +181,15 @@ class Grants:
 
     @property
     def roots(self) -> list:
-        return self.base_roots + [_norm(f) for f in self.added
+        with self._lock:
+            added = list(self.added)
+        return self.base_roots + [_norm(f) for f in added
                                   if Path(f).is_dir() and _norm(os.path.realpath(f)) == _norm(f)]
 
+    @_locked
     def folders(self) -> list:
         return ([{"path": r, "kind": "default", "removable": False} for r in self.base_roots] +
-                [{"path": f, "kind": "added", "removable": True} for f in self.added])
+                [{"path": f, "kind": "added", "removable": True} for f in list(self.added)])
 
     def _save(self):
         if self.folders_file is None:
@@ -182,6 +198,7 @@ class Grants:
         tmp.write_text(json.dumps({"folders": self.added}, indent=1), encoding="utf-8")
         os.replace(tmp, self.folders_file)
 
+    @_locked
     def add_folder(self, raw) -> dict:
         path = check_folder_shape(raw)
         p = Path(path)
@@ -197,6 +214,7 @@ class Grants:
         self._save()
         return {"added": True, "folders": self.folders()}
 
+    @_locked
     def remove_folder(self, raw) -> dict:
         """Stop allowing an added folder. Refused while a file from it is open or waiting to be saved (close it or
         finish the save first), so nothing is left half-granted."""
@@ -204,7 +222,7 @@ class Grants:
         if match is None:
             raise OfficeError("FOLDER_NOT_ADDED", "only folders you added can be removed")
         root = _norm(os.path.realpath(match))
-        if any(_inside(_norm(gr.path), root) for gr in self._by_id.values()):
+        if any(_inside(_norm(gr.path), root) for gr in list(self._by_id.values())):
             raise OfficeError("FOLDER_IN_USE", "close the files from this folder first", 409)
         self.added = [f for f in self.added if f is not match]
         self._save()
@@ -220,6 +238,7 @@ class Grants:
             _refuse("the file is outside the folders URI may use")
         return p
 
+    @_locked
     def grant_open(self, raw, *, kind: str = "xlsx") -> Grant:
         p = Path(check_shape(raw, suffixes=_suffixes(kind)))
         try:
@@ -233,6 +252,7 @@ class Grants:
             raise OfficeError("FILE_TOO_LARGE", f"the {KIND_LABEL[kind]} is larger than {cap // (1024 * 1024)} MB")
         return self._add("open", p)
 
+    @_locked
     def grant_save_as(self, raw, *, kind: str = "xlsx") -> Grant:
         p = Path(check_shape(raw, suffixes=_suffixes(kind)))
         if not p.parent.is_dir():
@@ -242,16 +262,19 @@ class Grants:
             _refuse("not a regular file")
         return self._add("save_as", p)
 
+    @_locked
     def _add(self, kind, p) -> Grant:
         g = Grant(uuid.uuid4().hex, kind, p)
         self._by_id[g.grant_id] = g
         return g
 
+    @_locked
     def get(self, grant_id, kind) -> Grant:
         g = self._by_id.get(grant_id) if isinstance(grant_id, str) else None
         if g is None or g.kind != kind:
             raise OfficeError("NO_GRANT", "this file was not opened or approved by the owner", 403)
         return g
 
+    @_locked
     def revoke(self, grant_id):
         self._by_id.pop(grant_id, None)

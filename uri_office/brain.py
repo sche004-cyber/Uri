@@ -221,7 +221,8 @@ class OfficeBrain:
         self.client = client
 
     def plan(self, instruction: str, *, sheets: list, active: str | None, engine: str, locked: dict,
-             history_rows: list, cancel=None, sources: list | None = None, task: str = "build") -> dict:
+             history_rows: list, cancel=None, sources: list | None = None, task: str = "build",
+             pending_rows=()) -> dict:
         """`sources` (M2): the reference files when the owner added files with roles; `task` is build (no working
         file: a new workbook), edit or check (the working file)."""
         if not isinstance(instruction, str) or not instruction.strip():
@@ -260,16 +261,30 @@ class OfficeBrain:
         # M2-XB-1: a question or a refusal never changes the draft, whatever ops came with it.
         # Row changes and cell changes on the same sheet in one answer are refused (cell ops name cells as shown
         # now, and a Brain that also fixes totals for the moved rows would adjust them twice).
-        row_sheets = {o.get("sheet") for o in data["ops"][:20] if isinstance(o, dict)
-                      and o.get("op") in ("insert_rows", "delete_rows")} if engine == "local" else set()
-        row_seen: set = set()                # independent review S1-01: one row change per sheet per answer
+        # Independent review S3-06: only row ops that will be proposed count (valid, not refused as pending or as a
+        # second row change on the sheet); an invalid row op no longer refuses the answer's cell changes there.
+        row_sheets: set = set()
+        if engine == "local" and status == "propose":
+            taken = set(pending_rows or ())
+            for o in data["ops"][:20]:
+                if isinstance(o, dict) and o.get("op") in ("insert_rows", "delete_rows") and o.get("sheet") not in taken:
+                    try:
+                        O.to_cell_edits({k: v for k, v in o.items() if v is not None}, engine=engine, sheets=names,
+                                        locked=locked)
+                    except OfficeError:
+                        continue
+                    taken.add(o.get("sheet"))
+                    row_sheets.add(o.get("sheet"))
+        # Independent reviews S1-01 / S2-01 / S2-02: one row change per sheet until it is saved. A row op on a sheet
+        # that already has an unsaved row change (`pending_rows`) or a valid earlier row op in this answer is refused
+        # on its own; a sheet counts as taken only once its row op passed validation.
+        row_seen: set = set(pending_rows or ())
         for i, op in enumerate(data["ops"][:20] if status == "propose" else ()):
-            if isinstance(op, dict) and op.get("op") in ("insert_rows", "delete_rows"):
-                if op.get("sheet") in row_seen:
-                    refused.append({"index": i, "code": "ROW_CHANGE_PENDING",
-                                    "detail": "one row change per sheet at a time; save the first one"})
-                    continue
-                row_seen.add(op.get("sheet"))
+            is_row = isinstance(op, dict) and op.get("op") in ("insert_rows", "delete_rows")
+            if is_row and op.get("sheet") in row_seen:
+                refused.append({"index": i, "code": "ROW_CHANGE_PENDING",
+                                "detail": "save the earlier row change on this sheet first"})
+                continue
             if row_sheets and isinstance(op, dict) and op.get("op") in O.CELL_OPS + O.SOURCE_OPS and \
                     op.get("sheet") in row_sheets:
                 refused.append({"index": i, "code": "ROW_AND_CELL_CHANGES",
@@ -302,6 +317,8 @@ class OfficeBrain:
                 written.update((e["sheet"], e["cell"]) for e in got           # an empty value loses nothing
                                if "cell" in e and (e.get("formula") or e.get("value") not in (None, "")))
                 edits += got
+                if is_row:
+                    row_seen.add(op.get("sheet"))
                 for e in got:            # later ops in the same answer see the sheets earlier ops made (M2-D4)
                     if e.get("op") == "add_sheet":
                         names.append(e["name"])
