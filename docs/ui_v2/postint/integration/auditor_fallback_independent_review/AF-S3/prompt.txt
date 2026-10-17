@@ -1,0 +1,56 @@
+You are an INDEPENDENT REVIEWER. Review one exact commit of the URI repository. You did not write this code. You are read-only.
+
+Review nonce: b8bef1e6cb511270 (repeat it in your result).
+
+Target
+- Audit checkout (detached, already at the commit): D:/uri-dev/uri-ui-v2-freeze/audit-348677b7
+- Commit under review: 348677b79610d6e261885531bb2e2a95b5253315 (milestone branch tip; its parent merged the canonical tip)
+- Base (the current canonical tip it must sit on): 3e769fdfaf63d943b4472e8480fe3f93c6444088
+- Scope: everything in `git -C D:/uri-dev/uri-ui-v2-freeze/audit-348677b7 diff 3e769fdfaf63d943b4472e8480fe3f93c6444088 348677b79610d6e261885531bb2e2a95b5253315` (5 files: scripts/dev_workflow/lifecycle.py, scripts/dev_workflow/lifecycle_providers.py, tests/dev_workflow/lifecycle_fixture/worker.py, tests/dev_workflow/test_lifecycle_auditor_fallback.py, .claude/skills/uri-development-lifecycle/SKILL.md). Read surrounding driver code where needed. Read the code yourself; do not trust documents, commit messages or reports as proof.
+
+What the change is: the development lifecycle driver gains a reviewer fallback chain. Owner policy (2026-10-16): Codex is the preferred independent reviewer but never mandatory; a verifiable independent Claude CLI reviewer is the fallback; acceptance = verified independence + exact SHA + verdict; when no reviewer is available, progress is preserved, the run reports BLOCKED and waits for availability without needing the owner.
+
+Acceptance criteria (verbatim from the milestone config):
+- AF-1 Codex (the preferred reviewer) is selected whenever it is available; a fallback is used only after the preferred reviewer's bounded attempts are used up.
+- AF-2 Quota, sign-in (AUTH) and not-found unavailability move to the next reviewer without pointless retries; failures, timeouts, SHA mismatch and unverified independence are retried within reviewer_selection.max_attempts.
+- AF-3 Acceptance depends only on verified independence (bound CLI binary, driver-made isolated config, orphan containment, distinct session from coordinator and implementer, checkout/ref integrity) + the exact candidate SHA + the verdict; the same checks apply to every provider; a relayed/imported review never satisfies the gate.
+- AF-4 Every reviewer unavailable or failing -> BLOCKED NO_INDEPENDENT_REVIEWER with reasons, progress kept, and the next `run` re-checks availability by itself (preferred first) without an owner unblock; the re-check must be bound to the hash-chained blocker so it cannot clear any other block. Unusable results (SHA mismatch, unverified independence) -> BLOCKED NO_REVIEWER for the owner. No verdict is ever invented; attempt counters are derived from chained events and persist across restart.
+- AF-5 A candidate change requires a new review; owner integration authorization, protected/frozen paths, regression proof and gates are enforced exactly as before.
+- AF-6 Configs without reviewer_fallbacks keep an unchanged policy hash and control state (runs planned before this change see no CONFIG_CHANGED or GIT_CONTROL drift) and unchanged behaviour (single reviewer, WAITING_FOR_MODEL on unavailability).
+- AF-7 Fallback CLIs are bound at PLAN in the control state and launched by that bound path; a non-DEVTEST fallback must be claude_cli or codex_cli; counts_as_independent and binary overrides stay DEVTEST-only for every reviewer in the chain.
+- AF-8 The driver never signs in, recovers credentials, or edits acceptance/authorization flags itself.
+
+Rules
+- Do not modify, create or delete any file anywhere. Do not run git commands that change state (no checkout, switch, reset, stash, commit, fetch, worktree add/remove, clean). Use git show, git diff, git log, git ls-tree, git grep, git merge-base, file reads and searches.
+- Do not use the network. Do not run the lifecycle driver against real configs or any CLI reviewer.
+- You may run tests only if they write nothing into the checkout (python -B, PYTHONDONTWRITEBYTECODE=1, -p no:cacheprovider; tests that create temp dirs outside the checkout are acceptable); otherwise do not run them and say so.
+
+Findings of earlier independent reviews of this change, to re-check here - judge from the code, not from this list; for each say FIXED, PARTIAL or OPEN:
+- AF-S2-01 MEDIUM: QUOTA/AUTH were classified from codex_cli stderr, which carries the whole Codex session transcript (prompt, model messages, command output), and QUOTA was checked before TIMED_OUT; a failed or timed-out Codex review whose recent stderr mentions quota/429/rate limit/401 was marked exhausted and skipped. Earlier variant AF-S1-01 (reviewer stdout/result text; claude is_error detail from model text).
+- AF-S2-02 LOW: reviewer_fallbacks length unbounded, so chain length x max_attempts could exceed max_steps (STEP_LIMIT).
+- AF-S1-02 LOW: a no-result round failing the integrity check was classified FAILURE instead of INDEPENDENCE_UNVERIFIED.
+- AF-S1-03 LOW: the AUTH classification also changed implementer/diagnosis behaviour for configs without fallbacks.
+- AF-S1-04 LOW: adding reviewer_fallbacks to an in-flight run needed a CONFIG unblock then a GIT_CONTROL TAMPER unblock.
+- AF-S1-06 LOW: SKILL.md wording (retry guidance, "first in every round") and collapsed line continuations in lifecycle.py.
+Also look for new defects introduced by the latest repairs (git log and diff within the branch history are allowed for context).
+
+Check at least
+1. Ancestry: the commit descends from the base; the merge brought in nothing beyond the 5 files (git diff base..commit --stat).
+2. Each criterion AF-1..AF-8: MET / PARTIAL / NOT MET with file:line evidence, and whether tests assert it.
+3. Security of the gate: no path by which an unavailable, imported, relayed, coordinator-run or implementer-run review counts as an ACCEPT; no way a re-check clears a different blocker (TAMPER, OWNER_AUTHORIZATION, CONFIG, EVIDENCE); no owner flag (authorized, authorized_protected_changes) can be set by the driver; integration still requires owner authorization.
+4. Backward compatibility (AF-6): existing configs and in-flight state directories keep their policy hash, control anchor and behaviour.
+5. Robustness: attempt counting across restarts, event-chain verification (verify) still passes for new event kinds, no infinite retry loop, bounded attempts.
+6. The SKILL.md text matches what the code does.
+
+Severity: HIGH (gate bypass, wrong acceptance, owner-flag change, state corruption), MEDIUM (wrong behaviour a coordinator will hit, criterion not met, untested main criterion), LOW (minor, docs). A finding needs file:line evidence from this commit.
+
+Verdicts: ACCEPT, ACCEPT WITH FINDINGS (only LOW, or MEDIUM that is clearly non-blocking and stated why), REVISE (blocking findings to repair), REJECT (fundamentally unsound).
+
+Output: end your final message with exactly one fenced block starting with the line AUDIT_RESULT followed by JSON:
+{"commit": "<full sha you reviewed>", "nonce": "b8bef1e6cb511270", "verdict": "...",
+ "prior_findings": [{"id": "AF-S2-01", "status": "FIXED|PARTIAL|OPEN", "evidence": ["path:line ..."]}],
+ "criteria": [{"id": "AF-1", "status": "MET|PARTIAL|NOT MET", "evidence": ["path:line ..."]}],
+ "findings": [{"id": "AF-S3-01", "severity": "...", "blocking": true|false, "title": "...", "evidence": ["path:line ..."], "repair": "..."}],
+ "checks_performed": ["..."], "inspected": ["files you read yourself"], "evidence_reviewed_only": ["documents/reports you read but did not reproduce"],
+ "live_observed": [], "tests_run": [], "unverified": ["claims you could not verify"],
+ "follow_up_prompt": "a ready-to-copy instruction for the implementing session to repair the findings"}

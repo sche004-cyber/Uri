@@ -1,0 +1,206 @@
+{
+ "commit": "348677b79610d6e261885531bb2e2a95b5253315",
+ "nonce": "b8bef1e6cb511270",
+ "verdict": "ACCEPT WITH FINDINGS",
+ "prior_findings": [
+  {
+   "id": "AF-S2-01",
+   "status": "FIXED",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle_providers.py:536-551 TIMED_OUT first; codex only 'ERROR: ' lines",
+    "scripts/dev_workflow/lifecycle_providers.py:674-677",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:362-378"
+   ]
+  },
+  {
+   "id": "AF-S2-02",
+   "status": "FIXED",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:151-152 at most 3 fallbacks",
+    "scripts/dev_workflow/lifecycle.py:154-156 max_attempts 1..10 (4x10=40 < max_steps 50, lifecycle.py:1750)",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:381-384"
+   ]
+  },
+  {
+   "id": "AF-S1-02",
+   "status": "OPEN",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1142-1143 NO_RESULT regardless of integrity",
+    "scripts/dev_workflow/lifecycle.py:1159-1172 falls through to FAILURE",
+    "scripts/dev_workflow/lifecycle.py:1838 FAILURE counts toward self-rechecking NO_INDEPENDENT_REVIEWER"
+   ]
+  },
+  {
+   "id": "AF-S1-03",
+   "status": "OPEN",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle_providers.py:675 unavailable_reason for every role",
+    "scripts/dev_workflow/lifecycle.py:1531 repair retryable on AUTH",
+    "scripts/dev_workflow/lifecycle.py:1945-1948 diagnosis WAITING_FOR_MODEL on AUTH"
+   ]
+  },
+  {
+   "id": "AF-S1-04",
+   "status": "OPEN",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:476-479 reviewer_exec_fallbacks in control_state",
+    "scripts/dev_workflow/lifecycle.py:1777-1781 only reviewer_policy is back-anchored",
+    "scripts/dev_workflow/lifecycle.py:496 drift",
+    "scripts/dev_workflow/lifecycle.py:2106-2107 rebind only on TAMPER GIT_CONTROL/REVIEWER_EXEC unblock"
+   ]
+  },
+  {
+   "id": "AF-S1-06",
+   "status": "OPEN",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:155 collapsed continuation",
+    "scripts/dev_workflow/lifecycle.py:1783 collapsed continuation",
+    "scripts/dev_workflow/lifecycle.py:1838 collapsed continuation",
+    ".claude/skills/uri-development-lifecycle/SKILL.md:100 'Do not retry a Codex failure' vs in-driver retries",
+    ".claude/skills/uri-development-lifecycle/SKILL.md:103 'first in every round'"
+   ]
+  }
+ ],
+ "criteria": [
+  {
+   "id": "AF-1",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1205-1218",
+    "scripts/dev_workflow/lifecycle.py:1188-1192 reset after independent result",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:46-74"
+   ]
+  },
+  {
+   "id": "AF-2",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1887-1893 exhausted only for QUOTA/AUTH/UNAVAILABLE",
+    "scripts/dev_workflow/lifecycle.py:1855-1862 not found at PLAN",
+    "scripts/dev_workflow/lifecycle.py:1195-1197",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:77-95,152-163,314-340 (timeout retry not tested end-to-end)"
+   ]
+  },
+  {
+   "id": "AF-3",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:353-379",
+    "scripts/dev_workflow/lifecycle.py:1139-1149",
+    "scripts/dev_workflow/lifecycle.py:1060-1076",
+    "scripts/dev_workflow/lifecycle.py:2070",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:182-235"
+   ]
+  },
+  {
+   "id": "AF-4",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1836-1848",
+    "scripts/dev_workflow/lifecycle.py:1782-1787",
+    "scripts/dev_workflow/lifecycle.py:189-198",
+    "scripts/dev_workflow/lifecycle.py:2179-2183",
+    "scripts/dev_workflow/lifecycle.py:1184-1203",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:99-149,304-329"
+   ]
+  },
+  {
+   "id": "AF-5",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1984-2035 unchanged",
+    "scripts/dev_workflow/lifecycle.py:1803-1808 candidate move",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:69-72,240-265"
+   ]
+  },
+  {
+   "id": "AF-6",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:176-183",
+    "scripts/dev_workflow/lifecycle.py:476-479",
+    "scripts/dev_workflow/lifecycle.py:1114,1834,1863-1864 non-fallback path unchanged",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:293-299 (key-set only; caveat AF-S1-03)"
+   ]
+  },
+  {
+   "id": "AF-7",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:157-163",
+    "scripts/dev_workflow/lifecycle.py:1120-1122",
+    "scripts/dev_workflow/lifecycle.py:1176-1182",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:270-290 (no test that a fallback launches by its bound path)"
+   ]
+  },
+  {
+   "id": "AF-8",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:2099-2115 no flag writes",
+    "diff contains no login/credential code"
+   ]
+  }
+ ],
+ "findings": [
+  {
+   "id": "AF-S3-01",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "codex 'ERROR: ' filter still reads the full stderr transcript; command output lines starting 'ERROR: ' that mention 429/quota/401 can still exhaust Codex",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle_providers.py:543-548",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:355-359 synthetic transcript"
+   ],
+   "repair": "Read only the trailing CLI error line(s) after the session ends (e.g. the last 'ERROR: ' line after the final turn), or use codex --json / a structured error event; add a test with a command-output 'ERROR: ... 401' line."
+  },
+  {
+   "id": "AF-S3-02",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "40 worst-case attempts leave little max_steps headroom; earlier repair cycles in the same run can turn a reviewer-availability block into an owner STEP_LIMIT block",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:151-156",
+    "scripts/dev_workflow/lifecycle.py:1789",
+    "scripts/dev_workflow/lifecycle.py:2038"
+   ],
+   "repair": "Validate len(chain)*max_attempts + margin <= max_steps at load, or block NO_INDEPENDENT_REVIEWER (not STEP_LIMIT) when the step budget ends during reviewer selection."
+  }
+ ],
+ "checks_performed": [
+  "ancestry via merge-base --is-ancestor",
+  "diff --stat base..commit (5 files)",
+  "diff f2c8e9ae..348677b7 (latest repair)",
+  "read do_review/review_outcome/attempt_counts/select_reviewer/run AUDITING branch/unblock/import_review/verify/is_independent/accepted_review/control_state/control_drift",
+  "read run_worker/_run/unavailable_reason/reviewer_executable/provider_available",
+  "traced re-check binding vs TAMPER/CONFIG/drift",
+  "traced policy hash and control state for configs without fallbacks",
+  "traced bounded attempts and step budget",
+  "compared SKILL.md text to code",
+  "ran fallback test file with no writes to checkout (git status clean)"
+ ],
+ "inspected": [
+  "scripts/dev_workflow/lifecycle.py",
+  "scripts/dev_workflow/lifecycle_providers.py",
+  "tests/dev_workflow/lifecycle_fixture/worker.py",
+  "tests/dev_workflow/test_lifecycle_auditor_fallback.py",
+  ".claude/skills/uri-development-lifecycle/SKILL.md",
+  "tests/dev_workflow/conftest.py",
+  "tests/dev_workflow/test_lifecycle.py (fixture helpers)"
+ ],
+ "evidence_reviewed_only": [
+  "commit messages in git log"
+ ],
+ "live_observed": [],
+ "tests_run": [
+  "PYTHONDONTWRITEBYTECODE=1 python -B -m pytest -p no:cacheprovider -q tests/dev_workflow/test_lifecycle_auditor_fallback.py -> 36 passed (332.78s)",
+  "tests/dev_workflow/test_lifecycle.py -> did not finish within 590s timeout (no result)"
+ ],
+ "unverified": [
+  "real codex_cli stderr/error-line format and claude is_error result content",
+  "full tests/dev_workflow/test_lifecycle.py regression suite (timed out)",
+  "behaviour with real CLI reviewers (not run by rule)",
+  "whether a nested claude CLI could inherit CLAUDE_CODE_SESSION_ID as its session id"
+ ],
+ "follow_up_prompt": "Repair LOW findings on 348677b7 of milestone/lifecycle-auditor-fallback-20261016 without changing gate semantics: (1) AF-S1-02: in review_outcome (scripts/dev_workflow/lifecycle.py:1159-1172) classify a NO_RESULT round whose integrity.ok is not True as INDEPENDENCE_UNVERIFIED (unusable -> NO_REVIEWER), add a test. (2) AF-S1-03: apply AUTH classification (and the narrowed QUOTA source) only to the reviewer role when reviewer_fallbacks is configured, or document and test the implementer/diagnosis change; keep configs without fallbacks behaving as at 3e769fdf. (3) AF-S1-04: when the anchor lacks reviewer_exec_fallbacks and the owner has acknowledged the CONFIG change, bind only that key with CONTROL_ANCHORED (like reviewer_policy at lifecycle.py:1780-1781), with a test for adding fallbacks to an in-flight run. (4) AF-S3-01: restrict codex unavailability parsing to the CLI's final error line(s) or structured output, and test that a command-output line 'ERROR: ... 401 Unauthorized' inside the session is not AUTH. (5) AF-S3-02: make sure reviewer-chain exhaustion cannot end in STEP_LIMIT (validate chain*max_attempts against max_steps, or reserve steps). (6) AF-S1-06: expand the collapsed continuations at lifecycle.py:155,1783,1838 and test line 68; in SKILL.md reconcile line 100 with in-driver retries, replace 'first in every round' with 'first again after every independent result, owner unblock or availability re-check', and note that timeouts are retried (outcome UNAVAILABLE (TIMEOUT)). Run tests/dev_workflow/test_lifecycle_auditor_fallback.py and tests/dev_workflow/test_lifecycle.py."
+}

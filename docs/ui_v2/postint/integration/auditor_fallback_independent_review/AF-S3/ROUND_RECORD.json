@@ -1,0 +1,46 @@
+{
+ "round": "AF-S3",
+ "kind": "fresh read-only subagent (Explore), launched by the UI V2 session",
+ "agent_id": "a1127addb5ad16b7f",
+ "candidate": "348677b79610d6e261885531bb2e2a95b5253315",
+ "base": "3e769fdfaf63d943b4472e8480fe3f93c6444088",
+ "nonce": "b8bef1e6cb511270",
+ "prompt_sha256": "7c64f477aa414805e4a740af63ffbe7735539bfddb0acb35447ed7f82d7ed55a",
+ "transcript_sha256": "ebac901b12a3c2417a1788f160ce571134cc14e5453d42e5e011a1b706be78f5",
+ "verdict": "ACCEPT WITH FINDINGS",
+ "blocking_findings": 0,
+ "independence_checks": {
+  "opening_message_equals_prompt": true,
+  "other_user_texts": [
+   "<system-reminder>\nYour final report is delivered through SubagentHandback: when "
+  ],
+  "tools": {
+   "Bash": 13,
+   "Read": 11,
+   "SubagentHandback": 1
+  },
+  "agent_ids": [
+   "a1127addb5ad16b7f"
+  ],
+  "attachment_hits": [],
+  "snapshot_equal": {
+   "audit_head": true,
+   "audit_status": true,
+   "candidate_ref": true,
+   "impl_worktree_head": true
+  },
+  "result": [
+   "ACCEPT WITH FINDINGS",
+   "348677b79610d6e261885531bb2e2a95b5253315",
+   "b8bef1e6cb511270"
+  ]
+ },
+ "coordinator_checks": {
+  "AF-S3-01_real_logs": "in ~20 real Codex rounds under D:/uri-dev/lifecycle/*/state/rounds and uri-ui-v2p-run c6 R1, 'ERROR: ' lines occur only as genuine CLI usage-limit errors; completed reviews (incl. of this driver) have none",
+  "regression_gap": "closed: coordinator ran full tests/dev_workflow on 348677b7 in a separate worktree: 316 passed, 5 skipped (Linux-only), 0 failed, worktree clean (gate_dev_workflow.log)"
+ },
+ "memory_index_lines_removed_during_review": [
+  "uri-lifecycle-auditor-fallback",
+  "uri-auditor-fallback-policy"
+ ]
+}
