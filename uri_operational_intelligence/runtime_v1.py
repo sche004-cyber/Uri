@@ -82,6 +82,9 @@ def expected_argv(cfg) -> list:
          "--load-mode", r["load_mode"], "--cache-ram", str(r["cache_ram_mib"])]
     if m.get("mmproj") and r.get("vision_enabled"):
         a += ["--mmproj", m["mmproj"]]
+        if r.get("vision_offload") is False:
+            # Resource profile only (runtime_profiles); the frozen config has no such key, so its argv is unchanged.
+            a += ["--no-mmproj-offload"]
     else:
         a += ["--no-mmproj"]
     return a + list(r.get("extra_args", []))
