@@ -1,0 +1,33 @@
+{
+ "round": "S1",
+ "kind": "fresh read-only subagent (Explore), launched by the UI V2 post-integration session (not the Office implementer)",
+ "agent_id": "a31644f69597b7b08",
+ "candidate": "3e202efc7ca4739e94e8440bebc701d5ca804fc6",
+ "base": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+ "nonce": "d5347175af289877",
+ "prompt_sha256": "22b8208a23176701dfb4c1c30aacb9c3cae6e79e04200883bae4a2239a8619d4",
+ "transcript": "reviewer_transcript.jsonl",
+ "transcript_sha256": "1154123d6b27853cbf92487b1d263ef972a606deb6f45aef0b55a9eecf549b5c",
+ "audit_result": "AUDIT_RESULT.json",
+ "verdict": "REVISE",
+ "independence_checks": {
+  "opening_message_equals_prompt": true,
+  "further_instructions": "none (only the platform SubagentHandback notice)",
+  "agent_ids": [
+   "a31644f69597b7b08"
+  ],
+  "tools_used": {
+   "Bash": 36,
+   "Read": 10,
+   "Grep": 2,
+   "SubagentHandback": 1
+  },
+  "writes": "none (no Edit/Write; no state-changing shell command)",
+  "injected_context_mentions_candidate": false,
+  "memory_index_neutralized_during_review": true,
+  "before_after_snapshot_equal": true,
+  "result_names_commit_and_nonce": true
+ },
+ "limits": "same model inside the coordinator session (separate context and identity, not a separate process); not recorded by the lifecycle driver (driver tier-3 support exists only on the unintegrated branch milestone/lifecycle-owner-attested-review-20261017)",
+ "coordinator_check": "S1-01 confirmed by reading uri_office/draft.py _propose/_rows_now and xlsx_patch.py sequential apply_row_op"
+}

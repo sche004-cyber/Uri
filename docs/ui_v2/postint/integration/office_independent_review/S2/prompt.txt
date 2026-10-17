@@ -1,0 +1,41 @@
+You are an INDEPENDENT REVIEWER. Review one exact commit of the URI repository. You did not write this code. You are read-only.
+
+Review nonce: 104ea6654bda9010 (repeat it in your result).
+
+Target
+- Audit checkout (detached, already at the commit): D:/uri-dev/uri-ui-v2-freeze/audit-7893aaed
+- Commit under review: 7893aaed2b7ef3be71ac044bf4d432281c8f066b
+- Base (the current canonical tip it must sit on): 250487098ca53adcee1ba1d22b4db398cd8dc3ed
+- Scope: everything in `git -C D:/uri-dev/uri-ui-v2-freeze/audit-7893aaed diff 250487098ca53adcee1ba1d22b4db398cd8dc3ed 7893aaed2b7ef3be71ac044bf4d432281c8f066b` (about 170 files). Read the code yourself; do not trust documents, commit messages or reports as proof.
+
+Rules
+- Do not modify, create or delete any file anywhere. Do not run git commands that change state (no checkout, switch, reset, stash, commit, fetch, worktree add/remove, clean). Use git show, git diff, git log, git ls-tree, git grep, git merge-base, file reads and searches.
+- Do not use the network. Do not start the application, servers, LibreOffice or the GPU.
+- You may run tests only if they write nothing into the checkout; otherwise do not run them and say so. Separate gates run the suites; your job is code review.
+
+Acceptance criteria (documents inside the checkout)
+- docs/office/unified/15_OFFICE_COMPLETION_CANDIDATE.md: OC-1..OC-5.
+- The milestone records it cites: docs/office/unified/13_EXCEL_COMPLETION_PLAN.md (XC-*), 14_FOLDER_ACCESS_PLAN.md (FA-*), 11_AUTHORING_A_B_PLAN.md (AB-*), 12_AUTHORING_C_WORD_PLAN.md (C-*).
+
+Check at least
+1. OC-1 ancestry: the commit descends from the base (git merge-base --is-ancestor).
+2. File integrity: saves never overwrite or clobber a user file silently; no-hard-link publishing; a file changed on disk is refused, not replaced; backups; temporary/hold files cleaned up; paths stay inside allowed roots (no traversal, no symlink/junction escape); folder access is refused until the user adds the folder.
+3. Refusal by name: every refused action is reported in plain words naming what was refused, never a raw code alone, and the UI does not claim success after a refusal.
+4. Approval boundary: no write to a user file without the user's explicit approval card; typed text is never treated as an approval; cancelling leaves the file unchanged.
+5. Security: LibreOffice and document rendering cannot fetch external links or run macros/active content; the Office service binds loopback only and exclusively; no new network egress; no secrets in code or logs; no new dependency without a pin.
+6. Frozen boundary (OC-5): no change to frozen Core files listed by scripts/ws_frozen_check.py / protected paths; tests/phase2a/test_frozen_core.py ALLOWED_NEW changes only add exact new paths (check that the four tests/ws UI-V2 paths and every new test path are listed exactly and that new Office, devices and test paths of this diff are covered).
+7. Excel row insert/delete and formatting, Word and PowerPoint authoring, folder access: logic matches the plans; error and edge cases handled; tests exist for the main criteria and actually assert the behaviour.
+8. Regressions to existing UI V2 behaviour (navigation, companions, settings, conversation, approval cards) from shared files touched by this diff.
+
+9. Findings of an earlier independent review of the parent commit 3e202efc, to re-check on this commit (judge from the code, not from this list): S1-01 HIGH a second row insert/delete on the same sheet before a save landed on shifted rows while the card named the original rows (uri_office/draft.py _propose/_rows_now, uri_office/xlsx_patch.py sequential row ops, uri_office/brain.py); S1-02 LOW Excel Save/Save as published with os.replace after an earlier hash/exists check; S1-03 LOW some new refusal codes shown as "Refused: CODE (detail)"; S1-04..S1-07 LOW (delete card shows 3 rows, presentation wording for Word, grants list without lock, POSIX chmod on a hard-linked temp). Say for each whether it is FIXED, OPEN or PARTIAL, and look for new defects introduced by the repair (including uri_office/xlsx_struct.py _shift_area and pptx delete_shape changes).
+
+Severity: HIGH (data loss, security, approval bypass, frozen-boundary breach, wrong file written), MEDIUM (wrong behaviour a user will hit, missing refusal, untested main criterion), LOW (minor, docs). A finding needs file:line evidence from this commit.
+
+Verdicts: ACCEPT, ACCEPT WITH FINDINGS (only LOW, or MEDIUM that is clearly non-blocking and stated why), REVISE (blocking findings to repair), REJECT (fundamentally unsound).
+
+Output: end your final message with exactly one fenced block starting with the line AUDIT_RESULT followed by JSON:
+{"commit": "<full sha you reviewed>", "nonce": "104ea6654bda9010", "verdict": "...",
+ "findings": [{"id": "S2-01", "severity": "...", "blocking": true|false, "title": "...", "evidence": ["path:line ..."], "repair": "..."}],
+ "checks_performed": ["..."], "inspected": ["files you read yourself"], "evidence_reviewed_only": ["documents/reports you read but did not reproduce"],
+ "live_observed": [], "tests_run": [], "unverified": ["claims you could not verify"],
+ "follow_up_prompt": "a ready-to-copy instruction for the implementing session to repair the findings"}

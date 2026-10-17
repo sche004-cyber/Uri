@@ -1,0 +1,19 @@
+40 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: V2 integrated: Start new work asks the real worker, never the simulator
+00:49 +741 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_hardening_test.dart: Dashboard Brain card (L-DASH, H-AC8) without the integrated worker the Brain tile stays the badged mock
+00:49 +742 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: V2 dashboard counts the worker approval waiting for the user
+00:49 +743 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: V2 integrated Connections says accounts are not managed here (no mock results)
+00:50 +744 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: ready Brain shows the ready colour without a health report
+00:50 +745 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: approval card buttons send the decision; deny is a decision too
+00:50 +746 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: Brain picker lists only selectable rows and selection is explicit
+00:50 +747 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: legacy address detection
+00:50 +748 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: root: worker start failure is reported honestly
+00:50 +749 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: root: Living is the default shell; opening classic closes the integrated worker first
+00:50 +750 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: events that arrive before the turn is registered are replayed, not lost
+00:50 +751 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: a decision whose events beat its reply still ends the turn
+00:50 +752 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: the card can be decided while its own turn is still finishing
+00:50 +753 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: the original job's late turn.finished does not end the decision's continuation
+00:50 +754 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: a refused confirmation keeps its card when the refusal is transient
+00:50 +755 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: a timed-out confirmation also stays busy without a retry card
+00:50 +756 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: worker exit clears busy and shows the error state
+00:50 +757 ~5: D:/uri-dev/uri-ui-v2-freeze/gate-7893aaed/uri_ui/test/ws/ws_integration_test.dart: a timed-out decision is an unknown outcome: busy, no retry card, reconciled by its turn.finished
+00:50 +758 ~5: All tests passed!

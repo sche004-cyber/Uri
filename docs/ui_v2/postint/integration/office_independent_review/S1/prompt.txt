@@ -1,0 +1,39 @@
+You are an INDEPENDENT REVIEWER. Review one exact commit of the URI repository. You did not write this code. You are read-only.
+
+Review nonce: d5347175af289877 (repeat it in your result).
+
+Target
+- Audit checkout (detached, already at the commit): D:/uri-dev/uri-ui-v2-freeze/audit-3e202efc
+- Commit under review: 3e202efc7ca4739e94e8440bebc701d5ca804fc6
+- Base (the current canonical tip it must sit on): 250487098ca53adcee1ba1d22b4db398cd8dc3ed
+- Scope: everything in `git -C D:/uri-dev/uri-ui-v2-freeze/audit-3e202efc diff 250487098ca53adcee1ba1d22b4db398cd8dc3ed 3e202efc7ca4739e94e8440bebc701d5ca804fc6` (about 169 files). Read the code yourself; do not trust documents, commit messages or reports as proof.
+
+Rules
+- Do not modify, create or delete any file anywhere. Do not run git commands that change state (no checkout, switch, reset, stash, commit, fetch, worktree add/remove, clean). Use git show, git diff, git log, git ls-tree, git grep, git merge-base, file reads and searches.
+- Do not use the network. Do not start the application, servers, LibreOffice or the GPU.
+- You may run tests only if they write nothing into the checkout; otherwise do not run them and say so. Separate gates run the suites; your job is code review.
+
+Acceptance criteria (documents inside the checkout)
+- docs/office/unified/15_OFFICE_COMPLETION_CANDIDATE.md: OC-1..OC-5.
+- The milestone records it cites: docs/office/unified/13_EXCEL_COMPLETION_PLAN.md (XC-*), 14_FOLDER_ACCESS_PLAN.md (FA-*), 11_AUTHORING_A_B_PLAN.md (AB-*), 12_AUTHORING_C_WORD_PLAN.md (C-*).
+
+Check at least
+1. OC-1 ancestry: the commit descends from the base (git merge-base --is-ancestor).
+2. File integrity: saves never overwrite or clobber a user file silently; no-hard-link publishing; a file changed on disk is refused, not replaced; backups; temporary/hold files cleaned up; paths stay inside allowed roots (no traversal, no symlink/junction escape); folder access is refused until the user adds the folder.
+3. Refusal by name: every refused action is reported in plain words naming what was refused, never a raw code alone, and the UI does not claim success after a refusal.
+4. Approval boundary: no write to a user file without the user's explicit approval card; typed text is never treated as an approval; cancelling leaves the file unchanged.
+5. Security: LibreOffice and document rendering cannot fetch external links or run macros/active content; the Office service binds loopback only and exclusively; no new network egress; no secrets in code or logs; no new dependency without a pin.
+6. Frozen boundary (OC-5): no change to frozen Core files listed by scripts/ws_frozen_check.py / protected paths; tests/phase2a/test_frozen_core.py ALLOWED_NEW changes only add exact new paths (check the last commit's four added paths and that new Office, devices and test paths of this diff are covered).
+7. Excel row insert/delete and formatting, Word and PowerPoint authoring, folder access: logic matches the plans; error and edge cases handled; tests exist for the main criteria and actually assert the behaviour.
+8. Regressions to existing UI V2 behaviour (navigation, companions, settings, conversation, approval cards) from shared files touched by this diff.
+
+Severity: HIGH (data loss, security, approval bypass, frozen-boundary breach, wrong file written), MEDIUM (wrong behaviour a user will hit, missing refusal, untested main criterion), LOW (minor, docs). A finding needs file:line evidence from this commit.
+
+Verdicts: ACCEPT, ACCEPT WITH FINDINGS (only LOW, or MEDIUM that is clearly non-blocking and stated why), REVISE (blocking findings to repair), REJECT (fundamentally unsound).
+
+Output: end your final message with exactly one fenced block starting with the line AUDIT_RESULT followed by JSON:
+{"commit": "<full sha you reviewed>", "nonce": "d5347175af289877", "verdict": "...",
+ "findings": [{"id": "S1-01", "severity": "...", "blocking": true|false, "title": "...", "evidence": ["path:line ..."], "repair": "..."}],
+ "checks_performed": ["..."], "inspected": ["files you read yourself"], "evidence_reviewed_only": ["documents/reports you read but did not reproduce"],
+ "live_observed": [], "tests_run": [], "unverified": ["claims you could not verify"],
+ "follow_up_prompt": "a ready-to-copy instruction for the implementing session to repair the findings"}

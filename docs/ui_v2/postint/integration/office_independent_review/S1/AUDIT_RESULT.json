@@ -1,0 +1,152 @@
+{
+ "commit": "3e202efc7ca4739e94e8440bebc701d5ca804fc6",
+ "nonce": "d5347175af289877",
+ "verdict": "REVISE",
+ "findings": [
+  {
+   "id": "S1-01",
+   "severity": "HIGH",
+   "blocking": true,
+   "title": "A second row change on the same sheet before save lands on shifted rows while the card says it deletes the original rows (wrong data deleted under an approval)",
+   "evidence": [
+    "uri_office/draft.py:146-150 a new row proposal is accepted while another accepted, unsaved row change on the same sheet exists; no check",
+    "uri_office/draft.py:159-174 _rows_now computes 'now:' content from base and cell changes only, ignoring pending row changes",
+    "uri_office/service.py:437-444 _current_sheets: the Brain plans from the original layout",
+    "uri_office/xlsx_patch.py:261-264 row changes applied one after another (each shifts the next)",
+    "uri_office/brain.py:263-270 ROW_AND_CELL_CHANGES only refuses row+cell mixes in one answer",
+    "reproduced in memory: insert at 4 then 'Delete row 10 on Budget (now: orig10)' deleted orig9 and kept orig10",
+    "tests/office/test_local_rows_service.py has no test of two row changes in one save"
+   ],
+   "repair": "Refuse a new row proposal or accept (ROW_CHANGE_PENDING: save first) on a sheet that already has an accepted or proposed unsaved row change, and refuse more than one row change per sheet in one Brain answer; or translate later changes and their 'shown' content through the earlier changes. Add failing-first tests at draft/service level and through xlsx_patch.patch."
+  },
+  {
+   "id": "S1-02",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Excel Save and Save as publish with os.replace after an earlier hash/exists check",
+   "evidence": [
+    "uri_office/service.py:669-684",
+    "uri_office/xlsx_patch.py:310",
+    "uri_office/xlsx_patch.py:518"
+   ],
+   "repair": "Pass create_only=True for Save as and expected_sha256+backup for Save from xlsx_patch.patch to atomic_write, as authoring does."
+  },
+  {
+   "id": "S1-03",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "New refusal codes shown as 'Refused: CODE (detail)'",
+   "evidence": [
+    "uri_ui/lib/living/a2ui/a2ui_hub.dart:387",
+    "uri_ui/lib/living/office/office_controller.dart:153",
+    "uri_ui/lib/living/office/office_controller.dart:394-397"
+   ],
+   "repair": "Add plain-words texts for STRUCTURE_NOT_SUPPORTED, ROW_AND_CELL_CHANGES, FOLDER_NOT_ADDED, TOO_MANY_OPEN, FILE_TOO_LARGE, VALUES_SHAPE, FORMAT_NOT_SUPPORTED."
+  },
+  {
+   "id": "S1-04",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Delete card shows only 3 rows of content (and records at most 50)",
+   "evidence": [
+    "uri_office/ops.py describe_op vals[:3]",
+    "uri_office/draft.py:164 min(count, 50)"
+   ],
+   "repair": "Show all deleted rows' content on the card (chunked), or refuse deletes too large to show."
+  },
+  {
+   "id": "S1-05",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "AUTHORING_NOT_SUPPORTED says 'presentation' for Word documents",
+   "evidence": [
+    "uri_ui/lib/living/office/presentation_editor.dart:13"
+   ],
+   "repair": "Use kind-neutral words or a per-kind text."
+  },
+  {
+   "id": "S1-06",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "add_folder/remove_folder change and save the list without a lock",
+   "evidence": [
+    "uri_office/grants.py add_folder/remove_folder/_save"
+   ],
+   "repair": "Take a lock around the change and _save."
+  },
+  {
+   "id": "S1-07",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Cleanup changes permissions of a temp file that may be hard-linked to the published file (POSIX)",
+   "evidence": [
+    "uri_office/xlsx_patch.py:319",
+    "uri_office/xlsx_patch.py:337"
+   ],
+   "repair": "Do not change permissions in _unlink_quietly when the file has more than one link."
+  }
+ ],
+ "checks_performed": [
+  "OC-1 merge-base --is-ancestor",
+  "protected-path diff check against ws_frozen_check PROTECTED",
+  "ALLOWED_NEW coverage of all tracked Office/devices/test paths parsed via ast",
+  "last commit adds four exact paths",
+  "atomic_write/recover_held/_publish_no_replace review",
+  "authoring session save, Save as, grants and stale checks",
+  "approvals card hash and grant revoke on close",
+  "folder grants shape, link/junction, persistence and removal",
+  "xlsx_struct row engine review",
+  "draft/ops/brain row and format handling",
+  "in-memory reproduction of S1-01",
+  "page guard JS and Flutter refusal text and save-card result handling",
+  "network, secrets and dependency grep over the diff",
+  "git status confirmed checkout unchanged"
+ ],
+ "inspected": [
+  "uri_office/authoring/session.py",
+  "uri_office/authoring/pptx_ops.py (partial)",
+  "uri_office/authoring/docx_ops.py (partial)",
+  "uri_office/xlsx_patch.py",
+  "uri_office/xlsx_struct.py",
+  "uri_office/approvals.py",
+  "uri_office/grants.py (diff)",
+  "uri_office/service.py (diff + _apply)",
+  "uri_office/draft.py",
+  "uri_office/ops.py (diff)",
+  "uri_office/brain.py (diff)",
+  "uri_office/docs.py (diff)",
+  "tests/phase2a/test_frozen_core.py",
+  "scripts/ws_frozen_check.py (head)",
+  "scripts/ws_materialized_verify.py (verified_transitions)",
+  "scripts/oi_materialize_test_runtime.py (paths)",
+  "uri_ui/office_web/src/guard.js (diff)",
+  "uri_ui/office_web/src/main.js (diff)",
+  "uri_ui/lib/living/office/office_controller.dart",
+  "uri_ui/lib/living/office/document_controller.dart (save action)",
+  "uri_ui/lib/living/office/presentation_editor.dart (head)",
+  "uri_ui/lib/living/office/office_workspace.dart (diff)",
+  "uri_ui/lib/services/platform_office_environment.dart (diff)",
+  "uri_ui/lib/living/a2ui/a2ui_hub.dart (diff)",
+  "test names in tests/office/test_local_rows_service.py, test_xlsx_struct.py, test_xlsx_styles.py, test_folder_access.py"
+ ],
+ "evidence_reviewed_only": [
+  "docs/office/unified/15_OFFICE_COMPLETION_CANDIDATE.md",
+  "docs/office/unified/13_EXCEL_COMPLETION_PLAN.md",
+  "docs/office/unified/14_FOLDER_ACCESS_PLAN.md",
+  "docs/office/unified/11_AUTHORING_A_B_PLAN.md",
+  "docs/office/unified/12_AUTHORING_C_WORD_PLAN.md",
+  "commit messages 87f54e3a, 3e202efc"
+ ],
+ "live_observed": [],
+ "tests_run": [
+  "in-memory python -B -I reproduction of S1-01 (no files written; git status clean)"
+ ],
+ "unverified": [
+  "live runs a1-a11, o1-o4",
+  "full gates (office, office_u2, a2ui, Flutter, page JS)",
+  "real LibreOffice and Univer engine behaviour",
+  "ws_frozen_check against the checkpoint zip (not available here)",
+  "full line-by-line review of docx_ops, pptx_ops, xlsx_styles and the Flutter editors and companion pane"
+ ],
+ "follow_up_prompt": "Repair S1-01 on top of 3e202efc. Two row changes on the same sheet in one save are applied one after another (uri_office/xlsx_patch.py:261-264), while the Brain's view (service.py:437-444) and the delete card's 'now:' content (draft.py:159-174) use the original layout, so a second change deletes a different row than the card names. Refuse a new row proposal, or its accept, on a sheet that already has an unsaved accepted or proposed row change (new code ROW_CHANGE_PENDING, plain words: 'Save the earlier row change first'), and refuse more than one row change per sheet in one Brain answer (brain.py plan). Add failing-first tests: draft/service level (insert at 4 accepted, then delete row 10 proposed -> refused) and a patch-level test. Add plain-words Flutter texts for ROW_CHANGE_PENDING, STRUCTURE_NOT_SUPPORTED and ROW_AND_CELL_CHANGES (S1-03). Optionally fix LOW S1-02 (Excel Save/Save as through atomic_write's create_only and expected_sha256+backup), S1-04, S1-05, S1-06, S1-07. If you change uri_office or test paths, keep ALLOWED_NEW exact. Re-run office, office_u2, a2ui and Flutter office tests."
+}

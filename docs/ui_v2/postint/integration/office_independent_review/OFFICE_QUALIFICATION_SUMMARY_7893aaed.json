@@ -1,0 +1,64 @@
+{
+ "schema": "uri.office.qualification_summary.v1",
+ "date": "2026-10-17",
+ "candidate": "7893aaed2b7ef3be71ac044bf4d432281c8f066b",
+ "branch": "candidate/office-completion-20261016",
+ "base_canonical": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+ "policy": "owner directive 2026-10-17 (autonomous independent review; fresh read-only subagent when Codex/Claude CLI unavailable; independence judged from evidence)",
+ "reviews": [
+  {
+   "round": "S1",
+   "commit": "3e202efc7ca4739e94e8440bebc701d5ca804fc6",
+   "verdict": "REVISE",
+   "blocking": [
+    "S1-01 HIGH wrong row deleted under an approval card"
+   ]
+  },
+  {
+   "round": "S2",
+   "commit": "7893aaed2b7ef3be71ac044bf4d432281c8f066b",
+   "verdict": "ACCEPT WITH FINDINGS",
+   "blocking": [],
+   "fixed": [
+    "S1-01",
+    "S1-02"
+   ],
+   "open_low": [
+    "S2-01",
+    "S2-02",
+    "S1-03 partial",
+    "S1-04",
+    "S1-05",
+    "S1-06",
+    "S1-07"
+   ]
+  }
+ ],
+ "reviewer_transcripts": "kept locally only (contain account/session metadata): D:/uri-dev/uri-ui-v2-freeze/office-review-R1|R2/reviewer_transcript.jsonl; sha256 in each ROUND_RECORD.json",
+ "gates_by_this_session_on_7893aaed": {
+  "scope_materialized_runtime": "tests/phase2a/test_frozen_core.py + tests/phase2b/test_boundary.py 15 passed, 0 failed (all 89 previously unlisted paths covered)",
+  "ws_frozen_check": "ok true",
+  "python_driver_set": "tests/ssrf web a2ui ws oi: 4597 passed, 22 skipped (equal to the accepted UI-V2-POSTINT gate)",
+  "tests_office": "480 passed, 5 skipped, 1 failed: test_page_blocks_every_network_attempt_in_edge (no built Office page bundle in a fresh checkout; known environment, also reported by Office)",
+  "tests_office_u2": "320 passed, 1 failed: test_entry_script_runs_isolated_and_service_stops_with_its_parent - fails identically on canonical 25048709 with the same venv (environment)",
+  "tests_devices": "21 passed",
+  "flutter": "758 passed, 5 skipped (pub get --enforce-lockfile --offline)",
+  "flutter_analyze": "0 errors, 4 infos",
+  "env_notes": "runtime2 venv lacks jsonschema; tests/office run with system Python 3.13; tests/office and tests/office_u2 must be collected separately (conftest name clash, recorded by Office)"
+ },
+ "live_by_office_session": {
+  "composite": "c076c4ad = 7893aaed + runtime-profiles files (test-only, never integrated)",
+  "brain_profile": "64K main-only (owner decision for Office)",
+  "a15": "13/13 PASS",
+  "o8": "34/34 PASS",
+  "brain_ready_tps": [
+   99,
+   102
+  ]
+ },
+ "integration_readiness": "fast-forward possible: 25048709 is an ancestor of 7893aaed; canonical unchanged at 25048709",
+ "not_claimed": [
+  "integration (needs explicit owner authorization)",
+  "driver-chained review class (the lifecycle driver on canonical does not record subagent reviews)"
+ ]
+}

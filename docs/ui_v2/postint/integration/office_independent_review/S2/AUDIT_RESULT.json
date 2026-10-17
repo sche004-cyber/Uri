@@ -1,0 +1,145 @@
+{
+ "commit": "7893aaed2b7ef3be71ac044bf4d432281c8f066b",
+ "nonce": "104ea6654bda9010",
+ "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [
+  {
+   "id": "S2-01",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Brain marks a sheet's row change as seen before validating it; a valid second row op is refused as ROW_CHANGE_PENDING when the first was invalid",
+   "evidence": [
+    "uri_office/brain.py:265-272",
+    "uri_office/ops.py:159-165"
+   ],
+   "repair": "Add the sheet to row_seen only after to_cell_edits succeeds for that op."
+  },
+  {
+   "id": "S2-02",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "With a row change pending, a Brain answer that includes another row op on that sheet is refused as a whole, dropping valid edits on other sheets",
+   "evidence": [
+    "uri_office/draft.py:152-154",
+    "uri_office/service.py:572"
+   ],
+   "repair": "Pre-filter in OfficeBrain.plan using the draft's pending row sheets (report ROW_CHANGE_PENDING per op) or tell the Brain which sheets have a pending row change."
+  },
+  {
+   "id": "S1-03",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "PARTIAL: Excel save-card refusals raised at publish (STRUCTURE_NOT_SUPPORTED, FILE_OPEN_ELSEWHERE, CELL_NOT_EDITABLE) and other Brain refusal codes still shown as 'Refused: CODE (detail)' / 'CODE: detail'",
+   "evidence": [
+    "uri_ui/lib/living/a2ui/a2ui_hub.dart:387-388",
+    "uri_ui/lib/living/office/office_controller.dart:137-140",
+    "uri_ui/lib/living/office/office_controller.dart:163",
+    "uri_office/service.py:684"
+   ],
+   "repair": "Add plain-word entries for STRUCTURE_NOT_SUPPORTED, FILE_OPEN_ELSEWHERE, CELL_NOT_EDITABLE, NOTHING_TO_SAVE, RELOAD_REQUIRED, APPLY_FAILED in a2ui_hub _humanRefusal, and route all Brain refusal codes through _human with a plain fallback that does not lead with the code."
+  },
+  {
+   "id": "S1-04",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "OPEN: delete-rows card shows only 3 rows of what is deleted",
+   "evidence": [
+    "uri_office/ops.py:210-216",
+    "uri_office/approvals.py:320-321"
+   ],
+   "repair": "Show all captured rows (up to the 50 in op['shown']) on the save card, or say exactly how many non-empty rows are removed."
+  },
+  {
+   "id": "S1-05",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "OPEN: Word editor refusals use presentation wording",
+   "evidence": [
+    "uri_ui/lib/living/office/presentation_editor.dart:13",
+    "uri_ui/lib/living/office/presentation_editor.dart:24-25",
+    "uri_ui/lib/living/office/presentation_editor.dart:43-51"
+   ],
+   "repair": "Pass the edit kind to authoringErrorMessage and use document wording for docx."
+  },
+  {
+   "id": "S1-06",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "OPEN: Grants state (_by_id, added) mutated and iterated from request threads without a lock",
+   "evidence": [
+    "uri_office/grants.py:167",
+    "uri_office/grants.py:185-211",
+    "uri_office/grants.py:245-257"
+   ],
+   "repair": "Guard _by_id/added with a threading.Lock in add/get/revoke/add_folder/remove_folder/roots; iterate over a copy."
+  },
+  {
+   "id": "S1-07",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "OPEN and wider: _unlink_quietly chmods a temp/hold that is hard-linked to the published file, setting the saved file to 0600 on POSIX; Excel Save/Save as now use this path too",
+   "evidence": [
+    "uri_office/xlsx_patch.py:335-346",
+    "uri_office/xlsx_patch.py:491",
+    "uri_office/xlsx_patch.py:498-512",
+    "uri_office/xlsx_patch.py:518",
+    "uri_office/xlsx_patch.py:524",
+    "uri_office/xlsx_patch.py:420"
+   ],
+   "repair": "After a successful link publish, unlink the temp/hold without chmod (only clear read-only on Windows when unlink fails), or check st_nlink>1 and skip the chmod."
+  }
+ ],
+ "checks_performed": [
+  "OC-1 merge-base --is-ancestor 250487098..7893aaed: OK",
+  "Diff stat of base..commit and of 3e202efc..7893aaed",
+  "S1-01 draft/brain/service row-change guard, undo/redo, rebase and Save-as interaction",
+  "S1-02 Excel Save/Save as publish path through atomic_write (recheck, backup, no-replace)",
+  "xlsx_struct _shift_area change and every caller",
+  "pptx delete_shape animation refusal",
+  "UI refusal wording in office_controller, a2ui_hub, presentation_editor",
+  "Approval apply binding (hash, draft version), card close on refusal",
+  "Grants: folder-scoped roots, realpath, symlink and junction refusal, save-as parent check",
+  "Frozen boundary: PROTECTED list vs changed files; ALLOWED_NEW exact coverage of Office, devices and ws test paths, script-checked",
+  "Egress, secrets and dependency scan of the diff",
+  "Authoring save and preview sanitize path"
+ ],
+ "inspected": [
+  "uri_office/xlsx_patch.py",
+  "uri_office/xlsx_struct.py",
+  "uri_office/draft.py",
+  "uri_office/brain.py",
+  "uri_office/service.py",
+  "uri_office/ops.py",
+  "uri_office/grants.py",
+  "uri_office/safe_write.py",
+  "uri_office/approvals.py",
+  "uri_office/docs.py",
+  "uri_office/xlsx_styles.py",
+  "uri_office/authoring/pptx_ops.py",
+  "uri_office/authoring/session.py",
+  "uri_ui/lib/living/office/office_controller.dart",
+  "uri_ui/lib/living/a2ui/a2ui_hub.dart",
+  "uri_ui/lib/living/office/presentation_editor.dart",
+  "uri_ui/office_web/src/guard.js",
+  "tests/office/test_completion_s1_repairs.py",
+  "tests/office/test_review_r7_repairs.py",
+  "tests/phase2a/test_frozen_core.py",
+  "scripts/ws_frozen_check.py",
+  "scripts/ws_materialized_verify.py"
+ ],
+ "evidence_reviewed_only": [
+  "docs/office/unified/15_OFFICE_COMPLETION_CANDIDATE.md",
+  "commit messages of 7893aaed and 87f54e3a"
+ ],
+ "live_observed": [],
+ "tests_run": [
+  "PYTHONDONTWRITEBYTECODE=1 python -B -m pytest -p no:cacheprovider tests/office/test_completion_s1_repairs.py tests/office/test_review_r7_repairs.py tests/office/test_xlsx_struct.py tests/office/test_local_rows_service.py: 44 passed; git status clean before and after"
+ ],
+ "unverified": [
+  "Full office, office_u2, a2ui, Flutter and page JS suites (separate gates)",
+  "tests/phase2a frozen-core test in a materialized runtime (checkpoint zip and receipt); uri_ui and docs paths rely on that runtime's own scope",
+  "Live OC-4 runs; LibreOffice macro and external-link isolation and loopback binding not re-read in full (unchanged base code)",
+  "Plan criteria XC-*, FA-*, AB-*, C-* not traced one by one"
+ ],
+ "follow_up_prompt": "On top of 7893aaed, repair these LOW findings with failing-first tests, then update ALLOWED_NEW for any new test path: (S2-01) in uri_office/brain.py plan(), add a sheet to row_seen only after that row op passes validation; (S2-02) refuse a row op on a sheet that already has a pending row change per op in the Brain answer (pass the pending row sheets into plan) instead of failing the whole answer in Draft._propose; (S1-03) add plain-word texts in uri_ui/lib/living/a2ui/a2ui_hub.dart _humanRefusal for STRUCTURE_NOT_SUPPORTED, FILE_OPEN_ELSEWHERE, CELL_NOT_EDITABLE, NOTHING_TO_SAVE, RELOAD_REQUIRED, APPLY_FAILED, and make office_controller refused-suggestion text plain for all codes (no leading raw code); (S1-04) show all captured rows on the delete-rows save card; (S1-05) make authoringErrorMessage use document wording for Word; (S1-06) add a lock to uri_office/grants.py Grants for _by_id and added, iterating over copies; (S1-07) in uri_office/xlsx_patch.py stop chmod-ing a temp or hold file that is hard-linked to the published name (unlink directly; clear read-only only on Windows when unlink fails), with a POSIX test that the saved file keeps its original mode."
+}
