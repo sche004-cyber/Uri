@@ -1,0 +1,48 @@
+You are an INDEPENDENT REVIEWER. Review one exact commit of the URI repository. You did not write this code. You are read-only.
+
+Review nonce: 3d248270f8066d9c (repeat it in your result).
+
+Target
+- Audit checkout (detached, already at the commit): D:/uri-dev/uri-ui-v2-freeze/audit-3e769fdf
+- Commit under review: 3e769fdfaf63d943b4472e8480fe3f93c6444088
+- Base (the current canonical tip it must sit on): 7893aaed2b7ef3be71ac044bf4d432281c8f066b
+- Scope: everything in `git -C D:/uri-dev/uri-ui-v2-freeze/audit-3e769fdf diff 7893aaed2b7ef3be71ac044bf4d432281c8f066b 3e769fdfaf63d943b4472e8480fe3f93c6444088` (24 files; the newest commit 0d9b20dd..3e769fdf changes 9). Read surrounding code where needed to judge it. Read the code yourself; do not trust documents, commit messages or reports as proof.
+
+Rules
+- Do not modify, create or delete any file anywhere. Do not run git commands that change state (no checkout, switch, reset, stash, commit, fetch, worktree add/remove, clean). Use git show, git diff, git log, git ls-tree, git grep, git merge-base, file reads and searches.
+- Do not use the network. Do not start the application, servers, LibreOffice or the GPU.
+- You may run tests only if they write nothing into the checkout (for example python -B with PYTHONDONTWRITEBYTECODE=1 and -p no:cacheprovider); otherwise do not run them and say so. Separate gates run the suites; your job is code review.
+
+Context: earlier independent reviews of this line left these findings open; the commits since 7893aaed say they repair them. Judge from the code whether each is FIXED, PARTIAL or OPEN:
+- S2-01 uri_office/brain.py plan(): a sheet was marked as having a row change before the row op was validated.
+- S2-02 a later Brain answer with another row op on a sheet with a pending row change was refused as a whole, dropping valid edits on other sheets (needs a two-sheet test).
+- S1-03 / S3-02 refusal codes shown as "Refused: CODE (detail)" or "CODE: detail" (uri_ui/lib/living/a2ui/a2ui_hub.dart; uri_ui/lib/living/office/office_controller.dart _human, _guard, page edits; e.g. NOTHING_TO_SAVE, DESTINATION_EXISTS, CHANGE_CANNOT_BE_SHOWN).
+- S1-04 / S3-04 the delete-rows save card did not name rows beyond the 50 captured, and printed nothing when the captured rows were empty (uri_office/ops.py, uri_office/draft.py).
+- S1-05 Word editor refusals used presentation wording.
+- S1-06 uri_office/grants.py Grants state without a lock.
+- S1-07 / S3-03 xlsx_patch cleanup changed permissions (POSIX mode, Windows read-only bit) of a temp or hold file hard-linked to the published file; on Windows, publishing should no longer use a hard link.
+- S3-01 the APPLY_FAILED text in a2ui_hub.dart claimed "the file was left as it was" although APPLY_FAILED also wraps errors after publishing.
+- S3-05 no test that valid edits on other sheets are kept when a row op is refused as pending.
+- S3-06 brain.py row_sheets counted invalid or pending-refused row ops, refusing valid cell ops on that sheet.
+- S3-07 uri_ui/test/office/office_completion_s2_test.dart vs the frozen-scope ALLOWED_NEW gate.
+
+Check at least
+1. Ancestry: the commit descends from the base (git merge-base --is-ancestor).
+2. Each finding above: FIXED / PARTIAL / OPEN with file:line evidence; tests exist and actually assert the repaired behaviour (failing-first where claimed).
+3. New defects introduced by the repair: locking (deadlock, re-entrancy, lock held across I/O or callbacks), file integrity of saves and backups (no silent overwrite, no lost backup, read-only handling on Windows), approval boundary (no write without the card; the card still shows exactly what will change), refusal wording (plain words, no raw code alone, no false success), Brain planning behaviour.
+4. UI V2 shared file uri_ui/lib/living/a2ui/a2ui_hub.dart (UI V2 is frozen on the base commit): existing entries and the fallback for non-Office codes must keep their behaviour; humanRefusal is now public static - check every caller and that no UI V2 approval-card text changed; no regression to UI V2 approval cards, navigation, companions, settings or conversation.
+5. Test-infrastructure changes (conftest imports changed to package paths, fake Brains accepting **kw): they must not weaken any assertion or hide failures.
+6. Frozen boundary: no change to paths protected by scripts/ws_frozen_check.py; tests/phase2a/test_frozen_core.py ALLOWED_NEW changes only add exact new paths, and every new test path of this diff is listed.
+7. Security: no new network egress, secrets, or unpinned dependency.
+
+Severity: HIGH (data loss, security, approval bypass, frozen-boundary breach, wrong file written), MEDIUM (wrong behaviour a user will hit, missing refusal, untested main criterion), LOW (minor, docs). A finding needs file:line evidence from this commit.
+
+Verdicts: ACCEPT, ACCEPT WITH FINDINGS (only LOW, or MEDIUM that is clearly non-blocking and stated why), REVISE (blocking findings to repair), REJECT (fundamentally unsound).
+
+Output: end your final message with exactly one fenced block starting with the line AUDIT_RESULT followed by JSON:
+{"commit": "<full sha you reviewed>", "nonce": "3d248270f8066d9c", "verdict": "...",
+ "prior_findings": [{"id": "S2-01", "status": "FIXED|PARTIAL|OPEN", "evidence": ["path:line ..."]}],
+ "findings": [{"id": "S4-01", "severity": "...", "blocking": true|false, "title": "...", "evidence": ["path:line ..."], "repair": "..."}],
+ "checks_performed": ["..."], "inspected": ["files you read yourself"], "evidence_reviewed_only": ["documents/reports you read but did not reproduce"],
+ "live_observed": [], "tests_run": [], "unverified": ["claims you could not verify"],
+ "follow_up_prompt": "a ready-to-copy instruction for the implementing session to repair the findings"}

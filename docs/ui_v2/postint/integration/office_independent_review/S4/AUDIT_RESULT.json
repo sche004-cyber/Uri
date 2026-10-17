@@ -1,0 +1,224 @@
+{
+ "commit": "3e769fdfaf63d943b4472e8480fe3f93c6444088",
+ "nonce": "3d248270f8066d9c",
+ "verdict": "ACCEPT WITH FINDINGS",
+ "prior_findings": [
+  {
+   "id": "S2-01",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/brain.py:281 row_seen seeded only from pending_rows",
+    "uri_office/brain.py:320-321 sheet taken only after validation",
+    "tests/office/test_completion_s2_repairs.py:25-30"
+   ]
+  },
+  {
+   "id": "S2-02",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/service.py:568-573 pending_rows passed to plan()",
+    "uri_office/brain.py:284-287 per-op ROW_CHANGE_PENDING",
+    "uri_office/draft.py:144-154 last-check kept",
+    "tests/office/test_completion_s1_repairs.py:66-71",
+    "tests/office/test_completion_s3_repairs.py:45-56 two-sheet test"
+   ]
+  },
+  {
+   "id": "S1-03",
+   "status": "FIXED",
+   "evidence": [
+    "uri_ui/lib/living/office/office_controller.dart:138-183",
+    "uri_ui/lib/living/a2ui/a2ui_hub.dart:390-400",
+    "uri_ui/test/office/office_completion_s2_test.dart:19-36"
+   ]
+  },
+  {
+   "id": "S3-02",
+   "status": "FIXED",
+   "evidence": [
+    "uri_ui/lib/living/office/office_controller.dart:125,281 use humanRefusal",
+    "office_controller.dart:144-150 fallback without code"
+   ]
+  },
+  {
+   "id": "S1-04",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/ops.py:212-226",
+    "tests/office/test_completion_s2_repairs.py:46-51"
+   ]
+  },
+  {
+   "id": "S3-04",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/ops.py:221-225",
+    "tests/office/test_completion_s3_repairs.py:21-23"
+   ]
+  },
+  {
+   "id": "S1-05",
+   "status": "FIXED",
+   "evidence": [
+    "uri_ui/lib/living/office/presentation_editor.dart:44-48,161,186,206",
+    "uri_ui/test/office/office_completion_s2_test.dart:10-17"
+   ]
+  },
+  {
+   "id": "S1-06",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/grants.py:140-147 _locked",
+    "uri_office/grants.py:155 RLock",
+    "grants.py:184-187 roots copies under lock",
+    "tests/office/test_completion_s2_repairs.py:70-80"
+   ]
+  },
+  {
+   "id": "S1-07",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/xlsx_patch.py:340-356 unlink before any chmod, chmod only on nt",
+    "tests/office/test_completion_s2_repairs.py:83-91 (POSIX-gated)"
+   ]
+  },
+  {
+   "id": "S3-03",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/xlsx_patch.py:324-326 Windows always rename",
+    "tests/office/test_completion_s3_repairs.py:67-95 (ran on Windows, passed)",
+    "tests/office_u2/test_authoring_pptx.py:439-450"
+   ]
+  },
+  {
+   "id": "S3-01",
+   "status": "FIXED",
+   "evidence": [
+    "uri_ui/lib/living/a2ui/a2ui_hub.dart:400",
+    "uri_ui/test/office/office_completion_s2_test.dart:26"
+   ]
+  },
+  {
+   "id": "S3-05",
+   "status": "FIXED",
+   "evidence": [
+    "tests/office/test_completion_s3_repairs.py:45-56"
+   ]
+  },
+  {
+   "id": "S3-06",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/brain.py:266-277",
+    "uri_office/ops.py:138-139 local engine has no add_sheet, so validation before and in the loop matches",
+    "tests/office/test_completion_s3_repairs.py:59-64"
+   ]
+  },
+  {
+   "id": "S3-07",
+   "status": "FIXED",
+   "evidence": [
+    "scripts/oi_materialize_test_runtime.py:29-58 copies no uri_ui test paths",
+    "scripts/phase2close_chain.py:134 PHASE2_SCOPE includes uri_ui/",
+    "tests/phase2a/test_frozen_core.py:307-308 lists both new python tests"
+   ]
+  }
+ ],
+ "findings": [
+  {
+   "id": "S4-01",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Some Office card refusals still reach the hub fallback 'Refused: CODE (detail)'; sheet-view start error shows 'CODE: detail'",
+   "evidence": [
+    "uri_ui/lib/living/a2ui/a2ui_hub.dart:401-402",
+    "uri_office/approvals.py:435 CHANGE_MISMATCH",
+    "uri_office/approvals.py:467 STALE_PLAN/INPUT_CHANGED",
+    "uri_office/safe_write.py:55-60 DISK_FULL/WRITE_FAILED",
+    "uri_ui/lib/living/office/office_controller.dart:127",
+    "uri_ui/lib/living/office/office_bridge.dart:35"
+   ],
+   "repair": "Add plain sentences to A2uiHub.humanRefusal for CHANGE_MISMATCH, UNKNOWN_SURFACE, STALE_PLAN, INPUT_CHANGED, WRITE_FAILED, DISK_FULL (wording from uri_office/contracts.py ErrorInfo), and word OfficeSurfaceError without the raw code."
+  },
+  {
+   "id": "S4-02",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Delete-card wording edge cases: all-empty captured rows print nothing; no captured rows prints a lone 'and N more rows not shown'",
+   "evidence": [
+    "uri_office/ops.py:218-225"
+   ],
+   "repair": "When every captured row is empty and none are beyond the cap, say '(all N rows are empty)'; when nothing was captured, say '(N rows not shown)'. Add tests."
+  },
+  {
+   "id": "S4-03",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "CHANGE_CANNOT_BE_SHOWN wording says 'on the sheet' but the code means the approval card could not be built",
+   "evidence": [
+    "uri_ui/lib/living/office/office_controller.dart:175",
+    "uri_office/approvals.py:151,175"
+   ],
+   "repair": "Reword to 'This change is too large to show on an approval card, so it cannot be saved. Save fewer changes at a time.'"
+  }
+ ],
+ "checks_performed": [
+  "ancestry via git merge-base --is-ancestor",
+  "read full diff 7893aaed..3e769fdf (24 files)",
+  "brain.plan check before the loop vs main loop consistency (engine, add_sheet, overlap, locked)",
+  "service pending_rows vs draft rows_pending states",
+  "Grants lock coverage, re-entrancy, external access to private state, lock order with session lock",
+  "xlsx_patch publish/cleanup paths on Windows and POSIX incl. recover_held and atomic_write call sites",
+  "xlsx_new/safe_write link/unlink paths unaffected",
+  "a2ui_hub humanRefusal callers, subclassing, fallback, origin of new codes outside Office",
+  "office_controller refusal paths (_guard, page edits, suggestions)",
+  "presentation_editor document wording callers",
+  "test infra: conftest package imports, **_ fake brains, changed expectations",
+  "frozen boundary: PROTECTED paths, ALLOWED_NEW additions, materialized overlay scope",
+  "security grep for network/secrets/dependency changes",
+  "describe_op edge cases by calling the function"
+ ],
+ "inspected": [
+  "uri_office/brain.py",
+  "uri_office/service.py",
+  "uri_office/draft.py",
+  "uri_office/ops.py",
+  "uri_office/grants.py",
+  "uri_office/xlsx_patch.py",
+  "uri_office/xlsx_new.py",
+  "uri_office/safe_write.py",
+  "uri_office/approvals.py",
+  "uri_ui/lib/living/a2ui/a2ui_hub.dart",
+  "uri_ui/lib/living/office/office_controller.dart",
+  "uri_ui/lib/living/office/presentation_editor.dart",
+  "uri_ui/test/office/office_completion_s2_test.dart",
+  "uri_ui/test/office/office_m2_test.dart",
+  "tests/office/test_completion_s1_repairs.py",
+  "tests/office/test_completion_s2_repairs.py",
+  "tests/office/test_completion_s3_repairs.py",
+  "tests/office_u2/test_authoring_pptx.py",
+  "tests/office_u2/test_completion_r8_repairs.py",
+  "tests/phase2a/test_frozen_core.py",
+  "scripts/ws_frozen_check.py",
+  "scripts/oi_materialize_test_runtime.py",
+  "scripts/ws_materialized_verify.py",
+  "scripts/phase2close_chain.py"
+ ],
+ "evidence_reviewed_only": [
+  "commit messages of 0d9b20dd and 3e769fdf",
+  "docs/plans PHASE2* report lines mentioning test_frozen_core"
+ ],
+ "live_observed": [],
+ "tests_run": [
+  "PYTHONDONTWRITEBYTECODE=1 python -B -m pytest -p no:cacheprovider tests/office/test_completion_s1_repairs.py test_completion_s2_repairs.py test_completion_s3_repairs.py test_local_rows_service.py test_review_r5_repairs.py test_review_r6_repairs.py test_xlsx_patch.py: 54 passed, 1 skipped (POSIX-gated)",
+  "same flags, tests/office + tests/office_u2/test_authoring_pptx.py + tests/phase2a/test_frozen_core.py: 519 passed, 6 skipped, 4 failed (3 test_frozen_core failures come from running in a normal checkout instead of the materialized runtime: HEAD is not e8e3b65 and thousands of paths changed since then; test_page_blocks_every_network_attempt_in_edge not checked, it may start Edge headless and looks like an environment failure); git status clean before and after"
+ ],
+ "unverified": [
+  "Flutter/Dart tests not run (would write .dart_tool into checkout); Dart compile of static humanRefusal/_knownRefusal checked by reading only",
+  "POSIX-gated test test_removing_a_hard_linked_leftover_keeps_the_saved_files_mode not executed on this Windows host",
+  "failing-first claims of the new tests not reproduced (no checkout of earlier commits allowed); judged by reading the pre-repair code in the diff",
+  "test_page Edge failure not compared against base"
+ ],
+ "follow_up_prompt": "On top of 3e769fdf, repair LOW findings S4-01..S4-03 of independent review S4 (nonce 3d248270f8066d9c) without touching UI V2 approval-card text or the hub's non-Office fallback: (1) uri_ui/lib/living/a2ui/a2ui_hub.dart humanRefusal: add plain sentences for the Office codes CHANGE_MISMATCH, UNKNOWN_SURFACE, STALE_PLAN, INPUT_CHANGED, WRITE_FAILED, DISK_FULL (reuse the wording in uri_office/contracts.py ErrorInfo); in uri_ui/lib/living/office/office_controller.dart:127 stop printing OfficeSurfaceError as 'CODE: detail'. (2) uri_office/ops.py describe_op delete_rows: when every captured row is empty and count <= captured, say '(all N rows are empty)'; when nothing was captured, say '(N rows not shown)' without a leading 'and'. (3) office_controller.dart:175 CHANGE_CANNOT_BE_SHOWN: say the change is too large for the approval card and to save fewer changes at a time. Add one failing-first test per item (Python in tests/office/test_completion_s4_repairs.py, listed in tests/phase2a/test_frozen_core.py ALLOWED_NEW; Dart in uri_ui/test/office/office_completion_s2_test.dart) and keep the 'Refused: SOME_SCHEDULER_CODE (x)' fallback assertion."
+}

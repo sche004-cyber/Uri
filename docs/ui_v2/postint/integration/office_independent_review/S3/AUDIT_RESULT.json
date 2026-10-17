@@ -1,0 +1,205 @@
+{
+ "commit": "0d9b20ddf9b890323a1654bebaf9db81556de333",
+ "nonce": "af0efd68ee2dfa71",
+ "verdict": "ACCEPT WITH FINDINGS",
+ "prior_findings": [
+  {
+   "id": "S2-01",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/brain.py:269-275 a pending or earlier row op is refused on its own",
+    "uri_office/brain.py:308-309 a sheet is marked only after its op passes validation",
+    "tests/office/test_completion_s2_repairs.py:24-29 fails on base (would also refuse ROW_CHANGE_PENDING)"
+   ]
+  },
+  {
+   "id": "S2-02",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/service.py:570-573 pending_rows uses the same rule as uri_office/draft.py:144-145",
+    "uri_office/brain.py:269 seeded from pending_rows",
+    "tests/office/test_completion_s2_repairs.py:33-42 and tests/office/test_completion_s1_repairs.py:66-71 (per-op refusal; the draft still refuses as last check)",
+    "gap: single-sheet fixture tests/office/test_local_rows_service.py:30-41, so keeping edits on other sheets is not tested"
+   ]
+  },
+  {
+   "id": "S1-03",
+   "status": "PARTIAL",
+   "evidence": [
+    "uri_ui/lib/living/a2ui/a2ui_hub.dart:387-396 six additions",
+    "uri_ui/lib/living/office/office_controller.dart:138-143,409 refused-suggestion list in plain words",
+    "uri_ui/lib/living/office/office_controller.dart:125,264 -> :164 still 'Refused: $code ($detail)' for e.g. NOTHING_TO_SAVE (uri_office/approvals.py:142), DESTINATION_EXISTS (uri_office/service.py:609), CHANGE_CANNOT_BE_SHOWN",
+    "no Dart test for the hub additions (uri_ui/test/office/office_completion_s2_test.dart tests only S1-05)"
+   ]
+  },
+  {
+   "id": "S1-04",
+   "status": "PARTIAL",
+   "evidence": [
+    "uri_office/ops.py:218-224 lists all captured rows (max 50)",
+    "uri_office/draft.py:176 capture cap 50 while uri_office/ops.py:162 allows count up to 1000",
+    "uri_office/ops.py:221 when all captured rows are empty nothing is printed, not even 'N more rows not shown'"
+   ]
+  },
+  {
+   "id": "S1-05",
+   "status": "FIXED",
+   "evidence": [
+    "uri_ui/lib/living/office/presentation_editor.dart:44-47",
+    "uri_ui/lib/living/office/presentation_editor.dart:161,186,206 document: isWord",
+    "uri_ui/test/office/office_completion_s2_test.dart:8-15"
+   ]
+  },
+  {
+   "id": "S1-06",
+   "status": "FIXED",
+   "evidence": [
+    "uri_office/grants.py:140-147 _locked RLock decorator",
+    "uri_office/grants.py:155,184-186,189,201,217,241,255,265,271,278",
+    "tests/office/test_completion_s2_repairs.py:75-86"
+   ]
+  },
+  {
+   "id": "S1-07",
+   "status": "PARTIAL",
+   "evidence": [
+    "uri_office/xlsx_patch.py:341-351 POSIX unlinks without chmod",
+    "uri_office/xlsx_patch.py:345-349 Windows still chmods after PermissionError; NTFS read-only attribute is shared by hard links",
+    "uri_office/xlsx_patch.py:313,476-478 Save as copies the source's read-only bit to tmp; :323,:523 published by hard link; :529 cleanup clears it on the saved file; also :420-425 hold restore",
+    "tests/office/test_completion_s2_repairs.py:90 test skipped on Windows"
+   ]
+  }
+ ],
+ "findings": [
+  {
+   "id": "S3-01",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "title": "APPLY_FAILED hub wording falsely says the file was left unchanged",
+   "evidence": [
+    "uri_ui/lib/living/a2ui/a2ui_hub.dart:396",
+    "uri_office/approvals.py:443-449 wraps any non-OfficeError from apply_fn",
+    "uri_office/service.py:699-705 code that can fail after xlsx_patch.patch published the file; also google/print/plan apply paths (service.py:648-653,671-673)"
+   ],
+   "repair": "Use neutral wording, e.g. 'Something went wrong while saving. Check the file before saving again.', with no claim the file is unchanged; add a Dart test for each new hub code."
+  },
+  {
+   "id": "S3-02",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "S1-03 still open for Office request errors in office_controller",
+   "evidence": [
+    "uri_ui/lib/living/office/office_controller.dart:125,164,264"
+   ],
+   "repair": "Give _human plain words for NOTHING_TO_SAVE, DESTINATION_EXISTS, CHANGE_CANNOT_BE_SHOWN, FILE_READ_ONLY, CANCELLED and other Office codes, and make its fallback use the detail (as _refusedWords does) rather than 'Refused: CODE'; add Dart tests."
+  },
+  {
+   "id": "S3-03",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "S1-07 still open on Windows: cleanup clears read-only on the hard-linked published file",
+   "evidence": [
+    "uri_office/xlsx_patch.py:323,345-349,425,476-478,523,529"
+   ],
+   "repair": "On Windows publish with os.rename (never replaces there) instead of os.link, or record st_nlink/read-only before chmod and re-apply S_IREAD to the published path after unlinking; add a Windows test (read-only source, Save as, saved file keeps read-only)."
+  },
+  {
+   "id": "S3-04",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Delete card does not name rows beyond 50; nothing printed when the captured rows are empty",
+   "evidence": [
+    "uri_office/draft.py:176",
+    "uri_office/ops.py:162",
+    "uri_office/ops.py:221-224"
+   ],
+   "repair": "Either cap delete_rows count at the capture limit or capture every row; always append 'and N more rows not shown' when count > captured, even if the captured rows are empty."
+  },
+  {
+   "id": "S3-05",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "No test that valid edits on other sheets are kept when a row op is refused as pending (S2-02 main criterion)",
+   "evidence": [
+    "tests/office/test_completion_s2_repairs.py:33-42",
+    "tests/office/test_local_rows_service.py:30-41 single-sheet workbook"
+   ],
+   "repair": "Add a two-sheet test: pending row change on Budget, answer = [delete_rows Budget, set_value Other!A1]; assert ROW_CHANGE_PENDING refused and the Other!A1 edit proposed."
+  },
+  {
+   "id": "S3-06",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "row_sheets still counts invalid or pending-refused row ops, refusing valid cell ops on that sheet",
+   "evidence": [
+    "uri_office/brain.py:264-265",
+    "uri_office/brain.py:276-280"
+   ],
+   "repair": "Decide ROW_AND_CELL_CHANGES from row ops that pass validation (two-pass, or validate row ops first), or document that this is intended and test it."
+  },
+  {
+   "id": "S3-07",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "New Dart test path not matched by ALLOWED_NEW (same as existing uri_ui/test/office files)",
+   "evidence": [
+    "tests/phase2a/test_frozen_core.py:14-37 no uri_ui/test/office glob",
+    "uri_ui/test/office/office_completion_s2_test.dart"
+   ],
+   "repair": "Confirm the zip-gated test_nothing_changed_outside_checkpoint_and_phase2a_paths passes on the materialized tree, or list the Dart test paths explicitly."
+  }
+ ],
+ "checks_performed": [
+  "ancestry via git merge-base --is-ancestor (OK; single commit)",
+  "full diff of all 22 files",
+  "brain.plan row-op flow and draft._propose consistency",
+  "service.instruct pending_rows computation under s.lock",
+  "Grants lock coverage, re-entrancy, lock order, I/O under lock",
+  "xlsx_patch atomic_write/_publish_no_replace/recover_held cleanup paths for POSIX and Windows",
+  "approvals card hash/chunking for longer delete text",
+  "a2ui_hub switch: additions only, fallback unchanged, origins of the new codes",
+  "office_controller _human/_refusedWords call sites",
+  "presentation_editor wording and callers",
+  "conftest import and fake Brain signature changes",
+  "frozen PROTECTED list and ALLOWED_NEW fnmatch coverage of new paths",
+  "dependency/network changes (none)"
+ ],
+ "inspected": [
+  "uri_office/brain.py",
+  "uri_office/service.py",
+  "uri_office/draft.py",
+  "uri_office/ops.py",
+  "uri_office/approvals.py",
+  "uri_office/grants.py",
+  "uri_office/xlsx_patch.py",
+  "uri_office/safe_write.py",
+  "uri_ui/lib/living/a2ui/a2ui_hub.dart",
+  "uri_ui/lib/living/office/office_controller.dart",
+  "uri_ui/lib/living/office/presentation_editor.dart",
+  "uri_ui/test/office/office_completion_s2_test.dart",
+  "uri_ui/test/office/office_m2_test.dart",
+  "tests/office/test_completion_s1_repairs.py",
+  "tests/office/test_completion_s2_repairs.py",
+  "tests/office/test_local_rows_service.py",
+  "tests/office/test_review_r5_repairs.py",
+  "tests/office/test_review_r6_repairs.py",
+  "tests/phase2a/test_frozen_core.py",
+  "scripts/ws_frozen_check.py",
+  "scripts/ws_materialized_verify.py (verified_transitions)"
+ ],
+ "evidence_reviewed_only": [
+  "commit message and code comments claiming each repair"
+ ],
+ "live_observed": [],
+ "tests_run": [
+  "PYTHONDONTWRITEBYTECODE=1 python -B -m pytest -p no:cacheprovider -q tests/office/test_completion_s2_repairs.py tests/office/test_completion_s1_repairs.py tests/office/test_grants.py tests/office/test_xlsx_patch.py tests/office/test_local_rows_service.py tests/office/test_review_r5_repairs.py tests/office/test_review_r6_repairs.py -> 104 passed, 1 skipped (S1-07 POSIX test skipped on Windows); git status clean before and after"
+ ],
+ "unverified": [
+  "failing-first of the new tests on the base (worked out from the base code, not run)",
+  "S1-07 behaviour on Windows NTFS (from known NTFS hard-link attribute semantics; not run)",
+  "Dart tests not run (flutter would write .dart_tool)",
+  "frozen-core zip-gated test and ws_frozen_check not run",
+  "how existing uri_ui/test/office/*.dart pass the ALLOWED_NEW gate"
+ ],
+ "follow_up_prompt": "On top of 0d9b20dd, repair the review S3 findings: (1) uri_ui/lib/living/a2ui/a2ui_hub.dart APPLY_FAILED: replace 'the file was left as it was' with neutral wording that does not claim the file is unchanged, and add Dart tests for each of the six new hub codes plus the unchanged fallback for a non-Office code. (2) uri_ui/lib/living/office/office_controller.dart: give _human plain words for NOTHING_TO_SAVE, DESTINATION_EXISTS, CHANGE_CANNOT_BE_SHOWN, FILE_READ_ONLY, CANCELLED and the other Office codes reachable through _guard and page edits, and change its fallback to use the service detail rather than 'Refused: CODE (detail)'; test propose-save NOTHING_TO_SAVE and DESTINATION_EXISTS. (3) uri_office/xlsx_patch.py: on Windows, stop clearing the read-only bit on a file hard-linked to the published name (publish with os.rename on Windows, or restore the read-only bit on the published path after cleanup); add a Windows test: read-only source, Save as, the saved file keeps the read-only bit and no leftover remains; same for recover_held restore. (4) uri_office/ops.py / draft.py delete card: always state 'and N more rows not shown' when count exceeds the captured rows (even if captured rows are empty), or cap delete_rows count at the capture limit; test a 60-row delete whose first 50 rows are empty. (5) Add a two-sheet test for S2-02: a pending row change on one sheet, an answer with a row op there plus a cell edit on another sheet; the cell edit is proposed and only the row op is refused. (6) brain.py: build row_sheets only from row ops that pass validation and are not refused as pending, or document and test the stricter behaviour. (7) Confirm the frozen-core gate accepts uri_ui/test/office/office_completion_s2_test.dart, or list it. Do not change existing hub entries or the hub fallback."
+}

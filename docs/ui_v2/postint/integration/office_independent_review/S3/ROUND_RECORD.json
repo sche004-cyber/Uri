@@ -1,0 +1,39 @@
+{
+ "round": "S3",
+ "kind": "fresh read-only subagent (Explore), launched by the UI V2 session (not the Office implementer)",
+ "agent_id": "af2c1e57037269d50",
+ "candidate": "0d9b20ddf9b890323a1654bebaf9db81556de333",
+ "base": "7893aaed2b7ef3be71ac044bf4d432281c8f066b",
+ "nonce": "af0efd68ee2dfa71",
+ "prompt_sha256": "a804122a50089a29bf7263911fad661d81a2accd3ab58e4e8a43b0d9dc21f8ac",
+ "transcript_sha256": "11a894e6486b18d7923881082b0fecdae1131ba6c7bba35015911ecc1bf581a9",
+ "verdict": "ACCEPT WITH FINDINGS",
+ "blocking_findings": 0,
+ "independence_checks": {
+  "opening_message_equals_prompt": true,
+  "n_user_texts": 2,
+  "tools": {
+   "Bash": 35,
+   "Read": 9,
+   "SubagentHandback": 1
+  },
+  "agent_ids": [
+   "af2c1e57037269d50"
+  ],
+  "attachment_hits": [],
+  "snapshot_equal": {
+   "audit_head": true,
+   "audit_status": true,
+   "candidate_ref": true,
+   "canonical_remote": true,
+   "impl_worktree_head": true
+  },
+  "result": [
+   "ACCEPT WITH FINDINGS",
+   "0d9b20ddf9b890323a1654bebaf9db81556de333",
+   "af0efd68ee2dfa71"
+  ]
+ },
+ "memory_index_neutralized_during_review": true,
+ "limits": "same model, separate context; not driver-chained"
+}
