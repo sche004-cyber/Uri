@@ -16,6 +16,7 @@
  "review_focus": [
   "IC-1 scope: baseline..HEAD may change ONLY uri_operational_intelligence/runtime_profiles.py, uri_operational_intelligence/runtime_v1.py, scripts/ws_brain_host.py, tests/oi/test_runtime_profiles.py, docs/operational_intelligence/RUNTIME_PROFILES_UI_CONTRACT.md (all five byte-identical to commit 7c7a7776 of research/runtime-vram-r1-20261017, independently accepted in audit round 3), plus docs/operational_intelligence/RUNTIME_PROFILES_INTEGRATION_PLAN.md and this config. ADDITIONALLY (beyond the accepted scope, review it in full): fa0a70e6 adds uri_operational_intelligence/runtime_profile_selection.py, 6 lines in scripts/run_uri_integrated_worker.py and tests/oi/test_runtime_profile_selection.py, and a5fa08d4 adds live evidence under docs/operational_intelligence/profiles_live/ (evidence-only). Verify with git hash-object against 7c7a7776 (fetch research/runtime-vram-r1-20261017 from the canonical repository)",
   "Worker profile selection (fa0a70e6): the worker reads control/oi/brain_profile.json once before its file guard; verify only measured profiles derived from the frozen config can be selected (no binary, model, port or flag injection), absent/invalid file = frozen config exactly as before, the selection is recorded in worker-instance.json, and the guard's pinned read files follow the derived config; check that no path lets a profile replace the frozen Brain without the selection file",
+  "ProfileFollower (4d782ef1): the worker re-reads the selection on each readiness check when its stat signature changes and swaps only the readiness manager (the host owns the server); verify no race lets a turn be verified against a stale profile in a way that bypasses identity checks, that the guard's frozen-superset pinned files are correct, that brain_health.backend names the serving profile with qualified false, and that with no selection file behaviour is unchanged",
   "IC-2 frozen Runtime v1 preserved: model_lab/integration/local_brain.json and the freeze record unchanged; runtime_v1.expected_argv(frozen config) byte-identical to the baseline; runtime_profiles.derive_config(frozen, 32768, 'gpu', True) returns the frozen object; ws_brain_host without --profile behaves exactly as at the baseline (lease expected_vram_mib 15626, fit required_mib 15626); no path through which a profile could silently replace the frozen Brain (RuntimeManager identity, FOREIGN_INSTANCE); the default Brain configuration is NOT changed anywhere",
   "Correctness and security of runtime_profiles.derive_config / plan_change / cfg_required_mib and ws_brain_host.parse_profile: admission never on an estimate (unmeasured combinations refused), context never shrunk below a live conversation without confirmation, strict argument parsing",
   "test_every_measured_entry_matches_a_completed_probe SKIPS in this checkout by design (the probe evidence lives on the research branch); judge whether that is acceptable for integration",
@@ -39,7 +40,8 @@
   "uri_operational_intelligence/runtime_profile_selection.py",
   "scripts/run_uri_integrated_worker.py",
   "tests/oi/test_runtime_profile_selection.py",
-  "docs/operational_intelligence/profiles_live/**"
+  "docs/operational_intelligence/profiles_live/**",
+  "uri_operational_intelligence/brain_health.py"
  ],
  "test_globs": [
   "tests/**"
