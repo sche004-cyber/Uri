@@ -2,6 +2,7 @@
 import hashlib
 import io
 import json
+import os
 import zipfile
 from pathlib import Path
 
@@ -435,7 +436,8 @@ def test_save_does_not_replace_a_name_created_after_the_old_file_is_claimed(env,
     aid = a.edit_document(docs.add_opened(dest, grants))["authoring_id"]
     a.apply(aid, {"op": "add_slide", "layout": "Blank"})
     body = act_body(appr, a.propose_save(aid))
-    actual_link = xlsx_patch.os.link
+    primitive = "rename" if os.name == "nt" else "link"    # independent review S3-03: Windows publishes by rename
+    actual_link = getattr(xlsx_patch.os, primitive)
     raced = False
 
     def create_before_publish(source, target, *args, **kwargs):
@@ -445,7 +447,7 @@ def test_save_does_not_replace_a_name_created_after_the_old_file_is_claimed(env,
             dest.write_bytes(b"new external file")
         return actual_link(source, target, *args, **kwargs)
 
-    monkeypatch.setattr(xlsx_patch.os, "link", create_before_publish)
+    monkeypatch.setattr(xlsx_patch.os, primitive, create_before_publish)
     with pytest.raises(OfficeError) as error:
         a.apply_save(body)
     assert error.value.code == "TARGET_CHANGED"

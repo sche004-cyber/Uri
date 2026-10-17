@@ -135,14 +135,21 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
 
   /// Independent reviews S1-03 / S2: plain words for refused suggestions, never a leading raw code; a code without
   /// its own sentence is described by the service's short detail.
-  String _refusedWords(String code, String? detail) {
-    final words = _human(code, detail);
-    if (!words.startsWith('Refused: ')) return words;
+  String _refusedWords(String code, String? detail) => humanRefusal(code, detail, suggestion: true);
+
+  String _human(String code, String? detail) => humanRefusal(code, detail);
+
+  /// Independent reviews S1-03 / S3-02: plain words for every Office refusal the owner can meet in the sheet pane; a
+  /// code without its own sentence is described by the service's short detail, never as "Refused: CODE".
+  static String humanRefusal(String code, String? detail, {bool suggestion = false}) {
+    final known = _knownRefusal(code, detail);
+    if (known != null) return known;
     final d = (detail ?? '').trim();
-    return d.isEmpty || d == 'None' ? 'that change is not possible here' : d;
+    if (d.isEmpty || d == 'None') return suggestion ? 'that change is not possible here' : 'URI could not do that here.';
+    return suggestion ? d : 'URI could not do that: $d.';
   }
 
-  String _human(String code, String? detail) => switch (code) {
+  static String? _knownRefusal(String code, String? detail) => switch (code) {
         'PATH_REFUSED' => 'That file cannot be used here (${detail ?? ''}).',
         'TARGET_CHANGED' => 'The file changed outside URI since it was opened. Reload it or save as a new file.',
         'FILE_OPEN_ELSEWHERE' => 'The file is open in Excel. Close it there first.',
@@ -163,7 +170,17 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
         'ROW_AND_CELL_CHANGES' => 'Ask for row changes and cell changes on the same sheet separately.',
         'RELOAD_REQUIRED' =>
           'The sheet\'s rows or sheets changed with the last save. The sheet was reloaded; nothing was changed by that edit.',
-        _ => 'Refused: $code${detail == null || detail.isEmpty ? '' : ' ($detail)'}',
+        'NOTHING_TO_SAVE' => 'There are no accepted changes to save.',
+        'DESTINATION_EXISTS' => 'A file with that name already exists. Nothing was replaced; choose another name.',
+        'CHANGE_CANNOT_BE_SHOWN' => 'This change cannot be shown on the sheet, so it cannot be saved from here.',
+        'FILE_READ_ONLY' => 'The file is read-only, so it was not replaced. Save as a new file instead.',
+        'CANCELLED' => 'Stopped. Nothing was changed.',
+        'DRAFT_TOO_LARGE' => 'There are too many unsaved changes. Save or undo some first.',
+        'NO_GRANT' => 'This file was not opened through URI. Open it again.',
+        'FILE_TOO_LARGE' => 'The file is too large for URI Office.',
+        'UNKNOWN_SHEET' => 'That sheet is not in this workbook.',
+        'BAD_ROWS' => 'That row position or count is not possible.',
+        _ => null,
       };
 
   Future<void> _apply(Map<String, dynamic> v) async {

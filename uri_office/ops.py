@@ -218,9 +218,11 @@ def describe_op(op: dict) -> str:
         # Independent review S1-04 (3e202efc): a delete names every row it captured (at most 50), so the owner sees
         # everything that goes; rows beyond the captured ones are counted. Empty rows are named as empty.
         shown = ["  |  ".join(_cell_text(c) for c in r).rstrip(" |") or "(empty row)" for r in vals]
+        more = f"and {n - len(vals)} more rows not shown" if n > len(vals) else ""   # S3-04: always said
         if any(s != "(empty row)" for s in shown):
-            text += " (now: " + "; ".join(shown) + \
-                (f"; and {n - len(vals)} more rows not shown" if n > len(vals) else "") + ")"
+            text += " (now: " + "; ".join(shown + ([more] if more else [])) + ")"
+        elif more:
+            text += f" (the first {len(vals)} rows are empty; {more})" if vals else f" ({more})"
         return text
     if kind == "add_sheet":
         return f"Add sheet '{op.get('name')}'"

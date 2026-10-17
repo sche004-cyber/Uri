@@ -370,7 +370,10 @@ class A2uiHub extends ChangeNotifier {
     _ => 'Check "$key" before continuing.',
   };
 
-  String _humanRefusal(String code, String? detail) => switch (code) {
+  String _humanRefusal(String code, String? detail) => humanRefusal(code, detail);
+
+  /// Plain words for a refused card action (public for tests; independent review S3-01).
+  static String humanRefusal(String code, String? detail) => switch (code) {
     'DRAFT_CHANGED' => 'You changed the choices. Press "Update proposal" first, then confirm the new proposal.',
     'STALE_SURFACE' => 'This view was out of date and has been refreshed. Please check it again.',
     'PROPOSAL_MISMATCH' => 'The proposal changed. Please review it again.',
@@ -393,7 +396,8 @@ class A2uiHub extends ChangeNotifier {
         'nothing was saved.',
     'NOTHING_TO_SAVE' => 'There are no accepted changes to save.',
     'RELOAD_REQUIRED' => 'The sheet changed with the last save and was reloaded. Nothing was saved; review it again.',
-    'APPLY_FAILED' => 'The change could not be written, so the file was left as it was.',
+    // S3-01: APPLY_FAILED also covers errors after the file was written, so it claims nothing about the file.
+    'APPLY_FAILED' => 'Something went wrong while saving. Check the file before saving again.',
     _ =>
       'Refused: $code${detail == null || detail.isEmpty ? '' : ' ($detail)'}',
   };

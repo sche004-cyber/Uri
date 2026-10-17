@@ -261,8 +261,20 @@ class OfficeBrain:
         # M2-XB-1: a question or a refusal never changes the draft, whatever ops came with it.
         # Row changes and cell changes on the same sheet in one answer are refused (cell ops name cells as shown
         # now, and a Brain that also fixes totals for the moved rows would adjust them twice).
-        row_sheets = {o.get("sheet") for o in data["ops"][:20] if isinstance(o, dict)
-                      and o.get("op") in ("insert_rows", "delete_rows")} if engine == "local" else set()
+        # Independent review S3-06: only row ops that will be proposed count (valid, not refused as pending or as a
+        # second row change on the sheet); an invalid row op no longer refuses the answer's cell changes there.
+        row_sheets: set = set()
+        if engine == "local" and status == "propose":
+            taken = set(pending_rows or ())
+            for o in data["ops"][:20]:
+                if isinstance(o, dict) and o.get("op") in ("insert_rows", "delete_rows") and o.get("sheet") not in taken:
+                    try:
+                        O.to_cell_edits({k: v for k, v in o.items() if v is not None}, engine=engine, sheets=names,
+                                        locked=locked)
+                    except OfficeError:
+                        continue
+                    taken.add(o.get("sheet"))
+                    row_sheets.add(o.get("sheet"))
         # Independent reviews S1-01 / S2-01 / S2-02: one row change per sheet until it is saved. A row op on a sheet
         # that already has an unsaved row change (`pending_rows`) or a valid earlier row op in this answer is refused
         # on its own; a sheet counts as taken only once its row op passed validation.
