@@ -1,0 +1,45 @@
+{
+ "meta": {
+  "name": "vr1_c64k_vis",
+  "args": {
+   "name": "vr1_c64k_vis",
+   "model": null,
+   "url": "http://127.0.0.1:18572",
+   "api_model": "local",
+   "family": "qwen",
+   "ctx": 32768,
+   "n_cpu_moe": 0,
+   "ngl": 999,
+   "cache": "q8_0",
+   "paths": "fast",
+   "suites": "V",
+   "l_sizes": "4000,16000,32000",
+   "repeat_f": 3,
+   "port": 18480,
+   "load_mode": "none",
+   "extra": "",
+   "mmproj": null
+  },
+  "started": "20261017-090207",
+  "path_wall_s": {
+   "fast": 10.6
+  }
+ },
+ "summary": {
+  "fast/V": {
+   "n": 10,
+   "score": 0.733,
+   "ttft_p50": null,
+   "ttfa_p50": null,
+   "total_p50": 0.712,
+   "total_p95": 1.795,
+   "gen_tps_p50": null,
+   "prefill_tps_p50": null,
+   "gen_tokens_p50": null,
+   "errors": 0,
+   "truncated": 0,
+   "vlm_score": 1.0,
+   "ocr_score": 0.467
+  }
+ }
+}

@@ -1,0 +1,57 @@
+{
+ "meta": {
+  "name": "vr1_p_dryrun",
+  "args": {
+   "name": "vr1_p_dryrun",
+   "model": null,
+   "url": "http://127.0.0.1:9",
+   "api_model": "local",
+   "family": "qwen",
+   "ctx": 32768,
+   "n_cpu_moe": 0,
+   "ngl": 999,
+   "cache": "q8_0",
+   "paths": "fast",
+   "suites": "P",
+   "l_sizes": "4000,16000,32000",
+   "repeat_f": 3,
+   "port": 18480,
+   "load_mode": "none",
+   "extra": "",
+   "mmproj": null
+  },
+  "started": "20261017-100310",
+  "path_wall_s": {
+   "fast": 100.6
+  }
+ },
+ "summary": {
+  "fast/P": {
+   "n": 12,
+   "score": 0.083,
+   "ttft_p50": null,
+   "ttfa_p50": null,
+   "total_p50": null,
+   "total_p95": null,
+   "gen_tps_p50": null,
+   "prefill_tps_p50": null,
+   "gen_tokens_p50": null,
+   "errors": 5,
+   "truncated": 0,
+   "proposer_invalid": 18,
+   "failed_ids": [
+    "p01_ambiguous_reference_full_loop",
+    "p02_followup_reuses_referent",
+    "p03_correction",
+    "p04_implicit_fact",
+    "p05_conversation",
+    "p06_destructive",
+    "p08_injected_approval",
+    "p09_vague_reference",
+    "p10_plain_save",
+    "p11_preference_statement",
+    "p12_typed_confirm_never_confirms"
+   ]
+  }
+ }
+}

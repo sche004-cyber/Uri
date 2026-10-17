@@ -34,10 +34,23 @@ MTP_ARGS = ("-md", "--spec-type", "--spec-draft-n-max", "-otd")   # flags that t
 
 # Measured device request (MiB) per (ctx, vision, mtp). Source: research/runtime_vram_r1/evidence/probe/*/probe.json
 # ("buffers.device_total_mib"). Filled only from COMPLETED_WITH_RESULT probes; a missing key is NOT_MEASURED.
+# Vision on the CPU adds no device memory (projector and its compute buffer are host buffers).
+# The lease fit check applies these per start, so a profile larger than what the desktop leaves (e.g. 128K + MTP,
+# 16,107 MiB: demoted at load on 2026-10-17, decode 22-30 tok/s) waits as GPU_CONTENDED instead of starting slow.
 MEASURED_MIB: dict = {
     (32768, "gpu", True): 15626,     # frozen; lease constant (R1), re-measured 15,620.5 on 2026-10-17
+    (16384, "off", False): 13052,
+    (32768, "off", False): 13254,
+    (65536, "off", False): 13658,
+    (131072, "off", False): 14466,
+    (16384, "off", True): 14265,
     (32768, "off", True): 14515,
     (65536, "off", True): 15043,
+    (131072, "off", True): 16107,
+    (32768, "gpu", False): 14360,
+    (65536, "gpu", False): 14764,
+    (131072, "gpu", False): 15572,
+    (65536, "cpu", True): 15043,
 }
 
 

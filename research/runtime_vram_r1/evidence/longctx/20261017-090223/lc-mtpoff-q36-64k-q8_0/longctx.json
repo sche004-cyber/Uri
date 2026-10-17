@@ -1,0 +1,348 @@
+{
+ "profile": {
+  "name": "lc-mtpoff-q36-64k-q8_0",
+  "ctx": 65536,
+  "ctk": "q8_0",
+  "mtp": false,
+  "mtp_n": 2,
+  "vision": "off",
+  "draft_kv": "",
+  "b": 2048,
+  "ub": 1024,
+  "cache_ram": 2048,
+  "ckpt": 16,
+  "extra": [],
+  "env": [],
+  "port": 18572
+ },
+ "argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "65536",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18572",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--cache-ram",
+  "2048",
+  "--no-mmproj",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "--metrics",
+  "-lv",
+  "4"
+ ],
+ "classification": "STARTED",
+ "lease": {
+  "acquired_at": 1792207943.898,
+  "label": "URI-RUNTIME-VRAM-R1 lc-mtpoff-q36-64k-q8_0",
+  "max_hold_s": 900,
+  "pid": 23920
+ },
+ "release_wait": {
+  "waited_s": 3.7,
+  "attributed_mib": 1369.2
+ },
+ "before": {
+  "ok": true,
+  "adapter_dedicated_mib": 650.9,
+  "attributed_mib": 1369.2,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 14998.8,
+  "processes": [
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 886.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 11.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.5
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ],
+  "system_available_mib": 6916
+ },
+ "load_seconds": 14.19,
+ "buffers": {
+  "device_mib": {
+   "main.model": 12634.81,
+   "main.KV": 680.0,
+   "main.RS": 62.81,
+   "main.compute": 280.3
+  },
+  "device_total_mib": 13657.9,
+  "host_visible_mib": {
+   "main.model": 397.85,
+   "main.output": 0.95,
+   "main.compute": 160.31
+  },
+  "host_total_mib": 559.1,
+  "clip_backend": null,
+  "rows": [
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 12634.81
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 397.85
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 680.0
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "RS",
+    "mib": 62.81
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 280.3
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 160.31
+   }
+  ]
+ },
+ "loaded": {
+  "t": 1792207968.5,
+  "server": {
+   "dedicated_mib": 13812.2,
+   "non_local_mib": 559.8
+  },
+  "not_resident_mib": -154.3,
+  "server_private_mib": 15343.4,
+  "system_available_mib": 6052
+ },
+ "loaded_census": {
+  "ok": true,
+  "adapter_dedicated_mib": 14463.2,
+  "attributed_mib": 15181.4,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 1186.6,
+  "processes": [
+   {
+    "pid": 6204,
+    "name": "llama-server.exe",
+    "dedicated_mib": 13812.2,
+    "non_local_mib": 559.8
+   },
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 886.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 11.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.5
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ]
+ },
+ "props": {
+  "model_path": "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "build_info": "b11425-e117148a4",
+  "n_ctx": 65536,
+  "modalities": {
+   "vision": false,
+   "video": false,
+   "audio": false
+  }
+ },
+ "prompt_tokens_measured": 64062,
+ "mem_after_turn1": {
+  "t": 1792208024.2,
+  "server": {
+   "dedicated_mib": 13992.0,
+   "non_local_mib": 561.8
+  },
+  "not_resident_mib": -334.1,
+  "server_private_mib": 15752.7,
+  "system_available_mib": 5788
+ },
+ "turn1": {
+  "text": "{\n  \"convocation_date\": \"2026-12-21\",\n  \"second_registrar_circular_topic\": \"extension of central library hours until 10 pm during examinations\",\n  \"hostel_change_students\": [\n    \"Tenzin Bhutia\",\n    \"Kavya Menon\",\n    \"Farhan Khan\"\n  ],\n  \"generator_contract\": \"GSC-5521\",\n  \"bus_fitness_test_date\": \"2026-11-09\",\n  \"staff_wifi_password\": \"Teesta#2026\",\n  \"science_exhibition_budget_rs\": 48500,\n  \"pc17_total_rs\": 5525,\n  \"principal_mobile_number\": null\n}",
+  "finish_reason": "stop",
+  "tool_calls": [],
+  "ttft_s": 44.716,
+  "total_s": 46.839,
+  "prompt_n": 64093,
+  "prompt_tps": 1444.7096674097704,
+  "prompt_ms": 44363.931,
+  "cache_n": 0,
+  "predicted_n": 175,
+  "decode_tps": 81.84337623682273,
+  "draft_n": null,
+  "draft_accepted": null,
+  "reasoning_chars": 0
+ },
+ "turn1_score": {
+  "score": 1.0,
+  "checks": {
+   "valid_json": true,
+   "no_roll_numbers": true,
+   "superseded_fact": true,
+   "ordinal_reference": true,
+   "entity_set": true,
+   "needle_early": true,
+   "needle_mid": true,
+   "needle_late": true,
+   "two_hop": true,
+   "aggregate": true,
+   "absent_fact_null": true
+  }
+ },
+ "turn2": {
+  "text": "{\n  \"chemistry_store_key_locker\": \"4417\"\n}",
+  "finish_reason": "stop",
+  "tool_calls": [],
+  "ttft_s": 0.977,
+  "total_s": 1.2,
+  "prompt_n": 38,
+  "prompt_tps": 181.46566956056654,
+  "prompt_ms": 209.406,
+  "cache_n": 64267,
+  "predicted_n": 19,
+  "decode_tps": 81.20508343822323,
+  "draft_n": null,
+  "draft_accepted": null
+ },
+ "turn2_score": {
+  "followup_needle": true
+ },
+ "mem_after_turn2": {
+  "t": 1792208029.0,
+  "server": {
+   "dedicated_mib": 13993.2,
+   "non_local_mib": 593.1
+  },
+  "not_resident_mib": -335.3,
+  "server_private_mib": 16905.5,
+  "system_available_mib": 4641
+ },
+ "short_after": {
+  "finish_reason": "length",
+  "tool_calls": [],
+  "ttft_s": 0.79,
+  "total_s": 3.627,
+  "prompt_n": 58,
+  "prompt_tps": 353.0299710271955,
+  "prompt_ms": 164.292,
+  "cache_n": 0,
+  "predicted_n": 300,
+  "decode_tps": 105.3654259740928,
+  "draft_n": null,
+  "draft_accepted": null
+ },
+ "stopped": 1792208036.6
+}

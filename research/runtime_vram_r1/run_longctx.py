@@ -1,4 +1,4 @@
-"""Context-capacity run: for each (ctx, kv type) load a profile, fill ~(ctx - reserve) tokens, score retrieval and
+"""(Adapted from research/qwen38 @9689a666 to vlab profiles.) Context-capacity run: for each (ctx, kv type) load a profile, fill ~(ctx - reserve) tokens, score retrieval and
 reasoning, then a same-prefix follow-up (cache reuse), and record memory/residency at every step.
 
     python -I run_longctx.py --model q38-iq4xs --sizes 8192:q8_0,32768:q8_0,65536:q4_0 [--mtp] [--think]
@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import qlab as lab  # noqa: E402
+import vlab as lab  # noqa: E402
 import longctx_suite as LC  # noqa: E402
 import speed  # noqa: E402
 
@@ -20,9 +20,9 @@ RESERVE = 1500   # answer + template + follow-up headroom
 
 
 def run_one(model, ctx, kv, mtp, think, label, vision="off", run_root=None):
-    prof = lab.Profile(f"{label}-{model}-{ctx // 1024}k-{kv}", model, ctx=ctx, ctk=kv, ctv=kv, mtp=mtp, vision=vision)
+    prof = lab.Profile(f"{label}-{model}-{ctx // 1024}k-{kv}", ctx=ctx, ctk=kv, mtp=mtp, vision=vision)
     run_dir = run_root / prof.name
-    srv = lab.Server(prof, run_dir)
+    srv = lab.Server(prof, run_dir, max_hold_s=900)
     rec = srv.record
     try:
         srv.start()
@@ -48,10 +48,9 @@ def run_one(model, ctx, kv, mtp, think, label, vision="off", run_root=None):
     finally:
         srv.stop()
         lab.save(run_dir, "longctx", rec)
-    b = {x["what"]: x["mib"] for x in rec.get("buffers", [])}
     t1, t2 = rec.get("turn1", {}), rec.get("turn2", {})
     brief = {"profile": prof.name, "error": rec.get("error"), "load_s": rec.get("load_seconds"),
-             "kv_mib": b.get("Vulkan0 KV"), "compute_mib": b.get("Vulkan0 compute"), "model_mib": b.get("Vulkan0 model"),
+             "request_mib": (rec.get("buffers") or {}).get("device_total_mib"),
              "loaded_gpu": rec.get("loaded", {}).get("server"), "after_gpu": rec.get("mem_after_turn2", {}).get("server"),
              "prompt_tokens": t1.get("prompt_n"), "prefill_tps": t1.get("prompt_tps"), "ttft_s": t1.get("ttft_s"),
              "decode_tps_at_depth": t1.get("decode_tps"), "turn1_total_s": t1.get("total_s"), "finish": t1.get("finish_reason"),

@@ -1,0 +1,290 @@
+{
+ "profile": {
+  "name": "suite-c64k-mtpoff",
+  "ctx": 65536,
+  "ctk": "q8_0",
+  "mtp": false,
+  "mtp_n": 2,
+  "vision": "off",
+  "draft_kv": "",
+  "b": 2048,
+  "ub": 1024,
+  "cache_ram": 2048,
+  "ckpt": 16,
+  "extra": [],
+  "env": [],
+  "port": 18572
+ },
+ "argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "65536",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18572",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--cache-ram",
+  "2048",
+  "--no-mmproj",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "--metrics",
+  "-lv",
+  "4"
+ ],
+ "classification": "FAILED",
+ "lease": {
+  "acquired_at": 1792206700.261,
+  "label": "URI-RUNTIME-VRAM-R1 suite-c64k-mtpoff",
+  "max_hold_s": 3600,
+  "pid": 16880
+ },
+ "release_wait": {
+  "waited_s": 3.8,
+  "attributed_mib": 1369.2
+ },
+ "before": {
+  "ok": true,
+  "adapter_dedicated_mib": 650.9,
+  "attributed_mib": 1369.2,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 14998.8,
+  "processes": [
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 886.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.5
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ],
+  "system_available_mib": 6685
+ },
+ "load_seconds": 14.11,
+ "buffers": {
+  "device_mib": {
+   "main.model": 12634.81,
+   "main.KV": 680.0,
+   "main.RS": 62.81,
+   "main.compute": 280.3
+  },
+  "device_total_mib": 13657.9,
+  "host_visible_mib": {
+   "main.model": 397.85,
+   "main.output": 0.95,
+   "main.compute": 160.31
+  },
+  "host_total_mib": 559.1,
+  "clip_backend": null,
+  "rows": [
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 12634.81
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 397.85
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 680.0
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "RS",
+    "mib": 62.81
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 280.3
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 160.31
+   }
+  ]
+ },
+ "loaded": {
+  "t": 1792206724.9,
+  "server": {
+   "dedicated_mib": 13812.2,
+   "non_local_mib": 559.8
+  },
+  "not_resident_mib": -154.3,
+  "server_private_mib": 15347.1,
+  "system_available_mib": 5727
+ },
+ "loaded_census": {
+  "ok": true,
+  "adapter_dedicated_mib": 14463.2,
+  "attributed_mib": 15181.4,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 1186.6,
+  "processes": [
+   {
+    "pid": 11392,
+    "name": "llama-server.exe",
+    "dedicated_mib": 13812.2,
+    "non_local_mib": 559.8
+   },
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 886.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.5
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ]
+ },
+ "props": {
+  "model_path": "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "build_info": "b11425-e117148a4",
+  "n_ctx": 65536,
+  "modalities": {
+   "vision": false,
+   "video": false,
+   "audio": false
+  }
+ },
+ "command": {
+  "argv": [
+   "python",
+   "-I",
+   "../../model_lab/run_bench.py",
+   "--name",
+   "vr1_c64k_mtpoff",
+   "--url",
+   "{URL}",
+   "--suites",
+   "F,D,DG,C,H,S,O,R,RH,L,P",
+   "--l-sizes",
+   "4000,12000,28000"
+  ],
+  "rc": 1,
+  "seconds": 607.8
+ },
+ "after": {
+  "t": 1792207340.5,
+  "server": {
+   "dedicated_mib": 13955.0,
+   "non_local_mib": 566.8
+  },
+  "not_resident_mib": -297.1,
+  "server_private_mib": 17679.3,
+  "system_available_mib": 3521
+ },
+ "stopped": 1792207344.5
+}

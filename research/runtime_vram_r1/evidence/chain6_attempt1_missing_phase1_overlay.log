@@ -1,0 +1,22 @@
+##### timeout 1500 python -I with_profile.py --name p-frozen --ctx 32768 --vision gpu --cwd D:/uri-dev/uri-vram-r1-p1 -- D:/uri-dev/uri-vram-r1-p1/.venv/Scripts/python.exe -I D:/uri-dev/uri-vram-r1-p1/model_lab/run_bench.py --name vr1_p_frozen --url {URL} --suites P 09:59:33
+    from lab import paired
+  File "D:\uri-dev\uri-vram-r1-p1\model_lab\lab\paired.py", line 21, in <module>
+    from test_c5_intent_discovery import NOBRAIN, Stack, uid  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'test_c5_intent_discovery'
+WITH_PROFILE FAILED 1 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-095934_p-frozen
+##### timeout 1500 python -I with_profile.py --name p-c64k-mtpoff --ctx 65536 --no-mtp --cwd D:/uri-dev/uri-vram-r1-p1 -- D:/uri-dev/uri-vram-r1-p1/.venv/Scripts/python.exe -I D:/uri-dev/uri-vram-r1-p1/model_lab/run_bench.py --name vr1_p_c64k_mtpoff --url {URL} --suites P 10:00:19
+    from lab import paired
+  File "D:\uri-dev\uri-vram-r1-p1\model_lab\lab\paired.py", line 21, in <module>
+    from test_c5_intent_discovery import NOBRAIN, Stack, uid  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'test_c5_intent_discovery'
+WITH_PROFILE FAILED 1 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-100019_p-c64k-mtpoff
+##### timeout 1500 python -I with_profile.py --name p-c64k-mtpon --ctx 65536 --cwd D:/uri-dev/uri-vram-r1-p1 -- D:/uri-dev/uri-vram-r1-p1/.venv/Scripts/python.exe -I D:/uri-dev/uri-vram-r1-p1/model_lab/run_bench.py --name vr1_p_c64k_mtpon --url {URL} --suites P 10:00:58
+    from lab import paired
+  File "D:\uri-dev\uri-vram-r1-p1\model_lab\lab\paired.py", line 21, in <module>
+    from test_c5_intent_discovery import NOBRAIN, Stack, uid  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'test_c5_intent_discovery'
+WITH_PROFILE FAILED 1 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-100059_p-c64k-mtpon
+##### chain6 done 10:01:40

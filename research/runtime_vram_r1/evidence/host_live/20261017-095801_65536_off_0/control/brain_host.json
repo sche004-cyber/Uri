@@ -1,0 +1,148 @@
+{
+ "detail": "HOST_EXIT",
+ "explain": "The Brain host has exited.",
+ "gpu": {
+  "census_s": 3.84,
+  "census_t": 1792211332.692,
+  "explain": "The Brain fits in GPU memory (margin 1324 MB).",
+  "fit": {
+   "card_mib": 16368,
+   "consumers": [
+    {
+     "dedicated_mib": 903.3,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1792,
+     "role": "desktop compositor"
+    }
+   ],
+   "free_mib": 14981.8,
+   "margin_mib": 1323.8,
+   "others_mib": 1386.2,
+   "owner_mib": 0,
+   "required_mib": 13658,
+   "unattributed_mib": 0.0,
+   "verdict": "FITS"
+  },
+  "since_stop_s": 3.8
+ },
+ "heartbeat_at": 1792211357.091,
+ "history": [
+  {
+   "detail": null,
+   "state": "STARTING",
+   "t": 1792211285.614
+  },
+  {
+   "detail": null,
+   "state": "LOADING",
+   "t": 1792211312.257
+  },
+  {
+   "detail": null,
+   "state": "CALIBRATING",
+   "t": 1792211325.98
+  },
+  {
+   "detail": null,
+   "state": "READY",
+   "t": 1792211332.03
+  },
+  {
+   "detail": null,
+   "state": "STOPPING",
+   "t": 1792211332.642
+  },
+  {
+   "detail": null,
+   "state": "STARTING",
+   "t": 1792211336.535
+  },
+  {
+   "detail": null,
+   "state": "LOADING",
+   "t": 1792211341.939
+  },
+  {
+   "detail": null,
+   "state": "CALIBRATING",
+   "t": 1792211355.667
+  },
+  {
+   "detail": null,
+   "state": "READY",
+   "t": 1792211361.654
+  },
+  {
+   "detail": null,
+   "state": "STOPPING",
+   "t": 1792211362.811
+  },
+  {
+   "detail": "STOP_REQUESTED",
+   "state": "STOPPED",
+   "t": 1792211362.865
+  },
+  {
+   "detail": "HOST_EXIT",
+   "state": "STOPPED",
+   "t": 1792211363.47
+  }
+ ],
+ "host_pid": 17732,
+ "host_started": 1792211281.765,
+ "last_request": {
+  "action": "stop",
+  "done_state": "STOPPED",
+  "id": "d85ecffe-63b6-458d-a60d-55c14269cf75",
+  "result": "DONE",
+  "t": 1792211362.76,
+  "t_done": 1792211362.92
+ },
+ "lease": {
+  "held": false
+ },
+ "override": null,
+ "profile": {
+  "ctx": 65536,
+  "frozen": false,
+  "id": "c64k-visoff-mtpoff",
+  "mtp": false,
+  "qualified": false,
+  "required_mib": 13658,
+  "vision": "off"
+ },
+ "release_measurement": {
+  "since_stop_s": 3.8,
+  "unattributed_mib": 0.0,
+  "verdict": "FITS"
+ },
+ "requests": {
+  "c9d24dd0-12ab-4a1a-a864-854032360089": "DONE",
+  "d85ecffe-63b6-458d-a60d-55c14269cf75": "DONE"
+ },
+ "residency": {
+  "consumers": [
+   {
+    "dedicated_mib": 903.3,
+    "name": "dwm.exe",
+    "parent": "winlogon.exe",
+    "pid": 1792,
+    "role": "desktop compositor"
+   }
+  ],
+  "dedicated_mib": 13831.6,
+  "non_local_mib": 561.8,
+  "others_mib": 1386.2,
+  "t": 1792211357.642,
+  "verdict_now": "FITS"
+ },
+ "schema": "uri.ws.brain_host.v1",
+ "server": {
+  "owned": false,
+  "pid": null,
+  "stopped_clean": true
+ },
+ "state": "STOPPED",
+ "updated_at": 1792211363.47
+}

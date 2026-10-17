@@ -1,0 +1,22 @@
+##### timeout 1500 python -I with_profile.py --name p-frozen --ctx 32768 --vision gpu --cwd D:/uri-dev/uri-vram-r1-p1 -- D:/uri-dev/uri-vram-r1-p1/.venv/Scripts/python.exe -I D:/uri-dev/uri-vram-r1-p1/model_lab/run_bench.py --name vr1_p_frozen --url {URL} --suites P 10:05:04
+  "proposer_invalid": 0,
+  "failed_ids": []
+ }
+}
+EVIDENCE D:\uri-dev\uri-vram-r1-p1\model_lab\evidence\runs\vr1_p_frozen\20261017-100545
+WITH_PROFILE COMPLETED_WITH_RESULT 0 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-100505_p-frozen
+##### timeout 1500 python -I with_profile.py --name p-c64k-mtpoff --ctx 65536 --no-mtp --cwd D:/uri-dev/uri-vram-r1-p1 -- D:/uri-dev/uri-vram-r1-p1/.venv/Scripts/python.exe -I D:/uri-dev/uri-vram-r1-p1/model_lab/run_bench.py --name vr1_p_c64k_mtpoff --url {URL} --suites P 10:07:45
+  "proposer_invalid": 0,
+  "failed_ids": []
+ }
+}
+EVIDENCE D:\uri-dev\uri-vram-r1-p1\model_lab\evidence\runs\vr1_p_c64k_mtpoff\20261017-100820
+WITH_PROFILE COMPLETED_WITH_RESULT 0 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-100746_p-c64k-mtpoff
+##### timeout 1500 python -I with_profile.py --name p-c64k-mtpon --ctx 65536 --cwd D:/uri-dev/uri-vram-r1-p1 -- D:/uri-dev/uri-vram-r1-p1/.venv/Scripts/python.exe -I D:/uri-dev/uri-vram-r1-p1/model_lab/run_bench.py --name vr1_p_c64k_mtpon --url {URL} --suites P 10:10:27
+  "proposer_invalid": 0,
+  "failed_ids": []
+ }
+}
+EVIDENCE D:\uri-dev\uri-vram-r1-p1\model_lab\evidence\runs\vr1_p_c64k_mtpon\20261017-101104
+WITH_PROFILE COMPLETED_WITH_RESULT 0 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-101028_p-c64k-mtpon
+##### chain6 done 10:13:08

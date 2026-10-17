@@ -1,0 +1,312 @@
+{
+ "A": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "65536",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18572",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--cache-ram",
+  "2048",
+  "--no-mmproj",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "-md",
+  "C:\\uri-model-lab\\mtp\\mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+  "--spec-type",
+  "draft-mtp",
+  "--spec-draft-n-max",
+  "2",
+  "-otd",
+  "token_embd.weight=CPU",
+  "--metrics",
+  "-lv",
+  "4",
+  "--slot-save-path",
+  "D:\\uri-dev\\uri-vram-r1-slots"
+ ],
+ "B": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "65536",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18572",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--cache-ram",
+  "2048",
+  "--mmproj",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "--metrics",
+  "-lv",
+  "4",
+  "--slot-save-path",
+  "D:\\uri-dev\\uri-vram-r1-slots"
+ ],
+ "steps": [
+  {
+   "profile": "switch-A",
+   "i": 0,
+   "load_s": 16.44,
+   "request_mib": 15042.8,
+   "loaded": {
+    "t": 1792205541.9,
+    "server": {
+     "dedicated_mib": 15203.6,
+     "non_local_mib": 980.4
+    },
+    "not_resident_mib": -160.8,
+    "server_private_mib": 18101.5,
+    "system_available_mib": 5658
+   },
+   "turn1": {
+    "prompt_n": 20147,
+    "cache_n": 0,
+    "prompt_ms": 10405.473,
+    "ttft_s": 10.718,
+    "total_s": 12.009,
+    "decode_tps": 134.77308163298503,
+    "error": null
+   },
+   "turn1_score": 1.0,
+   "followup": {
+    "prompt_n": 38,
+    "cache_n": 20321,
+    "prompt_ms": 278.167,
+    "ttft_s": 0.741,
+    "total_s": 0.852,
+    "decode_tps": 117.69179235546542,
+    "error": null
+   },
+   "followup_ok": true,
+   "save": {
+    "status": 200,
+    "s": 0.54,
+    "body": {
+     "id_slot": 0,
+     "filename": "uri_switch_slot0.bin",
+     "n_saved": 20372,
+     "n_written": 288082488,
+     "timings": {
+      "save_ms": 291.689
+     }
+    }
+   },
+   "after": {
+    "t": 1792205563.8,
+    "server": {
+     "dedicated_mib": 15308.1,
+     "non_local_mib": 1018.2
+    },
+    "not_resident_mib": -265.3,
+    "server_private_mib": 19549.2,
+    "system_available_mib": 3833
+   },
+   "classification": "COMPLETED_WITH_RESULT",
+   "release": {
+    "waited_s": 3.8,
+    "attributed_mib": 1295.5
+   }
+  },
+  {
+   "profile": "switch-B",
+   "i": 1,
+   "load_s": 16.97,
+   "request_mib": 14763.6,
+   "loaded": {
+    "t": 1792205599.1,
+    "server": {
+     "dedicated_mib": 14920.8,
+     "non_local_mib": 559.8
+    },
+    "not_resident_mib": -157.2,
+    "server_private_mib": 16646.9,
+    "system_available_mib": 5730
+   },
+   "switch_total_s": 39.5,
+   "restore": {
+    "status": 200,
+    "s": 2.18,
+    "body": {
+     "id_slot": 0,
+     "filename": "uri_switch_slot0.bin",
+     "n_restored": 20372,
+     "n_read": 288082488,
+     "timings": {
+      "restore_ms": 1930.45
+     }
+    }
+   },
+   "followup": {
+    "prompt_n": 20359,
+    "cache_n": 0,
+    "prompt_ms": 9727.05,
+    "ttft_s": 10.204,
+    "total_s": 10.398,
+    "decode_tps": 84.37011221224924,
+    "error": null
+   },
+   "followup_ok": true,
+   "vision": [
+    {
+     "ttft_s": 0.795,
+     "total_s": 1.186,
+     "prompt_n": 536,
+     "prompt_ms": 541.063,
+     "error": null,
+     "mentions_401": true,
+     "text": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles that are on are \"Voice input\" and \"Gmail drafts\"."
+    }
+   ],
+   "save": {
+    "status": 200,
+    "s": 0.32,
+    "body": {
+     "id_slot": 0,
+     "filename": "uri_switch_slot0.bin",
+     "n_saved": 576,
+     "n_written": 72147868,
+     "timings": {
+      "save_ms": 76.647
+     }
+    }
+   },
+   "after": {
+    "t": 1792205621.2,
+    "server": {
+     "dedicated_mib": 15026.4,
+     "non_local_mib": 570.4
+    },
+    "not_resident_mib": -262.8,
+    "server_private_mib": 17149.2,
+    "system_available_mib": 5802
+   },
+   "classification": "COMPLETED_WITH_RESULT",
+   "release": {
+    "waited_s": 3.9,
+    "attributed_mib": 1295.5
+   }
+  },
+  {
+   "profile": "switch-A",
+   "i": 2,
+   "load_s": 16.54,
+   "request_mib": 15042.8,
+   "loaded": {
+    "t": 1792205656.4,
+    "server": {
+     "dedicated_mib": 15203.6,
+     "non_local_mib": 980.4
+    },
+    "not_resident_mib": -160.8,
+    "server_private_mib": 18102.9,
+    "system_available_mib": 5175
+   },
+   "switch_total_s": 39.4,
+   "restore": {
+    "status": 400,
+    "s": 0.55,
+    "body": {
+     "error": {
+      "code": 400,
+      "message": "Unable to restore slot: Cannot restore media tokens without an mmproj",
+      "type": "invalid_request_error"
+     }
+    }
+   },
+   "followup": {
+    "prompt_n": 20359,
+    "cache_n": 0,
+    "prompt_ms": 10593.435,
+    "ttft_s": 10.871,
+    "total_s": 10.992,
+    "decode_tps": 108.5957731183694,
+    "error": null
+   },
+   "followup_ok": true,
+   "save": {
+    "status": 200,
+    "s": 0.52,
+    "body": {
+     "id_slot": 0,
+     "filename": "uri_switch_slot0.bin",
+     "n_saved": 20372,
+     "n_written": 288082488,
+     "timings": {
+      "save_ms": 287.346
+     }
+    }
+   },
+   "after": {
+    "t": 1792205676.3,
+    "server": {
+     "dedicated_mib": 15308.6,
+     "non_local_mib": 1018.2
+    },
+    "not_resident_mib": -265.8,
+    "server_private_mib": 18760.7,
+    "system_available_mib": 4643
+   },
+   "classification": "COMPLETED_WITH_RESULT",
+   "release": {
+    "waited_s": 3.8,
+    "attributed_mib": 1295.5
+   }
+  }
+ ]
+}

@@ -1,0 +1,642 @@
+{
+ "baseline": "D:\\uri-dev\\uri-runtime-vram-r1\\model_lab\\evidence\\runs\\ue_cand_mtp2\\20261006-223100",
+ "run": "model_lab\\evidence\\runs\\vr1_c64k_mtpoff\\20261017-084215",
+ "common_cases": 249,
+ "only_baseline": 22,
+ "only_run": 0,
+ "score_changing": 56,
+ "diffs": [
+  {
+   "case": [
+    "fast",
+    "D",
+    "ambiguous_1",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "boundary_answer_roll_number",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "boundary_new_intent_email_choice",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "cgpa_lookup",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "clarify_1",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "continuation_file_choice_capability_recovery",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "continue_1",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "continue_2",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "convert_doc",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "d_continuation_file_choice",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "d_continuation_roll_number",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "d_new_intent_office_note_from_email_pending",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "disclosure_1",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "memory_name",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "memory_pref_1",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "memory_pref_2",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "office_note",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "office_order",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "recall_general",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "recall_name",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "spreadsheet_fetch",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "system_perf",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "x05_implicit_fact",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "x06_recall",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "x07_pc_slow",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "x09_order",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "D",
+    "x10_correction_continuation",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "ambiguous_1",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "boundary_answer_roll_number",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "boundary_new_intent_email_choice",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "cgpa_lookup",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "clarify_1",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "continuation_file_choice_capability_recovery",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "continue_1",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "continue_2",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "convert_doc",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "d_continuation_file_choice",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "d_continuation_roll_number",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "d_new_intent_office_note_from_email_pending",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "disclosure_1",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "memory_name",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "memory_pref_1",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "memory_pref_2",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "office_note",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "office_order",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "recall_general",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "recall_name",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "spreadsheet_fetch",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "system_perf",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "x05_implicit_fact",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "x06_recall",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "x07_pc_slow",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "x09_order",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "DG",
+    "x10_correction_continuation",
+    0
+   ],
+   "baseline": 1.0,
+   "run": 0.0
+  },
+  {
+   "case": [
+    "fast",
+    "RH",
+    "rh4_rooms",
+    0
+   ],
+   "baseline": 0.0,
+   "run": 1.0
+  },
+  {
+   "case": [
+    "fast",
+    "RH",
+    "rh7_dates",
+    0
+   ],
+   "baseline": 0.0,
+   "run": 1.0
+  }
+ ],
+ "suites": {
+  "fast/F": {
+   "baseline": 1.0,
+   "run": 1.0,
+   "n": 30,
+   "gen_tps_p50": 98.5,
+   "baseline_gen_tps_p50": 126.6
+  },
+  "fast/D": {
+   "baseline": 0.861,
+   "run": 0.486,
+   "n": 72,
+   "gen_tps_p50": 101.0,
+   "baseline_gen_tps_p50": 141.2
+  },
+  "fast/DG": {
+   "baseline": 0.861,
+   "run": 0.486,
+   "n": 72,
+   "gen_tps_p50": 100.9,
+   "baseline_gen_tps_p50": 139.8
+  },
+  "fast/C": {
+   "baseline": 1.0,
+   "run": 1.0,
+   "n": 14,
+   "gen_tps_p50": 103.2,
+   "baseline_gen_tps_p50": 141.3
+  },
+  "fast/H": {
+   "baseline": 1.0,
+   "run": 1.0,
+   "n": 22,
+   "gen_tps_p50": 103.1,
+   "baseline_gen_tps_p50": 136.0
+  },
+  "fast/S": {
+   "baseline": 1.0,
+   "run": 1.0,
+   "n": 12,
+   "gen_tps_p50": 103.3,
+   "baseline_gen_tps_p50": 156.5
+  },
+  "fast/O": {
+   "baseline": 1.0,
+   "run": 1.0,
+   "n": 4,
+   "gen_tps_p50": 103.6,
+   "baseline_gen_tps_p50": 152.8
+  },
+  "fast/R": {
+   "baseline": 0.958,
+   "run": 0.958,
+   "n": 12,
+   "gen_tps_p50": 104.1,
+   "baseline_gen_tps_p50": 152.3
+  },
+  "fast/RH": {
+   "baseline": 0.625,
+   "run": 0.875,
+   "n": 8,
+   "gen_tps_p50": 104.0,
+   "baseline_gen_tps_p50": 150.6
+  },
+  "fast/L": {
+   "baseline": 0.933,
+   "run": 0.933,
+   "n": 3,
+   "gen_tps_p50": 93.0,
+   "baseline_gen_tps_p50": 142.1
+  }
+ }
+}

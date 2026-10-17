@@ -1,0 +1,495 @@
+{
+ "profile": {
+  "name": "co-c32k-mtpon",
+  "ctx": 32768,
+  "ctk": "q8_0",
+  "mtp": true,
+  "mtp_n": 2,
+  "vision": "off",
+  "draft_kv": "",
+  "b": 2048,
+  "ub": 1024,
+  "cache_ram": 2048,
+  "ckpt": 16,
+  "extra": [],
+  "env": [],
+  "port": 18572
+ },
+ "argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "32768",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18572",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--cache-ram",
+  "2048",
+  "--no-mmproj",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "-md",
+  "C:\\uri-model-lab\\mtp\\mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+  "--spec-type",
+  "draft-mtp",
+  "--spec-draft-n-max",
+  "2",
+  "-otd",
+  "token_embd.weight=CPU",
+  "--metrics",
+  "-lv",
+  "4"
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "owner_prefs_sha256_before": "493bff9fc058c18392ad149fde2a063ace53d41a20c82ee8650a08ba6dffa2b6",
+ "lease": {
+  "acquired_at": 1792206330.092,
+  "label": "URI-RUNTIME-VRAM-R1 co-c32k-mtpon",
+  "max_hold_s": 900,
+  "pid": 25044
+ },
+ "release_wait": {
+  "waited_s": 3.8,
+  "attributed_mib": 1343.5
+ },
+ "before": {
+  "ok": true,
+  "adapter_dedicated_mib": 659.2,
+  "attributed_mib": 1343.5,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 15024.5,
+  "processes": [
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 852.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.5
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ],
+  "system_available_mib": 5268
+ },
+ "load_seconds": 16.89,
+ "buffers": {
+  "device_mib": {
+   "main.model": 12634.81,
+   "main.KV": 340.0,
+   "main.RS": 188.44,
+   "main.compute": 216.3,
+   "draft.model": 919.24,
+   "draft.KV": 64.0,
+   "draft.compute": 152.03
+  },
+  "device_total_mib": 14514.8,
+  "host_visible_mib": {
+   "main.model": 397.85,
+   "main.output": 0.95,
+   "main.compute": 96.31,
+   "draft.model": 272.81,
+   "draft.output": 0.95,
+   "draft.compute": 80.04
+  },
+  "host_total_mib": 848.9,
+  "clip_backend": null,
+  "rows": [
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 12634.81
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 397.85
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 340.0
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "RS",
+    "mib": 188.44
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 216.3
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 96.31
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 919.24
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 272.81
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 64.0
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 152.03
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 80.04
+   }
+  ]
+ },
+ "loaded": {
+  "t": 1792206357.5,
+  "server": {
+   "dedicated_mib": 14674.6,
+   "non_local_mib": 852.4
+  },
+  "not_resident_mib": -159.8,
+  "server_private_mib": 17442.5,
+  "system_available_mib": 4027
+ },
+ "loaded_census": {
+  "ok": true,
+  "adapter_dedicated_mib": 15333.7,
+  "attributed_mib": 16018.1,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 349.9,
+  "processes": [
+   {
+    "pid": 16952,
+    "name": "llama-server.exe",
+    "dedicated_mib": 14674.6,
+    "non_local_mib": 852.4
+   },
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 852.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.5
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ]
+ },
+ "props": {
+  "model_path": "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "build_info": "b11425-e117148a4",
+  "n_ctx": 32768,
+  "modalities": {
+   "vision": false,
+   "video": false,
+   "audio": false
+  }
+ },
+ "A": {
+  "phase": "A_desktop",
+  "t": 1792206374.8,
+  "server": {
+   "dedicated_mib": 14730.4,
+   "non_local_mib": 872.3
+  },
+  "others": [
+   [
+    "dwm.exe",
+    852.3
+   ],
+   [
+    "ChatGPT.exe",
+    103.1
+   ],
+   [
+    "claude.exe",
+    62.4
+   ],
+   [
+    "msedgewebview2.exe",
+    61.7
+   ],
+   [
+    "msedge.exe",
+    43.7
+   ],
+   [
+    "explorer.exe",
+    37.5
+   ],
+   [
+    "TextInputHost.exe",
+    37.0
+   ]
+  ],
+  "adapter_mib": 15333.7,
+  "uri_json_tps": 134.64753249199472,
+  "uri_json_total_s": 2.448,
+  "prose_tps": 108.83595037080664
+ },
+ "ui_gpu": {
+  "dedicated_mib": 73.4,
+  "non_local_mib": 2.8
+ },
+ "B": {
+  "phase": "B_plus_uri_ui",
+  "t": 1792206420.9,
+  "server": {
+   "dedicated_mib": 14730.4,
+   "non_local_mib": 872.3
+  },
+  "others": [
+   [
+    "dwm.exe",
+    856.1
+   ],
+   [
+    "ChatGPT.exe",
+    103.1
+   ],
+   [
+    "uri_ui.exe",
+    73.4
+   ],
+   [
+    "claude.exe",
+    62.4
+   ],
+   [
+    "msedgewebview2.exe",
+    61.7
+   ],
+   [
+    "msedge.exe",
+    43.7
+   ],
+   [
+    "explorer.exe",
+    37.5
+   ],
+   [
+    "TextInputHost.exe",
+    37.0
+   ]
+  ],
+  "adapter_mib": 15463.0,
+  "uri_json_tps": 137.03071659576761,
+  "uri_json_total_s": 1.741,
+  "prose_tps": 109.14914409183714
+ },
+ "C": {
+  "phase": "C_plus_chrome",
+  "t": 1792206478.5,
+  "server": {
+   "dedicated_mib": 14730.4,
+   "non_local_mib": 872.3
+  },
+  "others": [
+   [
+    "dwm.exe",
+    902.6
+   ],
+   [
+    "chrome.exe",
+    600.3
+   ],
+   [
+    "ChatGPT.exe",
+    103.1
+   ],
+   [
+    "claude.exe",
+    62.4
+   ],
+   [
+    "msedgewebview2.exe",
+    61.7
+   ],
+   [
+    "uri_ui.exe",
+    54.4
+   ],
+   [
+    "msedge.exe",
+    43.7
+   ],
+   [
+    "explorer.exe",
+    37.5
+   ]
+  ],
+  "adapter_mib": 16057.5,
+  "uri_json_tps": 137.40461454251397,
+  "uri_json_total_s": 1.674,
+  "prose_tps": 108.74581883237542
+ },
+ "D": {
+  "phase": "D_both_closed",
+  "t": 1792206507.8,
+  "server": {
+   "dedicated_mib": 14730.4,
+   "non_local_mib": 872.3
+  },
+  "others": [
+   [
+    "dwm.exe",
+    869.3
+   ],
+   [
+    "ChatGPT.exe",
+    103.1
+   ],
+   [
+    "claude.exe",
+    62.4
+   ],
+   [
+    "msedgewebview2.exe",
+    61.7
+   ],
+   [
+    "msedge.exe",
+    43.7
+   ],
+   [
+    "explorer.exe",
+    37.5
+   ],
+   [
+    "TextInputHost.exe",
+    37.0
+   ]
+  ],
+  "adapter_mib": 15389.6,
+  "uri_json_tps": 136.81762210972772,
+  "uri_json_total_s": 1.677,
+  "prose_tps": 108.12405843472526
+ },
+ "stopped": 1792206511.7,
+ "owner_prefs_sha256_after": "493bff9fc058c18392ad149fde2a063ace53d41a20c82ee8650a08ba6dffa2b6"
+}

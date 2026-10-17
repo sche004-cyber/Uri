@@ -1,0 +1,29 @@
+##### timeout 1800 python -I with_profile.py --name ctl-frozen-dgp --ctx 32768 --vision gpu -- D:/uri-dev/uri-runtime-vram-r1/.venv/Scripts/python.exe -I D:/uri-dev/uri-runtime-vram-r1/model_lab/run_bench.py --name vr1_ctl_frozen_dgp --url {URL} --suites D,DG,P 09:38:42
+    self.server_manifest = provision(ROOT, base / "server", Path(sys.executable), port, "c2-paired-core")
+                           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\uri-dev\uri-runtime-vram-r1\uri_core\core\runtime_identity.py", line 253, in provision
+    raise RuntimeIdentityError("SOURCE_CHECKPOINT_MISMATCH")
+uri_core.core.runtime_identity.RuntimeIdentityError: SOURCE_CHECKPOINT_MISMATCH
+WITH_PROFILE FAILED 1 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-093842_ctl-frozen-dgp
+##### timeout 1800 python -I with_profile.py --name dgp-c64k-mtpoff --ctx 65536 --no-mtp -- D:/uri-dev/uri-runtime-vram-r1/.venv/Scripts/python.exe -I D:/uri-dev/uri-runtime-vram-r1/model_lab/run_bench.py --name vr1_c64k_mtpoff_dgp --url {URL} --suites D,DG,P 09:44:54
+    self.server_manifest = provision(ROOT, base / "server", Path(sys.executable), port, "c2-paired-core")
+                           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\uri-dev\uri-runtime-vram-r1\uri_core\core\runtime_identity.py", line 253, in provision
+    raise RuntimeIdentityError("SOURCE_CHECKPOINT_MISMATCH")
+uri_core.core.runtime_identity.RuntimeIdentityError: SOURCE_CHECKPOINT_MISMATCH
+WITH_PROFILE FAILED 1 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-094455_dgp-c64k-mtpoff
+##### timeout 1800 python -I with_profile.py --name dgp-c64k-mtpon --ctx 65536 -- D:/uri-dev/uri-runtime-vram-r1/.venv/Scripts/python.exe -I D:/uri-dev/uri-runtime-vram-r1/model_lab/run_bench.py --name vr1_c64k_mtpon_dgp --url {URL} --suites D,DG,P 09:51:50
+    self.server_manifest = provision(ROOT, base / "server", Path(sys.executable), port, "c2-paired-core")
+                           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\uri-dev\uri-runtime-vram-r1\uri_core\core\runtime_identity.py", line 253, in provision
+    raise RuntimeIdentityError("SOURCE_CHECKPOINT_MISMATCH")
+uri_core.core.runtime_identity.RuntimeIdentityError: SOURCE_CHECKPOINT_MISMATCH
+WITH_PROFILE FAILED 1 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-095151_dgp-c64k-mtpon
+##### timeout 1500 python -I host_live.py --profile 65536,off,0 09:58:00
+   "detail": "STOP_REQUESTED"
+  }
+ ],
+ "host_exit": 0
+}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\host_live\20261017-095801_65536_off_0
+##### chain5 done 09:59:23
