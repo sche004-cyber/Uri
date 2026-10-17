@@ -344,3 +344,41 @@ def test_af_s1_05_max_attempts_is_bounded(tmp_path):
     repo, wt, base, remote = make_fixture(tmp_path, defect=False)
     with pytest.raises(L.LifecycleError, match="integer from 1 to 10"):
         chain_config(tmp_path, repo, wt, "check", ["x"], max_attempts=11)
+
+
+# ---------------------------------------------------------------- independent review af-review-R2 (f2c8e9ae)
+
+from scripts.dev_workflow.lifecycle_providers import unavailable_reason  # noqa: E402
+
+# Shape of a real codex_cli stderr (driver round, 2026-10-17): the banner, the prompt and the whole session activity
+# go to stderr; the CLI's own errors are lines that start with "ERROR: ".
+CODEX_SESSION = ("OpenAI Codex v0.x\n--------\nworkdir: D:/audit\nmodel: gpt-6-sol\n--------\nuser\n"
+                 "AF-2 Quota, sign-in (AUTH) and not-found unavailability move to the next reviewer ...\n"
+                 "codex\nThe handler returns 401 unauthorized and retries on a 429 rate limit.\n"
+                 "exec python -m pytest tests/dev_workflow -q\n")
+CODEX_QUOTA = "ERROR: You've hit your usage limit. Upgrade to Pro or try again at Oct 22nd, 2026 2:03 PM.\n"
+
+
+def test_af_s2_01_codex_session_activity_on_stderr_is_not_an_unavailability():
+    assert unavailable_reason("codex_cli", "FAILED", CODEX_SESSION, None) is None
+
+
+def test_af_s2_01_codex_error_lines_are_read():
+    assert unavailable_reason("codex_cli", "FAILED", CODEX_SESSION + CODEX_QUOTA, None) == "QUOTA"
+    assert unavailable_reason("codex_cli", "FAILED", CODEX_SESSION + "ERROR: unexpected status 401 Unauthorized\n",
+                              None) == "AUTH"
+
+
+def test_af_s2_01_a_timeout_is_a_timeout_whatever_the_text_says():
+    assert unavailable_reason("codex_cli", "TIMED_OUT", CODEX_SESSION + CODEX_QUOTA, None) == "TIMEOUT"
+
+
+def test_af_s2_01_claude_errors_come_from_stderr_and_the_is_error_result():
+    assert unavailable_reason("claude_cli", "FAILED", "", "Claude AI usage limit reached") == "QUOTA"
+    assert unavailable_reason("claude_cli", "FAILED", "Failed to authenticate: OAuth session expired", None) == "AUTH"
+
+
+def test_af_s2_02_the_fallback_chain_is_bounded(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    with pytest.raises(L.LifecycleError, match="at most 3"):
+        chain_config(tmp_path, repo, wt, "check", ["x", "y", "z", "w"])

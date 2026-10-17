@@ -148,8 +148,8 @@ def load_config(path) -> dict:
         cfg["protected_paths"] = list(_ws_protected(cfg["repo"]))
     fb = cfg.get("reviewer_fallbacks")
     if fb is not None:
-        if not isinstance(fb, list) or not all(isinstance(s, dict) for s in fb):
-            raise LifecycleError("reviewer_fallbacks must be a list of reviewer specs")
+        if not isinstance(fb, list) or not all(isinstance(s, dict) for s in fb) or len(fb) > 3:   # AF-S2-02
+            raise LifecycleError("reviewer_fallbacks must be a list of at most 3 reviewer specs")
         sel = cfg.setdefault("reviewer_selection", {})
         sel.setdefault("max_attempts", 2)
         if not isinstance(sel["max_attempts"], int) or isinstance(sel["max_attempts"], bool) or                 not 1 <= sel["max_attempts"] <= 10:          # AF-S1-05: bounded
