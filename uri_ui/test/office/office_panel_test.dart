@@ -265,6 +265,36 @@ void main() {
       expect(edits, isEmpty);
     });
 
+    test('OD-R3: a local workbook loads with formatting on, and the owner\'s formatting is sent to be saved', () async {
+      final surface = FakeSurface();
+      final c = make(surface);
+      await c.openLocal(r'C:\Users\me\book.xlsx');
+      surface.ctl.add({'type': 'ready'});
+      await until(() => surface.posted.any((m) => m['type'] == 'load'));
+      expect(surface.posted.lastWhere((m) => m['type'] == 'load')['formatting'], isTrue);
+      surface.ctl.add({'type': 'format', 'sheet': 'Sales', 'cell': 'A1', 'style': {'b': true, 'bg': '#FFFF00'}});
+      await until(() => edits.length == 1 && !c.busy);
+      expect(edits.single['style'], {'b': true, 'bg': '#FFFF00'});
+      expect(edits.single['cell'], 'A1');
+      surface.ctl.add({'type': 'error', 'code': 'FORMAT_PARTLY_NOT_SAVED'});
+      await until(() => c.notice != null);
+      expect(c.notice, contains('Font size'));
+    });
+
+    test('OD-R3: format messages with anything else are dropped', () {
+      expect(parsePageMessage({'type': 'format', 'sheet': 'S', 'cell': 'A1', 'style': {'b': true}})!['style'], {'b': true});
+      for (final bad in [
+        {'type': 'format', 'sheet': 'S', 'cell': 'A1', 'style': {'sz': 14}},
+        {'type': 'format', 'sheet': 'S', 'cell': 'A1', 'style': {'fc': 'red'}},
+        {'type': 'format', 'sheet': 'S', 'cell': 'A1', 'style': {'b': 1}},
+        {'type': 'format', 'sheet': 'S', 'cell': 'A1', 'style': {'ha': 'justify'}},
+        {'type': 'format', 'sheet': 'S', 'cell': '1A', 'style': {}},
+        {'type': 'format', 'sheet': 'S', 'cell': 'A1', 'style': {}, 'extra': 1},
+      ]) {
+        expect(parsePageMessage(bad), isNull, reason: '$bad');
+      }
+    });
+
     test('typing during a Brain turn is sent, not discarded', () async {
       final surface = FakeSurface();
       final c = make(surface);

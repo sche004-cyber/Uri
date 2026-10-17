@@ -1,0 +1,122 @@
+[
+ {
+  "tag": "brain-only-before-ui",
+  "utc": "2026-10-16T05:47:04Z",
+  "runs": [
+   {
+    "i": 0,
+    "status": "COMPLETE",
+    "wall_s": 0.95,
+    "ttft_s": 0.5218,
+    "predicted_per_second": 122.37338473015494,
+    "predicted_n": 53
+   },
+   {
+    "i": 1,
+    "status": "COMPLETE",
+    "wall_s": 0.54,
+    "ttft_s": 0.1068,
+    "predicted_per_second": 120.82991562818776,
+    "predicted_n": 53
+   },
+   {
+    "i": 2,
+    "status": "COMPLETE",
+    "wall_s": 0.51,
+    "ttft_s": 0.0747,
+    "predicted_per_second": 120.24539309837691,
+    "predicted_n": 53
+   }
+  ]
+ },
+ {
+  "tag": "app-only",
+  "utc": "2026-10-16T05:48:13Z",
+  "runs": [
+   {
+    "i": 0,
+    "status": "COMPLETE",
+    "wall_s": 0.83,
+    "ttft_s": 0.3984,
+    "predicted_per_second": 121.52599254017369,
+    "predicted_n": 53
+   },
+   {
+    "i": 1,
+    "status": "COMPLETE",
+    "wall_s": 0.48,
+    "ttft_s": 0.0512,
+    "predicted_per_second": 122.29308949972719,
+    "predicted_n": 53
+   },
+   {
+    "i": 2,
+    "status": "COMPLETE",
+    "wall_s": 0.48,
+    "ttft_s": 0.0514,
+    "predicted_per_second": 122.45465056858991,
+    "predicted_n": 53
+   }
+  ]
+ },
+ {
+  "tag": "with-office",
+  "utc": "2026-10-16T05:53:20Z",
+  "runs": [
+   {
+    "i": 0,
+    "status": "COMPLETE",
+    "wall_s": 0.98,
+    "ttft_s": 0.5324,
+    "predicted_per_second": 117.33116721947698,
+    "predicted_n": 53
+   },
+   {
+    "i": 1,
+    "status": "COMPLETE",
+    "wall_s": 0.56,
+    "ttft_s": 0.1078,
+    "predicted_per_second": 114.96082488813427,
+    "predicted_n": 53
+   },
+   {
+    "i": 2,
+    "status": "COMPLETE",
+    "wall_s": 0.5,
+    "ttft_s": 0.0553,
+    "predicted_per_second": 118.04231362934715,
+    "predicted_n": 53
+   }
+  ]
+ },
+ {
+  "tag": "after-ui-exit",
+  "utc": "2026-10-16T05:54:18Z",
+  "runs": [
+   {
+    "i": 0,
+    "status": "COMPLETE",
+    "wall_s": 0.93,
+    "ttft_s": 0.509,
+    "predicted_per_second": 122.68809618746742,
+    "predicted_n": 53
+   },
+   {
+    "i": 1,
+    "status": "COMPLETE",
+    "wall_s": 0.51,
+    "ttft_s": 0.0917,
+    "predicted_per_second": 123.70731800155588,
+    "predicted_n": 53
+   },
+   {
+    "i": 2,
+    "status": "COMPLETE",
+    "wall_s": 0.49,
+    "ttft_s": 0.0654,
+    "predicted_per_second": 123.75884161724247,
+    "predicted_n": 53
+   }
+  ]
+ }
+]

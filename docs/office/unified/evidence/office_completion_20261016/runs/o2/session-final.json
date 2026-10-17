@@ -1,0 +1,291 @@
+{
+ "run": "o2",
+ "brain_mode": true,
+ "port": 18331,
+ "started_utc": "2026-10-16T05:45:45.305250+00:00",
+ "verified": {
+  "ok": true,
+  "source_head": "a80f83aa471cbaaa6328efde9d2569bee9a76aa7",
+  "source_tree": "475a0010a4c3ee9a3566faf2ca70bdab78eeda19",
+  "checked_files": 1516
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "gpu_authority": "owner directive 2026-10-15 B5: Brain/GPU testing under the existing GPU lease, runtime safety and permission controls; no contention override",
+ "server_pid": 18616,
+ "server_listener_pid": 6756,
+ "server_listen_s": 3.497,
+ "server_listening": true,
+ "office_cmdlines": {
+  "16088": [
+   "D:\\uri-dev\\uri-auth-live\\runtime\\.venv\\Scripts\\python.exe",
+   "-B",
+   "-I",
+   "D:\\uri-dev\\uri-auth-live\\runtime\\scripts\\run_uri_office_service.py",
+   "run",
+   "--state",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office",
+   "--parent-pid",
+   "15772",
+   "--brain-from-runtime"
+  ],
+  "20536": [
+   "\\??\\C:\\WINDOWS\\system32\\conhost.exe",
+   "0x4"
+  ],
+  "20472": [
+   "D:\\uri-dev\\uri-auth-live\\runtime\\.venv\\Scripts\\python.exe",
+   "-B",
+   "-I",
+   "D:\\uri-dev\\uri-auth-live\\runtime\\scripts\\run_uri_office_service.py",
+   "run",
+   "--state",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office",
+   "--parent-pid",
+   "15772",
+   "--brain-from-runtime"
+  ],
+  "4244": [
+   "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+   "-NoProfile",
+   "-NonInteractive",
+   "-Command",
+   "\n$ErrorActionPreference = 'Stop'\n$root = $env:URI_SIGNER_ROOT\n$files = Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { @('.exe','.dll','.bin','.com','.pyd') -contains $_.Extension.ToLower() }\n$out = foreach ($s in ($files | Get-AuthenticodeSignature)) {\n  [pscustomobject]@{ path = $s.Path.Substring($root.Length).TrimStart([char]92).Replace([string][char]92, '/');\n                     status = $s.Status.ToString(); signer = if ($s.SignerCertificate) { $s.SignerCertificate.Subject } else { $null } }\n}\n@($out) | ConvertTo-Json -Compress\n"
+  ],
+  "18988": [
+   "\\??\\C:\\WINDOWS\\system32\\conhost.exe",
+   "0x4"
+  ],
+  "2144": [
+   "\\??\\C:\\WINDOWS\\system32\\conhost.exe",
+   "0x4"
+  ],
+  "17696": [
+   "C:\\Users\\cheta\\AppData\\Local\\URI\\engines\\libreoffice-26.8.1\\program\\\\python-core-3.13.15",
+   "-I",
+   "-B",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\run\\lo_bridge-69257c0e0234.py",
+   "uri_office_ec412681e22847389bf6ff74e84e3edb",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\files"
+  ],
+  "21328": [
+   "C:\\Users\\cheta\\AppData\\Local\\URI\\engines\\libreoffice-26.8.1\\program\\python.exe",
+   "-I",
+   "-B",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\run\\lo_bridge-69257c0e0234.py",
+   "uri_office_ec412681e22847389bf6ff74e84e3edb",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\files"
+  ],
+  "18232": [
+   "\\??\\C:\\WINDOWS\\system32\\conhost.exe",
+   "0x4"
+  ],
+  "2356": [
+   "C:\\Users\\cheta\\AppData\\Local\\URI\\engines\\libreoffice-26.8.1\\program\\soffice.com",
+   "-env:UserInstallation=file:///C:/Users/cheta/uri-o2i-fixtures/o2/local/URI/office/lo-profile",
+   "--headless",
+   "--invisible",
+   "--norestore",
+   "--nolockcheck",
+   "--nodefault",
+   "--nologo",
+   "--nofirststartwizard",
+   "--accept=pipe,name=uri_office_ec412681e22847389bf6ff74e84e3edb;urp;StarOffice.ComponentContext"
+  ],
+  "22100": [
+   "C:\\Users\\cheta\\AppData\\Local\\URI\\engines\\libreoffice-26.8.1\\program\\soffice.com",
+   "-env:UserInstallation=file:///C:/Users/cheta/uri-o2i-fixtures/o2/local/URI/office/lo-profile",
+   "--headless",
+   "--invisible",
+   "--norestore",
+   "--nolockcheck",
+   "--nodefault",
+   "--nologo",
+   "--nofirststartwizard",
+   "--accept=pipe,name=uri_office_ec412681e22847389bf6ff74e84e3edb;urp;StarOffice.ComponentContext",
+   "-env:OOO_CWD=2C:\\\\Users\\\\cheta\\\\uri-o2i-fixtures\\\\o2\\\\local\\\\URI\\\\office\\\\lo-tmp"
+  ],
+  "16268": [
+   "\\??\\C:\\WINDOWS\\system32\\conhost.exe",
+   "0x4"
+  ],
+  "3596": [
+   "\\??\\C:\\WINDOWS\\system32\\conhost.exe",
+   "0x4"
+  ],
+  "20572": [
+   "D:\\uri-dev\\uri-auth-live\\runtime\\.venv\\Scripts\\python.exe",
+   "-I",
+   "-B",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\run\\pdf_text-2b185cb3a9d4.py",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\files"
+  ],
+  "20652": [
+   "D:\\uri-dev\\uri-auth-live\\runtime\\.venv\\Scripts\\python.exe",
+   "-I",
+   "-B",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\run\\pdf_text-2b185cb3a9d4.py",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\files"
+  ],
+  "1328": [
+   "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+   "-NoProfile",
+   "-NonInteractive",
+   "-ExecutionPolicy",
+   "Bypass",
+   "-File",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\run\\winrt_raster-24e313bcbba4.ps1",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\files"
+  ],
+  "6840": [
+   "C:\\Users\\cheta\\AppData\\Local\\URI\\engines\\libreoffice-26.8.1\\program\\soffice.com",
+   "-env:UserInstallation=file:///C:/Users/cheta/uri-o2i-fixtures/o2/local/URI/office/lo-profile",
+   "--headless",
+   "--invisible",
+   "--norestore",
+   "--nolockcheck",
+   "--nodefault",
+   "--nologo",
+   "--nofirststartwizard",
+   "--accept=pipe,name=uri_office_ec412681e22847389bf6ff74e84e3edb;urp;StarOffice.ComponentContext",
+   "-env:OOO_CWD=2C:\\\\Users\\\\cheta\\\\uri-o2i-fixtures\\\\o2\\\\local\\\\URI\\\\office\\\\lo-tmp"
+  ],
+  "13140": [
+   "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+   "-NoProfile",
+   "-NonInteractive",
+   "-ExecutionPolicy",
+   "Bypass",
+   "-File",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\run\\winrt_raster-2738d878e148.ps1",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\files"
+  ],
+  "8988": [
+   "D:\\uri-dev\\uri-auth-live\\runtime\\.venv\\Scripts\\python.exe",
+   "-I",
+   "-B",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\run\\pdf_text-af31c3183856.py",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\files"
+  ],
+  "2232": [
+   "D:\\uri-dev\\uri-auth-live\\runtime\\.venv\\Scripts\\python.exe",
+   "-I",
+   "-B",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\run\\pdf_text-af31c3183856.py",
+   "C:\\Users\\cheta\\uri-o2i-fixtures\\o2\\local\\URI\\office\\files"
+  ],
+  "20272": [
+   "\\??\\C:\\WINDOWS\\system32\\conhost.exe",
+   "0x4"
+  ],
+  "18040": [
+   "\\??\\C:\\WINDOWS\\system32\\conhost.exe",
+   "0x4"
+  ]
+ },
+ "ui_finished_utc": "2026-10-16T05:54:00.742876+00:00",
+ "finished_utc": "2026-10-16T05:56:09.977873+00:00",
+ "server_exit": 1,
+ "brain_config_sha256_after": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_listener_after_3s": null,
+ "server_listener_after": null,
+ "host_final": {
+  "schema": "uri.ws.brain_host.v1",
+  "host_pid": 11936,
+  "host_started": 1792129548.808,
+  "state": "STOPPED",
+  "history": [
+   {
+    "t": 1792129554.92,
+    "state": "STARTING",
+    "detail": null
+   },
+   {
+    "t": 1792129584.091,
+    "state": "LOADING",
+    "detail": null
+   },
+   {
+    "t": 1792129601.636,
+    "state": "CALIBRATING",
+    "detail": null
+   },
+   {
+    "t": 1792129609.05,
+    "state": "READY",
+    "detail": null
+   },
+   {
+    "t": 1792130166.911,
+    "state": "STOPPING",
+    "detail": null
+   },
+   {
+    "t": 1792130166.937,
+    "state": "STOPPED",
+    "detail": "HOST_EXIT"
+   }
+  ],
+  "override": null,
+  "lease": {
+   "held": false
+  },
+  "gpu": {
+   "fit": {
+    "verdict": "AT_RISK",
+    "card_mib": 16368,
+    "required_mib": 15626,
+    "others_mib": 970.7,
+    "unattributed_mib": 0.0,
+    "owner_mib": 0,
+    "free_mib": 15397.3,
+    "margin_mib": -228.7,
+    "consumers": [
+     {
+      "pid": 1792,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 469.8,
+      "role": "desktop compositor"
+     }
+    ]
+   },
+   "explain": "GPU memory is 229 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading.",
+   "census_t": 1792129548.823,
+   "census_s": 3.74
+  },
+  "detail": "HOST_EXIT",
+  "explain": "The Brain host has exited.",
+  "updated_at": 1792130166.937,
+  "heartbeat_at": 1792130166.352,
+  "server": {
+   "pid": null,
+   "owned": false,
+   "stopped_clean": true
+  },
+  "residency": {
+   "t": 1792130134.89,
+   "dedicated_mib": 14993.4,
+   "non_local_mib": 1730.1,
+   "others_mib": 970.0,
+   "verdict_now": "AT_RISK",
+   "consumers": [
+    {
+     "pid": 1792,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "dedicated_mib": 475.8,
+     "role": "desktop compositor"
+    }
+   ]
+  }
+ },
+ "office_left": []
+}

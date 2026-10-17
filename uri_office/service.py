@@ -80,8 +80,9 @@ class Office:
         self.state = Path(state)
         self.state.mkdir(parents=True, exist_ok=True)
         self.owner = owner
-        self.grants = Grants(allowed_roots)
-        self.approvals = Approvals(self.state, owner)
+        # OD-R1: folders the owner added are kept in the state folder (restricted to this user) and survive restarts.
+        self.grants = Grants(allowed_roots, folders_file=self.state / "folders.json")
+        self.approvals = Approvals(self.state, owner, on_close=self.grants.revoke)
         self.history = History(self.state)
         self.google = google or G.GoogleSheets(self.state, None)
         self.brain = brain
@@ -89,6 +90,14 @@ class Office:
         self.lock = threading.RLock()
         # O2: engines, documents and workflows start on first use, so the M1/M2 paths and their tests start nothing.
         self.recent = Recent(self.state)
+        # Independent review C1-01: a Save interrupted after the original was moved aside left it under a hidden
+        # '.<name>.*.uri-office.hold' name; files the owner opened recently are put back under their own names.
+        from .xlsx_patch import recover_held
+        for item in self.recent.listing().get("items", []):
+            try:
+                recover_held(Path(item["path"]))
+            except (OSError, KeyError, TypeError):
+                pass
         self._hub = None
         self._documents = None
         self._workflows = None
@@ -125,6 +134,28 @@ class Office:
                 self._workflows = Workflows(self.state, hub, self.grants, self.approvals, docs, self._session,
                                             on_saved=self.recent.add)
             return self._workflows
+
+    @property
+    def authoring(self):
+        """Milestone A/B: authoring sessions start on first use, like the O2 parts."""
+        documents = self.documents                      # resolved outside the lock (it takes the lock itself)
+        with self._o2_lock:
+            if getattr(self, "_authoring", None) is None:
+                from .authoring.session import Authoring
+                self._authoring = Authoring(self.state, documents, self.grants, self.approvals,
+                                            audit=self.approvals.audit)
+            return self._authoring
+
+    def authoring_op(self, aid, body) -> dict:
+        """One authoring op; a picture comes from the owner's picker (an open grant of kind image, used once)."""
+        op = body.get("op")
+        if isinstance(op, dict) and op.get("op") == "insert_image":
+            g = self.grants.grant_open(body.get("image_path"), kind="image")
+            try:
+                return self.authoring.apply(aid, op, image_grant=g.grant_id)
+            finally:
+                self.grants.revoke(g.grant_id)
+        return self.authoring.apply(aid, op)
 
     def capabilities(self) -> dict:
         # Before the engines start, nothing that needs them is reported ready (review round 1, finding 9).
@@ -220,6 +251,7 @@ class Office:
                 out["open_url"] = G.open_url(s.file_id)
                 out["writable"] = self.google.writable(s.file_id)
                 out["reload_required"] = bool(s.stale_ops)
+            if s.engine in ("google", "local"):
                 out["layout_version"] = s.layout_version
             return out
 
@@ -418,6 +450,11 @@ class Office:
         s.draft.committed(pending)
         s.workbook = {**s.workbook, "sheets": self._overlay(
             s.workbook["sheets"], [(e["sheet"], e["cell"], e["after"]) for e in pending["edits"]])}
+        if pending.get("formats") and not pending["struct_ops"] and s.engine == "local":
+            try:                                         # XF-1: the snapshot shows the saved formatting too
+                s.workbook = xlsx_model.read(s.path)
+            except OfficeError:
+                pass
         if pending["struct_ops"]:
             s.stale_ops = list(s.stale_ops) + list(pending["struct_ops"])
             try:
@@ -434,7 +471,7 @@ class Office:
         if not s.stale_ops:
             return None
         try:
-            wb = self.google.read(s.file_id)
+            wb = xlsx_model.read(s.path) if s.engine == "local" else self.google.read(s.file_id)
         except Exception:  # noqa: BLE001 - a failed re-read must not be reported as a failed save
             raise OfficeError("RELOAD_REQUIRED", "the sheet's layout changed with the last save and could not be "
                                                  "read again; try again", 503) from None
@@ -449,7 +486,7 @@ class Office:
     def _reloaded(s, refreshed) -> dict:
         """Response fields after a call that may have re-read the sheet: the layout version, and the new workbook when
         this call re-read it, so the panel reloads its grid before the owner edits it by row and column."""
-        if s.engine != "google":
+        if s.engine not in ("google", "local"):
             return {}
         return {"layout_version": s.layout_version, **({"workbook": s.workbook} if refreshed is not None else {})}
 
@@ -462,9 +499,15 @@ class Office:
             # Google save) they name a different cell now: refuse rather than write the owner's value there.
             stale_grid = (body.get("layout_version") is not None and body.get("layout_version") != s.layout_version) \
                 or (refreshed is not None and str(body.get("sheet")) in refreshed[1])
-            if s.engine == "google" and stale_grid:
+            if s.engine in ("google", "local") and stale_grid:
                 raise OfficeError("RELOAD_REQUIRED", "the sheet's rows moved since this grid was loaded; reload it "
                                                      "and edit again", 409)
+            if "style" in body:                          # XF-1 (OD-R3): the owner formatted a cell
+                if s.engine != "local":
+                    raise OfficeError("FORMAT_NOT_SUPPORTED", "formatting is saved for local workbooks only")
+                from .xlsx_styles import check_style
+                s.draft.user_format(body.get("sheet"), body.get("cell"), check_style(body["style"]))
+                return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
             op = ({"op": "set_formula", "sheet": body.get("sheet"), "cell": body.get("cell"), "formula": body["formula"]}
                   if "formula" in body else
                   {"op": "set_values", "sheet": body.get("sheet"), "range": body.get("cell"), "values": [[body.get("value")]]})
@@ -546,30 +589,42 @@ class Office:
         with s.lock:
             self._refresh(s)
             pending = s.draft.pending()
-            if s.engine == "local":
-                dest = None
-                if body.get("save_as_path"):
+            if s.engine == "local" and pending.get("formats"):
+                from .xlsx_styles import check_visible_fills
+                check_visible_fills(s.path, pending["formats"])
+            new_grant = None
+            try:
+                if s.engine == "local":
+                    dest = None
+                    if body.get("save_as_path"):
+                        g = self.grants.grant_save_as(body["save_as_path"])
+                        new_grant = g.grant_id
+                        if g.path.exists():
+                            raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
+                        dest = g
+                    target = {"kind": "local", "label": str(dest.path if dest else s.path),
+                              "grant_id": dest.grant_id if dest else s.grant_id, "save_as": bool(dest),
+                              "source_sha256": s.open_sha, "draft_version": s.draft.version}
+                elif s.engine == "new":
+                    if not body.get("save_as_path"):
+                        raise OfficeError("SAVE_AS_REQUIRED", "choose where to create the new file")
                     g = self.grants.grant_save_as(body["save_as_path"])
+                    new_grant = g.grant_id
                     if g.path.exists():
                         raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
-                    dest = g
-                target = {"kind": "local", "label": str(dest.path if dest else s.path),
-                          "grant_id": dest.grant_id if dest else s.grant_id, "save_as": bool(dest),
-                          "source_sha256": s.open_sha, "draft_version": s.draft.version}
-            elif s.engine == "new":
-                if not body.get("save_as_path"):
-                    raise OfficeError("SAVE_AS_REQUIRED", "choose where to create the new file")
-                g = self.grants.grant_save_as(body["save_as_path"])
-                if g.path.exists():
-                    raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
-                if not xlsx_new.content(s.draft.sheets(), pending["edits"]):
-                    raise OfficeError("NOTHING_TO_SAVE", "the new workbook has no cells")
-                target = {"kind": "new_file", "label": str(g.path), "grant_id": g.grant_id,
-                          "draft_version": s.draft.version, "sheets": s.draft.sheets(),
-                          "sources": [src.label for src in s.sources]}
-            else:
-                target = {"kind": "google", "label": s.label, "file_id": s.file_id, "draft_version": s.draft.version}
-            surface = self.approvals.propose(wid, target, pending)
+                    if not xlsx_new.content(s.draft.sheets(), pending["edits"]):
+                        raise OfficeError("NOTHING_TO_SAVE", "the new workbook has no cells")
+                    target = {"kind": "new_file", "label": str(g.path), "grant_id": g.grant_id,
+                              "draft_version": s.draft.version, "sheets": s.draft.sheets(),
+                              "sources": [src.label for src in s.sources]}
+                else:
+                    target = {"kind": "google", "label": s.label, "file_id": s.file_id,
+                              "draft_version": s.draft.version}
+                surface = self.approvals.propose(wid, target, pending)
+            except BaseException:
+                if new_grant is not None:
+                    self.grants.revoke(new_grant)
+                raise
             return {"messages": surface.messages(), "surface_id": surface.surface_id}
 
     def propose_share(self, wid) -> dict:
@@ -588,6 +643,8 @@ class Office:
             return self.workflows.apply(body)
         if body.get("target", {}).get("kind") == "print_job":
             return self.printing.apply(body)
+        if body.get("target", {}).get("kind") == "authoring_save":
+            return self.authoring.apply_save(body)
         s = self._session(body["workbook_id"])
         with s.lock:
             t = body["target"]
@@ -602,7 +659,7 @@ class Office:
             if s.draft.version != t.get("draft_version"):
                 raise OfficeError("STALE_CHANGE", "the draft changed after this approval was shown; review the save "
                                                   "again", 409)
-            pending = {"edits": body["edits"], "struct_ops": body["struct_ops"]}
+            pending = {"edits": body["edits"], "struct_ops": body["struct_ops"], "formats": body.get("formats", [])}
             if t["kind"] == "new_file":
                 return self._create_new_file(s, t, pending)
             if t["kind"] == "google":
@@ -622,20 +679,25 @@ class Office:
                 dest = self.grants.get(t["grant_id"], "open").path
             backup = self.state / "backups" / s.workbook_id
             backup.mkdir(parents=True, exist_ok=True)
-            if not t["save_as"]:
-                shutil.copy2(src, backup / f"{int(time.time())}-{src.name}")
-            res = xlsx_patch.patch(src, dest, D.patch_edits(pending))
+            # Independent reviews (3e202efc) S1-03 / S1-02: no check-then-replace. Save as is a no-replace publish;
+            # Save re-checks the original at publish time and writes a durable, uniquely named backup first.
+            res = xlsx_patch.patch(src, dest, D.patch_edits(pending), pending["struct_ops"], pending["formats"],
+                                   create_only=t["save_as"],
+                                   expected_sha256=None if t["save_as"] else t["source_sha256"],
+                                   backup=None if t["save_as"] else backup / f"{time.time_ns()}-{src.name}")
             # A Save As writes a new file but the session keeps editing the original: the draft stays relative to the
             # original (its edits remain pending for it, and for any later Save As), so nothing is committed here.
+            extra = {}
             if not t["save_as"]:
-                self._committed(s, pending)
+                # the file's new hash first: the layout re-read below reads the saved file
                 s.open_sha = xlsx_model.file_sha256(dest)
+                extra = self._committed(s, pending)
                 # A working file that is also one of the added files: its record follows URI's own save, so it can
                 # be a reference or the working file again without a false "changed on disk" (Codex C-02).
                 for src in s.sources:
                     if src.grant_id == s.grant_id:
                         src.sha256, src.workbook = s.open_sha, s.workbook
-            return {"changed_parts": res["changed_parts"], "saved_to": dest.name}
+            return {"changed_parts": res["changed_parts"], "saved_to": dest.name, **extra}
 
     def _create_new_file(self, s, t, pending) -> dict:
         """M2-AC9/AC10: publish the new file, then open it as a local session when possible."""
@@ -689,6 +751,13 @@ class Office:
             if r.get("status") == "declined":
                 self.printing.declined(subject)
             return r
+        if kind == "authoring_save":
+            # Lock order: the edit's lock, then approvals lock (propose_save takes them that way).
+            ed = self.authoring.sessions.get(subject)
+            if ed is None:
+                return self.approvals.action(msg, self._apply)
+            with ed.lock:
+                return self.approvals.action(msg, self._apply)
         if kind in ("plan", "output_files"):
             # Lock order: workflow lock, then approvals lock (plan §5.1, review N9).
             lock = self.workflows.lock_of(subject)
@@ -711,7 +780,7 @@ class Office:
             s = self.sessions[r["workbook_id"]]
             r["draft"] = s.draft.snapshot()
             r["workbook"] = s.workbook
-            if s.engine == "google":
+            if s.engine in ("google", "local"):         # OD-R3: local row changes move the layout too
                 r["layout_version"] = s.layout_version
                 r["reload_required"] = bool(s.stale_ops)
         return r
@@ -729,11 +798,14 @@ class Office:
         if s.engine != "google":
             raise OfficeError("NOT_GOOGLE")
         g = self.grants.grant_save_as(body.get("dest_path"))
-        if g.path.exists():
-            raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
-        r = self.google.export_xlsx(s.file_id, g.path)
-        self.approvals.audit("office.exported", {"workbook_id": wid})
-        return r
+        try:
+            if g.path.exists():
+                raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
+            r = self.google.export_xlsx(s.file_id, g.path)
+            self.approvals.audit("office.exported", {"workbook_id": wid})
+            return r
+        finally:
+            self.grants.revoke(g.grant_id)
 
     # ---- history -------------------------------------------------------------------------------------------------
     def history_op(self, wid, body) -> dict:
@@ -863,6 +935,13 @@ def make_handler(office: Office, token: str):
                     return office.hub.status()
                 if parts == ["recent"]:
                     return office.recent.listing()
+                if parts == ["authoring", "layouts"]:
+                    from .authoring.docx_templates import layout_list
+                    return {"docx": layout_list()}
+                if len(parts) == 2 and parts[0] == "authoring" and _ok_id(parts[1]):
+                    return office.authoring.view(parts[1])
+                if parts == ["folders"]:
+                    return {"folders": office.grants.folders()}
                 if parts == ["workflows"]:
                     return office.workflows.listing()
                 if parts == ["devices", "printers"]:
@@ -901,6 +980,31 @@ def make_handler(office: Office, token: str):
                     return office.open_new(b.get("paths"))
                 if parts == ["a2ui", "action"]:
                     return office.action(b.get("action"))
+                # ---- authoring (milestones A/B) ----
+                if parts == ["authoring", "edit"]:
+                    return office.authoring.edit_document(b.get("document_id"))
+                if parts == ["authoring", "new"]:
+                    if b.get("kind") == "docx":
+                        return office.authoring.new_document(b.get("layout"), b.get("template_path"))
+                    return office.authoring.new_presentation(b.get("template_path"))
+                if len(parts) == 3 and parts[0] == "authoring" and _ok_id(parts[1]):
+                    aid, verb = parts[1], parts[2]
+                    if verb == "op":
+                        return office.authoring_op(aid, b)
+                    if verb in ("undo", "redo"):
+                        return office.authoring.undo(aid, redo=verb == "redo")
+                    if verb == "save":
+                        return office.authoring.propose_save(aid, b.get("save_as_path"))
+                    if verb == "close":
+                        return office.authoring.close(aid)
+                if parts == ["folders", "add"]:          # OD-R1: a folder the owner picked in the folder dialog
+                    r = office.grants.add_folder(b.get("path"))
+                    office.approvals.audit("office.folder_added", {"added": r["added"]})
+                    return r
+                if parts == ["folders", "remove"]:
+                    r = office.grants.remove_folder(b.get("path"))
+                    office.approvals.audit("office.folder_removed", {})
+                    return r
                 # ---- O2 (contract o2.1) ----
                 if parts == ["engines", "verify"]:
                     return office.hub.verify()

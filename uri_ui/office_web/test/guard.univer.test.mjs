@@ -9,7 +9,7 @@ import { IFunctionService, UniverFormulaEnginePlugin } from '@univerjs/engine-fo
 import { SetBoldCommand, SetStyleCommand, SheetsSelectionsService, UniverSheetsPlugin } from '@univerjs/sheets';
 import sheetsCoreEnUS from '@univerjs/preset-sheets-core/locales/en-US';
 
-import { BLOCKED_FUNCTIONS, blockFunctions, guardFormatting, guardStructure } from '../src/guard.js';
+import { BLOCKED_FUNCTIONS, blockFunctions, fromUniverStyle, guardFormatting, guardStructure } from '../src/guard.js';
 import { editsFromMutation } from '../src/convert.js';
 
 const tick = () => new Promise((r) => setTimeout(r, 50));
@@ -144,5 +144,29 @@ test('formatting is not applied; values, existing styles and page marks are kept
   assert.ok(refused.includes('sheet.command.add-worksheet-merge'));
   assert.ok(refused.includes('sheet.command.set-worksheet-col-width'));
   assert.ok(refused.includes('sheet.command.set-row-height'));
+  univer.dispose();
+});
+
+// OD-R3 / XF-1: for a local workbook the saved subset of formatting is applied and reported; the rest is removed.
+test('local workbook: bold and fill are applied and read back as URI style; font size is removed', async () => {
+  const univer = start();
+  const injector = univer.__getInjector();
+  const cs = injector.get(ICommandService);
+  const refused = [];
+  guardFormatting(cs, CanceledError, () => false, (id) => refused.push(id), () => true);
+  univer.createUnit(UniverInstanceType.UNIVER_SHEET, book('w'));
+  await tick();
+  const wbm = injector.get(IUniverInstanceService).getUnit('w');
+  const ws = wbm.getSheetBySheetId('s0');
+  await cs.executeCommand('sheet.command.set-range-values', { unitId: 'w', subUnitId: 's0',
+    range: { startRow: 0, endRow: 0, startColumn: 0, endColumn: 0 },
+    value: { s: { bl: 1, bg: { rgb: '#ffff00' }, fs: 20, n: { pattern: '#,##0' }, ht: 2 } } });
+  const st = wbm.getStyles().getStyleByCell(ws.getCellRaw(0, 0));
+  assert.equal(st.fs, undefined, 'font size is not applied');
+  assert.deepEqual(fromUniverStyle(st), { b: true, bg: '#FFFF00', nf: '#,##0', ha: 'center' });
+  assert.deepEqual(refused, ['sheet.mutation.set-range-values'], 'the owner is told about the removed part');
+  // a change mark's background is never reported as a fill
+  assert.deepEqual(fromUniverStyle(st, null), { b: true, nf: '#,##0', ha: 'center' });
+  assert.deepEqual(fromUniverStyle(st, '#D9F2D9'), { b: true, bg: '#D9F2D9', nf: '#,##0', ha: 'center' });
   univer.dispose();
 });

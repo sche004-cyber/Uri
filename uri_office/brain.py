@@ -59,6 +59,18 @@ CHECK_TEXT = (
     "say so in message. ")
 
 
+# OD-R3 / XB-2: real row insert and delete instead of rewriting cells to imitate them.
+ROW_TEXT_LOCAL = (
+    ", insert_rows (sheet, at, count, values) and delete_rows (sheet, at, count). insert_rows puts `count` new rows "
+    "ABOVE row `at`: to add a row below row N use at = N+1, and to add rows after the last row use the first empty "
+    "row. Put the new rows' values in `values` (one list per new row, from column A; a value starting with '=' is a "
+    "formula), or null for empty rows. Formulas and totals that refer to moved rows are adjusted by URI, so never "
+    "rewrite them yourself, and never imitate an insert or a delete by rewriting other rows. Row changes and cell "
+    "changes on the same sheet must not be in one answer: do the row change and say the rest can follow")
+ROW_TEXT_GOOGLE = ("; for Google Sheets also insert_rows, delete_rows (sheet, at, count), add_sheet (name), rename_sheet "
+                   "(sheet, name)")
+
+
 def system_for(engine: str, task: str) -> str:
     """The system prompt when the owner added files with roles (M2-D10/D11)."""
     if engine == "new":
@@ -173,8 +185,8 @@ def build_body(instruction: str, view: dict, history_rows: list, engine: str, so
                 + data_block("the new workbook so far" if engine == "new" else "the working file", view) + "\n\n"
                 + data_block("reference files (read-only; first rows of each sheet)", source_view))
     else:
-        system = SYSTEM.format(google="; for Google Sheets also insert_rows, delete_rows (sheet, at, count), add_sheet "
-                                      "(name), rename_sheet (sheet, name)" if engine == "google" else "")
+        system = SYSTEM.format(google=ROW_TEXT_GOOGLE if engine == "google" else ROW_TEXT_LOCAL if engine == "local"
+                               else "")
         user = (f"Owner instruction:\n{instruction}\n\n"
                 + data_block("workbook", view) + "\n\n"
                 + data_block("correction history for this workbook (what changed and why)",
@@ -246,7 +258,23 @@ class OfficeBrain:
         written: set = set()                 # cells written by earlier ops of this answer
         touched: set = set()                 # every cell an earlier op of this answer set, clears included (NOOP-1)
         # M2-XB-1: a question or a refusal never changes the draft, whatever ops came with it.
+        # Row changes and cell changes on the same sheet in one answer are refused (cell ops name cells as shown
+        # now, and a Brain that also fixes totals for the moved rows would adjust them twice).
+        row_sheets = {o.get("sheet") for o in data["ops"][:20] if isinstance(o, dict)
+                      and o.get("op") in ("insert_rows", "delete_rows")} if engine == "local" else set()
+        row_seen: set = set()                # independent review S1-01: one row change per sheet per answer
         for i, op in enumerate(data["ops"][:20] if status == "propose" else ()):
+            if isinstance(op, dict) and op.get("op") in ("insert_rows", "delete_rows"):
+                if op.get("sheet") in row_seen:
+                    refused.append({"index": i, "code": "ROW_CHANGE_PENDING",
+                                    "detail": "one row change per sheet at a time; save the first one"})
+                    continue
+                row_seen.add(op.get("sheet"))
+            if row_sheets and isinstance(op, dict) and op.get("op") in O.CELL_OPS + O.SOURCE_OPS and \
+                    op.get("sheet") in row_sheets:
+                refused.append({"index": i, "code": "ROW_AND_CELL_CHANGES",
+                                "detail": "a row change and cell changes on the same sheet go in separate requests"})
+                continue
             if isinstance(op, dict):
                 op = {k: v for k, v in op.items() if v is not None}
             try:

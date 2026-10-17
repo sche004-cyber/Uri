@@ -378,6 +378,12 @@ class A2uiHub extends ChangeNotifier {
       'The GIF is not the version shown. Nothing was decided.',
     'INSTRUCTION_REQUIRED' => 'Say what should change.',
     'DATE_REQUIRED' => 'Pick the corrected date.',
+    // URI Office save cards (live run a2: the raw code was shown)
+    'TARGET_CHANGED' => 'The file changed on disk since it was opened, so it was not replaced. Use Save as to keep '
+        'your changes in a new file.',
+    'STALE_CHANGE' => 'The file was changed after this card was shown. Nothing was saved; review the save again.',
+    'DESTINATION_EXISTS' => 'A file with that name already exists. Nothing was replaced; choose another name.',
+    'FILE_READ_ONLY' => 'The file is read-only, so it was not replaced. Use Save as to keep your changes in a new file.',
     _ =>
       'Refused: $code${detail == null || detail.isEmpty ? '' : ' ($detail)'}',
   };

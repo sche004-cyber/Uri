@@ -2,8 +2,8 @@
 
   set_values   {"op", "sheet", "range": "A1:C3", "values": [[...], ...]}   local + Google
   set_formula  {"op", "sheet", "cell": "D4", "formula": "=SUM(A1:A3)"}      local + Google
-  insert_rows  {"op", "sheet", "at": 5, "count": 2}                          Google only
-  delete_rows  {"op", "sheet", "at": 5, "count": 2}                          Google only
+  insert_rows  {"op", "sheet", "at": 5, "count": 2, "values": [[...]]|null}  local + Google (values: local only)
+  delete_rows  {"op", "sheet", "at": 5, "count": 2}                          local + Google
   add_sheet    {"op", "name": "Summary"}                                     new + Google
   rename_sheet {"op", "sheet": "Old", "name": "New"}                         Google only
 
@@ -133,8 +133,11 @@ def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
     if not isinstance(op, dict) or op.get("op") not in CELL_OPS + STRUCT_OPS:
         raise OfficeError("UNKNOWN_OP", str(op.get("op") if isinstance(op, dict) else op)[:32])
     kind = op["op"]
-    if kind in STRUCT_OPS and engine != "google" and not (engine == "new" and kind == "add_sheet"):
-        raise OfficeError("OP_NOT_SUPPORTED_LOCALLY", f"{kind} is available for Google Sheets only in this version")
+    # OD-R3 (2026-10-16): whole-row insert and delete also for local files (uri_office/xlsx_struct.py). Adding and
+    # renaming sheets stays Google (and new workbooks for add_sheet).
+    local_rows = engine == "local" and kind in ("insert_rows", "delete_rows")
+    if kind in STRUCT_OPS and engine != "google" and not local_rows and not (engine == "new" and kind == "add_sheet"):
+        raise OfficeError("OP_NOT_SUPPORTED_LOCALLY", f"{kind} is not available for this workbook")
     locked = locked or {}
     out = []
     if kind == "set_values":
@@ -158,7 +161,18 @@ def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
         at, count = op.get("at"), op.get("count")
         if not (isinstance(at, int) and isinstance(count, int) and 1 <= at <= refs.MAX_ROW and 1 <= count <= 1000):
             raise OfficeError("BAD_ROWS", "row position or count out of range")
+        if kind == "insert_rows" and at + count - 1 > refs.MAX_ROW:      # R8-02: the new rows must fit
+            raise OfficeError("BAD_ROWS", "the inserted rows would go past the last row of a sheet")
         out.append({k: op[k] for k in ("op", "sheet", "at", "count")})
+        vals = op.get("values")
+        if vals is not None:
+            if kind != "insert_rows" or engine != "local":
+                raise OfficeError("VALUES_NOT_SUPPORTED", "only a local row insert can carry values for the new rows")
+            if not isinstance(vals, list) or not vals or len(vals) > count or \
+                    any(not isinstance(r, list) or not r or len(r) > 200 for r in vals):
+                raise OfficeError("VALUES_SHAPE", "values must be rows for the inserted rows")
+            out[-1]["values"] = [[{"f": check_formula(v)} if isinstance(v, str) and v.startswith("=")
+                                  else {"v": check_value(v)} for v in r] for r in vals]
     elif kind == "add_sheet":
         name = op.get("name")
         if not isinstance(name, str) or not _SHEET_NAME.match(name) or _XML_INVALID.search(name) or \
@@ -175,6 +189,37 @@ def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
         if "cell" in e and e["cell"] in set(locked.get(e["sheet"], ())):
             raise OfficeError("CELL_NOT_EDITABLE", f"{e['sheet']}!{e['cell']} is part of a shared formula or merged range")
     return out
+
+
+def _cell_text(c) -> str:
+    if isinstance(c, dict):
+        return str(c.get("f") or ("" if c.get("v") is None else c.get("v")))
+    return "" if c is None else str(c)
+
+
+def describe_op(op: dict) -> str:
+    """Plain words for a structural change, as the owner sees it on the change list and the save card."""
+    kind, sheet = op.get("op"), op.get("sheet")
+    if kind in ("insert_rows", "delete_rows"):
+        n, at = op["count"], op["at"]
+        rows = "row" if n == 1 else "rows"
+        if kind == "insert_rows":
+            text = f"Insert {n} {rows} above row {at} on '{sheet}'"
+            vals = op.get("values") or []
+        else:
+            text = f"Delete {rows} {at}" + (f"-{at + n - 1}" if n > 1 else "") + f" on '{sheet}'"
+            vals = op.get("shown") or []
+        shown = ["  |  ".join(_cell_text(c) for c in r).rstrip(" |") for r in vals[:3]]
+        shown = [s for s in shown if s]
+        if shown:
+            text += (": " if kind == "insert_rows" else " (now: ") + "; ".join(shown) + \
+                (f"; and {len(vals) - 3} more" if len(vals) > 3 else "") + ("" if kind == "insert_rows" else ")")
+        return text
+    if kind == "add_sheet":
+        return f"Add sheet '{op.get('name')}'"
+    if kind == "rename_sheet":
+        return f"Rename sheet '{sheet}' to '{op.get('name')}'"
+    return str(kind)
 
 
 _OPEN_RANGE = re.compile(r"^([A-Z]{1,3})([1-9][0-9]{0,6})?:([A-Z]{1,3})$")

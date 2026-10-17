@@ -104,8 +104,9 @@ def _chunks(lines: list, limit: int) -> list:
 
 
 class Approvals:
-    def __init__(self, state_dir: Path, owner: str):
+    def __init__(self, state_dir: Path, owner: str, on_close=None):
         self.owner = owner
+        self.on_close = on_close
         self.lock = threading.RLock()
         self.db = sqlite3.connect(str(Path(state_dir) / "office.db"), check_same_thread=False, isolation_level=None)
         self.db.row_factory = sqlite3.Row
@@ -136,10 +137,13 @@ class Approvals:
 
     # ---- surfaces ------------------------------------------------------------------------------------------------
     def propose(self, workbook_id: str, target: dict, pending: dict) -> Surface:
-        if not pending["edits"] and not pending["struct_ops"] and target.get("kind") != "google_upload":
+        if not pending["edits"] and not pending["struct_ops"] and not pending.get("formats") and \
+                target.get("kind") != "google_upload":
             raise OfficeError("NOTHING_TO_SAVE", "there are no accepted or typed changes")
         body = {"workbook_id": workbook_id, "target": target, "edits": pending["edits"],
                 "struct_ops": pending["struct_ops"]}
+        if pending.get("formats"):                      # XF-1: only when present (earlier bodies hash as before)
+            body["formats"] = pending["formats"]
         sha = hashlib.sha256(canonical(body)).hexdigest()
         try:
             surface = self._surface(f"office.{workbook_id}.{uuid.uuid4().hex[:8]}", target, body, sha)
@@ -220,6 +224,23 @@ class Approvals:
         return self._propose_subject(workflow_id, "output_files", body, card, {"outputs": len(outputs),
                                                                                "warnings": len(warnings)})
 
+    def propose_authoring_save(self, authoring_id: str, body: dict) -> Surface:
+        """Authoring (milestone A): `office.apply_change` on an `authoring_save` subject. The hash binds every change
+        in plain words, the working copy's SHA-256, the full destination and whether it replaces the opened file."""
+        t = body["target"]
+
+        def card(sid, sha):
+            dest = t["destination"]
+            if u16(dest) > C.MAX_STRING:
+                raise OfficeError("CHANGE_TOO_LARGE_TO_SHOW", "the destination path is too long to show")
+            lines = list(body["changes"]) or ["A new file with the content shown."]
+            lines.append("This replaces the file you opened (a backup is kept)." if t["replaces"]
+                         else "A new file is written. An existing file is never replaced.")
+            title = "Save this document?" if body.get("kind") == "docx" else "Save this presentation?"
+            return self._card(sid, title, dest, lines, "Save", "Not now", "office.apply_change",
+                              "office.reject_change", "change_sha256", sha, "office_change", "Office save")
+        return self._propose_subject(authoring_id, "authoring_save", body, card, {"changes": len(body["changes"])})
+
     def propose_print(self, job: str, p: dict) -> Surface:
         """The print card (O2P, A1 §A4): `office.apply_change` on a `print_job` subject. The hash binds the PDF's
         SHA-256, the page list, the printer name, every setting, the capability snapshot, the printer status and the
@@ -288,15 +309,18 @@ class Approvals:
                                 (surface_id,)).fetchone()
         return (r["subject_kind"], r["workbook_id"]) if r else (None, None)
 
-    def _surface(self, sid, target, body, sha) -> Surface:
+    def _surface(self, sid, target, body, sha) -> Surface:  # noqa: C901 - one card builder
         google = target.get("kind") == "google"
         upload = target.get("kind") == "google_upload"
         new_file = target.get("kind") == "new_file"
         # The card shows the whole change set the hash binds (every edit with its full before/after, every structural
         # op, the full destination). A set too large for one card is refused, never shortened.
         lines = [f"{e['sheet']}!{e['cell']}: {_shown(e['before'])} -> {_shown(e['after'])}" for e in body["edits"]]
-        lines += [" ".join(f"{k}={json.dumps(op[k], ensure_ascii=False)}" for k in sorted(op))
-                  for op in body["struct_ops"]]
+        # OD-R2: structural changes in plain words, rows to be deleted with what they hold now.
+        from .ops import describe_op
+        lines += [describe_op(op) for op in body["struct_ops"]]
+        lines += [f"{f['sheet']}!{f['cell']} formatting: {_style_words(f['before'])} -> {_style_words(f['after'])}"
+                  for f in body.get("formats", ())]
         if new_file:
             # M2-D1: a new file changes no existing data and can hold far more cells than a card can show, so the card
             # summarises it; the hash still binds every cell, and a later draft change makes this approval stale.
@@ -349,7 +373,15 @@ class Approvals:
                        title="Office change")
 
     def _close(self, sid):
+        row = self.db.execute("SELECT state, body_json FROM surface WHERE surface_id=?", (sid,)).fetchone()
+        if row is None or row["state"] != "OPEN":
+            return
         self.db.execute("UPDATE surface SET state='CLOSED', updated_at=? WHERE surface_id=?", (time.time(), sid))
+        if self.on_close is not None:
+            target = json.loads(row["body_json"]).get("target", {})
+            if (target.get("save_as") or target.get("kind") == "new_file" or
+                    target.get("kind") == "authoring_save" and not target.get("replaces")):
+                self.on_close(target["grant_id"])
 
     def open_messages(self, workbook_id=None) -> list:
         q = "SELECT record_json FROM surface WHERE owner=? AND state='OPEN'"
@@ -373,8 +405,9 @@ class Approvals:
 
     def close_workbook(self, workbook_id):
         with self.lock:
-            self.db.execute("UPDATE surface SET state='CLOSED', updated_at=? WHERE workbook_id=? AND state='OPEN'",
-                            (time.time(), workbook_id))
+            for row in self.db.execute("SELECT surface_id FROM surface WHERE workbook_id=? AND state='OPEN'",
+                                       (workbook_id,)).fetchall():
+                self._close(row["surface_id"])
 
     def action(self, msg: dict, apply_fn) -> dict:
         """Gate one client action message. `apply_fn(body)` performs the write after every check passed."""
@@ -421,6 +454,8 @@ class Approvals:
                     counts = {"steps": len(body["plan"]["steps"])}
                 elif kind == "print_job":
                     counts = {"pages": len(body["print"]["pages"]), "copies": body["print"]["settings"]["copies"]}
+                elif kind == "authoring_save":
+                    counts = {"changes": len(body["changes"])}
                 else:
                     counts = {"outputs": len(body.get("outputs", []))}
                 self.audit("office.change_applied", {"surface_id": sid, "change_sha256": r["change_sha256"],
@@ -429,6 +464,23 @@ class Approvals:
             except OfficeError as exc:
                 self.audit("office.action_refused", {"surface_id": sid if isinstance(sid, str) else None,
                                                      "code": exc.code})
-                if exc.code in ("TARGET_CHANGED", "STALE_CHANGE", "STALE_PLAN", "INPUT_CHANGED") and r is not None:
+                if exc.code in ("TARGET_CHANGED", "STALE_CHANGE", "STALE_PLAN", "INPUT_CHANGED", "FILE_READ_ONLY") and r is not None:
                     self._close(sid)
                 raise
+
+
+def _style_words(st: dict) -> str:
+    """XF-1: formatting in plain words for the save card ("bold, fill #FFFF00, number format #,##0.00")."""
+    if not st:
+        return "plain"
+    words = {"b": "bold", "i": "italic", "u": "underlined", "wrap": "wrapped"}
+    out = [words[k] for k in ("b", "i", "u", "wrap") if st.get(k)]
+    if st.get("fc"):
+        out.append("text " + st["fc"])
+    if st.get("bg"):
+        out.append("fill " + st["bg"])
+    if st.get("ha"):
+        out.append("aligned " + st["ha"])
+    if st.get("nf"):
+        out.append("number format " + st["nf"])
+    return ", ".join(out)
