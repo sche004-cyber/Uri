@@ -1,0 +1,191 @@
+{
+ "commit": "f2c8e9aeb064bb5db1af9d0a0debdd5be91ebac5",
+ "nonce": "96b5a80bc92ffb1e",
+ "verdict": "ACCEPT WITH FINDINGS",
+ "prior_findings": [
+  {
+   "id": "AF-S1-01",
+   "status": "PARTIAL",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle_providers.py:657-664 stdout no longer scanned",
+    "scripts/dev_workflow/lifecycle_providers.py:393 codex exec without --json: stderr carries agent activity (unverified)",
+    "scripts/dev_workflow/lifecycle_providers.py:644-646 claude is_error detail from meta['result']"
+   ]
+  },
+  {
+   "id": "AF-S1-02",
+   "status": "OPEN",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1144 NO_RESULT regardless of integrity",
+    "scripts/dev_workflow/lifecycle.py:1163-1173 falls through to FAILURE"
+   ]
+  },
+  {
+   "id": "AF-S1-03",
+   "status": "OPEN",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle_providers.py:663-664 AUTH for every role",
+    "scripts/dev_workflow/lifecycle.py:1531",
+    "scripts/dev_workflow/lifecycle.py:1945",
+    "scripts/dev_workflow/lifecycle.py:1966"
+   ]
+  },
+  {
+   "id": "AF-S1-04",
+   "status": "OPEN",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:2106-2107 CONFIG unblock does not rebind control",
+    "scripts/dev_workflow/lifecycle.py:496 new key reported as drift"
+   ]
+  },
+  {
+   "id": "AF-S1-05",
+   "status": "FIXED",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:155-156",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py test_af_s1_05_max_attempts_is_bounded"
+   ]
+  },
+  {
+   "id": "AF-S1-06",
+   "status": "OPEN",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:155",
+    "scripts/dev_workflow/lifecycle.py:1783",
+    "scripts/dev_workflow/lifecycle.py:1838",
+    ".claude/skills/uri-development-lifecycle/SKILL.md:100",
+    ".claude/skills/uri-development-lifecycle/SKILL.md:103"
+   ]
+  }
+ ],
+ "criteria": [
+  {
+   "id": "AF-1",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1206-1218",
+    "scripts/dev_workflow/lifecycle.py:1834-1851",
+    "tests: test_preferred_reviewer_available_is_selected, test_preferred_unavailable_falls_back..."
+   ]
+  },
+  {
+   "id": "AF-2",
+   "status": "PARTIAL",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1891 exhausted only for QUOTA/AUTH/UNAVAILABLE",
+    "scripts/dev_workflow/lifecycle_providers.py:660-666 codex stderr transcript classified; QUOTA before TIMED_OUT"
+   ]
+  },
+  {
+   "id": "AF-3",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:353-379",
+    "scripts/dev_workflow/lifecycle.py:1060-1076",
+    "tests: test_an_unverifiable_reviewer_identity_is_denied, test_a_relayed_claude_review_never_satisfies_the_gate"
+   ]
+  },
+  {
+   "id": "AF-4",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1834-1848",
+    "scripts/dev_workflow/lifecycle.py:1782-1787",
+    "scripts/dev_workflow/lifecycle.py:2179-2181",
+    "scripts/dev_workflow/lifecycle.py:1186-1203",
+    "tests: test_no_reviewer_available_blocks_and_the_next_run_rechecks..., test_s1_03_verify_refuses..."
+   ]
+  },
+  {
+   "id": "AF-5",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1060-1095 unchanged",
+    "tests: test_owner_authorisation_is_still_required..., test_frozen_core_is_still_protected..., test_new_gate_failure..."
+   ]
+  },
+  {
+   "id": "AF-6",
+   "status": "PARTIAL",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:175-183",
+    "scripts/dev_workflow/lifecycle.py:477-479",
+    "scripts/dev_workflow/lifecycle_providers.py:663-664 AUTH behaviour change for configs without fallbacks"
+   ]
+  },
+  {
+   "id": "AF-7",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:149-163",
+    "scripts/dev_workflow/lifecycle.py:477-479",
+    "scripts/dev_workflow/lifecycle.py:1178-1184",
+    "scripts/dev_workflow/lifecycle.py:1119-1121"
+   ]
+  },
+  {
+   "id": "AF-8",
+   "status": "MET",
+   "evidence": [
+    "diff contains no writes of authorized/authorized_protected_changes and no login/credential code"
+   ]
+  }
+ ],
+ "findings": [
+  {
+   "id": "AF-S2-01",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "title": "QUOTA/AUTH still classified from Codex reviewer activity on stderr; QUOTA checked before TIMED_OUT",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle_providers.py:393",
+    "scripts/dev_workflow/lifecycle_providers.py:660-666",
+    "scripts/dev_workflow/lifecycle.py:1891"
+   ],
+   "repair": "For codex_cli, classify only from a structured error channel (e.g. --json error events or an exit-code/last-line error marker), not the stderr transcript; check TIMED_OUT before QUOTA/AUTH; add a test where a failing/timed-out reviewer writes 'rate limit'/'401' to stderr as activity."
+  },
+  {
+   "id": "AF-S2-02",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "reviewer_fallbacks length unbounded: chain x max_attempts can exceed max_steps (STEP_LIMIT)",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:149-156",
+    "scripts/dev_workflow/lifecycle.py:2038"
+   ],
+   "repair": "Bound len(reviewer_fallbacks) so that (1+len)*max_attempts stays well under max_steps, or count failed review attempts outside the step budget."
+  }
+ ],
+ "checks_performed": [
+  "ancestry via merge-base --is-ancestor",
+  "diff --stat base..commit (5 files)",
+  "read full diff",
+  "read run loop, do_review, is_independent, accepted_review, verify, unblock, control_state/anchor/drift, State.block/to, run_worker/_run, build_argv",
+  "traced re-check binding and verify rule",
+  "traced outcome classification and attempt counting",
+  "checked owner-flag writes",
+  "checked SKILL.md against code",
+  "ran fallback and main lifecycle tests with no writes to the checkout"
+ ],
+ "inspected": [
+  "scripts/dev_workflow/lifecycle.py",
+  "scripts/dev_workflow/lifecycle_providers.py",
+  "tests/dev_workflow/test_lifecycle_auditor_fallback.py",
+  "tests/dev_workflow/lifecycle_fixture/worker.py",
+  ".claude/skills/uri-development-lifecycle/SKILL.md"
+ ],
+ "evidence_reviewed_only": [
+  "commit subjects in git log"
+ ],
+ "live_observed": [],
+ "tests_run": [
+  "python -B -m pytest -p no:cacheprovider tests/dev_workflow/test_lifecycle_auditor_fallback.py: 31 passed",
+  "python -B -m pytest -p no:cacheprovider tests/dev_workflow/test_lifecycle.py: 103 passed, 5 skipped (Linux-only)"
+ ],
+ "unverified": [
+  "that codex exec (without --json) writes agent messages and command output to stderr; based on Codex CLI behaviour, not reproduced here",
+  "Linux-only containment tests (skipped on win32)",
+  "behaviour with real codex/claude CLIs (not run, per rules)"
+ ],
+ "follow_up_prompt": "Repair on top of f2c8e9ae (milestone/lifecycle-auditor-fallback-20261016): (1) AF-S2-01: in scripts/dev_workflow/lifecycle_providers.py _run, stop classifying QUOTA/AUTH from codex_cli's stderr transcript; use a structured error source (codex --json error events or a final error line) and check TIMED_OUT before QUOTA/AUTH; add a fixture mode that writes 'rate limit 429'/'401 unauthorized' to stderr as activity and exits non-zero or times out, and assert it is retried within max_attempts. (2) AF-S1-02: in review_outcome, classify a round whose integrity.ok is not True as INDEPENDENCE_UNVERIFIED even without a result, so it leads to the owner block NO_REVIEWER; test it. (3) AF-S1-03: limit AUTH classification to role=='reviewer' when reviewer_fallbacks is configured, or document and test the implementer/diagnosis change. (4) AF-S1-04: on an owner unblock of a CONFIG block, re-bind only newly added control keys (reviewer_exec_fallbacks), or add CONTROL_ANCHORED for the missing key as is done for reviewer_policy; test adding fallbacks to an in-flight run with one unblock. (5) AF-S2-02: bound len(reviewer_fallbacks) (e.g. <=3) at load_config. (6) AF-S1-06: restore line continuations at lifecycle.py:155, 1783, 1838; in SKILL.md replace 'first in every round' with 'first again after each independent result, owner unblock or re-check', and reconcile line 100 with the in-driver retry rule. Re-run both lifecycle test files."
+}

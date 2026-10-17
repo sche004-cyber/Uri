@@ -1,0 +1,45 @@
+{
+ "round": "AF-S2",
+ "kind": "fresh read-only subagent (Explore), launched by the UI V2 session",
+ "agent_id": "a560f312fbcb7e72f",
+ "candidate": "f2c8e9aeb064bb5db1af9d0a0debdd5be91ebac5",
+ "base": "3e769fdfaf63d943b4472e8480fe3f93c6444088",
+ "nonce": "96b5a80bc92ffb1e",
+ "prompt_sha256": "e2a095a6ade0c4cb105089bc104823a496e10d09b885da7e73ea84c81d52c79a",
+ "transcript_sha256": "664d83139072c5d28e1a3061a257ced18244bbd7a25174d90ab5e0b3a34312e9",
+ "verdict": "ACCEPT WITH FINDINGS",
+ "blocking_findings": 0,
+ "independence_checks": {
+  "opening_message_equals_prompt": true,
+  "other_user_texts": [
+   "<system-reminder>\nYour final report is delivered through SubagentHandback: when your work ",
+   "[SYSTEM NOTIFICATION - NOT USER INPUT]\nThis is an automated background-task event, NOT a m"
+  ],
+  "tools": {
+   "Bash": 24,
+   "ToolSearch": 1,
+   "Monitor": 1,
+   "SubagentHandback": 1
+  },
+  "agent_ids": [
+   "a560f312fbcb7e72f"
+  ],
+  "attachment_hits": [],
+  "snapshot_equal": {
+   "audit_head": true,
+   "audit_status": true,
+   "candidate_ref": true,
+   "impl_worktree_head": true
+  },
+  "result": [
+   "ACCEPT WITH FINDINGS",
+   "f2c8e9aeb064bb5db1af9d0a0debdd5be91ebac5",
+   "96b5a80bc92ffb1e"
+  ]
+ },
+ "coordinator_check": "AF-S2-01 premise CONFIRMED: a real driver Codex round (uri-ui-v2p-run/lifecycle/c6/rounds/R1/reviewer_stderr.txt, 1,460,156 bytes) holds the full Codex session (banner, prompt, activity) on stderr",
+ "memory_index_lines_removed_during_review": [
+  "uri-lifecycle-auditor-fallback",
+  "uri-auditor-fallback-policy"
+ ]
+}
