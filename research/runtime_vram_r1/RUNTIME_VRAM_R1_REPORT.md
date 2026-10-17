@@ -59,7 +59,8 @@ Frozen profile (32K, MTP, vision GPU), from the server log:
 | MTP draft weights | 919.2 | 272.8 |
 | MTP draft KV (f16) / compute | 64.0 / 152.0 | 80.0 |
 | Vision weights / compute | 857.6 / 248.1 | — |
-| **Total** | **15,620.5** | **873.8** |
+| CLIP compute on CPU (plain CPU buffer, not GPU memory) | — | (CPU 24.9) |
+| **Total** | **15,620.5** | **848.9 Vulkan_Host** (+ 24.9 CPU) |
 
 The cost of each add-on depends on context: MTP adds 1,213 (16K), 1,261 (32K), 1,385 (64K) and 1,641 MiB (128K),
 including the draft KV and the larger recurrent state. Vision on the GPU adds 1,106 at every context. Main KV costs
@@ -105,8 +106,12 @@ Paired test at 64K: identical prompts, alternating order A B B A, same runtime c
 | 24K-token prompt, short answer | 132.1 / 93.7 | 14.55 / 14.13 s | −3% (prefill 1,876 vs 2,028 tok/s) |
 
 On URI's own 271-case suite (2026-10-06 frozen qualification, `ue_cand` vs `ue_cand_mtp2`), the end-to-end wall time
-is 610 s with MTP and 712 s without (−14%). Decision turns take 2.22 vs 2.57 s. Scores are identical. MTP also costs
-7-16% of prefill speed. MTP is lossless: every suite score in this milestone was identical with it on and off.
+is 610 s with MTP and 712 s without (−14%). Decision turns take 2.22 vs 2.57 s. Scores are identical on every suite except RH (two cases differ). MTP also
+costs 7-16% of prefill speed. In this milestone, MTP on and off scored identically on D, DG, F, C, H, S, O, R, L, P
+and V. RH (8 capped hard-reasoning cases) varies between 0.625 and 0.875 across runs, never below the 0.625 baseline
+(0.875 with MTP off and 0.625 with MTP on in the `vr1r2_*` runs). This is run variance on capped cases, not an
+accuracy loss attributed to either setting. (Corrected after audit round 2: the earlier text said every score was
+identical.)
 
 **Verdict:** MTP has a real but moderate benefit: 13-33% faster generation-heavy turns, about 14% end to end, nothing
 on prose, slightly slower on long-prompt turns. On this 16 GB card it does not justify its residency as the default
@@ -240,7 +245,8 @@ The candidate maps the UI's Thinking Off / On to the existing turn `depth` fast 
   `vision_offload: false`).
 - `scripts/ws_brain_host.py`: the lease and the contention check use the profile's measured request; `--profile`;
   `profile` in the report. With no `--profile`, behaviour is unchanged.
-- Tests: `tests/oi/test_runtime_profiles.py`, 10 passed. `tests/oi` + `tests/ws`: 708 passed, 22 skipped.
+- Tests: `tests/oi/test_runtime_profiles.py`, 12 passed. `tests/oi` + `tests/ws`: 710 passed, 22 skipped (at
+  353347b2 and after the round-2 repair).
 - UI contract: `docs/operational_intelligence/RUNTIME_PROFILES_UI_CONTRACT.md`. Thinking = per turn. Vision and
   Context = controlled reload with a fit check. MTP is a profile property, not a UI control. The host `reconfigure`
   action is deliberately not wired yet.
@@ -298,6 +304,7 @@ remaining checks in section 12 and owner approval. Not with MTP or vision reside
   | `coexist/20261017-090558_co-c32k-vis` | FAILED | `RuntimeError: REFUSED_OTHER_LLAMA_SERVER_RUNNING [17028]` (the duplicate instance's server) |
   | `coexist/20261017-090614_co-c64k-mtpoff-r2` | FAILED | same as above |
   | `longctx/20261017-090223/*`, `longctx/20261017-090357/*` | STARTED (never set) | no error; reclassified as supporting-only (section 6) |
+  | `switch/20261017-082155/{0_switch-A,1_switch-B,2_switch-A}/server.json` | STARTED (never set) | no error; per-server records were not finalized. Section 5 relies on `switch/20261017-082155/switch.json`, where all three steps are `COMPLETED_WITH_RESULT` |
   | `suite_p/vr1_p_dryrun` | dry run | deliberate run with no Brain (`--url http://127.0.0.1:9`); expected failures |
 
   Queue logs: `chain5_attempt1_relpath_failed.log` and `chain6_attempt1_missing_phase1_overlay.log`.
@@ -318,8 +325,10 @@ Round 1 (independent external reviewer, commit `c79ae681`): **REVISE**. It confi
 frozen argv is byte-identical, `derive_config` returns the frozen object, CWD-1 reproduces, the D/DG reruns show 0
 changed cases, the RH flips match the 2026-10-06 qualification, the memory figures match the evidence, there is no
 silent substitution path, and the tests pass. It required seven repairs; section 14 records how each was handled.
-Round 2 (re-check of the repair commit): PENDING. Integration needs independent acceptance and owner approval.
-Neither has happened.
+Round 2 (independent Claude reviewer session, commit `353347b2`): **ACCEPT WITH FINDINGS**. F1-F7 are all
+RESOLVED; 6 LOW documentation/tooling findings remain, repaired as listed in section 14 (round 2). Round 3 (re-check of
+the round-2 repair): PENDING. Integration, a default-profile change and any real-app UI V2 run need explicit owner
+approval. None has happened.
 
 ## 14. Correction log (audit round 1 -> repair)
 
@@ -335,3 +344,14 @@ silently.
 | 5 | LOW | Section 12 failed-run list incomplete; one error mislabelled | Section 12 now lists every failed run by directory with its exact error. `090558` and `090614` were `REFUSED_OTHER_LLAMA_SERVER_RUNNING [17028]`, not `GPU_LEASE_HELD`. Probe argv differences (`--metrics -lv 4`, `C:\` junction targets, lab port) are disclosed. |
 | 6 | LOW | `demoted_est` counted CPU buffers as host-visible | `vlab.account` and `summarize.py` separate `Vulkan_Host` from CPU buffers (`cpu_buffers` column). p64-mtp-viscpu is now 23.4 (was −1,082.3). Frozen is now ~883 (was 858: the 24.9 MiB CLIP CPU buffer moved). 128K + vision is ~253 (was 228). Sections 1 and 3 are reworded: "consistent with the vision weights", not "equals". |
 | 7 | LOW | `--profile` silently treated unknown MTP tokens as off | `ws_brain_host.parse_profile` refuses anything except `<ctx>,<vision>,<0/1/on/off/true/false>` (`PROFILE_ARG_INVALID`). New test `test_host_profile_argument_is_strict`. |
+
+### Round 2 findings (ACCEPT WITH FINDINGS on 353347b2) -> repair
+
+| # | Severity | Finding | Repair |
+|---|---|---|---|
+| R2-1 | LOW | Section 4 said "scores are identical" and "MTP is lossless: every suite score identical" | Reworded. Scores are identical on D, DG, F, C, H, S, O, R, L, P and V. RH varies 0.625-0.875 across runs, never below the baseline (0.875 MTP off / 0.625 MTP on in `vr1r2_*`; 2 RH changes in `ue_cand` vs `ue_cand_mtp2`). |
+| R2-2 | LOW | Stale test counts in section 10 | Now `test_runtime_profiles.py` 12 passed; `tests/oi` + `tests/ws` 710 passed, 22 skipped. |
+| R2-3 | LOW | Section 2 host-visible total 873.8 used the old definition | Now 848.9 Vulkan_Host + 24.9 CPU (CLIP compute on CPU, not GPU memory). |
+| R2-4 | LOW | Section 12 did not list the switch per-server records (`STARTED`) | Added. Section 5 relies on `switch.json`, where all steps are `COMPLETED_WITH_RESULT`. |
+| R2-5 | LOW | `compare_suite.py` overwrote committed compare files, with cwd-dependent paths | Writes only when the file is absent or with `--write`; paths are repo-relative. The three committed `vr1r2_*` compare files were regenerated once with `--write` (only the `baseline` / `run` path fields changed, plus LF line endings). Re-running without `--write` from the repo root and from `research/runtime_vram_r1` leaves `git status` clean. |
+| R2-6 | LOW | `frozen_fit_record.py` claimed "non-destructive by construction" | The docstring now states the actual guarantee: the host starts only after a CONTENDED pre-check with the lease FREE; the stop file is written as soon as it reports WAITING_FOR_GPU, STARTING, LOADING, READY or FAILED (or after 180 s); a race exists in which a normal frozen start begins and is then stopped at once. |

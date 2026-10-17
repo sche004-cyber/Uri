@@ -1,10 +1,12 @@
 """Audit finding 4: record the frozen config's lease fit on the current desktop with the Brain host itself.
 
-Non-destructive by construction: the host's own fit function (gpu_lease.assess_fit with the frozen request) runs
-first. The host is started only when that verdict is CONTENDED, the state in which the host refuses to start the
-Brain and waits (WAITING_FOR_GPU / GPU_CONTENDED). It is stopped through its stop file once that state is reported.
-If the pre-check is not CONTENDED, the host is NOT started (it could start the frozen Brain) and only the pre-check
-is saved.
+Guarantee (stated exactly): the host is started only when the host's own fit function (gpu_lease.assess_fit with
+the frozen request) says CONTENDED and the lease is FREE. In that state the host refuses to start the Brain and waits
+(WAITING_FOR_GPU / GPU_CONTENDED). The stop file is written as soon as the host reports WAITING_FOR_GPU, STARTING, LOADING, READY
+or FAILED, or after 180 s. A race remains: if GPU memory frees between the pre-check and the host's own check, the
+host could begin a normal frozen start (the accepted Runtime v1 path), and the stop file then ends it at once. This
+is not "non-destructive by construction". If the pre-check is not CONTENDED, the host is NOT started and only the
+pre-check is saved.
 
     python -I frozen_fit_record.py
 """
