@@ -1,0 +1,191 @@
+{
+ "commit": "d47b4535dc4f63aaadcb06c3a5478d0aa6738cc5",
+ "nonce": "9eceb7abf9027a4f",
+ "verdict": "ACCEPT WITH FINDINGS",
+ "criteria": [
+  {
+   "id": "AF-1",
+   "status": "PARTIAL",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1205-1217 select_reviewer picks first non-exhausted index from 0",
+    "scripts/dev_workflow/lifecycle.py:1186-1194 counters reset on independent result/unblock/recheck so preferred is retried first",
+    "tests/dev_workflow/test_lifecycle_auditor_fallback.py:test_preferred_reviewer_available_is_selected, test_preferred_unavailable_falls_back... asserts [0,1,0,1]",
+    "scripts/dev_workflow/lifecycle_providers.py:657-662 QUOTA_RE over reviewer text can exhaust preferred early (AF-S1-01)"
+   ]
+  },
+  {
+   "id": "AF-2",
+   "status": "PARTIAL",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1891 exhausted only for QUOTA/AUTH/UNAVAILABLE; TIMEOUT/FAILURE/SHA_MISMATCH/NOT_INDEPENDENT counted against max_attempts",
+    "scripts/dev_workflow/lifecycle.py:1855-1862 NOT_FOUND at plan exhausted",
+    "scripts/dev_workflow/lifecycle_providers.py:658-664 AUTH only from stderr/detail (S1-02); QUOTA still from free text",
+    "tests: quota/auth/disconnect/fail_401/wrong_sha/not-found tested; timeout not tested"
+   ]
+  },
+  {
+   "id": "AF-3",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:353-379 same checks for every provider; coordinator env session ids excluded",
+    "scripts/dev_workflow/lifecycle.py:1114-1124,1139-1141 spec from cfg chain, diagnoses added to impl sids",
+    "scripts/dev_workflow/lifecycle.py:1060-1076 accepted_review excludes imported, needs independent+exact sha+hash-bound round.json",
+    "tests: test_an_unverifiable_reviewer_identity_is_denied, test_the_claude_code_session_running_the_driver_is_never_the_reviewer, test_a_relayed_claude_review_never_satisfies_the_gate"
+   ]
+  },
+  {
+   "id": "AF-4",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1836-1848 NO_INDEPENDENT_REVIEWER vs NO_REVIEWER split by unusable flag",
+    "scripts/dev_workflow/lifecycle.py:1782-1787 recheck bound to chained_blocker and state blocker",
+    "scripts/dev_workflow/lifecycle.py:2179-2183 verify rejects recheck clearing other kinds",
+    "tests: test_no_reviewer_available_blocks_and_the_next_run_rechecks..., test_reviewers_that_return_unusable_results_need_the_owner, test_s1_01, test_s1_03"
+   ]
+  },
+  {
+   "id": "AF-5",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1060-1076 acceptance keyed to exact sha",
+    "scripts/dev_workflow/lifecycle.py:1984-2035 gates/protected/evidence/integrate unchanged",
+    "tests: test_owner_authorisation_is_still_required_after_a_fallback_accept, test_frozen_core_is_still_protected..., test_new_gate_failure_still_prevents_integration..."
+   ]
+  },
+  {
+   "id": "AF-6",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:176-184 optional policy keys only when present",
+    "scripts/dev_workflow/lifecycle.py:477-479 reviewer_exec_fallbacks only with a chain",
+    "scripts/dev_workflow/lifecycle.py:149-158 setdefault only when fallbacks set",
+    "scripts/dev_workflow/lifecycle.py:1863-1864,1883,1894-1899 legacy path unchanged -> WAITING_FOR_MODEL",
+    "tests: test_a_config_without_fallbacks_keeps_its_policy_and_control_state; existing test_lifecycle.py 103 passed"
+   ]
+  },
+  {
+   "id": "AF-7",
+   "status": "MET",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:478 fallback executables bound in control_state at PLAN (lifecycle.py:1724)",
+    "scripts/dev_workflow/lifecycle.py:1175-1181,1120-1122 launched via reviewer_anchor path",
+    "scripts/dev_workflow/lifecycle_providers.py:562-574 binary_anchor_ok enforced",
+    "scripts/dev_workflow/lifecycle.py:157-163 provider and DEVTEST-only checks over the whole chain",
+    "tests: test_config_rules_for_the_chain (binary override on fallback not separately tested)"
+   ]
+  },
+  {
+   "id": "AF-8",
+   "status": "MET",
+   "evidence": [
+    "git diff 7893aaed..d47b4535 -- scripts: no writes to authorized/authorized_protected_changes, no login/credential code",
+    "scripts/dev_workflow/lifecycle.py:2099-2115 unblock remains owner-invoked"
+   ]
+  }
+ ],
+ "findings": [
+  {
+   "id": "AF-S1-01",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "title": "QUOTA classification still reads reviewer free text and now exhausts the reviewer immediately",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle_providers.py:657-662 blob includes text[-2000:]",
+    "scripts/dev_workflow/lifecycle.py:1891 exhausted=True for QUOTA",
+    "scripts/dev_workflow/lifecycle_providers.py:640-642 claude is_error detail is meta.result (model text) though comment at 658-659 says CLI channels only"
+   ],
+   "repair": "Match QUOTA_RE (and AUTH_RE) only against stderr and CLI-generated error fields, not the reviewer's result text; for claude is_error use the subtype/error fields rather than result text; add a test with a failing reviewer whose text mentions 'rate limit'/'quota' that must be retried."
+  },
+  {
+   "id": "AF-S1-02",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "A no-result round with failed integrity is FAILURE, not INDEPENDENCE_UNVERIFIED",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:1159-1172",
+    "scripts/dev_workflow/lifecycle.py:1142-1143"
+   ],
+   "repair": "In review_outcome, return INDEPENDENCE_UNVERIFIED when integrity.ok is not True regardless of result, so it routes to the owner (NO_REVIEWER)."
+  },
+  {
+   "id": "AF-S1-03",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "AUTH classification changes implementer/diagnosis behaviour also for configs without fallbacks",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle_providers.py:663-664",
+    "scripts/dev_workflow/lifecycle.py:1531",
+    "scripts/dev_workflow/lifecycle.py:1945-1950"
+   ],
+   "repair": "Either scope AUTH to role=='reviewer' or document the change and add a test; confirm intended."
+  },
+  {
+   "id": "AF-S1-04",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Adding reviewer_fallbacks to an in-flight run triggers GIT_CONTROL TAMPER after the CONFIG unblock",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:478",
+    "scripts/dev_workflow/lifecycle.py:496",
+    "scripts/dev_workflow/lifecycle.py:2106-2107"
+   ],
+   "repair": "Re-bind control (add reviewer_exec_fallbacks) on an OWNER_UNBLOCK of a CONFIG block that introduced the chain, or document the double unblock in SKILL.md."
+  },
+  {
+   "id": "AF-S1-05",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "max_attempts has no upper bound; large values end in STEP_LIMIT instead of a reviewer block",
+   "evidence": [
+    "scripts/dev_workflow/lifecycle.py:155",
+    "scripts/dev_workflow/lifecycle.py:1789",
+    "scripts/dev_workflow/lifecycle.py:2038"
+   ],
+   "repair": "Cap max_attempts (e.g. <=5) or ensure chain_length*max_attempts < max_steps at load_config."
+  },
+  {
+   "id": "AF-S1-06",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "SKILL.md wording and collapsed line continuations",
+   "evidence": [
+    ".claude/skills/uri-development-lifecycle/SKILL.md:100 'Do not retry a Codex failure' vs in-driver retry",
+    ".claude/skills/uri-development-lifecycle/SKILL.md:103 'first in every round' vs exhausted-skip until reset",
+    "scripts/dev_workflow/lifecycle.py:1783",
+    "scripts/dev_workflow/lifecycle.py:1838"
+   ],
+   "repair": "Clarify SKILL.md (outside-driver vs in-driver retry; preferred reviewer first after each independent result/unblock/recheck); restore proper line continuations."
+  }
+ ],
+ "checks_performed": [
+  "merge-base --is-ancestor base commit",
+  "git diff --stat base..commit (5 files only)",
+  "read full diff",
+  "traced run() AUDITING/fallback path, do_review, review_outcome, attempt_counts, select_reviewer, chained_blocker, recheck, unblock, verify, accepted_review, evidence_ok, control_state/drift/anchor, load_config, policy",
+  "traced provider run_worker/_run unavailability and anchor checks",
+  "checked no owner flag writes or sign-in code in diff",
+  "checked legacy (no fallbacks) policy hash/control state/behaviour paths",
+  "ran new and existing lifecycle test suites without writing to checkout; git status clean after"
+ ],
+ "inspected": [
+  "scripts/dev_workflow/lifecycle.py",
+  "scripts/dev_workflow/lifecycle_providers.py",
+  "tests/dev_workflow/lifecycle_fixture/worker.py",
+  "tests/dev_workflow/test_lifecycle_auditor_fallback.py",
+  ".claude/skills/uri-development-lifecycle/SKILL.md",
+  "tests/dev_workflow/test_lifecycle.py (grep)"
+ ],
+ "evidence_reviewed_only": [],
+ "live_observed": [],
+ "tests_run": [
+  "python -B -m pytest -p no:cacheprovider tests/dev_workflow/test_lifecycle_auditor_fallback.py (basetemp outside checkout): 29 passed",
+  "python -B -m pytest -p no:cacheprovider tests/dev_workflow/test_lifecycle.py (basetemp outside checkout): 103 passed, 5 skipped (Linux-only)"
+ ],
+ "unverified": [
+  "Whether codex exec writes its transcript to stderr (would also expose AUTH_RE to tool output)",
+  "Real claude/codex CLI behaviour (sign-in errors, session ids) - no live CLI run per rules",
+  "No end-to-end test with a state dir planned by the pre-change driver; AF-6 verified by code reading and key-level test",
+  "Linux-only gated tests not executed on this Windows host"
+ ],
+ "follow_up_prompt": "Repair review findings on d47b4535 (lifecycle auditor fallback): (1) AF-S1-01: in scripts/dev_workflow/lifecycle_providers.py _run, classify QUOTA and AUTH only from stderr and CLI-generated error fields, never from the reviewer's result text; for claude is_error use non-model fields; add a test where a failing reviewer's text mentions 'quota'/'rate limit' and must be retried within max_attempts (not exhausted). (2) AF-S1-02: in lifecycle.py review_outcome, return INDEPENDENCE_UNVERIFIED whenever integrity.ok is not True (even with no result) so it blocks NO_REVIEWER; add a test. (3) AF-S1-03: decide whether AUTH applies to implementer/diagnosis roles; if not, scope it to role=='reviewer'; otherwise document and test. (4) AF-S1-04: on OWNER_UNBLOCK of a CONFIG block that introduces reviewer_fallbacks, re-bind control including reviewer_exec_fallbacks, or document the extra TAMPER unblock. (5) AF-S1-05: bound reviewer_selection.max_attempts in load_config so chain_length*max_attempts stays under max_steps. (6) AF-S1-06: fix SKILL.md lines 100/103 wording and restore line continuations at lifecycle.py:1783 and 1838. Keep AF-6 invariants (no policy/control changes for configs without fallbacks) and rerun tests/dev_workflow/test_lifecycle.py and test_lifecycle_auditor_fallback.py."
+}
