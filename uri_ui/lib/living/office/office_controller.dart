@@ -133,11 +133,14 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
     }
   }
 
-  /// Independent review S1-03: plain words for refused suggestions, with the code only when there are none.
-  String _refusedWords(String code, String? detail) => switch (code) {
-        'ROW_CHANGE_PENDING' || 'STRUCTURE_NOT_SUPPORTED' || 'ROW_AND_CELL_CHANGES' => _human(code, detail),
-        _ => '$code${(detail ?? '').isEmpty ? '' : ': $detail'}',
-      };
+  /// Independent reviews S1-03 / S2: plain words for refused suggestions, never a leading raw code; a code without
+  /// its own sentence is described by the service's short detail.
+  String _refusedWords(String code, String? detail) {
+    final words = _human(code, detail);
+    if (!words.startsWith('Refused: ')) return words;
+    final d = (detail ?? '').trim();
+    return d.isEmpty || d == 'None' ? 'that change is not possible here' : d;
+  }
 
   String _human(String code, String? detail) => switch (code) {
         'PATH_REFUSED' => 'That file cannot be used here (${detail ?? ''}).',
@@ -403,7 +406,7 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
         final why = {
           for (final x in refused.whereType<Map>()) _refusedWords('${x['code']}', x['detail'] as String?),
         };
-        notice = '${refused.length} suggested change(s) were refused as unsafe or invalid (${why.join('; ')}).';
+        notice = '${refused.length} suggested change(s) were not made: ${why.join('; ')}';
       }
       final found = (r['findings'] as List?)?.whereType<Map>().toList();
       if (found != null) {

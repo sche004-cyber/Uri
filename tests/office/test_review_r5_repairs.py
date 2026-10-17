@@ -92,7 +92,7 @@ class _Brain:
     def __init__(self):
         self.sheets = None
 
-    def plan(self, text, *, sheets, active, engine, locked, history_rows):
+    def plan(self, text, *, sheets, active, engine, locked, history_rows, **_):
         self.sheets = sheets
         return {"message": "ok", "edits": [], "refused": [], "metrics": {}}
 

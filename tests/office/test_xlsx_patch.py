@@ -7,7 +7,7 @@ import zipfile
 import pytest
 from openpyxl import load_workbook
 
-from conftest import build_rich
+from tests.office.conftest import build_rich
 from uri_office import xlsx_patch as XP
 from uri_office.errors import OfficeError
 

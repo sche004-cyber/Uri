@@ -226,8 +226,9 @@ void main() {
     await c.openNew([r'C:\Users\me\north.xlsx']);
     await c.instruct('build it');
     final texts = [for (final t in c.conversation) t.text];
-    expect(texts, contains('2 suggested change(s) were refused as unsafe or invalid '
-        '(UNKNOWN_SOURCE: None; OVERLAPS_EARLIER_OP: Summary!A6 was already written).'));
+    // independent review S1-03: plain words, no leading raw code
+    expect(texts, contains('2 suggested change(s) were not made: that change is not possible here; '
+        'Summary!A6 was already written'));
     expect(texts, contains('2 source formula cell(s) had no calculated value and were copied as empty.'));
   });
 

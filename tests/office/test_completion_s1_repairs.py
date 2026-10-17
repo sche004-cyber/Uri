@@ -63,10 +63,12 @@ def test_a_second_row_change_on_the_sheet_before_a_save_is_refused(office):
     o.decide_all(wid, {"decision": "accept", "draft_version": r["draft"]["version"],
                        "set_sha256": o._session(wid).draft.proposed_set_sha256()})
     before = [dict(c) for c in o.view(wid)["draft"]["changes"]]
-    with pytest.raises(OfficeError) as e:
-        o.instruct(wid, {"text": "Delete row 6", "active_sheet": "Budget"})
-    assert e.value.code == "ROW_CHANGE_PENDING"
+    r = o.instruct(wid, {"text": "Delete row 6", "active_sheet": "Budget"})   # S2-02: refused per op, not an error
+    assert [x["code"] for x in r["refused"]] == ["ROW_CHANGE_PENDING"]
     assert o.view(wid)["draft"]["changes"] == before                    # nothing else changed
+    with pytest.raises(OfficeError) as e:                               # the draft still refuses it as a last check
+        o._session(wid).draft.propose([{"op": "delete_rows", "sheet": "Budget", "at": 6, "count": 1}])
+    assert e.value.code == "ROW_CHANGE_PENDING"
 
 
 def test_two_row_changes_on_one_sheet_in_one_answer_keep_only_the_first(office):

@@ -807,7 +807,7 @@ def test_check_role_returns_findings_and_suggested_fixes(tmp_path, office):
 
 
 def test_reference_copy_into_the_working_file_respects_locked_cells(tmp_path, office):
-    from conftest import build_rich
+    from tests.office.conftest import build_rich
     rich = tmp_path / "rich.xlsx"
     build_rich(rich)
     ref = make_source(tmp_path / "ref.xlsx")

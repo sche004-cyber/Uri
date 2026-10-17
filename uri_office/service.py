@@ -565,6 +565,12 @@ class Office:
             # answer about them as "unchanged"; plan() drops restated cells before its overlap check.
             pending = {(c["sheet"], c["cell"]) for c in s.draft.snapshot()["changes"]
                        if c.get("state") == "proposed" and c.get("kind") == "cell"}
+            # Independent review S2-02: sheets with an unsaved row change, so plan() refuses a further row op there
+            # by itself (the draft still refuses it as a last check).
+            rows = {c.get("sheet") for c in s.draft.changes if c.get("kind") == "struct" and c.get("state") != "rejected"
+                    and (c.get("op") or {}).get("op") in ("insert_rows", "delete_rows")}
+            if rows:
+                extra["pending_rows"] = rows
             res = self.brain.plan(body.get("text"), sheets=_mark_pending(self._current_sheets(s), pending),
                                   active=body.get("active_sheet"),
                                   engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key),

@@ -335,13 +335,18 @@ HOLD_SUFFIX = ".uri-office.hold"
 def _unlink_quietly(path: Path):
     """Remove a temp or hold file of ours; a read-only bit copied from the original is cleared first. Used only after
     the outcome is decided: a cleanup error never changes what the owner is told (independent review C1-02)."""
+    # Independent review S1-07 (3e202efc): a temp or hold file can be a hard link of the published name, and a mode
+    # change applies to both names. So the file is unlinked as it is (POSIX needs only write access to the folder);
+    # only on Windows, where a read-only file cannot be deleted, the read-only bit is cleared after a failed unlink.
     try:
         if os.path.lexists(path):
             try:
+                path.unlink()
+            except PermissionError:
+                if os.name != "nt":
+                    raise
                 os.chmod(path, stat.S_IWRITE | stat.S_IREAD)
-            except OSError:
-                pass
-            path.unlink()
+                path.unlink()
     except OSError:
         pass
 

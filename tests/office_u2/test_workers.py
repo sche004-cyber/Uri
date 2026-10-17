@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from conftest import needs_windows, pdf_with_text
+from tests.office_u2.conftest import needs_windows, pdf_with_text
 from uri_office import engines as E
 from uri_office import jobobject as J
 from uri_office.workerproc import Worker, WorkerFailed, powershell_exe, python_exe

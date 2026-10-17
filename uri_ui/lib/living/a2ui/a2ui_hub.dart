@@ -384,6 +384,16 @@ class A2uiHub extends ChangeNotifier {
     'STALE_CHANGE' => 'The file was changed after this card was shown. Nothing was saved; review the save again.',
     'DESTINATION_EXISTS' => 'A file with that name already exists. Nothing was replaced; choose another name.',
     'FILE_READ_ONLY' => 'The file is read-only, so it was not replaced. Use Save as to keep your changes in a new file.',
+    // Independent review S1-03 (3e202efc): Office save-card codes in plain words; other codes keep the fallback.
+    'STRUCTURE_NOT_SUPPORTED' =>
+      'URI cannot add or remove rows in this sheet safely${detail == null || detail.isEmpty ? '' : ': $detail'}. '
+          'Nothing was saved.',
+    'FILE_OPEN_ELSEWHERE' => 'The file is open in another program. Close it there, then save again.',
+    'CELL_NOT_EDITABLE' => 'A cell in this change is part of a table header, shared formula or merged range, so '
+        'nothing was saved.',
+    'NOTHING_TO_SAVE' => 'There are no accepted changes to save.',
+    'RELOAD_REQUIRED' => 'The sheet changed with the last save and was reloaded. Nothing was saved; review it again.',
+    'APPLY_FAILED' => 'The change could not be written, so the file was left as it was.',
     _ =>
       'Refused: $code${detail == null || detail.isEmpty ? '' : ' ($detail)'}',
   };

@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import pdf_with_text
+from tests.office_u2.conftest import pdf_with_text
 from uri_office import validate as V
 from uri_office.approvals import Approvals
 from uri_office.errors import OfficeError
