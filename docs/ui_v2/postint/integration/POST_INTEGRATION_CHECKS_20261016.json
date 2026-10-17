@@ -1,0 +1,56 @@
+{
+ "schema": "uri.post_integration_checks.v1",
+ "canonical": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+ "date": "2026-10-17",
+ "runtime": {
+  "materialized": "uri-ui-v2p-run/runtime2 from candidate 165dac8a",
+  "code_identity": "git diff 165dac8a 25048709 outside docs/ is empty, so the runtime code equals canonical",
+  "installation": "uiv2p-h port 18301"
+ },
+ "checks": {
+  "1_ui_v2_startup_navigation_companion": {
+   "status": "PARTIAL",
+   "verified": "pn1 (no-Brain, production main, fresh prefs, automation input): connected in 9.5 s, V2 is default, dashboard first, onboarding 8 steps, no raw codes on screen; screenshot main-j1-start.png shows the V2 dashboard with the Office nav entry and an honest 'Brain not running' status",
+   "not_verified": "J2 navigation, J7 frameless shaped companion window, J3-J16: the driver needs a ready Brain after J1 and timed out at 40 min (pn1 TimeoutException)"
+  },
+  "2_uri_office": {
+   "status": "GATES ONLY",
+   "verified": "driver gates on 25048709 (Office tests inside python 4597/4597 and flutter 738/738); Office nav entry rendered in pn1",
+   "not_verified": "Office real-app live journeys on canonical (the Office session's a13 run hit the same GPU block)"
+  },
+  "3_brain_connectivity": {
+   "status": "BLOCKED",
+   "reason": "Brain needs 15,626 MiB, about 15,069 MiB free; dwm.exe 804 MiB, ChatGPT 103, webview 62, claude 66, edge 44. pi1/pi2 stayed WAITING_FOR_GPU GPU_CONTENDED and were stopped through the harness stop files; pi3 EXIT_BEFORE_LEASE",
+   "not_a_code_regression_evidence": "Office session started the same frozen runtime earlier on 2026-10-16 (a12); environmental"
+  },
+  "4_transparent_borderless_companion": {
+   "status": "NOT VERIFIED post-integration",
+   "last_pass": "l22 on 165dac8a (J7 440x680, shaped region, native region rejects malformed layouts)"
+  },
+  "5_live_windows_checks": {
+   "status": "PARTIAL",
+   "runs": {
+    "pi1": "stopped, Brain WAITING_FOR_GPU, UI NO_BRAIN_READY",
+    "pi2": "stopped, Brain WAITING_FOR_GPU",
+    "pi3": "stopped before lease",
+    "pn1": "startup checks PASS, then TimeoutException"
+   }
+  },
+  "6_hardware_limitations": [
+   "Brain VRAM budget 15,626 MiB leaves about 740 MiB for every other GPU user on a 16 GiB card; dwm growth alone can block the Brain (owner sign-out/reboot clears it)",
+   "physical keyboard, mouse and microphone not qualified (automation input)",
+   "DRV-4: driver hashes .git/info/refs, so a routine repack gives a false GIT_CONTROL TAMPER block (seen as INT-B1)",
+   "stopping a stuck own live chain with taskkill was refused by the auto-mode policy; harness stop files work, but a host started after the session-level stop file needs the host stop file (live_session watch did not write it for pi2)"
+  ]
+ },
+ "freeze_assessment": "NOT QUALIFIED FOR FREEZING: post-integration Brain journeys, navigation and companion window checks are not verified on canonical. Re-run main/returning/perf after GPU memory is freed. Integration does not imply freeze.",
+ "legacy": {
+  "URIServer": "investigation only: task Ready, last run 2026-10-15 08:54 (0xFFFFFFFF), no next run; action runs uri-agent run_uri_server.py on port 8000; not modified",
+  "URI.lnk": "not modified"
+ },
+ "ember_handoff": {
+  "branch": "phase/ember-v21-final-20261015 @4a70d9e7 (merge-base 1b5423bc)",
+  "merge_tree_vs_canonical": "3 conflicts: uri_ui/lib/living/integration/oi_sources.dart, uri_ui/lib/living/screens/settings/voice_input_settings.dart, uri_ui/test/ws/ws_integration_test.dart (handoff doc expected 1, against 316e6475)",
+  "reviewer_availability": "Codex weekly limit until 2026-10-22 14:03; Claude CLI login expired"
+ }
+}

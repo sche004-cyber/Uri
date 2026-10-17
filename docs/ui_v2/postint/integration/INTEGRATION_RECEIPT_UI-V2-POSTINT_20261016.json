@@ -1,0 +1,116 @@
+{
+ "schema": "uri.integration.receipt.v1",
+ "date": "2026-10-16",
+ "owner_decision": "OWNER DECISION - URI UI V2 POST-INTEGRATION (2026-10-16): integrate DEV-LIFECYCLE-3B at 57f2d567 then UI-V2-POSTINT at 25048709, strictly in that order, with the lifecycle driver, fast-forward only. F1: Conversation remains the default chat target; document edits need explicit target selection. F5: further visual fidelity changes deferred. Legacy URIServer: investigation only. URI.lnk shortcuts: unchanged. Auditor-fallback milestone NOT authorized. Integration is not a freeze decision.",
+ "target": {
+  "remote": "uri-repo",
+  "url": "https://github.com/sche004-cyber/Uri.git",
+  "ref": "integration/git-sync-20261008"
+ },
+ "driver": "scripts/dev_workflow/lifecycle.py from worktree uri-dl3b at 57f2d567 (DEV-LIFECYCLE-3B)",
+ "integrations": [
+  {
+   "order": 1,
+   "milestone": "DEV-LIFECYCLE-3B-c3",
+   "candidate": "57f2d567a043a5afcd1f7830fc3c3936aea0ac24",
+   "target_tip_before": "eaeb10c126132b014751674a1fed7d734122e653",
+   "target_tip_after": "57f2d567a043a5afcd1f7830fc3c3936aea0ac24",
+   "mode": "fast-forward",
+   "integrated_at": "2026-10-16T17:30:05Z",
+   "status": "INTEGRATED",
+   "independent_review": {
+    "provider": "codex_cli",
+    "round": 2,
+    "session_id": "codex_cli-8d901727-8332-4417-b7a4-a897cca75f2b",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "exact_sha": true,
+    "open_findings": [
+     {
+      "id": "R2-01",
+      "severity": "LOW",
+      "blocking": false,
+      "title": "Plan states an outdated gate schema version"
+     }
+    ]
+   },
+   "gates_rerun_on_candidate": {
+    "python": {
+     "candidate": "280 executed, 279 passed, 1 failed",
+     "baseline": "244 executed, 243 passed, 1 failed",
+     "new_failures": [],
+     "preexisting_failure": "tests.dev_workflow.test_lifecycle_platform::test_win_breakaway_is_refused (DRV-ENV-2)"
+    },
+    "at": "2026-10-16T17:29:58Z"
+   },
+   "protected_paths_changed": [],
+   "owner_unblocks": [
+    "OWNER_AUTHORIZATION (integration approval)",
+    "CONFIG (only integration.authorized/expected_target_tip/owner_decision changed)",
+    "TAMPER GIT_CONTROL - owner chat answer 'Accept and proceed': current control state e704a42a30335fdbeecd1000898e89dce0b5595ff2a00d83f40425dc9af65ea1 accepted"
+   ],
+   "new_blocker_during_integration": {
+    "id": "INT-B1",
+    "kind": "GIT_CONTROL drift",
+    "detail": "shared repo control digest changed c3ef36413258 -> e704a42a3033 between 13:22:45Z and 14:35:07Z (bracketed by other runs' PLAN anchors); most likely a routine git repack at 13:58:38Z that rewrote .git/info/refs (multi-pack-index and objects/info/packs same second); .git/config mtime 13:31Z, only a hash is recorded so the changed entry cannot be proven; current non-routine config, hooks, user/system config inspected: no hooks, insteadOf, hooksPath or filters. Review and gates predate the drift. Resolved by owner acceptance.",
+    "driver_finding": "DRV-4: control digest includes .git/info/*, so routine repack/gc yields false TAMPER blocks"
+   },
+   "config_sha256": "37171c214198d55d96c5d897b7c47f8d5bba06f1964d0a6dcf96cfa5cd2774d3",
+   "driver_receipt": "driver_receipt_DEV-LIFECYCLE-3B-c3.json",
+   "driver_receipt_sha256": "a925f5754f53800373e061f60378ac64437db1b45893bd53214b4e7e6be6c41f",
+   "event_chain_tip": {
+    "seq": 38,
+    "hash": "6271c574ea514621215ed384f0c4ec9fd53f6224bbb46e5161104e748a964edc"
+   },
+   "verify": "ok"
+  },
+  {
+   "order": 2,
+   "milestone": "UI-V2-POSTINT-c6",
+   "candidate": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+   "target_tip_before": "57f2d567a043a5afcd1f7830fc3c3936aea0ac24",
+   "target_tip_after": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+   "mode": "fast-forward",
+   "integrated_at": "2026-10-16T17:38:12Z",
+   "status": "INTEGRATED",
+   "independent_review": {
+    "provider": "codex_cli",
+    "round": 1,
+    "session_id": "codex_cli-2ffc0967-e1c4-4c77-9d27-5ca8bf712e33",
+    "verdict": "ACCEPT",
+    "exact_sha": true,
+    "open_findings": []
+   },
+   "note_on_moved_target": "canonical moved eaeb10c1 -> 57f2d567 between review and integration; 57f2d567 is an ancestor of the reviewed SHA 25048709 (the candidate already contained it), so the reviewed SHA is unchanged and no rebase or re-review is needed",
+   "gates_rerun_on_candidate": {
+    "python": "4597/4597 passed (baseline 4491/4491)",
+    "flutter": "738/738 executed and passed (baseline 717/717), pub get --enforce-lockfile --offline",
+    "flutter-analyze": "exit 0",
+    "new_failures": {},
+    "at": "2026-10-16T17:38:05Z"
+   },
+   "protected_paths_changed": [],
+   "owner_unblocks": [
+    "OWNER_AUTHORIZATION (integration approval)",
+    "CONFIG (only integration.authorized/expected_target_tip/owner_decision changed)"
+   ],
+   "config_sha256": "e1ad06872f088a2b0b894b6a360ac785bfad129eb6b697fff5643d43f1d6c19c",
+   "driver_receipt": "driver_receipt_UI-V2-POSTINT-c6.json",
+   "driver_receipt_sha256": "3f4c8402c7f840839e3812e8a2963c202e6d5efd9917880376457add9d936c6f",
+   "event_chain_tip": {
+    "seq": 26,
+    "hash": "81a905a73669483941504ff01748c13bdf28beb947e242769488d2affe191db4"
+   },
+   "verify": "ok"
+  }
+ ],
+ "canonical_after": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+ "ls_remote_verified": true,
+ "not_claimed": [
+  "production deployment",
+  "milestone freeze",
+  "auditor-fallback milestone (not merged)",
+  "URIServer disable",
+  "URI.lnk changes"
+ ],
+ "post_integration_checks": "see POST_INTEGRATION_CHECKS_20261016.json (written after the live runs)"
+}

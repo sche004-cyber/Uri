@@ -1,0 +1,168 @@
+{
+ "baseline": "eaeb10c126132b014751674a1fed7d734122e653",
+ "blocker": null,
+ "candidate": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+ "config_sha256": "e1ad06872f088a2b0b894b6a360ac785bfad129eb6b697fff5643d43f1d6c19c",
+ "events": 26,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "250487098ca5": {
+   "blocked": null,
+   "counts": {
+    "flutter": {
+     "baseline": {
+      "evidence": "EXECUTED",
+      "executed": 717,
+      "exit_code": 0,
+      "failed": 0,
+      "passed": 717,
+      "prepared": true,
+      "skipped": 5,
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     "candidate": {
+      "evidence": "EXECUTED",
+      "executed": 738,
+      "exit_code": 0,
+      "failed": 0,
+      "passed": 738,
+      "prepared": true,
+      "skipped": 5,
+      "status": "COMPLETED_WITH_RESULT"
+     }
+    },
+    "flutter-analyze": {
+     "baseline": {
+      "evidence": null,
+      "executed": null,
+      "exit_code": 0,
+      "failed": 0,
+      "passed": 1,
+      "prepared": true,
+      "skipped": 0,
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     "candidate": {
+      "evidence": null,
+      "executed": null,
+      "exit_code": 0,
+      "failed": 0,
+      "passed": 1,
+      "prepared": true,
+      "skipped": 0,
+      "status": "COMPLETED_WITH_RESULT"
+     }
+    },
+    "python": {
+     "baseline": {
+      "evidence": "EXECUTED",
+      "executed": 4491,
+      "exit_code": 0,
+      "failed": 0,
+      "passed": 4491,
+      "prepared": false,
+      "skipped": 22,
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     "candidate": {
+      "evidence": "EXECUTED",
+      "executed": 4597,
+      "exit_code": 0,
+      "failed": 0,
+      "passed": 4597,
+      "prepared": false,
+      "skipped": 22,
+      "status": "COMPLETED_WITH_RESULT"
+     }
+    }
+   },
+   "new_failures": {
+    "flutter": [],
+    "flutter-analyze": [],
+    "python": []
+   },
+   "ok": true,
+   "preparation": {
+    "flutter": {
+     "baseline": {
+      "cmd": [
+       "C:/Users/cheta/flutter/bin/flutter.bat",
+       "pub",
+       "get",
+       "--enforce-lockfile",
+       "--offline"
+      ],
+      "pubspec_lock_sha256": "c77bc579affbd74586c11464f3bb17c5ae1388d230b915a3e60645c1136c12c6"
+     },
+     "candidate": {
+      "cmd": [
+       "C:/Users/cheta/flutter/bin/flutter.bat",
+       "pub",
+       "get",
+       "--enforce-lockfile",
+       "--offline"
+      ],
+      "pubspec_lock_sha256": "c77bc579affbd74586c11464f3bb17c5ae1388d230b915a3e60645c1136c12c6"
+     }
+    },
+    "flutter-analyze": {
+     "baseline": {
+      "cmd": [
+       "C:/Users/cheta/flutter/bin/flutter.bat",
+       "pub",
+       "get",
+       "--enforce-lockfile",
+       "--offline"
+      ],
+      "pubspec_lock_sha256": "c77bc579affbd74586c11464f3bb17c5ae1388d230b915a3e60645c1136c12c6"
+     },
+     "candidate": {
+      "cmd": [
+       "C:/Users/cheta/flutter/bin/flutter.bat",
+       "pub",
+       "get",
+       "--enforce-lockfile",
+       "--offline"
+      ],
+      "pubspec_lock_sha256": "c77bc579affbd74586c11464f3bb17c5ae1388d230b915a3e60645c1136c12c6"
+     }
+    }
+   }
+  }
+ },
+ "integration": {
+  "at": "2026-10-16T17:38:12Z",
+  "candidate": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+  "command": "git push uri-repo 250487098ca53adcee1ba1d22b4db398cd8dc3ed:refs/heads/integration/git-sync-20261008",
+  "mode": "fast-forward",
+  "push_exit": 0,
+  "push_stderr": "To https://github.com/sche004-cyber/Uri.git\n   57f2d567..25048709  250487098ca53adcee1ba1d22b4db398cd8dc3ed -> integration/git-sync-20261008\n",
+  "remote": "uri-repo",
+  "result_commit": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+  "status": "INTEGRATED",
+  "target_ref": "integration/git-sync-20261008",
+  "target_tip_after": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+  "target_tip_before": "57f2d567a043a5afcd1f7830fc3c3936aea0ac24"
+ },
+ "milestone": "UI-V2-POSTINT-c6",
+ "open_findings": [],
+ "repairs": [],
+ "reviewers": [
+  {
+   "candidate": "250487098ca53adcee1ba1d22b4db398cd8dc3ed",
+   "independent": true,
+   "models": null,
+   "provider": "codex_cli",
+   "reviewer_label": "ACCEPT",
+   "round": 1,
+   "session_id": "codex_cli-2ffc0967-e1c4-4c77-9d27-5ca8bf712e33",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT"
+  }
+ ],
+ "rounds": 1,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "COMPLETE",
+ "verify_errors": [],
+ "written_at": "2026-10-16T17:38:39Z"
+}

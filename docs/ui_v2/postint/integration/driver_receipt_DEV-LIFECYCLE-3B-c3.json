@@ -1,0 +1,126 @@
+{
+ "baseline": "eaeb10c126132b014751674a1fed7d734122e653",
+ "blocker": null,
+ "candidate": "57f2d567a043a5afcd1f7830fc3c3936aea0ac24",
+ "config_sha256": "37171c214198d55d96c5d897b7c47f8d5bba06f1964d0a6dcf96cfa5cd2774d3",
+ "events": 38,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "57f2d567a043": {
+   "blocked": null,
+   "counts": {
+    "python": {
+     "baseline": {
+      "evidence": "EXECUTED",
+      "executed": 244,
+      "exit_code": 1,
+      "failed": 1,
+      "passed": 243,
+      "prepared": false,
+      "skipped": 5,
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     "candidate": {
+      "evidence": "EXECUTED",
+      "executed": 280,
+      "exit_code": 1,
+      "failed": 1,
+      "passed": 279,
+      "prepared": false,
+      "skipped": 5,
+      "status": "COMPLETED_WITH_RESULT"
+     }
+    }
+   },
+   "new_failures": {
+    "python": []
+   },
+   "ok": true,
+   "preparation": {}
+  }
+ },
+ "integration": {
+  "at": "2026-10-16T17:30:05Z",
+  "candidate": "57f2d567a043a5afcd1f7830fc3c3936aea0ac24",
+  "command": "git push uri-repo 57f2d567a043a5afcd1f7830fc3c3936aea0ac24:refs/heads/integration/git-sync-20261008",
+  "mode": "fast-forward",
+  "push_exit": 0,
+  "push_stderr": "To https://github.com/sche004-cyber/Uri.git\n   eaeb10c1..57f2d567  57f2d567a043a5afcd1f7830fc3c3936aea0ac24 -> integration/git-sync-20261008\n",
+  "remote": "uri-repo",
+  "result_commit": "57f2d567a043a5afcd1f7830fc3c3936aea0ac24",
+  "status": "INTEGRATED",
+  "target_ref": "integration/git-sync-20261008",
+  "target_tip_after": "57f2d567a043a5afcd1f7830fc3c3936aea0ac24",
+  "target_tip_before": "eaeb10c126132b014751674a1fed7d734122e653"
+ },
+ "milestone": "DEV-LIFECYCLE-3B-c3",
+ "open_findings": [
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "severity": "LOW",
+   "title": "Plan states an outdated gate schema version"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": [
+    "R1-01",
+    "R1-02"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: tests/dev_workflow/test_lifecycle_drv3_flutter_gates.py does not pass after the repair (DONE, exit 1)",
+   "repair": 1,
+   "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R1-01",
+    "R1-02"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: tests/dev_workflow/test_lifecycle_drv3_flutter_gates.py does not pass after the repair (DONE, exit 1)",
+   "repair": 2,
+   "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R1-01",
+    "R1-02"
+   ],
+   "commit": "57f2d567a043a5afcd1f7830fc3c3936aea0ac24",
+   "reason": null,
+   "repair": 3,
+   "status": "COMMITTED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "c2a7d242ad6e9995d2c0cbcddf083dcda16cf5e3",
+   "independent": true,
+   "models": null,
+   "provider": "codex_cli",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "codex_cli-34eeeb80-2a70-49bc-9b58-de26a700f526",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "57f2d567a043a5afcd1f7830fc3c3936aea0ac24",
+   "independent": true,
+   "models": null,
+   "provider": "codex_cli",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "round": 2,
+   "session_id": "codex_cli-8d901727-8332-4417-b7a4-a897cca75f2b",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "rounds": 2,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "COMPLETE",
+ "verify_errors": [],
+ "written_at": "2026-10-16T17:30:29Z"
+}
