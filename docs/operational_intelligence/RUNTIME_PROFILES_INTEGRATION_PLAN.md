@@ -72,3 +72,23 @@ Owner decision 2026-10-17 (after independent audit round 3 ACCEPT on `7c7a7776`,
 
 Primary `codex_cli` (`gpt-6-sol`), available after 2026-10-22 14:03. If you log in the claude CLI first, a revision
 config with `claude_cli` will be used instead. This is chosen before the first driver run.
+
+## Amendment A1 (2026-10-17, after the first live runs and independent review RPI-R1) — correction note
+
+IC-1 above limited the code to the five files accepted in URI-RUNTIME-VRAM-R1. That turned out to be insufficient:
+- With only those files, the app could not use a profile Brain. The worker verified against the frozen argv and
+  reported FOREIGN_INSTANCE (live run `p1-main`).
+- Reviewer finding R1-01 led to CONTEXT-1: a profile switch restarted the worker and lost the in-memory conversation.
+
+The candidate therefore also contains changes **beyond the accepted scope**, reviewed on their own (subagent review
+rounds RPI-R1 and later), never presented as covered by the earlier acceptance:
+- `fa0a70e6`: `uri_operational_intelligence/runtime_profile_selection.py` (new), the worker reads
+  `control/oi/brain_profile.json`, tests.
+- `4d782ef1`: `ProfileFollower` (the worker follows the selection without restarting, so the conversation survives
+  a switch); the guard pins the frozen superset of artifacts; `brain_health.backend()` names the serving profile;
+  tests.
+
+The five accepted files remain byte-identical to `7c7a7776`. IC-1 now reads: the accepted five files, plus the files
+of `fa0a70e6` and `4d782ef1`, plus plan, config and evidence documents. Nothing else.
+
+The default Brain stays the frozen Runtime v1. Integration (IC-4) still requires your explicit authorisation.
