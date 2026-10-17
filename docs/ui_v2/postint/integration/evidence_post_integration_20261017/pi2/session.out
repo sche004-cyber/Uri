@@ -1,0 +1,4 @@
+{"label": "pi2", "port": 18301, "server_pid": 7648, "server_listen_s": 5.639, "server_listening": true}
+STATE WAITING_FOR_GPU GPU_CONTENDED
+STATE STOPPED HOST_EXIT
+{"label": "pi2", "server_exit": 1, "brain_exit_code": 0, "lease_after": {"state": "HELD", "holder": {"acquired_at": 1792178662.412, "create_time": 1792178619.867, "expected_vram_mib": 15626, "heartbeat_at": 1792178662.412, "label": "WS Brain host", "max_hold_s": null, "override": null, "pid": 4980, "process": "python.exe", "purpose": "runtime_v1_brain", "schema": "uri.gpu.lease.v1", "session": "D:\\uri-dev\\uri-auth-live\\candidate", "state": "held"}}, "brain_listener_after_3s": null, "server_listener_after": null}

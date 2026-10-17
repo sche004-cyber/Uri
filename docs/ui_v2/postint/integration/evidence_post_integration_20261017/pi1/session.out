@@ -1,0 +1,5 @@
+{"label": "pi1", "port": 18301, "server_pid": 24472, "server_listen_s": 14.677, "server_listening": true}
+STATE WAITING_FOR_LEASE GPU_LEASE_HELD
+STATE WAITING_FOR_GPU GPU_CONTENDED
+STATE STOPPED HOST_EXIT
+{"label": "pi1", "server_exit": 1, "brain_exit_code": 0, "lease_after": {"state": "FREE", "holder": null}, "brain_listener_after_3s": null, "server_listener_after": null}

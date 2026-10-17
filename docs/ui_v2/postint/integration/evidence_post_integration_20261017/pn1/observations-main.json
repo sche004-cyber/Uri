@@ -1,0 +1,88 @@
+[
+  {
+    "utc": "2026-10-17T01:08:18.342927Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput + synthesized key events",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "first_run": "1",
+    "visual": "v2"
+  },
+  {
+    "utc": "2026-10-17T01:08:18.354019Z",
+    "label": "preferences at start",
+    "keys": []
+  },
+  {
+    "utc": "2026-10-17T01:08:27.871756Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 9.514,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792199303.080534,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-17T01:08:29.854628Z",
+    "label": "memory at start",
+    "facts": [
+      "the project room code is K12453"
+    ],
+    "run_fact": "the project room code is K7872"
+  },
+  {
+    "utc": "2026-10-17T01:08:33.319160Z",
+    "label": "onboarding shown",
+    "shown": true
+  },
+  {
+    "utc": "2026-10-17T01:08:44.083744Z",
+    "label": "onboarding steps",
+    "titles": [
+      "What URI is",
+      "Connect",
+      "Harness",
+      "Brain",
+      "Permissions",
+      "Sign-in & qualification",
+      "Your workspace",
+      "Ready?"
+    ]
+  },
+  {
+    "utc": "2026-10-17T01:08:44.084958Z",
+    "label": "check",
+    "id": "J1-v2-is-default",
+    "result": "PASS",
+    "visualV2": true,
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-17T01:08:44.098869Z",
+    "label": "check",
+    "id": "J1-dashboard-first",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T01:08:44.568776Z",
+    "label": "raw-codes-on-screen",
+    "where": "start",
+    "codes": []
+  }
+]

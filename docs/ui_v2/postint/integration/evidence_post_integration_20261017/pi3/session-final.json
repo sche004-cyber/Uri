@@ -1,0 +1,59 @@
+{
+ "label": "pi3",
+ "port": 18301,
+ "started_utc": "2026-10-16T20:24:36.310092+00:00",
+ "no_brain": false,
+ "verified": {
+  "ok": true,
+  "mismatched": [],
+  "checked_files": 329,
+  "runtime_head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "materialized_from": "165dac8ac15e09dc7132b2185d5497cb858ab4af",
+  "source_head": "250487098ca53adcee1ba1d22b4db398cd8dc3ed"
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "override": false,
+ "server_pid": 4912,
+ "server_listener_pid": 7020,
+ "server_listen_s": 5.636,
+ "server_listening": true,
+ "brain_exit_code": 0,
+ "finished_utc": "2026-10-16T21:24:45.536382+00:00",
+ "server_exit": 1,
+ "brain_config_sha256_after": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_listener_after_3s": null,
+ "server_listener_after": null,
+ "host_final": {
+  "schema": "uri.ws.brain_host.v1",
+  "host_pid": 21632,
+  "host_started": 1792182281.953,
+  "state": "STOPPED",
+  "history": [
+   {
+    "t": 1792182281.967,
+    "state": "STOPPED",
+    "detail": "EXIT_BEFORE_LEASE"
+   },
+   {
+    "t": 1792182281.973,
+    "state": "STOPPED",
+    "detail": "HOST_EXIT"
+   }
+  ],
+  "override": null,
+  "detail": "HOST_EXIT",
+  "updated_at": 1792182281.973,
+  "lease": {
+   "held": false
+  },
+  "explain": "The Brain host has exited."
+ }
+}

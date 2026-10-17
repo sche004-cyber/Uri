@@ -1,0 +1,14 @@
+[
+ {
+  "state": "STARTING_HOST",
+  "t": 0.5,
+  "explain": null,
+  "detail": null
+ },
+ {
+  "state": "WAITING_FOR_GPU",
+  "t": 4.05,
+  "explain": "The Brain needs 15.3 GB of GPU memory but only 14.7 GB is free. In use by: dwm.exe (desktop compositor, 0.8 GB). Close those or wait; URI will not stop them.",
+  "detail": "GPU_CONTENDED"
+ }
+]

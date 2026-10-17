@@ -1,0 +1,14 @@
+[
+ {
+  "state": "WAITING_FOR_LEASE",
+  "t": 0.51,
+  "explain": "Another URI GPU workload holds the GPU: QWEN38-EXP queue5 load-order (python.exe, pid 16304). URI waits; it does not stop it.",
+  "detail": "GPU_LEASE_HELD"
+ },
+ {
+  "state": "WAITING_FOR_GPU",
+  "t": 948.31,
+  "explain": "The Brain needs 15.3 GB of GPU memory but only 14.7 GB is free. In use by: dwm.exe (desktop compositor, 0.8 GB). Close those or wait; URI will not stop them.",
+  "detail": "GPU_CONTENDED"
+ }
+]

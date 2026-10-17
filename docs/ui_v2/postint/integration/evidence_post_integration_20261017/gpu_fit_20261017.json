@@ -1,0 +1,22 @@
+{
+ "census_t": 1792203316.742,
+ "fit": {
+  "verdict": "CONTENDED",
+  "card_mib": 16368,
+  "required_mib": 15626,
+  "others_mib": 1295.5,
+  "unattributed_mib": 0.0,
+  "owner_mib": 0,
+  "free_mib": 15072.5,
+  "margin_mib": -553.5,
+  "consumers": [
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "parent": "winlogon.exe",
+    "dedicated_mib": 804.3,
+    "role": "desktop compositor"
+   }
+  ]
+ }
+}
