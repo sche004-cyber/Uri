@@ -117,12 +117,14 @@ def llama_servers():
 def account(log_text):
     """Device (Vulkan0) and host-visible (Vulkan_Host) buffers by component, from llama-server's own log lines.
 
+    Device = Vulkan0; host-visible = Vulkan_Host (GPU-mapped system memory, counted in the process' non-local GPU
+    usage); CPU = plain CPU buffers (e.g. the vision projector with --no-mmproj-offload), which are NOT GPU memory.
     Components: main weights / KV / recurrent state / compute; draft (MTP) weights / KV / compute; vision weights /
     vision compute. A compute buffer re-reserved for the same context at the same size is counted once (the
     scheduler reuses the buffer)."""
     phase = "main"
     seen_compute = {}
-    dev, host, rows = {}, {}, []
+    dev, host, cpu, rows = {}, {}, {}, []
     clip_backend = None
     for line in log_text.splitlines():
         if "loading draft model" in line:
@@ -144,18 +146,19 @@ def account(log_text):
                 if seen_compute.get(key) == mib:
                     continue          # same-size re-reserve of the same context
                 seen_compute[key] = max(seen_compute.get(key, 0), mib)
-            target = dev if kind == "Vulkan0" else host
+            target = dev if kind == "Vulkan0" else host if kind == "Vulkan_Host" else cpu
             target[comp] = round(target.get(comp, 0) + mib, 2)
             rows.append({"phase": ph, "kind": kind, "what": what, "mib": mib})
             continue
         m = re.search(r"load_hparams: model size:\s+([\d.]+) MiB", line)
         if m:
             mib = float(m.group(1))
-            target = dev if (clip_backend or "").startswith("Vulkan") else host
+            target = dev if (clip_backend or "").startswith("Vulkan") else cpu
             target["vision.model"] = round(target.get("vision.model", 0) + mib, 2)
             rows.append({"phase": "vision", "kind": clip_backend, "what": "model", "mib": mib})
     return {"device_mib": dev, "device_total_mib": round(sum(dev.values()), 1),
             "host_visible_mib": host, "host_total_mib": round(sum(host.values()), 1),
+            "cpu_mib": cpu, "cpu_total_mib": round(sum(cpu.values()), 1),
             "clip_backend": clip_backend, "rows": rows}
 
 

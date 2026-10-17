@@ -64,3 +64,20 @@ C. CHECKS RUN: the commands you ran and their results. Say what you could not ve
 D. FOLLOW-UP PROMPT: a ready-to-paste message for the ORIGINAL URI-RUNTIME-VRAM-R1 session that states your verdict,
    lists the findings to repair (or that none remain), and says what evidence it must produce for a re-check.
 ---
+
+## Round 2 re-check (after REVISE on c79ae681)
+
+Review the repair commit named by the owner against `c79ae681` (`git diff c79ae681 <head>`). Section 14 of the report
+maps each of the seven findings to its repair and evidence:
+
+- new accuracy runs: `model_lab/evidence/runs/vr1r2_ctl_frozen_dg/20261017-111219`,
+  `vr1r2_c64k_mtpoff/20261017-111826`, `vr1r2_c64k_mtpon/20261017-113004`. Each has `summary.json` and
+  `compare_vs_ue_cand_mtp2.{json,txt}`. Their `with_profile` records are in `research/runtime_vram_r1/evidence/with_profile/`:
+  `20261017-111138_r2-ctl-frozen-dg`, `20261017-111752_r2-c64k-mtpoff`, `20261017-112928_r2-c64k-mtpon` (rc=0,
+  `COMPLETED_WITH_RESULT`);
+- long-context rerun: `research/runtime_vram_r1/evidence/longctx/20261017-113930` (`COMPLETED_WITH_RESULT`);
+- frozen fit by the host: `research/runtime_vram_r1/evidence/frozen_fit/20261017-114127/frozen_fit.json`;
+- tests: `python -m pytest tests/oi tests/ws -q -p no:cacheprovider` (710 passed, 22 skipped at repair time),
+  including the new `test_every_measured_entry_matches_a_completed_probe` and `test_host_profile_argument_is_strict`.
+
+Use the same reply format (A. verdict + SHA, B. findings, C. checks run, D. follow-up prompt for the original session).

@@ -1,0 +1,19 @@
+##### timeout 1800 python -I with_profile.py --name r2-ctl-frozen-dg --ctx 32768 --vision gpu -- D:/uri-dev/uri-runtime-vram-r1/.venv/Scripts/python.exe -I D:/uri-dev/uri-runtime-vram-r1/model_lab/run_bench.py --name vr1r2_ctl_frozen_dg --url {URL} --suites D,DG 11:11:37
+ }
+}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\model_lab\evidence\runs\vr1r2_ctl_frozen_dg\20261017-111219
+WITH_PROFILE COMPLETED_WITH_RESULT 0 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-111138_r2-ctl-frozen-dg
+##### timeout 2400 python -I with_profile.py --name r2-c64k-mtpoff --ctx 65536 --no-mtp -- D:/uri-dev/uri-runtime-vram-r1/.venv/Scripts/python.exe -I D:/uri-dev/uri-runtime-vram-r1/model_lab/run_bench.py --name vr1r2_c64k_mtpoff --url {URL} --suites D,DG,F,C,H,S,O,R,RH,L --l-sizes 4000,12000,28000 11:17:51
+ }
+}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\model_lab\evidence\runs\vr1r2_c64k_mtpoff\20261017-111826
+WITH_PROFILE COMPLETED_WITH_RESULT 0 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-111752_r2-c64k-mtpoff
+##### timeout 2400 python -I with_profile.py --name r2-c64k-mtpon --ctx 65536 -- D:/uri-dev/uri-runtime-vram-r1/.venv/Scripts/python.exe -I D:/uri-dev/uri-runtime-vram-r1/model_lab/run_bench.py --name vr1r2_c64k_mtpon --url {URL} --suites D,DG,F,C,H,S,O,R,RH,L --l-sizes 4000,12000,28000 11:29:27
+ }
+}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\model_lab\evidence\runs\vr1r2_c64k_mtpon\20261017-113004
+WITH_PROFILE COMPLETED_WITH_RESULT 0 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-112928_r2-c64k-mtpon
+##### timeout 1500 python -I run_longctx.py --model q36 --sizes 65536:q8_0 --label r2-lc-mtpoff 11:39:29
+{"profile": "r2-lc-mtpoff-q36-64k-q8_0", "class": "COMPLETED_WITH_RESULT", "error": null, "load_s": 14.62, "request_mib": 13657.9, "loaded_gpu": {"dedicated_mib": 13812.2, "non_local_mib": 559.8}, "after_gpu": {"dedicated_mib": 13993.2, "non_local_mib": 593.1}, "prompt_tokens": 64093, "prefill_tps": 1437.4546639295677, "ttft_s": 44.904, "decode_tps_at_depth": 81.82690318090329, "turn1_total_s": 47.042, "finish": "stop", "score": {"score": 1.0, "checks": {"valid_json": true, "no_roll_numbers": true, "superseded_fact": true, "ordinal_reference": true, "entity_set": true, "needle_early": true, "needle_mid": true, "needle_late": true, "two_hop": true, "aggregate": true, "absent_fact_null": true}}, "turn2_cache_n": 64267, "turn2_prompt_n": 38, "turn2_ttft_s": 0.916, "turn2": {"followup_needle": true}, "short_decode_after": 105.41070690746845, "draft": [null, null]}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\longctx\20261017-113930
+##### chain7 done 11:41:03

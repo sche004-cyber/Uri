@@ -43,13 +43,15 @@ def run_one(model, ctx, kv, mtp, think, label, vision="off", run_root=None):
         # decode speed at depth vs short-prompt decode on the same loaded server
         rec["short_after"] = {k: v for k, v in speed.stream_chat(srv.url, [{"role": "user", "content": speed.FIXED_PROMPT}],
                                                                   max_tokens=300).items() if k not in ("text", "reasoning")}
+        rec["classification"] = "COMPLETED_WITH_RESULT"
     except Exception as exc:
         rec["error"] = f"{type(exc).__name__}: {exc}"
+        rec["classification"] = "FAILED"
     finally:
         srv.stop()
         lab.save(run_dir, "longctx", rec)
     t1, t2 = rec.get("turn1", {}), rec.get("turn2", {})
-    brief = {"profile": prof.name, "error": rec.get("error"), "load_s": rec.get("load_seconds"),
+    brief = {"profile": prof.name, "class": rec.get("classification"), "error": rec.get("error"), "load_s": rec.get("load_seconds"),
              "request_mib": (rec.get("buffers") or {}).get("device_total_mib"),
              "loaded_gpu": rec.get("loaded", {}).get("server"), "after_gpu": rec.get("mem_after_turn2", {}).get("server"),
              "prompt_tokens": t1.get("prompt_n"), "prefill_tps": t1.get("prompt_tps"), "ttft_s": t1.get("ttft_s"),

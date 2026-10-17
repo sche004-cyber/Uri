@@ -430,11 +430,19 @@ def main(argv=None):
     ap.add_argument("--profile", default=None,
                     help="research candidate (URI-RUNTIME-VRAM-R1): ctx,vision,mtp e.g. 65536,off,1; default = frozen")
     a = ap.parse_args(argv)
-    cfg = None
-    if a.profile:
-        ctx, vision, mtp = a.profile.split(",")
-        cfg = RP.derive_config(R.load_config(), int(ctx), vision, mtp in ("1", "on", "true"))
+    cfg = RP.derive_config(R.load_config(), *parse_profile(a.profile)) if a.profile else None
     return Host(Path(a.report_dir), minutes=a.minutes, override=a.override_contention, cfg=cfg).run()
+
+
+MTP_TOKENS = {"1": True, "on": True, "true": True, "0": False, "off": False, "false": False}
+
+
+def parse_profile(text):
+    """'<ctx>,<vision>,<mtp>' -> (ctx, vision, mtp). Unknown values are refused, never guessed."""
+    parts = [x.strip().lower() for x in str(text).split(",")]
+    if len(parts) != 3 or not parts[0].isdigit() or parts[2] not in MTP_TOKENS:
+        raise SystemExit("PROFILE_ARG_INVALID: expected <ctx>,<off|gpu|cpu>,<0|1>, got %r" % text)
+    return int(parts[0]), parts[1], MTP_TOKENS[parts[2]]
 
 
 if __name__ == "__main__":

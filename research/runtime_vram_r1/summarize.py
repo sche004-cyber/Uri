@@ -21,12 +21,15 @@ for f in sorted(glob.glob(str(HERE / "evidence" / "probe" / "*" / "probe.json"))
     p = r["profile"]
     loaded = (r.get("loaded") or {}).get("server") or {}
     after = (r.get("after_vision") or r.get("after_speed") or {}).get("server") or {}
-    host = b.get("host_total_mib") or 0
+    brows = b.get("rows") or []
+    # host-visible = Vulkan_Host only; CPU buffers (vision on CPU) are not GPU memory (audit finding 6)
+    host = round(sum(x["mib"] for x in brows if x.get("kind") == "Vulkan_Host"), 1) if brows else (b.get("host_total_mib") or 0)
+    cpu_mib = round(sum(x["mib"] for x in brows if x.get("kind") == "CPU"), 1)
     rows.append({
         "run": Path(f).parent.name, "class": r.get("classification"), "ctx": p["ctx"], "mtp": p["mtp"],
         "vision": p["vision"], "draft_kv": p.get("draft_kv") or "f16",
         "free_before": (r.get("before") or {}).get("free_for_one_process_mib"),
-        "request": b.get("device_total_mib"), "host_visible": host,
+        "request": b.get("device_total_mib"), "host_visible": host, "cpu_buffers": cpu_mib,
         "draft_mib": round(sum(v for k, v in dev.items() if k.startswith("draft.")), 1),
         "vision_mib": round(sum(v for k, v in dev.items() if k.startswith("vision.")), 1),
         "kv_mib": dev.get("main.KV"), "dedicated": after.get("dedicated_mib") or loaded.get("dedicated_mib"),
@@ -42,7 +45,7 @@ for f in sorted(glob.glob(str(HERE / "evidence" / "probe" / "*" / "probe.json"))
         "error": r.get("error")})
 json.dump(rows, open(HERE / "evidence" / "summary.json", "w"), indent=1)
 cols = ["run", "class", "ctx", "mtp", "vision", "draft_kv", "free_before", "request", "dedicated", "non_local",
-        "host_visible", "demoted_est", "draft_mib", "vision_mib", "kv_mib", "load_s", "prose_tps", "uri_tps",
+        "host_visible", "cpu_buffers", "demoted_est", "draft_mib", "vision_mib", "kv_mib", "load_s", "prose_tps", "uri_tps",
         "uri_prefill_1200", "vision_first", "vision_ok", "error"]
 print("| " + " | ".join(cols) + " |")
 print("|" + "---|" * len(cols))

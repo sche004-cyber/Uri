@@ -33,12 +33,16 @@ FROZEN_KEY = (32768, "gpu", True)
 MTP_ARGS = ("-md", "--spec-type", "--spec-draft-n-max", "-otd")   # flags that take one value each
 
 # Measured device request (MiB) per (ctx, vision, mtp). Source: research/runtime_vram_r1/evidence/probe/*/probe.json
-# ("buffers.device_total_mib"). Filled only from COMPLETED_WITH_RESULT probes; a missing key is NOT_MEASURED.
+# ("buffers.device_total_mib", rounded, default draft KV type). Filled only from COMPLETED_WITH_RESULT probes; a missing
+# key is NOT_MEASURED. tests/oi/test_runtime_profiles.py checks every entry against the probe files.
 # Vision on the CPU adds no device memory (projector and its compute buffer are host buffers).
 # The lease fit check applies these per start, so a profile larger than what the desktop leaves (e.g. 128K + MTP,
 # 16,107 MiB: demoted at load on 2026-10-17, decode 22-30 tok/s) waits as GPU_CONTENDED instead of starting slow.
 MEASURED_MIB: dict = {
-    (32768, "gpu", True): 15626,     # frozen; lease constant (R1), re-measured 15,620.5 on 2026-10-17
+    # Frozen combination: probe value 15,620.5 (2026-10-17; rounded half-even = 15,620). It is listed only so that plan_change can target it; the
+    # frozen config itself is returned unchanged by derive_config and budgets with gpu_lease.RUNTIME_V1_DEVICE_MIB
+    # (15,626, the R1 lease constant, deliberately not changed here).
+    (32768, "gpu", True): 15620,
     (16384, "off", False): 13052,
     (32768, "off", False): 13254,
     (65536, "off", False): 13658,

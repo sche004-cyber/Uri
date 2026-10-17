@@ -1,0 +1,102 @@
+{
+ "baseline": "D:\\uri-dev\\uri-runtime-vram-r1\\model_lab\\evidence\\runs\\ue_cand_mtp2\\20261006-223100",
+ "run": "..\\..\\model_lab\\evidence\\runs\\vr1r2_c64k_mtpoff\\20261017-111826",
+ "common_cases": 249,
+ "only_baseline": 22,
+ "only_run": 0,
+ "score_changing": 2,
+ "diffs": [
+  {
+   "case": [
+    "fast",
+    "RH",
+    "rh4_rooms",
+    0
+   ],
+   "baseline": 0.0,
+   "run": 1.0
+  },
+  {
+   "case": [
+    "fast",
+    "RH",
+    "rh7_dates",
+    0
+   ],
+   "baseline": 0.0,
+   "run": 1.0
+  }
+ ],
+ "suites": {
+  "fast/C": {
+   "baseline": 1.0,
+   "run": 1.0,
+   "n": 14,
+   "gen_tps_p50": 102.5,
+   "baseline_gen_tps_p50": 141.3
+  },
+  "fast/D": {
+   "baseline": 0.861,
+   "run": 0.861,
+   "n": 72,
+   "gen_tps_p50": 100.3,
+   "baseline_gen_tps_p50": 141.2
+  },
+  "fast/DG": {
+   "baseline": 0.861,
+   "run": 0.861,
+   "n": 72,
+   "gen_tps_p50": 100.1,
+   "baseline_gen_tps_p50": 139.8
+  },
+  "fast/F": {
+   "baseline": 1.0,
+   "run": 1.0,
+   "n": 30,
+   "gen_tps_p50": 97.3,
+   "baseline_gen_tps_p50": 126.6
+  },
+  "fast/H": {
+   "baseline": 1.0,
+   "run": 1.0,
+   "n": 22,
+   "gen_tps_p50": 103.0,
+   "baseline_gen_tps_p50": 136.0
+  },
+  "fast/L": {
+   "baseline": 0.933,
+   "run": 0.933,
+   "n": 3,
+   "gen_tps_p50": 95.2,
+   "baseline_gen_tps_p50": 142.1
+  },
+  "fast/O": {
+   "baseline": 1.0,
+   "run": 1.0,
+   "n": 4,
+   "gen_tps_p50": 103.4,
+   "baseline_gen_tps_p50": 152.8
+  },
+  "fast/R": {
+   "baseline": 0.958,
+   "run": 0.958,
+   "n": 12,
+   "gen_tps_p50": 103.9,
+   "baseline_gen_tps_p50": 152.3
+  },
+  "fast/RH": {
+   "baseline": 0.625,
+   "run": 0.875,
+   "n": 8,
+   "gen_tps_p50": 103.7,
+   "baseline_gen_tps_p50": 150.6
+  },
+  "fast/S": {
+   "baseline": 1.0,
+   "run": 1.0,
+   "n": 12,
+   "gen_tps_p50": 103.6,
+   "baseline_gen_tps_p50": 156.5
+  }
+ }
+}

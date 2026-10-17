@@ -109,3 +109,38 @@ def test_host_budgets_the_profile_request(tmp_path):
                   census=lambda: {"ok": False}, lease_dir=tmp_path / "l2")
     assert host.required_mib == 15043 and host.report["profile"]["id"] == "c64k-visoff-mtpon"
     json.dumps(host.report)
+
+
+def _probe_requests():
+    import glob
+    out = {}
+    root = Path(R.REPO_ROOT) / "research" / "runtime_vram_r1" / "evidence" / "probe"
+    for f in glob.glob(str(root / "*" / "probe.json")):
+        r = json.loads(Path(f).read_text(encoding="utf-8"))
+        p = r["profile"]
+        if r.get("classification") != "COMPLETED_WITH_RESULT" or p.get("draft_kv"):
+            continue
+        key = (p["ctx"], p["vision"], bool(p["mtp"]))
+        out.setdefault(key, set()).add(round(r["buffers"]["device_total_mib"]))
+    return out
+
+
+def test_every_measured_entry_matches_a_completed_probe():
+    probes = _probe_requests()
+    if not probes:
+        pytest.skip("research evidence not present in this checkout")
+    for key, mib in RP.MEASURED_MIB.items():
+        assert mib in probes.get(key, set()), (key, mib, probes.get(key))
+
+
+def test_host_profile_argument_is_strict():
+    import sys
+    sys.path.insert(0, str(Path(R.REPO_ROOT) / "scripts"))
+    import ws_brain_host as H
+    assert H.parse_profile("65536,off,0") == (65536, "off", False)
+    assert H.parse_profile("32768,GPU,on") == (32768, "gpu", True)
+    for bad in ("65536,off,yes", "65536,off", "64k,off,1", "65536,off,1,x", ""):
+        with pytest.raises(SystemExit):
+            H.parse_profile(bad)
+    with pytest.raises(RP.ProfileError):
+        RP.derive_config(R.load_config(), *H.parse_profile("65536,maybe,1"))

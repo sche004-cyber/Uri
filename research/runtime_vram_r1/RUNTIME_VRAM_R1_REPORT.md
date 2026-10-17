@@ -5,7 +5,7 @@ canonical `25048709`. Acceptance criteria were written before measurement: `ACCE
 includes the two owner additions of the same day: mutually exclusive Vision / MTP allocation, and the resume
 directive.
 
-**Status: RESEARCH COMPLETE. CANDIDATE NOT QUALIFIED FOR INTEGRATION. PENDING INDEPENDENT AUDIT.** Nothing is
+**Status: RESEARCH COMPLETE, REVISED AFTER INDEPENDENT AUDIT (REVISE on c79ae681; repairs in section 14). CANDIDATE NOT QUALIFIED FOR INTEGRATION. RE-CHECK PENDING.** Nothing is
 merged, deployed or frozen. Frozen Runtime v1 is untouched: `git diff 25048709 --
 model_lab/integration/local_brain.json model_lab/URI_RESIDENT_INTELLIGENCE_RUNTIME_V1_FREEZE.md` is empty. In every
 profile the model, quantization, binary, KV type (q8_0), batch sizes and checkpoint flags are the frozen ones. Only
@@ -15,8 +15,9 @@ Reopening basis (freeze record section 14): "an unacceptable stability problem u
 Brain could not start on the ordinary desktop. That blocked the UI V2 and Office live qualifications.
 
 Units are MiB. "Request" = the sum of llama-server's own `Vulkan0 ... buffer size` lines, including the vision
-projector weights. "Dedicated" / "non-local" = the Windows per-process GPU counters. "Demoted" = device request not
-resident, measured as non-local minus host-visible buffers. Desktop during all tests: about 1,296 MiB used by other
+projector weights. "Dedicated" / "non-local" = the Windows per-process GPU counters. "Demoted" (estimate) = the
+process's non-local GPU usage minus its host-visible (`Vulkan_Host`) buffers. Plain CPU buffers (for example the vision
+projector with `--no-mmproj-offload`) are not GPU memory and are reported separately (corrected after audit finding 6). Desktop during all tests: about 1,296 MiB used by other
 processes (dwm 804, ChatGPT 103, Claude 62, Edge WebView 62, Edge 44, ...), so 15,072 MiB was free for one process.
 Evidence: `research/runtime_vram_r1/evidence/` (`summary.json`, `summary_table.md`, `coexist_summary.json`, per-run
 folders). Suite runs are in `model_lab/evidence/runs/vr1_*` and `evidence/suite_p/`.
@@ -25,8 +26,10 @@ folders). Suite runs are in `model_lab/evidence/runs/vr1_*` and `evidence/suite_
 
 1. **The frozen Brain requests 15,620.5 MiB of device memory** (re-measured; the lease constant is 15,626). The card
    offers about 15,072 MiB to one process on this desktop. That leaves about 550 MiB that cannot be resident.
-2. **Which buffers become non-resident decides the outcome.** In today's frozen-equivalent load, 858 MiB was not
-   resident. That equals the vision projector weights (857.6). Text decode stayed at 108 / 141 tok/s, but image
+2. **Which buffers become non-resident decides the outcome.** In today's frozen-equivalent load about 883 MiB of
+   device memory was non-local (non-local 1,732 minus host-visible 848.9). That is consistent with the vision
+   projector weights (857.6) plus part of the CLIP buffers being the non-resident part: text was unaffected and only
+   image encode slowed. This is an inference from the counters, not a direct observation of which buffer moved. Text decode stayed at 108 / 141 tok/s, but image
    encode slowed to 1.4-2.0 s (0.51-0.53 s when vision is resident). When the driver demotes MoE weight blocks
    instead (Adaptive Runtime R1, the Office r7 record, and 128K+MTP today: 943 MiB demoted, 23 / 31 tok/s), decode
    collapses by 60-80% for the life of the process. Placement is not controllable, so a 15.6 GiB request on this
@@ -79,9 +82,9 @@ Free on this desktop: 15,072. Margin = free − request. The lease verdict uses 
 | 128K + MTP | 16,107 | −1,035 CONTENDED | **943 demoted at load** | **22.6 / 30.5** | 17.6 | — |
 | 32K + vision GPU | 14,360 | +712 FITS | resident | 106.4 / 104.5 | 17.9 | 0.51 s |
 | 64K + vision GPU | 14,764 | +308 AT_RISK | resident | 106.4 / 104.3 | 17.6 | 0.53 s |
-| 128K + vision GPU | 15,572 | −500 AT_RISK | 228 demoted (vision) | 106.3 / 104.1 | 23.2 | 1.46 s |
+| 128K + vision GPU | 15,572 | −500 AT_RISK | ~253 demoted (vision slowed) | 106.3 / 104.1 | 23.2 | 1.46 s |
 | 64K + MTP + vision CPU | 15,043 | +29 AT_RISK | resident | 107.8 / 142.7 | 22.9 | 4.22 s (CPU) |
-| Frozen 32K + MTP + vision GPU | 15,621 | −549 CONTENDED | 858 not resident (vision) | 107.6 / 141.1 | 20-26 | 1.39-2.02 s |
+| Frozen 32K + MTP + vision GPU | 15,621 | −549 CONTENDED | ~883 demoted (vision slowed) | 107.6 / 141.1 | 20-26 | 1.39-2.02 s |
 
 Not measured: main only + vision CPU at any context. That profile is therefore not selectable in the candidate,
 because admission never runs on an estimate.
@@ -132,30 +135,56 @@ at 16-32K with a 557-807 MiB margin.
 ## 6. Accuracy (AC8): no loss measured
 
 Baseline: the frozen qualification run `ue_cand_mtp2` (2026-10-06). The comparison is case by case
-(`compare_suite.py`).
+(`compare_suite.py`; the output is saved as `compare_vs_ue_cand_mtp2.json` / `.txt` in each run folder). **Only the
+runs below support the accuracy claims.** Each ended with rc=0, classification `COMPLETED_WITH_RESULT` and a
+`summary.json`. Each was started from the repo root, without suite P.
 
-| Suite | Frozen-equivalent control (today) | 64K main only | 64K + MTP |
+| Suite | Frozen-equivalent control `vr1r2_ctl_frozen_dg/20261017-111219` | 64K main only `vr1r2_c64k_mtpoff/20261017-111826` | 64K + MTP `vr1r2_c64k_mtpon/20261017-113004` |
 |---|---|---|---|
-| D / DG (72 + 72) | 0.861 / 0.861, 0 changed | 0.861 / 0.861, 0 changed | 0.861 / 0.861, 0 changed |
-| P (12, Phase 1 production loop) | 12/12 | 12/12 | 12/12 |
-| F, C, H, S, O, R, L | — | identical | identical |
-| RH (8 hard, capped) | — | 0.875 (rh4, rh7: 0→1) | 0.750 (rh4: 0→1) |
-| Long context, full 64K fill (11 checks + follow-up) | — | 11/11, follow-up OK | 11/11, follow-up OK |
+| D / DG (72 + 72) | 0.861 / 0.861, 0 of 144 changed | 0.861 / 0.861, 0 changed | 0.861 / 0.861, 0 changed |
+| F, C, H, S, O, R, L | — | identical (1.0, 1.0, 1.0, 1.0, 1.0, 0.958, 0.933) | identical |
+| RH (8 hard, capped) | — | 0.875 (rh4_rooms, rh7_dates: 0→1) | 0.625, 0 changed |
+| Cases compared / changed | 144 / 0 | 249 / 2 (both RH, upward) | 249 / 0 |
 
-The RH changes are improvements only. The same two flips appear between `ue_cand` and `ue_cand_mtp2` in the
-2026-10-06 qualification, so they are known run variance. Long context at 64K: prefill 1,445 / 1,326 tok/s, TTFT
-44.7 / 48.7 s, decode at depth 81.8 / 113.1 tok/s (MTP off / on), follow-up from cache 1.0 / 1.3 s.
+`with_profile` records: `20261017-111138_r2-ctl-frozen-dg`, `20261017-111752_r2-c64k-mtpoff`,
+`20261017-112928_r2-c64k-mtpon`, all rc=0 and `COMPLETED_WITH_RESULT`. The two RH changes are improvements only. The
+same two flips appear between `ue_cand` and `ue_cand_mtp2` in the 2026-10-06 qualification (known run variance).
 
-**The D/DG discrepancy (0.861 → 0.486) is explained (finding CWD-1).** My first suite runs started `run_bench.py`
+Suite P (12 cases, Phase 1 production loop) has to run from a checkout at `e8e3b652`
+(`runtime_identity.BASELINE`). It ran through `with_profile` with `--cwd D:\uri-dev\uri-vram-r1-p1`. Records
+`20261017-100505_p-frozen`, `20261017-100746_p-c64k-mtpoff`, `20261017-101028_p-c64k-mtpon`: rc=0, `COMPLETED_WITH_RESULT`, 12/12 each, 0 errors,
+0 invalid proposer outputs. Summaries are in `evidence/suite_p/vr1_p_*`.
+
+Long context, full 64K fill (11 checks + same-prefix follow-up), main only:
+`evidence/longctx/20261017-113930/r2-lc-mtpoff-q36-64k-q8_0/longctx.json`, `COMPLETED_WITH_RESULT`, 64,093 prompt
+tokens, 11/11, follow-up correct, prefill 1,437 tok/s, TTFT 44.9 s, decode at depth 81.8 tok/s, follow-up TTFT 0.92 s
+(cache reuse). The earlier long-context runs `evidence/longctx/20261017-090223` (main only) and `20261017-090357`
+(MTP) carry classification `STARTED`, because the script did not set a final class (audit finding 2). They completed,
+with 11/11 in their records, but they are **reclassified as supporting-only**. The MTP long-context figures
+(11/11, prefill 1,326 tok/s, TTFT 48.7 s, decode at depth 113.1 tok/s) come from `20261017-090357` and are
+supporting-only. The script now sets `COMPLETED_WITH_RESULT`
+/ `FAILED`.
+
+Vision accuracy: suite V on 64K + vision GPU (`vr1_c64k_vis/20261017-090207`, `with_profile` `20261017-090129`,
+rc=0, `COMPLETED_WITH_RESULT`): 0.733 (VLM 1.000, OCR path 0.467), identical to the baseline.
+
+**The D/DG discrepancy (0.861 -> 0.486) is explained (finding CWD-1).** My first suite runs started `run_bench.py`
 from `research/runtime_vram_r1`. Core opens `uri_workspace\capabilities_registry.json` relative to the current
 working directory. From that folder the decision prompt held 2 capability summaries instead of 17: `remember_fact`,
 `recall_memory`, drafting and convert were missing. This was verified offline (`real_directory().summaries()`: 2 vs
-17; the prompt was 2,653 chars shorter, matching the 590-token gap). The model then answered correctly by its own
-rules ("no capability covers memory"). Re-run from the repo root, all three profiles score 0.861 / 0.861 with 0
-score-changing cases, including the same-environment frozen-equivalent control. The runtime was never the cause.
-The superseded runs are kept (`vr1_c64k_mtpoff`, `vr1_c64k_mtpon`; their non-D suites are valid). CWD-1 is a latent
-Core fragility: any caller with another working directory silently loses capabilities. It is reported for a
-separate fix, not changed here.
+17; the prompt was 2,653 chars shorter, which matches the 590-token gap), and the independent auditor reproduced it.
+Re-run from the repo root, every profile scores 0.861 / 0.861 with 0 score-changing cases. The runtime was never the
+cause. CWD-1 is a latent Core fragility (any caller with another working directory silently loses capabilities). It
+is reported for a separate fix and not changed here.
+
+**Superseded runs (kept, not used as support), with the correction:**
+- `vr1_c64k_mtpoff/20261017-084215` and `vr1_c64k_mtpon/20261017-085302` (`with_profile` `084140`, `085225`, FAILED
+  rc=1): D/DG ran from the wrong cwd (CWD-1), and suite P crashed (`ISOLATED_INTERPRETER_REQUIRED`). In c79ae681 the
+  report cited their non-D suites as support; that was incorrect under the evidence rule. They are replaced by the
+  `vr1r2_*` runs above.
+- `vr1_ctl_frozen_dgp`, `vr1_c64k_mtpoff_dgp`, `vr1_c64k_mtpon_dgp` (`with_profile` `093842`, `094455`, `095151`,
+  FAILED rc=1, P crashed with `SOURCE_CHECKPOINT_MISMATCH`): c79ae681 cited their D/DG results. Their D/DG rows agree
+  with the reruns, but they are not used as support. They are replaced by `vr1r2_*`.
 
 ## 7. Coexistence: URI UI + Chrome (AC11)
 
@@ -182,7 +211,10 @@ across 509 earlier canonical samples), so real margins are smaller than this tab
 `evidence/host_live/20261017-095801_65536_off_0`:
 
 - start: READY after 51.1 s (first full artifact hash plus load); lease `expected_vram_mib` 13,658; fit **FITS,
-  +1,324 MiB**. The frozen config on the same desktop: CONTENDED, −554. Calibration 106.3 tok/s; residency 13,832 /
+  +1,324 MiB** (free 14,982). The frozen config, measured by the same host on the same desktop with its own fit
+  function (`evidence/frozen_fit/20261017-114127/frozen_fit.json`): CONTENDED, free 14,981.8, required 15,626, margin
+  **−644.2**. The host waited with `GPU_CONTENDED`, started nothing, and exited 0. (c79ae681 said "−554" without an
+  evidence file; corrected.) Calibration 106.3 tok/s; residency 13,832 /
   562, no demotion;
 - restart request (recovery): back to READY in 29.1 s, release 3.8 s, calibration 105.3 tok/s;
 - stop request: STOPPED in 1.0 s; host exit 0; lease FREE afterwards.
@@ -248,13 +280,33 @@ remaining checks in section 12 and owner approval. Not with MTP or vision reside
   re-run here (the Qwen3.8 experiment measured 10/11 at 128K).
 - THINK-1 (small thinking budgets can cut off the answer), CWD-1 (cwd-dependent capability registry) and RAM-1
   (other sessions' PowerShell memory) are open findings outside this milestone's scope.
-- Failed or invalid runs, disclosed and not used as support:
-  - suite runs that crashed at suite P (`ISOLATED_INTERPRETER_REQUIRED`, `SOURCE_CHECKPOINT_MISMATCH`; their earlier
-    suites are valid; D/DG from the wrong cwd are superseded);
-  - two queue steps with a relative interpreter path (`chain5_attempt1_relpath_failed.log`);
-  - three P loads before the Phase 1 overlay (`chain6_attempt1_missing_phase1_overlay.log`);
-  - three coexistence loads refused by my own duplicate queue watcher (`GPU_LEASE_HELD`);
-  - a P dry run with no Brain (`vr1_p_dryrun`, expected failures).
+- Failed or invalid runs (every one listed; none is used as support):
+
+  | Run directory (`research/runtime_vram_r1/evidence/...`) | Class | Exact error |
+  |---|---|---|
+  | `with_profile/20261017-084140_suite-c64k-mtpoff` | FAILED rc=1 | suite P: `RuntimeIdentityError: ISOLATED_INTERPRETER_REQUIRED` (system Python). D/DG also from the wrong cwd (CWD-1) |
+  | `with_profile/20261017-085225_suite-c64k-mtpon` | FAILED rc=1 | same as above |
+  | `with_profile/20261017-093712_ctl-frozen-dgp` | FAILED | `FileNotFoundError: [WinError 2] The system cannot find the file specified` (relative `.venv` interpreter path with `cwd=`) |
+  | `with_profile/20261017-093751_dgp-c64k-mtpoff` | FAILED | same as above |
+  | `with_profile/20261017-093842_ctl-frozen-dgp` | FAILED rc=1 | suite P: `RuntimeIdentityError: SOURCE_CHECKPOINT_MISMATCH` (HEAD is not `e8e3b652`) |
+  | `with_profile/20261017-094455_dgp-c64k-mtpoff` | FAILED rc=1 | same as above |
+  | `with_profile/20261017-095151_dgp-c64k-mtpon` | FAILED rc=1 | same as above |
+  | `with_profile/20261017-095934_p-frozen` | FAILED rc=1 | `ModuleNotFoundError: No module named 'test_c5_intent_discovery'` (Phase 1 overlay not yet copied) |
+  | `with_profile/20261017-100019_p-c64k-mtpoff` | FAILED rc=1 | same as above |
+  | `with_profile/20261017-100059_p-c64k-mtpon` | FAILED rc=1 | same as above |
+  | `coexist/20261017-090542_co-c64k-vis` | FAILED | `GpuBusy: GPU_LEASE_HELD` (my duplicate chain-4 instance held the lease) |
+  | `coexist/20261017-090558_co-c32k-vis` | FAILED | `RuntimeError: REFUSED_OTHER_LLAMA_SERVER_RUNNING [17028]` (the duplicate instance's server) |
+  | `coexist/20261017-090614_co-c64k-mtpoff-r2` | FAILED | same as above |
+  | `longctx/20261017-090223/*`, `longctx/20261017-090357/*` | STARTED (never set) | no error; reclassified as supporting-only (section 6) |
+  | `suite_p/vr1_p_dryrun` | dry run | deliberate run with no Brain (`--url http://127.0.0.1:9`); expected failures |
+
+  Queue logs: `chain5_attempt1_relpath_failed.log` and `chain6_attempt1_missing_phase1_overlay.log`.
+- Probe argv differs from the frozen argv in three disclosed ways: (1) the lab port 18572 instead of 18470; (2)
+  `--metrics -lv 4` appended for logging and buffer accounting; (3) model, projector and MTP paths given as their
+  real NVMe locations `C:\uri-model-lab\...` instead of the frozen `D:\uri-model-lab\...` paths, which are directory
+  junctions to the same files (sha256 checked on 2026-10-15, see memory `brain-model-on-ssd-junction`). All other
+  flags and their order match `runtime_v1.expected_argv`. The live host check (section 8) used the exact
+  production argv derivation on port 18470.
 - Suite P runs only from a checkout at the Phase 1 baseline `e8e3b652`. I used my own detached worktree
   `D:\uri-dev\uri-vram-r1-p1` with a byte-identical overlay of the 187 modified/untracked files of the original
   Phase 1 research worktree (list in `evidence/suite_p/PHASE1_OVERLAY_FILES.txt`, all `cmp`-equal). The original
@@ -262,6 +314,24 @@ remaining checks in section 12 and owner approval. Not with MTP or vision reside
 
 ## 13. Independent review status
 
-PENDING AUDIT. Codex is unavailable (weekly limit until 2026-10-22 14:03; the MCP server did not connect), and the
-claude_cli reviewer is not logged in. The audit package and a copyable reviewer prompt are in `AUDIT_PACKAGE.md`.
-Integration needs independent acceptance and owner approval. Neither has happened.
+Round 1 (independent external reviewer, commit `c79ae681`): **REVISE**. It confirmed: the frozen diff is empty, the
+frozen argv is byte-identical, `derive_config` returns the frozen object, CWD-1 reproduces, the D/DG reruns show 0
+changed cases, the RH flips match the 2026-10-06 qualification, the memory figures match the evidence, there is no
+silent substitution path, and the tests pass. It required seven repairs; section 14 records how each was handled.
+Round 2 (re-check of the repair commit): PENDING. Integration needs independent acceptance and owner approval.
+Neither has happened.
+
+## 14. Correction log (audit round 1 -> repair)
+
+The original text is kept in git history (`c79ae681`). Each correction is listed here instead of being overwritten
+silently.
+
+| # | Severity | Finding | Repair |
+|---|---|---|---|
+| 1 | HIGH | Accuracy claims cited `with_profile` runs classified FAILED (rc=1, suite P crash) | Re-ran from the repo root without P: `vr1r2_ctl_frozen_dg` (D,DG), `vr1r2_c64k_mtpoff` and `vr1r2_c64k_mtpon` (D,DG,F,C,H,S,O,R,RH,L). All rc=0, `COMPLETED_WITH_RESULT`, with `summary.json` and `compare_vs_ue_cand_mtp2.{json,txt}`. Section 6 now cites only these runs plus the completed P runs (`100505`, `100746`, `101028`) and the V run (`090129`). The old runs are listed as superseded. Result unchanged: 0 score-changing cases except the two known RH upward flips. |
+| 2 | MEDIUM | `longctx.json` records had classification `STARTED` | `run_longctx.py` now sets `COMPLETED_WITH_RESULT` / `FAILED`. The 64K main-only check was re-run (`longctx/20261017-113930`, `COMPLETED_WITH_RESULT`, 11/11). The two earlier records are reclassified as supporting-only. |
+| 3 | LOW | `MEASURED_MIB` frozen entry 15,626 was not a probe value | The entry is now 15,620 (probe 15,620.5, rounded half-even). The comment states that the frozen config itself still budgets with the unchanged lease constant `RUNTIME_V1_DEVICE_MIB` = 15,626. New test `test_every_measured_entry_matches_a_completed_probe` checks every entry against `evidence/probe/*/probe.json`. |
+| 4 | LOW | "frozen CONTENDED −554" had no evidence file | Measured with the Brain host (`frozen_fit_record.py`, non-destructive: the host starts only when the pre-check is CONTENDED): CONTENDED, margin **−644.2** (`evidence/frozen_fit/20261017-114127`). Section 8 corrected. |
+| 5 | LOW | Section 12 failed-run list incomplete; one error mislabelled | Section 12 now lists every failed run by directory with its exact error. `090558` and `090614` were `REFUSED_OTHER_LLAMA_SERVER_RUNNING [17028]`, not `GPU_LEASE_HELD`. Probe argv differences (`--metrics -lv 4`, `C:\` junction targets, lab port) are disclosed. |
+| 6 | LOW | `demoted_est` counted CPU buffers as host-visible | `vlab.account` and `summarize.py` separate `Vulkan_Host` from CPU buffers (`cpu_buffers` column). p64-mtp-viscpu is now 23.4 (was −1,082.3). Frozen is now ~883 (was 858: the 24.9 MiB CLIP CPU buffer moved). 128K + vision is ~253 (was 228). Sections 1 and 3 are reworded: "consistent with the vision weights", not "equals". |
+| 7 | LOW | `--profile` silently treated unknown MTP tokens as off | `ws_brain_host.parse_profile` refuses anything except `<ctx>,<vision>,<0/1/on/off/true/false>` (`PROFILE_ARG_INVALID`). New test `test_host_profile_argument_is_strict`. |
