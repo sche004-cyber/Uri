@@ -1197,6 +1197,8 @@ def attempt_counts(cfg, st: State) -> dict:
             a = used.setdefault(str(d["index"]), {"count": 0})
             a["count"] = n if d.get("exhausted") else a["count"] + 1
             a["last"] = d.get("last")
+            if str(d.get("last", "")).startswith(("SHA_MISMATCH", "INDEPENDENCE_UNVERIFIED")):
+                a["unusable"] = True        # S1-01: kept until the reset, even if a later attempt only failed
     return used
 
 
@@ -1833,7 +1835,7 @@ def run(cfg, max_steps: int = 50) -> S:
                 idx, why = select_reviewer(cfg, st)
                 if idx is None:  # never invent a review
                     used = attempt_counts(cfg, st)
-                    if all(str(a.get("last", "")).startswith(("UNAVAILABLE", "FAILURE")) for a in used.values()):
+                    if not any(a.get("unusable") for a in used.values()) and                             all(str(a.get("last", "")).startswith(("UNAVAILABLE", "FAILURE")) for a in used.values()):
                         # Owner policy 2026-10-16: neither reviewer available -> preserve progress, report BLOCKED,
                         # await availability; routine availability needs no owner action: the next `run` re-checks
                         # it (preferred reviewer first) by itself
@@ -2174,6 +2176,9 @@ def verify(cfg) -> list[str]:
             resume_to = d["resume_to"]
         if k == "STAGE" and d.get("stage") == S.BLOCKED.value:
             blocker = d.get("blocker")
+        if k == "REVIEWER_RECHECK" and (blocker or {}).get("kind") != NO_INDEPENDENT_REVIEWER:
+            # S1-03: the self-recheck may only clear a NO_INDEPENDENT_REVIEWER block
+            errs.append(f"event {ev['seq']} REVIEWER_RECHECK cleared a {(blocker or {}).get('kind')} block")
         if k in ("OWNER_UNBLOCK", "REVIEWER_RECHECK"):
             blocker = None
         if k == "REVIEW_STARTED":

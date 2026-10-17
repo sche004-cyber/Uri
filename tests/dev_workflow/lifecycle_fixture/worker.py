@@ -54,6 +54,16 @@ if mode == "auth":  # a CLI whose sign-in expired (auditor fallback policy)
 if mode == "disconnect":  # the connection drops mid-review: partial output, no result block
     print("reviewing", head)
     sys.exit(1)
+if mode == "fail_401":  # a failed review whose own text mentions 401 (not a sign-in failure, S1-02)
+    print("the handler returns 401 unauthorized for bad tokens")
+    sys.exit(1)
+if mode == "wrong_sha_then_disconnect":  # a wrong-SHA result once (flag next to the worktree), then drops (S1-01)
+    flag = Path("..") / "wrong_sha_used"
+    if flag.exists():
+        print("reviewing", head)
+        sys.exit(1)
+    flag.write_text("x")
+    mode = "wrong_sha"
 if mode == "disconnect_once":  # drops once (flag next to the worktree), then reviews like "check"
     flag = Path("..") / "disconnect_used"
     if not flag.exists():

@@ -297,3 +297,33 @@ def test_a_config_without_fallbacks_keeps_its_policy_and_control_state(tmp_path)
     assert set(L.policy(cfg)) == set(L.POLICY_KEYS)
     assert "reviewer_exec_fallbacks" not in L.control_state(cfg)
     assert L.reviewer_chain(cfg) == [cfg["reviewer"]]
+
+
+# ---------------------------------------------------------------- subagent review S1 (8c362121) repairs
+
+def test_s1_01_an_unusable_result_is_not_hidden_by_a_later_failure(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = chain_config(tmp_path, repo, wt, "wrong_sha_then_disconnect", ["quota"])
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert [r["outcome"] for r in s["reviewers"]] == ["SHA_MISMATCH", "FAILURE", "UNAVAILABLE"]
+    assert s["blocker"]["kind"] == "NO_REVIEWER"                  # the owner sees it
+    assert L.run(cfg) == S.BLOCKED and L.status(cfg)["rounds"] == 3 and not events(cfg, "REVIEWER_RECHECK")
+
+
+def test_s1_02_a_failed_review_mentioning_401_is_retried_not_treated_as_sign_in(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = chain_config(tmp_path, repo, wt, "fail_401", ["check"])
+    assert L.run(cfg) == S.COMPLETE
+    s = L.status(cfg)
+    assert [(r["reviewer_index"], r["outcome"]) for r in s["reviewers"]] == [(0, "FAILURE"), (0, "FAILURE"), (1, "ACCEPT")]
+    assert all(not r["worker"].get("unavailable_reason") for r in L.State(cfg).d["rounds"][:2])
+
+
+def test_s1_03_verify_refuses_a_recheck_that_clears_another_block(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = chain_config(tmp_path, repo, wt, "wrong_sha", ["wrong_sha"])
+    assert L.run(cfg) == S.BLOCKED and L.status(cfg)["blocker"]["kind"] == "NO_REVIEWER"
+    st = L.State(cfg)
+    st.event("REVIEWER_RECHECK", blocker=st.d["blocker"])         # forged
+    assert any("REVIEWER_RECHECK cleared a NO_REVIEWER block" in e for e in L.verify(cfg))
