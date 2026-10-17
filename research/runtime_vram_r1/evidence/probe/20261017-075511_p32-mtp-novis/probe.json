@@ -1,0 +1,389 @@
+{
+ "profile": {
+  "name": "p32-mtp-novis",
+  "ctx": 32768,
+  "ctk": "q8_0",
+  "mtp": true,
+  "mtp_n": 2,
+  "vision": "off",
+  "draft_kv": "",
+  "b": 2048,
+  "ub": 1024,
+  "cache_ram": 2048,
+  "ckpt": 16,
+  "extra": [],
+  "env": [],
+  "port": 18572
+ },
+ "argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "32768",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18572",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--cache-ram",
+  "2048",
+  "--no-mmproj",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "-md",
+  "C:\\uri-model-lab\\mtp\\mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+  "--spec-type",
+  "draft-mtp",
+  "--spec-draft-n-max",
+  "2",
+  "-otd",
+  "token_embd.weight=CPU",
+  "--metrics",
+  "-lv",
+  "4"
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "lease": {
+  "acquired_at": 1792203911.297,
+  "label": "URI-RUNTIME-VRAM-R1 p32-mtp-novis",
+  "max_hold_s": 900,
+  "pid": 22888
+ },
+ "release_wait": {
+  "waited_s": 3.7,
+  "attributed_mib": 1295.7
+ },
+ "before": {
+  "ok": true,
+  "adapter_dedicated_mib": 659.4,
+  "attributed_mib": 1295.7,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 15072.3,
+  "processes": [
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 804.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.6,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.6
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ],
+  "system_available_mib": 4250
+ },
+ "load_seconds": 28.25,
+ "buffers": {
+  "device_mib": {
+   "main.model": 12634.81,
+   "main.KV": 340.0,
+   "main.RS": 188.44,
+   "main.compute": 216.3,
+   "draft.model": 919.24,
+   "draft.KV": 64.0,
+   "draft.compute": 152.03
+  },
+  "device_total_mib": 14514.8,
+  "host_visible_mib": {
+   "main.model": 397.85,
+   "main.output": 0.95,
+   "main.compute": 96.31,
+   "draft.model": 272.81,
+   "draft.output": 0.95,
+   "draft.compute": 80.04
+  },
+  "host_total_mib": 848.9,
+  "clip_backend": null,
+  "rows": [
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 12634.81
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 397.85
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 340.0
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "RS",
+    "mib": 188.44
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 216.3
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 96.31
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 919.24
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 272.81
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 64.0
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 152.03
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 80.04
+   }
+  ]
+ },
+ "loaded": {
+  "t": 1792203949.9,
+  "server": {
+   "dedicated_mib": 14674.6,
+   "non_local_mib": 852.4
+  },
+  "not_resident_mib": -159.8,
+  "server_private_mib": 17441.6,
+  "system_available_mib": 2529
+ },
+ "props": {
+  "model_path": "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "build_info": "b11425-e117148a4",
+  "n_ctx": 32768,
+  "modalities": {
+   "vision": false,
+   "video": false,
+   "audio": false
+  }
+ },
+ "speed": {
+  "prose": [
+   {
+    "finish_reason": "length",
+    "tool_calls": [],
+    "ttft_s": 1.017,
+    "total_s": 4.714,
+    "prompt_n": 58,
+    "prompt_tps": 134.53767750854777,
+    "prompt_ms": 431.106,
+    "cache_n": 0,
+    "predicted_n": 400,
+    "decode_tps": 107.6293858974753,
+    "draft_n": 395,
+    "draft_accepted": 201
+   },
+   {
+    "finish_reason": "length",
+    "tool_calls": [],
+    "ttft_s": 0.372,
+    "total_s": 4.111,
+    "prompt_n": 4,
+    "prompt_tps": 74.17159598731665,
+    "prompt_ms": 53.929,
+    "cache_n": 54,
+    "predicted_n": 400,
+    "decode_tps": 106.74377187545062,
+    "draft_n": 400,
+    "draft_accepted": 199
+   },
+   {
+    "finish_reason": "length",
+    "tool_calls": [],
+    "ttft_s": 0.349,
+    "total_s": 4.074,
+    "prompt_n": 4,
+    "prompt_tps": 75.72745688267923,
+    "prompt_ms": 52.821,
+    "cache_n": 54,
+    "predicted_n": 400,
+    "decode_tps": 107.14035413243568,
+    "draft_n": 399,
+    "draft_accepted": 199
+   }
+  ],
+  "uri_structured": [
+   {
+    "finish_reason": "stop",
+    "tool_calls": [],
+    "ttft_s": 1.006,
+    "total_s": 2.036,
+    "prompt_n": 1200,
+    "prompt_tps": 1585.5545410942707,
+    "prompt_ms": 756.833,
+    "cache_n": 0,
+    "predicted_n": 145,
+    "decode_tps": 139.9257810336434,
+    "draft_n": 106,
+    "draft_accepted": 91,
+    "valid_json": true
+   },
+   {
+    "finish_reason": "stop",
+    "tool_calls": [],
+    "ttft_s": 0.557,
+    "total_s": 1.931,
+    "prompt_n": 87,
+    "prompt_tps": 464.61204893913583,
+    "prompt_ms": 187.253,
+    "cache_n": 1106,
+    "predicted_n": 184,
+    "decode_tps": 133.26555966437468,
+    "draft_n": 144,
+    "draft_accepted": 111,
+    "valid_json": true
+   },
+   {
+    "finish_reason": "stop",
+    "tool_calls": [],
+    "ttft_s": 0.53,
+    "total_s": 1.737,
+    "prompt_n": 89,
+    "prompt_tps": 489.31748457825233,
+    "prompt_ms": 181.886,
+    "cache_n": 1106,
+    "predicted_n": 181,
+    "decode_tps": 149.2491523891887,
+    "draft_n": 126,
+    "draft_accepted": 118,
+    "valid_json": true
+   }
+  ]
+ },
+ "after_speed": {
+  "t": 1792203972.6,
+  "server": {
+   "dedicated_mib": 14730.4,
+   "non_local_mib": 872.3
+  },
+  "not_resident_mib": -215.6,
+  "server_private_mib": 18594.1,
+  "system_available_mib": 570
+ },
+ "thinking": {
+  "off": {
+   "reasoning_chars": 0,
+   "answer": "7/10",
+   "predicted_n": 5,
+   "finish_reason": "stop",
+   "total_s": 0.588,
+   "error": null
+  },
+  "on_b64": {
+   "reasoning_chars": 182,
+   "answer": "Let's calculate step-by-step:\n\n- **Initial:** 3 red, 5 blue\n- **Add 4 red:** 3 + 4 = 7 red\n- **Remove 2 blue:** 5 - 2 = 3 blue\n- **Total pens:** 7 red + 3 blue = 10 pens\n- **Fraction of red pens:** 7/",
+   "predicted_n": 160,
+   "finish_reason": "stop",
+   "total_s": 1.513,
+   "error": null
+  },
+  "on_b768": {
+   "reasoning_chars": 2184,
+   "answer": "7/10",
+   "predicted_n": 775,
+   "finish_reason": "stop",
+   "total_s": 5.782,
+   "error": null
+  }
+ },
+ "stopped": 1792203985.0,
+ "after_stop": {
+  "waited_s": 4.1,
+  "attributed_mib": 1295.7
+ }
+}

@@ -1,0 +1,472 @@
+{
+ "profile": {
+  "name": "frozen-exact",
+  "ctx": 32768,
+  "ctk": "q8_0",
+  "mtp": true,
+  "mtp_n": 2,
+  "vision": "gpu",
+  "draft_kv": "",
+  "b": 2048,
+  "ub": 1024,
+  "cache_ram": 2048,
+  "ckpt": 16,
+  "extra": [],
+  "env": [],
+  "port": 18572
+ },
+ "argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "32768",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18572",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--cache-ram",
+  "2048",
+  "--mmproj",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "-md",
+  "C:\\uri-model-lab\\mtp\\mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+  "--spec-type",
+  "draft-mtp",
+  "--spec-draft-n-max",
+  "2",
+  "-otd",
+  "token_embd.weight=CPU",
+  "--metrics",
+  "-lv",
+  "4"
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "lease": {
+  "acquired_at": 1792204130.905,
+  "label": "URI-RUNTIME-VRAM-R1 frozen-exact",
+  "max_hold_s": 900,
+  "pid": 22784
+ },
+ "release_wait": {
+  "waited_s": 3.7,
+  "attributed_mib": 1295.7
+ },
+ "before": {
+  "ok": true,
+  "adapter_dedicated_mib": 659.4,
+  "attributed_mib": 1295.7,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 15072.3,
+  "processes": [
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 804.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.6,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.6
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ],
+  "system_available_mib": 4176
+ },
+ "load_seconds": 26.19,
+ "buffers": {
+  "device_mib": {
+   "main.model": 12634.81,
+   "main.KV": 340.0,
+   "main.RS": 188.44,
+   "main.compute": 216.3,
+   "draft.model": 919.24,
+   "draft.KV": 64.0,
+   "draft.compute": 152.03,
+   "vision.model": 857.6,
+   "vision.compute": 248.1
+  },
+  "device_total_mib": 15620.5,
+  "host_visible_mib": {
+   "main.model": 397.85,
+   "main.output": 0.95,
+   "main.compute": 96.31,
+   "draft.model": 272.81,
+   "draft.output": 0.95,
+   "draft.compute": 80.04,
+   "vision.compute": 24.93
+  },
+  "host_total_mib": 873.8,
+  "clip_backend": "Vulkan0",
+  "rows": [
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 12634.81
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 397.85
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 340.0
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "RS",
+    "mib": 188.44
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 216.3
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 96.31
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 919.24
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 272.81
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 64.0
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 152.03
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 80.04
+   },
+   {
+    "phase": "vision",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 857.6
+   },
+   {
+    "phase": "vision",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 248.1
+   },
+   {
+    "phase": "vision",
+    "kind": "CPU",
+    "what": "compute",
+    "mib": 24.93
+   }
+  ]
+ },
+ "loaded": {
+  "t": 1792204167.5,
+  "server": {
+   "dedicated_mib": 14924.8,
+   "non_local_mib": 1710.2
+  },
+  "not_resident_mib": 695.7,
+  "server_private_mib": 18743.3,
+  "system_available_mib": 2973
+ },
+ "loaded_census": {
+  "ok": true,
+  "adapter_dedicated_mib": 15584.3,
+  "attributed_mib": 16220.5,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 147.5,
+  "processes": [
+   {
+    "pid": 16644,
+    "name": "llama-server.exe",
+    "dedicated_mib": 14924.8,
+    "non_local_mib": 1710.2
+   },
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 804.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.6,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.6
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ]
+ },
+ "props": {
+  "model_path": "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "build_info": "b11425-e117148a4",
+  "n_ctx": 32768,
+  "modalities": {
+   "vision": true,
+   "video": true,
+   "audio": false
+  }
+ },
+ "speed": {
+  "prose": [
+   {
+    "finish_reason": "length",
+    "tool_calls": [],
+    "ttft_s": 1.45,
+    "total_s": 5.193,
+    "prompt_n": 58,
+    "prompt_tps": 90.24624777885312,
+    "prompt_ms": 642.686,
+    "cache_n": 0,
+    "predicted_n": 400,
+    "decode_tps": 107.57581803456014,
+    "draft_n": 395,
+    "draft_accepted": 201
+   },
+   {
+    "finish_reason": "length",
+    "tool_calls": [],
+    "ttft_s": 0.376,
+    "total_s": 4.083,
+    "prompt_n": 4,
+    "prompt_tps": 50.40767204768566,
+    "prompt_ms": 79.353,
+    "cache_n": 54,
+    "predicted_n": 400,
+    "decode_tps": 107.66409127324525,
+    "draft_n": 400,
+    "draft_accepted": 199
+   },
+   {
+    "finish_reason": "length",
+    "tool_calls": [],
+    "ttft_s": 0.367,
+    "total_s": 4.078,
+    "prompt_n": 4,
+    "prompt_tps": 68.83970674284927,
+    "prompt_ms": 58.106,
+    "cache_n": 54,
+    "predicted_n": 400,
+    "decode_tps": 107.50364677157658,
+    "draft_n": 399,
+    "draft_accepted": 199
+   }
+  ],
+  "uri_structured": [
+   {
+    "finish_reason": "stop",
+    "tool_calls": [],
+    "ttft_s": 1.162,
+    "total_s": 2.184,
+    "prompt_n": 1200,
+    "prompt_tps": 1312.7810171864915,
+    "prompt_ms": 914.09,
+    "cache_n": 0,
+    "predicted_n": 145,
+    "decode_tps": 141.06099418613195,
+    "draft_n": 106,
+    "draft_accepted": 91,
+    "valid_json": true
+   },
+   {
+    "finish_reason": "stop",
+    "tool_calls": [],
+    "ttft_s": 0.512,
+    "total_s": 1.874,
+    "prompt_n": 87,
+    "prompt_tps": 475.7347915242652,
+    "prompt_ms": 182.875,
+    "cache_n": 1106,
+    "predicted_n": 184,
+    "decode_tps": 134.41768496020356,
+    "draft_n": 144,
+    "draft_accepted": 111,
+    "valid_json": true
+   },
+   {
+    "finish_reason": "stop",
+    "tool_calls": [],
+    "ttft_s": 0.519,
+    "total_s": 1.718,
+    "prompt_n": 89,
+    "prompt_tps": 506.92031668280464,
+    "prompt_ms": 175.57,
+    "cache_n": 1106,
+    "predicted_n": 181,
+    "decode_tps": 150.13725046980448,
+    "draft_n": 126,
+    "draft_accepted": 118,
+    "valid_json": true
+   }
+  ]
+ },
+ "after_speed": {
+  "t": 1792204194.6,
+  "server": {
+   "dedicated_mib": 14980.7,
+   "non_local_mib": 1730.1
+  },
+  "not_resident_mib": 639.8,
+  "server_private_mib": 19894.6,
+  "system_available_mib": 2209
+ },
+ "vision": [
+  {
+   "ttft_s": 2.637,
+   "total_s": 2.943,
+   "prompt_n": 536,
+   "prompt_ms": 2018.339,
+   "error": null,
+   "mentions_401": true,
+   "text": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles that are on are \"Voice input\" and \"Gmail drafts\"."
+  },
+  {
+   "ttft_s": 0.364,
+   "total_s": 0.671,
+   "prompt_n": 4,
+   "prompt_ms": 52.389,
+   "error": null,
+   "mentions_401": true,
+   "text": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles that are on are \"Voice input\" and \"Gmail drafts\"."
+  }
+ ],
+ "after_vision": {
+  "t": 1792204201.9,
+  "server": {
+   "dedicated_mib": 14999.4,
+   "non_local_mib": 1732.0
+  },
+  "not_resident_mib": 621.1,
+  "server_private_mib": 20203.9,
+  "system_available_mib": 1929
+ },
+ "stopped": 1792204206.0,
+ "after_stop": {
+  "waited_s": 3.8,
+  "attributed_mib": 1295.7
+ }
+}
