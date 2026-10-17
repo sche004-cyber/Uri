@@ -138,12 +138,21 @@ class Draft:
     def _propose(self, edits: list) -> list:
         self._push()
         new = []
+        # Independent review S1-01 (3e202efc, HIGH): row changes are applied one after another at save, while every
+        # card, the Brain's view and a delete card's "now:" rows use the layout as last saved. So a sheet takes one
+        # row change per save; a second one is refused until the first is saved (or undone).
+        rows_pending = {c["sheet"] for c in self.changes if c["kind"] == "struct" and c["state"] != "rejected"
+                        and (c.get("op") or {}).get("op") in ROW_OPS}
         for e in edits:
             if "op" in e and self.engine == "new":
                 self._sheet_op(e)
                 ch = self._new("uri", "struct", "accepted", op=e, sheet=e.get("sheet") or e.get("name"))
             elif "op" in e:
                 op = dict(e)
+                if op["op"] in ROW_OPS:
+                    if op.get("sheet") in rows_pending:
+                        raise OfficeError("ROW_CHANGE_PENDING", f"{op.get('sheet')}: save the earlier row change first")
+                    rows_pending.add(op.get("sheet"))
                 if op["op"] == "delete_rows":           # the card shows what the rows hold now (OD-R2: before values)
                     op["shown"] = self._rows_now(op["sheet"], op["at"], op["count"])
                 ch = self._new("uri", "struct", "proposed", op=op, sheet=e.get("sheet"))

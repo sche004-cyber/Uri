@@ -303,6 +303,7 @@ ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "d
                "tests/office/test_grants.py",
                "tests/office/test_history_and_google.py",
                "tests/office/test_local_rows_service.py",
+               "tests/office/test_completion_s1_repairs.py",
                "tests/office/test_m2_new_workbook.py",
                "tests/office/test_page.py",
                "tests/office/test_review_c_repairs.py",

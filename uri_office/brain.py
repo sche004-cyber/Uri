@@ -262,7 +262,14 @@ class OfficeBrain:
         # now, and a Brain that also fixes totals for the moved rows would adjust them twice).
         row_sheets = {o.get("sheet") for o in data["ops"][:20] if isinstance(o, dict)
                       and o.get("op") in ("insert_rows", "delete_rows")} if engine == "local" else set()
+        row_seen: set = set()                # independent review S1-01: one row change per sheet per answer
         for i, op in enumerate(data["ops"][:20] if status == "propose" else ()):
+            if isinstance(op, dict) and op.get("op") in ("insert_rows", "delete_rows"):
+                if op.get("sheet") in row_seen:
+                    refused.append({"index": i, "code": "ROW_CHANGE_PENDING",
+                                    "detail": "one row change per sheet at a time; save the first one"})
+                    continue
+                row_seen.add(op.get("sheet"))
             if row_sheets and isinstance(op, dict) and op.get("op") in O.CELL_OPS + O.SOURCE_OPS and \
                     op.get("sheet") in row_sheets:
                 refused.append({"index": i, "code": "ROW_AND_CELL_CHANGES",

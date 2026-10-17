@@ -217,7 +217,8 @@ def locked_cells(path: Path) -> dict:
     return out
 
 
-def patch(src: Path, dst: Path, edits: list, struct_ops=(), formats=()) -> dict:
+def patch(src: Path, dst: Path, edits: list, struct_ops=(), formats=(), *, create_only=False,
+          expected_sha256: str | None = None, backup: Path | None = None) -> dict:
     """Apply `edits` to the package at `src` and write the result to `dst` (may equal `src`). Cell edits name cells
     as shown (before any row moves), as for Google; then `struct_ops` (local row insert/delete, OD-R3) run in order,
     each insert followed by the values it carries, written into its new rows."""
@@ -307,7 +308,10 @@ def patch(src: Path, dst: Path, edits: list, struct_ops=(), formats=()) -> dict:
             for info in order:
                 if info.filename in parts:
                     z.writestr(info, parts[info.filename], compress_type=info.compress_type)
-    atomic_write(Path(dst), write, mode_from=Path(src))
+    # Independent reviews (3e202efc) S1-03 / S1-02: Excel saves publish as authoring does - Save as never replaces a
+    # name, Save replaces only the checked original after a durable backup (the defaults keep a plain write).
+    atomic_write(Path(dst), write, mode_from=Path(src), create_only=create_only, expected_sha256=expected_sha256,
+                 backup=backup)
     return {"changed_parts": sorted(changed)}
 
 

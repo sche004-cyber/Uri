@@ -679,9 +679,12 @@ class Office:
                 dest = self.grants.get(t["grant_id"], "open").path
             backup = self.state / "backups" / s.workbook_id
             backup.mkdir(parents=True, exist_ok=True)
-            if not t["save_as"]:
-                shutil.copy2(src, backup / f"{int(time.time())}-{src.name}")
-            res = xlsx_patch.patch(src, dest, D.patch_edits(pending), pending["struct_ops"], pending["formats"])
+            # Independent reviews (3e202efc) S1-03 / S1-02: no check-then-replace. Save as is a no-replace publish;
+            # Save re-checks the original at publish time and writes a durable, uniquely named backup first.
+            res = xlsx_patch.patch(src, dest, D.patch_edits(pending), pending["struct_ops"], pending["formats"],
+                                   create_only=t["save_as"],
+                                   expected_sha256=None if t["save_as"] else t["source_sha256"],
+                                   backup=None if t["save_as"] else backup / f"{time.time_ns()}-{src.name}")
             # A Save As writes a new file but the session keeps editing the original: the draft stays relative to the
             # original (its edits remain pending for it, and for any later Save As), so nothing is committed here.
             extra = {}

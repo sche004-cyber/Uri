@@ -95,6 +95,11 @@ def _shift_area(ref: str, sh: _Shift):
     ms = [_REF.match(p) for p in parts]
     if not all(ms) or any(not (m.group(2) or m.group(4)) for m in ms):
         return None
+    # Independent review S1-01 (3e202efc): "YTD2024" or "XFE10" is a defined name (Excel only allows names that are
+    # not cell references), not a cell past column XFD: never shifted.
+    if any((m.group(2) and refs.col_index(m.group(2).upper()) > refs.MAX_COL) or
+           (m.group(4) and int(m.group(4)) > refs.MAX_ROW) for m in ms):
+        return None
     rows = [int(m.group(4)) if m.group(4) else None for m in ms]
     if any(r is None for r in rows):          # whole columns: rows do not move
         return ref

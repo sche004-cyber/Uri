@@ -383,6 +383,12 @@ def delete_shape(prs, sid, shid):
             _set_paragraphs(sh.text_frame, [""])
             return
         _refuse("that placeholder cannot be removed")
+    # Independent review S1-02 (3e202efc): an animation names its shape by id; removing the shape would leave the
+    # slide's timing pointing at nothing (PowerPoint may then ask to repair the file).
+    ids = {str(e.get("id")) for e in sh._element.iter() if isinstance(e.tag, str) and e.tag.endswith("}cNvPr")}
+    timing = sl._element.find(qn("p:timing"))
+    if timing is not None and any(t.get("spid") in ids for t in timing.iter(qn("p:spTgt"))):
+        _refuse("that item is animated")
     sh._element.getparent().remove(sh._element)
 
 

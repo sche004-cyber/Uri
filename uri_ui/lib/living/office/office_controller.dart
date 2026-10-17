@@ -133,6 +133,12 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
     }
   }
 
+  /// Independent review S1-03: plain words for refused suggestions, with the code only when there are none.
+  String _refusedWords(String code, String? detail) => switch (code) {
+        'ROW_CHANGE_PENDING' || 'STRUCTURE_NOT_SUPPORTED' || 'ROW_AND_CELL_CHANGES' => _human(code, detail),
+        _ => '$code${(detail ?? '').isEmpty ? '' : ': $detail'}',
+      };
+
   String _human(String code, String? detail) => switch (code) {
         'PATH_REFUSED' => 'That file cannot be used here (${detail ?? ''}).',
         'TARGET_CHANGED' => 'The file changed outside URI since it was opened. Reload it or save as a new file.',
@@ -148,6 +154,10 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
         'BRAIN_UNAVAILABLE' => 'The local Brain is not running. Nothing was changed.',
         'CELL_NOT_EDITABLE' => 'That cell is part of a table header, shared formula or merged range and cannot be edited here.',
         'STALE_CHANGE' || 'STALE_SURFACE' || 'CHANGE_MISMATCH' => 'This changed since it was shown. Please review it again.',
+        'ROW_CHANGE_PENDING' => 'Save the earlier row change on this sheet first.',
+        'STRUCTURE_NOT_SUPPORTED' =>
+          'URI cannot add or remove rows in this sheet safely${detail == null || detail.isEmpty ? '' : ': $detail'}.',
+        'ROW_AND_CELL_CHANGES' => 'Ask for row changes and cell changes on the same sheet separately.',
         'RELOAD_REQUIRED' =>
           'The sheet\'s rows or sheets changed with the last save. The sheet was reloaded; nothing was changed by that edit.',
         _ => 'Refused: $code${detail == null || detail.isEmpty ? '' : ' ($detail)'}',
@@ -391,8 +401,7 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       if (refused.isNotEmpty) {
         // Say why, so the owner can rephrase: the code and the service's short detail of each refused op.
         final why = {
-          for (final x in refused.whereType<Map>())
-            '${x['code']}${(x['detail'] as String? ?? '').isEmpty ? '' : ': ${x['detail']}'}',
+          for (final x in refused.whereType<Map>()) _refusedWords('${x['code']}', x['detail'] as String?),
         };
         notice = '${refused.length} suggested change(s) were refused as unsafe or invalid (${why.join('; ')}).';
       }
