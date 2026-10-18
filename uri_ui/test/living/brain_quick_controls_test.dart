@@ -346,4 +346,12 @@ void main() {
     await settle(tester);
     expect(find.byKey(const ValueKey('qc-thinking')), findsOneWidget);
   });
+
+  testWidgets('in a small window the quick controls step aside (no overflow)', (tester) async {
+    final (_, services) = await pumpRoot(tester, const Size(800, 600));
+    services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.conversation);
+    await settle(tester);
+    expect(find.byKey(const ValueKey('qc-thinking')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
