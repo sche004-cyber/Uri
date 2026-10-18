@@ -1,8 +1,8 @@
 diff --git a/uri_ui/lib/living/integration/oi_conversation.dart b/uri_ui/lib/living/integration/oi_conversation.dart
-index ee386632..089cff05 100644
+index ee386632..efa1fe5e 100644
 --- a/uri_ui/lib/living/integration/oi_conversation.dart
 +++ b/uri_ui/lib/living/integration/oi_conversation.dart
-@@ -36,6 +36,21 @@ String notSentMessage(String code) => switch (code) {
+@@ -36,6 +36,22 @@ String notSentMessage(String code) => switch (code) {
        _ => 'Not sent: URI could not accept this request right now.',
      };
  
@@ -14,6 +14,7 @@ index ee386632..089cff05 100644
 +      'BRAIN_CONTROL_UNAVAILABLE' => 'Not switched: this URI build cannot control the Brain.',
 +      'NOT_SELECTED' => 'Not switched: no local Brain is selected.',
 +      'PROFILE_NOT_QUALIFIED' => 'Not switched: that combination is not qualified yet.',
++      'PROFILE_NOT_OFFERED' => 'Not switched: that Brain setting is not offered here.',
 +      'PROFILE_UNKNOWN' || 'PROFILE_INVALID' => 'Not switched: URI does not know that Brain setting.',
 +      'REFUSED_DOES_NOT_FIT' => 'Not switched: there is not enough free GPU memory. The Brain keeps running as it was.',
 +      'REFUSED_GPU_UNMEASURED' => 'Not switched: GPU memory could not be measured. The Brain keeps running as it was.',
@@ -24,7 +25,28 @@ index ee386632..089cff05 100644
  class OiMessage {
    OiMessage({required this.role, required this.text, this.turnId});
    final OiRole role;
-@@ -748,6 +763,56 @@ class OiConversation extends ChangeNotifier {
+@@ -260,7 +276,20 @@ class OiConversation extends ChangeNotifier {
+     try {
+       final health = await rt.call({'command': 'brain_health'}).timeout(probeTimeout);
+       if (!_active(rt)) return;
++      final changed = brainHealth.isNotEmpty && health['state'] != brainHealth['state'];
+       brainHealth = health;
++      // BRAIN-QC (review R1-01 correction): the readiness the header shows is re-read on a health change AND on every
++      // poll while the Brain is recovering or switching. During a profile switch it never reads "ready": the old
++      // server still answers READY until it is stopped, and the new one before its calibration, but neither is the
++      // confirmed Brain yet; the header says "starting" until the switch is finished.
++      final switching = (brainControls['switch'] as Map?)?['pending'] == true;
++      if (changed || switching || health['state'] == 'RECOVERING') {
++        final status = await rt.call({'command': 'brain_status'}).timeout(probeTimeout);
++        if (!_active(rt)) return;
++        brainStatus = switching && status['state'] == 'READY'
++            ? {...status, 'state': 'STARTING', 'runtime_state': 'READY', 'switching': true}
++            : status;
++      }
+     } on IntegratedRuntimeException catch (e) {
+       if (!_active(rt)) return;
+       lastError = e.code;
+@@ -748,6 +777,73 @@ class OiConversation extends ChangeNotifier {
      notifyListeners();
    }
  
@@ -48,26 +70,43 @@ index ee386632..089cff05 100644
 +  /// The id of the switch this UI requested (its outcome is shown once).
 +  String? profileRequestId;
 +
-+  /// Plain-words outcome of the latest refused switch request, or null.
-+  String? profileNotice;
++  /// Plain-words outcome of the latest refused switch request, or null. It
++  /// is shown for [profileNoticeFor] and then clears (review R1-08.1).
++  String? get profileNotice {
++    final at = _profileNoticeAt;
++    if (_profileNotice == null || at == null) return null;
++    return DateTime.now().difference(at) > profileNoticeFor ? null : _profileNotice;
++  }
++
++  set profileNotice(String? v) {
++    _profileNotice = v;
++    _profileNoticeAt = v == null ? null : DateTime.now();
++  }
++
++  String? _profileNotice;
++  DateTime? _profileNoticeAt;
++  static Duration profileNoticeFor = const Duration(seconds: 20);
 +
 +  /// Explicit user action: switch the Brain to a qualified profile (Vision /
-+  /// Context). Returns the worker's reply; `needs_confirmation` means the
-+  /// conversation is longer than the new context and the user must confirm
-+  /// ([confirmShrink]). Refusals are reported in [profileNotice].
-+  Future<Map<String, dynamic>?> reconfigureBrain(String profileId, {bool confirmShrink = false}) async {
++  /// Context). Returns the worker's reply. A context the conversation would
++  /// not fit in is refused by the worker (`refused`, review R1-02); refusals
++  /// are reported in [profileNotice].
++  Future<Map<String, dynamic>?> reconfigureBrain(String profileId) async {
 +    if (busy || restarting || workerExited) return null;
 +    final rt = runtime;
 +    try {
-+      final r = await rt.call({
-+        'command': 'brain_reconfigure',
-+        'profile_id': profileId,
-+        if (confirmShrink) 'confirm_shrink': true,
-+      });
++      final r = await rt.call({'command': 'brain_reconfigure', 'profile_id': profileId});
 +      if (!_active(rt)) return null;
 +      lastError = null;
 +      profileNotice = null;
 +      if (r['requested'] == 'reconfigure') profileRequestId = r['request_id'] as String?;
++      if (r['refused'] == 'CONTEXT_SMALLER_THAN_CONVERSATION') {
++        final d = (r['detail'] as Map?) ?? const {};
++        final ctx = (d['ctx'] as num?)?.toInt();
++        profileNotice = 'Not switched: this conversation (about ${d['live_tokens'] ?? '?'} tokens, plus room for an '
++            'answer) does not fit in ${ctx == null ? 'the smaller context' : '${ctx ~/ 1024}K'}. '
++            'Keep the larger context for this conversation.';
++      }
 +      await refreshHealth();
 +      return r;
 +    } on IntegratedRuntimeException catch (e) {
@@ -82,7 +121,7 @@ index ee386632..089cff05 100644
  
    void _onEvent(Map<String, dynamic> ev) {
 diff --git a/uri_ui/lib/living/widgets/living_composer.dart b/uri_ui/lib/living/widgets/living_composer.dart
-index 36b84c06..c43e7ba6 100644
+index 36b84c06..61343ae8 100644
 --- a/uri_ui/lib/living/widgets/living_composer.dart
 +++ b/uri_ui/lib/living/widgets/living_composer.dart
 @@ -5,6 +5,7 @@ import '../../services/app_state_scope.dart';
@@ -93,14 +132,65 @@ index 36b84c06..c43e7ba6 100644
  import '../integration/oi_conversation.dart';
  import '../living_scope.dart';
  import '../office/office_bridge.dart' show OfficeRequestHint;
-@@ -360,6 +361,14 @@ class _LivingComposerState extends State<LivingComposer> {
+@@ -45,6 +46,10 @@ class LivingComposer extends StatefulWidget {
+   State<LivingComposer> createState() => _LivingComposerState();
+ }
+ 
++/// BRAIN-QC: room for the quick-control chip row under the chat box (UIV2-F3: nothing may overflow).
++bool qcRoom(BuildContext context) =>
++    MediaQuery.sizeOf(context).height >= 640 && MediaQuery.sizeOf(context).width >= 420;
++
+ class _LivingComposerState extends State<LivingComposer> {
+   late final TextEditingController _controller;
+   ValueNotifier<String?>? _insert;
+@@ -166,6 +171,8 @@ class _LivingComposerState extends State<LivingComposer> {
+         final presentation = LivingScope.of(context).presentation;
+         // UIV2-F1: the draft target applies to the conversation, not to an Office request.
+         final draft = office == null ? oi?.draft : null;
++        // BRAIN-QC-20261018: the quick controls belong to the full composer only.
++        final qcFull = !widget.compact && !widget.minimal && !widget.floating;
+         final content = Column(
+           mainAxisSize: MainAxisSize.min,
+           children: [
+@@ -205,8 +212,31 @@ class _LivingComposerState extends State<LivingComposer> {
+             // an active testing mode keeps its toggle even when narrow, so it can be switched off (C1-06)
+             final testing = oi != null && !widget.minimal && UriTestingTools.enabled &&
+                 (w >= 420 || oi.transcriptMode || oi.dictationMode);
++            // BRAIN-QC (review R1-08.4): where the chip row has no room, one compact button opens the same controls.
++            final qcCompact = oi != null && office == null && qcFull && !qcRoom(context) && w >= 300;
+             return Row(
+               children: [
++                if (qcCompact)
++                  IconButton(
++                    key: const ValueKey('qc-compact'),
++                    tooltip: 'Brain settings: Thinking, Vision, Context',
++                    icon: const Icon(Icons.tune_rounded, size: 18),
++                    color: c.inkSoft,
++                    onPressed: () => showDialog<void>(
++                      context: context,
++                      builder: (ctx) => AlertDialog(
++                        key: const ValueKey('qc-compact-dialog'),
++                        title: const Text('Brain settings'),
++                        content: ListenableBuilder(
++                          listenable: oi,
++                          builder: (_, _) => BrainQuickControls(conversation: oi),
++                        ),
++                        actions: [
++                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
++                        ],
++                      ),
++                    ),
++                  ),
+                 if (widget.filePicker != null && w >= 260)
+                   IconButton(
+                     tooltip: 'Attach a file',
+@@ -360,6 +390,13 @@ class _LivingComposerState extends State<LivingComposer> {
                ],
              );
              }),
 +            // BRAIN-QC-20261018: Thinking / Vision / Context under the chat box (full composer only). They step
 +            // aside in a small window (UIV2-F3: nothing may overflow while it shrinks into Companion).
-+            if (oi != null && office == null && !widget.compact && !widget.minimal && !widget.floating &&
-+                MediaQuery.sizeOf(context).height >= 640 && MediaQuery.sizeOf(context).width >= 420)
++            if (oi != null && office == null && qcFull && qcRoom(context))
 +              Align(
 +                alignment: Alignment.centerLeft,
 +                child: BrainQuickControls(conversation: oi),

@@ -1,11 +1,11 @@
  scripts/run_uri_integrated_worker.py               |   2 +-
- scripts/ws_brain_host.py                           | 163 +++++++-
- tests/oi/test_brain_quick_controls.py              | 346 ++++++++++++++++
+ scripts/ws_brain_host.py                           | 169 +++++++-
+ tests/oi/test_brain_quick_controls.py              | 374 ++++++++++++++++++
  uri_operational_intelligence/brain_health.py       |  14 +-
- .../brain_quick_controls.py                        | 154 ++++++++
- uri_operational_intelligence/worker_bridge.py      |  88 ++++-
- .../living/integration/brain_quick_controls.dart   | 440 +++++++++++++++++++++
- uri_ui/lib/living/integration/oi_conversation.dart |  65 +++
- uri_ui/lib/living/widgets/living_composer.dart     |   9 +
- uri_ui/test/living/brain_quick_controls_test.dart  | 357 +++++++++++++++++
- 10 files changed, 1622 insertions(+), 16 deletions(-)
+ .../brain_quick_controls.py                        | 160 ++++++++
+ uri_operational_intelligence/worker_bridge.py      | 102 ++++-
+ .../living/integration/brain_quick_controls.dart   | 429 ++++++++++++++++++++
+ uri_ui/lib/living/integration/oi_conversation.dart |  96 +++++
+ uri_ui/lib/living/widgets/living_composer.dart     |  37 ++
+ uri_ui/test/living/brain_quick_controls_test.dart  | 431 +++++++++++++++++++++
+ 10 files changed, 1798 insertions(+), 16 deletions(-)

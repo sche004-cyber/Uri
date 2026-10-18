@@ -4,9 +4,9 @@
  "date": "2026-10-18",
  "branch": "milestone/brain-quick-controls-20261018",
  "base": "f3d5eb29",
- "candidate_code_commit": "aa7a1cf6 (UI); Python runtime code unchanged since 0d599b6a (verified byte-identical by each session)",
+ "candidate_code_commit": "aba3a5b6 (runtime3 materialized from 578f7c40, code-identical); gates at 25701f51",
  "classification": "COMPLETED_WITH_RESULT",
- "status": "CANDIDATE_PASS_PENDING_INDEPENDENT_REVIEW",
+ "status": "R1_REPAIRED_PENDING_RE_REVIEW",
  "acceptance": {
   "QC-1": {
    "status": "MET",
@@ -22,7 +22,7 @@
   },
   "QC-4": {
    "status": "MET",
-   "evidence": "qc-3 switch timelines: active null and 'Switching to ...' until READY on the new profile; dry-1 '(not running)'; unit+widget tests"
+   "evidence": "qc-4/qc-5 QC-header-truthful-* PASS (0 'ready' rows while pending); qc-3 header defect recorded as C-1"
   },
   "QC-5": {
    "status": "MET_WITH_NOTE",
@@ -38,15 +38,15 @@
   },
   "QC-8": {
    "status": "MET_UNIT_ONLY",
-   "evidence": "unit + widget tests; not exercised live (needs a >32K-token conversation)"
+   "evidence": "R1-02: shrink below conversation+4096 refused (unit+widget); no live >32K evidence"
   },
   "QC-9": {
-   "status": "MET",
-   "evidence": "evidence/gates/frozen_check.json ok; ui_v2_frozen_files_diff_vs_7893aaed.patch 0 deletions"
+   "status": "MET_WITH_NOTE",
+   "evidence": "ws_frozen_check ok at 25701f51; UI V2 frozen files +96/0, +37/0; refreshHealth behaviour change disclosed (C-4); UI V2 68/68 uiv2-main-3"
   },
   "QC-10": {
    "status": "MET",
-   "evidence": "pytest 759 passed/23 skipped (baseline 731/23); flutter test 776 pass; analyze 4 pre-existing infos; release build exit 0"
+   "evidence": "at 25701f51: pytest 762/23 skipped, flutter test 778, analyze 4 pre-existing infos, release build exit 0 (all with .head files)"
   },
   "QC-11": {
    "status": "MET",
@@ -350,12 +350,67 @@
    "lease_after": "FREE",
    "brain_config_unchanged": true,
    "order": "UI first (launcher order)"
+  },
+  "qc-4": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "verdict": "PASS",
+   "checks_pass": 22,
+   "checks_total": 22,
+   "source_head": "78db55f659e2abddcaf3276a9ba91d617005417a",
+   "runtime_python_from": "78db55f659e2abddcaf3276a9ba91d617005417a",
+   "switches": [
+    {
+     "from": "frozen",
+     "to": "c64k-visoff-mtpoff",
+     "result": "READY",
+     "seconds": 30.9
+    },
+    {
+     "from": "c64k-visoff-mtpoff",
+     "to": "frozen",
+     "result": "READY",
+     "seconds": 37.3
+    }
+   ],
+   "perf_decode_tps": {
+    "standard-start": 121.5,
+    "long": 97.4,
+    "standard-after-switch": 151.3
+   }
+  },
+  "qc-5": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "verdict": "PASS",
+   "checks_pass": 22,
+   "checks_total": 22,
+   "source_head": "578f7c403a57cb9ef2a7363dd320ab01ea81884f",
+   "runtime_python_from": "578f7c403a57cb9ef2a7363dd320ab01ea81884f",
+   "switches": [
+    {
+     "from": "frozen",
+     "to": "c64k-visoff-mtpoff",
+     "result": "READY",
+     "seconds": 30.8
+    },
+    {
+     "from": "c64k-visoff-mtpoff",
+     "to": "frozen",
+     "result": "READY",
+     "seconds": 38.2
+    }
+   ],
+   "perf_decode_tps": {
+    "standard-start": 121.2,
+    "long": 98.2,
+    "standard-after-switch": 148.3
+   }
   }
  },
  "uiv2_regression": {
   "runs": {
    "uiv2-main": "68/68 on 157e35ea (before the header fix)",
-   "uiv2-main-2": "68/68 on 7e3a99f3 (code = aa7a1cf6)"
+   "uiv2-main-2": "68/68 on 7e3a99f3 (code = aa7a1cf6)",
+   "uiv2-main-3": "68/68 on 29db21f9 (R1 repairs, before the P3 change)"
   }
  },
  "dry_no_brain": {
@@ -375,5 +430,23 @@
  "environment_notes": [
   "tests/ws/test_ws_hardening.py::test_fit_desktop_only_fits_and_a_1gb_consumer_contends failed once while the qc-1 session process happened to have pid 18372 (the test's fake census pid is named from the live process table); passes in the final gate run",
   "tests/phase2a/test_frozen_core.py fails at base f3d5eb29 already (runtime-profiles paths not in ALLOWED_NEW); BRAIN-QC adds uri_operational_intelligence/brain_quick_controls.py and tests/oi/test_brain_quick_controls.py to the same stray list (guard not edited: governance file)"
+ ],
+ "history": [
+  {
+   "round": "candidate",
+   "commit": "177a5319",
+   "status": "CANDIDATE_PASS_PENDING_INDEPENDENT_REVIEW"
+  },
+  {
+   "round": "R1",
+   "verdict": "REVISE (narrow)",
+   "report": "review/R1_report.md",
+   "corrections": [
+    "C-1 header 'ready' during switch on aa7a1cf6 (qc-3): claim disproved",
+    "C-2 shrink dialog promise not implemented",
+    "C-3 gate evidence not pinned to aa7a1cf6",
+    "C-4 frozen refreshHealth behaviour change not disclosed"
+   ]
+  }
  ]
 }

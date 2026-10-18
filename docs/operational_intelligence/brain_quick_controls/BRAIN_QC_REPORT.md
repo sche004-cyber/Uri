@@ -45,3 +45,83 @@ flutter analyze 4 pre-existing infos; Windows release build OK; ws_frozen_check 
 - QC-F4: `test_frozen_core` stray list (pre-existing at base) now also names the two new BRAIN-QC files.
 - The new `reconfigure` action changes `ws_brain_host.py`, which the runtime-profiles IC-1 counts as byte-identical
   to 7c7a7776. Integrating BRAIN-QC therefore supersedes that file and needs its own review.
+
+---
+
+## Review R1 (2026-10-18): corrections and repairs
+
+The independent review is in `review/R1_report.md` (verdict: REVISE, narrow). The text above this line is kept as it
+was written at `177a5319`. The corrections below replace any statement above that they contradict.
+
+**Code:** repaired code `aba3a5b6`. The runtime for the live runs was materialized from `578f7c40`, whose code is
+identical; `runtime3` was verified byte for byte by the session. Gates run at `25701f51`, which is code-identical,
+with `.head` files in `evidence/gates/`.
+
+### Corrections to the earlier claims
+- **C-1 (R1-01):** commit `aa7a1cf6` ("no stale ready while switching") claimed something its own qc-3 evidence
+  disproves. In qc-3 the header and the right panel showed "ready" for about 10-17 s while the old server was
+  stopping, and again during calibration. The qc-3 PASS for QC-4 covered only the chips and the RECOVERING card, not
+  the header.
+- **C-2 (R1-02):** the shrink dialog promised "the Brain will not see all of it at once", but nothing trims the
+  history. QC-8 "MET_UNIT_ONLY" checked only the confirmation gate.
+- **C-3 (R1-04):** the earlier "Gates (exact commit) ... release build OK" was not pinned to the reviewed code. The
+  release build log predated `aa7a1cf6`, and the frozen-files patch and the diff stat were stale.
+- **C-4 (R1-05):** QC-9 said "only additive". The added lines are additive, but `refreshHealth` (a frozen UI V2
+  method) now also reads `brain_status` on every screen when the health state changes, and on every poll while the
+  Brain is recovering. UI V2 journeys 68/68 were re-run on the repaired UI (`uiv2-main-3`, `29db21f9`).
+
+### Repairs
+| Finding | Change | Verified by |
+|---|---|---|
+| R1-01 MEDIUM | `refreshHealth` re-reads `brain_status` on a health change and on every poll while health is RECOVERING or a switch is pending. During a pending switch, a READY status is shown as "starting" (`runtime_state` keeps the raw READY), so the Brain is not reported ready until the switch is finished. | Widget test: READY at the edge, then STOPPED, LOADING, READY-before-calibration, then READY. Live qc-4 and qc-5: `QC-header-truthful-*` PASS, 0 rows show "ready" while the switch is pending. Screenshot `qc-4/06-switching.png` header reads "starting". |
+| R1-02 MEDIUM | No "switch anyway" path, and `confirm_shrink` is removed from the schema. The worker refuses a target context that the largest session's last answer context plus a 4,096-token answer reserve would not fit (`CONTEXT_SMALLER_THAN_CONVERSATION`, with the numbers). The UI says so and advises keeping the larger context. Context size is now tracked per session. | Unit tests (30,000 + 4,096 > 32K refused; 20,000 allowed; the old confirm is a schema error) and a widget test. **Live evidence with a conversation over 32K tokens is still absent.** |
+| R1-03 LOW | The fit pre-check uses `cfg_required_mib(derive_config(...))`, the same 15,626 MiB the start budgets for the frozen profile. | Unit test. Live qc-4/qc-5: `fit_before.required_mib` 15626 for Standard. |
+| R1-04 LOW | Gates, release build, frozen check, frozen-files patch and diff stat regenerated at `25701f51`, each with a `.head` file. | `evidence/gates/` |
+| R1-05 LOW | Disclosed (C-4). | |
+| R1-06 LOW | The dialog now says "If URI sees before the switch that it does not fit, it keeps the current Brain. If the new setting then fails to start or waits for memory, choose the previous setting again." Listed as QC-F5. | Widget test. |
+| R1-07 LOW | QC-F4 completed (below). | |
+| R1-08.1 | A refusal notice clears after 20 s. | Widget test. |
+| R1-08.2 | Outcome lines for a waiting, stopped or other non-ready end of a switch. | Widget test. |
+| R1-08.3 | Behaviour kept and documented: choosing a setting while the Brain is stopped starts it. The dialog says so, and the host records `started_stopped_brain`. | Unit and widget tests. |
+| R1-08.4 | Below 640 x 420 the chip row stays hidden, and one compact "Brain settings" button in the composer row opens the same controls in a dialog (reachable at 800x600). | Widget test at 800x600; UI V2 no-overflow tests pass. |
+| Coordinator note | P3 (32K + vision, no MTP) is recognized but never a switch target (`switchable: false`, `PROFILE_NOT_OFFERED`). Only Standard and Long context are offered. | Unit and widget tests. |
+
+Note on the coordinator message: it lists `(32768, gpu, False)` (which is P3) as allowed by the runtime-profiles
+SELECTABLE, and in the same message says P3 is not in SELECTABLE. The two statements conflict. Quick Controls
+follows the instruction itself (never offer P3), and that holds under either reading.
+
+### Live re-verification (real app, production main(), real Brain, UI-first, no override)
+| Run | Code | Checks | Switch to Long / back (s) | Stop (s) | Decode tok/s Standard / Long / Standard after switch |
+|---|---|---|---|---|---|
+| qc-4 | `78db55f6` (R1 repairs) | 22/22 | 30.9 / 37.3 | 3.5 | 121.5 / 97.4 / 151.3 |
+| qc-5 | `578f7c40` (final code) | 22/22 | 30.8 / 38.2 | 3.6 | 121.2 / 98.2 / 148.3 |
+
+- In both runs, "4817" was recalled after each switch, the worker processes stayed the same, a message sent during
+  the switch was refused, and the lease was FREE afterwards.
+- `uiv2-main-3` (`29db21f9`): 68/68.
+- The P3 change after it only touched catalog resolution and one refusal text; UI V2 was not re-run for it, and
+  qc-5 covers it live.
+
+### Gates at `25701f51` (code = `aba3a5b6`)
+- pytest `tests/oi` + `tests/ws`: 762 passed, 23 skipped.
+- flutter test: 778 passed.
+- flutter analyze: 4 info messages, all in files this milestone did not touch.
+- Windows release build OK.
+- `ws_frozen_check` ok.
+- Frozen UI V2 files against `7893aaed`: +96/0 and +37/0 lines (behaviour note C-4).
+
+### Open findings (updated)
+- **QC-F1:** the choice is not persisted; a new host starts on Standard.
+- **QC-F2:** no live evidence with a conversation over 32K tokens. The refusal path is covered by unit and widget
+  tests only.
+- **QC-F3:** the pre-existing host residency alert can miss a demotion because of timing.
+- **QC-F4:** two guards would flag the new files and were not edited, because they are governance files:
+  `tests/phase2a/test_frozen_core.py` ALLOWED_NEW and `scripts/phase2close_chain.py` WS_EXACT. Both lack
+  `uri_operational_intelligence/brain_quick_controls.py`, and the base `f3d5eb29` already lacks the runtime-profiles
+  files in both.
+- **QC-F5:** there is no automatic fallback. If the pre-check passes but the new start then fails or waits, URI has
+  no ready Brain until the user chooses another setting. The UI tells the user to do so.
+- **QC-F6:** the existing health chip can show the previous instance's tok/s for a moment during a switch. This is
+  pre-existing WS hardening behaviour and was not changed.
+- `ws_brain_host.py` supersedes the runtime-profiles IC-1 byte-identity for that file. Integration needs its own
+  review.
