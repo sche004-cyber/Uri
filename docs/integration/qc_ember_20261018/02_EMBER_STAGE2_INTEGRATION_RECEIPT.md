@@ -80,6 +80,9 @@ looseness, recorded in the Ember receipt).
 
 ## 6. Licensing (OD-2) - deferred distribution-release gate (was: blocking)
 
+> Superseded wording: this section's "Fiverr illustration" phrasing and options A-D predate the provenance record
+> `03_EMBER_OD2_PROVENANCE.md` (revision 2), which is authoritative.
+
 Investigation (`ember_stage2/review/OD2_licensing_investigation.md`, repository evidence only):
 - OD-2 asks the licence of the reference art ("Fiverr illustration; emotions sheet carries a Gemini mark"); the recorded
   owner answer is "I hold rights / will license"; no licence, receipt or attribution is in the repository.

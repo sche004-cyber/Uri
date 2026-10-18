@@ -31,16 +31,19 @@ reverse-image search alone would not establish ownership or AI-only provenance. 
 
 | # | Fact | Evidence |
 |---|---|---|
-| F1 | A phone screenshot shows the first image inside a ChatGPT conversation | `docs/companions/fire/reference/idle_source_screenshot.jpg` at `8a1438ec` (1080x2340; EXIF model string `BP2A.250605.031.A3.S906EXXSEGZH4`; URL bar `chatgpt.com/c/6acef...`; full-screen viewer with close and bookmark controls) |
+| F1 | A phone screenshot shows the first image inside a ChatGPT conversation | `docs/companions/fire/reference/idle_source_screenshot.jpg` at `8a1438ec` (1080x2340; EXIF Software tag `BP2A.250605.031.A3.S906EXXSEGZH4`, DateTimeOriginal 2026-10-14 09:23:37 +05:30; URL bar `chatgpt.com/c/6acef...`; full-screen viewer with close and bookmark controls) |
 | F2 | Under the image the viewer shows a source card: a favicon, "fiverr", and "Digital illustration - Hire a Freelance Illustrator ..." | same screenshot |
-| F3 | That card text matches the title of Fiverr's public category page "Digital illustration - Hire a Freelance Illustrator Services" | public page (sources) |
 | F4 | The image shows a faint signature-like mark to the right of the figure | same screenshot |
-| F5 | The Gemini sheet `uri_emotions_sheet.png` (896x1200) carries a Gemini sparkle mark; its "01. IDLE" panel closely matches the screenshot image (pose, flame shape, tail curl, ground glow) including the signature-like mark at the same position; panels 02-04 (Joyful, Fierce, Depleted) are new variations | sheet at `8a1438ec`; visual comparison (independent quantitative check: see review) |
-| F6 | The 12 shipped Ember assets are pixel-level derivatives of the sheet; the signature-like mark (idle) and the Gemini mark (depleted) were inpainted out | `companion_art/fire_v2/layers.py`, `animate.py`, `rig.json`; `uri_ui/assets/companions/ember/manifest.json` |
+| F5 | The Gemini sheet `uri_emotions_sheet.png` (896x1200) carries a Gemini sparkle mark (lower right of the Depleted panel); its "01. IDLE" panel closely matches the screenshot image (pose, flame shape, tail curl, ground glow) including the signature-like mark at the same relative position; panels 02-04 (Joyful, Fierce, Depleted) are new variations. Measured (independent review, 128x128 after alignment): IDLE vs screenshot image grayscale NCC 0.915 / edge NCC 0.642; controls JOYFUL 0.590 / 0.170, FIERCE 0.587 / 0.151, DEPLETED 0.393 / -0.033 - strong match for IDLE only, not pixel-identical (consistent with an image-to-image re-render) | sheet at `8a1438ec`; `ember_stage2/review/od2_ncc/` |
+| F6 | The 11 shipped Ember image files (9 clip atlases, the blink atlas, the thumbnail) are pixel-level derivatives of the sheet (`manifest.json` describes them); the signature-like mark (idle) and the Gemini mark (depleted) were inpainted out | `companion_art/fire_v2/layers.py`, `animate.py`, `rig.json`; `uri_ui/assets/companions/ember/manifest.json` |
 | F7 | A Gemini-generated motion video (not committed) was used as motion reference; frames are in `reference/video_frames/` | `PROVENANCE.md` at `8a1438ec` |
 | F8 | Nothing in the repository records a purchase, commission or licence from Fiverr, and nothing records a ChatGPT generation (prompt, generated-image output, file id) | search of history, docs, commit messages |
 
 ## 3. Reasonable inferences (not proven)
+
+- I0 (external check, not a repository artefact): the card's visible text "Digital illustration - Hire a Freelance
+  Illustrator ..." (truncated) matches the prefix of the title of Fiverr's public category page "Digital illustration -
+  Hire a Freelance Illustrator Services" (sources).
 
 - I1: A website source card under an image in ChatGPT is typical of images ChatGPT retrieved from the web; generated
   images are normally shown without a website card. This is an inference from product behaviour; no official OpenAI
@@ -95,13 +98,21 @@ image requires the rights holder's licence or replacement art - only then.
   listing" (`PROVENANCE.md`): the repository shows a Fiverr **source card** in ChatGPT, not a Fiverr illustration
   listing, purchase or commission. These phrases are superseded by section 2.
 - Nothing in the repository supports "commissioned from Fiverr"; the owner states it was not.
+- Also superseded (historical documents not edited): the OD-2 question text "Fiverr illustration" in
+  `docs/companions/fire/00_PLAN_AND_ACCEPTANCE_CRITERIA.md` (`8a1438ec`); "illustration listed on Fiverr" in
+  `docs/companions/fire/01_RESEARCH_AND_APPROACH.md` section 2.3; the third-party Fiverr-listing statement in
+  `ember_stage2/review/OD2_licensing_investigation.md`; section 6 of `02_EMBER_STAGE2_INTEGRATION_RECEIPT.md` (option A
+  wording "rights to the Fiverr illustration").
 
 ## 8. Boundaries
 
-Artwork, history, animation, rendering and qualified Ember functionality are unchanged. Ember stays outside canonical
-and unpushed while OD-2 is unresolved.
+Artwork, history, animation, rendering and qualified Ember functionality are unchanged. Ember artwork is not
+distributed externally until the distribution-phase rights review is complete. Canonical integration requires technical
+acceptance and separate owner authorization; OD-2 does not block it. The canonical remote (`uri-repo`,
+`sche004-cyber/Uri`) is private; a push there is not treated as external distribution (any change to its visibility, a
+public mirror or a release would be distribution and falls under the gate).
 
 Sources: [Fiverr - Digital illustration category](https://www.fiverr.com/categories/graphics-design/digital-illustration);
 [OpenAI community - image attribution in ChatGPT image results](https://community.openai.com/t/feature-request-image-attribution-provenance-and-source-linking-in-chatgpt-image-results/1379995);
-[OpenAI Terms of Use output provision (summary)](https://conductatlas.com/platform/openai/openai-terms-of-use/user-generated-content-and-output-ownership/);
+[OpenAI Terms of Use output provision (third-party summary; official text at openai.com/policies/terms-of-use)](https://conductatlas.com/platform/openai/openai-terms-of-use/user-generated-content-and-output-ownership/);
 [Gemini API Additional Terms](https://ai.google.dev/terms).
