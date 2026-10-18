@@ -1,0 +1,90 @@
+[
+ {
+  "run": 0,
+  "state": "STARTING_HOST",
+  "t": 0.51,
+  "utc": "2026-10-18T04:37:46.152747+00:00",
+  "explain": null,
+  "detail": null
+ },
+ {
+  "run": 0,
+  "state": "STARTING",
+  "t": 3.54,
+  "utc": "2026-10-18T04:37:49.182719+00:00",
+  "explain": "Starting the Brain (Runtime v1).",
+  "detail": null
+ },
+ {
+  "run": 0,
+  "state": "LOADING",
+  "t": 33.89,
+  "utc": "2026-10-18T04:38:19.531772+00:00",
+  "explain": "Starting the Brain (Runtime v1).",
+  "detail": null
+ },
+ {
+  "run": 0,
+  "state": "CALIBRATING",
+  "t": 51.63,
+  "utc": "2026-10-18T04:38:37.271455+00:00",
+  "explain": "Measuring Brain speed.",
+  "detail": null
+ },
+ {
+  "run": 0,
+  "state": "READY",
+  "t": 56.69,
+  "utc": "2026-10-18T04:38:42.329456+00:00",
+  "explain": "Brain ready (156 tok/s).",
+  "detail": null
+ },
+ {
+  "run": 1,
+  "state": "STARTING_HOST",
+  "t": 0.51,
+  "utc": "2026-10-18T04:40:35.523594+00:00",
+  "explain": null,
+  "detail": null
+ },
+ {
+  "run": 1,
+  "state": "STARTING",
+  "t": 3.53,
+  "utc": "2026-10-18T04:40:38.545907+00:00",
+  "explain": "Starting the Brain (Runtime v1).",
+  "detail": null
+ },
+ {
+  "run": 1,
+  "state": "LOADING",
+  "t": 34.43,
+  "utc": "2026-10-18T04:41:09.439410+00:00",
+  "explain": "Starting the Brain (Runtime v1).",
+  "detail": null
+ },
+ {
+  "run": 1,
+  "state": "CALIBRATING",
+  "t": 54.21,
+  "utc": "2026-10-18T04:41:29.224484+00:00",
+  "explain": "Measuring Brain speed.",
+  "detail": null
+ },
+ {
+  "run": 1,
+  "state": "READY",
+  "t": 58.78,
+  "utc": "2026-10-18T04:41:33.791643+00:00",
+  "explain": "Brain ready (155 tok/s).",
+  "detail": null
+ },
+ {
+  "run": 1,
+  "state": "STOPPED",
+  "t": 62.33,
+  "utc": "2026-10-18T04:41:37.343107+00:00",
+  "explain": "The Brain host has exited.",
+  "detail": "HOST_EXIT"
+ }
+]

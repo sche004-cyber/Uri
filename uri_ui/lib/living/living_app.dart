@@ -165,17 +165,17 @@ class LivingApp extends StatefulWidget {
   }) {
     final demo = MockCompanionSource();
     final work = MockWorkSimulator(seed: !visualV2);
+    final oiCompanion = OiCompanionSource(oi);
     return LivingServices(
       presentation: UiPresentationController(
         initialMode: visualV2
             ? UiPresentationMode.dashboard
             : UiPresentationMode.companion,
       ),
-      companion: CompositeCompanionSource([
-        OiCompanionSource(oi),
-        work.companion,
-        demo,
-      ]),
+      companion: CompositeCompanionSource(
+        [oiCompanion, work.companion, demo],
+        owned: [oiCompanion],
+      ),
       work: work,
       readiness: OiReadinessSource(oi),
       effects: EffectsSettings(),

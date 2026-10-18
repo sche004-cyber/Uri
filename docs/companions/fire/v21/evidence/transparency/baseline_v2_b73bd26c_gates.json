@@ -1,0 +1,172 @@
+{
+ "manifest_source": "companion_art/fire_v2 (painting-derived 2.5D)",
+ "stage": null,
+ "clips": {
+  "idle": {
+   "frames": 72,
+   "worst": {
+    "border_max": 148,
+    "ring_max": 255,
+    "opaque_frac_max": 0.2129296875,
+    "matte_fringe_px_max": 0,
+    "semi_rim_px_median": 48.0
+   },
+   "pass": {
+    "T1_border": false,
+    "T2_ring": false,
+    "T3_opaque": true,
+    "T4_matte": true
+   }
+  },
+  "joyful": {
+   "frames": 48,
+   "worst": {
+    "border_max": 255,
+    "ring_max": 255,
+    "opaque_frac_max": 0.1641015625,
+    "matte_fringe_px_max": 0,
+    "semi_rim_px_median": 9.0
+   },
+   "pass": {
+    "T1_border": false,
+    "T2_ring": false,
+    "T3_opaque": true,
+    "T4_matte": true
+   }
+  },
+  "depleted": {
+   "frames": 72,
+   "worst": {
+    "border_max": 64,
+    "ring_max": 255,
+    "opaque_frac_max": 0.127509765625,
+    "matte_fringe_px_max": 6,
+    "semi_rim_px_median": 63.0
+   },
+   "pass": {
+    "T1_border": false,
+    "T2_ring": false,
+    "T3_opaque": true,
+    "T4_matte": false
+   }
+  },
+  "listening": {
+   "frames": 48,
+   "worst": {
+    "border_max": 148,
+    "ring_max": 255,
+    "opaque_frac_max": 0.2108203125,
+    "matte_fringe_px_max": 0,
+    "semi_rim_px_median": 48.0
+   },
+   "pass": {
+    "T1_border": false,
+    "T2_ring": false,
+    "T3_opaque": true,
+    "T4_matte": true
+   }
+  },
+  "thinking": {
+   "frames": 72,
+   "worst": {
+    "border_max": 148,
+    "ring_max": 255,
+    "opaque_frac_max": 0.213427734375,
+    "matte_fringe_px_max": 0,
+    "semi_rim_px_median": 48.0
+   },
+   "pass": {
+    "T1_border": false,
+    "T2_ring": false,
+    "T3_opaque": true,
+    "T4_matte": true
+   }
+  },
+  "speaking": {
+   "frames": 48,
+   "worst": {
+    "border_max": 148,
+    "ring_max": 255,
+    "opaque_frac_max": 0.212197265625,
+    "matte_fringe_px_max": 0,
+    "semi_rim_px_median": 48.0
+   },
+   "pass": {
+    "T1_border": false,
+    "T2_ring": false,
+    "T3_opaque": true,
+    "T4_matte": true
+   }
+  },
+  "focused": {
+   "frames": 48,
+   "worst": {
+    "border_max": 148,
+    "ring_max": 255,
+    "opaque_frac_max": 0.2121875,
+    "matte_fringe_px_max": 0,
+    "semi_rim_px_median": 48.0
+   },
+   "pass": {
+    "T1_border": false,
+    "T2_ring": false,
+    "T3_opaque": true,
+    "T4_matte": true
+   }
+  },
+  "concerned": {
+   "frames": 48,
+   "worst": {
+    "border_max": 148,
+    "ring_max": 255,
+    "opaque_frac_max": 0.212666015625,
+    "matte_fringe_px_max": 0,
+    "semi_rim_px_median": 48.0
+   },
+   "pass": {
+    "T1_border": false,
+    "T2_ring": false,
+    "T3_opaque": true,
+    "T4_matte": true
+   }
+  }
+ },
+ "blink": {
+  "idle": {
+   "inside_cell": true,
+   "patch_edge_alpha_max": 0,
+   "pass": true
+  },
+  "depleted": {
+   "inside_cell": true,
+   "patch_edge_alpha_max": 0,
+   "pass": true
+  },
+  "listening": {
+   "inside_cell": true,
+   "patch_edge_alpha_max": 1,
+   "pass": true
+  },
+  "thinking": {
+   "inside_cell": true,
+   "patch_edge_alpha_max": 0,
+   "pass": true
+  },
+  "speaking": {
+   "inside_cell": true,
+   "patch_edge_alpha_max": 0,
+   "pass": true
+  },
+  "focused": {
+   "inside_cell": true,
+   "patch_edge_alpha_max": 0,
+   "pass": true
+  },
+  "concerned": {
+   "inside_cell": true,
+   "patch_edge_alpha_max": 0,
+   "pass": true
+  }
+ },
+ "all_pass": false
+}

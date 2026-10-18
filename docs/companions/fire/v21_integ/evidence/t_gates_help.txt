@@ -1,0 +1,7 @@
+HEAD=0533d2a4
+usage: transparency_check.py [-h] [--out OUT] [--assets ASSETS]
+
+options:
+  -h, --help       show this help message and exit
+  --out OUT
+  --assets ASSETS  atlas folder to check (default: this tree's)

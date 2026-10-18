@@ -1,0 +1,1 @@
+Probe attempt 1 INVALID: companion window was below the Claude desktop app; captures and SendInput hit that app. Ember click (270,351) and drag (270,351)->(150,411) landed on the Claude app sidebar. Kept as history.

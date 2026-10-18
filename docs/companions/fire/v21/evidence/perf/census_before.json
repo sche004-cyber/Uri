@@ -1,0 +1,163 @@
+{
+ "census": {
+  "ok": true,
+  "t": 1792049070.614,
+  "sample_s": 3.62,
+  "luid": "luid_0x00000000_0x0000c069",
+  "card_mib": 16368,
+  "card_name": "AMD Radeon RX 7900 GRE",
+  "adapter_dedicated_mib": 725.9,
+  "attributed_mib": 920.9,
+  "unattributed_mib": 0.0,
+  "processes": [
+   {
+    "pid": 1792,
+    "dedicated_mib": 377.6,
+    "non_local_mib": 9.1,
+    "name": "dwm.exe",
+    "create_time": 1792034649.306,
+    "parent": "winlogon.exe"
+   },
+   {
+    "pid": 2464,
+    "dedicated_mib": 111.3,
+    "non_local_mib": 2.6,
+    "name": "ChatGPT.exe",
+    "create_time": 1792034684.558,
+    "parent": "ChatGPT.exe"
+   },
+   {
+    "pid": 7580,
+    "dedicated_mib": 77.9,
+    "non_local_mib": 2.0,
+    "name": "claude.exe",
+    "create_time": 1792034664.011,
+    "parent": "claude.exe"
+   },
+   {
+    "pid": 12760,
+    "dedicated_mib": 63.7,
+    "non_local_mib": 14.7,
+    "name": "msedgewebview2.exe",
+    "create_time": 1792034658.434,
+    "parent": "msedgewebview2.exe"
+   },
+   {
+    "pid": 15440,
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7,
+    "name": "msedge.exe",
+    "create_time": 1792034672.55,
+    "parent": "msedge.exe"
+   },
+   {
+    "pid": 9952,
+    "dedicated_mib": 41.5,
+    "non_local_mib": 1.4,
+    "name": "WindowsTerminal.exe",
+    "create_time": 1792034656.283,
+    "parent": "svchost.exe"
+   },
+   {
+    "pid": 8912,
+    "dedicated_mib": 37.2,
+    "non_local_mib": 1.6,
+    "name": "explorer.exe",
+    "create_time": 1792034655.628,
+    "parent": null
+   },
+   {
+    "pid": 14600,
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5,
+    "name": "TextInputHost.exe",
+    "create_time": 1792034666.831,
+    "parent": "svchost.exe"
+   },
+   {
+    "pid": 1604,
+    "dedicated_mib": 24.3,
+    "non_local_mib": 0.6,
+    "name": "csrss.exe",
+    "create_time": 1792034648.61,
+    "parent": null
+   },
+   {
+    "pid": 10820,
+    "dedicated_mib": 21.5,
+    "non_local_mib": 0.7,
+    "name": "StartMenuExperienceHost.exe",
+    "create_time": 1792034656.886,
+    "parent": "svchost.exe"
+   },
+   {
+    "pid": 4164,
+    "dedicated_mib": 21.4,
+    "non_local_mib": 2.7,
+    "name": "codex-computer-use-swift.exe",
+    "create_time": 1792034698.391,
+    "parent": "ChatGPT.exe"
+   },
+   {
+    "pid": 10812,
+    "dedicated_mib": 20.0,
+    "non_local_mib": 0.8,
+    "name": "SearchHost.exe",
+    "create_time": 1792034656.882,
+    "parent": "svchost.exe"
+   },
+   {
+    "pid": 9160,
+    "dedicated_mib": 14.0,
+    "non_local_mib": 0.7,
+    "name": "ShellHost.exe",
+    "create_time": 1792034655.671,
+    "parent": "sihost.exe"
+   },
+   {
+    "pid": 9376,
+    "dedicated_mib": 14.0,
+    "non_local_mib": 0.7,
+    "name": "CrossDeviceResume.exe",
+    "create_time": 1792034655.786,
+    "parent": "sihost.exe"
+   },
+   {
+    "pid": 15792,
+    "dedicated_mib": 13.2,
+    "non_local_mib": 0.7,
+    "name": "claude.exe",
+    "create_time": 1792034669.756,
+    "parent": "claude.exe"
+   },
+   {
+    "pid": 4,
+    "dedicated_mib": 2.6,
+    "non_local_mib": 2.0,
+    "name": "System",
+    "create_time": 0.0,
+    "parent": "System Idle Process"
+   }
+  ]
+ },
+ "fit_for_runtime_v1": {
+  "verdict": "AT_RISK",
+  "card_mib": 16368,
+  "required_mib": 15626,
+  "others_mib": 920.9,
+  "unattributed_mib": 0.0,
+  "owner_mib": 0,
+  "free_mib": 15447.1,
+  "margin_mib": -178.9,
+  "consumers": [
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "parent": "winlogon.exe",
+    "dedicated_mib": 377.6,
+    "role": "desktop compositor"
+   }
+  ]
+ },
+ "explain": "GPU memory is 179 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading."
+}

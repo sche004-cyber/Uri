@@ -1,0 +1,27 @@
+HEAD=dcb5ebaa (recorded at b6220852)
+$ git diff --stat cd4a7963 dcb5ebaa -- uri_operational_intelligence 'scripts/run_uri_*' scripts/ws_brain_host.py scripts/ws_frozen_check.py .gitignore uri_ui/windows
+(empty output = no difference)
+$ git diff --name-only cd4a7963 dcb5ebaa -- . ':!docs' ':!uri_ui' | wc -l
+22
+companion_art/fire_v2/.gitignore
+companion_art/fire_v2/animate.py
+companion_art/fire_v2/export_v2.py
+companion_art/fire_v2/expressions.json
+companion_art/fire_v2/layers.py
+companion_art/fire_v2/render_clips.py
+companion_art/fire_v2/rig.json
+rnd/companions/registry.js
+rnd/companions/state_tables.json
+rnd/companions/state_tables.py
+scripts/fire_companion/audit_reviewer_access.py
+scripts/fire_companion/critique_pack_v2.py
+scripts/fire_companion/critique_pack_v21.py
+scripts/fire_companion/critique_pack_v21r.py
+scripts/fire_companion/demo_v21.py
+scripts/fire_companion/diag_v21.py
+scripts/fire_companion/fidelity_score.py
+scripts/fire_companion/haze_probe_v21.py
+scripts/fire_companion/score_all.py
+scripts/fire_companion/score_v2.py
+scripts/fire_companion/size_crop_v21.py
+scripts/fire_companion/transparency_check.py
