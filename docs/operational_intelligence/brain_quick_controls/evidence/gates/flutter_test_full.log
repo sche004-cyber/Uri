@@ -28,24 +28,24 @@ Got dependencies!
 Try `flutter pub outdated` for more information.
 00:00 +0: loading D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_contract_test.dart
 00:00 +0: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_contract_test.dart: shared contract cases: same first error code as Python
-00:00 +1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:00 +2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:00 +3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_contract_test.dart: the real scheduler surfaces validate in the renderer
+00:00 +2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_contract_test.dart: typed context values
+00:00 +3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_contract_test.dart: sha256 matches the standard vectors
 00:00 +4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:00 +4: loading D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_service_live_test.dart
 Warning: A tag was used that wasn't specified in dart_test.yaml.
   a2ui-live was used in the suite itself
 
 00:00 +4 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:01 +5 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:01 +6 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:01 +7 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:01 +8 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:01 +9 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:01 +10 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:01 +11 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:01 +12 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:01 +13 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +5 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +6 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +7 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +8 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +9 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +10 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +11 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +12 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +13 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:01 +14 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:01 +15 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:01 +16 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
@@ -58,16 +58,16 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:01 +23 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:01 +24 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:01 +25 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +26 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +27 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +28 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +29 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +30 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +31 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +32 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +33 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +34 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +35 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +26 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +27 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +28 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +29 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +30 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +31 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +32 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +33 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +34 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +35 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:02 +36 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:02 +37 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:02 +38 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
@@ -79,20 +79,20 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:02 +44 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:02 +45 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:02 +46 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
-00:02 +47 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +48 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +49 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +50 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +51 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +52 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +53 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +54 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +55 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +56 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +57 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +58 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +59 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:02 +60 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +47 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +48 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +49 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +50 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +51 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +52 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +53 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +54 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +55 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +56 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +57 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +58 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +59 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +60 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
 00:02 +61 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
 00:02 +62 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
 00:02 +63 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
@@ -117,7 +117,7 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:02 +82 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
 00:02 +83 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
 00:02 +84 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
-00:03 +85 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +85 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
 00:03 +86 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
 00:03 +87 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
 00:03 +88 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
@@ -137,63 +137,63 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:03 +102 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
 00:03 +103 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
 00:03 +104 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
-00:04 +105 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
-00:04 +106 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
-00:04 +107 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:03 +105 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:03 +106 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:03 +107 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
 00:04 +108 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
-00:04 +109 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
-00:04 +110 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
-00:04 +111 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:04 +109 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +110 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +111 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
 00:04 +112 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
 00:04 +113 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
-00:04 +114 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +115 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +116 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +117 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +118 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +119 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +120 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +121 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +122 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +123 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +124 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +125 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +126 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +127 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +128 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +129 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +130 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +131 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +132 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +133 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +134 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +135 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +136 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +137 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +138 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +139 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +140 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +141 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +142 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +143 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +144 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +145 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +146 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +147 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +148 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +149 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +150 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +151 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +152 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:04 +153 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:05 +154 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:05 +155 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:05 +156 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:05 +157 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:05 +158 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:05 +159 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:05 +160 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
-00:05 +161 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
+00:04 +114 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +115 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +116 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +117 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +118 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +119 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +120 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +121 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +122 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +123 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +124 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +125 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +126 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +127 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +128 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +129 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +130 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +131 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +132 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +133 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +134 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +135 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +136 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +137 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +138 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +139 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +140 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +141 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +142 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +143 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +144 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +145 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +146 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +147 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +148 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +149 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +150 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +151 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +152 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +153 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +154 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +155 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +156 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +157 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +158 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +159 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/assist_mode_test.dart: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:04 +160 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
+00:04 +161 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
 00:05 +162 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
 00:05 +163 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
 00:05 +164 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
@@ -207,38 +207,38 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:05 +172 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
 00:05 +173 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
 00:05 +174 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
-00:05 +175 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:05 +176 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:05 +177 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:05 +178 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:05 +179 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:05 +180 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:05 +181 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:05 +182 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:05 +183 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:05 +184 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +175 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
+00:05 +176 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
+00:05 +177 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
+00:05 +178 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
+00:05 +179 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
+00:05 +180 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
+00:05 +181 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
+00:05 +182 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
+00:05 +183 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
+00:05 +184 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible and the approval flow is unchanged
 00:05 +185 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
 00:05 +186 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
 00:05 +187 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
 00:05 +188 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
 00:05 +189 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +190 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +191 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +192 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +193 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +194 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +195 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +196 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +197 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +198 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +199 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +200 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +201 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +202 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +203 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +204 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +205 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +206 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +190 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +191 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +192 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +193 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +194 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +195 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +196 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +197 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +198 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +199 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +200 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +201 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +202 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +203 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +204 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +205 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:05 +206 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
 00:06 +207 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
 00:06 +208 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
 00:06 +209 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
@@ -256,14 +256,14 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:06 +221 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
 00:06 +222 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
 00:06 +223 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
-00:06 +224 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: a draft typed in Compact survives Expand back to the Workspace composer
-00:06 +225 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: a draft typed in Compact survives Expand back to the Workspace composer
+00:06 +224 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
+00:06 +225 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: authorizing a not-connected service updates its state
 00:06 +226 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: a draft typed in Compact survives Expand back to the Workspace composer
 00:06 +227 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: a draft typed in Compact survives Expand back to the Workspace composer
 00:06 +228 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: a draft typed in Compact survives Expand back to the Workspace composer
 00:06 +229 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: a draft typed in Compact survives Expand back to the Workspace composer
-00:06 +230 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
-00:06 +231 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:06 +230 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: a draft typed in Compact survives Expand back to the Workspace composer
+00:06 +231 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
 00:06 +232 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
 00:06 +233 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
 00:06 +234 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
@@ -289,20 +289,20 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:06 +254 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
 00:06 +255 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
 00:06 +256 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
-00:07 +257 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:06 +257 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
 00:07 +258 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
 00:07 +259 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
 00:07 +260 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
 00:07 +261 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
 00:07 +262 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
-00:07 +263 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
-00:07 +264 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
-00:07 +265 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
-00:07 +266 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
-00:07 +267 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
-00:07 +268 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
-00:07 +269 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
-00:07 +270 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:07 +263 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +264 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +265 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +266 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +267 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +268 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +269 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +270 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
 00:07 +271 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
 00:07 +272 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
 00:07 +273 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
@@ -312,7 +312,7 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:07 +277 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
 00:07 +278 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
 00:08 +279 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
-00:08 +280 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:08 +280 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:08 +281 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:08 +282 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:08 +283 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
@@ -356,8 +356,8 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:08 +321 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:08 +322 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:08 +323 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
-00:08 +324 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
-00:08 +325 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:09 +324 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:09 +325 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:09 +326 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:09 +327 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:09 +328 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
@@ -386,8 +386,8 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:09 +351 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:09 +352 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:09 +353 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
-00:09 +354 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
-00:09 +355 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
+00:10 +354 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +355 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
 00:10 +356 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
 00:10 +357 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
 00:10 +358 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
@@ -395,9 +395,9 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:10 +360 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
 00:10 +361 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
 00:10 +362 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
-00:10 +363 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
-00:10 +364 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
-00:10 +365 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
+00:11 +363 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
+00:11 +364 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
+00:11 +365 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
 00:11 +366 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
 00:11 +367 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
 00:11 +368 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
@@ -406,30 +406,30 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:11 +371 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
 00:11 +372 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
 00:11 +373 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
-00:11 +374 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
-00:11 +375 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
-00:11 +376 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
-00:11 +377 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
-00:11 +378 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
-00:11 +379 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:11 +374 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/uiv2_postint_test.dart: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
+00:11 +375 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:11 +376 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:11 +377 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:11 +378 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:11 +379 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
 00:11 +380 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
 00:11 +381 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
 00:11 +382 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
 00:11 +383 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
 00:11 +384 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
-00:11 +385 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
-00:11 +386 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
-00:12 +387 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
-00:12 +388 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
-00:12 +389 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:12 +385 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:12 +386 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:12 +387 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:12 +388 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:12 +389 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
 00:12 +390 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
 00:12 +391 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
 00:12 +392 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
-00:13 +393 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:12 +393 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
 00:13 +394 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
-00:13 +395 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
-00:13 +396 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
-00:13 +397 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:13 +395 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:13 +396 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:13 +397 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
 00:13 +398 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
 00:13 +399 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
 00:13 +400 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
@@ -437,25 +437,25 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:14 +402 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
 00:14 +403 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
 00:14 +404 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
-00:14 +405 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +406 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +407 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +408 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +409 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +410 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +411 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +412 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +413 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +414 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +415 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +416 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +417 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +418 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +419 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +420 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +421 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +422 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:14 +423 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:14 +405 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +406 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +407 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +408 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +409 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +410 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +411 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +412 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +413 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +414 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +415 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +416 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +417 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +418 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +419 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +420 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +421 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +422 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:14 +423 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
 00:14 +424 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
 00:14 +425 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
 00:14 +426 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
@@ -464,10 +464,10 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:14 +429 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
 00:14 +430 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
 00:14 +431 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:15 +432 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:15 +433 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:15 +434 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:15 +435 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:14 +432 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:14 +433 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:14 +434 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:14 +435 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
 00:15 +436 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
 00:15 +437 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
 00:15 +438 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
@@ -478,12 +478,12 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:15 +443 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
 00:15 +444 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
 00:15 +445 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:15 +446 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:15 +447 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:15 +448 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:15 +449 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:16 +450 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
-00:16 +451 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:15 +446 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:15 +447 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:16 +448 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:16 +449 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:16 +450 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:16 +451 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:16 +452 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:16 +453 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:16 +454 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
@@ -499,7 +499,7 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:16 +464 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:16 +465 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:16 +466 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
-00:16 +467 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:17 +467 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:17 +468 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:17 +469 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:17 +470 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
@@ -513,8 +513,8 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:17 +478 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:17 +479 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:17 +480 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
-00:18 +481 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
-00:18 +482 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:17 +481 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:17 +482 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:18 +483 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:18 +484 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:18 +485 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
@@ -535,9 +535,9 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:18 +500 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:18 +501 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:18 +502 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
-00:19 +503 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
-00:19 +504 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
-00:19 +505 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
+00:18 +503 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:19 +504 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:19 +505 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
 00:19 +506 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
 00:19 +507 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
 00:19 +508 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
@@ -548,32 +548,32 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:19 +513 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
 00:19 +514 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
 00:19 +515 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
-00:19 +516 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
-00:19 +517 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
-00:19 +518 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
-00:20 +519 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
-00:20 +520 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
-00:20 +521 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
-00:20 +522 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
-00:20 +523 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/companion_settings_test.dart: settings page voices: installed ones listed by engine, previews use the prefs
-00:20 +524 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/companion_settings_test.dart: settings page voices: installed ones listed by engine, previews use the prefs
+00:20 +516 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/office_print_view_test.dart: print panel: virtual printers only, preview, card, Settings hand-off on click
+00:20 +517 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +518 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +519 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +520 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +521 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +522 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +523 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +524 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:20 +525 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:20 +526 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:20 +527 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:20 +527 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/paired_runtime_live_test.dart: Dart bridge drives the REAL worker and server
+00:20 +528 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +529 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +530 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +531 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +532 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +533 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +534 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:20 +534 ~1: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/paired_runtime_live_test.dart: Dart bridge drives the REAL worker and server
   Skip: needs URI_CLIENT_MANIFEST (scripts/validate_c6_bridge.py)
-00:20 +527 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:20 +528 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:20 +529 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:20 +530 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:20 +531 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:20 +532 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:20 +533 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:20 +534 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:20 +535 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:20 +536 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:20 +537 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:20 +538 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:21 +537 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:21 +538 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:21 +539 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:21 +540 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:21 +541 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
@@ -583,40 +583,40 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:21 +545 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:21 +546 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:21 +547 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +548 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +549 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +550 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +551 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +552 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +553 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:21 +548 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:21 +549 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:21 +550 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:21 +551 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:21 +552 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
+00:21 +553 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:22 +554 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
 00:22 +555 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +556 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +557 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +558 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +558 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/supervised_runtime_live_test.dart: Dart runtime drives the REAL supervised worker: lifecycle, mid-run cancel, reconnect
+00:22 +556 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:22 +557 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:22 +558 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:22 +559 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:22 +560 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:22 +561 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:22 +562 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:22 +563 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:22 +564 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:23 +565 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:23 +566 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:23 +567 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:23 +568 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:23 +569 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:23 +570 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:23 +571 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:23 +572 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:23 +573 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:23 +574 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:24 +574 ~2: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/supervised_runtime_live_test.dart: Dart runtime drives the REAL supervised worker: lifecycle, mid-run cancel, reconnect
   Skip: needs URI_CLIENT_MANIFEST (scripts/phase2ops_validate_ui_bridge.py)
-00:22 +558 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +559 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:22 +560 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/presentation_editor_test.dart: AB-10/AB-5: edit from the presentation view, change, undo, add a slide, save through the card
-00:23 +561 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +562 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +563 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +564 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +565 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +566 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +567 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +568 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +569 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +570 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +571 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +572 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +573 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +574 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +575 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +576 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +577 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
-00:23 +578 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/office/word_editor_test.dart: C-8: edit a Word document by block, page section, find and replace, save through the card
+00:24 +574 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:24 +575 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:24 +576 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:24 +577 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:24 +578 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:24 +579 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:24 +580 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:24 +581 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
@@ -635,14 +635,14 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:24 +594 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:24 +595 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:24 +596 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:24 +597 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:24 +598 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:24 +599 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:24 +600 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:24 +601 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:24 +602 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:24 +603 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:24 +604 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:25 +597 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:25 +598 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:25 +599 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:25 +600 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:25 +601 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:25 +602 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:25 +603 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:25 +604 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:25 +605 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:25 +606 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:25 +607 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
@@ -650,173 +650,174 @@ Warning: A tag was used that wasn't specified in dart_test.yaml.
 00:25 +609 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:25 +610 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:25 +611 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:25 +612 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:25 +613 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:25 +614 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:25 +615 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:25 +616 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:25 +617 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:25 +618 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:25 +619 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:25 +620 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:25 +621 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:26 +612 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:26 +613 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:26 +614 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:26 +615 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:26 +616 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:26 +617 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:26 +618 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:26 +619 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:26 +620 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:26 +621 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:26 +622 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:26 +623 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:26 +624 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:26 +625 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:26 +626 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
 00:26 +627 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +628 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +629 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +630 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +631 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +632 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +633 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +634 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +635 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +636 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +637 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +638 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +639 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +640 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +641 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +642 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +643 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +644 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +645 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +646 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +647 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +648 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +649 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +650 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +651 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +652 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +653 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +654 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +655 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +656 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +657 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +658 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +659 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:26 +660 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +661 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +662 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +663 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +664 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +665 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +666 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +667 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +668 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +669 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +670 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +671 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +672 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +673 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +674 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +675 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +676 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +677 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +678 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +679 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +680 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +681 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +682 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +683 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +684 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +685 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +686 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +687 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +688 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +689 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +690 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +691 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +692 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +693 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +694 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +695 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +696 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +697 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +698 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:27 +699 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:28 +700 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
-00:28 +701 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +702 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +703 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +704 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +705 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +706 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +707 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +708 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +709 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +710 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +711 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +712 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +713 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +714 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +715 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +715 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +716 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +717 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +718 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:28 +719 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
-00:29 +720 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_draft_test.dart: panel: version, simulated label, flags, missing, changes and original views, undo button
-00:29 +721 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_draft_test.dart: panel: version, simulated label, flags, missing, changes and original views, undo button
-00:29 +722 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_draft_test.dart: panel: version, simulated label, flags, missing, changes and original views, undo button
-00:29 +723 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_draft_test.dart: panel: version, simulated label, flags, missing, changes and original views, undo button
-00:29 +723 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_draft_test.dart: panel: version, simulated label, flags, missing, changes and original views, undo button
-00:29 +724 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_draft_test.dart: panel: version, simulated label, flags, missing, changes and original views, undo button
-00:29 +725 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_draft_test.dart: panel: version, simulated label, flags, missing, changes and original views, undo button
-00:29 +726 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_draft_test.dart: panel: version, simulated label, flags, missing, changes and original views, undo button
-00:29 +727 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_draft_test.dart: panel: version, simulated label, flags, missing, changes and original views, undo button
-00:29 +728 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: markdown (L-MD) a Brain answer renders without raw markdown markers
-00:29 +729 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: markdown (L-MD) a Brain answer renders without raw markdown markers
+00:27 +628 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +629 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +630 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +631 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +632 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +633 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +634 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +635 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +636 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +637 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +638 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +639 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +640 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +641 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +642 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/ui_v2_test.dart: viewer exposes every existing design and state with one isolated renderer
+00:27 +643 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:27 +644 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:27 +645 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:27 +646 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +647 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +648 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +649 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +650 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +651 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +652 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +653 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +654 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +655 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +656 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +657 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +658 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +659 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +660 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +661 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +662 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +663 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +664 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +665 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +666 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +667 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +668 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:27 +669 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +670 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +671 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +672 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +673 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +674 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +675 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +676 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +677 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +678 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +679 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +680 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/settings_server_address_test.dart: a connection failure shows a useful diagnostic reason, not just "Not reachable"
+00:28 +681 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +682 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +683 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +684 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +685 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +686 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +687 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +688 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +689 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +690 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +691 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +692 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +693 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +694 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +695 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +696 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +697 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +698 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +699 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +700 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +701 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +702 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +703 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +704 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +705 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:28 +706 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +707 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +708 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +709 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +710 ~3: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +710 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +711 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +712 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +713 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +714 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +715 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +716 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +717 ~4: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +717 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +718 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/fcv_context_rail_test.dart: live worker: the context rail carries no simulated placeholder rows
+00:29 +719 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_draft_test.dart: panel: version, simulated label, flags, missing, changes and original views, undo button
+00:29 +720 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_ws_combined_test.dart: after the worker exited the panel offers Copy only
+00:29 +721 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ti_ws_combined_test.dart: after the worker exited the panel offers Copy only
+00:29 +722 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: markdown (L-MD) a Brain answer renders without raw markdown markers
+00:29 +723 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: markdown (L-MD) a Brain answer renders without raw markdown markers
+00:29 +724 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: markdown (L-MD) a Brain answer renders without raw markdown markers
+00:29 +725 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:29 +726 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:29 +727 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:29 +728 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:29 +729 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
 00:29 +730 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
 00:29 +731 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
 00:29 +732 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
 00:29 +733 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
 00:29 +734 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +735 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +736 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +737 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +738 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +739 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +740 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +741 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +742 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +743 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +744 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +745 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:29 +746 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
-00:30 +747 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: worker failure (R-BUSY, H-AC7) a worker that hangs before replying to the turn is detected; the request is not repeated
+00:30 +735 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +736 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +737 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +738 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +739 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +740 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +741 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +742 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +743 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +744 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +745 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +746 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
+00:30 +747 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 mode changes retain worker approval without a decision or duplicate turn
 00:30 +748 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: worker failure (R-BUSY, H-AC7) a worker that hangs before replying to the turn is detected; the request is not repeated
-00:30 +749 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: worker failure (R-BUSY, H-AC7) a worker that hangs before replying to the turn is detected; the request is not repeated
-00:30 +750 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: worker failure (R-BUSY, H-AC7) a worker that hangs before replying to the turn is detected; the request is not repeated
-00:30 +751 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: worker failure (R-BUSY, H-AC7) a worker that hangs before replying to the turn is detected; the request is not repeated
-00:30 +752 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated: Start new work asks the real worker, never the simulator
-00:30 +753 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated: Start new work asks the real worker, never the simulator
-00:30 +754 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated: Start new work asks the real worker, never the simulator
-00:30 +755 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated: Start new work asks the real worker, never the simulator
+00:30 +749 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: worker failure (R-BUSY, H-AC7) a probe that answers clears the alarm; a long-silent job is stalled, not unresponsive
+00:30 +750 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: typed text is only ever a turn; approval is the structured decision with the shown digest
+00:30 +751 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: typed text is only ever a turn; approval is the structured decision with the shown digest
+00:30 +752 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: worker failure (R-BUSY, H-AC7) Restart URI replaces the worker, never retries the turn, and withdraws the card
+00:30 +753 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: worker failure (R-BUSY, H-AC7) Restart URI replaces the worker, never retries the turn, and withdraws the card
+00:30 +754 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: worker failure (R-BUSY, H-AC7) Restart URI replaces the worker, never retries the turn, and withdraws the card
+00:30 +755 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: worker failure (R-BUSY, H-AC7) Restart URI replaces the worker, never retries the turn, and withdraws the card
 00:30 +756 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated: Start new work asks the real worker, never the simulator
 00:30 +757 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated: Start new work asks the real worker, never the simulator
 00:30 +758 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated: Start new work asks the real worker, never the simulator
 00:30 +759 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated: Start new work asks the real worker, never the simulator
-00:30 +760 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: Dashboard Brain card (L-DASH, H-AC8) real worker data, no Simulated badge on the Brain tile
-00:30 +761 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 dashboard counts the worker approval waiting for the user
+00:30 +760 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated: Start new work asks the real worker, never the simulator
+00:31 +761 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_hardening_test.dart: Dashboard Brain card (L-DASH, H-AC8) real worker data, no Simulated badge on the Brain tile
 00:31 +762 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 dashboard counts the worker approval waiting for the user
-00:31 +763 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated Connections says accounts are not managed here (no mock results)
-00:31 +764 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: ready Brain shows the ready colour without a health report
-00:31 +765 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: approval card buttons send the decision; deny is a decision too
-00:31 +766 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: Brain picker lists only selectable rows and selection is explicit
-00:31 +767 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: legacy address detection
-00:31 +768 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: root: worker start failure is reported honestly
-00:31 +769 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: root: Living is the default shell; opening classic closes the integrated worker first
-00:31 +770 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: events that arrive before the turn is registered are replayed, not lost
-00:31 +771 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: a decision whose events beat its reply still ends the turn
-00:31 +772 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: the card can be decided while its own turn is still finishing
-00:31 +773 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: the original job's late turn.finished does not end the decision's continuation
-00:31 +774 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: a refused confirmation keeps its card when the refusal is transient
-00:31 +775 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: a timed-out confirmation also stays busy without a retry card
-00:31 +776 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: worker exit clears busy and shows the error state
-00:31 +777 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: a timed-out decision is an unknown outcome: busy, no retry card, reconciled by its turn.finished
-00:31 +778 ~5: All tests passed!
+00:31 +763 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 dashboard counts the worker approval waiting for the user
+00:31 +764 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: V2 integrated Connections says accounts are not managed here (no mock results)
+00:32 +765 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: ready Brain shows the ready colour without a health report
+00:32 +766 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: approval card buttons send the decision; deny is a decision too
+00:32 +767 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: Brain picker lists only selectable rows and selection is explicit
+00:32 +768 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: legacy address detection
+00:32 +769 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: root: worker start failure is reported honestly
+00:32 +770 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: root: Living is the default shell; opening classic closes the integrated worker first
+00:32 +771 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: events that arrive before the turn is registered are replayed, not lost
+00:32 +772 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: a decision whose events beat its reply still ends the turn
+00:32 +773 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: the card can be decided while its own turn is still finishing
+00:32 +774 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: the original job's late turn.finished does not end the decision's continuation
+00:32 +775 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: a refused confirmation keeps its card when the refusal is transient
+00:32 +776 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: a timed-out confirmation also stays busy without a retry card
+00:32 +777 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: worker exit clears busy and shows the error state
+00:32 +778 ~5: D:/uri-dev/uri-brain-quick-controls/uri_ui/test/ws/ws_integration_test.dart: a timed-out decision is an unknown outcome: busy, no retry card, reconciled by its turn.finished
+00:32 +779 ~5: All tests passed!
 exit=0
