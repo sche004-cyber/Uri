@@ -1,11 +1,14 @@
 # Ember V2.1 - controlled canonical integration, stage 2 receipt
 
-**Status: QUALIFIED ON CURRENT CANONICAL - CANONICAL INTEGRATION BLOCKED (OD-2 licensing).**
-Ember is NOT integrated and NOT pushed. Owner authorization (2026-10-18) permits integration after gates but "does not
-authorize ... waiving licensing requirements" and says "Do not push Ember while licensing clearance remains
-unresolved". Canonical is the `uri-repo` branch, so integration requires a push; that push would publish the reference
-art (section 6). Reviewer verdicts are independent read-only subagents (Codex quota-blocked until 2026-10-22), not
-owner approval.
+**Status (revised 2026-10-18 after the owner's OD-2 policy decision): QUALIFIED ON CURRENT CANONICAL - READY FOR
+OWNER INTEGRATION AUTHORIZATION.** Ember is NOT integrated and NOT pushed. OD-2 is now a deferred
+distribution-release gate, not an integration blocker (`03_EMBER_OD2_PROVENANCE.md`): no external distribution of
+Ember artwork before the distribution-phase rights review. The canonical remote `uri-repo` (`sche004-cyber/Uri`) is
+private (checked 2026-10-18). Canonical integration still requires separate owner authorization. Reviewer verdicts are
+independent read-only subagents (Codex quota-blocked until 2026-10-22), not owner approval.
+
+Earlier status line (kept for history): "QUALIFIED ON CURRENT CANONICAL - CANONICAL INTEGRATION BLOCKED (OD-2
+licensing)", superseded by the owner's reclassification.
 
 ## 1. Provenance
 
@@ -75,7 +78,7 @@ startup gap; AC-P1 peak VRAM. Accepted limitations vs mandatory: none of these i
 decisions recorded since the Ember V2.1 closure. Additional: INTEG harness notes above; HARN-2 (Ember probe gate
 looseness, recorded in the Ember receipt).
 
-## 6. Licensing (OD-2) - BLOCKING for canonical integration
+## 6. Licensing (OD-2) - deferred distribution-release gate (was: blocking)
 
 Investigation (`ember_stage2/review/OD2_licensing_investigation.md`, repository evidence only):
 - OD-2 asks the licence of the reference art ("Fiverr illustration; emotions sheet carries a Gemini mark"); the recorded
