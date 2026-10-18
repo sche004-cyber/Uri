@@ -1646,13 +1646,21 @@
     "verdict": "ACCEPT WITH FINDINGS",
     "findings": 2,
     "outcome": "two INFO wording findings (R7-01 status_reason tail, R7-02 report section 8), fixed; no LOW or higher finding open"
+   },
+   {
+    "round": "RPI-R8",
+    "nonce": "RPI-R8-e04c17",
+    "reviewed_commit": "91f2b0bd",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 5,
+    "outcome": "pre-integration review after owner D1-D5: 2 LOW (R8-01 binding wording, R8-02 lifecycle review focus) and 3 INFO (R8-03 Brain QC writer, R8-04 API label, R8-05 rollback wording), all fixed in d1545c9e; no HIGH or MEDIUM"
    }
   ],
-  "next_round": "none planned by subagent review; driver-counted round (IC-3) when a driver reviewer is available"
+  "next_round": "RPI-R9 re-check of the R8 repairs before the fast-forward; a driver-counted round (IC-3) when a driver reviewer is available"
  },
  "status": "FAIL",
  "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS, bound 60-minute soaks soak-p2-e and soak-p3-e per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria whose top-level entries on the current commit are FAIL: [] (history, supporting and nested P1 results are listed above and in criteria; review R7-01).",
- "recorded_at": "2026-10-18T07:49:13.700258+00:00",
+ "recorded_at": "2026-10-18T07:49:34.758176+00:00",
  "corrections": [
   {
    "id": "C-1",

@@ -135,7 +135,13 @@ r["independent_audit"]["prior_rounds"].append(
 r["independent_audit"]["prior_rounds"].append(
     {"round": "RPI-R7", "nonce": "RPI-R7-2a9f50", "reviewed_commit": "b5007afc", "verdict": "ACCEPT WITH FINDINGS",
      "findings": 2, "outcome": "two INFO wording findings (R7-01 status_reason tail, R7-02 report section 8), fixed; no LOW or higher finding open"})
-r["independent_audit"]["next_round"] = "none planned by subagent review; driver-counted round (IC-3) when a driver reviewer is available"
+r["independent_audit"]["prior_rounds"].append(
+    {"round": "RPI-R8", "nonce": "RPI-R8-e04c17", "reviewed_commit": "91f2b0bd", "verdict": "ACCEPT WITH FINDINGS",
+     "findings": 5, "outcome": "pre-integration review after owner D1-D5: 2 LOW (R8-01 binding wording, R8-02 lifecycle "
+                               "review focus) and 3 INFO (R8-03 Brain QC writer, R8-04 API label, R8-05 rollback "
+                               "wording), all fixed in d1545c9e; no HIGH or MEDIUM"})
+r["independent_audit"]["next_round"] = ("RPI-R9 re-check of the R8 repairs before the fast-forward; a driver-counted round "
+                                        "(IC-3) when a driver reviewer is available")
 # Review R5-03: the binding.py that ran each bound run, from the hashes the run recorded (absent before R3-03).
 _bv = {}
 for _sub, _name in (("live", "session-start.json"), ("soak", "soak.json"), ("assist", "assist_vision.json"),
