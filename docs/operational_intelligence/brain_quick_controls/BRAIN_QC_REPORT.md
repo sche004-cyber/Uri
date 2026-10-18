@@ -170,3 +170,38 @@ one live switch round trip re-run. That is the main session's decision.
 No new live run was made. The R2 changes are a status re-read condition at the end of a switch, a notice text, and the
 order of an internal dict, and the widget and unit tests cover them. The live switch evidence (qc-4, qc-5) was taken
 on `78db55f6` and `578f7c40`, which do not include `ce5c2fe0`.
+
+### Gates for the R2 repairs: `9ea83b24` (code = `ce5c2fe0`)
+- pytest `tests/oi` + `tests/ws`: 763 passed, 23 skipped.
+- flutter test: 779 passed.
+- flutter analyze: 4 info messages, all in files this milestone did not touch.
+- Windows release build OK.
+- `ws_frozen_check` ok.
+- Frozen UI V2 files against `7893aaed`: +98/0 and +37/0 lines.
+
+The `25701f51` gate section above is kept as history.
+
+---
+
+## Review R3 (2026-10-18): ACCEPT WITH FINDINGS (2 LOW, 2 INFO); repairs
+
+The review report is in `review/R3_report.md`. The code and test repairs are in `e39a9a13`.
+
+| Finding | Change |
+|---|---|
+| R3-01 | `BRAIN_QC_QUALIFICATION.json` QC-9 and QC-10 now point to the current gates, and the R2 section above has its gate line. |
+| R3-02 | The R1-02 widget test now also asserts the notice wording ("a conversation URI has held since it started", "until URI is restarted"). |
+| R3-03 | The QC-F7 text and the `worker_bridge.py` comment now say: the sizes are never cleared except by LRU eviction beyond 64 sessions. |
+| R3-04 | The notice now reads "has held since it started" (it said "holds"); the test asserts the new wording. |
+| Nit | The R2-01 test is now described as a unit test of `OiConversation`. It lives in the widget test file. |
+
+### Gates at `e39a9a13` (final code)
+- pytest `tests/oi` + `tests/ws`: 763 passed, 23 skipped.
+- flutter test: 779 passed.
+- flutter analyze: 4 info messages, all in files this milestone did not touch.
+- `ws_frozen_check` ok.
+- Frozen UI V2 files against `7893aaed`: +98/0 and +37/0 lines.
+
+The release build was not re-run. Its last build is `9ea83b24`, recorded in `uibuild-release.head`. R3 changed only
+one string in the UI code. No live run was made for R3, as the coordinator directed: the changes are wording, a
+comment and a test assertion.

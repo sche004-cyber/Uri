@@ -4,9 +4,9 @@
  "date": "2026-10-18",
  "branch": "milestone/brain-quick-controls-20261018",
  "base": "f3d5eb29",
- "candidate_code_commit": "ce5c2fe0 (R2 repairs); live switch evidence qc-4/qc-5 on 78db55f6/578f7c40 (pre-R2 code)",
+ "candidate_code_commit": "e39a9a13 (final code; R3 wording/test repairs on ce5c2fe0); live switch evidence qc-4/qc-5 on 78db55f6/578f7c40 (pre-R2 code); no live run for R2/R3 changes",
  "classification": "COMPLETED_WITH_RESULT",
- "status": "R2_ACCEPTED_WITH_FINDINGS_REPAIRED",
+ "status": "R3_ACCEPTED_WITH_FINDINGS_REPAIRED",
  "acceptance": {
   "QC-1": {
    "status": "MET",
@@ -42,11 +42,11 @@
   },
   "QC-9": {
    "status": "MET_WITH_NOTE",
-   "evidence": "ws_frozen_check ok at 25701f51; UI V2 frozen files +96/0, +37/0; refreshHealth behaviour change disclosed (C-4); UI V2 68/68 uiv2-main-3"
+   "evidence": "at e39a9a13 (gates) / 9ea83b24 (R2 gates, code = ce5c2fe0): ws_frozen_check ok; UI V2 frozen files +98/0 (oi_conversation) and +37/0 (living_composer); refreshHealth behaviour change disclosed (C-4); UI V2 68/68 uiv2-main-3"
   },
   "QC-10": {
    "status": "MET",
-   "evidence": "at 25701f51: pytest 762/23 skipped, flutter test 778, analyze 4 pre-existing infos, release build exit 0 (all with .head files)"
+   "evidence": "gates at e39a9a13: pytest 763 passed/23 skipped, flutter test 779, analyze 4 pre-existing infos, frozen check ok (.head files); R2 gates at 9ea83b24 (code = ce5c2fe0) identical counts; Windows release build exit 0 at 9ea83b24 (not re-run for the R3 string change)"
   },
   "QC-11": {
    "status": "MET",
@@ -454,6 +454,13 @@
    "verdict": "ACCEPT WITH FINDINGS (3 LOW, 2 INFO)",
    "report": "review/R2_report.md",
    "repairs_commit": "ce5c2fe0"
+  },
+  {
+   "round": "R3",
+   "commit": "57b4e589",
+   "verdict": "ACCEPT WITH FINDINGS (2 LOW, 2 INFO)",
+   "report": "review/R3_report.md",
+   "repairs_commit": "e39a9a13"
   }
  ],
  "open_findings": [
@@ -463,7 +470,7 @@
   "QC-F4 test_frozen_core ALLOWED_NEW and phase2close_chain WS_EXACT not updated",
   "QC-F5 no automatic fallback after a failed start",
   "QC-F6 health chip shows previous tok/s briefly (pre-existing)",
-  "QC-F7 shrink refusal is worker-lifetime-wide; reserve heuristic",
+  "QC-F7 shrink refusal covers every conversation the worker has held; sizes never cleared except by LRU eviction beyond 64 sessions; reserve heuristic",
   "QC-F8 from a P3 host, Standard needs two switches",
   "IC-1: ws_brain_host.py, brain_health.py, run_uri_integrated_worker.py changed; integration needs rebase/merge onto the runtime-profiles tip (c3fc8bbc) or the integrated canonical with gates and a live switch re-run"
  ]
