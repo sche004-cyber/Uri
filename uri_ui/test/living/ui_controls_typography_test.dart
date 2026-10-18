@@ -36,7 +36,7 @@ void main() {
       expect(find.text('Switch the Brain to Long context?'), findsOneWidget);
       // the coupled change is stated: vision on -> off AND context 32K -> 64K
       final changes = find.byKey(const ValueKey('qc-confirm-changes'));
-      expect(find.descendant(of: changes, matching: find.text('Off')), findsOneWidget);
+      expect(find.descendant(of: changes, matching: find.text('Off')), findsNWidgets(2), reason: 'vision and draft');
       expect(find.descendant(of: changes, matching: find.text('64K')), findsOneWidget);
       expect(find.descendant(of: changes, matching: find.text('32K')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('qc-confirm-switch-go')));

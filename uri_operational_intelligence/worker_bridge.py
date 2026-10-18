@@ -156,6 +156,12 @@ class _NotSelected:
     detail = "No Brain is selected; the deterministic source does not answer open questions."
 
 
+def assist_state_of(assist) -> dict:
+    """Closure D2/D6: what the Quick Controls need from URI Assist. `granted` is true for any held grant, ACTIVE or
+    PAUSED (review QCC-R1-02): a paused session can resume at any moment, so vision stays."""
+    return {"asking": bool(assist.asking), "granted": assist.access.snapshot().get("state") != "OFF"}
+
+
 class IntegratedTurns:
     def __init__(self, *, orchestrator, cfg, status, write_event, memory=None, cloud=None, defer_start=False,
                  host_report=None, host_request=None):
@@ -667,10 +673,26 @@ class IntegratedTurns:
             reason = "NOT_SELECTED"
         try:
             return QC.controls(self.cfg, state, host_profile=(host or {}).get("profile") if alive else None,
-                               switch=switch, can_switch=reason is None, cannot_switch_reason=reason)
+                               switch=switch, can_switch=reason is None, cannot_switch_reason=reason,
+                               host_selection_error=(host or {}).get("selection_error") if alive else None,
+                               host_alive=bool(alive and host), assist=self._assist())
         except Exception as exc:          # a config the catalog cannot describe is reported, never guessed
             return {"schema": QC.SCHEMA, "active": None, "error": type(exc).__name__, "switch": switch,
                     "options": [], "can_switch": False, "cannot_switch_reason": "PROFILE_UNDESCRIBED"}
+
+    def switch_pending(self) -> bool:
+        """A profile switch this worker asked for has not finished (closure QCC-R1-04: Assist waits for it)."""
+        return bool(self._switch is not None and self._restart_pending())
+
+    def _assist(self):
+        """{"asking", "granted"} from the worker's Assist commands (set by the worker as `assist_state`), or None."""
+        fn = getattr(self, "assist_state", None)
+        if fn is None:
+            return None
+        try:
+            return fn()
+        except Exception:                 # Assist state is advisory for the controls; never breaks a status read
+            return None
 
     def _largest_context(self):
         """The largest last-answer context of any session in this worker (0 when none is known)."""
@@ -696,6 +718,12 @@ class IntegratedTurns:
         if self._restart_pending():
             raise BridgeRefused("BRAIN_RESTARTING")
         current = RP.describe(self.cfg)
+        # Closure D2/D6: no reload under a running Assist answer, and vision stays on while Assist holds a grant.
+        a = self._assist()
+        if a and a.get("asking"):
+            raise BridgeRefused("ASSIST_ASK_IN_PROGRESS")
+        if a and a.get("granted") and current.get("vision") in QC.VISION_ON and key[1] not in QC.VISION_ON:
+            raise BridgeRefused("ASSIST_NEEDS_VISION")
         live = self._largest_context()
         needed = live + ANSWER_RESERVE_TOKENS if live else 0
         plan = RP.plan_change(current, context=key[0], vision=key[1], mtp=key[2], live_tokens=needed)

@@ -23,7 +23,9 @@ OUT = HERE.parent / "live" / LABEL
 OUT.mkdir(parents=True, exist_ok=True)
 SRC = HERE.parents[3].parent            # docs/operational_intelligence/brain_quick_controls/evidence/harness -> repo
 UI = SRC / "uri_ui"
-RT = pathlib.Path(r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\runtime4")
+# Closure (BRAIN-QC-CLOSURE-20261018): the runtime is configurable; default = the QC runtime4.
+RT = pathlib.Path(__import__("os").environ.get(
+    "URI_QC_RT", r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\runtime4"))
 FX = pathlib.Path(r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\fixtures") / LABEL
 current = json.loads((RT / "work/c1/ws-current.json").read_text())
 if "--fresh-prefs" in sys.argv and FX.exists():
@@ -60,6 +62,7 @@ record = dict(label=LABEL, source_head=git("rev-parse", "HEAD"), source_tree=git
               command=command, driver_sha256=hashlib.sha256(driver_src.read_bytes()).hexdigest(),
               entry="original production main() via integration_test (Debug build); taps and TestTextInput",
               physical_keyboard_qualified=False, physical_mouse_qualified=False,
+              closure_steps=os.environ.get("URI_QC_CLOSURE") == "1", runtime=str(RT),
               started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
 t = time.monotonic()
 p = None

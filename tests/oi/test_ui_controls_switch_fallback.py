@@ -216,3 +216,24 @@ def test_profile_id_maps_back_to_the_catalog():
     assert QC.entry_by_profile_id("frozen")["id"] == "standard"
     assert QC.entry_by_profile_id("c64k-visoff-mtpoff")["id"] == "long"
     assert QC.entry_by_profile_id("nope") is None
+
+
+def test_restore_to_standard_draft_off_after_the_closure(tmp_path, monkeypatch):
+    """Closure ec2fab54 made P3 (Standard, draft off) a Quick Controls target; a failed switch away from it restores it."""
+    p3 = RP.derive_config(frozen(), 32768, "gpu", False)
+    H, h = qc_host(tmp_path, lambda: ROOMY, cfg=p3)
+    monkeypatch.setattr(H.R, "RuntimeManager", FakeRM)
+    monkeypatch.setattr(h, "owners", lambda: set())
+    monkeypatch.setattr(h, "calibrate", lambda pid, **k: h.set("READY", detail=None))
+    FakeRM.plan, FakeRM.started = {"c64k-visoff-mtpoff": "FAILED"}, []
+    h.lease = G.acquire("runtime_v1_brain", label="t", expected_vram_mib=h.required_mib, directory=tmp_path / "lease")
+    try:
+        h.mgr = FakeMgr()
+        assert request(h, {"ctx": 65536, "vision": "off", "mtp": False}) == "reconfigure"
+        h.reconfigure()
+        sw = h.report["profile_switch"]
+        assert sw["restored"] is True and sw["fallback"]["to"] == "c32k-visgpu-mtpoff"
+        assert sw["fallback"]["label"] == QC.entry_by_id("standard-nodraft")["label"]
+        assert FakeRM.started == ["c64k-visoff-mtpoff", "c32k-visgpu-mtpoff"] and lease_mib(tmp_path) == 14360
+    finally:
+        h.lease.release("test")

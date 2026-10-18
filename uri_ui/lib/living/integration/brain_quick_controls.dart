@@ -30,6 +30,7 @@ class QcOption {
   String get summary => raw['summary'] as String? ?? '';
   int get ctx => (raw['ctx'] as num).toInt();
   bool get visionOn => raw['vision_on'] == true;
+  bool get mtp => raw['mtp'] == true;
   bool get qualified => raw['qualified'] == true;
 
   /// A Quick Controls target: qualified AND offered (an older worker without the field: qualified).
@@ -149,6 +150,61 @@ List<QcChoice> contextChoices(List<QcOption> options, Map<String, dynamic>? acti
   return out;
 }
 
+/// Draft (speculative decoding, MTP) On / Off at the running context and
+/// vision (closure D2/D6): offered only where two qualified profiles differ
+/// in the draft alone (Standard and Standard, draft off). Vision and context
+/// stay as they are. Empty when there is nothing to choose.
+List<QcChoice> draftChoices(List<QcOption> options, Map<String, dynamic>? active) {
+  if (active == null) return const [];
+  final activeCtx = (active['ctx'] as num?)?.toInt();
+  final activeOn = active['vision_on'] == true;
+  final activeMtp = active['mtp'] == true;
+  final same = options.where((o) => o.switchable && o.ctx == activeCtx && o.visionOn == activeOn).toList();
+  if ({for (final o in same) o.mtp}.length < 2) return const [];
+  final out = <QcChoice>[];
+  for (final on in [true, false]) {
+    final title = on ? 'On' : 'Off';
+    if (activeMtp == on) {
+      out.add(QcChoice(title: title, current: true, note: 'Current: ${active['label'] ?? ''}'));
+      continue;
+    }
+    final t = _firstQualified(same.where((o) => o.mtp == on));
+    if (t != null) out.add(QcChoice(title: title, target: t, note: '${t.label}: ${t.summary}'));
+  }
+  return out;
+}
+
+/// Closure D2/D6: while URI Assist holds a grant ([locked]), a choice that
+/// would turn vision off is shown disabled with the reason.
+List<QcChoice> lockVision(List<QcChoice> xs, bool locked, Map<String, dynamic>? active) {
+  if (!locked || active?['vision_on'] != true) return xs;
+  return [
+    for (final x in xs)
+      if (x.target != null && !x.target!.visionOn)
+        QcChoice(title: x.title, blocked: 'A URI Assist session is open, so URI keeps vision on. End it first.')
+      else
+        x,
+  ];
+}
+
+/// The host and the worker disagree about the running Brain (closure D3,
+/// QC-F9): what to tell the user, or null when they agree.
+String? mismatchNotice(Map<String, dynamic> controls) {
+  final m = (controls['mismatch'] as Map?)?.cast<String, dynamic>();
+  if (m == null) return null;
+  final host = m['host'] ?? 'an unknown setting';
+  if (m['code'] == 'HOST_SELECTION_ERROR') {
+    return 'The Brain host could not save its setting (${m['selection_error']}). The Brain works now; if URI '
+        'stops recognising it, Restart Brain.';
+  }
+  if (m['code'] == 'PROFILE_NOT_SELECTABLE' || m['host_qualified'] == false) {
+    return 'The Brain host runs $host, which is not a qualified choice. URI does not use it: choose a setting or '
+        'Restart Brain.';
+  }
+  return 'The Brain host runs $host but URI expects ${m['worker'] ?? 'another setting'}. URI does not use it '
+      'until they match: choose a setting or Restart Brain.';
+}
+
 String thinkingLabel(OiDepth d) => switch (d) {
       OiDepth.auto => 'Auto',
       OiDepth.fast => 'Off',
@@ -233,6 +289,7 @@ class BrainQuickControls extends StatelessWidget {
                       : 'not running'
           : null;
       final errorLook = active == null && !pending && outcome == QcOutcome.error;
+      final locked = controls['vision_locked'] == true;
       final why = canSwitch
           ? null
           : conv.busy
@@ -247,7 +304,8 @@ class BrainQuickControls extends StatelessWidget {
           : configured == null
               ? null
               : configured['vision'] != 'off';
-      final vis = visionChoices(options, active);
+      // Closure D2/D6: while URI Assist holds a grant, a choice that turns vision off is disabled with the reason.
+      final vis = lockVision(visionChoices(options, active), locked, active);
       final want = visionOn == true ? 'Off' : 'On';
       final vt = visionOn == null ? (choice: null, blocked: const <String>[]) : toggleChoice(vis, want);
       final visTip = why ??
@@ -278,7 +336,7 @@ class BrainQuickControls extends StatelessWidget {
       ));
 
       // Context: one size at a time, so a selection, not toggles.
-      final ctxChoices = contextChoices(options, active);
+      final ctxChoices = lockVision(contextChoices(options, active), locked, active);
       final activeCtx = (active?['ctx'] as num?)?.toInt();
       final sizes = {for (final o in options) o.ctx}.toList()..sort();
       controlsRow.add(QcSegmented(
@@ -293,6 +351,27 @@ class BrainQuickControls extends StatelessWidget {
           for (final ctx in sizes) _contextSegment(ctx, ctxChoices, active, activeCtx, why, canSwitch && !pending, context),
         ],
       ));
+
+      // Draft (closure D2/D6): a toggle, offered only where two qualified profiles differ in the draft alone
+      // (Standard = On, Standard, draft off = Off). Vision and context stay.
+      final draft = draftChoices(options, active);
+      if (draft.isNotEmpty) {
+        final draftOn = active?['mtp'] == true;
+        final dt = toggleChoice(draft, draftOn ? 'Off' : 'On');
+        controlsRow.add(QcToggle(
+          key: const ValueKey('qc-draft'),
+          icon: Icons.bolt_outlined,
+          label: 'Draft',
+          visual: draftOn ? QcVisual.on : QcVisual.off,
+          tooltip: why ??
+              'Draft is ${draftOn ? 'on' : 'off'}. A speculative draft speeds up structured answers; Off uses about '
+                  '1.2 GB less GPU memory. Vision and context stay. Click to turn it ${draftOn ? 'off' : 'on'}; '
+                  'the Brain reloads.',
+          onPressed: canSwitch && !pending && dt.choice != null
+              ? () => _confirmAndSwitch(context, dt.choice!, blocked: dt.blocked)
+              : null,
+        ));
+      }
 
       if (pending) {
         final last = (switchState['last'] as Map?)?.cast<String, dynamic>();
@@ -318,6 +397,8 @@ class BrainQuickControls extends StatelessWidget {
       QcOutcome.warning || QcOutcome.restored => c.warning,
       _ => c.inkSoft,
     };
+    // Closure D3: the host and the worker disagree about the running Brain (not shown while a switch runs).
+    final mismatch = pending ? null : mismatchNotice(controls);
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Column(
@@ -325,6 +406,14 @@ class BrainQuickControls extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Wrap(spacing: 8, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: controlsRow),
+          if (mismatch != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, left: 4),
+              child: Text(mismatch,
+                  key: const ValueKey('qc-mismatch'),
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      fontSize: UriType.caption, color: c.warning, height: 1.35)),
+            ),
           if (notice != null)
             Padding(
               padding: const EdgeInsets.only(top: 4, left: 4),
@@ -586,6 +675,8 @@ class QcSwitchDialog extends StatelessWidget {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 change('Vision', nowVision == null ? null : (nowVision ? 'On' : 'Off'), target.visionOn ? 'On' : 'Off'),
                 change('Context', nowCtx == null ? null : ctxLabel(nowCtx), ctxLabel(target.ctx)),
+                if (active != null && (active!['mtp'] == true) != target.mtp)
+                  change('Draft', active!['mtp'] == true ? 'On' : 'Off', target.mtp ? 'On' : 'Off'),
                 if (target.requiredMib != null)
                   change('GPU memory', nowMib == null ? null : '${gb(nowMib)} GB', '${gb(target.requiredMib!)} GB'),
               ]),
