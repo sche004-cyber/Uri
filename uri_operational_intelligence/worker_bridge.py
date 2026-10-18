@@ -81,7 +81,9 @@ MAX_TEXT = 20000
 MAX_HISTORY = 24
 MAX_PENDING = 64
 # Room kept for the next answer when judging whether a conversation fits a smaller context: the largest local output
-# cap (reasoning_policy MAX_TOKENS["normal"] = 4,000) rounded up.
+# cap (reasoning_policy MAX_TOKENS["normal"] = 4,000) rounded up. A heuristic, not a guarantee: the next user message
+# (up to MAX_TEXT characters) is not counted. The check covers every session this worker has answered since it started
+# (sizes are never cleared; the worker keeps their history too), so it is conservative (review R2-02).
 ANSWER_RESERVE_TOKENS = 4096
 
 
@@ -287,6 +289,7 @@ class IntegratedTurns:
                 ctx_n = sum(int(m.get(k) or 0) for k in ("prompt_n", "cache_n", "predicted_n"))
                 if ctx_n:
                     sid = self._turn_session.get(turn_id)
+                    self._context_tokens.pop(sid, None)          # re-insert: the dict order is least recently used
                     self._context_tokens[sid] = ctx_n
                     while len(self._context_tokens) > MAX_PENDING:
                         self._context_tokens.pop(next(iter(self._context_tokens)))

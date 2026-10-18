@@ -372,3 +372,21 @@ def test_a_switch_on_a_stopped_brain_starts_it_and_says_so(tmp_path, monkeypatch
     assert request(h, {"ctx": 65536, "vision": "off", "mtp": False}) == "reconfigure"
     h.reconfigure()
     assert started == ["c64k-visoff-mtpoff"] and h.report["profile_switch"]["started_stopped_brain"] is True
+
+
+def test_context_sizes_are_kept_least_recently_used(fake, tmp_path):  # noqa: F811
+    """Review R2-02 (a): an updated session moves to the end, so eviction drops the least recently used one."""
+    from uri_operational_intelligence import worker_bridge as WB
+    b, _, _ = bridge(fake, tmp_path)
+
+    def answer(sid, n):
+        tid = "t-" + sid + "-" + str(n)
+        b._turn_session[tid] = sid
+        b._sink(tid).emit(tid, "answer.done", metrics={"prompt_n": n, "cache_n": 0, "predicted_n": 0})
+    answer("long", 30000)
+    for i in range(WB.MAX_PENDING - 1):
+        answer("s%d" % i, 100)
+    answer("long", 30001)                       # used again: now the most recent
+    answer("new", 100)                          # one over the bound: the oldest unused session goes
+    assert "long" in b._context_tokens and "s0" not in b._context_tokens
+    assert len(b._context_tokens) == WB.MAX_PENDING and b._largest_context() == 30001

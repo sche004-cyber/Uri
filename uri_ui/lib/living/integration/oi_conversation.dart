@@ -283,7 +283,8 @@ class OiConversation extends ChangeNotifier {
       // server still answers READY until it is stopped, and the new one before its calibration, but neither is the
       // confirmed Brain yet; the header says "starting" until the switch is finished.
       final switching = (brainControls['switch'] as Map?)?['pending'] == true;
-      if (changed || switching || health['state'] == 'RECOVERING') {
+      // R2-01: a masked status left by a failed read is re-read until a real one replaces it.
+      if (changed || switching || health['state'] == 'RECOVERING' || brainStatus['switching'] == true) {
         final status = await rt.call({'command': 'brain_status'}).timeout(probeTimeout);
         if (!_active(rt)) return;
         brainStatus = switching && status['state'] == 'READY'
@@ -830,9 +831,10 @@ class OiConversation extends ChangeNotifier {
       if (r['refused'] == 'CONTEXT_SMALLER_THAN_CONVERSATION') {
         final d = (r['detail'] as Map?) ?? const {};
         final ctx = (d['ctx'] as num?)?.toInt();
-        profileNotice = 'Not switched: this conversation (about ${d['live_tokens'] ?? '?'} tokens, plus room for an '
-            'answer) does not fit in ${ctx == null ? 'the smaller context' : '${ctx ~/ 1024}K'}. '
-            'Keep the larger context for this conversation.';
+        // R2-02: the worker judges the longest conversation it has held since it started, not only this one.
+        profileNotice = 'Not switched: a conversation URI holds since it started uses about '
+            '${d['live_tokens'] ?? '?'} tokens; with room for an answer it does not fit in '
+            '${ctx == null ? 'the smaller context' : '${ctx ~/ 1024}K'}. Keep the larger context until URI is restarted.';
       }
       await refreshHealth();
       return r;

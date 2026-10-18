@@ -67,6 +67,7 @@ class QcRuntime implements IntegratedRuntime {
   Map<String, dynamic> Function(Map<String, dynamic>)? onReconfigure;
   String? refuse;
   Map<String, dynamic> status = {'state': 'READY'};
+  String? statusError;
 
   @override
   Stream<Map<String, dynamic>> get events => _events.stream;
@@ -87,6 +88,7 @@ class QcRuntime implements IntegratedRuntime {
       case 'brain_health':
         return health;
       case 'brain_status':
+        if (statusError != null) throw IntegratedRuntimeException(statusError!);
         return status;
       case 'brain_reconfigure':
         if (refuse != null) throw IntegratedRuntimeException(refuse!);
@@ -222,6 +224,27 @@ void main() {
       final n = rt.commands.where((c) => c['command'] == 'brain_status').length;
       await conv.refreshHealth();                    // steady READY: no extra status call
       expect(rt.commands.where((c) => c['command'] == 'brain_status').length, n);
+    });
+
+    test('R2-01: a failed status read when the switch ends does not leave the masked "starting" behind', () async {
+      final rt = QcRuntime();
+      final conv = await ready(rt);
+      await conv.refreshHealth();
+      rt.health = {'state': 'RECOVERING', 'controls': controls(pending: true)};
+      rt.status = {'state': 'READY'};
+      await conv.refreshHealth();
+      expect(conv.brainStatus['state'], 'STARTING');
+      // the switch ends, but the status read on that very poll fails
+      rt.health = {'state': 'READY', 'controls': controls(active: 'long')};
+      rt.statusError = 'WORKER_TIMEOUT';
+      await conv.refreshHealth();
+      expect(conv.brainStatus['switching'], isTrue, reason: 'the failed read left the mask');
+      // the next poll (health unchanged, READY) re-reads because the mask is still there
+      rt.statusError = null;
+      await conv.refreshHealth();
+      expect(conv.brainStatus['state'], 'READY');
+      expect(conv.brainStatus['switching'], isNull);
+      expect(conv.brainReady, isTrue);
     });
 
     testWidgets('a worker without quick controls shows only Thinking', (tester) async {
