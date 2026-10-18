@@ -1,0 +1,22 @@
+HEAD=d65b122ce994b3b745bff9de75bdf76cbfbcde19
+00:00 +0: loading D:/uri-dev/uri-brain-quick-controls/uri_ui/test/living/brain_quick_controls_test.dart
+00:00 +0: choice resolution from Standard: vision off and 64K both lead to Long context, 64K + vision is disabled
+00:00 +1: choice resolution from Long context: vision on is offered only with 32K (Standard, the frozen default)
+00:00 +2: choice resolution an unqualified option is never a target
+00:00 +3: truthfulness a profile not yet verified is never shown as current
+00:00 +4: truthfulness while a switch runs the controls say so and offer nothing
+00:00 +5: truthfulness R1-01: the header never reads ready while a switch runs (status READY at the edge, STOPPED later)
+00:00 +6: truthfulness R2-01: a failed status read when the switch ends does not leave the masked "starting" behind
+00:00 +7: truthfulness a worker without quick controls shows only Thinking
+00:00 +8: switching choosing 64K asks first, then sends one reconfigure for Long context
+00:01 +9: switching R1-02: a conversation that does not fit the smaller context is refused with the numbers
+00:01 +10: switching R1-08.1: a refusal notice clears after its time
+00:01 +11: switching R1-08.2/.3: non-final outcomes are explained; a stopped Brain is started only with a warning
+00:01 +12: switching a refusal is explained and nothing is shown as switched
+00:01 +13: switching the host outcome of this UI request is reported once it is final
+00:01 +14: switching no switch while URI is answering or without the Brain host
+00:01 +15: thinking Thinking On / Off is the next turn depth and reports what the answer did
+00:01 +16: the Workspace composer carries the quick controls
+00:02 +17: R1-08.4: in a small window the chip row steps aside and one compact button opens the controls
+00:02 +18: All tests passed!
+rc=0
