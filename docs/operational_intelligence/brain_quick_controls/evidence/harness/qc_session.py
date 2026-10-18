@@ -51,6 +51,16 @@ def main():
               "receipt": {k: v for k, v in json.loads((RT / "OI_MATERIALIZATION_RECEIPT.json").read_text()).items()
                           if k in ("head", "candidate_head", "candidate_tree", "candidate_source")},
               "brain_config_sha256_before": R.config_digest(R.load_config()), "override": False}
+    # Every file the materializer copied from the candidate is still byte-identical in the runtime AND in the
+    # candidate checkout (the runtime runs exactly the candidate's Python code).
+    import hashlib
+    receipt = json.loads((RT / "OI_MATERIALIZATION_RECEIPT.json").read_text())
+    src = pathlib.Path(receipt["candidate_source"])
+    sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()  # noqa: E731
+    bad = [rel for rel, d in receipt["oi_files_copied"].items()
+           if sha(RT / rel) != d or not (src / rel).exists() or sha(src / rel) != d]
+    record["runtime_verified"] = {"ok": not bad, "checked": len(receipt["oi_files_copied"]), "mismatched": bad[:20]}
+    assert not bad, bad[:20]
     assert R._listener_pid(CURRENT["port"]) is None, "server port busy"
     man = json.loads(pathlib.Path(CURRENT["server_manifest"]).read_text())
     srv_log = (OUT / "integrated-server.log").open("w", encoding="utf-8")
