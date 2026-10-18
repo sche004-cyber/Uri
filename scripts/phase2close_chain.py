@@ -300,6 +300,12 @@ WS_EXACT = frozenset((
     "uri_operational_intelligence/text_verify.py",
     "uri_operational_intelligence/triage.py",
     "uri_operational_intelligence/worker_bridge.py",
+    # BRAIN-QUICK-CONTROLS (with its declared prerequisite URI-RUNTIME-VRAM-R1): EXACT new paths, same WS-D3 rule.
+    "tests/oi/test_brain_quick_controls.py",
+    "tests/oi/test_runtime_profiles.py",
+    "uri_operational_intelligence/brain_profile.py",
+    "uri_operational_intelligence/images.py",
+    "uri_operational_intelligence/runtime_profiles.py",
     "work/oi/.gitignore",
     # URI Scheduler (docs/scheduler/SCHEDULER_ARCHITECTURE.md): EXACT new paths, same WS-D3 rule.
     "scripts/scheduler_live_test.py",

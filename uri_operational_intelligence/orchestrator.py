@@ -213,8 +213,10 @@ class Orchestrator:
         if tri.kind in (T.ACTION, T.HARNESS, T.MULTI_STEP) or tier.tier == RP.ESCALATE:
             emit("turn.routed", route="answer", triage=tri.to_dict(), tier=tier.to_dict())
             emit("error", code="IMAGE_ACTION_UNSUPPORTED", recoverable=True, recovery_options=["ask_about_image"],
-                 message="URI can answer questions about an image, but it cannot act on one yet. Ask about the "
-                         "image, or send the request without it.")
+                 message=("A stronger tool cannot take images yet. Ask the local Brain about the image (Thinking "
+                          "Auto, Off or On)." if tier.tier == RP.ESCALATE else
+                          "URI can answer questions about an image, but it cannot act on one yet. Ask about the "
+                          "image, or send the request without it."))
             return TurnOutcome(turn_id, "answer", tri.to_dict(), tier.to_dict(), "error",
                                answer={"status": "IMAGE_ACTION_UNSUPPORTED"})
         return self._answer_turn(text, session_id, tri, tier, emit, turn_id, history, cancel, images=images)

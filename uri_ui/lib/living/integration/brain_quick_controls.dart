@@ -328,14 +328,19 @@ Future<void> attachOiImage(BuildContext context, OiConversation conv, String nam
     refusal = 'VISION_OFF';
   } else {
     final used = conv.pendingImages.fold<int>(0, (n, i) => n + i.bytes.length);
-    final img = await prepareOiImage(name, Uint8List.fromList(bytes), limit: OiConversation.maxImageBytes - used);
+    OiImage? img;
+    try {
+      img = await prepareOiImage(name, Uint8List.fromList(bytes), limit: OiConversation.maxImageBytes - used);
+    } catch (_) {
+      img = null;            // not a picture Flutter can read: said plainly below, nothing is attached
+    }
     refusal = img == null ? 'IMAGES_TOO_LARGE' : conv.attachImage(img);
   }
   if (refusal == null || !context.mounted) return;
   final text = switch (refusal) {
     'VISION_OFF' => 'Vision is off, so the Brain cannot see images. Turn Vision on next to the Brain status first.',
     'IMAGES_INVALID' => 'At most ${OiConversation.maxImages} images can go with one message.',
-    _ => 'That image is too large to send. Try a smaller one.',
+    _ => 'That image could not be prepared for sending (too large or unreadable). Try a smaller PNG or JPEG.',
   };
   ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(text)));
 }
