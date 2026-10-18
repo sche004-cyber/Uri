@@ -1,0 +1,361 @@
+{
+ "profile": {
+  "name": "p-frozen",
+  "ctx": 32768,
+  "ctk": "q8_0",
+  "mtp": true,
+  "mtp_n": 2,
+  "vision": "gpu",
+  "draft_kv": "",
+  "b": 2048,
+  "ub": 1024,
+  "cache_ram": 2048,
+  "ckpt": 16,
+  "extra": [],
+  "env": [],
+  "port": 18572
+ },
+ "argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "32768",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18572",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--cache-ram",
+  "2048",
+  "--mmproj",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "-md",
+  "C:\\uri-model-lab\\mtp\\mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+  "--spec-type",
+  "draft-mtp",
+  "--spec-draft-n-max",
+  "2",
+  "-otd",
+  "token_embd.weight=CPU",
+  "--metrics",
+  "-lv",
+  "4"
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "lease": {
+  "acquired_at": 1792211705.322,
+  "label": "URI-RUNTIME-VRAM-R1 p-frozen",
+  "max_hold_s": 3600,
+  "pid": 13548
+ },
+ "release_wait": {
+  "waited_s": 3.7,
+  "attributed_mib": 1386.2
+ },
+ "before": {
+  "ok": true,
+  "adapter_dedicated_mib": 650.9,
+  "attributed_mib": 1386.2,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 14981.8,
+  "processes": [
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 903.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 11.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.5
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ],
+  "system_available_mib": 7460
+ },
+ "load_seconds": 20.31,
+ "buffers": {
+  "device_mib": {
+   "main.model": 12634.81,
+   "main.KV": 340.0,
+   "main.RS": 188.44,
+   "main.compute": 216.3,
+   "draft.model": 919.24,
+   "draft.KV": 64.0,
+   "draft.compute": 152.03,
+   "vision.model": 857.6,
+   "vision.compute": 248.1
+  },
+  "device_total_mib": 15620.5,
+  "host_visible_mib": {
+   "main.model": 397.85,
+   "main.output": 0.95,
+   "main.compute": 96.31,
+   "draft.model": 272.81,
+   "draft.output": 0.95,
+   "draft.compute": 80.04,
+   "vision.compute": 24.93
+  },
+  "host_total_mib": 873.8,
+  "clip_backend": "Vulkan0",
+  "rows": [
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 12634.81
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 397.85
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 340.0
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "RS",
+    "mib": 188.44
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 216.3
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 96.31
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 919.24
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 272.81
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 64.0
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 152.03
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 80.04
+   },
+   {
+    "phase": "vision",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 857.6
+   },
+   {
+    "phase": "vision",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 248.1
+   },
+   {
+    "phase": "vision",
+    "kind": "CPU",
+    "what": "compute",
+    "mib": 24.93
+   }
+  ]
+ },
+ "loaded": {
+  "t": 1792211736.1,
+  "server": {
+   "dedicated_mib": 14924.8,
+   "non_local_mib": 1710.2
+  },
+  "not_resident_mib": 695.7,
+  "server_private_mib": 18744.3,
+  "system_available_mib": 5164
+ },
+ "loaded_census": {
+  "ok": true,
+  "adapter_dedicated_mib": 15575.8,
+  "attributed_mib": 16311.0,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 57.0,
+  "processes": [
+   {
+    "pid": 2272,
+    "name": "llama-server.exe",
+    "dedicated_mib": 14924.8,
+    "non_local_mib": 1710.2
+   },
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 903.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 11.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.5
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ]
+ },
+ "props": {
+  "model_path": "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "build_info": "b11425-e117148a4",
+  "n_ctx": 32768,
+  "modalities": {
+   "vision": true,
+   "video": true,
+   "audio": false
+  }
+ },
+ "command_cwd": "D:/uri-dev/uri-vram-r1-p1",
+ "command": {
+  "argv": [
+   "D:/uri-dev/uri-vram-r1-p1/.venv/Scripts/python.exe",
+   "-I",
+   "D:/uri-dev/uri-vram-r1-p1/model_lab/run_bench.py",
+   "--name",
+   "vr1_p_frozen",
+   "--url",
+   "{URL}",
+   "--suites",
+   "P"
+  ],
+  "rc": 0,
+  "seconds": 117.6
+ },
+ "after": {
+  "t": 1792211861.5,
+  "server": {
+   "dedicated_mib": 15022.2,
+   "non_local_mib": 1731.5
+  },
+  "not_resident_mib": 598.3,
+  "server_private_mib": 21228.8,
+  "system_available_mib": 3183
+ },
+ "stopped": 1792211865.7
+}

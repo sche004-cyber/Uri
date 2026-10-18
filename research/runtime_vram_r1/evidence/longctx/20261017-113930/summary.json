@@ -1,0 +1,50 @@
+[
+ {
+  "profile": "r2-lc-mtpoff-q36-64k-q8_0",
+  "class": "COMPLETED_WITH_RESULT",
+  "error": null,
+  "load_s": 14.62,
+  "request_mib": 13657.9,
+  "loaded_gpu": {
+   "dedicated_mib": 13812.2,
+   "non_local_mib": 559.8
+  },
+  "after_gpu": {
+   "dedicated_mib": 13993.2,
+   "non_local_mib": 593.1
+  },
+  "prompt_tokens": 64093,
+  "prefill_tps": 1437.4546639295677,
+  "ttft_s": 44.904,
+  "decode_tps_at_depth": 81.82690318090329,
+  "turn1_total_s": 47.042,
+  "finish": "stop",
+  "score": {
+   "score": 1.0,
+   "checks": {
+    "valid_json": true,
+    "no_roll_numbers": true,
+    "superseded_fact": true,
+    "ordinal_reference": true,
+    "entity_set": true,
+    "needle_early": true,
+    "needle_mid": true,
+    "needle_late": true,
+    "two_hop": true,
+    "aggregate": true,
+    "absent_fact_null": true
+   }
+  },
+  "turn2_cache_n": 64267,
+  "turn2_prompt_n": 38,
+  "turn2_ttft_s": 0.916,
+  "turn2": {
+   "followup_needle": true
+  },
+  "short_decode_after": 105.41070690746845,
+  "draft": [
+   null,
+   null
+  ]
+ }
+]

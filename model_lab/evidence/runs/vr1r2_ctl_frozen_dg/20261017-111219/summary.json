@@ -1,0 +1,66 @@
+{
+ "meta": {
+  "name": "vr1r2_ctl_frozen_dg",
+  "args": {
+   "name": "vr1r2_ctl_frozen_dg",
+   "model": null,
+   "url": "http://127.0.0.1:18572",
+   "api_model": "local",
+   "family": "qwen",
+   "ctx": 32768,
+   "n_cpu_moe": 0,
+   "ngl": 999,
+   "cache": "q8_0",
+   "paths": "fast",
+   "suites": "D,DG",
+   "l_sizes": "4000,16000,32000",
+   "repeat_f": 3,
+   "port": 18480,
+   "load_mode": "none",
+   "extra": "",
+   "mmproj": null
+  },
+  "started": "20261017-111219",
+  "path_wall_s": {
+   "fast": 327.1
+  }
+ },
+ "summary": {
+  "fast/D": {
+   "n": 72,
+   "score": 0.861,
+   "ttft_p50": 1.157,
+   "ttfa_p50": 1.157,
+   "total_p50": 2.266,
+   "total_p95": 2.67,
+   "gen_tps_p50": 138.9,
+   "prefill_tps_p50": 1886.1,
+   "gen_tokens_p50": 156,
+   "errors": 0,
+   "truncated": 0,
+   "invalid": 0,
+   "golden_acc": 0.912,
+   "extra_acc": 0.667,
+   "categories": {
+    "correct": 62,
+    "missed_capability": 3,
+    "false_capability": 1,
+    "missed_continuation": 1,
+    "mismatch": 5
+   }
+  },
+  "fast/DG": {
+   "n": 72,
+   "score": 0.861,
+   "ttft_p50": 1.137,
+   "ttfa_p50": 1.137,
+   "total_p50": 2.263,
+   "total_p95": 2.631,
+   "gen_tps_p50": 137.5,
+   "prefill_tps_p50": 1877.4,
+   "gen_tokens_p50": 156,
+   "errors": 0,
+   "truncated": 0
+  }
+ }
+}

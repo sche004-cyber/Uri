@@ -1,0 +1,416 @@
+{
+ "profile": {
+  "name": "mtp-on-64k",
+  "ctx": 65536,
+  "ctk": "q8_0",
+  "mtp": true,
+  "mtp_n": 2,
+  "vision": "off",
+  "draft_kv": "",
+  "b": 2048,
+  "ub": 1024,
+  "cache_ram": 2048,
+  "ckpt": 16,
+  "extra": [],
+  "env": [],
+  "port": 18572
+ },
+ "argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "65536",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18572",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--cache-ram",
+  "2048",
+  "--no-mmproj",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "-md",
+  "C:\\uri-model-lab\\mtp\\mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+  "--spec-type",
+  "draft-mtp",
+  "--spec-draft-n-max",
+  "2",
+  "-otd",
+  "token_embd.weight=CPU",
+  "--metrics",
+  "-lv",
+  "4"
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "lease": {
+  "acquired_at": 1792205433.223,
+  "label": "URI-RUNTIME-VRAM-R1 mtp-on-64k",
+  "max_hold_s": 900,
+  "pid": 7708
+ },
+ "release_wait": {
+  "waited_s": 3.8,
+  "attributed_mib": 1295.5
+ },
+ "before": {
+  "ok": true,
+  "adapter_dedicated_mib": 659.2,
+  "attributed_mib": 1295.5,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 15072.5,
+  "processes": [
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 804.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.6
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ],
+  "system_available_mib": 6417
+ },
+ "load_seconds": 16.98,
+ "buffers": {
+  "device_mib": {
+   "main.model": 12634.81,
+   "main.KV": 680.0,
+   "main.RS": 188.44,
+   "main.compute": 280.3,
+   "draft.model": 919.24,
+   "draft.KV": 128.0,
+   "draft.compute": 212.03
+  },
+  "device_total_mib": 15042.8,
+  "host_visible_mib": {
+   "main.model": 397.85,
+   "main.output": 0.95,
+   "main.compute": 160.31,
+   "draft.model": 272.81,
+   "draft.output": 0.95,
+   "draft.compute": 144.04
+  },
+  "host_total_mib": 976.9,
+  "clip_backend": null,
+  "rows": [
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 12634.81
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 397.85
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 680.0
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "RS",
+    "mib": 188.44
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 280.3
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 160.31
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 919.24
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 272.81
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 128.0
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 212.03
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 144.04
+   }
+  ]
+ },
+ "loaded": {
+  "t": 1792205460.7,
+  "server": {
+   "dedicated_mib": 15203.6,
+   "non_local_mib": 980.4
+  },
+  "not_resident_mib": -160.8,
+  "server_private_mib": 18101.6,
+  "system_available_mib": 4939
+ },
+ "loaded_census": {
+  "ok": true,
+  "adapter_dedicated_mib": 15862.8,
+  "attributed_mib": 16499.1,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": -131.1,
+  "processes": [
+   {
+    "pid": 4600,
+    "name": "llama-server.exe",
+    "dedicated_mib": 15203.6,
+    "non_local_mib": 980.4
+   },
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 804.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.6
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ]
+ },
+ "props": {
+  "model_path": "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "build_info": "b11425-e117148a4",
+  "n_ctx": 65536,
+  "modalities": {
+   "vision": false,
+   "video": false,
+   "audio": false
+  }
+ },
+ "work": [
+  {
+   "work": "prose",
+   "prompt_n": 58,
+   "predicted_n": 400,
+   "decode_tps": 108.40765189569392,
+   "prompt_tps": 272.24806492646957,
+   "ttft_s": 0.497,
+   "total_s": 4.165,
+   "draft_n": 395,
+   "draft_accepted": 201,
+   "finish_reason": "length",
+   "error": null
+  },
+  {
+   "work": "uri_json",
+   "prompt_n": 1200,
+   "predicted_n": 145,
+   "decode_tps": 142.27069964580525,
+   "prompt_tps": 1647.6545637285324,
+   "ttft_s": 1.024,
+   "total_s": 2.036,
+   "draft_n": 106,
+   "draft_accepted": 91,
+   "finish_reason": "stop",
+   "error": null
+  },
+  {
+   "work": "code",
+   "prompt_n": 51,
+   "predicted_n": 500,
+   "decode_tps": 147.4926689640842,
+   "prompt_tps": 348.5916214978504,
+   "ttft_s": 0.478,
+   "total_s": 3.862,
+   "draft_n": 363,
+   "draft_accepted": 317,
+   "finish_reason": "length",
+   "error": null
+  },
+  {
+   "work": "office_edit",
+   "prompt_n": 77,
+   "predicted_n": 191,
+   "decode_tps": 153.82622494251757,
+   "prompt_tps": 529.671947335475,
+   "ttft_s": 0.439,
+   "total_s": 1.674,
+   "draft_n": 130,
+   "draft_accepted": 125,
+   "finish_reason": "stop",
+   "error": null
+  },
+  {
+   "work": "extract",
+   "prompt_n": 31,
+   "predicted_n": 579,
+   "decode_tps": 136.827273794689,
+   "prompt_tps": 236.41743692992893,
+   "ttft_s": 0.432,
+   "total_s": 4.657,
+   "draft_n": 450,
+   "draft_accepted": 353,
+   "finish_reason": "stop",
+   "error": null
+  },
+  {
+   "work": "reason_think",
+   "prompt_n": 44,
+   "predicted_n": 1425,
+   "decode_tps": 141.75646816148728,
+   "prompt_tps": 350.9611549812555,
+   "ttft_s": 0.434,
+   "total_s": 10.48,
+   "draft_n": 1064,
+   "draft_accepted": 892,
+   "finish_reason": "stop",
+   "error": null
+  },
+  {
+   "work": "depth24k",
+   "prompt_n": 24231,
+   "predicted_n": 175,
+   "decode_tps": 132.14885429221758,
+   "prompt_tps": 1872.4788649676211,
+   "ttft_s": 13.258,
+   "total_s": 14.575,
+   "draft_n": 120,
+   "draft_accepted": 114,
+   "error": null,
+   "score": 1.0
+  }
+ ],
+ "after": {
+  "t": 1792205510.2,
+  "server": {
+   "dedicated_mib": 15322.7,
+   "non_local_mib": 1022.0
+  },
+  "not_resident_mib": -279.9,
+  "server_private_mib": 19598.8,
+  "system_available_mib": 3661
+ },
+ "stopped": 1792205514.3
+}

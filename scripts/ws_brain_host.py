@@ -34,6 +34,7 @@ if str(REPO) not in sys.path:
 
 from uri_operational_intelligence import gpu_lease as G  # noqa: E402
 from uri_operational_intelligence import runtime_v1 as R  # noqa: E402
+from uri_operational_intelligence import runtime_profiles as RP  # noqa: E402
 from uri_operational_intelligence.brain_health import (ACTIONS, HOST_HEARTBEAT_S, REPORT_FILE,  # noqa: E402
                                                        REPORT_SCHEMA, REQUEST_FILE, REQUEST_SCHEMA, write_host_request)
 REQUEST_MAX_AGE_S = 120.0
@@ -67,6 +68,8 @@ class Host:
                  census=G.census, lease_dir=None, now=time.time):
         self.report_dirs = [Path(report_dir)]
         self.cfg = cfg or R.load_config()
+        # Measured device request of this config: the frozen constant, or a resource profile's own measurement.
+        self.required_mib = RP.cfg_required_mib(self.cfg, G.RUNTIME_V1_DEVICE_MIB)
         self.state_dir = Path(state_dir or R.DEFAULT_STATE)
         self.report_dirs.append(self.state_dir)
         self.deadline = time.monotonic() + minutes * 60
@@ -75,7 +78,8 @@ class Host:
         self.lease = None
         self.mgr = None
         self.report = {"schema": REPORT_SCHEMA, "host_pid": os.getpid(), "host_started": round(now(), 3),
-                       "state": "STARTING_HOST", "history": [], "override": None}
+                       "state": "STARTING_HOST", "history": [], "override": None,
+                       "profile": RP.describe(self.cfg)}
         if override:
             self.report["override"] = {"by": "--override-contention", "at": round(now(), 3)}
         self.last_request_id = None
@@ -169,7 +173,7 @@ class Host:
         while not self.should_exit():
             try:
                 self.lease = G.acquire("runtime_v1_brain", label="WS Brain host", session=str(REPO),
-                                       expected_vram_mib=G.RUNTIME_V1_DEVICE_MIB, override=self.report["override"],
+                                       expected_vram_mib=self.required_mib, override=self.report["override"],
                                        directory=self.lease_dir)
                 self.report["lease"] = {"held": True, "acquired_at": self.lease.record["acquired_at"],
                                         "recovered_from": self.lease.record.get("recovered_from")}
@@ -217,7 +221,7 @@ class Host:
         t0 = self.now()
         while not self.should_exit():
             c = self.census()
-            fit = G.assess_fit(c, owners=self.owners())
+            fit = G.assess_fit(c, owners=self.owners(), required_mib=self.required_mib)
             gpu = {"fit": fit, "explain": G.explain(fit), "census_t": c.get("t"), "census_s": c.get("sample_s")}
             unattr = fit.get("unattributed_mib") or 0.0
             if self.stopped_at is not None:
@@ -346,7 +350,8 @@ class Host:
     def residency(self, pid):
         c = self.census()
         me = next((p for p in c.get("processes", []) if p["pid"] == pid), None) if c.get("ok") else None
-        fit = G.assess_fit(c, owners=self.owners()) if c.get("ok") else {"verdict": G.UNKNOWN}
+        fit = (G.assess_fit(c, owners=self.owners(), required_mib=self.required_mib) if c.get("ok")
+               else {"verdict": G.UNKNOWN})
         out = {"t": c.get("t"), "dedicated_mib": me and me["dedicated_mib"], "non_local_mib": me and me["non_local_mib"],
                "others_mib": fit.get("others_mib"), "verdict_now": fit.get("verdict"),
                "consumers": fit.get("consumers")}
@@ -422,8 +427,22 @@ def main(argv=None):
     ap.add_argument("--minutes", type=float, default=240.0)
     ap.add_argument("--override-contention", action="store_true",
                     help="owner-authorized: start next to foreign GPU consumers (recorded; result calibrated)")
+    ap.add_argument("--profile", default=None,
+                    help="research candidate (URI-RUNTIME-VRAM-R1): ctx,vision,mtp e.g. 65536,off,1; default = frozen")
     a = ap.parse_args(argv)
-    return Host(Path(a.report_dir), minutes=a.minutes, override=a.override_contention).run()
+    cfg = RP.derive_config(R.load_config(), *parse_profile(a.profile)) if a.profile else None
+    return Host(Path(a.report_dir), minutes=a.minutes, override=a.override_contention, cfg=cfg).run()
+
+
+MTP_TOKENS = {"1": True, "on": True, "true": True, "0": False, "off": False, "false": False}
+
+
+def parse_profile(text):
+    """'<ctx>,<vision>,<mtp>' -> (ctx, vision, mtp). Unknown values are refused, never guessed."""
+    parts = [x.strip().lower() for x in str(text).split(",")]
+    if len(parts) != 3 or not parts[0].isdigit() or parts[2] not in MTP_TOKENS:
+        raise SystemExit("PROFILE_ARG_INVALID: expected <ctx>,<off|gpu|cpu>,<0|1>, got %r" % text)
+    return int(parts[0]), parts[1], MTP_TOKENS[parts[2]]
 
 
 if __name__ == "__main__":

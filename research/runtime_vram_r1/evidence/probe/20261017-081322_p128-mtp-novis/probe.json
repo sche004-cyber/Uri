@@ -1,0 +1,420 @@
+{
+ "profile": {
+  "name": "p128-mtp-novis",
+  "ctx": 131072,
+  "ctk": "q8_0",
+  "mtp": true,
+  "mtp_n": 2,
+  "vision": "off",
+  "draft_kv": "",
+  "b": 2048,
+  "ub": 1024,
+  "cache_ram": 2048,
+  "ckpt": 16,
+  "extra": [],
+  "env": [],
+  "port": 18572
+ },
+ "argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "131072",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18572",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--cache-ram",
+  "2048",
+  "--no-mmproj",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "-md",
+  "C:\\uri-model-lab\\mtp\\mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+  "--spec-type",
+  "draft-mtp",
+  "--spec-draft-n-max",
+  "2",
+  "-otd",
+  "token_embd.weight=CPU",
+  "--metrics",
+  "-lv",
+  "4"
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "lease": {
+  "acquired_at": 1792205002.099,
+  "label": "URI-RUNTIME-VRAM-R1 p128-mtp-novis",
+  "max_hold_s": 900,
+  "pid": 13184
+ },
+ "release_wait": {
+  "waited_s": 3.6,
+  "attributed_mib": 1295.5
+ },
+ "before": {
+  "ok": true,
+  "adapter_dedicated_mib": 659.2,
+  "attributed_mib": 1295.5,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": 15072.5,
+  "processes": [
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 804.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.6
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ],
+  "system_available_mib": 5935
+ },
+ "load_seconds": 17.61,
+ "buffers": {
+  "device_mib": {
+   "main.model": 12634.81,
+   "main.KV": 1360.0,
+   "main.RS": 188.44,
+   "main.compute": 408.3,
+   "draft.model": 919.24,
+   "draft.KV": 256.0,
+   "draft.compute": 340.03
+  },
+  "device_total_mib": 16106.8,
+  "host_visible_mib": {
+   "main.model": 397.85,
+   "main.output": 0.95,
+   "main.compute": 288.31,
+   "draft.model": 272.81,
+   "draft.output": 0.95,
+   "draft.compute": 272.04
+  },
+  "host_total_mib": 1232.9,
+  "clip_backend": null,
+  "rows": [
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 12634.81
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 397.85
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 1360.0
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "RS",
+    "mib": 188.44
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 408.3
+   },
+   {
+    "phase": "main",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 288.31
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "model",
+    "mib": 919.24
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "model",
+    "mib": 272.81
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "output",
+    "mib": 0.95
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "KV",
+    "mib": 256.0
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan0",
+    "what": "compute",
+    "mib": 340.03
+   },
+   {
+    "phase": "draft",
+    "kind": "Vulkan_Host",
+    "what": "compute",
+    "mib": 272.04
+   }
+  ]
+ },
+ "loaded": {
+  "t": 1792205030.0,
+  "server": {
+   "dedicated_mib": 15351.4,
+   "non_local_mib": 2155.7
+  },
+  "not_resident_mib": 755.4,
+  "server_private_mib": 19431.2,
+  "system_available_mib": 3831
+ },
+ "loaded_census": {
+  "ok": true,
+  "adapter_dedicated_mib": 16010.5,
+  "attributed_mib": 16646.9,
+  "unattributed_mib": 0.0,
+  "free_for_one_process_mib": -278.9,
+  "processes": [
+   {
+    "pid": 16460,
+    "name": "llama-server.exe",
+    "dedicated_mib": 15351.4,
+    "non_local_mib": 2155.7
+   },
+   {
+    "pid": 1792,
+    "name": "dwm.exe",
+    "dedicated_mib": 804.3,
+    "non_local_mib": 9.1
+   },
+   {
+    "pid": 2464,
+    "name": "ChatGPT.exe",
+    "dedicated_mib": 103.1,
+    "non_local_mib": 2.6
+   },
+   {
+    "pid": 7580,
+    "name": "claude.exe",
+    "dedicated_mib": 62.4,
+    "non_local_mib": 2.0
+   },
+   {
+    "pid": 12760,
+    "name": "msedgewebview2.exe",
+    "dedicated_mib": 61.7,
+    "non_local_mib": 14.7
+   },
+   {
+    "pid": 15440,
+    "name": "msedge.exe",
+    "dedicated_mib": 43.7,
+    "non_local_mib": 12.7
+   },
+   {
+    "pid": 8912,
+    "name": "explorer.exe",
+    "dedicated_mib": 37.5,
+    "non_local_mib": 1.6
+   },
+   {
+    "pid": 14600,
+    "name": "TextInputHost.exe",
+    "dedicated_mib": 37.0,
+    "non_local_mib": 1.5
+   }
+  ]
+ },
+ "props": {
+  "model_path": "C:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "build_info": "b11425-e117148a4",
+  "n_ctx": 131072,
+  "modalities": {
+   "vision": false,
+   "video": false,
+   "audio": false
+  }
+ },
+ "speed": {
+  "prose": [
+   {
+    "finish_reason": "length",
+    "tool_calls": [],
+    "ttft_s": 0.53,
+    "total_s": 18.06,
+    "prompt_n": 58,
+    "prompt_tps": 233.9634210292777,
+    "prompt_ms": 247.902,
+    "cache_n": 0,
+    "predicted_n": 400,
+    "decode_tps": 22.76026577829756,
+    "draft_n": 395,
+    "draft_accepted": 201
+   },
+   {
+    "finish_reason": "length",
+    "tool_calls": [],
+    "ttft_s": 0.336,
+    "total_s": 18.015,
+    "prompt_n": 4,
+    "prompt_tps": 75.65441065214102,
+    "prompt_ms": 52.872,
+    "cache_n": 54,
+    "predicted_n": 400,
+    "decode_tps": 22.56920983951934,
+    "draft_n": 400,
+    "draft_accepted": 199
+   },
+   {
+    "finish_reason": "length",
+    "tool_calls": [],
+    "ttft_s": 0.344,
+    "total_s": 18.028,
+    "prompt_n": 4,
+    "prompt_tps": 76.91716021844474,
+    "prompt_ms": 52.004,
+    "cache_n": 54,
+    "predicted_n": 400,
+    "decode_tps": 22.562864296246453,
+    "draft_n": 399,
+    "draft_accepted": 199
+   }
+  ],
+  "uri_structured": [
+   {
+    "finish_reason": "stop",
+    "tool_calls": [],
+    "ttft_s": 1.12,
+    "total_s": 5.835,
+    "prompt_n": 1200,
+    "prompt_tps": 1357.674936415557,
+    "prompt_ms": 883.864,
+    "cache_n": 0,
+    "predicted_n": 145,
+    "decode_tps": 30.53909130933809,
+    "draft_n": 106,
+    "draft_accepted": 91,
+    "valid_json": true
+   },
+   {
+    "finish_reason": "stop",
+    "tool_calls": [],
+    "ttft_s": 0.595,
+    "total_s": 6.989,
+    "prompt_n": 87,
+    "prompt_tps": 391.3401375538093,
+    "prompt_ms": 222.313,
+    "cache_n": 1106,
+    "predicted_n": 184,
+    "decode_tps": 28.622748421995034,
+    "draft_n": 144,
+    "draft_accepted": 111,
+    "valid_json": true
+   },
+   {
+    "finish_reason": "stop",
+    "tool_calls": [],
+    "ttft_s": 0.533,
+    "total_s": 6.124,
+    "prompt_n": 89,
+    "prompt_tps": 408.52485804908724,
+    "prompt_ms": 217.857,
+    "cache_n": 1106,
+    "predicted_n": 181,
+    "decode_tps": 32.2008358979212,
+    "draft_n": 126,
+    "draft_accepted": 118,
+    "valid_json": true
+   }
+  ]
+ },
+ "after_speed": {
+  "t": 1792205111.0,
+  "server": {
+   "dedicated_mib": 15407.2,
+   "non_local_mib": 2175.6
+  },
+  "not_resident_mib": 699.6,
+  "server_private_mib": 20581.0,
+  "system_available_mib": 2884
+ },
+ "stopped": 1792205115.1,
+ "after_stop": {
+  "waited_s": 3.8,
+  "attributed_mib": 1295.5
+ }
+}

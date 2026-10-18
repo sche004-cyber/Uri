@@ -1,0 +1,70 @@
+##### timeout 900 python -I coexist.py co-c64k-mtpoff --ctx 65536 --no-mtp 08:29:05
+{"phase": "A_desktop", "t": 1792205988.8, "server": {"dedicated_mib": 13859.4, "non_local_mib": 561.8}, "others": [["dwm.exe", 804.3], ["ChatGPT.exe", 103.1], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 14471.4, "uri_json_tps": 102.67982946021215, "uri_json_total_s": 2.794, "prose_tps": 104.7965999636892}
+{"phase": "B_plus_uri_ui", "t": 1792206036.2, "server": {"dedicated_mib": 13859.4, "non_local_mib": 561.8}, "others": [["dwm.exe", 808.1], ["ChatGPT.exe", 103.1], ["uri_ui.exe", 73.4], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 14592.0, "uri_json_tps": 100.6474989096521, "uri_json_total_s": 2.371, "prose_tps": 102.31971454510673}
+{"phase": "C_plus_chrome", "t": 1792206094.8, "server": {"dedicated_mib": 13859.4, "non_local_mib": 561.8}, "others": [["dwm.exe", 847.6], ["chrome.exe", 548.9], ["ChatGPT.exe", 103.1], ["uri_ui.exe", 75.4], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5]], "adapter_mib": 15173.4, "uri_json_tps": 99.72000837648069, "uri_json_total_s": 2.277, "prose_tps": 102.19287452492274}
+{"phase": "D_both_closed", "t": 1792206124.7, "server": {"dedicated_mib": 13859.4, "non_local_mib": 561.8}, "others": [["dwm.exe", 821.3], ["ChatGPT.exe", 103.1], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 14518.5, "uri_json_tps": 103.89328543468083, "uri_json_total_s": 2.07, "prose_tps": 105.10098306327536}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\coexist\20261017-082906_co-c64k-mtpoff COMPLETED_WITH_RESULT
+##### timeout 900 python -I coexist.py co-c64k-mtpon --ctx 65536 08:32:08
+{"phase": "A_desktop", "t": 1792206174.5, "server": {"dedicated_mib": 15259.9, "non_local_mib": 1000.3}, "others": [["dwm.exe", 821.3], ["ChatGPT.exe", 103.1], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 15862.8, "uri_json_tps": 133.52498668398357, "uri_json_total_s": 2.493, "prose_tps": 109.08730048698907}
+{"phase": "B_plus_uri_ui", "t": 1792206220.5, "server": {"dedicated_mib": 15259.9, "non_local_mib": 1000.3}, "others": [["dwm.exe", 825.1], ["ChatGPT.exe", 103.1], ["uri_ui.exe", 73.4], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 15992.6, "uri_json_tps": 137.6485268975, "uri_json_total_s": 1.747, "prose_tps": 109.59542792799398}
+{"phase": "C_plus_chrome", "t": 1792206287.3, "server": {"dedicated_mib": 14238.2, "non_local_mib": 2022.1}, "others": [["dwm.exe", 885.6], ["chrome.exe", 574.8], ["ChatGPT.exe", 103.1], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["uri_ui.exe", 58.2], ["msedge.exe", 43.7], ["explorer.exe", 37.5]], "adapter_mib": 15543.6, "uri_json_tps": 44.2460437871422, "uri_json_total_s": 4.515, "prose_tps": 34.730365176431995}
+{"phase": "D_both_closed", "t": 1792206325.3, "server": {"dedicated_mib": 14238.2, "non_local_mib": 2022.1}, "others": [["dwm.exe", 852.3], ["ChatGPT.exe", 103.1], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 14897.4, "uri_json_tps": 44.584374955080634, "uri_json_total_s": 4.454, "prose_tps": 34.92942095781612}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\coexist\20261017-083209_co-c64k-mtpon COMPLETED_WITH_RESULT
+##### timeout 900 python -I coexist.py co-c32k-mtpon --ctx 32768 08:35:29
+{"phase": "A_desktop", "t": 1792206374.8, "server": {"dedicated_mib": 14730.4, "non_local_mib": 872.3}, "others": [["dwm.exe", 852.3], ["ChatGPT.exe", 103.1], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 15333.7, "uri_json_tps": 134.64753249199472, "uri_json_total_s": 2.448, "prose_tps": 108.83595037080664}
+{"phase": "B_plus_uri_ui", "t": 1792206420.9, "server": {"dedicated_mib": 14730.4, "non_local_mib": 872.3}, "others": [["dwm.exe", 856.1], ["ChatGPT.exe", 103.1], ["uri_ui.exe", 73.4], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 15463.0, "uri_json_tps": 137.03071659576761, "uri_json_total_s": 1.741, "prose_tps": 109.14914409183714}
+{"phase": "C_plus_chrome", "t": 1792206478.5, "server": {"dedicated_mib": 14730.4, "non_local_mib": 872.3}, "others": [["dwm.exe", 902.6], ["chrome.exe", 600.3], ["ChatGPT.exe", 103.1], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["uri_ui.exe", 54.4], ["msedge.exe", 43.7], ["explorer.exe", 37.5]], "adapter_mib": 16057.5, "uri_json_tps": 137.40461454251397, "uri_json_total_s": 1.674, "prose_tps": 108.74581883237542}
+{"phase": "D_both_closed", "t": 1792206507.8, "server": {"dedicated_mib": 14730.4, "non_local_mib": 872.3}, "others": [["dwm.exe", 869.3], ["ChatGPT.exe", 103.1], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 15389.6, "uri_json_tps": 136.81762210972772, "uri_json_total_s": 1.677, "prose_tps": 108.12405843472526}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\coexist\20261017-083530_co-c32k-mtpon COMPLETED_WITH_RESULT
+##### timeout 900 python -I coexist.py co-frozen --ctx 32768 --vision gpu 08:38:31
+{"phase": "A_desktop", "t": 1792206562.5, "server": {"dedicated_mib": 14980.7, "non_local_mib": 1730.1}, "others": [["dwm.exe", 869.3], ["ChatGPT.exe", 103.1], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 15584.0, "uri_json_tps": 136.16324708420916, "uri_json_total_s": 2.465, "prose_tps": 108.46156162158378}
+{"phase": "B_plus_uri_ui", "t": 1792206608.5, "server": {"dedicated_mib": 14980.7, "non_local_mib": 1730.1}, "others": [["dwm.exe", 873.1], ["ChatGPT.exe", 103.1], ["uri_ui.exe", 73.4], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 15713.3, "uri_json_tps": 136.89387059564544, "uri_json_total_s": 1.727, "prose_tps": 108.81515580401481}
+{"phase": "C_plus_chrome", "t": 1792206666.3, "server": {"dedicated_mib": 14980.7, "non_local_mib": 1730.1}, "others": [["dwm.exe", 912.6], ["chrome.exe", 578.2], ["ChatGPT.exe", 103.1], ["uri_ui.exe", 73.4], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5]], "adapter_mib": 16304.7, "uri_json_tps": 136.16780635896214, "uri_json_total_s": 1.677, "prose_tps": 108.39271368952846}
+{"phase": "D_both_closed", "t": 1792206695.5, "server": {"dedicated_mib": 14980.7, "non_local_mib": 1730.1}, "others": [["dwm.exe", 886.3], ["ChatGPT.exe", 103.1], ["claude.exe", 62.4], ["msedgewebview2.exe", 61.7], ["msedge.exe", 43.7], ["explorer.exe", 37.5], ["TextInputHost.exe", 37.0]], "adapter_mib": 15631.6, "uri_json_tps": 137.37346440113052, "uri_json_total_s": 1.684, "prose_tps": 109.12544170256128}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\coexist\20261017-083832_co-frozen COMPLETED_WITH_RESULT
+##### timeout 1800 python -I with_profile.py --name suite-c64k-mtpoff --ctx 65536 --no-mtp -- python -I ../../model_lab/run_bench.py --name vr1_c64k_mtpoff --url {URL} --suites F,D,DG,C,H,S,O,R,RH,L,P --l-sizes 4000,12000,28000 08:41:39
+               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\uri-dev\uri-runtime-vram-r1\model_lab\lab\paired.py", line 169, in run
+    st = make_stack(port, selection, seams)
+  File "D:\uri-dev\uri-runtime-vram-r1\model_lab\lab\paired.py", line 107, in make_stack
+    st = Stack(port)
+  File "D:\uri-dev\uri-runtime-vram-r1\test_c5_intent_discovery.py", line 35, in __init__
+    self.server_manifest = provision(ROOT, base / "server", Path(sys.executable), port, "c2-paired-core")
+                           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\uri-dev\uri-runtime-vram-r1\uri_core\core\runtime_identity.py", line 248, in provision
+    raise RuntimeIdentityError("ISOLATED_INTERPRETER_REQUIRED")
+uri_core.core.runtime_identity.RuntimeIdentityError: ISOLATED_INTERPRETER_REQUIRED
+WITH_PROFILE FAILED 1 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-084140_suite-c64k-mtpoff
+##### timeout 1800 python -I with_profile.py --name suite-c64k-mtpon --ctx 65536 -- python -I ../../model_lab/run_bench.py --name vr1_c64k_mtpon --url {URL} --suites F,D,DG,C,H,S,O,R,RH,L,P --l-sizes 4000,12000,28000 08:52:24
+               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\uri-dev\uri-runtime-vram-r1\model_lab\lab\paired.py", line 169, in run
+    st = make_stack(port, selection, seams)
+  File "D:\uri-dev\uri-runtime-vram-r1\model_lab\lab\paired.py", line 107, in make_stack
+    st = Stack(port)
+  File "D:\uri-dev\uri-runtime-vram-r1\test_c5_intent_discovery.py", line 35, in __init__
+    self.server_manifest = provision(ROOT, base / "server", Path(sys.executable), port, "c2-paired-core")
+                           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\uri-dev\uri-runtime-vram-r1\uri_core\core\runtime_identity.py", line 248, in provision
+    raise RuntimeIdentityError("ISOLATED_INTERPRETER_REQUIRED")
+uri_core.core.runtime_identity.RuntimeIdentityError: ISOLATED_INTERPRETER_REQUIRED
+WITH_PROFILE FAILED 1 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-085225_suite-c64k-mtpon
+##### timeout 1200 python -I with_profile.py --name suite-c64k-vis --ctx 65536 --no-mtp --vision gpu -- python -I ../../model_lab/run_bench.py --name vr1_c64k_vis --url {URL} --suites V 09:01:28
+  "total_p95": 1.795,
+  "gen_tps_p50": null,
+  "prefill_tps_p50": null,
+  "gen_tokens_p50": null,
+  "errors": 0,
+  "truncated": 0,
+  "vlm_score": 1.0,
+  "ocr_score": 0.467
+ }
+}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\model_lab\evidence\runs\vr1_c64k_vis\20261017-090207
+WITH_PROFILE COMPLETED_WITH_RESULT 0 D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\with_profile\20261017-090129_suite-c64k-vis
+##### timeout 1500 python -I run_longctx.py --model q36 --sizes 65536:q8_0 --label lc-mtpoff 09:02:23
+{"profile": "lc-mtpoff-q36-64k-q8_0", "error": null, "load_s": 14.19, "request_mib": 13657.9, "loaded_gpu": {"dedicated_mib": 13812.2, "non_local_mib": 559.8}, "after_gpu": {"dedicated_mib": 13993.2, "non_local_mib": 593.1}, "prompt_tokens": 64093, "prefill_tps": 1444.7096674097704, "ttft_s": 44.716, "decode_tps_at_depth": 81.84337623682273, "turn1_total_s": 46.839, "finish": "stop", "score": {"score": 1.0, "checks": {"valid_json": true, "no_roll_numbers": true, "superseded_fact": true, "ordinal_reference": true, "entity_set": true, "needle_early": true, "needle_mid": true, "needle_late": true, "two_hop": true, "aggregate": true, "absent_fact_null": true}}, "turn2_cache_n": 64267, "turn2_prompt_n": 38, "turn2_ttft_s": 0.977, "turn2": {"followup_needle": true}, "short_decode_after": 105.3654259740928, "draft": [null, null]}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\longctx\20261017-090223
+##### timeout 1500 python -I run_longctx.py --model q36 --sizes 65536:q8_0 --mtp --label lc-mtpon 09:03:56
+{"profile": "lc-mtpon-q36-64k-q8_0", "error": null, "load_s": 16.48, "request_mib": 15042.8, "loaded_gpu": {"dedicated_mib": 15203.6, "non_local_mib": 980.4}, "after_gpu": {"dedicated_mib": 15394.6, "non_local_mib": 1061.1}, "prompt_tokens": 64093, "prefill_tps": 1326.0827101288053, "ttft_s": 48.668, "decode_tps_at_depth": 113.05264224816224, "turn1_total_s": 50.207, "finish": "stop", "score": {"score": 1.0, "checks": {"valid_json": true, "no_roll_numbers": true, "superseded_fact": true, "ordinal_reference": true, "entity_set": true, "needle_early": true, "needle_mid": true, "needle_late": true, "two_hop": true, "aggregate": true, "absent_fact_null": true}}, "turn2_cache_n": 64267, "turn2_prompt_n": 38, "turn2_ttft_s": 1.316, "turn2": {"followup_needle": true}, "short_decode_after": 105.4146462192808, "draft": [118, 115]}
+EVIDENCE D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1\evidence\longctx\20261017-090357
+##### chain3 done 09:05:37

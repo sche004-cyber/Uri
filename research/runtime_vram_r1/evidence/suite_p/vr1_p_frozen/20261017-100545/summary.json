@@ -1,0 +1,45 @@
+{
+ "meta": {
+  "name": "vr1_p_frozen",
+  "args": {
+   "name": "vr1_p_frozen",
+   "model": null,
+   "url": "http://127.0.0.1:18572",
+   "api_model": "local",
+   "family": "qwen",
+   "ctx": 32768,
+   "n_cpu_moe": 0,
+   "ngl": 999,
+   "cache": "q8_0",
+   "paths": "fast",
+   "suites": "P",
+   "l_sizes": "4000,16000,32000",
+   "repeat_f": 3,
+   "port": 18480,
+   "load_mode": "none",
+   "extra": "",
+   "mmproj": null
+  },
+  "started": "20261017-100545",
+  "path_wall_s": {
+   "fast": 115.1
+  }
+ },
+ "summary": {
+  "fast/P": {
+   "n": 12,
+   "score": 1.0,
+   "ttft_p50": null,
+   "ttfa_p50": null,
+   "total_p50": null,
+   "total_p95": null,
+   "gen_tps_p50": null,
+   "prefill_tps_p50": null,
+   "gen_tokens_p50": null,
+   "errors": 0,
+   "truncated": 0,
+   "proposer_invalid": 0,
+   "failed_ids": []
+  }
+ }
+}

@@ -1,0 +1,122 @@
+{
+ "pre_check": {
+  "fit": {
+   "verdict": "CONTENDED",
+   "card_mib": 16368,
+   "required_mib": 15626,
+   "others_mib": 1386.2,
+   "unattributed_mib": 0.0,
+   "owner_mib": 0,
+   "free_mib": 14981.8,
+   "margin_mib": -644.2,
+   "consumers": [
+    {
+     "pid": 1792,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "dedicated_mib": 903.3,
+     "role": "desktop compositor"
+    }
+   ]
+  },
+  "census_t": 1792217487.517,
+  "explain": "The Brain needs 15.3 GB of GPU memory but only 14.6 GB is free. In use by: dwm.exe (desktop compositor, 0.9 GB). Close those or wait; URI will not stop them."
+ },
+ "lease": {
+  "state": "FREE",
+  "last": {
+   "acquired_at": 1792217370.227,
+   "create_time": 1792217369.671,
+   "expected_vram_mib": null,
+   "heartbeat_at": 1792217370.227,
+   "label": "URI-RUNTIME-VRAM-R1 r2-lc-mtpoff-q36-64k-q8_0",
+   "max_hold_s": 900,
+   "override": null,
+   "pid": 23700,
+   "process": "python.exe",
+   "purpose": "benchmark",
+   "release_reason": "benchmark done",
+   "released_at": 1792217463.755,
+   "schema": "uri.gpu.lease.v1",
+   "session": "D:\\uri-dev\\uri-runtime-vram-r1",
+   "state": "released"
+  },
+  "stale_record": false
+ },
+ "host_started": true,
+ "host_report": {
+  "detail": "GPU_CONTENDED",
+  "explain": "The Brain needs 15.3 GB of GPU memory but only 14.6 GB is free. In use by: dwm.exe (desktop compositor, 0.9 GB). Close those or wait; URI will not stop them.",
+  "gpu": {
+   "census_s": 3.67,
+   "census_t": 1792217491.984,
+   "explain": "The Brain needs 15.3 GB of GPU memory but only 14.6 GB is free. In use by: dwm.exe (desktop compositor, 0.9 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 903.3,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1792,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14981.8,
+    "margin_mib": -644.2,
+    "others_mib": 1386.2,
+    "owner_mib": 0,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   }
+  },
+  "history": [
+   {
+    "detail": "GPU_CONTENDED",
+    "state": "WAITING_FOR_GPU",
+    "t": 1792217495.658
+   }
+  ],
+  "host_pid": 18820,
+  "host_started": 1792217491.953,
+  "lease": {
+   "acquired_at": 1792217491.981,
+   "held": true,
+   "recovered_from": null
+  },
+  "override": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": true,
+   "id": "frozen",
+   "mtp": true,
+   "vision": "gpu"
+  },
+  "schema": "uri.ws.brain_host.v1",
+  "state": "WAITING_FOR_GPU",
+  "updated_at": 1792217495.658
+ },
+ "host_exit": 0,
+ "lease_after": {
+  "state": "FREE",
+  "last": {
+   "acquired_at": 1792217491.981,
+   "create_time": 1792217491.436,
+   "expected_vram_mib": 15626,
+   "heartbeat_at": 1792217491.981,
+   "label": "WS Brain host",
+   "max_hold_s": null,
+   "override": null,
+   "pid": 18820,
+   "process": "python.exe",
+   "purpose": "runtime_v1_brain",
+   "release_reason": "host exit",
+   "released_at": 1792217496.713,
+   "schema": "uri.gpu.lease.v1",
+   "session": "D:\\uri-dev\\uri-runtime-vram-r1",
+   "state": "released"
+  },
+  "stale_record": false
+ }
+}

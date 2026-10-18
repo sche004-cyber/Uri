@@ -1,0 +1,56 @@
+{
+ "detail": "HOST_EXIT",
+ "explain": "The Brain host has exited.",
+ "gpu": {
+  "census_s": 3.67,
+  "census_t": 1792217491.984,
+  "explain": "The Brain needs 15.3 GB of GPU memory but only 14.6 GB is free. In use by: dwm.exe (desktop compositor, 0.9 GB). Close those or wait; URI will not stop them.",
+  "fit": {
+   "card_mib": 16368,
+   "consumers": [
+    {
+     "dedicated_mib": 903.3,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1792,
+     "role": "desktop compositor"
+    }
+   ],
+   "free_mib": 14981.8,
+   "margin_mib": -644.2,
+   "others_mib": 1386.2,
+   "owner_mib": 0,
+   "required_mib": 15626,
+   "unattributed_mib": 0.0,
+   "verdict": "CONTENDED"
+  }
+ },
+ "history": [
+  {
+   "detail": "GPU_CONTENDED",
+   "state": "WAITING_FOR_GPU",
+   "t": 1792217495.658
+  },
+  {
+   "detail": "HOST_EXIT",
+   "state": "STOPPED",
+   "t": 1792217496.716
+  }
+ ],
+ "host_pid": 18820,
+ "host_started": 1792217491.953,
+ "lease": {
+  "held": false
+ },
+ "override": null,
+ "profile": {
+  "ctx": 32768,
+  "frozen": true,
+  "id": "frozen",
+  "mtp": true,
+  "vision": "gpu"
+ },
+ "schema": "uri.ws.brain_host.v1",
+ "state": "STOPPED",
+ "updated_at": 1792217496.716
+}
