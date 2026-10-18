@@ -469,6 +469,7 @@
   "LQ-3 sustained operation": {
    "soak-p1": "SUPPORTING ONLY (no source binding; ran before R2-02): FAIL",
    "soak-p2": "SUPPORTING ONLY (no source binding; ran before R2-02): would PASS",
+   "soak-p2-e": "PASS",
    "soak-p3": "SUPPORTING ONLY (no source binding; ran before R2-02): would PASS",
    "soak-p3-attempt1-pdh-failed": "NOT VERIFIED (harness FAILED: RuntimeError: PdhAddEnglishCounterW failed. Performance counters may be disabled.)",
    "soak-p3-e": "PASS"
@@ -519,6 +520,35 @@
     "valid_json": 120,
     "decode_min": 96.18000646159602,
     "decode_median": 99.29412906912856,
+    "max_brain_non_local": 561.8,
+    "min_brain_dedicated": 13876.1,
+    "host_exited": false
+   },
+   "events": [
+    {
+     "t": 0,
+     "event": "ui_open"
+    },
+    {
+     "t": 1200,
+     "event": "chrome_open"
+    },
+    {
+     "t": 2400,
+     "event": "chrome_closed"
+    }
+   ],
+   "host_exit": 0,
+   "profile_arg": "65536,off,0"
+  },
+  "soak-p2-e": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "summary": {
+    "turns": 120,
+    "ok_turns": 120,
+    "valid_json": 120,
+    "decode_min": 87.82120606116872,
+    "decode_median": 103.95598734509115,
     "max_brain_non_local": 561.8,
     "min_brain_dedicated": 13876.1,
     "host_exited": false
@@ -1407,7 +1437,7 @@
   "CRASH-1 open: root cause UNVERIFIED (hypothesis host commit exhaustion; E0: see e0_host_memory - commit is the scarce resource on this PC while physical RAM is available; RAM-1 snapshot shows other sessions' PowerShell processes at ~4 GB private each). Can affect every profile and the frozen config. Reproduction E1 not run.",
   "DEMOTE-P1 open; mitigations (vision on CPU at 64K, 256 MiB suballocation) unmeasured.",
   "P3 sustained operation: soak-p3 (unbound, AT_RISK desktop) and soak-p3-e (bound) - see LQ-3; n=2 at most, near the estimated margin on heavy desktops.",
-  "P2 sustained operation: see LQ-3 soak-p2-e (review R3-01); the earlier soak-p2 is unbound and supporting only.",
+  "P2 sustained operation: one bound soak, soak-p2-e PASS (n=1, light desktop, free commit above 21 GB; review R3-01); the earlier soak-p2 is unbound and supporting only.",
   "Conversation continuity across profile switches verified at worker level (sw5 bound, sw4), not through UI clicks; the UI V2 driver does not test it.",
   "R2-07 DEFERRED to the UI thread: the UI does not yet render backend.profile; the API exposes it (qualified false). UI presentation is outside this milestone (owner brief: runtime owns capability, not presentation).",
   "Soak UI window is the app's start screen (a GPU-memory consumer), not a journey run.",
@@ -1449,7 +1479,7 @@
  },
  "status": "FAIL",
  "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS; P3 soak per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria with FAIL entries: [].",
- "recorded_at": "2026-10-18T04:51:14.472999+00:00",
+ "recorded_at": "2026-10-18T05:55:28.389923+00:00",
  "corrections": [
   {
    "id": "C-1",
@@ -1505,6 +1535,14 @@
     "commit_free_mib_max": 24491,
     "avail_phys_mib_min": 9753,
     "avail_phys_mib_max": 14134
+   },
+   "soak-p2-e": {
+    "samples": 120,
+    "commit_free_mib_min": 21352,
+    "commit_free_mib_median": 24255,
+    "commit_free_mib_max": 24809,
+    "avail_phys_mib_min": 9252,
+    "avail_phys_mib_max": 13047
    }
   },
   "ram1_snapshot": {
@@ -1557,7 +1595,7 @@
  },
  "qualification_by_profile": {
   "P2 64K main only (c64k-visoff-mtpoff)": {
-   "status": "NOT QUALIFIED YET: journeys and switch PASS; LQ-3 bound soak not run",
+   "status": "PASS",
    "on_commit": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
    "bound_evidence": "e-p2-main 68/68, e-p2-ret 12/12, sw5 PASS, soak-p2-e (see LQ-3)",
    "supporting": "c-p2-main/c-p2-ret on 4d782ef1, soak-p2 60 min clean (unbound), history runs on fa0a70e6",

@@ -1,4 +1,4 @@
-# RUNTIME-PROFILES-INTEG — live qualification results (v3, bound to code f3d5eb29)
+# RUNTIME-PROFILES-INTEG — live qualification results (v3.1, bound to code f3d5eb29)
 
 Date 2026-10-18. Candidate `milestone/runtime-profiles-integ-20261017`. Code tested live: `f3d5eb29`, which is
 `07dca2a8` (the profile code) merged with canonical `348677b7`. Plan and criteria:
@@ -14,8 +14,12 @@ integrated, deployed or frozen. Independent review is by fresh read-only subagen
 
 - **Source binding (review R2-02).** Every harness (`live_session.py`, `soak.py`, `assist_vision_app.py`,
   `switch_live.py`) now refuses to run without a clean source binding (`evidence/harness/binding.py`). The binding
-  requires a runtime materialized from the candidate HEAD, a clean candidate worktree, and a byte match of all 358
-  runtime files. The soak and Assist runs of v2 ran from the mutable development checkout without a recorded
+  requires a clean candidate worktree and a byte match of all 358 runtime files in both the runtime and the
+  candidate checkout. After review R3-03 it also requires that the runtime was materialized from the candidate HEAD,
+  or from an ancestor that differs from HEAD only in `docs/` files the runtime does not contain. It records the
+  hashes of the harness scripts at run time. Limits: the binding is taken once, at the start of a run, and it does
+  not cover base or overlay files outside the receipt (none of them changes in this milestone). The record counts a
+  run for a commit only when its binding names that commit. The soak and Assist runs of v2 ran from the mutable development checkout without a recorded
   binding. They are now **supporting evidence only** (correction C-5). Bound re-runs replace them.
 - **ProfileFollower (R2-05, R2-06), code `07dca2a8`.** Change detection now compares the file content, not
   `(mtime, size)`. The same bytes are validated and applied, and `on_change` runs in order under the lock. There are
@@ -34,7 +38,7 @@ integrated, deployed or frozen. Independent review is by fresh read-only subagen
 
 | Profile | Status | Bound evidence on `f3d5eb29` | Operating condition measured |
 |---|---|---|---|
-| **P2 64K main only** (13,658 MiB) | **PASS** | `e-p2-main` 68/68, `e-p2-ret` 12/12, switch `sw5` PASS | lease fit FITS +1,920 MiB (2026-10-18); +1,176..+1,324 on 2026-10-17 |
+| **P2 64K main only** (13,658 MiB) | **PASS** | `e-p2-main` 68/68, `e-p2-ret` 12/12, switch `sw5` PASS, soak `soak-p2-e` 60 min PASS (added after review R3-01) | lease fit FITS +1,920 MiB (2026-10-18); +1,176..+1,324 on 2026-10-17 |
 | **P3 32K + GPU vision** (14,360 MiB) | **PASS** | `e-p3-main` 68/68, `e-p3-ret` 12/12, switch `sw5` PASS, Assist application path `assist-p3-e` 3/3, soak `soak-p3-e` 60 min PASS | fit FITS +1,218 (2026-10-18) .. AT_RISK +474 (2026-10-17 evening, dwm 1.05 GB) |
 | **P1 64K + GPU vision** (14,764 MiB) | **FAIL — unqualified** | not re-run. History on `fa0a70e6`: `p1b-main` FAIL (CRASH-1), `soak-p1` FAIL (demotion 99 -> 21 tok/s for 12 min); also 2 x 68/68, 2 x 12/12, Assist 3/3 (unbound) | fit AT_RISK +218; stays unqualified until CRASH-1 and DEMOTE-P1 are resolved and re-tested |
 
@@ -50,7 +54,13 @@ dropped. The ordering-artifact rule (R1-03) applies only when all of these hold:
 `R-restore-defaults`; and the run immediately before was a returning run. The rule marks a run NOT VERIFIED, not
 PASS (`p2-ret`, `s3-p2-ret`).
 
-## 4. Sustained operation and Assist (P3, bound)
+## 4. Sustained operation (P2, P3) and Assist (P3), bound
+
+- **`soak-p2-e`** (60 min, the app's start screen open, Chrome opened at 20 min and closed at 40 min): 120/120 turns valid. Decode
+  median 104.0 tok/s, minimum 87.8 tok/s. Brain non-local memory at most 561.8 MiB, which is the same Vulkan host
+  buffers as in the P2 journey runs, so there was no demotion. Dedicated memory at least 13,876.1 MiB. Free commit
+  21,352-24,809 MiB. Fit after the run FITS +1,885 MiB. The lease was FREE after the run. Review R3-01 found that v3
+  reported P2 as qualified without a bound soak; this run closes that gap.
 
 - **`soak-p3-e`** (60 min, the app's start screen open, Chrome opened at 20 min): 120/120 turns valid. Decode median
   103.8 tok/s, minimum 90.2 tok/s. Brain non-local memory at most 497.8 MiB, which is the Vulkan host buffers only, so
@@ -59,8 +69,8 @@ PASS (`p2-ret`, `s3-p2-ret`).
 - **`assist-p3-e`** (application path, 3 asks): every answer named error 401 and both enabled toggles. Ask time 1.34
   s cold, then 0.52 s and 0.47 s. Plain decode 106.7 tok/s before and 105.0 tok/s after. Host ready in 23.0 s.
 
-This is one bound soak (n=1) on a lighter desktop than on 2026-10-17. With the unbound `soak-p3` (AT_RISK desktop),
-there are two clean 60-minute runs.
+Each profile has one bound soak (n=1), on a lighter desktop than on 2026-10-17. With the unbound `soak-p2` and
+`soak-p3` (2026-10-17), each profile has two clean 60-minute runs.
 
 ## 5. Profile switch with conversation continuity (LQ-4)
 
@@ -77,6 +87,12 @@ conversation through P2 -> P3 -> P2.
 | **`sw5`** | **PASS, bound to `f3d5eb29`**: "4817" recalled through the answer channel before the switch, after P2 -> P3 and after P3 -> P2. Both switches reached READY on the new profile (26.8 s and 21.2 s). The worker pid did not change |
 
 Not tested: a switch through UI clicks. The UI V2 driver does not test it.
+
+Deviation from the plan (review R3-02, plan amendment A2): LQ-4 names the switch P2 -> P1 -> P2. The run used
+P2 -> P3 -> P2, because P1 is unqualified and P3 is the qualified vision profile. Cold start is covered by every
+bound journey and soak run, each of which starts the Brain host cold. Host restart is covered by each `sw5` switch,
+which stops the host and starts it again on the new profile. VRAM release is measured in `sw5`. A P2 -> P1 -> P2
+switch stays open together with P1.
 
 ## 6. Research (subagents; hypotheses are labelled)
 
@@ -105,8 +121,8 @@ Not tested: a switch through UI clicks. The UI V2 driver does not test it.
 
 - CRASH-1 is open (root cause unverified; E1 not run). It can affect any profile under commit pressure.
 - DEMOTE-P1 is open. Its mitigations (vision on CPU at 64K, 256 MiB suballocation) are unmeasured.
-- P2 sustained-operation evidence is unbound (`soak-p2`).
-- P3 sustained operation: at most n=2, near the estimated margin on heavy desktops.
+- P2 and P3 sustained operation: one bound soak each (n=1) on a light desktop; P3 is near the estimated margin on
+  heavy desktops.
 - **R2-07 deferred to the UI thread.** The UI does not render `backend.profile` yet. The API exposes it with
   `qualified: false`. UI presentation is outside this milestone (owner brief: the runtime owns the capability, not
   its presentation). The Brain Quick Controls milestone (owner-approved 2026-10-18, branch
@@ -123,7 +139,14 @@ Not tested: a switch through UI clicks. The UI V2 driver does not test it.
 - RPI-R2 (nonce `RPI-R2-c41e88`, commit `a5605ae8`): ACCEPT WITH FINDINGS, 9 findings. R2-05/06 fixed in code
   (`07dca2a8`). R2-02 fixed by the binding and the bound re-runs. R2-01/03/04/08/09 fixed in the record and this
   report. R2-07 deferred (section 7).
-- RPI-R3 reviews the evidence commit on top of `f3d5eb29`.
+- RPI-R3 (nonce `RPI-R3-9d27b4`, commit `fec31dfd`): ACCEPT WITH FINDINGS, 5 findings.
+  - R3-01 MEDIUM: P2 was reported qualified without a bound soak. Fixed: `soak-p2-e` was run (section 4).
+  - R3-02: the LQ-4 deviation was not stated. Fixed (section 5, plan A2).
+  - R3-03: the binding was described too strongly. Fixed: the binding now also checks the commit and hashes the
+    harness scripts, and its limits are stated (section 1).
+  - R3-04: `environment.core` cited the wrong materialization. Fixed.
+  - R3-05: the plan and lifecycle config named the old baseline and review focus. Fixed (plan A2, config).
+- RPI-R4 reviews the commit that carries this report.
 - **Driver-verified acceptance: not available.** Codex is over its usage limit until 2026-10-22, and the claude CLI is
   logged out. Subagent acceptance under the 2026-10-17 lifecycle policy is a different verification class and is
   reported as such.

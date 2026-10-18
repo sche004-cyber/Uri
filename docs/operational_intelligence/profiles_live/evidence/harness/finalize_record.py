@@ -26,7 +26,7 @@ def mem_range(s):
             "commit_free_mib_max": srt[-1], "avail_phys_mib_min": min(ap), "avail_phys_mib_max": max(ap)}
 
 
-e0 = {k: mem_range(soak(k)) for k in ("soak-p3", "soak-p3-e") if mem_range(soak(k))}
+e0 = {k: mem_range(soak(k)) for k in ("soak-p3", "soak-p3-e", "soak-p2-e") if mem_range(soak(k))}
 ram1 = json.loads((ROOT / "evidence" / "ram1_snapshot.json").read_text(encoding="utf-8-sig"))
 sp3e = soak("soak-p3-e")
 r["e0_host_memory"] = {"measured": e0, "ram1_snapshot": {k: ram1.get(k) for k in ("utc", "free_phys_mib", "commit_used_mib",
@@ -73,7 +73,7 @@ r["remaining_limitations"] = [
     "CRASH-1 open: root cause UNVERIFIED (hypothesis host commit exhaustion; E0: see e0_host_memory - commit is the scarce resource on this PC while physical RAM is available; RAM-1 snapshot shows other sessions' PowerShell processes at ~4 GB private each). Can affect every profile and the frozen config. Reproduction E1 not run.",
     "DEMOTE-P1 open; mitigations (vision on CPU at 64K, 256 MiB suballocation) unmeasured.",
     "P3 sustained operation: soak-p3 (unbound, AT_RISK desktop) and soak-p3-e (bound) - see LQ-3; n=2 at most, near the estimated margin on heavy desktops.",
-    "P2 sustained operation: see LQ-3 soak-p2-e (review R3-01); the earlier soak-p2 is unbound and supporting only.",
+    "P2 sustained operation: one bound soak, soak-p2-e PASS (n=1, light desktop, free commit above 21 GB; review R3-01); the earlier soak-p2 is unbound and supporting only.",
     "Conversation continuity across profile switches verified at worker level (sw5 bound, sw4), not through UI clicks; the UI V2 driver does not test it.",
     "R2-07 DEFERRED to the UI thread: the UI does not yet render backend.profile; the API exposes it (qualified false). UI presentation is outside this milestone (owner brief: runtime owns capability, not presentation).",
     "Soak UI window is the app's start screen (a GPU-memory consumer), not a journey run.",
