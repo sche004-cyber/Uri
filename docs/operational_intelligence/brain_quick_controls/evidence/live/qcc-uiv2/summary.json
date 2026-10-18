@@ -1,0 +1,555 @@
+{
+ "label": "qcc-uiv2",
+ "classification": "INCOMPLETE",
+ "verdict": "FAIL",
+ "closure_steps": false,
+ "missing_closure_checks": [],
+ "assist": null,
+ "source_head": "fcc1f183567f607086cf5f465c473ac7378a2a83",
+ "runtime_candidate_head": "fcc1f183567f607086cf5f465c473ac7378a2a83",
+ "runtime_verified": {
+  "ok": true,
+  "checked": 361,
+  "mismatched": []
+ },
+ "checks": [
+  {
+   "id": "J1-v2-is-default",
+   "result": "PASS"
+  },
+  {
+   "id": "J1-dashboard-first",
+   "result": "PASS"
+  },
+  {
+   "id": "J1-brain-ready",
+   "result": "PASS"
+  },
+  {
+   "id": "J2-ctrl-workspace",
+   "result": "PASS"
+  },
+  {
+   "id": "J2-ctrl-dashboard",
+   "result": "PASS"
+  },
+  {
+   "id": "J2-ctrl-assist",
+   "result": "PASS"
+  },
+  {
+   "id": "J2-ctrl-dashboard",
+   "result": "PASS"
+  },
+  {
+   "id": "J2-nav-Conversation",
+   "result": "PASS"
+  },
+  {
+   "id": "J2-nav-Tasks",
+   "result": "PASS"
+  },
+  {
+   "id": "J2-nav-Documents",
+   "result": "PASS"
+  },
+  {
+   "id": "J2-nav-Settings",
+   "result": "PASS"
+  },
+  {
+   "id": "J3-greeting-replied",
+   "result": "PASS"
+  },
+  {
+   "id": "J3-fact",
+   "result": "PASS"
+  },
+  {
+   "id": "J4-clarification-asked",
+   "result": "PASS"
+  },
+  {
+   "id": "J4-confirmation-asked",
+   "result": "PASS"
+  },
+  {
+   "id": "J9-dashboard-counts-decision",
+   "result": "PASS"
+  },
+  {
+   "id": "J9-review-opens-tasks",
+   "result": "PASS"
+  },
+  {
+   "id": "J9-deny-honoured",
+   "result": "PASS"
+  },
+  {
+   "id": "J5-tool-settled",
+   "result": "PASS"
+  },
+  {
+   "id": "J5-memory-written",
+   "result": "PASS"
+  },
+  {
+   "id": "J5-recall",
+   "result": "PASS"
+  },
+  {
+   "id": "J6-letter-opens-conversation",
+   "result": "PASS"
+  },
+  {
+   "id": "J6-letter-real-turn",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-no-testing-controls",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-draft-open",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-target-chip-shown",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-chat-answered",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-chat-does-not-edit",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-target-conversation-never-edits",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-target-draft-chosen",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-explicit-edit-applies",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-target-back-to-conversation",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-new-document-keeps-old",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-undo-restores",
+   "result": "PASS"
+  },
+  {
+   "id": "J14-redo-returns",
+   "result": "PASS"
+  },
+  {
+   "id": "J16-tile-never-revises-open-draft",
+   "result": "PASS"
+  },
+  {
+   "id": "J10-navigation-while-busy",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-window-440x680",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-shaped-region",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-native-rejects-nan",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-native-rejects-infinite",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-native-rejects-inverted",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-region-kept-after-reject",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-single-click-controls",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-detached-chat",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-draft-note",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-chat-reply",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-draft-untouched",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-stays-companion",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-escape-closes-chat",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-double-click-dashboard",
+   "result": "PASS"
+  },
+  {
+   "id": "J7-window-restored",
+   "result": "PASS"
+  },
+  {
+   "id": "J8-gallery-opens",
+   "result": "PASS"
+  },
+  {
+   "id": "J8-preview-isolated",
+   "result": "PASS"
+  },
+  {
+   "id": "J8-apply",
+   "result": "PASS"
+  },
+  {
+   "id": "J8-theme",
+   "result": "PASS"
+  },
+  {
+   "id": "J15-lunar-edge-invisible-light-theme",
+   "result": "PASS"
+  },
+  {
+   "id": "J13-classic-reachable",
+   "result": "PASS"
+  },
+  {
+   "id": "J13-classic-entry-present",
+   "result": "PASS"
+  },
+  {
+   "id": "J11-composer-in-view-1366",
+   "result": "PASS"
+  },
+  {
+   "id": "J11-no-layout-error-1366",
+   "result": "PASS"
+  },
+  {
+   "id": "J11-composer-in-view-1280",
+   "result": "PASS"
+  },
+  {
+   "id": "J11-no-layout-error-1280",
+   "result": "PASS"
+  },
+  {
+   "id": "J11-composer-in-view-1024",
+   "result": "PASS"
+  },
+  {
+   "id": "J11-no-layout-error-1024",
+   "result": "PASS"
+  },
+  {
+   "id": "J11-no-layout-error-900",
+   "result": "PASS"
+  },
+  {
+   "id": "J11-no-layout-error-800",
+   "result": "PASS"
+  },
+  {
+   "id": "J12-brain-not-ready-seen",
+   "result": "PASS"
+  }
+ ],
+ "failed_checks": [],
+ "turns": [
+  {
+   "scenario": "greeting",
+   "tier": null,
+   "route": "answer",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "Hello! How can I help you today?",
+   "decode_tps": 142.14192081115655,
+   "prompt_n": 744,
+   "cache_n": 0
+  },
+  {
+   "scenario": "fact question",
+   "tier": null,
+   "route": "answer",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "The capital of France is Paris.",
+   "decode_tps": 109.40577037291739,
+   "prompt_n": 26,
+   "cache_n": 753
+  },
+  {
+   "scenario": "missing fact clarification",
+   "tier": null,
+   "route": "core",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "",
+   "decode_tps": null,
+   "prompt_n": null,
+   "cache_n": null
+  },
+  {
+   "scenario": "clarification answer",
+   "tier": null,
+   "route": "core",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "",
+   "decode_tps": null,
+   "prompt_n": null,
+   "cache_n": null
+  },
+  {
+   "scenario": "remember again",
+   "tier": null,
+   "route": "core",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "",
+   "decode_tps": null,
+   "prompt_n": null,
+   "cache_n": null
+  },
+  {
+   "scenario": "remember again: the fact",
+   "tier": null,
+   "route": "core",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "",
+   "decode_tps": null,
+   "prompt_n": null,
+   "cache_n": null
+  },
+  {
+   "scenario": "recall",
+   "tier": null,
+   "route": "answer",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "You asked URI to remember: the project room code is K64207.",
+   "decode_tps": 151.3062775293366,
+   "prompt_n": 189,
+   "cache_n": 685
+  },
+  {
+   "scenario": "start new work: letter",
+   "tier": null,
+   "route": "draft",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "Please provide the recipient's name, the purpose of the letter, and any specific details you want included.",
+   "decode_tps": 97.05336351853546,
+   "prompt_n": 737,
+   "cache_n": 0
+  },
+  {
+   "scenario": "drop letter question",
+   "tier": null,
+   "route": "draft",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "Okay, I have dropped that question. Nothing was changed.",
+   "decode_tps": null,
+   "prompt_n": null,
+   "cache_n": null
+  },
+  {
+   "scenario": "create warden letter",
+   "tier": null,
+   "route": "draft",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "Letter (version 1 of 1): A formal letter reporting that seven students left the hostel on Monday without permission. Missing: [City, State, Zip Code], [Date], [",
+   "decode_tps": 121.87275409125044,
+   "prompt_n": 52,
+   "cache_n": 703
+  },
+  {
+   "scenario": "chat with a draft open (live l9)",
+   "tier": null,
+   "route": "answer",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "Hello there, friend!",
+   "decode_tps": 63.54209028060187,
+   "prompt_n": 415,
+   "cache_n": 685
+  },
+  {
+   "scenario": "target conversation",
+   "tier": null,
+   "route": "answer",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "Hello.\n\nWhy did the scarecrow win an award? Because he was outstanding in his field.",
+   "decode_tps": 126.51741828556247,
+   "prompt_n": 424,
+   "cache_n": 685
+  },
+  {
+   "scenario": "explicit edit",
+   "tier": null,
+   "route": "draft",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "Letter (version 2 of 2): Condensed the body paragraphs to be more concise while retaining all key facts. Missing: [City, State, Zip Code], [Date], [Hostel Name/",
+   "decode_tps": 113.66736382649815,
+   "prompt_n": 1082,
+   "cache_n": 0
+  },
+  {
+   "scenario": "new document replaces",
+   "tier": null,
+   "route": "draft",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "Notice (version 1 of 1): A notice informing users that the library opening time is now 8 AM starting from Monday. Missing: [Date], [Designation], [Your Name], S",
+   "decode_tps": 108.92059688487092,
+   "prompt_n": 46,
+   "cache_n": 703
+  },
+  {
+   "scenario": "companion chat",
+   "tier": null,
+   "route": "answer",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "Hello there, friend!",
+   "decode_tps": 115.70592182907922,
+   "prompt_n": 492,
+   "cache_n": 685
+  },
+  {
+   "scenario": "turn without Brain",
+   "tier": null,
+   "route": "answer",
+   "seconds": null,
+   "depth_sent": null,
+   "error": null,
+   "answer": "",
+   "decode_tps": null,
+   "prompt_n": null,
+   "cache_n": null
+  }
+ ],
+ "profiles": {
+  "frozen": {
+   "server_pids": [
+    17396
+   ],
+   "calibration_tps": [
+    158.9
+   ],
+   "llama_dedicated_mib_max": 15008.7,
+   "llama_non_local_mib_max": 1731.4,
+   "lease_expected_mib": [
+    15626
+   ],
+   "fit_margin_mib": [
+    -108.4
+   ],
+   "ready_samples": 40
+  }
+ },
+ "switches": [
+  {
+   "from": "frozen",
+   "id": "5dccafc2-9407-4983-8b10-efe0613203ff",
+   "result": "ALREADY_ACTIVE",
+   "t_request": 1792323018.003,
+   "to": "frozen"
+  }
+ ],
+ "switch_ui_timelines": [],
+ "worker_processes": [
+  [
+   8376,
+   1792323058.484
+  ],
+  [
+   16736,
+   1792323058.513
+  ]
+ ],
+ "host_state_sequence": [
+  {
+   "state": "STARTING",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:29:55.578446+00:00",
+   "detail": null
+  },
+  {
+   "state": "LOADING",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:30:01.257171+00:00",
+   "detail": null
+  },
+  {
+   "state": "CALIBRATING",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:30:17.941592+00:00",
+   "detail": null
+  },
+  {
+   "state": "READY",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:30:23.405246+00:00",
+   "detail": null
+  }
+ ],
+ "lease_after": "FREE",
+ "brain_config_digest_unchanged": true,
+ "brain_listener_after": null,
+ "host_exit": 0,
+ "native_exit_code": 0,
+ "elapsed_s": 236.22
+}

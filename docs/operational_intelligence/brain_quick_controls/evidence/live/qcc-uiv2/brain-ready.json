@@ -1,0 +1,122 @@
+{
+ "state": "READY",
+ "utc": "2026-10-18T11:30:17.943188+00:00",
+ "host": {
+  "calibration": {
+   "decode_tps": 158.9,
+   "predicted_n": 160,
+   "prompt_ms": 196.234,
+   "reason": "START",
+   "residency": {
+    "consumers": [
+     {
+      "dedicated_mib": 401.8,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1,
+    "others_mib": 850.4,
+    "t": 1792323014.441,
+    "verdict_now": "AT_RISK"
+   },
+   "server_create_time": 1792322993.3729002,
+   "server_pid": 17396,
+   "t": 1792323012.995,
+   "threshold_tps": 60.0,
+   "tokens": 160
+  },
+  "detail": null,
+  "explain": "Brain ready (159 tok/s).",
+  "gpu": {
+   "census_s": 3.47,
+   "census_t": 1792322985.138,
+   "explain": "GPU memory is 108 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 401.8,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 15517.6,
+    "margin_mib": -108.4,
+    "others_mib": 850.4,
+    "owner_mib": 0,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   }
+  },
+  "heartbeat_at": 1792323015.191,
+  "history": [
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792322988.614
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792322995.216
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792323012.946
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792323017.909
+   }
+  ],
+  "host_pid": 3292,
+  "host_started": 1792322985.116,
+  "lease": {
+   "acquired_at": 1792322985.136,
+   "held": true,
+   "recovered_from": null
+  },
+  "override": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": true,
+   "id": "frozen",
+   "mtp": true,
+   "vision": "gpu"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 401.8,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14946.2,
+   "non_local_mib": 1730.1,
+   "others_mib": 850.4,
+   "t": 1792323014.441,
+   "verdict_now": "AT_RISK"
+  },
+  "schema": "uri.ws.brain_host.v1",
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 17396
+  },
+  "state": "READY",
+  "updated_at": 1792323017.909
+ }
+}
