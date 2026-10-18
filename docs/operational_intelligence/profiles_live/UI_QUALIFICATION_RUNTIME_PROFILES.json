@@ -1652,7 +1652,7 @@
  },
  "status": "FAIL",
  "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS, bound 60-minute soaks soak-p2-e and soak-p3-e per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria whose top-level entries on the current commit are FAIL: [] (history, supporting and nested P1 results are listed above and in criteria; review R7-01).",
- "recorded_at": "2026-10-18T07:40:45.842986+00:00",
+ "recorded_at": "2026-10-18T07:49:13.700258+00:00",
  "corrections": [
   {
    "id": "C-1",
@@ -1814,11 +1814,11 @@
   "code_change_after_qualification": "runtime_profile_selection.SELECTABLE (frozen, P2, P3) and its tests; every other measured combination, P1 included, is PROFILE_NOT_QUALIFIED",
   "live_verification_on_integration_code": "sw6 (LQ-4) PASS, bound",
   "regression_gates": "evidence/gates_integ: tests/ws, oi, ssrf, web, a2ui, assist, office worker isolation, governance, dev_workflow with one interpreter on the candidate and on canonical 348677b7: identical failure sets (6 failed, 20 errors, all pre-existing: Chromium-dependent Assist tests and test_win_breakaway_is_refused); candidate 7255 passed, canonical 7209",
-  "brain_quick_controls_compatibility": "integration code merged into the Brain QC tip 29db21f9 in a scratch worktree: no conflict; tests/oi/test_brain_quick_controls.py + profile tests 75 passed, 1 skipped",
+  "brain_quick_controls_compatibility": "integration code merged into the Brain QC tips in a scratch worktree, no conflict: 29db21f9 (75 passed, 1 skipped) and, after review R8-03, f7c08dbc with 91f2b0bd (78 passed, 1 skipped; tests/oi/test_brain_quick_controls.py + profile tests). Brain QC's host writes the selection file (sync_selection) only with a catalog profile; the worker still refuses any other key on every read",
   "p1_investigation": "evidence/research/P1_D3_INVESTIGATION.md (read-only; labels VERIFIED / HYPOTHESIS)"
  },
  "binding_versions": {
-  "note": "the committed evidence/harness/binding.py is the current version (explicit allowlist, R4-01). No bound run used it. Runs before R3-03 did not record the hash; the binding.py copy committed with their evidence in fec31dfd has sha256 c64df8c887866e2fc39d8f5d662a29c1e38a2cfb924a40b6bc274ff6d3a28608 (that this exact file ran is inferred from the timeline, not hashed at run time). soak-p2-e used the R3-03 version (docs/ outside the receipt), whose rule its changed paths also satisfy under R4-01.",
+  "note": "the committed evidence/harness/binding.py is the current version (explicit allowlist, R4-01). Of the qualification runs none used it; the integration run sw6 did (review R8-01). Runs before R3-03 did not record the hash; the binding.py copy committed with their evidence in fec31dfd has sha256 c64df8c887866e2fc39d8f5d662a29c1e38a2cfb924a40b6bc274ff6d3a28608 (that this exact file ran is inferred from the timeline, not hashed at run time). soak-p2-e used the R3-03 version (docs/ outside the receipt), whose rule its changed paths also satisfy under R4-01.",
   "committed_binding_py_sha256": "f1f2772c2d09b29946f5d15b588cd622285eb085b666504a74e29fcbb7f2db1a",
   "per_run": {
    "e-p2-main": "not recorded (run before R3-03)",

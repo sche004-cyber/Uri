@@ -131,4 +131,5 @@ The default Brain stays the frozen Runtime v1. Integration (IC-4) still requires
     lists agree.
 - **Integration mechanics:** canonical `integration/git-sync-20261008` is still `348677b7`, which the candidate
   contains, so integration is a fast-forward. The push is verified with `git ls-remote`, and a receipt is written.
-  Rollback: canonical can be reset to `348677b7`, and the frozen fallback is the absent selection file.
+  Rollback: a revert commit on canonical (non-destructive), or a force reset to `348677b7` with owner
+  authorisation; at run time the frozen fallback is the absent selection file.

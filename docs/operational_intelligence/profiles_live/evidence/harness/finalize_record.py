@@ -83,8 +83,11 @@ r["integration"] = {
                          "dev_workflow with one interpreter on the candidate and on canonical 348677b7: identical failure "
                          "sets (6 failed, 20 errors, all pre-existing: Chromium-dependent Assist tests and "
                          "test_win_breakaway_is_refused); candidate 7255 passed, canonical 7209"),
-    "brain_quick_controls_compatibility": ("integration code merged into the Brain QC tip 29db21f9 in a scratch worktree: no "
-                                           "conflict; tests/oi/test_brain_quick_controls.py + profile tests 75 passed, 1 skipped"),
+    "brain_quick_controls_compatibility": ("integration code merged into the Brain QC tips in a scratch worktree, no conflict: "
+                                           "29db21f9 (75 passed, 1 skipped) and, after review R8-03, f7c08dbc with 91f2b0bd "
+                                           "(78 passed, 1 skipped; tests/oi/test_brain_quick_controls.py + profile tests). "
+                                           "Brain QC's host writes the selection file (sync_selection) only with a catalog "
+                                           "profile; the worker still refuses any other key on every read"),
     "p1_investigation": "evidence/research/P1_D3_INVESTIGATION.md (read-only; labels VERIFIED / HYPOTHESIS)"}
 r["remaining_limitations"] = [
     "P1 D3 investigation (evidence/research/P1_D3_INVESTIGATION.md): CRASH-1 is NOT shown to be P1-specific; every profile and the frozen config share the prompt-cache path. The pagefile is system-managed on an HDD and grows on demand; 'virtual memory minimum too low' popups occurred on 2026-09-17 and 2026-10-15; Windows exhaustion detectors and WER are not usable evidence on this PC. Proposed (owner) mitigations: fixed pagefile, closing stale large processes, commit sampling in live runs, crash dumps; decisive experiment E1' on P2 needs owner approval.",
@@ -148,8 +151,8 @@ for _sub, _name in (("live", "session-start.json"), ("soak", "soak.json"), ("ass
                                                                       "not recorded (run before R3-03)")
 import hashlib as _hl
 r["binding_versions"] = {
-    "note": ("the committed evidence/harness/binding.py is the current version (explicit allowlist, R4-01). No bound "
-             "run used it. Runs before R3-03 did not record the hash; the binding.py copy committed with their evidence in "
+    "note": ("the committed evidence/harness/binding.py is the current version (explicit allowlist, R4-01). Of the "
+             "qualification runs none used it; the integration run sw6 did (review R8-01). Runs before R3-03 did not record the hash; the binding.py copy committed with their evidence in "
              "fec31dfd has sha256 c64df8c887866e2fc39d8f5d662a29c1e38a2cfb924a40b6bc274ff6d3a28608 (that this exact file ran "
              "is inferred from the timeline, not hashed at run time). soak-p2-e used the R3-03 version "
              "(docs/ outside the receipt), whose rule its changed paths also satisfy under R4-01."),

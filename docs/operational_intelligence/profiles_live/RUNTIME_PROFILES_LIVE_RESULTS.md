@@ -17,8 +17,9 @@ integrated, deployed or frozen. Independent review is by fresh read-only subagen
   requires a clean candidate worktree and a byte match of all 358 runtime files in both the runtime and the
   candidate checkout. After review R3-03 it also requires that the runtime was materialized from the candidate HEAD,
   or from an earlier commit that differs from HEAD only in this milestone's evidence, plan and lifecycle config
-  (an explicit allowlist since review R4-01; none of these files is in the runtime). No bound run used the
-  allowlist version: `soak-p2-e` ran with the R3-03 version, and its changed paths satisfy both rules. The
+  (an explicit allowlist since review R4-01; none of these files is in the runtime). No qualification run
+  used the allowlist version: `soak-p2-e` ran with the R3-03 version, and its changed paths satisfy both rules. The
+  integration run `sw6` used the allowlist version (review R8-01). The
   record's `binding_versions` lists the version each run recorded (review R5-03). It records the
   hashes of the harness scripts at run time. Limits: the binding is taken once, at the start of a run, and it does
   not cover base or overlay files outside the receipt (none of them changes in this milestone). The record counts a
@@ -175,7 +176,9 @@ switch stays open together with P1.
   frozen config; `write()` refuses it too. The Brain host's `--profile` keeps every measured combination for
   research; a worker never verifies against such a host (FOREIGN_INSTANCE, fail closed). Plan amendment A3.
 - **Default Brain unchanged (D2):** with no selection file, the worker and the host use the frozen config exactly as
-  before. Nothing in product code writes the selection file.
+  before. Nothing in this candidate's product code writes the selection file. After Brain Quick Controls is
+  integrated, its Brain host writes it, but only with a catalog profile (frozen, P2, P3); the worker still refuses
+  any other key on every read (review R8-03).
 - **Live verification on the integration code:** `sw6`, bound to `c3fc8bbc` (runtime-f, installation rp-f), PASS.
   "4817" was recalled before the switch, after P2 -> P3 and after P3 -> P2. Switches were READY in 25.2 s and 23.3 s,
   VRAM was released in 3.4 s, and the worker pid did not change. The P2/P3 journeys and soaks were not repeated: the
@@ -186,10 +189,15 @@ switch stays open together with P1.
   `test_win_breakaway_is_refused`). Candidate 7,255 passed, canonical 7,209.
 - **Brain Quick Controls compatibility (D4):** `c3fc8bbc` merged into the Brain QC tip `29db21f9` in a scratch
   worktree without conflict; `tests/oi/test_brain_quick_controls.py` plus the profile tests gave 75 passed and 1
+  skipped. Repeated on the newer Brain QC tip `f7c08dbc`, merged with `91f2b0bd`: no conflict, 78 passed and 1
   skipped. Brain QC's own catalog lists the same three profiles and refuses P1 on the host side.
 - **P1 (D3):** stays unqualified and not selectable. A read-only investigation
   (`evidence/research/P1_D3_INVESTIGATION.md`) found nothing that makes CRASH-1 specific to P1. The leading
   hypothesis, still unverified, is host commit exhaustion. The pagefile is system-managed on an HDD and grows on
   demand, and "virtual memory minimum too low" warnings occurred on 2026-09-17 and 2026-10-15. Mitigations that need
   you (fixed pagefile, crash dumps) and the decisive experiment E1' (commit starvation on P2) are not done.
-- **Rollback:** reset canonical to `348677b7`, or remove the selection file (the frozen fallback).
+- **Rollback:** a revert commit on canonical (non-destructive), or, with your authorisation, a force reset to
+  `348677b7`. At run time, removing the selection file returns the worker to the frozen fallback (review R8-05).
+- **API label (R8-04, R2-07):** `brain_health.backend().profile.qualified` is `false` for every profile, P2 and P3
+  included. The value is hard-coded in the accepted `runtime_profiles.describe()` and is left unchanged; showing
+  qualification in the UI belongs to Brain Quick Controls, whose catalog marks P2 and P3 qualified.
