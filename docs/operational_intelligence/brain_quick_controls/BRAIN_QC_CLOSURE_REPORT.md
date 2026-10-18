@@ -15,7 +15,7 @@ Branch `milestone/brain-qc-closure-20261018`, worktree `D:\uri-dev\uri-brain-qc-
 | C3 | P1 not selectable through normal controls | MET (catalog refuses it; worker `SELECTABLE` refuses it; the UI lists it disabled with its reason; live check `QC-unqualified-not-requested`) |
 | C4 | UI qualification and active-profile information accurate; host, worker and selection never disagree silently | MET (`active` only after worker verification; new `mismatch` with the host's `selection_error`, shown as a `qc-mismatch` line; live `QC-no-mismatch-p3`; unit and widget tests for each mismatch kind) |
 | C5 | Conversation and worker survive switching | MET (live: "4817" recalled after 4 switches; the same 2 worker processes and the same session) |
-| C6 | Vision stays available during an active Assist session | MET in code and tests. Live: only the application path. See section 4 and L-2 |
+| C6 | Vision stays available during an active Assist session | MET in code and tests. Live: a vision answer on P3 by the production Assist classes in the session process, not through the worker (L-2) |
 | C7 | Loading, switching, readiness and failure states truthful | MET (live: the header is never "ready" while a switch is pending; a turn during a switch is refused; P3 is shown only when it is READY) |
 | C8 | No new material regression | MET (gates; UI V2 journeys 68/68; resource numbers in section 5) |
 | C9 | Independent review: no unresolved blocking issue | see section 7 |
@@ -59,7 +59,7 @@ Files changed against canonical `feaabe3f`:
 |---|---|---|
 | pytest `tests/oi` + `tests/ws` | 793 passed, 23 skipped, rc 0 | `evidence/gates/closure_fcc1f183/pytest_oi_ws.log` |
 | flutter test (full) | 788 passed (5 skipped), rc 0 | `…/flutter_test.log` |
-| flutter analyze | 4 info messages, all pre-existing, in files this milestone did not touch | |
+| flutter analyze | 4 info messages (exit 1, as at the QC baseline), all pre-existing, in files this milestone did not touch | `…/flutter_analyze.log` |
 | `ws_frozen_check` | ok, no unapproved drift; same as the QC baseline | `…/frozen_check.json` |
 | Frozen UI V2 files vs `7893aaed` | +137 / -0 lines (additive) | `…/ui_v2_frozen_files_stat_vs_7893aaed.txt` |
 | Windows release build | OK (`uri_ui.exe` Release built), rc 0 | `…/uibuild-release.log` |
@@ -68,7 +68,7 @@ Files changed against canonical `feaabe3f`:
 Focused tests added by this closure:
 - Python: P3 target, every mismatch kind, mismatch suppressed during a switch, the Assist guard (vision off refused,
   vision kept allowed, ask in progress), a real `AssistCommands` grant / pause / revoke, `switch_pending`, the
-  dispatch guard, and assist-state failure isolation.
+  dispatch guard (a source-order check only), and assist-state failure isolation.
 - Dart: Draft choices (32K, P3, 64K, unknown), lockVision cases, mismatch and selection-error notices, a Draft switch
   through the confirm dialog, and the refusal texts.
 
@@ -119,10 +119,10 @@ run.
 | | Standard (frozen) | P3 (draft off) | P2 |
 |---|---|---|---|
 | GPU headroom next to the app | negative (AT_RISK); about 1.7 GB in system memory | +0.9 GB, fully resident | +1.7 GB, fully resident |
-| Decode, list task | 149-150 (MTP) | about 99-100 | about 95-96 |
+| Decode, list task (measured turns) | 110.7 at the first turn, 148.9 after a switch (MTP); calibration 146.7-150.5 | 99.8; calibration 98.4 | 96.2; calibration 94.6 |
 | Vision | yes | yes | no |
 | Context | 32K | 32K | 64K |
-| Qualification | frozen baseline | live-qualified + this closure | live-qualified + this closure |
+| Qualification | frozen baseline | live-qualified (runtime profiles), subagent-reviewed, not driver-accepted; plus this closure | same as P3 |
 
 - **Standard:** fastest. On this desktop it runs past the safe GPU budget, as known since Runtime v1 (P-GOV-1).
 - **P3:** keeps vision, with headroom.
@@ -144,7 +144,7 @@ run.
 
 - **L-1:** switching was driven by automation (flutter_test taps); physical keyboard and mouse are not qualified.
 - **L-2:** Assist vision through the worker is still unqualified (owner-gated capture adapters). The live Assist
-  check used the application path with stand-ins. The worker's vision lock and switch guard are covered by unit and
+  check ran the production Assist classes in the session process (not the worker path) with stand-ins. The worker's vision lock and switch guard are covered by unit and
   widget tests, not live.
 - **L-3:** `qc-mismatch` is unit and widget tested only. Live, it would need a research P1 host; P1 was deliberately
   not started.
@@ -156,4 +156,17 @@ run.
 
 ## 9. Review results
 
-(filled in after QCC-R2)
+- **QCC-R2** (fresh read-only subagent, nonce `QCC-R2-d61f93`, commit `0988176d`): **ACCEPT WITH FINDINGS**, 4 LOW,
+  no HIGH or MEDIUM (`review/closure/REVIEW_QCC_R2.md`). Every owner criterion was MET, and the numbers in sections
+  4-6 were recomputed from the raw files. The repairs below are wording and evidence only; they were not re-reviewed:
+  - R2-01: the live Assist check is described as the production Assist classes in the session process, not the
+    worker path. The harness comments that still say "application path" (`qc_session.py`, `qc_driver.dart`) are kept
+    unchanged, because the runs recorded the driver hash.
+  - R2-02: decode now shows the measured range.
+  - R2-03: the flutter analyze log is added. The dispatch guard is marked as a source-order test. `frozen_check.head`
+    names the commit and the baseline file.
+  - R2-04: the qualification class is stated. The host report's `profile.qualified: false` for P2 and P3 is the
+    research flag of the accepted `runtime_profiles.describe()` (R2-07 / R8-04). The UI does not show it; the Quick
+    Controls catalog is the qualification authority in the UI.
+- **Status:** ACCEPT WITH FINDINGS by independent subagent review. This is not driver-verified, not integrated, not
+  frozen and not deployed.
