@@ -86,7 +86,10 @@ r["corrections"] = [
     {"id": "C-3", "was": "URI-RUNTIME-VRAM-R1 report: 64K+MTP demotion 'stays after close'", "now": "measured only 38 s after Chrome closed; does not show process-lifetime stickiness (DEMOTE-P1 returned after 180-210 s)", "source": "demotion research subagent"},
     {"id": "C-4", "was": "report v2 E0: 'free commit 386-1,600 MiB with 6-8 GB physical available'", "now": "see e0_host_memory (soak-p3: commit free min 386 at t=0, median well above 1,600; physical 3.6-7.0 GB)", "source": "RPI-R2 R2-01"},
     {"id": "C-5", "was": "report v2: soak/Assist evidence 'on 4d782ef1', 'host code identical'", "now": "those runs ran from the mutable dev checkout without a recorded binding: supporting only; bound re-runs soak-p3-e / assist-p3-e on the current commit", "source": "RPI-R2 R2-02"},
-    {"id": "C-6", "was": "ProfileFollower change detection by (mtime, size), on_change outside the lock", "now": "content comparison, same-bytes validation, ordered delivery under the lock (07dca2a8)", "source": "RPI-R2 R2-05/R2-06"}]
+    {"id": "C-6", "was": "ProfileFollower change detection by (mtime, size), on_change outside the lock", "now": "content comparison, same-bytes validation, ordered delivery under the lock (07dca2a8)", "source": "RPI-R2 R2-05/R2-06"},
+    {"id": "C-7", "was": "report/record v3: P2 'PASS / qualified on this commit' without a bound 60-minute soak", "now": "P2 qualified only after the bound soak-p2-e PASS (v3.1)", "source": "RPI-R3 R3-01"},
+    {"id": "C-8", "was": "report v3.1: 'Fit after the run FITS +1,885 MiB' for soak-p2-e", "now": "that fit was taken at host start; at the end of the run only the residency verdict FITS is recorded", "source": "RPI-R4 R4-02"},
+    {"id": "C-9", "was": "binding.py after R3-03: any docs/ path outside the receipt may differ from the runtime's commit", "now": "explicit allowlist (profiles_live evidence, the plan, the lifecycle config); soak-p2-e's changed paths satisfy both rules", "source": "RPI-R4 R4-01"}]
 r["independent_audit"]["prior_rounds"] = [
     {"round": "RPI-R1", "nonce": "RPI-R1-7f3c91", "reviewed_commit": "3b77aabc", "verdict": "ACCEPT WITH FINDINGS",
      "findings": 9, "outcome": "all 9 resolved (verified in RPI-R2)"},
@@ -102,7 +105,7 @@ r["independent_audit"]["next_round"] = "RPI-R4 on the commit that carries this r
 fails = [k for k, v in lq.items() if isinstance(v, dict) and any(str(x).startswith("FAIL") for x in v.values())]
 r["status"] = "FAIL"
 r["status_reason"] = ("The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit "
-                      f"{code[:8]}, switch continuity PASS (sw5), P3 Assist PASS; P3 soak per LQ-3. P1: failed journeys "
+                      f"{code[:8]}, switch continuity PASS (sw5), P3 Assist PASS, bound 60-minute soaks soak-p2-e and soak-p3-e per LQ-3. P1: failed journeys "
                       "(p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the "
                       f"record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria with FAIL entries: {fails}.")
 REC.write_text(json.dumps(r, indent=1, default=str), encoding="utf-8")

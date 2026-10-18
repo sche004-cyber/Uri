@@ -13,7 +13,11 @@ from pathlib import Path
 
 SRC = Path(r"D:\uri-dev\uri-runtime-profiles-integ")
 TOOLS = Path(__file__).resolve().parent
-DOCS_ONLY = "docs/"
+# Review R4-01: an explicit allowlist. Product code reads some docs/ files at run time (for example
+# docs/governance/URI_RUNTIME_AUTHORITY_MANIFEST.json), so "any docs/ path" was too wide.
+NON_RUNTIME_PREFIXES = ("docs/operational_intelligence/profiles_live/",)
+NON_RUNTIME_FILES = ("docs/operational_intelligence/RUNTIME_PROFILES_INTEGRATION_PLAN.md",
+                     "docs/dev_workflow/lifecycle/RUNTIME-PROFILES-INTEG.json")
 
 
 def _sha(p):
@@ -30,13 +34,14 @@ def bind(runtime_root) -> dict:
     out = {"runtime_root": str(rt), "materialized_from": receipt["candidate_head"], "candidate_head_now": head,
            "candidate_tracked_changes": porcelain.splitlines(), "runtime_files_checked": len(receipt["oi_files_copied"]),
            "mismatched": bad[:20]}
-    # Review R3-03: the runtime must come from the candidate HEAD, or from an ancestor whose only differences to HEAD
-    # are documents that do not run: paths under docs/ that the materializer did not copy into the runtime (evidence,
-    # the plan, the lifecycle config). Any other difference fails the binding.
+    # Review R3-03 / R4-01: the runtime must come from the candidate HEAD, or from an earlier commit whose only
+    # differences to HEAD are the listed non-runtime documents (this milestone's evidence, plan and lifecycle config)
+    # and are not in the runtime receipt. Any other difference fails the binding.
     since = subprocess.check_output(["git", "diff", "--name-only", receipt["candidate_head"], head], cwd=SRC,
                                     text=True).split()
     out["changed_since_materialization"] = since
-    out["code_matches_head"] = all(x.startswith(DOCS_ONLY) and x not in receipt["oi_files_copied"] for x in since)
+    out["code_matches_head"] = all((x.startswith(NON_RUNTIME_PREFIXES) or x in NON_RUNTIME_FILES)
+                                   and x not in receipt["oi_files_copied"] for x in since)
     # The harness scripts that ran, hashed at run time (not only the later copies in the evidence folder).
     out["harness_sha256"] = {f.name: _sha(f) for f in sorted(TOOLS.iterdir()) if f.suffix in (".py", ".sh", ".dart")}
     out["ok"] = (not bad and receipt.get("head_is_base") is True and not porcelain.strip()

@@ -97,7 +97,8 @@ The default Brain stays the frozen Runtime v1. Integration (IC-4) still requires
 
 - **Baseline.** Canonical moved from `25048709` to `348677b7`. It was merged into the candidate as `f3d5eb29`
   ("revalidation before integration"). `f3d5eb29` is the code tested live; later commits on this branch change
-  only evidence documents under `docs/operational_intelligence/profiles_live/`. IC-1 and IC-2 are now checked
+  only documents: evidence under `docs/operational_intelligence/profiles_live/`, this plan (A2) and the lifecycle
+  config (correction after review R4-03). IC-1 and IC-2 are now checked
   against `348677b7`. The file list of A1 stays the same. `07dca2a8` (content-based `ProfileFollower`, reviews
   R2-05 and R2-06) changes only `runtime_profile_selection.py` and its test, which are A1 files. The lifecycle
   config records the new baseline and review focus.

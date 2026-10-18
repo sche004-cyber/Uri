@@ -16,7 +16,8 @@ integrated, deployed or frozen. Independent review is by fresh read-only subagen
   `switch_live.py`) now refuses to run without a clean source binding (`evidence/harness/binding.py`). The binding
   requires a clean candidate worktree and a byte match of all 358 runtime files in both the runtime and the
   candidate checkout. After review R3-03 it also requires that the runtime was materialized from the candidate HEAD,
-  or from an ancestor that differs from HEAD only in `docs/` files the runtime does not contain. It records the
+  or from an earlier commit that differs from HEAD only in this milestone's evidence, plan and lifecycle config
+  (an explicit allowlist since review R4-01; none of these files is in the runtime). It records the
   hashes of the harness scripts at run time. Limits: the binding is taken once, at the start of a run, and it does
   not cover base or overlay files outside the receipt (none of them changes in this milestone). The record counts a
   run for a commit only when its binding names that commit. The soak and Assist runs of v2 ran from the mutable development checkout without a recorded
@@ -59,7 +60,8 @@ PASS (`p2-ret`, `s3-p2-ret`).
 - **`soak-p2-e`** (60 min, the app's start screen open, Chrome opened at 20 min and closed at 40 min): 120/120 turns valid. Decode
   median 104.0 tok/s, minimum 87.8 tok/s. Brain non-local memory at most 561.8 MiB, which is the same Vulkan host
   buffers as in the P2 journey runs, so there was no demotion. Dedicated memory at least 13,876.1 MiB. Free commit
-  21,352-24,809 MiB. Fit after the run FITS +1,885 MiB. The lease was FREE after the run. Review R3-01 found that v3
+  21,352-24,809 MiB. Fit FITS +1,885 MiB at host start; at the end of the run the residency verdict was FITS
+  (correction C-8, review R4-02). The lease was FREE after the run. Review R3-01 found that v3
   reported P2 as qualified without a bound soak; this run closes that gap.
 
 - **`soak-p3-e`** (60 min, the app's start screen open, Chrome opened at 20 min): 120/120 turns valid. Decode median
@@ -146,7 +148,10 @@ switch stays open together with P1.
     harness scripts, and its limits are stated (section 1).
   - R3-04: `environment.core` cited the wrong materialization. Fixed.
   - R3-05: the plan and lifecycle config named the old baseline and review focus. Fixed (plan A2, config).
-- RPI-R4 reviews the commit that carries this report.
+- RPI-R4 (nonce `RPI-R4-5e81a0`, commit `900e9962`): ACCEPT WITH FINDINGS, 4 LOW findings, all fixed in the
+  next commit: R4-01 binding allowlist (correction C-9); R4-02 fit wording (C-8); R4-03 plan A2 and review focus;
+  R4-04 the record's status reason names both bound soaks, and correction C-7 records the v3 P2 overclaim.
+- RPI-R5 re-checks these repairs on the commit that carries this report.
 - **Driver-verified acceptance: not available.** Codex is over its usage limit until 2026-10-22, and the claude CLI is
   logged out. Subagent acceptance under the 2026-10-17 lifecycle policy is a different verification class and is
   reported as such.

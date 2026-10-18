@@ -1478,8 +1478,8 @@
   "next_round": "RPI-R4 on the commit that carries this record"
  },
  "status": "FAIL",
- "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS; P3 soak per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria with FAIL entries: [].",
- "recorded_at": "2026-10-18T05:55:28.389923+00:00",
+ "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS, bound 60-minute soaks soak-p2-e and soak-p3-e per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria with FAIL entries: [].",
+ "recorded_at": "2026-10-18T06:03:52.051701+00:00",
  "corrections": [
   {
    "id": "C-1",
@@ -1516,6 +1516,24 @@
    "was": "ProfileFollower change detection by (mtime, size), on_change outside the lock",
    "now": "content comparison, same-bytes validation, ordered delivery under the lock (07dca2a8)",
    "source": "RPI-R2 R2-05/R2-06"
+  },
+  {
+   "id": "C-7",
+   "was": "report/record v3: P2 'PASS / qualified on this commit' without a bound 60-minute soak",
+   "now": "P2 qualified only after the bound soak-p2-e PASS (v3.1)",
+   "source": "RPI-R3 R3-01"
+  },
+  {
+   "id": "C-8",
+   "was": "report v3.1: 'Fit after the run FITS +1,885 MiB' for soak-p2-e",
+   "now": "that fit was taken at host start; at the end of the run only the residency verdict FITS is recorded",
+   "source": "RPI-R4 R4-02"
+  },
+  {
+   "id": "C-9",
+   "was": "binding.py after R3-03: any docs/ path outside the receipt may differ from the runtime's commit",
+   "now": "explicit allowlist (profiles_live evidence, the plan, the lifecycle config); soak-p2-e's changed paths satisfy both rules",
+   "source": "RPI-R4 R4-01"
   }
  ],
  "e0_host_memory": {
