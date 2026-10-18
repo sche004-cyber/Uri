@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:ui' as ui;
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -123,7 +125,8 @@ Widget _bar(OiConversation conv) => _host(ListenableBuilder(
       builder: (_, _) => OiBrainBar(conversation: conv),
     ));
 
-final _png = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0]);
+// A real 2 x 2 PNG: the composer decodes every picture to check its size in pixels (r3 R1-02).
+final _png = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR42mNocFAAIgYIBQAaDgOBdA+WSAAAAABJRU5ErkJggg==');
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -280,7 +283,7 @@ void main() {
     expect(conv.attachImage(OiImage(name: 'cat.png', mime: 'image/png', bytes: _png)), isNull);
     await conv.send('What is this?');
     final turn = rt.commands.where((c) => c['command'] == 'oi_turn').single;
-    expect((turn['images'] as List).single, {'name': 'cat.png', 'mime': 'image/png', 'data': 'iVBORw0KGgoAAAAA'});
+    expect((turn['images'] as List).single, {'name': 'cat.png', 'mime': 'image/png', 'data': base64Encode(_png)});
     expect(conv.messages.first.images, ['cat.png']);
     expect(conv.pendingImages, isEmpty);
     expect(conv.attachImage(OiImage(name: 'a.png', mime: 'image/png', bytes: _png)), isNull);
@@ -435,11 +438,29 @@ void main() {
     expect(conv.lastError, isNull);
   });
 
-  test('image file types and scaling keep small files unchanged', () async {
+  testWidgets('image file types and scaling keep small pictures unchanged and scale large ones', (tester) async {
     expect(oiImageMime('Photo.JPG'), 'image/jpeg');
     expect(oiImageMime('scan.tiff'), isNull);
-    final img = await prepareOiImage('a.png', _png);
-    expect(img!.bytes, _png);
+    final small = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR42mNocFAAIgYIBQAaDgOBdA+WSAAAAABJRU5ErkJggg==');
+    final img = await tester.runAsync(() => prepareOiImage('a.png', small));
+    expect(img!.bytes, small);
+    // r3 R1-02: a small file that is a wide picture (2000 x 8) is scaled to the 1280 px side the budget covers.
+    final wide = base64Decode('iVBORw0KGgoAAAANSUhEUgAAB9AAAAAICAIAAAAukPPiAAAAWklEQVR42u3YMQ0AAAgEsZeCFKQhHRFspEkV3HiZLgAAAAAA4'
+        'CgSAAAAAACA4Q4AAAAAAIY7AAAAAAAY7gAAAAAAgOEOAAAAAACGOwAAAAAAGO4AAAAAAPDPAnOlsysfPZVHAAAAAElFTkSuQmCC');
+    final scaled = await tester.runAsync(() => prepareOiImage('wide.png', wide));
+    final codec = await tester.runAsync(() => ui.instantiateImageCodec(scaled!.bytes));
+    final frame = await tester.runAsync(() => codec!.getNextFrame());
+    expect(frame!.image.width, lessThanOrEqualTo(1280));
+    frame.image.dispose();
+  });
+
+  test('r3 R1-03: turning Vision off says which attached pictures were removed', () async {
+    final rt = _Runtime();
+    final conv = await _ready(rt);
+    expect(conv.attachImage(OiImage(name: 'cat.png', mime: 'image/png', bytes: _png)), isNull);
+    expect(await conv.setProfile(vision: false, context: 32768), isNull);
+    expect(conv.pendingImages, isEmpty);
+    expect(conv.messages.last.text, allOf(contains('removed'), contains('cat.png')));
   });
 
   // ---- review R1 repairs ------------------------------------------------------------------------------------------

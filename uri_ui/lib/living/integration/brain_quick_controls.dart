@@ -437,7 +437,18 @@ Future<OiImage?> prepareOiImage(String name, Uint8List bytes, {int limit = OiCon
     int maxSide = 1280}) async {
   if (oiImageMime(name) == null) return null;
   final sniffed = oiSniffImageMime(bytes);
-  if (sniffed != null && bytes.length <= limit) return OiImage(name: oiImageName(name), mime: sniffed, bytes: bytes);
+  if (sniffed != null && bytes.length <= limit) {
+    // r3 R1-02: a small file can still be a large picture; the worker's context budget covers at most maxSide pixels.
+    var big = false;
+    try {
+      final frame = await (await ui.instantiateImageCodec(bytes)).getNextFrame();
+      big = frame.image.width > maxSide || frame.image.height > maxSide;
+      frame.image.dispose();
+    } catch (_) {
+      // Flutter cannot read its size: sent as it is (the worker checks the type; the Brain's answer says the rest).
+    }
+    if (!big) return OiImage(name: oiImageName(name), mime: sniffed, bytes: bytes);
+  }
   var side = maxSide;
   while (side >= 256) {
     final codec = await ui.instantiateImageCodec(bytes);

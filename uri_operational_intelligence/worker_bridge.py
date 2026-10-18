@@ -77,11 +77,15 @@ RESTART_GATE_S = 600.0
 HOST_WAIT_STATES = ("WAITING_FOR_GPU", "WAITING_FOR_LEASE", "RELEASE_WAIT")
 # The host loads or stops a Brain and reads only stop requests meanwhile: no profile switch is taken (R1-05).
 HOST_LOAD_STATES = ("STARTING_HOST", "STARTING", "LOADING", "CALIBRATING", "STOPPING")
-# Answer-channel context kept within the active profile's context (R1-03): tokens left for the system prompt, memory,
-# the answer and each image, and a conservative 3 characters per token for history and the current text.
-CONTEXT_RESERVE_TOKENS = 6144
-IMAGE_TOKENS = 1536
+# Answer-channel context kept within the active profile's context (R1-03), worst case (r3 R1-02): the NORMAL answer
+# (reasoning_policy MAX_TOKENS "normal" 4000), the system and capability text (measured 3,605 chars), the memory
+# evidence cap (answer.memory_evidence: 8,192 chars) and the chat template; a conservative 3 characters per token.
 CHARS_PER_TOKEN = 3
+CONTEXT_RESERVE_TOKENS = 4000 + 4096 // CHARS_PER_TOKEN + 8192 // CHARS_PER_TOKEN + 512
+# One image the UI scaled to at most 1280 px per side (prepareOiImage): 1280 * 1280 / (28 * 28) patches, rounded up.
+IMAGE_TOKENS = 2112
+# The next turn the shrink check allows for (r3 R2-01): a typical message plus the most images one turn can carry.
+NEXT_TURN_TOKENS = 1024 + IMAGE_TOKENS * IMG.MAX_IMAGES
 DRAFT_OPS = ("undo", "redo", "restore", "discard")
 # A decision on the turn whose job is still finishing (the card is shown by an event the job emits before it records
 # the continuation) waits for that job instead of being refused (Codex WS round 1, F1).
@@ -717,9 +721,11 @@ class IntegratedTurns:
 
     def _live_tokens(self):
         """Context the largest live conversation needs to reach the Brain whole: the budget _fit_history applies
-        (chars / CHARS_PER_TOKEN + CONTEXT_RESERVE_TOKENS), so a context below it shows the Brain less (R1-01)."""
+        (chars / CHARS_PER_TOKEN + CONTEXT_RESERVE_TOKENS) plus room for the next turn (r3 R2-01), so a context below
+        it shows the Brain less (R1-01)."""
         sizes = [sum(len(m.get("content") or "") for m in h) for h in self.history.values()]
-        return (-(-max(sizes) // CHARS_PER_TOKEN) + CONTEXT_RESERVE_TOKENS) if sizes and max(sizes) else 0
+        return (-(-max(sizes) // CHARS_PER_TOKEN) + CONTEXT_RESERVE_TOKENS + NEXT_TURN_TOKENS) \
+            if sizes and max(sizes) else 0
 
     def _brain_profile_get(self, _c):
         host, alive = self._host()

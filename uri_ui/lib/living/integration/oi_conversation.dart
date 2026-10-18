@@ -920,7 +920,16 @@ class OiConversation extends ChangeNotifier {
       });
       if (!_active(rt)) return null;
       lastError = null;
-      if (!vision) pendingImages.clear();
+      if (!vision && pendingImages.isNotEmpty) {
+        // r3 R1-03: the Brain without Vision cannot take them; say which pictures were removed, never silently.
+        final names = pendingImages.map((i) => i.name).join(', ');
+        pendingImages.clear();
+        messages.add(OiMessage(
+            role: OiRole.system,
+            text: 'Vision is turning off, so the attached picture${names.contains(', ') ? 's were' : ' was'} removed: '
+                '$names. Turn Vision on to attach pictures again.'));
+        notifyListeners();
+      }
     } on IntegratedRuntimeException catch (e) {
       if (!_active(rt)) return e.code;
       await refreshProfile();

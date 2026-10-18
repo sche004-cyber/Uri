@@ -357,6 +357,19 @@ def test_history_is_fitted_to_the_active_context(fake, tmp_path):
     assert b._fit_history(b.history[SID], "q", None) == b.history[SID]
 
 
+def test_context_reserve_covers_the_worst_case_answer_turn():
+    """r3 R1-02: the reserve holds the NORMAL answer, the full system and capability text and the memory cap."""
+    from uri_operational_intelligence import answer as A
+    from uri_operational_intelligence import reasoning_policy as RPOL
+    caps = sorted(A.CAPABILITY_WORDS) + ["external_harness_task"]
+    msgs = A.build_messages("", capability_ids=caps, memory={"status": "available", "facts": [], "truncated": False})
+    system_chars = sum(len(m["content"]) for m in msgs)
+    assert system_chars <= 4096
+    assert RPOL.MAX_TOKENS["normal"] <= 4000 and RPOL.tier_params(RPOL.NORMAL)["max_tokens"] <= 4000
+    assert IW.CONTEXT_RESERVE_TOKENS >= 4000 + 4096 // IW.CHARS_PER_TOKEN + 8192 // IW.CHARS_PER_TOKEN
+    assert IW.IMAGE_TOKENS * 28 * 28 >= 1280 * 1280
+
+
 def test_no_switch_while_the_host_loads_or_stops(fake, tmp_path):
     """R1-05: the host reads only stop requests while it loads; a switch would wait unread and go stale."""
     for state in ("STARTING_HOST", "STARTING", "CALIBRATING", "STOPPING"):
@@ -453,15 +466,21 @@ def test_shrink_check_uses_the_same_budget_as_the_history_sent_to_the_brain(fake
     with pytest.raises(BridgeRefused) as e:
         b.handle("brain_profile_set", cmd)
     assert e.value.code == "CONTEXT_SMALLER_THAN_CONVERSATION" and reqs == []
-    # boundary: exactly the 16K budget is sent whole and switches; one more character needs the confirmation
+    # r3 R2-01: a conversation that fills the 16K budget exactly still needs the confirmation, because the next
+    # turn (its text and up to two images) would push part of it out.
     budget = (16384 - IW.CONTEXT_RESERVE_TOKENS) * IW.CHARS_PER_TOKEN
     b.history[SID] = [{"role": "user", "content": "q" * (budget - 1000)}, {"role": "assistant", "content": "a" * 1000}]
     assert _kept_at(b, 16384) == 2
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("brain_profile_set", cmd)
+    assert e.value.code == "CONTEXT_SMALLER_THAN_CONVERSATION"
+    # boundary: a conversation that leaves room for the next turn switches; one more character needs the confirmation
+    edge = (16384 - IW.CONTEXT_RESERVE_TOKENS - IW.NEXT_TURN_TOKENS) * IW.CHARS_PER_TOKEN
+    b.history[SID] = [{"role": "user", "content": "q" * (edge - 1000)}, {"role": "assistant", "content": "a" * 1000}]
     assert b.handle("brain_profile_set", cmd)["requested"] == "reconfigure"
     b._restart = None
     host["rep"] = _live((32768, "off", False))
     b.history[SID][1]["content"] += "a"
-    assert _kept_at(b, 16384) < 2
     with pytest.raises(BridgeRefused) as e:
         b.handle("brain_profile_set", cmd)
     assert e.value.code == "CONTEXT_SMALLER_THAN_CONVERSATION"
