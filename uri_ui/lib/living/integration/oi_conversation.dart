@@ -275,7 +275,15 @@ class OiConversation extends ChangeNotifier {
     try {
       final health = await rt.call({'command': 'brain_health'}).timeout(probeTimeout);
       if (!_active(rt)) return;
+      final changed = brainHealth.isNotEmpty && health['state'] != brainHealth['state'];
       brainHealth = health;
+      if (changed) {
+        // BRAIN-QC: a health change (e.g. a profile switch) also refreshes the readiness the header shows, so it
+        // never keeps saying "ready" while the Brain reloads.
+        final status = await rt.call({'command': 'brain_status'}).timeout(probeTimeout);
+        if (!_active(rt)) return;
+        brainStatus = status;
+      }
     } on IntegratedRuntimeException catch (e) {
       if (!_active(rt)) return;
       lastError = e.code;

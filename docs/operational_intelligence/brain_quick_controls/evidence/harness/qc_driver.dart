@@ -127,6 +127,7 @@ void main() {
           'active': activeId(), 'pending': (c['switch'] as Map?)?['pending'],
           'configured': (c['configured'] as Map?)?['id'], 'chip_vision': textOf('qc-vision'),
           'chip_context': textOf('qc-context'), 'chip_switching': textOf('qc-switching'),
+          'header_brain': conv.brainStatus['state'],
         };
         timeline?.add(row);
         if (activeId() == id && h['state'] == 'READY') break;

@@ -66,6 +66,7 @@ class QcRuntime implements IntegratedRuntime {
   Map<String, dynamic> health = {'state': 'READY', 'controls': controls(active: 'standard')};
   Map<String, dynamic> Function(Map<String, dynamic>)? onReconfigure;
   String? refuse;
+  Map<String, dynamic> status = {'state': 'READY'};
 
   @override
   Stream<Map<String, dynamic>> get events => _events.stream;
@@ -85,6 +86,8 @@ class QcRuntime implements IntegratedRuntime {
     switch (command['command']) {
       case 'brain_health':
         return health;
+      case 'brain_status':
+        return status;
       case 'brain_reconfigure':
         if (refuse != null) throw IntegratedRuntimeException(refuse!);
         return onReconfigure?.call(command) ??
@@ -186,6 +189,19 @@ void main() {
       expect(find.byKey(const ValueKey('qc-vision')), findsNothing);
       expect(find.byKey(const ValueKey('qc-context')), findsNothing);
       expect(find.byKey(const ValueKey('qc-thinking')), findsOneWidget, reason: 'Thinking never reloads');
+    });
+
+    test('a health change refreshes the readiness the header shows (no stale "ready" while switching)', () async {
+      final rt = QcRuntime();
+      final conv = await ready(rt);
+      conv.brainStatus = {'state': 'READY'};
+      rt.status = {'state': 'STOPPED'};
+      rt.health = {'state': 'RECOVERING', 'controls': controls(pending: true)};
+      await conv.refreshHealth();
+      expect(conv.brainStatus['state'], 'STOPPED');
+      final n = rt.commands.where((c) => c['command'] == 'brain_status').length;
+      await conv.refreshHealth();                    // unchanged state: no extra status call
+      expect(rt.commands.where((c) => c['command'] == 'brain_status').length, n);
     });
 
     testWidgets('a worker without quick controls shows only Thinking', (tester) async {

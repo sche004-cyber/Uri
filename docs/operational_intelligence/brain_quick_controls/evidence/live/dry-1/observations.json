@@ -1,0 +1,135 @@
+[
+  {
+    "utc": "2026-10-18T06:08:07.735745Z",
+    "t": 1792303687.736,
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "Brain_Core_worker_mocked": false
+  },
+  {
+    "utc": "2026-10-18T06:08:23.824003Z",
+    "t": 1792303703.824,
+    "label": "window",
+    "logical_size": "Size(1264.0, 681.0)",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T06:08:29.273758Z",
+    "t": 1792303709.273,
+    "label": "dry-health",
+    "state": "UNAVAILABLE",
+    "reasons": [
+      "RUNTIME_STOPPED"
+    ],
+    "controls": {
+      "active": null,
+      "can_switch": false,
+      "cannot_switch_reason": "BRAIN_HOST_NOT_RUNNING",
+      "configured": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "host_profile": null,
+      "options": [
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+          "id": "standard",
+          "label": "Standard",
+          "mtp": true,
+          "qualified": true,
+          "required_mib": 15620,
+          "summary": "32K context, vision on (the default Runtime v1)",
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+          "id": "long",
+          "label": "Long context",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 13658,
+          "summary": "64K context, vision off",
+          "vision": "off",
+          "vision_on": false
+        },
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw4",
+          "id": "standard-nodraft",
+          "label": "Standard (no draft)",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 14360,
+          "summary": "32K context, vision on, no speculative draft",
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P1: FAIL",
+          "id": "long-vision",
+          "label": "Long context with vision",
+          "mtp": false,
+          "qualified": false,
+          "reason": "Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+          "required_mib": 14764,
+          "summary": "64K context, vision on",
+          "vision": "gpu",
+          "vision_on": true
+        }
+      ],
+      "schema": "uri.brain.quick_controls.v1",
+      "switch": {
+        "context_tokens": null,
+        "last": null,
+        "pending": false,
+        "target": null
+      },
+      "thinking": {
+        "auto": "auto",
+        "off": "fast",
+        "on": "normal",
+        "reload": false
+      }
+    }
+  },
+  {
+    "utc": "2026-10-18T06:08:29.275263Z",
+    "t": 1792303709.275,
+    "label": "check",
+    "id": "QC-dry-nothing-active",
+    "result": "PASS",
+    "active": null
+  },
+  {
+    "utc": "2026-10-18T06:08:29.283309Z",
+    "t": 1792303709.283,
+    "label": "check",
+    "id": "QC-dry-not-switchable",
+    "result": "PASS",
+    "reason": "BRAIN_HOST_NOT_RUNNING"
+  },
+  {
+    "utc": "2026-10-18T06:08:29.293909Z",
+    "t": 1792303709.293,
+    "label": "check",
+    "id": "QC-dry-chips-unconfirmed",
+    "result": "PASS",
+    "vision": "Vision: On (not running)",
+    "context": "Context: 32K (not running)",
+    "thinking": "Thinking: Auto"
+  }
+]
