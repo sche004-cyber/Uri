@@ -91,8 +91,8 @@ Future<(_CountingClient, AppState, LivingServices)> pumpV2(
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
   test('every accepted design is represented once with original renderer and theme', () {
-    expect(CompanionDesign.installed.length, 11);
-    expect(CompanionDesign.installed.map((d) => d.id).toSet().length, 11);
+    expect(CompanionDesign.installed.length, 12);
+    expect(CompanionDesign.installed.map((d) => d.id).toSet().length, 12);
     expect(
       CompanionDesign.installed
           .where((d) => d.classicVariant != null)

@@ -67,7 +67,10 @@ void main() {
     expect(CompanionState.initializing.needsUser, isFalse);
   });
 
-  test('a normally starting Brain shows initializing; stopped or failed stays unavailable', () async {
+  // EMBER-V21-INTEG: on canonical 348677b7 the headline, detail and non-starting state come from the FCV-10
+  // brainNotReadyPresentation. Ember adds only the calm Initializing look, and only when FCV-10 shows a startup
+  // phase (working) and brainStartingDetail accepts both snapshots.
+  test('a normally starting Brain shows initializing; everything else keeps the FCV-10 presentation', () async {
     final rt = _Runtime();
     final conv = OiConversation(rt);
     await conv.refreshStatus();
@@ -78,40 +81,51 @@ void main() {
       return src.signal;
     }
 
-    for (final st in ['STARTING', 'LOADING']) {
+    for (final (st, headline) in [('STARTING', 'Starting Brain'), ('LOADING', 'Loading model')]) {
       final s = await at(st);
       expect(s.state, CompanionState.initializing, reason: st);
-      expect(s.detail, 'Brain loading', reason: st);
+      expect(s.headline, headline, reason: st);
+      expect(s.detail, brainNotReadyPresentation(st, conv.brainHealth).detail, reason: st);
       expect(s.simulated, isFalse);
     }
     for (final st in ['STOPPED', 'FAILED', 'ARTIFACT_MISSING', 'IDENTITY_MISMATCH', 'FOREIGN_INSTANCE', 'DEGRADED', 'SOMETHING_NEW']) {
       final s = await at(st);
-      expect(s.state, CompanionState.unavailable, reason: st);
-      expect(s.detail, 'Brain $st', reason: st);
+      final p = brainNotReadyPresentation(st, conv.brainHealth);
+      expect(s.state, isNot(CompanionState.initializing), reason: st);
+      expect(s.state, p.state, reason: st);
+      expect(s.headline, p.headline, reason: st);
+      expect(s.detail, p.detail, reason: st);
     }
-    // The runtime still reads STOPPED while the Brain host boots or waits for
-    // the lease: the running host's startup state decides.
+    // The runtime still reads STOPPED while the Brain host boots: the running host's startup state decides.
     rt.hostState = 'STARTING_HOST';
     expect((await at('STOPPED')).state, CompanionState.initializing);
-    expect(src.signal.detail, 'Brain loading');
+    expect(src.signal.headline, 'Starting Brain');
+    // Waiting for the GPU lease keeps the FCV-10 unavailable "Waiting for GPU" (deviation D-1 from the Ember
+    // handoff section 6, which listed WAITING_FOR_LEASE as Initializing).
     rt.hostState = 'WAITING_FOR_LEASE';
-    expect((await at('STOPPED')).detail, 'Waiting for the GPU');
-    // A host that is stopping, or waiting on GPU contention that needs the
-    // user (review R3-02), or a runtime fault, is never shown as starting.
+    expect((await at('STOPPED')).state, CompanionState.unavailable);
+    expect(src.signal.headline, 'Waiting for GPU');
+    // A host that is stopping, or waiting on GPU contention that needs the user, is never shown as starting.
     rt.hostState = 'STOPPING';
     expect((await at('STOPPED')).state, CompanionState.unavailable);
     rt.hostState = 'WAITING_FOR_GPU';
     expect((await at('STOPPED')).state, CompanionState.unavailable);
+    // A runtime fault is never the calm look, even while a host still reports starting (FCV-10 keeps its
+    // host-phase presentation; finding EI-1).
     rt.hostState = 'STARTING_HOST';
-    expect((await at('FAILED')).state, CompanionState.unavailable);
+    expect((await at('FAILED')).state, isNot(CompanionState.initializing));
     rt.hostState = null;
     // Startup completes: initializing hands over to idle.
     expect((await at('LOADING')).state, CompanionState.initializing);
     expect((await at('READY')).state, CompanionState.idle);
-    // The streamed brain.status event takes the same path.
+    // A streamed brain.status event alone does not override the brain_health readiness that canonical FCV-R
+    // prefers; with the next health report the same path shows Initializing.
     await conv.send('hi');
     rt.emit('t1', 'brain.status', {'state': 'LOADING'});
     await pumpEventQueue();
+    expect(src.signal.state, CompanionState.idle);
+    rt.brainState = 'LOADING';
+    await conv.refreshStatus();
     expect(src.signal.state, CompanionState.initializing);
     src.dispose();
   });
@@ -187,34 +201,35 @@ void main() {
     });
   });
 
-  test('stamped reports through the real conversation: the newer one decides (review R6-7)', () async {
+  test('stamped reports through the real conversation: Initializing only when the newer one agrees (R6-7)', () async {
     final rt = _Runtime()
       ..statusAt = 100
       ..healthAt = 200;
     final conv = OiConversation(rt);
     final src = OiCompanionSource(conv);
-    // Newer health: the host has failed although the runtime read still says LOADING.
+    // Newer health: the host has failed although readiness still says LOADING. Never the calm look; FCV-10
+    // keeps its readiness presentation (finding EI-1: Ember V2.1 showed unavailable "Brain FAILED" here).
     rt
       ..brainState = 'LOADING'
       ..hostState = 'FAILED';
     await conv.refreshStatus();
-    expect(src.signal.state, CompanionState.unavailable);
-    expect(src.signal.detail, 'Brain FAILED');
+    expect(src.signal.state, isNot(CompanionState.initializing));
+    expect(src.signal.state, CompanionState.working);
     // Newer health says the Brain is up while the runtime read is a stale STOPPED: calm, not depleted.
     rt
       ..brainState = 'STOPPED'
       ..healthReadiness = 'READY'
       ..hostState = 'READY';
     await conv.refreshStatus();
-    expect(src.signal.state, CompanionState.initializing);
-    // Older health (a failed refresh kept it): only the fresh STOPPED counts.
+    expect(src.signal.state, CompanionState.idle);
+    // Older health (a failed refresh kept it) next to a fresh STOPPED: never Initializing (EI-1: FCV-10 still
+    // presents the older report's phase).
     rt
       ..statusAt = 300
       ..healthReadiness = 'LOADING'
       ..hostState = 'STARTING';
     await conv.refreshStatus();
-    expect(src.signal.state, CompanionState.unavailable);
-    expect(src.signal.detail, 'Brain STOPPED');
+    expect(src.signal.state, isNot(CompanionState.initializing));
     src.dispose();
   });
 
