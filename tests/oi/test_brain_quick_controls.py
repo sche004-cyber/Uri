@@ -431,6 +431,52 @@ def test_shrinking_below_the_live_conversation_needs_confirmation_and_history_su
     assert b.history[SID][0]["content"] == "x" * 80000      # the switch never touches the conversation
 
 
+def _kept_at(b, ctx):
+    """How many history entries _fit_history sends the Brain at `ctx` (the bridge itself is left unchanged)."""
+    b._active_cfg = lambda: {"runtime": {"ctx": ctx}}
+    try:
+        return len(b._fit_history(b.history[SID], "", ()))
+    finally:
+        del b._active_cfg
+
+
+def test_shrink_check_uses_the_same_budget_as_the_history_sent_to_the_brain(fake, tmp_path):
+    """R1-01 (r3): a mid-sized conversation that fits 32K but not 16K must need confirm_shrink, because at 16K
+    _fit_history sends the Brain only part of it. The check and the budget agree exactly at the boundary."""
+    b, _, reqs, host = _bridge(fake, tmp_path)
+    host["rep"] = _live((32768, "off", False))
+    b.history[SID] = [m for i in range(3) for m in ({"role": "user", "content": f"doc{i}" + "u" * 14996},
+                                                     {"role": "assistant", "content": "a" * 1000})]
+    full = len(b.history[SID])
+    cmd = {"command": "brain_profile_set", "vision": False, "context": 16384, "speed": False}
+    assert _kept_at(b, 32768) == full and _kept_at(b, 16384) < full
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("brain_profile_set", cmd)
+    assert e.value.code == "CONTEXT_SMALLER_THAN_CONVERSATION" and reqs == []
+    # boundary: exactly the 16K budget is sent whole and switches; one more character needs the confirmation
+    budget = (16384 - IW.CONTEXT_RESERVE_TOKENS) * IW.CHARS_PER_TOKEN
+    b.history[SID] = [{"role": "user", "content": "q" * (budget - 1000)}, {"role": "assistant", "content": "a" * 1000}]
+    assert _kept_at(b, 16384) == 2
+    assert b.handle("brain_profile_set", cmd)["requested"] == "reconfigure"
+    b._restart = None
+    host["rep"] = _live((32768, "off", False))
+    b.history[SID][1]["content"] += "a"
+    assert _kept_at(b, 16384) < 2
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("brain_profile_set", cmd)
+    assert e.value.code == "CONTEXT_SMALLER_THAN_CONVERSATION"
+    assert b.handle("brain_profile_set", dict(cmd, confirm_shrink=True))["requested"] == "reconfigure"
+
+
+def test_growing_the_context_never_asks_to_confirm_a_shrink(fake, tmp_path):
+    b, _, reqs, host = _bridge(fake, tmp_path)
+    host["rep"] = _live((16384, "off", False))
+    b.history[SID] = [{"role": "user", "content": "x" * 300000}, {"role": "assistant", "content": "ok"}]
+    out = b.handle("brain_profile_set", {"command": "brain_profile_set", "vision": False, "context": 32768,
+                                         "speed": False})
+    assert out["requested"] == "reconfigure" and len(reqs) == 1
+
+
 def test_profile_set_is_refused_while_a_turn_runs(fake, tmp_path):
     fake.scripts.append({"chunks": [("answer", "slow")], "finish": "stop", "delay": 0.5})
     b, _, reqs, host = _bridge(fake, tmp_path)

@@ -716,9 +716,10 @@ class IntegratedTurns:
                 "pending_request": self._restart_pending()}
 
     def _live_tokens(self):
-        """Conservative size of the largest live conversation (chars / 4 + the system prompt allowance)."""
+        """Context the largest live conversation needs to reach the Brain whole: the budget _fit_history applies
+        (chars / CHARS_PER_TOKEN + CONTEXT_RESERVE_TOKENS), so a context below it shows the Brain less (R1-01)."""
         sizes = [sum(len(m.get("content") or "") for m in h) for h in self.history.values()]
-        return (max(sizes) // 4 + 2048) if sizes and max(sizes) else 0
+        return (-(-max(sizes) // CHARS_PER_TOKEN) + CONTEXT_RESERVE_TOKENS) if sizes and max(sizes) else 0
 
     def _brain_profile_get(self, _c):
         host, alive = self._host()
@@ -745,8 +746,10 @@ class IntegratedTurns:
         if akey is None:
             raise BridgeRefused("PROFILE_UNKNOWN")
         current = {"ctx": akey[0], "vision": akey[1], "mtp": akey[2]}
+        # Only a smaller context can show the Brain less of the conversation; a larger one never needs the confirm.
+        live = self._live_tokens() if key[0] < akey[0] else 0
         plan = RPROF.plan_change(current, context=key[0], vision=key[1], mtp=key[2],
-                                 live_tokens=self._live_tokens(), confirm_shrink=bool(c.get("confirm_shrink")))
+                                 live_tokens=live, confirm_shrink=bool(c.get("confirm_shrink")))
         if plan["refused"]:
             if plan["refused"] == "CONTEXT_SMALLER_THAN_CONVERSATION":
                 raise BridgeRefused("CONTEXT_SMALLER_THAN_CONVERSATION")
