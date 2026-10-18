@@ -16,7 +16,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 LABEL = sys.argv[1]
 MINUTES = float(sys.argv[sys.argv.index("--minutes") + 1]) if "--minutes" in sys.argv else 60
 NO_BRAIN = "--no-brain" in sys.argv
-SRC, RT = pathlib.Path(r"D:\uri-dev\uri-ember-v21-integ"), pathlib.Path(r"D:\uri-dev\uri-ember-rt")
+SRC, RT = pathlib.Path(r"D:\uri-dev\uri-ember-v21-integ"), pathlib.Path(r"D:\uri-dev\uri-ember-rt2")
 sys.path.insert(0, str(SRC))
 import psutil  # noqa: E402
 from scripts.ws_brain_host import Host  # noqa: E402

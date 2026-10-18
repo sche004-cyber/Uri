@@ -126,3 +126,24 @@ Subagent acceptance is not owner approval and not driver-counted lifecycle accep
 | R2-02 tests | `test/ws/fcv_context_rail_test.dart:68`, `test/ws/ws_hardening_test.dart:480` build an unowned `OiCompanionSource`; no leak today (no ok turn finishes there) | recorded, not changed (UI V2 tests) |
 | HARN-1 | Probe attempt 1 sent one click and one drag to the owner's Claude desktop sidebar (section 3.2) | disclosed; owner may check the sidebar "cheta" group |
 | Integration | Not requested; requires owner authorization and OD-2 resolution before any push | boundary |
+
+## 8. Addendum 2026-10-18 - refresh onto canonical `cd4a7963`
+
+Canonical `integration/git-sync-20261008` moved 348677b7 -> `cd4a7963` (runtime profiles integrated by its own
+milestone; verified with `git ls-remote uri-repo`). Canonical code delta: runtime-profiles backend only
+(`ws_brain_host.py`, `run_uri_integrated_worker.py`, `brain_health.py`, `runtime_profile_selection.py`,
+`runtime_profiles.py`, `runtime_v1.py`); no `uri_ui` change. This refresh is not an integration.
+
+| Item | Result | Evidence |
+|---|---|---|
+| Merge | `dcb5ebaa` (parents `108be0d2`, `cd4a7963`), no conflicts, no history rewrite | `git log` |
+| Analyze at `dcb5ebaa` | 0 errors, 5 info | `evidence/analyze_dcb5ebaa.log` |
+| Full Flutter suite at `dcb5ebaa` | 827 passed, 5 skipped, 0 failed | `evidence/full_flutter_test_dcb5ebaa.log` |
+| Release build at `dcb5ebaa` | rc 0 | `evidence/build_windows_release_main_dcb5ebaa.log` |
+| `ws_frozen_check` at `dcb5ebaa` | `unapproved_protected_changes: []` | `evidence/ws_frozen_check_dcb5ebaa.txt` |
+| Backend boundary vs `cd4a7963` | no difference in runtime/backend paths | `evidence/boundary_vs_cd4a7963_dcb5ebaa.txt` |
+| Runtime | `D:\uri-dev\uri-ember-rt2` materialized from `dcb5ebaa` | `evidence/runtime_materialization_receipt_dcb5ebaa.json` |
+| Live `l7-returning-cd4a` (13:30-13:33 IST, own lease, no override) | **all checks PASS, 0 failures**: Ember restored, Initializing -> idle (Brain READY 53.7 s, 135.0 tok/s), borderless, per-pixel transparency, click-through outside, Ember click reaches URI (controls shown), drag, 1.25x; lease FREE after; Brain config hash unchanged | `live/l7-returning-cd4a/` |
+
+Not re-run on `dcb5ebaa`: first-time-user journeys (conversation, stop, recovery; last run l1 on `6bdaf86e`).
+Harness copies in `harness/` now point at runtime `uri-ember-rt2` (the only change).

@@ -6,7 +6,7 @@ R=/d/uri-dev/uri-ember-live
 L=$1; M=$2; F=$3; NB=$4
 cd $R
 mkdir -p evidence/live/$L
-PY=/d/uri-dev/uri-ember-rt/.venv/Scripts/python.exe
+PY=/d/uri-dev/uri-ember-rt2/.venv/Scripts/python.exe
 SYS=/c/Users/cheta/AppData/Local/Programs/Python/Python313/python.exe
 until $PY -B -c "import sys; sys.path.insert(0, r'D:\uri-dev\uri-ember-v21-integ'); from uri_operational_intelligence import gpu_lease as G; sys.exit(0 if G.peek().get('state') == 'FREE' else 1)"; do sleep 30; done
 echo "lease free $(date +%T)" > evidence/live/$L/go.log
