@@ -380,12 +380,13 @@ def test_health_reports_active_profile_and_live_vision(fake, tmp_path):
 
 
 # ---- review R1 repairs ---------------------------------------------------------------------------------------------
-def _contended_host(tmp_path, monkeypatch, foreign_mib=2200.0):
+def _contended_host(tmp_path, monkeypatch, foreign_mib=2200.0, real_quiet=False):
     """A host whose census shows a foreign GPU consumer: 64K + vision does not fit, 32K + vision does."""
     sys.path.insert(0, str(Path(R.REPO_ROOT) / "scripts"))
     import ws_brain_host as H
     monkeypatch.setattr(H, "GPU_POLL_S", 0.2)
-    monkeypatch.setattr(H, "QUIET_S", 0.0)
+    if not real_quiet:
+        monkeypatch.setattr(H, "QUIET_S", 0.0)
     census = lambda: {"ok": True, "card_mib": 16368, "unattributed_mib": 0.0, "t": time.time(), "sample_s": 0.1,
                       "processes": [{"pid": 999999, "name": "chrome.exe", "dedicated_mib": foreign_mib}]}
     (tmp_path / "rep").mkdir(exist_ok=True)
@@ -435,6 +436,61 @@ def test_r1_01_a_switch_waiting_for_gpu_takes_a_new_choice_and_goes_back(tmp_pat
     assert BP.read_choice(tmp_path / "rep")[0] == BP.DEFAULT_KEY
     h.finish_request()
     assert h.report["requests"][back["id"]] == "DONE"
+
+
+def test_r3_01_going_back_from_a_target_too_large_starts_without_a_quiet_window(tmp_path, monkeypatch):
+    """R3-01: with the real QUIET_S, a target that only fails because of its own size (the same foreign use fits the
+    previous profile) is not foreign contention: going back starts at once, no 'another job has finished' wait is
+    shown, and nothing is written to the machine-wide contention record."""
+    import threading
+    from uri_operational_intelligence import gpu_lease as G
+    H, h = _contended_host(tmp_path, monkeypatch, real_quiet=True)
+    assert H.QUIET_S >= 60
+
+    class Mgr:
+        owns_instance = True
+    h.mgr, h.lease = Mgr(), object()
+    h.stop_brain = lambda: setattr(h, "mgr", None)
+    started = []
+    h.start_brain = lambda: h.wait_for_gpu() and not started.append(h.report["profile"]["id"])
+    BH.write_host_request(tmp_path / "rep", "reconfigure", (65536, "gpu", False))
+    assert h.take_request() == "reconfigure"
+    t = threading.Thread(target=h.reconfigure, args=(h.request_profile,), daemon=True)
+    t.start()
+    assert _wait_for(lambda: h.report.get("detail") == "GPU_CONTENDED")
+    BH.write_host_request(tmp_path / "rep", "reconfigure", BP.DEFAULT_KEY)
+    t.join(10)
+    assert not t.is_alive(), "going back must not wait the quiet window"
+    assert started == [RP.profile_id(BP.DEFAULT_KEY)]
+    assert all(e.get("detail") != "GPU_QUIET_WINDOW" for e in h.report["history"])
+    assert G.last_contention(tmp_path / "l") is None
+
+
+def test_r3_01_a_foreign_job_that_ends_still_gets_the_quiet_window(tmp_path, monkeypatch):
+    """R3-01 counterpart: foreign use that blocks every offered profile is contention; when it ends the host still
+    waits the real quiet window and the machine-wide record is written."""
+    import threading
+    from uri_operational_intelligence import gpu_lease as G
+    sys.path.insert(0, str(Path(R.REPO_ROOT) / "scripts"))
+    import ws_brain_host as H
+    monkeypatch.setattr(H, "GPU_POLL_S", 0.2)
+    use = {"mib": 14000.0}
+    census = lambda: {"ok": True, "card_mib": 16368, "unattributed_mib": 0.0, "t": time.time(), "sample_s": 0.1,
+                      "processes": [{"pid": 999999, "name": "llama-server.exe", "dedicated_mib": use["mib"]}]}
+    (tmp_path / "rep").mkdir(exist_ok=True)
+    h = H.Host(tmp_path / "rep", minutes=1.0, override=False, state_dir=tmp_path / "s", census=census,
+               lease_dir=tmp_path / "l")
+    box = {}
+    t = threading.Thread(target=lambda: box.update(r=h.wait_for_gpu()), daemon=True)
+    t.start()
+    assert _wait_for(lambda: h.report.get("detail") == "GPU_CONTENDED")
+    assert G.last_contention(tmp_path / "l") is not None
+    use["mib"] = 300.0
+    assert _wait_for(lambda: h.report.get("detail") == "GPU_QUIET_WINDOW")
+    assert "another job has finished" in h.report["explain"] and t.is_alive()
+    h.deadline = time.monotonic() - 1          # end the host; the wait returns without a start
+    t.join(10)
+    assert box.get("r") is False
 
 
 def test_r1_01_the_worker_accepts_a_new_choice_while_the_host_waits_for_gpu(fake, tmp_path):

@@ -97,6 +97,14 @@ class Host:
         self.request_profile = None     # target key of the accepted reconfigure request
         self.stopped_at = None          # wall time the last server stop finished (release measurement)
         self.last_contended = None      # monotonic time the GPU was last seen CONTENDED (quiet window)
+        # Peak foreign use (card - free, MiB) while CONTENDED in this window; inf when the contention was only seen in
+        # the machine-wide record (its foreign use is unknown). The quiet window waits for a foreign job that ended,
+        # so it does not apply when foreign use has not dropped since (R3-01: the host's own target was too large).
+        self.contended_foreign_mib = None
+        # Smallest offered request: a census that fits it is not contention for every Brain, only for a large target,
+        # and is not written to the machine-wide record other URI GPU workloads honor (R3-01).
+        self.min_required_mib = min([self.required_mib] + [
+            RP.cfg_required_mib(BP.config_for(self.frozen_cfg, k), G.RUNTIME_V1_DEVICE_MIB) for k in BP.OFFERED])
         self.loaders = []               # (thread, manager) of loads stopped before they finished (Codex H-r1 F1)
         self.stop_requested = False     # a stop request was consumed (possibly inside a wait or a load)
         self._write_lock = threading.Lock()
@@ -104,6 +112,7 @@ class Host:
         seen = G.last_contention(lease_dir)       # also seen by an earlier host or another URI GPU workload
         if seen is not None and 0 <= now() - seen < QUIET_S:
             self.last_contended = time.monotonic() - (now() - seen)
+            self.contended_foreign_mib = float("inf")
         self.stop_file = self.state_dir / "runtime_v1.stop"
 
     # ---- report ---------------------------------------------------------------------------------------------
@@ -266,11 +275,16 @@ class Host:
                          if late else "Waiting for GPU memory from the previous Brain to be released (%.0f MB left)." % unattr,
                          gpu=gpu)
             elif fit["verdict"] == G.CONTENDED and not self.override:
-                self.last_contended = time.monotonic()
-                G.record_contention(self.lease_dir, fit)
+                foreign = fit["card_mib"] - fit["free_mib"]
+                if self.last_contended is not None and time.monotonic() - self.last_contended < QUIET_S:
+                    foreign = max(foreign, self.contended_foreign_mib or 0.0)
+                self.last_contended, self.contended_foreign_mib = time.monotonic(), foreign
+                if G.assess_fit(c, owners=self.owners(), required_mib=self.min_required_mib)["verdict"] == G.CONTENDED:
+                    G.record_contention(self.lease_dir, fit)
                 self.set("WAITING_FOR_GPU", detail="GPU_CONTENDED", explain=gpu["explain"], gpu=gpu)
             elif (not self.override and self.last_contended is not None
-                  and time.monotonic() - self.last_contended < QUIET_S):
+                  and time.monotonic() - self.last_contended < QUIET_S
+                  and fit["card_mib"] - fit["free_mib"] < (self.contended_foreign_mib or 0.0) - G.CONTENDED_SHORTFALL_MIB):
                 left = QUIET_S - (time.monotonic() - self.last_contended)
                 self.set("WAITING_FOR_GPU", detail="GPU_QUIET_WINDOW", gpu=gpu,
                          explain="The GPU just became free. URI waits %.0f s more to be sure another job has finished." % left)
