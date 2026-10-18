@@ -39,15 +39,18 @@ List<Map<String, dynamic>> options({String? active}) => [
           active: active == 'standard'),
       opt('long', 'Long context', '64K context, vision off', 65536, 'off', false, true, 13658,
           active: active == 'long'),
-      {...opt('standard-nodraft', 'Standard (no draft)', '32K context, vision on, no speculative draft', 32768, 'gpu',
-          false, true, 14360, active: active == 'standard-nodraft'), 'switchable': false},
+      opt('standard-nodraft', 'Standard, draft off', '32K context, vision on, no speculative draft (about 1.2 GB less '
+          'GPU memory)', 32768, 'gpu', false, true, 14360, active: active == 'standard-nodraft'),
       opt('long-vision', 'Long context with vision', '64K context, vision on', 65536, 'gpu', false, false, 14764,
           reason: lvReason),
     ];
 
-Map<String, dynamic> controls({String? active, bool pending = false, Map<String, dynamic>? last, bool canSwitch = true}) {
+Map<String, dynamic> controls({String? active, bool pending = false, Map<String, dynamic>? last, bool canSwitch = true,
+    Map<String, dynamic>? mismatch, bool visionLocked = false}) {
   final opts = options(active: active);
   return {
+    'mismatch': mismatch,
+    'vision_locked': visionLocked,
     'schema': 'uri.brain.quick_controls.v1',
     'active': active == null ? null : opts.firstWhere((o) => o['id'] == active),
     'configured': {'id': active == 'long' ? 'c64k-visoff-mtpoff' : 'frozen', 'ctx': active == 'long' ? 65536 : 32768,
@@ -158,7 +161,8 @@ void main() {
         for (final ch in [...visionChoices(opts, active), ...contextChoices(opts, active)]) {
           expect(ch.target?.qualified ?? true, isTrue);
           expect(ch.target?.id, isNot('long-vision'));
-          expect(ch.target?.id, isNot('standard-nodraft'), reason: 'P3 is recognized but never a target');
+          // Closure D2: P3 is reached through the Draft chip only; Vision / Context keep preferring Standard.
+          expect(ch.target?.id, isNot('standard-nodraft'));
         }
       }
     });
@@ -453,5 +457,107 @@ void main() {
     expect(find.byKey(const ValueKey('qc-compact-dialog')), findsOneWidget);
     expect(find.byKey(const ValueKey('qc-thinking')), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  group('closure: Draft chip (P3), Assist vision lock, host/worker mismatch', () {
+    final opts = qcOptions(controls());
+
+    test('Draft offers Standard <-> Standard, draft off at 32K + vision, and nothing at 64K', () {
+      final fromStd = draftChoices(opts, options(active: 'standard').first);
+      expect(titles(fromStd), ['On', 'Off']);
+      expect(fromStd[0].current, isTrue);
+      expect(fromStd[1].target!.id, 'standard-nodraft');
+      final fromP3 = draftChoices(opts, options(active: 'standard-nodraft')[2]);
+      expect(fromP3[0].target!.id, 'standard');
+      expect(fromP3[1].current, isTrue);
+      expect(draftChoices(opts, options(active: 'long')[1]), isEmpty, reason: 'no qualified 64K draft variant');
+      expect(draftChoices(opts, null), isEmpty, reason: 'nothing verified as running: nothing to change');
+    });
+
+    test('from Standard, draft off: Vision Off and 64K lead to Long context; P1 stays blocked', () {
+      final p3 = options(active: 'standard-nodraft')[2];
+      final vis = visionChoices(opts, p3);
+      expect(vis.firstWhere((c) => c.title == 'Off').target!.id, 'long');
+      final ctx = contextChoices(opts, p3);
+      expect(ctx.firstWhere((c) => c.blocked != null).blocked, lvReason);
+      expect(ctx.firstWhere((c) => c.target != null).target!.id, 'long');
+    });
+
+    test('while Assist holds a grant, every choice that turns vision off is blocked', () {
+      final std = options(active: 'standard').first;
+      final vis = lockVision(visionChoices(opts, std), true, std);
+      final off = vis.firstWhere((c) => c.title == 'Off');
+      expect(off.target, isNull);
+      expect(off.blocked, contains('A URI Assist session is open'));
+      final ctx = lockVision(contextChoices(opts, std), true, std);
+      expect(ctx.where((c) => c.target != null && !c.target!.visionOn), isEmpty);
+      expect(lockVision(visionChoices(opts, std), false, std).firstWhere((c) => c.title == 'Off').target!.id, 'long');
+    });
+
+    testWidgets('the Draft chip switches to P3 after a confirmation', (tester) async {
+      final rt = QcRuntime()..health = {'state': 'READY', 'controls': controls(active: 'standard')};
+      final conv = await ready(rt);
+      await pumpControls(tester, conv);
+      expect(find.text('Draft: On'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('qc-draft')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('qc-draft-Off')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('14.0 GB (now 15.3 GB)'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('qc-confirm-switch-go')));
+      await tester.pumpAndSettle();
+      expect(rt.commands.where((c) => c['command'] == 'brain_reconfigure').toList(), [
+        {'command': 'brain_reconfigure', 'profile_id': 'standard-nodraft'},
+      ]);
+    });
+
+    testWidgets('no Draft chip on Long context', (tester) async {
+      final rt = QcRuntime()..health = {'state': 'READY', 'controls': controls(active: 'long')};
+      await pumpControls(tester, await ready(rt));
+      expect(find.byKey(const ValueKey('qc-draft')), findsNothing);
+    });
+
+    testWidgets('a host/worker mismatch is shown in words, never silently', (tester) async {
+      final rt = QcRuntime()
+        ..health = {
+          'state': 'FOREIGN_INSTANCE',
+          'controls': controls(mismatch: {
+            'code': 'PROFILE_NOT_SELECTABLE',
+            'host': 'Long context with vision',
+            'host_qualified': false,
+            'worker': 'Standard',
+          }),
+        };
+      final conv = await ready(rt);
+      await pumpControls(tester, conv);
+      expect(find.byKey(const ValueKey('qc-mismatch')), findsOneWidget);
+      expect(find.textContaining('runs Long context with vision, which is not a qualified choice'), findsOneWidget);
+      rt.health = {'state': 'READY', 'controls': controls(active: 'standard')};
+      await conv.refreshHealth();
+      await tester.pump();
+      expect(find.byKey(const ValueKey('qc-mismatch')), findsNothing);
+    });
+
+    test('lockVision changes nothing without a verified vision-on profile (QCC-R1-06)', () {
+      final long = options(active: 'long')[1];
+      final visLong = visionChoices(opts, long);
+      expect(lockVision(visLong, true, long), visLong, reason: 'vision already off: nothing to keep');
+      final visNull = visionChoices(opts, null);
+      expect(lockVision(visNull, true, null), visNull, reason: 'nothing verified as running');
+    });
+
+    test('a selection error with agreeing profiles is explained, not called a mismatch (QCC-R1-05)', () {
+      final n = mismatchNotice(controls(active: 'long', mismatch: {
+        'code': 'HOST_SELECTION_ERROR', 'host': 'Long context', 'worker': 'Long context', 'host_qualified': true,
+        'selection_error': 'PermissionError'}));
+      expect(n, contains('could not save its setting (PermissionError)'));
+      expect(n, isNot(contains('expects')));
+      expect(mismatchNotice(controls(active: 'long')), isNull);
+    });
+
+    test('the Assist refusals have plain words', () {
+      expect(brainSwitchRefusal('ASSIST_NEEDS_VISION'), contains('a URI Assist session is open'));
+      expect(brainSwitchRefusal('ASSIST_ASK_IN_PROGRESS'), contains('URI Assist has finished'));
+    });
   });
 }

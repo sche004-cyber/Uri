@@ -1,0 +1,24 @@
+{
+ "utc": "2026-10-18T11:28:45.202365+00:00",
+ "stand_ins": [
+  "capture adapter = tests.assist FakeAdapter",
+  "vision_qualified=True (harness)"
+ ],
+ "host_profile": {
+  "ctx": 32768,
+  "frozen": false,
+  "id": "c32k-visgpu-mtpoff",
+  "mtp": false,
+  "qualified": false,
+  "required_mib": 14360,
+  "vision": "gpu"
+ },
+ "method": "vision",
+ "status": "COMPLETE",
+ "wall_s": 1.54,
+ "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+ "mentions_401": true,
+ "toggles_ok": true,
+ "correct": true,
+ "classification": "COMPLETED_WITH_RESULT"
+}

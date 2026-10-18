@@ -330,6 +330,74 @@ void main() {
       check('QC-thinking-auto-restored', conv.depth == OiDepth.auto);
     });
 
+    // Closure D2/D6 (BRAIN-QC-CLOSURE-20261018): P3 through the Draft chip, Assist vision on it, back to Standard.
+    if (Platform.environment['URI_QC_CLOSURE'] == '1') {
+      await step('QC-p3-draft-off', () async {
+        check('QC-draft-chip-standard', textOf('qc-draft') == 'Draft: On', {'draft': textOf('qc-draft')});
+        await t.tap(find.byKey(const ValueKey('qc-draft')));
+        await settle(800);
+        await shot('11-draft-menu-standard');
+        await t.tap(find.byKey(const ValueKey('qc-draft-Off')));
+        await settle(800);
+        await shot('12-confirm-p3');
+        check('QC-confirm-dialog-p3', find.byKey(const ValueKey('qc-confirm-switch')).evaluate().isNotEmpty);
+        final tSwitch = DateTime.now().millisecondsSinceEpoch / 1000;
+        await t.tap(find.byKey(const ValueKey('qc-confirm-switch-go')));
+        await settle(300);
+        final timeline = <Map<String, Object?>>[];
+        await waitActive('standard-nodraft', 'Standard, draft off ready', timeline: timeline);
+        final tReady = DateTime.now().millisecondsSinceEpoch / 1000;
+        record('switch-timeline', {'to': 'standard-nodraft', 'rows': timeline, 'ui_seconds': tReady - tSwitch});
+        final headerReady = timeline.where((r) => r['pending'] == true &&
+            (r['header_brain'] == 'READY' || '${r['header_text']}'.endsWith('ready')));
+        check('QC-header-truthful-p3', headerReady.isEmpty, {'rows_ready_while_pending': headerReady.length});
+        final early = timeline.where((r) => r['active'] == 'standard-nodraft' && r['state'] != 'READY' &&
+            r['state'] != 'BUSY');
+        check('QC-truthful-switch-p3', early.isEmpty, {'rows': timeline.length});
+        check('QC-chips-p3', textOf('qc-vision') == 'Vision: On' && textOf('qc-context') == 'Context: 32K' &&
+            textOf('qc-draft') == 'Draft: Off',
+            {'vision': textOf('qc-vision'), 'context': textOf('qc-context'), 'draft': textOf('qc-draft')});
+        check('QC-no-mismatch-p3', find.byKey(const ValueKey('qc-mismatch')).evaluate().isEmpty,
+            {'mismatch': conv.brainControls['mismatch']});
+        await shot('13-p3-ready');
+        await perfTurn('p3');
+        final r = await send('recall-p3',
+            'And now: what was the secret number I gave you at the start of this conversation? Reply with the number only.');
+        check('QC-continuity-p3', r.text.contains(secret) && r.route == 'answer', {'answer': r.text, 'route': r.route});
+        // URI Assist vision on the profile the UI just loaded (session process, application path).
+        File('${out.path}/assist-request.json')
+            .writeAsStringSync(jsonEncode({'utc': DateTime.now().toUtc().toIso8601String()}));
+        final res = File('${out.path}/assist-result.json');
+        final end = DateTime.now().add(const Duration(seconds: 240));
+        while (!res.existsSync() && DateTime.now().isBefore(end)) {
+          await t.runAsync(() => Future<void>.delayed(const Duration(seconds: 1)));
+          await t.pump();
+        }
+        final a = res.existsSync() ? jsonDecode(res.readAsStringSync()) as Map<String, dynamic> : <String, dynamic>{};
+        check('QC-assist-vision-on-p3',
+            a['correct'] == true && ((a['host_profile'] as Map?)?['id']) == 'c32k-visgpu-mtpoff', {'assist': a});
+      });
+      await step('QC-p3-back-to-standard', () async {
+        await t.tap(find.byKey(const ValueKey('qc-draft')));
+        await settle(800);
+        await t.tap(find.byKey(const ValueKey('qc-draft-On')));
+        await settle(800);
+        await t.tap(find.byKey(const ValueKey('qc-confirm-switch-go')));
+        await settle(300);
+        final timeline = <Map<String, Object?>>[];
+        await waitActive('standard', 'Standard ready after P3', timeline: timeline);
+        record('switch-timeline', {'to': 'standard-from-p3', 'rows': timeline});
+        check('QC-chips-standard-after-p3', textOf('qc-vision') == 'Vision: On' &&
+            textOf('qc-context') == 'Context: 32K' && textOf('qc-draft') == 'Draft: On',
+            {'vision': textOf('qc-vision'), 'context': textOf('qc-context'), 'draft': textOf('qc-draft')});
+        final r = await send('recall-standard-after-p3',
+            'Last time: what was the secret number I gave you at the start? Reply with the number only.');
+        check('QC-continuity-standard-after-p3', r.text.contains(secret) && r.route == 'answer',
+            {'answer': r.text, 'route': r.route});
+        await shot('14-standard-after-p3');
+      });
+    }
+
     check('QC-same-worker-and-session', identical(conv.runtime, runtime0) && conv.sessionId == session0 &&
         !conv.workerExited, {'before': pidsBefore, 'session_after': conv.sessionId});
     record('final', {'failures': failures, 'controls': conv.brainControls, 'health_state': conv.healthState});
