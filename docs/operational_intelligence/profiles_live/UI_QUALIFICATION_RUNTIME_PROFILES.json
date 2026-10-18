@@ -1495,7 +1495,7 @@
  },
  "status": "FAIL",
  "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS, bound 60-minute soaks soak-p2-e and soak-p3-e per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria with FAIL entries: [].",
- "recorded_at": "2026-10-18T06:09:39.887535+00:00",
+ "recorded_at": "2026-10-18T06:14:57.470487+00:00",
  "corrections": [
   {
    "id": "C-1",

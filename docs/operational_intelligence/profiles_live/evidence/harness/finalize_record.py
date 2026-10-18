@@ -129,7 +129,7 @@ r["binding_versions"] = {
              "fec31dfd has sha256 c64df8c887866e2fc39d8f5d662a29c1e38a2cfb924a40b6bc274ff6d3a28608 (that this exact file ran "
              "is inferred from the timeline, not hashed at run time). soak-p2-e used the R3-03 version "
              "(docs/ outside the receipt), whose rule its changed paths also satisfy under R4-01."),
-    "committed_binding_py_sha256": _hl.sha256((ROOT / "tools" / "binding.py").read_bytes()).hexdigest(),
+    "committed_binding_py_sha256": _hl.sha256((REC.parent / "evidence" / "harness" / "binding.py").read_bytes()).hexdigest(),  # R6-02: the committed copy
     "per_run": _bv}
 
 fails = [k for k, v in lq.items() if isinstance(v, dict) and any(str(x).startswith("FAIL") for x in v.values())]

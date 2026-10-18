@@ -35,7 +35,7 @@ integrated, deployed or frozen. Independent review is by fresh read-only subagen
   `e0_host_memory` (correction C-4).
 - **Record (R2-03, R2-04, R2-08, R2-09).** The record keeps each profile's results on earlier commits under
   `history_on_earlier_commits`. Interpretations are labelled as such in `annotations`. Every correction is listed in
-  `corrections` (C-1 to C-6).
+  `corrections` (C-1 to C-6 at v3; C-1 to C-9 now).
 
 ## 2. Qualification by profile
 
