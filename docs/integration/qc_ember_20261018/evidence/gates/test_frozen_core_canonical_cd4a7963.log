@@ -1,0 +1,6 @@
+HEAD=cd4a7963c3161b197ef81641e44c5821d36a76da
+=========================== short test summary info ===========================
+FAILED tests/phase2a/test_frozen_core.py::test_every_checkpoint_file_is_byte_identical_in_this_tree
+FAILED tests/phase2a/test_frozen_core.py::test_nothing_changed_outside_checkpoint_and_phase2a_paths
+FAILED tests/phase2a/test_frozen_core.py::test_base_commit_is_the_one_the_checkpoint_was_built_on
+3 failed, 5 passed in 6.22s

@@ -1,0 +1,416 @@
+{
+ "label": "integ-qc-5",
+ "classification": "COMPLETED_WITH_RESULT",
+ "verdict": "PASS",
+ "source_head": "5f77acb81d5836e518b8e17985f7d3340697b238",
+ "runtime_candidate_head": "6427b68168388e517bda185cf2f54dc81e22acf8",
+ "runtime_verified": {
+  "ok": true,
+  "checked": 361,
+  "mismatched": []
+ },
+ "checks": [
+  {
+   "id": "QC-ready-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-chips-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-off-depth",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-off-tier",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-on-depth",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-on-tier",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-last-answer-shown",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-unqualified-listed-disabled",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-unqualified-not-requested",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-confirm-dialog",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-turn-refused-during-switch",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-header-truthful-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-truthful-switch-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-chips-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-continuity-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-unqualified-listed-at-64k",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-header-truthful-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-truthful-switch-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-chips-standard-again",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-continuity-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-auto-restored",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-same-worker-and-session",
+   "result": "PASS"
+  }
+ ],
+ "failed_checks": [],
+ "turns": [
+  {
+   "scenario": "perf-standard-start",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 3.075,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa",
+   "decode_tps": 122.21543247597356,
+   "prompt_n": 754,
+   "cache_n": 0
+  },
+  {
+   "scenario": "tell-fact",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 6.387,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "OK",
+   "decode_tps": 34.8153048079936,
+   "prompt_n": 32,
+   "cache_n": 854
+  },
+  {
+   "scenario": "thinking-on",
+   "tier": "NORMAL",
+   "route": "answer",
+   "seconds": 2.212,
+   "depth_sent": "normal",
+   "error": null,
+   "answer": "A bicycle offers a more engaging workout and requires no charging, though it demands more physical effort over the distance. An electric scooter provides a quic",
+   "decode_tps": 113.69068382362441,
+   "prompt_n": 31,
+   "cache_n": 887
+  },
+  {
+   "scenario": "perf-long",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 2.96,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa",
+   "decode_tps": 98.42421832281156,
+   "prompt_n": 993,
+   "cache_n": 0
+  },
+  {
+   "scenario": "recall-long",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 1.414,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "4817",
+   "decode_tps": 89.71426008163998,
+   "prompt_n": 35,
+   "cache_n": 1092
+  },
+  {
+   "scenario": "perf-standard-after-switch",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 2.848,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa",
+   "decode_tps": 151.35138440652676,
+   "prompt_n": 1157,
+   "cache_n": 0
+  },
+  {
+   "scenario": "recall-standard",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 1.508,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "4817",
+   "decode_tps": 91.14939385653085,
+   "prompt_n": 38,
+   "cache_n": 1256
+  }
+ ],
+ "profiles": {
+  "frozen": {
+   "server_pids": [
+    5580,
+    6908
+   ],
+   "calibration_tps": [
+    149.0,
+    151.9
+   ],
+   "llama_dedicated_mib_max": 15008.2,
+   "llama_non_local_mib_max": 1731.1,
+   "lease_expected_mib": [
+    13658,
+    15626
+   ],
+   "fit_margin_mib": [
+    -350.6,
+    -108.4
+   ],
+   "ready_samples": 8
+  },
+  "c64k-visoff-mtpoff": {
+   "server_pids": [
+    9372
+   ],
+   "calibration_tps": [
+    101.2
+   ],
+   "llama_dedicated_mib_max": 13895.5,
+   "llama_non_local_mib_max": 561.8,
+   "lease_expected_mib": [
+    13658,
+    15626
+   ],
+   "fit_margin_mib": [
+    1635.4
+   ],
+   "ready_samples": 3
+  }
+ },
+ "switches": [
+  {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 405.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 216.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 8976,
+      "role": null
+     }
+    ],
+    "free_mib": 15293.6,
+    "margin_mib": 1635.6,
+    "others_mib": 1074.4,
+    "owner_mib": 15008.2,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "FITS"
+   },
+   "from": "frozen",
+   "id": "1363bc54-3664-4c35-91cb-034dc9e691c5",
+   "required_mib": 13658,
+   "result": "READY",
+   "seconds": 32.4,
+   "started_stopped_brain": false,
+   "t_done": 1792322003.797,
+   "t_request": 1792321971.382,
+   "t_stopped": 1792321975.009,
+   "to": "c64k-visoff-mtpoff"
+  },
+  {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 405.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 234.7,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 8976,
+      "role": null
+     }
+    ],
+    "free_mib": 15275.4,
+    "margin_mib": -350.6,
+    "others_mib": 1092.6,
+    "owner_mib": 13895.5,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "f1415940-2bfb-4e6a-b9f9-603da1828327",
+   "required_mib": 15626,
+   "result": "READY",
+   "seconds": 36.8,
+   "started_stopped_brain": false,
+   "t_done": 1792322051.395,
+   "t_request": 1792322014.642,
+   "t_stopped": 1792322018.242,
+   "to": "frozen"
+  }
+ ],
+ "switch_ui_timelines": [
+  {
+   "to": "long",
+   "ui_seconds": 33.718000173568726,
+   "rows": 18
+  },
+  {
+   "to": "standard",
+   "ui_seconds": 39.06399989128113,
+   "rows": 24
+  }
+ ],
+ "worker_processes": [
+  [
+   2128,
+   1792321931.929
+  ],
+  [
+   14528,
+   1792321931.977
+  ]
+ ],
+ "host_state_sequence": [
+  {
+   "state": "STARTING",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:11:49.010188+00:00",
+   "detail": null
+  },
+  {
+   "state": "LOADING",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:11:54.666033+00:00",
+   "detail": null
+  },
+  {
+   "state": "CALIBRATING",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:12:17.005630+00:00",
+   "detail": null
+  },
+  {
+   "state": "READY",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:12:22.501270+00:00",
+   "detail": null
+  },
+  {
+   "state": "STOPPING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T11:13:01.476257+00:00",
+   "detail": null
+  },
+  {
+   "state": "STARTING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T11:13:07.078147+00:00",
+   "detail": null
+  },
+  {
+   "state": "LOADING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T11:13:12.737488+00:00",
+   "detail": null
+  },
+  {
+   "state": "CALIBRATING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T11:13:24.107528+00:00",
+   "detail": null
+  },
+  {
+   "state": "READY",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T11:13:29.658121+00:00",
+   "detail": null
+  },
+  {
+   "state": "STARTING",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:13:46.235654+00:00",
+   "detail": null
+  },
+  {
+   "state": "LOADING",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:13:51.810899+00:00",
+   "detail": null
+  },
+  {
+   "state": "CALIBRATING",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:14:14.292748+00:00",
+   "detail": null
+  },
+  {
+   "state": "READY",
+   "profile": "frozen",
+   "utc": "2026-10-18T11:14:19.838157+00:00",
+   "detail": null
+  }
+ ],
+ "lease_after": "FREE",
+ "brain_config_digest_unchanged": true,
+ "brain_listener_after": null,
+ "host_exit": 0,
+ "native_exit_code": 0,
+ "elapsed_s": 169.01
+}

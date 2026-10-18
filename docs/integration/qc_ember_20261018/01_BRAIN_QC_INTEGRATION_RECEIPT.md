@@ -22,6 +22,7 @@ approval.
 |---|---|---|---|
 | IC1 | `4e827178` | ACCEPT WITH FINDINGS (1 MEDIUM, 5 LOW, 2 INFO) | Default path unchanged vs `cd4a7963`; profile safety holds; 744 canonical tests pass. IC1-01 (stale switch after Restart, MEDIUM), IC1-02, IC1-04 repaired in `01e06d70`; IC1-03 (companion idle during a switch) assigned to the Ember stage (it owns `oi_sources.dart`); IC1-05..09 recorded below |
 | IC1-R2 | `01e06d70` | ACCEPT WITH FINDINGS (1 LOW, 3 INFO) | Repairs confirmed; new tests fail on `4e827178`. R2-01 (stop during the lease wait recorded WAITING_FOR_LEASE) and R2-02 repaired in `6427b681` with tests |
+| Pre-push | `5f77acb8` | ACCEPT WITH FINDINGS (4 LOW, 4 INFO) | R2-01/R2-02 fixes confirmed (tests fail on `01e06d70`); receipt citation fixes (F-1..F-4) applied in this revision; INTEG-F1 re-run with the original driver (`integ-qc-5`); F-7 (pre-existing: a stop during a restart's lease wait exits the host) recorded. Report `review/FINAL_QC_report.md` |
 
 Recorded: `scripts/ws_brain_host.py` is no longer byte-identical to `7c7a7776` (runtime-profiles IC-1 ends here by
 owner-authorized integration); `runtime_profiles.py`, `runtime_profile_selection.py`, `runtime_v1.py` are unchanged.
@@ -34,31 +35,36 @@ the host syncs it (IC1-07); the file is protected, so this is recorded here inst
 |---|---|---|
 | pytest `tests/oi tests/ws` | `6427b681` | 784 passed, 23 skipped (`evidence/gates/pytest_oi_ws_final.log`) |
 | `ws_frozen_check` | `6427b681` | `unapproved_protected_changes: []` |
-| `tests/phase2a/test_frozen_core.py` | `4e827178` | 3 of 8 fail - identical set fails on canonical `cd4a7963` (pre-existing governance gap, QC-F4) |
+| `tests/phase2a/test_frozen_core.py` | `4e827178` | 3 of 8 fail - identical set fails on canonical `cd4a7963` (`evidence/gates/test_frozen_core_canonical_cd4a7963.log`; pre-existing governance gap, QC-F4) |
 | flutter analyze / full flutter test / release build | `4e827178` | 0 errors (4 info) / 779 passed / rc 0. `git diff 4e827178 6427b681 -- uri_ui` is empty (`dart_unchanged_since_4e827178.txt`) |
-| Secret scan of `cd4a7963..4e827178` additions | - | no matches |
+| Secret scan of `cd4a7963..5f77acb8` additions | - | no matches (main session regex scan; independently repeated by the pre-push review) |
 
-## 4. Windows live verification (real app, production `main()`, real worker/Core/Brain, own lease, no override)
+## 4. Windows live verification
+
+Real Windows app through production `main()` in a Debug build driven by `integration_test` (synthesized taps and
+typing, not physical input), real integrated worker, paired Core and Runtime v1 Brain, own GPU lease, no override. The
+Release build was built (section 3) but not run live.
 
 | Run | Code | Result |
 |---|---|---|
 | `integ-qc-2` | `4e827178` | PASS 22/22 |
 | `integ-uiv2-2` | `4e827178` | UI V2 journeys 68/68 PASS |
 | `integ-vision-1` | `4e827178` (host unchanged on this path) | Standard: image answered "Red" in 2.1 s; Long: server refuses image input ("image input is not supported"), as designed |
-| `integ-qc-3` | `01e06d70` | FAIL 1 check: `QC-switch-to-standard` - after the Standard confirm dialog's Switch tap no request reached worker or host and no notice appeared; timed out after 7 min. Not reproduced (finding INTEG-F1) |
-| `integ-qc-4` | `6427b681` (final) | PASS 22/22; instrumentation shows the Switch tap produced a request id and closed the dialog |
+| `integ-qc-3` | `01e06d70` | FAIL 1 check: `QC-switch-to-standard` - the Standard confirm dialog was shown (`09-confirm-standard.png`); after the Switch tap the host received no second request (all host samples show only the Long switch) and the worker showed no pending switch; timed out after ~7 min. Whether a notice appeared was not recorded by that driver. Cause unknown (finding INTEG-F1) |
+| `integ-qc-4` | `6427b681` | PASS 22/22 with an instrumented driver (`qc_driver_integration_instrumented.dart`, sha `ebeb62dd`: records request id, notice and dialog state after the tap, and pumps ~5 s more frames) - the tap produced a request id and closed the dialog |
+| `integ-qc-5` | `5f77acb8` (code = `6427b681`, final) | PASS 22/22 with the original, unmodified QC driver (sha `c2f23a11`, same as `integ-qc-2/3`) |
 
-Final run `integ-qc-4` vs qualified baseline (qc-5, qc-6):
+Final runs vs qualified baseline qc-5 (the qualification run on the pre-R2 QC code):
 
-| Metric | qc-5 (qualified) | integ-qc-4 (integrated) |
-|---|---|---|
-| Decode tok/s Standard start / Long / Standard after switch | 121.2 / 98.2 / 148.3 | 122.8 / 98.8 / 150.0 |
-| Switch to Long / back (UI s) | 30.8 / 38.2 | 32.1 / 38.8 (host 31.0 / 36.9) |
-| Fit before switch to Long / back | FITS / AT_RISK (-294.5..-336.6 MiB) | FITS +1,669.9 / AT_RISK -316.4 MiB |
-| llama-server dedicated / non-local MiB, Standard | 15,008 / 1,731 | 15,008 / 1,731 |
-| llama-server dedicated / non-local MiB, Long | 13,896 / 562 | 13,896 / 562 |
-| Conversation continuity ("4817"), same worker pids, turn refused during switch | yes | yes |
-| Lease FREE after, Brain config digest unchanged | yes | yes |
+| Metric | qc-5 (qualified) | integ-qc-4 | integ-qc-5 |
+|---|---|---|---|
+| Decode tok/s Standard start / Long / Standard after switch | 121.2 / 98.2 / 148.3 | 122.8 / 98.8 / 150.0 | 122.2 / 98.4 / 151.4 |
+| Switch to Long / back, UI s (host s) | 31.4 / 40.1 (30.8 / 38.2) | 32.1 / 38.8 (31.0 / 36.9) | 33.7 / 39.1 (32.4 / 36.8) |
+| Fit before switch to Long / back | FITS +1,678.5 / AT_RISK -299.3 MiB (qc-1..qc-4 range -294.5..-336.6) | FITS +1,669.9 / AT_RISK -316.4 MiB | FITS +1,635.6 / AT_RISK -350.6 MiB |
+| llama-server dedicated / non-local MiB, Standard | 15,008 / 1,731 | 15,008 / 1,731 | see summary |
+| llama-server dedicated / non-local MiB, Long | 13,896 / 562 | 13,896 / 562 | see summary |
+| Conversation continuity ("4817"), same worker pids, turn refused during switch | yes | yes | yes |
+| Lease FREE after, Brain config digest unchanged | yes | yes | yes |
 
 No sustained performance regression; the Standard AT_RISK start with ~1.7 GB non-local is the known, qualified
 behaviour of the frozen Runtime v1 next to a UI window (unchanged by this milestone).
@@ -78,7 +84,7 @@ behaviour of the frozen Runtime v1 next to a UI window (unchanged by this milest
 | QC-F9/F10 | `selection_error` / host-side refusals not surfaced in UI (research launch only; worker fails closed) | recorded; another session's closure branch works on QC-F9 |
 | IC1-03 | Companion showed idle during a switch | fixed in the Ember stage |
 | IC1-05, IC1-08, IC1-09 | stale reconfigure after >120 s load; override skips switch fit refusal; failed Long switch + long conversation leaves Restart/relaunch | recorded |
-| INTEG-F1 | One live run (`integ-qc-3`) where the Standard switch tap produced no request; not reproduced in `integ-qc-4` or qualification runs qc-1..qc-6; a user can tap again | recorded, NOT REPRODUCED |
+| INTEG-F1 | One live run (`integ-qc-3`, code `01e06d70`) where the Standard confirm dialog's Switch tap produced no request; cause unknown (a synthesized-tap or frame race in the test harness is possible but not shown). Rate: 1 failure in 10 live QC runs (qc-1..qc-6, integ-qc-2..5); not reproduced with the original driver (`integ-qc-5`) or the instrumented one (`integ-qc-4`). Physical-input behaviour not tested | OPEN, cause unknown |
 
 ## 6. Rollback
 
