@@ -1,0 +1,125 @@
+{
+ "state": "READY",
+ "load_s": 60.28,
+ "utc": "2026-10-17T08:34:48.348631+00:00",
+ "host": {
+  "schema": "uri.ws.brain_host.v1",
+  "host_pid": 23692,
+  "host_started": 1792226028.064,
+  "state": "READY",
+  "history": [
+   {
+    "t": 1792226032.046,
+    "state": "STARTING",
+    "detail": null
+   },
+   {
+    "t": 1792226059.061,
+    "state": "LOADING",
+    "detail": null
+   },
+   {
+    "t": 1792226082.012,
+    "state": "CALIBRATING",
+    "detail": null
+   },
+   {
+    "t": 1792226088.015,
+    "state": "READY",
+    "detail": null
+   }
+  ],
+  "override": null,
+  "profile": {
+   "id": "c64k-visgpu-mtpoff",
+   "ctx": 65536,
+   "vision": "gpu",
+   "mtp": false,
+   "required_mib": 14764,
+   "qualified": false,
+   "frozen": false
+  },
+  "lease": {
+   "held": true,
+   "acquired_at": 1792226028.073,
+   "recovered_from": null
+  },
+  "gpu": {
+   "fit": {
+    "verdict": "AT_RISK",
+    "card_mib": 16368,
+    "required_mib": 14764,
+    "others_mib": 1386.4,
+    "unattributed_mib": 0.0,
+    "owner_mib": 0,
+    "free_mib": 14981.6,
+    "margin_mib": 217.6,
+    "consumers": [
+     {
+      "pid": 1792,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 903.3,
+      "role": "desktop compositor"
+     }
+    ]
+   },
+   "explain": "The Brain fits with a small margin (218 MB); other GPU apps may slow it down.",
+   "census_t": 1792226028.077,
+   "census_s": 3.96
+  },
+  "detail": null,
+  "explain": "Brain ready (103 tok/s).",
+  "updated_at": 1792226088.015,
+  "heartbeat_at": 1792226088.255,
+  "server": {
+   "pid": 19268,
+   "owned": true,
+   "load_seconds": 24.8,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s"
+  },
+  "residency": {
+   "t": 1792226084.059,
+   "dedicated_mib": 14940.1,
+   "non_local_mib": 561.8,
+   "others_mib": 1386.4,
+   "verdict_now": "AT_RISK",
+   "consumers": [
+    {
+     "pid": 1792,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "dedicated_mib": 903.3,
+     "role": "desktop compositor"
+    }
+   ]
+  },
+  "calibration": {
+   "t": 1792226082.059,
+   "tokens": 160,
+   "threshold_tps": 60.0,
+   "server_pid": 19268,
+   "server_create_time": 1792226057.2451224,
+   "reason": "START",
+   "decode_tps": 103.3,
+   "predicted_n": 160,
+   "prompt_ms": 170.827,
+   "residency": {
+    "t": 1792226084.059,
+    "dedicated_mib": 14940.1,
+    "non_local_mib": 561.8,
+    "others_mib": 1386.4,
+    "verdict_now": "AT_RISK",
+    "consumers": [
+     {
+      "pid": 1792,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 903.3,
+      "role": "desktop compositor"
+     }
+    ]
+   }
+  }
+ }
+}

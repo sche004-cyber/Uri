@@ -1,0 +1,172 @@
+{
+ "label": "sw4",
+ "session_id": "a62f74db-7eb6-4f5c-befd-4aac8acc7a51",
+ "steps": [
+  {
+   "step": "ready-P2",
+   "state": "READY",
+   "seconds": 22.5,
+   "worker_profile": "c64k-visoff-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "tell",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "9370df54-d2ab-4b35-98a2-c608e2f0300a",
+   "seconds": 7.07,
+   "answer": "OK",
+   "route": [
+    "core",
+    "answer"
+   ],
+   "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "core.result",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "recall-P2",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "seconds": 0.7,
+   "answer": "4817",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "switch-to-P3",
+   "stop_s": 0.3,
+   "vram_release_s": 3.8,
+   "state": "READY",
+   "seconds": 33.4,
+   "worker_profile": "c32k-visgpu-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "recall-P3",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "745af5d7-7af4-48fb-bd31-86178e2ffb0f",
+   "seconds": 1.37,
+   "answer": "4817",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "switch-to-P2-again",
+   "stop_s": 2.9,
+   "vram_release_s": 3.9,
+   "state": "READY",
+   "seconds": 26.4,
+   "worker_profile": "c64k-visoff-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "recall-P2-again",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "73b38c49-0dcc-4ceb-bb85-8df83b4f519a",
+   "seconds": 1.62,
+   "answer": "4817",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  }
+ ],
+ "commit": [
+  {
+   "t": 1792246927.11,
+   "avail_phys_mib": 4082,
+   "commit_limit_mib": 52429,
+   "commit_free_mib": 958
+  },
+  {
+   "t": 1792246972.36,
+   "avail_phys_mib": 4215,
+   "commit_limit_mib": 52858,
+   "commit_free_mib": 848
+  },
+  {
+   "t": 1792247006.89,
+   "avail_phys_mib": 4331,
+   "commit_limit_mib": 52418,
+   "commit_free_mib": 894
+  }
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "preflight_ok": "ws-integrated",
+ "all_recalled": true,
+ "all_answer_route": true,
+ "all_switches_ready_on_new_profile": true,
+ "worker_pid_constant": true,
+ "lease_after": "FREE",
+ "worker_instance": {
+  "brain_profile": {
+   "file": "D:\\uri-dev\\uri-profiles-live\\runtime-c\\work\\c1\\ws-rp-c\\client\\control\\oi\\brain_profile.json",
+   "profile": {
+    "ctx": 65536,
+    "frozen": false,
+    "id": "c64k-visoff-mtpoff",
+    "mtp": false,
+    "qualified": false,
+    "required_mib": 13658,
+    "vision": "off"
+   },
+   "source": "selection"
+  },
+  "cli_homes_pinned": [
+   "CODEX_HOME"
+  ],
+  "client_id": "9ee833d0-03f8-42a5-a2b3-662ebc71600c",
+  "create_time": 1792246901.9296875,
+  "execution_lifecycle": true,
+  "fixture_allowed": false,
+  "generation": "362d27a4-db47-484d-b1f2-dd51d334a6b8",
+  "manifest_digest": "55d8fa7aa13aefe4d52d64821d6c3a9a3437b9c800281ba5a1993efc6a1aa25d",
+  "oi": true,
+  "phase2_source_digest": "933685f766ad71bf6f846044c6a8fa86e7d9f32b935593b11799e4a356eaea76",
+  "pid": 18868,
+  "profile": "ws-integrated",
+  "qualified": []
+ }
+}

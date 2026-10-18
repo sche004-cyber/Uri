@@ -1,0 +1,48 @@
+{
+ "label": "dry1",
+ "session_id": "fe34f39b-97c1-4a1f-beea-7546ea8a8c4a",
+ "steps": [],
+ "commit": [],
+ "classification": "DRY_RUN",
+ "preflight_ok": "ws-integrated",
+ "dry_brain_status": {
+  "artifacts": null,
+  "checked_at": 1792240763.1932466,
+  "detail": null,
+  "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+  "owned": false,
+  "pid": null,
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  },
+  "state": "STOPPED",
+  "url": "http://127.0.0.1:18470"
+ },
+ "dry_brain_health_profile": {
+  "frozen": true,
+  "id": "frozen"
+ },
+ "lease_after": "FREE",
+ "worker_instance": {
+  "brain_profile": {
+   "file": null,
+   "source": "frozen"
+  },
+  "cli_homes_pinned": [
+   "CODEX_HOME"
+  ],
+  "client_id": "9ee833d0-03f8-42a5-a2b3-662ebc71600c",
+  "create_time": 1792240757.5292604,
+  "execution_lifecycle": true,
+  "fixture_allowed": false,
+  "generation": "f80a1bbb-1237-40bd-8e3f-1648df75c5a0",
+  "manifest_digest": "55d8fa7aa13aefe4d52d64821d6c3a9a3437b9c800281ba5a1993efc6a1aa25d",
+  "oi": true,
+  "phase2_source_digest": "933685f766ad71bf6f846044c6a8fa86e7d9f32b935593b11799e4a356eaea76",
+  "pid": 22900,
+  "profile": "ws-integrated",
+  "qualified": []
+ }
+}

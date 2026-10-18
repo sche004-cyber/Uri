@@ -1,0 +1,34 @@
+{
+ "label": "c-p3-ret",
+ "port": 18336,
+ "started_utc": "2026-10-17T12:58:45.732642+00:00",
+ "no_brain": false,
+ "profile_arg": "32768,gpu,0",
+ "profile": {
+  "id": "c32k-visgpu-mtpoff",
+  "ctx": 32768,
+  "vision": "gpu",
+  "mtp": false,
+  "required_mib": 14360,
+  "qualified": false,
+  "frozen": false
+ },
+ "verified": {
+  "ok": true,
+  "mismatched": [],
+  "checked_files": 333,
+  "runtime_head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "materialized_from": "4d782ef16bee26c555774676c165aafb1d94cd55",
+  "source_head": "4d782ef16bee26c555774676c165aafb1d94cd55"
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "override": false,
+ "server_pid": 24108,
+ "server_listener_pid": 15420,
+ "server_listen_s": 2.377,
+ "server_listening": true
+}

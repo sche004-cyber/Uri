@@ -1,0 +1,157 @@
+{
+ "label": "sw2",
+ "session_id": "8eefed3d-427a-4a7a-807e-9479d0245fa6",
+ "steps": [
+  {
+   "step": "ready-P2",
+   "state": "READY",
+   "seconds": 24.7,
+   "worker_profile": "c64k-visoff-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "tell",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "024f5f82-6576-455b-953e-b82ab5fdb410",
+   "seconds": 5.64,
+   "answer": "",
+   "route": [
+    "core"
+   ],
+   "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+   "types": [
+    "companion.state",
+    "core.result",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "recall-P2",
+   "reply": "REFUSED",
+   "error": "TURN_IN_PROGRESS",
+   "turn_id": null,
+   "seconds": 180.01,
+   "answer": "",
+   "route": [],
+   "core": "[]",
+   "types": []
+  },
+  {
+   "step": "switch-to-P3",
+   "stop_s": 0.4,
+   "vram_release_s": 3.9,
+   "state": "READY",
+   "seconds": 28.5,
+   "worker_profile": "c32k-visgpu-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "recall-P3",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+   "seconds": 2.28,
+   "answer": "4818",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "switch-to-P2-again",
+   "stop_s": 3.8,
+   "vram_release_s": 3.8,
+   "state": "READY",
+   "seconds": 29.1,
+   "worker_profile": "c64k-visoff-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "recall-P2-again",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+   "seconds": 3.53,
+   "answer": "4818",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.routed",
+    "turn.started"
+   ]
+  }
+ ],
+ "commit": [
+  {
+   "t": 1792246413.35,
+   "avail_phys_mib": 4219,
+   "commit_limit_mib": 52426,
+   "commit_free_mib": 1123
+  },
+  {
+   "t": 1792246631.84,
+   "avail_phys_mib": 4544,
+   "commit_limit_mib": 52785,
+   "commit_free_mib": 915
+  },
+  {
+   "t": 1792246670.77,
+   "avail_phys_mib": 4295,
+   "commit_limit_mib": 52421,
+   "commit_free_mib": 1389
+  }
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "preflight_ok": "ws-integrated",
+ "all_recalled": false,
+ "all_answer_route": false,
+ "all_switches_ready_on_new_profile": true,
+ "worker_pid_constant": true,
+ "lease_after": "FREE",
+ "worker_instance": {
+  "brain_profile": {
+   "file": "D:\\uri-dev\\uri-profiles-live\\runtime-c\\work\\c1\\ws-rp-c\\client\\control\\oi\\brain_profile.json",
+   "profile": {
+    "ctx": 65536,
+    "frozen": false,
+    "id": "c64k-visoff-mtpoff",
+    "mtp": false,
+    "qualified": false,
+    "required_mib": 13658,
+    "vision": "off"
+   },
+   "source": "selection"
+  },
+  "cli_homes_pinned": [
+   "CODEX_HOME"
+  ],
+  "client_id": "9ee833d0-03f8-42a5-a2b3-662ebc71600c",
+  "create_time": 1792246385.5798376,
+  "execution_lifecycle": true,
+  "fixture_allowed": false,
+  "generation": "977a0ef7-aa47-42ba-89e6-a204a607ca8e",
+  "manifest_digest": "55d8fa7aa13aefe4d52d64821d6c3a9a3437b9c800281ba5a1993efc6a1aa25d",
+  "oi": true,
+  "phase2_source_digest": "933685f766ad71bf6f846044c6a8fa86e7d9f32b935593b11799e4a356eaea76",
+  "pid": 20872,
+  "profile": "ws-integrated",
+  "qualified": []
+ }
+}

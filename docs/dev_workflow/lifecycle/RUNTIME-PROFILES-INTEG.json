@@ -1,0 +1,116 @@
+{
+ "milestone": "RUNTIME-PROFILES-INTEG",
+ "repo": "D:/uri-dev/uri-runtime-profiles-integ",
+ "canonical_url": "https://github.com/sche004-cyber/Uri",
+ "baseline": {
+  "remote_branch": "integration/git-sync-20261008",
+  "expect": "348677b79610d6e261885531bb2e2a95b5253315"
+ },
+ "candidate": {
+  "branch": "milestone/runtime-profiles-integ-20261017",
+  "worktree": "D:/uri-dev/uri-runtime-profiles-integ"
+ },
+ "state_dir": "D:/uri-dev/uri-profiles-live/lifecycle/r1",
+ "acceptance_criteria_file": "docs/operational_intelligence/RUNTIME_PROFILES_INTEGRATION_PLAN.md",
+ "python": "D:/uri-dev/uri-profiles-live/runtime-e/.venv/Scripts/python.exe",
+ "review_focus": [
+  "IC-1 scope (plan IC-1 + A1 + A2): 348677b7..HEAD may change ONLY (a) the five files accepted in URI-RUNTIME-VRAM-R1, byte-identical to commit 7c7a7776 of research/runtime-vram-r1-20261017: uri_operational_intelligence/runtime_profiles.py, uri_operational_intelligence/runtime_v1.py, scripts/ws_brain_host.py, tests/oi/test_runtime_profiles.py, docs/operational_intelligence/RUNTIME_PROFILES_UI_CONTRACT.md (verify with git hash-object); (b) the A1 files beyond the accepted scope, review them in full: uri_operational_intelligence/runtime_profile_selection.py, scripts/run_uri_integrated_worker.py, tests/oi/test_runtime_profile_selection.py (fa0a70e6, 4d782ef1, 07dca2a8) and uri_operational_intelligence/brain_health.py (4d782ef1); (c) documents: docs/operational_intelligence/RUNTIME_PROFILES_INTEGRATION_PLAN.md, this config, and evidence under docs/operational_intelligence/profiles_live/. Code tested live is f3d5eb29; later commits change only (c), except c3fc8bbc (plan A3, owner D3), which adds runtime_profile_selection.SELECTABLE (frozen, P2, P3) and its tests; the integration verification sw6 is bound to c3fc8bbc",
+  "Worker profile selection (fa0a70e6): the worker reads control/oi/brain_profile.json once before its file guard; verify only measured profiles derived from the frozen config can be selected (no binary, model, port or flag injection), absent/invalid file = frozen config exactly as before, the selection is recorded in worker-instance.json, and the guard's pinned read files follow the derived config; check that no path lets a profile replace the frozen Brain without the selection file",
+  "ProfileFollower (4d782ef1, repaired in 07dca2a8 after review R2-05/R2-06): the worker re-reads the selection on each readiness check, detects a change by comparing the file content, validates and applies the same bytes it read, and calls on_change in order under its lock with a generation counter; it swaps only the readiness manager (the host owns the server). Verify no race lets a turn be verified against a stale profile in a way that bypasses identity checks, that the guard's frozen-superset pinned files are correct, that brain_health.backend names the serving profile with qualified false, and that with no selection file behaviour is unchanged",
+  "IC-2 frozen Runtime v1 preserved: model_lab/integration/local_brain.json and the freeze record unchanged; runtime_v1.expected_argv(frozen config) byte-identical to the baseline; runtime_profiles.derive_config(frozen, 32768, 'gpu', True) returns the frozen object; ws_brain_host without --profile behaves exactly as at the baseline (lease expected_vram_mib 15626, fit required_mib 15626); no path through which a profile could silently replace the frozen Brain (RuntimeManager identity, FOREIGN_INSTANCE); the default Brain configuration is NOT changed anywhere",
+  "Correctness and security of runtime_profiles.derive_config / plan_change / cfg_required_mib and ws_brain_host.parse_profile: admission never on an estimate (unmeasured combinations refused), context never shrunk below a live conversation without confirmation, strict argument parsing",
+  "test_every_measured_entry_matches_a_completed_probe SKIPS in this checkout by design (the probe evidence lives on the research branch); judge whether that is acceptable for integration",
+  "INDIRECT capability: live Windows UI V2 qualification. Code tested live: f3d5eb29 (07dca2a8 merged with canonical 348677b7, plan amendment A2); later commits change only documents (evidence under docs/operational_intelligence/profiles_live/, the plan and this config), except c3fc8bbc (D3 SELECTABLE guard, plan A3; live-verified by sw6 bound to it). Record docs/operational_intelligence/profiles_live/UI_QUALIFICATION_RUNTIME_PROFILES.json, status FAIL as a whole (P1 unqualified: CRASH-1, DEMOTE-P1). Only runs with a clean source binding (evidence/harness/binding.py) naming f3d5eb29 count as evidence; unbound runs are supporting only. Check that the record matches the tested code commit and its evidence, and that nothing claims a default change, integration or qualification that did not happen",
+  "Subagent review rounds RPI-R1 (3b77aabc), RPI-R2 (a5605ae8), RPI-R3 (fec31dfd), RPI-R4 (900e9962), RPI-R5 (47b41df2), RPI-R6 (42cc4e2d) and later are recorded in the record's independent_audit; they are a different verification class from this driver round and must be re-verified, not trusted"
+ ],
+ "environment_notes": [
+  "Evidence classes (owner directive 2026-10-15). If you are the reviewer, add these keys to your AUDIT_RESULT JSON: \"inspected\" (code and documents you read yourself), \"evidence_reviewed_only\" (reports, screenshots, logs you read but did not reproduce), \"live_observed\" (live behaviour you observed yourself; [] if none); tests you executed go in tests_run and claims you could not verify in unverified. Never present reviewed screenshots or reports as your own live observation. If you are an implementer or diagnosis worker, make the same distinction in your notes.",
+  "Research context and measurements: branch research/runtime-vram-r1-20261017 @ 7c7a7776 on the canonical repository (research/runtime_vram_r1/RUNTIME_VRAM_R1_REPORT.md); independent audit round 1 REVISE, round 2 ACCEPT WITH FINDINGS, round 3 ACCEPT (imported Claude reviews, not driver-counted).",
+  "Known environmental failure on this host, identical on canonical: tests/dev_workflow/test_lifecycle_platform.py::test_win_breakaway_is_refused (DRV-ENV-2)."
+ ],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": [
+  "uri_operational_intelligence/runtime_profiles.py",
+  "uri_operational_intelligence/runtime_v1.py",
+  "scripts/ws_brain_host.py",
+  "tests/oi/test_runtime_profiles.py",
+  "docs/operational_intelligence/RUNTIME_PROFILES_UI_CONTRACT.md",
+  "docs/operational_intelligence/RUNTIME_PROFILES_INTEGRATION_PLAN.md",
+  "docs/dev_workflow/lifecycle/RUNTIME-PROFILES-INTEG*.json",
+  "uri_operational_intelligence/runtime_profile_selection.py",
+  "scripts/run_uri_integrated_worker.py",
+  "tests/oi/test_runtime_profile_selection.py",
+  "docs/operational_intelligence/profiles_live/**",
+  "uri_operational_intelligence/brain_health.py"
+ ],
+ "test_globs": [
+  "tests/**"
+ ],
+ "allowed_flaky": [],
+ "gates": [
+  {
+   "id": "python",
+   "kind": "pytest",
+   "cmd": [
+    "{python}",
+    "-B",
+    "-m",
+    "pytest",
+    "-c",
+    "scripts/phase2d_pytest.ini",
+    "--rootdir=.",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "tests/ws",
+    "tests/oi",
+    "tests/ssrf",
+    "tests/web",
+    "tests/a2ui"
+   ],
+   "timeout_s": 3600
+  }
+ ],
+ "regression_runner": [
+  "{python}",
+  "-B",
+  "-m",
+  "pytest",
+  "-q",
+  "-p",
+  "no:cacheprovider"
+ ],
+ "regression_runners": [],
+ "repair_nonblocking_severities": [],
+ "reviewer": {
+  "provider": "codex_cli",
+  "model": "gpt-6-sol",
+  "timeout_s": 5400
+ },
+ "implementer": {
+  "provider": "codex_cli",
+  "model": "gpt-6-sol",
+  "timeout_s": 5400
+ },
+ "limits": {
+  "max_repair_attempts": 3
+ },
+ "continuation": {
+  "stall_rounds": 2,
+  "diagnose_after": 2,
+  "budget": {
+   "max_rounds": 8,
+   "max_cost_usd": 150,
+   "max_hours": 12
+  }
+ },
+ "integration": {
+  "mode": "none",
+  "target_ref": "integration/git-sync-20261008",
+  "authorized": false
+ },
+ "commit_trailers": [
+  "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+ ]
+}

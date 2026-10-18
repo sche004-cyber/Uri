@@ -1,0 +1,153 @@
+{
+ "text": "What was the secret number I gave you at the start of this conversation? Reply with the number only.",
+ "events": [
+  {
+   "data": {
+    "depth": "fast",
+    "text_chars": 100
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 1,
+   "t": 1792246934.183,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "turn.started"
+  },
+  {
+   "data": {
+    "state": "thinking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 2,
+   "t": 1792246934.184,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "route": "answer",
+    "tier": {
+     "escalation_offer": false,
+     "reason": "user_selected_fast",
+     "selected_by": "user",
+     "tier": "FAST"
+    },
+    "triage": {
+     "action_clauses": 0,
+     "kind": "QUESTION",
+     "reasons": [
+      "default_conversation"
+     ]
+    }
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 3,
+   "t": 1792246934.41,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "turn.routed"
+  },
+  {
+   "data": {
+    "state": "speaking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 4,
+   "t": 1792246934.835,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "text": "4"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 5,
+   "t": 1792246934.835,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "8"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 6,
+   "t": 1792246934.85,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "1"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 7,
+   "t": 1792246934.86,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "7"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 8,
+   "t": 1792246934.871,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "complete": true,
+    "escalation_candidate": false,
+    "flags": [],
+    "metrics": {
+     "cache_n": 786,
+     "draft_n": null,
+     "draft_n_accepted": null,
+     "first_answer_s": 0.2762,
+     "memory_context": {
+      "fact_count": 2,
+      "status": "available",
+      "truncated": false
+     },
+     "predicted_n": 5,
+     "predicted_per_second": 87.3400585178392,
+     "prompt_n": 35,
+     "prompt_per_second": 190.10167723994093,
+     "reasoning_chars": 0,
+     "retried": false,
+     "total_s": 0.3222,
+     "ttft_s": 0.2762
+    },
+    "status": "COMPLETE"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 9,
+   "t": 1792246934.881,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "answer.done"
+  },
+  {
+   "data": {
+    "route": "answer",
+    "status": "ok",
+    "total_s": 0.6978
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 10,
+   "t": 1792246934.881,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "turn.finished"
+  },
+  {
+   "data": {
+    "state": "idle"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 11,
+   "t": 1792246934.881,
+   "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+   "type": "companion.state"
+  }
+ ]
+}

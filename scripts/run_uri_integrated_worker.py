@@ -112,8 +112,17 @@ def main():
             raise RuntimeIdentityError("CLIENT_CWD_MISMATCH")
         # The frozen Runtime v1 configuration is read once, before the guard (it lives under the source root's
         # model_lab/, outside the guard's read roots). The worker only ever READS Runtime v1 state.
-        cfg = R.load_config()
+        frozen_cfg = cfg = R.load_config()
+        # Resource profile (RUNTIME-PROFILES-INTEG): verify the Brain against the same derived config its host was
+        # started with, named by control/oi/brain_profile.json. Absent or invalid file = the frozen config. The
+        # follower re-reads it on change, so a profile switch keeps this worker (and its conversation history).
+        from uri_operational_intelligence import runtime_profile_selection as PS
         oi_state = root / "control" / "oi"
+        profile = PS.ProfileFollower(frozen_cfg, PS.selection_path(root),
+                                     lambda c: R.RuntimeManager(c, state_dir=oi_state),
+                                     on_change=lambda c, _note: [setattr(t, "cfg", c) for t in profile_sinks])
+        profile_sinks = []          # the IntegratedTurns instance once built (its health/catalog follow the profile)
+        cfg, brain_profile = profile.cfg, profile.note
         safe = child_environment(root, Path(m["interpreter"]))
         os.environ.clear()
         os.environ.update(safe)
@@ -140,7 +149,9 @@ def main():
                     guard.read_files.add(Path(str(p)).resolve())
         # Runtime v1 readiness re-checks the five pinned artifacts (metadata cache under the client root; a full hash
         # only when a file changed). Exactly those files are readable, nothing else outside the roots.
-        for art in R.pinned_artifacts(cfg):
+        # The frozen config's artifacts are a superset of every derived profile's (profiles only drop the projector
+        # and/or the MTP draft), so a later profile switch never needs a file the guard does not allow.
+        for art in R.pinned_artifacts(frozen_cfg):
             guard.read_files.add(Path(art["path"]).resolve())
         sys.addaudithook(guard)
         with NamedMutex("Local\\URI_Client_" + m["client_id"], 0):
@@ -165,7 +176,7 @@ def main():
                 "phase2_source_digest": hashlib.sha256(canonical(source_digests())).hexdigest(),
                 "qualified": composition.qualified(), "fixture_allowed": bool(args.allow_fixture_qualification),
                 "cli_homes_pinned": sorted(client_cli_homes(root, create=False)),
-                "execution_lifecycle": True, "oi": True})
+                "execution_lifecycle": True, "oi": True, "brain_profile": brain_profile})
             guard.starting = False
             harnesses = composition.registry
             turns = SupervisedWorkerService(manifest, persistence, bridge, harness=harnesses, composition=composition)
@@ -181,7 +192,7 @@ def main():
                 with write_lock:
                     write_frame(sys.stdout.buffer, frame)
 
-            manager = R.RuntimeManager(cfg, state_dir=oi_state)
+            manager = profile                    # readiness follows the selected profile (status() only)
             client = BC.BrainClient(R.base_url(cfg))
             ledger = TaskLedger(oi_state / "tasks")
             ledger.acquire_owner()
@@ -204,6 +215,7 @@ def main():
                                     write_event=lambda ev: write({"event": ev}), memory=memory, defer_start=True,
                                     host_report=lambda: BH.read_host_report(oi_state),
                                     host_request=lambda action: BH.write_host_request(oi_state, action))
+            profile_sinks.append(oi)
             # W1 / A0 (additive): research and Assist commands. Both yield the single Brain slot to the user's turn
             # (BRAIN_TURNS below cancels their Brain work in flight).
             # A failure to load them never takes the OI worker down: their commands are then refused (COMMAND_SCHEMA).

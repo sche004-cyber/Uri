@@ -1,0 +1,181 @@
+{
+ "label": "sw5",
+ "session_id": "989bad0e-2eb6-4ec0-8616-19812c70f476",
+ "steps": [
+  {
+   "step": "ready-P2",
+   "state": "READY",
+   "seconds": 28.2,
+   "worker_profile": "c64k-visoff-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "tell",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "85239825-88f2-41f9-9c74-c450b0e69487",
+   "seconds": 7.84,
+   "answer": "OK",
+   "route": [
+    "core",
+    "answer"
+   ],
+   "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "core.result",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "recall-P2",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "906c4bdb-43bc-48b1-a88c-f4ceeb4229e1",
+   "seconds": 0.84,
+   "answer": "4817",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "switch-to-P3",
+   "stop_s": 0.5,
+   "vram_release_s": 3.5,
+   "state": "READY",
+   "seconds": 26.8,
+   "worker_profile": "c32k-visgpu-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "recall-P3",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "b8581b1e-1312-4478-b076-59b54beea51c",
+   "seconds": 2.49,
+   "answer": "4817",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "switch-to-P2-again",
+   "stop_s": 3.3,
+   "vram_release_s": 3.4,
+   "state": "READY",
+   "seconds": 21.2,
+   "worker_profile": "c64k-visoff-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "recall-P2-again",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "seconds": 1.31,
+   "answer": "4817",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  }
+ ],
+ "commit": [
+  {
+   "t": 1792294335.32,
+   "avail_phys_mib": 14149,
+   "commit_limit_mib": 52148,
+   "commit_free_mib": 25327
+  },
+  {
+   "t": 1792294374.77,
+   "avail_phys_mib": 13688,
+   "commit_limit_mib": 52148,
+   "commit_free_mib": 24167
+  },
+  {
+   "t": 1792294405.2,
+   "avail_phys_mib": 13862,
+   "commit_limit_mib": 52148,
+   "commit_free_mib": 25176
+  }
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "binding": {
+  "runtime_root": "D:\\uri-dev\\uri-profiles-live\\runtime-e",
+  "materialized_from": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "candidate_head_now": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "candidate_tracked_changes": [],
+  "runtime_files_checked": 358,
+  "mismatched": [],
+  "ok": true
+ },
+ "preflight_ok": "ws-integrated",
+ "all_recalled": true,
+ "all_answer_route": true,
+ "all_switches_ready_on_new_profile": true,
+ "worker_pid_constant": true,
+ "lease_after": "FREE",
+ "worker_instance": {
+  "brain_profile": {
+   "file": "D:\\uri-dev\\uri-profiles-live\\runtime-e\\work\\c1\\ws-rp-e\\client\\control\\oi\\brain_profile.json",
+   "profile": {
+    "ctx": 65536,
+    "frozen": false,
+    "id": "c64k-visoff-mtpoff",
+    "mtp": false,
+    "qualified": false,
+    "required_mib": 13658,
+    "vision": "off"
+   },
+   "source": "selection"
+  },
+  "cli_homes_pinned": [
+   "CODEX_HOME"
+  ],
+  "client_id": "15ced449-602f-4389-90dc-cf1c17e0ce26",
+  "create_time": 1792294304.9636621,
+  "execution_lifecycle": true,
+  "fixture_allowed": false,
+  "generation": "0e819a1f-90ba-4671-a1c2-0f4beeda1e63",
+  "manifest_digest": "b890129ca08dedbd141103530c222ff2783e2afed19b14d4dd2230d71e51530f",
+  "oi": true,
+  "phase2_source_digest": "6ffc41f41ad9f03410d48262dc100273a1790f5ff1c55b8c2fedb7034c400517",
+  "pid": 17172,
+  "profile": "ws-integrated",
+  "qualified": []
+ }
+}

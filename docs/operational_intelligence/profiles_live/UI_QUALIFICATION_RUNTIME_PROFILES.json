@@ -1,0 +1,1844 @@
+{
+ "schema": "uri-ui-qualification/1",
+ "task": {
+  "task_id": "RUNTIME-PROFILES-INTEG",
+  "capability": "Runtime v1 resource profiles (Brain host --profile + worker profile selection/follower)",
+  "classification": "INDIRECT",
+  "no_ui_reason": null,
+  "phase": "live qualification before any default change",
+  "candidate_branch": "milestone/runtime-profiles-integ-20261017",
+  "code_commit": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "integration_code_commit": "c3fc8bbc8354980a98e914816b8b77db727c8312",
+  "acceptance_criteria_file": "docs/operational_intelligence/RUNTIME_PROFILES_INTEGRATION_PLAN.md",
+  "acceptance_criteria": [
+   "LQ-1",
+   "LQ-2",
+   "LQ-3",
+   "LQ-4"
+  ]
+ },
+ "environment": {
+  "windows": "Microsoft Windows [Version 10.0.26200.9711]",
+  "app_build": "candidate uri_ui, debug build via flutter test integration_test (driver runs); release build for soak windows",
+  "core": "materialized runtime e8e3b652 + Phase 2 OQ overlay + candidate f3d5eb29 (evidence/materialize-e.json; runtime-e, installation rp-e)",
+  "brain": "llama.cpp b11425 Vulkan, Qwen3.6-35B-A3B UD-IQ3_S (+ mmproj-F16 on vision profiles), MTP off on all tested profiles; frozen config unchanged",
+  "dependencies": [],
+  "gpu_override": "none (lease, no contention override)"
+ },
+ "functional": [
+  {
+   "journey_id": "c-p2-main",
+   "class": "HISTORY",
+   "source_head": "4d782ef16bee26c555774676c165aafb1d94cd55",
+   "user": "first_time",
+   "mandatory": false,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('STOPPED', 337, 'HOST_EXIT'); calibration 104.0 tok/s; fit FITS (1182.6 MiB); Brain max dedicated/non-local (13901.2, 561.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-c\\\\work\\\\c1\\\\ws-rp-c\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 65536, 'frozen': False, 'id': 'c64k-visoff-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 13658, 'vision': 'off'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/c-p2-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "c-p2-ret",
+   "class": "HISTORY",
+   "source_head": "4d782ef16bee26c555774676c165aafb1d94cd55",
+   "user": "returning",
+   "mandatory": false,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "12/12 PASS; failures []; last Brain phase ('READY', 51, None); calibration 102.7 tok/s; fit FITS (1176.3 MiB); Brain max dedicated/non-local (13900.7, 561.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-c\\\\work\\\\c1\\\\ws-rp-c\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 65536, 'frozen': False, 'id': 'c64k-visoff-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 13658, 'vision': 'off'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/c-p2-ret/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "c-p3-main",
+   "class": "HISTORY",
+   "source_head": "4d782ef16bee26c555774676c165aafb1d94cd55",
+   "user": "first_time",
+   "mandatory": false,
+   "profile": "c32k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P3 32K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('READY', 54, None); calibration 104.8 tok/s; fit AT_RISK (474.3 MiB); Brain max dedicated/non-local (14604.3, 497.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-c\\\\work\\\\c1\\\\ws-rp-c\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 32768, 'frozen': False, 'id': 'c32k-visgpu-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 14360, 'vision': 'gpu'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/c-p3-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "c-p3-ret",
+   "class": "HISTORY",
+   "source_head": "4d782ef16bee26c555774676c165aafb1d94cd55",
+   "user": "returning",
+   "mandatory": false,
+   "profile": "c32k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P3 32K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "12/12 PASS; failures []; last Brain phase ('READY', 57, None); calibration 102.6 tok/s; fit AT_RISK (474.6 MiB); Brain max dedicated/non-local (14603.8, 497.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-c\\\\work\\\\c1\\\\ws-rp-c\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 32768, 'frozen': False, 'id': 'c32k-visgpu-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 14360, 'vision': 'gpu'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/c-p3-ret/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "e-p2-main",
+   "class": "CURRENT",
+   "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "user": "first_time",
+   "mandatory": true,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('READY', 41, None); calibration 105.0 tok/s; fit FITS (1919.8 MiB); Brain max dedicated/non-local (13901.2, 561.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-e\\\\work\\\\c1\\\\ws-rp-e\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 65536, 'frozen': False, 'id': 'c64k-visoff-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 13658, 'vision': 'off'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/e-p2-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "e-p2-ret",
+   "class": "CURRENT",
+   "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "user": "returning",
+   "mandatory": true,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "12/12 PASS; failures []; last Brain phase ('STOPPING', 116, None); calibration 107.0 tok/s; fit FITS (1919.8 MiB); Brain max dedicated/non-local (13900.7, 561.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-e\\\\work\\\\c1\\\\ws-rp-e\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 65536, 'frozen': False, 'id': 'c64k-visoff-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 13658, 'vision': 'off'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/e-p2-ret/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "e-p3-main",
+   "class": "CURRENT",
+   "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "user": "first_time",
+   "mandatory": true,
+   "profile": "c32k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P3 32K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('READY', 33, None); calibration 106.7 tok/s; fit FITS (1217.8 MiB); Brain max dedicated/non-local (14604.3, 497.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-e\\\\work\\\\c1\\\\ws-rp-e\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 32768, 'frozen': False, 'id': 'c32k-visgpu-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 14360, 'vision': 'gpu'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/e-p3-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "e-p3-ret",
+   "class": "CURRENT",
+   "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "user": "returning",
+   "mandatory": true,
+   "profile": "c32k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P3 32K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "12/12 PASS; failures []; last Brain phase ('READY', 39, None); calibration 106.6 tok/s; fit FITS (1217.8 MiB); Brain max dedicated/non-local (14603.8, 497.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-e\\\\work\\\\c1\\\\ws-rp-e\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 32768, 'frozen': False, 'id': 'c32k-visgpu-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 14360, 'vision': 'gpu'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/e-p3-ret/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "p1-main",
+   "class": "HISTORY",
+   "source_head": "84ef1a39645efa73bceeb2bb3a67d7a0473a88c0",
+   "user": "first_time",
+   "mandatory": false,
+   "profile": "c64k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode v2 through the production main() of the candidate app; Brain host ws_brain_host --profile on P1 64K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "44/56 PASS; failures ['J1-brain-ready', 'J3-greeting-replied', 'J3-fact', 'J4-clarification-asked', 'J4-confirmation-asked', 'J9-dashboard-counts-decision', 'J4-clarify-confirm-decline', 'J5-approve-tool', 'J14-draft-open', 'J14-draft-integrity', 'J16-precondition-draft-open', 'J7-chat-reply']; last Brain phase ('READY', 55, None); calibration 106.4 tok/s; fit AT_RISK (217.6 MiB); Brain max dedicated/non-local (14940.1, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/p1-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "FAIL"
+  },
+  {
+   "journey_id": "p1b-main",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "first_time",
+   "mandatory": false,
+   "profile": "c64k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P1 64K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "52/57 PASS; failures ['J5-approve-tool', 'J14-draft-open', 'J14-draft-integrity', 'J16-precondition-draft-open', 'J7-chat-reply']; last Brain phase ('FAILED', 213, 'LOCAL_BRAIN_EXITED:3221226505'); calibration 102.5 tok/s; fit AT_RISK (217.8 MiB); Brain max dedicated/non-local (15009.0, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/p1b-main/"
+   ],
+   "failure_and_recovery": "CRASH-1: llama-server exited 0xC0000409 (LOCAL_BRAIN_EXITED:3221226505); later Brain journeys had no Brain",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "FAIL"
+  },
+  {
+   "journey_id": "p1c-main",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "first_time",
+   "mandatory": false,
+   "profile": "c64k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P1 64K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('STOPPED', 290, 'HOST_EXIT'); calibration 103.0 tok/s; fit AT_RISK (217.8 MiB); Brain max dedicated/non-local (15009.3, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/p1c-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "p1c-ret",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "returning",
+   "mandatory": false,
+   "profile": "c64k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P1 64K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "12/12 PASS; failures []; last Brain phase ('READY', 58, None); calibration 101.5 tok/s; fit AT_RISK (217.6 MiB); Brain max dedicated/non-local (15008.8, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/p1c-ret/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "p2-main",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "first_time",
+   "mandatory": false,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('READY', 51, None); calibration 103.0 tok/s; fit FITS (1323.8 MiB); Brain max dedicated/non-local (13901.2, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/p2-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "p2-ret",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "returning",
+   "mandatory": false,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "10/12 PASS; failures ['R-companion-persisted', 'R-theme-persisted']; last Brain phase ('READY', 50, None); calibration 101.3 tok/s; fit FITS (1323.8 MiB); Brain max dedicated/non-local (13900.7, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/p2-ret/"
+   ],
+   "failure_and_recovery": "harness ordering artifact: the run that started just before (p1c-ret) was a returning run, whose final step R-restore-defaults reset companion/theme to the observed defaults (solar, null); every other check PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "NOT VERIFIED"
+  },
+  {
+   "journey_id": "p3-main",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "first_time",
+   "mandatory": false,
+   "profile": "c32k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P3 32K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('STOPPING', 285, None); calibration 104.9 tok/s; fit FITS (621.8 MiB); Brain max dedicated/non-local (14604.3, 497.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/p3-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "p3-ret",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "returning",
+   "mandatory": false,
+   "profile": "c32k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P3 32K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "12/12 PASS; failures []; last Brain phase ('READY', 54, None); calibration 103.4 tok/s; fit FITS (621.6 MiB); Brain max dedicated/non-local (14603.8, 497.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/p3-ret/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "s1-p2-main",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "first_time",
+   "mandatory": false,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('READY', 50, None); calibration 104.6 tok/s; fit FITS (1323.6 MiB); Brain max dedicated/non-local (13901.2, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/s1-p2-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "s2-p1-ret",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "returning",
+   "mandatory": false,
+   "profile": "c64k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P1 64K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "12/12 PASS; failures []; last Brain phase ('READY', 91, None); calibration 103.7 tok/s; fit AT_RISK (217.6 MiB); Brain max dedicated/non-local (15008.8, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/s2-p1-ret/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "s3-p2-ret",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "returning",
+   "mandatory": false,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "10/12 PASS; failures ['R-companion-persisted', 'R-theme-persisted']; last Brain phase ('READY', 52, None); calibration 103.7 tok/s; fit FITS (1323.6 MiB); Brain max dedicated/non-local (13900.7, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/s3-p2-ret/"
+   ],
+   "failure_and_recovery": "harness ordering artifact: the run that started just before (s2-p1-ret) was a returning run, whose final step R-restore-defaults reset companion/theme to the observed defaults (solar, null); every other check PASS",
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "NOT VERIFIED"
+  },
+  {
+   "journey_id": "s4-p1-main",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "first_time",
+   "mandatory": false,
+   "profile": "c64k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P1 64K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('READY', 60, None); calibration 103.3 tok/s; fit AT_RISK (217.6 MiB); Brain max dedicated/non-local (15009.5, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/s4-p1-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "s5-p2-ret",
+   "class": "HISTORY",
+   "source_head": "fa0a70e6cb6d2898ee13e230a2ad0d4598b70b9b",
+   "user": "returning",
+   "mandatory": false,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "12/12 PASS; failures []; last Brain phase ('READY', 53, None); calibration 103.0 tok/s; fit FITS (1323.3 MiB); Brain max dedicated/non-local (13900.7, 561.8); worker selection None",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/s5-p2-ret/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  }
+ ],
+ "criteria": {
+  "LQ-1 P1 64K + GPU vision": {
+   "first_time": "NOT VERIFIED",
+   "returning": "NOT VERIFIED",
+   "history_on_earlier_commits": {
+    "p1-main": "FAIL",
+    "p1b-main": "FAIL",
+    "p1c-main": "PASS",
+    "p1c-ret": "PASS",
+    "s2-p1-ret": "PASS",
+    "s4-p1-main": "PASS"
+   }
+  },
+  "LQ-1 P2 64K main only": {
+   "first_time": "PASS",
+   "returning": "PASS",
+   "history_on_earlier_commits": {
+    "c-p2-main": "PASS",
+    "c-p2-ret": "PASS",
+    "p2-main": "PASS",
+    "p2-ret": "NOT VERIFIED",
+    "s1-p2-main": "PASS",
+    "s3-p2-ret": "NOT VERIFIED",
+    "s5-p2-ret": "PASS"
+   }
+  },
+  "LQ-1 P3 32K + GPU vision": {
+   "first_time": "PASS",
+   "returning": "PASS",
+   "history_on_earlier_commits": {
+    "c-p3-main": "PASS",
+    "c-p3-ret": "PASS",
+    "p3-main": "PASS",
+    "p3-ret": "PASS"
+   }
+  },
+  "LQ-2 Assist vision (application path)": {
+   "assist-p1": "SUPPORTING ONLY (no source binding): correct",
+   "assist-p3": "SUPPORTING ONLY (no source binding): correct",
+   "assist-p3-e": "PASS"
+  },
+  "LQ-3 sustained operation": {
+   "soak-p1": "SUPPORTING ONLY (no source binding; ran before R2-02): FAIL",
+   "soak-p2": "SUPPORTING ONLY (no source binding; ran before R2-02): would PASS",
+   "soak-p2-e": "PASS",
+   "soak-p3": "SUPPORTING ONLY (no source binding; ran before R2-02): would PASS",
+   "soak-p3-attempt1-pdh-failed": "NOT VERIFIED (harness FAILED: RuntimeError: PdhAddEnglishCounterW failed. Performance counters may be disabled.)",
+   "soak-p3-e": "PASS"
+  },
+  "LQ-4 profile switch with conversation continuity (worker level)": {
+   "sw1": "NOT VERIFIED (test design: recall turns were routed to Core memory, not the conversation; superseded)",
+   "sw2": "SUPPORTING ONLY (no source binding): not PASS",
+   "sw3": "SUPPORTING ONLY (no source binding): not PASS",
+   "sw4": "SUPPORTING ONLY (no source binding): PASS",
+   "sw5": "PASS",
+   "sw6": "PASS"
+  }
+ },
+ "sustained_operation": {
+  "soak-p1": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "summary": {
+    "turns": 120,
+    "ok_turns": 120,
+    "valid_json": 120,
+    "decode_min": 20.547481781355124,
+    "decode_median": 99.2338594749316,
+    "max_brain_non_local": 1583.5,
+    "min_brain_dedicated": 13963.2,
+    "host_exited": false
+   },
+   "events": [
+    {
+     "t": 0,
+     "event": "ui_open"
+    },
+    {
+     "t": 1200,
+     "event": "chrome_open"
+    },
+    {
+     "t": 2400,
+     "event": "chrome_closed"
+    }
+   ],
+   "host_exit": 0,
+   "profile_arg": "65536,gpu,0"
+  },
+  "soak-p2": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "summary": {
+    "turns": 120,
+    "ok_turns": 120,
+    "valid_json": 120,
+    "decode_min": 96.18000646159602,
+    "decode_median": 99.29412906912856,
+    "max_brain_non_local": 561.8,
+    "min_brain_dedicated": 13876.1,
+    "host_exited": false
+   },
+   "events": [
+    {
+     "t": 0,
+     "event": "ui_open"
+    },
+    {
+     "t": 1200,
+     "event": "chrome_open"
+    },
+    {
+     "t": 2400,
+     "event": "chrome_closed"
+    }
+   ],
+   "host_exit": 0,
+   "profile_arg": "65536,off,0"
+  },
+  "soak-p2-e": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "summary": {
+    "turns": 120,
+    "ok_turns": 120,
+    "valid_json": 120,
+    "decode_min": 87.82120606116872,
+    "decode_median": 103.95598734509115,
+    "max_brain_non_local": 561.8,
+    "min_brain_dedicated": 13876.1,
+    "host_exited": false
+   },
+   "events": [
+    {
+     "t": 0,
+     "event": "ui_open"
+    },
+    {
+     "t": 1200,
+     "event": "chrome_open"
+    },
+    {
+     "t": 2400,
+     "event": "chrome_closed"
+    }
+   ],
+   "host_exit": 0,
+   "profile_arg": "65536,off,0"
+  },
+  "soak-p3": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "summary": {
+    "turns": 120,
+    "ok_turns": 120,
+    "valid_json": 120,
+    "decode_min": 94.27967205258827,
+    "decode_median": 99.34541798075225,
+    "max_brain_non_local": 497.8,
+    "min_brain_dedicated": 14579.6,
+    "host_exited": false
+   },
+   "events": [
+    {
+     "t": 0,
+     "event": "ui_open"
+    },
+    {
+     "t": 1200,
+     "event": "chrome_open"
+    },
+    {
+     "t": 2400,
+     "event": "chrome_closed"
+    }
+   ],
+   "host_exit": 0,
+   "profile_arg": "32768,gpu,0"
+  },
+  "soak-p3-attempt1-pdh-failed": {
+   "classification": "FAILED",
+   "summary": null,
+   "events": [
+    {
+     "t": 0,
+     "event": "ui_open"
+    }
+   ],
+   "host_exit": 0,
+   "profile_arg": "32768,gpu,0"
+  },
+  "soak-p3-e": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "summary": {
+    "turns": 120,
+    "ok_turns": 120,
+    "valid_json": 120,
+    "decode_min": 90.24658758206955,
+    "decode_median": 103.83387956073105,
+    "max_brain_non_local": 497.8,
+    "min_brain_dedicated": 14579.6,
+    "host_exited": false
+   },
+   "events": [
+    {
+     "t": 0,
+     "event": "ui_open"
+    },
+    {
+     "t": 1200,
+     "event": "chrome_open"
+    },
+    {
+     "t": 2400,
+     "event": "chrome_closed"
+    }
+   ],
+   "host_exit": 0,
+   "profile_arg": "32768,gpu,0"
+  }
+ },
+ "assist_application_path": {
+  "assist-p1": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "decode_before": 104.2,
+   "decode_after": 103.1,
+   "correct_all": true,
+   "asks": [
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 1.34,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    },
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 0.56,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    },
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 0.51,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    }
+   ],
+   "stand_ins": [
+    "capture adapter = tests.assist FakeAdapter (no real adapter exists)",
+    "vision_qualified=True in this harness only"
+   ]
+  },
+  "assist-p3": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "decode_before": 104.6,
+   "decode_after": 103.4,
+   "correct_all": true,
+   "asks": [
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 1.37,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    },
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 0.57,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    },
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 0.49,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    }
+   ],
+   "stand_ins": [
+    "capture adapter = tests.assist FakeAdapter (no real adapter exists)",
+    "vision_qualified=True in this harness only"
+   ]
+  },
+  "assist-p3-e": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "decode_before": 106.7,
+   "decode_after": 105.0,
+   "correct_all": true,
+   "asks": [
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 1.34,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    },
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 0.52,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    },
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 0.47,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    }
+   ],
+   "stand_ins": [
+    "capture adapter = tests.assist FakeAdapter (no real adapter exists)",
+    "vision_qualified=True in this harness only"
+   ]
+  }
+ },
+ "profile_switch": {
+  "dry1": {
+   "classification": "DRY_RUN",
+   "all_recalled": null,
+   "all_switches_ready_on_new_profile": null,
+   "worker_pid_constant": null,
+   "steps": [],
+   "commit": []
+  },
+  "dry2": {
+   "classification": "DRY_RUN",
+   "all_recalled": null,
+   "all_switches_ready_on_new_profile": null,
+   "worker_pid_constant": null,
+   "steps": [],
+   "commit": []
+  },
+  "sw1": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "all_recalled": false,
+   "all_switches_ready_on_new_profile": true,
+   "worker_pid_constant": true,
+   "steps": [
+    {
+     "step": "ready-P2",
+     "state": "READY",
+     "seconds": 63.0,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "tell",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "afcf3082-b241-4e33-ae70-b2f8c03f79fd",
+     "seconds": 5.83,
+     "answer": "",
+     "types": [
+      "companion.state",
+      "core.result",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "recall-P2",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "b9d58975-fd53-487b-87ca-cfe43a6bbd62",
+     "seconds": 1.24,
+     "answer": "Noted.",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P3",
+     "stop_s": 0.5,
+     "vram_release_s": 4.1,
+     "state": "READY",
+     "seconds": 29.9,
+     "worker_profile": "c32k-visgpu-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P3",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "adcfc180-ae6c-40b5-8a0b-6ea8c8fb2127",
+     "seconds": 6.23,
+     "answer": "",
+     "types": [
+      "companion.state",
+      "core.result",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P2-again",
+     "stop_s": 0.5,
+     "vram_release_s": 3.8,
+     "state": "READY",
+     "seconds": 24.1,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P2-again",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "4256a296-d3b1-428e-ac27-a83a5bd79172",
+     "seconds": 6.73,
+     "answer": "",
+     "types": [
+      "companion.state",
+      "core.result",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    }
+   ],
+   "commit": [
+    {
+     "t": 1792240982.05,
+     "avail_phys_mib": 7303,
+     "commit_limit_mib": 53452,
+     "commit_free_mib": 1565
+    },
+    {
+     "t": 1792241023.67,
+     "avail_phys_mib": 6778,
+     "commit_limit_mib": 54043,
+     "commit_free_mib": 759
+    },
+    {
+     "t": 1792241058.26,
+     "avail_phys_mib": 7126,
+     "commit_limit_mib": 53453,
+     "commit_free_mib": 1168
+    }
+   ]
+  },
+  "sw2": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "all_recalled": false,
+   "all_switches_ready_on_new_profile": true,
+   "worker_pid_constant": true,
+   "steps": [
+    {
+     "step": "ready-P2",
+     "state": "READY",
+     "seconds": 24.7,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "tell",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "024f5f82-6576-455b-953e-b82ab5fdb410",
+     "seconds": 5.64,
+     "answer": "",
+     "route": [
+      "core"
+     ],
+     "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+     "types": [
+      "companion.state",
+      "core.result",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "recall-P2",
+     "reply": "REFUSED",
+     "error": "TURN_IN_PROGRESS",
+     "turn_id": null,
+     "seconds": 180.01,
+     "answer": "",
+     "route": [],
+     "core": "[]",
+     "types": []
+    },
+    {
+     "step": "switch-to-P3",
+     "stop_s": 0.4,
+     "vram_release_s": 3.9,
+     "state": "READY",
+     "seconds": 28.5,
+     "worker_profile": "c32k-visgpu-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P3",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+     "seconds": 2.28,
+     "answer": "4818",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P2-again",
+     "stop_s": 3.8,
+     "vram_release_s": 3.8,
+     "state": "READY",
+     "seconds": 29.1,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P2-again",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+     "seconds": 3.53,
+     "answer": "4818",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.routed",
+      "turn.started"
+     ]
+    }
+   ],
+   "commit": [
+    {
+     "t": 1792246413.35,
+     "avail_phys_mib": 4219,
+     "commit_limit_mib": 52426,
+     "commit_free_mib": 1123
+    },
+    {
+     "t": 1792246631.84,
+     "avail_phys_mib": 4544,
+     "commit_limit_mib": 52785,
+     "commit_free_mib": 915
+    },
+    {
+     "t": 1792246670.77,
+     "avail_phys_mib": 4295,
+     "commit_limit_mib": 52421,
+     "commit_free_mib": 1389
+    }
+   ]
+  },
+  "sw3": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "all_recalled": false,
+   "all_switches_ready_on_new_profile": true,
+   "worker_pid_constant": true,
+   "steps": [
+    {
+     "step": "ready-P2",
+     "state": "READY",
+     "seconds": 22.5,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "tell",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "24b18dc2-a8e0-4ff9-9bee-fc28d0fc7d93",
+     "seconds": 13.33,
+     "answer": "OK",
+     "route": [
+      "core",
+      "answer"
+     ],
+     "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "core.result",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "recall-P2",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "2b097ba8-5850-412c-a7b3-7bfdfc6f4dc8",
+     "seconds": 1.13,
+     "answer": "4818",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P3",
+     "stop_s": 0.3,
+     "vram_release_s": 3.9,
+     "state": "READY",
+     "seconds": 33.5,
+     "worker_profile": "c32k-visgpu-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P3",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "aca57d59-2f2e-4fc9-ba19-0417ad4d801c",
+     "seconds": 3.86,
+     "answer": "4819",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P2-again",
+     "stop_s": 3.7,
+     "vram_release_s": 3.8,
+     "state": "READY",
+     "seconds": 28.8,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P2-again",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "811f7ed2-971f-420a-b261-36ced2808da9",
+     "seconds": 3.41,
+     "answer": "4820",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    }
+   ],
+   "commit": [
+    {
+     "t": 1792246771.36,
+     "avail_phys_mib": 3636,
+     "commit_limit_mib": 52424,
+     "commit_free_mib": 1288
+    },
+    {
+     "t": 1792246823.51,
+     "avail_phys_mib": 3829,
+     "commit_limit_mib": 53054,
+     "commit_free_mib": 1206
+    },
+    {
+     "t": 1792246863.71,
+     "avail_phys_mib": 3870,
+     "commit_limit_mib": 52419,
+     "commit_free_mib": 1244
+    }
+   ]
+  },
+  "sw4": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "all_recalled": true,
+   "all_switches_ready_on_new_profile": true,
+   "worker_pid_constant": true,
+   "steps": [
+    {
+     "step": "ready-P2",
+     "state": "READY",
+     "seconds": 22.5,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "tell",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "9370df54-d2ab-4b35-98a2-c608e2f0300a",
+     "seconds": 7.07,
+     "answer": "OK",
+     "route": [
+      "core",
+      "answer"
+     ],
+     "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "core.result",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "recall-P2",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "92ce3ac1-183b-456f-9d94-184161287d61",
+     "seconds": 0.7,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P3",
+     "stop_s": 0.3,
+     "vram_release_s": 3.8,
+     "state": "READY",
+     "seconds": 33.4,
+     "worker_profile": "c32k-visgpu-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P3",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "745af5d7-7af4-48fb-bd31-86178e2ffb0f",
+     "seconds": 1.37,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P2-again",
+     "stop_s": 2.9,
+     "vram_release_s": 3.9,
+     "state": "READY",
+     "seconds": 26.4,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P2-again",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "73b38c49-0dcc-4ceb-bb85-8df83b4f519a",
+     "seconds": 1.62,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    }
+   ],
+   "commit": [
+    {
+     "t": 1792246927.11,
+     "avail_phys_mib": 4082,
+     "commit_limit_mib": 52429,
+     "commit_free_mib": 958
+    },
+    {
+     "t": 1792246972.36,
+     "avail_phys_mib": 4215,
+     "commit_limit_mib": 52858,
+     "commit_free_mib": 848
+    },
+    {
+     "t": 1792247006.89,
+     "avail_phys_mib": 4331,
+     "commit_limit_mib": 52418,
+     "commit_free_mib": 894
+    }
+   ]
+  },
+  "sw5": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "all_recalled": true,
+   "all_switches_ready_on_new_profile": true,
+   "worker_pid_constant": true,
+   "steps": [
+    {
+     "step": "ready-P2",
+     "state": "READY",
+     "seconds": 28.2,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "tell",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "85239825-88f2-41f9-9c74-c450b0e69487",
+     "seconds": 7.84,
+     "answer": "OK",
+     "route": [
+      "core",
+      "answer"
+     ],
+     "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "core.result",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "recall-P2",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "906c4bdb-43bc-48b1-a88c-f4ceeb4229e1",
+     "seconds": 0.84,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P3",
+     "stop_s": 0.5,
+     "vram_release_s": 3.5,
+     "state": "READY",
+     "seconds": 26.8,
+     "worker_profile": "c32k-visgpu-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P3",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "b8581b1e-1312-4478-b076-59b54beea51c",
+     "seconds": 2.49,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P2-again",
+     "stop_s": 3.3,
+     "vram_release_s": 3.4,
+     "state": "READY",
+     "seconds": 21.2,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P2-again",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+     "seconds": 1.31,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    }
+   ],
+   "commit": [
+    {
+     "t": 1792294335.32,
+     "avail_phys_mib": 14149,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 25327
+    },
+    {
+     "t": 1792294374.77,
+     "avail_phys_mib": 13688,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 24167
+    },
+    {
+     "t": 1792294405.2,
+     "avail_phys_mib": 13862,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 25176
+    }
+   ]
+  },
+  "sw6": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "all_recalled": true,
+   "all_switches_ready_on_new_profile": true,
+   "worker_pid_constant": true,
+   "steps": [
+    {
+     "step": "ready-P2",
+     "state": "READY",
+     "seconds": 49.9,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "tell",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "1d04891e-aa20-483e-964f-22e6c7735811",
+     "seconds": 6.18,
+     "answer": "OK",
+     "route": [
+      "core",
+      "answer"
+     ],
+     "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "core.result",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "recall-P2",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "35f79784-3924-4751-b149-1abd4b37539d",
+     "seconds": 0.66,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P3",
+     "stop_s": 0.6,
+     "vram_release_s": 3.4,
+     "state": "READY",
+     "seconds": 25.2,
+     "worker_profile": "c32k-visgpu-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P3",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "d9e1f65f-c642-4c0e-9113-b7f7dce71b71",
+     "seconds": 1.14,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P2-again",
+     "stop_s": 2.9,
+     "vram_release_s": 3.4,
+     "state": "READY",
+     "seconds": 23.3,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P2-again",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "9cfd4c84-a77a-4625-937e-84026aadb0f2",
+     "seconds": 1.34,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    }
+   ],
+   "commit": [
+    {
+     "t": 1792309117.18,
+     "avail_phys_mib": 12118,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 24001
+    },
+    {
+     "t": 1792309153.31,
+     "avail_phys_mib": 12196,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 23204
+    },
+    {
+     "t": 1792309184.05,
+     "avail_phys_mib": 12184,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 23841
+    }
+   ]
+  }
+ },
+ "ux": {
+  "discoverability": [],
+  "navigation": [],
+  "tool_visibility": [],
+  "control_usability": [],
+  "feedback": [],
+  "consistency": [],
+  "accessibility": [],
+  "onboarding_needed": []
+ },
+ "improvements": [],
+ "remaining_limitations": [
+  "P1 D3 investigation (evidence/research/P1_D3_INVESTIGATION.md): CRASH-1 is NOT shown to be P1-specific; every profile and the frozen config share the prompt-cache path. The pagefile is system-managed on an HDD and grows on demand; 'virtual memory minimum too low' popups occurred on 2026-09-17 and 2026-10-15; Windows exhaustion detectors and WER are not usable evidence on this PC. Proposed (owner) mitigations: fixed pagefile, closing stale large processes, commit sampling in live runs, crash dumps; decisive experiment E1' on P2 needs owner approval.",
+  "CRASH-1 open: root cause UNVERIFIED (hypothesis host commit exhaustion; E0: see e0_host_memory - commit is the scarce resource on this PC while physical RAM is available; RAM-1 snapshot shows other sessions' PowerShell processes at ~4 GB private each). Can affect every profile and the frozen config. Reproduction E1 not run.",
+  "DEMOTE-P1 open; mitigations (vision on CPU at 64K, 256 MiB suballocation) unmeasured.",
+  "P3 sustained operation: soak-p3 (unbound, AT_RISK desktop) and soak-p3-e (bound) - see LQ-3; n=2 at most, near the estimated margin on heavy desktops.",
+  "P2 sustained operation: one bound soak, soak-p2-e PASS (n=1, light desktop, free commit above 21 GB; review R3-01); the earlier soak-p2 is unbound and supporting only.",
+  "Conversation continuity across profile switches verified at worker level (sw5 bound, sw4), not through UI clicks; the UI V2 driver does not test it.",
+  "R2-07 DEFERRED to the UI thread: the UI does not yet render backend.profile; the API exposes it (qualified false). UI presentation is outside this milestone (owner brief: runtime owns capability, not presentation).",
+  "Soak UI window is the app's start screen (a GPU-memory consumer), not a journey run.",
+  "URI Assist vision: application path only; real capture adapters not implemented (owner-gated); product keeps vision_qualified False.",
+  "Automated input; physical keyboard, mouse and microphone not qualified.",
+  "Office reports a15/o8 PASS on the 64K main-only profile (Office evidence, not part of this record)."
+ ],
+ "independent_audit": {
+  "auditor": "fresh read-only Claude subagent (lifecycle tier: subagent review; not driver-verified)",
+  "verdict": null,
+  "reviewed_commit": null,
+  "prior_rounds": [
+   {
+    "round": "RPI-R1",
+    "nonce": "RPI-R1-7f3c91",
+    "reviewed_commit": "3b77aabc",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 9,
+    "outcome": "all 9 resolved (verified in RPI-R2)"
+   },
+   {
+    "round": "RPI-R2",
+    "nonce": "RPI-R2-c41e88",
+    "reviewed_commit": "a5605ae8",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 9,
+    "outcome": "R2-05/06 code fix 07dca2a8; R2-02 binding + bound re-runs on f3d5eb29; R2-01/03/04/08/09 record/report fixes; R2-07 DEFERRED to the UI thread (see remaining_limitations)"
+   },
+   {
+    "round": "RPI-R3",
+    "nonce": "RPI-R3-9d27b4",
+    "reviewed_commit": "fec31dfd",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 5,
+    "outcome": "R3-01 bound soak-p2-e; R3-02 LQ-4 deviation annotated; R3-03 binding checks the commit and hashes the harness at run time; R3-04 environment.core; R3-05 plan amendment A2 and lifecycle config baseline/focus"
+   },
+   {
+    "round": "RPI-R4",
+    "nonce": "RPI-R4-5e81a0",
+    "reviewed_commit": "900e9962",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 4,
+    "outcome": "R4-01 binding allowlist (C-9); R4-02 fit wording (C-8); R4-03 plan A2 / review focus (completed after RPI-R5 R5-02); R4-04 status reason + C-7"
+   },
+   {
+    "round": "RPI-R5",
+    "nonce": "RPI-R5-b3f6d2",
+    "reviewed_commit": "47b41df2",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 3,
+    "outcome": "R5-01 this audit history; R5-02 lifecycle review_focus[6]/[7]; R5-03 binding versions per bound run (binding_versions)"
+   },
+   {
+    "round": "RPI-R6",
+    "nonce": "RPI-R6-71c4e9",
+    "reviewed_commit": "42cc4e2d",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 2,
+    "outcome": "R6-01 (LOW) report names C-1..C-9; R6-02 (INFO) committed binding hash from the evidence copy"
+   },
+   {
+    "round": "RPI-R7",
+    "nonce": "RPI-R7-2a9f50",
+    "reviewed_commit": "b5007afc",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 2,
+    "outcome": "two INFO wording findings (R7-01 status_reason tail, R7-02 report section 8), fixed; no LOW or higher finding open"
+   },
+   {
+    "round": "RPI-R8",
+    "nonce": "RPI-R8-e04c17",
+    "reviewed_commit": "91f2b0bd",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 5,
+    "outcome": "pre-integration review after owner D1-D5: 2 LOW (R8-01 binding wording, R8-02 lifecycle review focus) and 3 INFO (R8-03 Brain QC writer, R8-04 API label, R8-05 rollback wording), all fixed in d1545c9e; no HIGH or MEDIUM"
+   }
+  ],
+  "next_round": "RPI-R9 re-check of the R8 repairs before the fast-forward; a driver-counted round (IC-3) when a driver reviewer is available"
+ },
+ "status": "FAIL",
+ "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS, bound 60-minute soaks soak-p2-e and soak-p3-e per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria whose top-level entries on the current commit are FAIL: [] (history, supporting and nested P1 results are listed above and in criteria; review R7-01).",
+ "recorded_at": "2026-10-18T07:49:34.758176+00:00",
+ "corrections": [
+  {
+   "id": "C-1",
+   "was": "report v1: 'conversation is kept by URI' across switches",
+   "now": "withdrawn; verified at worker level only after the CONTEXT-1 repair (sw4/sw5)",
+   "source": "RPI-R1 R1-01"
+  },
+  {
+   "id": "C-2",
+   "was": "report v1: '17 new tests' for fa0a70e6",
+   "now": "15 (now 22 after 4d782ef1/07dca2a8)",
+   "source": "RPI-R1 R1-05"
+  },
+  {
+   "id": "C-3",
+   "was": "URI-RUNTIME-VRAM-R1 report: 64K+MTP demotion 'stays after close'",
+   "now": "measured only 38 s after Chrome closed; does not show process-lifetime stickiness (DEMOTE-P1 returned after 180-210 s)",
+   "source": "demotion research subagent"
+  },
+  {
+   "id": "C-4",
+   "was": "report v2 E0: 'free commit 386-1,600 MiB with 6-8 GB physical available'",
+   "now": "see e0_host_memory (soak-p3: commit free min 386 at t=0, median well above 1,600; physical 3.6-7.0 GB)",
+   "source": "RPI-R2 R2-01"
+  },
+  {
+   "id": "C-5",
+   "was": "report v2: soak/Assist evidence 'on 4d782ef1', 'host code identical'",
+   "now": "those runs ran from the mutable dev checkout without a recorded binding: supporting only; bound re-runs soak-p3-e / assist-p3-e on the current commit",
+   "source": "RPI-R2 R2-02"
+  },
+  {
+   "id": "C-6",
+   "was": "ProfileFollower change detection by (mtime, size), on_change outside the lock",
+   "now": "content comparison, same-bytes validation, ordered delivery under the lock (07dca2a8)",
+   "source": "RPI-R2 R2-05/R2-06"
+  },
+  {
+   "id": "C-7",
+   "was": "report/record v3: P2 'PASS / qualified on this commit' without a bound 60-minute soak",
+   "now": "P2 qualified only after the bound soak-p2-e PASS (v3.1)",
+   "source": "RPI-R3 R3-01"
+  },
+  {
+   "id": "C-8",
+   "was": "report v3.1: 'Fit after the run FITS +1,885 MiB' for soak-p2-e",
+   "now": "that fit was taken at host start; at the end of the run only the residency verdict FITS is recorded",
+   "source": "RPI-R4 R4-02"
+  },
+  {
+   "id": "C-9",
+   "was": "binding.py after R3-03: any docs/ path outside the receipt may differ from the runtime's commit",
+   "now": "explicit allowlist (profiles_live evidence, the plan, the lifecycle config); soak-p2-e's changed paths satisfy both rules",
+   "source": "RPI-R4 R4-01"
+  }
+ ],
+ "e0_host_memory": {
+  "measured": {
+   "soak-p3": {
+    "samples": 120,
+    "commit_free_mib_min": 386,
+    "commit_free_mib_median": 2500,
+    "commit_free_mib_max": 5107,
+    "avail_phys_mib_min": 3639,
+    "avail_phys_mib_max": 6959
+   },
+   "soak-p3-e": {
+    "samples": 120,
+    "commit_free_mib_min": 20841,
+    "commit_free_mib_median": 23122,
+    "commit_free_mib_max": 24491,
+    "avail_phys_mib_min": 9753,
+    "avail_phys_mib_max": 14134
+   },
+   "soak-p2-e": {
+    "samples": 120,
+    "commit_free_mib_min": 21352,
+    "commit_free_mib_median": 24255,
+    "commit_free_mib_max": 24809,
+    "avail_phys_mib_min": 9252,
+    "avail_phys_mib_max": 13047
+   }
+  },
+  "ram1_snapshot": {
+   "utc": "2026-10-17T14:49:35.6672533Z",
+   "free_phys_mib": 5089,
+   "commit_used_mib": 53958,
+   "commit_limit_mib": 58197,
+   "commit_free_mib": 4239,
+   "top_private": [
+    {
+     "pid": 8180,
+     "name": "llama-server",
+     "private_mib": 17400,
+     "ws_mib": 2777,
+     "started": "2026-10-17T20:09:51"
+    },
+    {
+     "pid": 6664,
+     "name": "powershell",
+     "private_mib": 4012,
+     "ws_mib": 894,
+     "started": "2026-10-16T23:01:09"
+    },
+    {
+     "pid": 9144,
+     "name": "powershell",
+     "private_mib": 3991,
+     "ws_mib": 983,
+     "started": "2026-10-16T07:14:44"
+    },
+    {
+     "pid": 5144,
+     "name": "claude",
+     "private_mib": 1355,
+     "ws_mib": 572,
+     "started": "2026-10-15T08:54:24"
+    }
+   ]
+  }
+ },
+ "annotations": {
+  "sw3": "automated verdict FAIL kept. INTERPRETATION (not verified): the 'plus 1 now' prompt was ambiguous and the answers 4818, 4819, 4820 may continue the conversation's own arithmetic. Verified fact: every answer >= 4818 requires the number 4817 from the first turn, so that turn was in context. sw2 (same prompt) answered 4818 twice after its first recall failed with TURN_IN_PROGRESS.",
+  "sw2": "a harness bug (next turn sent while the previous Core-routed turn was still finishing, TURN_IN_PROGRESS) made one recall fail; the record's criterion entry reports it as a recall not routed to the answer channel, which is the same event",
+  "sw4": "PASS (n=1) after the sw3 automated FAIL, with reworded prompts; unbound (ran on runtime-c / 4d782ef1 before the binding helper)",
+  "sw5": "PASS (n=1) bound to the current commit with the sw4 wording",
+  "p1b-main": "CRASH-1, research/CRASH1_RESEARCH.md: leading HYPOTHESIS (unverified) host commit exhaustion -> uncaught bad_alloc in the prompt-cache save; the 'cancel came after the task finished' reading is INFERRED from log order and b11510 source",
+  "soak-p1": "DEMOTE-P1, research/DEMOTION_RESEARCH.md: the demoted block is IDENTIFIED BY SIZE MATCH (1,021.7 MiB = first of 13 weight allocations); the tensor-to-allocation map was not dumped",
+  "LQ-4 deviation": "review R3-02: the plan names the switch P2 -> P1 -> P2; it ran P2 -> P3 -> P2 because P1 is unqualified (CRASH-1, DEMOTE-P1) and P3 is the qualified vision profile. Mapping of the other LQ-4 items: cold start = every e-* journey run and soak-*-e starts the Brain host cold (host_ready / calibration in each run's files); host restart = each sw5 switch stops and restarts the host on the new profile (READY in 26.8 s and 21.2 s); VRAM release = sw5 vram_release_s. Continuity is verified at worker level, not through UI clicks.",
+  "sw6": "PASS (n=1) bound to the integration code (D3 SELECTABLE guard on top of the qualified code): the same P2 -> P3 -> P2 continuity test as sw5, switches READY in 25.2 s and 23.3 s, VRAM release 3.4 s",
+  "vram_release_s": "switch_live measures release as 'no process holds more than 2 GiB dedicated', not a full release"
+ },
+ "qualification_by_profile": {
+  "P2 64K main only (c64k-visoff-mtpoff)": {
+   "status": "PASS",
+   "on_commit": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "bound_evidence": "e-p2-main 68/68, e-p2-ret 12/12, sw5 PASS, soak-p2-e (see LQ-3)",
+   "supporting": "c-p2-main/c-p2-ret on 4d782ef1, soak-p2 60 min clean (unbound), history runs on fa0a70e6",
+   "conditions": "lease fit FITS (+1,176..+1,920 MiB across days)"
+  },
+  "P3 32K + GPU vision (c32k-visgpu-mtpoff)": {
+   "status": "PASS",
+   "on_commit": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "bound_evidence": "e-p3-main 68/68, e-p3-ret 12/12, sw5 PASS, assist-p3-e 3/3, soak-p3-e (see LQ-3)",
+   "supporting": "c-p3-* on 4d782ef1, soak-p3 60 min clean (unbound), assist-p3 (unbound)",
+   "conditions": "fit FITS +1,218 (2026-10-18) .. AT_RISK +474 (2026-10-17 evening, dwm 1.05 GB); Assist only through the application path"
+  },
+  "P1 64K + GPU vision (c64k-visgpu-mtpoff)": {
+   "status": "FAIL (unqualified); not selectable: the worker refuses it (D3 SELECTABLE guard, integration code)",
+   "on_commit": "fa0a70e6 history only; not re-run",
+   "evidence": "p1b-main FAIL (CRASH-1), soak-p1 FAIL (DEMOTE-P1); passing runs p1c-main, s4-p1-main, p1c-ret, s2-p1-ret, assist-p1 (unbound)",
+   "conditions": "stays unqualified until CRASH-1 and DEMOTE-P1 are resolved and re-tested"
+  }
+ },
+ "integration": {
+  "owner_decisions": "D1-D5 approved 2026-10-18 (conditional integration of P2 and P3; default unchanged; P1 unqualified; Brain Quick Controls coordination; no freeze or deployment)",
+  "qualified_code_commit": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "integration_code_commit": "c3fc8bbc8354980a98e914816b8b77db727c8312",
+  "code_change_after_qualification": "runtime_profile_selection.SELECTABLE (frozen, P2, P3) and its tests; every other measured combination, P1 included, is PROFILE_NOT_QUALIFIED",
+  "live_verification_on_integration_code": "sw6 (LQ-4) PASS, bound",
+  "regression_gates": "evidence/gates_integ: tests/ws, oi, ssrf, web, a2ui, assist, office worker isolation, governance, dev_workflow with one interpreter on the candidate and on canonical 348677b7: identical failure sets (6 failed, 20 errors, all pre-existing: Chromium-dependent Assist tests and test_win_breakaway_is_refused); candidate 7255 passed, canonical 7209",
+  "brain_quick_controls_compatibility": "integration code merged into the Brain QC tips in a scratch worktree, no conflict: 29db21f9 (75 passed, 1 skipped) and, after review R8-03, f7c08dbc with 91f2b0bd (78 passed, 1 skipped; tests/oi/test_brain_quick_controls.py + profile tests). Brain QC's host writes the selection file (sync_selection) only with a catalog profile; the worker still refuses any other key on every read",
+  "p1_investigation": "evidence/research/P1_D3_INVESTIGATION.md (read-only; labels VERIFIED / HYPOTHESIS)"
+ },
+ "binding_versions": {
+  "note": "the committed evidence/harness/binding.py is the current version (explicit allowlist, R4-01). Of the qualification runs none used it; the integration run sw6 did (review R8-01). Runs before R3-03 did not record the hash; the binding.py copy committed with their evidence in fec31dfd has sha256 c64df8c887866e2fc39d8f5d662a29c1e38a2cfb924a40b6bc274ff6d3a28608 (that this exact file ran is inferred from the timeline, not hashed at run time). soak-p2-e used the R3-03 version (docs/ outside the receipt), whose rule its changed paths also satisfy under R4-01.",
+  "committed_binding_py_sha256": "f1f2772c2d09b29946f5d15b588cd622285eb085b666504a74e29fcbb7f2db1a",
+  "per_run": {
+   "e-p2-main": "not recorded (run before R3-03)",
+   "e-p2-ret": "not recorded (run before R3-03)",
+   "e-p3-main": "not recorded (run before R3-03)",
+   "e-p3-ret": "not recorded (run before R3-03)",
+   "soak-p2-e": "adb9f12b97bb6ffb5c66e164f93e3bfbb38a551a4ece41404bef2cf070be1672",
+   "soak-p3-e": "not recorded (run before R3-03)",
+   "assist-p3-e": "not recorded (run before R3-03)",
+   "dry2": "not recorded (run before R3-03)",
+   "sw5": "not recorded (run before R3-03)",
+   "sw6": "f1f2772c2d09b29946f5d15b588cd622285eb085b666504a74e29fcbb7f2db1a"
+  }
+ }
+}

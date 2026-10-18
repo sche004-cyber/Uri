@@ -1,0 +1,106 @@
+{
+ "label": "assist-p1",
+ "profile_arg": "65536,gpu,0",
+ "started": 1792226519.620225,
+ "classification": "COMPLETED_WITH_RESULT",
+ "stand_ins": [
+  "capture adapter = tests.assist FakeAdapter (no real adapter exists)",
+  "vision_qualified=True in this harness only"
+ ],
+ "host_ready": {
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14764,
+   "vision": "gpu"
+  },
+  "calibration": {
+   "decode_tps": 103.1,
+   "predicted_n": 160,
+   "prompt_ms": 162.338,
+   "reason": "START",
+   "residency": {
+    "consumers": [
+     {
+      "dedicated_mib": 903.3,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1792,
+      "role": "desktop compositor"
+     }
+    ],
+    "dedicated_mib": 14940.1,
+    "non_local_mib": 561.8,
+    "others_mib": 1386.7,
+    "t": 1792226574.472,
+    "verdict_now": "AT_RISK"
+   },
+   "server_create_time": 1792226548.5880094,
+   "server_pid": 9604,
+   "t": 1792226572.512,
+   "threshold_tps": 60.0,
+   "tokens": 160
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 903.3,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1792,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14940.1,
+   "non_local_mib": 561.8,
+   "others_mib": 1386.7,
+   "t": 1792226574.472,
+   "verdict_now": "AT_RISK"
+  }
+ },
+ "host_ready_s": 59.1,
+ "decode_before": 104.2,
+ "asks": [
+  {
+   "method": "vision",
+   "status": "COMPLETE",
+   "wall_s": 1.34,
+   "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+   "mentions_401": true,
+   "toggles_ok": true
+  },
+  {
+   "method": "vision",
+   "status": "COMPLETE",
+   "wall_s": 0.56,
+   "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+   "mentions_401": true,
+   "toggles_ok": true
+  },
+  {
+   "method": "vision",
+   "status": "COMPLETE",
+   "wall_s": 0.51,
+   "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+   "mentions_401": true,
+   "toggles_ok": true
+  }
+ ],
+ "decode_after": 103.1,
+ "residency_after": {
+  "pid": 9604,
+  "dedicated_mib": 14979.9,
+  "non_local_mib": 563.7,
+  "name": "llama-server.exe",
+  "create_time": 1792226548.588,
+  "parent": "python.exe"
+ },
+ "correct_all": true,
+ "host_exit": 0,
+ "lease_after": "FREE"
+}

@@ -1,0 +1,131 @@
+{
+ "text": "And what is the secret number plus 1 now? Reply with the result only.",
+ "events": [
+  {
+   "data": {
+    "depth": "fast",
+    "text_chars": 69
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 1,
+   "t": 1792246631.84,
+   "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+   "type": "turn.started"
+  },
+  {
+   "data": {
+    "state": "thinking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 2,
+   "t": 1792246631.84,
+   "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "route": "answer",
+    "tier": {
+     "escalation_offer": false,
+     "reason": "user_selected_fast",
+     "selected_by": "user",
+     "tier": "FAST"
+    },
+    "triage": {
+     "action_clauses": 0,
+     "kind": "QUESTION",
+     "reasons": [
+      "default_conversation"
+     ]
+    }
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 3,
+   "t": 1792246632.053,
+   "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+   "type": "turn.routed"
+  },
+  {
+   "data": {
+    "state": "speaking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 4,
+   "t": 1792246634.116,
+   "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "text": "4"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 5,
+   "t": 1792246634.116,
+   "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "8"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 6,
+   "t": 1792246634.116,
+   "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "1"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 7,
+   "t": 1792246634.116,
+   "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "8"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 8,
+   "t": 1792246634.116,
+   "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "complete": true,
+    "escalation_candidate": false,
+    "flags": [],
+    "metrics": {
+     "cache_n": 0,
+     "draft_n": null,
+     "draft_n_accepted": null,
+     "first_answer_s": 1.712,
+     "memory_context": {
+      "fact_count": 2,
+      "status": "available",
+      "truncated": false
+     },
+     "predicted_n": 5,
+     "predicted_per_second": 90.38526720144615,
+     "prompt_n": 817,
+     "prompt_per_second": 1323.7586319756572,
+     "reasoning_chars": 0,
+     "retried": false,
+     "total_s": 1.7174,
+     "ttft_s": 1.712
+    },
+    "status": "COMPLETE"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 9,
+   "t": 1792246634.121,
+   "turn_id": "a41e33ee-83dd-4576-b76c-ff75abb2a362",
+   "type": "answer.done"
+  }
+ ]
+}

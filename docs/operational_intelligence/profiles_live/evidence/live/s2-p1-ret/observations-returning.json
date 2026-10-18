@@ -1,0 +1,303 @@
+[
+  {
+    "utc": "2026-10-17T08:30:05.701012Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput + synthesized key events",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "first_run": "0",
+    "visual": "v2"
+  },
+  {
+    "utc": "2026-10-17T08:30:05.718148Z",
+    "label": "preferences at start",
+    "keys": [
+      "uri.clientDeviceId",
+      "uri.living.companion.choice",
+      "uri.living.companion.interfaceTheme",
+      "uri.living.onboardingDone",
+      "uri.living.prefs.autonomyLevel",
+      "uri.living.prefs.communicationStyle",
+      "uri.living.prefs.completedOnboarding",
+      "uri.living.prefs.focusAreas"
+    ]
+  },
+  {
+    "utc": "2026-10-17T08:30:13.561434Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 7.841,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792225812.455722,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 23728,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-17T08:30:13.878443Z",
+    "label": "memory at start",
+    "facts": [
+      "the project room code is K41066",
+      "the project room code is K78068",
+      "the project room code is K96180",
+      "the project room code is K18094"
+    ],
+    "run_fact": "the project room code is K13561"
+  },
+  {
+    "utc": "2026-10-17T08:30:17.374802Z",
+    "label": "onboarding shown",
+    "shown": false
+  },
+  {
+    "utc": "2026-10-17T08:30:17.376889Z",
+    "label": "check",
+    "id": "J1-v2-is-default",
+    "result": "PASS",
+    "visualV2": true,
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-17T08:30:17.384011Z",
+    "label": "check",
+    "id": "J1-dashboard-first",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:30:17.868816Z",
+    "label": "raw-codes-on-screen",
+    "where": "start",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-17T08:30:17.869824Z",
+    "label": "check",
+    "id": "J1-brain-ready",
+    "result": "PASS",
+    "brain": {
+      "artifacts": "MATCH",
+      "checked_at": 1792225813.2564824,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 23728,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-17T08:30:28.384489Z",
+    "label": "perf-window",
+    "window": "idle-dashboard",
+    "seconds": 10,
+    "frames": 1299,
+    "build_ms_p50": 0.727,
+    "build_ms_p95": 0.997,
+    "build_ms_max": 29.449,
+    "raster_ms_p50": 2.21,
+    "raster_ms_p95": 2.662,
+    "raster_ms_max": 3.456,
+    "total_ms_p95": 4.809,
+    "over_16ms": 2
+  },
+  {
+    "utc": "2026-10-17T08:30:28.387001Z",
+    "label": "check",
+    "id": "R-no-onboarding",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:30:28.392022Z",
+    "label": "check",
+    "id": "R-companion-persisted",
+    "result": "PASS",
+    "choice": "lunar"
+  },
+  {
+    "utc": "2026-10-17T08:30:28.393527Z",
+    "label": "check",
+    "id": "R-theme-persisted",
+    "result": "PASS",
+    "theme": "snowArchive"
+  },
+  {
+    "utc": "2026-10-17T08:30:29.558081Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#4c0bc(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:30:30.243870Z",
+    "label": "lunar edge (UIV2-F4)",
+    "found": true,
+    "rect": "Rect.fromLTRB(596.0, 205.5, 876.0, 485.5)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 1020,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-17T08:30:30.244875Z",
+    "label": "check",
+    "id": "R-lunar-edge-invisible-light-theme",
+    "result": "PASS",
+    "found": true,
+    "rect": "Rect.fromLTRB(596.0, 205.5, 876.0, 485.5)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 1020,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-17T08:30:30.940326Z",
+    "label": "key",
+    "key": "ctrl+1",
+    "focus_before": "FocusNode#4c0bc(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "companion",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:30:31.587749Z",
+    "label": "lunar edge companion window (UIV2-F4)",
+    "found": true,
+    "rect": "Rect.fromLTRB(41.4, 66.2, 398.6, 423.4)",
+    "view": "Size(440.0, 680.0)",
+    "samples": 1332,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-17T08:30:32.288407Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#4c0bc(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:30:32.970115Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#4c0bc(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:30:40.541267Z",
+    "label": "turn",
+    "scenario": "returning conversation",
+    "request": "Reply with exactly the word ready.",
+    "text": "ready",
+    "core_message": "I can only act on an explicit request in this mode (for example: 'remember that ...').",
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": "CONVERSATION",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.8596,
+      "memory_context": {
+        "fact_count": 4,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 2,
+      "predicted_per_second": 68.48376934666484,
+      "prompt_n": 800,
+      "prompt_per_second": 1562.0362704822005,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.8744,
+      "ttft_s": 0.8596
+    },
+    "application_seconds": 7.57,
+    "frames_during_turn": {
+      "frames": 1026,
+      "build_ms_p50": 0.705,
+      "build_ms_p95": 1.131,
+      "build_ms_max": 44.587,
+      "raster_ms_p50": 2.099,
+      "raster_ms_p95": 2.788,
+      "raster_ms_max": 4.123,
+      "total_ms_p95": 5.074,
+      "over_16ms": 6
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T08:30:40.542771Z",
+    "label": "check",
+    "id": "R-conversation",
+    "result": "PASS",
+    "text": "ready"
+  },
+  {
+    "utc": "2026-10-17T08:30:41.231983Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#bb99e(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:30:41.234495Z",
+    "label": "check",
+    "id": "R-connections-card-plain",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:30:42.822132Z",
+    "label": "check",
+    "id": "R-connections-page-plain",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:30:45.192284Z",
+    "label": "check",
+    "id": "R-connections-open-settings",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:30:51.035597Z",
+    "label": "check",
+    "id": "R-restored",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:30:51.037110Z",
+    "label": "summary",
+    "failures": [],
+    "flutter_errors": 0,
+    "elapsed_s": 45.317
+  }
+]

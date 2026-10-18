@@ -1,0 +1,301 @@
+[
+  {
+    "utc": "2026-10-17T08:10:05.562753Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput + synthesized key events",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "first_run": "0",
+    "visual": "v2"
+  },
+  {
+    "utc": "2026-10-17T08:10:05.581125Z",
+    "label": "preferences at start",
+    "keys": [
+      "uri.clientDeviceId",
+      "uri.living.companion.choice",
+      "uri.living.companion.interfaceTheme",
+      "uri.living.onboardingDone",
+      "uri.living.prefs.autonomyLevel",
+      "uri.living.prefs.communicationStyle",
+      "uri.living.prefs.completedOnboarding",
+      "uri.living.prefs.focusAreas"
+    ]
+  },
+  {
+    "utc": "2026-10-17T08:10:12.174361Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 6.592,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792224611.1344256,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 2332,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-17T08:10:12.542926Z",
+    "label": "memory at start",
+    "facts": [
+      "the project room code is K41066",
+      "the project room code is K78068"
+    ],
+    "run_fact": "the project room code is K12174"
+  },
+  {
+    "utc": "2026-10-17T08:10:16.018783Z",
+    "label": "onboarding shown",
+    "shown": false
+  },
+  {
+    "utc": "2026-10-17T08:10:16.021296Z",
+    "label": "check",
+    "id": "J1-v2-is-default",
+    "result": "PASS",
+    "visualV2": true,
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-17T08:10:16.026825Z",
+    "label": "check",
+    "id": "J1-dashboard-first",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:10:16.511966Z",
+    "label": "raw-codes-on-screen",
+    "where": "start",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-17T08:10:16.512973Z",
+    "label": "check",
+    "id": "J1-brain-ready",
+    "result": "PASS",
+    "brain": {
+      "artifacts": "MATCH",
+      "checked_at": 1792224611.9151983,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 2332,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-17T08:10:27.018187Z",
+    "label": "perf-window",
+    "window": "idle-dashboard",
+    "seconds": 10,
+    "frames": 1378,
+    "build_ms_p50": 0.751,
+    "build_ms_p95": 1.042,
+    "build_ms_max": 29.651,
+    "raster_ms_p50": 2.176,
+    "raster_ms_p95": 2.657,
+    "raster_ms_max": 4.631,
+    "total_ms_p95": 5.014,
+    "over_16ms": 2
+  },
+  {
+    "utc": "2026-10-17T08:10:27.020699Z",
+    "label": "check",
+    "id": "R-no-onboarding",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:10:27.027729Z",
+    "label": "check",
+    "id": "R-companion-persisted",
+    "result": "PASS",
+    "choice": "lunar"
+  },
+  {
+    "utc": "2026-10-17T08:10:27.027729Z",
+    "label": "check",
+    "id": "R-theme-persisted",
+    "result": "PASS",
+    "theme": "snowArchive"
+  },
+  {
+    "utc": "2026-10-17T08:10:28.200087Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#71820(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:10:28.890560Z",
+    "label": "lunar edge (UIV2-F4)",
+    "found": true,
+    "rect": "Rect.fromLTRB(596.0, 205.5, 876.0, 485.5)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 1020,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-17T08:10:28.892069Z",
+    "label": "check",
+    "id": "R-lunar-edge-invisible-light-theme",
+    "result": "PASS",
+    "found": true,
+    "rect": "Rect.fromLTRB(596.0, 205.5, 876.0, 485.5)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 1020,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-17T08:10:29.597629Z",
+    "label": "key",
+    "key": "ctrl+1",
+    "focus_before": "FocusNode#71820(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "companion",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:10:30.257386Z",
+    "label": "lunar edge companion window (UIV2-F4)",
+    "found": true,
+    "rect": "Rect.fromLTRB(41.4, 66.2, 398.6, 423.4)",
+    "view": "Size(440.0, 680.0)",
+    "samples": 1332,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-17T08:10:30.958967Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#71820(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:10:31.663220Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#71820(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:10:38.839020Z",
+    "label": "turn",
+    "scenario": "returning conversation",
+    "request": "Reply with exactly the word ready.",
+    "text": "ready",
+    "core_message": "I can only act on an explicit request in this mode (for example: 'remember that ...').",
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": "CONVERSATION",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.8954,
+      "memory_context": {
+        "fact_count": 2,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 2,
+      "predicted_per_second": 66.0807506773277,
+      "prompt_n": 774,
+      "prompt_per_second": 1518.474776446769,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.9107,
+      "ttft_s": 0.8954
+    },
+    "application_seconds": 7.173,
+    "frames_during_turn": {
+      "frames": 971,
+      "build_ms_p50": 0.943,
+      "build_ms_p95": 1.615,
+      "build_ms_max": 38.316,
+      "raster_ms_p50": 2.543,
+      "raster_ms_p95": 3.254,
+      "raster_ms_max": 4.059,
+      "total_ms_p95": 6.065,
+      "over_16ms": 8
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T08:10:38.840526Z",
+    "label": "check",
+    "id": "R-conversation",
+    "result": "PASS",
+    "text": "ready"
+  },
+  {
+    "utc": "2026-10-17T08:10:39.513567Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#07582(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:10:39.516084Z",
+    "label": "check",
+    "id": "R-connections-card-plain",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:10:41.111738Z",
+    "label": "check",
+    "id": "R-connections-page-plain",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:10:43.436302Z",
+    "label": "check",
+    "id": "R-connections-open-settings",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:10:49.346420Z",
+    "label": "check",
+    "id": "R-restored",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:10:49.347431Z",
+    "label": "summary",
+    "failures": [],
+    "flutter_errors": 0,
+    "elapsed_s": 43.766
+  }
+]

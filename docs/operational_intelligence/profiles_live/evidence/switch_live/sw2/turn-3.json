@@ -1,0 +1,131 @@
+{
+ "text": "And what is the secret number plus 1 now? Reply with the result only.",
+ "events": [
+  {
+   "data": {
+    "depth": "fast",
+    "text_chars": 69
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 1,
+   "t": 1792246670.776,
+   "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+   "type": "turn.started"
+  },
+  {
+   "data": {
+    "state": "thinking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 2,
+   "t": 1792246670.776,
+   "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "route": "answer",
+    "tier": {
+     "escalation_offer": false,
+     "reason": "user_selected_fast",
+     "selected_by": "user",
+     "tier": "FAST"
+    },
+    "triage": {
+     "action_clauses": 0,
+     "kind": "QUESTION",
+     "reasons": [
+      "default_conversation"
+     ]
+    }
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 3,
+   "t": 1792246671.037,
+   "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+   "type": "turn.routed"
+  },
+  {
+   "data": {
+    "state": "speaking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 4,
+   "t": 1792246674.23,
+   "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "text": "4"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 5,
+   "t": 1792246674.23,
+   "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "8"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 6,
+   "t": 1792246674.23,
+   "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "1"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 7,
+   "t": 1792246674.23,
+   "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "8"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 8,
+   "t": 1792246674.23,
+   "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "complete": true,
+    "escalation_candidate": false,
+    "flags": [],
+    "metrics": {
+     "cache_n": 0,
+     "draft_n": null,
+     "draft_n_accepted": null,
+     "first_answer_s": 2.679,
+     "memory_context": {
+      "fact_count": 2,
+      "status": "available",
+      "truncated": false
+     },
+     "predicted_n": 5,
+     "predicted_per_second": 92.79020135473695,
+     "prompt_n": 852,
+     "prompt_per_second": 1185.1967259635983,
+     "reasoning_chars": 0,
+     "retried": false,
+     "total_s": 2.7021,
+     "ttft_s": 2.679
+    },
+    "status": "COMPLETE"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 9,
+   "t": 1792246674.253,
+   "turn_id": "74e87953-5dfe-419c-b00f-e6e2c152d239",
+   "type": "answer.done"
+  }
+ ]
+}

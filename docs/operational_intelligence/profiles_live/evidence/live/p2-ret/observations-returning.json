@@ -1,0 +1,304 @@
+[
+  {
+    "utc": "2026-10-17T08:12:26.180033Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput + synthesized key events",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "first_run": "0",
+    "visual": "v2"
+  },
+  {
+    "utc": "2026-10-17T08:12:26.198137Z",
+    "label": "preferences at start",
+    "keys": [
+      "uri.clientDeviceId",
+      "uri.living.companion.choice",
+      "uri.living.companion.interfaceTheme",
+      "uri.living.onboardingDone",
+      "uri.living.prefs.autonomyLevel",
+      "uri.living.prefs.communicationStyle",
+      "uri.living.prefs.completedOnboarding",
+      "uri.living.prefs.focusAreas"
+    ]
+  },
+  {
+    "utc": "2026-10-17T08:12:32.675732Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 6.477,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792224751.667079,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 21004,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-17T08:12:32.977758Z",
+    "label": "memory at start",
+    "facts": [
+      "the project room code is K41066",
+      "the project room code is K78068"
+    ],
+    "run_fact": "the project room code is K52676"
+  },
+  {
+    "utc": "2026-10-17T08:12:39.089454Z",
+    "label": "onboarding shown",
+    "shown": false
+  },
+  {
+    "utc": "2026-10-17T08:12:39.090961Z",
+    "label": "check",
+    "id": "J1-v2-is-default",
+    "result": "PASS",
+    "visualV2": true,
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-17T08:12:39.096994Z",
+    "label": "check",
+    "id": "J1-dashboard-first",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:12:39.596630Z",
+    "label": "raw-codes-on-screen",
+    "where": "start",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-17T08:12:39.596630Z",
+    "label": "check",
+    "id": "J1-brain-ready",
+    "result": "PASS",
+    "brain": {
+      "artifacts": "MATCH",
+      "checked_at": 1792224752.3973904,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 21004,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-17T08:12:50.081653Z",
+    "label": "perf-window",
+    "window": "idle-dashboard",
+    "seconds": 10,
+    "frames": 1445,
+    "build_ms_p50": 0.737,
+    "build_ms_p95": 1.027,
+    "build_ms_max": 29.916,
+    "raster_ms_p50": 2.698,
+    "raster_ms_p95": 3.228,
+    "raster_ms_max": 4.729,
+    "total_ms_p95": 5.381,
+    "over_16ms": 3
+  },
+  {
+    "utc": "2026-10-17T08:12:50.082660Z",
+    "label": "check",
+    "id": "R-no-onboarding",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:12:50.089196Z",
+    "label": "check",
+    "id": "R-companion-persisted",
+    "result": "FAIL",
+    "choice": "solar"
+  },
+  {
+    "utc": "2026-10-17T08:12:50.089196Z",
+    "label": "check",
+    "id": "R-theme-persisted",
+    "result": "FAIL",
+    "theme": null
+  },
+  {
+    "utc": "2026-10-17T08:12:51.232470Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#8c489(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:12:51.921553Z",
+    "label": "lunar edge (UIV2-F4)",
+    "found": true,
+    "rect": "Rect.fromLTRB(604.4, 213.9, 867.6, 477.1)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 954,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": null,
+    "identity": "solar"
+  },
+  {
+    "utc": "2026-10-17T08:12:51.921553Z",
+    "label": "check",
+    "id": "R-lunar-edge-invisible-light-theme",
+    "result": "PASS",
+    "found": true,
+    "rect": "Rect.fromLTRB(604.4, 213.9, 867.6, 477.1)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 954,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": null,
+    "identity": "solar"
+  },
+  {
+    "utc": "2026-10-17T08:12:52.573072Z",
+    "label": "key",
+    "key": "ctrl+1",
+    "focus_before": "FocusNode#8c489(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "companion",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:12:53.234834Z",
+    "label": "lunar edge companion window (UIV2-F4)",
+    "found": true,
+    "rect": "Rect.fromLTRB(-90.6, -65.8, 530.6, 555.4)",
+    "view": "Size(440.0, 680.0)",
+    "samples": 441,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": null,
+    "identity": "solar"
+  },
+  {
+    "utc": "2026-10-17T08:12:53.933530Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#8c489(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:12:54.596349Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#8c489(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:13:01.402939Z",
+    "label": "turn",
+    "scenario": "returning conversation",
+    "request": "Reply with exactly the word ready.",
+    "text": "ready",
+    "core_message": "I can only act on an explicit request in this mode (for example: 'remember that ...').",
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": "CONVERSATION",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.8543,
+      "memory_context": {
+        "fact_count": 2,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 2,
+      "predicted_per_second": 68.60122110173562,
+      "prompt_n": 774,
+      "prompt_per_second": 1553.4993878329285,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.8692,
+      "ttft_s": 0.8543
+    },
+    "application_seconds": 6.803,
+    "frames_during_turn": {
+      "frames": 918,
+      "build_ms_p50": 0.723,
+      "build_ms_p95": 1.436,
+      "build_ms_max": 44.832,
+      "raster_ms_p50": 2.618,
+      "raster_ms_p95": 3.458,
+      "raster_ms_max": 4.558,
+      "total_ms_p95": 5.79,
+      "over_16ms": 7
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-17T08:13:01.403945Z",
+    "label": "check",
+    "id": "R-conversation",
+    "result": "PASS",
+    "text": "ready"
+  },
+  {
+    "utc": "2026-10-17T08:13:02.066884Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#a5b73(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-17T08:13:02.070434Z",
+    "label": "check",
+    "id": "R-connections-card-plain",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:13:03.677469Z",
+    "label": "check",
+    "id": "R-connections-page-plain",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:13:06.008114Z",
+    "label": "check",
+    "id": "R-connections-open-settings",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:13:06.858181Z",
+    "label": "check",
+    "id": "R-restored",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-17T08:13:06.859190Z",
+    "label": "summary",
+    "failures": [
+      "R-companion-persisted",
+      "R-theme-persisted"
+    ],
+    "flutter_errors": 0,
+    "elapsed_s": 40.66
+  }
+]
