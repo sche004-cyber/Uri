@@ -1,0 +1,1513 @@
+[
+  {
+    "utc": "2026-10-18T07:57:45.853113Z",
+    "t": 1792310265.854,
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "Brain_Core_worker_mocked": false
+  },
+  {
+    "utc": "2026-10-18T07:58:19.646338Z",
+    "t": 1792310299.646,
+    "label": "window",
+    "logical_size": "Size(1264.0, 681.0)",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T07:58:19.937692Z",
+    "t": 1792310299.937,
+    "label": "ready-timeline",
+    "rows": [
+      {
+        "t": 1792310299.932,
+        "state": "READY",
+        "reasons": [],
+        "active": "standard",
+        "pending": false,
+        "configured": "frozen",
+        "chip_vision": "Vision: On",
+        "chip_context": "Context: 32K",
+        "chip_switching": null,
+        "header_brain": "READY",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · ready"
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T07:58:19.940201Z",
+    "t": 1792310299.94,
+    "label": "check",
+    "id": "QC-ready-standard",
+    "result": "PASS",
+    "controls": {
+      "active": {
+        "active": true,
+        "ctx": 32768,
+        "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+        "id": "standard",
+        "label": "Standard",
+        "mtp": true,
+        "qualified": true,
+        "required_mib": 15620,
+        "summary": "32K context, vision on (the default Runtime v1)",
+        "switchable": true,
+        "vision": "gpu",
+        "vision_on": true
+      },
+      "can_switch": true,
+      "cannot_switch_reason": null,
+      "configured": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "host_profile": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "options": [
+        {
+          "active": true,
+          "ctx": 32768,
+          "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+          "id": "standard",
+          "label": "Standard",
+          "mtp": true,
+          "qualified": true,
+          "required_mib": 15620,
+          "summary": "32K context, vision on (the default Runtime v1)",
+          "switchable": true,
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+          "id": "long",
+          "label": "Long context",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 13658,
+          "summary": "64K context, vision off",
+          "switchable": true,
+          "vision": "off",
+          "vision_on": false
+        },
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw4",
+          "id": "standard-nodraft",
+          "label": "Standard (no draft)",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 14360,
+          "summary": "32K context, vision on, no speculative draft",
+          "switchable": false,
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P1: FAIL",
+          "id": "long-vision",
+          "label": "Long context with vision",
+          "mtp": false,
+          "qualified": false,
+          "reason": "Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+          "required_mib": 14764,
+          "summary": "64K context, vision on",
+          "switchable": false,
+          "vision": "gpu",
+          "vision_on": true
+        }
+      ],
+      "schema": "uri.brain.quick_controls.v1",
+      "switch": {
+        "context_tokens": 0,
+        "last": null,
+        "pending": false,
+        "target": null
+      },
+      "thinking": {
+        "auto": "auto",
+        "off": "fast",
+        "on": "normal",
+        "reload": false
+      }
+    }
+  },
+  {
+    "utc": "2026-10-18T07:58:19.952896Z",
+    "t": 1792310299.952,
+    "label": "check",
+    "id": "QC-chips-standard",
+    "result": "PASS",
+    "vision": "Vision: On",
+    "context": "Context: 32K",
+    "thinking": "Thinking: Auto"
+  },
+  {
+    "utc": "2026-10-18T07:58:25.560997Z",
+    "t": 1792310305.56,
+    "label": "turn",
+    "scenario": "perf-standard-start",
+    "request": "List thirty common fruits, one per line, nothing else.",
+    "text": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapaya\nGuava\nPassion Fruit\nDragon Fruit\nLychee\nRambutan\nMangosteen\nPomegranate\nFig\nDate\nOlive",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": 82,
+      "draft_n_accepted": 59,
+      "first_answer_s": 1.53,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 100,
+      "predicted_per_second": 40.57734595466404,
+      "prompt_n": 754,
+      "prompt_per_second": 674.7650403695636,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 3.976,
+      "ttft_s": 1.53
+    },
+    "depth_sent": "fast",
+    "seconds": 5.092,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "List thirty common fruits, one per line, nothing else."
+      },
+      {
+        "role": "uri",
+        "text": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapaya\nGuava\nPassion Fruit\nDragon Fruit\nLychee\nRambutan\nMangosteen\nPomegranate\nFig\nDate\nOlive"
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T07:58:25.562005Z",
+    "t": 1792310305.562,
+    "label": "perf",
+    "profile": "standard-start",
+    "predicted_n": 100,
+    "decode_tps": 40.57734595466404,
+    "tier": "FAST"
+  },
+  {
+    "utc": "2026-10-18T07:58:26.842057Z",
+    "t": 1792310306.842,
+    "label": "check",
+    "id": "QC-thinking-off-depth",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T07:58:34.922390Z",
+    "t": 1792310314.922,
+    "label": "turn",
+    "scenario": "tell-fact",
+    "request": "Quick arithmetic game. The secret number is 4817. Reply with just OK.",
+    "text": "OK",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 854,
+      "draft_n": 2,
+      "draft_n_accepted": 0,
+      "first_answer_s": 0.5204,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 2,
+      "predicted_per_second": 15.869741164521606,
+      "prompt_n": 32,
+      "prompt_per_second": 87.42070668713768,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.5837,
+      "ttft_s": 0.5204
+    },
+    "depth_sent": "fast",
+    "seconds": 8.08,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "Quick arithmetic game. The secret number is 4817. Reply with just OK."
+      },
+      {
+        "role": "uri",
+        "text": "OK"
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T07:58:34.923399Z",
+    "t": 1792310314.923,
+    "label": "check",
+    "id": "QC-thinking-off-tier",
+    "result": "PASS",
+    "tier": "FAST",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T07:58:36.195613Z",
+    "t": 1792310316.195,
+    "label": "check",
+    "id": "QC-thinking-on-depth",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T07:58:40.179723Z",
+    "t": 1792310320.179,
+    "label": "turn",
+    "scenario": "thinking-on",
+    "request": "Compare a bicycle and an electric scooter for a 3 km city commute in two short sentences.",
+    "text": "A bicycle offers a more engaging workout and requires no charging, though it demands more physical effort over the distance. An electric scooter provides a quicker, less strenuous ride but relies on battery life and may offer less stability on rough terrain.",
+    "route": "answer",
+    "tier": "NORMAL",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 887,
+      "draft_n": 78,
+      "draft_n_accepted": 49,
+      "first_answer_s": 1.3786,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 89,
+      "predicted_per_second": 37.53244637338472,
+      "prompt_n": 31,
+      "prompt_per_second": 92.51218325768224,
+      "reasoning_chars": 179,
+      "retried": false,
+      "total_s": 2.8053,
+      "ttft_s": 0.4604
+    },
+    "depth_sent": "normal",
+    "seconds": 3.983,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "Compare a bicycle and an electric scooter for a 3 km city commute in two short sentences."
+      },
+      {
+        "role": "uri",
+        "text": "A bicycle offers a more engaging workout and requires no charging, though it demands more physical effort over the distance. An electric scooter provides a quicker, less strenuous ride but relies on battery life and may offer less stability on rough terrain."
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T07:58:40.179723Z",
+    "t": 1792310320.179,
+    "label": "check",
+    "id": "QC-thinking-on-tier",
+    "result": "PASS",
+    "tier": "NORMAL",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T07:58:41.273517Z",
+    "t": 1792310321.273,
+    "label": "check",
+    "id": "QC-thinking-last-answer-shown",
+    "result": "PASS",
+    "text": null
+  },
+  {
+    "utc": "2026-10-18T07:58:44.472782Z",
+    "t": 1792310324.472,
+    "label": "check",
+    "id": "QC-unqualified-listed-disabled",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T07:58:45.321900Z",
+    "t": 1792310325.321,
+    "label": "check",
+    "id": "QC-unqualified-not-requested",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T07:58:50.069523Z",
+    "t": 1792310330.069,
+    "label": "check",
+    "id": "QC-confirm-dialog",
+    "result": "PASS",
+    "texts": [
+      "Switch the Brain to Long context?",
+      "64K context, vision off\n\nThe Brain reloads, which takes about half a minute. Messages wait until it is ready.\n\nYour conversation stays: URI keeps it and the Brain reads it again after the switch.\n\nGPU memory: 13.3 GB (now 15.3 GB). If URI sees before the switch that it does not fit, it keeps the current Brain. If the new setting then fails to start or waits for memory, choose the previous setting again.",
+      "Cancel",
+      "Switch"
+    ]
+  },
+  {
+    "utc": "2026-10-18T07:58:50.395004Z",
+    "t": 1792310330.069,
+    "label": "switch-requested",
+    "to": "long",
+    "request_id": "d7e0cca7-597b-45bb-80cb-191c5c5a75d7",
+    "notice": null
+  },
+  {
+    "utc": "2026-10-18T07:58:53.839310Z",
+    "t": 1792310333.839,
+    "label": "send-during-switch",
+    "health": "RECOVERING",
+    "reasons": [
+      "PROFILE_SWITCH",
+      "GPU_MEMORY_TAKEN_AFTER_LOAD"
+    ],
+    "messages": [
+      "Are you there?",
+      "Not sent: the Brain is restarting. Try again when it is ready."
+    ],
+    "last_error": "BRAIN_RESTARTING"
+  },
+  {
+    "utc": "2026-10-18T07:58:53.839815Z",
+    "t": 1792310333.839,
+    "label": "check",
+    "id": "QC-turn-refused-during-switch",
+    "result": "PASS",
+    "last_error": "BRAIN_RESTARTING",
+    "messages": [
+      "Are you there?",
+      "Not sent: the Brain is restarting. Try again when it is ready."
+    ]
+  },
+  {
+    "utc": "2026-10-18T07:59:20.879675Z",
+    "t": 1792310360.879,
+    "label": "switch-timeline",
+    "to": "long",
+    "rows": [
+      {
+        "t": 1792310336.418,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_STOPPED",
+          "HOST_STOPPING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "STOPPED",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · not running"
+      },
+      {
+        "t": 1792310343.507,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310344.747,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310346.069,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310347.39,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310348.592,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310349.864,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310351.149,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310353.222,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310354.468,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310355.758,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310357.211,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310358.436,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310359.633,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310360.875,
+        "state": "READY",
+        "reasons": [],
+        "active": "long",
+        "pending": false,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": "Vision: Off",
+        "chip_context": "Context: 64K",
+        "chip_switching": null,
+        "header_brain": "READY",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · ready"
+      }
+    ],
+    "ui_seconds": 30.80999994277954
+  },
+  {
+    "utc": "2026-10-18T07:59:20.883694Z",
+    "t": 1792310360.883,
+    "label": "check",
+    "id": "QC-header-truthful-long",
+    "result": "PASS",
+    "rows_ready_while_pending": 0,
+    "states": [
+      "STOPPED",
+      "LOADING",
+      "STARTING",
+      "READY"
+    ]
+  },
+  {
+    "utc": "2026-10-18T07:59:20.901884Z",
+    "t": 1792310360.901,
+    "label": "check",
+    "id": "QC-truthful-switch-long",
+    "result": "PASS",
+    "rows": 15,
+    "early": 0,
+    "shown_early": 0
+  },
+  {
+    "utc": "2026-10-18T07:59:20.914748Z",
+    "t": 1792310360.914,
+    "label": "check",
+    "id": "QC-chips-long",
+    "result": "PASS",
+    "vision": "Vision: Off",
+    "context": "Context: 64K",
+    "notice": null
+  },
+  {
+    "utc": "2026-10-18T07:59:24.145775Z",
+    "t": 1792310364.145,
+    "label": "turn",
+    "scenario": "perf-long",
+    "request": "List thirty common fruits, one per line, nothing else.",
+    "text": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapaya\nGuava\nPassion Fruit\nDragon Fruit\nLychee\nRambutan\nMangosteen\nPomegranate\nFig\nDate\nOlive",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.7835,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 100,
+      "predicted_per_second": 99.805932908234,
+      "prompt_n": 993,
+      "prompt_per_second": 1428.1563982269574,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 1.7894,
+      "ttft_s": 0.7835
+    },
+    "depth_sent": "fast",
+    "seconds": 2.76,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "List thirty common fruits, one per line, nothing else."
+      },
+      {
+        "role": "uri",
+        "text": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapaya\nGuava\nPassion Fruit\nDragon Fruit\nLychee\nRambutan\nMangosteen\nPomegranate\nFig\nDate\nOlive"
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T07:59:24.146782Z",
+    "t": 1792310364.146,
+    "label": "perf",
+    "profile": "long",
+    "predicted_n": 100,
+    "decode_tps": 99.805932908234,
+    "tier": "FAST"
+  },
+  {
+    "utc": "2026-10-18T07:59:25.480345Z",
+    "t": 1792310365.48,
+    "label": "turn",
+    "scenario": "recall-long",
+    "request": "What was the secret number I gave you at the start of this conversation? Reply with the number only.",
+    "text": "4817",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 1092,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.3025,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 5,
+      "predicted_per_second": 89.94827973915,
+      "prompt_n": 35,
+      "prompt_per_second": 189.08493695367957,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.3471,
+      "ttft_s": 0.3025
+    },
+    "depth_sent": "fast",
+    "seconds": 1.332,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "What was the secret number I gave you at the start of this conversation? Reply with the number only."
+      },
+      {
+        "role": "uri",
+        "text": "4817"
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T07:59:25.481389Z",
+    "t": 1792310365.481,
+    "label": "check",
+    "id": "QC-continuity-long",
+    "result": "PASS",
+    "answer": "4817",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T07:59:26.787296Z",
+    "t": 1792310366.787,
+    "label": "check",
+    "id": "QC-unqualified-listed-at-64k",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T08:00:08.401326Z",
+    "t": 1792310408.401,
+    "label": "switch-timeline",
+    "to": "standard",
+    "rows": [
+      {
+        "t": 1792310370.58,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310372.107,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310373.35,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310380.82,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_STOPPED",
+          "HOST_STARTING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "STOPPED",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · not running"
+      },
+      {
+        "t": 1792310383.128,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310384.409,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310385.709,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310387.211,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310388.464,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310389.756,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310391.04,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310392.341,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310393.579,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310394.858,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310396.055,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310398.154,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310399.408,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310400.675,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "LOADING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · loading"
+      },
+      {
+        "t": 1792310402.199,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310403.421,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310404.652,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310405.86,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310407.161,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…",
+        "header_brain": "STARTING",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · starting"
+      },
+      {
+        "t": 1792310408.396,
+        "state": "READY",
+        "reasons": [],
+        "active": "standard",
+        "pending": false,
+        "configured": "frozen",
+        "chip_vision": "Vision: On",
+        "chip_context": "Context: 32K",
+        "chip_switching": null,
+        "header_brain": "READY",
+        "header_text": "Brain: qwen3.6-35b-a3b-ud-iq3_s · ready"
+      }
+    ],
+    "ui_seconds": 38.831000089645386
+  },
+  {
+    "utc": "2026-10-18T08:00:08.401836Z",
+    "t": 1792310408.401,
+    "label": "check",
+    "id": "QC-header-truthful-standard",
+    "result": "PASS",
+    "rows_ready_while_pending": 0,
+    "states": [
+      "STARTING",
+      "STOPPED",
+      "LOADING",
+      "READY"
+    ]
+  },
+  {
+    "utc": "2026-10-18T08:00:08.409389Z",
+    "t": 1792310408.409,
+    "label": "check",
+    "id": "QC-truthful-switch-standard",
+    "result": "PASS",
+    "rows": 24
+  },
+  {
+    "utc": "2026-10-18T08:00:08.421941Z",
+    "t": 1792310408.421,
+    "label": "check",
+    "id": "QC-chips-standard-again",
+    "result": "PASS",
+    "vision": "Vision: On",
+    "context": "Context: 32K",
+    "notice": null
+  },
+  {
+    "utc": "2026-10-18T08:00:11.532572Z",
+    "t": 1792310411.532,
+    "label": "turn",
+    "scenario": "perf-standard-after-switch",
+    "request": "List thirty common fruits, one per line, nothing else.",
+    "text": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapaya\nGuava\nPassion Fruit\nDragon Fruit\nLychee\nRambutan\nMangosteen\nPomegranate\nFig\nDate\nOlive",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": 66,
+      "draft_n_accepted": 66,
+      "first_answer_s": 0.9873,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 100,
+      "predicted_per_second": 149.16962243511122,
+      "prompt_n": 1157,
+      "prompt_per_second": 1270.9509173475462,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 1.6516,
+      "ttft_s": 0.9873
+    },
+    "depth_sent": "fast",
+    "seconds": 2.653,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "List thirty common fruits, one per line, nothing else."
+      },
+      {
+        "role": "uri",
+        "text": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapaya\nGuava\nPassion Fruit\nDragon Fruit\nLychee\nRambutan\nMangosteen\nPomegranate\nFig\nDate\nOlive"
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T08:00:11.532572Z",
+    "t": 1792310411.532,
+    "label": "perf",
+    "profile": "standard-after-switch",
+    "predicted_n": 100,
+    "decode_tps": 149.16962243511122,
+    "tier": "FAST"
+  },
+  {
+    "utc": "2026-10-18T08:00:13.208197Z",
+    "t": 1792310413.208,
+    "label": "turn",
+    "scenario": "recall-standard",
+    "request": "Once more: what was the secret number I gave you at the start of this conversation? Reply with the number only.",
+    "text": "4817",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 1256,
+      "draft_n": 4,
+      "draft_n_accepted": 2,
+      "first_answer_s": 0.3243,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 5,
+      "predicted_per_second": 92.83973540675409,
+      "prompt_n": 38,
+      "prompt_per_second": 181.03686482263154,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.3677,
+      "ttft_s": 0.3243
+    },
+    "depth_sent": "fast",
+    "seconds": 1.631,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "Once more: what was the secret number I gave you at the start of this conversation? Reply with the number only."
+      },
+      {
+        "role": "uri",
+        "text": "4817"
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T08:00:13.209718Z",
+    "t": 1792310413.209,
+    "label": "check",
+    "id": "QC-continuity-standard",
+    "result": "PASS",
+    "answer": "4817",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T08:00:14.493654Z",
+    "t": 1792310414.493,
+    "label": "check",
+    "id": "QC-thinking-auto-restored",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T08:00:14.494660Z",
+    "t": 1792310414.494,
+    "label": "check",
+    "id": "QC-same-worker-and-session",
+    "result": "PASS",
+    "before": {
+      "runtime_identical": true,
+      "session": "1c332ba8-a88b-4e79-8d86-79b0dc1cc2ea"
+    },
+    "session_after": "1c332ba8-a88b-4e79-8d86-79b0dc1cc2ea"
+  },
+  {
+    "utc": "2026-10-18T08:00:14.494660Z",
+    "t": 1792310414.494,
+    "label": "final",
+    "failures": [],
+    "controls": {
+      "active": {
+        "active": true,
+        "ctx": 32768,
+        "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+        "id": "standard",
+        "label": "Standard",
+        "mtp": true,
+        "qualified": true,
+        "required_mib": 15620,
+        "summary": "32K context, vision on (the default Runtime v1)",
+        "switchable": true,
+        "vision": "gpu",
+        "vision_on": true
+      },
+      "can_switch": true,
+      "cannot_switch_reason": null,
+      "configured": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "host_profile": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "options": [
+        {
+          "active": true,
+          "ctx": 32768,
+          "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+          "id": "standard",
+          "label": "Standard",
+          "mtp": true,
+          "qualified": true,
+          "required_mib": 15620,
+          "summary": "32K context, vision on (the default Runtime v1)",
+          "switchable": true,
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+          "id": "long",
+          "label": "Long context",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 13658,
+          "summary": "64K context, vision off",
+          "switchable": true,
+          "vision": "off",
+          "vision_on": false
+        },
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw4",
+          "id": "standard-nodraft",
+          "label": "Standard (no draft)",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 14360,
+          "summary": "32K context, vision on, no speculative draft",
+          "switchable": false,
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P1: FAIL",
+          "id": "long-vision",
+          "label": "Long context with vision",
+          "mtp": false,
+          "qualified": false,
+          "reason": "Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+          "required_mib": 14764,
+          "summary": "64K context, vision on",
+          "switchable": false,
+          "vision": "gpu",
+          "vision_on": true
+        }
+      ],
+      "schema": "uri.brain.quick_controls.v1",
+      "switch": {
+        "context_tokens": 1257,
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 405.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.9,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 17796,
+                "role": null
+              }
+            ],
+            "free_mib": 15300.5,
+            "margin_mib": -325.5,
+            "others_mib": 1067.5,
+            "owner_mib": 13895.5,
+            "required_mib": 15626,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c64k-visoff-mtpoff",
+          "id": "537d5450-82c1-475b-a2c3-5cfa3a9be3ef",
+          "required_mib": 15626,
+          "result": "READY",
+          "seconds": 37.2,
+          "started_stopped_brain": false,
+          "t_done": 1792310406.956,
+          "t_request": 1792310369.773,
+          "t_stopped": 1792310373.332,
+          "to": "frozen"
+        },
+        "pending": false,
+        "target": null
+      },
+      "thinking": {
+        "auto": "auto",
+        "off": "fast",
+        "on": "normal",
+        "reload": false
+      }
+    },
+    "health_state": "BUSY"
+  }
+]
