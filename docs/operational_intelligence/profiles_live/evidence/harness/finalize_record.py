@@ -101,7 +101,35 @@ r["independent_audit"]["prior_rounds"].append(
      "findings": 5, "outcome": "R3-01 bound soak-p2-e; R3-02 LQ-4 deviation annotated; R3-03 binding checks the commit "
                                "and hashes the harness at run time; R3-04 environment.core; R3-05 plan amendment A2 "
                                "and lifecycle config baseline/focus"})
-r["independent_audit"]["next_round"] = "RPI-R4 on the commit that carries this record"
+r["independent_audit"]["prior_rounds"] += [
+    {"round": "RPI-R4", "nonce": "RPI-R4-5e81a0", "reviewed_commit": "900e9962", "verdict": "ACCEPT WITH FINDINGS",
+     "findings": 4, "outcome": "R4-01 binding allowlist (C-9); R4-02 fit wording (C-8); R4-03 plan A2 / review focus "
+                               "(completed after RPI-R5 R5-02); R4-04 status reason + C-7"},
+    {"round": "RPI-R5", "nonce": "RPI-R5-b3f6d2", "reviewed_commit": "47b41df2", "verdict": "ACCEPT WITH FINDINGS",
+     "findings": 3, "outcome": "R5-01 this audit history; R5-02 lifecycle review_focus[6]/[7]; R5-03 binding "
+                               "versions per bound run (binding_versions)"}]
+r["independent_audit"]["next_round"] = "RPI-R6 on the commit that carries this record"
+# Review R5-03: the binding.py that ran each bound run, from the hashes the run recorded (absent before R3-03).
+_bv = {}
+for _sub, _name in (("live", "session-start.json"), ("soak", "soak.json"), ("assist", "assist_vision.json"),
+                    ("switch_live", "switch_live.json")):
+    for _p in sorted((ROOT / "evidence" / _sub).glob("*/" + _name)):
+        try:
+            _j = json.loads(_p.read_text(encoding="utf-8"))
+        except ValueError:
+            continue
+        _b = _j.get("binding") or (_j.get("verified") or {}).get("binding")
+        if _b:
+            _bv[_p.parent.name] = (_b.get("harness_sha256") or {}).get("binding.py",
+                                                                      "not recorded (run before R3-03)")
+import hashlib as _hl
+r["binding_versions"] = {
+    "note": ("the committed evidence/harness/binding.py is the current version (explicit allowlist, R4-01). No bound "
+             "run used it: runs before R3-03 did not record the hash; soak-p2-e used the R3-03 version "
+             "(docs/ outside the receipt), whose rule its changed paths also satisfy under R4-01."),
+    "committed_binding_py_sha256": _hl.sha256((ROOT / "tools" / "binding.py").read_bytes()).hexdigest(),
+    "per_run": _bv}
+
 fails = [k for k, v in lq.items() if isinstance(v, dict) and any(str(x).startswith("FAIL") for x in v.values())]
 r["status"] = "FAIL"
 r["status_reason"] = ("The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit "

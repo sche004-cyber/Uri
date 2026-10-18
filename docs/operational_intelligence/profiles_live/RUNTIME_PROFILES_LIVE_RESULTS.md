@@ -17,7 +17,9 @@ integrated, deployed or frozen. Independent review is by fresh read-only subagen
   requires a clean candidate worktree and a byte match of all 358 runtime files in both the runtime and the
   candidate checkout. After review R3-03 it also requires that the runtime was materialized from the candidate HEAD,
   or from an earlier commit that differs from HEAD only in this milestone's evidence, plan and lifecycle config
-  (an explicit allowlist since review R4-01; none of these files is in the runtime). It records the
+  (an explicit allowlist since review R4-01; none of these files is in the runtime). No bound run used the
+  allowlist version: `soak-p2-e` ran with the R3-03 version, and its changed paths satisfy both rules. The
+  record's `binding_versions` lists the version each run recorded (review R5-03). It records the
   hashes of the harness scripts at run time. Limits: the binding is taken once, at the start of a run, and it does
   not cover base or overlay files outside the receipt (none of them changes in this milestone). The record counts a
   run for a commit only when its binding names that commit. The soak and Assist runs of v2 ran from the mutable development checkout without a recorded
@@ -151,7 +153,10 @@ switch stays open together with P1.
 - RPI-R4 (nonce `RPI-R4-5e81a0`, commit `900e9962`): ACCEPT WITH FINDINGS, 4 LOW findings, all fixed in the
   next commit: R4-01 binding allowlist (correction C-9); R4-02 fit wording (C-8); R4-03 plan A2 and review focus;
   R4-04 the record's status reason names both bound soaks, and correction C-7 records the v3 P2 overclaim.
-- RPI-R5 re-checks these repairs on the commit that carries this report.
+- RPI-R5 (nonce `RPI-R5-b3f6d2`, commit `47b41df2`): ACCEPT WITH FINDINGS, 3 LOW bookkeeping findings, fixed
+  in the next commit: R5-01 the record's audit history; R5-02 the remaining lifecycle review-focus wording
+  (completes R4-03); R5-03 which binding version each bound run used.
+- RPI-R6 re-checks these repairs on the commit that carries this report.
 - **Driver-verified acceptance: not available.** Codex is over its usage limit until 2026-10-22, and the claude CLI is
   logged out. Subagent acceptance under the 2026-10-17 lifecycle policy is a different verification class and is
   reported as such.

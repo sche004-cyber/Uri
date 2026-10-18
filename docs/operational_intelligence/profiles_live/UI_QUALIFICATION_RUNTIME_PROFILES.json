@@ -1473,13 +1473,29 @@
     "verdict": "ACCEPT WITH FINDINGS",
     "findings": 5,
     "outcome": "R3-01 bound soak-p2-e; R3-02 LQ-4 deviation annotated; R3-03 binding checks the commit and hashes the harness at run time; R3-04 environment.core; R3-05 plan amendment A2 and lifecycle config baseline/focus"
+   },
+   {
+    "round": "RPI-R4",
+    "nonce": "RPI-R4-5e81a0",
+    "reviewed_commit": "900e9962",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 4,
+    "outcome": "R4-01 binding allowlist (C-9); R4-02 fit wording (C-8); R4-03 plan A2 / review focus (completed after RPI-R5 R5-02); R4-04 status reason + C-7"
+   },
+   {
+    "round": "RPI-R5",
+    "nonce": "RPI-R5-b3f6d2",
+    "reviewed_commit": "47b41df2",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 3,
+    "outcome": "R5-01 this audit history; R5-02 lifecycle review_focus[6]/[7]; R5-03 binding versions per bound run (binding_versions)"
    }
   ],
-  "next_round": "RPI-R4 on the commit that carries this record"
+  "next_round": "RPI-R6 on the commit that carries this record"
  },
  "status": "FAIL",
  "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS, bound 60-minute soaks soak-p2-e and soak-p3-e per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria with FAIL entries: [].",
- "recorded_at": "2026-10-18T06:03:52.051701+00:00",
+ "recorded_at": "2026-10-18T06:09:06.663427+00:00",
  "corrections": [
   {
    "id": "C-1",
@@ -1631,6 +1647,21 @@
    "on_commit": "fa0a70e6 history only; not re-run",
    "evidence": "p1b-main FAIL (CRASH-1), soak-p1 FAIL (DEMOTE-P1); passing runs p1c-main, s4-p1-main, p1c-ret, s2-p1-ret, assist-p1 (unbound)",
    "conditions": "stays unqualified until CRASH-1 and DEMOTE-P1 are resolved and re-tested"
+  }
+ },
+ "binding_versions": {
+  "note": "the committed evidence/harness/binding.py is the current version (explicit allowlist, R4-01). No bound run used it: runs before R3-03 did not record the hash; soak-p2-e used the R3-03 version (docs/ outside the receipt), whose rule its changed paths also satisfy under R4-01.",
+  "committed_binding_py_sha256": "f1f2772c2d09b29946f5d15b588cd622285eb085b666504a74e29fcbb7f2db1a",
+  "per_run": {
+   "e-p2-main": "not recorded (run before R3-03)",
+   "e-p2-ret": "not recorded (run before R3-03)",
+   "e-p3-main": "not recorded (run before R3-03)",
+   "e-p3-ret": "not recorded (run before R3-03)",
+   "soak-p2-e": "adb9f12b97bb6ffb5c66e164f93e3bfbb38a551a4ece41404bef2cf070be1672",
+   "soak-p3-e": "not recorded (run before R3-03)",
+   "assist-p3-e": "not recorded (run before R3-03)",
+   "dry2": "not recorded (run before R3-03)",
+   "sw5": "not recorded (run before R3-03)"
   }
  }
 }
