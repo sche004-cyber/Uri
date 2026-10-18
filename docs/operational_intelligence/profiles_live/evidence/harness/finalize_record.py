@@ -42,13 +42,23 @@ r["annotations"] = {
     "sw5": "PASS (n=1) bound to the current commit with the sw4 wording",
     "p1b-main": "CRASH-1, research/CRASH1_RESEARCH.md: leading HYPOTHESIS (unverified) host commit exhaustion -> uncaught bad_alloc in the prompt-cache save; the 'cancel came after the task finished' reading is INFERRED from log order and b11510 source",
     "soak-p1": "DEMOTE-P1, research/DEMOTION_RESEARCH.md: the demoted block is IDENTIFIED BY SIZE MATCH (1,021.7 MiB = first of 13 weight allocations); the tensor-to-allocation map was not dumped",
+    "LQ-4 deviation": ("review R3-02: the plan names the switch P2 -> P1 -> P2; it ran P2 -> P3 -> P2 because P1 is "
+                       "unqualified (CRASH-1, DEMOTE-P1) and P3 is the qualified vision profile. Mapping of the other "
+                       "LQ-4 items: cold start = every e-* journey run and soak-*-e starts the Brain host cold "
+                       "(host_ready / calibration in each run's files); host restart = each sw5 switch stops and "
+                       "restarts the host on the new profile (READY in 26.8 s and 21.2 s); VRAM release = sw5 "
+                       "vram_release_s. Continuity is verified at worker level, not through UI clicks."),
     "vram_release_s": "switch_live measures release as 'no process holds more than 2 GiB dedicated', not a full release"}
 r["qualification_by_profile"] = {
     "P2 64K main only (c64k-visoff-mtpoff)": {
-        "status": "PASS", "on_commit": code,
-        "bound_evidence": "e-p2-main 68/68, e-p2-ret 12/12, sw5 PASS (all with a clean source binding to this commit)",
+        # Review R3-01: the plan's LQ-3 requires a 60-minute soak on P2; only a bound soak counts.
+        "status": ("PASS" if (lq.get("LQ-3 sustained operation") or {}).get("soak-p2-e") == "PASS"
+                   else "NOT QUALIFIED YET: journeys and switch PASS; LQ-3 bound soak "
+                        + str((lq.get("LQ-3 sustained operation") or {}).get("soak-p2-e", "not run"))),
+        "on_commit": code,
+        "bound_evidence": "e-p2-main 68/68, e-p2-ret 12/12, sw5 PASS, soak-p2-e (see LQ-3)",
         "supporting": "c-p2-main/c-p2-ret on 4d782ef1, soak-p2 60 min clean (unbound), history runs on fa0a70e6",
-        "conditions": "lease fit FITS (+1,176..+1,920 MiB across days); sustained-operation evidence for this profile is the unbound soak-p2"},
+        "conditions": "lease fit FITS (+1,176..+1,920 MiB across days)"},
     "P3 32K + GPU vision (c32k-visgpu-mtpoff)": {
         "status": "PASS" if (lq.get("LQ-3 sustained operation") or {}).get("soak-p3-e") == "PASS" else "PENDING soak-p3-e",
         "on_commit": code,
@@ -63,7 +73,7 @@ r["remaining_limitations"] = [
     "CRASH-1 open: root cause UNVERIFIED (hypothesis host commit exhaustion; E0: see e0_host_memory - commit is the scarce resource on this PC while physical RAM is available; RAM-1 snapshot shows other sessions' PowerShell processes at ~4 GB private each). Can affect every profile and the frozen config. Reproduction E1 not run.",
     "DEMOTE-P1 open; mitigations (vision on CPU at 64K, 256 MiB suballocation) unmeasured.",
     "P3 sustained operation: soak-p3 (unbound, AT_RISK desktop) and soak-p3-e (bound) - see LQ-3; n=2 at most, near the estimated margin on heavy desktops.",
-    "P2 sustained operation evidence is unbound (soak-p2, fa0a70e6-era host files that did not change).",
+    "P2 sustained operation: see LQ-3 soak-p2-e (review R3-01); the earlier soak-p2 is unbound and supporting only.",
     "Conversation continuity across profile switches verified at worker level (sw5 bound, sw4), not through UI clicks; the UI V2 driver does not test it.",
     "R2-07 DEFERRED to the UI thread: the UI does not yet render backend.profile; the API exposes it (qualified false). UI presentation is outside this milestone (owner brief: runtime owns capability, not presentation).",
     "Soak UI window is the app's start screen (a GPU-memory consumer), not a journey run.",
@@ -83,7 +93,12 @@ r["independent_audit"]["prior_rounds"] = [
     {"round": "RPI-R2", "nonce": "RPI-R2-c41e88", "reviewed_commit": "a5605ae8", "verdict": "ACCEPT WITH FINDINGS",
      "findings": 9, "outcome": "R2-05/06 code fix 07dca2a8; R2-02 binding + bound re-runs on f3d5eb29; R2-01/03/04/08/09 "
                                "record/report fixes; R2-07 DEFERRED to the UI thread (see remaining_limitations)"}]
-r["independent_audit"]["next_round"] = "RPI-R3 on the evidence commit on top of f3d5eb29 (this record's commit)"
+r["independent_audit"]["prior_rounds"].append(
+    {"round": "RPI-R3", "nonce": "RPI-R3-9d27b4", "reviewed_commit": "fec31dfd", "verdict": "ACCEPT WITH FINDINGS",
+     "findings": 5, "outcome": "R3-01 bound soak-p2-e; R3-02 LQ-4 deviation annotated; R3-03 binding checks the commit "
+                               "and hashes the harness at run time; R3-04 environment.core; R3-05 plan amendment A2 "
+                               "and lifecycle config baseline/focus"})
+r["independent_audit"]["next_round"] = "RPI-R4 on the commit that carries this record"
 fails = [k for k, v in lq.items() if isinstance(v, dict) and any(str(x).startswith("FAIL") for x in v.values())]
 r["status"] = "FAIL"
 r["status_reason"] = ("The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit "

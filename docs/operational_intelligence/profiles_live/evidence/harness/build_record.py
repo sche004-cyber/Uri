@@ -145,7 +145,7 @@ def copy_evidence(rows):
     (EV / "harness").mkdir(parents=True, exist_ok=True)
     for f in ("live_session.py", "run_live_ui.py", "uiv2_driver.dart", "go.sh", "assist_vision_app.py", "soak.py",
               "switch_live.py", "summarize_live.py", "build_record.py", "_patch_harness.py", "_patch_harness_b.py",
-              "_patch_harness_c.py", "_patch_harness_d.py", "_patch_harness_e.py", "binding.py", "finalize_record.py", "chain10.sh"):
+              "_patch_harness_c.py", "_patch_harness_d.py", "_patch_harness_e.py", "binding.py", "finalize_record.py", "chain10.sh", "chain11.sh"):
         if (ROOT / "tools" / f).exists():
             shutil.copy2(ROOT / "tools" / f, EV / "harness" / f)
 
@@ -211,7 +211,7 @@ def main():
         "environment": {
             "windows": subprocess.run(["cmd", "/c", "ver"], capture_output=True, text=True).stdout.strip(),
             "app_build": "candidate uri_ui, debug build via flutter test integration_test (driver runs); release build for soak windows",
-            "core": f"materialized runtime e8e3b652 + Phase 2 OQ overlay + candidate {CODE_COMMIT[:8]} (evidence/materialize-c.json)",
+            "core": f"materialized runtime e8e3b652 + Phase 2 OQ overlay + candidate {CODE_COMMIT[:8]} (evidence/materialize-e.json; runtime-e, installation rp-e)",
             "brain": "llama.cpp b11425 Vulkan, Qwen3.6-35B-A3B UD-IQ3_S (+ mmproj-F16 on vision profiles), MTP off on all tested profiles; frozen config unchanged",
             "dependencies": [], "gpu_override": "none (lease, no contention override)"},
         "functional": rows,

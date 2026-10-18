@@ -92,3 +92,22 @@ The five accepted files remain byte-identical to `7c7a7776`. IC-1 now reads: the
 of `fa0a70e6` and `4d782ef1`, plus plan, config and evidence documents. Nothing else.
 
 The default Brain stays the frozen Runtime v1. Integration (IC-4) still requires your explicit authorisation.
+
+## Amendment A2 (2026-10-18, after subagent review RPI-R3) — baseline revalidation and LQ-4 deviation
+
+- **Baseline.** Canonical moved from `25048709` to `348677b7`. It was merged into the candidate as `f3d5eb29`
+  ("revalidation before integration"). `f3d5eb29` is the code tested live; later commits on this branch change
+  only evidence documents under `docs/operational_intelligence/profiles_live/`. IC-1 and IC-2 are now checked
+  against `348677b7`. The file list of A1 stays the same. `07dca2a8` (content-based `ProfileFollower`, reviews
+  R2-05 and R2-06) changes only `runtime_profile_selection.py` and its test, which are A1 files. The lifecycle
+  config records the new baseline and review focus.
+- **Source binding.** Since review R2-02, every live harness records a source binding before it runs
+  (`profiles_live/evidence/harness/binding.py`). A run counts as evidence for a commit only when the binding is
+  clean and names that commit.
+- **LQ-4 deviation (review R3-02).** This plan names the switch P2 -> P1 -> P2. The run used P2 -> P3 -> P2,
+  because P1 is unqualified (CRASH-1, DEMOTE-P1) and P3 is the qualified vision profile. Continuity is verified
+  at worker level, not through UI clicks. The mapping of cold start, host restart and VRAM release to evidence is
+  in the record's `annotations` ("LQ-4 deviation"). A P2 -> P1 -> P2 switch stays open together with P1.
+- **LQ-3 (review R3-01).** "At least 60 minutes per preferred profile (P1, P2)": P2 needs a bound soak
+  (`soak-p2-e`). P1 stays unqualified. P3 has a bound soak (`soak-p3-e`) because the owner prioritised 32K +
+  vision for Assist.
