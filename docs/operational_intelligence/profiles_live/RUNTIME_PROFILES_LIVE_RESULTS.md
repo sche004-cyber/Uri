@@ -150,15 +150,17 @@ switch stays open together with P1.
     harness scripts, and its limits are stated (section 1).
   - R3-04: `environment.core` cited the wrong materialization. Fixed.
   - R3-05: the plan and lifecycle config named the old baseline and review focus. Fixed (plan A2, config).
-- RPI-R4 (nonce `RPI-R4-5e81a0`, commit `900e9962`): ACCEPT WITH FINDINGS, 4 LOW findings, all fixed in the
-  next commit: R4-01 binding allowlist (correction C-9); R4-02 fit wording (C-8); R4-03 plan A2 and review focus;
+- RPI-R4 (nonce `RPI-R4-5e81a0`, commit `900e9962`): ACCEPT WITH FINDINGS, 4 LOW findings, fixed in the next
+  commit except R4-03, which was completed after RPI-R5 (R5-02): R4-01 binding allowlist (correction C-9); R4-02 fit wording (C-8); R4-03 plan A2 and review focus;
   R4-04 the record's status reason names both bound soaks, and correction C-7 records the v3 P2 overclaim.
 - RPI-R5 (nonce `RPI-R5-b3f6d2`, commit `47b41df2`): ACCEPT WITH FINDINGS, 3 LOW bookkeeping findings, fixed
   in the next commit: R5-01 the record's audit history; R5-02 the remaining lifecycle review-focus wording
   (completes R4-03); R5-03 which binding version each bound run used.
 - RPI-R6 (nonce `RPI-R6-71c4e9`, commit `42cc4e2d`): ACCEPT WITH FINDINGS, one LOW (the corrections range in
   section 1) and one INFO (the committed binding hash), both fixed.
-- RPI-R7 re-checks these repairs on the commit that carries this report.
+- RPI-R7 (nonce `RPI-R7-2a9f50`, commit `b5007afc`): ACCEPT WITH FINDINGS, two INFO wording findings (the record's
+  status-reason tail and this section's R4 line), both fixed in the next commit. No LOW or higher finding is open.
+  The INFO wording fixes were not re-reviewed.
 - **Driver-verified acceptance: not available.** Codex is over its usage limit until 2026-10-22, and the claude CLI is
   logged out. Subagent acceptance under the 2026-10-17 lifecycle policy is a different verification class and is
   reported as such.

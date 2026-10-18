@@ -111,7 +111,10 @@ r["independent_audit"]["prior_rounds"] += [
 r["independent_audit"]["prior_rounds"].append(
     {"round": "RPI-R6", "nonce": "RPI-R6-71c4e9", "reviewed_commit": "42cc4e2d", "verdict": "ACCEPT WITH FINDINGS",
      "findings": 2, "outcome": "R6-01 (LOW) report names C-1..C-9; R6-02 (INFO) committed binding hash from the evidence copy"})
-r["independent_audit"]["next_round"] = "RPI-R7 on the commit that carries this record"
+r["independent_audit"]["prior_rounds"].append(
+    {"round": "RPI-R7", "nonce": "RPI-R7-2a9f50", "reviewed_commit": "b5007afc", "verdict": "ACCEPT WITH FINDINGS",
+     "findings": 2, "outcome": "two INFO wording findings (R7-01 status_reason tail, R7-02 report section 8), fixed; no LOW or higher finding open"})
+r["independent_audit"]["next_round"] = "none planned by subagent review; driver-counted round (IC-3) when a driver reviewer is available"
 # Review R5-03: the binding.py that ran each bound run, from the hashes the run recorded (absent before R3-03).
 _bv = {}
 for _sub, _name in (("live", "session-start.json"), ("soak", "soak.json"), ("assist", "assist_vision.json"),
@@ -140,6 +143,6 @@ r["status"] = "FAIL"
 r["status_reason"] = ("The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit "
                       f"{code[:8]}, switch continuity PASS (sw5), P3 Assist PASS, bound 60-minute soaks soak-p2-e and soak-p3-e per LQ-3. P1: failed journeys "
                       "(p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the "
-                      f"record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria with FAIL entries: {fails}.")
+                      f"record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria whose top-level entries on the current commit are FAIL: {fails} (history, supporting and nested P1 results are listed above and in criteria; review R7-01).")
 REC.write_text(json.dumps(r, indent=1, default=str), encoding="utf-8")
 print(r["status"], fails, json.dumps(e0))
