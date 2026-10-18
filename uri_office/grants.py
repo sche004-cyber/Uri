@@ -19,21 +19,34 @@ Path rule, in two steps:
 """
 from __future__ import annotations
 
+import json
 import ntpath
 import os
 import posixpath
 import re
+import threading
 import uuid
 from dataclasses import dataclass
+from functools import wraps
 from pathlib import Path
 
 from .errors import OfficeError
 
 MAX_BYTES = 50 * 1024 * 1024
 # O2 (plan §5 grants.py): per-kind suffixes and size caps. The `.xlsx` default and its messages are unchanged.
-KIND_SUFFIX = {"xlsx": ".xlsx", "docx": ".docx", "pptx": ".pptx", "pdf": ".pdf"}
-KIND_MAX_BYTES = {"xlsx": MAX_BYTES, "docx": 50 * 1024 * 1024, "pptx": 50 * 1024 * 1024, "pdf": 100 * 1024 * 1024}
-KIND_LABEL = {"xlsx": "workbook", "docx": "document", "pptx": "presentation", "pdf": "PDF"}
+KIND_SUFFIX = {"xlsx": ".xlsx", "docx": ".docx", "pptx": ".pptx", "pdf": ".pdf",
+               # authoring (OD-A5): a presentation template, and a picture to insert
+               "pptx_template": (".pptx", ".potx"), "image": (".png", ".jpg", ".jpeg", ".gif", ".bmp"),
+               "docx_template": (".docx", ".dotx")}
+KIND_MAX_BYTES = {"xlsx": MAX_BYTES, "docx": 50 * 1024 * 1024, "pptx": 50 * 1024 * 1024, "pdf": 100 * 1024 * 1024,
+                  "pptx_template": 50 * 1024 * 1024, "image": 20 * 1024 * 1024, "docx_template": 50 * 1024 * 1024}
+KIND_LABEL = {"xlsx": "workbook", "docx": "document", "pptx": "presentation", "pdf": "PDF",
+              "pptx_template": "template", "image": "picture", "docx_template": "template"}
+
+
+def _suffixes(kind) -> tuple:
+    v = KIND_SUFFIX[kind]
+    return v if isinstance(v, tuple) else (v,)
 MAX_PATH = 1024
 _WIN_ABS = re.compile(r"^[A-Za-z]:[\\/]")
 _WIN_RESERVED = re.compile(r"^(CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[0-9¹²³]|LPT[0-9¹²³])(\..*)?$", re.IGNORECASE)
@@ -102,15 +115,118 @@ def _inside(path: str, root: str) -> bool:
         return False
 
 
+def check_folder_shape(raw, flavor: str | None = None) -> str:
+    """OD-R1: a folder the owner may add. Same shape rules as files (absolute local drive path, no network, device,
+    stream or relative names), and never a whole drive or a system folder: permission stays folder-scoped."""
+    flavor = flavor or ("nt" if os.name == "nt" else "posix")
+    if not isinstance(raw, str) or not raw.strip():
+        _refuse("not a folder")
+    raw = raw.rstrip("\\/") if len(raw.rstrip("\\/")) > 2 else raw
+    check_shape(raw + ("\\x.xlsx" if flavor == "nt" else "/x.xlsx"), flavor)
+    if flavor == "nt":
+        if re.fullmatch(r"[A-Za-z]:[\\/]?", raw):
+            _refuse("a whole drive cannot be added; choose a folder on it")
+        low = raw.replace("/", "\\").casefold()
+        for env in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData", "ProgramW6432"):
+            sysdir = os.environ.get(env)
+            if sysdir and (low == sysdir.casefold() or low.startswith(sysdir.casefold().rstrip("\\") + "\\")):
+                _refuse("system folders cannot be added")
+    else:
+        if raw == "/" or raw.count("/") < 2 and raw in ("/usr", "/bin", "/etc", "/var", "/opt", "/boot", "/lib"):
+            _refuse("system folders cannot be added")
+    return raw
+
+
+def _locked(fn):
+    """Independent review S1-06 (3e202efc): grants and added folders change from several request threads; every
+    read and change of them holds the one lock, so a folder is never removed while a grant inside it is being made."""
+    @wraps(fn)
+    def run(self, *a, **kw):
+        with self._lock:
+            return fn(self, *a, **kw)
+    return run
+
+
 class Grants:
-    def __init__(self, allowed_roots=None):
+    """Open and save-as grants for files the owner picked, inside the allowed folders: the user home (or the service's
+    --allow-root folders) plus folders the owner added (OD-R1, kept in `folders_file`, revocable)."""
+
+    def __init__(self, allowed_roots=None, folders_file: Path | None = None):
+        self._lock = threading.RLock()
         roots = [Path.home()] if allowed_roots is None else list(allowed_roots)
-        self.roots = []
+        self.base_roots = []
         for r in roots:
             rp = Path(r)
             if rp.is_dir():
-                self.roots.append(_norm(os.path.realpath(rp)))
+                self.base_roots.append(_norm(os.path.realpath(rp)))
+        self.folders_file = Path(folders_file) if folders_file else None
+        self.added: list[str] = []                       # as the owner chose them (display spelling)
+        if self.folders_file and self.folders_file.is_file():
+            try:
+                data = json.loads(self.folders_file.read_text(encoding="utf-8"))
+                if not isinstance(data, dict) or not isinstance(data.get("folders", []), list):
+                    raise ValueError("invalid folders list")
+                restored = []
+                for f in data.get("folders", []):
+                    if not isinstance(f, str) or not Path(f).is_dir():
+                        raise ValueError("invalid saved folder")
+                    check_folder_shape(f)
+                    if _norm(os.path.realpath(f)) != _norm(f):
+                        raise ValueError("invalid saved folder")
+                    restored.append(f)
+                self.added = restored
+            except (ValueError, OfficeError, OSError):
+                self.added = []                          # a damaged list grants nothing extra
         self._by_id: dict[str, Grant] = {}
+
+    @property
+    def roots(self) -> list:
+        with self._lock:
+            added = list(self.added)
+        return self.base_roots + [_norm(f) for f in added
+                                  if Path(f).is_dir() and _norm(os.path.realpath(f)) == _norm(f)]
+
+    @_locked
+    def folders(self) -> list:
+        return ([{"path": r, "kind": "default", "removable": False} for r in self.base_roots] +
+                [{"path": f, "kind": "added", "removable": True} for f in list(self.added)])
+
+    def _save(self):
+        if self.folders_file is None:
+            return
+        tmp = self.folders_file.with_suffix(".tmp")
+        tmp.write_text(json.dumps({"folders": self.added}, indent=1), encoding="utf-8")
+        os.replace(tmp, self.folders_file)
+
+    @_locked
+    def add_folder(self, raw) -> dict:
+        path = check_folder_shape(raw)
+        p = Path(path)
+        if not p.is_dir():
+            _refuse("the folder does not exist")
+        if _norm(os.path.realpath(p)) != _norm(p):
+            _refuse("links, junctions and shortcuts are not followed")
+        n = _norm(p)
+        if any(n == r or _inside(n, r) for r in self.roots):
+            return {"added": False, "already_allowed": True, "folders": self.folders()}
+        # A new folder that contains added ones replaces them (one entry per tree).
+        self.added = [f for f in self.added if not _inside(_norm(f), n)] + [path]
+        self._save()
+        return {"added": True, "folders": self.folders()}
+
+    @_locked
+    def remove_folder(self, raw) -> dict:
+        """Stop allowing an added folder. Refused while a file from it is open or waiting to be saved (close it or
+        finish the save first), so nothing is left half-granted."""
+        match = next((f for f in self.added if _norm(f) == _norm(raw)), None) if isinstance(raw, str) else None
+        if match is None:
+            raise OfficeError("FOLDER_NOT_ADDED", "only folders you added can be removed")
+        root = _norm(os.path.realpath(match))
+        if any(_inside(_norm(gr.path), root) for gr in list(self._by_id.values())):
+            raise OfficeError("FOLDER_IN_USE", "close the files from this folder first", 409)
+        self.added = [f for f in self.added if f is not match]
+        self._save()
+        return {"removed": True, "folders": self.folders()}
 
     def _real_inside(self, p: Path, *, must_exist: bool) -> Path:
         if not self.roots:
@@ -122,8 +238,9 @@ class Grants:
             _refuse("the file is outside the folders URI may use")
         return p
 
+    @_locked
     def grant_open(self, raw, *, kind: str = "xlsx") -> Grant:
-        p = Path(check_shape(raw, suffixes=(KIND_SUFFIX[kind],)))
+        p = Path(check_shape(raw, suffixes=_suffixes(kind)))
         try:
             self._real_inside(p, must_exist=True)
         except OSError:
@@ -135,8 +252,9 @@ class Grants:
             raise OfficeError("FILE_TOO_LARGE", f"the {KIND_LABEL[kind]} is larger than {cap // (1024 * 1024)} MB")
         return self._add("open", p)
 
+    @_locked
     def grant_save_as(self, raw, *, kind: str = "xlsx") -> Grant:
-        p = Path(check_shape(raw, suffixes=(KIND_SUFFIX[kind],)))
+        p = Path(check_shape(raw, suffixes=_suffixes(kind)))
         if not p.parent.is_dir():
             _refuse("the folder does not exist")
         self._real_inside(p.parent, must_exist=True)
@@ -144,16 +262,19 @@ class Grants:
             _refuse("not a regular file")
         return self._add("save_as", p)
 
+    @_locked
     def _add(self, kind, p) -> Grant:
         g = Grant(uuid.uuid4().hex, kind, p)
         self._by_id[g.grant_id] = g
         return g
 
+    @_locked
     def get(self, grant_id, kind) -> Grant:
         g = self._by_id.get(grant_id) if isinstance(grant_id, str) else None
         if g is None or g.kind != kind:
             raise OfficeError("NO_GRANT", "this file was not opened or approved by the owner", 403)
         return g
 
+    @_locked
     def revoke(self, grant_id):
         self._by_id.pop(grant_id, None)

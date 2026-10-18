@@ -1,0 +1,109 @@
+[
+ {
+  "version": "v0.9",
+  "createSurface": {
+   "surfaceId": "office.authoring_save.7a637033e4644519.01857255",
+   "catalogId": "uri:a2ui/catalog/v1",
+   "theme": {
+    "agentDisplayName": "URI",
+    "placement": "workspace"
+   }
+  }
+ },
+ {
+  "version": "v0.9",
+  "updateComponents": {
+   "surfaceId": "office.authoring_save.7a637033e4644519.01857255",
+   "components": [
+    {
+     "id": "root",
+     "component": "Column",
+     "children": [
+      "title",
+      "target",
+      "lines0",
+      "buttons"
+     ],
+     "gap": "medium"
+    },
+    {
+     "id": "title",
+     "component": "Text",
+     "variant": "title",
+     "text": "Save this presentation?"
+    },
+    {
+     "id": "target",
+     "component": "Text",
+     "variant": "caption",
+     "text": "C:\\Users\\me\\Documents\\Quarterly Review.pptx"
+    },
+    {
+     "id": "lines0",
+     "component": "Text",
+     "variant": "body",
+     "text": "Slide 1: title 'Quarterly Review 2026'\nThis replaces the file you opened (a backup is kept)."
+    },
+    {
+     "id": "apply",
+     "component": "Button",
+     "variant": "primary",
+     "label": "Save",
+     "action": {
+      "event": {
+       "name": "office.apply_change",
+       "context": {
+        "change_sha256": {
+         "path": "/bound/change_sha256"
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "reject",
+     "component": "Button",
+     "variant": "secondary",
+     "label": "Not now",
+     "action": {
+      "event": {
+       "name": "office.reject_change",
+       "context": {
+        "change_sha256": {
+         "path": "/bound/change_sha256"
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "buttons",
+     "component": "Row",
+     "children": [
+      "apply",
+      "reject"
+     ],
+     "gap": "small"
+    }
+   ]
+  }
+ },
+ {
+  "version": "v0.9",
+  "updateDataModel": {
+   "surfaceId": "office.authoring_save.7a637033e4644519.01857255",
+   "path": "/",
+   "value": {
+    "bound": {
+     "change_sha256": "131c22082f3a5e759b1a01f68e8502febd5266a057d18a6eb510b36f426d89a4",
+     "surface": {
+      "digest": "20f94dd73a4bb0ac340c5a61ca1d970fd5bc6c2035d40336125004356cf276a9",
+      "revision": 1,
+      "kind": "office_change",
+      "title": "Office save"
+     }
+    }
+   }
+  }
+ }
+]

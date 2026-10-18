@@ -33,6 +33,10 @@ from scripts.dev_workflow import containment
 INDEPENDENT_PROVIDERS = ("claude_cli", "codex_cli")
 # A worker that failed for one of these reasons is resumable later; the attempt is not counted against the repair.
 QUOTA_RE = re.compile(r"rate.?limit|usage limit|quota|overloaded|too many requests|\b429\b|\b529\b|credit balance")
+# A reviewer that cannot sign in is unavailable (owner action: log in), not a failed review (auditor fallback policy,
+# 2026-10-16). The driver never signs in or recovers credentials itself.
+AUTH_RE = re.compile(r"failed to authenticate|oauth (session|token)|not logged in|please (run .{0,20})?log ?in|"
+                     r"unauthori[sz]ed|\b401\b|invalid api key|authentication (failed|required)")
 
 # Tool policy per role. Prefix rules are a convenience, not the boundary: the driver re-checks the checkout and
 # every ref after the run and discards the result if anything changed.
@@ -529,6 +533,24 @@ class ConfigWatch:
         self.check()
 
 
+def unavailable_reason(provider, status, err, detail) -> str | None:
+    """Why a worker that did not complete is unavailable (resumable later), or None for an ordinary failure.
+    Read from the CLI's own error channels only, never from the worker's free text (independent reviews S1-02,
+    AF-S1-01, AF-S2-01): codex writes its whole session (prompt and activity) to stderr, so only its 'ERROR: ' lines
+    count; claude's are stderr and its is_error result. A timeout is a timeout whatever the text says."""
+    if status == "TIMED_OUT":
+        return "TIMEOUT"
+    lines = (err or "").splitlines()
+    if provider == "codex_cli":
+        lines = [ln for ln in lines if ln.startswith("ERROR: ")]
+    cli_err = " ".join([" ".join(lines)[-2000:], str(detail or "")]).lower()
+    if QUOTA_RE.search(cli_err):
+        return "QUOTA"
+    if AUTH_RE.search(cli_err):
+        return "AUTH"
+    return None
+
+
 def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path, *,
                protected: list[str] = (), timeout_s: float = 3600, env_extra: dict | None = None) -> dict:
     """Run one worker process. Returns a record; never raises for worker failure."""
@@ -650,10 +672,8 @@ def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) ->
     if "status" not in rec:
         rec["status"] = "COMPLETED" if rec.get("exit_code") == 0 else "FAILED"
     if rec["status"] != "COMPLETED":
-        blob = " ".join([text[-2000:], (err or "")[-2000:], str(rec.get("detail", ""))]).lower()
-        if QUOTA_RE.search(blob):
-            rec["unavailable_reason"] = "QUOTA"
-        elif rec["status"] == "TIMED_OUT":
-            rec["unavailable_reason"] = "TIMEOUT"
+        why = unavailable_reason(rec["provider"], rec["status"], err, rec.get("detail"))
+        if why:
+            rec["unavailable_reason"] = why
     rec["result_text"] = text
     return rec

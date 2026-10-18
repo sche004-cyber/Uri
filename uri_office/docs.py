@@ -119,6 +119,37 @@ class Documents:
         threading.Thread(target=self._prepare, args=(s,), daemon=True, name=f"doc-{did}").start()
         return s
 
+    def open_bytes(self, name: str, kind: str, data: bytes, *, owner: str) -> DocSession:
+        """Authoring (milestone A): a preview document for a working copy held by an authoring session. Same
+        sanitize -> render -> raster path as an opened file; no grant (nothing on disk belongs to it)."""
+        if kind not in ("docx", "pptx"):
+            raise OfficeError("UNSUPPORTED_KIND", "", 415)
+        did = uuid.uuid4().hex[:16]
+        folder = self.root / did
+        folder.mkdir(parents=True)
+        try:
+            src = folder / f"source.{kind}"
+            src.write_bytes(data)
+            sha = hashlib.sha256(data).hexdigest()
+            s = DocSession(did, kind, name, None, src, sha, len(data), folder)
+            r = sanitize.make_render_copy(src, folder, kind)
+            s.render_copy = r.path
+            for check, sev, msg in r.findings():
+                s.findings.add(check, "structural", sev, msg, file="source")
+            src.unlink()
+            if kind == "docx":
+                s.outline = content.docx_outline(r.path)
+            else:
+                s.slides, s.outline = content.pptx_outline(r.path)
+        except BaseException:
+            shutil.rmtree(folder, ignore_errors=True)
+            raise
+        s.cache = self.hub.cache_dir(sha, kind)
+        with self._lock:
+            self.sessions[did] = s
+        threading.Thread(target=self._prepare, args=(s,), daemon=True, name=f"doc-{did}").start()
+        return s
+
     def _prepare(self, s: DocSession):
         t0 = time.perf_counter()
         with self._lock:
@@ -208,7 +239,8 @@ class Documents:
         if s is None:
             raise OfficeError("UNKNOWN_DOCUMENT", "", 404)
         self.hub.lo.cancel_owner(did)
-        self.grants.revoke(s.grant_id)
+        if s.grant_id is not None:                      # an authoring preview holds no grant
+            self.grants.revoke(s.grant_id)
         s.ready.wait(5)
         shutil.rmtree(s.folder, ignore_errors=True)
         self.audit("office.document_closed", {"document_id": did})

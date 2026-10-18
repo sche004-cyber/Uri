@@ -9,6 +9,7 @@ import threading
 
 import pytest
 from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
 
 from uri_office.errors import OfficeError
 from uri_office.service import Office, serve
@@ -239,6 +240,66 @@ def test_save_as_goes_only_to_the_granted_new_file(svc, rich, tmp_path):
     assert load_workbook(dest)["Sales"]["B2"].value == 12 and load_workbook(rich)["Sales"]["B2"].value == 10
     st, out, _ = call(port, token, "POST", f"/workbook/{wid}/propose_save", {"save_as_path": str(rich)})
     assert st == 409 and out["error"] == "DESTINATION_EXISTS"
+
+
+@pytest.mark.parametrize("finish", ["decline", "supersede", "apply", "close"])
+def test_save_as_grant_released_when_card_closes(tmp_path, rich, finish):
+    source = tmp_path / "source"
+    target = tmp_path / "target"
+    source.mkdir()
+    target.mkdir()
+    original = source / "input.xlsx"
+    shutil.copy2(rich, original)
+    office = Office(tmp_path / "state", allowed_roots=[source])
+    office.grants.add_folder(str(target))
+    wid = office.open_local(str(original))["workbook_id"]
+    office.edit(wid, {"sheet": "Sales", "cell": "B2", "value": 12})
+    card = office.propose_save(wid, {"save_as_path": str(target / "copy.xlsx")})
+    with pytest.raises(OfficeError) as error:
+        office.grants.remove_folder(str(target))
+    assert error.value.code == "FOLDER_IN_USE"
+    if finish == "decline":
+        office.action(action_for(card["messages"], "reject", "office.reject_change"))
+    elif finish == "supersede":
+        office.propose_save(wid, {})
+    elif finish == "apply":
+        office.action(action_for(card["messages"], "apply", "office.apply_change"))
+    else:
+        office.close(wid)
+    assert office.grants.remove_folder(str(target))["removed"] is True
+    if finish != "close":
+        assert office.grants.get(office.sessions[wid].grant_id, "open").path == original
+
+
+def test_failed_save_as_proposal_does_not_hold_folder(tmp_path, rich):
+    source = tmp_path / "source"
+    target = tmp_path / "target"
+    source.mkdir()
+    target.mkdir()
+    original = source / "input.xlsx"
+    shutil.copy2(rich, original)
+    office = Office(tmp_path / "state", allowed_roots=[source])
+    office.grants.add_folder(str(target))
+    wid = office.open_local(str(original))["workbook_id"]
+    with pytest.raises(OfficeError) as error:
+        office.propose_save(wid, {"save_as_path": str(target / "copy.xlsx")})
+    assert error.value.code == "NOTHING_TO_SAVE"
+    assert office.grants.remove_folder(str(target))["removed"] is True
+
+
+def test_patterned_fill_is_refused_before_a_save_card(tmp_path, rich):
+    book = tmp_path / "pattern.xlsx"
+    shutil.copy2(rich, book)
+    wb = load_workbook(book)
+    wb["Sales"]["B2"].fill = PatternFill(patternType="darkGrid", fgColor="FF112233", bgColor="FF445566")
+    wb.save(book)
+    office = Office(tmp_path / "state", allowed_roots=[tmp_path])
+    wid = office.open_local(str(book))["workbook_id"]
+    office.edit(wid, {"sheet": "Sales", "cell": "B2", "style": {"bg": "#ABCDEF"}})
+    with pytest.raises(OfficeError) as error:
+        office.propose_save(wid, {})
+    assert error.value.code == "STYLE_NOT_SUPPORTED"
+    assert office.approvals.open_messages(wid) == []
 
 
 def test_closed_workbook_grant_is_revoked(svc, rich):

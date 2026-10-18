@@ -110,9 +110,69 @@ export function stripCellStyles(params) {
   return n;
 }
 
+// OD-R3 (2026-10-16): for local workbooks URI now saves this subset of formatting (uri_office/xlsx_styles.py):
+// bold, italic, underline, text colour, fill, number format, horizontal alignment and wrap. Any other style property
+// (font size or family, borders, strikethrough, vertical alignment, rotation...) is still removed before it is
+// applied, so what is shown stays what is saved.
+export const SAVED_STYLE_KEYS = Object.freeze(['bl', 'it', 'ul', 'cl', 'bg', 'n', 'ht', 'tb']);
+
+// Keep only the saved keys of every user cell style in a set-range-values mutation's params. A style given as a
+// reference (string) or a clear (null) cannot be split and is removed. Returns how many cells lost something.
+export function keepSavedStyles(params) {
+  let n = 0;
+  const cv = params && params.cellValue;
+  if (!cv || typeof cv !== 'object') return 0;
+  for (const cols of Object.values(cv)) {
+    for (const cell of Object.values(cols || {})) {
+      if (!cell || typeof cell !== 'object' || !('s' in cell)) continue;
+      const s = cell.s;
+      if (!s || typeof s !== 'object') { delete cell.s; n++; continue; }
+      let lost = false;
+      for (const k of Object.keys(s)) if (!SAVED_STYLE_KEYS.includes(k)) { delete s[k]; lost = true; }
+      if (s.ul && typeof s.ul === 'object') for (const k of Object.keys(s.ul)) if (k !== 's') { delete s.ul[k]; lost = true; }
+      if (!Object.keys(s).length) delete cell.s;
+      if (lost) n++;
+    }
+  }
+  return n;
+}
+
+function hex(c) {
+  if (!c) return null;
+  const v = String(c.rgb || '').trim();
+  let m = /^#?([0-9a-f]{6})$/i.exec(v);
+  if (m) return '#' + m[1].toUpperCase();
+  m = /^#?([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(v);
+  if (m) return ('#' + m[1] + m[1] + m[2] + m[2] + m[3] + m[3]).toUpperCase();
+  m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(v);
+  if (m) return '#' + [m[1], m[2], m[3]].map((x) => Number(x).toString(16).padStart(2, '0')).join('').toUpperCase();
+  return null;
+}
+
+// Univer IStyleData -> URI's style dict (the inverse of convert.js toUniverStyle). `markRestore`: the background the
+// cell had before URI marked it (a change mark is never saved as a fill).
+export function fromUniverStyle(st, markRestore) {
+  const out = {};
+  if (!st) return out;
+  if (st.bl === 1) out.b = true;
+  if (st.it === 1) out.i = true;
+  if (st.ul && st.ul.s === 1) out.u = true;
+  const fc = hex(st.cl);
+  if (fc && fc !== '#000000') out.fc = fc;
+  const bg = markRestore !== undefined ? hex(markRestore ? { rgb: markRestore } : null) : hex(st.bg);
+  if (bg) out.bg = bg;
+  if (st.n && st.n.pattern && st.n.pattern !== 'General') out.nf = st.n.pattern;
+  const ha = { 1: 'left', 2: 'center', 3: 'right' }[st.ht];
+  if (ha) out.ha = ha;
+  if (st.tb === 3) out.wrap = true;
+  return out;
+}
+
 // `isApplying()` is true while the page itself changes cells (loads and change marks), which may set backgrounds.
-// `onRefused(id)` lets the page tell the host once per refused or stripped action.
-export function guardFormatting(commandService, CancelError, isApplying = () => false, onRefused = () => {}) {
+// `onRefused(id)` lets the page tell the host once per refused or stripped action. `allowSavedStyles()` is true for a
+// local workbook: then the saved subset is applied and reported, and only the rest is removed.
+export function guardFormatting(commandService, CancelError, isApplying = () => false, onRefused = () => {},
+  allowSavedStyles = () => false) {
   return commandService.beforeCommandExecuted((info, options) => {
     if (!info || isApplying()) return;
     if (FORMAT_COMMANDS.has(info.id)) {
@@ -122,7 +182,7 @@ export function guardFormatting(commandService, CancelError, isApplying = () => 
     if (info.id === 'sheet.mutation.set-range-values') {
       const o = options || {};
       if (o.onlyLocal || o.fromFormula) return;
-      if (stripCellStyles(info.params)) onRefused(info.id);
+      if (allowSavedStyles() ? keepSavedStyles(info.params) : stripCellStyles(info.params)) onRefused(info.id);
     }
   });
 }

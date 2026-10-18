@@ -133,7 +133,23 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
     }
   }
 
-  String _human(String code, String? detail) => switch (code) {
+  /// Independent reviews S1-03 / S2: plain words for refused suggestions, never a leading raw code; a code without
+  /// its own sentence is described by the service's short detail.
+  String _refusedWords(String code, String? detail) => humanRefusal(code, detail, suggestion: true);
+
+  String _human(String code, String? detail) => humanRefusal(code, detail);
+
+  /// Independent reviews S1-03 / S3-02: plain words for every Office refusal the owner can meet in the sheet pane; a
+  /// code without its own sentence is described by the service's short detail, never as "Refused: CODE".
+  static String humanRefusal(String code, String? detail, {bool suggestion = false}) {
+    final known = _knownRefusal(code, detail);
+    if (known != null) return known;
+    final d = (detail ?? '').trim();
+    if (d.isEmpty || d == 'None') return suggestion ? 'that change is not possible here' : 'URI could not do that here.';
+    return suggestion ? d : 'URI could not do that: $d.';
+  }
+
+  static String? _knownRefusal(String code, String? detail) => switch (code) {
         'PATH_REFUSED' => 'That file cannot be used here (${detail ?? ''}).',
         'TARGET_CHANGED' => 'The file changed outside URI since it was opened. Reload it or save as a new file.',
         'FILE_OPEN_ELSEWHERE' => 'The file is open in Excel. Close it there first.',
@@ -148,9 +164,23 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
         'BRAIN_UNAVAILABLE' => 'The local Brain is not running. Nothing was changed.',
         'CELL_NOT_EDITABLE' => 'That cell is part of a table header, shared formula or merged range and cannot be edited here.',
         'STALE_CHANGE' || 'STALE_SURFACE' || 'CHANGE_MISMATCH' => 'This changed since it was shown. Please review it again.',
+        'ROW_CHANGE_PENDING' => 'Save the earlier row change on this sheet first.',
+        'STRUCTURE_NOT_SUPPORTED' =>
+          'URI cannot add or remove rows in this sheet safely${detail == null || detail.isEmpty ? '' : ': $detail'}.',
+        'ROW_AND_CELL_CHANGES' => 'Ask for row changes and cell changes on the same sheet separately.',
         'RELOAD_REQUIRED' =>
           'The sheet\'s rows or sheets changed with the last save. The sheet was reloaded; nothing was changed by that edit.',
-        _ => 'Refused: $code${detail == null || detail.isEmpty ? '' : ' ($detail)'}',
+        'NOTHING_TO_SAVE' => 'There are no accepted changes to save.',
+        'DESTINATION_EXISTS' => 'A file with that name already exists. Nothing was replaced; choose another name.',
+        'CHANGE_CANNOT_BE_SHOWN' => 'This change cannot be shown on the sheet, so it cannot be saved from here.',
+        'FILE_READ_ONLY' => 'The file is read-only, so it was not replaced. Save as a new file instead.',
+        'CANCELLED' => 'Stopped. Nothing was changed.',
+        'DRAFT_TOO_LARGE' => 'There are too many unsaved changes. Save or undo some first.',
+        'NO_GRANT' => 'This file was not opened through URI. Open it again.',
+        'FILE_TOO_LARGE' => 'The file is too large for URI Office.',
+        'UNKNOWN_SHEET' => 'That sheet is not in this workbook.',
+        'BAD_ROWS' => 'That row position or count is not possible.',
+        _ => null,
       };
 
   Future<void> _apply(Map<String, dynamic> v) async {
@@ -167,8 +197,11 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
   Future<void> _sendLoad() async {
     final v = view;
     if (!pageReady || v == null) return;
-    await surface.post({'type': 'load', 'workbook': v['workbook'], 'marks': marks()});
+    await surface.post({'type': 'load', 'workbook': v['workbook'], 'marks': marks(), 'formatting': savesFormatting});
   }
+
+  /// OD-R3 / XF-1: the service saves the owner's formatting for local workbooks (not Google Sheets, not a new one).
+  bool get savesFormatting => view?['engine'] == 'local';
 
   Future<void> _refreshDraft(Map<String, dynamic> r) async {
     final d = r['draft'];
@@ -178,7 +211,10 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       final w = r['workbook'];
       final lv = r['layout_version'];
       view = {...view!, 'draft': d, if (w is Map) 'workbook': w, 'layout_version': ?lv};
-      if (pageReady) await surface.post({'type': 'load', 'workbook': view!['workbook'], 'marks': marks()});
+      if (pageReady) {
+        await surface.post({'type': 'load', 'workbook': view!['workbook'], 'marks': marks(),
+          'formatting': savesFormatting});
+      }
     }
   }
 
@@ -198,15 +234,26 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
           'layout_version': ?lv};
         _pageEdits.add((wid, body));
         await _sendPageEdits();
+      case 'format':                                      // OD-R3: the owner's formatting, saved with the next save
+        final wid = workbookId;
+        if (wid == null || !savesFormatting) return;
+        final lv = view?['layout_version'];
+        _pageEdits.add((wid, {'sheet': m['sheet'], 'cell': m['cell'], 'style': m['style'], 'layout_version': ?lv}));
+        await _sendPageEdits();
       case 'error':
         notice = switch (m['code']) {
           'STRUCTURE_CHANGE_NOT_SUPPORTED' =>
-            'Inserting, deleting or moving rows and columns, sorting, and adding or renaming sheets are not '
-                'available in this panel yet. Nothing was changed.',
+            'To insert or delete rows, ask URI (for example "insert a row above row 5"); it shows the change for '
+                'you to approve. Columns, moving and sorting, and adding or renaming sheets are not available here '
+                'yet. Nothing was changed.',
           // XF-1: formatting is not saved yet, so the page does not apply it (values and formulas still are).
           'FORMAT_CHANGE_NOT_SAVED' => 'Formatting (bold, colours, number formats, borders, merged cells) and '
               'column widths or row heights are not saved by this panel yet, so they were not applied. Values and '
               'formulas are kept.',
+          // OD-R3: bold, italic, underline, colours, fill, number formats, alignment and wrap are saved now.
+          'FORMAT_PARTLY_NOT_SAVED' => 'Bold, italic, underline, text colour, fill, number formats, alignment and '
+              'wrap are saved. Font size and family, borders, merged cells and column widths or row heights are not '
+              'saved by this panel yet, so those parts were not applied.',
           _ => 'The sheet view reported a problem (${m['code']}).',
         };
         notifyListeners();
@@ -374,10 +421,9 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
       if (refused.isNotEmpty) {
         // Say why, so the owner can rephrase: the code and the service's short detail of each refused op.
         final why = {
-          for (final x in refused.whereType<Map>())
-            '${x['code']}${(x['detail'] as String? ?? '').isEmpty ? '' : ': ${x['detail']}'}',
+          for (final x in refused.whereType<Map>()) _refusedWords('${x['code']}', x['detail'] as String?),
         };
-        notice = '${refused.length} suggested change(s) were refused as unsafe or invalid (${why.join('; ')}).';
+        notice = '${refused.length} suggested change(s) were not made: ${why.join('; ')}';
       }
       final found = (r['findings'] as List?)?.whereType<Map>().toList();
       if (found != null) {
@@ -441,13 +487,22 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
 
   Future<void> proposeSave({String? saveAsPath}) => _guard(() async {
         final r = await client.proposeSave(workbookId!, saveAsPath: saveAsPath);
+        _dropOlderCards();
         hub.apply((r['messages'] as List?) ?? const []);
       });
 
   Future<void> proposeShare() => _guard(() async {
         final r = await client.proposeShare(workbookId!);
+        _dropOlderCards();
         hub.apply((r['messages'] as List?) ?? const []);
       });
+
+  /// The service keeps one open approval per workbook and closes the older one when a new one is proposed; the app
+  /// drops the older card too, so it never shows a card that can only be refused (live run a5: two save cards).
+  void _dropOlderCards() {
+    final ids = [for (final s in hub.surfaces) if (s.id.startsWith('office.$workbookId.')) s.id];
+    if (ids.isNotEmpty) hub.apply([for (final id in ids) {'version': 'v0.9', 'deleteSurface': {'surfaceId': id}}]);
+  }
 
   Future<void> editCopy() => _guard(() async => _apply(await client.editCopy(workbookId!)));
 

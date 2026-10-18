@@ -21,15 +21,20 @@ def _proposed(o, wid):
 
 
 def test_leftover_row_op_is_dropped_after_rows_moved(office):  # noqa: F811
+    # Independent review S1-01 (3e202efc): a sheet now takes one row change per save, so a second row change on the
+    # same sheet is refused when it is proposed (it can no longer be left over after the rows moved).
     o, wid, g, b = office
     b.ops = [{"op": "insert_rows", "sheet": "S", "at": 1, "count": 1},
              {"op": "delete_rows", "sheet": "S", "at": 3, "count": 1}]          # row 3 is 'c' as planned
+    with pytest.raises(OfficeError) as e:
+        o.instruct(wid, {"text": "t", "active_sheet": "S"})
+    assert e.value.code == "ROW_CHANGE_PENDING" and o.sessions[wid].draft.changes == []
+    b.ops = [{"op": "insert_rows", "sheet": "S", "at": 1, "count": 1}]
     new = o.instruct(wid, {"text": "t", "active_sheet": "S"})["proposed"]
     ins = next(c for c in o.sessions[wid].draft.changes if c["cid"] == new[0])
     o.decide(wid, {"change_id": ins["cid"], "decision": "accept", "change_sha256": change_sha256(ins)})
     r = o.action(_act(o.propose_save(wid, {})))
-    assert r["status"] == "applied" and r["proposals_dropped"] == 1               # was 0
-    assert _proposed(o, wid) == []                                               # the delete of old row 3 is gone
+    assert r["status"] == "applied" and r["proposals_dropped"] == 0
     assert g.sheets["S"] == {(2, 1): "a", (3, 1): "b", (4, 1): "c"}
 
 

@@ -17,10 +17,15 @@ Rules
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import posixpath
+import re
+import secrets
 import shutil
+import stat
 import tempfile
+import time
 import zipfile
 from pathlib import Path
 
@@ -212,9 +217,12 @@ def locked_cells(path: Path) -> dict:
     return out
 
 
-def patch(src: Path, dst: Path, edits: list) -> dict:
-    """Apply `edits` to the package at `src` and write the result to `dst` (may equal `src`)."""
-    if not edits:
+def patch(src: Path, dst: Path, edits: list, struct_ops=(), formats=(), *, create_only=False,
+          expected_sha256: str | None = None, backup: Path | None = None) -> dict:
+    """Apply `edits` to the package at `src` and write the result to `dst` (may equal `src`). Cell edits name cells
+    as shown (before any row moves), as for Google; then `struct_ops` (local row insert/delete, OD-R3) run in order,
+    each insert followed by the values it carries, written into its new rows."""
+    if not edits and not struct_ops and not formats:
         raise OfficeError("NOTHING_TO_SAVE")
     try:
         zin = zipfile.ZipFile(src)
@@ -223,6 +231,7 @@ def patch(src: Path, dst: Path, edits: list) -> dict:
     with zin:
         order = zin.infolist()
         parts = {i.filename: zin.read(i.filename) for i in order}
+    orig = dict(parts)
     by_sheet = sheet_parts(parts)
     grouped: dict[str, list] = {}
     for e in edits:
@@ -247,6 +256,31 @@ def patch(src: Path, dst: Path, edits: list) -> dict:
         _extend_dimension(root, [e["cell"] for e in es])
         parts[part] = _ser(root)
         changed.add(part)
+    if formats:                                     # XF-1: formatting as shown, before any row moves
+        from . import xlsx_styles
+        changed |= xlsx_styles.apply_formats(parts, list(formats))
+    if struct_ops:
+        from . import xlsx_struct
+        for op in struct_ops:
+            xlsx_struct.apply_row_op(parts, op)
+            if op.get("values"):
+                part = sheet_parts(parts)[op["sheet"]]
+                root = _xml(parts[part])
+                sd = root.find(M + "sheetData")
+                cells = []
+                for dr, row in enumerate(op["values"]):
+                    for dc, cell in enumerate(row):
+                        if cell.get("v") in (None, "") and not cell.get("f"):
+                            continue
+                        ref = refs.cell_ref(1 + dc, op["at"] + dr)
+                        if _in_merged_non_anchor(root, 1 + dc, op["at"] + dr):
+                            raise OfficeError("CELL_NOT_EDITABLE", f"{ref}: inside a merged range")
+                        formulas |= _set_cell(_get_cell(sd, ref), {"formula": cell["f"]} if cell.get("f")
+                                              else {"value": cell["v"]})
+                        cells.append(ref)
+                _extend_dimension(root, cells)
+                parts[part] = _ser(root)
+        changed |= {n for n in parts if parts[n] != orig.get(n)} | {n for n in orig if n not in parts}
     wb = _xml(parts["xl/workbook.xml"])
     calc = wb.find(M + "calcPr")
     if calc is None:
@@ -274,15 +308,169 @@ def patch(src: Path, dst: Path, edits: list) -> dict:
             for info in order:
                 if info.filename in parts:
                     z.writestr(info, parts[info.filename], compress_type=info.compress_type)
-    atomic_write(Path(dst), write, mode_from=Path(src))
+    # Independent reviews (3e202efc) S1-03 / S1-02: Excel saves publish as authoring does - Save as never replaces a
+    # name, Save replaces only the checked original after a durable backup (the defaults keep a plain write).
+    atomic_write(Path(dst), write, mode_from=Path(src), create_only=create_only, expected_sha256=expected_sha256,
+                 backup=backup)
     return {"changed_parts": sorted(changed)}
 
 
-def atomic_write(dst: Path, write, mode_from: Path | None = None):
+def _publish_no_replace(src: Path, dst: Path):
+    """Give `src`'s file the name `dst` only if `dst` does not exist (FileExistsError otherwise). A hard link where the
+    file system has them; on Windows without hard links (FAT, exFAT, some shares) a rename, which never replaces an
+    existing name there. Elsewhere a missing hard link is an error, never a replacing rename.
+    Independent review S3-03: on Windows always the rename. A hard link shares the file's attributes, so clearing the
+    read-only bit of the leftover name cleared it on the published file too."""
+    if os.name == "nt":
+        os.rename(src, dst)
+        return
+    try:
+        os.link(src, dst)
+    except FileExistsError:
+        raise
+    except OSError:
+        if os.name != "nt":
+            raise
+        os.rename(src, dst)
+
+
+HOLD_SUFFIX = ".uri-office.hold"
+
+
+def _unlink_quietly(path: Path):
+    """Remove a temp or hold file of ours; a read-only bit copied from the original is cleared first. Used only after
+    the outcome is decided: a cleanup error never changes what the owner is told (independent review C1-02)."""
+    # Independent reviews S1-07 / S3-03: on POSIX a temp or hold file can be a hard link of the published name, and a
+    # mode change applies to both names, so it is unlinked as it is (that needs only write access to the folder). On
+    # Windows nothing is hard-linked (publish is a rename), and a read-only leftover is cleared after a failed unlink.
+    try:
+        if os.path.lexists(path):
+            try:
+                path.unlink()
+            except PermissionError:
+                if os.name != "nt":
+                    raise
+                os.chmod(path, stat.S_IWRITE | stat.S_IREAD)
+                path.unlink()
+    except OSError:
+        pass
+
+
+def _write_durably(path: Path, data: bytes):
+    with open(path, "wb") as fh:
+        fh.write(data)
+        fh.flush()
+        os.fsync(fh.fileno())
+
+
+STALE_SECONDS = 60          # leftovers younger than this may belong to a Save still in progress
+
+
+KEEP_SUFFIX = ".uri-office.keep"
+
+
+def _stem(dst: Path) -> str:
+    """The name part of this file's holds. Independent review C3-02: a hold name is 37 characters longer than the
+    file name, so a long name uses a fixed hash of the name instead (Windows names stop at 255 characters)."""
+    if len(dst.name) + 40 <= 250:
+        return dst.name
+    return "h" + hashlib.sha256(dst.name.encode("utf-8")).hexdigest()[:24]
+
+
+def _hold_name(dst: Path, sha12: str, created: int, rand: str, suffix: str = HOLD_SUFFIX) -> Path:
+    return dst.parent / f".{_stem(dst)}.{sha12}-{created:08x}{rand}{suffix}"
+
+
+def _ours(dst: Path):
+    """This file's own holds and temp files, matched by EXACT name (independent review C2-01: a prefix glob also
+    matched 'Plan.pptx.v2.pptx' when looking for 'Plan.pptx'). A hold name carries the first 12 hex digits of the
+    SHA-256 of the bytes it holds (C2-04: a wrong or empty hold is never put back) and its creation time (C3-03: a
+    rename keeps the original's modification time, so that cannot tell a fresh hold from an old one). '.keep' files
+    hold bytes that are not a URI original (another program's, C3-04): they are put back but never removed."""
+    stem = re.escape("." + _stem(dst) + ".")
+    hold_re = re.compile(stem + r"([0-9a-f]{12})-([0-9a-f]{8})[0-9a-f]{8}(" + re.escape(HOLD_SUFFIX) + "|"
+                         + re.escape(KEEP_SUFFIX) + ")")
+    tmp_re = re.compile(re.escape("." + dst.name + ".") + r"[a-z0-9_]{8}" + re.escape(".uri-office.tmp"))
+    holds, tmps = [], []
+    for entry in os.scandir(dst.parent):
+        m = hold_re.fullmatch(entry.name)
+        if m:
+            holds.append((Path(entry.path), m.group(1), int(m.group(2), 16), m.group(3) == KEEP_SUFFIX))
+        elif tmp_re.fullmatch(entry.name):
+            tmps.append(Path(entry.path))
+    return holds, tmps
+
+
+def recover_held(dst: Path, *, restore_min_age: float = 0.0, cleanup_min_age: float = STALE_SECONDS) -> Path | None:
+    """Independent reviews C1-01, C2-01, C2-04, C3-03, C3-04: a Save interrupted after the original was moved aside
+    leaves it as a hold. When `dst` is missing, the newest hold whose bytes match its recorded hash is put back under
+    its own name (never replacing anything). When `dst` exists, holds of URI originals are stale (the backup in the
+    Office state keeps the original) and are removed, as are this file's leftover temp files; '.keep' files are never
+    removed. A hold created less than `restore_min_age` seconds ago is not put back (during a Save it may belong to
+    another Save in progress; at service start nothing is in progress); leftovers younger than `cleanup_min_age` are
+    not removed. Returns the restored path or None."""
+    dst = Path(dst)
+    now = time.time()
+    try:
+        holds, tmps = _ours(dst)
+    except OSError:
+        return None
+    restored = None
+    try:
+        if not os.path.lexists(dst):
+            for h, prefix, created, _keep in sorted(holds, key=lambda x: x[2], reverse=True):
+                if now - created < restore_min_age or hashlib.sha256(h.read_bytes()).hexdigest()[:12] != prefix:
+                    continue
+                try:
+                    _publish_no_replace(h, dst)
+                except FileExistsError:
+                    break
+                except OSError:
+                    continue
+                _unlink_quietly(h)                    # restored by a hard link: this name goes
+                restored = dst
+                break
+        if os.path.lexists(dst):
+            for h, _, created, keep in holds:
+                if not keep and os.path.lexists(h) and now - created >= cleanup_min_age:
+                    _unlink_quietly(h)
+            for t in tmps:
+                if now - t.stat().st_mtime >= cleanup_min_age:
+                    _unlink_quietly(t)
+    except OSError:
+        pass
+    return restored
+
+
+def glob_escape(name: str) -> str:
+    import glob
+    return glob.escape(name)
+
+
+def atomic_write(dst: Path, write, mode_from: Path | None = None, *, create_only=False,
+                 expected_sha256: str | None = None, backup: Path | None = None):
     """Write through `write(fileobj)` into a new temp file next to `dst` and move it into place. The temp file is
     created exclusively with a random name (mkstemp: O_EXCL, so a planted file or symlink is never followed), synced,
-    given the permission bits of the file it replaces (or of `mode_from` for a new file), then renamed over `dst`.
-    On Windows only the read-only bit is carried over; the folder's inherited ACL applies to the new file."""
+    given the permission bits of the file it replaces (or of `mode_from` for a new file), then published at `dst`.
+    On Windows only the read-only bit is carried over; the folder's inherited ACL applies to the new file.
+    Authoring uses a no-replace publish for Save as. For Save (`expected_sha256` + `backup`): a read-only original is
+    refused; the backup is written and synced from the checked original first; then the original name is moved aside,
+    its bytes checked again, and the new file published without replacing a name another program may have created
+    meanwhile; an interrupted Save is undone by `recover_held` (independent review C1-01, C1-02)."""
+    if expected_sha256 is not None:
+        if backup is None:
+            raise ValueError("a conditional replacement requires a backup path")
+        recover_held(dst, restore_min_age=STALE_SECONDS)
+        try:
+            st = os.stat(dst)
+        except FileNotFoundError:
+            raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new file", 409) from None
+        if not (st.st_mode & stat.S_IWRITE):
+            raise OfficeError("FILE_READ_ONLY", "the file is read-only; save as a new file", 409)
+        current = Path(dst).read_bytes()
+        if hashlib.sha256(current).hexdigest() != expected_sha256:
+            raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new file", 409)
+        _write_durably(backup, current)               # the backup exists before the original name is touched
     fd, name = tempfile.mkstemp(dir=dst.parent, prefix="." + dst.name + ".", suffix=".uri-office.tmp")
     tmp = Path(name)
     try:
@@ -293,7 +481,54 @@ def atomic_write(dst: Path, write, mode_from: Path | None = None):
         ref = dst if dst.exists() else mode_from
         if ref is not None and ref.exists():
             shutil.copymode(ref, tmp)
-        os.replace(tmp, dst)
+        if expected_sha256 is not None:
+            # C2-04: the hold name is created only by the rename below (no empty placeholder) and records the hash of
+            # the original it will hold
+            created, rand = int(time.time()), secrets.token_hex(4)
+            hold = _hold_name(dst, expected_sha256[:12], created, rand)
+            claimed = False
+            published = False
+            try:
+                try:
+                    os.replace(dst, hold)
+                    claimed = True
+                except FileNotFoundError:
+                    raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new file", 409) from None
+                if hashlib.sha256(hold.read_bytes()).hexdigest() != expected_sha256:
+                    raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; save as a new file", 409)
+                # A second process can create dst while the old name is held aside. Never replace that new file.
+                try:
+                    _publish_no_replace(tmp, dst)
+                except FileExistsError:
+                    raise OfficeError("TARGET_CHANGED", "the file changed on disk during Save; save as a new file", 409) from None
+                published = True
+            finally:
+                if claimed and not published:
+                    try:
+                        _publish_no_replace(hold, dst)
+                    except OSError:
+                        # Left aside: the other file won the name, or putting it back failed. Independent review
+                        # C3-04: when these bytes are not the original URI checked (another program wrote the file
+                        # just before), they are in no backup, so the hold is renamed '.keep' under their own hash:
+                        # recover_held puts it back if the name is free and never removes it.
+                        try:
+                            data = hold.read_bytes()
+                            actual = hashlib.sha256(data).hexdigest()
+                            if actual != expected_sha256:
+                                os.replace(hold, _hold_name(dst, actual[:12], created, rand, KEEP_SUFFIX))
+                        except OSError:
+                            pass
+                    else:
+                        _unlink_quietly(hold)
+                elif not claimed and os.path.lexists(hold):
+                    _unlink_quietly(hold)
+            _unlink_quietly(hold)                     # published: the old bytes are in the backup
+        elif create_only:
+            try:
+                _publish_no_replace(tmp, dst)
+            except FileExistsError:
+                raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409) from None
+        else:
+            os.replace(tmp, dst)
     finally:
-        if os.path.lexists(tmp):
-            tmp.unlink()
+        _unlink_quietly(tmp)

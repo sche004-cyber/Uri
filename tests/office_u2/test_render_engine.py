@@ -21,7 +21,7 @@ import psutil
 import pytest
 
 import canaries as CN
-from conftest import lo_present, needs_windows
+from tests.office_u2.conftest import lo_present, needs_windows
 from uri_office import engines as E
 from uri_office import render as R
 from uri_office import sanitize as S

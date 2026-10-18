@@ -160,4 +160,32 @@ void main() {
     b.dispose();
     await tester.pump(const Duration(seconds: 10));
   });
+
+  // Smoke test only: this ordering does not reproduce the live run a7 assertion (it passes without the fix too);
+  // the fix is evidenced by the live log and qualified by the next live run.
+  testWidgets('live run a7: closing the app with Office open does not touch a disposed target', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.binding.setSurfaceSize(const Size(1440, 900));
+    final services = _services();
+    final client = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', FakeOffice().client());
+    final appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
+    await tester.pumpWidget(MaterialApp(
+      theme: ThemeData(extensions: const [UriColors.graphite]),
+      home: AppStateScope(
+        state: appState,
+        child: LivingScope(
+          services: services,
+          child: Scaffold(body: OfficeWorkspace(environment: _env(), clientFactory: () => client)),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(services.officeTarget.value, isNotNull);
+    // The app closes: the tree goes (the workspace's release is deferred to the end of the frame) and the living
+    // scope's services are disposed before that frame ends.
+    await tester.pumpWidget(const SizedBox(), duration: Duration.zero, phase: EnginePhase.build);
+    services.dispose();
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
 }
