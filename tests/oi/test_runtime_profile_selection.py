@@ -29,17 +29,19 @@ def test_absent_file_is_the_frozen_config_object(tmp_path):
     assert R.expected_argv(out) == R.expected_argv(frozen())
 
 
-def test_valid_selection_derives_the_measured_profile(tmp_path):
-    p = PS.write(tmp_path, 65536, "gpu", False)
+@pytest.mark.parametrize("ctx,vision,pid,mmproj", [(65536, "off", "c64k-visoff-mtpoff", False),
+                                                    (32768, "gpu", "c32k-visgpu-mtpoff", True)])
+def test_valid_selection_derives_the_qualified_profile(tmp_path, ctx, vision, pid, mmproj):
+    p = PS.write(tmp_path, ctx, vision, False)
     cfg, note = PS.select(frozen(), p)
-    assert note["source"] == "selection" and note["profile"]["id"] == "c64k-visgpu-mtpoff"
+    assert note["source"] == "selection" and note["profile"]["id"] == pid
     argv = R.expected_argv(cfg)
-    assert argv[argv.index("-c") + 1] == "65536" and "--mmproj" in argv and "-md" not in argv
+    assert argv[argv.index("-c") + 1] == str(ctx) and ("--mmproj" in argv) is mmproj and "-md" not in argv
     # identical to what the host derives from its --profile argument
     import sys
     sys.path.insert(0, str(ROOT / "scripts"))
     import ws_brain_host as H
-    host_cfg = RP.derive_config(frozen(), *H.parse_profile("65536,gpu,0"))
+    host_cfg = RP.derive_config(frozen(), *H.parse_profile("%d,%s,0" % (ctx, vision)))
     assert R.expected_argv(host_cfg) == argv and R.pinned_artifacts(host_cfg) == R.pinned_artifacts(cfg)
 
 
@@ -76,6 +78,36 @@ def test_selection_cannot_name_binary_model_port_or_flags(tmp_path):
     assert note["source"] == "selection"
     assert cfg["runtime"]["binary"] == f["runtime"]["binary"] and cfg["runtime"]["port"] == f["runtime"]["port"]
     assert cfg["model"]["path"] == f["model"]["path"] and "0.0.0.0" not in " ".join(R.expected_argv(cfg))
+
+
+UNQUALIFIED = [k for k in RP.MEASURED_MIB if k not in PS.SELECTABLE]
+
+
+def test_selectable_is_frozen_plus_the_two_qualified_profiles():
+    assert set(PS.SELECTABLE) == {RP.FROZEN_KEY, (65536, "off", False), (32768, "gpu", False)}
+    assert all(k in RP.MEASURED_MIB for k in PS.SELECTABLE)
+    assert (65536, "gpu", False) in UNQUALIFIED          # P1 stays unqualified (D3: CRASH-1, DEMOTE-P1)
+
+
+@pytest.mark.parametrize("key", UNQUALIFIED)
+def test_measured_but_unqualified_profile_is_not_followed(tmp_path, key):
+    ctx, vision, mtp = key
+    p = write_raw(tmp_path, {"schema": PS.SCHEMA, "ctx": ctx, "vision": vision, "mtp": mtp})
+    cfg = frozen()
+    out, note = PS.select(cfg, p)
+    assert out is cfg and note["source"] == "frozen" and note["error"] == "PROFILE_NOT_QUALIFIED"
+    with pytest.raises(RP.ProfileError) as e:
+        PS.write(tmp_path / "w", ctx, vision, mtp)
+    assert e.value.code == "PROFILE_NOT_QUALIFIED" and not PS.selection_path(tmp_path / "w").exists()
+
+
+def test_follower_ignores_a_switch_to_an_unqualified_profile(tmp_path):
+    p = PS.selection_path(tmp_path)
+    fol = PS.ProfileFollower(frozen(), p, FakeManager)
+    PS.write(tmp_path, 65536, "off", False)
+    assert fol.refresh() and RP.describe(fol.cfg)["id"] == "c64k-visoff-mtpoff"
+    write_raw(tmp_path, {"schema": PS.SCHEMA, "ctx": 65536, "vision": "gpu", "mtp": False})
+    assert fol.refresh() and fol.cfg is fol.frozen and fol.note["error"] == "PROFILE_NOT_QUALIFIED"
 
 
 def test_write_refuses_unmeasured(tmp_path):
@@ -186,7 +218,7 @@ def test_on_change_is_delivered_in_order_under_concurrency(tmp_path):
         seen.append(RP.describe(cfg)["id"])
     p = PS.selection_path(tmp_path)
     fol = PS.ProfileFollower(frozen(), p, FakeManager, on_change=slow_sink)
-    combos = [(65536, "off", False), (32768, "gpu", False), (16384, "off", False), (131072, "off", False)]
+    combos = [(65536, "off", False), (32768, "gpu", False), (32768, "gpu", True), (65536, "off", False)]
     for i in range(20):
         PS.write(tmp_path, *combos[i % len(combos)])
         ts = [threading.Thread(target=fol.status) for _ in range(4)]

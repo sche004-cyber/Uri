@@ -25,9 +25,13 @@ import time
 import uuid
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-RT = ROOT / "runtime-c"
+import os as _os
+# Which materialized runtime (default e = f3d5eb29; f = the D3 guard commit c3fc8bbc, 2026-10-18 integration).
+RT_ID = _os.environ.get("URI_LIVE_RT", "e")
+RT = ROOT / ("runtime-" + RT_ID)
 SRC = pathlib.Path(r"D:\uri-dev\uri-runtime-profiles-integ")
 sys.path.insert(0, str(SRC))
+sys.path.insert(0, str(ROOT / "tools"))
 import psutil  # noqa: E402
 from uri_operational_intelligence import brain_health as BH, gpu_lease as G, runtime_v1 as R  # noqa: E402
 from uri_operational_intelligence import runtime_profile_selection as PS  # noqa: E402
@@ -35,7 +39,7 @@ from uri_operational_intelligence import runtime_profile_selection as PS  # noqa
 LABEL = sys.argv[1]
 OUT = ROOT / "evidence" / "switch_live" / LABEL
 OUT.mkdir(parents=True, exist_ok=True)
-INST = json.loads((ROOT / "evidence" / "provision-c.json").read_text())
+INST = json.loads((ROOT / "evidence" / ("provision-%s.json" % RT_ID)).read_text())
 CLIENT = pathlib.Path(INST["client_root"])
 CONTROL = CLIENT / "control" / "oi"
 HOST_STATE = ROOT / "fixtures" / f"brain-state-{LABEL}"
@@ -162,7 +166,9 @@ def stop_host(host):
 
 
 def main():
-    rec = {"label": LABEL, "session_id": SESSION, "steps": [], "commit": [], "classification": "STARTED"}
+    import binding
+    rec = {"label": LABEL, "session_id": SESSION, "steps": [], "commit": [], "classification": "STARTED",
+           "binding": binding.require(RT)}
     man = json.loads(pathlib.Path(INST["server_manifest"]).read_text())
     srv = subprocess.Popen([str(RT / ".venv/Scripts/python.exe"), "-B", "-I", str(RT / "scripts/run_uri_integrated_server.py"),
                             "--manifest", INST["server_manifest"]], cwd=man["state_root"], stdin=subprocess.DEVNULL,

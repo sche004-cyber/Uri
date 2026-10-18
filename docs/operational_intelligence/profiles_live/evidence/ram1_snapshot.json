@@ -1,0 +1,72 @@
+﻿{
+    "utc":  "2026-10-17T14:49:35.6672533Z",
+    "free_phys_mib":  5089,
+    "commit_used_mib":  53958,
+    "commit_limit_mib":  58197,
+    "commit_free_mib":  4239,
+    "top_private":  [
+                        {
+                            "pid":  8180,
+                            "name":  "llama-server",
+                            "private_mib":  17400,
+                            "ws_mib":  2777,
+                            "started":  "2026-10-17T20:09:51"
+                        },
+                        {
+                            "pid":  6664,
+                            "name":  "powershell",
+                            "private_mib":  4012,
+                            "ws_mib":  894,
+                            "started":  "2026-10-16T23:01:09"
+                        },
+                        {
+                            "pid":  9144,
+                            "name":  "powershell",
+                            "private_mib":  3991,
+                            "ws_mib":  983,
+                            "started":  "2026-10-16T07:14:44"
+                        },
+                        {
+                            "pid":  5144,
+                            "name":  "claude",
+                            "private_mib":  1355,
+                            "ws_mib":  572,
+                            "started":  "2026-10-15T08:54:24"
+                        },
+                        {
+                            "pid":  22428,
+                            "name":  "claude",
+                            "private_mib":  776,
+                            "ws_mib":  328,
+                            "started":  "2026-10-15T22:15:29"
+                        },
+                        {
+                            "pid":  6544,
+                            "name":  "claude",
+                            "private_mib":  704,
+                            "ws_mib":  287,
+                            "started":  "2026-10-17T12:45:34"
+                        },
+                        {
+                            "pid":  22468,
+                            "name":  "claude",
+                            "private_mib":  698,
+                            "ws_mib":  373,
+                            "started":  "2026-10-17T19:40:28"
+                        },
+                        {
+                            "pid":  25512,
+                            "name":  "claude",
+                            "private_mib":  590,
+                            "ws_mib":  247,
+                            "started":  "2026-10-17T19:11:07"
+                        },
+                        {
+                            "pid":  10892,
+                            "name":  "ChatGPT",
+                            "private_mib":  434,
+                            "ws_mib":  305,
+                            "started":  "2026-10-15T08:54:53"
+                        }
+                    ]
+}

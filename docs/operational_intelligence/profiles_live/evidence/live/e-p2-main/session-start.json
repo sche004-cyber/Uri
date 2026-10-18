@@ -1,0 +1,43 @@
+{
+ "label": "e-p2-main",
+ "port": 18334,
+ "started_utc": "2026-10-18T03:16:53.020986+00:00",
+ "no_brain": false,
+ "profile_arg": "65536,off,0",
+ "profile": {
+  "id": "c64k-visoff-mtpoff",
+  "ctx": 65536,
+  "vision": "off",
+  "mtp": false,
+  "required_mib": 13658,
+  "qualified": false,
+  "frozen": false
+ },
+ "verified": {
+  "ok": true,
+  "mismatched": [],
+  "checked_files": 358,
+  "runtime_head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "materialized_from": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "binding": {
+   "runtime_root": "D:\\uri-dev\\uri-profiles-live\\runtime-e",
+   "materialized_from": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "candidate_head_now": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "candidate_tracked_changes": [],
+   "runtime_files_checked": 358,
+   "mismatched": [],
+   "ok": true
+  }
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "override": false,
+ "server_pid": 6920,
+ "server_listener_pid": 10632,
+ "server_listen_s": 1.891,
+ "server_listening": true
+}

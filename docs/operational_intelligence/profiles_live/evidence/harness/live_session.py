@@ -18,7 +18,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 LABEL = sys.argv[1]
 MINUTES = float(sys.argv[sys.argv.index("--minutes") + 1]) if "--minutes" in sys.argv else 50
 NO_BRAIN = "--no-brain" in sys.argv
-SRC, RT = pathlib.Path(r"D:\uri-dev\uri-runtime-profiles-integ"), ROOT / "runtime-c"
+SRC, RT = pathlib.Path(r"D:\uri-dev\uri-runtime-profiles-integ"), ROOT / "runtime-e"
 PROFILE = sys.argv[sys.argv.index("--profile") + 1] if "--profile" in sys.argv else None
 sys.path.insert(0, str(SRC))
 import psutil  # noqa: E402
@@ -57,6 +57,9 @@ def verify_runtime():
 
 def main():
     verified = verify_runtime()
+    sys.path.insert(0, str(ROOT / "tools"))
+    import binding
+    verified["binding"] = binding.require(RT)
     assert verified["ok"], verified
     port = CURRENT["port"]
     assert R._listener_pid(port) is None, f"port {port} busy"

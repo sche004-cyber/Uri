@@ -1,0 +1,57 @@
+{
+ "label": "dry2",
+ "session_id": "863e77dd-3564-42b6-b278-583878b7876c",
+ "steps": [],
+ "commit": [],
+ "classification": "DRY_RUN",
+ "binding": {
+  "runtime_root": "D:\\uri-dev\\uri-profiles-live\\runtime-d",
+  "materialized_from": "07dca2a841bfe11e2a18ae1189266b0e47f8b090",
+  "candidate_head_now": "07dca2a841bfe11e2a18ae1189266b0e47f8b090",
+  "candidate_tracked_changes": [],
+  "runtime_files_checked": 333,
+  "mismatched": [],
+  "ok": true
+ },
+ "preflight_ok": "ws-integrated",
+ "dry_brain_status": {
+  "artifacts": null,
+  "checked_at": 1792248563.336933,
+  "detail": "ARGV_MISMATCH",
+  "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+  "owned": false,
+  "pid": 8180,
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  },
+  "state": "FOREIGN_INSTANCE",
+  "url": "http://127.0.0.1:18470"
+ },
+ "dry_brain_health_profile": {
+  "frozen": true,
+  "id": "frozen"
+ },
+ "lease_after": "HELD",
+ "worker_instance": {
+  "brain_profile": {
+   "file": null,
+   "source": "frozen"
+  },
+  "cli_homes_pinned": [
+   "CODEX_HOME"
+  ],
+  "client_id": "76e1fb01-efc7-465e-956e-31b2b50658b9",
+  "create_time": 1792248559.3825395,
+  "execution_lifecycle": true,
+  "fixture_allowed": false,
+  "generation": "bfaff640-036c-42db-ac09-3be848d7f6e1",
+  "manifest_digest": "5a6e28cff0f4374753641f49d04121a522f92473eda08876417ee1b173b9e56e",
+  "oi": true,
+  "phase2_source_digest": "6ffc41f41ad9f03410d48262dc100273a1790f5ff1c55b8c2fedb7034c400517",
+  "pid": 25000,
+  "profile": "ws-integrated",
+  "qualified": []
+ }
+}

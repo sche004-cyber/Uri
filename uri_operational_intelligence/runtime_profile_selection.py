@@ -11,7 +11,9 @@ started with, read from one explicit selection file next to the host report:
 
 Rules:
   * absent file = the frozen config, exactly as before (default unchanged);
-  * only a combination with a measured request (`runtime_profiles.MEASURED_MIB`) is accepted; the argv is derived
+  * only the frozen combination and the two qualified profiles (`SELECTABLE`: P2 64K main only, P3 32K + GPU vision)
+    are followed; any other measured combination keeps the frozen config (`PROFILE_NOT_QUALIFIED`). Each accepted
+    combination has a measured request (`runtime_profiles.MEASURED_MIB`); the argv is derived
     locally from the frozen config, so the file can only select another measured launch shape of the same pinned
     binary and model, never a different binary, model, port or flag;
   * an invalid or unreadable file keeps the frozen config and is reported (`error`), never guessed;
@@ -34,6 +36,14 @@ from . import runtime_v1 as R
 
 SCHEMA = "uri.runtime.profile_selection.v1"
 SELECTION_FILE = "brain_profile.json"
+# The only launch shapes the worker follows (owner decisions D1/D3, 2026-10-18): the frozen Runtime v1 and the two
+# live-qualified profiles. Every other measured combination stays available to the Brain host's --profile for
+# research, but a worker never verifies against it, so a host started on it is FOREIGN_INSTANCE (fails closed).
+SELECTABLE = (
+    RP.FROZEN_KEY,              # frozen Runtime v1 (32K, vision on the GPU, MTP draft): the default, unchanged
+    (65536, "off", False),      # P2 c64k-visoff-mtpoff, qualified (profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md)
+    (32768, "gpu", False),      # P3 c32k-visgpu-mtpoff, qualified (same report)
+)
 
 
 def selection_path(client_root) -> Path:
@@ -67,6 +77,9 @@ def select_bytes(frozen_cfg: dict, raw, path) -> tuple:
         cfg = RP.derive_config(frozen_cfg, ctx, vision, mtp)
     except RP.ProfileError as exc:
         return frozen_cfg, {"source": "frozen", "file": str(path), "error": exc.code}
+    if (ctx, vision, mtp) not in SELECTABLE:
+        # Measured but not qualified (P1 64K + GPU vision, MTP and other context variants): never followed.
+        return frozen_cfg, {"source": "frozen", "file": str(path), "error": "PROFILE_NOT_QUALIFIED"}
     return cfg, {"source": "selection", "file": str(path), "profile": RP.describe(cfg)}
 
 
@@ -79,6 +92,8 @@ def select(frozen_cfg: dict, path) -> tuple:
 def write(client_root, ctx: int, vision: str, mtp: bool) -> Path:
     """Write a selection (development/launcher use). Validates first, so an invalid selection is never written."""
     RP.required_mib(RP.key_for(ctx, vision, mtp))
+    if (int(ctx), vision, bool(mtp)) not in SELECTABLE:
+        raise RP.ProfileError("PROFILE_NOT_QUALIFIED", (ctx, vision, mtp))
     p = selection_path(client_root)
     p.parent.mkdir(parents=True, exist_ok=True)
     tmp = p.with_suffix(".json.tmp")
