@@ -73,6 +73,8 @@ PERF_SAMPLES = 48
 # the request are made on the worker's single command thread, and no turn can start between them or after them while
 # the host has not finished. Bounded: a host that never answers releases the gate after this long.
 RESTART_GATE_S = 600.0
+# Brain host states in which no Brain runs or loads and the host only waits for the GPU (ws_brain_host.WAIT_STATES).
+HOST_WAIT_STATES = ("WAITING_FOR_GPU", "WAITING_FOR_LEASE", "RELEASE_WAIT")
 DRAFT_OPS = ("undo", "redo", "restore", "discard")
 # A decision on the turn whose job is still finishing (the card is shown by an event the job emits before it records
 # the continuation) waits for that job instead of being refused (Codex WS round 1, F1).
@@ -228,7 +230,7 @@ class IntegratedTurns:
         result = ((host or {}).get("requests") or {}).get(r["id"])
         done = (time.time() > r["until"]
                 or (host is not None and alive is False)
-                or result in ("DONE", "IGNORED_INVALID_OR_STALE"))
+                or result in ("DONE", "IGNORED_INVALID_OR_STALE", "SUPERSEDED"))
         if done:
             self._restart = None
         return not done
@@ -661,7 +663,14 @@ class IntegratedTurns:
         akey = BP.key_of_described(active)
         switch = (host or {}).get("switch") if alive else None
         ready = (readiness or {}).get("state") == "READY"
-        return {"active": dict(active, **BP.controls(akey)) if akey else None,
+        lr = (host or {}).get("last_request") if alive else None
+        return {"host_state": (host or {}).get("state") if alive else None,
+                "host_explain": (host or {}).get("explain") if alive else None,
+                # R1-01: during a GPU wait no Brain runs; the controls stay usable and a new choice retargets the wait.
+                "host_waiting": bool(alive and (host or {}).get("state") in HOST_WAIT_STATES),
+                "last_request": {k: lr.get(k) for k in ("id", "action", "result", "t")} if isinstance(lr, dict) else None,
+                "host_choice_error": ((host or {}).get("profile_choice") or {}).get("error") if alive else None,
+                "active": dict(active, **BP.controls(akey)) if akey else None,
                 "vision_live": bool(ready and akey and akey[1] != "off"),
                 "choice": dict(BP.controls(key), id=RPROF.profile_id(key), source=source, error=error) if key else None,
                 "switching": {"from": switch.get("from", {}).get("id"), "to": switch.get("to", {}).get("id")}
@@ -691,7 +700,7 @@ class IntegratedTurns:
         host, alive = self._host()
         if not alive:
             raise BridgeRefused("BRAIN_HOST_NOT_RUNNING")
-        if self._restart_pending():
+        if self._restart_pending() and not self._host_took_request_and_waits(host):
             raise BridgeRefused("BRAIN_REQUEST_PENDING")
         akey = BP.key_of_described((host or {}).get("profile"))
         if akey is None:
@@ -703,15 +712,24 @@ class IntegratedTurns:
             if plan["refused"] == "CONTEXT_SMALLER_THAN_CONVERSATION":
                 raise BridgeRefused("CONTEXT_SMALLER_THAN_CONVERSATION")
             raise BridgeRefused(plan["refused"])
-        BP.write_choice(self._choice_dir, key)
         running = (host or {}).get("state") in ("READY", "DEGRADED")
         if not plan["reload"] and running:
+            BP.write_choice(self._choice_dir, key)      # the profile that runs: nothing for the host to take
             return {"requested": None, "profile": RPROF.profile_id(key), "unchanged": True}
+        # The choice file is written by the host once it takes the switch (R1-02): a refused or ignored request
+        # never leaves a choice behind that the next host start would apply.
         now = time.time()
         req = self._host_request("reconfigure", key)
         self._restart = {"id": req.get("id"), "t": now, "until": now + RESTART_GATE_S}
         return {"requested": "reconfigure", "request_id": req.get("id"), "profile": RPROF.profile_id(key),
                 "host_state": (host or {}).get("state")}
+
+    def _host_took_request_and_waits(self, host):
+        """R1-01: the pending request was taken by the host, which now only waits for the GPU (no Brain runs or
+        loads). A new choice may replace it there; an untaken request is never overwritten."""
+        r = self._restart
+        taken = r is not None and ((host or {}).get("requests") or {}).get(r["id"]) == "ACCEPTED"
+        return taken and (host or {}).get("state") in HOST_WAIT_STATES
 
     def _brain_restart(self, c):
         action = c["action"]

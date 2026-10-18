@@ -5,10 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:uri_ui/living/companion/companion_sources.dart';
+import 'package:uri_ui/living/companion/effects_settings.dart';
+import 'package:uri_ui/living/contracts/readiness_report.dart';
+import 'package:uri_ui/living/contracts/work_items.dart';
 import 'package:uri_ui/living/integration/brain_quick_controls.dart';
 import 'package:uri_ui/living/integration/oi_conversation.dart';
 import 'package:uri_ui/living/integration/oi_widgets.dart';
+import 'package:uri_ui/living/living_app.dart' show LivingPreferencesStore;
+import 'package:uri_ui/living/living_scope.dart';
+import 'package:uri_ui/living/office/office_bridge.dart';
+import 'package:uri_ui/living/presentation/presentation_controller.dart';
+import 'package:uri_ui/living/widgets/living_composer.dart';
+import 'package:uri_ui/services/app_state.dart';
+import 'package:uri_ui/services/app_state_scope.dart';
+import 'package:uri_ui/services/file_picker_service.dart';
 import 'package:uri_ui/services/integrated_runtime.dart';
+import 'package:uri_ui/services/mock_uri_client.dart';
 import 'package:uri_ui/theme/uri_theme.dart';
 
 /// BRAIN-QUICK-CONTROLS: Thinking / Vision / Context controls, image turns and
@@ -23,6 +36,8 @@ class _Runtime implements IntegratedRuntime {
   bool pending = false;
   Map<String, dynamic>? switching;
   String? refuseSet;
+  String? refuseTurn;
+  Map<String, dynamic> extra = {};
   int turns = 0;
 
   static const options = [
@@ -42,6 +57,7 @@ class _Runtime implements IntegratedRuntime {
         'switching': switching,
         'pending_request': pending,
         'choice': active,
+        ...extra,
       };
 
   @override
@@ -74,6 +90,7 @@ class _Runtime implements IntegratedRuntime {
         pending = true;
         return {'requested': 'reconfigure'};
       case 'oi_turn':
+        if (refuseTurn != null) throw IntegratedRuntimeException(refuseTurn!);
         return {'turn_id': 't${++turns}', 'accepted': true};
       default:
         return {'ok': true};
@@ -278,6 +295,201 @@ void main() {
     final img = await prepareOiImage('a.png', _png);
     expect(img!.bytes, _png);
   });
+
+  // ---- review R1 repairs ------------------------------------------------------------------------------------------
+  final waiting64 = {
+    'host_state': 'WAITING_FOR_GPU',
+    'host_waiting': true,
+    'host_explain': 'The Brain needs 15.6 GB of GPU memory but only 14.0 GB is free.',
+    'switching': {'from': 'c32k-visgpu-mtpoff', 'to': 'c64k-visgpu-mtpoff'},
+  };
+
+  testWidgets('R1-01: while a switch waits for GPU memory the controls stay usable and offer going back',
+      (tester) async {
+    final rt = _Runtime()
+      ..active = {'id': 'c64k-visgpu-mtpoff', 'vision': true, 'context': 65536, 'speed': false}
+      ..visionLive = false
+      ..pending = true
+      ..extra = Map.of(waiting64);
+    final conv = await tester.runAsync(() => _ready(rt));
+    await tester.pumpWidget(_bar(conv!));
+    expect(find.textContaining('waiting for GPU memory'), findsOneWidget);
+    expect(find.byKey(const ValueKey('oi-qc-notice')), findsOneWidget);
+    expect(find.textContaining('Waiting for GPU memory to load Vision on, 64K'), findsOneWidget);
+    expect(tester.widget<PopupMenuButton<int>>(find.byKey(const ValueKey('oi-qc-context-menu'))).enabled, isTrue);
+    expect(tester.widget<InkWell>(find.byKey(const ValueKey('oi-qc-vision'))).onTap, isNotNull);
+    final back = find.byKey(const ValueKey('oi-qc-go-back'));
+    expect(find.text('Go back to Vision on, 32K'), findsOneWidget);
+    await tester.tap(back);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('oi-qc-confirm-yes')));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+    await tester.pumpAndSettle();
+    final set = rt.commands.where((c) => c['command'] == 'brain_profile_set').single;
+    expect(set, {'command': 'brain_profile_set', 'vision': true, 'context': 32768, 'speed': false});
+  });
+
+  testWidgets('R1-01: while the Brain loads after a switch the controls stay locked', (tester) async {
+    final rt = _Runtime()
+      ..pending = true
+      ..extra = {'host_state': 'LOADING', 'host_waiting': false, 'switching': waiting64['switching']};
+    final conv = await tester.runAsync(() => _ready(rt));
+    await tester.pumpWidget(_bar(conv!));
+    expect(tester.widget<InkWell>(find.byKey(const ValueKey('oi-qc-vision'))).onTap, isNull);
+    expect(find.byKey(const ValueKey('oi-qc-go-back')), findsNothing);
+  });
+
+  testWidgets('R1-02: a switch that did not start is said, Vision is "not running", and going back is offered',
+      (tester) async {
+    final rt = _Runtime()
+      ..active = {'id': 'c64k-visgpu-mtpoff', 'vision': true, 'context': 65536, 'speed': false}
+      ..visionLive = false
+      ..extra = {
+        'host_state': 'FAILED',
+        'host_explain': 'The Brain did not become ready (LOAD_TIMEOUT).',
+        'last_switch': {'from': 'c32k-visgpu-mtpoff', 'to': 'c64k-visgpu-mtpoff', 'result': 'NOT_READY'},
+      };
+    final conv = await tester.runAsync(() => _ready(rt));
+    await tester.pumpWidget(_bar(conv!));
+    expect(find.text('Vision: not running'), findsOneWidget);
+    expect(find.text('Vision: starting…'), findsNothing);
+    expect(find.textContaining('The Brain did not start with Vision on, 64K. The Brain did not become ready'),
+        findsOneWidget);
+    expect(find.text('Go back to Vision on, 32K'), findsOneWidget);
+  });
+
+  test('R1-02: refused, ignored and unreadable-choice outcomes all have plain words', () {
+    final options = [for (final o in _Runtime.options) Map<String, dynamic>.of(o)];
+    expect(profileNoticeText({}, options), isNull);
+    expect(
+        profileNoticeText({
+          'last_switch': {'from': 'c32k-visgpu-mtpoff', 'to': 'c64k-visoff-mtpoff', 'result': 'REFUSED_ATTACHED'},
+        }, options),
+        allOf(contains('Not switched to Vision off, 64K'), contains('did not start')));
+    expect(
+        profileNoticeText({
+          'last_request': {'id': 'r', 'action': 'reconfigure', 'result': 'IGNORED_INVALID_OR_STALE'},
+        }, options),
+        contains('did not take the change in time'));
+    expect(
+        profileNoticeText({
+          'choice': {'id': 'c32k-visgpu-mtpoff', 'error': 'CHOICE_UNREADABLE'},
+        }, options),
+        contains('saved Brain setting could not be read'));
+    expect(profileNoticeText({'host_choice_error': 'CHOICE_WRITE_FAILED'}, options), contains('CHOICE_WRITE_FAILED'));
+    // a finished switch says nothing; going back is offered only while waiting or after a failed start
+    expect(
+        profileNoticeText({
+          'host_state': 'READY',
+          'last_switch': {'from': 'c32k-visgpu-mtpoff', 'to': 'c64k-visgpu-mtpoff', 'result': 'DONE'},
+        }, options),
+        isNull);
+    expect(
+        previousProfileOption({
+          'host_state': 'READY',
+          'last_switch': {'from': 'c32k-visgpu-mtpoff', 'to': 'c64k-visgpu-mtpoff', 'result': 'NOT_READY'},
+        }, options),
+        isNull);
+  });
+
+  test('R1-03: a mislabeled picture is sent with the type its bytes show, and a long name is shortened', () async {
+    final jpeg = Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0, 0, 0, 0, 0]);
+    final img = await prepareOiImage('photo.png', jpeg);
+    expect(img!.mime, 'image/jpeg');
+    expect(img.bytes, jpeg);
+    final long = '${'a' * 200}.png';
+    final named = await prepareOiImage(long, _png);
+    expect(named!.name.length, lessThanOrEqualTo(120));
+    expect(named.name, endsWith('.png'));
+    expect(oiImageName('a\r\nb.png'), 'a  b.png');
+  });
+
+  test('R1-03: every image refusal names the image and how to fix it, and the image does not block the next turn',
+      () async {
+    for (final code in ['IMAGE_TYPE_MISMATCH', 'IMAGE_NAME_INVALID', 'IMAGE_TYPE_UNSUPPORTED', 'IMAGE_DATA_INVALID']) {
+      final text = notSentMessage(code, ['cat.png']);
+      expect(text, contains('cat.png'), reason: code);
+      expect(text, isNot(contains('could not accept this request')), reason: code);
+    }
+    expect(notSentMessage('IMAGES_INVALID'), isNot(contains('could not accept this request')));
+    final rt = _Runtime()..refuseTurn = 'IMAGE_TYPE_MISMATCH';
+    final conv = await _ready(rt);
+    expect(conv.attachImage(OiImage(name: 'cat.png', mime: 'image/png', bytes: _png)), isNull);
+    await conv.send('What is this?');
+    expect(conv.messages.last.text, contains('cat.png'));
+    expect(conv.pendingImages, isEmpty);
+    rt.refuseTurn = null;
+    await conv.send('And now?');
+    expect(rt.commands.where((c) => c['command'] == 'oi_turn').last.containsKey('images'), isFalse);
+  });
+
+  for (final officeFocus in [true, false]) {
+    testWidgets('R1-04: an attached picture with ${officeFocus ? 'the Office pane' : 'the conversation'} in focus '
+        '${officeFocus ? 'keeps the previous attach path' : 'goes to the Brain'}', (tester) async {
+      final rt = _Runtime();
+      final conv = (await tester.runAsync(() => _ready(rt)))!;
+      final services = _services(conv);
+      addTearDown(services.dispose);
+      if (officeFocus) {
+        services.officeTarget.value = _FakeOfficeTarget();
+        services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.office);
+      }
+      final appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
+      await tester.pumpWidget(MaterialApp(
+        theme: buildUriTheme(resolveUriColors(UriThemeChoice.obsidianCyan, Brightness.dark)),
+        home: AppStateScope(
+          state: appState,
+          child: LivingScope(
+            services: services,
+            child: Scaffold(
+              body: SizedBox(
+                width: 900,
+                height: 600,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: LivingComposer(filePicker: () async => PickedFile(name: 'cat.png', bytes: _png)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.pump();
+      await tester.tap(find.byTooltip('Attach a file'));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pump(const Duration(seconds: 2));         // the mock upload's latency
+      await tester.pump();
+      if (officeFocus) {
+        expect(conv.pendingImages, isEmpty, reason: 'an Office request never carries the conversation pictures');
+        expect(appState.attachments.map((a) => a.filename), contains('cat.png'));
+      } else {
+        expect(conv.pendingImages.map((i) => i.name), ['cat.png']);
+      }
+    });
+  }
+}
+
+class _FakeOfficeTarget extends ChangeNotifier implements OfficeRequestTarget {
+  @override
+  bool acceptsRequests = true;
+  @override
+  bool busy = false;
+  @override
+  Future<void> instruct(String text, {String? activeSheet}) async {}
+}
+
+LivingServices _services(OiConversation oi) {
+  final demo = MockCompanionSource();
+  final work = MockWorkSimulator(stepInterval: const Duration(milliseconds: 100));
+  return LivingServices(
+    presentation: UiPresentationController(commandCooldown: Duration.zero),
+    companion: CompositeCompanionSource([work.companion, demo]),
+    work: work,
+    readiness: MockReadinessSource(),
+    effects: EffectsSettings(reducedMotion: true),
+    demo: demo,
+    oi: oi,
+  );
 }
 
 class _LegacyRuntime extends _Runtime {

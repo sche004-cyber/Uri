@@ -304,7 +304,8 @@ def test_profile_set_writes_choice_and_one_reconfigure_request(fake, tmp_path):
                                          "speed": False})
     assert out["requested"] == "reconfigure" and out["profile"] == "c64k-visoff-mtpoff"
     assert len(reqs) == 1 and reqs[0]["profile"] == {"ctx": 65536, "vision": "off", "mtp": False}
-    assert BP.read_choice(tmp_path)[0] == (65536, "off", False)
+    # R1-02: the worker never persists the choice; the host writes it when it takes the switch
+    assert BP.read_choice(tmp_path) == (BP.DEFAULT_KEY, "default", None)
     # a second change while the first is pending is refused, and a turn is gated too
     with pytest.raises(BridgeRefused) as e:
         b.handle("brain_profile_set", {"command": "brain_profile_set", "vision": True, "context": 32768,
@@ -314,7 +315,7 @@ def test_profile_set_writes_choice_and_one_reconfigure_request(fake, tmp_path):
         b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "auto"})
     assert e.value.code == "BRAIN_RESTARTING"
     state = b.handle("brain_profile_get", {"command": "brain_profile_get"})["state"]
-    assert state["pending_request"] is True and state["choice"]["id"] == "c64k-visoff-mtpoff"
+    assert state["pending_request"] is True and state["choice"]["id"] == RP.profile_id(BP.DEFAULT_KEY)
     assert state["active"]["id"] == RP.profile_id(BP.DEFAULT_KEY)          # truthful: still the running one
     host["rep"]["requests"] = {reqs[0]["id"]: "DONE"}
     assert b.handle("brain_profile_get", {"command": "brain_profile_get"})["state"]["pending_request"] is False
@@ -376,3 +377,136 @@ def test_health_reports_active_profile_and_live_vision(fake, tmp_path):
     assert h["profile"]["vision_live"] is True and h["profile"]["switching"] is None
     host["rep"]["switch"] = {"from": {"id": "a"}, "to": {"id": "b"}}
     assert b.handle("brain_health", {"command": "brain_health"})["profile"]["switching"] == {"from": "a", "to": "b"}
+
+
+# ---- review R1 repairs ---------------------------------------------------------------------------------------------
+def _contended_host(tmp_path, monkeypatch, foreign_mib=2200.0):
+    """A host whose census shows a foreign GPU consumer: 64K + vision does not fit, 32K + vision does."""
+    sys.path.insert(0, str(Path(R.REPO_ROOT) / "scripts"))
+    import ws_brain_host as H
+    monkeypatch.setattr(H, "GPU_POLL_S", 0.2)
+    monkeypatch.setattr(H, "QUIET_S", 0.0)
+    census = lambda: {"ok": True, "card_mib": 16368, "unattributed_mib": 0.0, "t": time.time(), "sample_s": 0.1,
+                      "processes": [{"pid": 999999, "name": "chrome.exe", "dedicated_mib": foreign_mib}]}
+    (tmp_path / "rep").mkdir(exist_ok=True)
+    h = H.Host(tmp_path / "rep", minutes=1.0, override=False, state_dir=tmp_path / "s", census=census,
+               lease_dir=tmp_path / "l")
+    from uri_operational_intelligence import gpu_lease as G
+    assert G.assess_fit(census(), required_mib=RP.MEASURED_MIB[(65536, "gpu", False)])["verdict"] == G.CONTENDED
+    assert G.assess_fit(census(), required_mib=RP.MEASURED_MIB[BP.DEFAULT_KEY])["verdict"] != G.CONTENDED
+    return H, h
+
+
+def _wait_for(pred, timeout=10.0):
+    end = time.monotonic() + timeout
+    while time.monotonic() < end:
+        if pred():
+            return True
+        time.sleep(0.05)
+    return False
+
+
+def test_r1_01_a_switch_waiting_for_gpu_takes_a_new_choice_and_goes_back(tmp_path, monkeypatch):
+    """R1-01: a reconfigure to an offered profile that does not fit waits for the GPU; a second reconfigure taken
+    during that wait retargets the pending start (back to the previous profile), so the user is never locked out."""
+    import threading
+    H, h = _contended_host(tmp_path, monkeypatch)
+
+    class Mgr:
+        owns_instance = True
+    h.mgr, h.lease = Mgr(), object()
+    h.stop_brain = lambda: setattr(h, "mgr", None)
+    started = []
+    h.start_brain = lambda: h.wait_for_gpu() and not started.append(h.report["profile"]["id"])
+    first = BH.write_host_request(tmp_path / "rep", "reconfigure", (65536, "gpu", False))
+    assert h.take_request() == "reconfigure"
+    t = threading.Thread(target=h.reconfigure, args=(h.request_profile,), daemon=True)
+    t.start()
+    assert _wait_for(lambda: h.report.get("detail") == "GPU_CONTENDED")
+    assert h.report["state"] == "WAITING_FOR_GPU" and h.report["switch"]["to"]["id"] == "c64k-visgpu-mtpoff"
+    back = BH.write_host_request(tmp_path / "rep", "reconfigure", BP.DEFAULT_KEY)
+    t.join(10)
+    assert not t.is_alive(), "the second request must be taken during the GPU wait"
+    assert h.report["requests"][back["id"]] == "ACCEPTED"
+    assert h.report["requests"][first["id"]] == "SUPERSEDED"
+    assert started == [RP.profile_id(BP.DEFAULT_KEY)] and h.report["profile"]["id"] == RP.profile_id(BP.DEFAULT_KEY)
+    assert h.required_mib == RP.MEASURED_MIB[BP.DEFAULT_KEY]
+    assert h.report["last_switch"]["result"] == "DONE" and "switch" not in h.report
+    assert BP.read_choice(tmp_path / "rep")[0] == BP.DEFAULT_KEY
+    h.finish_request()
+    assert h.report["requests"][back["id"]] == "DONE"
+
+
+def test_r1_01_the_worker_accepts_a_new_choice_while_the_host_waits_for_gpu(fake, tmp_path):
+    """R1-01: while the host has taken the switch and only waits for GPU memory, brain_profile_set is not refused
+    with BRAIN_REQUEST_PENDING, and the profile state says the host is waiting. An untaken request is never replaced."""
+    b, _, reqs, host = _bridge(fake, tmp_path)
+    host["rep"] = _live(BP.DEFAULT_KEY)
+    b.handle("brain_profile_set", {"command": "brain_profile_set", "vision": True, "context": 65536, "speed": False})
+    # untaken by the host yet: still refused (the first request would be overwritten unread)
+    host["rep"] = dict(_live((65536, "gpu", False), state="WAITING_FOR_GPU"))
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("brain_profile_set", {"command": "brain_profile_set", "vision": True, "context": 32768,
+                                       "speed": False})
+    assert e.value.code == "BRAIN_REQUEST_PENDING"
+    host["rep"]["requests"] = {reqs[0]["id"]: "ACCEPTED"}
+    host["rep"]["switch"] = {"from": {"id": RP.profile_id(BP.DEFAULT_KEY)}, "to": {"id": "c64k-visgpu-mtpoff"}}
+    state = b.handle("brain_profile_get", {"command": "brain_profile_get"})["state"]
+    assert state["host_waiting"] is True and state["host_state"] == "WAITING_FOR_GPU"
+    out = b.handle("brain_profile_set", {"command": "brain_profile_set", "vision": True, "context": 32768,
+                                         "speed": False})
+    assert out["requested"] == "reconfigure" and reqs[-1]["profile"] == {"ctx": 32768, "vision": "gpu", "mtp": False}
+    # while the Brain loads, a change is still refused
+    host["rep"]["state"] = "LOADING"
+    host["rep"]["requests"] = {reqs[-1]["id"]: "ACCEPTED"}
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("brain_profile_set", {"command": "brain_profile_set", "vision": False, "context": 32768,
+                                       "speed": False})
+    assert e.value.code == "BRAIN_REQUEST_PENDING"
+
+
+def test_r1_02_choice_is_written_only_when_the_host_takes_the_switch(tmp_path):
+    """R1-02: a refused switch (attached instance) leaves the previous choice; an accepted one persists it; the
+    switch outcome carries what the UI needs to say it (from, to, result, explain)."""
+    h = _host(tmp_path)
+    BP.write_choice(tmp_path / "rep", BP.DEFAULT_KEY)
+
+    class Attached:
+        owns_instance = False
+    h.mgr = Attached()
+    h.reconfigure((65536, "off", False))
+    assert h.report["last_switch"]["result"] == "REFUSED_ATTACHED"
+    assert h.report["last_switch"]["from"] == RP.profile_id(BP.DEFAULT_KEY)
+    assert BP.read_choice(tmp_path / "rep")[0] == BP.DEFAULT_KEY
+
+    class Owned:
+        owns_instance = True
+    h.mgr, h.lease = Owned(), object()
+    h.stop_brain = lambda: setattr(h, "mgr", None)
+
+    def start():
+        h.set("FAILED", detail="X", explain="The Brain did not become ready (X).")
+        return False
+    h.start_brain = start
+    h.reconfigure((65536, "off", False))
+    assert BP.read_choice(tmp_path / "rep")[0] == (65536, "off", False)
+    ls = h.report["last_switch"]
+    assert ls["result"] == "NOT_READY" and ls["from"] == RP.profile_id(BP.DEFAULT_KEY)
+    assert ls["to"] == "c64k-visoff-mtpoff" and "did not become ready" in ls["explain"]
+
+
+def test_r1_02_profile_state_reports_switch_outcome_request_result_and_choice_errors(fake, tmp_path):
+    b, _, _, host = _bridge(fake, tmp_path)
+    host["rep"] = _live((65536, "gpu", False), state="FAILED")
+    host["rep"]["explain"] = "The Brain did not become ready (X)."
+    host["rep"]["last_switch"] = {"from": "c32k-visgpu-mtpoff", "to": "c64k-visgpu-mtpoff", "result": "NOT_READY"}
+    host["rep"]["last_request"] = {"id": "r1", "action": "reconfigure", "result": "IGNORED_INVALID_OR_STALE",
+                                   "t": 1.0, "extra": "x"}
+    host["rep"]["profile_choice"] = {"source": "default", "error": "CHOICE_UNREADABLE"}
+    (tmp_path / BP.CHOICE_FILE).write_text("{bad", encoding="utf-8")
+    state = b.handle("brain_profile_get", {"command": "brain_profile_get"})["state"]
+    assert state["host_state"] == "FAILED" and "did not become ready" in state["host_explain"]
+    assert state["last_switch"]["result"] == "NOT_READY" and state["host_waiting"] is False
+    assert state["last_request"] == {"id": "r1", "action": "reconfigure", "result": "IGNORED_INVALID_OR_STALE",
+                                     "t": 1.0}
+    assert state["choice"]["error"] == "CHOICE_UNREADABLE" and state["host_choice_error"] == "CHOICE_UNREADABLE"

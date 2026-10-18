@@ -42,13 +42,18 @@ Measured device requests used by this milestone (MiB; R1 `MEASURED_MIB`, checked
   "tight" with the measured margin; nothing unmeasured or CONTENDED is offered.
 - **Speed boost (MTP), optional.** A settings switch, offered only with Vision off at 16K / 32K (the measured FITS
   MTP profiles). Never a quick control, never chosen automatically.
-- **The user's choice** is one file, `control/oi/brain_profile.json` (`uri.oi.brain_profile.v1`), written by the
-  worker after validation and read by the Brain host at start. `local_brain.json` is never touched. No file =
+- **The user's choice** is one file, `control/oi/brain_profile.json` (`uri.oi.brain_profile.v1`), validated by the
+  worker and written by the Brain host only once it takes the switch (review R1-02: a refused or ignored request
+  leaves the previous choice; the worker writes it only when the choice is the profile already running), read by the
+  Brain host at start. `local_brain.json` is never touched. No file =
   the default profile (owner decision BQC-D1).
 - **Switch = controlled host reconfigure.** New host request action `reconfigure` with the target profile. The host
   validates it with `runtime_profiles.derive_config` (measured profiles only), stops its own server, waits for the
   VRAM release, re-acquires the fit with the target's measured request, starts, calibrates. A target that does not
-  fit waits `WAITING_FOR_GPU` with its explanation; it never falls back to another profile.
+  fit waits `WAITING_FOR_GPU` with its explanation; it never falls back to another profile. During that wait (no
+  Brain runs or loads) the host takes a new `reconfigure` and retargets the pending start (review R1-01); the UI keeps
+  the controls usable, offers "Go back to <previous profile>", and shows how the last switch ended (waiting, did not
+  start, refused, not taken) and choice-file errors (review R1-02). Controls lock only while the Brain stops or loads.
 - **Identity follows the active profile.** The worker derives the expected config from the host report's active
   profile (measured profiles only, via `derive_config`) and checks the live server's exact argv and `n_ctx`
   against it. An unknown or unmeasured profile in the report is UNAVAILABLE, never accepted.

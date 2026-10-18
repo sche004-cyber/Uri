@@ -39,6 +39,9 @@ from uri_operational_intelligence import brain_profile as BP  # noqa: E402
 from uri_operational_intelligence.brain_health import (ACTIONS, HOST_HEARTBEAT_S, REPORT_FILE,  # noqa: E402
                                                        REPORT_SCHEMA, REQUEST_FILE, REQUEST_SCHEMA, write_host_request)
 REQUEST_MAX_AGE_S = 120.0
+# States in which no Brain runs or loads and the host only waits for the GPU (R1-01): a reconfigure taken here retargets
+# the pending start, so a target that does not fit never locks the user out of the controls.
+WAIT_STATES = ("WAITING_FOR_GPU", "WAITING_FOR_LEASE", "RELEASE_WAIT")
 
 # Calibration: one fixed decode right after READY. The threshold is the accepted OI value (perf_monitor
 # DEGRADED_DECODE_TPS = 60), which lies in the measured gap between healthy instances (96-157 tok/s, freeze record;
@@ -167,6 +170,10 @@ class Host:
                                            "t": round(self.now(), 3)}
             self.write()
             return None
+        prev = self.report.get("last_request") or {}
+        if prev.get("result") == "ACCEPTED" and prev.get("id") != rid:
+            # Taken inside a wait (R1-01): the earlier request is replaced by this one; the worker follows the latest.
+            self.record_request(prev.get("id"), "SUPERSEDED")
         self.record_request(rid, "ACCEPTED")
         self.report["last_request"] = {"id": rid, "action": req["action"], "result": "ACCEPTED", "t": round(self.now(), 3)}
         self.write()
@@ -278,13 +285,50 @@ class Host:
         return False
 
     def wait_or_request(self, seconds):
+        """Wait, taking requests meanwhile. No Brain runs during a GPU or lease wait, so a stop ends the wait, a
+        reconfigure retargets the pending start (R1-01) and a restart or start is already what the wait leads to."""
         end = time.monotonic() + seconds
         while time.monotonic() < end and not self.should_exit():
-            a = self.take_request(only="stop")
+            a = self.take_request()
             if a == "stop":
                 return "stop"
+            if a == "reconfigure":
+                self.retarget(self.request_profile)
+                return "reconfigure"         # the caller re-checks at once with the new target's request
             time.sleep(0.5)
         return None
+
+    def persist_choice(self, key):
+        """The user's choice is written once the host has taken the switch (R1-02), never before: a refused or
+        ignored request leaves the previous choice in place."""
+        try:
+            BP.write_choice(self.report_dirs[0], key)
+            self.report["profile_choice"] = {"source": "user", "error": None}
+        except (OSError, BP.ChoiceError):
+            self.report["profile_choice"] = {"source": "user", "error": "CHOICE_WRITE_FAILED"}
+
+    def retarget(self, key):
+        """A reconfigure taken while no Brain runs (GPU or lease wait, R1-01): nothing is stopped; the pending start
+        now aims at the new target and the wait re-checks the fit with the target's measured request."""
+        target_cfg = BP.config_for(self.frozen_cfg, key)
+        desc = RP.describe(target_cfg)
+        self.persist_choice(key)
+        if desc["id"] != self.report["profile"]["id"]:
+            prev = (self.report.get("switch") or {}).get("from") or self.report["profile"]
+            self.report["switch"] = {"from": prev, "to": desc, "t": round(self.now(), 3)}
+            self.cfg, self.required_mib = target_cfg, RP.cfg_required_mib(target_cfg, G.RUNTIME_V1_DEVICE_MIB)
+            self.report["profile"] = desc
+        self.write()
+
+    def end_switch(self, ok):
+        """Record how a switch ended (shown by the UI, R1-02) and clear the in-progress marker."""
+        sw = self.report.pop("switch", None)
+        if sw is None:
+            return
+        self.report["last_switch"] = {"from": (sw.get("from") or {}).get("id"), "to": self.report["profile"]["id"],
+                                      "result": "DONE" if ok else "NOT_READY", "state": self.report.get("state"),
+                                      "explain": None if ok else self.report.get("explain"), "t": round(self.now(), 3)}
+        self.write()
 
     # ---- Brain ----------------------------------------------------------------------------------------------
     def start_brain(self):
@@ -385,14 +429,16 @@ class Host:
         target_cfg = BP.config_for(self.frozen_cfg, key)
         same = RP.describe(target_cfg)["id"] == self.report["profile"]["id"]
         if same and self.mgr is not None:
+            self.persist_choice(key)
             self.report["last_switch"] = {"to": self.report["profile"]["id"], "result": "UNCHANGED",
                                           "t": round(self.now(), 3)}
             return
         if self.mgr is not None and not self.mgr.owns_instance:
-            # An attached instance was not started here and is never stopped from here.
-            self.report["last_switch"] = {"to": RP.describe(target_cfg)["id"], "result": "REFUSED_ATTACHED",
-                                          "t": round(self.now(), 3)}
+            # An attached instance was not started here and is never stopped from here; the choice is not written.
+            self.report["last_switch"] = {"from": self.report["profile"]["id"], "to": RP.describe(target_cfg)["id"],
+                                          "result": "REFUSED_ATTACHED", "t": round(self.now(), 3)}
             return
+        self.persist_choice(key)
         self.report["switch"] = {"from": self.report["profile"], "to": RP.describe(target_cfg),
                                  "t": round(self.now(), 3)}
         self.stop_brain()
@@ -400,10 +446,7 @@ class Host:
         self.report["profile"] = RP.describe(self.cfg)
         self.write()
         ok = (self.lease is not None or self.acquire_lease()) and self.start_brain()
-        self.report["last_switch"] = {"to": self.report["profile"]["id"], "result": "DONE" if ok else "NOT_READY",
-                                      "state": self.report.get("state"), "t": round(self.now(), 3)}
-        self.report.pop("switch", None)
-        self.write()
+        self.end_switch(ok)
 
     def stop_brain(self):
         if self.mgr is None:
@@ -421,9 +464,10 @@ class Host:
         threading.Thread(target=self._heartbeat, name="host-heartbeat", daemon=True).start()
         try:
             if not self.acquire_lease():
+                self.end_switch(False)
                 self.set("STOPPED", detail="EXIT_BEFORE_LEASE")
                 return 0
-            self.start_brain()
+            self.end_switch(self.start_brain())      # a reconfigure taken during the first wait is a switch too
             last_res = time.monotonic()
             while not self.should_exit():
                 self.reap_loaders()
@@ -441,7 +485,7 @@ class Host:
                     self.stop_brain()
                     if self.lease is None and not self.acquire_lease():
                         break
-                    self.start_brain()
+                    self.end_switch(self.start_brain())
                 if action == "stop" or self.stop_requested:       # also a stop consumed inside a wait or a load
                     self.stop_requested = False
                     self.stop_brain()
@@ -460,6 +504,7 @@ class Host:
         finally:
             self.stop_brain()
             self.release_lease("host exit", at_exit=True)
+            self.end_switch(False)
             self.set("STOPPED", detail="HOST_EXIT", explain="The Brain host has exited.")
             self.finish_request()
             self._done.set()

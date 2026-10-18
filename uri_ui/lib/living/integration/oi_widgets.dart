@@ -548,7 +548,7 @@ class OiBrainBar extends StatelessWidget {
           ),
           Text(
             'Brain: ${conv.brainStatus['model_id'] ?? 'Runtime v1'} · '
-            '${conv.profileSwitching ? 'switching' : state}',
+            '${conv.profileSwitching ? (conv.profileWaiting ? 'waiting for GPU memory' : 'switching') : state}',
             key: const ValueKey('oi-brain-state'),
             style: TextStyle(color: c.inkSoft, fontSize: 12),
           ),

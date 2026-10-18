@@ -29,18 +29,38 @@ import 'oi_draft.dart';
 
 enum OiRole { user, uri, system }
 
+/// Image refusals caused by the image itself (review R1-03): the images are
+/// taken off the next message, so a retry is not refused the same way.
+const oiImageDefectCodes = {
+  'IMAGE_TYPE_MISMATCH', 'IMAGE_TYPE_UNSUPPORTED', 'IMAGE_NAME_INVALID', 'IMAGE_DATA_INVALID', 'IMAGES_INVALID',
+  'IMAGES_TOO_LARGE',
+};
+
 /// Plain words for a turn the worker did not accept (FCV-08); the code stays in the worker's evidence.
-String notSentMessage(String code) => switch (code) {
+/// [images] names the pictures that went with the turn, so an image refusal says which one.
+String notSentMessage(String code, [List<String> images = const []]) {
+  final which = images.isEmpty ? 'the image' : images.join(', ');
+  return switch (code) {
+      'IMAGE_TYPE_MISMATCH' => 'Not sent: $which is not the kind of picture its file name says. It was removed '
+          'from the message; save it again as PNG or JPEG and attach it.',
+      'IMAGE_TYPE_UNSUPPORTED' => 'Not sent: URI can only send PNG, JPEG or WebP pictures, and $which is not one. '
+          'It was removed from the message; attach a PNG or JPEG instead.',
+      'IMAGE_NAME_INVALID' => 'Not sent: the file name of $which is too long or not valid. It was removed from the '
+          'message; rename the file and attach it again.',
+      'IMAGE_DATA_INVALID' => 'Not sent: $which could not be read. It was removed from the message; attach it again.',
+      'IMAGES_INVALID' => 'Not sent: at most 2 images can go with one message. The images were removed; attach up '
+          'to two again.',
       'TURN_IN_PROGRESS' => 'Not sent: URI is still finishing the previous request. Try again in a moment.',
       'BRAIN_RESTARTING' => 'Not sent: the Brain is restarting. Try again when it is ready.',
       'VISION_OFF' => 'Not sent: Vision is off, so the Brain cannot see images. Turn Vision on, or remove the image.',
       'IMAGE_ACTION_UNSUPPORTED' =>
         'Not sent: URI can answer questions about an image, but cannot act on one. Ask about the image instead.',
-      'IMAGES_TOO_LARGE' => 'Not sent: the images are too large. Attach one smaller image.',
+      'IMAGES_TOO_LARGE' => 'Not sent: the images are too large. They were removed; attach one smaller image.',
       'TEXT_INVALID' => 'Not sent: the message was empty or too long.',
       'WORKER_TIMEOUT' => 'Not sent: URI did not answer in time. Try again.',
       _ => 'Not sent: URI could not accept this request right now.',
     };
+}
 
 class OiMessage {
   OiMessage({required this.role, required this.text, this.turnId});
@@ -590,7 +610,12 @@ class OiConversation extends ChangeNotifier {
             role: OiRole.system,
             text: 'No reply from URI. The request may or may not have started; it was not repeated.'));
       } else {
-        messages.add(OiMessage(role: OiRole.system, text: notSentMessage(e.code)));
+        if (oiImageDefectCodes.contains(e.code)) {
+          for (final i in images) {
+            pendingImages.remove(i);
+          }
+        }
+        messages.add(OiMessage(role: OiRole.system, text: notSentMessage(e.code, [for (final i in images) i.name])));
       }
       notifyListeners();
     }
@@ -822,6 +847,13 @@ class OiConversation extends ChangeNotifier {
 
   /// A Vision / Context switch is in progress (requested, or the host is reloading).
   bool get profileSwitching => profileState['pending_request'] == true || profileState['switching'] != null;
+
+  /// The Brain host only waits for GPU memory (no Brain runs or loads): the
+  /// controls stay usable and a new choice replaces the waiting one (R1-01).
+  bool get profileWaiting => profileState['host_waiting'] == true;
+
+  /// The Brain host's state (null without a live host).
+  String? get brainHostState => profileState['host_state'] as String?;
 
   Future<void> refreshProfile() async {
     if (_disposed) return;

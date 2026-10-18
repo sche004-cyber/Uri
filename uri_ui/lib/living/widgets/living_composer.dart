@@ -216,8 +216,10 @@ class _LivingComposerState extends State<LivingComposer> {
                     onPressed: () async {
                       final picked = await widget.filePicker!();
                       if (picked == null || !context.mounted) return;
-                      if (oi != null && oiImageMime(picked.name) != null) {
-                        // BRAIN-QUICK-CONTROLS: on the working system an image goes to the Brain (Vision On).
+                      if (oi != null && services.officeInFocus() == null && oiImageMime(picked.name) != null) {
+                        // BRAIN-QUICK-CONTROLS: on the working system an image goes to the Brain (Vision On). With
+                        // the Office pane in focus the attach path is unchanged (review R1-04): an Office request
+                        // never carries the conversation's pictures.
                         await attachOiImage(context, oi, picked.name, picked.bytes);
                         return;
                       }

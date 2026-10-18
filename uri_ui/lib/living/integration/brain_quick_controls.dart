@@ -38,7 +38,9 @@ class OiQuickControls extends StatelessWidget {
     ];
     final hasProfiles = options.isNotEmpty;
     final switching = conv.profileSwitching;
-    final locked = conv.busy || conv.restarting || switching || active == null;
+    // R1-01: while the host only waits for GPU memory nothing runs or loads, so the controls stay usable (a new
+    // choice replaces the waiting one). They lock only while the Brain stops or loads.
+    final locked = conv.busy || conv.restarting || (switching && !conv.profileWaiting) || active == null;
     final style = TextStyle(color: c.ink, fontSize: 12);
 
     Widget chip({required Key key, required IconData icon, required String label, String? tooltip,
@@ -103,7 +105,8 @@ class OiQuickControls extends StatelessWidget {
     } else if (active == null) {
       visionText = 'Vision: unknown';
     } else if (vision && !conv.visionLive) {
-      visionText = 'Vision: starting…';
+      // R1-02: a Brain that failed or was stopped is not "starting".
+      visionText = const {'FAILED', 'STOPPED'}.contains(conv.brainHostState) ? 'Vision: not running' : 'Vision: starting…';
     } else {
       visionText = vision ? 'Vision: On' : 'Vision: Off';
     }
@@ -148,10 +151,26 @@ class OiQuickControls extends StatelessWidget {
       ),
     );
 
+    final notice = profileNoticeText(conv.profileState, options);
+    final previous = previousProfileOption(conv.profileState, options);
+    final canGoBack = !conv.busy && !conv.restarting && (!switching || conv.profileWaiting);
     return Wrap(spacing: 6, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
       thinking,
       visionChip,
       contextChip,
+      if (notice != null)
+        Text(notice, key: const ValueKey('oi-qc-notice'), style: TextStyle(color: c.warning, fontSize: 11)),
+      if (previous != null)
+        TextButton(
+          key: const ValueKey('oi-qc-go-back'),
+          onPressed: canGoBack
+              ? () => _switch(context,
+                  vision: previous['vision'] == true,
+                  context_: (previous['context'] as num).toInt(),
+                  speed: previous['speed'] == true)
+              : null,
+          child: Text('Go back to ${profileOptionLabel(previous)}', style: const TextStyle(fontSize: 11)),
+        ),
       if (active?['speed'] == true)
         Text('Speed boost on', key: const ValueKey('oi-qc-speed-on'), style: TextStyle(color: c.inkSoft, fontSize: 11)),
       for (final img in conv.pendingImages)
@@ -227,6 +246,74 @@ class OiQuickControls extends StatelessWidget {
   }
 }
 
+/// "Vision on, 32K" (plus ", speed boost") for an offered option.
+String profileOptionLabel(Map<String, dynamic> o) => '${o['vision'] == true ? 'Vision on' : 'Vision off'}, '
+    '${OiQuickControls.contextLabel((o['context'] as num).toInt())}${o['speed'] == true ? ', speed boost' : ''}';
+
+Map<String, dynamic>? _optionById(List<Map<String, dynamic>> options, Object? id) {
+  for (final o in options) {
+    if (o['id'] == id) return o;
+  }
+  return null;
+}
+
+String _labelOf(List<Map<String, dynamic>> options, Object? id) {
+  final o = _optionById(options, id);
+  return o == null ? 'the new setting' : profileOptionLabel(o);
+}
+
+/// What became of the last Vision / Context change, in plain words (review
+/// R1-02): a switch waiting for GPU memory, one that did not start, one that
+/// was refused or not taken, and a saved choice that could not be read. Null
+/// when there is nothing to say.
+String? profileNoticeText(Map<String, dynamic> state, List<Map<String, dynamic>> options) {
+  final hostState = state['host_state'];
+  final explain = state['host_explain'] as String?;
+  final sw = state['switching'];
+  final ls = state['last_switch'];
+  final lr = state['last_request'];
+  if (state['host_waiting'] == true && sw is Map) {
+    return 'Waiting for GPU memory to load ${_labelOf(options, sw['to'])}.${explain == null ? '' : ' $explain'} '
+        'You can choose another setting or go back.';
+  }
+  if (lr is Map && lr['action'] == 'reconfigure' && lr['result'] == 'IGNORED_INVALID_OR_STALE') {
+    return 'Not switched: the Brain did not take the change in time. The previous setting is kept; choose again.';
+  }
+  if (ls is Map && ls['result'] == 'REFUSED_ATTACHED' && state['pending_request'] != true) {
+    return 'Not switched to ${_labelOf(options, ls['to'])}: URI is using a Brain it did not start, so it cannot '
+        'reload it. The previous setting is kept.';
+  }
+  if (ls is Map && ls['result'] == 'NOT_READY' && (hostState == 'FAILED' || hostState == 'STOPPED')) {
+    return 'The Brain did not start with ${_labelOf(options, ls['to'])}.${explain == null ? '' : ' $explain'} '
+        'Choose another setting or go back.';
+  }
+  final choice = state['choice'];
+  final choiceError = (choice is Map ? choice['error'] : null) ?? state['host_choice_error'];
+  if (choiceError != null) {
+    return 'Your saved Brain setting could not be read or saved ($choiceError), so URI uses the default. '
+        'Choose Vision and Context again to save it.';
+  }
+  return null;
+}
+
+/// The profile to offer "Go back to" (review R1-01/R1-02): the one a switch
+/// left while it waits for GPU memory, or the one before a switch that did
+/// not start. Null when there is none or it is what runs.
+Map<String, dynamic>? previousProfileOption(Map<String, dynamic> state, List<Map<String, dynamic>> options) {
+  final sw = state['switching'];
+  final ls = state['last_switch'];
+  final hostState = state['host_state'];
+  Object? id;
+  if (sw is Map && state['host_waiting'] == true) {
+    id = sw['from'];
+  } else if (sw == null && ls is Map && ls['result'] == 'NOT_READY' && (hostState == 'FAILED' || hostState == 'STOPPED')) {
+    id = ls['from'];
+  }
+  final active = state['active'];
+  if (id == null || (active is Map && active['id'] == id)) return null;
+  return _optionById(options, id);
+}
+
 /// Plain words for a refused Vision / Context change.
 String profileRefusalText(String code) => switch (code) {
       'TURN_IN_PROGRESS' => 'Not switched: URI is still answering. Try again when it has finished.',
@@ -291,14 +378,40 @@ String? oiImageMime(String filename) {
   return dot < 0 ? null : oiImageTypes[filename.substring(dot + 1).toLowerCase()];
 }
 
-/// Scales a picture so a turn fits the worker's frame limit. A file already
-/// small enough is sent unchanged; otherwise it is decoded, scaled to at most
-/// [maxSide] pixels and re-encoded as PNG, shrinking until it fits [limit].
+/// The picture type from the file's first bytes (what the worker checks),
+/// never from its name. Null when it is not PNG, JPEG or WebP.
+String? oiSniffImageMime(Uint8List b) {
+  bool at(int i, List<int> m) => b.length >= i + m.length && [for (var k = 0; k < m.length; k++) b[i + k] == m[k]].every((x) => x);
+  if (at(0, const [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])) return 'image/png';
+  if (at(0, const [0xFF, 0xD8, 0xFF])) return 'image/jpeg';
+  if (at(0, const [0x52, 0x49, 0x46, 0x46]) && at(8, const [0x57, 0x45, 0x42, 0x50])) return 'image/webp';
+  return null;
+}
+
+/// Longest image name the worker accepts (images.py MAX_NAME).
+const oiImageMaxName = 120;
+
+/// A name the worker accepts: one line, at most [oiImageMaxName] characters,
+/// the extension kept when the name is shortened.
+String oiImageName(String name) {
+  var n = name.replaceAll(RegExp(r'[\r\n]'), ' ').trim();
+  if (n.isEmpty) n = 'image';
+  if (n.length <= oiImageMaxName) return n;
+  final dot = n.lastIndexOf('.');
+  final ext = dot > 0 && n.length - dot <= 8 ? n.substring(dot) : '';
+  return n.substring(0, oiImageMaxName - ext.length).trimRight() + ext;
+}
+
+/// Scales a picture so a turn fits the worker's frame limit. A PNG, JPEG or
+/// WebP file already small enough is sent unchanged, with the type its bytes
+/// show (a JPEG named .png is sent as JPEG); otherwise it is decoded, scaled to
+/// at most [maxSide] pixels and re-encoded as PNG, shrinking until it fits
+/// [limit]. The name is kept within the worker's limit.
 Future<OiImage?> prepareOiImage(String name, Uint8List bytes, {int limit = OiConversation.maxImageBytes,
     int maxSide = 1280}) async {
-  final mime = oiImageMime(name);
-  if (mime == null) return null;
-  if (bytes.length <= limit) return OiImage(name: name, mime: mime, bytes: bytes);
+  if (oiImageMime(name) == null) return null;
+  final sniffed = oiSniffImageMime(bytes);
+  if (sniffed != null && bytes.length <= limit) return OiImage(name: oiImageName(name), mime: sniffed, bytes: bytes);
   var side = maxSide;
   while (side >= 256) {
     final codec = await ui.instantiateImageCodec(bytes);
@@ -313,7 +426,7 @@ Future<OiImage?> prepareOiImage(String name, Uint8List bytes, {int limit = OiCon
     img.dispose();
     if (png != null && png.lengthInBytes <= limit) {
       final base = name.contains('.') ? name.substring(0, name.lastIndexOf('.')) : name;
-      return OiImage(name: '$base.png', mime: 'image/png', bytes: png.buffer.asUint8List());
+      return OiImage(name: oiImageName('$base.png'), mime: 'image/png', bytes: png.buffer.asUint8List());
     }
     side = (side * 0.75).round();
   }
