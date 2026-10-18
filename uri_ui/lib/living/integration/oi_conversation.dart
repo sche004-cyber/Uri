@@ -36,6 +36,21 @@ String notSentMessage(String code) => switch (code) {
       _ => 'Not sent: URI could not accept this request right now.',
     };
 
+/// Plain words for a Brain profile switch the worker or the host refused (BRAIN-QC).
+String brainSwitchRefusal(String code) => switch (code) {
+      'TURN_IN_PROGRESS' => 'Not switched: wait until URI has finished answering.',
+      'BRAIN_RESTARTING' => 'Not switched: the Brain is already restarting or switching.',
+      'BRAIN_HOST_NOT_RUNNING' => 'Not switched: the Brain host is not running. Start URI with its launcher.',
+      'BRAIN_CONTROL_UNAVAILABLE' => 'Not switched: this URI build cannot control the Brain.',
+      'NOT_SELECTED' => 'Not switched: no local Brain is selected.',
+      'PROFILE_NOT_QUALIFIED' => 'Not switched: that combination is not qualified yet.',
+      'PROFILE_UNKNOWN' || 'PROFILE_INVALID' => 'Not switched: URI does not know that Brain setting.',
+      'REFUSED_DOES_NOT_FIT' => 'Not switched: there is not enough free GPU memory. The Brain keeps running as it was.',
+      'REFUSED_GPU_UNMEASURED' => 'Not switched: GPU memory could not be measured. The Brain keeps running as it was.',
+      'REFUSED_ATTACHED_INSTANCE' => 'Not switched: this Brain was started outside URI.',
+      _ => 'Not switched ($code).',
+    };
+
 class OiMessage {
   OiMessage({required this.role, required this.text, this.turnId});
   final OiRole role;
@@ -746,6 +761,56 @@ class OiConversation extends ChangeNotifier {
   void setDepth(OiDepth d) {
     depth = d;
     notifyListeners();
+  }
+
+  // ---- Brain Quick Controls (BRAIN-QC-20261018) ---------------------------
+
+  /// The worker's Quick Controls state (`brain_health.controls`), or empty
+  /// when this worker does not offer them. `active` is set only after the
+  /// worker verified the running Brain against that profile.
+  Map<String, dynamic> get brainControls =>
+      (brainHealth['controls'] as Map?)?.cast<String, dynamic>() ?? const {};
+
+  /// Tier (FAST / NORMAL) the latest URI answer actually used, from its
+  /// `turn.tier` event: what Thinking did, not what was asked.
+  String? get lastAnswerTier {
+    for (final m in messages.reversed) {
+      if (m.role == OiRole.uri && m.tier != null) return m.tier;
+    }
+    return null;
+  }
+
+  /// The id of the switch this UI requested (its outcome is shown once).
+  String? profileRequestId;
+
+  /// Plain-words outcome of the latest refused switch request, or null.
+  String? profileNotice;
+
+  /// Explicit user action: switch the Brain to a qualified profile (Vision /
+  /// Context). Returns the worker's reply; `needs_confirmation` means the
+  /// conversation is longer than the new context and the user must confirm
+  /// ([confirmShrink]). Refusals are reported in [profileNotice].
+  Future<Map<String, dynamic>?> reconfigureBrain(String profileId, {bool confirmShrink = false}) async {
+    if (busy || restarting || workerExited) return null;
+    final rt = runtime;
+    try {
+      final r = await rt.call({
+        'command': 'brain_reconfigure',
+        'profile_id': profileId,
+        if (confirmShrink) 'confirm_shrink': true,
+      });
+      if (!_active(rt)) return null;
+      lastError = null;
+      profileNotice = null;
+      if (r['requested'] == 'reconfigure') profileRequestId = r['request_id'] as String?;
+      await refreshHealth();
+      return r;
+    } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return null;
+      profileNotice = brainSwitchRefusal(e.code);
+      notifyListeners();
+      return null;
+    }
   }
 
   // ---- events -----------------------------------------------------------

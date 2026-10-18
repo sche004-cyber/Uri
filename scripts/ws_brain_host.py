@@ -35,6 +35,8 @@ if str(REPO) not in sys.path:
 from uri_operational_intelligence import gpu_lease as G  # noqa: E402
 from uri_operational_intelligence import runtime_v1 as R  # noqa: E402
 from uri_operational_intelligence import runtime_profiles as RP  # noqa: E402
+from uri_operational_intelligence import brain_quick_controls as QC  # noqa: E402
+from uri_operational_intelligence import runtime_profile_selection as PS  # noqa: E402
 from uri_operational_intelligence.brain_health import (ACTIONS, HOST_HEARTBEAT_S, REPORT_FILE,  # noqa: E402
                                                        REPORT_SCHEMA, REQUEST_FILE, REQUEST_SCHEMA, write_host_request)
 REQUEST_MAX_AGE_S = 120.0
@@ -65,9 +67,12 @@ RESIDENCY_ALERT_GROWTH_MIB = 512.0
 
 class Host:
     def __init__(self, report_dir: Path, *, minutes: float, override: bool, cfg=None, state_dir=None,
-                 census=G.census, lease_dir=None, now=time.time):
+                 census=G.census, lease_dir=None, now=time.time, frozen_cfg=None):
         self.report_dirs = [Path(report_dir)]
         self.cfg = cfg or R.load_config()
+        # The frozen config a reconfigure derives from (BRAIN-QC-20261018); loaded on first use when not given.
+        self._frozen_cfg = frozen_cfg if frozen_cfg is not None else (None if cfg is not None else self.cfg)
+        self.pending_profile = None     # validated reconfigure target (profile key) taken from a request
         # Measured device request of this config: the frozen constant, or a resource profile's own measurement.
         self.required_mib = RP.cfg_required_mib(self.cfg, G.RUNTIME_V1_DEVICE_MIB)
         self.state_dir = Path(state_dir or R.DEFAULT_STATE)
@@ -138,7 +143,7 @@ class Host:
         rid = req.get("id") if isinstance(req, dict) else None
         if not isinstance(req, dict) or req.get("schema") != REQUEST_SCHEMA or rid == self.last_request_id:
             return None
-        if only is not None and req.get("action") != only:
+        if only is not None and req.get("action") not in ((only,) if isinstance(only, str) else only):
             return None
         self.last_request_id = rid
         age = self.now() - float(req.get("requested_at") or 0)
@@ -148,6 +153,19 @@ class Host:
                                            "t": round(self.now(), 3)}
             self.write()
             return None
+        if req["action"] == "reconfigure":
+            # BRAIN-QC: the host is the authority on what it loads. Only a qualified Quick Controls profile is a
+            # target, whoever wrote the request; anything else is refused here and nothing is stopped.
+            try:
+                prof = req.get("profile")
+                self.pending_profile = QC.switch_target(prof if isinstance(prof, dict) else None)
+            except (QC.QuickControlError, RP.ProfileError) as exc:
+                code = "REFUSED_" + exc.code
+                self.record_request(rid, code)
+                self.report["last_request"] = {"id": rid, "action": "reconfigure", "result": code,
+                                               "t": round(self.now(), 3)}
+                self.write()
+                return None
         self.record_request(rid, "ACCEPTED")
         self.report["last_request"] = {"id": rid, "action": req["action"], "result": "ACCEPTED", "t": round(self.now(), 3)}
         self.write()
@@ -184,8 +202,11 @@ class Host:
                          explain="Another URI GPU workload holds the GPU: %s (%s, pid %s). URI waits; it does not stop it."
                          % (h.get("label") or h.get("purpose") or "unknown", h.get("process"), h.get("pid")),
                          lease={"held": False, "holder": h})
-                if self.wait_or_request(5.0) == "stop":
+                r = self.wait_or_request(5.0)
+                if r == "stop":
                     return False
+                if r == "reconfigure":
+                    self.apply_pending_profile()       # no Brain runs while waiting for the lease
         return False
 
     def reap_loaders(self):
@@ -253,21 +274,41 @@ class Host:
                                                           "unattributed_mib": unattr, "verdict": fit["verdict"]}
                 self.report["gpu"] = gpu
                 return True
-            if self.wait_or_request(GPU_POLL_S) == "stop":
+            r = self.wait_or_request(GPU_POLL_S)
+            if r == "stop":
                 return False
+            if r == "reconfigure":
+                # No Brain runs while the start waits: the new target replaces this one and the fit is re-checked
+                # with its own measured request (a smaller profile may fit where this one waits).
+                self.apply_pending_profile()
         return False
 
     def wait_or_request(self, seconds):
         end = time.monotonic() + seconds
         while time.monotonic() < end and not self.should_exit():
-            a = self.take_request(only="stop")
-            if a == "stop":
-                return "stop"
+            # A reconfigure is also taken while waiting (BRAIN-QC): a smaller profile may fit where this one waits.
+            a = self.take_request(only=("stop", "reconfigure"))
+            if a in ("stop", "reconfigure"):
+                return a
             time.sleep(0.5)
         return None
 
     # ---- Brain ----------------------------------------------------------------------------------------------
     def start_brain(self):
+        try:
+            return self._start_brain()
+        finally:
+            self._finish_switch()
+
+    def _finish_switch(self):
+        """Close an IN_PROGRESS profile switch record with the state the start left (READY, DEGRADED, FAILED...)."""
+        sw = self.report.get("profile_switch") or {}
+        if sw.get("result") == "IN_PROGRESS":
+            t = float(sw.get("t_request") or self.now())
+            sw.update(result=self.report.get("state"), t_done=round(self.now(), 3), seconds=round(self.now() - t, 1))
+            self.write()
+
+    def _start_brain(self):
         if not self.wait_for_gpu():
             return False
         self.mgr = R.RuntimeManager(self.cfg, state_dir=self.state_dir)
@@ -369,10 +410,110 @@ class Host:
         self.report.pop("calibration", None)          # it described the instance that just stopped
         self.report.pop("residency_alert", None)
 
+    # ---- resource profile switch (Brain Quick Controls, BRAIN-QC-20261018) ------------------------------------
+    def sync_selection(self):
+        """The selection file the worker verifies against always names what this host runs: the derived profile,
+        or no file for the frozen config (absent = frozen). Written before every start, so a host started without
+        --profile never leaves a stale selection that would make the worker refuse the frozen Brain."""
+        path = self.report_dirs[0] / PS.SELECTION_FILE
+        p = self.cfg.get("profile")
+        try:
+            if p:
+                self.report_dirs[0].mkdir(parents=True, exist_ok=True)
+                tmp = path.with_suffix(".json.tmp")
+                tmp.write_text(json.dumps({"schema": PS.SCHEMA, "ctx": int(p["ctx"]), "vision": p["vision"],
+                                           "mtp": bool(p["mtp"])}), encoding="utf-8")
+                os.replace(tmp, path)
+            else:
+                path.unlink(missing_ok=True)
+            self.report.pop("selection_error", None)
+        except OSError as exc:
+            self.report["selection_error"] = type(exc).__name__
+
+    def apply_pending_profile(self):
+        """Make the validated reconfigure target this host's config. Only called while no Brain server runs."""
+        key = self.pending_profile
+        if key is None:
+            return False
+        self.pending_profile = None
+        if self._frozen_cfg is None:
+            self._frozen_cfg = R.load_config()
+        before = RP.describe(self.cfg)["id"]
+        self.cfg = RP.derive_config(self._frozen_cfg, *key)
+        self.required_mib = RP.cfg_required_mib(self.cfg, G.RUNTIME_V1_DEVICE_MIB)
+        self.report["profile"] = RP.describe(self.cfg)
+        sw = dict(self.report.get("profile_switch") or {})
+        if sw.get("result") != "IN_PROGRESS":
+            sw = {"id": (self.report.get("last_request") or {}).get("id"), "from": before,
+                  "t_request": round(self.now(), 3)}
+        sw.update(to=self.report["profile"]["id"], required_mib=self.required_mib, result="IN_PROGRESS")
+        self.report["profile_switch"] = sw
+        self.sync_selection()
+        if self.lease is not None:
+            self.lease.heartbeat(expected_vram_mib=self.required_mib)
+        self.write()
+        return True
+
+    def reconfigure(self):
+        """Controlled switch to `pending_profile`: fit pre-check while the current Brain still runs, stop, VRAM
+        release wait, start on the derived config, calibration. Nothing falls back silently: a target that would not
+        fit is refused BEFORE anything is stopped (the working Brain stays), and a start that then waits or fails is
+        reported as it is."""
+        key = self.pending_profile
+        if key is None:
+            return
+        key = tuple(key)
+        rid = (self.report.get("last_request") or {}).get("id")
+        cur = RP.describe(self.cfg)
+        try:
+            same = QC.key_of(cur) == key
+        except (KeyError, TypeError, ValueError):
+            same = False
+        t0 = round(self.now(), 3)
+        if same and self.mgr is not None:
+            self.pending_profile = None
+            self.report["profile_switch"] = {"id": rid, "from": cur["id"], "to": cur["id"], "t_request": t0,
+                                             "result": "ALREADY_ACTIVE"}
+            return
+        fit = None
+        if self.mgr is not None and not self.mgr.owns_instance:
+            # An attached instance this host did not start is never stopped from here, so it cannot be switched.
+            return self._refuse_switch(rid, cur, key, t0, "REFUSED_ATTACHED_INSTANCE",
+                                       "The Brain was not switched: it was started outside URI's Brain host.")
+        if self.mgr is not None:
+            c = self.census()
+            # Owners = this host and its children, so the running Brain counts as memory the switch frees.
+            fit = G.assess_fit(c, owners=self.owners(), required_mib=RP.required_mib(key))
+            if fit["verdict"] in (G.CONTENDED, G.UNKNOWN) and not self.override:
+                code = "REFUSED_DOES_NOT_FIT" if fit["verdict"] == G.CONTENDED else "REFUSED_GPU_UNMEASURED"
+                return self._refuse_switch(rid, cur, key, t0, code, "The Brain was not switched. " + G.explain(fit),
+                                           fit=fit)
+        self.report["profile_switch"] = {"id": rid, "from": cur["id"], "to": RP.profile_id(key),
+                                         "t_request": t0, "fit_before": fit, "result": "IN_PROGRESS"}
+        self.stop_brain()
+        self.report["profile_switch"]["t_stopped"] = round(self.now(), 3)
+        self.apply_pending_profile()
+        if self.lease is None and not self.acquire_lease():
+            self._finish_switch()
+            return
+        self.start_brain()
+
+    def _refuse_switch(self, rid, cur, key, t0, code, explain, fit=None):
+        """The current Brain keeps running; the request is closed with the refusal (the worker's gate opens on it)."""
+        self.pending_profile = None
+        self.report["profile_switch"] = {"id": rid, "from": cur["id"], "to": RP.profile_id(key), "t_request": t0,
+                                         "result": code, "fit": fit, "explain": explain}
+        lr = self.report.get("last_request") or {}
+        if lr.get("id") == rid and lr.get("result") == "ACCEPTED":
+            lr.update(result=code, t_done=round(self.now(), 3), done_state=self.report.get("state"))
+        self.record_request(rid, code)
+        self.write()
+
     # ---- main loop ------------------------------------------------------------------------------------------
     def run(self):
         threading.Thread(target=self._heartbeat, name="host-heartbeat", daemon=True).start()
         try:
+            self.sync_selection()
             if not self.acquire_lease():
                 self.set("STOPPED", detail="EXIT_BEFORE_LEASE")
                 return 0
@@ -393,6 +534,8 @@ class Host:
                     if self.lease is None and not self.acquire_lease():
                         break
                     self.start_brain()
+                elif action == "reconfigure":
+                    self.reconfigure()
                 if action == "stop" or self.stop_requested:       # also a stop consumed inside a wait or a load
                     self.stop_requested = False
                     self.stop_brain()
@@ -430,8 +573,10 @@ def main(argv=None):
     ap.add_argument("--profile", default=None,
                     help="research candidate (URI-RUNTIME-VRAM-R1): ctx,vision,mtp e.g. 65536,off,1; default = frozen")
     a = ap.parse_args(argv)
-    cfg = RP.derive_config(R.load_config(), *parse_profile(a.profile)) if a.profile else None
-    return Host(Path(a.report_dir), minutes=a.minutes, override=a.override_contention, cfg=cfg).run()
+    frozen = R.load_config()
+    cfg = RP.derive_config(frozen, *parse_profile(a.profile)) if a.profile else None
+    return Host(Path(a.report_dir), minutes=a.minutes, override=a.override_contention, cfg=cfg,
+                frozen_cfg=frozen).run()
 
 
 MTP_TOKENS = {"1": True, "on": True, "true": True, "0": False, "off": False, "false": False}

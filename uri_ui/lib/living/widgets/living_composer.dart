@@ -5,6 +5,7 @@ import '../../services/app_state_scope.dart';
 import '../../services/file_picker_service.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
+import '../integration/brain_quick_controls.dart';
 import '../integration/oi_conversation.dart';
 import '../living_scope.dart';
 import '../office/office_bridge.dart' show OfficeRequestHint;
@@ -360,6 +361,14 @@ class _LivingComposerState extends State<LivingComposer> {
               ],
             );
             }),
+            // BRAIN-QC-20261018: Thinking / Vision / Context under the chat box (full composer only). They step
+            // aside in a small window (UIV2-F3: nothing may overflow while it shrinks into Companion).
+            if (oi != null && office == null && !widget.compact && !widget.minimal && !widget.floating &&
+                MediaQuery.sizeOf(context).height >= 640 && MediaQuery.sizeOf(context).width >= 420)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: BrainQuickControls(conversation: oi),
+              ),
             if (voice != null && !widget.minimal)
               VoiceNoticeLine(controller: voice),
           ],

@@ -214,7 +214,7 @@ def main():
             oi = WB.IntegratedTurns(orchestrator=orch, cfg=cfg, status=manager.status,
                                     write_event=lambda ev: write({"event": ev}), memory=memory, defer_start=True,
                                     host_report=lambda: BH.read_host_report(oi_state),
-                                    host_request=lambda action: BH.write_host_request(oi_state, action))
+                                    host_request=lambda action, profile=None: BH.write_host_request(oi_state, action, profile))
             profile_sinks.append(oi)
             # W1 / A0 (additive): research and Assist commands. Both yield the single Brain slot to the user's turn
             # (BRAIN_TURNS below cancels their Brain work in flight).

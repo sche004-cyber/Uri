@@ -29,7 +29,10 @@ from .perf_monitor import DEGRADED_DECODE_TPS
 REPORT_SCHEMA = "uri.ws.brain_host.v1"
 REQUEST_SCHEMA = "uri.ws.brain_request.v1"
 REPORT_FILE, REQUEST_FILE = "brain_host.json", "brain_request.json"
-ACTIONS = ("restart", "stop", "start")
+# The worker's `brain_restart` command may write only the first three; "reconfigure" (Brain Quick Controls,
+# BRAIN-QC-20261018) is written only by `brain_reconfigure` and always carries a qualified profile target.
+RESTART_ACTIONS = ("restart", "stop", "start")
+ACTIONS = RESTART_ACTIONS + ("reconfigure",)
 # The Brain host rewrites its report at least this often (heartbeat). A report older than HOST_STALE_S whose process
 # cannot be inspected is evidence of a dead host; a fresh one is evidence of a live host.
 HOST_HEARTBEAT_S = 15.0
@@ -210,15 +213,20 @@ def host_alive(rep, now=None) -> bool:
     return ((now or time.time()) - beat) < HOST_STALE_S
 
 
-def write_host_request(report_dir, action) -> dict:
-    """One explicit request for the Brain host (restart / stop / start)."""
+def write_host_request(report_dir, action, profile=None) -> dict:
+    """One explicit request for the Brain host (restart / stop / start, or reconfigure with a profile target
+    `{"ctx", "vision", "mtp"}`; the host validates the target again against the Quick Controls catalog)."""
     if action not in ACTIONS:
         raise ValueError("ACTION_INVALID")
+    if (action == "reconfigure") != (profile is not None):
+        raise ValueError("PROFILE_REQUIRED_FOR_RECONFIGURE_ONLY")
     # Rounded DOWN to the millisecond (WS-FLAKE-1): rounding to the nearest could stamp a time up to 0.5 ms in the
     # future, and the host refuses a request with a negative age as stale.
     now = time.time()
     req = {"schema": REQUEST_SCHEMA, "id": str(uuid.uuid4()), "action": action,
            "requested_at": min(now, math.floor(now * 1000) / 1000)}
+    if profile is not None:
+        req["profile"] = {"ctx": profile["ctx"], "vision": profile["vision"], "mtp": profile["mtp"]}
     path = Path(report_dir) / REQUEST_FILE
     tmp = path.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(req), encoding="utf-8")

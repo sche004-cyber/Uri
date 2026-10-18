@@ -21,6 +21,10 @@ turns. The protocol keeps its existing guarantees:
     explicit restart / stop / start and is refused while a turn runs. `oi_turn_status` tells the UI whether the
     running job is alive and how long it has been silent, so an alive-but-silent worker can be told apart from an
     unresponsive one (R-BUSY).
+  * Brain Quick Controls (BRAIN-QC-20261018): `brain_health` also carries `controls` (the Vision / Context profile
+    choices, which one the worker has VERIFIED as serving, and any switch in flight). `brain_reconfigure` asks the
+    Brain host for a controlled switch to a qualified profile (brain_quick_controls.CATALOG); it is refused while a
+    turn runs, and the conversation history kept here is not touched by it (the worker keeps running).
 """
 from __future__ import annotations
 
@@ -31,6 +35,8 @@ from collections import deque
 
 from . import brain_catalog
 from . import brain_health
+from . import brain_quick_controls as QC
+from . import runtime_profiles as RP
 from . import cloud_policy
 from . import schedule_intent
 from . import text_input as TI
@@ -52,6 +58,7 @@ COMMANDS = {
     "cloud_policy": ({"command"},),
     "brain_health": ({"command"},),
     "brain_restart": ({"command", "action"},),
+    "brain_reconfigure": ({"command", "profile_id"}, {"command", "profile_id", "confirm_shrink"}),
     "oi_turn_status": ({"command"},),
     # Text intelligence: read the session's draft; deterministic draft operations (no model, no authority).
     "draft_get": ({"command", "session_id"},),
@@ -176,6 +183,8 @@ class IntegratedTurns:
         self._last_event = None       # monotonic time of the job's last event frame
         self._job_events = 0
         self._restart = None          # {"id", "t", "until"} of a Brain request the host has not finished
+        self._switch = None           # {"id", "to", "label", "t"} of a profile switch the host has not finished
+        self._context_tokens = None   # tokens of the last answer's full context (prompt + cache + answer)
         self._perf_ident = None       # (pid, create_time) of the server the timing samples belong to
         self.desk = DraftDesk(orchestrator)   # text intelligence: drafts per session (language work only)
 
@@ -216,9 +225,12 @@ class IntegratedTurns:
         result = ((host or {}).get("requests") or {}).get(r["id"])
         done = (time.time() > r["until"]
                 or (host is not None and alive is False)
-                or result in ("DONE", "IGNORED_INVALID_OR_STALE"))
+                or result in ("DONE", "IGNORED_INVALID_OR_STALE")
+                or (isinstance(result, str) and result.startswith("REFUSED_")))
         if done:
             self._restart = None
+            if self._switch is not None and self._switch.get("id") == r["id"]:
+                self._switch = None
         return not done
 
     def _start(self, turn_id, fn):
@@ -267,6 +279,9 @@ class IntegratedTurns:
             self._job_events += 1
             if ev["type"] == "answer.done":
                 m = ev["data"].get("metrics") or {}
+                ctx_n = sum(int(m.get(k) or 0) for k in ("prompt_n", "cache_n", "predicted_n"))
+                if ctx_n:
+                    self._context_tokens = ctx_n
                 if m.get("predicted_n") and m.get("predicted_per_second"):
                     self._perf.append((time.time(), {"predicted_n": m["predicted_n"],
                                                      "predicted_per_second": m["predicted_per_second"]}))
@@ -601,15 +616,82 @@ class IntegratedTurns:
         out = brain_health.assess(readiness=readiness, host=host, host_alive=alive, perf=perf, busy=self.busy,
                                   selected=self.selected, cfg=self.cfg,
                                   server={"pid": proc.get("pid"), "create_time": proc.get("create_time")})
-        if self._restart_pending() and out["state"] != brain_health.RECOVERING:
+        pending = self._restart_pending()
+        switching = pending and self._switch is not None
+        if switching:
+            out.update(state=brain_health.RECOVERING, reasons=["PROFILE_SWITCH"] + list(out.get("reasons") or []),
+                       recovery_options=[],
+                       explain="Switching the Brain to %s. It reloads (about half a minute); your conversation stays."
+                       % self._switch["label"])
+        elif pending and out["state"] != brain_health.RECOVERING:
             out.update(state=brain_health.RECOVERING, reasons=["RESTART_REQUESTED"] + list(out.get("reasons") or []),
                        recovery_options=[], explain="The Brain restart was requested; URI is waiting for it.")
+        out["controls"] = self._controls(out["state"], host, alive, switching)
         out["checked_at"] = round(time.time(), 3)
         return out
 
+    def _controls(self, state, host, alive, switching):
+        """Quick Controls state. `active` only when this worker's readiness verified the server (never before)."""
+        last = (host or {}).get("profile_switch") if alive else None
+        switch = {"pending": bool(switching), "target": dict(self._switch) if switching else None,
+                  "last": last, "context_tokens": self._context_tokens}
+        reason = None
+        if self._host_request is None:
+            reason = "BRAIN_CONTROL_UNAVAILABLE"
+        elif not alive:
+            reason = "BRAIN_HOST_NOT_RUNNING"
+        elif self.selected.get("provider") != "llamacpp-runtime-v1":
+            reason = "NOT_SELECTED"
+        try:
+            return QC.controls(self.cfg, state, host_profile=(host or {}).get("profile") if alive else None,
+                               switch=switch, can_switch=reason is None, cannot_switch_reason=reason)
+        except Exception as exc:          # a config the catalog cannot describe is reported, never guessed
+            return {"schema": QC.SCHEMA, "active": None, "error": type(exc).__name__, "switch": switch,
+                    "options": [], "can_switch": False, "cannot_switch_reason": "PROFILE_UNDESCRIBED"}
+
+    def _brain_reconfigure(self, c):
+        """Explicit user action: switch the Brain to a qualified profile (Vision / Context). Refused while a turn
+        runs (handled by `handle`), while another Brain request is unfinished, and for anything outside the catalog.
+        A context smaller than the live conversation needs `confirm_shrink: true`; URI keeps the history either way
+        (only the model's working memory is rebuilt)."""
+        try:
+            key = QC.switch_target(c["profile_id"])
+        except (QC.QuickControlError, RP.ProfileError) as exc:
+            raise BridgeRefused(exc.code) from None
+        if self._host_request is None:
+            raise BridgeRefused("BRAIN_CONTROL_UNAVAILABLE")
+        if self.selected.get("provider") != "llamacpp-runtime-v1":
+            raise BridgeRefused("NOT_SELECTED")
+        host, alive = self._host()
+        if not alive:
+            raise BridgeRefused("BRAIN_HOST_NOT_RUNNING")
+        if self._restart_pending():
+            raise BridgeRefused("BRAIN_RESTARTING")
+        confirm = c.get("confirm_shrink", False)
+        if not isinstance(confirm, bool):
+            raise BridgeRefused("COMMAND_SCHEMA")
+        current = RP.describe(self.cfg)
+        plan = RP.plan_change(current, context=key[0], vision=key[1], mtp=key[2],
+                              live_tokens=self._context_tokens or 0, confirm_shrink=confirm)
+        entry = QC.entry_by_key(key)
+        if plan["refused"] == "CONTEXT_SMALLER_THAN_CONVERSATION":
+            return {"requested": None, "needs_confirmation": plan["refused"], "detail": plan.get("detail"),
+                    "target": QC.describe_key(key)}
+        if plan["refused"]:
+            raise BridgeRefused(plan["refused"])
+        if not plan["reload"]:
+            return {"requested": None, "already_active": True, "target": QC.describe_key(key)}
+        now = time.time()
+        req = self._host_request("reconfigure", QC.target_dict(key))
+        self._restart = {"id": req.get("id"), "t": now, "until": now + RESTART_GATE_S}
+        self._switch = {"id": req.get("id"), "to": entry["id"], "label": entry["label"], "t": round(now, 3),
+                        "from": current.get("id")}
+        return {"requested": "reconfigure", "request_id": req.get("id"), "target": QC.describe_key(key),
+                "host_state": host.get("state")}
+
     def _brain_restart(self, c):
         action = c["action"]
-        if action not in brain_health.ACTIONS:
+        if action not in brain_health.RESTART_ACTIONS:
             raise BridgeRefused("ACTION_INVALID")
         if self._host_request is None:
             raise BridgeRefused("BRAIN_CONTROL_UNAVAILABLE")
