@@ -24,6 +24,9 @@ class _Runtime implements IntegratedRuntime {
   /// Brain Quick Controls `controls` block of brain_health (a profile switch in flight).
   Map<String, dynamic>? controls;
 
+  /// `state` of brain_health (the real worker reports RECOVERING while a switch or restart runs).
+  String? healthState;
+
   /// When set, both reports carry `checked_at` like the real worker (review R6-7).
   num? statusAt;
   num? healthAt;
@@ -47,6 +50,7 @@ class _Runtime implements IntegratedRuntime {
       'host': {'running': hostState != null, 'state': hostState},
       'checked_at': ?healthAt,
       'controls': ?controls,
+      'state': ?healthState,
     },
     'brain_catalog' => {
       'rows': [
@@ -295,12 +299,14 @@ void main() {
     await conv.refreshStatus();
     expect(src.signal.state, CompanionState.idle);
     // The old server still answers READY while the switch is pending: turns are refused, so not idle.
-    rt.controls = {
-      'switch': {
-        'pending': true,
-        'target': {'label': 'Long context'},
-      },
-    };
+    rt
+      ..healthState = 'RECOVERING'
+      ..controls = {
+        'switch': {
+          'pending': true,
+          'target': {'label': 'Long context'},
+        },
+      };
     await conv.refreshStatus();
     expect(src.signal.state, CompanionState.initializing);
     expect(src.signal.headline, 'Switching Brain');
@@ -318,14 +324,15 @@ void main() {
     expect(src.signal.headline, 'Waiting for GPU');
     rt.hostState = 'FAILED';
     await conv.refreshStatus();
-    expect(src.signal.state, isNot(CompanionState.initializing));
-    expect(src.signal.state, isNot(CompanionState.idle));
+    expect(src.signal.state, CompanionState.error);
+    expect(src.signal.headline, 'Brain failed to start');
     // Switch finished and the new Brain is READY: idle.
     rt
       ..controls = {
         'switch': {'pending': false},
       }
       ..hostState = 'READY'
+      ..healthState = null
       ..brainState = 'READY';
     await conv.refreshStatus();
     expect(src.signal.state, CompanionState.idle);

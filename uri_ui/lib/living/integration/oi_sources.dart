@@ -182,12 +182,16 @@ class OiCompanionSource extends CompanionStateSource {
     // never shows ready/idle - not from the old server before it stops, nor from the new one before calibration. A
     // reload in progress (old server stopping, memory release, load, calibration) is a genuine start (Initializing,
     // D-1); a host that waits for the GPU or fails keeps its FCV-10 presentation.
-    final switching = (c.brainControls['switch'] as Map?)?['pending'] == true || c.brainStatus['switching'] == true;
+    // The worker's controls decide (review F-1): they are as fresh as the status mask and cannot outlive the switch.
+    final switching = (c.brainControls['switch'] as Map?)?['pending'] == true;
     if (switching && c.selectedRowId == 'runtime-v1') {
       final h = c.brainHealth['host'];
       final hs = h is Map && h['running'] == true ? h['state'] : null;
       if (hs is String && brainSwitchNotProgressing.contains(hs)) {
-        final p = brainNotReadyPresentation(hs, c.brainHealth);
+        // The host's own state decides here (review F-2): during a switch the worker reports RECOVERING, which
+        // brainNotReadyPresentation would otherwise read as a start.
+        final p = brainNotReadyPresentation(
+            hs == 'FAILED' ? 'FAILED' : 'STOPPED', {...c.brainHealth, 'readiness': null, 'state': null});
         return CompanionSignal(
             state: p.state, headline: p.headline, detail: p.detail, sourceName: 'URI', simulated: false);
       }
