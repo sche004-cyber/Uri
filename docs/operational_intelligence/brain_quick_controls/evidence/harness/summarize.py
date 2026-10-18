@@ -75,9 +75,17 @@ for s in samples:
 timelines = [{"to": r.get("to"), "ui_seconds": r.get("ui_seconds"), "rows": len(r.get("rows") or [])}
              for r in obs if r.get("label") == "switch-timeline"]
 fails = [c["id"] for c in checks if c["result"] != "PASS"]
+# Closure (review QCC-R1-01): a closure run must contain every closure check; a missing one is a failure.
+CLOSURE_IDS = ["QC-draft-chip-standard", "QC-confirm-dialog-p3", "QC-header-truthful-p3", "QC-truthful-switch-p3",
+               "QC-chips-p3", "QC-no-mismatch-p3", "QC-continuity-p3", "QC-assist-vision-on-p3",
+               "QC-chips-standard-after-p3", "QC-continuity-standard-after-p3"]
+missing = [i for i in CLOSURE_IDS if i not in {c["id"] for c in checks}] if native.get("closure_steps") else []
+fails += ["MISSING:" + i for i in missing]
 complete = (session.get("result") == "COMPLETED" and finished.get("by") == "driver" and native.get("exit_code") == 0)
 summary = {"label": LABEL, "classification": "COMPLETED_WITH_RESULT" if complete else "INCOMPLETE",
            "verdict": "PASS" if complete and not fails and checks else "FAIL",
+           "closure_steps": native.get("closure_steps"), "missing_closure_checks": missing,
+           "assist": load("assist-result.json"),
            "source_head": native.get("source_head"), "runtime_candidate_head": (session.get("receipt") or {}).get("candidate_head"),
            "runtime_verified": session.get("runtime_verified"), "checks": checks, "failed_checks": fails,
            "turns": turns, "profiles": profiles, "switches": switches, "switch_ui_timelines": timelines,

@@ -62,6 +62,7 @@ record = dict(label=LABEL, source_head=git("rev-parse", "HEAD"), source_tree=git
               command=command, driver_sha256=hashlib.sha256(driver_src.read_bytes()).hexdigest(),
               entry="original production main() via integration_test (Debug build); taps and TestTextInput",
               physical_keyboard_qualified=False, physical_mouse_qualified=False,
+              closure_steps=os.environ.get("URI_QC_CLOSURE") == "1", runtime=str(RT),
               started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
 t = time.monotonic()
 p = None

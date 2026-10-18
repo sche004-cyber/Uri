@@ -156,6 +156,12 @@ class _NotSelected:
     detail = "No Brain is selected; the deterministic source does not answer open questions."
 
 
+def assist_state_of(assist) -> dict:
+    """Closure D2/D6: what the Quick Controls need from URI Assist. `granted` is true for any held grant, ACTIVE or
+    PAUSED (review QCC-R1-02): a paused session can resume at any moment, so vision stays."""
+    return {"asking": bool(assist.asking), "granted": assist.access.snapshot().get("state") != "OFF"}
+
+
 class IntegratedTurns:
     def __init__(self, *, orchestrator, cfg, status, write_event, memory=None, cloud=None, defer_start=False,
                  host_report=None, host_request=None):
@@ -665,6 +671,10 @@ class IntegratedTurns:
         except Exception as exc:          # a config the catalog cannot describe is reported, never guessed
             return {"schema": QC.SCHEMA, "active": None, "error": type(exc).__name__, "switch": switch,
                     "options": [], "can_switch": False, "cannot_switch_reason": "PROFILE_UNDESCRIBED"}
+
+    def switch_pending(self) -> bool:
+        """A profile switch this worker asked for has not finished (closure QCC-R1-04: Assist waits for it)."""
+        return bool(self._switch is not None and self._restart_pending())
 
     def _assist(self):
         """{"asking", "granted"} from the worker's Assist commands (set by the worker as `assist_state`), or None."""

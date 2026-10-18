@@ -176,7 +176,7 @@ List<QcChoice> lockVision(List<QcChoice> xs, bool locked, Map<String, dynamic>? 
   return [
     for (final x in xs)
       if (x.target != null && !x.target!.visionOn)
-        QcChoice(title: x.title, blocked: 'URI Assist is using vision. End the Assist session first.')
+        QcChoice(title: x.title, blocked: 'A URI Assist session is open, so URI keeps vision on. End it first.')
       else
         x,
   ];
@@ -188,6 +188,10 @@ String? mismatchNotice(Map<String, dynamic> controls) {
   final m = (controls['mismatch'] as Map?)?.cast<String, dynamic>();
   if (m == null) return null;
   final host = m['host'] ?? 'an unknown setting';
+  if (m['code'] == 'HOST_SELECTION_ERROR') {
+    return 'The Brain host could not save its setting (${m['selection_error']}). The Brain works now; if URI '
+        'stops recognising it, Restart Brain.';
+  }
   if (m['code'] == 'PROFILE_NOT_SELECTABLE' || m['host_qualified'] == false) {
     return 'The Brain host runs $host, which is not a qualified choice. URI does not use it: choose a setting or '
         'Restart Brain.';

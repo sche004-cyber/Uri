@@ -496,8 +496,11 @@ def test_assist_state_failure_never_breaks_controls(fake, tmp_path):  # noqa: F8
 def test_worker_wires_assist_state_after_assist_is_created():
     src = (Path(R.REPO_ROOT) / "scripts" / "run_uri_integrated_worker.py").read_text(encoding="utf-8")
     i_assist = src.index("assist = ASSIST.AssistCommands(")
-    i_wire = src.index("oi.assist_state = lambda:")
-    assert i_assist < i_wire and '"granted": assist.access.snapshot().get("state") == "ACTIVE"' in src
+    i_wire = src.index("oi.assist_state = lambda: WB.assist_state_of(assist)")
+    assert i_assist < i_wire
+    # QCC-R1-04: Assist asks and grants wait for a pending profile switch.
+    i_guard = src.index('if kind in ("assist_ask", "assist_grant") and oi.switch_pending():')
+    assert src.index('raise TurnError("BRAIN_RESTARTING")', i_guard) - i_guard < 400
 
 
 def test_no_mismatch_is_reported_while_a_switch_is_pending():
@@ -506,3 +509,37 @@ def test_no_mismatch_is_reported_while_a_switch_is_pending():
     assert c["mismatch"] is None
     c2 = QC.controls(frozen(), "READY", host_profile=p3, switch={"pending": False}, host_alive=True)
     assert c2["mismatch"]["code"] == "HOST_WORKER_PROFILE_MISMATCH"
+
+
+def test_assist_state_of_a_real_assist_session_follows_grant_pause_and_revoke():
+    """QCC-R1-02/06: the real AssistCommands: no grant = not held; ACTIVE and PAUSED = held; revoked = not held."""
+    from uri_assist import access as AC, bridge as AB
+    from uri_operational_intelligence import worker_bridge as WB
+    a = AB.AssistCommands(adapters={}, brain_client=None)
+    assert WB.assist_state_of(a) == {"asking": False, "granted": False}
+    a.access.grant_scope(AC.ScopeKind.BROWSER_TAB, "t", "Tab", ["observe"], confirm_screen=False)
+    assert WB.assist_state_of(a)["granted"] is True
+    a.access.pause()
+    assert WB.assist_state_of(a)["granted"] is True          # a paused session can resume: vision stays
+    a.access.revoke("user")
+    assert WB.assist_state_of(a)["granted"] is False
+    a.close()
+
+
+def test_switch_pending_only_for_a_profile_switch(fake, tmp_path):  # noqa: F811
+    b, rep, _ = bridge(fake, tmp_path)
+    assert b.switch_pending() is False
+    b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "long"})
+    assert b.switch_pending() is True
+    b2, _, _ = bridge(fake, tmp_path / "b2")
+    b2.handle("brain_restart", {"command": "brain_restart", "action": "restart"})
+    assert b2.switch_pending() is False                      # a plain restart is not a profile switch
+
+
+def test_mismatch_reports_a_selection_error_even_when_profiles_agree():
+    """QCC-R1-05: same profile on both sides, but the host could not save the selection file."""
+    long = RP.describe(RP.derive_config(frozen(), *LONG))
+    m = QC.mismatch(LONG, long, "PermissionError")
+    assert m["code"] == "HOST_SELECTION_ERROR" and m["host"] == m["worker"] == "Long context"
+    u = QC.mismatch(LONG, {"ctx": "x"})
+    assert u["host"] == "an unreadable setting" and u["worker"] == "Long context"

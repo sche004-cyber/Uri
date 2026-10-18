@@ -248,8 +248,7 @@ def main():
                 assist = ASSIST.AssistCommands(brain_client=assist_brain, brain_idle=lambda: not oi.busy,
                                                write_event=lambda ev: write({"event": ev}), defer_start=True)
                 # Brain Quick Controls closure (D2/D6): the controls keep vision on while Assist holds a grant.
-                oi.assist_state = lambda: {"asking": assist.asking,
-                                           "granted": assist.access.snapshot().get("state") == "ACTIVE"}
+                oi.assist_state = lambda: WB.assist_state_of(assist)
                 WEB_COMMANDS, ASSIST_COMMANDS = frozenset(WEB.COMMANDS), frozenset(ASSIST.COMMANDS)
             except Exception:
                 web = assist = None
@@ -282,6 +281,9 @@ def main():
                         continue
                     if kind in WEB_COMMANDS or kind in ASSIST_COMMANDS:
                         handler = web if kind in WEB_COMMANDS else assist
+                        if kind in ("assist_ask", "assist_grant") and oi.switch_pending():
+                            # Closure QCC-R1-04: no Assist answer or new grant on a Brain that is being reloaded.
+                            raise TurnError("BRAIN_RESTARTING")
                         try:
                             result = handler.handle(kind, command)
                         except (WEB.Refused, ASSIST.Refused) as exc:

@@ -82,8 +82,8 @@ def assist_ask():
     import io
     out = {"utc": now(), "stand_ins": ["capture adapter = tests.assist FakeAdapter", "vision_qualified=True (harness)"]}
     try:
-        src = pathlib.Path(json.loads((RT / "OI_MATERIALIZATION_RECEIPT.json").read_text())["candidate_source"])
-        for p in (str(src / "model_lab"), str(src)):
+        # Review QCC-R1-07: everything is imported from the materialized runtime that ran (bound to the commit).
+        for p in (str(RT / "model_lab"), str(RT)):
             if p not in sys.path:
                 sys.path.insert(0, p)
         from uri_assist import bridge as B, access as AC
@@ -109,9 +109,13 @@ def assist_ask():
         br.wait(120)
         res = br.handle("assist_ask_status", {"command": "assist_ask_status", "ask_id": st["ask_id"]})
         ans = res.get("answer") or ""
+        low = ans.lower()
+        # The screenshot has Voice input and Gmail drafts on, Dark theme and Auto backup off. An answer that names an
+        # off toggle must also say "off" (review QCC-R1-07: "all four are on" no longer passes).
+        names_off = "dark" in low or "backup" in low
         out.update(method=res.get("method"), status=res.get("status"), wall_s=round(time.monotonic() - t0, 2),
                    answer=ans[:400], mentions_401="401" in ans,
-                   toggles_ok="voice" in ans.lower() and "gmail" in ans.lower())
+                   toggles_ok="voice" in low and "gmail" in low and (not names_off or " off" in low))
         out["correct"] = (out["status"] == "COMPLETE" and out["method"] == "vision" and out["mentions_401"]
                           and out["toggles_ok"])
         br.close()

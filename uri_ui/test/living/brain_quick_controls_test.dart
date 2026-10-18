@@ -488,7 +488,7 @@ void main() {
       final vis = lockVision(visionChoices(opts, std), true, std);
       final off = vis.firstWhere((c) => c.title == 'Off');
       expect(off.target, isNull);
-      expect(off.blocked, contains('URI Assist is using vision'));
+      expect(off.blocked, contains('A URI Assist session is open'));
       final ctx = lockVision(contextChoices(opts, std), true, std);
       expect(ctx.where((c) => c.target != null && !c.target!.visionOn), isEmpty);
       expect(lockVision(visionChoices(opts, std), false, std).firstWhere((c) => c.title == 'Off').target!.id, 'long');
@@ -538,8 +538,25 @@ void main() {
       expect(find.byKey(const ValueKey('qc-mismatch')), findsNothing);
     });
 
+    test('lockVision changes nothing without a verified vision-on profile (QCC-R1-06)', () {
+      final long = options(active: 'long')[1];
+      final visLong = visionChoices(opts, long);
+      expect(lockVision(visLong, true, long), visLong, reason: 'vision already off: nothing to keep');
+      final visNull = visionChoices(opts, null);
+      expect(lockVision(visNull, true, null), visNull, reason: 'nothing verified as running');
+    });
+
+    test('a selection error with agreeing profiles is explained, not called a mismatch (QCC-R1-05)', () {
+      final n = mismatchNotice(controls(active: 'long', mismatch: {
+        'code': 'HOST_SELECTION_ERROR', 'host': 'Long context', 'worker': 'Long context', 'host_qualified': true,
+        'selection_error': 'PermissionError'}));
+      expect(n, contains('could not save its setting (PermissionError)'));
+      expect(n, isNot(contains('expects')));
+      expect(mismatchNotice(controls(active: 'long')), isNull);
+    });
+
     test('the Assist refusals have plain words', () {
-      expect(brainSwitchRefusal('ASSIST_NEEDS_VISION'), contains('URI Assist is using vision'));
+      expect(brainSwitchRefusal('ASSIST_NEEDS_VISION'), contains('a URI Assist session is open'));
       expect(brainSwitchRefusal('ASSIST_ASK_IN_PROGRESS'), contains('URI Assist has finished'));
     });
   });

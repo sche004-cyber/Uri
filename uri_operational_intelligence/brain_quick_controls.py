@@ -144,10 +144,17 @@ def mismatch(configured_key, host_profile, host_selection_error=None, host_alive
     try:
         hkey = key_of(host_profile) if host_profile else RP.FROZEN_KEY
     except (KeyError, TypeError, ValueError):
-        return {"code": "HOST_PROFILE_UNREADABLE", "host": None, "worker": RP.profile_id(configured_key),
+        return {"code": "HOST_PROFILE_UNREADABLE", "host": "an unreadable setting", "host_id": None,
+                "worker": describe_key(configured_key)["label"], "worker_id": RP.profile_id(configured_key),
+                "host_qualified": False, "selection_error": host_selection_error}
+    if hkey == tuple(configured_key):
+        if not host_selection_error:
+            return None
+        # Review QCC-R1-05: both run the same profile, but the host could not record its selection file.
+        return {"code": "HOST_SELECTION_ERROR", "host": describe_key(hkey)["label"], "host_id": RP.profile_id(hkey),
+                "worker": describe_key(configured_key)["label"], "worker_id": RP.profile_id(configured_key),
+                "host_qualified": bool((entry_by_key(hkey) or {}).get("qualified")),
                 "selection_error": host_selection_error}
-    if hkey == tuple(configured_key) and not host_selection_error:
-        return None
     return {"code": host_selection_error or "HOST_WORKER_PROFILE_MISMATCH",
             "host": describe_key(hkey)["label"], "host_id": RP.profile_id(hkey),
             "worker": describe_key(configured_key)["label"], "worker_id": RP.profile_id(configured_key),
