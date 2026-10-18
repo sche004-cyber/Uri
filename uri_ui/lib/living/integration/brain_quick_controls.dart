@@ -25,6 +25,7 @@ class QcOption {
   String get summary => raw['summary'] as String? ?? '';
   int get ctx => (raw['ctx'] as num).toInt();
   bool get visionOn => raw['vision_on'] == true;
+  bool get mtp => raw['mtp'] == true;
   bool get qualified => raw['qualified'] == true;
 
   /// A Quick Controls target: qualified AND offered (an older worker without the field: qualified).
@@ -144,6 +145,57 @@ List<QcChoice> contextChoices(List<QcOption> options, Map<String, dynamic>? acti
   return out;
 }
 
+/// Draft (speculative decoding, MTP) On / Off at the running context and
+/// vision (closure D2/D6): offered only where two qualified profiles differ
+/// in the draft alone (Standard and Standard, draft off). Vision and context
+/// stay as they are. Empty when there is nothing to choose.
+List<QcChoice> draftChoices(List<QcOption> options, Map<String, dynamic>? active) {
+  if (active == null) return const [];
+  final activeCtx = (active['ctx'] as num?)?.toInt();
+  final activeOn = active['vision_on'] == true;
+  final activeMtp = active['mtp'] == true;
+  final same = options.where((o) => o.switchable && o.ctx == activeCtx && o.visionOn == activeOn).toList();
+  if ({for (final o in same) o.mtp}.length < 2) return const [];
+  final out = <QcChoice>[];
+  for (final on in [true, false]) {
+    final title = on ? 'On' : 'Off';
+    if (activeMtp == on) {
+      out.add(QcChoice(title: title, current: true, note: 'Current: ${active['label'] ?? ''}'));
+      continue;
+    }
+    final t = _firstQualified(same.where((o) => o.mtp == on));
+    if (t != null) out.add(QcChoice(title: title, target: t, note: '${t.label}: ${t.summary}'));
+  }
+  return out;
+}
+
+/// Closure D2/D6: while URI Assist holds a grant ([locked]), a choice that
+/// would turn vision off is shown disabled with the reason.
+List<QcChoice> lockVision(List<QcChoice> xs, bool locked, Map<String, dynamic>? active) {
+  if (!locked || active?['vision_on'] != true) return xs;
+  return [
+    for (final x in xs)
+      if (x.target != null && !x.target!.visionOn)
+        QcChoice(title: x.title, blocked: 'URI Assist is using vision. End the Assist session first.')
+      else
+        x,
+  ];
+}
+
+/// The host and the worker disagree about the running Brain (closure D3,
+/// QC-F9): what to tell the user, or null when they agree.
+String? mismatchNotice(Map<String, dynamic> controls) {
+  final m = (controls['mismatch'] as Map?)?.cast<String, dynamic>();
+  if (m == null) return null;
+  final host = m['host'] ?? 'an unknown setting';
+  if (m['code'] == 'PROFILE_NOT_SELECTABLE' || m['host_qualified'] == false) {
+    return 'The Brain host runs $host, which is not a qualified choice. URI does not use it: choose a setting or '
+        'Restart Brain.';
+  }
+  return 'The Brain host runs $host but URI expects ${m['worker'] ?? 'another setting'}. URI does not use it '
+      'until they match: choose a setting or Restart Brain.';
+}
+
 String thinkingLabel(OiDepth d) => switch (d) {
       OiDepth.auto => 'Auto',
       OiDepth.fast => 'Off',
@@ -223,8 +275,10 @@ class BrainQuickControls extends StatelessWidget {
         ]),
       ));
     } else if (hasProfiles) {
-      final vis = visionChoices(options, active);
-      final ctx = contextChoices(options, active);
+      final locked = controls['vision_locked'] == true;
+      final vis = lockVision(visionChoices(options, active), locked, active);
+      final ctx = lockVision(contextChoices(options, active), locked, active);
+      final draft = draftChoices(options, active);
       final visValue = active != null
           ? (active['vision_on'] == true ? 'On' : 'Off')
           : configured == null
@@ -244,9 +298,16 @@ class BrainQuickControls extends StatelessWidget {
           canSwitch, why ?? 'Vision lets the Brain read images. Changing it reloads the Brain.'));
       chips.add(_profileChip(context, const ValueKey('qc-context'), Icons.notes_rounded, 'Context: $ctxValue', ctx,
           canSwitch, why ?? 'How much of the conversation the Brain reads at once. Changing it reloads the Brain.'));
+      if (draft.isNotEmpty) {
+        chips.add(_profileChip(context, const ValueKey('qc-draft'), Icons.bolt_outlined,
+            'Draft: ${active?['mtp'] == true ? 'On' : 'Off'}', draft, canSwitch,
+            why ?? 'A speculative draft speeds up structured answers; Off uses about 1.2 GB less GPU memory. '
+                'Vision and context stay. Changing it reloads the Brain.'));
+      }
     }
 
     final notice = _notice(conv, switchState);
+    final mismatch = pending ? null : mismatchNotice(controls);
     return Padding(
       padding: const EdgeInsets.only(top: 2),
       child: Column(
@@ -254,6 +315,12 @@ class BrainQuickControls extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Wrap(spacing: 6, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: chips),
+          if (mismatch != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2, left: 4),
+              child: Text(mismatch, key: const ValueKey('qc-mismatch'),
+                  style: style.copyWith(fontSize: 11, color: c.warning)),
+            ),
           if (notice != null)
             Padding(
               padding: const EdgeInsets.only(top: 2, left: 4),

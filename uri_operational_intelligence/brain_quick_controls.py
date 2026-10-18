@@ -17,9 +17,10 @@ Qualification sources (runtime-profiles candidate, docs/operational_intelligence
 RUNTIME_PROFILES_LIVE_RESULTS.md section 2; subagent-reviewed, not driver-accepted):
   * Standard = the frozen Runtime v1 (32K, vision on the GPU, MTP draft): the verified default and fallback.
   * Long context = P2 64K main only (13,658 MiB): UI V2 journeys 68/68 + 12/12, soak 60 min, switch sw4 PASS.
-  * Standard without draft = P3 32K + GPU vision, MTP off (14,360 MiB): journeys 68/68 + 12/12, soak 60 min, Assist
-    3/3, switch sw4 PASS. Recognized when a host runs it, but NOT switchable from the Quick Controls (coordinator
-    2026-10-18): only Standard and Long context are targets.
+  * Standard, draft off = P3 32K + GPU vision, MTP off (14,360 MiB, about 1.2 GB less than Standard): journeys 68/68
+    + 12/12, soak 60 min, Assist 3/3, switch sw5/sw6 PASS. Switchable (owner closure decision D2/D3 2026-10-18,
+    which replaces the earlier "never offer P3" coordinator note): the Draft chip chooses between Standard and this
+    profile. Vision stays on either way.
   * 64K + vision = P1 (14,764 MiB): UNQUALIFIED (CRASH-1 and DEMOTE-P1 open). Listed, never switchable.
 """
 from __future__ import annotations
@@ -38,11 +39,9 @@ CATALOG = (
     {"id": "long", "key": (65536, "off", False), "label": "Long context",
      "summary": "64K context, vision off", "qualified": True,
      "evidence": EVIDENCE + " section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4"},
-    {"id": "standard-nodraft", "key": (32768, "gpu", False), "label": "Standard (no draft)",
-     "summary": "32K context, vision on, no speculative draft", "qualified": True,
-     # Coordinator 2026-10-18: P3 is recognized (a harness may start it) but never a Quick Controls target.
-     "switchable": False,
-     "evidence": EVIDENCE + " section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw4"},
+    {"id": "standard-nodraft", "key": (32768, "gpu", False), "label": "Standard, draft off",
+     "summary": "32K context, vision on, no speculative draft (about 1.2 GB less GPU memory)", "qualified": True,
+     "evidence": EVIDENCE + " section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw5/sw6"},
     {"id": "long-vision", "key": (65536, "gpu", False), "label": "Long context with vision",
      "summary": "64K context, vision on", "qualified": False,
      "reason": "Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser "
@@ -137,10 +136,31 @@ def describe_key(key) -> dict:
 SERVING_STATES = ("READY", "BUSY", "DEGRADED")
 
 
+def mismatch(configured_key, host_profile, host_selection_error=None, host_alive=True):
+    """Closure D3: the host, the worker and the persisted selection must never disagree silently. None when they
+    agree (or no host report is available); otherwise what each side runs and why, for the UI to show."""
+    if not host_alive:
+        return None
+    try:
+        hkey = key_of(host_profile) if host_profile else RP.FROZEN_KEY
+    except (KeyError, TypeError, ValueError):
+        return {"code": "HOST_PROFILE_UNREADABLE", "host": None, "worker": RP.profile_id(configured_key),
+                "selection_error": host_selection_error}
+    if hkey == tuple(configured_key) and not host_selection_error:
+        return None
+    return {"code": host_selection_error or "HOST_WORKER_PROFILE_MISMATCH",
+            "host": describe_key(hkey)["label"], "host_id": RP.profile_id(hkey),
+            "worker": describe_key(configured_key)["label"], "worker_id": RP.profile_id(configured_key),
+            "host_qualified": bool((entry_by_key(hkey) or {}).get("qualified")),
+            "selection_error": host_selection_error}
+
+
 def controls(cfg: dict, health_state, *, host_profile=None, switch=None, can_switch=True,
-             cannot_switch_reason=None) -> dict:
+             cannot_switch_reason=None, host_selection_error=None, host_alive=None, assist=None) -> dict:
     """The controls' state for the UI. `active` is set only when the worker's own readiness check verified the
-    running server against `cfg` (health READY / BUSY / DEGRADED): never before the runtime confirms."""
+    running server against `cfg` (health READY / BUSY / DEGRADED): never before the runtime confirms.
+    `assist` = {"asking": bool, "granted": bool} from the worker's Assist commands (closure D2/D6): while a grant is
+    active, vision stays on (`vision_locked`)."""
     configured = RP.describe(cfg)
     ckey = key_of(configured)
     serving = health_state in SERVING_STATES and not (switch or {}).get("pending")
@@ -157,4 +177,10 @@ def controls(cfg: dict, health_state, *, host_profile=None, switch=None, can_swi
             "options": [_view(e, ckey if serving else None) for e in CATALOG],
             "thinking": {"off": RP.thinking_depth(False), "on": RP.thinking_depth(True), "auto": "auto",
                          "reload": False},
-            "can_switch": bool(can_switch), "cannot_switch_reason": cannot_switch_reason}
+            "can_switch": bool(can_switch), "cannot_switch_reason": cannot_switch_reason,
+            # A switch in progress is a known, shown transition (the "Switching to" chip), not a disagreement.
+            "mismatch": None if (switch or {}).get("pending") else mismatch(
+                ckey, host_profile, host_selection_error,
+                host_alive if host_alive is not None else host_profile is not None),
+            "assist": dict(assist) if assist else None,
+            "vision_locked": bool(assist and assist.get("granted"))}

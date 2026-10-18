@@ -49,6 +49,8 @@ String brainSwitchRefusal(String code) => switch (code) {
       'REFUSED_DOES_NOT_FIT' => 'Not switched: there is not enough free GPU memory. The Brain keeps running as it was.',
       'REFUSED_GPU_UNMEASURED' => 'Not switched: GPU memory could not be measured. The Brain keeps running as it was.',
       'REFUSED_ATTACHED_INSTANCE' => 'Not switched: this Brain was started outside URI.',
+      'ASSIST_NEEDS_VISION' => 'Not switched: URI Assist is using vision. End the Assist session first.',
+      'ASSIST_ASK_IN_PROGRESS' => 'Not switched: wait until URI Assist has finished answering.',
       _ => 'Not switched ($code).',
     };
 

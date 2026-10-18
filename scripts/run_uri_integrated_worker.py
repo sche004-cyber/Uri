@@ -247,6 +247,9 @@ def main():
                                       defer_start=True)
                 assist = ASSIST.AssistCommands(brain_client=assist_brain, brain_idle=lambda: not oi.busy,
                                                write_event=lambda ev: write({"event": ev}), defer_start=True)
+                # Brain Quick Controls closure (D2/D6): the controls keep vision on while Assist holds a grant.
+                oi.assist_state = lambda: {"asking": assist.asking,
+                                           "granted": assist.access.snapshot().get("state") == "ACTIVE"}
                 WEB_COMMANDS, ASSIST_COMMANDS = frozenset(WEB.COMMANDS), frozenset(ASSIST.COMMANDS)
             except Exception:
                 web = assist = None

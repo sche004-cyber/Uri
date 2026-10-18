@@ -5,6 +5,7 @@ endpoint, the real Brain host class with recorded GPU census samples and a stubb
 with the real Brain and the real UI is covered by the milestone's live evidence, not here."""
 import json
 import time
+from pathlib import Path
 
 import pytest
 
@@ -37,13 +38,13 @@ def test_catalog_entries_are_measured_and_only_the_documented_ones_are_qualified
     lv = QC.entry_by_id("long-vision")
     assert lv["key"] == LONG_VISION and lv["qualified"] is False and "CRASH-1" in lv["reason"]
     assert {e["id"] for e in QC.CATALOG if e["qualified"]} == {"standard", "long", "standard-nodraft"}
-    assert {e["id"] for e in QC.CATALOG if e["qualified"] and e.get("switchable", True)} == {"standard", "long"}
+    # Closure D2/D3: every qualified entry is offered (P3 via the Draft chip); only P1 is listed and refused.
+    assert {e["id"] for e in QC.CATALOG if e["qualified"] and e.get("switchable", True)} == {
+        "standard", "long", "standard-nodraft"}
 
 
 @pytest.mark.parametrize("target,code", [
     ("long-vision", "PROFILE_NOT_QUALIFIED"),
-    ("standard-nodraft", "PROFILE_NOT_OFFERED"),
-    ({"ctx": 32768, "vision": "gpu", "mtp": False}, "PROFILE_NOT_OFFERED"),
     ({"ctx": 65536, "vision": "gpu", "mtp": False}, "PROFILE_NOT_QUALIFIED"),
     ("nope", "PROFILE_UNKNOWN"),
     ({"ctx": 131072, "vision": "off", "mtp": True}, "PROFILE_UNKNOWN"),     # measured, not in the catalog
@@ -393,12 +394,13 @@ def test_context_sizes_are_kept_least_recently_used(fake, tmp_path):  # noqa: F8
 
 
 def test_catalog_agrees_with_the_integrated_selectable_set():
-    """Canonical cd4a7963: SELECTABLE = frozen, P2, P3. Quick Controls offer Standard and Long only; P3 is recognised,
-    not offered; P1 is refused by both."""
+    """Canonical cd4a7963: SELECTABLE = frozen, P2, P3. Closure D2/D3: Quick Controls offer exactly SELECTABLE
+    (Standard, Long context, Standard draft off); P1 is refused by both."""
     qualified = {tuple(e["key"]) for e in QC.CATALOG if e["qualified"]}
     offered = {tuple(e["key"]) for e in QC.CATALOG if e["qualified"] and e.get("switchable", True)}
     assert qualified == set(PS.SELECTABLE)
-    assert offered == {RP.FROZEN_KEY, LONG} and offered < set(PS.SELECTABLE)
+    assert offered == set(PS.SELECTABLE)
+    assert QC.switch_target("standard-nodraft") == (32768, "gpu", False)
     assert LONG_VISION not in PS.SELECTABLE and LONG_VISION not in qualified
 
 
@@ -422,3 +424,85 @@ def test_the_host_report_decides_whether_a_target_already_runs(fake, tmp_path): 
     b2, _, requests2 = bridge(fake, tmp_path / "b2")          # host reports the frozen Standard profile
     r2 = b2.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard"})
     assert r2["already_active"] is True and requests2 == []
+
+
+P3 = (32768, "gpu", False)
+
+
+def test_reconfigure_to_p3_sends_the_p3_target(fake, tmp_path):  # noqa: F811
+    """Closure D2: P3 (Standard, draft off) is a Quick Controls target; vision stays on."""
+    b, _, requests = bridge(fake, tmp_path)
+    r = b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard-nodraft"})
+    assert r["requested"] == "reconfigure" and requests == [("reconfigure", {"ctx": 32768, "vision": "gpu", "mtp": False})]
+
+
+def test_mismatch_is_none_when_host_and_worker_agree():
+    assert QC.mismatch(RP.FROZEN_KEY, None) is None                      # no host profile = frozen host
+    assert QC.mismatch(LONG, RP.describe(RP.derive_config(frozen(), *LONG))) is None
+    assert QC.mismatch(LONG, None, host_alive=False) is None              # no live host: nothing to compare
+
+
+def test_mismatch_names_a_research_host_profile_and_the_selection_error():
+    """Closure D3 / QC-F9: a host on P1 (research --profile) with the worker on the frozen config is reported, with
+    the host's selection_error, not left as a generic not-ready state."""
+    p1 = RP.describe(RP.derive_config(frozen(), *LONG_VISION))
+    m = QC.mismatch(RP.FROZEN_KEY, p1, "PROFILE_NOT_SELECTABLE")
+    assert m["code"] == "PROFILE_NOT_SELECTABLE" and m["host_id"] == "c64k-visgpu-mtpoff"
+    assert m["host_qualified"] is False and m["worker_id"] == RP.describe(frozen())["id"]
+    m2 = QC.mismatch(LONG, RP.describe(RP.derive_config(frozen(), *P3)))
+    assert m2["code"] == "HOST_WORKER_PROFILE_MISMATCH" and m2["host_qualified"] is True
+    assert QC.mismatch(LONG, {"ctx": "x"})["code"] == "HOST_PROFILE_UNREADABLE"
+
+
+def test_controls_carry_the_mismatch_and_the_assist_vision_lock(fake, tmp_path):  # noqa: F811
+    p1 = RP.describe(RP.derive_config(frozen(), *LONG_VISION))
+    b, rep, _ = bridge(fake, tmp_path, rep={"schema": BH.REPORT_SCHEMA, "state": "READY", "updated_at": time.time(),
+                                            "profile": p1, "selection_error": "PROFILE_NOT_SELECTABLE"})
+    b.assist_state = lambda: {"asking": False, "granted": True}
+    c = b._controls("READY", rep, True, False)
+    assert c["mismatch"]["code"] == "PROFILE_NOT_SELECTABLE" and c["vision_locked"] is True
+    assert c["active"] is None                    # the worker never calls a mismatched host's profile active
+    b2, rep2, _ = bridge(fake, tmp_path / "b2")
+    c2 = b2._controls("READY", rep2, True, False)
+    assert c2["mismatch"] is None and c2["vision_locked"] is False and c2["assist"] is None
+
+
+def test_reconfigure_keeps_vision_while_assist_holds_a_grant(fake, tmp_path):  # noqa: F811
+    """Closure D2/D6: while Assist holds a grant, a switch that turns vision off is refused; a switch that keeps
+    vision (Standard <-> draft off) is allowed. A running Assist answer blocks any reload."""
+    b, _, requests = bridge(fake, tmp_path)
+    b.assist_state = lambda: {"asking": False, "granted": True}
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "long"})
+    assert e.value.code == "ASSIST_NEEDS_VISION" and requests == []
+    r = b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard-nodraft"})
+    assert r["requested"] == "reconfigure"
+    b2, _, requests2 = bridge(fake, tmp_path / "b2")
+    b2.assist_state = lambda: {"asking": True, "granted": True}
+    with pytest.raises(BridgeRefused) as e2:
+        b2.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard-nodraft"})
+    assert e2.value.code == "ASSIST_ASK_IN_PROGRESS" and requests2 == []
+
+
+def test_assist_state_failure_never_breaks_controls(fake, tmp_path):  # noqa: F811
+    b, rep, _ = bridge(fake, tmp_path)
+
+    def boom():
+        raise RuntimeError("x")
+    b.assist_state = boom
+    assert b._controls("READY", rep, True, False)["assist"] is None
+
+
+def test_worker_wires_assist_state_after_assist_is_created():
+    src = (Path(R.REPO_ROOT) / "scripts" / "run_uri_integrated_worker.py").read_text(encoding="utf-8")
+    i_assist = src.index("assist = ASSIST.AssistCommands(")
+    i_wire = src.index("oi.assist_state = lambda:")
+    assert i_assist < i_wire and '"granted": assist.access.snapshot().get("state") == "ACTIVE"' in src
+
+
+def test_no_mismatch_is_reported_while_a_switch_is_pending():
+    p3 = RP.describe(RP.derive_config(frozen(), *P3))
+    c = QC.controls(frozen(), "RECOVERING", host_profile=p3, switch={"pending": True}, host_alive=True)
+    assert c["mismatch"] is None
+    c2 = QC.controls(frozen(), "READY", host_profile=p3, switch={"pending": False}, host_alive=True)
+    assert c2["mismatch"]["code"] == "HOST_WORKER_PROFILE_MISMATCH"
