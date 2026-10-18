@@ -153,21 +153,24 @@ class Orchestrator:
         return False
 
     def handle_turn(self, text, session_id, *, depth="auto", history=(), sink: EventSink | None = None,
-                    turn_id=None, core_clarification=False) -> TurnOutcome:
+                    turn_id=None, core_clarification=False, images=None) -> TurnOutcome:
         turn_id = turn_id or str(uuid.uuid4())
         sink = sink or EventSink()
         cancel = self.cancels.setdefault(turn_id, BC.CancelToken())
         t0 = time.monotonic()
         emit = lambda t, **d: sink.emit(turn_id, t, **d)
         try:
-            emit("turn.started", text_chars=len(text), depth=depth)
+            emit("turn.started", text_chars=len(text), depth=depth, **({"images": len(images)} if images else {}))
             emit("companion.state", state="thinking")
             # The integrated worker holds the same client's pending Core question. Its next free-text
             # answer belongs to Core's existing intent continuation, not standalone conversational triage.
             # This only chooses the authority path; it never confirms, approves or rewrites the user's words.
             tri = T.Triage(T.ACTION, ["pending_core_clarification"]) if core_clarification else T.triage(text)
             tier = RP.decide(tri.kind, depth)
-            out = self._route(text, session_id, tri, tier, depth, history, emit, cancel, turn_id)
+            if images:
+                out = self._image_turn(text, session_id, tri, tier, emit, turn_id, history, cancel, images)
+            else:
+                out = self._route(text, session_id, tri, tier, depth, history, emit, cancel, turn_id)
         finally:
             self.cancels.pop(turn_id, None)
         out.total_s = round(time.monotonic() - t0, 4)
@@ -204,8 +207,20 @@ class Orchestrator:
             return self._plan_turn(text, session_id, tri, tier, emit, turn_id)
         return self._answer_turn(text, session_id, tri, tier, emit, turn_id, history, cancel)
 
+    def _image_turn(self, text, session_id, tri, tier, emit, turn_id, history, cancel, images) -> TurnOutcome:
+        """Vision On (BRAIN-QUICK-CONTROLS): an image turn is a question for the answer channel. A request to act,
+        plan or escalate with an image is refused with a reason, never run without its image (no silent drop)."""
+        if tri.kind in (T.ACTION, T.HARNESS, T.MULTI_STEP) or tier.tier == RP.ESCALATE:
+            emit("turn.routed", route="answer", triage=tri.to_dict(), tier=tier.to_dict())
+            emit("error", code="IMAGE_ACTION_UNSUPPORTED", recoverable=True, recovery_options=["ask_about_image"],
+                 message="URI can answer questions about an image, but it cannot act on one yet. Ask about the "
+                         "image, or send the request without it.")
+            return TurnOutcome(turn_id, "answer", tri.to_dict(), tier.to_dict(), "error",
+                               answer={"status": "IMAGE_ACTION_UNSUPPORTED"})
+        return self._answer_turn(text, session_id, tri, tier, emit, turn_id, history, cancel, images=images)
+
     def _answer_turn(self, text, session_id, tri, tier, emit, turn_id, history, cancel, executed_action=False,
-                     rerouted_from=None) -> TurnOutcome:
+                     rerouted_from=None, images=None) -> TurnOutcome:
         ready, r = self._brain_ready()
         emit("turn.routed", route="answer", triage=tri.to_dict(), tier=tier.to_dict())
         if not ready:
@@ -232,10 +247,15 @@ class Orchestrator:
         memory = A.memory_evidence(self.remembered_facts) if self.remembered_facts is not None else None
         res = A.answer(self.client, text, tier=tier.tier, use=use, history=history, cancel=cancel,
                        deadlines=self.deadlines, on_delta=on_delta, executed_action=executed_action,
-                       memory=memory, capability_ids=self.capability_ids)
+                       memory=memory, capability_ids=self.capability_ids, images=images)
         if memory is not None:
             res.metrics["memory_context"] = {"status": memory["status"], "fact_count": len(memory["facts"]),
                                              "truncated": memory["truncated"]}
+        if res.status == "ACTION_REQUESTED" and images:
+            emit("error", code="IMAGE_ACTION_UNSUPPORTED", recoverable=True, recovery_options=["ask_about_image"],
+                 message="URI can answer questions about an image, but it cannot act on one yet.")
+            return TurnOutcome(turn_id, "answer", tri.to_dict(), tier.to_dict(), "error",
+                               answer={"status": "IMAGE_ACTION_UNSUPPORTED"})
         if res.status == "ACTION_REQUESTED" and rerouted_from is None:
             # Model-side guard: the user asked URI to DO something. Core decides; nothing was said to the user yet.
             return self._core_turn(text, session_id, T.Triage(T.ACTION, ["answer_channel_action_marker"]),

@@ -30,6 +30,9 @@ import uuid
 from collections import deque
 
 from . import brain_catalog
+from . import brain_profile as BP
+from . import images as IMG
+from . import runtime_profiles as RPROF
 from . import brain_health
 from . import cloud_policy
 from . import schedule_intent
@@ -40,7 +43,9 @@ from .events import EventSink
 from .perf_monitor import PerfMonitor
 
 COMMANDS = {
-    "oi_turn": ({"command", "session_id", "text", "depth"}, {"command", "session_id", "text", "depth", "input"}),
+    "oi_turn": ({"command", "session_id", "text", "depth"}, {"command", "session_id", "text", "depth", "input"},
+                {"command", "session_id", "text", "depth", "images"},
+                {"command", "session_id", "text", "depth", "input", "images"}),
     "oi_cancel": ({"command", "turn_id"},),
     "oi_confirm": ({"command", "turn_id"},),
     "oi_decide": ({"command", "turn_id", "approve", "approval_digest"},),
@@ -52,13 +57,17 @@ COMMANDS = {
     "cloud_policy": ({"command"},),
     "brain_health": ({"command"},),
     "brain_restart": ({"command", "action"},),
+    # Brain quick controls (BRAIN-QUICK-CONTROLS): Vision / Context / Speed as a measured Runtime v1 profile.
+    "brain_profile_get": ({"command"},),
+    "brain_profile_set": ({"command", "vision", "context", "speed"}, {"command", "vision", "context", "speed",
+                                                                     "confirm_shrink"}),
     "oi_turn_status": ({"command"},),
     # Text intelligence: read the session's draft; deterministic draft operations (no model, no authority).
     "draft_get": ({"command", "session_id"},),
     "draft_op": ({"command", "session_id", "op"}, {"command", "session_id", "op", "version"}),
 }
 OPEN_WHILE_BUSY = {"oi_cancel", "brain_status", "brain_catalog", "cloud_policy", "brain_health",
-                   "oi_turn_status", "draft_get"}
+                   "oi_turn_status", "draft_get", "brain_profile_get"}
 PERF_SAMPLES = 48
 # A Brain restart/stop request blocks new turns until the host has acted on it (Codex H-r1 F2): the busy check and
 # the request are made on the worker's single command thread, and no turn can start between them or after them while
@@ -145,7 +154,7 @@ class _NotSelected:
 
 class IntegratedTurns:
     def __init__(self, *, orchestrator, cfg, status, write_event, memory=None, cloud=None, defer_start=False,
-                 host_report=None, host_request=None):
+                 host_report=None, host_request=None, profiles=None, choice_dir=None):
         """
         orchestrator: an OI Orchestrator whose `core` is the paired Core gateway for this client.
         cfg:          the frozen Runtime v1 configuration (already loaded).
@@ -155,7 +164,9 @@ class IntegratedTurns:
         defer_start:  a started job waits for `release()`, which the worker calls right AFTER it wrote the reply.
                       The reply that carries the turn id therefore always precedes the turn's first event frame.
         host_report:  callable() -> (Brain host report | None, host_alive) (read-only), or None without a host.
-        host_request: callable(action) that writes one explicit request for the Brain host, or None.
+        host_request: callable(action, profile=None) that writes one explicit request for the Brain host, or None.
+        profiles:     brain_profile.ProfileStatus (active profile of the live Brain), or None (frozen config only).
+        choice_dir:   directory of the user's persisted profile choice (brain_profile.json), or None.
         """
         self.o, self.cfg, self._status, self._write = orchestrator, cfg, status, write_event
         self._memory, self.cloud = memory, cloud or cloud_policy.CloudSpendPolicy()
@@ -171,6 +182,7 @@ class IntegratedTurns:
         self.pending = {}             # oi turn_id -> {"env", "text", "session_id"} (Core turn awaiting the user)
         self.history = {}             # session_id -> [{"role", "content"}] (answer-channel context, bounded)
         self._host_report, self._host_request = host_report, host_request
+        self._profiles, self._choice_dir = profiles, choice_dir
         self._perf = deque(maxlen=PERF_SAMPLES)     # (wall time, llama-server timings) of finished answers
         self._job_started = None      # monotonic start of the running job
         self._last_event = None       # monotonic time of the job's last event frame
@@ -286,6 +298,14 @@ class IntegratedTurns:
             inp = TI.parse(c.get("input"), text)
         except TI.InputRejected as exc:
             raise BridgeRefused(exc.code) from None
+        images = None
+        if "images" in c:
+            try:
+                images = IMG.parse(c["images"])
+            except IMG.ImageRejected as exc:
+                raise BridgeRefused(exc.code) from None
+            if not self._vision_live():
+                raise BridgeRefused("VISION_OFF")
         turn_id = str(uuid.uuid4())
         history = list(self.history.get(session_id, ()))
         # A transcript reaches the ordinary path with fillers removed; the raw transcript stays in the envelope.
@@ -296,6 +316,10 @@ class IntegratedTurns:
                               and not p["env"].get("confirmation")
                               and p["env"].get("state") != "approval_required"}
         continue_core = bool(clarifications) and inp.mode != "dictation"
+        if images is not None and (continue_core or inp.mode in ("dictation", "draft")
+                                   or schedule_intent.interpret(plain) is not None):
+            # An image is a question for the answer channel only: never a draft, a Core continuation or a handoff.
+            raise BridgeRefused("IMAGE_ACTION_UNSUPPORTED")
         if continue_core and len(clarifications) != 1:
             # No arbitrary selection or bulk retirement of independent cards. Keep all records and let the
             # caller surface the ambiguous state; nothing reaches a model, Core continuation or decision.
@@ -303,8 +327,9 @@ class IntegratedTurns:
 
         def ordinary(sink, request=None):
             words = request if request is not None else plain
+            extra = {"images": images} if images is not None else {}
             out = self.o.handle_turn(words, session_id, depth=depth, history=history, sink=sink, turn_id=turn_id,
-                                     core_clarification=continue_core)
+                                     core_clarification=continue_core, **extra)
             out.events = getattr(sink, "events", out.events)
             if continue_core and out.core is not None:
                 # Core returned the replacement state. Retire only the questions it continued; never an
@@ -315,7 +340,9 @@ class IntegratedTurns:
                             self.pending.pop(tid)
             self._remember(turn_id, session_id, words, out.core, out.status)
             answer = (out.answer or {}).get("text")
-            self._record_history(session_id, words, answer if out.status in ("ok", "incomplete") else None)
+            # History never holds image bytes: a later switch to Vision Off must not need media tokens.
+            recorded = words if images is None else words + "".join("\n" + IMG.placeholder(i) for i in images)
+            self._record_history(session_id, recorded, answer if out.status in ("ok", "incomplete") else None)
             return out
 
         # A2UI slice (docs/a2ui/A2UI_ARCHITECTURE.md): a festival-greeting scheduling request is handed to the
@@ -331,6 +358,9 @@ class IntegratedTurns:
         def run():
             sink = self._sink(turn_id)
             try:
+                if images is not None:
+                    ordinary(sink)
+                    return
                 if continue_core:
                     self.desk.drop_open_question(session_id)
                     ordinary(sink)
@@ -599,13 +629,89 @@ class IntegratedTurns:
             mon.record(timings)
         perf = mon.assess(sample=False)
         out = brain_health.assess(readiness=readiness, host=host, host_alive=alive, perf=perf, busy=self.busy,
-                                  selected=self.selected, cfg=self.cfg,
+                                  selected=self.selected, cfg=self._active_cfg(),
                                   server={"pid": proc.get("pid"), "create_time": proc.get("create_time")})
         if self._restart_pending() and out["state"] != brain_health.RECOVERING:
             out.update(state=brain_health.RECOVERING, reasons=["RESTART_REQUESTED"] + list(out.get("reasons") or []),
                        recovery_options=[], explain="The Brain restart was requested; URI is waiting for it.")
+        out["profile"] = self._profile_state(host, alive, readiness)
         out["checked_at"] = round(time.time(), 3)
         return out
+
+    # ---- Brain quick controls (BRAIN-QUICK-CONTROLS) ----------------------------------------------------
+    def _active_cfg(self):
+        cfg = self._profiles.active_cfg() if self._profiles is not None else None
+        return cfg if cfg is not None else self.cfg
+
+    def _vision_live(self):
+        """Images are accepted only when the active profile has vision AND the live server is READY with it (the
+        profile-aware readiness checks the server's /props modalities)."""
+        if not self._active_cfg()["runtime"].get("vision_enabled"):
+            return False
+        try:
+            return self._status().state == "READY"
+        except Exception:
+            return False
+
+    def _profile_state(self, host, alive, readiness=None):
+        """Truthful profile view: what runs (the live host's report), what is requested, what the user chose."""
+        key, source, error = BP.read_choice(self._choice_dir) if self._choice_dir is not None else \
+            (None, "none", None)
+        active = (host or {}).get("profile") if alive else None
+        akey = BP.key_of_described(active)
+        switch = (host or {}).get("switch") if alive else None
+        ready = (readiness or {}).get("state") == "READY"
+        return {"active": dict(active, **BP.controls(akey)) if akey else None,
+                "vision_live": bool(ready and akey and akey[1] != "off"),
+                "choice": dict(BP.controls(key), id=RPROF.profile_id(key), source=source, error=error) if key else None,
+                "switching": {"from": switch.get("from", {}).get("id"), "to": switch.get("to", {}).get("id")}
+                if isinstance(switch, dict) else None,
+                "last_switch": (host or {}).get("last_switch") if alive else None,
+                "pending_request": self._restart_pending()}
+
+    def _live_tokens(self):
+        """Conservative size of the largest live conversation (chars / 4 + the system prompt allowance)."""
+        sizes = [sum(len(m.get("content") or "") for m in h) for h in self.history.values()]
+        return (max(sizes) // 4 + 2048) if sizes and max(sizes) else 0
+
+    def _brain_profile_get(self, _c):
+        host, alive = self._host()
+        return {"offer": BP.offer(), "state": self._profile_state(host, alive),
+                "host_state": (host or {}).get("state") if alive else None}
+
+    def _brain_profile_set(self, c):
+        try:
+            key = BP.key_from_controls(c["vision"], c["context"], c["speed"])
+        except BP.ChoiceError as exc:
+            raise BridgeRefused(exc.code) from None
+        if "confirm_shrink" in c and not isinstance(c["confirm_shrink"], bool):
+            raise BridgeRefused("COMMAND_SCHEMA")
+        if self._host_request is None or self._choice_dir is None:
+            raise BridgeRefused("BRAIN_CONTROL_UNAVAILABLE")
+        host, alive = self._host()
+        if not alive:
+            raise BridgeRefused("BRAIN_HOST_NOT_RUNNING")
+        if self._restart_pending():
+            raise BridgeRefused("BRAIN_REQUEST_PENDING")
+        akey = BP.key_of_described((host or {}).get("profile"))
+        if akey is None:
+            raise BridgeRefused("PROFILE_UNKNOWN")
+        current = {"ctx": akey[0], "vision": akey[1], "mtp": akey[2]}
+        plan = RPROF.plan_change(current, context=key[0], vision=key[1], mtp=key[2],
+                                 live_tokens=self._live_tokens(), confirm_shrink=bool(c.get("confirm_shrink")))
+        if plan["refused"]:
+            if plan["refused"] == "CONTEXT_SMALLER_THAN_CONVERSATION":
+                raise BridgeRefused("CONTEXT_SMALLER_THAN_CONVERSATION")
+            raise BridgeRefused(plan["refused"])
+        BP.write_choice(self._choice_dir, key)
+        running = (host or {}).get("state") in ("READY", "DEGRADED")
+        if not plan["reload"] and running:
+            return {"requested": None, "profile": RPROF.profile_id(key), "unchanged": True}
+        now = time.time()
+        req = self._host_request("reconfigure", key)
+        self._restart = {"id": req.get("id"), "t": now, "until": now + RESTART_GATE_S}
+        return {"requested": "reconfigure", "request_id": req.get("id"), "profile": RPROF.profile_id(key),
+                "host_state": (host or {}).get("state")}
 
     def _brain_restart(self, c):
         action = c["action"]

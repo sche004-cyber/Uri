@@ -181,13 +181,18 @@ def main():
                 with write_lock:
                     write_frame(sys.stdout.buffer, frame)
 
-            manager = R.RuntimeManager(cfg, state_dir=oi_state)
+            # BRAIN-QUICK-CONTROLS: readiness is checked against the profile the Brain host runs (exact derived argv,
+            # n_ctx, artifacts, live vision modality), never against the frozen config alone.
+            from uri_operational_intelligence import brain_health as BH
+            from uri_operational_intelligence import brain_profile as BP
+            manager = BP.ProfileStatus(cfg, oi_state, host_report=lambda: BH.read_host_report(oi_state),
+                                       choice_dir=oi_state)
             client = BC.BrainClient(R.base_url(cfg))
             ledger = TaskLedger(oi_state / "tasks")
             ledger.acquire_owner()
             ledger.recover()
             orch = Orchestrator(client=client, core=PairedCoreGateway(LazyRunner()), brain_selection={}, ledger=ledger,
-                                capability_ids={"remember_fact", "external_harness_task"}, readiness=manager.status)
+                                capability_ids={"remember_fact", "external_harness_task"}, readiness=manager)
 
             # Client-scoped memory is read under a fixed per-client session id (Core requires a UUID session).
             memory_session = str(uuid.uuid5(uuid.NAMESPACE_URL, "uri-ws-memory:" + m["client_id"]))
@@ -199,11 +204,12 @@ def main():
 
             # Brain host link (WS hardening): the host's report and this worker's explicit requests live in the
             # client's control/oi directory, inside the guard's state root.
-            from uri_operational_intelligence import brain_health as BH
-            oi = WB.IntegratedTurns(orchestrator=orch, cfg=cfg, status=manager.status,
+            oi = WB.IntegratedTurns(orchestrator=orch, cfg=cfg, status=manager,
                                     write_event=lambda ev: write({"event": ev}), memory=memory, defer_start=True,
                                     host_report=lambda: BH.read_host_report(oi_state),
-                                    host_request=lambda action: BH.write_host_request(oi_state, action))
+                                    host_request=lambda action, profile=None: BH.write_host_request(oi_state, action,
+                                                                                                    profile),
+                                    profiles=manager, choice_dir=oi_state)
             # W1 / A0 (additive): research and Assist commands. Both yield the single Brain slot to the user's turn
             # (BRAIN_TURNS below cancels their Brain work in flight).
             # A failure to load them never takes the OI worker down: their commands are then refused (COMMAND_SCHEMA).

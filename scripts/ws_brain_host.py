@@ -35,6 +35,7 @@ if str(REPO) not in sys.path:
 from uri_operational_intelligence import gpu_lease as G  # noqa: E402
 from uri_operational_intelligence import runtime_v1 as R  # noqa: E402
 from uri_operational_intelligence import runtime_profiles as RP  # noqa: E402
+from uri_operational_intelligence import brain_profile as BP  # noqa: E402
 from uri_operational_intelligence.brain_health import (ACTIONS, HOST_HEARTBEAT_S, REPORT_FILE,  # noqa: E402
                                                        REPORT_SCHEMA, REQUEST_FILE, REQUEST_SCHEMA, write_host_request)
 REQUEST_MAX_AGE_S = 120.0
@@ -67,7 +68,14 @@ class Host:
     def __init__(self, report_dir: Path, *, minutes: float, override: bool, cfg=None, state_dir=None,
                  census=G.census, lease_dir=None, now=time.time):
         self.report_dirs = [Path(report_dir)]
-        self.cfg = cfg or R.load_config()
+        self.frozen_cfg = R.load_config()
+        choice = None
+        if cfg is None:
+            # BRAIN-QUICK-CONTROLS: the user's persisted Vision / Context choice (validated; offered profiles only).
+            key, source, error = BP.read_choice(self.report_dirs[0])
+            cfg = BP.config_for(self.frozen_cfg, key)
+            choice = {"source": source, "error": error}
+        self.cfg = cfg
         # Measured device request of this config: the frozen constant, or a resource profile's own measurement.
         self.required_mib = RP.cfg_required_mib(self.cfg, G.RUNTIME_V1_DEVICE_MIB)
         self.state_dir = Path(state_dir or R.DEFAULT_STATE)
@@ -79,10 +87,11 @@ class Host:
         self.mgr = None
         self.report = {"schema": REPORT_SCHEMA, "host_pid": os.getpid(), "host_started": round(now(), 3),
                        "state": "STARTING_HOST", "history": [], "override": None,
-                       "profile": RP.describe(self.cfg)}
+                       "profile": RP.describe(self.cfg), "profile_choice": choice}
         if override:
             self.report["override"] = {"by": "--override-contention", "at": round(now(), 3)}
         self.last_request_id = None
+        self.request_profile = None     # target key of the accepted reconfigure request
         self.stopped_at = None          # wall time the last server stop finished (release measurement)
         self.last_contended = None      # monotonic time the GPU was last seen CONTENDED (quiet window)
         self.loaders = []               # (thread, manager) of loads stopped before they finished (Codex H-r1 F1)
@@ -142,7 +151,17 @@ class Host:
             return None
         self.last_request_id = rid
         age = self.now() - float(req.get("requested_at") or 0)
-        if req.get("action") not in ACTIONS or not isinstance(rid, str) or not (0 <= age <= REQUEST_MAX_AGE_S):
+        target = None
+        if req.get("action") == "reconfigure":
+            p = req.get("profile")
+            try:
+                target = BP.key_from_controls(p["vision"] != "off", p["ctx"], p["mtp"]) if isinstance(p, dict) else None
+                if target is not None and (target[1] != p["vision"] or target[2] is not p["mtp"]):
+                    target = None
+            except (BP.ChoiceError, KeyError, TypeError, ValueError):
+                target = None
+        if (req.get("action") not in ACTIONS or not isinstance(rid, str) or not (0 <= age <= REQUEST_MAX_AGE_S)
+                or (req.get("action") == "reconfigure" and target is None)):
             self.record_request(rid, "IGNORED_INVALID_OR_STALE")
             self.report["last_request"] = {"id": rid, "action": req.get("action"), "result": "IGNORED_INVALID_OR_STALE",
                                            "t": round(self.now(), 3)}
@@ -153,6 +172,7 @@ class Host:
         self.write()
         if req["action"] == "stop":
             self.stop_requested = True
+        self.request_profile = target
         return req["action"]
 
     def finish_request(self):
@@ -358,6 +378,33 @@ class Host:
         self.report["residency"] = out
         return out
 
+    def reconfigure(self, key):
+        """BRAIN-QUICK-CONTROLS: controlled switch to another measured profile. Stop this host's server, then the
+        normal start path (release wait, fit check with the TARGET's measured request, load, calibration). No fallback:
+        a target that does not fit waits WAITING_FOR_GPU; one that fails stays FAILED until the user chooses again."""
+        target_cfg = BP.config_for(self.frozen_cfg, key)
+        same = RP.describe(target_cfg)["id"] == self.report["profile"]["id"]
+        if same and self.mgr is not None:
+            self.report["last_switch"] = {"to": self.report["profile"]["id"], "result": "UNCHANGED",
+                                          "t": round(self.now(), 3)}
+            return
+        if self.mgr is not None and not self.mgr.owns_instance:
+            # An attached instance was not started here and is never stopped from here.
+            self.report["last_switch"] = {"to": RP.describe(target_cfg)["id"], "result": "REFUSED_ATTACHED",
+                                          "t": round(self.now(), 3)}
+            return
+        self.report["switch"] = {"from": self.report["profile"], "to": RP.describe(target_cfg),
+                                 "t": round(self.now(), 3)}
+        self.stop_brain()
+        self.cfg, self.required_mib = target_cfg, RP.cfg_required_mib(target_cfg, G.RUNTIME_V1_DEVICE_MIB)
+        self.report["profile"] = RP.describe(self.cfg)
+        self.write()
+        ok = (self.lease is not None or self.acquire_lease()) and self.start_brain()
+        self.report["last_switch"] = {"to": self.report["profile"]["id"], "result": "DONE" if ok else "NOT_READY",
+                                      "state": self.report.get("state"), "t": round(self.now(), 3)}
+        self.report.pop("switch", None)
+        self.write()
+
     def stop_brain(self):
         if self.mgr is None:
             return
@@ -388,6 +435,8 @@ class Host:
                     self.set("FAILED", detail="LOCAL_BRAIN_EXITED:%s" % code,
                              explain="The Brain process exited unexpectedly. Use Restart Brain.")
                 action = self.take_request()
+                if action == "reconfigure":
+                    self.reconfigure(self.request_profile)
                 if action == "restart" or (action == "start" and self.mgr is None):
                     self.stop_brain()
                     if self.lease is None and not self.acquire_lease():
@@ -430,6 +479,7 @@ def main(argv=None):
     ap.add_argument("--profile", default=None,
                     help="research candidate (URI-RUNTIME-VRAM-R1): ctx,vision,mtp e.g. 65536,off,1; default = frozen")
     a = ap.parse_args(argv)
+    # --profile (research) overrides the user's persisted choice; without it the host reads brain_profile.json.
     cfg = RP.derive_config(R.load_config(), *parse_profile(a.profile)) if a.profile else None
     return Host(Path(a.report_dir), minutes=a.minutes, override=a.override_contention, cfg=cfg).run()
 

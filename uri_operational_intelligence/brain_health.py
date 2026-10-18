@@ -29,7 +29,7 @@ from .perf_monitor import DEGRADED_DECODE_TPS
 REPORT_SCHEMA = "uri.ws.brain_host.v1"
 REQUEST_SCHEMA = "uri.ws.brain_request.v1"
 REPORT_FILE, REQUEST_FILE = "brain_host.json", "brain_request.json"
-ACTIONS = ("restart", "stop", "start")
+ACTIONS = ("restart", "stop", "start", "reconfigure")   # reconfigure: BRAIN-QUICK-CONTROLS profile switch
 # The Brain host rewrites its report at least this often (heartbeat). A report older than HOST_STALE_S whose process
 # cannot be inspected is evidence of a dead host; a fresh one is evidence of a live host.
 HOST_HEARTBEAT_S = 15.0
@@ -48,7 +48,16 @@ def backend(cfg) -> dict:
     return {"provider": "Runtime v1 (local)", "engine": rt.get("engine"), "model_id": model.get("id"),
             "model_repo": model.get("repo"), "context": rt.get("ctx"), "vision": bool(rt.get("vision_enabled")),
             "speculative": "MTP draft" if model.get("mtp_draft") else None,
-            "thinking_tiers": sorted((cfg.get("tiers") or {}).keys())}
+            "thinking_tiers": sorted((cfg.get("tiers") or {}).keys()),
+            "profile": _describe(cfg)}
+
+
+def _describe(cfg):
+    from . import runtime_profiles
+    try:
+        return runtime_profiles.describe(cfg)
+    except (KeyError, TypeError):
+        return None
 
 
 def assess(*, readiness: dict, host: dict | None, host_alive: bool, perf: dict, busy: bool, selected: dict,
@@ -199,15 +208,17 @@ def host_alive(rep, now=None) -> bool:
     return ((now or time.time()) - beat) < HOST_STALE_S
 
 
-def write_host_request(report_dir, action) -> dict:
-    """One explicit request for the Brain host (restart / stop / start)."""
-    if action not in ACTIONS:
+def write_host_request(report_dir, action, profile=None) -> dict:
+    """One explicit request for the Brain host (restart / stop / start, or reconfigure with a target profile)."""
+    if action not in ACTIONS or (action == "reconfigure") != (profile is not None):
         raise ValueError("ACTION_INVALID")
     # Rounded DOWN to the millisecond (WS-FLAKE-1): rounding to the nearest could stamp a time up to 0.5 ms in the
     # future, and the host refuses a request with a negative age as stale.
     now = time.time()
     req = {"schema": REQUEST_SCHEMA, "id": str(uuid.uuid4()), "action": action,
            "requested_at": min(now, math.floor(now * 1000) / 1000)}
+    if profile is not None:
+        req["profile"] = {"ctx": int(profile[0]), "vision": str(profile[1]), "mtp": bool(profile[2])}
     path = Path(report_dir) / REQUEST_FILE
     tmp = path.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(req), encoding="utf-8")

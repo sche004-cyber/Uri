@@ -20,6 +20,7 @@ import re
 from dataclasses import dataclass, field
 
 from . import brain_client as BC
+from . import images as IMG
 from .reasoning_policy import FAST, NORMAL, after_result, tier_params
 
 ACTION_MARKER = "<<ACTION>>"
@@ -161,7 +162,7 @@ CAPABILITY_WORDS = {
 }
 
 
-def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, capability_ids=()):
+def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, capability_ids=(), images=None):
     if capability_ids:
         known = [CAPABILITY_WORDS[c] for c in sorted(capability_ids) if c in CAPABILITY_WORDS]
         if known:
@@ -202,13 +203,14 @@ def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, cap
     for turn in list(history)[-12:]:
         if turn.get("role") in ("user", "assistant") and isinstance(turn.get("content"), str):
             msgs.append({"role": turn["role"], "content": turn["content"]})
-    msgs.append({"role": "user", "content": user_text})
+    # Vision On (BRAIN-QUICK-CONTROLS): the current request's images, as image_url parts after its text.
+    msgs.append({"role": "user", "content": IMG.user_content(user_text, images)})
     return msgs
 
 
 def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", history=(), cancel=None,
            deadlines=None, on_delta=None, executed_action=False, max_tokens=None, memory=None,
-           capability_ids=()) -> AnswerOutcome:
+           capability_ids=(), images=None) -> AnswerOutcome:
     """Stream an answer. `on_delta(kind, text)` receives "answer" text only after the marker check, and
     "reasoning" deltas (NORMAL tier) as they arrive."""
     cancel = cancel or BC.CancelToken()
@@ -271,7 +273,7 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
         safe_emit(held["buf"])
 
     body = {"model": "local", "messages": build_messages(user_text, history, memory=memory,
-                                                        capability_ids=capability_ids),
+                                                        capability_ids=capability_ids, images=images),
             **tier_params(tier, use=use, max_tokens=max_tokens)}
     res = client.stream_chat(body, cancel=cancel, deadlines=deadlines, on_delta=relay)
     metrics = {"ttft_s": res.ttft_s, "first_answer_s": res.first_answer_s, "total_s": res.total_s,
