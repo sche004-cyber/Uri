@@ -23,7 +23,7 @@ DEST = SRC / "docs" / "operational_intelligence" / "profiles_live"
 EV = DEST / "evidence"
 LAB = Path(r"D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1")
 CODE_COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=SRC, text=True).strip()
-CODE_COMMIT = json.loads((ROOT / "evidence" / "materialize-c.json").read_text())["candidate_head"]
+CODE_COMMIT = json.loads((ROOT / "evidence" / "materialize-e.json").read_text())["candidate_head"]
 PROFILES = {"c64k-visgpu-mtpoff": "P1 64K + GPU vision", "c64k-visoff-mtpoff": "P2 64K main only",
             "c32k-visgpu-mtpoff": "P3 32K + GPU vision"}
 ORDER_FAILS = {"R-companion-persisted", "R-theme-persisted"}
@@ -113,7 +113,7 @@ def classify(rs):
 def copy_evidence(rows):
     if EV.exists():
         shutil.rmtree(EV)
-    png_runs = {r["journey_id"] for r in rows if r.get("class") == "CURRENT"} | {"p1b-main", "s4-p1-main"}
+    png_runs = {r["journey_id"] for r in rows if r.get("class") == "CURRENT"} | {"p1b-main", "s4-p1-main", "c-p2-main", "c-p2-ret", "c-p3-main", "c-p3-ret"}  # c-*: committed in a5605ae8, kept
     for sub in ("live", "soak", "assist", "switch_live"):
         for f in (ROOT / "evidence" / sub).rglob("*"):
             if not f.is_file() or (f.name.endswith(".tmp")):
@@ -125,7 +125,8 @@ def copy_evidence(rows):
             out.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(f, out)
     for f in ("live_summary.json", "materialize-b.json", "provision-b.json", "materialize-c.json", "provision-c.json",
-              "uibuild-release.log"):
+              "materialize-d.json", "provision-d.json", "materialize-e.json", "provision-e.json", "uibuild-release.log",
+              "uibuild-release-e.log", "ram1_snapshot.json"):
         if (ROOT / "evidence" / f).exists():
             shutil.copy2(ROOT / "evidence" / f, EV / f)
     # CRASH-1 evidence (R1-02): the crashed server's own log, the reproduction script and its result.
@@ -144,7 +145,7 @@ def copy_evidence(rows):
     (EV / "harness").mkdir(parents=True, exist_ok=True)
     for f in ("live_session.py", "run_live_ui.py", "uiv2_driver.dart", "go.sh", "assist_vision_app.py", "soak.py",
               "switch_live.py", "summarize_live.py", "build_record.py", "_patch_harness.py", "_patch_harness_b.py",
-              "_patch_harness_c.py"):
+              "_patch_harness_c.py", "_patch_harness_d.py", "_patch_harness_e.py", "binding.py", "finalize_record.py", "chain10.sh"):
         if (ROOT / "tools" / f).exists():
             shutil.copy2(ROOT / "tools" / f, EV / "harness" / f)
 
@@ -165,18 +166,36 @@ def main():
                 and any(r["result"] == "PASS" for r in rr) and not any(r["result"] == "FAIL" for r in rr)
                 else "FAIL" if any(r["result"] == "FAIL" for r in rr) else "NOT VERIFIED")
     lq = {}
+    hist = [r for r in rows if r.get("class") == "HISTORY"]
     for pid, name in PROFILES.items():
         lq[f"LQ-1 {name}"] = {"first_time": prof_ok(pid, "first_time"), "returning": prof_ok(pid, "returning")}
-    lq["LQ-2 Assist vision (application path)"] = {k: ("PASS" if v.get("correct_all") else "FAIL") for k, v in assist.items()}
+        h = [r for r in hist if r.get("profile") == pid]
+        if h:   # review R2-03: earlier-commit results stay visible per profile
+            lq[f"LQ-1 {name}"]["history_on_earlier_commits"] = {r["journey_id"]: r["result"] for r in h}
+    def bound(v):
+        b = v.get("binding") or {}
+        return b.get("ok") is True and b.get("materialized_from") == CODE_COMMIT
+
+    lq["LQ-2 Assist vision (application path)"] = {
+        k: (("PASS" if v.get("correct_all") else "FAIL") if bound(v)
+            else "SUPPORTING ONLY (no source binding): " + ("correct" if v.get("correct_all") else "FAIL"))
+        for k, v in assist.items()}
     def soak_verdict(v):
         if v.get("classification") != "COMPLETED_WITH_RESULT":
             return "NOT VERIFIED (harness %s: %s)" % (v.get("classification"), v.get("error"))
+        if not bound(v):
+            sm = v.get("summary") or {}
+            ok = sm.get("max_brain_non_local", 0) < 1000 and sm.get("decode_min", 0) >= 60
+            return "SUPPORTING ONLY (no source binding; ran before R2-02): " + ("would PASS" if ok else "FAIL")
         sm = v.get("summary") or {}
         return "PASS" if sm.get("max_brain_non_local", 0) < 1000 and sm.get("decode_min", 0) >= 60 else "FAIL"
     lq["LQ-3 sustained operation"] = {k: soak_verdict(v) for k, v in soak.items()}
     sw = [v for v in switch.values() if v.get("classification") == "COMPLETED_WITH_RESULT"]
     lq["LQ-4 profile switch with conversation continuity (worker level)"] = (
-        {k: ("NOT VERIFIED (test design: recall turns were routed to Core memory, not the conversation; superseded)"
+        {k: ("SUPPORTING ONLY (no source binding): " + ("PASS" if v.get("all_recalled") and v.get("all_answer_route")
+                                                        and v.get("all_switches_ready_on_new_profile") else "not PASS")
+             if not bound(v) and "all_answer_route" in v else
+             "NOT VERIFIED (test design: recall turns were routed to Core memory, not the conversation; superseded)"
              if "all_answer_route" not in v else
              "NOT VERIFIED (a recall turn was not routed to the answer channel)" if not v.get("all_answer_route") else
              "PASS" if v.get("all_recalled") and v.get("all_switches_ready_on_new_profile") and v.get("worker_pid_constant")

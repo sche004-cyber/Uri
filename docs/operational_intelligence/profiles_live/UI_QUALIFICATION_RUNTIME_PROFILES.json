@@ -7,7 +7,7 @@
   "no_ui_reason": null,
   "phase": "live qualification before any default change",
   "candidate_branch": "milestone/runtime-profiles-integ-20261017",
-  "code_commit": "4d782ef16bee26c555774676c165aafb1d94cd55",
+  "code_commit": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
   "acceptance_criteria_file": "docs/operational_intelligence/RUNTIME_PROFILES_INTEGRATION_PLAN.md",
   "acceptance_criteria": [
    "LQ-1",
@@ -19,7 +19,7 @@
  "environment": {
   "windows": "Microsoft Windows [Version 10.0.26200.9711]",
   "app_build": "candidate uri_ui, debug build via flutter test integration_test (driver runs); release build for soak windows",
-  "core": "materialized runtime e8e3b652 + Phase 2 OQ overlay + candidate 4d782ef1 (evidence/materialize-c.json)",
+  "core": "materialized runtime e8e3b652 + Phase 2 OQ overlay + candidate f3d5eb29 (evidence/materialize-c.json)",
   "brain": "llama.cpp b11425 Vulkan, Qwen3.6-35B-A3B UD-IQ3_S (+ mmproj-F16 on vision profiles), MTP off on all tested profiles; frozen config unchanged",
   "dependencies": [],
   "gpu_override": "none (lease, no contention override)"
@@ -27,10 +27,10 @@
  "functional": [
   {
    "journey_id": "c-p2-main",
-   "class": "CURRENT",
+   "class": "HISTORY",
    "source_head": "4d782ef16bee26c555774676c165aafb1d94cd55",
    "user": "first_time",
-   "mandatory": true,
+   "mandatory": false,
    "profile": "c64k-visoff-mtpoff",
    "steps": [
     "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
@@ -46,10 +46,10 @@
   },
   {
    "journey_id": "c-p2-ret",
-   "class": "CURRENT",
+   "class": "HISTORY",
    "source_head": "4d782ef16bee26c555774676c165aafb1d94cd55",
    "user": "returning",
-   "mandatory": true,
+   "mandatory": false,
    "profile": "c64k-visoff-mtpoff",
    "steps": [
     "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
@@ -65,10 +65,10 @@
   },
   {
    "journey_id": "c-p3-main",
-   "class": "CURRENT",
+   "class": "HISTORY",
    "source_head": "4d782ef16bee26c555774676c165aafb1d94cd55",
    "user": "first_time",
-   "mandatory": true,
+   "mandatory": false,
    "profile": "c32k-visgpu-mtpoff",
    "steps": [
     "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P3 32K + GPU vision"
@@ -84,10 +84,10 @@
   },
   {
    "journey_id": "c-p3-ret",
-   "class": "CURRENT",
+   "class": "HISTORY",
    "source_head": "4d782ef16bee26c555774676c165aafb1d94cd55",
    "user": "returning",
-   "mandatory": true,
+   "mandatory": false,
    "profile": "c32k-visgpu-mtpoff",
    "steps": [
     "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P3 32K + GPU vision"
@@ -96,6 +96,82 @@
    "actual": "12/12 PASS; failures []; last Brain phase ('READY', 57, None); calibration 102.6 tok/s; fit AT_RISK (474.6 MiB); Brain max dedicated/non-local (14603.8, 497.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-c\\\\work\\\\c1\\\\ws-rp-c\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 32768, 'frozen': False, 'id': 'c32k-visgpu-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 14360, 'vision': 'gpu'}, 'source': 'selection'}",
    "evidence": [
     "docs/operational_intelligence/profiles_live/evidence/live/c-p3-ret/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "e-p2-main",
+   "class": "CURRENT",
+   "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "user": "first_time",
+   "mandatory": true,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('READY', 41, None); calibration 105.0 tok/s; fit FITS (1919.8 MiB); Brain max dedicated/non-local (13901.2, 561.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-e\\\\work\\\\c1\\\\ws-rp-e\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 65536, 'frozen': False, 'id': 'c64k-visoff-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 13658, 'vision': 'off'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/e-p2-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "e-p2-ret",
+   "class": "CURRENT",
+   "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "user": "returning",
+   "mandatory": true,
+   "profile": "c64k-visoff-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P2 64K main only"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "12/12 PASS; failures []; last Brain phase ('STOPPING', 116, None); calibration 107.0 tok/s; fit FITS (1919.8 MiB); Brain max dedicated/non-local (13900.7, 561.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-e\\\\work\\\\c1\\\\ws-rp-e\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 65536, 'frozen': False, 'id': 'c64k-visoff-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 13658, 'vision': 'off'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/e-p2-ret/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "e-p3-main",
+   "class": "CURRENT",
+   "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "user": "first_time",
+   "mandatory": true,
+   "profile": "c32k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode main through the production main() of the candidate app; Brain host ws_brain_host --profile on P3 32K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "68/68 PASS; failures []; last Brain phase ('READY', 33, None); calibration 106.7 tok/s; fit FITS (1217.8 MiB); Brain max dedicated/non-local (14604.3, 497.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-e\\\\work\\\\c1\\\\ws-rp-e\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 32768, 'frozen': False, 'id': 'c32k-visgpu-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 14360, 'vision': 'gpu'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/e-p3-main/"
+   ],
+   "failure_and_recovery": null,
+   "evidence_status": "COMPLETED_WITH_RESULT",
+   "result": "PASS"
+  },
+  {
+   "journey_id": "e-p3-ret",
+   "class": "CURRENT",
+   "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "user": "returning",
+   "mandatory": true,
+   "profile": "c32k-visgpu-mtpoff",
+   "steps": [
+    "canonical UI V2 driver mode returning through the production main() of the candidate app; Brain host ws_brain_host --profile on P3 32K + GPU vision"
+   ],
+   "expected": "every driver check PASS; Brain READY serving the app on the profile",
+   "actual": "12/12 PASS; failures []; last Brain phase ('READY', 39, None); calibration 106.6 tok/s; fit FITS (1217.8 MiB); Brain max dedicated/non-local (14603.8, 497.8); worker selection {'file': 'D:\\\\uri-dev\\\\uri-profiles-live\\\\runtime-e\\\\work\\\\c1\\\\ws-rp-e\\\\client\\\\control\\\\oi\\\\brain_profile.json', 'profile': {'ctx': 32768, 'frozen': False, 'id': 'c32k-visgpu-mtpoff', 'mtp': False, 'qualified': False, 'required_mib': 14360, 'vision': 'gpu'}, 'source': 'selection'}",
+   "evidence": [
+    "docs/operational_intelligence/profiles_live/evidence/live/e-p3-ret/"
    ],
    "failure_and_recovery": null,
    "evidence_status": "COMPLETED_WITH_RESULT",
@@ -352,31 +428,57 @@
  "criteria": {
   "LQ-1 P1 64K + GPU vision": {
    "first_time": "NOT VERIFIED",
-   "returning": "NOT VERIFIED"
+   "returning": "NOT VERIFIED",
+   "history_on_earlier_commits": {
+    "p1-main": "FAIL",
+    "p1b-main": "FAIL",
+    "p1c-main": "PASS",
+    "p1c-ret": "PASS",
+    "s2-p1-ret": "PASS",
+    "s4-p1-main": "PASS"
+   }
   },
   "LQ-1 P2 64K main only": {
    "first_time": "PASS",
-   "returning": "PASS"
+   "returning": "PASS",
+   "history_on_earlier_commits": {
+    "c-p2-main": "PASS",
+    "c-p2-ret": "PASS",
+    "p2-main": "PASS",
+    "p2-ret": "NOT VERIFIED",
+    "s1-p2-main": "PASS",
+    "s3-p2-ret": "NOT VERIFIED",
+    "s5-p2-ret": "PASS"
+   }
   },
   "LQ-1 P3 32K + GPU vision": {
    "first_time": "PASS",
-   "returning": "PASS"
+   "returning": "PASS",
+   "history_on_earlier_commits": {
+    "c-p3-main": "PASS",
+    "c-p3-ret": "PASS",
+    "p3-main": "PASS",
+    "p3-ret": "PASS"
+   }
   },
   "LQ-2 Assist vision (application path)": {
-   "assist-p1": "PASS",
-   "assist-p3": "PASS"
+   "assist-p1": "SUPPORTING ONLY (no source binding): correct",
+   "assist-p3": "SUPPORTING ONLY (no source binding): correct",
+   "assist-p3-e": "PASS"
   },
   "LQ-3 sustained operation": {
-   "soak-p1": "FAIL",
-   "soak-p2": "PASS",
-   "soak-p3": "PASS",
-   "soak-p3-attempt1-pdh-failed": "NOT VERIFIED (harness FAILED: RuntimeError: PdhAddEnglishCounterW failed. Performance counters may be disabled.)"
+   "soak-p1": "SUPPORTING ONLY (no source binding; ran before R2-02): FAIL",
+   "soak-p2": "SUPPORTING ONLY (no source binding; ran before R2-02): would PASS",
+   "soak-p3": "SUPPORTING ONLY (no source binding; ran before R2-02): would PASS",
+   "soak-p3-attempt1-pdh-failed": "NOT VERIFIED (harness FAILED: RuntimeError: PdhAddEnglishCounterW failed. Performance counters may be disabled.)",
+   "soak-p3-e": "PASS"
   },
   "LQ-4 profile switch with conversation continuity (worker level)": {
    "sw1": "NOT VERIFIED (test design: recall turns were routed to Core memory, not the conversation; superseded)",
-   "sw2": "NOT VERIFIED (a recall turn was not routed to the answer channel)",
-   "sw3": "FAIL",
-   "sw4": "PASS"
+   "sw2": "SUPPORTING ONLY (no source binding): not PASS",
+   "sw3": "SUPPORTING ONLY (no source binding): not PASS",
+   "sw4": "SUPPORTING ONLY (no source binding): PASS",
+   "sw5": "PASS"
   }
  },
  "sustained_operation": {
@@ -478,6 +580,35 @@
    ],
    "host_exit": 0,
    "profile_arg": "32768,gpu,0"
+  },
+  "soak-p3-e": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "summary": {
+    "turns": 120,
+    "ok_turns": 120,
+    "valid_json": 120,
+    "decode_min": 90.24658758206955,
+    "decode_median": 103.83387956073105,
+    "max_brain_non_local": 497.8,
+    "min_brain_dedicated": 14579.6,
+    "host_exited": false
+   },
+   "events": [
+    {
+     "t": 0,
+     "event": "ui_open"
+    },
+    {
+     "t": 1200,
+     "event": "chrome_open"
+    },
+    {
+     "t": 2400,
+     "event": "chrome_closed"
+    }
+   ],
+   "host_exit": 0,
+   "profile_arg": "32768,gpu,0"
   }
  },
  "assist_application_path": {
@@ -552,10 +683,54 @@
     "capture adapter = tests.assist FakeAdapter (no real adapter exists)",
     "vision_qualified=True in this harness only"
    ]
+  },
+  "assist-p3-e": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "decode_before": 106.7,
+   "decode_after": 105.0,
+   "correct_all": true,
+   "asks": [
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 1.34,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    },
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 0.52,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    },
+    {
+     "method": "vision",
+     "status": "COMPLETE",
+     "wall_s": 0.47,
+     "answer": "The error message shown is \"Sync failed: token expired (code 401). Reconnect your account.\" The toggles switched on are \"Voice input\" and \"Gmail drafts.\"",
+     "mentions_401": true,
+     "toggles_ok": true
+    }
+   ],
+   "stand_ins": [
+    "capture adapter = tests.assist FakeAdapter (no real adapter exists)",
+    "vision_qualified=True in this harness only"
+   ]
   }
  },
  "profile_switch": {
   "dry1": {
+   "classification": "DRY_RUN",
+   "all_recalled": null,
+   "all_switches_ready_on_new_profile": null,
+   "worker_pid_constant": null,
+   "steps": [],
+   "commit": []
+  },
+  "dry2": {
    "classification": "DRY_RUN",
    "all_recalled": null,
    "all_switches_ready_on_new_profile": null,
@@ -1077,6 +1252,144 @@
      "commit_free_mib": 894
     }
    ]
+  },
+  "sw5": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "all_recalled": true,
+   "all_switches_ready_on_new_profile": true,
+   "worker_pid_constant": true,
+   "steps": [
+    {
+     "step": "ready-P2",
+     "state": "READY",
+     "seconds": 28.2,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "tell",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "85239825-88f2-41f9-9c74-c450b0e69487",
+     "seconds": 7.84,
+     "answer": "OK",
+     "route": [
+      "core",
+      "answer"
+     ],
+     "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "core.result",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "recall-P2",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "906c4bdb-43bc-48b1-a88c-f4ceeb4229e1",
+     "seconds": 0.84,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P3",
+     "stop_s": 0.5,
+     "vram_release_s": 3.5,
+     "state": "READY",
+     "seconds": 26.8,
+     "worker_profile": "c32k-visgpu-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P3",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "b8581b1e-1312-4478-b076-59b54beea51c",
+     "seconds": 2.49,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P2-again",
+     "stop_s": 3.3,
+     "vram_release_s": 3.4,
+     "state": "READY",
+     "seconds": 21.2,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P2-again",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+     "seconds": 1.31,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    }
+   ],
+   "commit": [
+    {
+     "t": 1792294335.32,
+     "avail_phys_mib": 14149,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 25327
+    },
+    {
+     "t": 1792294374.77,
+     "avail_phys_mib": 13688,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 24167
+    },
+    {
+     "t": 1792294405.2,
+     "avail_phys_mib": 13862,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 25176
+    }
+   ]
   }
  },
  "ux": {
@@ -1091,48 +1404,167 @@
  },
  "improvements": [],
  "remaining_limitations": [
-  "CRASH-1 open: root cause not verified (hypothesis: commit exhaustion; E0 measured 386-1,600 MiB free commit during soak-p3 with 6-8 GB physical RAM available, other sessions' PowerShell processes holding ~4.2 GB private each). Affects every profile and the frozen config, not only P1. Reproduction E1 not run.",
-  "DEMOTE-P1 open: P1 headroom next to the app is ~200-300 MiB; a browser burst demoted a weight allocation. Mitigations proposed (P3, vision on CPU, 256 MiB suballocation) are not measured.",
-  "P3 rests on one 60 min soak at +474..+622 MiB; the demotion research estimates a needed margin of ~+450-500 MiB, so P3 is close to the boundary on a heavier desktop.",
-  "UI V2 driver checks do not test conversation continuity across app restarts; continuity across profile switches is verified at worker level (sw4), not through UI clicks.",
+  "CRASH-1 open: root cause UNVERIFIED (hypothesis host commit exhaustion; E0: see e0_host_memory - commit is the scarce resource on this PC while physical RAM is available; RAM-1 snapshot shows other sessions' PowerShell processes at ~4 GB private each). Can affect every profile and the frozen config. Reproduction E1 not run.",
+  "DEMOTE-P1 open; mitigations (vision on CPU at 64K, 256 MiB suballocation) unmeasured.",
+  "P3 sustained operation: soak-p3 (unbound, AT_RISK desktop) and soak-p3-e (bound) - see LQ-3; n=2 at most, near the estimated margin on heavy desktops.",
+  "P2 sustained operation evidence is unbound (soak-p2, fa0a70e6-era host files that did not change).",
+  "Conversation continuity across profile switches verified at worker level (sw5 bound, sw4), not through UI clicks; the UI V2 driver does not test it.",
+  "R2-07 DEFERRED to the UI thread: the UI does not yet render backend.profile; the API exposes it (qualified false). UI presentation is outside this milestone (owner brief: runtime owns capability, not presentation).",
   "Soak UI window is the app's start screen (a GPU-memory consumer), not a journey run.",
-  "URI Assist vision: application path only; real capture adapters not implemented (owner-gated Assist checklist items 8-10); product keeps vision_qualified False.",
+  "URI Assist vision: application path only; real capture adapters not implemented (owner-gated); product keeps vision_qualified False.",
   "Automated input; physical keyboard, mouse and microphone not qualified.",
-  "Office (separate session) reports a15/o8 PASS on the 64K main-only profile: Office-reported evidence, not part of this record.",
-  "No Thinking/Vision/Context UI controls yet; a profile is chosen by the launcher (selection file + host --profile)."
+  "Office reports a15/o8 PASS on the 64K main-only profile (Office evidence, not part of this record)."
  ],
  "independent_audit": {
   "auditor": "fresh read-only Claude subagent (lifecycle tier: subagent review; not driver-verified)",
   "verdict": null,
-  "reviewed_commit": null
+  "reviewed_commit": null,
+  "prior_rounds": [
+   {
+    "round": "RPI-R1",
+    "nonce": "RPI-R1-7f3c91",
+    "reviewed_commit": "3b77aabc",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 9,
+    "outcome": "all 9 resolved (verified in RPI-R2)"
+   },
+   {
+    "round": "RPI-R2",
+    "nonce": "RPI-R2-c41e88",
+    "reviewed_commit": "a5605ae8",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 9,
+    "outcome": "R2-05/06 code fix 07dca2a8; R2-02 binding + bound re-runs on f3d5eb29; R2-01/03/04/08/09 record/report fixes; R2-07 DEFERRED to the UI thread (see remaining_limitations)"
+   }
+  ],
+  "next_round": "RPI-R3 on the evidence commit on top of f3d5eb29 (this record's commit)"
  },
  "status": "FAIL",
- "status_reason": "Record covers three profiles. P2 and P3: every mandatory journey PASS on the current code commit, soaks clean, switch continuity PASS. P1: mandatory failures (CRASH-1 journey, soak demotion) -> the record as a whole is FAIL and P1 stays unqualified; failed journeys are listed, not excluded. Criteria with a FAIL entry: ['LQ-3 sustained operation', 'LQ-4 profile switch with conversation continuity (worker level)'].",
- "recorded_at": "2026-10-17T14:24:27.834933+00:00",
- "corrections": [],
+ "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS; P3 soak per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria with FAIL entries: [].",
+ "recorded_at": "2026-10-18T04:38:05.123411+00:00",
+ "corrections": [
+  {
+   "id": "C-1",
+   "was": "report v1: 'conversation is kept by URI' across switches",
+   "now": "withdrawn; verified at worker level only after the CONTEXT-1 repair (sw4/sw5)",
+   "source": "RPI-R1 R1-01"
+  },
+  {
+   "id": "C-2",
+   "was": "report v1: '17 new tests' for fa0a70e6",
+   "now": "15 (now 22 after 4d782ef1/07dca2a8)",
+   "source": "RPI-R1 R1-05"
+  },
+  {
+   "id": "C-3",
+   "was": "URI-RUNTIME-VRAM-R1 report: 64K+MTP demotion 'stays after close'",
+   "now": "measured only 38 s after Chrome closed; does not show process-lifetime stickiness (DEMOTE-P1 returned after 180-210 s)",
+   "source": "demotion research subagent"
+  },
+  {
+   "id": "C-4",
+   "was": "report v2 E0: 'free commit 386-1,600 MiB with 6-8 GB physical available'",
+   "now": "see e0_host_memory (soak-p3: commit free min 386 at t=0, median well above 1,600; physical 3.6-7.0 GB)",
+   "source": "RPI-R2 R2-01"
+  },
+  {
+   "id": "C-5",
+   "was": "report v2: soak/Assist evidence 'on 4d782ef1', 'host code identical'",
+   "now": "those runs ran from the mutable dev checkout without a recorded binding: supporting only; bound re-runs soak-p3-e / assist-p3-e on the current commit",
+   "source": "RPI-R2 R2-02"
+  },
+  {
+   "id": "C-6",
+   "was": "ProfileFollower change detection by (mtime, size), on_change outside the lock",
+   "now": "content comparison, same-bytes validation, ordered delivery under the lock (07dca2a8)",
+   "source": "RPI-R2 R2-05/R2-06"
+  }
+ ],
+ "e0_host_memory": {
+  "measured": {
+   "soak-p3": {
+    "samples": 120,
+    "commit_free_mib_min": 386,
+    "commit_free_mib_median": 2500,
+    "commit_free_mib_max": 5107,
+    "avail_phys_mib_min": 3639,
+    "avail_phys_mib_max": 6959
+   },
+   "soak-p3-e": {
+    "samples": 120,
+    "commit_free_mib_min": 20841,
+    "commit_free_mib_median": 23122,
+    "commit_free_mib_max": 24491,
+    "avail_phys_mib_min": 9753,
+    "avail_phys_mib_max": 14134
+   }
+  },
+  "ram1_snapshot": {
+   "utc": "2026-10-17T14:49:35.6672533Z",
+   "free_phys_mib": 5089,
+   "commit_used_mib": 53958,
+   "commit_limit_mib": 58197,
+   "commit_free_mib": 4239,
+   "top_private": [
+    {
+     "pid": 8180,
+     "name": "llama-server",
+     "private_mib": 17400,
+     "ws_mib": 2777,
+     "started": "2026-10-17T20:09:51"
+    },
+    {
+     "pid": 6664,
+     "name": "powershell",
+     "private_mib": 4012,
+     "ws_mib": 894,
+     "started": "2026-10-16T23:01:09"
+    },
+    {
+     "pid": 9144,
+     "name": "powershell",
+     "private_mib": 3991,
+     "ws_mib": 983,
+     "started": "2026-10-16T07:14:44"
+    },
+    {
+     "pid": 5144,
+     "name": "claude",
+     "private_mib": 1355,
+     "ws_mib": 572,
+     "started": "2026-10-15T08:54:24"
+    }
+   ]
+  }
+ },
  "annotations": {
-  "sw3": "automated verdict FAIL kept. The recall prompt said 'secret number plus 1 now'; the model answered 4818, 4819 and 4820 across the two switches, i.e. it continued the conversation's own arithmetic, which shows the full history (including its previous answers) was in context. The strict check expected 4818 each time. Re-run sw4 with unambiguous wording: PASS.",
-  "sw2": "harness bug: the next turn was sent while the Core-routed turn was still finishing (TURN_IN_PROGRESS); fixed in sw3",
-  "p1b-main": "CRASH-1, see research/CRASH1_RESEARCH.md (leading hypothesis: host commit exhaustion -> uncaught bad_alloc in the prompt-cache save; not verified)",
-  "soak-p1": "DEMOTE-P1, see research/DEMOTION_RESEARCH.md (a 1,021.7 MiB weight allocation moved to system memory under a Chrome burst)"
+  "sw3": "automated verdict FAIL kept. INTERPRETATION (not verified): the 'plus 1 now' prompt was ambiguous and the answers 4818, 4819, 4820 may continue the conversation's own arithmetic. Verified fact: every answer >= 4818 requires the number 4817 from the first turn, so that turn was in context. sw2 (same prompt) answered 4818 twice after its first recall failed with TURN_IN_PROGRESS.",
+  "sw2": "a harness bug (next turn sent while the previous Core-routed turn was still finishing, TURN_IN_PROGRESS) made one recall fail; the record's criterion entry reports it as a recall not routed to the answer channel, which is the same event",
+  "sw4": "PASS (n=1) after the sw3 automated FAIL, with reworded prompts; unbound (ran on runtime-c / 4d782ef1 before the binding helper)",
+  "sw5": "PASS (n=1) bound to the current commit with the sw4 wording",
+  "p1b-main": "CRASH-1, research/CRASH1_RESEARCH.md: leading HYPOTHESIS (unverified) host commit exhaustion -> uncaught bad_alloc in the prompt-cache save; the 'cancel came after the task finished' reading is INFERRED from log order and b11510 source",
+  "soak-p1": "DEMOTE-P1, research/DEMOTION_RESEARCH.md: the demoted block is IDENTIFIED BY SIZE MATCH (1,021.7 MiB = first of 13 weight allocations); the tensor-to-allocation map was not dumped",
+  "vram_release_s": "switch_live measures release as 'no process holds more than 2 GiB dedicated', not a full release"
  },
  "qualification_by_profile": {
   "P2 64K main only (c64k-visoff-mtpoff)": {
    "status": "PASS",
-   "on_commit": "4d782ef16bee26c555774676c165aafb1d94cd55",
-   "evidence": "c-p2-main 68/68, c-p2-ret 12/12 on the current commit; soak-p2 60 min clean (host code identical); switch sw4 PASS; history p2-main/s1-p2-main 68/68, s5-p2-ret 12/12",
-   "conditions": "desktop as measured (dwm 0.8-1.06 GB, Chrome 6 tabs); lease fit FITS +1,176..+1,324 MiB"
+   "on_commit": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "bound_evidence": "e-p2-main 68/68, e-p2-ret 12/12, sw5 PASS (all with a clean source binding to this commit)",
+   "supporting": "c-p2-main/c-p2-ret on 4d782ef1, soak-p2 60 min clean (unbound), history runs on fa0a70e6",
+   "conditions": "lease fit FITS (+1,176..+1,920 MiB across days); sustained-operation evidence for this profile is the unbound soak-p2"
   },
   "P3 32K + GPU vision (c32k-visgpu-mtpoff)": {
    "status": "PASS",
-   "on_commit": "4d782ef16bee26c555774676c165aafb1d94cd55",
-   "evidence": "c-p3-main 68/68, c-p3-ret 12/12 on the current commit; soak-p3 60 min clean (min 94 tok/s, no demotion, with Chrome); Assist application path 3/3; switch sw4 PASS",
-   "conditions": "fit AT_RISK +474 MiB on the 19:00 desktop (dwm 1.05 GB) and FITS +622 earlier; one soak sample; Assist vision only through the application path (no real capture adapter)"
+   "on_commit": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+   "bound_evidence": "e-p3-main 68/68, e-p3-ret 12/12, sw5 PASS, assist-p3-e 3/3, soak-p3-e (see LQ-3)",
+   "supporting": "c-p3-* on 4d782ef1, soak-p3 60 min clean (unbound), assist-p3 (unbound)",
+   "conditions": "fit FITS +1,218 (2026-10-18) .. AT_RISK +474 (2026-10-17 evening, dwm 1.05 GB); Assist only through the application path"
   },
   "P1 64K + GPU vision (c64k-visgpu-mtpoff)": {
    "status": "FAIL (unqualified)",
-   "on_commit": "fa0a70e6 (history; not re-run on the current commit)",
-   "evidence": "p1b-main FAIL (CRASH-1); soak-p1 FAIL (DEMOTE-P1); p1c-main/s4-p1-main 68/68, p1c-ret/s2-p1-ret 12/12, Assist 3/3",
+   "on_commit": "fa0a70e6 history only; not re-run",
+   "evidence": "p1b-main FAIL (CRASH-1), soak-p1 FAIL (DEMOTE-P1); passing runs p1c-main, s4-p1-main, p1c-ret, s2-p1-ret, assist-p1 (unbound)",
    "conditions": "stays unqualified until CRASH-1 and DEMOTE-P1 are resolved and re-tested"
   }
  }

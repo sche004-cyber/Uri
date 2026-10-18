@@ -181,6 +181,187 @@
   "ui_dedicated_max": 123.9
  },
  {
+  "label": "e-p2-main",
+  "complete": true,
+  "profile": "c64k-visoff-mtpoff",
+  "mode": "main",
+  "checks": 68,
+  "passed": 68,
+  "failures": [],
+  "flutter_exit": 0,
+  "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "brain_phases": [
+   [
+    "STARTING_HOST",
+    1,
+    null
+   ],
+   [
+    "STARTING",
+    4,
+    null
+   ],
+   [
+    "LOADING",
+    30,
+    null
+   ],
+   [
+    "CALIBRATING",
+    35,
+    null
+   ],
+   [
+    "READY",
+    41,
+    null
+   ]
+  ],
+  "calibration_tps": 105.0,
+  "fit_at_start": "FITS",
+  "margin_at_start": 1919.8,
+  "brain_dedicated_max": 13901.2,
+  "brain_non_local_max": 561.8,
+  "ui_dedicated_max": 277.2
+ },
+ {
+  "label": "e-p2-ret",
+  "complete": true,
+  "profile": "c64k-visoff-mtpoff",
+  "mode": "returning",
+  "checks": 12,
+  "passed": 12,
+  "failures": [],
+  "flutter_exit": 0,
+  "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "brain_phases": [
+   [
+    "STARTING_HOST",
+    1,
+    null
+   ],
+   [
+    "STARTING",
+    4,
+    null
+   ],
+   [
+    "LOADING",
+    27,
+    null
+   ],
+   [
+    "CALIBRATING",
+    34,
+    null
+   ],
+   [
+    "READY",
+    39,
+    null
+   ],
+   [
+    "STOPPING",
+    116,
+    null
+   ]
+  ],
+  "calibration_tps": 107.0,
+  "fit_at_start": "FITS",
+  "margin_at_start": 1919.8,
+  "brain_dedicated_max": 13900.7,
+  "brain_non_local_max": 561.8,
+  "ui_dedicated_max": 128.9
+ },
+ {
+  "label": "e-p3-main",
+  "complete": true,
+  "profile": "c32k-visgpu-mtpoff",
+  "mode": "main",
+  "checks": 68,
+  "passed": 68,
+  "failures": [],
+  "flutter_exit": 0,
+  "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "brain_phases": [
+   [
+    "STARTING_HOST",
+    1,
+    null
+   ],
+   [
+    "STARTING",
+    4,
+    null
+   ],
+   [
+    "LOADING",
+    21,
+    null
+   ],
+   [
+    "CALIBRATING",
+    28,
+    null
+   ],
+   [
+    "READY",
+    33,
+    null
+   ]
+  ],
+  "calibration_tps": 106.7,
+  "fit_at_start": "FITS",
+  "margin_at_start": 1217.8,
+  "brain_dedicated_max": 14604.3,
+  "brain_non_local_max": 497.8,
+  "ui_dedicated_max": 268.7
+ },
+ {
+  "label": "e-p3-ret",
+  "complete": true,
+  "profile": "c32k-visgpu-mtpoff",
+  "mode": "returning",
+  "checks": 12,
+  "passed": 12,
+  "failures": [],
+  "flutter_exit": 0,
+  "source_head": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "brain_phases": [
+   [
+    "STARTING_HOST",
+    1,
+    null
+   ],
+   [
+    "STARTING",
+    4,
+    null
+   ],
+   [
+    "LOADING",
+    26,
+    null
+   ],
+   [
+    "CALIBRATING",
+    34,
+    null
+   ],
+   [
+    "READY",
+    39,
+    null
+   ]
+  ],
+  "calibration_tps": 106.6,
+  "fit_at_start": "FITS",
+  "margin_at_start": 1217.8,
+  "brain_dedicated_max": 14603.8,
+  "brain_non_local_max": 497.8,
+  "ui_dedicated_max": 127.0
+ },
+ {
   "label": "p1-main",
   "complete": true,
   "profile": "c64k-visgpu-mtpoff",

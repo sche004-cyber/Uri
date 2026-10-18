@@ -1,0 +1,153 @@
+{
+ "text": "Once more: what was the secret number I gave you at the start of this conversation? Reply with the number only.",
+ "events": [
+  {
+   "data": {
+    "depth": "fast",
+    "text_chars": 111
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 1,
+   "t": 1792294405.205,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "turn.started"
+  },
+  {
+   "data": {
+    "state": "thinking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 2,
+   "t": 1792294405.205,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "route": "answer",
+    "tier": {
+     "escalation_offer": false,
+     "reason": "user_selected_fast",
+     "selected_by": "user",
+     "tier": "FAST"
+    },
+    "triage": {
+     "action_clauses": 0,
+     "kind": "QUESTION",
+     "reasons": [
+      "default_conversation"
+     ]
+    }
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 3,
+   "t": 1792294405.428,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "turn.routed"
+  },
+  {
+   "data": {
+    "state": "speaking"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 4,
+   "t": 1792294406.474,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "companion.state"
+  },
+  {
+   "data": {
+    "text": "4"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 5,
+   "t": 1792294406.474,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "8"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 6,
+   "t": 1792294406.489,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "1"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 7,
+   "t": 1792294406.498,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "text": "7"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 8,
+   "t": 1792294406.508,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "answer.delta"
+  },
+  {
+   "data": {
+    "complete": true,
+    "escalation_candidate": false,
+    "flags": [],
+    "metrics": {
+     "cache_n": 0,
+     "draft_n": null,
+     "draft_n_accepted": null,
+     "first_answer_s": 0.6435,
+     "memory_context": {
+      "fact_count": 2,
+      "status": "available",
+      "truncated": false
+     },
+     "predicted_n": 5,
+     "predicted_per_second": 90.38730962172912,
+     "prompt_n": 906,
+     "prompt_per_second": 1424.4767877891206,
+     "reasoning_chars": 0,
+     "retried": false,
+     "total_s": 0.6879,
+     "ttft_s": 0.6435
+    },
+    "status": "COMPLETE"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 9,
+   "t": 1792294406.518,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "answer.done"
+  },
+  {
+   "data": {
+    "route": "answer",
+    "status": "ok",
+    "total_s": 1.3133
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 10,
+   "t": 1792294406.518,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "turn.finished"
+  },
+  {
+   "data": {
+    "state": "idle"
+   },
+   "schema": "uri.oi.event.v1",
+   "seq": 11,
+   "t": 1792294406.518,
+   "turn_id": "8bf3aa02-f23e-49aa-ae3e-9898a5faffe9",
+   "type": "companion.state"
+  }
+ ]
+}

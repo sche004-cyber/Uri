@@ -1,106 +1,131 @@
-# RUNTIME-PROFILES-INTEG — live qualification results (v2, bound to code 4d782ef1)
+# RUNTIME-PROFILES-INTEG — live qualification results (v3, bound to code f3d5eb29)
 
-Date 2026-10-17. Candidate `milestone/runtime-profiles-integ-20261017`. Code tested live: `4d782ef1`. Baseline
-canonical `25048709`. Plan and criteria: `../RUNTIME_PROFILES_INTEGRATION_PLAN.md` (amendment A1 covers the scope
-beyond the accepted files). Authoritative record: `UI_QUALIFICATION_RUNTIME_PROFILES.json`, status **FAIL as a
-whole**, because P1 has mandatory failures. P2 and P3 are qualified on this commit (section 2).
+Date 2026-10-18. Candidate `milestone/runtime-profiles-integ-20261017`. Code tested live: `f3d5eb29`, which is
+`07dca2a8` (the profile code) merged with canonical `348677b7`. Plan and criteria:
+`../RUNTIME_PROFILES_INTEGRATION_PLAN.md` (amendment A1 covers the scope beyond the accepted files). Authoritative
+record: `UI_QUALIFICATION_RUNTIME_PROFILES.json`. Its status is **FAIL as a whole**, because P1 has mandatory
+failures. P2 and P3 are qualified on this commit (section 2).
 
-URI's default Brain is unchanged: the frozen Runtime v1, used whenever no profile is selected. Nothing is
-integrated, deployed or frozen. Independent review: fresh read-only subagent reviews (lifecycle tier 3, owner
-decision 2026-10-17), not driver-verified (section 7).
+URI's default Brain is unchanged: the frozen Runtime v1 is used whenever no profile is selected. Nothing is
+integrated, deployed or frozen. Independent review is by fresh read-only subagents (lifecycle tier 3, owner decision
+2026-10-17). It is not driver-verified (section 8).
 
-## 1. What changed since v1 of this report (fa0a70e6)
+## 1. What changed since v2 of this report (4d782ef1)
 
-- **CONTEXT-1 (found after review R1-01, repaired in `4d782ef1`).** Before the repair, the worker read the profile
-  selection only at start, so a profile switch needed a worker restart and lost the in-memory conversation.
-  `ProfileFollower` now re-reads the selection on change and swaps only the readiness verifier. The guard pins the
-  frozen (superset) artifact set, and `brain_health` names the serving profile with `qualified: false` (R1-06).
-  Tests: 19 in `tests/oi/test_runtime_profile_selection.py`. Gates `tests/oi`, `tests/ws`, `tests/assist`,
-  `tests/web` and the worker isolation test give a failure set identical to canonical (25 pre-existing
-  Chromium-dependent Assist failures/errors).
-- The v1 report said "17 new tests"; the correct count for `fa0a70e6` was 15 (R1-05).
-- The v1 claim "conversation is kept by URI" across switches was not evidenced. The driver's `R-conversation`
-  check sends a new prompt only (R1-01). This is now verified at worker level (section 4).
-- Research subagents investigated CRASH-1 and the P1 demotion (section 5). One correction to the URI-RUNTIME-VRAM-R1
-  report: its 64K + MTP "stays slow after Chrome closed" was measured only 38 s after the close, so it does not show
-  process-lifetime stickiness.
-- `evidence/live/dry` was an empty folder created by an import check of the harness (no run). It was removed and is
-  listed here (R1-04).
+- **Source binding (review R2-02).** Every harness (`live_session.py`, `soak.py`, `assist_vision_app.py`,
+  `switch_live.py`) now refuses to run without a clean source binding (`evidence/harness/binding.py`). The binding
+  requires a runtime materialized from the candidate HEAD, a clean candidate worktree, and a byte match of all 358
+  runtime files. The soak and Assist runs of v2 ran from the mutable development checkout without a recorded
+  binding. They are now **supporting evidence only** (correction C-5). Bound re-runs replace them.
+- **ProfileFollower (R2-05, R2-06), code `07dca2a8`.** Change detection now compares the file content, not
+  `(mtime, size)`. The same bytes are validated and applied, and `on_change` runs in order under the lock. There are
+  22 tests in `tests/oi/test_runtime_profile_selection.py` (correction C-6).
+- **Canonical revalidation.** Canonical `348677b7` was merged (`f3d5eb29`). The gates `tests/oi`, `tests/ws`, SSRF,
+  `tests/web`, `tests/a2ui`, `tests/assist` and the worker isolation test give the same failure set on the candidate
+  and on canonical: 5 failed and 20 errors, all pre-existing and Chromium-dependent Assist tests. The candidate has
+  6,845 passed tests and canonical has 6,812; the 33 extra tests are the new profile tests.
+- **E0 corrected (R2-01).** The v2 text "free commit 386-1,600 MiB" was wrong. See section 6 and the record's
+  `e0_host_memory` (correction C-4).
+- **Record (R2-03, R2-04, R2-08, R2-09).** The record keeps each profile's results on earlier commits under
+  `history_on_earlier_commits`. Interpretations are labelled as such in `annotations`. Every correction is listed in
+  `corrections` (C-1 to C-6).
 
 ## 2. Qualification by profile
 
-| Profile | Status | Evidence on `4d782ef1` | Operating condition measured |
+| Profile | Status | Bound evidence on `f3d5eb29` | Operating condition measured |
 |---|---|---|---|
-| **P2 64K main only** (13,658 MiB) | **PASS** | `c-p2-main` 68/68, `c-p2-ret` 12/12; switch `sw4` PASS. Host-only evidence, with host code identical: `soak-p2` 60 min clean. History on `fa0a70e6`: 2 x 68/68, 12/12 | lease fit FITS +1,176..+1,324 MiB; dwm 0.8-1.06 GB; Chrome 6 tabs |
-| **P3 32K + GPU vision** (14,360 MiB) | **PASS** | `c-p3-main` 68/68, `c-p3-ret` 12/12; `soak-p3` 60 min with the app + Chrome: 120/120, median 99.3 / min 94.3 tok/s, never demoted; switch `sw4` PASS; Assist application path 3/3 | fit AT_RISK +474 (19:00 desktop, dwm 1.05 GB) .. FITS +622; one soak |
-| **P1 64K + GPU vision** (14,764 MiB) | **FAIL — unqualified** | history on `fa0a70e6`: `p1b-main` FAIL (CRASH-1), `soak-p1` FAIL (demotion 99 -> 21 tok/s for 12 min); also 2 x 68/68, 2 x 12/12, Assist 3/3. Not re-run on `4d782ef1` | fit AT_RISK +218; stays unqualified until CRASH-1 and DEMOTE-P1 are resolved and re-tested |
+| **P2 64K main only** (13,658 MiB) | **PASS** | `e-p2-main` 68/68, `e-p2-ret` 12/12, switch `sw5` PASS | lease fit FITS +1,920 MiB (2026-10-18); +1,176..+1,324 on 2026-10-17 |
+| **P3 32K + GPU vision** (14,360 MiB) | **PASS** | `e-p3-main` 68/68, `e-p3-ret` 12/12, switch `sw5` PASS, Assist application path `assist-p3-e` 3/3, soak `soak-p3-e` 60 min PASS | fit FITS +1,218 (2026-10-18) .. AT_RISK +474 (2026-10-17 evening, dwm 1.05 GB) |
+| **P1 64K + GPU vision** (14,764 MiB) | **FAIL — unqualified** | not re-run. History on `fa0a70e6`: `p1b-main` FAIL (CRASH-1), `soak-p1` FAIL (demotion 99 -> 21 tok/s for 12 min); also 2 x 68/68, 2 x 12/12, Assist 3/3 (unbound) | fit AT_RISK +218; stays unqualified until CRASH-1 and DEMOTE-P1 are resolved and re-tested |
 
-Also reported by the Office session, not part of this record: Office a15/o8 PASS (13/13, 34/34) on the 64K
+Supporting (unbound) evidence: `c-p2-*` and `c-p3-*` on `4d782ef1`, `soak-p2` and `soak-p3` (60 min each, clean),
+`assist-p3`, `sw4`. Not part of this record: the Office session reports a15/o8 PASS (13/13, 34/34) on the 64K
 main-only profile.
 
-## 3. Journeys on the current commit
+## 3. Journeys
 
-Every run is listed in the record: 17 journey runs, of which 13 are history on earlier commits and 4 are current.
-Failures are listed, never dropped. The ordering-artifact rule (R1-03) now applies only when all of these hold: the
-only failures are `R-companion-persisted` and `R-theme-persisted`; the observed values equal the defaults written by
-`R-restore-defaults`; and the run immediately before was a returning run.
+The record lists every journey run: 21 in total, 4 of them on the current commit. Failures are listed, never
+dropped. The ordering-artifact rule (R1-03) applies only when all of these hold: the only failures are
+`R-companion-persisted` and `R-theme-persisted`; the observed values equal the defaults written by
+`R-restore-defaults`; and the run immediately before was a returning run. The rule marks a run NOT VERIFIED, not
+PASS (`p2-ret`, `s3-p2-ret`).
 
-## 4. Profile switch with conversation continuity (LQ-4)
+## 4. Sustained operation and Assist (P3, bound)
 
-Worker-level test (`tools/switch_live.py`). It uses the real integrated server, the production Brain host and the
-real worker spawned exactly as the app spawns it, driven with the app's commands. One worker process carried one
+- **`soak-p3-e`** (60 min, the app's start screen open, Chrome opened at 20 min): 120/120 turns valid. Decode median
+  103.8 tok/s, minimum 90.2 tok/s. Brain non-local memory at most 497.8 MiB, which is the Vulkan host buffers only, so
+  there was no demotion. Dedicated memory at least 14,579.6 MiB. The host did not exit early. The lease was FREE after
+  the run.
+- **`assist-p3-e`** (application path, 3 asks): every answer named error 401 and both enabled toggles. Ask time 1.34
+  s cold, then 0.52 s and 0.47 s. Plain decode 106.7 tok/s before and 105.0 tok/s after. Host ready in 23.0 s.
+
+This is one bound soak (n=1) on a lighter desktop than on 2026-10-17. With the unbound `soak-p3` (AT_RISK desktop),
+there are two clean 60-minute runs.
+
+## 5. Profile switch with conversation continuity (LQ-4)
+
+Worker-level test (`tools/switch_live.py`). It uses the real integrated server, the production Brain host, and the
+real worker spawned exactly as the app spawns it, driven with the app's commands. One worker process carries one
 conversation through P2 -> P3 -> P2.
 
 | Run | Result |
 |---|---|
-| `sw1` | NOT VERIFIED: my prompts routed to Core memory, not to the conversation |
-| `sw2` | NOT VERIFIED: harness bug (`TURN_IN_PROGRESS`, next turn sent too early); the post-switch recalls were already correct |
-| `sw3` | automated FAIL, kept. The prompt "plus 1 now" was ambiguous; the answers 4818 -> 4819 -> 4820 continued the conversation's own arithmetic, which shows the history was in context |
-| **`sw4`** | **PASS**: "4817" through the answer channel before the switch, after P2 -> P3 and after P3 -> P2. Switches reached READY on the new profile in 26-33 s; VRAM released in 3.8-3.9 s; same worker pid |
+| `sw1` | NOT VERIFIED: the recall prompts routed to Core memory, not to the conversation |
+| `sw2` | supporting, not PASS: harness bug (`TURN_IN_PROGRESS`, next turn sent too early) |
+| `sw3` | supporting, automated FAIL kept. Interpretation (not verified) in the record's `annotations` |
+| `sw4` | supporting PASS (unbound, `4d782ef1`) |
+| **`sw5`** | **PASS, bound to `f3d5eb29`**: "4817" recalled through the answer channel before the switch, after P2 -> P3 and after P3 -> P2. Both switches reached READY on the new profile (26.8 s and 21.2 s). The worker pid did not change |
 
-## 5. Research (subagents; hypotheses are labelled)
+Not tested: a switch through UI clicks. The UI V2 driver does not test it.
 
-- **CRASH-1** (`evidence/research/CRASH1_RESEARCH.md`, crashed server log and reproduction script in
+## 6. Research (subagents; hypotheses are labelled)
+
+- **CRASH-1** (`evidence/research/CRASH1_RESEARCH.md`; the crashed server log and the reproduction script are in
   `evidence/crash1/`).
   - Leading hypothesis, not verified: host commit exhaustion leads to an uncaught `std::bad_alloc` in the
-    prompt-cache save (an unprotected copy, upstream PR #27451, still open), which leads to `std::terminate` /
+    prompt-cache save (an unprotected copy; upstream PR #27451 is still open). That leads to `std::terminate` /
     `abort` and 0xC0000409. There is no Windows log, because the terminate handler prints only on Linux/macOS.
-  - Task 841 was not a grammar request; its "cancel" came after it had already finished.
-  - **E0 measured in soak-p3:** free system commit was 386-1,600 MiB while 6-8 GB of physical RAM was available.
-    Two PowerShell processes of other sessions held about 4.2 GB private each (RAM-1). This risk applies to every
-    profile and to the frozen configuration.
+  - The reading "the cancel came after the task had finished" is inferred from the log order and the b11510 source.
+  - **E0, measured** (record `e0_host_memory`): in `soak-p3` (2026-10-17), free system commit was 386 MiB minimum
+    (at t=0), median 2,500 MiB, maximum 5,107 MiB, with 3.6-7.0 GB of physical memory available. In `soak-p3-e`
+    (2026-10-18), free commit was 20,841-24,491 MiB. The RAM-1 snapshot shows PowerShell processes of other sessions
+    at about 4 GB private each. Commit, not physical memory, was the scarce resource on 2026-10-17. This risk applies
+    to every profile and to the frozen configuration.
+  - Reproduction E1 was not run.
 - **DEMOTE-P1** (`evidence/research/DEMOTION_RESEARCH.md`).
-  - What moved: a 1,021.7 MiB weight allocation (the first of 13 weight allocations), not the KV cache or the
-    projector. It happened at a Chrome memory burst, and the allocation returned 180-210 s after Chrome closed.
-  - Estimated margin needed with an ordinary browser: about +450-500 MiB fit. P1 at +218 is insufficient; P3 at
-    +474..+622 is near the boundary, but its soak passed.
-  - Recovery policy proposed: detect (residency alert plus a decode drop); offer a lighter profile; restart only when
-    the fit is FITS; any automatic restart is opt-in, idle-only and rate-limited.
+  - What moved: a 1,021.7 MiB allocation, identified by size match as the first of 13 weight allocations. The
+    tensor-to-allocation map was not dumped. It happened at a Chrome memory burst. The allocation returned 180-210 s
+    after Chrome closed.
+  - Estimated margin needed with an ordinary browser: about +450-500 MiB fit. P1 at +218 is not sufficient. P3 at
+    +474..+1,218 is near or above the boundary, and its soaks passed.
+  - Proposed recovery policy: detect (residency alert plus a decode drop); offer a lighter profile; restart only when
+    the fit is FITS. Any automatic restart is opt-in, idle-only and rate-limited.
 
-## 6. Remaining defects and unverified scenarios
+## 7. Remaining defects and unverified scenarios
 
-- CRASH-1 open (root cause unverified; reproduction E1 not run); it can affect any profile under commit pressure.
-- DEMOTE-P1 open. Its mitigations (vision on CPU at 64K, 256 MiB suballocation) are unmeasured.
-- P3 qualification rests on one soak near the estimated margin boundary.
-- URI Assist vision is verified only through the application path (no real capture adapter; owner-gated Assist
+- CRASH-1 is open (root cause unverified; E1 not run). It can affect any profile under commit pressure.
+- DEMOTE-P1 is open. Its mitigations (vision on CPU at 64K, 256 MiB suballocation) are unmeasured.
+- P2 sustained-operation evidence is unbound (`soak-p2`).
+- P3 sustained operation: at most n=2, near the estimated margin on heavy desktops.
+- **R2-07 deferred to the UI thread.** The UI does not render `backend.profile` yet. The API exposes it with
+  `qualified: false`. UI presentation is outside this milestone (owner brief: the runtime owns the capability, not
+  its presentation). The Brain Quick Controls milestone (owner-approved 2026-10-18, branch
+  `milestone/brain-quick-controls-20261018`, base `f3d5eb29`) is the UI thread.
+- URI Assist vision is verified only through the application path. No real capture adapter exists (owner-gated Assist
   checklist items 8-10). The product keeps `vision_qualified=False`.
-- Automated input only; the soak UI window is the app's start screen; there are no Thinking/Vision/Context controls.
+- Automated input only. The soak UI window is the app's start screen, not a journey run. Physical keyboard, mouse and
+  microphone are not qualified.
 
-## 7. Independent review and integration readiness
+## 8. Independent review and integration readiness
 
-- Round RPI-R1 (fresh read-only subagent, nonce `RPI-R1-7f3c91`, commit `3b77aabc`): ACCEPT WITH FINDINGS, 9
-  findings. Repairs:
-  - R1-01: CONTEXT-1 repair plus the worker-level test;
-  - R1-02: CRASH-1 log and reproduction committed;
-  - R1-03: classifier;
-  - R1-04: `dry` folder disclosed;
-  - R1-05: test count;
-  - R1-06: health profile;
-  - R1-07: documented;
-  - R1-08: `worker-instance.json` preserved for runs on the current commit;
-  - R1-09: plan amendment A1.
-- The next subagent round reviews this exact head.
-- **Driver-verified acceptance: not yet.** Codex is over its usage limit until 2026-10-22 and the claude CLI is
+- RPI-R1 (nonce `RPI-R1-7f3c91`, commit `3b77aabc`): ACCEPT WITH FINDINGS, 9 findings, all resolved (verified in
+  RPI-R2).
+- RPI-R2 (nonce `RPI-R2-c41e88`, commit `a5605ae8`): ACCEPT WITH FINDINGS, 9 findings. R2-05/06 fixed in code
+  (`07dca2a8`). R2-02 fixed by the binding and the bound re-runs. R2-01/03/04/08/09 fixed in the record and this
+  report. R2-07 deferred (section 7).
+- RPI-R3 reviews the evidence commit on top of `f3d5eb29`.
+- **Driver-verified acceptance: not available.** Codex is over its usage limit until 2026-10-22, and the claude CLI is
   logged out. Subagent acceptance under the 2026-10-17 lifecycle policy is a different verification class and is
   reported as such.
-- Integration into canonical needs your explicit authorisation. A default change needs a separate authorisation.
+- Integration into canonical needs your explicit authorisation. A change of the default Brain needs a separate
+  authorisation.

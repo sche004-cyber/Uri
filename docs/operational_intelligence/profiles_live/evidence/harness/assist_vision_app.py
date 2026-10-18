@@ -24,7 +24,9 @@ import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SRC = pathlib.Path(r"D:\uri-dev\uri-runtime-profiles-integ")
+RT = ROOT / "runtime-e"
 sys.path.insert(0, str(SRC))
+sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(SRC / "model_lab"))
 import httpx  # noqa: E402
 from uri_operational_intelligence import brain_health as BH, gpu_lease as G  # noqa: E402
@@ -67,11 +69,13 @@ def main():
     rec = {"label": LABEL, "profile_arg": PROFILE, "started": time.time(), "classification": "STARTED",
            "stand_ins": ["capture adapter = tests.assist FakeAdapter (no real adapter exists)",
                          "vision_qualified=True in this harness only"]}
-    stop = SRC / "work" / "oi" / "state" / "runtime_v1.stop"
+    import binding
+    rec["binding"] = binding.require(RT)
+    stop = RT / "work" / "oi" / "state" / "runtime_v1.stop"
     stop.unlink(missing_ok=True)
     log = open(OUT / "host.log", "wb")
-    host = subprocess.Popen([sys.executable, "-B", "-I", str(SRC / "scripts" / "ws_brain_host.py"), "--report-dir",
-                             str(REP), "--minutes", "20", "--profile", PROFILE], cwd=str(SRC), stdout=log,
+    host = subprocess.Popen([str(RT / ".venv/Scripts/python.exe"), "-B", "-I", str(RT / "scripts" / "ws_brain_host.py"), "--report-dir",
+                             str(REP), "--minutes", "20", "--profile", PROFILE], cwd=str(RT), stdout=log,
                             stderr=subprocess.STDOUT)
     try:
         t0 = time.monotonic()

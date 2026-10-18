@@ -23,8 +23,10 @@ import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SRC = pathlib.Path(r"D:\uri-dev\uri-runtime-profiles-integ")
+RT = ROOT / "runtime-e"
 LAB = pathlib.Path(r"D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1")
 sys.path.insert(0, str(SRC))
+sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(LAB))
 import httpx  # noqa: E402
 from uri_operational_intelligence import brain_health as BH, gpu_lease as G  # noqa: E402
@@ -125,10 +127,12 @@ def main():
     rec = {"label": LABEL, "profile_arg": PROFILE, "minutes": MINUTES, "classification": "STARTED", "samples": [],
            "events": []}
     prefs_before = OWNER_PREFS.read_bytes() if OWNER_PREFS.exists() else None
-    stop = SRC / "work" / "oi" / "state" / "runtime_v1.stop"
+    import binding
+    rec["binding"] = binding.require(RT)
+    stop = RT / "work" / "oi" / "state" / "runtime_v1.stop"
     stop.unlink(missing_ok=True)
-    host = subprocess.Popen([sys.executable, "-B", "-I", str(SRC / "scripts" / "ws_brain_host.py"), "--report-dir",
-                             str(REP), "--minutes", str(MINUTES + 15), "--profile", PROFILE], cwd=str(SRC),
+    host = subprocess.Popen([str(RT / ".venv/Scripts/python.exe"), "-B", "-I", str(RT / "scripts" / "ws_brain_host.py"), "--report-dir",
+                             str(REP), "--minutes", str(MINUTES + 15), "--profile", PROFILE], cwd=str(RT),
                             stdout=open(OUT / "host.log", "wb"), stderr=subprocess.STDOUT)
     ui = chrome = None
     try:
