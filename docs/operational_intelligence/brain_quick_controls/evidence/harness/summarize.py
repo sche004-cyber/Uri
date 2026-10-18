@@ -17,7 +17,8 @@ def load(name, default=None):
 
 
 obs = load("observations.json", []) or load("observations-main.json", [])
-samples = [s for s in load("samples.json", []) if "sample_error" not in s]
+# Only samples of THIS session's live host (a report left by an earlier run reads host_alive False).
+samples = [s for s in load("samples.json", []) if "sample_error" not in s and s.get("host_alive")]
 session = load("session.json", {})
 native = load("native-execution.json", {})
 finished = load("ui-finished.json", {})

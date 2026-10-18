@@ -1,0 +1,25 @@
+{
+ "label": "uiv2-main",
+ "source_head": "157e35ea2d65fd1f953662c0312dc53829df7ca5",
+ "source_tree": "3801c6711ee71f106b6055f75f4b1e2181a5368d",
+ "source_status_before": "M docs/operational_intelligence/brain_quick_controls/evidence/harness/summarize.py\n M docs/operational_intelligence/brain_quick_controls/evidence/live/qc-1/summary.json",
+ "port": 18327,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/uiv2_native_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "884902e27569099645ed1367e6ce9bf5a39c8588d734708d0ae86e67130a16e6",
+ "entry": "original production main() via integration_test (Debug build); taps and TestTextInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "started_utc": "2026-10-18T06:03:25.698318+00:00",
+ "exit_code": 0,
+ "elapsed_s": 237.99,
+ "finished_utc": "2026-10-18T06:07:23.691074+00:00",
+ "source_status_after": "M docs/operational_intelligence/brain_quick_controls/evidence/harness/summarize.py\n M docs/operational_intelligence/brain_quick_controls/evidence/live/qc-1/summary.json",
+ "ui_binary_sha256": "a9ada7d3c57ce83eee16982ffcae40611271eaf6d7cfcab262fc136ad48d4cd0"
+}
