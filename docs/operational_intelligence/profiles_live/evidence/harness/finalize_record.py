@@ -125,7 +125,9 @@ for _sub, _name in (("live", "session-start.json"), ("soak", "soak.json"), ("ass
 import hashlib as _hl
 r["binding_versions"] = {
     "note": ("the committed evidence/harness/binding.py is the current version (explicit allowlist, R4-01). No bound "
-             "run used it: runs before R3-03 did not record the hash; soak-p2-e used the R3-03 version "
+             "run used it. Runs before R3-03 did not record the hash; the binding.py copy committed with their evidence in "
+             "fec31dfd has sha256 c64df8c887866e2fc39d8f5d662a29c1e38a2cfb924a40b6bc274ff6d3a28608 (that this exact file ran "
+             "is inferred from the timeline, not hashed at run time). soak-p2-e used the R3-03 version "
              "(docs/ outside the receipt), whose rule its changed paths also satisfy under R4-01."),
     "committed_binding_py_sha256": _hl.sha256((ROOT / "tools" / "binding.py").read_bytes()).hexdigest(),
     "per_run": _bv}
