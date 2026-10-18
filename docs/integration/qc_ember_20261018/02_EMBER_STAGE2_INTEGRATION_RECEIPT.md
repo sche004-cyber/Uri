@@ -25,7 +25,7 @@ owner approval.
 | `8f883bbf` | switching derived from worker controls only (F-1); a FAILED host during a switch shows the FCV-10 error "Brain failed to start" (F-2); test fixture with RECOVERING | stage-2 review F-1/F-2 |
 
 Stage-2 review (`ember_stage2/review/EMBER_INTEG_report.md`, at `b07bd496`): ACCEPT WITH FINDINGS (3 LOW, 2 INFO); F-1/F-2/F-3
-repaired; F-4/F-5 INFO recorded (F-5: STOPPING/RELEASE_WAIT during a requested switch shown as Initializing - an
+repaired; F-4/F-5 INFO recorded. Final focused review at `74e7f7ba` (`ember_stage2/review/FINAL_EMBER_report.md`): ACCEPT WITH FINDINGS (4 LOW, 3 INFO, receipt wording/evidence); F-1/F-2 confirmed with a negative test; R-1..R-7 applied in this revision (F-5: STOPPING/RELEASE_WAIT during a requested switch shown as Initializing - an
 interpretation of D-1 "genuinely starting", owner may disagree).
 
 ## 3. Automated gates at `bb61e976`
@@ -44,9 +44,9 @@ interpretation of D-1 "genuinely starting", owner may disagree).
 | Run | Code | Brain | Result |
 |---|---|---|---|
 | `e-first` | `8f883bbf` (pre-`ec2fab54` merge) | frozen Standard | ALL PASS: Ember selected, Initializing -> idle (calibration 154.7 tok/s), borderless, per-pixel transparency, click-through, Ember click, drag, 1.25x, conversation thinking->speaking->success, Brain stop -> unavailable, recovery -> "15", choice persisted |
-| `e-returning-switch` | `8f883bbf` | frozen | harness defects (INVALID for switch): fact prompt triggered the remember_fact approval card; Ember harness host is in-process. Window checks passed |
-| `c-uiv2` | `8f883bbf` | frozen | UI V2 journeys PASS |
-| `c-qc` | `8f883bbf` | - | Brain never started: production host refused, GPU CONTENDED (owner's Chrome ~660 MB + dwm). Correct safety behaviour; no QC evidence from this run |
+| `e-returning-switch` | `8f883bbf` | frozen | INVALID for the switch journey: the fact turn finished `refused` (cause not recorded; no awaiting-approval state was seen) and the switch request returned null (the Ember harness runs the Brain host in-process and its report showed no host). Window checks and `R-initializing-seen` passed. Re-run on the production-host harness as `p3-ember-switch` |
+| `c-uiv2` | `8f883bbf` | frozen | UI V2 journeys PASS; the run logged 2 Flutter errors (RenderFlex overflow at `oi_health_widgets.dart:94`) that predate Ember (file unchanged since `cd4a7963`; same errors in UI V2 runs l11/l13) |
+| `c-qc` | `8f883bbf` | - | Brain never started: the production host waited in WAITING_FOR_GPU (GPU_CONTENDED, fit -924 MiB; owner's Chrome 675.6 MB + dwm) for ~11 min until the driver timed out. Correct safety behaviour; no QC evidence from this run |
 | `p3-ember-switch` | `bb61e976` | **P3 (32K + vision, no MTP), owner instruction** | Window checks ALL PASS (borderless; 90.8 % transparent / 7.1 % blended; click-through; Ember click reaches URI; drag; 1.25x). Brain switches P3 -> Long -> P3 under Ember: companion Initializing while switching and never idle (both switches); idle after; recall "4817" after each switch; Ember transparent on Long (89.8 % / 5.4 %). One check `R-initializing-seen` failed because this harness starts the Brain before the app (READY 12:28:48, first app sample 12:29:20) - not applicable here; startup Initializing passed in `e-first` |
 | `p3-uiv2` | `bb61e976` | P3 | UI V2 journeys PASS |
 
@@ -54,10 +54,19 @@ Owner instruction 2026-10-18: "Close crome or try with no mtp and 32k context si
 Chrome helper processes; Chrome restarted its GPU process (438 MB). The browser was not force-closed. Final live runs
 use P3 (`--profile 32768,gpu,0`, a qualified profile).
 
-Performance under the owner's desktop contention (not comparable with qualified baselines): P3 calibration 63.3 tok/s
-with ~2.1 GB of the Brain non-local (demotion caused by foreign GPU use; fit AT_RISK +250..+431 MiB). Ember's own
-cost: window 178.5 MiB dedicated (Debug runner), unchanged from Ember qualification runs (173-179 MiB). No Ember-
-attributable regression; Brain throughput comparisons need an uncontended desktop (NOT VERIFIED on `bb61e976`).
+Performance under the owner's desktop GPU use (not comparable with qualified baselines): P3 calibration 63.3 tok/s
+with ~2.1 GB of the Brain non-local, about 40 % below the qualified P3 baseline (~104 tok/s, <= 498 MiB non-local,
+RUNTIME_PROFILES_LIVE_RESULTS.md). Probable cause: the desktop's foreign GPU use (Chrome, dwm) - not isolated; the
+host's fit check still rated the start AT_RISK +431 MiB. Ember is excluded as the cause: both P3 calibrations ran
+before any `uri_ui` process existed, and `p3-uiv2` (no Ember selected) calibrated at 63.5 tok/s. Ember's own cost:
+window 178.5 MiB dedicated (Debug runner), unchanged from Ember qualification runs (173-179 MiB). Brain throughput on
+`bb61e976` on an uncontended desktop: NOT VERIFIED.
+
+Notes: the `8f883bbf` runs used a runtime materialized from `b07bd496` (only Dart changed between them). Startup
+Initializing was verified live at `8f883bbf` (`e-first`); the `ec2fab54` merge does not touch that path. The drivers of
+`e-first`/`e-returning-switch` (sha `bcdce2a1`) and `c-qc` (sha `c2f23a11`, = the QC driver in
+`docs/operational_intelligence/brain_quick_controls/evidence/harness/qc_driver.dart`) are not archived separately; the
+`p3-*` harness is in `ember_stage2/harness/`.
 
 ## 5. Findings carried (owner decisions, unchanged)
 
@@ -72,7 +81,9 @@ Investigation (`ember_stage2/review/OD2_licensing_investigation.md`, repository 
 - OD-2 asks the licence of the reference art ("Fiverr illustration; emotions sheet carries a Gemini mark"); the recorded
   owner answer is "I hold rights / will license"; no licence, receipt or attribution is in the repository.
 - The 12 shipped Ember files (`uri_ui/assets/companions/ember/`) are pixel-level derivatives of that art (signature and
-  generator mark inpainted out).
+  generator mark inpainted out). The tree also holds other derived Ember imagery (demo GIFs, evidence screenshots and
+  captures, `companion_art/fire_v2/rig.json` with the signature-erase coordinates), and this receipt's evidence adds more
+  Ember screenshots.
 - `git log feaabe3f..bb61e976` contains the reference art and reviewer packs (15 commits, from `8a1438ec`); pushing the
   candidate publishes them.
 
