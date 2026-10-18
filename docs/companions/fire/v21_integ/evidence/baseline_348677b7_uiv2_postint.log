@@ -1,0 +1,25 @@
+HEAD=348677b7 (clean canonical baseline worktree)
+00:00 +0: loading D:/uri-dev/uri-ember-baseline-348677b7/uri_ui/test/living/uiv2_postint_test.dart
+00:00 +0: UIV2-F1: draft scope without a draft every surface sends an ordinary turn
+00:00 +1: UIV2-F1: draft scope with a draft open, a turn from a surface that does not show it is mode command
+00:00 +2: UIV2-F1: draft scope the Workspace draft target: conversation by default, draft only when chosen, reset by a new draft
+00:00 +3: UIV2-F1: draft scope deep depth keeps the explicit draft target and the chosen depth (the worker honours the target)
+00:00 +4: UIV2-F1: draft scope the Workspace composer shows the draft target chip and switches it
+00:01 +5: UIV2-F1: draft scope a Start new work request never changes the open draft, whatever the target (C1-02)
+00:01 +6: UIV2-F1: draft scope a question about a NEW document is labelled as such and has no Answer for the open draft (C2-01)
+00:02 +7: UIV2-F1: draft scope the draft is in view only in the Workspace conversation
+00:02 +8: UIV2-F1: draft scope a draft that replaced an open one says so; Undo brings it back
+00:02 +9: UIV2-F1: draft scope draft panel shows the replacement tag
+00:02 +10: UIV2-F1: draft scope Companion chat with an open draft: a note, and its messages go as mode command
+00:02 +11: UIV2-F2: testing-only composer controls hidden from ordinary users
+00:02 +12: UIV2-F2: testing-only composer controls available with URI_UI_TESTING_TOOLS
+00:03 +13: UIV2-F2: testing-only composer controls environment values
+00:03 +14: UIV2-F3: no overflow while the window shrinks into Companion draft panel and conversation scroll instead of overflowing at any height
+00:03 +15: UIV2-F3: no overflow while the window shrinks into Companion approval and confirmation cards never overflow the conversation pane (C1-03)
+00:04 +16: UIV2-F3: no overflow while the window shrinks into Companion an active testing mode keeps its toggle in a narrow composer (C1-06)
+00:04 +17: UIV2-F3: no overflow while the window shrinks into Companion at a normal size the draft toolbar is in view without scrolling (live l1)
+00:04 +18: UIV2-F3: no overflow while the window shrinks into Companion the Companion note stays visible under a long chat
+00:04 +19: UIV2-F3: no overflow while the window shrinks into Companion workspace -> Companion across window sizes and scale, testing tools on
+00:05 +20: UIV2-F3: no overflow while the window shrinks into Companion dashboard -> Companion across window sizes and scale, testing tools on
+00:05 +21: All tests passed!
+rc=0
