@@ -353,10 +353,10 @@
   }
  },
  "uiv2_regression": {
-  "run": "uiv2-main",
-  "checks_pass": 68,
-  "checks_total": 68,
-  "source_head": "157e35ea (UI lib identical to 0d599b6a)"
+  "runs": {
+   "uiv2-main": "68/68 on 157e35ea (before the header fix)",
+   "uiv2-main-2": "68/68 on 7e3a99f3 (code = aa7a1cf6)"
+  }
  },
  "dry_no_brain": {
   "run": "dry-1",
@@ -371,5 +371,9 @@
   "context shrink confirmation live",
   "persistence of the choice across host restart (not implemented)",
   "independent review"
+ ],
+ "environment_notes": [
+  "tests/ws/test_ws_hardening.py::test_fit_desktop_only_fits_and_a_1gb_consumer_contends failed once while the qc-1 session process happened to have pid 18372 (the test's fake census pid is named from the live process table); passes in the final gate run",
+  "tests/phase2a/test_frozen_core.py fails at base f3d5eb29 already (runtime-profiles paths not in ALLOWED_NEW); BRAIN-QC adds uri_operational_intelligence/brain_quick_controls.py and tests/oi/test_brain_quick_controls.py to the same stray list (guard not edited: governance file)"
  ]
 }
