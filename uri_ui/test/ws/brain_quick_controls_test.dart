@@ -181,20 +181,32 @@ void main() {
   });
 
   testWidgets('Vision configured but not live is never shown as On', (tester) async {
-    final rt = _Runtime()..visionLive = false;
+    final rt = _Runtime()
+      ..visionLive = false
+      ..extra = {'host_state': 'STARTING'};
     final conv = await tester.runAsync(() => _ready(rt));
     await tester.pumpWidget(_bar(conv!));
     expect(find.text('Vision: On'), findsNothing);
     expect(find.text('Vision: starting…'), findsOneWidget);
+    // R5-01: no live host is "not running", a host that is up but unconfirmed is "not confirmed".
+    for (final (host, label) in <(String?, String)>[(null, 'Vision: not running'), ('READY', 'Vision: not confirmed')]) {
+      rt.extra = {'host_state': host};
+      await tester.runAsync(() => conv.refreshHealth());
+      await tester.pump();
+      expect(find.text(label), findsOneWidget, reason: '$host');
+      expect(find.text('Vision: On'), findsNothing);
+    }
     // R4-01: Vision is on but the Brain is not ready: never "Vision is off".
     expect(conv.attachImage(OiImage(name: 'a.png', mime: 'image/png', bytes: _png)), 'VISION_NOT_READY');
   });
 
   testWidgets('an image while the Vision Brain starts or failed says not ready, never "Vision is off"',
       (tester) async {
-    for (final (host, says) in [
+    for (final (host, says) in <(String?, String)>[
       ('STARTING', 'The Brain is still starting'),
       ('FAILED', 'The Brain is not running'),
+      (null, 'The Brain is not running'),                              // R5-01: no live host
+      ('READY', 'does not confirm that it can see images'),            // R5-01: host up, vision not confirmed
     ]) {
       final rt = _Runtime()
         ..visionLive = false
@@ -361,6 +373,37 @@ void main() {
     await tester.runAsync(() => conv.refreshHealth());
     await tester.pump();
     expect(tester.widget<SwitchListTile>(find.byKey(const ValueKey('ws-speed-boost'))).onChanged, isNull);
+  });
+
+  testWidgets('R5-02: the speed boost switch asks before it reloads the Brain', (tester) async {
+    final rt = _Runtime()
+      ..active = {'id': 'c32k-visoff-mtpoff', 'vision': false, 'context': 32768, 'speed': false}
+      ..visionLive = false;
+    final conv = await tester.runAsync(() => _ready(rt));
+    await tester.pumpWidget(_host(ListenableBuilder(
+      listenable: conv!,
+      builder: (_, _) => OiSpeedBoostTile(conversation: conv),
+    )));
+    await tester.tap(find.byKey(const ValueKey('ws-speed-boost')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('oi-qc-confirm')), findsOneWidget);
+    expect(find.textContaining('speed boost'), findsWidgets);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(rt.commands.where((c) => c['command'] == 'brain_profile_set'), isEmpty);
+    await tester.tap(find.byKey(const ValueKey('ws-speed-boost')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('oi-qc-confirm-yes')));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+    await tester.pumpAndSettle();
+    expect(rt.commands.where((c) => c['command'] == 'brain_profile_set').single,
+        {'command': 'brain_profile_set', 'vision': false, 'context': 32768, 'speed': true});
+  });
+
+  test('R4-03: an image while URI waits for an answer asks for the answer first', () {
+    final text = notSentMessage('IMAGE_DURING_CLARIFICATION', ['a.png']);
+    expect(text, contains('waiting for your answer'));
+    expect(text, isNot(contains('Ask about the image instead')));
   });
 
   test('without quick-controls support the bar keeps only Thinking', () async {

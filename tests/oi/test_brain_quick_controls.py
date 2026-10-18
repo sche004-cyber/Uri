@@ -295,6 +295,25 @@ def test_image_with_an_action_request_is_refused_with_a_reason(fake, tmp_path):
     assert fake.requests == []
 
 
+def test_image_while_a_clarification_waits_is_refused_with_its_own_code(fake, tmp_path):
+    """R4-03: the answer to URI's question goes to Core (no images): its own code, not 'ask about the image'."""
+    b, _, _, _ = _bridge(fake, tmp_path)
+    b.pending["t-clar"] = {"session_id": SID, "env": {"clarification": {"question": "Which file?"}}}
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "the second one", "depth": "auto",
+                             "images": [{"name": "a.png", "mime": "image/png", "data": b64(PNG)}]})
+    assert e.value.code == "IMAGE_DURING_CLARIFICATION"
+    assert fake.requests == [] and "t-clar" in b.pending
+
+
+def test_brain_restart_never_carries_a_reconfigure(fake, tmp_path):
+    """R3-05: a profile switch has its own validated command; brain_restart 'reconfigure' is ACTION_INVALID."""
+    b, _, requests, _ = _bridge(fake, tmp_path)
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("brain_restart", {"command": "brain_restart", "action": "reconfigure"})
+    assert e.value.code == "ACTION_INVALID" and requests == []
+
+
 # ---- profile set via the bridge ------------------------------------------------------------------------------------
 def _live(desc_key, state="READY"):
     return {"state": state, "profile": RP.describe(BP.config_for(frozen(), desc_key)), "requests": {}}

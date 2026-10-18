@@ -105,8 +105,12 @@ class OiQuickControls extends StatelessWidget {
     } else if (active == null) {
       visionText = 'Vision: unknown';
     } else if (vision && !conv.visionLive) {
-      // R1-02: a Brain that failed or was stopped is not "starting".
-      visionText = const {'FAILED', 'STOPPED'}.contains(conv.brainHostState) ? 'Vision: not running' : 'Vision: starting…';
+      // R1-02 / R5-01: only a host that is loading is "starting".
+      visionText = switch (visionNotReady(conv)) {
+        VisionNotReady.notRunning => 'Vision: not running',
+        VisionNotReady.unconfirmed => 'Vision: not confirmed',
+        VisionNotReady.starting => 'Vision: starting…',
+      };
     } else {
       visionText = vision ? 'Vision: On' : 'Vision: Off';
     }
@@ -197,52 +201,69 @@ class OiQuickControls extends StatelessWidget {
     return below.isNotEmpty ? below.last : ctxs.first;
   }
 
-  Future<void> _switch(BuildContext context, {required bool vision, required int context_, bool speed = false}) async {
-    final conv = conversation;
-    final what = '${vision ? 'Vision on' : 'Vision off'}, ${contextLabel(context_)} context${speed ? ', speed boost' : ''}';
-    final ok = await showDialog<bool>(
+  Future<void> _switch(BuildContext context, {required bool vision, required int context_, bool speed = false}) =>
+      switchBrainProfile(context, conversation, vision: vision, context_: context_, speed: speed);
+}
+
+/// Why Vision is not live although the running profile has it (R5-01).
+enum VisionNotReady { notRunning, unconfirmed, starting }
+
+VisionNotReady visionNotReady(OiConversation conv) {
+  final host = conv.brainHostState;
+  if (host == null || const {'FAILED', 'STOPPED'}.contains(host)) return VisionNotReady.notRunning;
+  // The host has a Brain up, but the worker does not confirm it (identity or the live vision modality).
+  if (const {'READY', 'DEGRADED'}.contains(host)) return VisionNotReady.unconfirmed;
+  return VisionNotReady.starting;
+}
+
+/// Every Vision / Context / Speed switch: one confirmation of the reload, then
+/// the shrink confirmation when the worker asks for it (R5-02: Settings too).
+Future<void> switchBrainProfile(BuildContext context, OiConversation conv,
+    {required bool vision, required int context_, bool speed = false}) async {
+  final what = '${vision ? 'Vision on' : 'Vision off'}, ${OiQuickControls.contextLabel(context_)} context'
+      '${speed ? ', speed boost' : ''}';
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      key: const ValueKey('oi-qc-confirm'),
+      title: Text('Switch the Brain to $what?'),
+      content: const Text('The Brain reloads, which takes about 30 seconds. Your conversation stays; the first '
+          'reply afterwards can take longer while the Brain reads it again.'),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+        FilledButton(
+          key: const ValueKey('oi-qc-confirm-yes'),
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: const Text('Switch'),
+        ),
+      ],
+    ),
+  );
+  if (ok != true || !context.mounted) return;
+  var refusal = await conv.setProfile(vision: vision, context: context_, speed: speed);
+  if (refusal == 'CONTEXT_SMALLER_THAN_CONVERSATION' && context.mounted) {
+    final shrink = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        key: const ValueKey('oi-qc-confirm'),
-        title: Text('Switch the Brain to $what?'),
-        content: const Text('The Brain reloads, which takes about 30 seconds. Your conversation stays; the first '
-            'reply afterwards can take longer while the Brain reads it again.'),
+        key: const ValueKey('oi-qc-shrink'),
+        title: const Text('This conversation is longer than the new context'),
+        content: const Text('URI keeps the whole conversation, but the Brain will only see its most recent part. '
+            'Switch anyway?'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Keep current context')),
           FilledButton(
-            key: const ValueKey('oi-qc-confirm-yes'),
+            key: const ValueKey('oi-qc-shrink-yes'),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Switch'),
+            child: const Text('Switch anyway'),
           ),
         ],
       ),
     );
-    if (ok != true || !context.mounted) return;
-    var refusal = await conv.setProfile(vision: vision, context: context_, speed: speed);
-    if (refusal == 'CONTEXT_SMALLER_THAN_CONVERSATION' && context.mounted) {
-      final shrink = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          key: const ValueKey('oi-qc-shrink'),
-          title: const Text('This conversation is longer than the new context'),
-          content: const Text('URI keeps the whole conversation, but the Brain will only see its most recent part. '
-              'Switch anyway?'),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Keep current context')),
-            FilledButton(
-              key: const ValueKey('oi-qc-shrink-yes'),
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Switch anyway'),
-            ),
-          ],
-        ),
-      );
-      if (shrink != true || !context.mounted) return;
-      refusal = await conv.setProfile(vision: vision, context: context_, speed: speed, confirmShrink: true);
-    }
-    if (refusal != null && context.mounted) {
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(profileRefusalText(refusal))));
-    }
+    if (shrink != true || !context.mounted) return;
+    refusal = await conv.setProfile(vision: vision, context: context_, speed: speed, confirmShrink: true);
+  }
+  if (refusal != null && context.mounted) {
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(profileRefusalText(refusal))));
   }
 }
 
@@ -359,12 +380,7 @@ class OiSpeedBoostTile extends StatelessWidget {
       ),
       value: on,
       onChanged: (available || on) && !locked
-          ? (v) async {
-              final refusal = await conv.setProfile(vision: false, context: ctx, speed: v);
-              if (refusal != null && context.mounted) {
-                ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(profileRefusalText(refusal))));
-              }
-            }
+          ? (v) => switchBrainProfile(context, conv, vision: false, context_: ctx, speed: v)
           : null,
     );
   }
@@ -452,9 +468,14 @@ Future<void> attachOiImage(BuildContext context, OiConversation conv, String nam
   if (refusal == null || !context.mounted) return;
   final text = switch (refusal) {
     'VISION_OFF' => 'Vision is off, so the Brain cannot see images. Turn Vision on next to the Brain status first.',
-    'VISION_NOT_READY' => const {'FAILED', 'STOPPED'}.contains(conv.brainHostState)
-        ? 'The Brain is not running, so it cannot see images. Restart the Brain, then attach the image again.'
-        : 'The Brain is still starting, so it cannot see images yet. Attach the image again when it is ready.',
+    'VISION_NOT_READY' => switch (visionNotReady(conv)) {
+        VisionNotReady.notRunning =>
+          'The Brain is not running, so it cannot see images. Start or restart the Brain, then attach the image again.',
+        VisionNotReady.unconfirmed => 'The Brain is running, but it does not confirm that it can see images. '
+            'Check the Brain status, and attach the image again when Vision shows On.',
+        VisionNotReady.starting =>
+          'The Brain is still starting, so it cannot see images yet. Attach the image again when it is ready.',
+      },
     'IMAGES_INVALID' => 'At most ${OiConversation.maxImages} images can go with one message.',
     _ => 'That image could not be prepared for sending (too large or unreadable). Try a smaller PNG or JPEG.',
   };

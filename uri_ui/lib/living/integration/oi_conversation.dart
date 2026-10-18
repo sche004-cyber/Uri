@@ -57,6 +57,8 @@ String notSentMessage(String code, [List<String> images = const []]) {
           'start). Try again when the Brain status shows ready.',
       'IMAGE_ACTION_UNSUPPORTED' =>
         'Not sent: URI can answer questions about an image, but cannot act on one. Ask about the image instead.',
+      'IMAGE_DURING_CLARIFICATION' => 'Not sent: URI is waiting for your answer to its question, and that answer '
+          'cannot carry a picture. Remove the picture, answer the question, then ask about the picture.',
       'IMAGES_TOO_LARGE' => 'Not sent: the images are too large. They were removed; attach one smaller image.',
       'TEXT_INVALID' => 'Not sent: the message was empty or too long.',
       'WORKER_TIMEOUT' => 'Not sent: URI did not answer in time. Try again.',

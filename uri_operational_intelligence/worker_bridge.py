@@ -319,8 +319,11 @@ class IntegratedTurns:
                               and not p["env"].get("confirmation")
                               and p["env"].get("state") != "approval_required"}
         continue_core = bool(clarifications) and inp.mode != "dictation"
-        if images is not None and (continue_core or inp.mode in ("dictation", "draft")
-                                   or schedule_intent.interpret(plain) is not None):
+        if images is not None and continue_core:
+            # URI waits for the answer to its own question: that answer goes to Core, which takes no images. Its own
+            # code, so the UI asks for the answer first instead of advising "ask about the image" (R4-03).
+            raise BridgeRefused("IMAGE_DURING_CLARIFICATION")
+        if images is not None and (inp.mode in ("dictation", "draft") or schedule_intent.interpret(plain) is not None):
             # An image is a question for the answer channel only: never a draft, a Core continuation or a handoff.
             raise BridgeRefused("IMAGE_ACTION_UNSUPPORTED")
         if continue_core and len(clarifications) != 1:
@@ -736,7 +739,8 @@ class IntegratedTurns:
 
     def _brain_restart(self, c):
         action = c["action"]
-        if action not in brain_health.ACTIONS:
+        # A profile switch goes through brain_profile_set (validated, with a target), never brain_restart (R3-05).
+        if action not in brain_health.ACTIONS or action == "reconfigure":
             raise BridgeRefused("ACTION_INVALID")
         if self._host_request is None:
             raise BridgeRefused("BRAIN_CONTROL_UNAVAILABLE")

@@ -60,8 +60,10 @@ Measured device requests used by this milestone (MiB; R1 `MEASURED_MIB`, checked
 - **Session state.** The worker keeps the conversation history, pending cards and drafts across the switch; the UI
   keeps its message list. Image turns are recorded in history as text placeholders, so a later switch to Vision Off
   never needs media tokens. A switch is refused while a turn runs or a Brain request is pending.
-- **Vision on turns.** `oi_turn` gains an optional `images` list (PNG / JPEG / WebP, at most 4, at most 8 MiB
-  each, decoded and type-checked). The answer channel sends them as OpenAI `image_url` parts. Images with Vision
+- **Vision on turns.** `oi_turn` gains an optional `images` list (PNG / JPEG / WebP, at most 2 images and 1.25 MiB
+  of decoded image bytes per turn, decoded and type-checked; sized so the base64 JSON stays below the frozen 2 MiB
+  worker frame limit `uri_core.client_contracts.FRAME_LIMIT`; the UI scales larger pictures down before sending;
+  review R5-03). The answer channel sends them as OpenAI `image_url` parts. Images with Vision
   off are refused `VISION_OFF` (the UI offers "Turn on Vision"); images on a turn that triage sends to Core, a plan
   or a harness are refused `IMAGE_ACTION_UNSUPPORTED`. Nothing is dropped silently.
 - **Truthful readiness.** Health reports the active profile, the requested profile while a switch is pending,
