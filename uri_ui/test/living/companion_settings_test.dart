@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uri_ui/living/companion/companion_orb.dart';
+import 'package:uri_ui/living/companion/ember_companion.dart';
 import 'package:uri_ui/living/companion/companion_preferences.dart';
 import 'package:uri_ui/living/companion/companion_state.dart';
 import 'package:uri_ui/living/companion/companion_theme.dart';
@@ -754,6 +755,38 @@ void main() {
       expect(find.bySemanticsLabel(RegExp('URI companion: ')), findsWidgets);
     });
 
+    testWidgets('Ember is drawn from clips through the companion seam', (
+      tester,
+    ) async {
+      final services = await pumpShell(tester);
+      services.companionPrefs.select(
+        const CompanionChoice.living(CompanionIdentity.ember),
+      );
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(EmberCompanion), findsOneWidget);
+      expect(
+        tester.widget<CompanionOrb>(find.byType(CompanionOrb)).identity,
+        CompanionIdentity.ember,
+      );
+      expect(find.bySemanticsLabel(RegExp('URI companion: ')), findsWidgets);
+      services.effects.setReducedEffects(true);
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(EmberCompanion), findsNothing);
+      expect(find.byType(EnergyOrb), findsOneWidget);
+      services.effects.setReducedEffects(false);
+      services.companionPrefs.select(
+        const CompanionChoice.living(CompanionIdentity.solar),
+      );
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(EmberCompanion), findsNothing);
+    });
+
     testWidgets('preferences survive a restart of the app', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final a = await pumpShell(tester);
@@ -807,6 +840,27 @@ void main() {
       expect(find.text('APPEARANCE · SAKURA'), findsOneWidget);
       expect(find.text('Petals and pollen'), findsOneWidget);
       expect(find.text('Energy ribbons'), findsOneWidget);
+    });
+
+    testWidgets('the Ember tile shows its still frame; its look omits baked controls', (
+      tester,
+    ) async {
+      final services = await pumpShell(tester);
+      await openSettings(tester, services);
+      final card = find.byKey(const ValueKey('companion-choice-ember'));
+      await scrollTo(tester, card);
+      // The tile is a shipped still image, never a shader frame.
+      expect(find.byKey(const ValueKey('companion-still-ember')), findsOneWidget);
+      expect(CompanionShaderCache.failureFor(CompanionIdentity.ember), isNull);
+      await tester.tap(card);
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(services.companionPrefs.choice.identity, CompanionIdentity.ember);
+      expect(find.text('APPEARANCE · EMBER'), findsOneWidget);
+      expect(find.byKey(const ValueKey('look-particles')), findsNothing);
+      expect(find.byKey(const ValueKey('look-atmosphere')), findsNothing);
+      expect(find.byKey(const ValueKey('quality-unavailable')), findsOneWidget);
     });
 
     testWidgets('appearance sliders change only the selected companion', (

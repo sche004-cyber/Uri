@@ -1,0 +1,85 @@
+[
+  {
+    "utc": "2026-10-15T08:36:14.791961Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput",
+    "pointer": "Flutter tester taps on the real window",
+    "physical_input_qualified": false,
+    "Brain_Core_worker_mocked": false
+  },
+  {
+    "utc": "2026-10-15T08:36:14.809615Z",
+    "label": "0 preferences before start",
+    "mode": "returning",
+    "stored_choice": "ember"
+  },
+  {
+    "utc": "2026-10-15T08:36:28.510014Z",
+    "label": "1 start",
+    "seconds_to_shell": 13.699,
+    "manifest": "C:\\Users\\cheta\\Development\\uri-fire-companion-v2-rt\\work\\c1\\ws-firev2\\client\\client-manifest.json",
+    "default_companion": "ember",
+    "orb_state": "unavailable",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792053383.5894632,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T08:36:30.852440Z",
+    "label": "R1 returning user",
+    "choice": "ember",
+    "ember_widgets": 1,
+    "orb_state": "unavailable",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792053390.2796795,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-15T08:36:56.126641Z",
+    "label": "R2 blinks while shown (25 s)",
+    "seconds": 25,
+    "blink_starts_s": [
+      4.542,
+      10.633,
+      13.794,
+      20.053,
+      23.127
+    ],
+    "gaps_s": [
+      6.09,
+      3.16,
+      6.26,
+      3.07
+    ],
+    "fully_closed_samples": 17
+  },
+  {
+    "utc": "2026-10-15T08:37:09.431324Z",
+    "label": "R3 settings opened (voice section built; PRE-1 would raise framework errors here)",
+    "ember_choice_visible": true
+  }
+]

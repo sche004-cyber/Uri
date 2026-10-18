@@ -1,0 +1,647 @@
+commit-base: b4ff2ed2c9155b56245d47c81b055d03800e5106 + working tree:
+ M uri_ui/test/living/companion_initializing_test.dart
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.1.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.3.1 available)
+  file_picker_linux 1.1.0 (2.0.2 available)
+  file_picker_platform_interface 3.3.0 (4.2.0 available)
+  file_picker_web 3.1.0 (4.1.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  screen_retriever 0.2.2 (0.3.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+19 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_contract_test.dart
+00:00 +0: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_contract_test.dart: shared contract cases: same first error code as Python
+00:00 +1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_contract_test.dart: the real scheduler surfaces validate in the renderer
+00:00 +2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_contract_test.dart: typed context values
+00:00 +3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_contract_test.dart: sha256 matches the standard vectors
+00:00 +4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +4: loading C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_service_live_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  a2ui-live was used in the suite itself
+
+00:00 +4 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +5 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +6 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +7 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +8 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +9 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +10 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +11 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +12 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +13 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +14 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +15 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +16 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +17 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +18 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +19 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +20 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +21 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +22 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +23 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +24 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +25 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +26 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +27 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +28 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +29 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +30 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +31 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +32 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +33 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +34 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +35 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +36 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +37 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +38 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +39 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +40 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +41 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +42 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +43 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +44 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +45 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +46 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +47 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +48 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +49 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +50 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +51 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +52 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +53 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +54 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +55 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +56 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +57 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +58 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +59 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +60 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +61 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +62 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +63 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +64 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +65 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +66 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +67 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +68 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +69 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +70 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +71 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +72 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +73 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +74 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +75 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +76 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +77 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +78 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +79 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +80 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +81 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +82 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +83 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +84 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +85 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +86 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +87 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +88 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +89 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +90 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:04 +91 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:04 +92 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:04 +93 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:04 +94 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:04 +95 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:04 +96 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:04 +97 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +98 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +99 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +100 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +101 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +102 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +103 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +104 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +105 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +106 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +107 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +108 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +109 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:05 +110 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:06 +111 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:06 +112 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:06 +113 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:06 +114 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:06 +115 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:06 +116 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:06 +117 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:06 +118 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:06 +119 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:06 +120 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:06 +121 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:06 +122 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +123 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +124 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +125 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +126 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +127 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +128 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +129 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +130 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +131 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +132 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +133 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +134 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:06 +135 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:07 +136 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:07 +137 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:07 +138 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:07 +139 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the same session/transcript renders in Compact - no new session, no duplicated turn
+00:07 +140 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: research result renders through the A2UI renderer; Teach and Smart Fill are not available
+00:07 +141 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: research result renders through the A2UI renderer; Teach and Smart Fill are not available
+00:07 +142 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +143 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +144 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +145 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +146 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +147 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +148 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +149 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +150 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +151 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +152 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +153 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +154 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +155 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +156 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +157 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +158 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +159 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +160 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +161 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +162 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +163 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:07 +164 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:08 +165 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +166 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +167 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +168 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +169 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +170 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +171 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +172 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +173 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +174 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +175 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +176 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:08 +177 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: entering and expanding Compact calls the native-window hook exactly once each way
+00:08 +178 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: entering and expanding Compact calls the native-window hook exactly once each way
+00:08 +179 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: entering and expanding Compact calls the native-window hook exactly once each way
+00:08 +180 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: entering and expanding Compact calls the native-window hook exactly once each way
+00:08 +181 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: appearance the companion shaders are byte-identical to the accepted artwork
+00:08 +182 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:08 +183 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:08 +184 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:08 +185 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:08 +186 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:08 +187 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:08 +188 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:08 +189 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:08 +190 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:08 +191 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:08 +192 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: frame clock a cap below the display rate schedules only that many frames
+00:08 +193 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 440x680, with a long draft and a long model name
+00:08 +194 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 440x680, with a long draft and a long model name
+00:08 +195 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 440x680, with a long draft and a long model name
+00:08 +196 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 440x680, with a long draft and a long model name
+00:08 +197 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 440x680, with a long draft and a long model name
+00:09 +198 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:09 +199 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:09 +200 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:09 +201 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:09 +202 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:09 +203 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:09 +204 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:09 +205 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:09 +206 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: a long model name in the Compact composer ellipsizes instead of overlapping neighboring controls
+00:09 +207 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: a long model name in the Compact composer ellipsizes instead of overlapping neighboring controls
+00:09 +208 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: a long model name in the Compact composer ellipsizes instead of overlapping neighboring controls
+00:09 +209 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +210 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +211 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +212 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +213 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +214 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +215 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +216 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +217 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +218 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +219 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +220 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +221 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +222 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +222 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: shipped assets the resident budget stays bounded
+EMBER_BUDGET worst three atlases: 97.7 MiB
+00:10 +223 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +224 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +225 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +226 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:10 +227 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:10 +228 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:11 +229 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:12 +230 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +231 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +232 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +233 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +234 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +235 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +236 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +237 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +238 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +239 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +240 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +241 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +242 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +243 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:12 +244 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:13 +245 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:13 +246 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:13 +247 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:13 +248 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:13 +249 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:13 +250 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:13 +251 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:13 +252 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:13 +253 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:13 +254 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:13 +255 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:13 +256 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:13 +257 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:13 +258 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:13 +259 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:13 +260 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:13 +261 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:13 +262 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:14 +263 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:14 +264 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:14 +265 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:14 +266 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:14 +267 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:15 +268 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:15 +269 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:15 +270 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:15 +271 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:15 +272 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:15 +273 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a state change cross-fades and evicts the old clip after
+00:16 +274 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:16 +275 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:16 +276 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:16 +277 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:16 +278 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:17 +279 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/energy_orb_test.dart: A1: every state renders visibly different pixels, with and without effects
+00:17 +280 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +281 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +282 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +283 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +284 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +285 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +286 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +287 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +288 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +289 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +290 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +291 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +292 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +293 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +294 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +295 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +296 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +297 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +298 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +299 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +300 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +301 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +302 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +303 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +304 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +305 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +306 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +307 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +308 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +309 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +310 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +311 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +312 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +313 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +314 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +315 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +316 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +317 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +318 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +319 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:17 +320 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.thinking renders with genuine alpha (no opaque backdrop)
+00:18 +321 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/companion_settings_test.dart: settings page render quality is offered for living companions only
+00:18 +322 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:18 +323 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:18 +324 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:18 +325 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:18 +326 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:18 +327 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:18 +328 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +329 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +330 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +331 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +332 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +333 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +334 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +335 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +336 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +337 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +338 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +339 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +340 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +341 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +342 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +343 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +344 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +345 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:19 +346 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:20 +347 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a fade waits for the incoming clip; the old one stays visible
+00:20 +348 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.focused renders with genuine alpha (no opaque backdrop)
+00:20 +349 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.focused renders with genuine alpha (no opaque backdrop)
+00:20 +350 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:20 +351 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:21 +352 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:21 +353 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:21 +354 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:21 +355 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:21 +356 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +357 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +358 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +359 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +360 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +361 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +362 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +363 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +364 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +365 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +366 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +367 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +368 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +369 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +370 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +371 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +372 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +373 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +374 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +375 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +376 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +377 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +378 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +379 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +380 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:21 +381 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:22 +382 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:22 +383 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:22 +384 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:22 +385 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:22 +386 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_transparency_test.dart: EmberClip.concerned renders with genuine alpha (no opaque backdrop)
+00:22 +387 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +388 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +389 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +390 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +391 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +392 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +393 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +394 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +395 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +396 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +397 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +398 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +399 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +400 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +401 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +402 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +403 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +404 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +405 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +406 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +407 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +408 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +409 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget the blink atlas is freed with the last Ember; a still tile never loads it
+00:22 +410 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:22 +411 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:22 +412 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:22 +413 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:22 +414 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +415 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +416 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +417 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +418 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +419 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +420 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +421 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +422 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +423 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +424 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +425 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:23 +426 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +427 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +428 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +429 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +430 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +431 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +432 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +433 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +434 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +435 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +436 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +437 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +438 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +438 ~1: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/paired_runtime_live_test.dart: Dart bridge drives the REAL worker and server
+  Skip: needs URI_CLIENT_MANIFEST (scripts/validate_c6_bridge.py)
+00:24 +438 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +439 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +440 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +441 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +442 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +443 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +444 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:24 +445 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:25 +446 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:25 +447 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:25 +448 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:25 +449 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:25 +450 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:25 +451 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:26 +452 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a smiling (joyful) or reduced-motion Ember never blinks
+00:26 +453 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a smiling (joyful) or reduced-motion Ember never blinks
+00:26 +454 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a smiling (joyful) or reduced-motion Ember never blinks
+00:26 +455 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a smiling (joyful) or reduced-motion Ember never blinks
+00:26 +456 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a smiling (joyful) or reduced-motion Ember never blinks
+00:26 +457 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a smiling (joyful) or reduced-motion Ember never blinks
+00:26 +458 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:26 +459 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:26 +460 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:27 +460 ~2: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/supervised_runtime_live_test.dart: Dart runtime drives the REAL supervised worker: lifecycle, mid-run cancel, reconnect
+  Skip: needs URI_CLIENT_MANIFEST (scripts/phase2ops_validate_ui_bridge.py)
+00:27 +460 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:27 +461 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:27 +462 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:27 +463 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:27 +464 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:27 +465 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:27 +466 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:27 +467 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:27 +468 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:27 +469 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +470 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +471 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +472 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +473 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +474 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +475 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +476 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +477 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +478 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +479 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:28 +480 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:28 +481 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:28 +482 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:29 +483 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:29 +484 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:29 +485 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:29 +486 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:29 +487 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:29 +488 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:29 +489 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:29 +490 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:29 +491 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:29 +492 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:29 +493 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:29 +494 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:29 +495 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:29 +496 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:29 +497 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:29 +498 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:29 +499 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:30 +500 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:30 +501 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:30 +502 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:30 +503 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a clip that fails to load ends the fade on the old clip
+00:30 +504 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:30 +505 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:30 +506 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:30 +507 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:30 +508 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:30 +509 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:30 +510 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:30 +511 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:30 +512 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:30 +513 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:30 +514 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +515 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +516 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +517 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +518 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +519 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +520 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +521 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +522 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +523 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +524 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +525 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +526 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +527 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +528 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +529 ~3: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +529 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +530 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +531 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +532 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +533 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +534 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +535 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:31 +536 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:32 +537 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:32 +538 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:32 +539 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:32 +540 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:32 +541 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: Gmail connection state Connect never fakes success - shows the backend's real explanation
+00:32 +542 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: Gmail connection state Connect never fakes success - shows the backend's real explanation
+00:32 +543 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: Gmail connection state Connect never fakes success - shows the backend's real explanation
+00:32 +544 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: Gmail connection state Connect never fakes success - shows the backend's real explanation
+00:32 +545 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +546 ~4: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +546 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +547 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +548 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +549 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +550 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +551 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +552 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +553 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +554 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +555 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +556 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +557 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +558 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +559 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: pressing Save still applies and the badge resets to not-tested-yet
+00:32 +560 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:32 +561 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +562 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +563 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +564 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +565 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +566 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +567 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +568 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +569 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +570 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +571 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +572 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +573 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:33 +574 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:34 +575 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +576 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +577 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +578 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +579 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +580 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +581 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +582 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +583 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +584 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +585 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:34 +586 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: appearance choosing Deep Navy in Settings actually changes the active theme
+00:34 +587 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: appearance choosing Deep Navy in Settings actually changes the active theme
+00:34 +588 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: appearance choosing Deep Navy in Settings actually changes the active theme
+00:34 +589 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: appearance choosing Deep Navy in Settings actually changes the active theme
+00:34 +590 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/redesign_test.dart: appearance choosing Deep Navy in Settings actually changes the active theme
+00:34 +591 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget after the retry window a failed first clip is loaded again
+00:34 +592 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget after the retry window a failed first clip is loaded again
+00:34 +593 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget after the retry window a failed first clip is loaded again
+00:34 +594 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget after the retry window a failed first clip is loaded again
+00:34 +595 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget after the retry window a failed first clip is loaded again
+00:34 +596 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget after the retry window a failed first clip is loaded again
+00:35 +597 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget after the retry window a failed first clip is loaded again
+00:35 +598 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/m22_ui_parity_test.dart: Connections: Google Workspace access is open to every authenticated user (2026-09-12) an admin sees enabled connect/reconnect controls and no notice
+00:35 +599 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a refused target is followed once it may be retried
+00:38 +600 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a still Ember also retries a failed clip after the window
+00:39 +601 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: widget a still Ember (picker) settles and requests nothing
+00:40 +602 ~5: C:/Users/cheta/Development/uri-fire-companion-v21/uri_ui/test/living/ember_companion_test.dart: expressions.json ships exactly the clips the app knows
+00:40 +603 ~5: All tests passed!
+rc=0

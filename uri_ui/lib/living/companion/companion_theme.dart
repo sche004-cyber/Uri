@@ -20,7 +20,10 @@ class CompanionTheme {
 
   static UriThemeChoice choiceFor(CompanionIdentity identity) =>
       switch (identity) {
-        CompanionIdentity.solar => UriThemeChoice.solarEmber,
+        // Ember is a fire spirit: it adopts the existing warm Solar Ember
+        // surface rather than a theme of its own.
+        CompanionIdentity.solar ||
+        CompanionIdentity.ember => UriThemeChoice.solarEmber,
         CompanionIdentity.sakura => UriThemeChoice.sakuraBloom,
         // The hybrid is a night scene, so it adopts the lunar surface colours
         // and lets its own rose accents live in the companion itself. Tinting
@@ -31,7 +34,8 @@ class CompanionTheme {
       };
 
   static UriColors paletteFor(CompanionIdentity identity) => switch (identity) {
-    CompanionIdentity.solar => UriColors.solarEmber,
+    CompanionIdentity.solar ||
+    CompanionIdentity.ember => UriColors.solarEmber,
     CompanionIdentity.sakura => UriColors.sakuraBloom,
     CompanionIdentity.lunar ||
     CompanionIdentity.moonlit => UriColors.lunarSilver,

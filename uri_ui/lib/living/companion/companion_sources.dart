@@ -438,6 +438,7 @@ class CompositeCompanionSource extends CompanionStateSource {
     CompanionState.listening,
     CompanionState.success,
     CompanionState.unavailable,
+    CompanionState.initializing,
     CompanionState.idle,
   ];
 

@@ -1,0 +1,45 @@
+Boundary / frozen-file check (Ember V2.1 final), generated at commit 06370431 (the final code and evidence commit; this file is committed in the next, docs-only commit).
+
+== Protected prefixes changed in 28149905..06370431 (ws_frozen_check PROTECTED + uri_operational_intelligence/ + Runtime v1 configs + launch scripts) ==
+(none)
+
+== Protected prefixes changed in 1b5423bc..06370431 (ws_frozen_check PROTECTED + uri_operational_intelligence/ + Runtime v1 configs + launch scripts) ==
+(none)
+
+== Shared UI files changed since V2.1 28149905 (owner-approved Initializing state; isolated branch, not integrated) ==
+uri_ui/lib/living/companion/companion_orb.dart
+uri_ui/lib/living/companion/companion_sources.dart
+uri_ui/lib/living/companion/companion_state.dart
+uri_ui/lib/living/companion/ember_companion.dart
+uri_ui/lib/living/companion/energy_orb.dart
+uri_ui/lib/living/integration/oi_sources.dart
+
+== Code, asset and test files changed since 28149905 (docs and evidence omitted) ==
+companion_art/fire_v2/export_v2.py
+companion_art/fire_v2/expressions.json
+rnd/companions/registry.js
+rnd/companions/state_tables.json
+rnd/companions/state_tables.py
+scripts/fire_companion/critique_pack_v21r.py
+scripts/fire_companion/haze_probe_v21.py
+scripts/fire_companion/size_crop_v21.py
+uri_ui/assets/companions/ember/blink.webp
+uri_ui/assets/companions/ember/concerned.webp
+uri_ui/assets/companions/ember/depleted.webp
+uri_ui/assets/companions/ember/focused.webp
+uri_ui/assets/companions/ember/idle.webp
+uri_ui/assets/companions/ember/joyful.webp
+uri_ui/assets/companions/ember/kindling.webp
+uri_ui/assets/companions/ember/listening.webp
+uri_ui/assets/companions/ember/manifest.json
+uri_ui/assets/companions/ember/speaking.webp
+uri_ui/assets/companions/ember/thinking.webp
+uri_ui/assets/companions/ember/thumbnail.webp
+uri_ui/lib/living/companion/companion_orb.dart
+uri_ui/lib/living/companion/companion_sources.dart
+uri_ui/lib/living/companion/companion_state.dart
+uri_ui/lib/living/companion/ember_companion.dart
+uri_ui/lib/living/companion/energy_orb.dart
+uri_ui/lib/living/integration/oi_sources.dart
+uri_ui/test/living/companion_initializing_test.dart
+uri_ui/test/living/ember_companion_test.dart
