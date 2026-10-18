@@ -1,0 +1,375 @@
+{
+ "schema": "uri.brain_qc.qualification.v1",
+ "milestone": "BRAIN-QC-20261018",
+ "date": "2026-10-18",
+ "branch": "milestone/brain-quick-controls-20261018",
+ "base": "f3d5eb29",
+ "candidate_code_commit": "aa7a1cf6 (UI); Python runtime code unchanged since 0d599b6a (verified byte-identical by each session)",
+ "classification": "COMPLETED_WITH_RESULT",
+ "status": "CANDIDATE_PASS_PENDING_INDEPENDENT_REVIEW",
+ "acceptance": {
+  "QC-1": {
+   "status": "MET",
+   "evidence": "evidence/gates/diff_stat_vs_f3d5eb29.txt (runtime_profiles.py, runtime_profile_selection.py, runtime_v1.py, model_lab/ unchanged)"
+  },
+  "QC-2": {
+   "status": "MET",
+   "evidence": "qc-1/2/3 turns tell-fact FAST, thinking-on NORMAL, same server; widget tests"
+  },
+  "QC-3": {
+   "status": "MET",
+   "evidence": "tests/oi/test_brain_quick_controls.py host+worker refusals; qc-*/03-context-menu-standard.png, 08-vision-menu-long.png"
+  },
+  "QC-4": {
+   "status": "MET",
+   "evidence": "qc-3 switch timelines: active null and 'Switching to ...' until READY on the new profile; dry-1 '(not running)'; unit+widget tests"
+  },
+  "QC-5": {
+   "status": "MET_WITH_NOTE",
+   "evidence": "profile_switch fit_before, lease expected follows profile, stop 3.5 s; note: Standard next to the open app window is AT_RISK (-294..-335 MiB) with ~1.7 GB non-local, decode 147-149 tok/s after switch (healthy)"
+  },
+  "QC-6": {
+   "status": "MET",
+   "evidence": "qc-1/2/3 recall '4817' after each switch, worker pids constant, same runtime/session (QC-same-worker-and-session)"
+  },
+  "QC-7": {
+   "status": "MET",
+   "evidence": "QC-turn-refused-during-switch (BRAIN_RESTARTING) live; unit test TURN_IN_PROGRESS"
+  },
+  "QC-8": {
+   "status": "MET_UNIT_ONLY",
+   "evidence": "unit + widget tests; not exercised live (needs a >32K-token conversation)"
+  },
+  "QC-9": {
+   "status": "MET",
+   "evidence": "evidence/gates/frozen_check.json ok; ui_v2_frozen_files_diff_vs_7893aaed.patch 0 deletions"
+  },
+  "QC-10": {
+   "status": "MET",
+   "evidence": "pytest 759 passed/23 skipped (baseline 731/23); flutter test 776 pass; analyze 4 pre-existing infos; release build exit 0"
+  },
+  "QC-11": {
+   "status": "MET",
+   "evidence": "runs below"
+  },
+  "QC-12": {
+   "status": "MET",
+   "evidence": "this file"
+  }
+ },
+ "live_runs": {
+  "qc-1": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "verdict": "PASS",
+   "checks_pass": 20,
+   "checks_total": 20,
+   "failed": [],
+   "source_head": "1f3b3386317bb4e5a3609944a27f478fd15917c8",
+   "runtime_python_from": "0d599b6a033881ae28235daa4acc0635580dc04a",
+   "runtime_verified": true,
+   "switches": [
+    {
+     "from": "frozen",
+     "to": "c64k-visoff-mtpoff",
+     "result": "READY",
+     "seconds": 29.9,
+     "stop_s": 3.6,
+     "fit_before": "FITS",
+     "margin_mib": 1673.5
+    },
+    {
+     "from": "c64k-visoff-mtpoff",
+     "to": "frozen",
+     "result": "READY",
+     "seconds": 35.1,
+     "stop_s": 3.5,
+     "fit_before": "AT_RISK",
+     "margin_mib": -294.5
+    }
+   ],
+   "perf_decode_tps": {},
+   "turns": [
+    {
+     "scenario": "tell-fact",
+     "tier": "FAST",
+     "answer": "OK"
+    },
+    {
+     "scenario": "thinking-on",
+     "tier": "NORMAL",
+     "answer": "A bicycle provides a reliable, zero-emission workout but may be slower and more physically demanding over 3 km. An electric scooter offers faster, effortless tr"
+    },
+    {
+     "scenario": "recall-long",
+     "tier": "FAST",
+     "answer": "4817"
+    },
+    {
+     "scenario": "recall-standard",
+     "tier": "FAST",
+     "answer": "4817"
+    }
+   ],
+   "calibration_tps": {
+    "frozen": [
+     151.8,
+     158.2
+    ],
+    "c64k-visoff-mtpoff": [
+     102.7
+    ]
+   },
+   "llama_vram_mib_max": {
+    "frozen": {
+     "dedicated": 15555.7,
+     "non_local": 1895.1
+    },
+    "c64k-visoff-mtpoff": {
+     "dedicated": 13895.2,
+     "non_local": 561.8
+    }
+   },
+   "worker_processes": [
+    [
+     6636,
+     1792302955.087
+    ],
+    [
+     14844,
+     1792302955.109
+    ]
+   ],
+   "lease_after": "FREE",
+   "brain_config_unchanged": true,
+   "order": "Brain first"
+  },
+  "qc-2": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "verdict": "PASS",
+   "checks_pass": 20,
+   "checks_total": 20,
+   "failed": [],
+   "source_head": "157e35ea2d65fd1f953662c0312dc53829df7ca5",
+   "runtime_python_from": "0d599b6a033881ae28235daa4acc0635580dc04a",
+   "runtime_verified": true,
+   "switches": [
+    {
+     "from": "frozen",
+     "to": "c64k-visoff-mtpoff",
+     "result": "READY",
+     "seconds": 31.5,
+     "stop_s": 3.6,
+     "fit_before": "FITS",
+     "margin_mib": 1647.2
+    },
+    {
+     "from": "c64k-visoff-mtpoff",
+     "to": "frozen",
+     "result": "READY",
+     "seconds": 34.7,
+     "stop_s": 3.5,
+     "fit_before": "AT_RISK",
+     "margin_mib": -335.3
+    }
+   ],
+   "perf_decode_tps": {
+    "standard-start": 122.5,
+    "long": 98.7,
+    "standard-after-switch": 149.4
+   },
+   "turns": [
+    {
+     "scenario": "perf-standard-start",
+     "tier": "FAST",
+     "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa"
+    },
+    {
+     "scenario": "tell-fact",
+     "tier": "FAST",
+     "answer": "OK"
+    },
+    {
+     "scenario": "thinking-on",
+     "tier": "NORMAL",
+     "answer": "A bicycle offers a more engaging workout and requires no charging, though it demands more physical effort over the distance. An electric scooter provides a quic"
+    },
+    {
+     "scenario": "perf-long",
+     "tier": "FAST",
+     "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa"
+    },
+    {
+     "scenario": "recall-long",
+     "tier": "FAST",
+     "answer": "4817"
+    },
+    {
+     "scenario": "perf-standard-after-switch",
+     "tier": "FAST",
+     "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa"
+    },
+    {
+     "scenario": "recall-standard",
+     "tier": "FAST",
+     "answer": "4817"
+    }
+   ],
+   "calibration_tps": {
+    "frozen": [
+     145.9,
+     150.7
+    ],
+    "c64k-visoff-mtpoff": [
+     102.2
+    ]
+   },
+   "llama_vram_mib_max": {
+    "frozen": {
+     "dedicated": 15008.2,
+     "non_local": 1731.1
+    },
+    "c64k-visoff-mtpoff": {
+     "dedicated": 13895.5,
+     "non_local": 561.8
+    }
+   },
+   "worker_processes": [
+    [
+     4332,
+     1792303221.58
+    ],
+    [
+     4912,
+     1792303221.602
+    ]
+   ],
+   "lease_after": "FREE",
+   "brain_config_unchanged": true,
+   "order": "UI first (launcher order)"
+  },
+  "qc-3": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "verdict": "PASS",
+   "checks_pass": 20,
+   "checks_total": 20,
+   "failed": [],
+   "source_head": "aa7a1cf61023f91ca26bba6ee58a779214b35456",
+   "runtime_python_from": "0d599b6a033881ae28235daa4acc0635580dc04a",
+   "runtime_verified": true,
+   "switches": [
+    {
+     "from": "frozen",
+     "to": "c64k-visoff-mtpoff",
+     "result": "READY",
+     "seconds": 31.4,
+     "stop_s": 3.6,
+     "fit_before": "FITS",
+     "margin_mib": 1640.5
+    },
+    {
+     "from": "c64k-visoff-mtpoff",
+     "to": "frozen",
+     "result": "READY",
+     "seconds": 36.6,
+     "stop_s": 3.5,
+     "fit_before": "AT_RISK",
+     "margin_mib": -332.3
+    }
+   ],
+   "perf_decode_tps": {
+    "standard-start": 125.6,
+    "long": 99.3,
+    "standard-after-switch": 147.6
+   },
+   "turns": [
+    {
+     "scenario": "perf-standard-start",
+     "tier": "FAST",
+     "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa"
+    },
+    {
+     "scenario": "tell-fact",
+     "tier": "FAST",
+     "answer": "OK"
+    },
+    {
+     "scenario": "thinking-on",
+     "tier": "NORMAL",
+     "answer": "A bicycle offers a more engaging workout and lower maintenance but requires more physical effort and time. An electric scooter provides faster, effortless trave"
+    },
+    {
+     "scenario": "perf-long",
+     "tier": "FAST",
+     "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa"
+    },
+    {
+     "scenario": "recall-long",
+     "tier": "FAST",
+     "answer": "4817"
+    },
+    {
+     "scenario": "perf-standard-after-switch",
+     "tier": "FAST",
+     "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa"
+    },
+    {
+     "scenario": "recall-standard",
+     "tier": "FAST",
+     "answer": "4817"
+    }
+   ],
+   "calibration_tps": {
+    "frozen": [
+     146.6,
+     149.1
+    ],
+    "c64k-visoff-mtpoff": [
+     101.5
+    ]
+   },
+   "llama_vram_mib_max": {
+    "frozen": {
+     "dedicated": 15008.2,
+     "non_local": 1731.1
+    },
+    "c64k-visoff-mtpoff": {
+     "dedicated": 13895.5,
+     "non_local": 561.8
+    }
+   },
+   "worker_processes": [
+    [
+     8172,
+     1792303835.382
+    ],
+    [
+     10580,
+     1792303835.404
+    ]
+   ],
+   "lease_after": "FREE",
+   "brain_config_unchanged": true,
+   "order": "UI first (launcher order)"
+  }
+ },
+ "uiv2_regression": {
+  "run": "uiv2-main",
+  "checks_pass": 68,
+  "checks_total": 68,
+  "source_head": "157e35ea (UI lib identical to 0d599b6a)"
+ },
+ "dry_no_brain": {
+  "run": "dry-1",
+  "checks": {
+   "QC-dry-nothing-active": "PASS",
+   "QC-dry-not-switchable": "PASS",
+   "QC-dry-chips-unconfirmed": "PASS"
+  }
+ },
+ "not_qualified": [
+  "physical keyboard/mouse (automation input only)",
+  "context shrink confirmation live",
+  "persistence of the choice across host restart (not implemented)",
+  "independent review"
+ ]
+}

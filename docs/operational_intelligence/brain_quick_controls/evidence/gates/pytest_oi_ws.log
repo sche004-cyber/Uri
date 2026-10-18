@@ -7,35 +7,13 @@
 ........................................................................ [ 64%]
 ..........................................ss............................ [ 73%]
 ........................................................................ [ 82%]
-...........................................................F............ [ 92%]
+........................................................................ [ 92%]
 ..................................................ssssssssssss           [100%]
-================================== FAILURES ===================================
-___________ test_fit_desktop_only_fits_and_a_1gb_consumer_contends ____________
-
-    def test_fit_desktop_only_fits_and_a_1gb_consumer_contends():
-        desktop = G.census(raw([(1580, 311.3, 9), (3144, 84.3, 23), (5384, 65.8, 1)], 470), card=CARD)
-        f = G.assess_fit(desktop)
-        assert f["verdict"] == G.AT_RISK and 0 < f["margin_mib"] < G.AT_RISK_MARGIN_MIB     # 281 MB margin, measured case
-        ollama = G.census(raw([(1580, 311.3, 9), (18372, 1601.9, 349)], 1920), card=CARD)
-        f2 = G.assess_fit(ollama)
-        assert f2["verdict"] == G.CONTENDED and f2["margin_mib"] <= -G.CONTENDED_SHORTFALL_MIB
-        # measured live 2026-10-09: desktop + an open URI window, 15.2 GB free: a small shortfall starts AT_RISK
-        ui_open = G.census(raw([(1580, 318, 9), (3144, 84, 23), (5384, 66, 1), (9999, 210, 5), (7777, 440, 12), (9252, 33, 1)], 1160), card=CARD)
-        f3 = G.assess_fit(ui_open)
-        assert f3["verdict"] == G.AT_RISK and -G.CONTENDED_SHORTFALL_MIB < f3["margin_mib"] < 0
-        assert "short" in G.explain(f3)
-        text = G.explain(f2)
->       assert "llama-server" in text or "pid 18372" in text
-E       AssertionError: assert ('llama-server' in 'The Brain needs 15.3 GB of GPU memory but only 14.1 GB is free. In use by: python.exe from bash.exe (1.6 GB), dwm.exe (desktop compositor, 0.3 GB). Close those or wait; URI will not stop them.' or 'pid 18372' in 'The Brain needs 15.3 GB of GPU memory but only 14.1 GB is free. In use by: python.exe from bash.exe (1.6 GB), dwm.exe (desktop compositor, 0.3 GB). Close those or wait; URI will not stop them.')
-
-tests\ws\test_ws_hardening.py:177: AssertionError
 ============================== warnings summary ===============================
 C:\Users\cheta\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\testclient.py:53
   C:\Users\cheta\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
     _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-=========================== short test summary info ===========================
-FAILED tests/ws/test_ws_hardening.py::test_fit_desktop_only_fits_and_a_1gb_consumer_contends
-1 failed, 758 passed, 23 skipped, 1 warning in 239.96s (0:03:59)
-exit=1
+759 passed, 23 skipped, 1 warning in 228.76s (0:03:48)
+exit=0
