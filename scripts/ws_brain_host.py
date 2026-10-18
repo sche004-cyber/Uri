@@ -311,7 +311,7 @@ class Host:
             # Integration review IC1-02: a stop (request or exit) while the start waited for the GPU ends the switch
             # as STOPPED; the report must not keep saying it waits for GPU memory.
             if result in ("WAITING_FOR_GPU", "WAITING_FOR_LEASE", "RELEASE_WAIT") and (
-                    getattr(self, "stop_during_wait", False) or self.should_exit()):
+                    getattr(self, "stop_during_wait", False) or self.stop_requested or self.should_exit()):
                 result = "STOPPED"
             sw.update(result=result, t_done=round(self.now(), 3), seconds=round(self.now() - t, 1))
             self.write()
@@ -427,7 +427,7 @@ class Host:
         for attempt in range(5):
             self._sync_selection_once()
             err = self.report.get("selection_error")
-            if err is None or err == "PROFILE_NOT_SELECTABLE":
+            if err is None or err == "PROFILE_NOT_SELECTABLE" or attempt == 4:
                 return
             time.sleep(0.2 * (attempt + 1))
 

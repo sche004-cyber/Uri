@@ -58,3 +58,29 @@ def test_selection_write_is_retried_before_an_error_is_recorded(tmp_path, monkey
     h.sync_selection()
     assert len(calls) == 3
     assert "selection_error" not in h.report
+
+
+def test_stop_while_a_switch_waits_for_the_lease_on_a_stopped_brain_ends_as_stopped(tmp_path, monkeypatch):
+    # IC1-R2 R2-01: the user had stopped the Brain (lease released); the switch waits for the lease; a Stop arrives.
+    H, h = qc_host(tmp_path, Seq([TIGHT]))
+    h.mgr = None
+    h.lease = None
+
+    def busy(*a, **k):
+        raise G.GpuBusy({"label": "other", "pid": 1})
+    monkeypatch.setattr(H.G, "acquire", busy)
+    h.deadline = time.monotonic() + 20
+    assert request(h, {"ctx": 65536, "vision": "off", "mtp": False}) == "reconfigure"
+    threading.Timer(0.6, lambda: BH.write_host_request(h.report_dirs[0], "stop")).start()
+    h.reconfigure()
+    assert h.report["profile_switch"]["result"] == "STOPPED"
+
+
+def test_selection_retry_does_not_sleep_after_the_last_attempt(tmp_path, monkeypatch):
+    H, h = qc_host(tmp_path, Seq([TIGHT]))
+    slept = []
+    monkeypatch.setattr(h, "_sync_selection_once", lambda: h.report.__setitem__("selection_error", "PermissionError"))
+    monkeypatch.setattr(H.time, "sleep", lambda s: slept.append(s))
+    h.sync_selection()
+    assert len(slept) == 4 and abs(sum(slept) - 2.0) < 1e-9
+    assert h.report["selection_error"] == "PermissionError"
