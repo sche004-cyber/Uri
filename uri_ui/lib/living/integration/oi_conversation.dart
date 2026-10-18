@@ -572,11 +572,23 @@ class OiConversation extends ChangeNotifier {
   Future<void> _turn(String t, Map<String, dynamic>? input, String? label) async {
     // Nothing goes to a worker that is being replaced (WS hardening).
     if (t.trim().isEmpty || busy || restarting) return;
-    // Images go with a typed question only (never dictation or a draft edit: the worker refuses those).
-    final images = input == null ? List<OiImage>.of(pendingImages) : const <OiImage>[];
+    // Images go with a typed question only: with no draft open or with an open draft the turn does not change
+    // ("conversation" or "command"; R2-01). Never with dictation, a draft edit or a transcript: those turns leave
+    // the image attached and say so (the image is never dropped silently).
+    final typedQuestion = input == null ||
+        (input['source'] == 'typed' && (input['mode'] == 'conversation' || input['mode'] == 'command'));
+    final images = typedQuestion ? List<OiImage>.of(pendingImages) : const <OiImage>[];
+    final heldBack = typedQuestion ? const <OiImage>[] : List<OiImage>.of(pendingImages);
     messages.add(OiMessage(role: OiRole.user, text: t)
       ..inputLabel = label
       ..images = [for (final i in images) i.name]);
+    if (heldBack.isNotEmpty) {
+      final names = heldBack.map((i) => i.name).join(', ');
+      messages.add(OiMessage(
+          role: OiRole.system,
+          text: 'Not sent with this message: $names. Pictures go only with a typed question to the conversation; '
+              '${heldBack.length == 1 ? 'it stays' : 'they stay'} attached for your next question.'));
+    }
     lastError = null;
     draftProgress = 0;
     _sendingSince = DateTime.now();

@@ -11,6 +11,7 @@ import 'package:uri_ui/living/contracts/readiness_report.dart';
 import 'package:uri_ui/living/contracts/work_items.dart';
 import 'package:uri_ui/living/integration/brain_quick_controls.dart';
 import 'package:uri_ui/living/integration/oi_conversation.dart';
+import 'package:uri_ui/living/integration/oi_draft.dart';
 import 'package:uri_ui/living/integration/oi_widgets.dart';
 import 'package:uri_ui/living/living_app.dart' show LivingPreferencesStore;
 import 'package:uri_ui/living/living_scope.dart';
@@ -23,6 +24,8 @@ import 'package:uri_ui/services/file_picker_service.dart';
 import 'package:uri_ui/services/integrated_runtime.dart';
 import 'package:uri_ui/services/mock_uri_client.dart';
 import 'package:uri_ui/theme/uri_theme.dart';
+
+import 'ti_draft_test.dart' show snapshot, v1, v2;
 
 /// BRAIN-QUICK-CONTROLS: Thinking / Vision / Context controls, image turns and
 /// truthful readiness, against a scripted worker.
@@ -248,6 +251,49 @@ void main() {
     await conv.send('note this down');
     expect(rt.commands.where((c) => c['command'] == 'oi_turn').single.containsKey('images'), isFalse);
     expect(conv.pendingImages.length, 1);
+  });
+
+  for (final inView in [true, false]) {
+    test('R2-01: with a draft open (${inView ? 'to: conversation' : 'draft not in view'}) an image question '
+        'carries its image', () async {
+      final rt = _Runtime();
+      final conv = await _ready(rt);
+      conv.draft = OiDraft.parse(snapshot(current: v2, previous: v1));
+      expect(conv.draftTarget, isFalse);
+      expect(conv.attachImage(OiImage(name: 'cat.png', mime: 'image/png', bytes: _png)), isNull);
+      await conv.send('What is in this picture?', draftInView: inView);
+      final turn = rt.commands.where((c) => c['command'] == 'oi_turn').single;
+      expect((turn['input'] as Map)['mode'], inView ? 'conversation' : 'command');
+      expect((turn['images'] as List).single['name'], 'cat.png');
+      expect(conv.messages.first.images, ['cat.png']);
+      expect(conv.pendingImages, isEmpty);
+    });
+  }
+
+  test('R2-01: an instruction to the draft does not carry the image, says so, and keeps it attached', () async {
+    final rt = _Runtime();
+    final conv = await _ready(rt);
+    conv.draft = OiDraft.parse(snapshot(current: v2, previous: v1));
+    conv.setDraftTarget(true);
+    conv.attachImage(OiImage(name: 'cat.png', mime: 'image/png', bytes: _png));
+    await conv.send('make it shorter');
+    final turn = rt.commands.where((c) => c['command'] == 'oi_turn').single;
+    expect((turn['input'] as Map)['mode'], 'draft');
+    expect(turn.containsKey('images'), isFalse);
+    expect(conv.pendingImages.length, 1);
+    expect(conv.messages.where((m) => m.role == OiRole.system).map((m) => m.text).join('\n'),
+        allOf(contains('Not sent with this message: cat.png'), contains('stays attached')));
+  });
+
+  test('R2-01: dictation says the image was not sent and stays attached', () async {
+    final rt = _Runtime();
+    final conv = await _ready(rt);
+    conv.attachImage(OiImage(name: 'cat.png', mime: 'image/png', bytes: _png));
+    conv.setDictationMode(true);
+    await conv.send('note this down');
+    expect(conv.pendingImages.length, 1);
+    expect(conv.messages.where((m) => m.role == OiRole.system).map((m) => m.text).join('\n'),
+        contains('Not sent with this message: cat.png'));
   });
 
   test('a stale READY is re-read when health readiness changes (truthful readiness)', () async {
