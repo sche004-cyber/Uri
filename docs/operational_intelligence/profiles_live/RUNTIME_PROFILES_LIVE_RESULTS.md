@@ -156,7 +156,9 @@ switch stays open together with P1.
 - RPI-R5 (nonce `RPI-R5-b3f6d2`, commit `47b41df2`): ACCEPT WITH FINDINGS, 3 LOW bookkeeping findings, fixed
   in the next commit: R5-01 the record's audit history; R5-02 the remaining lifecycle review-focus wording
   (completes R4-03); R5-03 which binding version each bound run used.
-- RPI-R6 re-checks these repairs on the commit that carries this report.
+- RPI-R6 (nonce `RPI-R6-71c4e9`, commit `42cc4e2d`): ACCEPT WITH FINDINGS, one LOW (the corrections range in
+  section 1) and one INFO (the committed binding hash), both fixed.
+- RPI-R7 re-checks these repairs on the commit that carries this report.
 - **Driver-verified acceptance: not available.** Codex is over its usage limit until 2026-10-22, and the claude CLI is
   logged out. Subagent acceptance under the 2026-10-17 lifecycle policy is a different verification class and is
   reported as such.

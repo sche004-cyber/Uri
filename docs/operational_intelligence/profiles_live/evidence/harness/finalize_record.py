@@ -108,7 +108,10 @@ r["independent_audit"]["prior_rounds"] += [
     {"round": "RPI-R5", "nonce": "RPI-R5-b3f6d2", "reviewed_commit": "47b41df2", "verdict": "ACCEPT WITH FINDINGS",
      "findings": 3, "outcome": "R5-01 this audit history; R5-02 lifecycle review_focus[6]/[7]; R5-03 binding "
                                "versions per bound run (binding_versions)"}]
-r["independent_audit"]["next_round"] = "RPI-R6 on the commit that carries this record"
+r["independent_audit"]["prior_rounds"].append(
+    {"round": "RPI-R6", "nonce": "RPI-R6-71c4e9", "reviewed_commit": "42cc4e2d", "verdict": "ACCEPT WITH FINDINGS",
+     "findings": 2, "outcome": "R6-01 (LOW) report names C-1..C-9; R6-02 (INFO) committed binding hash from the evidence copy"})
+r["independent_audit"]["next_round"] = "RPI-R7 on the commit that carries this record"
 # Review R5-03: the binding.py that ran each bound run, from the hashes the run recorded (absent before R3-03).
 _bv = {}
 for _sub, _name in (("live", "session-start.json"), ("soak", "soak.json"), ("assist", "assist_vision.json"),

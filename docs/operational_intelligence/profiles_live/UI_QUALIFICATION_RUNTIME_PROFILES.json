@@ -1489,13 +1489,21 @@
     "verdict": "ACCEPT WITH FINDINGS",
     "findings": 3,
     "outcome": "R5-01 this audit history; R5-02 lifecycle review_focus[6]/[7]; R5-03 binding versions per bound run (binding_versions)"
+   },
+   {
+    "round": "RPI-R6",
+    "nonce": "RPI-R6-71c4e9",
+    "reviewed_commit": "42cc4e2d",
+    "verdict": "ACCEPT WITH FINDINGS",
+    "findings": 2,
+    "outcome": "R6-01 (LOW) report names C-1..C-9; R6-02 (INFO) committed binding hash from the evidence copy"
    }
   ],
-  "next_round": "RPI-R6 on the commit that carries this record"
+  "next_round": "RPI-R7 on the commit that carries this record"
  },
  "status": "FAIL",
  "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS, bound 60-minute soaks soak-p2-e and soak-p3-e per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria with FAIL entries: [].",
- "recorded_at": "2026-10-18T06:14:57.470487+00:00",
+ "recorded_at": "2026-10-18T06:15:12.654052+00:00",
  "corrections": [
   {
    "id": "C-1",
