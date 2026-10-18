@@ -273,12 +273,15 @@ def test_image_turn_reaches_the_brain_as_image_url_and_history_keeps_a_placehold
 
 def test_image_with_vision_off_or_brain_not_ready_is_refused_not_dropped(fake, tmp_path):
     img = [{"name": "a.png", "mime": "image/png", "data": b64(PNG)}]
-    for vision, ready in ((False, "READY"), (True, "LOADING")):
+    # R4-01: a vision profile whose server is not READY is "not ready", never "Vision is off".
+    for vision, ready, code in ((False, "READY", "VISION_OFF"), (False, "LOADING", "VISION_OFF"),
+                                (True, "LOADING", "VISION_NOT_READY"), (True, "FAILED", "VISION_NOT_READY"),
+                                (True, "IDENTITY_MISMATCH", "VISION_NOT_READY")):
         b, _, _, _ = _bridge(fake, tmp_path, vision=vision, ready=ready)
         with pytest.raises(BridgeRefused) as e:
             b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "what is this", "depth": "auto",
                                  "images": img})
-        assert e.value.code == "VISION_OFF"
+        assert e.value.code == code, (vision, ready)
     assert fake.requests == []
 
 

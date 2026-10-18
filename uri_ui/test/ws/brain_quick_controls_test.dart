@@ -186,6 +186,41 @@ void main() {
     await tester.pumpWidget(_bar(conv!));
     expect(find.text('Vision: On'), findsNothing);
     expect(find.text('Vision: starting…'), findsOneWidget);
+    // R4-01: Vision is on but the Brain is not ready: never "Vision is off".
+    expect(conv.attachImage(OiImage(name: 'a.png', mime: 'image/png', bytes: _png)), 'VISION_NOT_READY');
+  });
+
+  testWidgets('an image while the Vision Brain starts or failed says not ready, never "Vision is off"',
+      (tester) async {
+    for (final (host, says) in [
+      ('STARTING', 'The Brain is still starting'),
+      ('FAILED', 'The Brain is not running'),
+    ]) {
+      final rt = _Runtime()
+        ..visionLive = false
+        ..extra = {'host_state': host};
+      final conv = await tester.runAsync(() => _ready(rt));
+      late BuildContext ctx;
+      await tester.pumpWidget(_host(Builder(builder: (c) {
+        ctx = c;
+        return const SizedBox();
+      })));
+      await tester.runAsync(() => attachOiImage(ctx, conv!, 'a.png', _png));
+      await tester.pump();
+      expect(find.textContaining(says), findsOneWidget, reason: host);
+      expect(find.textContaining('Vision is off'), findsNothing, reason: host);
+      expect(conv!.pendingImages, isEmpty);
+      expect(notSentMessage('VISION_NOT_READY'), isNot(contains('Vision is off')));
+      ScaffoldMessenger.of(ctx).clearSnackBars();
+      await tester.pumpAndSettle();
+    }
+  });
+
+  test('an image with a Vision-off Brain is still refused as Vision off', () async {
+    final rt = _Runtime()
+      ..active = {'id': 'c32k-visoff-mtpoff', 'vision': false, 'context': 32768, 'speed': false}
+      ..visionLive = false;
+    final conv = await _ready(rt);
     expect(conv.attachImage(OiImage(name: 'a.png', mime: 'image/png', bytes: _png)), 'VISION_OFF');
   });
 

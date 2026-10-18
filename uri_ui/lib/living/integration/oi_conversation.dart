@@ -53,6 +53,8 @@ String notSentMessage(String code, [List<String> images = const []]) {
       'TURN_IN_PROGRESS' => 'Not sent: URI is still finishing the previous request. Try again in a moment.',
       'BRAIN_RESTARTING' => 'Not sent: the Brain is restarting. Try again when it is ready.',
       'VISION_OFF' => 'Not sent: Vision is off, so the Brain cannot see images. Turn Vision on, or remove the image.',
+      'VISION_NOT_READY' => 'Not sent: the Brain is not ready to see images yet (still starting, or it did not '
+          'start). Try again when the Brain status shows ready.',
       'IMAGE_ACTION_UNSUPPORTED' =>
         'Not sent: URI can answer questions about an image, but cannot act on one. Ask about the image instead.',
       'IMAGES_TOO_LARGE' => 'Not sent: the images are too large. They were removed; attach one smaller image.',
@@ -857,6 +859,11 @@ class OiConversation extends ChangeNotifier {
   /// Vision is shown On only when the live server is READY with the projector.
   bool get visionLive => profileState['vision_live'] == true;
 
+  /// Why an image cannot be attached while Vision is not live (R4-01): the
+  /// running profile has no vision, or it has vision but the Brain is not
+  /// ready (loading, failed, unknown) — never "Vision is off" for the latter.
+  String get imageRefusal => activeProfile?['vision'] == false ? 'VISION_OFF' : 'VISION_NOT_READY';
+
   /// A Vision / Context switch is in progress (requested, or the host is reloading).
   bool get profileSwitching => profileState['pending_request'] == true || profileState['switching'] != null;
 
@@ -923,7 +930,7 @@ class OiConversation extends ChangeNotifier {
 
   /// Adds an image for the next turn. Returns null, or why it was not added.
   String? attachImage(OiImage image) {
-    if (!visionLive) return 'VISION_OFF';
+    if (!visionLive) return imageRefusal;
     if (pendingImages.length >= maxImages) return 'IMAGES_INVALID';
     final total = pendingImages.fold<int>(image.bytes.length, (n, i) => n + i.bytes.length);
     if (total > maxImageBytes) return 'IMAGES_TOO_LARGE';

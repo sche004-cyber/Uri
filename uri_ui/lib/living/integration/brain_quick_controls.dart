@@ -434,11 +434,11 @@ Future<OiImage?> prepareOiImage(String name, Uint8List bytes, {int limit = OiCon
 }
 
 /// Composer hook: scales the picked picture and adds it to the next turn, or
-/// says plainly why not (Vision off, too many, too large). Nothing is sent yet.
+/// says plainly why not (Vision off, Brain not ready, too many, too large). Nothing is sent yet.
 Future<void> attachOiImage(BuildContext context, OiConversation conv, String name, List<int> bytes) async {
   String? refusal;
   if (!conv.visionLive) {
-    refusal = 'VISION_OFF';
+    refusal = conv.imageRefusal;
   } else {
     final used = conv.pendingImages.fold<int>(0, (n, i) => n + i.bytes.length);
     OiImage? img;
@@ -452,6 +452,9 @@ Future<void> attachOiImage(BuildContext context, OiConversation conv, String nam
   if (refusal == null || !context.mounted) return;
   final text = switch (refusal) {
     'VISION_OFF' => 'Vision is off, so the Brain cannot see images. Turn Vision on next to the Brain status first.',
+    'VISION_NOT_READY' => const {'FAILED', 'STOPPED'}.contains(conv.brainHostState)
+        ? 'The Brain is not running, so it cannot see images. Restart the Brain, then attach the image again.'
+        : 'The Brain is still starting, so it cannot see images yet. Attach the image again when it is ready.',
     'IMAGES_INVALID' => 'At most ${OiConversation.maxImages} images can go with one message.',
     _ => 'That image could not be prepared for sending (too large or unreadable). Try a smaller PNG or JPEG.',
   };

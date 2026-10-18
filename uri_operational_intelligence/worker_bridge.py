@@ -306,8 +306,9 @@ class IntegratedTurns:
                 images = IMG.parse(c["images"])
             except IMG.ImageRejected as exc:
                 raise BridgeRefused(exc.code) from None
-            if not self._vision_live():
-                raise BridgeRefused("VISION_OFF")
+            refusal = self._image_refusal()
+            if refusal is not None:
+                raise BridgeRefused(refusal)
         turn_id = str(uuid.uuid4())
         history = list(self.history.get(session_id, ()))
         # A transcript reaches the ordinary path with fillers removed; the raw transcript stays in the envelope.
@@ -645,15 +646,17 @@ class IntegratedTurns:
         cfg = self._profiles.active_cfg() if self._profiles is not None else None
         return cfg if cfg is not None else self.cfg
 
-    def _vision_live(self):
+    def _image_refusal(self):
         """Images are accepted only when the active profile has vision AND the live server is READY with it (the
-        profile-aware readiness checks the server's /props modalities)."""
+        profile-aware readiness checks the server's /props modalities). R4-01: VISION_OFF only when the profile has
+        no vision; a vision profile whose server is not READY (loading, failed, mismatch) is VISION_NOT_READY."""
         if not self._active_cfg()["runtime"].get("vision_enabled"):
-            return False
+            return "VISION_OFF"
         try:
-            return self._status().state == "READY"
+            ready = self._status().state == "READY"
         except Exception:
-            return False
+            ready = False
+        return None if ready else "VISION_NOT_READY"
 
     def _profile_state(self, host, alive, readiness=None):
         """Truthful profile view: what runs (the live host's report), what is requested, what the user chose."""
