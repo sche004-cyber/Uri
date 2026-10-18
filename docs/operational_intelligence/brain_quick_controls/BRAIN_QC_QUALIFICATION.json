@@ -4,9 +4,9 @@
  "date": "2026-10-18",
  "branch": "milestone/brain-quick-controls-20261018",
  "base": "f3d5eb29",
- "candidate_code_commit": "aba3a5b6 (runtime3 materialized from 578f7c40, code-identical); gates at 25701f51",
+ "candidate_code_commit": "ce5c2fe0 (R2 repairs); live switch evidence qc-4/qc-5 on 78db55f6/578f7c40 (pre-R2 code)",
  "classification": "COMPLETED_WITH_RESULT",
- "status": "R1_REPAIRED_PENDING_RE_REVIEW",
+ "status": "R2_ACCEPTED_WITH_FINDINGS_REPAIRED",
  "acceptance": {
   "QC-1": {
    "status": "MET",
@@ -26,11 +26,11 @@
   },
   "QC-5": {
    "status": "MET_WITH_NOTE",
-   "evidence": "profile_switch fit_before, lease expected follows profile, stop 3.5 s; note: Standard next to the open app window is AT_RISK (-294..-335 MiB) with ~1.7 GB non-local, decode 147-149 tok/s after switch (healthy)"
+   "evidence": "profile_switch fit_before (same request as the start since R1-03), lease expected follows profile, stop 3.5-3.6 s; note: Standard next to the open app window is AT_RISK (-294.5..-336.6 MiB over qc-1..qc-5) with ~1.7 GB non-local, decode 147-151 tok/s after the switch"
   },
   "QC-6": {
    "status": "MET",
-   "evidence": "qc-1/2/3 recall '4817' after each switch, worker pids constant, same runtime/session (QC-same-worker-and-session)"
+   "evidence": "qc-1..qc-5: '4817' recalled after each switch, worker pids constant, same runtime/session (QC-same-worker-and-session)"
   },
   "QC-7": {
    "status": "MET",
@@ -38,7 +38,7 @@
   },
   "QC-8": {
    "status": "MET_UNIT_ONLY",
-   "evidence": "R1-02: shrink below conversation+4096 refused (unit+widget); no live >32K evidence"
+   "evidence": "R1-02/R2-02: a shrink below the largest held conversation + 4,096 is refused (worker-wide, heuristic reserve); unit+widget; no live >32K evidence"
   },
   "QC-9": {
    "status": "MET_WITH_NOTE",
@@ -423,9 +423,9 @@
  },
  "not_qualified": [
   "physical keyboard/mouse (automation input only)",
-  "context shrink confirmation live",
+  "context-shrink refusal path live (needs a >32K-token conversation)",
   "persistence of the choice across host restart (not implemented)",
-  "independent review"
+  "live switch run on ce5c2fe0 (R2 changes covered by unit/widget tests)"
  ],
  "environment_notes": [
   "tests/ws/test_ws_hardening.py::test_fit_desktop_only_fits_and_a_1gb_consumer_contends failed once while the qc-1 session process happened to have pid 18372 (the test's fake census pid is named from the live process table); passes in the final gate run",
@@ -447,6 +447,24 @@
     "C-3 gate evidence not pinned to aa7a1cf6",
     "C-4 frozen refreshHealth behaviour change not disclosed"
    ]
+  },
+  {
+   "round": "R2",
+   "commit": "c87a3387",
+   "verdict": "ACCEPT WITH FINDINGS (3 LOW, 2 INFO)",
+   "report": "review/R2_report.md",
+   "repairs_commit": "ce5c2fe0"
   }
+ ],
+ "open_findings": [
+  "QC-F1 choice not persisted",
+  "QC-F2 no live >32K evidence",
+  "QC-F3 residency alert timing (pre-existing)",
+  "QC-F4 test_frozen_core ALLOWED_NEW and phase2close_chain WS_EXACT not updated",
+  "QC-F5 no automatic fallback after a failed start",
+  "QC-F6 health chip shows previous tok/s briefly (pre-existing)",
+  "QC-F7 shrink refusal is worker-lifetime-wide; reserve heuristic",
+  "QC-F8 from a P3 host, Standard needs two switches",
+  "IC-1: ws_brain_host.py, brain_health.py, run_uri_integrated_worker.py changed; integration needs rebase/merge onto the runtime-profiles tip (c3fc8bbc) or the integrated canonical with gates and a live switch re-run"
  ]
 }

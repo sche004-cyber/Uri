@@ -125,3 +125,47 @@ follows the instruction itself (never offer P3), and that holds under either rea
   pre-existing WS hardening behaviour and was not changed.
 - `ws_brain_host.py` supersedes the runtime-profiles IC-1 byte-identity for that file. Integration needs its own
   review.
+
+---
+
+## Review R2 (2026-10-18): ACCEPT WITH FINDINGS (3 LOW, 2 INFO); repairs
+
+The review report is in `review/R2_report.md`. The sections above are kept as written; this section adds to them.
+The code repairs are in `ce5c2fe0`. The gates were run again on the commit named in `evidence/gates/*.head`.
+
+| Finding | Change | Verified by |
+|---|---|---|
+| R2-01 LOW | `refreshHealth` also re-reads the status while the stored status is a masked one (`switching: true`). A failed read on the poll where the switch ends can therefore no longer leave "starting" behind. | Widget test: the status read throws at the final edge, the next READY poll re-reads, and the result is READY and `brainReady`. |
+| R2-02 LOW | (a) The context sizes are now a real LRU: a key is popped before it is re-inserted. (b) The notice is worded for the whole worker: "a conversation URI holds since it started uses about N tokens ... Keep the larger context until URI is restarted." (c) The code comment says the 4,096-token reserve is a heuristic: the next user message is not counted. Scope listed as QC-F7. | Unit test (LRU eviction keeps a recently used long session); widget test (the notice text). |
+| R2-03 LOW | The IC-1 note is corrected (below). | |
+| R2-04 INFO | `BRAIN_QC_QUALIFICATION.json` corrected: the AT_RISK range now includes qc-4's -336.6 MiB, QC-6 cites qc-4 and qc-5, and `not_qualified` now names the refusal path. | |
+| R2-05 INFO | Noted as QC-F8. | |
+
+### Corrected IC-1 / integration note (replaces the last bullet of "Open findings (updated)")
+
+BRAIN-QC changes three files that the runtime-profiles plan counts in IC-1, including amendment A1 (fa0a70e6,
+4d782ef1):
+
+| File | Change vs `f3d5eb29` |
+|---|---|
+| `scripts/ws_brain_host.py` | the reconfigure action |
+| `uri_operational_intelligence/brain_health.py` | `RESTART_ACTIONS` / `ACTIONS`, and the profile in a request |
+| `scripts/run_uri_integrated_worker.py` | the `host_request` lambda passes the profile |
+
+The runtime-profiles branch has moved on to `c3fc8bbc`: its SELECTABLE allows only the frozen config, P2 and
+`(32768, gpu, False)`. BRAIN-QC was gated on `f3d5eb29`, not on that tip. Before integration, BRAIN-QC must be
+rebased or merged onto the current runtime-profiles tip, or onto the integrated canonical commit, and its gates and
+one live switch round trip re-run. That is the main session's decision.
+
+### Open findings added
+- **QC-F7:** the shrink refusal covers every conversation the worker has answered since it started. The sizes are
+  never cleared, and neither is the history the worker keeps. One long conversation therefore blocks a switch to a
+  smaller context until URI restarts, which is conservative. The 4,096-token answer reserve is a heuristic and does
+  not count the next user message.
+- **QC-F8:** when a harness or CLI started the host on P3 (32K + vision, no MTP), the menus offer only Long context,
+  because P3 is never a target. Getting back to Standard takes two switches.
+
+### Live evidence after R2
+No new live run was made. The R2 changes are a status re-read condition at the end of a switch, a notice text, and the
+order of an internal dict, and the widget and unit tests cover them. The live switch evidence (qc-4, qc-5) was taken
+on `78db55f6` and `578f7c40`, which do not include `ce5c2fe0`.
