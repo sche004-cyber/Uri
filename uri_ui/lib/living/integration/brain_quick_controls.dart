@@ -251,7 +251,9 @@ class BrainQuickControls extends StatelessWidget {
       final want = visionOn == true ? 'Off' : 'On';
       final vt = visionOn == null ? (choice: null, blocked: const <String>[]) : toggleChoice(vis, want);
       final visTip = why ??
-          (vt.choice == null
+          (visionOn == null
+              ? 'The Brain setting is not known yet; Vision can be changed once URI has read it.'
+              : vt.choice == null
               ? 'Vision ${want.toLowerCase()} is not available: '
                   '${vt.blocked.isEmpty ? 'no qualified Brain profile offers it.' : vt.blocked.join(' ')}'
               : 'Vision is ${visionOn == true ? 'on: the Brain can read images' : 'off'}. Click to turn it '
@@ -526,7 +528,8 @@ class QcSwitchDialog extends StatelessWidget {
             : configured!['vision'] != 'off';
     final nowCtx = (now?['ctx'] as num?)?.toInt();
     final nowMib = (active?['required_mib'] as num?)?.toInt();
-    final running = !brainStopped && active != null;
+    // The host goes back automatically only to a qualified profile that was running (ws_brain_host.reconfigure).
+    final running = !brainStopped && active != null && active!['qualified'] == true;
 
     Widget change(String what, String? from, String to) {
       final changed = from != to;
