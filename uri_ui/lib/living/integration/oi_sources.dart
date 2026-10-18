@@ -7,8 +7,12 @@ import '../widgets/status_badge.dart';
 import 'oi_conversation.dart';
 
 /// The calm Initializing look during a normal Brain startup (owner decision,
-/// Ember V2.1 final). [brainStartingDetail] decides; everything it does not
-/// accept stays `unavailable` with the real state named.
+/// Ember V2.1 final). On canonical UI V2 the FCV-10 [brainNotReadyPresentation]
+/// gives state, headline and detail; Initializing replaces its `working`
+/// state only when [brainStartingDetail] accepts both snapshots. The detail
+/// strings of [brainStartingDetail] and [brainUnavailableDetail] are not shown
+/// on this path (EMBER-V21-INTEG review R1-07); they remain the tested
+/// consistency rules.
 ///
 /// Runtime v1 readiness states of a normal startup.
 const Set<String> brainRuntimeStarting = {'STARTING', 'LOADING'};
@@ -179,7 +183,12 @@ class OiCompanionSource extends CompanionStateSource {
       final at = c.brainStatus['checked_at'];
       final statusAt = at is num ? at : null;
       final runtimeState = c.brainStatus['state'];
+      // A host state that means the Brain is not coming up never gets the calm look, whatever the snapshot age
+      // (review R1-04: a stale RELEASE_WAIT next to a fresh LOADING status).
+      final host = c.brainHealth['host'];
+      final hostState = host is Map && host['running'] == true ? host['state'] : null;
       final starting = p.state == CompanionState.working &&
+          !brainHostNotStarting.contains(hostState) &&
           brainStartingDetail(runtimeState is String ? runtimeState : null, c.brainHealth,
                   statusCheckedAt: statusAt) !=
               null;

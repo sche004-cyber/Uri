@@ -7,6 +7,8 @@ Branch `milestone/ember-v21-integ-20261018`, worktree `D:\uri-dev\uri-ember-v21-
 Not in scope (separate owner approval): canonical integration, freeze, tag `accepted/*`, push, deploy.
 Owner decisions carried unchanged from the closure receipt: fidelity (AC-F1/AC-F3 NOT MET), F-LIGHT-1, T4 depleted,
 F-SIZE-1, F-START-GAP, OD-2 licensing, AC-P1. This milestone does not decide or waive them.
+Added by this milestone for owner ruling (review R1-02): D-1 - on canonical, a host waiting for the GPU lease
+(`WAITING_FOR_LEASE`) keeps the FCV-10 unavailable "Waiting for GPU" look instead of the Ember handoff's Initializing.
 
 Evidence rule: only a check that ran to completion with a recorded result counts (COMPLETED_WITH_RESULT).
 

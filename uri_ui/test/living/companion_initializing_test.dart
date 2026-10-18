@@ -113,7 +113,8 @@ void main() {
     // A runtime fault is never the calm look, even while a host still reports starting (FCV-10 keeps its
     // host-phase presentation; finding EI-1).
     rt.hostState = 'STARTING_HOST';
-    expect((await at('FAILED')).state, isNot(CompanionState.initializing));
+    expect((await at('FAILED')).state, CompanionState.working);
+    expect(src.signal.headline, 'Starting Brain');
     rt.hostState = null;
     // Startup completes: initializing hands over to idle.
     expect((await at('LOADING')).state, CompanionState.initializing);
@@ -229,8 +230,29 @@ void main() {
       ..healthReadiness = 'LOADING'
       ..hostState = 'STARTING';
     await conv.refreshStatus();
-    expect(src.signal.state, isNot(CompanionState.initializing));
+    expect(src.signal.state, CompanionState.working);
+    expect(src.signal.headline, 'Starting Brain');
+    // A stale host report that means the Brain is not coming up never gets the calm look (review R1-04).
+    rt
+      ..statusAt = 400
+      ..healthAt = 100
+      ..brainState = 'LOADING'
+      ..healthReadiness = 'LOADING'
+      ..hostState = 'RELEASE_WAIT';
+    await conv.refreshStatus();
+    expect(src.signal.state, CompanionState.working);
+    expect(src.signal.headline, 'Waiting for GPU memory');
     src.dispose();
+  });
+
+  test('a composite disposes the sources it owns, and only those (review R1-06)', () {
+    final owned = MockCompanionSource();
+    final shared = MockCompanionSource();
+    final c = CompositeCompanionSource([owned, shared], owned: [owned]);
+    c.dispose();
+    expect(() => owned.addListener(() {}), throwsFlutterError);
+    shared.addListener(() {});
+    shared.dispose();
   });
 
   test('initializing never hides a failure or a request from another source', () {
