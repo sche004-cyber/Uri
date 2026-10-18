@@ -12,7 +12,7 @@ mkdir -p $OUT
 SA="--minutes 45"; [ -n "$NB" ] && SA="$SA --not-before $NB"; [ "$K" = dry ] && SA="$SA --no-brain"
 $PY -B -I $H/qc_session.py $L $SA > $OUT/session.out 2> $OUT/session.err &
 SP=$!
-UA=""; [ "$K" = uiv2 ] && UA="--driver uiv2 --mode main --fresh-prefs"; [ "$K" = dry ] && UA="--dry"
+UA="--ui-first"; [ "$K" = uiv2 ] && UA="--driver uiv2 --mode main --fresh-prefs"; [ "$K" = dry ] && UA="--dry"
 $SYS -B -I $H/run_qc_ui.py $L $UA > $OUT/ui.out 2> $OUT/ui.err
 wait $SP
 echo "DONE $L $(date +%T)" >> $OUT/go.log

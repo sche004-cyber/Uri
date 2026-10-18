@@ -1,0 +1,258 @@
+{
+ "label": "qc-1",
+ "started_utc": "2026-10-18T04:34:54.528293+00:00",
+ "runtime": "C:\\Users\\cheta\\AppData\\Local\\Temp\\claude\\brain_qc\\runtime",
+ "port": 18327,
+ "receipt": {
+  "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "candidate_source": "D:\\uri-dev\\uri-brain-quick-controls",
+  "candidate_head": "0d599b6a033881ae28235daa4acc0635580dc04a",
+  "candidate_tree": "359ce1d8681f6306d7ce13731efe1b269696a740"
+ },
+ "brain_config_sha256_before": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "override": false,
+ "runtime_verified": {
+  "ok": true,
+  "checked": 360,
+  "mismatched": []
+ },
+ "server_pid": 17476,
+ "server_listening": true,
+ "not_before": "11:15",
+ "lease_free_utc": "2026-10-18T05:54:42.455550+00:00",
+ "host_pid": 18100,
+ "host_argv": [
+  "ws_brain_host.py",
+  "--report-dir",
+  "C:\\Users\\cheta\\AppData\\Local\\Temp\\claude\\brain_qc\\runtime\\work\\c1\\ws-bqc\\client\\control\\oi",
+  "--minutes",
+  "45"
+ ],
+ "end_reason": "ui-finished",
+ "result": "COMPLETED",
+ "finished_utc": "2026-10-18T05:58:27.188696+00:00",
+ "host_exit": 0,
+ "host_final": {
+  "detail": "HOST_EXIT",
+  "explain": "The Brain host has exited.",
+  "gpu": {
+   "census_s": 3.53,
+   "census_t": 1792303067.056,
+   "explain": "GPU memory is 300 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 403.5,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 194.9,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 12072,
+      "role": null
+     }
+    ],
+    "free_mib": 15325.5,
+    "margin_mib": -300.5,
+    "others_mib": 1042.5,
+    "owner_mib": 0,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "since_stop_s": 3.5
+  },
+  "heartbeat_at": 1792303093.022,
+  "history": [
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792302886.421
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792302893.382
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792302912.097
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792302916.984
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792303030.229
+   },
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792303033.832
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792303039.169
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792303051.04
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792303056.518
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792303067.033
+   },
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792303070.585
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792303075.842
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792303093.555
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792303098.623
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792303104.141
+   },
+   {
+    "detail": "HOST_EXIT",
+    "state": "STOPPED",
+    "t": 1792303104.146
+   }
+  ],
+  "host_pid": 17736,
+  "host_started": 1792302882.835,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "1906fbff-d433-4e8c-8e4c-0a656f82574b",
+   "result": "DONE",
+   "t": 1792303063.542,
+   "t_done": 1792303098.631
+  },
+  "lease": {
+   "held": false
+  },
+  "override": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": true,
+   "id": "frozen",
+   "mtp": true,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 403.5,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 194.9,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 12072,
+      "role": null
+     }
+    ],
+    "free_mib": 15325.5,
+    "margin_mib": -294.5,
+    "others_mib": 1042.5,
+    "owner_mib": 13895.2,
+    "required_mib": 15620,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "1906fbff-d433-4e8c-8e4c-0a656f82574b",
+   "required_mib": 15626,
+   "result": "READY",
+   "seconds": 35.1,
+   "t_done": 1792303098.627,
+   "t_request": 1792303063.547,
+   "t_stopped": 1792303067.038,
+   "to": "frozen"
+  },
+  "release_measurement": {
+   "since_stop_s": 3.5,
+   "unattributed_mib": 0.0,
+   "verdict": "AT_RISK"
+  },
+  "requests": {
+   "1906fbff-d433-4e8c-8e4c-0a656f82574b": "DONE",
+   "ba76b711-b941-4f9f-bf12-89e15428d760": "DONE"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 403.5,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 193.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 12072,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14946.2,
+   "non_local_mib": 1730.1,
+   "others_mib": 1040.8,
+   "t": 1792303095.112,
+   "verdict_now": "AT_RISK"
+  },
+  "schema": "uri.ws.brain_host.v1",
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "state": "STOPPED",
+  "updated_at": 1792303104.146
+ },
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_config_sha256_after": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "brain_listener_after": null
+}

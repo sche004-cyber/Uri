@@ -156,6 +156,16 @@ void main() {
       return m;
     }
 
+    // Decode speed on a real answer of a few hundred tokens (Thinking Off), right after a profile became ready.
+    Future<void> perfTurn(String label) async {
+      final keep = conv.depth;
+      conv.setDepth(OiDepth.fast);
+      final m = await send('perf-$label', 'List thirty common fruits, one per line, nothing else.');
+      record('perf', {'profile': label, 'predicted_n': m.metrics['predicted_n'],
+        'decode_tps': m.metrics['predicted_per_second'], 'tier': m.tier});
+      conv.setDepth(keep);
+    }
+
     Future<void> chooseThinking(String title) async {
       await t.tap(find.byKey(const ValueKey('qc-thinking')));
       await settle(600);
@@ -188,6 +198,7 @@ void main() {
       check('QC-chips-standard', textOf('qc-vision') == 'Vision: On' && textOf('qc-context') == 'Context: 32K',
           {'vision': textOf('qc-vision'), 'context': textOf('qc-context'), 'thinking': textOf('qc-thinking')});
       await shot('01-standard-ready');
+      await perfTurn('standard-start');
     });
 
     const secret = '4817';
@@ -270,6 +281,7 @@ void main() {
       check('QC-chips-long', textOf('qc-vision') == 'Vision: Off' && textOf('qc-context') == 'Context: 64K',
           {'vision': textOf('qc-vision'), 'context': textOf('qc-context'), 'notice': textOf('qc-notice')});
       await shot('07-long-ready');
+      await perfTurn('long');
       final r = await send('recall-long', 'What was the secret number I gave you at the start of this conversation? Reply with the number only.');
       check('QC-continuity-long', r.text.contains(secret) && r.route == 'answer', {'answer': r.text, 'route': r.route});
       await t.tap(find.byKey(const ValueKey('qc-vision')));
@@ -298,6 +310,7 @@ void main() {
       check('QC-chips-standard-again', textOf('qc-vision') == 'Vision: On' && textOf('qc-context') == 'Context: 32K',
           {'vision': textOf('qc-vision'), 'context': textOf('qc-context'), 'notice': textOf('qc-notice')});
       await shot('10-standard-again');
+      await perfTurn('standard-after-switch');
       final r = await send('recall-standard', 'Once more: what was the secret number I gave you at the start of this conversation? Reply with the number only.');
       check('QC-continuity-standard', r.text.contains(secret) && r.route == 'answer', {'answer': r.text, 'route': r.route});
       await chooseThinking('Auto');

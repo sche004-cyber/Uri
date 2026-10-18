@@ -32,7 +32,7 @@ prefs, local = FX / "prefs", FX / "local"
 for p in (prefs, local / "roaming", local / "temp"):
     p.mkdir(parents=True, exist_ok=True)
 deadline = time.monotonic() + 3 * 3600
-while not (OUT / "brain-ready.json").exists():
+while "--ui-first" not in sys.argv and not (OUT / "brain-ready.json").exists():
     if time.monotonic() > deadline or (OUT / "stop-session").exists():
         sys.exit("NO_BRAIN_READY")
     time.sleep(2)

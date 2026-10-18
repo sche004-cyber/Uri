@@ -1,0 +1,1336 @@
+[
+  {
+    "utc": "2026-10-18T05:55:54.784010Z",
+    "t": 1792302954.785,
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "Brain_Core_worker_mocked": false
+  },
+  {
+    "utc": "2026-10-18T05:56:35.514787Z",
+    "t": 1792302995.515,
+    "label": "window",
+    "logical_size": "Size(1264.0, 681.0)",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T05:56:35.885346Z",
+    "t": 1792302995.885,
+    "label": "ready-timeline",
+    "rows": [
+      {
+        "t": 1792302995.878,
+        "state": "READY",
+        "reasons": [],
+        "active": "standard",
+        "pending": false,
+        "configured": "frozen",
+        "chip_vision": "Vision: On",
+        "chip_context": "Context: 32K",
+        "chip_switching": null
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T05:56:35.887858Z",
+    "t": 1792302995.887,
+    "label": "check",
+    "id": "QC-ready-standard",
+    "result": "PASS",
+    "controls": {
+      "active": {
+        "active": true,
+        "ctx": 32768,
+        "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+        "id": "standard",
+        "label": "Standard",
+        "mtp": true,
+        "qualified": true,
+        "required_mib": 15620,
+        "summary": "32K context, vision on (the default Runtime v1)",
+        "vision": "gpu",
+        "vision_on": true
+      },
+      "can_switch": true,
+      "cannot_switch_reason": null,
+      "configured": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "host_profile": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "options": [
+        {
+          "active": true,
+          "ctx": 32768,
+          "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+          "id": "standard",
+          "label": "Standard",
+          "mtp": true,
+          "qualified": true,
+          "required_mib": 15620,
+          "summary": "32K context, vision on (the default Runtime v1)",
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+          "id": "long",
+          "label": "Long context",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 13658,
+          "summary": "64K context, vision off",
+          "vision": "off",
+          "vision_on": false
+        },
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw4",
+          "id": "standard-nodraft",
+          "label": "Standard (no draft)",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 14360,
+          "summary": "32K context, vision on, no speculative draft",
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P1: FAIL",
+          "id": "long-vision",
+          "label": "Long context with vision",
+          "mtp": false,
+          "qualified": false,
+          "reason": "Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+          "required_mib": 14764,
+          "summary": "64K context, vision on",
+          "vision": "gpu",
+          "vision_on": true
+        }
+      ],
+      "schema": "uri.brain.quick_controls.v1",
+      "switch": {
+        "context_tokens": null,
+        "last": null,
+        "pending": false,
+        "target": null
+      },
+      "thinking": {
+        "auto": "auto",
+        "off": "fast",
+        "on": "normal",
+        "reload": false
+      }
+    }
+  },
+  {
+    "utc": "2026-10-18T05:56:35.904600Z",
+    "t": 1792302995.904,
+    "label": "check",
+    "id": "QC-chips-standard",
+    "result": "PASS",
+    "vision": "Vision: On",
+    "context": "Context: 32K",
+    "thinking": "Thinking: Auto"
+  },
+  {
+    "utc": "2026-10-18T05:56:37.820986Z",
+    "t": 1792302997.82,
+    "label": "check",
+    "id": "QC-thinking-off-depth",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T05:56:47.296665Z",
+    "t": 1792303007.296,
+    "label": "turn",
+    "scenario": "tell-fact",
+    "request": "Quick arithmetic game. The secret number is 4817. Reply with just OK.",
+    "text": "OK",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": 2,
+      "draft_n_accepted": 0,
+      "first_answer_s": 1.4181,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 2,
+      "predicted_per_second": 15.674226868759698,
+      "prompt_n": 761,
+      "prompt_per_second": 752.8868908640491,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 1.4824,
+      "ttft_s": 1.4181
+    },
+    "depth_sent": "fast",
+    "seconds": 9.474,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "Quick arithmetic game. The secret number is 4817. Reply with just OK."
+      },
+      {
+        "role": "uri",
+        "text": "OK"
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T05:56:47.297664Z",
+    "t": 1792303007.297,
+    "label": "check",
+    "id": "QC-thinking-off-tier",
+    "result": "PASS",
+    "tier": "FAST",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T05:56:48.572270Z",
+    "t": 1792303008.572,
+    "label": "check",
+    "id": "QC-thinking-on-depth",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T05:56:56.414202Z",
+    "t": 1792303016.414,
+    "label": "turn",
+    "scenario": "thinking-on",
+    "request": "Compare a bicycle and an electric scooter for a 3 km city commute in two short sentences.",
+    "text": "A bicycle provides a reliable, zero-emission workout but may be slower and more physically demanding over 3 km. An electric scooter offers faster, effortless travel ideal for quick commutes, though it often faces stricter local regulations and requires battery charging.",
+    "route": "answer",
+    "tier": "NORMAL",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 762,
+      "draft_n": 208,
+      "draft_n_accepted": 153,
+      "first_answer_s": 5.8543,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 257,
+      "predicted_per_second": 40.27141042906828,
+      "prompt_n": 31,
+      "prompt_per_second": 92.71471681635607,
+      "reasoning_chars": 976,
+      "retried": false,
+      "total_s": 6.8051,
+      "ttft_s": 0.4479
+    },
+    "depth_sent": "normal",
+    "seconds": 7.84,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "Compare a bicycle and an electric scooter for a 3 km city commute in two short sentences."
+      },
+      {
+        "role": "uri",
+        "text": "A bicycle provides a reliable, zero-emission workout but may be slower and more physically demanding over 3 km. An electric scooter offers faster, effortless travel ideal for quick commutes, though it often faces stricter local regulations and requires battery charging."
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T05:56:56.414202Z",
+    "t": 1792303016.414,
+    "label": "check",
+    "id": "QC-thinking-on-tier",
+    "result": "PASS",
+    "tier": "NORMAL",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T05:56:57.504877Z",
+    "t": 1792303017.504,
+    "label": "check",
+    "id": "QC-thinking-last-answer-shown",
+    "result": "PASS",
+    "text": null
+  },
+  {
+    "utc": "2026-10-18T05:57:00.723566Z",
+    "t": 1792303020.723,
+    "label": "check",
+    "id": "QC-unqualified-listed-disabled",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T05:57:01.563177Z",
+    "t": 1792303021.563,
+    "label": "check",
+    "id": "QC-unqualified-not-requested",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T05:57:06.285528Z",
+    "t": 1792303026.285,
+    "label": "check",
+    "id": "QC-confirm-dialog",
+    "result": "PASS",
+    "texts": [
+      "Switch the Brain to Long context?",
+      "64K context, vision off\n\nThe Brain reloads, which takes about half a minute. Messages wait until it is ready.\n\nYour conversation stays: URI keeps it and the Brain reads it again after the switch.\n\nGPU memory: 13.3 GB (now 15.3 GB). If it does not fit, URI keeps the current Brain.",
+      "Cancel",
+      "Switch"
+    ]
+  },
+  {
+    "utc": "2026-10-18T05:57:06.603034Z",
+    "t": 1792303026.285,
+    "label": "switch-requested",
+    "to": "long",
+    "request_id": "ba76b711-b941-4f9f-bf12-89e15428d760",
+    "notice": null
+  },
+  {
+    "utc": "2026-10-18T05:57:09.850315Z",
+    "t": 1792303029.85,
+    "label": "send-during-switch",
+    "health": "RECOVERING",
+    "reasons": [
+      "PROFILE_SWITCH"
+    ],
+    "messages": [
+      "Are you there?",
+      "Not sent: the Brain is restarting. Try again when it is ready."
+    ],
+    "last_error": "BRAIN_RESTARTING"
+  },
+  {
+    "utc": "2026-10-18T05:57:09.851380Z",
+    "t": 1792303029.851,
+    "label": "check",
+    "id": "QC-turn-refused-during-switch",
+    "result": "PASS",
+    "last_error": "BRAIN_RESTARTING",
+    "messages": [
+      "Are you there?",
+      "Not sent: the Brain is restarting. Try again when it is ready."
+    ]
+  },
+  {
+    "utc": "2026-10-18T05:57:36.724325Z",
+    "t": 1792303056.724,
+    "label": "switch-timeline",
+    "to": "long",
+    "rows": [
+      {
+        "t": 1792303033.021,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_STOPPED",
+          "HOST_STOPPING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303037.612,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_STOPPED",
+          "HOST_STARTING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303039.727,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303040.817,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303041.944,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303043.068,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303044.183,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303045.85,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303046.882,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303047.959,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303049.031,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303050.305,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303051.402,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303052.425,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303053.502,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303054.569,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303055.588,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Long context…"
+      },
+      {
+        "t": 1792303056.721,
+        "state": "READY",
+        "reasons": [],
+        "active": "long",
+        "pending": false,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": "Vision: Off",
+        "chip_context": "Context: 64K",
+        "chip_switching": null
+      }
+    ],
+    "ui_seconds": 30.438999891281128
+  },
+  {
+    "utc": "2026-10-18T05:57:36.726899Z",
+    "t": 1792303056.726,
+    "label": "check",
+    "id": "QC-truthful-switch-long",
+    "result": "PASS",
+    "rows": 18,
+    "early": 0,
+    "shown_early": 0
+  },
+  {
+    "utc": "2026-10-18T05:57:36.741509Z",
+    "t": 1792303056.741,
+    "label": "check",
+    "id": "QC-chips-long",
+    "result": "PASS",
+    "vision": "Vision: Off",
+    "context": "Context: 64K",
+    "notice": null
+  },
+  {
+    "utc": "2026-10-18T05:57:38.989258Z",
+    "t": 1792303058.989,
+    "label": "turn",
+    "scenario": "recall-long",
+    "request": "What was the secret number I gave you at the start of this conversation? Reply with the number only.",
+    "text": "4817",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.7087,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 5,
+      "predicted_per_second": 91.44320234094597,
+      "prompt_n": 879,
+      "prompt_per_second": 1416.67714266374,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.7321,
+      "ttft_s": 0.7087
+    },
+    "depth_sent": "fast",
+    "seconds": 1.78,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "What was the secret number I gave you at the start of this conversation? Reply with the number only."
+      },
+      {
+        "role": "uri",
+        "text": "4817"
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T05:57:38.990771Z",
+    "t": 1792303058.99,
+    "label": "check",
+    "id": "QC-continuity-long",
+    "result": "PASS",
+    "answer": "4817",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T05:57:40.309936Z",
+    "t": 1792303060.309,
+    "label": "check",
+    "id": "QC-unqualified-listed-at-64k",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T05:58:19.271381Z",
+    "t": 1792303099.271,
+    "label": "switch-timeline",
+    "to": "standard",
+    "rows": [
+      {
+        "t": 1792303063.765,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303064.841,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303065.88,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303066.902,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303069.95,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_STOPPED",
+          "HOST_STOPPING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303074.57,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_STOPPED",
+          "HOST_STARTING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303076.517,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303077.553,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303078.62,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303079.776,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303080.801,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303081.914,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303082.991,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303084.032,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303085.162,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303086.214,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303087.297,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303088.361,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303089.423,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303090.886,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303091.962,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303093.008,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303094.047,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303095.15,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303096.187,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303097.189,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303098.238,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "active": null,
+        "pending": true,
+        "configured": "frozen",
+        "chip_vision": null,
+        "chip_context": null,
+        "chip_switching": "Switching to Standard…"
+      },
+      {
+        "t": 1792303099.266,
+        "state": "READY",
+        "reasons": [],
+        "active": "standard",
+        "pending": false,
+        "configured": "frozen",
+        "chip_vision": "Vision: On",
+        "chip_context": "Context: 32K",
+        "chip_switching": null
+      }
+    ],
+    "ui_seconds": 36.16100001335144
+  },
+  {
+    "utc": "2026-10-18T05:58:19.272887Z",
+    "t": 1792303099.272,
+    "label": "check",
+    "id": "QC-truthful-switch-standard",
+    "result": "PASS",
+    "rows": 28
+  },
+  {
+    "utc": "2026-10-18T05:58:19.286943Z",
+    "t": 1792303099.286,
+    "label": "check",
+    "id": "QC-chips-standard-again",
+    "result": "PASS",
+    "vision": "Vision: On",
+    "context": "Context: 32K",
+    "notice": null
+  },
+  {
+    "utc": "2026-10-18T05:58:21.709082Z",
+    "t": 1792303101.709,
+    "label": "turn",
+    "scenario": "recall-standard",
+    "request": "Once more: what was the secret number I gave you at the start of this conversation? Reply with the number only.",
+    "text": "4817",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": 4,
+      "draft_n_accepted": 2,
+      "first_answer_s": 0.8443,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 5,
+      "predicted_per_second": 93.92978748385582,
+      "prompt_n": 921,
+      "prompt_per_second": 1211.0565120257518,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.9011,
+      "ttft_s": 0.8443
+    },
+    "depth_sent": "fast",
+    "seconds": 1.946,
+    "error": null,
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "Once more: what was the secret number I gave you at the start of this conversation? Reply with the number only."
+      },
+      {
+        "role": "uri",
+        "text": "4817"
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T05:58:21.710087Z",
+    "t": 1792303101.71,
+    "label": "check",
+    "id": "QC-continuity-standard",
+    "result": "PASS",
+    "answer": "4817",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T05:58:22.994216Z",
+    "t": 1792303102.994,
+    "label": "check",
+    "id": "QC-thinking-auto-restored",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T05:58:22.995215Z",
+    "t": 1792303102.995,
+    "label": "check",
+    "id": "QC-same-worker-and-session",
+    "result": "PASS",
+    "before": {
+      "runtime_identical": true,
+      "session": "cd7a9bd7-be3b-474c-bd6a-171e8d5bcb57"
+    },
+    "session_after": "cd7a9bd7-be3b-474c-bd6a-171e8d5bcb57"
+  },
+  {
+    "utc": "2026-10-18T05:58:23.002597Z",
+    "t": 1792303103.002,
+    "label": "final",
+    "failures": [],
+    "controls": {
+      "active": {
+        "active": true,
+        "ctx": 32768,
+        "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+        "id": "standard",
+        "label": "Standard",
+        "mtp": true,
+        "qualified": true,
+        "required_mib": 15620,
+        "summary": "32K context, vision on (the default Runtime v1)",
+        "vision": "gpu",
+        "vision_on": true
+      },
+      "can_switch": true,
+      "cannot_switch_reason": null,
+      "configured": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "host_profile": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "options": [
+        {
+          "active": true,
+          "ctx": 32768,
+          "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+          "id": "standard",
+          "label": "Standard",
+          "mtp": true,
+          "qualified": true,
+          "required_mib": 15620,
+          "summary": "32K context, vision on (the default Runtime v1)",
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+          "id": "long",
+          "label": "Long context",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 13658,
+          "summary": "64K context, vision off",
+          "vision": "off",
+          "vision_on": false
+        },
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw4",
+          "id": "standard-nodraft",
+          "label": "Standard (no draft)",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 14360,
+          "summary": "32K context, vision on, no speculative draft",
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P1: FAIL",
+          "id": "long-vision",
+          "label": "Long context with vision",
+          "mtp": false,
+          "qualified": false,
+          "reason": "Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+          "required_mib": 14764,
+          "summary": "64K context, vision on",
+          "vision": "gpu",
+          "vision_on": true
+        }
+      ],
+      "schema": "uri.brain.quick_controls.v1",
+      "switch": {
+        "context_tokens": 884,
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 403.5,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 194.9,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12072,
+                "role": null
+              }
+            ],
+            "free_mib": 15325.5,
+            "margin_mib": -294.5,
+            "others_mib": 1042.5,
+            "owner_mib": 13895.2,
+            "required_mib": 15620,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c64k-visoff-mtpoff",
+          "id": "1906fbff-d433-4e8c-8e4c-0a656f82574b",
+          "required_mib": 15626,
+          "result": "READY",
+          "seconds": 35.1,
+          "t_done": 1792303098.627,
+          "t_request": 1792303063.547,
+          "t_stopped": 1792303067.038,
+          "to": "frozen"
+        },
+        "pending": false,
+        "target": null
+      },
+      "thinking": {
+        "auto": "auto",
+        "off": "fast",
+        "on": "normal",
+        "reload": false
+      }
+    },
+    "health_state": "READY"
+  }
+]

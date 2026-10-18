@@ -1,0 +1,376 @@
+{
+ "label": "qc-1",
+ "classification": "COMPLETED_WITH_RESULT",
+ "verdict": "PASS",
+ "source_head": "1f3b3386317bb4e5a3609944a27f478fd15917c8",
+ "runtime_candidate_head": "0d599b6a033881ae28235daa4acc0635580dc04a",
+ "runtime_verified": {
+  "ok": true,
+  "checked": 360,
+  "mismatched": []
+ },
+ "checks": [
+  {
+   "id": "QC-ready-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-chips-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-off-depth",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-off-tier",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-on-depth",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-on-tier",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-last-answer-shown",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-unqualified-listed-disabled",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-unqualified-not-requested",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-confirm-dialog",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-turn-refused-during-switch",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-truthful-switch-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-chips-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-continuity-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-unqualified-listed-at-64k",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-truthful-switch-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-chips-standard-again",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-continuity-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-auto-restored",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-same-worker-and-session",
+   "result": "PASS"
+  }
+ ],
+ "failed_checks": [],
+ "turns": [
+  {
+   "scenario": "tell-fact",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 9.474,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "OK",
+   "decode_tps": 15.674226868759698,
+   "prompt_n": 761,
+   "cache_n": 0
+  },
+  {
+   "scenario": "thinking-on",
+   "tier": "NORMAL",
+   "route": "answer",
+   "seconds": 7.84,
+   "depth_sent": "normal",
+   "error": null,
+   "answer": "A bicycle provides a reliable, zero-emission workout but may be slower and more physically demanding over 3 km. An electric scooter offers faster, effortless tr",
+   "decode_tps": 40.27141042906828,
+   "prompt_n": 31,
+   "cache_n": 762
+  },
+  {
+   "scenario": "recall-long",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 1.78,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "4817",
+   "decode_tps": 91.44320234094597,
+   "prompt_n": 879,
+   "cache_n": 0
+  },
+  {
+   "scenario": "recall-standard",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 1.946,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "4817",
+   "decode_tps": 93.92978748385582,
+   "prompt_n": 921,
+   "cache_n": 0
+  }
+ ],
+ "profiles": {
+  "frozen": {
+   "server_pids": [
+    1884,
+    17860
+   ],
+   "calibration_tps": [
+    151.8,
+    158.2
+   ],
+   "llama_dedicated_mib_max": 15555.7,
+   "llama_non_local_mib_max": 1895.1,
+   "lease_expected_mib": [
+    13658,
+    15626
+   ],
+   "fit_margin_mib": [
+    -300.5,
+    -101.9
+   ],
+   "ready_samples": 22
+  },
+  "c64k-visoff-mtpoff": {
+   "server_pids": [
+    3144
+   ],
+   "calibration_tps": [
+    102.7
+   ],
+   "llama_dedicated_mib_max": 13895.2,
+   "llama_non_local_mib_max": 561.8,
+   "lease_expected_mib": [
+    13658,
+    15626
+   ],
+   "fit_margin_mib": [
+    1673.5
+   ],
+   "ready_samples": 2
+  }
+ },
+ "switches": [
+  {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 403.5,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 188.9,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 12072,
+      "role": null
+     }
+    ],
+    "free_mib": 15331.5,
+    "margin_mib": 1673.5,
+    "others_mib": 1036.5,
+    "owner_mib": 14843.7,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "FITS"
+   },
+   "from": "frozen",
+   "id": "ba76b711-b941-4f9f-bf12-89e15428d760",
+   "required_mib": 13658,
+   "result": "READY",
+   "seconds": 29.9,
+   "t_done": 1792303056.522,
+   "t_request": 1792303026.66,
+   "t_stopped": 1792303030.234,
+   "to": "c64k-visoff-mtpoff"
+  },
+  {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 403.5,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 194.9,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 12072,
+      "role": null
+     }
+    ],
+    "free_mib": 15325.5,
+    "margin_mib": -294.5,
+    "others_mib": 1042.5,
+    "owner_mib": 13895.2,
+    "required_mib": 15620,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "1906fbff-d433-4e8c-8e4c-0a656f82574b",
+   "required_mib": 15626,
+   "result": "READY",
+   "seconds": 35.1,
+   "t_done": 1792303098.627,
+   "t_request": 1792303063.547,
+   "t_stopped": 1792303067.038,
+   "to": "frozen"
+  }
+ ],
+ "switch_ui_timelines": [
+  {
+   "to": "long",
+   "ui_seconds": 30.438999891281128,
+   "rows": 18
+  },
+  {
+   "to": "standard",
+   "ui_seconds": 36.16100001335144,
+   "rows": 28
+  }
+ ],
+ "worker_processes": [
+  [
+   6636,
+   1792302955.087
+  ],
+  [
+   14844,
+   1792302955.109
+  ]
+ ],
+ "host_state_sequence": [
+  {
+   "state": null,
+   "profile": null,
+   "utc": "2026-10-18T04:35:02.525654+00:00",
+   "detail": null
+  },
+  {
+   "state": "STARTING",
+   "profile": "frozen",
+   "utc": "2026-10-18T05:54:55.115880+00:00",
+   "detail": null
+  },
+  {
+   "state": "LOADING",
+   "profile": "frozen",
+   "utc": "2026-10-18T05:55:00.639894+00:00",
+   "detail": null
+  },
+  {
+   "state": "CALIBRATING",
+   "profile": "frozen",
+   "utc": "2026-10-18T05:55:17.203106+00:00",
+   "detail": null
+  },
+  {
+   "state": "READY",
+   "profile": "frozen",
+   "utc": "2026-10-18T05:55:22.654927+00:00",
+   "detail": null
+  },
+  {
+   "state": "STARTING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T05:57:19.319420+00:00",
+   "detail": null
+  },
+  {
+   "state": "LOADING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T05:57:24.974506+00:00",
+   "detail": null
+  },
+  {
+   "state": "CALIBRATING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T05:57:36.288223+00:00",
+   "detail": null
+  },
+  {
+   "state": "READY",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T05:57:41.826862+00:00",
+   "detail": null
+  },
+  {
+   "state": "STOPPING",
+   "profile": "frozen",
+   "utc": "2026-10-18T05:57:52.921904+00:00",
+   "detail": null
+  },
+  {
+   "state": "STARTING",
+   "profile": "frozen",
+   "utc": "2026-10-18T05:57:58.556420+00:00",
+   "detail": null
+  },
+  {
+   "state": "LOADING",
+   "profile": "frozen",
+   "utc": "2026-10-18T05:58:04.195852+00:00",
+   "detail": null
+  },
+  {
+   "state": "CALIBRATING",
+   "profile": "frozen",
+   "utc": "2026-10-18T05:58:20.941411+00:00",
+   "detail": null
+  },
+  {
+   "state": "READY",
+   "profile": "frozen",
+   "utc": "2026-10-18T05:58:26.399578+00:00",
+   "detail": null
+  }
+ ],
+ "lease_after": "FREE",
+ "brain_config_digest_unchanged": true,
+ "brain_listener_after": null,
+ "host_exit": 0,
+ "native_exit_code": 0,
+ "elapsed_s": 183.32
+}
