@@ -9,6 +9,10 @@ Owner decisions carried unchanged from the closure receipt: fidelity (AC-F1/AC-F
 F-SIZE-1, F-START-GAP, OD-2 licensing, AC-P1. This milestone does not decide or waive them.
 Added by this milestone for owner ruling (review R1-02): D-1 - on canonical, a host waiting for the GPU lease
 (`WAITING_FOR_LEASE`) keeps the FCV-10 unavailable "Waiting for GPU" look instead of the Ember handoff's Initializing.
+**D-1 owner ruling 2026-10-18: APPROVED** - retain canonical FCV-10 Brain-state semantics ("Waiting for GPU" when GPU
+resources are unavailable, "Initializing" when the Brain is genuinely starting or loading, ready only after verified
+readiness, unavailable/failed only when the authoritative state confirms it). Ember controls visual presentation, not
+Brain-state authority. The acceptance criteria below are unchanged by this ruling.
 
 Evidence rule: only a check that ran to completion with a recorded result counts (COMPLETED_WITH_RESULT).
 

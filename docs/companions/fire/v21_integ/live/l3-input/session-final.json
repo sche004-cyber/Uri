@@ -1,0 +1,34 @@
+{
+ "label": "l3-input",
+ "port": 18300,
+ "started_utc": "2026-10-18T04:45:50.872468+00:00",
+ "no_brain": true,
+ "verified": {
+  "ok": true,
+  "mismatched": [],
+  "checked_files": 354,
+  "runtime_head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "materialized_from": "0533d2a4ecfc6cba3ce41c98f62fe684c0f07208",
+  "source_head": "6bdaf86e0e1bba05ab503cc69735b273c363cb24"
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "override": false,
+ "server_pid": 5596,
+ "server_listener_pid": 2712,
+ "server_listen_s": 2.22,
+ "server_listening": true,
+ "finished_utc": "2026-10-18T04:46:54.138503+00:00",
+ "server_exit": 1,
+ "brain_config_sha256_after": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_listener_after_3s": null,
+ "server_listener_after": null,
+ "host_final": []
+}
