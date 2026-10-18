@@ -237,8 +237,9 @@ class IntegratedTurns:
                 or (isinstance(result, str) and result.startswith("REFUSED_")))
         if done:
             self._restart = None
-            if self._switch is not None and self._switch.get("id") == r["id"]:
-                self._switch = None
+            # Integration review IC1-01: a switch belongs to the request the gate followed; once the gate opens no
+            # switch can still be pending (a later restart request replaced it).
+            self._switch = None
         return not done
 
     def _start(self, turn_id, fn):
@@ -729,6 +730,8 @@ class IntegratedTurns:
         # The gate follows the LATEST control request (Codex H-r3): a later request overwrites the request file, so
         # an earlier one may never be read; the host acts on the latest and marks its id.
         self._restart = {"id": req.get("id"), "t": now, "until": now + RESTART_GATE_S}
+        # IC1-01: the restart/stop/start request replaces any switch in flight; never report a stale switch.
+        self._switch = None
         return {"requested": action, "request_id": req.get("id"), "host_state": host.get("state")}
 
     def _oi_turn_status(self, _c):
