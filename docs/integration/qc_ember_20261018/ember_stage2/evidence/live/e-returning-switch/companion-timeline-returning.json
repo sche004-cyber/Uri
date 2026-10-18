@@ -1,0 +1,72 @@
+[
+  {
+    "utc": "2026-10-18T11:44:17.674318Z",
+    "t_s": 9.811,
+    "state": "unavailable",
+    "headline": "Brain not running",
+    "detail": "The Brain is not running. Start it with the URI Working System launcher.",
+    "source": "URI",
+    "simulated": false,
+    "brain_status": "STOPPED",
+    "readiness": "STOPPED",
+    "host": null,
+    "switch_pending": false,
+    "profile": null
+  },
+  {
+    "utc": "2026-10-18T11:45:05.357659Z",
+    "t_s": 57.494,
+    "state": "initializing",
+    "headline": "Loading model",
+    "detail": "The Brain is loading its model into memory. URI can answer when it is ready.",
+    "source": "URI",
+    "simulated": false,
+    "brain_status": "LOADING",
+    "readiness": "LOADING",
+    "host": null,
+    "switch_pending": false,
+    "profile": null
+  },
+  {
+    "utc": "2026-10-18T11:45:27.704415Z",
+    "t_s": 79.841,
+    "state": "idle",
+    "headline": null,
+    "detail": null,
+    "source": "URI",
+    "simulated": false,
+    "brain_status": "READY",
+    "readiness": "READY",
+    "host": null,
+    "switch_pending": false,
+    "profile": "standard"
+  },
+  {
+    "utc": "2026-10-18T11:46:08.112422Z",
+    "t_s": 120.25,
+    "state": "thinking",
+    "headline": null,
+    "detail": null,
+    "source": "URI",
+    "simulated": false,
+    "brain_status": "READY",
+    "readiness": "READY",
+    "host": null,
+    "switch_pending": false,
+    "profile": "standard"
+  },
+  {
+    "utc": "2026-10-18T11:46:13.992992Z",
+    "t_s": 126.13,
+    "state": "idle",
+    "headline": null,
+    "detail": null,
+    "source": "URI",
+    "simulated": false,
+    "brain_status": "READY",
+    "readiness": "READY",
+    "host": null,
+    "switch_pending": false,
+    "profile": "standard"
+  }
+]

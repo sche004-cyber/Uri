@@ -1,0 +1,283 @@
+{
+ "label": "p3-ember-switch",
+ "started_utc": "2026-10-18T12:28:11.153862+00:00",
+ "runtime": "D:\\uri-dev\\uri-integ-rt-e",
+ "port": 18300,
+ "receipt": {
+  "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "candidate_source": "D:\\uri-dev\\uri-integ-ember",
+  "candidate_head": "bb61e976ed452c0dd27b1dbc99acad24d9a25c0a",
+  "candidate_tree": "801c7bca0bb5c2fafbcecc92d002ec5658855e4f"
+ },
+ "brain_config_sha256_before": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "override": false,
+ "runtime_verified": {
+  "ok": true,
+  "checked": 361,
+  "mismatched": []
+ },
+ "server_pid": 9288,
+ "server_listening": true,
+ "lease_free_utc": "2026-10-18T12:28:12.906649+00:00",
+ "host_pid": 10548,
+ "host_argv": [
+  "ws_brain_host.py",
+  "--report-dir",
+  "D:\\uri-dev\\uri-integ-rt-e\\work\\c1\\ws-integ-e\\client\\control\\oi",
+  "--minutes",
+  "45",
+  "--profile",
+  "32768,gpu,0"
+ ],
+ "end_reason": "ui-finished",
+ "result": "COMPLETED",
+ "finished_utc": "2026-10-18T12:31:49.076065+00:00",
+ "host_exit": 0,
+ "host_final": {
+  "detail": "HOST_EXIT",
+  "explain": "The Brain host has exited.",
+  "gpu": {
+   "census_s": 3.67,
+   "census_t": 1792326666.879,
+   "explain": "The Brain fits with a small margin (250 MB); other GPU apps may slow it down.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 679.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 438.3,
+      "name": "chrome.exe",
+      "parent": "chrome.exe",
+      "pid": 14668,
+      "role": null
+     },
+     {
+      "dedicated_mib": 178.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 15588,
+      "role": null
+     }
+    ],
+    "free_mib": 14610.0,
+    "margin_mib": 250.0,
+    "others_mib": 1758.0,
+    "owner_mib": 0,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "since_stop_s": 3.7
+  },
+  "heartbeat_at": 1792326704.198,
+  "history": [
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792326496.895
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792326502.319
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792326520.186
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792326527.13
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792326621.217
+   },
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792326624.959
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792326630.455
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792326643.366
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792326650.172
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792326666.763
+   },
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792326670.562
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792326676.007
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792326693.009
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792326699.677
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792326705.852
+   },
+   {
+    "detail": "HOST_EXIT",
+    "state": "STOPPED",
+    "t": 1792326705.923
+   }
+  ],
+  "host_pid": 19076,
+  "host_started": 1792326493.227,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "3d39580f-7029-4eba-96e5-e27a477ee851",
+   "result": "DONE",
+   "t": 1792326662.989,
+   "t_done": 1792326699.79
+  },
+  "lease": {
+   "held": false
+  },
+  "override": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 679.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 438.3,
+      "name": "chrome.exe",
+      "parent": "chrome.exe",
+      "pid": 14668,
+      "role": null
+     },
+     {
+      "dedicated_mib": 178.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 15588,
+      "role": null
+     }
+    ],
+    "free_mib": 14610.0,
+    "margin_mib": 250.0,
+    "others_mib": 1758.0,
+    "owner_mib": 12472.0,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "3d39580f-7029-4eba-96e5-e27a477ee851",
+   "required_mib": 14360,
+   "result": "READY",
+   "seconds": 36.6,
+   "started_stopped_brain": false,
+   "t_done": 1792326699.731,
+   "t_request": 1792326663.097,
+   "t_stopped": 1792326666.814,
+   "to": "c32k-visgpu-mtpoff"
+  },
+  "release_measurement": {
+   "since_stop_s": 3.7,
+   "unattributed_mib": 0.0,
+   "verdict": "AT_RISK"
+  },
+  "requests": {
+   "3d39580f-7029-4eba-96e5-e27a477ee851": "DONE",
+   "eb59f05b-7281-4361-9992-294478cb3973": "DONE"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 679.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 438.3,
+     "name": "chrome.exe",
+     "parent": "chrome.exe",
+     "pid": 14668,
+     "role": null
+    },
+    {
+     "dedicated_mib": 178.5,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 15588,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 12935.6,
+   "non_local_mib": 2097.3,
+   "others_mib": 1758.0,
+   "t": 1792326696.095,
+   "verdict_now": "AT_RISK"
+  },
+  "schema": "uri.ws.brain_host.v1",
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "state": "STOPPED",
+  "updated_at": 1792326705.923
+ },
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_config_sha256_after": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "brain_listener_after": null
+}

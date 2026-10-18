@@ -1,0 +1,270 @@
+[
+  {
+    "utc": "2026-10-18T11:52:55.891522Z",
+    "t": 1792324375.892,
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "Brain_Core_worker_mocked": false
+  },
+  {
+    "utc": "2026-10-18T11:53:12.660710Z",
+    "t": 1792324392.66,
+    "label": "window",
+    "logical_size": "Size(1264.0, 681.0)",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T12:03:15.832917Z",
+    "t": 1792324995.832,
+    "label": "check",
+    "id": "QC-ready-standard",
+    "result": "FAIL",
+    "exception": "Bad state: Timeout: Standard ready {\"t\":1792324995.827,\"state\":\"UNAVAILABLE\",\"reasons\":[\"GPU_CONTENDED\"],\"active\":null,\"pending\":false,\"configured\":\"frozen\",\"chip_vision\":\"Vision: On (not running)\",\"chip_context\":\"Context: 32K (not running)\",\"chip_switching\":null,\"header_brain\":\"STOPPED\",\"header_text\":\"Brain: qwen3.6-35b-a3b-ud-iq3_s · not running\"}",
+    "stack": "#0      main.<anonymous closure>.waitActive (file:///D:/uri-dev/uri-integ-ember/uri_ui/integration_test/qc_native_test.dart:136:42) | <asynchronous suspension> | #1      main.<anonymous closure>.<anonymous closure> (file:///D:/uri-dev/uri-integ-ember/uri_ui/integration_test/qc_native_test.dart:198:7) | <asynchronous suspension> | #2      main.<anonymous closure>.step (file:///D:/uri-dev/uri-integ-ember/uri_ui/integration_test/qc_native_test.dart:74:9) | <asynchronous suspension>"
+  },
+  {
+    "utc": "2026-10-18T12:03:17.151566Z",
+    "t": 1792324997.151,
+    "label": "check",
+    "id": "QC-thinking-off-depth",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T12:03:23.191660Z",
+    "t": 1792325003.191,
+    "label": "turn",
+    "scenario": "tell-fact",
+    "request": "Quick arithmetic game. The secret number is 4817. Reply with just OK.",
+    "text": "",
+    "route": "core",
+    "tier": "FAST",
+    "status": "error",
+    "answer_status": null,
+    "metrics": {},
+    "depth_sent": "fast",
+    "seconds": 6.038,
+    "error": "BRAIN_UNAVAILABLE",
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "Quick arithmetic game. The secret number is 4817. Reply with just OK."
+      },
+      {
+        "role": "uri",
+        "text": ""
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T12:03:23.191660Z",
+    "t": 1792325003.191,
+    "label": "check",
+    "id": "QC-thinking-off-tier",
+    "result": "PASS",
+    "tier": "FAST",
+    "route": "core"
+  },
+  {
+    "utc": "2026-10-18T12:03:24.454319Z",
+    "t": 1792325004.454,
+    "label": "check",
+    "id": "QC-thinking-on-depth",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T12:03:27.735661Z",
+    "t": 1792325007.735,
+    "label": "turn",
+    "scenario": "thinking-on",
+    "request": "Compare a bicycle and an electric scooter for a 3 km city commute in two short sentences.",
+    "text": "",
+    "route": "answer",
+    "tier": "NORMAL",
+    "status": "error",
+    "answer_status": null,
+    "metrics": {},
+    "depth_sent": "normal",
+    "seconds": 3.28,
+    "error": "BRAIN_UNAVAILABLE",
+    "new_messages": [
+      {
+        "role": "user",
+        "text": "Compare a bicycle and an electric scooter for a 3 km city commute in two short sentences."
+      },
+      {
+        "role": "uri",
+        "text": ""
+      }
+    ]
+  },
+  {
+    "utc": "2026-10-18T12:03:27.736667Z",
+    "t": 1792325007.736,
+    "label": "check",
+    "id": "QC-thinking-on-tier",
+    "result": "PASS",
+    "tier": "NORMAL",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T12:03:28.834497Z",
+    "t": 1792325008.834,
+    "label": "check",
+    "id": "QC-thinking-last-answer-shown",
+    "result": "PASS",
+    "text": null
+  },
+  {
+    "utc": "2026-10-18T12:03:32.037006Z",
+    "t": 1792325012.037,
+    "label": "check",
+    "id": "QC-unqualified-listed-disabled",
+    "result": "FAIL"
+  },
+  {
+    "utc": "2026-10-18T12:03:32.037517Z",
+    "t": 1792325012.037,
+    "label": "check",
+    "id": "QC-menus",
+    "result": "FAIL",
+    "exception": "Bad state: No element",
+    "stack": "#0      Iterable.first (dart:core/iterable.dart:663:7) | #1      _FirstFinderMixin.filter (package:flutter_test/src/finders.dart:1383:28) | #2      _SyncStarIterator.moveNext (dart:async-patch/async_patch.dart:594:16) | #3      _AncestorFinderMixin.allCandidates (package:flutter_test/src/finders.dart:1857:49) | #4      FinderBase.evaluate (package:flutter_test/src/finders.dart:1030:76) | #5      WidgetController.widgetList (package:flutter_test/src/controller.dart:848:19)"
+  },
+  {
+    "utc": "2026-10-18T12:03:32.907421Z",
+    "t": 1792325012.907,
+    "label": "check",
+    "id": "QC-switch-to-long",
+    "result": "FAIL",
+    "exception": "The finder \"Found 0 widgets with key [<'qc-context-64K'>]: []\" (used in a call to \"tap()\") could not find any matching widgets.",
+    "stack": "#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2095:7) | #1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12) | #2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7) | #3      main.<anonymous closure>.<anonymous closure> (file:///D:/uri-dev/uri-integ-ember/uri_ui/integration_test/qc_native_test.dart:252:15) | <asynchronous suspension> | #4      main.<anonymous closure>.step (file:///D:/uri-dev/uri-integ-ember/uri_ui/integration_test/qc_native_test.dart:74:9)"
+  },
+  {
+    "utc": "2026-10-18T12:03:33.754412Z",
+    "t": 1792325013.754,
+    "label": "check",
+    "id": "QC-switch-to-standard",
+    "result": "FAIL",
+    "exception": "The finder \"Found 0 widgets with key [<'qc-vision-On'>]: []\" (used in a call to \"tap()\") could not find any matching widgets.",
+    "stack": "#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2095:7) | #1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12) | #2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7) | #3      main.<anonymous closure>.<anonymous closure> (file:///D:/uri-dev/uri-integ-ember/uri_ui/integration_test/qc_native_test.dart:306:15) | <asynchronous suspension> | #4      main.<anonymous closure>.step (file:///D:/uri-dev/uri-integ-ember/uri_ui/integration_test/qc_native_test.dart:74:9)"
+  },
+  {
+    "utc": "2026-10-18T12:03:33.755412Z",
+    "t": 1792325013.755,
+    "label": "check",
+    "id": "QC-same-worker-and-session",
+    "result": "PASS",
+    "before": {
+      "runtime_identical": true,
+      "session": "c8a3ac81-5a19-4609-9abe-db562e940b29"
+    },
+    "session_after": "c8a3ac81-5a19-4609-9abe-db562e940b29"
+  },
+  {
+    "utc": "2026-10-18T12:03:33.755412Z",
+    "t": 1792325013.755,
+    "label": "final",
+    "failures": [
+      "QC-ready-standard",
+      "QC-unqualified-listed-disabled",
+      "QC-menus",
+      "QC-switch-to-long",
+      "QC-switch-to-standard"
+    ],
+    "controls": {
+      "active": null,
+      "can_switch": true,
+      "cannot_switch_reason": null,
+      "configured": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "host_profile": {
+        "ctx": 32768,
+        "frozen": true,
+        "id": "frozen",
+        "mtp": true,
+        "vision": "gpu"
+      },
+      "options": [
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+          "id": "standard",
+          "label": "Standard",
+          "mtp": true,
+          "qualified": true,
+          "required_mib": 15620,
+          "summary": "32K context, vision on (the default Runtime v1)",
+          "switchable": true,
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+          "id": "long",
+          "label": "Long context",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 13658,
+          "summary": "64K context, vision off",
+          "switchable": true,
+          "vision": "off",
+          "vision_on": false
+        },
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw4",
+          "id": "standard-nodraft",
+          "label": "Standard (no draft)",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 14360,
+          "summary": "32K context, vision on, no speculative draft",
+          "switchable": false,
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P1: FAIL",
+          "id": "long-vision",
+          "label": "Long context with vision",
+          "mtp": false,
+          "qualified": false,
+          "reason": "Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+          "required_mib": 14764,
+          "summary": "64K context, vision on",
+          "switchable": false,
+          "vision": "gpu",
+          "vision_on": true
+        }
+      ],
+      "schema": "uri.brain.quick_controls.v1",
+      "switch": {
+        "context_tokens": 0,
+        "last": null,
+        "pending": false,
+        "target": null
+      },
+      "thinking": {
+        "auto": "auto",
+        "off": "fast",
+        "on": "normal",
+        "reload": false
+      }
+    },
+    "health_state": "UNAVAILABLE"
+  }
+]

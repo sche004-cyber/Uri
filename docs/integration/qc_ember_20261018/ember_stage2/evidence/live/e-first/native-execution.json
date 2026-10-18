@@ -1,0 +1,27 @@
+{
+ "label": "e-first",
+ "mode": "first",
+ "fresh_prefs": true,
+ "source_head": "8f883bbf178fe937f72673eec309ec1581dc3715",
+ "source_tree": "205056d76815a6f61b11eae80b64cb89655d5b96",
+ "source_status_before": "",
+ "port": 18300,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/ember_live_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "bcdce2a1ff4e5d310ee9287b3755a11cbc0558a52cd7e769ff7c48affe4cabbf",
+ "entry": "original production main() via integration_test; window checks via Win32 probe with SendInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "microphone_qualified": false,
+ "started_utc": "2026-10-18T11:37:10.837934+00:00",
+ "rc": 0,
+ "seconds": 369.0,
+ "source_status_after": "",
+ "finished_utc": "2026-10-18T11:43:22.525462+00:00"
+}

@@ -1,0 +1,25 @@
+{
+ "label": "c-qc",
+ "source_head": "8f883bbf178fe937f72673eec309ec1581dc3715",
+ "source_tree": "205056d76815a6f61b11eae80b64cb89655d5b96",
+ "source_status_before": "",
+ "port": 18300,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/qc_native_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "c2f23a11ea3456826ec66efbdd0c08ef867b4eebba615dcce0177c89c55fde25",
+ "entry": "original production main() via integration_test (Debug build); taps and TestTextInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "started_utc": "2026-10-18T11:52:27.967297+00:00",
+ "exit_code": 1,
+ "elapsed_s": 666.19,
+ "finished_utc": "2026-10-18T12:03:34.152788+00:00",
+ "source_status_after": "",
+ "ui_binary_sha256": "a096a44f681161761bd4b9ca9ff20beee441e687eafe4bc2db2c930668d18921"
+}
