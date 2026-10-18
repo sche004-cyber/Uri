@@ -228,10 +228,11 @@ comment and a test assertion.
   P3. The Quick Controls UI never shows that field and never calls a running profile "qualified". It names profiles
   (Standard, Long context) and shows "Not qualified yet" only for P1, whose catalog entry is the authority, with
   evidence paths.
-- **IC-1 / integration note** (replaces the earlier note): against canonical `cd4a7963`, BRAIN-QC changes three
-  existing files: `scripts/ws_brain_host.py`, `uri_operational_intelligence/brain_health.py` and
-  `scripts/run_uri_integrated_worker.py`. It adds the catalog, the UI file and the tests (diff stat:
-  `evidence/gates/diff_stat_vs_canonical_cd4a7963.txt`). Integrating needs its own review on this merged candidate.
+- **IC-1 / integration note** (replaces the earlier note; corrected by R4-02, see below): against canonical
+  `cd4a7963`, BRAIN-QC changes three IC-1 files: `scripts/ws_brain_host.py`,
+  `uri_operational_intelligence/brain_health.py` and `scripts/run_uri_integrated_worker.py`. It adds the catalog,
+  the UI file and the tests (diff stat: `evidence/gates/diff_stat_vs_canonical_cd4a7963.txt`). Integrating needs its
+  own review on this merged candidate.
 
 ### Live round trip on the merged candidate: qc-6
 Source and runtime `b653c154`; the runtime was verified byte for byte. The real app ran through production `main()`,
@@ -267,3 +268,50 @@ the Brain was started by the production host under a FREE lease, no override was
 - Frozen UI V2 files against `7893aaed`: +98/0 and +37/0 lines.
 
 All of these have `.head` files.
+
+---
+
+## Review R4 (2026-10-18): ACCEPT WITH FINDINGS (2 LOW, 3 INFO); repairs
+
+The review report is in `review/R4_report.md`. The code repair and the gates are both at `5bcf1f24`.
+
+| Finding | Change |
+|---|---|
+| R4-01 LOW | `_brain_reconfigure` now checks the host's reported profile. When the host runs a profile the worker does not follow (a research `--profile` launch such as P1, where the worker stays on the frozen config), choosing Standard sends a reconfigure; it no longer answers `already_active`. If the host reports Standard, the answer is `already_active`. Unit test: `test_the_host_report_decides_whether_a_target_already_runs`. There is no live run for this: it only affects a research launch with `--profile`. |
+| R4-02 LOW | The IC-1 wording is corrected (below). |
+| R4-03 INFO | The main session's R3 logs (`HEAD=d65b122c`) moved to `evidence/gates/history_r3_d65b122c/`. The new gate logs start with a `HEAD=` line. Where a log and its `.head` sidecar disagree, the `.head` file is authoritative. |
+| R4-04 INFO | Recorded as QC-F9. |
+| R4-05 INFO | Recorded as QC-F10. |
+
+### Existing files changed vs canonical `cd4a7963` (R4-02)
+The three IC-1 files: `scripts/ws_brain_host.py`, `uri_operational_intelligence/brain_health.py` and
+`scripts/run_uri_integrated_worker.py`. All six existing files changed:
+
+| File | IC-1 file |
+|---|---|
+| `scripts/ws_brain_host.py` | yes |
+| `uri_operational_intelligence/brain_health.py` | yes |
+| `scripts/run_uri_integrated_worker.py` | yes |
+| `uri_operational_intelligence/worker_bridge.py` | no |
+| `uri_ui/lib/living/integration/oi_conversation.dart` | no |
+| `uri_ui/lib/living/widgets/living_composer.dart` | no |
+
+The new files are `uri_operational_intelligence/brain_quick_controls.py`,
+`uri_ui/lib/living/integration/brain_quick_controls.dart` and the two test files.
+
+### Open findings added
+- **QC-F9:** the host's `selection_error: PROFILE_NOT_SELECTABLE` (R9-01) appears only in the host report. Neither
+  the worker's `controls` nor the UI shows it, so the user sees only the generic not-ready / foreign state.
+- **QC-F10:** a host-side refusal of a reconfigure target (`REFUSED_PROFILE_*`) is recorded in `last_request`, not
+  in `profile_switch`, and has no plain-words mapping, so the UI would show no notice. Today this cannot happen: the
+  worker applies the same `QC.switch_target` first. It matters only if the worker and the host ever diverge.
+
+### Gates at `5bcf1f24` (final code; `.head` files plus an in-log `HEAD=` line)
+- pytest `tests/oi` + `tests/ws`: 779 passed, 23 skipped.
+- Quick Controls flutter test file: 18 passed.
+- Full flutter test: 779 passed.
+- flutter analyze: 4 info messages, all in files this milestone did not touch.
+- `ws_frozen_check` ok.
+
+The R4 changes are Python only. The Dart code is the same as at `76088dad`, and the release build from that commit
+stands (`uibuild-release.head`).

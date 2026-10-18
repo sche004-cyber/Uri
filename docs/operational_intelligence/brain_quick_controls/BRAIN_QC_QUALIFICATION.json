@@ -4,9 +4,9 @@
  "date": "2026-10-18",
  "branch": "milestone/brain-quick-controls-20261018",
  "base": "canonical cd4a7963 (merged in 0226e7ee); original base f3d5eb29",
- "candidate_code_commit": "4c61a0b3 (code; harness-only b653c154 used for runtime4); gates at 76088dad",
+ "candidate_code_commit": "5bcf1f24 (final code; merged onto canonical cd4a7963); live round trip qc-6 on b653c154 (pre-R4; R4-01 path is research-launch only)",
  "classification": "COMPLETED_WITH_RESULT",
- "status": "MERGED_ONTO_CANONICAL_CD4A7963_PENDING_REVIEW",
+ "status": "R4_ACCEPTED_WITH_FINDINGS_REPAIRED",
  "acceptance": {
   "QC-1": {
    "status": "MET",
@@ -46,7 +46,7 @@
   },
   "QC-10": {
    "status": "MET",
-   "evidence": "gates at 76088dad (merged): pytest 778/23 skipped, flutter test 779, analyze 4 pre-existing infos, release build exit 0, frozen check ok (.head files)"
+   "evidence": "gates at 5bcf1f24: pytest 779/23 skipped, QC flutter test 18, full flutter test 779, analyze 4 pre-existing infos, frozen check ok; release build exit 0 at 76088dad (Dart unchanged since)"
   },
   "QC-11": {
    "status": "MET",
@@ -496,6 +496,14 @@
    "repairs_commit": "4c61a0b3 (R9-01)",
    "live": "qc-6 on b653c154: 22/22",
    "gates_commit": "76088dad"
+  },
+  {
+   "round": "R4",
+   "commit": "cfb877e5",
+   "verdict": "ACCEPT WITH FINDINGS (2 LOW, 3 INFO)",
+   "report": "review/R4_report.md",
+   "repairs_commit": "5bcf1f24",
+   "gates_commit": "5bcf1f24"
   }
  ],
  "open_findings": [
@@ -507,6 +515,8 @@
   "QC-F6 health chip shows previous tok/s briefly (pre-existing)",
   "QC-F7 shrink refusal covers every conversation the worker has held; sizes never cleared except by LRU eviction beyond 64 sessions; reserve heuristic",
   "QC-F8 from a P3 host, Standard needs two switches",
-  "IC-1 vs canonical cd4a7963: ws_brain_host.py, brain_health.py, run_uri_integrated_worker.py changed; integration needs its own review"
+  "IC-1 vs canonical cd4a7963: three IC-1 files changed (ws_brain_host.py, brain_health.py, run_uri_integrated_worker.py); all six existing files changed: ws_brain_host.py, brain_health.py, run_uri_integrated_worker.py, worker_bridge.py, oi_conversation.dart, living_composer.dart; integration needs its own review",
+  "QC-F9 host selection_error PROFILE_NOT_SELECTABLE not surfaced in worker controls or UI",
+  "QC-F10 host-side REFUSED_PROFILE_* recorded only in last_request, no UI notice (unreachable while worker and host share switch_target)"
  ]
 }

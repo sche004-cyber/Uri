@@ -1,3 +1,4 @@
+HEAD=5bcf1f24863a4aa3e3df2ade5ba5d8cae3988de1
 Resolving dependencies...
 Downloading packages...
   android_file_picker 1.1.1 (2.1.1 available)
@@ -33,5 +34,5 @@ Analyzing uri_ui...
    info - The import of 'dart:async' is unnecessary because all of the used elements are also provided by the import of 'package:flutter_test/flutter_test.dart'. Try removing the import directive - test\chat_supervised_handoff_test.dart:5:8 - unnecessary_import
    info - Unnecessary use of string interpolation. Try replacing the string literal with the variable name - test\living\assist_mode_test.dart:277:43 - unnecessary_string_interpolations
 
-4 issues found. (ran in 9.6s)
+4 issues found. (ran in 5.0s)
 exit=1
