@@ -5,6 +5,7 @@ import '../../services/app_state_scope.dart';
 import '../../services/file_picker_service.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
+import '../integration/brain_quick_controls.dart';
 import '../integration/oi_conversation.dart';
 import '../living_scope.dart';
 import '../office/office_bridge.dart' show OfficeRequestHint;
@@ -215,6 +216,11 @@ class _LivingComposerState extends State<LivingComposer> {
                     onPressed: () async {
                       final picked = await widget.filePicker!();
                       if (picked == null || !context.mounted) return;
+                      if (oi != null && oiImageMime(picked.name) != null) {
+                        // BRAIN-QUICK-CONTROLS: on the working system an image goes to the Brain (Vision On).
+                        await attachOiImage(context, oi, picked.name, picked.bytes);
+                        return;
+                      }
                       await appState.attachFile(
                         filename: picked.name,
                         bytes: picked.bytes,

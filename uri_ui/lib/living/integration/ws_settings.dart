@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/uri_theme.dart';
 import '../widgets/glass_panel.dart';
+import 'brain_quick_controls.dart';
 import 'oi_conversation.dart';
 
 /// Lets the working-system root offer the classic (Hybrid) interface from
@@ -83,6 +84,7 @@ class _WorkingSystemSettingsSectionState extends State<WorkingSystemSettingsSect
                           ? () => conv.selectBrain(r['id'] as String)
                           : null,
                     ),
+                  OiSpeedBoostTile(conversation: conv),
                 ],
               ),
             ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/uri_theme.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/scroll_when_short.dart';
+import 'brain_quick_controls.dart';
 import 'oi_conversation.dart';
 import 'oi_health_widgets.dart';
 import 'oi_markdown.dart';
@@ -516,7 +517,7 @@ class OiBrainBar extends StatelessWidget {
         if (r['selectable'] == true) r,
     ];
     // The label is plain words; readiness is decided on the raw state code.
-    final ready = conv.brainStatus['state'] == 'READY';
+    final ready = conv.brainStatus['state'] == 'READY' && !conv.profileSwitching;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         UriSpace.md,
@@ -546,7 +547,8 @@ class OiBrainBar extends StatelessWidget {
                       : (state == 'checking' ? c.inkFaint : c.warning)),
           ),
           Text(
-            'Brain: ${conv.brainStatus['model_id'] ?? 'Runtime v1'} · $state',
+            'Brain: ${conv.brainStatus['model_id'] ?? 'Runtime v1'} · '
+            '${conv.profileSwitching ? 'switching' : state}',
             key: const ValueKey('oi-brain-state'),
             style: TextStyle(color: c.inkSoft, fontSize: 12),
           ),
@@ -570,27 +572,8 @@ class OiBrainBar extends StatelessWidget {
                   ? null
                   : (v) => v == null ? null : conv.selectBrain(v),
             )),
-          fit(DropdownButton<OiDepth>(
-            key: const ValueKey('oi-depth'),
-            value: conv.depth,
-            isDense: true,
-            isExpanded: true,
-            underline: const SizedBox.shrink(),
-            style: TextStyle(color: c.ink, fontSize: 12),
-            items: const [
-              DropdownMenuItem(value: OiDepth.auto, child: Text('Depth: auto', overflow: TextOverflow.ellipsis)),
-              DropdownMenuItem(value: OiDepth.fast, child: Text('Depth: fast', overflow: TextOverflow.ellipsis)),
-              DropdownMenuItem(
-                value: OiDepth.normal,
-                child: Text('Depth: thinking', overflow: TextOverflow.ellipsis),
-              ),
-              DropdownMenuItem(
-                value: OiDepth.deep,
-                child: Text('Depth: deep (offer a stronger tool)', overflow: TextOverflow.ellipsis),
-              ),
-            ],
-            onChanged: (v) => v == null ? null : conv.setDepth(v),
-          )),
+          // BRAIN-QUICK-CONTROLS: Thinking / Vision / Context (Thinking keeps the 'oi-depth' key).
+          OiQuickControls(conversation: conv),
           IconButton(
             tooltip: 'Refresh Brain status',
             icon: const Icon(Icons.refresh_rounded, size: 16),

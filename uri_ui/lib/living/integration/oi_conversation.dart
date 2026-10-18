@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/integrated_runtime.dart';
 import 'oi_draft.dart';
@@ -31,6 +33,10 @@ enum OiRole { user, uri, system }
 String notSentMessage(String code) => switch (code) {
       'TURN_IN_PROGRESS' => 'Not sent: URI is still finishing the previous request. Try again in a moment.',
       'BRAIN_RESTARTING' => 'Not sent: the Brain is restarting. Try again when it is ready.',
+      'VISION_OFF' => 'Not sent: Vision is off, so the Brain cannot see images. Turn Vision on, or remove the image.',
+      'IMAGE_ACTION_UNSUPPORTED' =>
+        'Not sent: URI can answer questions about an image, but cannot act on one. Ask about the image instead.',
+      'IMAGES_TOO_LARGE' => 'Not sent: the images are too large. Attach one smaller image.',
       'TEXT_INVALID' => 'Not sent: the message was empty or too long.',
       'WORKER_TIMEOUT' => 'Not sent: URI did not answer in time. Try again.',
       _ => 'Not sent: URI could not accept this request right now.',
@@ -73,6 +79,9 @@ class OiMessage {
   /// transcripts are always labelled as simulated.
   String? inputLabel;
 
+  /// User messages: names of the images sent with the words (Vision On).
+  List<String> images = const [];
+
   bool get unverifiedClaim => flags.contains('UNVERIFIED_ACTION_CLAIM');
 }
 
@@ -113,6 +122,7 @@ class OiConversation extends ChangeNotifier {
     this.stalledAfter = const Duration(seconds: 90),
   }) : sessionId = sessionId ?? _uuid4() {
     _sub = runtime.events.listen(_onEvent);
+    _loadThinking();
   }
 
   /// The current worker. Replaced only by [restartWorker].
@@ -251,6 +261,7 @@ class OiConversation extends ChangeNotifier {
       lastError = e.code;
     }
     await refreshHealth(notify: false);
+    await refreshProfile();
     if (_active(rt)) notifyListeners();
   }
 
@@ -261,6 +272,13 @@ class OiConversation extends ChangeNotifier {
       final health = await rt.call({'command': 'brain_health'}).timeout(probeTimeout);
       if (!_active(rt)) return;
       brainHealth = health;
+      // Truthful readiness (BRAIN-QUICK-CONTROLS): the status line must never keep an old READY after a restart
+      // or a profile switch. When the health report's readiness differs from the last status, re-read it.
+      if (health['readiness'] != null && health['readiness'] != brainStatus['state']) {
+        final status = await rt.call({'command': 'brain_status'}).timeout(probeTimeout);
+        if (!_active(rt)) return;
+        brainStatus = status;
+      }
     } on IntegratedRuntimeException catch (e) {
       if (!_active(rt)) return;
       lastError = e.code;
@@ -534,7 +552,11 @@ class OiConversation extends ChangeNotifier {
   Future<void> _turn(String t, Map<String, dynamic>? input, String? label) async {
     // Nothing goes to a worker that is being replaced (WS hardening).
     if (t.trim().isEmpty || busy || restarting) return;
-    messages.add(OiMessage(role: OiRole.user, text: t)..inputLabel = label);
+    // Images go with a typed question only (never dictation or a draft edit: the worker refuses those).
+    final images = input == null ? List<OiImage>.of(pendingImages) : const <OiImage>[];
+    messages.add(OiMessage(role: OiRole.user, text: t)
+      ..inputLabel = label
+      ..images = [for (final i in images) i.name]);
     lastError = null;
     draftProgress = 0;
     _sendingSince = DateTime.now();
@@ -548,10 +570,14 @@ class OiConversation extends ChangeNotifier {
         'text': t,
         'depth': depth.name,
         'input': ?input,
+        if (images.isNotEmpty) 'images': [for (final i in images) i.toCommand()],
       });
       // A late reply from a worker that was replaced by Restart URI changes nothing (Codex H-r2).
       if (!identical(rt, runtime)) return;
       _sendingSince = null;
+      for (final i in images) {
+        pendingImages.remove(i);
+      }
       _begin(r['turn_id'] as String);
     } on IntegratedRuntimeException catch (e) {
       if (!identical(rt, runtime)) return;
@@ -746,6 +772,125 @@ class OiConversation extends ChangeNotifier {
   void setDepth(OiDepth d) {
     depth = d;
     notifyListeners();
+    _saveThinking(d);
+  }
+
+  // ---- Brain quick controls (BRAIN-QUICK-CONTROLS) -----------------------
+
+  /// Thinking Auto / Off / On is the per-turn depth auto / fast / normal: no
+  /// reload. It is remembered across app restarts; "deep" (offer a stronger
+  /// tool) is a one-off choice and is never remembered.
+  static const thinkingPrefKey = 'uri.oi.thinking';
+
+  Future<void> _loadThinking() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(thinkingPrefKey);
+      final d = OiDepth.values.where((v) => v.name == saved && v != OiDepth.deep);
+      if (_disposed || d.isEmpty || depth != OiDepth.auto) return;
+      depth = d.first;
+      notifyListeners();
+    } catch (_) {
+      // No preference store (tests, first start): the default applies.
+    }
+  }
+
+  Future<void> _saveThinking(OiDepth d) async {
+    if (d == OiDepth.deep) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(thinkingPrefKey, d.name);
+    } catch (_) {}
+  }
+
+  /// `brain_profile_get`: the offered Vision / Context / Speed options and
+  /// the truthful profile state (what runs, what is requested, what is chosen).
+  Map<String, dynamic> profileOffer = const {};
+  Map<String, dynamic> get profileState {
+    final fromHealth = brainHealth['profile'];
+    if (fromHealth is Map<String, dynamic>) return fromHealth;
+    return _profileState;
+  }
+
+  Map<String, dynamic> _profileState = const {};
+
+  /// The profile that runs now (null when unknown or no host).
+  Map<String, dynamic>? get activeProfile => profileState['active'] as Map<String, dynamic>?;
+
+  /// Vision is shown On only when the live server is READY with the projector.
+  bool get visionLive => profileState['vision_live'] == true;
+
+  /// A Vision / Context switch is in progress (requested, or the host is reloading).
+  bool get profileSwitching => profileState['pending_request'] == true || profileState['switching'] != null;
+
+  Future<void> refreshProfile() async {
+    if (_disposed) return;
+    final rt = runtime;
+    try {
+      final r = await rt.call({'command': 'brain_profile_get'});
+      if (!_active(rt)) return;
+      profileOffer = (r['offer'] as Map?)?.cast<String, dynamic>() ?? const {};
+      _profileState = (r['state'] as Map?)?.cast<String, dynamic>() ?? const {};
+    } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return;
+      // An older worker without quick controls: the controls stay hidden.
+      if (e.code != 'COMMAND_SCHEMA') lastError = e.code;
+    }
+    if (_active(rt)) notifyListeners();
+  }
+
+  /// Asks for a Vision / Context / Speed change. Returns null when the
+  /// request was accepted (or nothing had to change), else the refusal code
+  /// (e.g. CONTEXT_SMALLER_THAN_CONVERSATION: ask the user, then call again
+  /// with [confirmShrink]).
+  Future<String?> setProfile({
+    required bool vision,
+    required int context,
+    bool speed = false,
+    bool confirmShrink = false,
+  }) async {
+    if (busy || restarting) return 'TURN_IN_PROGRESS';
+    final rt = runtime;
+    try {
+      await rt.call({
+        'command': 'brain_profile_set',
+        'vision': vision,
+        'context': context,
+        'speed': speed,
+        if (confirmShrink) 'confirm_shrink': true,
+      });
+      if (!_active(rt)) return null;
+      lastError = null;
+      if (!vision) pendingImages.clear();
+    } on IntegratedRuntimeException catch (e) {
+      if (!_active(rt)) return e.code;
+      await refreshProfile();
+      return e.code;
+    }
+    await refreshHealth(notify: false);
+    await refreshProfile();
+    return null;
+  }
+
+  /// Images waiting to be sent with the next turn (Vision On only).
+  final List<OiImage> pendingImages = [];
+  static const maxImages = 2;
+  static const maxImageBytes = 1310720;     // worker limit for all images of a turn (images.py)
+
+  /// Adds an image for the next turn. Returns null, or why it was not added.
+  String? attachImage(OiImage image) {
+    if (!visionLive) return 'VISION_OFF';
+    if (pendingImages.length >= maxImages) return 'IMAGES_INVALID';
+    final total = pendingImages.fold<int>(image.bytes.length, (n, i) => n + i.bytes.length);
+    if (total > maxImageBytes) return 'IMAGES_TOO_LARGE';
+    pendingImages.add(image);
+    notifyListeners();
+    return null;
+  }
+
+  void removeImage(OiImage image) {
+    pendingImages.remove(image);
+    notifyListeners();
   }
 
   // ---- events -----------------------------------------------------------
@@ -920,4 +1065,14 @@ String _uuid4() {
   String h(int i) => b[i].toRadixString(16).padLeft(2, '0');
   final s = List.generate(16, h).join();
   return '${s.substring(0, 8)}-${s.substring(8, 12)}-${s.substring(12, 16)}-${s.substring(16, 20)}-${s.substring(20)}';
+}
+
+/// An image for the next turn (already scaled to the worker's limits).
+class OiImage {
+  const OiImage({required this.name, required this.mime, required this.bytes});
+  final String name;
+  final String mime;
+  final Uint8List bytes;
+
+  Map<String, dynamic> toCommand() => {'name': name, 'mime': mime, 'data': base64Encode(bytes)};
 }
