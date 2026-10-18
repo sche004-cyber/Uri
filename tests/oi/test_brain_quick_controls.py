@@ -409,3 +409,16 @@ def test_host_never_writes_a_selection_for_a_research_profile(tmp_path):
     h.sync_selection()
     assert not sel.exists() and h.report["selection_error"] == "PROFILE_NOT_SELECTABLE"
     assert PS.select(frozen(), sel)[1]["source"] == "frozen"
+
+
+def test_the_host_report_decides_whether_a_target_already_runs(fake, tmp_path):  # noqa: F811
+    """Review R4-01: a host started on a research profile (P1 via --profile) leaves the worker on the frozen config;
+    choosing Standard must still send the reconfigure. A host that reports Standard answers already_active."""
+    p1 = RP.describe(RP.derive_config(frozen(), *LONG_VISION))
+    b, rep, requests = bridge(fake, tmp_path, rep={"schema": BH.REPORT_SCHEMA, "state": "READY",
+                                                   "updated_at": time.time(), "profile": p1})
+    r = b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard"})
+    assert r["requested"] == "reconfigure" and requests == [("reconfigure", {"ctx": 32768, "vision": "gpu", "mtp": True})]
+    b2, _, requests2 = bridge(fake, tmp_path / "b2")          # host reports the frozen Standard profile
+    r2 = b2.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard"})
+    assert r2["already_active"] is True and requests2 == []

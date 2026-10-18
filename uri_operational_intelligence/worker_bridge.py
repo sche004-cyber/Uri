@@ -697,7 +697,15 @@ class IntegratedTurns:
                     "detail": {"live_tokens": live, "answer_reserve": ANSWER_RESERVE_TOKENS, "ctx": key[0]}}
         if plan["refused"]:
             raise BridgeRefused(plan["refused"])
-        if not plan["reload"]:
+        # Review R4-01: the host may run a profile the worker does not follow (a research --profile launch such as P1:
+        # the worker stays on the frozen config). The host's own report decides whether the target is already running.
+        host_profile = (host or {}).get("profile")
+        try:
+            host_key = QC.key_of(host_profile) if host_profile else None
+        except (KeyError, TypeError, ValueError):
+            host_key = None
+        reload = plan["reload"] or (host_key is not None and host_key != tuple(key))
+        if not reload:
             return {"requested": None, "already_active": True, "target": QC.describe_key(key)}
         now = time.time()
         req = self._host_request("reconfigure", QC.target_dict(key))
