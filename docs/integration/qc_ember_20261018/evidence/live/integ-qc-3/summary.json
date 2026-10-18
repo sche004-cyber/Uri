@@ -1,0 +1,306 @@
+{
+ "label": "integ-qc-3",
+ "classification": "INCOMPLETE",
+ "verdict": "FAIL",
+ "source_head": "01e06d70cad0eed0635aba5807006ddc1d71121a",
+ "runtime_candidate_head": "01e06d70cad0eed0635aba5807006ddc1d71121a",
+ "runtime_verified": {
+  "ok": true,
+  "checked": 361,
+  "mismatched": []
+ },
+ "checks": [
+  {
+   "id": "QC-ready-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-chips-standard",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-off-depth",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-off-tier",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-on-depth",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-on-tier",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-thinking-last-answer-shown",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-unqualified-listed-disabled",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-unqualified-not-requested",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-confirm-dialog",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-turn-refused-during-switch",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-header-truthful-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-truthful-switch-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-chips-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-continuity-long",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-unqualified-listed-at-64k",
+   "result": "PASS"
+  },
+  {
+   "id": "QC-switch-to-standard",
+   "result": "FAIL"
+  },
+  {
+   "id": "QC-same-worker-and-session",
+   "result": "PASS"
+  }
+ ],
+ "failed_checks": [
+  "QC-switch-to-standard"
+ ],
+ "turns": [
+  {
+   "scenario": "perf-standard-start",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 3.244,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa",
+   "decode_tps": 115.79597451084972,
+   "prompt_n": 754,
+   "cache_n": 0
+  },
+  {
+   "scenario": "tell-fact",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 6.947,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "OK",
+   "decode_tps": 35.64172933670742,
+   "prompt_n": 32,
+   "cache_n": 854
+  },
+  {
+   "scenario": "thinking-on",
+   "tier": "NORMAL",
+   "route": "answer",
+   "seconds": 2.353,
+   "depth_sent": "normal",
+   "error": null,
+   "answer": "A bicycle offers a more engaging workout and requires no charging, though it demands more physical effort over the distance. An electric scooter provides a quic",
+   "decode_tps": 114.24624740024875,
+   "prompt_n": 31,
+   "cache_n": 887
+  },
+  {
+   "scenario": "perf-long",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 3.085,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "Apple\nBanana\nOrange\nGrape\nStrawberry\nBlueberry\nRaspberry\nBlackberry\nCherry\nPeach\nPlum\nApricot\nNectarine\nMango\nPineapple\nWatermelon\nCantaloupe\nHoneydew\nKiwi\nPapa",
+   "decode_tps": 95.1943214183377,
+   "prompt_n": 993,
+   "cache_n": 0
+  },
+  {
+   "scenario": "recall-long",
+   "tier": "FAST",
+   "route": "answer",
+   "seconds": 1.435,
+   "depth_sent": "fast",
+   "error": null,
+   "answer": "4817",
+   "decode_tps": 81.848130793313,
+   "prompt_n": 35,
+   "cache_n": 1092
+  }
+ ],
+ "profiles": {
+  "frozen": {
+   "server_pids": [
+    8496
+   ],
+   "calibration_tps": [
+    151.0
+   ],
+   "llama_dedicated_mib_max": 15008.2,
+   "llama_non_local_mib_max": 1731.1,
+   "lease_expected_mib": [
+    15626
+   ],
+   "fit_margin_mib": [
+    -108.4
+   ],
+   "ready_samples": 13
+  },
+  "c64k-visoff-mtpoff": {
+   "server_pids": [
+    18364
+   ],
+   "calibration_tps": [
+    96.8
+   ],
+   "llama_dedicated_mib_max": 13895.5,
+   "llama_non_local_mib_max": 561.8,
+   "lease_expected_mib": [
+    13658
+   ],
+   "fit_margin_mib": [
+    1666.7
+   ],
+   "ready_samples": 78
+  }
+ },
+ "switches": [
+  {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 405.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 181.4,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 17396,
+      "role": null
+     }
+    ],
+    "free_mib": 15328.7,
+    "margin_mib": 1670.7,
+    "others_mib": 1039.3,
+    "owner_mib": 15008.2,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "FITS"
+   },
+   "from": "frozen",
+   "id": "9f97223e-bddc-4e43-8325-803902b584c3",
+   "required_mib": 13658,
+   "result": "READY",
+   "seconds": 32.0,
+   "started_stopped_brain": false,
+   "t_done": 1792320255.992,
+   "t_request": 1792320224.006,
+   "t_stopped": 1792320227.601,
+   "to": "c64k-visoff-mtpoff"
+  }
+ ],
+ "switch_ui_timelines": [
+  {
+   "to": "long",
+   "ui_seconds": 32.76300001144409,
+   "rows": 17
+  }
+ ],
+ "worker_processes": [
+  [
+   12992,
+   1792320159.292
+  ],
+  [
+   18260,
+   1792320159.236
+  ]
+ ],
+ "host_state_sequence": [
+  {
+   "state": "STARTING",
+   "profile": "frozen",
+   "utc": "2026-10-18T10:41:54.040155+00:00",
+   "detail": null
+  },
+  {
+   "state": "LOADING",
+   "profile": "frozen",
+   "utc": "2026-10-18T10:42:05.265035+00:00",
+   "detail": null
+  },
+  {
+   "state": "CALIBRATING",
+   "profile": "frozen",
+   "utc": "2026-10-18T10:42:33.174443+00:00",
+   "detail": null
+  },
+  {
+   "state": "READY",
+   "profile": "frozen",
+   "utc": "2026-10-18T10:42:38.740593+00:00",
+   "detail": null
+  },
+  {
+   "state": "STOPPING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T10:43:51.792070+00:00",
+   "detail": null
+  },
+  {
+   "state": "STARTING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T10:43:57.374355+00:00",
+   "detail": null
+  },
+  {
+   "state": "LOADING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T10:44:03.420697+00:00",
+   "detail": null
+  },
+  {
+   "state": "CALIBRATING",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T10:44:14.767076+00:00",
+   "detail": null
+  },
+  {
+   "state": "READY",
+   "profile": "c64k-visoff-mtpoff",
+   "utc": "2026-10-18T10:44:20.413871+00:00",
+   "detail": null
+  }
+ ],
+ "lease_after": "FREE",
+ "brain_config_digest_unchanged": true,
+ "brain_listener_after": null,
+ "host_exit": 0,
+ "native_exit_code": 1,
+ "elapsed_s": 586.4
+}

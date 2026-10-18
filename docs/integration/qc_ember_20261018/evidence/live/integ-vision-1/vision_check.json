@@ -1,0 +1,173 @@
+{
+ "label": "integ-vision-1",
+ "started_utc": "2026-10-18T10:16:00.947614+00:00",
+ "config_sha256_before": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "runs": [
+  {
+   "profile": "standard",
+   "argv_profile": null,
+   "host_pid": 7384,
+   "start_utc": "2026-10-18T10:16:01.040139+00:00",
+   "host_state": "READY",
+   "host_profile": {
+    "ctx": 32768,
+    "frozen": true,
+    "id": "frozen",
+    "mtp": true,
+    "vision": "gpu"
+   },
+   "calibration": {
+    "decode_tps": 158.3,
+    "predicted_n": 160,
+    "prompt_ms": 185.514,
+    "reason": "START",
+    "residency": {
+     "consumers": [
+      {
+       "dedicated_mib": 401.8,
+       "name": "dwm.exe",
+       "parent": "winlogon.exe",
+       "pid": 1580,
+       "role": "desktop compositor"
+      }
+     ],
+     "dedicated_mib": 14946.2,
+     "non_local_mib": 1730.1,
+     "others_mib": 850.7,
+     "t": 1792318589.817,
+     "verdict_now": "AT_RISK"
+    },
+    "server_create_time": 1792318569.6337187,
+    "server_pid": 17540,
+    "t": 1792318588.37,
+    "threshold_tps": 60.0,
+    "tokens": 160
+   },
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 401.8,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 15517.3,
+    "margin_mib": -108.7,
+    "others_mib": 850.7,
+    "owner_mib": 0,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "server_pid_report": 17540,
+   "listener_pid": 17540,
+   "our_brain": true,
+   "vision_request": {
+    "ok": true,
+    "http": 200,
+    "answer": "Red",
+    "s": 2.14,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 355,
+     "prompt_ms": 1911.882,
+     "prompt_per_token_ms": 5.38558309859155,
+     "prompt_per_second": 185.6809154539872,
+     "predicted_n": 2,
+     "predicted_ms": 22.845,
+     "predicted_per_token_ms": 22.845,
+     "predicted_per_second": 43.77325454147516,
+     "draft_n": 2,
+     "draft_n_accepted": 0
+    }
+   },
+   "vision_works": true,
+   "host_exit": 0,
+   "end_utc": "2026-10-18T10:16:36.902586+00:00"
+  },
+  {
+   "profile": "long",
+   "argv_profile": "65536,off,0",
+   "host_pid": 8852,
+   "start_utc": "2026-10-18T10:16:41.917068+00:00",
+   "host_state": "READY",
+   "host_profile": {
+    "ctx": 65536,
+    "frozen": false,
+    "id": "c64k-visoff-mtpoff",
+    "mtp": false,
+    "qualified": false,
+    "required_mib": 13658,
+    "vision": "off"
+   },
+   "calibration": {
+    "decode_tps": 103.7,
+    "predicted_n": 160,
+    "prompt_ms": 150.08,
+    "reason": "START",
+    "residency": {
+     "consumers": [
+      {
+       "dedicated_mib": 401.8,
+       "name": "dwm.exe",
+       "parent": "winlogon.exe",
+       "pid": 1580,
+       "role": "desktop compositor"
+      }
+     ],
+     "dedicated_mib": 13831.6,
+     "non_local_mib": 561.8,
+     "others_mib": 850.7,
+     "t": 1792318627.431,
+     "verdict_now": "FITS"
+    },
+    "server_create_time": 1792318610.8651009,
+    "server_pid": 4716,
+    "t": 1792318625.345,
+    "threshold_tps": 60.0,
+    "tokens": 160
+   },
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 401.8,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 15517.3,
+    "margin_mib": 1859.3,
+    "others_mib": 850.7,
+    "owner_mib": 0,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "FITS"
+   },
+   "server_pid_report": 4716,
+   "listener_pid": 4716,
+   "our_brain": true,
+   "vision_request": {
+    "ok": false,
+    "http": 500,
+    "error": "{\"error\":{\"code\":500,\"message\":\"image input is not supported - hint: if this is unexpected, you may need to provide the mmproj\",\"type\":\"server_error\"}}",
+    "s": 0.03
+   },
+   "vision_works": false,
+   "host_exit": 0,
+   "end_utc": "2026-10-18T10:17:11.602381+00:00"
+  }
+ ],
+ "finished_utc": "2026-10-18T10:17:16.602952+00:00",
+ "config_sha256_after": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_listener_after": null
+}
