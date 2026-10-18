@@ -52,7 +52,7 @@ class StatusBadge extends StatelessWidget {
         child: Text(
           status.label.toUpperCase(),
           style: TextStyle(
-            fontSize: compact ? 9 : 10,
+            fontSize: compact ? UriType.micro : UriType.micro,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.6,
             color: fg,
@@ -79,7 +79,7 @@ class Eyebrow extends StatelessWidget {
           child: Text(
             text.toUpperCase(),
             style: TextStyle(
-              fontSize: 10.5,
+              fontSize: UriType.caption,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
               color: c.inkFaint,

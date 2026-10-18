@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:uri_ui/living/integration/brain_quick_controls.dart';
 import 'package:uri_ui/living/integration/oi_conversation.dart';
+import 'package:uri_ui/living/integration/qc_toggle.dart';
 import 'package:uri_ui/living/presentation/presentation_controller.dart';
 import 'package:uri_ui/services/integrated_runtime.dart';
 
@@ -118,6 +119,10 @@ Future<void> pumpControls(WidgetTester tester, OiConversation conv) async {
 
 List<String> titles(List<QcChoice> xs) => [for (final x in xs) x.title];
 
+QcToggle toggle(WidgetTester t, String key) => t.widget<QcToggle>(find.byKey(ValueKey(key)));
+QcSegmented segmented(WidgetTester t) => t.widget<QcSegmented>(find.byKey(const ValueKey('qc-context')));
+QcSegment segment(WidgetTester t, String label) => segmented(t).segments.firstWhere((s) => s.label == label);
+
 void main() {
   group('choice resolution', () {
     final opts = [for (final o in options()) QcOption(o)];
@@ -169,18 +174,21 @@ void main() {
       final rt = QcRuntime()..health = {'state': 'RECOVERING', 'controls': controls()};
       final conv = await ready(rt);
       await pumpControls(tester, conv);
-      expect(find.text('Vision: On (starting)'), findsOneWidget);
-      expect(find.text('Context: 32K (starting)'), findsOneWidget);
-      expect(find.text('Vision: On'), findsNothing);
+      // configured vision on, but not verified: no glow, no selected size, and the status says why
+      expect(toggle(tester, 'qc-vision').visual, QcVisual.off);
+      expect(toggle(tester, 'qc-vision').status, 'starting');
+      expect(segmented(tester).status, 'starting');
+      expect(segmented(tester).segments.where((s) => s.selected), isEmpty);
       rt.health = {'state': 'UNAVAILABLE', 'controls': controls()};
       await conv.refreshHealth();
       await tester.pump();
-      expect(find.text('Context: 32K (not running)'), findsOneWidget);
+      expect(segmented(tester).status, 'not running');
       rt.health = {'state': 'READY', 'controls': controls(active: 'standard')};
       await conv.refreshHealth();
       await tester.pump();
-      expect(find.text('Vision: On'), findsOneWidget);
-      expect(find.text('Context: 32K'), findsOneWidget);
+      expect(toggle(tester, 'qc-vision').visual, QcVisual.on);
+      expect(toggle(tester, 'qc-vision').status, isNull);
+      expect(segment(tester, '32K').selected, isTrue);
     });
 
     testWidgets('while a switch runs the controls say so and offer nothing', (tester) async {
@@ -189,9 +197,14 @@ void main() {
       await pumpControls(tester, conv);
       expect(find.byKey(const ValueKey('qc-switching')), findsOneWidget);
       expect(find.text('Switching to Long context…'), findsOneWidget);
-      expect(find.byKey(const ValueKey('qc-vision')), findsNothing);
-      expect(find.byKey(const ValueKey('qc-context')), findsNothing);
-      expect(find.byKey(const ValueKey('qc-thinking')), findsOneWidget, reason: 'Thinking never reloads');
+      // the reload controls show the loading state: no glow, not choosable
+      expect(toggle(tester, 'qc-vision').visual, QcVisual.loading);
+      expect(segmented(tester).loading, isTrue);
+      await tester.tap(find.byKey(const ValueKey('qc-context-64K')), warnIfMissed: false);
+      await tester.tap(find.byKey(const ValueKey('qc-vision')), warnIfMissed: false);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byKey(const ValueKey('qc-confirm-switch')), findsNothing);
+      expect(toggle(tester, 'qc-thinking').onPressed, isNotNull, reason: 'Thinking never reloads');
     });
 
     test('R1-01: the header never reads ready while a switch runs (status READY at the edge, STOPPED later)', () async {
@@ -261,29 +274,22 @@ void main() {
       final rt = QcRuntime();
       final conv = await ready(rt);
       await pumpControls(tester, conv);
-      await tester.tap(find.byKey(const ValueKey('qc-context')));
-      await tester.pumpAndSettle();
-      // the unqualified combination is listed with its reason and cannot be chosen
-      expect(find.text('64K with vision on'), findsOneWidget);
-      expect(find.text(lvReason), findsOneWidget);
-      await tester.tap(find.text('64K with vision on'));
-      await tester.pumpAndSettle();
-      expect(rt.commands.where((c) => c['command'] == 'brain_reconfigure'), isEmpty);
-      if (find.byKey(const ValueKey('qc-context-64K')).evaluate().isEmpty) {
-        await tester.tap(find.byKey(const ValueKey('qc-context')));
-        await tester.pumpAndSettle();
-      }
+      // a selection of the two sizes; the unqualified 64K + vision is explained on the 64K segment, never offered
+      expect([for (final s in segmented(tester).segments) s.label], ['32K', '64K']);
+      expect(segment(tester, '64K').tooltip, contains(lvReason));
+      expect(segment(tester, '64K').tooltip, contains('Turns vision off'));
       await tester.tap(find.byKey(const ValueKey('qc-context-64K')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('qc-confirm-switch')), findsOneWidget);
       expect(find.textContaining('Your conversation stays'), findsOneWidget);
-      expect(find.textContaining('13.3 GB (now 15.3 GB)'), findsOneWidget);
+      expect(find.text('13.3 GB'), findsOneWidget);
+      expect(find.text('15.3 GB'), findsOneWidget);
+      expect(find.textContaining('64K with vision on: $lvReason'), findsOneWidget);
+      expect(find.textContaining('URI goes back to the current one automatically'), findsOneWidget);
       // Cancel sends nothing
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(rt.commands.where((c) => c['command'] == 'brain_reconfigure'), isEmpty);
-      await tester.tap(find.byKey(const ValueKey('qc-context')));
-      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('qc-context-64K')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('qc-confirm-switch-go')));
@@ -301,8 +307,6 @@ void main() {
           'detail': {'live_tokens': 30000, 'answer_reserve': 4096, 'ctx': 32768}};
       final conv = await ready(rt);
       await pumpControls(tester, conv);
-      await tester.tap(find.byKey(const ValueKey('qc-context')));
-      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('qc-context-32K')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('qc-confirm-switch-go')));
@@ -345,12 +349,12 @@ void main() {
       await conv.refreshHealth();
       await tester.pump();
       expect(find.text('The switch was stopped; the Brain is not running.'), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('qc-context')));
-      await tester.pumpAndSettle();
+      expect(toggle(tester, 'qc-vision').visual, QcVisual.error, reason: 'no Brain serves after a stopped switch');
       await tester.tap(find.byKey(const ValueKey('qc-context-64K')));
       await tester.pumpAndSettle();
       expect(find.textContaining('The Brain is stopped now: switching starts it'), findsOneWidget);
-      expect(find.textContaining('If the new setting then fails to start'), findsOneWidget);
+      // no automatic going back when nothing was running before
+      expect(find.textContaining('If the new setting fails to start, URI says so'), findsOneWidget);
     });
 
     testWidgets('a refusal is explained and nothing is shown as switched', (tester) async {
@@ -359,7 +363,7 @@ void main() {
       await conv.reconfigureBrain('long');
       await pumpControls(tester, conv);
       expect(find.text('Not switched: the Brain is already restarting or switching.'), findsOneWidget);
-      expect(find.text('Vision: On'), findsOneWidget);
+      expect(toggle(tester, 'qc-vision').visual, QcVisual.on);
     });
 
     testWidgets('the host outcome of this UI request is reported once it is final', (tester) async {
@@ -381,23 +385,26 @@ void main() {
       await conv.refreshHealth();
       await tester.pump();
       expect(find.text('Brain switched in 31 s. Your conversation is kept.'), findsOneWidget);
-      expect(find.text('Context: 64K'), findsOneWidget);
+      expect(segment(tester, '64K').selected, isTrue);
+      expect(toggle(tester, 'qc-vision').visual, QcVisual.off);
     });
 
     testWidgets('no switch while URI is answering or without the Brain host', (tester) async {
       final rt = QcRuntime()..health = {'state': 'READY', 'controls': controls(active: 'standard', canSwitch: false)};
       final conv = await ready(rt);
       await pumpControls(tester, conv);
-      await tester.tap(find.byKey(const ValueKey('qc-context')));
+      await tester.tap(find.byKey(const ValueKey('qc-context-64K')), warnIfMissed: false);
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('qc-context-64K')), findsNothing, reason: 'menu disabled');
+      expect(find.byKey(const ValueKey('qc-confirm-switch')), findsNothing, reason: 'selection disabled');
+      expect(segment(tester, '64K').tooltip, contains('Not switched: the Brain host is not running'));
       rt.health = {'state': 'READY', 'controls': controls(active: 'standard')};
       await conv.refreshHealth();
       await conv.send('hello');                      // a turn is now running
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('qc-vision')));
+      expect(toggle(tester, 'qc-vision').onPressed, isNull);
+      await tester.tap(find.byKey(const ValueKey('qc-vision')), warnIfMissed: false);
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('qc-vision-Off')), findsNothing);
+      expect(find.byKey(const ValueKey('qc-confirm-switch')), findsNothing);
       expect(await conv.reconfigureBrain('long'), isNull);
       expect(rt.commands.where((c) => c['command'] == 'brain_reconfigure'), isEmpty);
     });
@@ -408,13 +415,22 @@ void main() {
       final rt = QcRuntime();
       final conv = await ready(rt);
       await pumpControls(tester, conv);
-      expect(find.text('Thinking: Auto'), findsOneWidget);
+      expect(toggle(tester, 'qc-thinking').status, 'Auto');
+      expect(toggle(tester, 'qc-thinking').visual, QcVisual.off);
+      // push to enable: one click turns it on (and it glows) ...
       await tester.tap(find.byKey(const ValueKey('qc-thinking')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('qc-thinking-On')));
+      expect(conv.depth, OiDepth.normal);
+      expect(toggle(tester, 'qc-thinking').visual, QcVisual.on);
+      expect(toggle(tester, 'qc-thinking').status, isNull);
+      // ... the next turns it off, the next on again
+      await tester.tap(find.byKey(const ValueKey('qc-thinking')));
+      await tester.pumpAndSettle();
+      expect(conv.depth, OiDepth.fast);
+      expect(toggle(tester, 'qc-thinking').visual, QcVisual.off);
+      await tester.tap(find.byKey(const ValueKey('qc-thinking')));
       await tester.pumpAndSettle();
       expect(conv.depth, OiDepth.normal);
-      expect(find.text('Thinking: On'), findsOneWidget);
       await conv.send('compare these two plans');
       final turn = rt.commands.lastWhere((c) => c['command'] == 'oi_turn');
       expect(turn['depth'], 'normal');
@@ -424,12 +440,12 @@ void main() {
       rt.emit(id, 'turn.finished', {'status': 'ok'});
       await tester.pump();
       expect(conv.lastAnswerTier, 'NORMAL');
-      await tester.tap(find.byKey(const ValueKey('qc-thinking')));
+      await tester.tap(find.byKey(const ValueKey('qc-thinking-menu')));
       await tester.pumpAndSettle();
       expect(find.text('Last answer: thought first'), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('qc-thinking-Off')));
+      await tester.tap(find.byKey(const ValueKey('qc-thinking-Auto')));
       await tester.pumpAndSettle();
-      expect(conv.depth, OiDepth.fast);
+      expect(conv.depth, OiDepth.auto, reason: 'Auto stays one menu choice away');
       expect(rt.commands.where((c) => c['command'] == 'brain_reconfigure'), isEmpty, reason: 'no reload');
     });
   });

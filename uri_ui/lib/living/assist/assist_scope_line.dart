@@ -33,7 +33,7 @@ class AssistScopeLine extends StatelessWidget {
                   '${assist.paused ? 'Paused · ' : 'URI can see · '}${scope['label'] ?? ''}'
                   '${n > 0 ? ' · $n suggestion${n == 1 ? '' : 's'}' : ''}',
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12, color: c.inkSoft),
+                  style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
                 ),
               ),
               IconButton(
@@ -73,7 +73,7 @@ class AssistStatusSummary extends StatelessWidget {
       builder: (context, _) {
         final c = UriColors.of(context);
         final vision = (assist.status['vision'] as Map?) ?? const {};
-        final style = TextStyle(fontSize: 12.5, color: c.ink);
+        final style = TextStyle(fontSize: UriType.body, color: c.ink);
         return Column(
           key: const ValueKey('dashboard-assist'),
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,12 +91,12 @@ class AssistStatusSummary extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text('${a['kind']}: ${a['state']}', maxLines: 1, overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12, color: c.inkSoft)),
+                        style: TextStyle(fontSize: UriType.label, color: c.inkSoft)),
                   ),
                 ],
               ),
             Text('Vision: ${vision['application'] ?? 'unknown'}', maxLines: 2, overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12, color: c.inkFaint)),
+                style: TextStyle(fontSize: UriType.label, color: c.inkFaint)),
           ],
         );
       },

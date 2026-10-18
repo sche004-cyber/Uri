@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/uri_theme.dart';
 import 'oi_conversation.dart';
+import 'qc_toggle.dart';
 
 /// Brain Quick Controls (BRAIN-QC-20261018): Thinking, Vision and Context
 /// under the chat box.
@@ -14,8 +15,12 @@ import 'oi_conversation.dart';
 ///   for only after the user confirmed it; the conversation stays.
 /// * Truthfulness: a value is shown as current only when the worker verified
 ///   the running Brain against it (`controls.active`). While a switch runs
-///   the chips say so, and an unqualified combination is listed disabled
+///   the controls say so, and an unqualified combination is listed disabled
 ///   with its reason, never offered.
+/// * Push-to-enable (UI-CONTROLS-TYPO-20261018): Thinking and Vision are
+///   toggles, Context is a selection ([QcToggle], [QcSegmented]). The
+///   enabled glow follows the verified state only: a click asks, the
+///   worker's `controls.active` decides what glows.
 
 class QcOption {
   QcOption(this.raw);
@@ -151,6 +156,31 @@ String thinkingLabel(OiDepth d) => switch (d) {
       OiDepth.deep => 'Deep',
     };
 
+/// The choice a push-to-enable toggle makes (UI-CONTROLS-TYPO-20261018):
+/// the first qualified, not-current entry of [choices] whose title starts
+/// with [want] ('On' / 'Off', or a context label), and the reasons of the
+/// entries for [want] that are blocked (shown with the control, never
+/// hidden). Works for any choice list ([visionChoices], [contextChoices],
+/// and later a Draft list).
+({QcChoice? choice, List<String> blocked}) toggleChoice(List<QcChoice> choices, String want) {
+  QcChoice? choice;
+  final blocked = <String>[];
+  for (final ch in choices) {
+    if (!ch.title.startsWith(want)) continue;
+    if (ch.blocked != null) {
+      blocked.add('${ch.title}: ${ch.blocked}');
+    } else if (choice == null && ch.target != null && !ch.current) {
+      choice = ch;
+    }
+  }
+  return (choice: choice, blocked: blocked);
+}
+
+/// How the latest switch this UI asked for ended, for the notice tone and
+/// the controls' error look. `restored`: the host went back to the
+/// previous setting after the new one failed to start.
+enum QcOutcome { none, ok, restored, warning, error }
+
 class BrainQuickControls extends StatelessWidget {
   const BrainQuickControls({super.key, required this.conversation});
   final OiConversation conversation;
@@ -168,194 +198,275 @@ class BrainQuickControls extends StatelessWidget {
     final hasProfiles = options.isNotEmpty;
     final configured = (controls['configured'] as Map?)?.cast<String, dynamic>();
     final health = conv.healthState;
-    final style = TextStyle(color: c.inkSoft, fontSize: 12);
+    final (notice, outcome) = _notice(conv, switchState);
 
-    String unconfirmed(String value) =>
-        '$value (${health == 'RECOVERING' ? 'starting' : 'not running'})';
-
-    final chips = <Widget>[
-      _MenuChip<OiDepth>(
+    // Thinking: per message, nothing reloads. One click turns it On (think
+    // first), the next Off (answer directly). Auto, the default, lets URI
+    // decide per message and is chosen from the small menu next to it.
+    final thinkingOn = conv.depth == OiDepth.normal || conv.depth == OiDepth.deep;
+    final thinkingEnabled = !conv.restarting && !conv.workerExited;
+    final controlsRow = <Widget>[
+      QcToggle(
         key: const ValueKey('qc-thinking'),
         icon: Icons.psychology_alt_outlined,
-        label: 'Thinking: ${thinkingLabel(conv.depth)}',
-        tooltip: 'Thinking applies to your next message. Nothing reloads.',
-        enabled: !conv.restarting && !conv.workerExited,
-        onSelected: conv.setDepth,
-        items: [
-          _item(context, OiDepth.auto, 'Auto', 'URI decides for each message', selected: conv.depth == OiDepth.auto),
-          _item(context, OiDepth.fast, 'Off', 'Answers directly (fastest)', selected: conv.depth == OiDepth.fast),
-          _item(context, OiDepth.normal, 'On', 'Thinks first, within a fixed budget',
-              selected: conv.depth == OiDepth.normal),
-          if (conv.lastAnswerTier != null)
-            PopupMenuItem<OiDepth>(
-              enabled: false,
-              height: 28,
-              child: Text(
-                conv.lastAnswerTier == 'NORMAL'
-                    ? 'Last answer: thought first'
-                    : conv.lastAnswerTier == 'FAST'
-                        ? 'Last answer: answered directly'
-                        : 'Last answer: ${conv.lastAnswerTier}',
-                key: const ValueKey('qc-thinking-last'),
-                style: TextStyle(color: c.inkFaint, fontSize: 11),
-              ),
-            ),
-        ],
+        label: 'Thinking',
+        status: conv.depth == OiDepth.auto ? 'Auto' : null,
+        visual: thinkingOn ? QcVisual.on : QcVisual.off,
+        tooltip: thinkingOn
+            ? 'Thinking is on: URI thinks before answering your next message. Click to turn it off. Nothing reloads.'
+            : conv.depth == OiDepth.auto
+                ? 'Thinking is Auto: URI decides for each message. Click to turn it on. Nothing reloads.'
+                : 'Thinking is off: URI answers directly (fastest). Click to turn it on. Nothing reloads.',
+        onPressed: thinkingEnabled ? () => conv.setDepth(thinkingOn ? OiDepth.fast : OiDepth.normal) : null,
+        trailing: _thinkingMenu(context, thinkingEnabled),
       ),
     ];
 
-    if (hasProfiles && pending) {
-      final target = (switchState['target'] as Map?)?['label'] ?? 'the new setting';
-      chips.add(Container(
-        key: const ValueKey('qc-switching'),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          border: Border.all(color: c.accent.withValues(alpha: .6)),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          SizedBox(width: 10, height: 10, child: CircularProgressIndicator(strokeWidth: 1.5, color: c.accent)),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text('Switching to $target…',
-                overflow: TextOverflow.ellipsis, style: TextStyle(color: c.accent, fontSize: 12)),
-          ),
-        ]),
-      ));
-    } else if (hasProfiles) {
-      final vis = visionChoices(options, active);
-      final ctx = contextChoices(options, active);
-      final visValue = active != null
-          ? (active['vision_on'] == true ? 'On' : 'Off')
-          : configured == null
-              ? '?'
-              : unconfirmed(configured['vision'] == 'off' ? 'Off' : 'On');
-      final ctxValue = active != null
-          ? ctxLabel((active['ctx'] as num).toInt())
-          : configured == null || configured['ctx'] is! num
-              ? '?'
-              : unconfirmed(ctxLabel((configured['ctx'] as num).toInt()));
+    if (hasProfiles) {
+      final unverified = active == null
+          ? pending
+              ? 'switching'
+              : configured == null
+                  ? null
+                  : health == 'RECOVERING'
+                      ? 'starting'
+                      : 'not running'
+          : null;
+      final errorLook = active == null && !pending && outcome == QcOutcome.error;
       final why = canSwitch
           ? null
           : conv.busy
               ? 'Wait until URI has finished answering.'
               : brainSwitchRefusal('${controls['cannot_switch_reason'] ?? 'UNAVAILABLE'}');
-      chips.add(_profileChip(context, const ValueKey('qc-vision'), Icons.image_outlined, 'Vision: $visValue', vis,
-          canSwitch, why ?? 'Vision lets the Brain read images. Changing it reloads the Brain.'));
-      chips.add(_profileChip(context, const ValueKey('qc-context'), Icons.notes_rounded, 'Context: $ctxValue', ctx,
-          canSwitch, why ?? 'How much of the conversation the Brain reads at once. Changing it reloads the Brain.'));
+
+      // Vision: a toggle. Vision and context are coupled by the qualified
+      // catalog, so the toggle's choice may change the context too; that is
+      // stated in its tooltip and in the confirmation.
+      final visionOn = active != null
+          ? active['vision_on'] == true
+          : configured == null
+              ? null
+              : configured['vision'] != 'off';
+      final vis = visionChoices(options, active);
+      final want = visionOn == true ? 'Off' : 'On';
+      final vt = visionOn == null ? (choice: null, blocked: const <String>[]) : toggleChoice(vis, want);
+      final visTip = why ??
+          (vt.choice == null
+              ? 'Vision ${want.toLowerCase()} is not available: '
+                  '${vt.blocked.isEmpty ? 'no qualified Brain profile offers it.' : vt.blocked.join(' ')}'
+              : 'Vision is ${visionOn == true ? 'on: the Brain can read images' : 'off'}. Click to turn it '
+                  '${want.toLowerCase()}: ${vt.choice!.note}. The Brain reloads; your conversation stays.'
+                  '${vt.blocked.isEmpty ? '' : ' (${vt.blocked.join(' ')})'}');
+      controlsRow.add(QcToggle(
+        key: const ValueKey('qc-vision'),
+        icon: Icons.image_outlined,
+        label: 'Vision',
+        status: unverified ?? (active == null ? '?' : null),
+        visual: pending
+            ? QcVisual.loading
+            : errorLook
+                ? QcVisual.error
+                : active != null && active['vision_on'] == true
+                    ? QcVisual.on
+                    : QcVisual.off,
+        tooltip: visTip,
+        onPressed: canSwitch && !pending && vt.choice != null
+            ? () => _confirmAndSwitch(context, vt.choice!, blocked: vt.blocked)
+            : null,
+      ));
+
+      // Context: one size at a time, so a selection, not toggles.
+      final ctxChoices = contextChoices(options, active);
+      final activeCtx = (active?['ctx'] as num?)?.toInt();
+      final sizes = {for (final o in options) o.ctx}.toList()..sort();
+      controlsRow.add(QcSegmented(
+        key: const ValueKey('qc-context'),
+        icon: Icons.notes_rounded,
+        label: 'Context',
+        status: unverified,
+        loading: pending,
+        error: errorLook,
+        tooltip: why ?? 'How much of the conversation the Brain reads at once. Changing it reloads the Brain.',
+        segments: [
+          for (final ctx in sizes) _contextSegment(ctx, ctxChoices, active, activeCtx, why, canSwitch && !pending, context),
+        ],
+      ));
+
+      if (pending) {
+        final last = (switchState['last'] as Map?)?.cast<String, dynamic>();
+        final target = (switchState['target'] as Map?)?.cast<String, dynamic>();
+        final fb = last != null && target != null && last['id'] == target['id'] ? last['fallback'] as Map? : null;
+        final text = fb != null && fb['result'] == 'IN_PROGRESS'
+            ? 'Did not start; going back to ${fb['label'] ?? 'the previous setting'}…'
+            : 'Switching to ${target?['label'] ?? 'the new setting'}…';
+        controlsRow.add(Container(
+          key: const ValueKey('qc-switching'),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+          decoration: BoxDecoration(
+            border: Border.all(color: c.accent.withValues(alpha: .6)),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(text, overflow: TextOverflow.ellipsis, style: QcStyle.text(context, c.accent)),
+        ));
+      }
     }
 
-    final notice = _notice(conv, switchState);
+    final noticeColor = switch (outcome) {
+      QcOutcome.error => c.danger,
+      QcOutcome.warning || QcOutcome.restored => c.warning,
+      _ => c.inkSoft,
+    };
     return Padding(
-      padding: const EdgeInsets.only(top: 2),
+      padding: const EdgeInsets.only(top: 4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(spacing: 6, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: chips),
+          Wrap(spacing: 8, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: controlsRow),
           if (notice != null)
             Padding(
-              padding: const EdgeInsets.only(top: 2, left: 4),
-              child: Text(notice, key: const ValueKey('qc-notice'), style: style.copyWith(fontSize: 11)),
+              padding: const EdgeInsets.only(top: 4, left: 4),
+              child: Text(notice,
+                  key: const ValueKey('qc-notice'),
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      fontSize: UriType.caption, color: noticeColor, height: 1.35)),
             ),
         ],
       ),
     );
   }
 
-  /// The outcome of this UI's latest switch request, in plain words.
-  String? _notice(OiConversation conv, Map<String, dynamic> switchState) {
-    if (conv.profileNotice != null) return conv.profileNotice;
-    final last = (switchState['last'] as Map?)?.cast<String, dynamic>();
-    if (last == null || conv.profileRequestId == null || last['id'] != conv.profileRequestId) return null;
-    if (switchState['pending'] == true) return null;
-    final result = last['result'] as String?;
-    if (result == null || result == 'IN_PROGRESS' || result == 'ALREADY_ACTIVE') return null;
-    if (result.startsWith('REFUSED_')) {
-      return (last['explain'] as String?) ?? brainSwitchRefusal(result);
-    }
-    if (result == 'READY') {
-      final s = (last['seconds'] as num?)?.toStringAsFixed(0);
-      return s == null ? 'Brain switched. Your conversation is kept.' : 'Brain switched in $s s. Your conversation is kept.';
-    }
-    if (result == 'DEGRADED') return 'Brain switched, but it is running slowly (GPU memory was short).';
-    if (result == 'FAILED') return 'The Brain did not start with the new setting. Choose another setting or Restart Brain.';
-    if (result == 'WAITING_FOR_GPU' || result == 'WAITING_FOR_LEASE' || result == 'RELEASE_WAIT') {
-      return 'The new setting is waiting for GPU memory. Choose the previous setting to go back.';
-    }
-    if (result == 'STOPPED') return 'The switch was stopped; the Brain is not running.';
-    return 'The switch ended without a ready Brain. Choose a setting again or Restart Brain.';
-  }
-
-  Widget _profileChip(BuildContext context, Key key, IconData icon, String label, List<QcChoice> choices,
-      bool canSwitch, String tooltip) {
-    final c = UriColors.of(context);
-    return _MenuChip<QcChoice>(
-      key: key,
-      icon: icon,
-      label: label,
-      tooltip: tooltip,
-      enabled: canSwitch,
-      onSelected: (choice) => _confirmAndSwitch(context, choice),
-      items: [
-        for (final ch in choices)
-          PopupMenuItem<QcChoice>(
-            key: ValueKey('${(key as ValueKey).value}-${ch.title}'),
-            value: ch,
-            enabled: ch.target != null && !ch.current,
-            child: ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(
-                ch.current
-                    ? Icons.check_rounded
-                    : ch.blocked != null
-                        ? Icons.block_rounded
-                        : Icons.swap_horiz_rounded,
-                size: 16,
-                color: ch.current ? c.success : ch.blocked != null ? c.inkFaint : c.accent,
-              ),
-              title: Text(ch.title, style: TextStyle(fontSize: 13, color: ch.blocked != null ? c.inkFaint : c.ink)),
-              subtitle: Text(ch.blocked ?? ch.note ?? '', style: TextStyle(fontSize: 11, color: c.inkSoft)),
-            ),
-          ),
-      ],
+  QcSegment _contextSegment(int ctx, List<QcChoice> ctxChoices, Map<String, dynamic>? active, int? activeCtx,
+      String? why, bool canSwitch, BuildContext context) {
+    final title = ctxLabel(ctx);
+    final t = toggleChoice(ctxChoices, title);
+    final selected = activeCtx == ctx;
+    return QcSegment(
+      key: ValueKey('qc-context-$title'),
+      label: title,
+      selected: selected,
+      tooltip: selected
+          ? 'Current: ${active!['label'] ?? title}'
+          : why ??
+              (t.choice == null
+                  ? (t.blocked.isEmpty ? 'No qualified Brain profile offers this.' : t.blocked.join(' '))
+                  : '${t.choice!.note}. The Brain reloads; your conversation stays.'
+                      '${t.blocked.isEmpty ? '' : ' (${t.blocked.join(' ')})'}'),
+      onTap: canSwitch && !selected && t.choice != null
+          ? () => _confirmAndSwitch(context, t.choice!, blocked: t.blocked)
+          : null,
     );
   }
 
-  Future<void> _confirmAndSwitch(BuildContext context, QcChoice choice) async {
+  /// The outcome of this UI's latest switch request, in plain words.
+  (String?, QcOutcome) _notice(OiConversation conv, Map<String, dynamic> switchState) {
+    if (conv.profileNotice != null) return (conv.profileNotice, QcOutcome.warning);
+    final last = (switchState['last'] as Map?)?.cast<String, dynamic>();
+    if (last == null || conv.profileRequestId == null || last['id'] != conv.profileRequestId) {
+      return (null, QcOutcome.none);
+    }
+    if (switchState['pending'] == true) return (null, QcOutcome.none);
+    final result = last['result'] as String?;
+    if (result == null || result == 'IN_PROGRESS' || result == 'ALREADY_ACTIVE') return (null, QcOutcome.none);
+    if (result.startsWith('REFUSED_')) {
+      return ((last['explain'] as String?) ?? brainSwitchRefusal(result), QcOutcome.warning);
+    }
+    if (result == 'READY') {
+      final s = (last['seconds'] as num?)?.toStringAsFixed(0);
+      return (
+        s == null ? 'Brain switched. Your conversation is kept.' : 'Brain switched in $s s. Your conversation is kept.',
+        QcOutcome.ok
+      );
+    }
+    if (result == 'DEGRADED') {
+      return ('Brain switched, but it is running slowly (GPU memory was short).', QcOutcome.warning);
+    }
+    if (result == 'FAILED') {
+      final fb = (last['fallback'] as Map?)?.cast<String, dynamic>();
+      final prev = fb?['label'] ?? 'the previous setting';
+      if (fb != null && last['restored'] == true) {
+        return (
+          'The Brain did not start with the new setting, so URI went back to $prev'
+              '${fb['result'] == 'DEGRADED' ? ' (running slowly)' : ''}. Your conversation is kept.',
+          QcOutcome.restored
+        );
+      }
+      if (fb != null && fb['result'] == 'STOPPED') {
+        return ('The new setting did not start and going back was stopped; the Brain is not running.', QcOutcome.error);
+      }
+      if (fb != null) {
+        return (
+          'The Brain did not start with the new setting, and going back to $prev failed too. Use Restart Brain.',
+          QcOutcome.error
+        );
+      }
+      return ('The Brain did not start with the new setting. Choose another setting or Restart Brain.', QcOutcome.error);
+    }
+    if (result == 'WAITING_FOR_GPU' || result == 'WAITING_FOR_LEASE' || result == 'RELEASE_WAIT') {
+      return ('The new setting is waiting for GPU memory. Choose the previous setting to go back.', QcOutcome.warning);
+    }
+    if (result == 'STOPPED') return ('The switch was stopped; the Brain is not running.', QcOutcome.error);
+    return ('The switch ended without a ready Brain. Choose a setting again or Restart Brain.', QcOutcome.error);
+  }
+
+  Widget _thinkingMenu(BuildContext context, bool enabled) {
+    final c = UriColors.of(context);
+    final conv = conversation;
+    return PopupMenuButton<OiDepth>(
+      key: const ValueKey('qc-thinking-menu'),
+      tooltip: 'Thinking: Auto, On or Off',
+      enabled: enabled,
+      onSelected: conv.setDepth,
+      padding: EdgeInsets.zero,
+      itemBuilder: (_) => [
+        _item(context, OiDepth.auto, 'Auto', 'URI decides for each message', selected: conv.depth == OiDepth.auto),
+        _item(context, OiDepth.normal, 'On', 'Thinks first, within a fixed budget',
+            selected: conv.depth == OiDepth.normal),
+        _item(context, OiDepth.fast, 'Off', 'Answers directly (fastest)', selected: conv.depth == OiDepth.fast),
+        if (conv.lastAnswerTier != null)
+          PopupMenuItem<OiDepth>(
+            enabled: false,
+            height: 28,
+            child: Text(
+              conv.lastAnswerTier == 'NORMAL'
+                  ? 'Last answer: thought first'
+                  : conv.lastAnswerTier == 'FAST'
+                      ? 'Last answer: answered directly'
+                      : 'Last answer: ${conv.lastAnswerTier}',
+              key: const ValueKey('qc-thinking-last'),
+              style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: UriType.caption, color: c.inkFaint),
+            ),
+          ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 3, 6, 3),
+        child: Icon(Icons.arrow_drop_down_rounded,
+            size: 16,
+            color: conv.depth == OiDepth.normal
+                ? c.accentInk
+                : enabled
+                    ? c.inkSoft
+                    : c.inkFaint),
+      ),
+    );
+  }
+
+  Future<void> _confirmAndSwitch(BuildContext context, QcChoice choice, {List<String> blocked = const []}) async {
     final target = choice.target;
     if (target == null) return;
     final conv = conversation;
     final controls = conv.brainControls;
     final active = (controls['active'] as Map?)?.cast<String, dynamic>();
-    final nowMib = (active?['required_mib'] as num?)?.toInt();
+    final configured = (controls['configured'] as Map?)?.cast<String, dynamic>();
     final hostState = (conv.brainHealth['host'] as Map?)?['state'];
-    String gb(int mib) => (mib / 1024).toStringAsFixed(1);
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        key: const ValueKey('qc-confirm-switch'),
-        title: Text('Switch the Brain to ${target.label}?'),
-        content: Text([
-          target.summary,
-          'The Brain reloads, which takes about half a minute. Messages wait until it is ready.',
-          'Your conversation stays: URI keeps it and the Brain reads it again after the switch.',
-          if (target.requiredMib != null)
-            'GPU memory: ${gb(target.requiredMib!)} GB${nowMib != null ? ' (now ${gb(nowMib)} GB)' : ''}. '
-                'If URI sees before the switch that it does not fit, it keeps the current Brain. If the new '
-                'setting then fails to start or waits for memory, choose the previous setting again.',
-          if (hostState == 'STOPPED') 'The Brain is stopped now: switching starts it with the new setting.',
-        ].join('\n\n')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(
-            key: const ValueKey('qc-confirm-switch-go'),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Switch'),
-          ),
-        ],
+      builder: (ctx) => QcSwitchDialog(
+        target: target,
+        active: active,
+        configured: configured,
+        blocked: blocked,
+        brainStopped: hostState == 'STOPPED',
       ),
     );
     if (ok != true) return;
@@ -365,65 +476,144 @@ class BrainQuickControls extends StatelessWidget {
 
   PopupMenuItem<T> _item<T>(BuildContext context, T value, String title, String subtitle, {bool selected = false}) {
     final c = UriColors.of(context);
+    final tt = Theme.of(context).textTheme;
     return PopupMenuItem<T>(
       key: ValueKey('qc-thinking-$title'),
       value: value,
       child: ListTile(
         dense: true,
         contentPadding: EdgeInsets.zero,
-        leading: Icon(selected ? Icons.check_rounded : Icons.circle_outlined, size: 16,
-            color: selected ? c.success : c.inkFaint),
-        title: Text(title, style: TextStyle(fontSize: 13, color: c.ink)),
-        subtitle: Text(subtitle, style: TextStyle(fontSize: 11, color: c.inkSoft)),
+        leading: Icon(selected ? Icons.check_rounded : Icons.circle_outlined,
+            size: 16, color: selected ? c.success : c.inkFaint),
+        title: Text(title, style: tt.bodyMedium!.copyWith(fontSize: UriType.body, color: c.ink, height: 1.3)),
+        subtitle: Text(subtitle, style: tt.bodySmall!.copyWith(fontSize: UriType.caption, color: c.inkSoft)),
       ),
     );
   }
 }
 
-class _MenuChip<T> extends StatelessWidget {
-  const _MenuChip({
+/// The Brain switch confirmation (UI-CONTROLS-TYPO-20261018): what changes
+/// first, then what happens, then the two actions. Readable width, one type
+/// scale, a distinct primary action.
+class QcSwitchDialog extends StatelessWidget {
+  const QcSwitchDialog({
     super.key,
-    required this.icon,
-    required this.label,
-    required this.tooltip,
-    required this.enabled,
-    required this.onSelected,
-    required this.items,
+    required this.target,
+    this.active,
+    this.configured,
+    this.blocked = const [],
+    this.brainStopped = false,
   });
-  final IconData icon;
-  final String label;
-  final String tooltip;
-  final bool enabled;
-  final ValueChanged<T> onSelected;
-  final List<PopupMenuEntry<T>> items;
+
+  final QcOption target;
+  final Map<String, dynamic>? active;
+  final Map<String, dynamic>? configured;
+  final List<String> blocked;
+  final bool brainStopped;
+
+  static String gb(int mib) => (mib / 1024).toStringAsFixed(1);
 
   @override
   Widget build(BuildContext context) {
     final c = UriColors.of(context);
-    final tone = enabled ? c.inkSoft : c.inkFaint;
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 240),
-      child: PopupMenuButton<T>(
-        tooltip: tooltip,
-        enabled: enabled,
-        onSelected: onSelected,
-        itemBuilder: (_) => items,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-            border: Border.all(color: c.border),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(icon, size: 14, color: tone),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(label, overflow: TextOverflow.ellipsis, style: TextStyle(color: tone, fontSize: 12)),
+    final tt = Theme.of(context).textTheme;
+    final body = tt.bodyMedium!.copyWith(fontSize: UriType.body, color: c.inkSoft, height: 1.45);
+    final now = active ?? configured;
+    final nowVision = active != null
+        ? active!['vision_on'] == true
+        : configured == null
+            ? null
+            : configured!['vision'] != 'off';
+    final nowCtx = (now?['ctx'] as num?)?.toInt();
+    final nowMib = (active?['required_mib'] as num?)?.toInt();
+    final running = !brainStopped && active != null;
+
+    Widget change(String what, String? from, String to) {
+      final changed = from != to;
+      final strong = tt.labelLarge!.copyWith(fontSize: UriType.body, color: changed ? c.accentInk : c.inkSoft);
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Row(children: [
+          SizedBox(width: 92, child: Text(what, style: body.copyWith(color: c.inkFaint))),
+          if (from != null && changed) ...[
+            Text(from, style: body),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Icon(Icons.arrow_forward_rounded, size: 14, color: c.inkFaint),
             ),
-            Icon(Icons.arrow_drop_down_rounded, size: 16, color: tone),
+          ],
+          Flexible(child: Text(changed ? to : '$to (unchanged)', style: strong)),
+        ]),
+      );
+    }
+
+    Widget fact(IconData icon, String text) => Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Padding(padding: const EdgeInsets.only(top: 2), child: Icon(icon, size: 16, color: c.inkFaint)),
+            const SizedBox(width: 10),
+            Expanded(child: Text(text, style: body)),
+          ]),
+        );
+
+    return AlertDialog(
+      key: const ValueKey('qc-confirm-switch'),
+      titlePadding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
+      contentPadding: const EdgeInsets.fromLTRB(24, 14, 24, 4),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+      title: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 460),
+        child: Text('Switch the Brain to ${target.label}?',
+            style: tt.titleLarge!.copyWith(fontSize: UriType.titleLarge, color: c.ink)),
+      ),
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 460),
+        child: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(target.summary, style: body),
+            const SizedBox(height: 12),
+            Container(
+              key: const ValueKey('qc-confirm-changes'),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: c.surfaceSunken,
+                borderRadius: BorderRadius.circular(UriRadius.sm),
+                border: Border.all(color: c.border),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                change('Vision', nowVision == null ? null : (nowVision ? 'On' : 'Off'), target.visionOn ? 'On' : 'Off'),
+                change('Context', nowCtx == null ? null : ctxLabel(nowCtx), ctxLabel(target.ctx)),
+                if (target.requiredMib != null)
+                  change('GPU memory', nowMib == null ? null : '${gb(nowMib)} GB', '${gb(target.requiredMib!)} GB'),
+              ]),
+            ),
+            for (final b in blocked) fact(Icons.block_rounded, b),
+            fact(Icons.schedule_rounded,
+                'The Brain reloads, which takes about half a minute. Messages wait until it is ready.'),
+            fact(Icons.chat_bubble_outline_rounded,
+                'Your conversation stays: URI keeps it and the Brain reads it again after the switch.'),
+            fact(
+                Icons.shield_outlined,
+                running
+                    ? 'If URI sees before the switch that it does not fit in GPU memory, it keeps the current Brain. '
+                        'If the new setting fails to start, URI goes back to the current one automatically.'
+                    : 'If it does not fit in GPU memory, URI waits. If the new setting fails to start, URI says so '
+                        'and you can choose again.'),
+            if (brainStopped)
+              fact(Icons.play_circle_outline_rounded,
+                  'The Brain is stopped now: switching starts it with the new setting.'),
           ]),
         ),
       ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+        FilledButton.icon(
+          key: const ValueKey('qc-confirm-switch-go'),
+          onPressed: () => Navigator.pop(context, true),
+          icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+          label: const Text('Switch Brain'),
+        ),
+      ],
     );
   }
 }

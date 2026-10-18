@@ -198,7 +198,7 @@ class _LivingComposerState extends State<LivingComposer> {
                       ),
                       label: Text(
                         oi.draftTarget ? 'To: ${draft.docType} draft' : 'To: conversation',
-                        style: TextStyle(fontSize: 12, color: c.ink),
+                        style: TextStyle(fontSize: UriType.label, color: c.ink),
                       ),
                       onPressed: () => oi.setDraftTarget(!oi.draftTarget),
                     ),
@@ -300,7 +300,7 @@ class _LivingComposerState extends State<LivingComposer> {
                       minLines: 1,
                       maxLines: widget.compact ? 3 : 5,
                       onChanged: appState.setComposerDraft,
-                      style: TextStyle(color: c.ink, fontSize: 14),
+                      style: TextStyle(color: c.ink, fontSize: UriType.bodyLarge),
                       decoration: InputDecoration(
                         isDense: widget.floating,
                         hintText: office is OfficeRequestHint

@@ -347,7 +347,7 @@ class PresenceComposition extends StatelessWidget {
                   spokenChars: session.spokenChars,
                   isFinal: session.transcriptFinal,
                   simulated: view.simulated,
-                  fontSize: layout.wave.width < 300 ? 13.5 : 15,
+                  fontSize: layout.wave.width < 300 ? UriType.bodyLarge : UriType.title,
                 ),
               ),
             ),
@@ -446,7 +446,7 @@ class PresenceStatus extends StatelessWidget {
                   shownStatus,
                   key: const ValueKey('presence-status'),
                   style: TextStyle(
-                    fontSize: 13.5,
+                    fontSize: UriType.bodyLarge,
                     fontWeight: FontWeight.w600,
                     color: c.ink,
                   ),
@@ -466,7 +466,7 @@ class PresenceStatus extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: UriType.label,
                     color: view.notice != null ? c.warning : c.inkSoft,
                   ),
                 ),

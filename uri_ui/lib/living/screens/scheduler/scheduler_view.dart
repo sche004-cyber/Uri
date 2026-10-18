@@ -286,7 +286,7 @@ class _SchedulerViewState extends State<SchedulerView> {
                         '${a['started_utc']}  ${a['mode']}  ${a['harness']}  '
                         '${a['kind']}  →  ${a['outcome'] ?? 'running'}'
                         '${a['reason'] != null ? '  (${a['reason']})' : ''}',
-                        style: TextStyle(fontSize: 12, color: c.inkSoft),
+                        style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
                       ),
                   ],
                 ),
@@ -351,14 +351,14 @@ class _Section extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: UriType.title,
               fontWeight: FontWeight.w600,
               color: c.ink,
             ),
           ),
           const SizedBox(height: 8),
           if (children.isEmpty)
-            Text(empty, style: TextStyle(color: c.inkFaint, fontSize: 12.5))
+            Text(empty, style: TextStyle(color: c.inkFaint, fontSize: UriType.body))
           else
             ...children,
         ],
@@ -388,7 +388,7 @@ class _OccRow extends StatelessWidget {
           Text(
             '$name$date · due ${occ['due_local']} · ${occ['state']}'
             '${occ['reason'] != null ? ' (${occ['reason']})' : ''}',
-            style: TextStyle(fontSize: 12.5, color: c.ink),
+            style: TextStyle(fontSize: UriType.body, color: c.ink),
           ),
           if (actions.isNotEmpty)
             Padding(
@@ -415,7 +415,7 @@ class _JobRow extends StatelessWidget {
       children: [
         Text(
           '${job['title']} · $state\n${job['interpretation']}',
-          style: TextStyle(fontSize: 12.5, color: c.ink),
+          style: TextStyle(fontSize: UriType.body, color: c.ink),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -502,7 +502,7 @@ class _ReviewCard extends StatelessWidget {
                     '${meta['festival_date'] != null ? ' · ${meta['festival_date']}' : ''}'
                     '  ·  version ${art['version']}',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: UriType.title,
                       fontWeight: FontWeight.w600,
                       color: c.ink,
                     ),
@@ -510,27 +510,27 @@ class _ReviewCard extends StatelessWidget {
                   if (mode == 'FIXTURE')
                     Text(
                       'FIXTURE: made by the synthetic stand-in, not by Claude.',
-                      style: TextStyle(color: c.warning, fontSize: 12),
+                      style: TextStyle(color: c.warning, fontSize: UriType.label),
                     ),
                   const SizedBox(height: 6),
                   Text(
                     '${art['concept']}'.trim(),
                     maxLines: 6,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+                    style: TextStyle(fontSize: UriType.body, color: c.inkSoft),
                   ),
                   const SizedBox(height: 6),
                   SelectableText(
                     '${art['path']}\nsha256 ${sha.substring(0, 16)}…  ·  '
                     '${checks['n_frames']} frames  ·  ${art['bytes']} bytes',
-                    style: TextStyle(fontSize: 11, color: c.inkFaint),
+                    style: TextStyle(fontSize: UriType.caption, color: c.inkFaint),
                   ),
                   Text(
                     'Checks: animated GIF ${quality['animated_gif'] == true ? '✓' : '✗'}  '
                     'legible text ${quality['text_legible'] == true ? '✓' : '✗'}  '
                     'seamless loop ${quality['loop_seamless'] == true ? '✓' : '✗'}  '
                     'size budget ${quality['within_size_budget'] == true ? '✓' : '✗'}',
-                    style: TextStyle(fontSize: 11.5, color: c.inkSoft),
+                    style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -591,7 +591,7 @@ class _ProposalDialog extends StatelessWidget {
               Text(
                 '${r['festival']} · ${r['festival_date']} → GIF ${r['due_local']}'
                 '  [${(r['source'] as Map?)?['verification'] ?? ''}]',
-                style: TextStyle(fontSize: 12, color: c.inkSoft),
+                style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
               ),
             if (excluded.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -602,12 +602,12 @@ class _ProposalDialog extends StatelessWidget {
               for (final e in excluded)
                 Text(
                   '${e['festival_key']} ${e['date']} (${e['status']})',
-                  style: TextStyle(fontSize: 12, color: c.inkSoft),
+                  style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
                 ),
             ],
             const SizedBox(height: 8),
             for (final n in (proposal['notes'] as List))
-              Text('• $n', style: TextStyle(fontSize: 12, color: c.inkFaint)),
+              Text('• $n', style: TextStyle(fontSize: UriType.label, color: c.inkFaint)),
           ],
         ),
       ),

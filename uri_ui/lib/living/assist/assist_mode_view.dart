@@ -101,7 +101,7 @@ class _AssistModeViewState extends State<AssistModeView> {
                   child: Text(
                     _errorText(a.lastError!),
                     key: const ValueKey('assist-error'),
-                    style: TextStyle(color: c.danger, fontSize: 13),
+                    style: TextStyle(color: c.danger, fontSize: UriType.body),
                   ),
                 ),
               _PermissionsRow(a: a),
@@ -174,7 +174,7 @@ class _AssistModeViewState extends State<AssistModeView> {
             Text(
               'URI will be able to see everything on your screen when you ask, including notifications and other '
               'windows. Private fields are hidden where URI can find them; if it can\'t, no screenshot is used.',
-              style: TextStyle(color: c.inkSoft, fontSize: 13),
+              style: TextStyle(color: c.inkSoft, fontSize: UriType.body),
             ),
             const SizedBox(height: UriSpace.sm),
             Wrap(
@@ -255,7 +255,7 @@ class _AssistModeViewState extends State<AssistModeView> {
                 canSuggest
                     ? 'Reads one fresh view and lists possible mistakes. Nothing is changed.'
                     : 'Suggestions are off for this scope. Stop and choose again to allow them.',
-                style: TextStyle(color: c.inkSoft, fontSize: 12),
+                style: TextStyle(color: c.inkSoft, fontSize: UriType.label),
               ),
             ),
           ],
@@ -265,7 +265,7 @@ class _AssistModeViewState extends State<AssistModeView> {
           Text(
             'Read "${a.lastObservation!['title']}" · ${a.lastObservation!['fields']} fields · '
             '${a.lastObservation!['sensitive_fields']} private (hidden)',
-            style: TextStyle(color: c.inkFaint, fontSize: 12),
+            style: TextStyle(color: c.inkFaint, fontSize: UriType.label),
           ),
         for (final f in a.findings)
           ListTile(
@@ -315,7 +315,7 @@ class _AssistModeViewState extends State<AssistModeView> {
           Padding(
             padding: const EdgeInsets.only(top: UriSpace.sm),
             child: Text('URI is reading what you shared… Stop cancels it.', key: const ValueKey('assist-asking'),
-                style: TextStyle(color: c.inkSoft, fontSize: 12)),
+                style: TextStyle(color: c.inkSoft, fontSize: UriType.label)),
           ),
         if (a.answer != null)
           Padding(
@@ -358,7 +358,7 @@ class _AssistModeViewState extends State<AssistModeView> {
       children: [
         Text(
           'Searches public sources and answers with citations. It never looks at your screen.',
-          style: TextStyle(color: c.inkSoft, fontSize: 12),
+          style: TextStyle(color: c.inkSoft, fontSize: UriType.label),
         ),
         const SizedBox(height: UriSpace.xs),
         LayoutBuilder(
@@ -387,7 +387,7 @@ class _AssistModeViewState extends State<AssistModeView> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: UriSpace.xs),
             child: Text('Working: ${a.researchStage ?? 'starting'}…', key: const ValueKey('assist-research-stage'),
-                style: TextStyle(color: c.inkSoft, fontSize: 12)),
+                style: TextStyle(color: c.inkSoft, fontSize: UriType.label)),
           ),
         ListenableBuilder(
           listenable: results,
@@ -397,7 +397,7 @@ class _AssistModeViewState extends State<AssistModeView> {
               for (final s in results.placed('workspace'))
                 A2uiSurfaceView(hub: results, surfaceId: s.id),
               for (final n in results.notices)
-                Text(n, style: TextStyle(color: c.danger, fontSize: 12)),
+                Text(n, style: TextStyle(color: c.danger, fontSize: UriType.label)),
             ],
           ),
         ),
@@ -462,10 +462,10 @@ class _Frame extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: c.ink)),
+                        Text(title, style: TextStyle(fontSize: UriType.heading, fontWeight: FontWeight.w700, color: c.ink)),
                         const SizedBox(height: 4),
                         Text(subtitle, key: const ValueKey('assist-subtitle'),
-                            style: TextStyle(fontSize: 13, color: c.inkSoft)),
+                            style: TextStyle(fontSize: UriType.body, color: c.inkSoft)),
                       ],
                     ),
                   ),
@@ -499,7 +499,7 @@ class _ScopeChip extends StatelessWidget {
             _scopeText(a.scope),
             key: const ValueKey('assist-scope-label'),
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: c.ink, fontSize: 13),
+            style: TextStyle(color: c.ink, fontSize: UriType.body),
           ),
         ),
         IconButton(
@@ -560,7 +560,7 @@ class _KindCard extends StatelessWidget {
             Text(
               'Not available on this PC: ${adapter?['reason'] ?? 'no adapter'}',
               key: ValueKey('assist-kind-$kind-unavailable'),
-              style: TextStyle(color: c.inkFaint, fontSize: 12),
+              style: TextStyle(color: c.inkFaint, fontSize: UriType.label),
             ),
           if (choosing)
             for (final t in targets)
@@ -572,7 +572,7 @@ class _KindCard extends StatelessWidget {
                 onTap: () => onPick(t),
               ),
           if (choosing && targets.isEmpty)
-            Text('Nothing to choose.', style: TextStyle(color: c.inkFaint, fontSize: 12)),
+            Text('Nothing to choose.', style: TextStyle(color: c.inkFaint, fontSize: UriType.label)),
         ],
       ),
     );
@@ -599,12 +599,12 @@ class _PermissionsRow extends StatelessWidget {
       spacing: 10,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text('Permissions:', style: TextStyle(color: c.inkSoft, fontSize: 12)),
+        Text('Permissions:', style: TextStyle(color: c.inkSoft, fontSize: UriType.label)),
         for (final e in names.entries)
           Text(
             '${e.value} ${p[e.key] == true ? '✓' : '–'}',
             key: ValueKey('assist-perm-${e.key}'),
-            style: TextStyle(color: p[e.key] == true ? c.success : c.inkFaint, fontSize: 12),
+            style: TextStyle(color: p[e.key] == true ? c.success : c.inkFaint, fontSize: UriType.label),
           ),
       ],
     );
@@ -622,23 +622,23 @@ class _Diagnostics extends StatelessWidget {
     return ExpansionTile(
       key: const ValueKey('assist-diagnostics'),
       tilePadding: EdgeInsets.zero,
-      title: Text('Diagnostics', style: TextStyle(color: c.inkSoft, fontSize: 12)),
+      title: Text('Diagnostics', style: TextStyle(color: c.inkSoft, fontSize: UriType.label)),
       children: [
         for (final ad in a.adapters)
           Align(
             alignment: Alignment.centerLeft,
             child: Text('${ad['adapter']}: ${ad['state']}${ad['reason'] != null ? ' — ${ad['reason']}' : ''}',
-                style: TextStyle(color: c.inkFaint, fontSize: 11)),
+                style: TextStyle(color: c.inkFaint, fontSize: UriType.caption)),
           ),
         Align(
           alignment: Alignment.centerLeft,
           child: Text('Vision: model ${vision['model_level'] ?? '?'}; app ${vision['application'] ?? '?'}',
-              style: TextStyle(color: c.inkFaint, fontSize: 11)),
+              style: TextStyle(color: c.inkFaint, fontSize: UriType.caption)),
         ),
         Align(
           alignment: Alignment.centerLeft,
           child: Text('State ${a.state} · generation ${a.status['generation'] ?? '-'} · last refusal ${a.status['last_refusal'] ?? '-'}',
-              style: TextStyle(color: c.inkFaint, fontSize: 11)),
+              style: TextStyle(color: c.inkFaint, fontSize: UriType.caption)),
         ),
       ],
     );
@@ -659,7 +659,7 @@ class _ComingCard extends StatelessWidget {
         children: [
           Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: c.ink)),
           const SizedBox(height: 6),
-          Text(text, style: TextStyle(color: c.inkSoft, fontSize: 13)),
+          Text(text, style: TextStyle(color: c.inkSoft, fontSize: UriType.body)),
         ],
       ),
     );

@@ -59,7 +59,7 @@ class A2uiSurfaceView extends StatelessWidget {
                 child: Text(
                   err,
                   key: ValueKey('a2ui.$surfaceId.error'),
-                  style: TextStyle(color: c.danger, fontSize: 13),
+                  style: TextStyle(color: c.danger, fontSize: UriType.body),
                 ),
               ),
           ],
@@ -92,7 +92,7 @@ class A2uiSurfaceView extends StatelessWidget {
                   ),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.standard,
-                  textStyle: const TextStyle(fontSize: 14),
+                  textStyle: const TextStyle(fontSize: UriType.bodyLarge),
                 ),
               ),
             ),
@@ -230,21 +230,21 @@ class _Node extends StatelessWidget {
           key: _key(),
           style: switch (variant) {
             'title' => TextStyle(
-              fontSize: compact ? 16 : 18,
+              fontSize: compact ? UriType.titleLarge : UriType.titleLarge,
               fontWeight: FontWeight.w700,
               color: c.ink,
             ),
             'label' => TextStyle(
-              fontSize: 13,
+              fontSize: UriType.body,
               fontWeight: FontWeight.w600,
               color: c.inkSoft,
             ),
             'caption' => TextStyle(
-              fontSize: 12,
+              fontSize: UriType.label,
               color: c.inkSoft,
               height: 1.35,
             ),
-            _ => TextStyle(fontSize: 14, color: c.ink, height: 1.4),
+            _ => TextStyle(fontSize: UriType.bodyLarge, color: c.ink, height: 1.4),
           },
         );
       case 'Badge':
@@ -268,7 +268,7 @@ class _Node extends StatelessWidget {
               _text(comp['text']),
               style: TextStyle(
                 color: fg,
-                fontSize: 12,
+                fontSize: UriType.label,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -290,7 +290,7 @@ class _Node extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 textStyle: TextStyle(
-                  fontSize: box.maxWidth < 96 ? 13 : 16,
+                  fontSize: box.maxWidth < 96 ? UriType.body : UriType.titleLarge,
                   height: 1.2,
                 ),
               ),
@@ -341,7 +341,7 @@ class _Node extends StatelessWidget {
           value: s.read(p, scope: scope) == true,
           title: Text(
             _text(comp['label']),
-            style: TextStyle(color: c.ink, fontSize: 14),
+            style: TextStyle(color: c.ink, fontSize: UriType.bodyLarge),
           ),
           onChanged: (v) => hub.input(s.id, p, v == true, scope: scope),
         );
@@ -411,7 +411,7 @@ class _Choice extends StatelessWidget {
         for (final o in options)
           FilterChip(
             key: ValueKey('$keyBase.${o['value']}'),
-            label: Text('${o['label']}', style: const TextStyle(fontSize: 12)),
+            label: Text('${o['label']}', style: const TextStyle(fontSize: UriType.label)),
             selected: selected.contains(o['value']),
             showCheckmark: multiple,
             onSelected: (on) {
@@ -438,7 +438,7 @@ class _Choice extends StatelessWidget {
         Text(
           '${comp['label']}',
           style: TextStyle(
-            fontSize: 13,
+            fontSize: UriType.body,
             fontWeight: FontWeight.w600,
             color: c.inkSoft,
           ),
@@ -483,7 +483,7 @@ class _DateTime extends StatelessWidget {
           child: Text(
             '${comp['label']}',
             style: TextStyle(
-              fontSize: 13,
+              fontSize: UriType.body,
               fontWeight: FontWeight.w600,
               color: c.inkSoft,
             ),
@@ -638,7 +638,7 @@ class _ArtifactState extends State<_Artifact> {
               return Text(
                 'The image was not shown: its bytes do not match the reviewed version.',
                 key: ValueKey('${widget.keyBase}.refused'),
-                style: TextStyle(color: c.danger, fontSize: 13),
+                style: TextStyle(color: c.danger, fontSize: UriType.body),
               );
             }
             if (!snap.hasData) {
@@ -665,7 +665,7 @@ class _ArtifactState extends State<_Artifact> {
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               '${widget.comp['caption']}',
-              style: TextStyle(fontSize: 11, color: c.inkFaint),
+              style: TextStyle(fontSize: UriType.caption, color: c.inkFaint),
             ),
           ),
       ],
@@ -706,7 +706,7 @@ class A2uiNotices extends StatelessWidget {
                       Expanded(
                         child: Text(
                           hub.notices[i],
-                          style: TextStyle(color: c.ink, fontSize: 13),
+                          style: TextStyle(color: c.ink, fontSize: UriType.body),
                         ),
                       ),
                       IconButton(

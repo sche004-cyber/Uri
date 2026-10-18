@@ -77,6 +77,14 @@ def entry_by_key(key):
     return None
 
 
+def entry_by_profile_id(pid):
+    """The catalog entry of a runtime profile id (`runtime_profiles.profile_id`, e.g. "frozen"), or None."""
+    for e in CATALOG:
+        if RP.profile_id(_key(e)) == pid:
+            return e
+    return None
+
+
 def key_of(desc: dict) -> tuple:
     """(ctx, vision, mtp) of a `runtime_profiles.describe()` result."""
     return (int(desc["ctx"]), str(desc["vision"]), bool(desc["mtp"]))

@@ -235,7 +235,7 @@ class _Rail extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: UriType.caption,
                     fontWeight: FontWeight.w600,
                     color: s.state.needsUser ? c.warning : c.inkSoft,
                   ),
@@ -315,7 +315,7 @@ class _RailItem extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: UriType.body,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                   color: selected ? c.accent : c.ink,
                 ),
@@ -374,7 +374,7 @@ class _FocusHeader extends StatelessWidget {
               child: Text(
                 title,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: UriType.title,
                   fontWeight: FontWeight.w600,
                   color: c.ink,
                 ),
@@ -547,7 +547,7 @@ class TasksRegion extends StatelessWidget {
               'Needs your decision',
               trailing: Text(
                 '${waiting.length + pending.length + (services.visualV2 && services.oi?.pendingApproval != null ? 1 : 0) + (services.visualV2 && services.oi?.pendingConfirmation != null ? 1 : 0)}',
-                style: TextStyle(fontSize: 11, color: c.inkFaint),
+                style: TextStyle(fontSize: UriType.caption, color: c.inkFaint),
               ),
             ),
             const SizedBox(height: 8),
@@ -597,7 +597,7 @@ class _EmptyLine extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 10),
     child: Text(
       text,
-      style: TextStyle(fontSize: 13, color: UriColors.of(context).inkFaint),
+      style: TextStyle(fontSize: UriType.body, color: UriColors.of(context).inkFaint),
     ),
   );
 }
@@ -633,7 +633,7 @@ class _WorkApprovalCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               item.approvalSummary ?? 'Approve to continue',
-              style: TextStyle(fontSize: 13, color: c.inkSoft),
+              style: TextStyle(fontSize: UriType.body, color: c.inkSoft),
             ),
             const SizedBox(height: 10),
             Wrap(
@@ -695,7 +695,7 @@ class _PendingTaskCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               '${task.capabilityId} · risk ${task.risk}',
-              style: TextStyle(fontSize: 12, color: c.inkFaint),
+              style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
             ),
             const SizedBox(height: 10),
             Wrap(
@@ -743,7 +743,7 @@ class _WorkProgressCard extends StatelessWidget {
                 ),
                 Text(
                   item.state.label,
-                  style: TextStyle(fontSize: 12, color: c.inkSoft),
+                  style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
                 ),
                 const SizedBox(width: 8),
                 if (item.simulated) const StatusBadge.simulated(compact: true),
@@ -769,7 +769,7 @@ class _WorkProgressCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 item.detail!,
-                style: TextStyle(fontSize: 12, color: c.inkFaint),
+                style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
               ),
             ],
           ],
@@ -800,13 +800,13 @@ class _WorkHistoryRow extends StatelessWidget {
           Expanded(
             child: Text(
               item.title,
-              style: TextStyle(fontSize: 13, color: c.ink),
+              style: TextStyle(fontSize: UriType.body, color: c.ink),
             ),
           ),
           if (item.outputName != null)
             Text(
               item.outputName!,
-              style: TextStyle(fontSize: 12, color: c.inkFaint),
+              style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
             ),
           if (item.simulated) ...[
             const SizedBox(width: 8),
@@ -929,12 +929,12 @@ class DocumentsRegion extends StatelessWidget {
                           d.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13, color: c.ink),
+                          style: TextStyle(fontSize: UriType.body, color: c.ink),
                         ),
                       ),
                       Text(
                         _relative(d.modifiedAt),
-                        style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                        style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
                       ),
                       if (d.simulated) ...[
                         const SizedBox(width: 8),
@@ -1004,12 +1004,12 @@ class _TemplateTile extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: UriType.body,
                   fontWeight: FontWeight.w600,
                   color: c.ink,
                 ),
               ),
-              Text('New', style: TextStyle(fontSize: 11, color: c.inkFaint)),
+              Text('New', style: TextStyle(fontSize: UriType.caption, color: c.inkFaint)),
             ],
           ),
         ),
@@ -1142,7 +1142,7 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
             const SizedBox(height: 6),
             Text(
               'The mock does not change behaviour with this choice.',
-              style: TextStyle(fontSize: 12, color: c.inkFaint),
+              style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
             ),
             const SizedBox(height: UriSpace.lg),
             const Eyebrow('Approval boundary'),
@@ -1160,7 +1160,7 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
                 contentPadding: EdgeInsets.zero,
                 title: Text(
                   _autonomyLabel(level),
-                  style: TextStyle(fontSize: 13, color: c.ink),
+                  style: TextStyle(fontSize: UriType.body, color: c.ink),
                 ),
               ),
             const SizedBox(height: 8),
@@ -1224,21 +1224,21 @@ class HarnessRow extends StatelessWidget {
                   Text(
                     fact.displayName,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: UriType.body,
                       fontWeight: FontWeight.w600,
                       color: c.ink,
                     ),
                   ),
                   Text(
                     '${fact.installed ? 'installed' : 'not installed'} · ${fact.authState} · ${fact.qualification}',
-                    style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                    style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
                   ),
                   if (fact.requiredAction != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         fact.requiredAction!,
-                        style: TextStyle(fontSize: 12, color: c.warning),
+                        style: TextStyle(fontSize: UriType.label, color: c.warning),
                       ),
                     ),
                 ],
@@ -1295,14 +1295,14 @@ class _ProviderRow extends StatelessWidget {
                   Text(
                     provider.displayName,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: UriType.body,
                       fontWeight: FontWeight.w600,
                       color: c.ink,
                     ),
                   ),
                   Text(
                     '${local ? 'Local' : 'External'} · ${provider.activeModel ?? (provider.models.isNotEmpty ? provider.models.first.displayName : 'no model')}',
-                    style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                    style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
                   ),
                 ],
               ),
@@ -1313,7 +1313,7 @@ class _ProviderRow extends StatelessWidget {
               Text(
                 'Active',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: UriType.label,
                   color: c.accent,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1347,12 +1347,12 @@ class PermissionRow extends StatelessWidget {
           Expanded(
             child: Text(
               fact.label,
-              style: TextStyle(fontSize: 13, color: c.ink),
+              style: TextStyle(fontSize: UriType.body, color: c.ink),
             ),
           ),
           Text(
             fact.requiresApproval ? 'asks each time' : 'no approval needed',
-            style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+            style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
           ),
           if (fact.simulated) ...[
             const SizedBox(width: 8),
@@ -1446,11 +1446,11 @@ class _ContextPanel extends StatelessWidget {
               if (signal.detail != null)
                 Text(
                   signal.detail!,
-                  style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+                  style: TextStyle(fontSize: UriType.body, color: c.inkSoft),
                 ),
               Text(
                 'source: ${signal.sourceName ?? 'none'}',
-                style: TextStyle(fontSize: 11, color: c.inkFaint),
+                style: TextStyle(fontSize: UriType.caption, color: c.inkFaint),
               ),
               const SizedBox(height: UriSpace.lg),
               const Eyebrow('Executor'),
@@ -1500,7 +1500,7 @@ class _ContextPanel extends StatelessWidget {
               if (attachments.isEmpty && documents.isEmpty)
                 Text(
                   'No attachments staged.',
-                  style: TextStyle(fontSize: 12.5, color: c.inkFaint),
+                  style: TextStyle(fontSize: UriType.body, color: c.inkFaint),
                 ),
               for (final a in attachments)
                 _KeyValue(
@@ -1516,7 +1516,7 @@ class _ContextPanel extends StatelessWidget {
               if (results.isEmpty && lastTurn?.result == null)
                 Text(
                   'No results yet.',
-                  style: TextStyle(fontSize: 12.5, color: c.inkFaint),
+                  style: TextStyle(fontSize: UriType.body, color: c.inkFaint),
                 ),
               if (lastTurn?.result != null)
                 _KeyValue(
@@ -1550,14 +1550,14 @@ class _KeyValue extends StatelessWidget {
         children: [
           SizedBox(
             width: 78,
-            child: Text(k, style: TextStyle(fontSize: 11.5, color: c.inkFaint)),
+            child: Text(k, style: TextStyle(fontSize: UriType.label, color: c.inkFaint)),
           ),
           Expanded(
             child: Text(
               v,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 12.5, color: c.ink),
+              style: TextStyle(fontSize: UriType.body, color: c.ink),
             ),
           ),
           if (simulated) ...[

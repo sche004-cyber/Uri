@@ -46,7 +46,7 @@ class _PagePreviewState extends State<PagePreview> {
             Padding(
               padding: const EdgeInsets.only(top: UriSpace.xs),
               child: Text('First use: URI is checking the document engine. This takes about 2 minutes, once.',
-                  key: const ValueKey('office-preview-first-use'), style: TextStyle(color: colors.inkSoft, fontSize: 12)),
+                  key: const ValueKey('office-preview-first-use'), style: TextStyle(color: colors.inkSoft, fontSize: UriType.label)),
             ),
         ]),
       );
@@ -106,7 +106,7 @@ class _PagePreviewState extends State<PagePreview> {
           ),
           if (c.searchNotice != null) Text(c.searchNotice!, key: const ValueKey('office-search-notice')),
           Text('Preview rendered by ${d.renderer}', key: const ValueKey('office-renderer-label'),
-              style: TextStyle(color: colors.inkFaint, fontSize: 11)),
+              style: TextStyle(color: colors.inkFaint, fontSize: UriType.caption)),
         ]),
       ),
       if (c.searchMatches.isNotEmpty)
@@ -153,7 +153,7 @@ class _PagePreviewState extends State<PagePreview> {
               color: c.selectedPage == i + 1 ? colors.accent : colors.border, width: c.selectedPage == i + 1 ? 2 : 1)),
           child: Column(children: [
             _PageImage(controller: c, docId: d.id, page: i + 1, width: 160),
-            Text('${i + 1}', style: const TextStyle(fontSize: 11)),
+            Text('${i + 1}', style: const TextStyle(fontSize: UriType.caption)),
           ]),
         ),
       ),

@@ -99,7 +99,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                       Text(
                         'URI overview',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: UriType.heading,
                           fontWeight: FontWeight.w700,
                           color: c.ink,
                         ),
@@ -108,7 +108,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                       Text(
                         '${signal.title}${signal.detail != null ? ' · ${signal.detail}' : ''}',
                         key: const ValueKey('dashboard-state-line'),
-                        style: TextStyle(fontSize: 13, color: c.inkSoft),
+                        style: TextStyle(fontSize: UriType.body, color: c.inkSoft),
                       ),
                       const SizedBox(height: 10),
                       Wrap(
@@ -181,7 +181,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          fontSize: 12.5,
+                                          fontSize: UriType.body,
                                           color: c.ink,
                                         ),
                                       ),
@@ -231,7 +231,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: UriType.label,
                                   color: c.inkSoft,
                                 ),
                               ),
@@ -262,7 +262,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                                     appState.activeBrain?.providerId ??
                                     'No Brain selected',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: UriType.titleLarge,
                                   fontWeight: FontWeight.w600,
                                   color: c.ink,
                                 ),
@@ -270,7 +270,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                               Text(
                                 appState.activeBrain?.model ?? '—',
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: UriType.body,
                                   color: c.inkSoft,
                                 ),
                               ),
@@ -282,7 +282,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                                           ? 'Configured'
                                           : 'Not configured'),
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: UriType.label,
                                   color: c.inkFaint,
                                 ),
                               ),
@@ -318,7 +318,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          fontSize: 12.5,
+                                          fontSize: UriType.body,
                                           color: c.ink,
                                         ),
                                       ),
@@ -361,7 +361,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                                       child: Text(
                                         '${cl.label}${cl.isThisDevice ? ' (this device)' : ''}',
                                         style: TextStyle(
-                                          fontSize: 12.5,
+                                          fontSize: UriType.body,
                                           color: c.ink,
                                         ),
                                       ),
@@ -373,7 +373,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                             Text(
                               '${appState.devices.length} device session(s) reported by the client',
                               style: TextStyle(
-                                fontSize: 11.5,
+                                fontSize: UriType.label,
                                 color: c.inkFaint,
                               ),
                             ),
@@ -402,7 +402,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                             ? Text(
                                 'No capabilities reported.',
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: UriType.body,
                                   color: c.inkFaint,
                                 ),
                               )
@@ -434,7 +434,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
-                                                fontSize: 12.5,
+                                                fontSize: UriType.body,
                                                 color: c.ink,
                                               ),
                                             ),
@@ -466,7 +466,7 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                               return Text(
                                 'None selected. Pick one in Workspace › Settings.',
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: UriType.body,
                                   color: c.inkFaint,
                                 ),
                               );
@@ -520,7 +520,7 @@ class _Tile extends StatelessWidget {
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: 13.5,
+                    fontSize: UriType.bodyLarge,
                     fontWeight: FontWeight.w600,
                     color: c.ink,
                   ),
@@ -530,7 +530,7 @@ class _Tile extends StatelessWidget {
               ?trailing,
             ],
           ),
-          Text(source, style: TextStyle(fontSize: 10.5, color: c.inkFaint)),
+          Text(source, style: TextStyle(fontSize: UriType.caption, color: c.inkFaint)),
           const SizedBox(height: 10),
           Expanded(child: SingleChildScrollView(child: child)),
         ],
@@ -559,14 +559,14 @@ class _BigNumber extends StatelessWidget {
         Text(
           value,
           style: TextStyle(
-            fontSize: 26,
+            fontSize: UriType.headlineLarge,
             fontWeight: FontWeight.w700,
             color: color,
             height: 1,
           ),
         ),
         const SizedBox(width: 8),
-        Text(label, style: TextStyle(fontSize: 12.5, color: c.inkSoft)),
+        Text(label, style: TextStyle(fontSize: UriType.body, color: c.inkSoft)),
       ],
     );
   }
@@ -585,7 +585,7 @@ class _SchedulerTileBody extends StatelessWidget {
     if (cl == null) {
       return Text(
         'Scheduler service not configured (URI_SCHEDULER_STATE).',
-        style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+        style: TextStyle(fontSize: UriType.body, color: c.inkSoft),
       );
     }
     return FutureBuilder<Map<String, dynamic>>(
@@ -606,12 +606,12 @@ class _SchedulerTileBody extends StatelessWidget {
                 '${(ov['upcoming'] as List).length} upcoming · '
                 '${(ov['errors'] as List).length} need attention · '
                 '${(ov['paused_jobs'] as List).length} paused',
-                style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+                style: TextStyle(fontSize: UriType.body, color: c.inkSoft),
               ),
             ] else
               Text(
                 s.hasError ? 'Not reachable: ${s.error}' : 'Loading…',
-                style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+                style: TextStyle(fontSize: UriType.body, color: c.inkSoft),
               ),
             const SizedBox(height: 10),
             OutlinedButton.icon(

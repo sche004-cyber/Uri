@@ -148,7 +148,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                     children: [
                       Text(
                         _previewFor(_step).label,
-                        style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+                        style: TextStyle(fontSize: UriType.body, color: c.inkSoft),
                       ),
                       const SizedBox(width: 6),
                       const StatusBadge.simulated(compact: true),
@@ -173,7 +173,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                                   LivingOnboardingFlow.stepTitles[_step],
                                   key: const ValueKey('onboarding-step-title'),
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: UriType.heading,
                                     fontWeight: FontWeight.w700,
                                     color: c.ink,
                                   ),
@@ -182,7 +182,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                               Text(
                                 '${_step + 1} / ${LivingOnboardingFlow.stepTitles.length}',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: UriType.label,
                                   color: c.inkFaint,
                                 ),
                               ),
@@ -253,7 +253,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
   Widget _buildStep(BuildContext context, LivingServices services) {
     final s = AppStateScope.of(context);
     final c = UriColors.of(context);
-    final body = TextStyle(fontSize: 13.5, color: c.inkSoft, height: 1.5);
+    final body = TextStyle(fontSize: UriType.bodyLarge, color: c.inkSoft, height: 1.5);
     switch (_step) {
       case 0:
         return Column(
@@ -294,7 +294,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                 Expanded(
                   child: Text(
                     'Listening and Speaking have no source in this build; they are previews.',
-                    style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                    style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
                   ),
                 ),
               ],
@@ -344,7 +344,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                                 ? 'Mock client answered; no real server was contacted.'
                                 : 'Server reachable.')
                           : (_connection!.detail ?? 'Not reachable'),
-                      style: TextStyle(fontSize: 12, color: c.inkSoft),
+                      style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
                     ),
                   ),
                 ],
@@ -398,11 +398,11 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                           contentPadding: EdgeInsets.zero,
                           title: Text(
                             p.displayName,
-                            style: TextStyle(fontSize: 13, color: c.ink),
+                            style: TextStyle(fontSize: UriType.body, color: c.ink),
                           ),
                           subtitle: Text(
                             '${p.adapter == 'ollama' ? 'Local' : 'External'} · ${p.configured ? (p.available ? 'available' : 'configured, not reachable') : 'needs a key'}',
-                            style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                            style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
                           ),
                           secondary: services.appDataIsMock
                               ? const StatusBadge.simulated(compact: true)
@@ -442,7 +442,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                     level == AutonomyLevel.askEveryTime
                         ? 'Ask me before every action'
                         : 'Auto-approve routine actions, ask for the rest',
-                    style: TextStyle(fontSize: 13, color: c.ink),
+                    style: TextStyle(fontSize: UriType.body, color: c.ink),
                   ),
                 ),
               const SizedBox(height: 8),
@@ -476,7 +476,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                         child: Text(
                           h,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: UriType.caption,
                             fontWeight: FontWeight.w700,
                             color: c.inkFaint,
                           ),
@@ -491,21 +491,21 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Text(
                           h.displayName,
-                          style: TextStyle(fontSize: 13, color: c.ink),
+                          style: TextStyle(fontSize: UriType.body, color: c.ink),
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Text(
                           h.authState,
-                          style: TextStyle(fontSize: 12, color: c.inkSoft),
+                          style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Text(
                           h.qualification,
-                          style: TextStyle(fontSize: 12, color: c.inkSoft),
+                          style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
                         ),
                       ),
                       Padding(
@@ -550,7 +550,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
             Text(
               'Appearance',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: UriType.body,
                 fontWeight: FontWeight.w600,
                 color: c.ink,
               ),
@@ -582,11 +582,11 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                 contentPadding: EdgeInsets.zero,
                 title: Text(
                   'Reduced visual effects',
-                  style: TextStyle(fontSize: 13, color: c.ink),
+                  style: TextStyle(fontSize: UriType.body, color: c.ink),
                 ),
                 subtitle: Text(
                   'Turn off the shader, blur and glow. Good for older GPUs or remote desktops.',
-                  style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                  style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
                 ),
                 value: services.effects.reducedEffects,
                 onChanged: (v) async {
@@ -636,13 +636,13 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                           children: [
                             Text(
                               ch.label,
-                              style: TextStyle(fontSize: 13, color: c.ink),
+                              style: TextStyle(fontSize: UriType.body, color: c.ink),
                             ),
                             if (ch.detail != null)
                               Text(
                                 ch.detail!,
                                 style: TextStyle(
-                                  fontSize: 11.5,
+                                  fontSize: UriType.label,
                                   color: c.inkFaint,
                                 ),
                               ),
@@ -683,7 +683,7 @@ class _Bullet extends StatelessWidget {
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: TextStyle(fontSize: 13.5, color: c.inkSoft, height: 1.5),
+                style: TextStyle(fontSize: UriType.bodyLarge, color: c.inkSoft, height: 1.5),
                 children: [
                   TextSpan(
                     text: '$title: ',

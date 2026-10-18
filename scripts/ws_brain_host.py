@@ -480,8 +480,9 @@ class Host:
     def reconfigure(self):
         """Controlled switch to `pending_profile`: fit pre-check while the current Brain still runs, stop, VRAM
         release wait, start on the derived config, calibration. Nothing falls back silently: a target that would not
-        fit is refused BEFORE anything is stopped (the working Brain stays), and a start that then waits or fails is
-        reported as it is."""
+        fit is refused BEFORE anything is stopped (the working Brain stays), a start that then waits is reported as
+        it is, and a start that FAILS restores the previous known-good profile once, recorded in
+        `profile_switch.fallback` (UI-CONTROLS-TYPO-20261018)."""
         key = self.pending_profile
         if key is None:
             return
@@ -515,6 +516,9 @@ class Host:
                 code = "REFUSED_DOES_NOT_FIT" if fit["verdict"] == G.CONTENDED else "REFUSED_GPU_UNMEASURED"
                 return self._refuse_switch(rid, cur, key, t0, code, "The Brain was not switched. " + G.explain(fit),
                                            fit=fit)
+        # UI-CONTROLS-TYPO-20261018: the previous profile is restored only when it was RUNNING here (known good) and is
+        # a qualified catalog entry; a research profile or a Brain the user had stopped is never brought back.
+        prev_cfg = self.cfg if self.mgr is not None and self._restorable(cur) else None
         self.report["profile_switch"] = {"id": rid, "from": cur["id"], "to": RP.profile_id(key),
                                          "t_request": t0, "fit_before": fit, "result": "IN_PROGRESS",
                                          # A Brain the user had stopped is started by a switch (review R1-08.3).
@@ -526,6 +530,51 @@ class Host:
             self._finish_switch()
             return
         self.start_brain()
+        self._restore_after_failed_switch(prev_cfg, cur)
+
+    @staticmethod
+    def _restorable(desc):
+        try:
+            entry = QC.entry_by_key(QC.key_of(desc))
+        except (KeyError, TypeError, ValueError):
+            return False
+        return bool(entry and entry["qualified"])
+
+    def _restore_after_failed_switch(self, prev_cfg, prev_desc):
+        """UI-CONTROLS-TYPO-20261018 (closes QC-F5): when the new profile's start FAILED (not ready within the accepted
+        load bound of RuntimeManager.ensure_ready, or rejected), start the previous profile ONCE, on the lease this
+        host still holds. The switch keeps result FAILED (that is what happened); `fallback` records the restore and
+        its own outcome, `restored` whether a Brain is serving again. Only this host's own server was ever stopped; a
+        stop or exit during the switch or the restore wins, and a newer reconfigure request supersedes the restore."""
+        sw = self.report.get("profile_switch") or {}
+        if (prev_cfg is None or sw.get("result") != "FAILED" or self.stop_requested or self.should_exit()
+                or self.lease is None or self.mgr is not None or self.pending_profile is not None):
+            return False
+        sw["fallback"] = {"to": prev_desc["id"], "label": (QC.entry_by_profile_id(prev_desc["id"]) or {}).get("label"),
+                          "result": "IN_PROGRESS", "t_start": round(self.now(), 3),
+                          "after": {"state": self.report.get("state"), "detail": self.report.get("detail")}}
+        sw["restored"] = False
+        self.cfg = prev_cfg
+        self.required_mib = RP.cfg_required_mib(self.cfg, G.RUNTIME_V1_DEVICE_MIB)
+        self.report["profile"] = RP.describe(self.cfg)
+        self.sync_selection()
+        self.lease.heartbeat(expected_vram_mib=self.required_mib)
+        self.set("STARTING", detail="SWITCH_FALLBACK",
+                 explain="The Brain did not start with the new setting; URI is going back to the previous one.")
+        fb = sw["fallback"]
+        try:
+            self.start_brain()            # closes a newer switch record a request made during the wait (if any)
+        finally:
+            state = self.report.get("state")
+            if self.report.get("profile_switch") is not sw:
+                state = "SUPERSEDED"      # a newer reconfigure request took over while the restore waited
+            elif state in ("WAITING_FOR_GPU", "WAITING_FOR_LEASE", "RELEASE_WAIT") and (
+                    getattr(self, "stop_during_wait", False) or self.stop_requested or self.should_exit()):
+                state = "STOPPED"
+            fb.update(result=state, t_done=round(self.now(), 3), seconds=round(self.now() - fb["t_start"], 1))
+            sw["restored"] = state in ("READY", "DEGRADED")
+            self.write()
+        return sw["restored"]
 
     def _refuse_switch(self, rid, cur, key, t0, code, explain, fit=None):
         """The current Brain keeps running; the request is closed with the refusal (the worker's gate opens on it)."""

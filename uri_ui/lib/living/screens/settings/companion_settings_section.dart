@@ -63,10 +63,10 @@ class CompanionSettingsSection extends StatelessWidget {
 }
 
 TextStyle _label(BuildContext context) =>
-    TextStyle(fontSize: 13, color: UriColors.of(context).ink);
+    TextStyle(fontSize: UriType.body, color: UriColors.of(context).ink);
 
 TextStyle _note(BuildContext context) =>
-    TextStyle(fontSize: 12, color: UriColors.of(context).inkFaint);
+    TextStyle(fontSize: UriType.label, color: UriColors.of(context).inkFaint);
 
 /// A setting that exists but cannot be used here, with the reason.
 class _Unavailable extends StatelessWidget {
@@ -91,7 +91,7 @@ class _Unavailable extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontSize: 13, color: c.inkSoft)),
+                  Text(title, style: TextStyle(fontSize: UriType.body, color: c.inkSoft)),
                   const SizedBox(height: 2),
                   Text(reason, style: _note(context)),
                 ],
@@ -140,7 +140,7 @@ class _CompanionPicker extends StatelessWidget {
         Text(
           'Theme: $theme. The companion sets the colours of the whole app.',
           key: const ValueKey('companion-theme-line'),
-          style: TextStyle(fontSize: 12, color: c.inkSoft),
+          style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
         ),
       ],
     );
@@ -203,7 +203,7 @@ class _CompanionCard extends StatelessWidget {
                     choice.label,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 12.5,
+                      fontSize: UriType.body,
                       fontWeight: FontWeight.w600,
                       color: c.ink,
                     ),
@@ -213,7 +213,7 @@ class _CompanionCard extends StatelessWidget {
                     choice.tagline,
                     textAlign: TextAlign.center,
                     maxLines: 2,
-                    style: TextStyle(fontSize: 11, color: c.inkSoft),
+                    style: TextStyle(fontSize: UriType.caption, color: c.inkSoft),
                   ),
                 ],
               ),
@@ -378,7 +378,7 @@ class _LookSlider extends StatelessWidget {
           child: Text(
             display,
             textAlign: TextAlign.right,
-            style: TextStyle(fontSize: 12, color: c.inkSoft),
+            style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
           ),
         ),
       ],
@@ -644,7 +644,7 @@ class _PerformanceSettings extends StatelessWidget {
               title: Text('Reduced motion', style: _label(context)),
               subtitle: Text(
                 'The companion holds still; state shows by colour and label.',
-                style: TextStyle(fontSize: 12, color: c.inkFaint),
+                style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
               ),
               value: services.effects.reducedMotion,
               onChanged: (v) => services.effects.setReducedMotion(v),
@@ -747,7 +747,7 @@ class _VoiceSettingsState extends State<_VoiceSettings> {
                           'previews now and to URI\'s voice when it is.'
                     : 'Voice service: ${adapter.name}.',
                 key: const ValueKey('voice-service-line'),
-                style: TextStyle(fontSize: 12, color: c.inkSoft),
+                style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
               ),
             ),
             if (adapter?.simulated ?? false) ...[
@@ -847,7 +847,7 @@ class _VoiceSettingsState extends State<_VoiceSettings> {
               child: Text(
                 engine.label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: UriType.label,
                   fontWeight: FontWeight.w600,
                   color: c.inkSoft,
                 ),
@@ -867,7 +867,7 @@ class _VoiceSettingsState extends State<_VoiceSettings> {
         for (final e in listing.engineErrors)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Text(e, style: TextStyle(fontSize: 12, color: c.warning)),
+            child: Text(e, style: TextStyle(fontSize: UriType.label, color: c.warning)),
           ),
         if (_previewError != null)
           Padding(
@@ -875,7 +875,7 @@ class _VoiceSettingsState extends State<_VoiceSettings> {
             child: Text(
               'Preview failed: $_previewError',
               key: const ValueKey('voice-preview-error'),
-              style: TextStyle(fontSize: 12, color: c.danger),
+              style: TextStyle(fontSize: UriType.label, color: c.danger),
             ),
           ),
         const SizedBox(height: 10),
@@ -970,13 +970,13 @@ class _VoiceRow extends StatelessWidget {
       title: Text(
         voice.name,
         style: TextStyle(
-          fontSize: 13,
+          fontSize: UriType.body,
           color: voice.usable ? c.ink : c.inkFaint,
         ),
       ),
       subtitle: Text(
         detail,
-        style: TextStyle(fontSize: 11.5, color: c.inkSoft),
+        style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
       ),
       trailing: onPreview == null
           ? null
@@ -1044,7 +1044,7 @@ class _IntSlider extends StatelessWidget {
           child: Text(
             display,
             textAlign: TextAlign.right,
-            style: TextStyle(fontSize: 12, color: c.inkSoft),
+            style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
           ),
         ),
       ],

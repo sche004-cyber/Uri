@@ -18,7 +18,7 @@ class OiMarkdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = UriColors.of(context);
-    final base = TextStyle(color: color ?? c.ink, height: 1.4, fontSize: 14);
+    final base = TextStyle(color: color ?? c.ink, height: 1.4, fontSize: UriType.bodyLarge);
     final blocks = parseMarkdownBlocks(source);
     return SelectionArea(
       child: Column(
@@ -35,7 +35,7 @@ class OiMarkdown extends StatelessWidget {
   }
 
   Widget _block(MdBlock b, TextStyle base, UriColors c) {
-    final mono = base.copyWith(fontFamily: 'Consolas', fontSize: 12.5, height: 1.35);
+    final mono = base.copyWith(fontFamily: UriType.mono, fontSize: UriType.body, height: 1.35);
     switch (b.kind) {
       case MdKind.heading:
         final size = <double>[0, 18, 16, 15][b.level.clamp(1, 3)];
@@ -199,7 +199,7 @@ List<InlineSpan> inlineSpans(String text, TextStyle base, UriColors c) {
     if (m.group(1) != null) {
       spans.add(TextSpan(
           text: m.group(1),
-          style: base.copyWith(fontFamily: 'Consolas', fontSize: (base.fontSize ?? 14) - 1, backgroundColor: c.ink.withValues(alpha: 0.08))));
+          style: base.copyWith(fontFamily: UriType.mono, fontSize: (base.fontSize ?? UriType.bodyLarge) - 1, backgroundColor: c.ink.withValues(alpha: 0.08))));
     } else if (m.group(2) != null) {
       spans.add(TextSpan(text: m.group(2), style: base.copyWith(decoration: TextDecoration.underline, color: c.accent)));
     } else if (m.group(4) != null || m.group(5) != null) {
