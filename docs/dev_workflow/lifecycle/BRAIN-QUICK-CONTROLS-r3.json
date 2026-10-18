@@ -1,0 +1,172 @@
+{
+ "milestone": "BRAIN-QUICK-CONTROLS-r3",
+ "repo": "/home/claude/uri-qc",
+ "canonical_url": "https://github.com/sche004-cyber/Uri",
+ "baseline": {
+  "remote_branch": "integration/git-sync-20261008",
+  "expect": "348677b79610d6e261885531bb2e2a95b5253315"
+ },
+ "candidate": {
+  "branch": "claude/brain-quick-controls-ghikbt",
+  "worktree": "/home/claude/uri-qc"
+ },
+ "state_dir": "/home/claude/lifecycle-runs/BRAIN-QUICK-CONTROLS-r3",
+ "acceptance_criteria_file": "docs/brain_quick_controls/00_PLAN_AND_ACCEPTANCE_CRITERIA.md",
+ "python": "/home/claude/venv/bin/python",
+ "review_focus": [
+  "The WHOLE candidate baseline..HEAD against canonical 348677b7. It contains the merge a2c68bd0 of URI-RUNTIME-VRAM-R1 (origin/research/runtime-vram-r1-20261017 @ 7c7a7776: runtime_profiles.py, ws_brain_host --profile, runtime_v1 vision_offload, research/runtime_vram_r1/**), the declared prerequisite, and BRAIN-QUICK-CONTROLS (everything after). Review BRAIN-QUICK-CONTROLS against AC1..AC12 of docs/brain_quick_controls/00_PLAN_AND_ACCEPTANCE_CRITERIA.md; review the R1 part for defects that the quick controls depend on",
+  "Readiness honesty (AC: no misleading indicators): Vision is shown On only when the live server reports the vision modality for the ACTIVE profile (brain_profile.ProfileStatus, modality_problem); identity is checked against the active profile's derived config (exact argv, n_ctx), never loosened; while a switch runs the UI shows switching and not ready; an unknown host profile is UNAVAILABLE, never READY",
+  "Vision over MTP: Vision On is always MTP off; speed boost only with Vision off at the measured 16K/32K MTP profiles; key_from_controls refuses vision+speed rather than silently dropping one; OFFERED keys all measured (RP.MEASURED_MIB)",
+  "Session state across profile switches: the conversation, task ledger and drafts survive a reconfigure (the host restarts only llama-server; the worker keeps history); a context shrink below the live conversation needs explicit confirm_shrink; a switch is refused while a turn runs or a host request is pending; no fallback to another profile on failure (last_switch NOT_READY is shown)",
+  "Image turns: images are validated (count, total bytes vs the frozen 2 MiB FRAME_LIMIT, magic bytes) before reaching the Brain; history keeps placeholders only, never bytes; image turns that would route to actions, Harness, multi-step, Core, dictation or drafts are refused with IMAGE_ACTION_UNSUPPORTED, never silently drop the image; Vision Off refuses image turns with VISION_OFF",
+  "Brain host reconfigure (scripts/ws_brain_host.py): request validation (IGNORED_INVALID_OR_STALE), GPU lease handling, REFUSED_ATTACHED for a server the host does not own, the persisted choice file brain_profile.json read at host start with errors reported, never guessed",
+  "Frozen and protected: model_lab/integration/local_brain.json and uri_core/** unchanged; profiles are derived in memory; the frozen-scope lists (tests/phase2a/test_frozen_core.py ALLOWED_NEW, scripts/phase2close_chain.py WS_EXACT) only gain the exact new paths; CRLF line endings of answer.py, test_frozen_core.py, phase2close_chain.py preserved",
+  "Thinking control: per-turn depth only (no reload), persisted choice except deep; the existing depth contract is unchanged",
+  "Flutter UI (uri_ui/lib/living/integration/brain_quick_controls.dart, oi_conversation.dart, oi_widgets.dart, ws_settings.dart, living_composer.dart): discoverability, confirmation before a reload, plain-language refusal messages for every refusal code, image scaling to the limit, no layout overflow at small sizes, no expensive effects or persistent timers; classic interface and Office composer path unchanged",
+  "user-facing work: every capability reachable and operable through the real URI Windows UI; first-time and returning user; recovery after a failed switch",
+  "History to verify, not trust: run BRAIN-QUICK-CONTROLS (state /home/claude/lifecycle-runs/BRAIN-QUICK-CONTROLS) R1-R4 REJECT, driver repairs 2a22b3cd (R1-01..04), 29137482 (R2-01), 0d1d45c8 (R3-01), 592b861a (R4-01); R5 on 592b861a ACCEPT WITH FINDINGS (LOW R5-01 Vision not-ready wording, R5-02 speed boost without confirmation, R5-03 plan image limits). Manual repair 7ad15db0 fixes R5-01..03 and two LOW findings earlier rounds reported but no repair addressed: R4-03 (image while a Core clarification waits: new code IMAGE_DURING_CLARIFICATION) and R3-05 (brain_restart 'reconfigure' is ACTION_INVALID). Verify these repairs and review the whole candidate again for new defects; the runbook docs/brain_quick_controls/01_WINDOWS_LIVE_RUNBOOK.md must match the code (commands, labels, host exit file).",
+  "History to verify, not trust: run BRAIN-QUICK-CONTROLS-r2 (state /home/claude/lifecycle-runs/BRAIN-QUICK-CONTROLS-r2) R1 on bb855f97 ACCEPT WITH FINDINGS (LOW R1-01 image + draft request answered in chat, R1-02 ProfileStatus double read, R1-03 shrink dialog promised trimming that did not exist, R1-04 tight margin not shown, R1-05 controls not locked during first load). Manual repair be4fe544: worker_bridge IMAGE_DRAFT_UNSUPPORTED, _fit_history, BRAIN_LOADING; brain_profile ProfileStatus single read; UI tightNote and brainLoading lock. Verify these repairs (in particular that _fit_history never changes stored history and that the budget is conservative) and review the whole candidate again for new defects."
+ ],
+ "environment_notes": [
+  "Evidence classes (owner directive 2026-10-15). If you are the reviewer, add these keys to your AUDIT_RESULT JSON: \"inspected\" (code and documents you read yourself), \"evidence_reviewed_only\" (reports, screenshots, logs you read but did not reproduce), \"live_observed\" (live behaviour you observed yourself; [] if none); tests you executed go in tests_run and claims you could not verify in unverified. Never present reviewed screenshots or reports as your own live observation. If you are an implementer or diagnosis worker, make the same distinction in your notes.",
+  "This run is on a Linux cloud host (no GPU, no Windows). The product is Windows-only: tests/oi/conftest.py imports msvcrt in an autouse teardown, so the python gate loads an out-of-repository pytest plugin (/home/claude/lifecycle-env/linux_teardown_shim.py, -p linux_teardown_shim) that offers a stub msvcrt only during teardown and refuses every call; test bodies see no msvcrt. Baseline and candidate run with the same plugin.",
+  "Known pre-existing Linux failures, identical on canonical 348677b7: 37 python gate failures (Windows-only process/lock behaviour, e.g. tests/ws/test_ws_hardening.py::test_wait_ui_window_behaviour_on_real_processes); Flutter uri_ui/test/reference_render_test.dart 'render desktop dashboard'; flutter analyze 4 pre-existing infos.",
+  "Live evidence (Windows 11, AMD RX 7900 GRE 16 GB, Vulkan llama-server b11425) is produced after this review by the owner from a runbook; this round reviews code and tests. VRAM numbers come from URI-RUNTIME-VRAM-R1 measurements (research/runtime_vram_r1/**) and are evidence you only review.",
+  "Owner decision BQC-D1 (default profile) is open; the development default is the recommended 32K + Vision, MTP off (brain_profile.DEFAULT_KEY). Do not report the open decision itself as a defect."
+ ],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": [
+  "uri_operational_intelligence/brain_profile.py",
+  "uri_operational_intelligence/images.py",
+  "uri_operational_intelligence/answer.py",
+  "uri_operational_intelligence/orchestrator.py",
+  "uri_operational_intelligence/worker_bridge.py",
+  "uri_operational_intelligence/brain_health.py",
+  "uri_operational_intelligence/runtime_profiles.py",
+  "uri_operational_intelligence/runtime_v1.py",
+  "scripts/ws_brain_host.py",
+  "scripts/run_uri_integrated_worker.py",
+  "scripts/phase2close_chain.py",
+  "tests/phase2a/test_frozen_core.py",
+  "tests/oi/**",
+  "tests/ws/**",
+  "uri_ui/**",
+  "docs/brain_quick_controls/**",
+  "docs/dev_workflow/lifecycle/BRAIN-QUICK-CONTROLS*.json",
+  "research/runtime_vram_r1/**",
+  "docs/operational_intelligence/**"
+ ],
+ "test_globs": [
+  "uri_ui/test/**",
+  "uri_ui/integration_test/**",
+  "tests/**"
+ ],
+ "allowed_flaky": [],
+ "gates": [
+  {
+   "id": "flutter-analyze",
+   "kind": "command",
+   "cwd": "uri_ui",
+   "cmd": [
+    "/home/claude/tools/flutter/bin/flutter",
+    "analyze",
+    "--no-fatal-infos",
+    "--no-pub"
+   ],
+   "timeout_s": 1200
+  },
+  {
+   "id": "flutter",
+   "kind": "flutter",
+   "cwd": "uri_ui",
+   "cmd": [
+    "/home/claude/tools/flutter/bin/flutter",
+    "test",
+    "--no-pub"
+   ],
+   "timeout_s": 3600
+  },
+  {
+   "id": "python",
+   "kind": "pytest",
+   "cmd": [
+    "env",
+    "PYTHONPATH=/home/claude/lifecycle-env",
+    "{python}",
+    "-B",
+    "-m",
+    "pytest",
+    "-c",
+    "scripts/phase2d_pytest.ini",
+    "--rootdir=.",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "linux_teardown_shim",
+    "tests/ssrf",
+    "tests/web",
+    "tests/a2ui",
+    "tests/ws",
+    "tests/oi",
+    "tests/phase2a/test_frozen_core.py"
+   ],
+   "timeout_s": 3600
+  }
+ ],
+ "regression_runner": [
+  "env",
+  "PYTHONPATH=/home/claude/lifecycle-env",
+  "{python}",
+  "-B",
+  "-m",
+  "pytest",
+  "-q",
+  "-p",
+  "no:cacheprovider",
+  "-p",
+  "linux_teardown_shim"
+ ],
+ "regression_runners": [
+  {
+   "suffix": "_test.dart",
+   "cwd": "uri_ui",
+   "cmd": [
+    "/home/claude/tools/flutter/bin/flutter",
+    "test",
+    "--no-pub"
+   ]
+  }
+ ],
+ "repair_nonblocking_severities": [],
+ "reviewer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 5400
+ },
+ "implementer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 5400
+ },
+ "limits": {
+  "max_repair_attempts": 3
+ },
+ "continuation": {
+  "stall_rounds": 2,
+  "diagnose_after": 2,
+  "budget": {
+   "max_rounds": 8,
+   "max_cost_usd": 150,
+   "max_hours": 12
+  }
+ },
+ "integration": {
+  "mode": "none"
+ },
+ "commit_trailers": [
+  "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+  "Claude-Session: https://claude.ai/code/session_01PHQkYkMwgDmXRrpcLXu5Np"
+ ]
+}
