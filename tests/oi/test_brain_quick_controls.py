@@ -370,6 +370,20 @@ def test_context_reserve_covers_the_worst_case_answer_turn():
     assert IW.IMAGE_TOKENS * 28 * 28 >= 1280 * 1280
 
 
+def test_token_estimate_counts_digits_and_non_latin_text_as_a_token_each(fake, tmp_path):
+    """r4 R1-01: 3 characters per token holds for ASCII words, not for digits or CJK; those count one each."""
+    assert IW._tokens(*IW._text_size("abc" * 100)) == 100
+    assert IW._tokens(*IW._text_size("1234567890")) == 10
+    assert IW._tokens(*IW._text_size("\u6c49\u5b57" * 50)) == 100
+    b, _, _, _ = _bridge(fake, tmp_path)
+    b.cfg = dict(b.cfg, runtime=dict(b.cfg["runtime"], ctx=16384))
+    room = 16384 - IW.CONTEXT_RESERVE_TOKENS
+    cjk = [{"role": "user", "content": "\u6c49" * (room // 2)}, {"role": "assistant", "content": "\u5b57" * (room // 2)}]
+    assert b._fit_history(cjk, "", None) == cjk
+    cjk[1]["content"] += "\u5b57" * 2              # two characters over: the older turn no longer fits
+    assert b._fit_history(cjk, "", None) == []
+
+
 def test_no_switch_while_the_host_loads_or_stops(fake, tmp_path):
     """R1-05: the host reads only stop requests while it loads; a switch would wait unread and go stale."""
     for state in ("STARTING_HOST", "STARTING", "CALIBRATING", "STOPPING"):

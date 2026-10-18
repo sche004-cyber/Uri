@@ -428,6 +428,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('oi-qc-confirm')), findsNothing);
     expect(profileRefusalText('BRAIN_LOADING'), contains('still starting'));
+    for (final code in ['PROFILE_UNKNOWN', 'BRAIN_CONTROL_UNAVAILABLE', 'CONTROL_INVALID']) {
+      expect(profileRefusalText(code), isNot(contains('could not change the Brain right now')), reason: code);
+    }
     expect(notSentMessage('IMAGE_DRAFT_UNSUPPORTED', ['a.png']), contains('cannot write or change a document'));
   });
 

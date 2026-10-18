@@ -165,6 +165,19 @@ class _NotSelected:
     detail = "No Brain is selected; the deterministic source does not answer open questions."
 
 
+
+def _text_size(text):
+    """(plain, other) characters for the token estimate (r4 R1-01): ASCII letters, spaces and punctuation run about
+    4 characters per token and are counted at CHARS_PER_TOKEN; digits and non-ASCII characters (CJK, accents, emoji)
+    can be a token each and are counted as one."""
+    other = sum(1 for ch in text if ch > "\x7f" or ch.isdigit())
+    return len(text) - other, other
+
+
+def _tokens(plain, other):
+    return -(-plain // CHARS_PER_TOKEN) + other
+
+
 class IntegratedTurns:
     def __init__(self, *, orchestrator, cfg, status, write_event, memory=None, cloud=None, defer_start=False,
                  host_report=None, host_request=None, profiles=None, choice_dir=None):
@@ -460,16 +473,23 @@ class IntegratedTurns:
                 # The worker is shutting down: nobody can decide this card. Release it as a denial now (CAP-1).
                 self._release(entry)
 
+    @staticmethod
+    def _fit_history_tokens(history):
+        """Estimated tokens of a whole history, counted as _fit_history counts it."""
+        return _tokens(*map(sum, zip((0, 0), *(_text_size(m.get("content") or "") for m in history))))
+
     def _fit_history(self, history, text, images):
         """The most recent history that fits the active profile's context with the current turn (R1-03). The stored
         history is never changed; a smaller context only shows the Brain less of it."""
         history = list(history)
         ctx = int(self._active_cfg()["runtime"]["ctx"])
-        budget = (ctx - CONTEXT_RESERVE_TOKENS - IMAGE_TOKENS * len(images or ())) * CHARS_PER_TOKEN - len(text)
-        used, keep = 0, len(history)
+        budget = ctx - CONTEXT_RESERVE_TOKENS - IMAGE_TOKENS * len(images or ()) - _tokens(*_text_size(text))
+        plain = other = 0
+        keep = len(history)
         for i in range(len(history) - 1, -1, -1):
-            used += len(history[i].get("content") or "")
-            if used > budget:
+            p, o = _text_size(history[i].get("content") or "")
+            plain, other = plain + p, other + o
+            if _tokens(plain, other) > budget:
                 break
             keep = i
         out = history[keep:]
@@ -721,11 +741,10 @@ class IntegratedTurns:
 
     def _live_tokens(self):
         """Context the largest live conversation needs to reach the Brain whole: the budget _fit_history applies
-        (chars / CHARS_PER_TOKEN + CONTEXT_RESERVE_TOKENS) plus room for the next turn (r3 R2-01), so a context below
+        (estimated tokens + CONTEXT_RESERVE_TOKENS) plus room for the next turn (r3 R2-01), so a context below
         it shows the Brain less (R1-01)."""
-        sizes = [sum(len(m.get("content") or "") for m in h) for h in self.history.values()]
-        return (-(-max(sizes) // CHARS_PER_TOKEN) + CONTEXT_RESERVE_TOKENS + NEXT_TURN_TOKENS) \
-            if sizes and max(sizes) else 0
+        sizes = [self._fit_history_tokens(h) for h in self.history.values()]
+        return (max(sizes) + CONTEXT_RESERVE_TOKENS + NEXT_TURN_TOKENS) if sizes and max(sizes) else 0
 
     def _brain_profile_get(self, _c):
         host, alive = self._host()

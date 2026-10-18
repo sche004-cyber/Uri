@@ -18,8 +18,9 @@ Run every command in your own PowerShell window, from the folder named in that s
    Get-NetTCPConnection -LocalPort 18470 -State Listen -ErrorAction SilentlyContinue
    ```
 
-   The test launcher never stops a process on port 18470. A Brain left running would be attached rather than owned,
-   and every Vision or Context switch would then be refused.
+   The test launcher never stops a process on port 18470. With another Brain still running there, the test app
+   attaches to it instead of starting its own. That Brain is not the one this test configures, so the app shows the
+   Brain as not available and refuses every Vision or Context switch, and the journeys below cannot pass.
 2. Close LM Studio and Ollama models that use the GPU. Keep Chrome closed until step J5.
 3. Note the free GPU memory with nothing open:
 
@@ -64,8 +65,15 @@ $oi
 function Exit-TestBrain {
   # The Brain host's own exit file (scripts/ws_brain_host.py): it stops the Brain, frees the GPU lease and exits.
   New-Item -ItemType File -Force C:\Users\cheta\Development\uri-bqc-run\work\oi\state\runtime_v1.stop | Out-Null
-  do { Start-Sleep 2; $r = Get-Content -Raw (Join-Path $oi 'brain_host.json') | ConvertFrom-Json } until ($r.detail -eq 'HOST_EXIT')
-  'Brain host exited'
+  $report = Join-Path $oi 'brain_host.json'
+  if (-not (Test-Path $report)) { 'No Brain host report: nothing to stop'; return }
+  $until = (Get-Date).AddSeconds(180)
+  do {
+    Start-Sleep 2
+    $r = Get-Content -Raw $report | ConvertFrom-Json
+    if ($r.detail -eq 'HOST_EXIT') { 'Brain host exited'; return }
+  } until ((Get-Date) -gt $until)
+  "Brain host did not exit within 3 minutes (state $($r.state), $($r.detail)). Paste this line into the thread.
 }
 ```
 

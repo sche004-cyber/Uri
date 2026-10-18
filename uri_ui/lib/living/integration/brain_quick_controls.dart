@@ -351,7 +351,13 @@ String profileRefusalText(String code) => switch (code) {
       'BRAIN_LOADING' => 'Not switched: the Brain is still starting or stopping. Try again when it is ready.',
       'BRAIN_HOST_NOT_RUNNING' => 'Not switched: the Brain host is not running. Restart URI.',
       'CONTEXT_SMALLER_THAN_CONVERSATION' => 'Not switched: the conversation is longer than that context.',
-      'PROFILE_NOT_OFFERED' || 'SPEED_NEEDS_VISION_OFF' => 'Not switched: that combination does not fit the GPU.',
+      'PROFILE_NOT_OFFERED' || 'SPEED_NEEDS_VISION_OFF' || 'PROFILE_NOT_MEASURED' || 'CONTEXT_UNSUPPORTED' =>
+        'Not switched: that combination does not fit the GPU.',
+      'PROFILE_UNKNOWN' => 'Not switched: the running Brain uses a setting URI does not know. Restart the Brain, '
+          'then try again.',
+      'BRAIN_CONTROL_UNAVAILABLE' => 'Not switched: this URI installation cannot change the Brain setting. '
+          'Start URI with the working-system launcher.',
+      'CONTROL_INVALID' || 'COMMAND_SCHEMA' => 'Not switched: the request was not valid. Try the control again.',
       _ => 'Not switched: URI could not change the Brain right now ($code).',
     };
 
