@@ -2,8 +2,8 @@
 # BRAIN-QC live chain: one session host + one UI runner per run. The session waits for the announced window
 # (--not-before) and a FREE GPU lease; the production Brain host then takes the lease itself (no override).
 # Usage: go.sh <label> <qc|uiv2|dry> [not-before HH:MM]
-H=/d/uri-dev/uri-brain-quick-controls/docs/operational_intelligence/brain_quick_controls/evidence/harness
-RT=/c/Users/cheta/AppData/Local/Temp/claude/brain_qc/runtime4
+H=$(cd "$(dirname "$0")" && pwd)
+RT=${URI_QC_RT_POSIX:-/c/Users/cheta/AppData/Local/Temp/claude/brain_qc/runtime4}
 PY=$RT/.venv/Scripts/python.exe
 SYS=/c/Users/cheta/AppData/Local/Programs/Python/Python313/python.exe
 L=$1; K=$2; NB=$3

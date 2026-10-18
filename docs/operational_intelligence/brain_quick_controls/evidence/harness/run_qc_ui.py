@@ -23,7 +23,9 @@ OUT = HERE.parent / "live" / LABEL
 OUT.mkdir(parents=True, exist_ok=True)
 SRC = HERE.parents[3].parent            # docs/operational_intelligence/brain_quick_controls/evidence/harness -> repo
 UI = SRC / "uri_ui"
-RT = pathlib.Path(r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\runtime4")
+# Closure (BRAIN-QC-CLOSURE-20261018): the runtime is configurable; default = the QC runtime4.
+RT = pathlib.Path(__import__("os").environ.get(
+    "URI_QC_RT", r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\runtime4"))
 FX = pathlib.Path(r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\fixtures") / LABEL
 current = json.loads((RT / "work/c1/ws-current.json").read_text())
 if "--fresh-prefs" in sys.argv and FX.exists():

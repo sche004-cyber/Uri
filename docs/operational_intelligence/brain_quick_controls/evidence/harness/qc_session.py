@@ -29,7 +29,9 @@ HERE = pathlib.Path(__file__).resolve().parent
 EVID = HERE.parent
 OUT = EVID / "live" / LABEL
 OUT.mkdir(parents=True, exist_ok=True)
-RT = pathlib.Path(r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\runtime4")
+# Closure (BRAIN-QC-CLOSURE-20261018): the runtime is configurable; default = the QC runtime4.
+RT = pathlib.Path(__import__("os").environ.get(
+    "URI_QC_RT", r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\runtime4"))
 CURRENT = json.loads((RT / "work/c1/ws-current.json").read_text())
 sys.path.insert(0, str(RT))
 import psutil  # noqa: E402
@@ -44,6 +46,53 @@ HOST_STOP = RT / "work/oi/state/runtime_v1.stop"
 
 def now():
     return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def assist_ask():
+    """Closure: URI Assist on-demand vision against the Brain the UI has just switched to (application path).
+    Real: production `uri_assist.bridge.AssistCommands` (grant -> OBSERVE -> screenshot -> VisionGate -> loopback
+    Brain). Stand-ins (no real capture adapter exists; owner-gated): the test FakeAdapter and its synthetic settings
+    screenshot, and vision_qualified=True in this harness only (the product keeps it False)."""
+    import io
+    out = {"utc": now(), "stand_ins": ["capture adapter = tests.assist FakeAdapter", "vision_qualified=True (harness)"]}
+    try:
+        src = pathlib.Path(json.loads((RT / "OI_MATERIALIZATION_RECEIPT.json").read_text())["candidate_source"])
+        for p in (str(src / "model_lab"), str(src)):
+            if p not in sys.path:
+                sys.path.insert(0, p)
+        from uri_assist import bridge as B, access as AC
+        from uri_web.local_brain import loopback_client
+        from tests.assist.test_a0_access_perception import FakeAdapter, dom_snapshot
+        from lab import vision as V
+        buf = io.BytesIO()
+        V.img_ui().save(buf, format="PNG")
+        snap = dom_snapshot(url="https://settings.example/sync", title="URI Settings", text="", headings=["URI Settings"],
+                            fields=[])
+        ad = FakeAdapter("browser_tab", snap, targets=[{"target_id": "t", "label": "URI Settings"}], png=buf.getvalue())
+        rep, _ = BH.read_host_report(CONTROL)
+        out["host_profile"] = (rep or {}).get("profile")
+        br = B.AssistCommands(adapters={AC.ScopeKind.BROWSER_TAB: ad},
+                              brain_client=loopback_client(R.base_url(R.load_config())), brain_idle=lambda: True,
+                              vision_qualified=True)
+        br.handle("assist_grant", {"command": "assist_grant", "kind": "browser_tab", "target_id": "t",
+                                   "permissions": ["observe"], "confirm_screen": False})
+        t0 = time.monotonic()
+        st = br.handle("assist_ask", {"command": "assist_ask", "use_screenshot": True, "question":
+                                      "What error message is shown on this screen, and which toggles are switched on? "
+                                      "Answer in one sentence."})
+        br.wait(120)
+        res = br.handle("assist_ask_status", {"command": "assist_ask_status", "ask_id": st["ask_id"]})
+        ans = res.get("answer") or ""
+        out.update(method=res.get("method"), status=res.get("status"), wall_s=round(time.monotonic() - t0, 2),
+                   answer=ans[:400], mentions_401="401" in ans,
+                   toggles_ok="voice" in ans.lower() and "gmail" in ans.lower())
+        out["correct"] = (out["status"] == "COMPLETE" and out["method"] == "vision" and out["mentions_401"]
+                          and out["toggles_ok"])
+        br.close()
+        out["classification"] = "COMPLETED_WITH_RESULT"
+    except Exception as exc:
+        out.update(classification="FAILED", error="%s: %s" % (type(exc).__name__, exc))
+    return out
 
 
 def main():
@@ -153,6 +202,9 @@ def main():
                 (OUT / "stop-brain.json").rename(OUT / "stop-brain.done.json")
                 brain_stopped_by_driver = True
                 record["brain_stopped_by_driver_utc"] = now()
+            if (OUT / "assist-request.json").exists():
+                (OUT / "assist-request.json").rename(OUT / "assist-request.done.json")
+                (OUT / "assist-result.json").write_text(json.dumps(assist_ask(), indent=1, default=str))
             rep, _ = BH.read_host_report(CONTROL)
             st = (rep or {}).get("state")
             if st in ("READY", "DEGRADED", "FAILED") and not (OUT / "brain-ready.json").exists():
