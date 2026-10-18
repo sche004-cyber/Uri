@@ -44,6 +44,32 @@ STOP = OUT / "stop-session"
 HOST_STOP = RT / "work/oi/state/runtime_v1.stop"
 
 
+def host_commit():
+    """Closure D5 (read-only, E0b of P1_D3_INVESTIGATION): system commit and llama-server private bytes per sample."""
+    import ctypes
+
+    class MS(ctypes.Structure):
+        _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong),
+                    ("ullTotalPhys", ctypes.c_ulonglong), ("ullAvailPhys", ctypes.c_ulonglong),
+                    ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
+                    ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong),
+                    ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+    m = MS()
+    m.dwLength = ctypes.sizeof(MS)
+    ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+    out = {"commit_limit_mib": m.ullTotalPageFile >> 20, "commit_free_mib": m.ullAvailPageFile >> 20,
+           "avail_phys_mib": m.ullAvailPhys >> 20}
+    for pr in psutil.process_iter(["name"]):
+        if pr.info["name"] == "llama-server.exe":
+            try:
+                mi = pr.memory_info()
+                out["llama_private_mib"] = round(getattr(mi, "private", mi.vms) / 2**20, 1)
+                out["llama_ws_mib"] = round(mi.rss / 2**20, 1)
+            except psutil.Error:
+                pass
+    return out
+
+
 def now():
     return datetime.datetime.now(datetime.timezone.utc).isoformat()
 
@@ -151,6 +177,7 @@ def main():
                                 "fit": ((rep.get("gpu") or {}).get("fit") or {}).get("verdict"),
                                 "fit_margin_mib": ((rep.get("gpu") or {}).get("fit") or {}).get("margin_mib"),
                                 "last_request": rep.get("last_request"), "gpu": gpu, "workers": workers,
+                                "host_mem": host_commit(),
                                 "selection_file": (CONTROL / "brain_profile.json").read_text()
                                 if (CONTROL / "brain_profile.json").exists() else None,
                                 "lease": G.peek().get("holder", {}).get("expected_vram_mib")
