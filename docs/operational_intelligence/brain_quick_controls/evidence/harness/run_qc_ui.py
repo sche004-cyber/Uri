@@ -23,7 +23,7 @@ OUT = HERE.parent / "live" / LABEL
 OUT.mkdir(parents=True, exist_ok=True)
 SRC = HERE.parents[3].parent            # docs/operational_intelligence/brain_quick_controls/evidence/harness -> repo
 UI = SRC / "uri_ui"
-RT = pathlib.Path(r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\runtime3")
+RT = pathlib.Path(r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\runtime4")
 FX = pathlib.Path(r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\fixtures") / LABEL
 current = json.loads((RT / "work/c1/ws-current.json").read_text())
 if "--fresh-prefs" in sys.argv and FX.exists():

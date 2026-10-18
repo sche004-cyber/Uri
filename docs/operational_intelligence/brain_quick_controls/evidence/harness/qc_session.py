@@ -29,7 +29,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 EVID = HERE.parent
 OUT = EVID / "live" / LABEL
 OUT.mkdir(parents=True, exist_ok=True)
-RT = pathlib.Path(r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\runtime3")
+RT = pathlib.Path(r"C:\Users\cheta\AppData\Local\Temp\claude\brain_qc\runtime4")
 CURRENT = json.loads((RT / "work/c1/ws-current.json").read_text())
 sys.path.insert(0, str(RT))
 import psutil  # noqa: E402
