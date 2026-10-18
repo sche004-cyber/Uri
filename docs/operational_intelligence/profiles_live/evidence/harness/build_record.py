@@ -24,6 +24,9 @@ EV = DEST / "evidence"
 LAB = Path(r"D:\uri-dev\uri-runtime-vram-r1\research\runtime_vram_r1")
 CODE_COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=SRC, text=True).strip()
 CODE_COMMIT = json.loads((ROOT / "evidence" / "materialize-e.json").read_text())["candidate_head"]
+# Integration (owner D1/D3, 2026-10-18): the code integrated is CODE_COMMIT + the D3 SELECTABLE guard. Runs bound to
+# it (runtime-f) count as integration verification; qualification stays bound to CODE_COMMIT.
+INTEG_COMMIT = json.loads((ROOT / "evidence" / "materialize-f.json").read_text())["candidate_head"]
 PROFILES = {"c64k-visgpu-mtpoff": "P1 64K + GPU vision", "c64k-visoff-mtpoff": "P2 64K main only",
             "c32k-visgpu-mtpoff": "P3 32K + GPU vision"}
 ORDER_FAILS = {"R-companion-persisted", "R-theme-persisted"}
@@ -113,6 +116,11 @@ def classify(rs):
 def copy_evidence(rows):
     if EV.exists():
         shutil.rmtree(EV)
+    # Integration regression gates (candidate vs canonical, same interpreter and suites).
+    (EV / "gates_integ").mkdir(parents=True, exist_ok=True)
+    for f in ("run.sh", "run.log", "cand.log", "canon.log", "cand.xml", "canon.xml"):
+        if (ROOT / "evidence" / "gates-integ" / f).exists():
+            shutil.copy2(ROOT / "evidence" / "gates-integ" / f, EV / "gates_integ" / f)
     png_runs = {r["journey_id"] for r in rows if r.get("class") == "CURRENT"} | {"p1b-main", "s4-p1-main", "c-p2-main", "c-p2-ret", "c-p3-main", "c-p3-ret"}  # c-*: committed in a5605ae8, kept
     for sub in ("live", "soak", "assist", "switch_live"):
         for f in (ROOT / "evidence" / sub).rglob("*"):
@@ -125,7 +133,7 @@ def copy_evidence(rows):
             out.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(f, out)
     for f in ("live_summary.json", "materialize-b.json", "provision-b.json", "materialize-c.json", "provision-c.json",
-              "materialize-d.json", "provision-d.json", "materialize-e.json", "provision-e.json", "uibuild-release.log",
+              "materialize-d.json", "provision-d.json", "materialize-e.json", "provision-e.json", "materialize-f.json", "provision-f.json", "uibuild-release.log",
               "uibuild-release-e.log", "ram1_snapshot.json"):
         if (ROOT / "evidence" / f).exists():
             shutil.copy2(ROOT / "evidence" / f, EV / f)
@@ -145,7 +153,7 @@ def copy_evidence(rows):
     (EV / "harness").mkdir(parents=True, exist_ok=True)
     for f in ("live_session.py", "run_live_ui.py", "uiv2_driver.dart", "go.sh", "assist_vision_app.py", "soak.py",
               "switch_live.py", "summarize_live.py", "build_record.py", "_patch_harness.py", "_patch_harness_b.py",
-              "_patch_harness_c.py", "_patch_harness_d.py", "_patch_harness_e.py", "binding.py", "finalize_record.py", "chain10.sh", "chain11.sh"):
+              "_patch_harness_c.py", "_patch_harness_d.py", "_patch_harness_e.py", "binding.py", "finalize_record.py", "chain10.sh", "chain11.sh", "chain12.sh"):
         if (ROOT / "tools" / f).exists():
             shutil.copy2(ROOT / "tools" / f, EV / "harness" / f)
 
@@ -174,7 +182,7 @@ def main():
             lq[f"LQ-1 {name}"]["history_on_earlier_commits"] = {r["journey_id"]: r["result"] for r in h}
     def bound(v):
         b = v.get("binding") or {}
-        return b.get("ok") is True and b.get("materialized_from") == CODE_COMMIT
+        return b.get("ok") is True and b.get("materialized_from") in (CODE_COMMIT, INTEG_COMMIT)
 
     lq["LQ-2 Assist vision (application path)"] = {
         k: (("PASS" if v.get("correct_all") else "FAIL") if bound(v)
@@ -206,6 +214,7 @@ def main():
         "task": {"task_id": "RUNTIME-PROFILES-INTEG", "capability": "Runtime v1 resource profiles (Brain host --profile + worker profile selection/follower)",
                  "classification": "INDIRECT", "no_ui_reason": None, "phase": "live qualification before any default change",
                  "candidate_branch": "milestone/runtime-profiles-integ-20261017", "code_commit": CODE_COMMIT,
+                 "integration_code_commit": INTEG_COMMIT,
                  "acceptance_criteria_file": "docs/operational_intelligence/RUNTIME_PROFILES_INTEGRATION_PLAN.md",
                  "acceptance_criteria": ["LQ-1", "LQ-2", "LQ-3", "LQ-4"]},
         "environment": {

@@ -1,0 +1,206 @@
+{
+ "label": "sw6",
+ "session_id": "2072a934-4b12-408b-b3cc-ca0fed13267f",
+ "steps": [
+  {
+   "step": "ready-P2",
+   "state": "READY",
+   "seconds": 49.9,
+   "worker_profile": "c64k-visoff-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "tell",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "1d04891e-aa20-483e-964f-22e6c7735811",
+   "seconds": 6.18,
+   "answer": "OK",
+   "route": [
+    "core",
+    "answer"
+   ],
+   "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "core.result",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "recall-P2",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "35f79784-3924-4751-b149-1abd4b37539d",
+   "seconds": 0.66,
+   "answer": "4817",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "switch-to-P3",
+   "stop_s": 0.6,
+   "vram_release_s": 3.4,
+   "state": "READY",
+   "seconds": 25.2,
+   "worker_profile": "c32k-visgpu-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "recall-P3",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "d9e1f65f-c642-4c0e-9113-b7f7dce71b71",
+   "seconds": 1.14,
+   "answer": "4817",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  },
+  {
+   "step": "switch-to-P2-again",
+   "stop_s": 2.9,
+   "vram_release_s": 3.4,
+   "state": "READY",
+   "seconds": 23.3,
+   "worker_profile": "c64k-visoff-mtpoff",
+   "profile_ok": true,
+   "detail": null
+  },
+  {
+   "step": "recall-P2-again",
+   "reply": "OK",
+   "error": null,
+   "turn_id": "9cfd4c84-a77a-4625-937e-84026aadb0f2",
+   "seconds": 1.34,
+   "answer": "4817",
+   "route": [
+    "answer"
+   ],
+   "core": "[]",
+   "types": [
+    "answer.delta",
+    "answer.done",
+    "companion.state",
+    "turn.finished",
+    "turn.routed",
+    "turn.started"
+   ]
+  }
+ ],
+ "commit": [
+  {
+   "t": 1792309117.18,
+   "avail_phys_mib": 12118,
+   "commit_limit_mib": 52148,
+   "commit_free_mib": 24001
+  },
+  {
+   "t": 1792309153.31,
+   "avail_phys_mib": 12196,
+   "commit_limit_mib": 52148,
+   "commit_free_mib": 23204
+  },
+  {
+   "t": 1792309184.05,
+   "avail_phys_mib": 12184,
+   "commit_limit_mib": 52148,
+   "commit_free_mib": 23841
+  }
+ ],
+ "classification": "COMPLETED_WITH_RESULT",
+ "binding": {
+  "runtime_root": "D:\\uri-dev\\uri-profiles-live\\runtime-f",
+  "materialized_from": "c3fc8bbc8354980a98e914816b8b77db727c8312",
+  "candidate_head_now": "c3fc8bbc8354980a98e914816b8b77db727c8312",
+  "candidate_tracked_changes": [],
+  "runtime_files_checked": 358,
+  "mismatched": [],
+  "changed_since_materialization": [],
+  "code_matches_head": true,
+  "harness_sha256": {
+   "_patch_harness.py": "415a43c432b87aae30702c6028128a956b61efcac95d81118f0b271667f11ab7",
+   "_patch_harness_b.py": "7f562ee8469b55c69f94cd4d2cd392023f53b138212a97838856bae070e60262",
+   "_patch_harness_c.py": "24227dbca0defb765f1e07dd98e63e20f487075cc06fd6eff5e47f49cd348028",
+   "_patch_harness_d.py": "2342ef1f8609aa933d76a35a6cd29f537ddad0ca20c77ad1ad67474ca0ecaffc",
+   "_patch_harness_e.py": "fccd575df94d722cb0eb99d1b035bd499165129a86937ce6f82a6c52684dc2ab",
+   "assist_vision_app.py": "a5b5c65ffaa3b8422d90e04987f7e3b86a80c6e31c3d54db928fdb27f3804604",
+   "binding.py": "f1f2772c2d09b29946f5d15b588cd622285eb085b666504a74e29fcbb7f2db1a",
+   "build_record.py": "ad68a6e94aff9e908f52c344f6bfa03ee7260b04307f17ec47cecb4e7822ff7c",
+   "chain10.sh": "3b75537cbe609911aa029791bcaa3461b39d5015d758fe69add982a4df00022c",
+   "chain11.sh": "9374b1d576511a87850b80c32940036e42e5c008206e81655f3a359a92c73f23",
+   "chain12.sh": "c34beeefadf438444b1a63f394ad249a43450795c919bbdd20738f61697b790f",
+   "chain8.sh": "f0a8ecf0a4e1443eb031a3d62117e75adbafccb105b0e660f75d53c1d2694e42",
+   "chain9.sh": "51cf45077dbc75d99dab8931b53a6c435aecb9ed0f87513d6c5aac1cb41d3280",
+   "finalize_record.py": "6d69549d76f2953cd69ebb892b5e51b7542b227f905a51de36a2c8c1af64d274",
+   "go.sh": "f500694cb6ab4d1b1d5eeb42720cde2bc76d53ea861685a7615faa486e0ec9ad",
+   "live_session.py": "7d8b73bce068e7d87f3f2e3a5166997dadecafd273927a7228f8f1fe450a803e",
+   "run_live_ui.py": "9123d3486e6b5259db882c485d0fda77c3b641c9f97553cd6e15f6cbf62f26ae",
+   "soak.py": "6465712ad1099f103ab94a7d7e91b1a9795b036fbd3c04cccb1bbfa860925458",
+   "summarize_live.py": "2fabc7c4123e1dae661d617dc480f16423374ac731ffee2b7ed97545a7617eab",
+   "switch_live.py": "8893ac0bdd44759eed109d75e576589c8370ba092a9d5771b28764090bb2a53c",
+   "uiv2_driver.dart": "884902e27569099645ed1367e6ce9bf5a39c8588d734708d0ae86e67130a16e6"
+  },
+  "ok": true
+ },
+ "preflight_ok": "ws-integrated",
+ "all_recalled": true,
+ "all_answer_route": true,
+ "all_switches_ready_on_new_profile": true,
+ "worker_pid_constant": true,
+ "lease_after": "FREE",
+ "worker_instance": {
+  "brain_profile": {
+   "file": "D:\\uri-dev\\uri-profiles-live\\runtime-f\\work\\c1\\ws-rp-f\\client\\control\\oi\\brain_profile.json",
+   "profile": {
+    "ctx": 65536,
+    "frozen": false,
+    "id": "c64k-visoff-mtpoff",
+    "mtp": false,
+    "qualified": false,
+    "required_mib": 13658,
+    "vision": "off"
+   },
+   "source": "selection"
+  },
+  "cli_homes_pinned": [
+   "CODEX_HOME"
+  ],
+  "client_id": "43121b67-48d9-4f3f-a1db-ef69870ec0bd",
+  "create_time": 1792309064.233914,
+  "execution_lifecycle": true,
+  "fixture_allowed": false,
+  "generation": "5106ed88-20b1-46d3-8cc7-7f1cf0f0dbd2",
+  "manifest_digest": "382f20798d33c1e100c152bca45cec5c6aa56fb501c2db14207f465544050b31",
+  "oi": true,
+  "phase2_source_digest": "3995ff5c48d4c756f0a5bec3cd6cc642f4a91fa892ba38dc381f68844758fa8f",
+  "pid": 4716,
+  "profile": "ws-integrated",
+  "qualified": []
+ }
+}

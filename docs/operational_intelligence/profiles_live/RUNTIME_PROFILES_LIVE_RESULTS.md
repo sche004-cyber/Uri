@@ -166,3 +166,30 @@ switch stays open together with P1.
   reported as such.
 - Integration into canonical needs your explicit authorisation. A change of the default Brain needs a separate
   authorisation.
+
+## 9. Integration (owner decisions D1-D5, 2026-10-18)
+
+- **What is integrated:** P2 and P3 on the qualified code `f3d5eb29`, plus one change after qualification, the D3
+  guard in `c3fc8bbc`. `runtime_profile_selection.SELECTABLE` makes the worker follow only the frozen Runtime v1,
+  P2 and P3. Any other measured combination, P1 included, is refused with `PROFILE_NOT_QUALIFIED` and keeps the
+  frozen config; `write()` refuses it too. The Brain host's `--profile` keeps every measured combination for
+  research; a worker never verifies against such a host (FOREIGN_INSTANCE, fail closed). Plan amendment A3.
+- **Default Brain unchanged (D2):** with no selection file, the worker and the host use the frozen config exactly as
+  before. Nothing in product code writes the selection file.
+- **Live verification on the integration code:** `sw6`, bound to `c3fc8bbc` (runtime-f, installation rp-f), PASS.
+  "4817" was recalled before the switch, after P2 -> P3 and after P3 -> P2. Switches were READY in 25.2 s and 23.3 s,
+  VRAM was released in 3.4 s, and the worker pid did not change. The P2/P3 journeys and soaks were not repeated: the
+  guard does not change their derive path or argv (unit tests).
+- **Regression gates** (`evidence/gates_integ`): tests/ws, oi, ssrf, web, a2ui, assist, the office worker isolation
+  test, governance and dev_workflow, run with one interpreter on the candidate and on canonical `348677b7`. The
+  failure sets are identical: 6 failed and 20 errors, all pre-existing (Chromium-dependent Assist tests and
+  `test_win_breakaway_is_refused`). Candidate 7,255 passed, canonical 7,209.
+- **Brain Quick Controls compatibility (D4):** `c3fc8bbc` merged into the Brain QC tip `29db21f9` in a scratch
+  worktree without conflict; `tests/oi/test_brain_quick_controls.py` plus the profile tests gave 75 passed and 1
+  skipped. Brain QC's own catalog lists the same three profiles and refuses P1 on the host side.
+- **P1 (D3):** stays unqualified and not selectable. A read-only investigation
+  (`evidence/research/P1_D3_INVESTIGATION.md`) found nothing that makes CRASH-1 specific to P1. The leading
+  hypothesis, still unverified, is host commit exhaustion. The pagefile is system-managed on an HDD and grows on
+  demand, and "virtual memory minimum too low" warnings occurred on 2026-09-17 and 2026-10-15. Mitigations that need
+  you (fixed pagefile, crash dumps) and the decisive experiment E1' (commit starvation on P2) are not done.
+- **Rollback:** reset canonical to `348677b7`, or remove the selection file (the frozen fallback).

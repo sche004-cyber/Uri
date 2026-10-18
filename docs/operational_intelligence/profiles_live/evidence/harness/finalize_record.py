@@ -48,6 +48,8 @@ r["annotations"] = {
                        "(host_ready / calibration in each run's files); host restart = each sw5 switch stops and "
                        "restarts the host on the new profile (READY in 26.8 s and 21.2 s); VRAM release = sw5 "
                        "vram_release_s. Continuity is verified at worker level, not through UI clicks."),
+    "sw6": ("PASS (n=1) bound to the integration code (D3 SELECTABLE guard on top of the qualified code): the same "
+            "P2 -> P3 -> P2 continuity test as sw5, switches READY in 25.2 s and 23.3 s, VRAM release 3.4 s"),
     "vram_release_s": "switch_live measures release as 'no process holds more than 2 GiB dedicated', not a full release"}
 r["qualification_by_profile"] = {
     "P2 64K main only (c64k-visoff-mtpoff)": {
@@ -66,10 +68,26 @@ r["qualification_by_profile"] = {
         "supporting": "c-p3-* on 4d782ef1, soak-p3 60 min clean (unbound), assist-p3 (unbound)",
         "conditions": "fit FITS +1,218 (2026-10-18) .. AT_RISK +474 (2026-10-17 evening, dwm 1.05 GB); Assist only through the application path"},
     "P1 64K + GPU vision (c64k-visgpu-mtpoff)": {
-        "status": "FAIL (unqualified)", "on_commit": "fa0a70e6 history only; not re-run",
+        "status": "FAIL (unqualified); not selectable: the worker refuses it (D3 SELECTABLE guard, integration code)",
+        "on_commit": "fa0a70e6 history only; not re-run",
         "evidence": "p1b-main FAIL (CRASH-1), soak-p1 FAIL (DEMOTE-P1); passing runs p1c-main, s4-p1-main, p1c-ret, s2-p1-ret, assist-p1 (unbound)",
         "conditions": "stays unqualified until CRASH-1 and DEMOTE-P1 are resolved and re-tested"}}
+r["integration"] = {
+    "owner_decisions": "D1-D5 approved 2026-10-18 (conditional integration of P2 and P3; default unchanged; P1 unqualified; "
+                       "Brain Quick Controls coordination; no freeze or deployment)",
+    "qualified_code_commit": code, "integration_code_commit": r["task"].get("integration_code_commit"),
+    "code_change_after_qualification": ("runtime_profile_selection.SELECTABLE (frozen, P2, P3) and its tests; every other "
+                                        "measured combination, P1 included, is PROFILE_NOT_QUALIFIED"),
+    "live_verification_on_integration_code": "sw6 (LQ-4) PASS, bound",
+    "regression_gates": ("evidence/gates_integ: tests/ws, oi, ssrf, web, a2ui, assist, office worker isolation, governance, "
+                         "dev_workflow with one interpreter on the candidate and on canonical 348677b7: identical failure "
+                         "sets (6 failed, 20 errors, all pre-existing: Chromium-dependent Assist tests and "
+                         "test_win_breakaway_is_refused); candidate 7255 passed, canonical 7209"),
+    "brain_quick_controls_compatibility": ("integration code merged into the Brain QC tip 29db21f9 in a scratch worktree: no "
+                                           "conflict; tests/oi/test_brain_quick_controls.py + profile tests 75 passed, 1 skipped"),
+    "p1_investigation": "evidence/research/P1_D3_INVESTIGATION.md (read-only; labels VERIFIED / HYPOTHESIS)"}
 r["remaining_limitations"] = [
+    "P1 D3 investigation (evidence/research/P1_D3_INVESTIGATION.md): CRASH-1 is NOT shown to be P1-specific; every profile and the frozen config share the prompt-cache path. The pagefile is system-managed on an HDD and grows on demand; 'virtual memory minimum too low' popups occurred on 2026-09-17 and 2026-10-15; Windows exhaustion detectors and WER are not usable evidence on this PC. Proposed (owner) mitigations: fixed pagefile, closing stale large processes, commit sampling in live runs, crash dumps; decisive experiment E1' on P2 needs owner approval.",
     "CRASH-1 open: root cause UNVERIFIED (hypothesis host commit exhaustion; E0: see e0_host_memory - commit is the scarce resource on this PC while physical RAM is available; RAM-1 snapshot shows other sessions' PowerShell processes at ~4 GB private each). Can affect every profile and the frozen config. Reproduction E1 not run.",
     "DEMOTE-P1 open; mitigations (vision on CPU at 64K, 256 MiB suballocation) unmeasured.",
     "P3 sustained operation: soak-p3 (unbound, AT_RISK desktop) and soak-p3-e (bound) - see LQ-3; n=2 at most, near the estimated margin on heavy desktops.",

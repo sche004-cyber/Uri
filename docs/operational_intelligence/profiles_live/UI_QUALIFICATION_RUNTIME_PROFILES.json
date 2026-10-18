@@ -8,6 +8,7 @@
   "phase": "live qualification before any default change",
   "candidate_branch": "milestone/runtime-profiles-integ-20261017",
   "code_commit": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "integration_code_commit": "c3fc8bbc8354980a98e914816b8b77db727c8312",
   "acceptance_criteria_file": "docs/operational_intelligence/RUNTIME_PROFILES_INTEGRATION_PLAN.md",
   "acceptance_criteria": [
    "LQ-1",
@@ -479,7 +480,8 @@
    "sw2": "SUPPORTING ONLY (no source binding): not PASS",
    "sw3": "SUPPORTING ONLY (no source binding): not PASS",
    "sw4": "SUPPORTING ONLY (no source binding): PASS",
-   "sw5": "PASS"
+   "sw5": "PASS",
+   "sw6": "PASS"
   }
  },
  "sustained_operation": {
@@ -1420,6 +1422,144 @@
      "commit_free_mib": 25176
     }
    ]
+  },
+  "sw6": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "all_recalled": true,
+   "all_switches_ready_on_new_profile": true,
+   "worker_pid_constant": true,
+   "steps": [
+    {
+     "step": "ready-P2",
+     "state": "READY",
+     "seconds": 49.9,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "tell",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "1d04891e-aa20-483e-964f-22e6c7735811",
+     "seconds": 6.18,
+     "answer": "OK",
+     "route": [
+      "core",
+      "answer"
+     ],
+     "core": "[{\"code\": \"CONVERSATION\", \"message\": \"I can only act on an explicit request in this mode (for example: 'remember that ...').\", \"needs\": \"none\", \"state\": \"reply\"}]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "core.result",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "recall-P2",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "35f79784-3924-4751-b149-1abd4b37539d",
+     "seconds": 0.66,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P3",
+     "stop_s": 0.6,
+     "vram_release_s": 3.4,
+     "state": "READY",
+     "seconds": 25.2,
+     "worker_profile": "c32k-visgpu-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P3",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "d9e1f65f-c642-4c0e-9113-b7f7dce71b71",
+     "seconds": 1.14,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    },
+    {
+     "step": "switch-to-P2-again",
+     "stop_s": 2.9,
+     "vram_release_s": 3.4,
+     "state": "READY",
+     "seconds": 23.3,
+     "worker_profile": "c64k-visoff-mtpoff",
+     "profile_ok": true,
+     "detail": null
+    },
+    {
+     "step": "recall-P2-again",
+     "reply": "OK",
+     "error": null,
+     "turn_id": "9cfd4c84-a77a-4625-937e-84026aadb0f2",
+     "seconds": 1.34,
+     "answer": "4817",
+     "route": [
+      "answer"
+     ],
+     "core": "[]",
+     "types": [
+      "answer.delta",
+      "answer.done",
+      "companion.state",
+      "turn.finished",
+      "turn.routed",
+      "turn.started"
+     ]
+    }
+   ],
+   "commit": [
+    {
+     "t": 1792309117.18,
+     "avail_phys_mib": 12118,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 24001
+    },
+    {
+     "t": 1792309153.31,
+     "avail_phys_mib": 12196,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 23204
+    },
+    {
+     "t": 1792309184.05,
+     "avail_phys_mib": 12184,
+     "commit_limit_mib": 52148,
+     "commit_free_mib": 23841
+    }
+   ]
   }
  },
  "ux": {
@@ -1434,6 +1574,7 @@
  },
  "improvements": [],
  "remaining_limitations": [
+  "P1 D3 investigation (evidence/research/P1_D3_INVESTIGATION.md): CRASH-1 is NOT shown to be P1-specific; every profile and the frozen config share the prompt-cache path. The pagefile is system-managed on an HDD and grows on demand; 'virtual memory minimum too low' popups occurred on 2026-09-17 and 2026-10-15; Windows exhaustion detectors and WER are not usable evidence on this PC. Proposed (owner) mitigations: fixed pagefile, closing stale large processes, commit sampling in live runs, crash dumps; decisive experiment E1' on P2 needs owner approval.",
   "CRASH-1 open: root cause UNVERIFIED (hypothesis host commit exhaustion; E0: see e0_host_memory - commit is the scarce resource on this PC while physical RAM is available; RAM-1 snapshot shows other sessions' PowerShell processes at ~4 GB private each). Can affect every profile and the frozen config. Reproduction E1 not run.",
   "DEMOTE-P1 open; mitigations (vision on CPU at 64K, 256 MiB suballocation) unmeasured.",
   "P3 sustained operation: soak-p3 (unbound, AT_RISK desktop) and soak-p3-e (bound) - see LQ-3; n=2 at most, near the estimated margin on heavy desktops.",
@@ -1511,7 +1652,7 @@
  },
  "status": "FAIL",
  "status_reason": "The record covers three profiles. P2 and P3: every mandatory journey PASS on the bound current commit f3d5eb29, switch continuity PASS (sw5), P3 Assist PASS, bound 60-minute soaks soak-p2-e and soak-p3-e per LQ-3. P1: failed journeys (p1b-main CRASH-1, soak-p1 demotion) on earlier code and no re-run -> P1 unqualified, which makes the record as a whole FAIL; failed and superseded runs are listed, not excluded. Criteria whose top-level entries on the current commit are FAIL: [] (history, supporting and nested P1 results are listed above and in criteria; review R7-01).",
- "recorded_at": "2026-10-18T06:20:27.818572+00:00",
+ "recorded_at": "2026-10-18T07:40:45.842986+00:00",
  "corrections": [
   {
    "id": "C-1",
@@ -1641,6 +1782,7 @@
   "p1b-main": "CRASH-1, research/CRASH1_RESEARCH.md: leading HYPOTHESIS (unverified) host commit exhaustion -> uncaught bad_alloc in the prompt-cache save; the 'cancel came after the task finished' reading is INFERRED from log order and b11510 source",
   "soak-p1": "DEMOTE-P1, research/DEMOTION_RESEARCH.md: the demoted block is IDENTIFIED BY SIZE MATCH (1,021.7 MiB = first of 13 weight allocations); the tensor-to-allocation map was not dumped",
   "LQ-4 deviation": "review R3-02: the plan names the switch P2 -> P1 -> P2; it ran P2 -> P3 -> P2 because P1 is unqualified (CRASH-1, DEMOTE-P1) and P3 is the qualified vision profile. Mapping of the other LQ-4 items: cold start = every e-* journey run and soak-*-e starts the Brain host cold (host_ready / calibration in each run's files); host restart = each sw5 switch stops and restarts the host on the new profile (READY in 26.8 s and 21.2 s); VRAM release = sw5 vram_release_s. Continuity is verified at worker level, not through UI clicks.",
+  "sw6": "PASS (n=1) bound to the integration code (D3 SELECTABLE guard on top of the qualified code): the same P2 -> P3 -> P2 continuity test as sw5, switches READY in 25.2 s and 23.3 s, VRAM release 3.4 s",
   "vram_release_s": "switch_live measures release as 'no process holds more than 2 GiB dedicated', not a full release"
  },
  "qualification_by_profile": {
@@ -1659,11 +1801,21 @@
    "conditions": "fit FITS +1,218 (2026-10-18) .. AT_RISK +474 (2026-10-17 evening, dwm 1.05 GB); Assist only through the application path"
   },
   "P1 64K + GPU vision (c64k-visgpu-mtpoff)": {
-   "status": "FAIL (unqualified)",
+   "status": "FAIL (unqualified); not selectable: the worker refuses it (D3 SELECTABLE guard, integration code)",
    "on_commit": "fa0a70e6 history only; not re-run",
    "evidence": "p1b-main FAIL (CRASH-1), soak-p1 FAIL (DEMOTE-P1); passing runs p1c-main, s4-p1-main, p1c-ret, s2-p1-ret, assist-p1 (unbound)",
    "conditions": "stays unqualified until CRASH-1 and DEMOTE-P1 are resolved and re-tested"
   }
+ },
+ "integration": {
+  "owner_decisions": "D1-D5 approved 2026-10-18 (conditional integration of P2 and P3; default unchanged; P1 unqualified; Brain Quick Controls coordination; no freeze or deployment)",
+  "qualified_code_commit": "f3d5eb2918be00f0b1c764330bee10df43b79f80",
+  "integration_code_commit": "c3fc8bbc8354980a98e914816b8b77db727c8312",
+  "code_change_after_qualification": "runtime_profile_selection.SELECTABLE (frozen, P2, P3) and its tests; every other measured combination, P1 included, is PROFILE_NOT_QUALIFIED",
+  "live_verification_on_integration_code": "sw6 (LQ-4) PASS, bound",
+  "regression_gates": "evidence/gates_integ: tests/ws, oi, ssrf, web, a2ui, assist, office worker isolation, governance, dev_workflow with one interpreter on the candidate and on canonical 348677b7: identical failure sets (6 failed, 20 errors, all pre-existing: Chromium-dependent Assist tests and test_win_breakaway_is_refused); candidate 7255 passed, canonical 7209",
+  "brain_quick_controls_compatibility": "integration code merged into the Brain QC tip 29db21f9 in a scratch worktree: no conflict; tests/oi/test_brain_quick_controls.py + profile tests 75 passed, 1 skipped",
+  "p1_investigation": "evidence/research/P1_D3_INVESTIGATION.md (read-only; labels VERIFIED / HYPOTHESIS)"
  },
  "binding_versions": {
   "note": "the committed evidence/harness/binding.py is the current version (explicit allowlist, R4-01). No bound run used it. Runs before R3-03 did not record the hash; the binding.py copy committed with their evidence in fec31dfd has sha256 c64df8c887866e2fc39d8f5d662a29c1e38a2cfb924a40b6bc274ff6d3a28608 (that this exact file ran is inferred from the timeline, not hashed at run time). soak-p2-e used the R3-03 version (docs/ outside the receipt), whose rule its changed paths also satisfy under R4-01.",
@@ -1677,7 +1829,8 @@
    "soak-p3-e": "not recorded (run before R3-03)",
    "assist-p3-e": "not recorded (run before R3-03)",
    "dry2": "not recorded (run before R3-03)",
-   "sw5": "not recorded (run before R3-03)"
+   "sw5": "not recorded (run before R3-03)",
+   "sw6": "f1f2772c2d09b29946f5d15b588cd622285eb085b666504a74e29fcbb7f2db1a"
   }
  }
 }

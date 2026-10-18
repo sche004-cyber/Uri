@@ -25,7 +25,10 @@ import time
 import uuid
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-RT = ROOT / "runtime-e"
+import os as _os
+# Which materialized runtime (default e = f3d5eb29; f = the D3 guard commit c3fc8bbc, 2026-10-18 integration).
+RT_ID = _os.environ.get("URI_LIVE_RT", "e")
+RT = ROOT / ("runtime-" + RT_ID)
 SRC = pathlib.Path(r"D:\uri-dev\uri-runtime-profiles-integ")
 sys.path.insert(0, str(SRC))
 sys.path.insert(0, str(ROOT / "tools"))
@@ -36,7 +39,7 @@ from uri_operational_intelligence import runtime_profile_selection as PS  # noqa
 LABEL = sys.argv[1]
 OUT = ROOT / "evidence" / "switch_live" / LABEL
 OUT.mkdir(parents=True, exist_ok=True)
-INST = json.loads((ROOT / "evidence" / "provision-e.json").read_text())
+INST = json.loads((ROOT / "evidence" / ("provision-%s.json" % RT_ID)).read_text())
 CLIENT = pathlib.Path(INST["client_root"])
 CONTROL = CLIENT / "control" / "oi"
 HOST_STATE = ROOT / "fixtures" / f"brain-state-{LABEL}"
