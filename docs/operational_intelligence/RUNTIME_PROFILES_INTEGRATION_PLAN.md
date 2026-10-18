@@ -112,3 +112,23 @@ The default Brain stays the frozen Runtime v1. Integration (IC-4) still requires
 - **LQ-3 (review R3-01).** "At least 60 minutes per preferred profile (P1, P2)": P2 needs a bound soak
   (`soak-p2-e`). P1 stays unqualified. P3 has a bound soak (`soak-p3-e`) because the owner prioritised 32K +
   vision for Assist.
+
+## Amendment A3 (2026-10-18, owner decisions D1-D5: conditional integration approval)
+
+- **Approved for canonical integration (D1):** P2 (64K, main only) and P3 (32K, GPU vision), on the qualified code
+  `f3d5eb29`, plus the change below. The default Brain stays the frozen Runtime v1 (D2). Nothing is deployed or
+  frozen (D5).
+- **D3 guard (code, after qualification):** `runtime_profile_selection.SELECTABLE` limits what the worker follows
+  to the frozen combination, P2 and P3. Every other measured combination, P1 included, keeps the frozen config with
+  `PROFILE_NOT_QUALIFIED`, and `write()` refuses it. The Brain host's `--profile` still accepts every measured
+  combination for research. A worker never verifies against such a host, which it reports as FOREIGN_INSTANCE
+  (fails closed).
+  - Effect on P2 and P3: none. The same derive path and the same argv are used; only an unqualified choice is now
+    refused.
+  - Verification: unit tests (every measured unqualified key refused, follower ignores a switch to P1), the
+    regression gates, a bound live switch run on the final code, and an independent review.
+  - Brain Quick Controls already restricts its host-side reconfigure to its catalog (frozen, P2, P3), so the two
+    lists agree.
+- **Integration mechanics:** canonical `integration/git-sync-20261008` is still `348677b7`, which the candidate
+  contains, so integration is a fast-forward. The push is verified with `git ls-remote`, and a receipt is written.
+  Rollback: canonical can be reset to `348677b7`, and the frozen fallback is the absent selection file.
