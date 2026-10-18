@@ -3,10 +3,10 @@
  "milestone": "BRAIN-QC-20261018",
  "date": "2026-10-18",
  "branch": "milestone/brain-quick-controls-20261018",
- "base": "f3d5eb29",
- "candidate_code_commit": "e39a9a13 (final code; R3 wording/test repairs on ce5c2fe0); live switch evidence qc-4/qc-5 on 78db55f6/578f7c40 (pre-R2 code); no live run for R2/R3 changes",
+ "base": "canonical cd4a7963 (merged in 0226e7ee); original base f3d5eb29",
+ "candidate_code_commit": "4c61a0b3 (code; harness-only b653c154 used for runtime4); gates at 76088dad",
  "classification": "COMPLETED_WITH_RESULT",
- "status": "R3_ACCEPTED_WITH_FINDINGS_REPAIRED",
+ "status": "MERGED_ONTO_CANONICAL_CD4A7963_PENDING_REVIEW",
  "acceptance": {
   "QC-1": {
    "status": "MET",
@@ -42,11 +42,11 @@
   },
   "QC-9": {
    "status": "MET_WITH_NOTE",
-   "evidence": "at e39a9a13 (gates) / 9ea83b24 (R2 gates, code = ce5c2fe0): ws_frozen_check ok; UI V2 frozen files +98/0 (oi_conversation) and +37/0 (living_composer); refreshHealth behaviour change disclosed (C-4); UI V2 68/68 uiv2-main-3"
+   "evidence": "ws_frozen_check ok at 76088dad; UI V2 frozen files +98/0, +37/0; refreshHealth behaviour change disclosed (C-4)"
   },
   "QC-10": {
    "status": "MET",
-   "evidence": "gates at e39a9a13: pytest 763 passed/23 skipped, flutter test 779, analyze 4 pre-existing infos, frozen check ok (.head files); R2 gates at 9ea83b24 (code = ce5c2fe0) identical counts; Windows release build exit 0 at 9ea83b24 (not re-run for the R3 string change)"
+   "evidence": "gates at 76088dad (merged): pytest 778/23 skipped, flutter test 779, analyze 4 pre-existing infos, release build exit 0, frozen check ok (.head files)"
   },
   "QC-11": {
    "status": "MET",
@@ -404,6 +404,34 @@
     "long": 98.2,
     "standard-after-switch": 148.3
    }
+  },
+  "qc-6": {
+   "classification": "COMPLETED_WITH_RESULT",
+   "verdict": "PASS",
+   "checks_pass": 22,
+   "checks_total": 22,
+   "source_head": "b653c154f72fc55d254656c8501f4aef2f313645",
+   "runtime_python_from": "b653c154f72fc55d254656c8501f4aef2f313645",
+   "switches": [
+    {
+     "from": "frozen",
+     "to": "c64k-visoff-mtpoff",
+     "result": "READY",
+     "seconds": 30.1
+    },
+    {
+     "from": "c64k-visoff-mtpoff",
+     "to": "frozen",
+     "result": "READY",
+     "seconds": 37.2
+    }
+   ],
+   "perf_decode_tps": {
+    "standard-start": 40.6,
+    "long": 99.8,
+    "standard-after-switch": 149.2
+   },
+   "note": "standard-start 40.6 tok/s: UI window opened after Brain load (P-GOV-1), restored to 149.2 after the round trip"
   }
  },
  "uiv2_regression": {
@@ -461,6 +489,13 @@
    "verdict": "ACCEPT WITH FINDINGS (2 LOW, 2 INFO)",
    "report": "review/R3_report.md",
    "repairs_commit": "e39a9a13"
+  },
+  {
+   "round": "canonical refresh",
+   "merge": "0226e7ee (cd4a7963)",
+   "repairs_commit": "4c61a0b3 (R9-01)",
+   "live": "qc-6 on b653c154: 22/22",
+   "gates_commit": "76088dad"
   }
  ],
  "open_findings": [
@@ -472,6 +507,6 @@
   "QC-F6 health chip shows previous tok/s briefly (pre-existing)",
   "QC-F7 shrink refusal covers every conversation the worker has held; sizes never cleared except by LRU eviction beyond 64 sessions; reserve heuristic",
   "QC-F8 from a P3 host, Standard needs two switches",
-  "IC-1: ws_brain_host.py, brain_health.py, run_uri_integrated_worker.py changed; integration needs rebase/merge onto the runtime-profiles tip (c3fc8bbc) or the integrated canonical with gates and a live switch re-run"
+  "IC-1 vs canonical cd4a7963: ws_brain_host.py, brain_health.py, run_uri_integrated_worker.py changed; integration needs its own review"
  ]
 }

@@ -205,3 +205,65 @@ The review report is in `review/R3_report.md`. The code and test repairs are in 
 The release build was not re-run. Its last build is `9ea83b24`, recorded in `uibuild-release.head`. R3 changed only
 one string in the UI code. No live run was made for R3, as the coordinator directed: the changes are wording, a
 comment and a test assertion.
+
+---
+
+## Refresh onto the integrated canonical `cd4a7963` (2026-10-18)
+
+- **Merge:** `0226e7ee` merges canonical `integration/git-sync-20261008` = `cd4a7963` (runtime profiles integrated;
+  it contains `f3d5eb29` and `c3fc8bbc`). It is a merge commit with no conflicts; nothing was rebased or rewritten.
+  This is still a candidate: nothing is integrated or pushed.
+- **Catalog vs `runtime_profile_selection.SELECTABLE`** (frozen, P2 `(65536, off, False)`, P3 `(32768, gpu, False)`):
+  - the qualified entries in the catalog are exactly SELECTABLE;
+  - Quick Controls offer only Standard and Long context;
+  - P3 is recognized but never offered;
+  - P1 is refused by both the catalog and SELECTABLE.
+
+  A unit test pins all of this: `test_catalog_agrees_with_the_integrated_selectable_set`.
+- **R9-01** (runtime-profiles audit note), fixed in `4c61a0b3`: the host writes the selection file only for a
+  SELECTABLE profile. A host started on a research profile (for example P1 via `--profile`) removes any selection,
+  writes none, and records `selection_error: PROFILE_NOT_SELECTABLE`. The worker then verifies against the frozen
+  config and fails closed. Unit test: `test_host_never_writes_a_selection_for_a_research_profile`.
+- **`backend.profile.qualified`:** the accepted `runtime_profiles.describe` still says `qualified: false` for P2 and
+  P3. The Quick Controls UI never shows that field and never calls a running profile "qualified". It names profiles
+  (Standard, Long context) and shows "Not qualified yet" only for P1, whose catalog entry is the authority, with
+  evidence paths.
+- **IC-1 / integration note** (replaces the earlier note): against canonical `cd4a7963`, BRAIN-QC changes three
+  existing files: `scripts/ws_brain_host.py`, `uri_operational_intelligence/brain_health.py` and
+  `scripts/run_uri_integrated_worker.py`. It adds the catalog, the UI file and the tests (diff stat:
+  `evidence/gates/diff_stat_vs_canonical_cd4a7963.txt`). Integrating needs its own review on this merged candidate.
+
+### Live round trip on the merged candidate: qc-6
+Source and runtime `b653c154`; the runtime was verified byte for byte. The real app ran through production `main()`,
+the Brain was started by the production host under a FREE lease, no override was used, and input was automated.
+
+- **Checks:** 22/22 PASS.
+- **Switches:**
+  - Standard -> Long context: 30.1 s (FITS +1,648 MiB).
+  - Long context -> Standard: 37.2 s (AT_RISK -325.5 MiB).
+  - The old server stopped in 3.5 to 3.6 s.
+- **Continuity:** "4817" was recalled after both switches, and the worker processes stayed the same.
+- **After the run:** lease FREE, Brain config unchanged.
+- **Decode speed (tok/s):**
+
+| Point in the run | Decode tok/s |
+|---|---|
+| Standard at start | 40.6 |
+| Long context | 99.8 |
+| Standard after switch | 149.2 |
+
+  The slow start is the known effect of opening the UI window after the Brain has loaded (P-GOV-1), not a switch
+  defect. The runner is "UI first", but the Flutter integration build took longer than the Brain load: the app window
+  appeared at 07:57:46, after READY. The Brain then moved 0.77 GB to system memory, as in qc-1. The switch round trip
+  brought Standard back to 149 tok/s.
+
+### Gates at `76088dad` (merged candidate)
+- pytest `tests/oi` + `tests/ws`: 778 passed, 23 skipped. This includes the canonical tests that came in with the
+  merge.
+- flutter test: 779 passed.
+- flutter analyze: 4 info messages, all in files this milestone did not touch.
+- Windows release build OK.
+- `ws_frozen_check` ok.
+- Frozen UI V2 files against `7893aaed`: +98/0 and +37/0 lines.
+
+All of these have `.head` files.

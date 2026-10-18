@@ -33,5 +33,5 @@ Analyzing uri_ui...
    info - The import of 'dart:async' is unnecessary because all of the used elements are also provided by the import of 'package:flutter_test/flutter_test.dart'. Try removing the import directive - test\chat_supervised_handoff_test.dart:5:8 - unnecessary_import
    info - Unnecessary use of string interpolation. Try replacing the string literal with the variable name - test\living\assist_mode_test.dart:277:43 - unnecessary_string_interpolations
 
-4 issues found. (ran in 4.4s)
+4 issues found. (ran in 9.6s)
 exit=1
