@@ -343,9 +343,11 @@ class IntegratedTurns:
                               and not p["env"].get("confirmation")
                               and p["env"].get("state") != "approval_required"}
         continue_core = bool(clarifications) and inp.mode != "dictation"
-        if images is not None and continue_core:
-            # URI waits for the answer to its own question: that answer goes to Core, which takes no images. Its own
-            # code, so the UI asks for the answer first instead of advising "ask about the image" (R4-03).
+        d_open = self.desk.active(session_id)
+        if images is not None and (continue_core or session_id in self.desk.pending_new
+                                   or (d_open is not None and bool(d_open.pending_question))):
+            # URI waits for the answer to its own question (Core, or the draft desk: r5 R1-01; read-only check):
+            # that answer cannot carry a picture. Its own code, so the UI asks for the answer first (R4-03).
             raise BridgeRefused("IMAGE_DURING_CLARIFICATION")
         if images is not None and (inp.mode in ("dictation", "draft") or schedule_intent.interpret(plain) is not None):
             # An image is a question for the answer channel only: never a draft, a Core continuation or a handoff.

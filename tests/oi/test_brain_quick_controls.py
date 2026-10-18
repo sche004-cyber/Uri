@@ -322,6 +322,16 @@ def test_image_while_a_clarification_waits_is_refused_with_its_own_code(fake, tm
     assert fake.requests == [] and "t-clar" in b.pending
 
 
+def test_image_while_the_draft_desk_waits_for_an_answer_is_refused(fake, tmp_path):
+    """r5 R1-01: an open draft-desk question also waits for a text answer; the image turn is refused, the question kept."""
+    b, _, _, _ = _bridge(fake, tmp_path)
+    b.desk.pending_new[SID] = {"original": "Write a letter", "ambiguous": False}
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "what is this", "depth": "auto",
+                             "images": [{"name": "a.png", "mime": "image/png", "data": b64(PNG)}]})
+    assert e.value.code == "IMAGE_DURING_CLARIFICATION" and fake.requests == [] and SID in b.desk.pending_new
+
+
 def test_brain_restart_never_carries_a_reconfigure(fake, tmp_path):
     """R3-05: a profile switch has its own validated command; brain_restart 'reconfigure' is ACTION_INVALID."""
     b, _, requests, _ = _bridge(fake, tmp_path)

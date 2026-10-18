@@ -73,7 +73,7 @@ function Exit-TestBrain {
     $r = Get-Content -Raw $report | ConvertFrom-Json
     if ($r.detail -eq 'HOST_EXIT') { 'Brain host exited'; return }
   } until ((Get-Date) -gt $until)
-  "Brain host did not exit within 3 minutes (state $($r.state), $($r.detail)). Paste this line into the thread.
+  "Brain host did not exit within 3 minutes (state $($r.state), $($r.detail)). Paste this line into the thread."
 }
 ```
 
