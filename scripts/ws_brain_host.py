@@ -276,6 +276,7 @@ class Host:
                 return True
             r = self.wait_or_request(GPU_POLL_S)
             if r == "stop":
+                self.stop_during_wait = True
                 return False
             if r == "reconfigure":
                 # No Brain runs while the start waits: the new target replaces this one and the fit is re-checked
@@ -295,6 +296,7 @@ class Host:
 
     # ---- Brain ----------------------------------------------------------------------------------------------
     def start_brain(self):
+        self.stop_during_wait = False
         try:
             return self._start_brain()
         finally:
@@ -305,7 +307,13 @@ class Host:
         sw = self.report.get("profile_switch") or {}
         if sw.get("result") == "IN_PROGRESS":
             t = float(sw.get("t_request") or self.now())
-            sw.update(result=self.report.get("state"), t_done=round(self.now(), 3), seconds=round(self.now() - t, 1))
+            result = self.report.get("state")
+            # Integration review IC1-02: a stop (request or exit) while the start waited for the GPU ends the switch
+            # as STOPPED; the report must not keep saying it waits for GPU memory.
+            if result in ("WAITING_FOR_GPU", "WAITING_FOR_LEASE", "RELEASE_WAIT") and (
+                    getattr(self, "stop_during_wait", False) or self.stop_requested or self.should_exit()):
+                result = "STOPPED"
+            sw.update(result=result, t_done=round(self.now(), 3), seconds=round(self.now() - t, 1))
             self.write()
 
     def _start_brain(self):
@@ -413,8 +421,17 @@ class Host:
     # ---- resource profile switch (Brain Quick Controls, BRAIN-QC-20261018) ------------------------------------
     def sync_selection(self):
         """The selection file the worker verifies against always names what this host runs: the derived profile,
-        or no file for the frozen config (absent = frozen). Written before every start, so a host started without
-        --profile never leaves a stale selection that would make the worker refuse the frozen Brain."""
+        or no file for the frozen config (absent = frozen). Synced when the host starts and before a switch start, so
+        a host started without --profile never leaves a stale selection that would make the worker refuse the frozen
+        Brain. A failed write is retried briefly (IC1-04) and otherwise recorded as `selection_error`."""
+        for attempt in range(5):
+            self._sync_selection_once()
+            err = self.report.get("selection_error")
+            if err is None or err == "PROFILE_NOT_SELECTABLE" or attempt == 4:
+                return
+            time.sleep(0.2 * (attempt + 1))
+
+    def _sync_selection_once(self):
         path = self.report_dirs[0] / PS.SELECTION_FILE
         p = self.cfg.get("profile")
         try:
