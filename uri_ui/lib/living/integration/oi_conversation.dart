@@ -44,6 +44,7 @@ String brainSwitchRefusal(String code) => switch (code) {
       'BRAIN_CONTROL_UNAVAILABLE' => 'Not switched: this URI build cannot control the Brain.',
       'NOT_SELECTED' => 'Not switched: no local Brain is selected.',
       'PROFILE_NOT_QUALIFIED' => 'Not switched: that combination is not qualified yet.',
+      'PROFILE_NOT_OFFERED' => 'Not switched: that Brain setting is not offered here.',
       'PROFILE_UNKNOWN' || 'PROFILE_INVALID' => 'Not switched: URI does not know that Brain setting.',
       'REFUSED_DOES_NOT_FIT' => 'Not switched: there is not enough free GPU memory. The Brain keeps running as it was.',
       'REFUSED_GPU_UNMEASURED' => 'Not switched: GPU memory could not be measured. The Brain keeps running as it was.',

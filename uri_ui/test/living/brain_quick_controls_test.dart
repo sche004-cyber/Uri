@@ -39,8 +39,8 @@ List<Map<String, dynamic>> options({String? active}) => [
           active: active == 'standard'),
       opt('long', 'Long context', '64K context, vision off', 65536, 'off', false, true, 13658,
           active: active == 'long'),
-      opt('standard-nodraft', 'Standard (no draft)', '32K context, vision on, no speculative draft', 32768, 'gpu',
-          false, true, 14360, active: active == 'standard-nodraft'),
+      {...opt('standard-nodraft', 'Standard (no draft)', '32K context, vision on, no speculative draft', 32768, 'gpu',
+          false, true, 14360, active: active == 'standard-nodraft'), 'switchable': false},
       opt('long-vision', 'Long context with vision', '64K context, vision on', 65536, 'gpu', false, false, 14764,
           reason: lvReason),
     ];
@@ -156,6 +156,7 @@ void main() {
         for (final ch in [...visionChoices(opts, active), ...contextChoices(opts, active)]) {
           expect(ch.target?.qualified ?? true, isTrue);
           expect(ch.target?.id, isNot('long-vision'));
+          expect(ch.target?.id, isNot('standard-nodraft'), reason: 'P3 is recognized but never a target');
         }
       }
     });

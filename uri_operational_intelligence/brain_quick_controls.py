@@ -18,7 +18,8 @@ RUNTIME_PROFILES_LIVE_RESULTS.md section 2; subagent-reviewed, not driver-accept
   * Standard = the frozen Runtime v1 (32K, vision on the GPU, MTP draft): the verified default and fallback.
   * Long context = P2 64K main only (13,658 MiB): UI V2 journeys 68/68 + 12/12, soak 60 min, switch sw4 PASS.
   * Standard without draft = P3 32K + GPU vision, MTP off (14,360 MiB): journeys 68/68 + 12/12, soak 60 min, Assist
-    3/3, switch sw4 PASS. Qualified, but not the Standard choice (the frozen default is preferred for 32K + vision).
+    3/3, switch sw4 PASS. Recognized when a host runs it, but NOT switchable from the Quick Controls (coordinator
+    2026-10-18): only Standard and Long context are targets.
   * 64K + vision = P1 (14,764 MiB): UNQUALIFIED (CRASH-1 and DEMOTE-P1 open). Listed, never switchable.
 """
 from __future__ import annotations
@@ -39,6 +40,8 @@ CATALOG = (
      "evidence": EVIDENCE + " section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4"},
     {"id": "standard-nodraft", "key": (32768, "gpu", False), "label": "Standard (no draft)",
      "summary": "32K context, vision on, no speculative draft", "qualified": True,
+     # Coordinator 2026-10-18: P3 is recognized (a harness may start it) but never a Quick Controls target.
+     "switchable": False,
      "evidence": EVIDENCE + " section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw4"},
     {"id": "long-vision", "key": (65536, "gpu", False), "label": "Long context with vision",
      "summary": "64K context, vision on", "qualified": False,
@@ -96,6 +99,8 @@ def switch_target(profile) -> tuple:
         raise QuickControlError("PROFILE_UNKNOWN")
     if not entry["qualified"]:
         raise QuickControlError("PROFILE_NOT_QUALIFIED", entry.get("reason"))
+    if not entry.get("switchable", True):
+        raise QuickControlError("PROFILE_NOT_OFFERED")
     key = _key(entry)
     RP.required_mib(key)                 # measured, or ProfileError: admission never runs on an estimate
     return key
@@ -109,6 +114,7 @@ def _view(entry, active_key=None):
     key = _key(entry)
     out = {"id": entry["id"], "label": entry["label"], "summary": entry["summary"], "ctx": key[0],
            "vision": key[1], "vision_on": key[1] in VISION_ON, "mtp": key[2], "qualified": entry["qualified"],
+           "switchable": bool(entry["qualified"] and entry.get("switchable", True)),
            "required_mib": RP.MEASURED_MIB.get(key), "evidence": entry["evidence"],
            "active": active_key is not None and tuple(active_key) == key}
     if entry.get("reason"):

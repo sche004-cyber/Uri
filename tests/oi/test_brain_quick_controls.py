@@ -37,10 +37,13 @@ def test_catalog_entries_are_measured_and_only_the_documented_ones_are_qualified
     lv = QC.entry_by_id("long-vision")
     assert lv["key"] == LONG_VISION and lv["qualified"] is False and "CRASH-1" in lv["reason"]
     assert {e["id"] for e in QC.CATALOG if e["qualified"]} == {"standard", "long", "standard-nodraft"}
+    assert {e["id"] for e in QC.CATALOG if e["qualified"] and e.get("switchable", True)} == {"standard", "long"}
 
 
 @pytest.mark.parametrize("target,code", [
     ("long-vision", "PROFILE_NOT_QUALIFIED"),
+    ("standard-nodraft", "PROFILE_NOT_OFFERED"),
+    ({"ctx": 32768, "vision": "gpu", "mtp": False}, "PROFILE_NOT_OFFERED"),
     ({"ctx": 65536, "vision": "gpu", "mtp": False}, "PROFILE_NOT_QUALIFIED"),
     ("nope", "PROFILE_UNKNOWN"),
     ({"ctx": 131072, "vision": "off", "mtp": True}, "PROFILE_UNKNOWN"),     # measured, not in the catalog
@@ -139,7 +142,7 @@ def test_reconfigure_writes_one_request_gates_turns_and_reports_the_switch(fake,
         b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})
     assert e.value.code == "BRAIN_RESTARTING"
     with pytest.raises(BridgeRefused) as e:                  # one Brain request at a time
-        b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard-nodraft"})
+        b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard"})
     assert e.value.code == "BRAIN_RESTARTING"
     h = b.handle("brain_health", {"command": "brain_health"})
     assert h["state"] == "RECOVERING" and h["reasons"][0] == "PROFILE_SWITCH" and "Long context" in h["explain"]

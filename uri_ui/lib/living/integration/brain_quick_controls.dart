@@ -26,6 +26,9 @@ class QcOption {
   int get ctx => (raw['ctx'] as num).toInt();
   bool get visionOn => raw['vision_on'] == true;
   bool get qualified => raw['qualified'] == true;
+
+  /// A Quick Controls target: qualified AND offered (an older worker without the field: qualified).
+  bool get switchable => qualified && (raw['switchable'] ?? true) == true;
   String? get reason => raw['reason'] as String?;
   int? get requiredMib => (raw['required_mib'] as num?)?.toInt();
 }
@@ -49,7 +52,7 @@ List<QcOption> qcOptions(Map<String, dynamic> controls) => [
 
 QcOption? _firstQualified(Iterable<QcOption> xs) {
   for (final o in xs) {
-    if (o.qualified) return o;
+    if (o.switchable) return o;
   }
   return null;
 }
