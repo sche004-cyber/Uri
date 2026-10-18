@@ -310,6 +310,9 @@ void main() {
       expect(find.byKey(const ValueKey('qc-confirm-shrink')), findsNothing, reason: 'no "switch anyway" path');
       expect(find.textContaining('about 30000 tokens'), findsOneWidget);
       expect(find.textContaining('Keep the larger context'), findsOneWidget);
+      // R2-02 / R3-02: worded for every conversation the worker has held, not only this one
+      expect(find.textContaining('a conversation URI has held since it started'), findsOneWidget);
+      expect(find.textContaining('until URI is restarted'), findsOneWidget);
       final sent = rt.commands.where((c) => c['command'] == 'brain_reconfigure').toList();
       expect(sent, [
         {'command': 'brain_reconfigure', 'profile_id': 'standard'},

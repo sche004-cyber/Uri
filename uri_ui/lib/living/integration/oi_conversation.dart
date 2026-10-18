@@ -832,7 +832,7 @@ class OiConversation extends ChangeNotifier {
         final d = (r['detail'] as Map?) ?? const {};
         final ctx = (d['ctx'] as num?)?.toInt();
         // R2-02: the worker judges the longest conversation it has held since it started, not only this one.
-        profileNotice = 'Not switched: a conversation URI holds since it started uses about '
+        profileNotice = 'Not switched: a conversation URI has held since it started uses about '
             '${d['live_tokens'] ?? '?'} tokens; with room for an answer it does not fit in '
             '${ctx == null ? 'the smaller context' : '${ctx ~/ 1024}K'}. Keep the larger context until URI is restarted.';
       }

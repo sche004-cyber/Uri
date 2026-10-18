@@ -83,7 +83,8 @@ MAX_PENDING = 64
 # Room kept for the next answer when judging whether a conversation fits a smaller context: the largest local output
 # cap (reasoning_policy MAX_TOKENS["normal"] = 4,000) rounded up. A heuristic, not a guarantee: the next user message
 # (up to MAX_TEXT characters) is not counted. The check covers every session this worker has answered since it started
-# (sizes are never cleared; the worker keeps their history too), so it is conservative (review R2-02).
+# (sizes are never cleared except by LRU eviction beyond MAX_PENDING = 64 sessions; the worker keeps their history
+# too), so it is conservative (review R2-02, R3-03).
 ANSWER_RESERVE_TOKENS = 4096
 
 

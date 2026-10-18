@@ -135,8 +135,8 @@ The code repairs are in `ce5c2fe0`. The gates were run again on the commit named
 
 | Finding | Change | Verified by |
 |---|---|---|
-| R2-01 LOW | `refreshHealth` also re-reads the status while the stored status is a masked one (`switching: true`). A failed read on the poll where the switch ends can therefore no longer leave "starting" behind. | Widget test: the status read throws at the final edge, the next READY poll re-reads, and the result is READY and `brainReady`. |
-| R2-02 LOW | (a) The context sizes are now a real LRU: a key is popped before it is re-inserted. (b) The notice is worded for the whole worker: "a conversation URI holds since it started uses about N tokens ... Keep the larger context until URI is restarted." (c) The code comment says the 4,096-token reserve is a heuristic: the next user message is not counted. Scope listed as QC-F7. | Unit test (LRU eviction keeps a recently used long session); widget test (the notice text). |
+| R2-01 LOW | `refreshHealth` also re-reads the status while the stored status is a masked one (`switching: true`). A failed read on the poll where the switch ends can therefore no longer leave "starting" behind. | Unit test (OiConversation, in the widget test file): the status read throws at the final edge, the next READY poll re-reads, and the result is READY and `brainReady`. |
+| R2-02 LOW | (a) The context sizes are now a real LRU: a key is popped before it is re-inserted. (b) The notice is worded for the whole worker: "a conversation URI has held since it started uses about N tokens ... Keep the larger context until URI is restarted." (c) The code comment says the 4,096-token reserve is a heuristic: the next user message is not counted. Scope listed as QC-F7. | Unit test (LRU eviction keeps a recently used long session); widget test (the notice text). |
 | R2-03 LOW | The IC-1 note is corrected (below). | |
 | R2-04 INFO | `BRAIN_QC_QUALIFICATION.json` corrected: the AT_RISK range now includes qc-4's -336.6 MiB, QC-6 cites qc-4 and qc-5, and `not_qualified` now names the refusal path. | |
 | R2-05 INFO | Noted as QC-F8. | |
@@ -158,7 +158,8 @@ rebased or merged onto the current runtime-profiles tip, or onto the integrated 
 one live switch round trip re-run. That is the main session's decision.
 
 ### Open findings added
-- **QC-F7:** the shrink refusal covers every conversation the worker has answered since it started. The sizes are
+- **QC-F7** (R3-03 wording): the shrink refusal covers every conversation the worker has answered since it started; the sizes are
+  never cleared except by LRU eviction beyond 64 sessions. Original text:
   never cleared, and neither is the history the worker keeps. One long conversation therefore blocks a switch to a
   smaller context until URI restarts, which is conservative. The 4,096-token answer reserve is a heuristic and does
   not count the next user message.
