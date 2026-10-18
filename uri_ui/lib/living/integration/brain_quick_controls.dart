@@ -268,7 +268,7 @@ class BrainQuickControls extends StatelessWidget {
     if (last == null || conv.profileRequestId == null || last['id'] != conv.profileRequestId) return null;
     if (switchState['pending'] == true) return null;
     final result = last['result'] as String?;
-    if (result == null || result == 'IN_PROGRESS') return null;
+    if (result == null || result == 'IN_PROGRESS' || result == 'ALREADY_ACTIVE') return null;
     if (result.startsWith('REFUSED_')) {
       return (last['explain'] as String?) ?? brainSwitchRefusal(result);
     }
@@ -278,7 +278,11 @@ class BrainQuickControls extends StatelessWidget {
     }
     if (result == 'DEGRADED') return 'Brain switched, but it is running slowly (GPU memory was short).';
     if (result == 'FAILED') return 'The Brain did not start with the new setting. Choose another setting or Restart Brain.';
-    return null;
+    if (result == 'WAITING_FOR_GPU' || result == 'WAITING_FOR_LEASE' || result == 'RELEASE_WAIT') {
+      return 'The new setting is waiting for GPU memory. Choose the previous setting to go back.';
+    }
+    if (result == 'STOPPED') return 'The switch was stopped; the Brain is not running.';
+    return 'The switch ended without a ready Brain. Choose a setting again or Restart Brain.';
   }
 
   Widget _profileChip(BuildContext context, Key key, IconData icon, String label, List<QcChoice> choices,
@@ -324,6 +328,7 @@ class BrainQuickControls extends StatelessWidget {
     final controls = conv.brainControls;
     final active = (controls['active'] as Map?)?.cast<String, dynamic>();
     final nowMib = (active?['required_mib'] as num?)?.toInt();
+    final hostState = (conv.brainHealth['host'] as Map?)?['state'];
     String gb(int mib) => (mib / 1024).toStringAsFixed(1);
     final ok = await showDialog<bool>(
       context: context,
@@ -336,7 +341,9 @@ class BrainQuickControls extends StatelessWidget {
           'Your conversation stays: URI keeps it and the Brain reads it again after the switch.',
           if (target.requiredMib != null)
             'GPU memory: ${gb(target.requiredMib!)} GB${nowMib != null ? ' (now ${gb(nowMib)} GB)' : ''}. '
-                'If it does not fit, URI keeps the current Brain.',
+                'If URI sees before the switch that it does not fit, it keeps the current Brain. If the new '
+                'setting then fails to start or waits for memory, choose the previous setting again.',
+          if (hostState == 'STOPPED') 'The Brain is stopped now: switching starts it with the new setting.',
         ].join('\n\n')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
@@ -349,29 +356,8 @@ class BrainQuickControls extends StatelessWidget {
       ),
     );
     if (ok != true) return;
-    final r = await conv.reconfigureBrain(target.id);
-    if (r != null && r['needs_confirmation'] == 'CONTEXT_SMALLER_THAN_CONVERSATION' && context.mounted) {
-      final detail = (r['detail'] as Map?) ?? const {};
-      final shrink = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          key: const ValueKey('qc-confirm-shrink'),
-          title: const Text('This conversation is longer than the new context'),
-          content: Text('The conversation uses about ${detail['live_tokens'] ?? '?'} tokens; '
-              '${target.label} reads ${detail['ctx'] ?? target.ctx}. URI keeps the whole conversation, but the '
-              'Brain will not see all of it at once.'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-            FilledButton(
-              key: const ValueKey('qc-confirm-shrink-go'),
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Switch anyway'),
-            ),
-          ],
-        ),
-      );
-      if (shrink == true) await conv.reconfigureBrain(target.id, confirmShrink: true);
-    }
+    // A context the conversation does not fit in is refused by the worker and explained in the notice (R1-02).
+    await conv.reconfigureBrain(target.id);
   }
 
   PopupMenuItem<T> _item<T>(BuildContext context, T value, String title, String subtitle, {bool selected = false}) {

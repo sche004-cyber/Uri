@@ -46,6 +46,10 @@ class LivingComposer extends StatefulWidget {
   State<LivingComposer> createState() => _LivingComposerState();
 }
 
+/// BRAIN-QC: room for the quick-control chip row under the chat box (UIV2-F3: nothing may overflow).
+bool qcRoom(BuildContext context) =>
+    MediaQuery.sizeOf(context).height >= 640 && MediaQuery.sizeOf(context).width >= 420;
+
 class _LivingComposerState extends State<LivingComposer> {
   late final TextEditingController _controller;
   ValueNotifier<String?>? _insert;
@@ -167,6 +171,8 @@ class _LivingComposerState extends State<LivingComposer> {
         final presentation = LivingScope.of(context).presentation;
         // UIV2-F1: the draft target applies to the conversation, not to an Office request.
         final draft = office == null ? oi?.draft : null;
+        // BRAIN-QC-20261018: the quick controls belong to the full composer only.
+        final qcFull = !widget.compact && !widget.minimal && !widget.floating;
         final content = Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -206,8 +212,31 @@ class _LivingComposerState extends State<LivingComposer> {
             // an active testing mode keeps its toggle even when narrow, so it can be switched off (C1-06)
             final testing = oi != null && !widget.minimal && UriTestingTools.enabled &&
                 (w >= 420 || oi.transcriptMode || oi.dictationMode);
+            // BRAIN-QC (review R1-08.4): where the chip row has no room, one compact button opens the same controls.
+            final qcCompact = oi != null && office == null && qcFull && !qcRoom(context) && w >= 300;
             return Row(
               children: [
+                if (qcCompact)
+                  IconButton(
+                    key: const ValueKey('qc-compact'),
+                    tooltip: 'Brain settings: Thinking, Vision, Context',
+                    icon: const Icon(Icons.tune_rounded, size: 18),
+                    color: c.inkSoft,
+                    onPressed: () => showDialog<void>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        key: const ValueKey('qc-compact-dialog'),
+                        title: const Text('Brain settings'),
+                        content: ListenableBuilder(
+                          listenable: oi,
+                          builder: (_, _) => BrainQuickControls(conversation: oi),
+                        ),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+                        ],
+                      ),
+                    ),
+                  ),
                 if (widget.filePicker != null && w >= 260)
                   IconButton(
                     tooltip: 'Attach a file',
@@ -363,8 +392,7 @@ class _LivingComposerState extends State<LivingComposer> {
             }),
             // BRAIN-QC-20261018: Thinking / Vision / Context under the chat box (full composer only). They step
             // aside in a small window (UIV2-F3: nothing may overflow while it shrinks into Companion).
-            if (oi != null && office == null && !widget.compact && !widget.minimal && !widget.floating &&
-                MediaQuery.sizeOf(context).height >= 640 && MediaQuery.sizeOf(context).width >= 420)
+            if (oi != null && office == null && qcFull && qcRoom(context))
               Align(
                 alignment: Alignment.centerLeft,
                 child: BrainQuickControls(conversation: oi),

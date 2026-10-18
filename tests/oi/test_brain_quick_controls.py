@@ -121,7 +121,7 @@ def test_reconfigure_refuses_unqualified_and_unknown_profiles_without_any_reques
             b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": pid})
         assert e.value.code == code
     for bad in ({"command": "brain_reconfigure"}, {"command": "brain_reconfigure", "profile_id": "long", "x": 1},
-                {"command": "brain_reconfigure", "profile_id": "long", "confirm_shrink": "yes"}):
+                {"command": "brain_reconfigure", "profile_id": "long", "confirm_shrink": True}):
         with pytest.raises(BridgeRefused) as e:
             b.handle("brain_reconfigure", bad)
         assert e.value.code == "COMMAND_SCHEMA"
@@ -186,21 +186,33 @@ def test_already_active_profile_is_not_reloaded(fake, tmp_path):  # noqa: F811
     assert r["already_active"] is True and requests == []
 
 
-def test_a_smaller_context_than_the_conversation_needs_explicit_confirmation(fake, tmp_path):  # noqa: F811
+def test_a_conversation_that_would_not_fit_the_smaller_context_is_refused_not_confirmed(fake, tmp_path):  # noqa: F811
+    """Review R1-02: nothing trims the history sent to the Brain, so a shrink below the live conversation (plus one
+    answer) is refused outright; there is no confirm path that would make the next turns fail."""
     b, _, requests = bridge(fake, tmp_path, cfg=RP.derive_config(frozen(), *LONG))
-    b._context_tokens = 40000
+    b._context_tokens = {SID: 30000, "other": 1000}     # the largest session decides (30,000 + 4,096 > 32,768)
     r = b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard"})
-    assert r["needs_confirmation"] == "CONTEXT_SMALLER_THAN_CONVERSATION" and r["detail"]["ctx"] == 32768
+    assert r["refused"] == "CONTEXT_SMALLER_THAN_CONVERSATION" and r["requested"] is None
+    assert r["detail"] == {"live_tokens": 30000, "answer_reserve": 4096, "ctx": 32768}
     assert requests == []
-    r = b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard", "confirm_shrink": True})
+    with pytest.raises(BridgeRefused) as e:               # the old confirm path no longer exists
+        b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard", "confirm_shrink": True})
+    assert e.value.code == "COMMAND_SCHEMA" and requests == []
+    b._context_tokens = {SID: 20000}                       # fits with room for an answer: switched
+    r = b.handle("brain_reconfigure", {"command": "brain_reconfigure", "profile_id": "standard"})
     assert r["requested"] == "reconfigure" and requests == [("reconfigure", {"ctx": 32768, "vision": "gpu", "mtp": True})]
 
 
-def test_answer_context_size_is_recorded_from_the_answer_metrics(fake, tmp_path):  # noqa: F811
+def test_answer_context_size_is_recorded_per_session(fake, tmp_path):  # noqa: F811
     b, _, _ = bridge(fake, tmp_path)
-    sink = b._sink("t-x")
-    sink.emit("t-x", "answer.done", metrics={"prompt_n": 120, "cache_n": 30000, "predicted_n": 80})
-    assert b._context_tokens == 30200
+    fake.scripts.append({"chunks": [("answer", "ok")], "finish": "stop"})
+    tid = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})["turn_id"]
+    b.wait(10)
+    sink = b._sink(tid)
+    sink.emit(tid, "answer.done", metrics={"prompt_n": 120, "cache_n": 30000, "predicted_n": 80})
+    assert b._context_tokens[SID] == 30200 and b._largest_context() == 30200
+    h = b.handle("brain_health", {"command": "brain_health"})
+    assert h["controls"]["switch"]["context_tokens"] == 30200
 
 
 # ---- Brain host ---------------------------------------------------------------------------------------------------
@@ -254,6 +266,7 @@ def test_host_refuses_a_switch_that_would_not_fit_before_stopping_anything(tmp_p
     assert h.mgr is not None and h.mgr.stopped == 0 and h.cfg is long_cfg
     sw = h.report["profile_switch"]
     assert sw["result"] == "REFUSED_DOES_NOT_FIT" and "not switched" in sw["explain"]
+    assert sw["fit"]["required_mib"] == G.RUNTIME_V1_DEVICE_MIB      # R1-03: the request the start would budget
     assert h.report["requests"][sw["id"]] == "REFUSED_DOES_NOT_FIT"
     assert h.report["last_request"]["result"] == "REFUSED_DOES_NOT_FIT"
 
@@ -285,6 +298,7 @@ def test_host_switch_derives_the_profile_writes_the_selection_and_updates_the_le
         sw = h.report["profile_switch"]
         assert sw["from"] == "frozen" and sw["to"] == "c64k-visoff-mtpoff" and sw["result"] == "READY"
         assert sw["seconds"] is not None and h.report["profile"]["id"] == "c64k-visoff-mtpoff"
+        assert sw["fit_before"]["required_mib"] == 13658 and sw["started_stopped_brain"] is False
         # and back to Standard: the frozen config object itself, no selection file (absent = frozen)
         assert request(h, {"ctx": 32768, "vision": "gpu", "mtp": True}) == "reconfigure"
         h.reconfigure()
@@ -344,3 +358,14 @@ def test_frozen_runtime_v1_argv_is_unchanged():
     assert RP.derive_config(cfg, *RP.FROZEN_KEY) is cfg
     argv = R.expected_argv(cfg)
     assert argv[argv.index("-c") + 1] == "32768" and "-md" in argv and "--mmproj" in argv
+
+
+def test_a_switch_on_a_stopped_brain_starts_it_and_says_so(tmp_path, monkeypatch):
+    """Review R1-08.3: documented behaviour - a Vision / Context choice while the user's Brain is stopped starts it."""
+    H, h = qc_host(tmp_path, Seq([ROOMY]))
+    monkeypatch.setattr(h, "acquire_lease", lambda: True)
+    started = []
+    monkeypatch.setattr(h, "_start_brain", lambda: started.append(RP.describe(h.cfg)["id"]) or True)
+    assert request(h, {"ctx": 65536, "vision": "off", "mtp": False}) == "reconfigure"
+    h.reconfigure()
+    assert started == ["c64k-visoff-mtpoff"] and h.report["profile_switch"]["started_stopped_brain"] is True

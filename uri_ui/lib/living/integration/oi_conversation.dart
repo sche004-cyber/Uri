@@ -277,12 +277,17 @@ class OiConversation extends ChangeNotifier {
       if (!_active(rt)) return;
       final changed = brainHealth.isNotEmpty && health['state'] != brainHealth['state'];
       brainHealth = health;
-      if (changed) {
-        // BRAIN-QC: a health change (e.g. a profile switch) also refreshes the readiness the header shows, so it
-        // never keeps saying "ready" while the Brain reloads.
+      // BRAIN-QC (review R1-01 correction): the readiness the header shows is re-read on a health change AND on every
+      // poll while the Brain is recovering or switching. During a profile switch it never reads "ready": the old
+      // server still answers READY until it is stopped, and the new one before its calibration, but neither is the
+      // confirmed Brain yet; the header says "starting" until the switch is finished.
+      final switching = (brainControls['switch'] as Map?)?['pending'] == true;
+      if (changed || switching || health['state'] == 'RECOVERING') {
         final status = await rt.call({'command': 'brain_status'}).timeout(probeTimeout);
         if (!_active(rt)) return;
-        brainStatus = status;
+        brainStatus = switching && status['state'] == 'READY'
+            ? {...status, 'state': 'STARTING', 'runtime_state': 'READY', 'switching': true}
+            : status;
       }
     } on IntegratedRuntimeException catch (e) {
       if (!_active(rt)) return;
@@ -791,26 +796,43 @@ class OiConversation extends ChangeNotifier {
   /// The id of the switch this UI requested (its outcome is shown once).
   String? profileRequestId;
 
-  /// Plain-words outcome of the latest refused switch request, or null.
-  String? profileNotice;
+  /// Plain-words outcome of the latest refused switch request, or null. It
+  /// is shown for [profileNoticeFor] and then clears (review R1-08.1).
+  String? get profileNotice {
+    final at = _profileNoticeAt;
+    if (_profileNotice == null || at == null) return null;
+    return DateTime.now().difference(at) > profileNoticeFor ? null : _profileNotice;
+  }
+
+  set profileNotice(String? v) {
+    _profileNotice = v;
+    _profileNoticeAt = v == null ? null : DateTime.now();
+  }
+
+  String? _profileNotice;
+  DateTime? _profileNoticeAt;
+  static Duration profileNoticeFor = const Duration(seconds: 20);
 
   /// Explicit user action: switch the Brain to a qualified profile (Vision /
-  /// Context). Returns the worker's reply; `needs_confirmation` means the
-  /// conversation is longer than the new context and the user must confirm
-  /// ([confirmShrink]). Refusals are reported in [profileNotice].
-  Future<Map<String, dynamic>?> reconfigureBrain(String profileId, {bool confirmShrink = false}) async {
+  /// Context). Returns the worker's reply. A context the conversation would
+  /// not fit in is refused by the worker (`refused`, review R1-02); refusals
+  /// are reported in [profileNotice].
+  Future<Map<String, dynamic>?> reconfigureBrain(String profileId) async {
     if (busy || restarting || workerExited) return null;
     final rt = runtime;
     try {
-      final r = await rt.call({
-        'command': 'brain_reconfigure',
-        'profile_id': profileId,
-        if (confirmShrink) 'confirm_shrink': true,
-      });
+      final r = await rt.call({'command': 'brain_reconfigure', 'profile_id': profileId});
       if (!_active(rt)) return null;
       lastError = null;
       profileNotice = null;
       if (r['requested'] == 'reconfigure') profileRequestId = r['request_id'] as String?;
+      if (r['refused'] == 'CONTEXT_SMALLER_THAN_CONVERSATION') {
+        final d = (r['detail'] as Map?) ?? const {};
+        final ctx = (d['ctx'] as num?)?.toInt();
+        profileNotice = 'Not switched: this conversation (about ${d['live_tokens'] ?? '?'} tokens, plus room for an '
+            'answer) does not fit in ${ctx == null ? 'the smaller context' : '${ctx ~/ 1024}K'}. '
+            'Keep the larger context for this conversation.';
+      }
       await refreshHealth();
       return r;
     } on IntegratedRuntimeException catch (e) {

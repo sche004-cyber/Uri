@@ -476,6 +476,10 @@ class Host:
                                              "result": "ALREADY_ACTIVE"}
             return
         fit = None
+        if self._frozen_cfg is None:
+            self._frozen_cfg = R.load_config()
+        # The same request the start will budget (review R1-03): the frozen config budgets with the lease constant.
+        target_mib = RP.cfg_required_mib(RP.derive_config(self._frozen_cfg, *key), G.RUNTIME_V1_DEVICE_MIB)
         if self.mgr is not None and not self.mgr.owns_instance:
             # An attached instance this host did not start is never stopped from here, so it cannot be switched.
             return self._refuse_switch(rid, cur, key, t0, "REFUSED_ATTACHED_INSTANCE",
@@ -483,13 +487,15 @@ class Host:
         if self.mgr is not None:
             c = self.census()
             # Owners = this host and its children, so the running Brain counts as memory the switch frees.
-            fit = G.assess_fit(c, owners=self.owners(), required_mib=RP.required_mib(key))
+            fit = G.assess_fit(c, owners=self.owners(), required_mib=target_mib)
             if fit["verdict"] in (G.CONTENDED, G.UNKNOWN) and not self.override:
                 code = "REFUSED_DOES_NOT_FIT" if fit["verdict"] == G.CONTENDED else "REFUSED_GPU_UNMEASURED"
                 return self._refuse_switch(rid, cur, key, t0, code, "The Brain was not switched. " + G.explain(fit),
                                            fit=fit)
         self.report["profile_switch"] = {"id": rid, "from": cur["id"], "to": RP.profile_id(key),
-                                         "t_request": t0, "fit_before": fit, "result": "IN_PROGRESS"}
+                                         "t_request": t0, "fit_before": fit, "result": "IN_PROGRESS",
+                                         # A Brain the user had stopped is started by a switch (review R1-08.3).
+                                         "started_stopped_brain": self.mgr is None}
         self.stop_brain()
         self.report["profile_switch"]["t_stopped"] = round(self.now(), 3)
         self.apply_pending_profile()

@@ -58,7 +58,7 @@ COMMANDS = {
     "cloud_policy": ({"command"},),
     "brain_health": ({"command"},),
     "brain_restart": ({"command", "action"},),
-    "brain_reconfigure": ({"command", "profile_id"}, {"command", "profile_id", "confirm_shrink"}),
+    "brain_reconfigure": ({"command", "profile_id"},),
     "oi_turn_status": ({"command"},),
     # Text intelligence: read the session's draft; deterministic draft operations (no model, no authority).
     "draft_get": ({"command", "session_id"},),
@@ -80,6 +80,9 @@ DEPTHS = ("auto", "fast", "normal", "deep")
 MAX_TEXT = 20000
 MAX_HISTORY = 24
 MAX_PENDING = 64
+# Room kept for the next answer when judging whether a conversation fits a smaller context: the largest local output
+# cap (reasoning_policy MAX_TOKENS["normal"] = 4,000) rounded up.
+ANSWER_RESERVE_TOKENS = 4096
 
 
 class BridgeRefused(RuntimeError):
@@ -184,7 +187,9 @@ class IntegratedTurns:
         self._job_events = 0
         self._restart = None          # {"id", "t", "until"} of a Brain request the host has not finished
         self._switch = None           # {"id", "to", "label", "t"} of a profile switch the host has not finished
-        self._context_tokens = None   # tokens of the last answer's full context (prompt + cache + answer)
+        # Tokens of each session's last answer context (prompt + cache + answer), and the session of each turn id.
+        self._context_tokens = {}
+        self._turn_session = {}
         self._perf_ident = None       # (pid, create_time) of the server the timing samples belong to
         self.desk = DraftDesk(orchestrator)   # text intelligence: drafts per session (language work only)
 
@@ -281,7 +286,10 @@ class IntegratedTurns:
                 m = ev["data"].get("metrics") or {}
                 ctx_n = sum(int(m.get(k) or 0) for k in ("prompt_n", "cache_n", "predicted_n"))
                 if ctx_n:
-                    self._context_tokens = ctx_n
+                    sid = self._turn_session.get(turn_id)
+                    self._context_tokens[sid] = ctx_n
+                    while len(self._context_tokens) > MAX_PENDING:
+                        self._context_tokens.pop(next(iter(self._context_tokens)))
                 if m.get("predicted_n") and m.get("predicted_per_second"):
                     self._perf.append((time.time(), {"predicted_n": m["predicted_n"],
                                                      "predicted_per_second": m["predicted_per_second"]}))
@@ -302,6 +310,9 @@ class IntegratedTurns:
         except TI.InputRejected as exc:
             raise BridgeRefused(exc.code) from None
         turn_id = str(uuid.uuid4())
+        self._turn_session[turn_id] = session_id
+        while len(self._turn_session) > MAX_PENDING:
+            self._turn_session.pop(next(iter(self._turn_session)))
         history = list(self.history.get(session_id, ()))
         # A transcript reaches the ordinary path with fillers removed; the raw transcript stays in the envelope.
         plain = TI.clean_transcript(text) if inp.is_transcript else text
@@ -634,7 +645,7 @@ class IntegratedTurns:
         """Quick Controls state. `active` only when this worker's readiness verified the server (never before)."""
         last = (host or {}).get("profile_switch") if alive else None
         switch = {"pending": bool(switching), "target": dict(self._switch) if switching else None,
-                  "last": last, "context_tokens": self._context_tokens}
+                  "last": last, "context_tokens": self._largest_context()}
         reason = None
         if self._host_request is None:
             reason = "BRAIN_CONTROL_UNAVAILABLE"
@@ -649,11 +660,16 @@ class IntegratedTurns:
             return {"schema": QC.SCHEMA, "active": None, "error": type(exc).__name__, "switch": switch,
                     "options": [], "can_switch": False, "cannot_switch_reason": "PROFILE_UNDESCRIBED"}
 
+    def _largest_context(self):
+        """The largest last-answer context of any session in this worker (0 when none is known)."""
+        return max(self._context_tokens.values(), default=0)
+
     def _brain_reconfigure(self, c):
         """Explicit user action: switch the Brain to a qualified profile (Vision / Context). Refused while a turn
         runs (handled by `handle`), while another Brain request is unfinished, and for anything outside the catalog.
-        A context smaller than the live conversation needs `confirm_shrink: true`; URI keeps the history either way
-        (only the model's working memory is rebuilt)."""
+        A context that the live conversation (plus one answer) would not fit in is refused (review R1-02): nothing
+        trims the history sent to the Brain, so a smaller window would make the next turns fail. The reply says so,
+        with the numbers; the user keeps the larger context for this conversation."""
         try:
             key = QC.switch_target(c["profile_id"])
         except (QC.QuickControlError, RP.ProfileError) as exc:
@@ -667,16 +683,14 @@ class IntegratedTurns:
             raise BridgeRefused("BRAIN_HOST_NOT_RUNNING")
         if self._restart_pending():
             raise BridgeRefused("BRAIN_RESTARTING")
-        confirm = c.get("confirm_shrink", False)
-        if not isinstance(confirm, bool):
-            raise BridgeRefused("COMMAND_SCHEMA")
         current = RP.describe(self.cfg)
-        plan = RP.plan_change(current, context=key[0], vision=key[1], mtp=key[2],
-                              live_tokens=self._context_tokens or 0, confirm_shrink=confirm)
+        live = self._largest_context()
+        needed = live + ANSWER_RESERVE_TOKENS if live else 0
+        plan = RP.plan_change(current, context=key[0], vision=key[1], mtp=key[2], live_tokens=needed)
         entry = QC.entry_by_key(key)
         if plan["refused"] == "CONTEXT_SMALLER_THAN_CONVERSATION":
-            return {"requested": None, "needs_confirmation": plan["refused"], "detail": plan.get("detail"),
-                    "target": QC.describe_key(key)}
+            return {"requested": None, "refused": plan["refused"], "target": QC.describe_key(key),
+                    "detail": {"live_tokens": live, "answer_reserve": ANSWER_RESERVE_TOKENS, "ctx": key[0]}}
         if plan["refused"]:
             raise BridgeRefused(plan["refused"])
         if not plan["reload"]:

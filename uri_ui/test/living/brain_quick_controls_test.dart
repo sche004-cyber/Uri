@@ -191,16 +191,35 @@ void main() {
       expect(find.byKey(const ValueKey('qc-thinking')), findsOneWidget, reason: 'Thinking never reloads');
     });
 
-    test('a health change refreshes the readiness the header shows (no stale "ready" while switching)', () async {
+    test('R1-01: the header never reads ready while a switch runs (status READY at the edge, STOPPED later)', () async {
       final rt = QcRuntime();
       final conv = await ready(rt);
+      await conv.refreshHealth();
       conv.brainStatus = {'state': 'READY'};
-      rt.status = {'state': 'STOPPED'};
+      // the edge READY -> RECOVERING: the old server still answers READY (what happens live)
       rt.health = {'state': 'RECOVERING', 'controls': controls(pending: true)};
+      rt.status = {'state': 'READY', 'model_id': 'qwen-test'};
+      await conv.refreshHealth();
+      expect(conv.brainStatus['state'], 'STARTING', reason: 'not the confirmed Brain while the switch is pending');
+      expect(conv.brainStatus['runtime_state'], 'READY');
+      expect(conv.brainReady, isFalse);
+      // later polls, health unchanged (RECOVERING): the status is re-read every time
+      rt.status = {'state': 'STOPPED'};
       await conv.refreshHealth();
       expect(conv.brainStatus['state'], 'STOPPED');
+      rt.status = {'state': 'LOADING'};
+      await conv.refreshHealth();
+      expect(conv.brainStatus['state'], 'LOADING');
+      // the new server answers before its calibration: still not ready while the switch is pending
+      rt.status = {'state': 'READY'};
+      await conv.refreshHealth();
+      expect(conv.brainStatus['state'], 'STARTING');
+      // switch finished: READY on the new profile
+      rt.health = {'state': 'READY', 'controls': controls(active: 'long')};
+      await conv.refreshHealth();
+      expect(conv.brainStatus['state'], 'READY');
       final n = rt.commands.where((c) => c['command'] == 'brain_status').length;
-      await conv.refreshHealth();                    // unchanged state: no extra status call
+      await conv.refreshHealth();                    // steady READY: no extra status call
       expect(rt.commands.where((c) => c['command'] == 'brain_status').length, n);
     });
 
@@ -252,12 +271,10 @@ void main() {
       expect(conv.profileRequestId, 'req-1');
     });
 
-    testWidgets('a shorter context than the conversation needs a second confirmation', (tester) async {
+    testWidgets('R1-02: a conversation that does not fit the smaller context is refused with the numbers', (tester) async {
       final rt = QcRuntime()..health = {'state': 'READY', 'controls': controls(active: 'long')};
-      rt.onReconfigure = (c) => c['confirm_shrink'] == true
-          ? {'requested': 'reconfigure', 'request_id': 'req-2'}
-          : {'requested': null, 'needs_confirmation': 'CONTEXT_SMALLER_THAN_CONVERSATION',
-              'detail': {'live_tokens': 40000, 'ctx': 32768}};
+      rt.onReconfigure = (c) => {'requested': null, 'refused': 'CONTEXT_SMALLER_THAN_CONVERSATION',
+          'detail': {'live_tokens': 30000, 'answer_reserve': 4096, 'ctx': 32768}};
       final conv = await ready(rt);
       await pumpControls(tester, conv);
       await tester.tap(find.byKey(const ValueKey('qc-context')));
@@ -266,13 +283,47 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('qc-confirm-switch-go')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('qc-confirm-shrink')), findsOneWidget);
-      expect(find.textContaining('40000 tokens'), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('qc-confirm-shrink-go')));
-      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('qc-confirm-shrink')), findsNothing, reason: 'no "switch anyway" path');
+      expect(find.textContaining('about 30000 tokens'), findsOneWidget);
+      expect(find.textContaining('Keep the larger context'), findsOneWidget);
       final sent = rt.commands.where((c) => c['command'] == 'brain_reconfigure').toList();
-      expect(sent.length, 2);
-      expect(sent.last, {'command': 'brain_reconfigure', 'profile_id': 'standard', 'confirm_shrink': true});
+      expect(sent, [
+        {'command': 'brain_reconfigure', 'profile_id': 'standard'},
+      ]);
+    });
+
+    testWidgets('R1-08.1: a refusal notice clears after its time', (tester) async {
+      final rt = QcRuntime()..refuse = 'TURN_IN_PROGRESS';
+      final conv = await ready(rt);
+      await conv.reconfigureBrain('long');
+      expect(conv.profileNotice, isNotNull);
+      final keep = OiConversation.profileNoticeFor;
+      OiConversation.profileNoticeFor = Duration.zero;
+      addTearDown(() => OiConversation.profileNoticeFor = keep);
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 5)));
+      expect(conv.profileNotice, isNull);
+    });
+
+    testWidgets('R1-08.2/.3: non-final outcomes are explained; a stopped Brain is started only with a warning',
+        (tester) async {
+      final rt = QcRuntime();
+      final conv = await ready(rt);
+      await conv.reconfigureBrain('long');
+      rt.health = {'state': 'UNAVAILABLE', 'controls': controls(last: {'id': 'req-1', 'result': 'WAITING_FOR_GPU'})};
+      await conv.refreshHealth();
+      await pumpControls(tester, conv);
+      expect(find.text('The new setting is waiting for GPU memory. Choose the previous setting to go back.'),
+          findsOneWidget);
+      rt.health = {'state': 'UNAVAILABLE', 'host': {'state': 'STOPPED'}, 'controls': controls(last: {'id': 'req-1', 'result': 'STOPPED'})};
+      await conv.refreshHealth();
+      await tester.pump();
+      expect(find.text('The switch was stopped; the Brain is not running.'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('qc-context')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('qc-context-64K')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('The Brain is stopped now: switching starts it'), findsOneWidget);
+      expect(find.textContaining('If the new setting then fails to start'), findsOneWidget);
     });
 
     testWidgets('a refusal is explained and nothing is shown as switched', (tester) async {
@@ -363,11 +414,17 @@ void main() {
     expect(find.byKey(const ValueKey('qc-thinking')), findsOneWidget);
   });
 
-  testWidgets('in a small window the quick controls step aside (no overflow)', (tester) async {
+  testWidgets('R1-08.4: in a small window the chip row steps aside and one compact button opens the controls',
+      (tester) async {
     final (_, services) = await pumpRoot(tester, const Size(800, 600));
     services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.conversation);
     await settle(tester);
     expect(find.byKey(const ValueKey('qc-thinking')), findsNothing);
+    expect(find.byKey(const ValueKey('qc-compact')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('qc-compact')));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('qc-compact-dialog')), findsOneWidget);
+    expect(find.byKey(const ValueKey('qc-thinking')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

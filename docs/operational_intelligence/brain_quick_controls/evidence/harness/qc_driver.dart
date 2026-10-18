@@ -128,6 +128,8 @@ void main() {
           'configured': (c['configured'] as Map?)?['id'], 'chip_vision': textOf('qc-vision'),
           'chip_context': textOf('qc-context'), 'chip_switching': textOf('qc-switching'),
           'header_brain': conv.brainStatus['state'],
+          'header_text': find.byKey(const ValueKey('oi-brain-state')).evaluate().isEmpty ? null
+              : (find.byKey(const ValueKey('oi-brain-state')).evaluate().first.widget as Text).data,
         };
         timeline?.add(row);
         if (activeId() == id && h['state'] == 'READY') break;
@@ -274,6 +276,11 @@ void main() {
       await waitActive('long', 'Long context ready', timeline: timeline);
       final tReady = DateTime.now().millisecondsSinceEpoch / 1000;
       record('switch-timeline', {'to': 'long', 'rows': timeline, 'ui_seconds': tReady - tSwitch});
+      // review R1-01: the header never reads "ready" while the switch is pending
+      final headerReady = timeline.where((r) => r['pending'] == true &&
+          (r['header_brain'] == 'READY' || '${r['header_text']}'.endsWith('ready')));
+      check('QC-header-truthful-long', headerReady.isEmpty, {'rows_ready_while_pending': headerReady.length,
+        'states': {for (final r in timeline) '${r['header_brain']}'}.toList()});
       final early = timeline.where((r) => r['active'] == 'long' && r['state'] != 'READY' && r['state'] != 'BUSY');
       final shownEarly = timeline.where((r) => r['state'] != 'READY' && r['chip_context'] == 'Context: 64K');
       check('QC-truthful-switch-long', early.isEmpty && shownEarly.isEmpty &&
@@ -306,6 +313,11 @@ void main() {
       await waitActive('standard', 'Standard ready again', timeline: timeline);
       final tReady = DateTime.now().millisecondsSinceEpoch / 1000;
       record('switch-timeline', {'to': 'standard', 'rows': timeline, 'ui_seconds': tReady - tSwitch});
+      // review R1-01: the header never reads "ready" while the switch is pending
+      final headerReady = timeline.where((r) => r['pending'] == true &&
+          (r['header_brain'] == 'READY' || '${r['header_text']}'.endsWith('ready')));
+      check('QC-header-truthful-standard', headerReady.isEmpty, {'rows_ready_while_pending': headerReady.length,
+        'states': {for (final r in timeline) '${r['header_brain']}'}.toList()});
       final early = timeline.where((r) => r['active'] == 'standard' && r['state'] != 'READY' && r['state'] != 'BUSY');
       check('QC-truthful-switch-standard', early.isEmpty, {'rows': timeline.length});
       check('QC-chips-standard-again', textOf('qc-vision') == 'Vision: On' && textOf('qc-context') == 'Context: 32K',
