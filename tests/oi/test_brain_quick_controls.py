@@ -390,3 +390,22 @@ def test_context_sizes_are_kept_least_recently_used(fake, tmp_path):  # noqa: F8
     answer("new", 100)                          # one over the bound: the oldest unused session goes
     assert "long" in b._context_tokens and "s0" not in b._context_tokens
     assert len(b._context_tokens) == WB.MAX_PENDING and b._largest_context() == 30001
+
+
+def test_catalog_agrees_with_the_integrated_selectable_set():
+    """Canonical cd4a7963: SELECTABLE = frozen, P2, P3. Quick Controls offer Standard and Long only; P3 is recognised,
+    not offered; P1 is refused by both."""
+    qualified = {tuple(e["key"]) for e in QC.CATALOG if e["qualified"]}
+    offered = {tuple(e["key"]) for e in QC.CATALOG if e["qualified"] and e.get("switchable", True)}
+    assert qualified == set(PS.SELECTABLE)
+    assert offered == {RP.FROZEN_KEY, LONG} and offered < set(PS.SELECTABLE)
+    assert LONG_VISION not in PS.SELECTABLE and LONG_VISION not in qualified
+
+
+def test_host_never_writes_a_selection_for_a_research_profile(tmp_path):
+    """Review R9-01: a host started on P1 with --profile removes any selection and writes none."""
+    sel = PS.write(tmp_path / "client", 65536, "off", False)             # a stale selection from before
+    H, h = qc_host(tmp_path, Seq([ROOMY]), cfg=RP.derive_config(frozen(), *LONG_VISION))
+    h.sync_selection()
+    assert not sel.exists() and h.report["selection_error"] == "PROFILE_NOT_SELECTABLE"
+    assert PS.select(frozen(), sel)[1]["source"] == "frozen"

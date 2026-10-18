@@ -418,6 +418,12 @@ class Host:
         path = self.report_dirs[0] / PS.SELECTION_FILE
         p = self.cfg.get("profile")
         try:
+            if p and (int(p["ctx"]), p["vision"], bool(p["mtp"])) not in PS.SELECTABLE:
+                # Review R9-01: a research profile started with --profile (e.g. P1) is never written as a selection;
+                # the worker then verifies against the frozen config and reports FOREIGN_INSTANCE (fails closed).
+                path.unlink(missing_ok=True)
+                self.report["selection_error"] = "PROFILE_NOT_SELECTABLE"
+                return
             if p:
                 self.report_dirs[0].mkdir(parents=True, exist_ok=True)
                 tmp = path.with_suffix(".json.tmp")
