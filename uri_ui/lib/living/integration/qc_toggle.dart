@@ -25,7 +25,8 @@ class QcStyle {
 
   /// The enabled glow: one soft accent shadow, stronger on hover.
   static List<BoxShadow> glow(UriColors c, {bool hover = false}) => [
-        BoxShadow(color: c.accent.withValues(alpha: hover ? .45 : .32), blurRadius: hover ? 12 : 9),
+        // ui-1 live review: .32 / blur 9 read as faint on the dark companion themes; still one static shadow.
+        BoxShadow(color: c.accent.withValues(alpha: hover ? .55 : .42), blurRadius: hover ? 14 : 12, spreadRadius: .5),
       ];
 
   static Color fill(UriColors c, QcVisual v, {bool hover = false, bool pressed = false, bool enabled = true}) {
