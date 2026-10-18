@@ -31,8 +31,8 @@ enum CompanionIdentity {
   /// separate identity rather than a mode of either.
   moonlit,
 
-  /// Warmth and character. A small fire spirit with a face, rendered in
-  /// Blender (`companion_art/fire/`) and played as sprite clips by
+  /// Warmth and character. A small fire spirit with a face, painted (2.5D,
+  /// painting-derived clips built with `companion_art/fire_v2/`) and played by
   /// [EmberCompanion]; it has no shader of its own.
   ember,
 }
