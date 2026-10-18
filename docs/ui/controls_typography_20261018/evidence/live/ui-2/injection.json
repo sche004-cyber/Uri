@@ -1,0 +1,47 @@
+{
+ "profile": "c64k-visoff-mtpoff",
+ "t": 1792327752.64,
+ "switch": {
+  "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+  "from": "c32k-visgpu-mtpoff",
+  "to": "c64k-visoff-mtpoff",
+  "t_request": 1792327745.284,
+  "fit_before": {
+   "verdict": "FITS",
+   "card_mib": 16368,
+   "required_mib": 13658,
+   "others_mib": 1798.4,
+   "unattributed_mib": 0.0,
+   "owner_mib": 13004.3,
+   "free_mib": 14569.6,
+   "margin_mib": 911.6,
+   "consumers": [
+    {
+     "pid": 1580,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "dedicated_mib": 681.3,
+     "role": "desktop compositor"
+    },
+    {
+     "pid": 14668,
+     "name": "chrome.exe",
+     "parent": "chrome.exe",
+     "dedicated_mib": 438.3,
+     "role": null
+    },
+    {
+     "pid": 15536,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "dedicated_mib": 214.5,
+     "role": null
+    }
+   ]
+  },
+  "result": "IN_PROGRESS",
+  "started_stopped_brain": false,
+  "t_stopped": 1792327748.936,
+  "required_mib": 13658
+ }
+}
