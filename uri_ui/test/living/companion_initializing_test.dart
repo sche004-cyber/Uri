@@ -21,6 +21,9 @@ class _Runtime implements IntegratedRuntime {
 
   String? healthReadiness;
 
+  /// Brain Quick Controls `controls` block of brain_health (a profile switch in flight).
+  Map<String, dynamic>? controls;
+
   /// When set, both reports carry `checked_at` like the real worker (review R6-7).
   num? statusAt;
   num? healthAt;
@@ -43,6 +46,7 @@ class _Runtime implements IntegratedRuntime {
       'readiness': healthReadiness ?? brainState,
       'host': {'running': hostState != null, 'state': hostState},
       'checked_at': ?healthAt,
+      'controls': ?controls,
     },
     'brain_catalog' => {
       'rows': [
@@ -282,5 +286,49 @@ void main() {
     // rekindle reserved for leaving depleted.
     expect(EmberClips.fadeBetween(EmberClip.kindling, EmberClip.idle),
         EmberClips.fadeBetween(EmberClip.idle, EmberClip.thinking));
+  });
+
+  test('a Brain Quick Controls profile switch is Initializing, never ready, until it ends (integration IC1-03)', () async {
+    final rt = _Runtime();
+    final conv = OiConversation(rt);
+    final src = OiCompanionSource(conv);
+    await conv.refreshStatus();
+    expect(src.signal.state, CompanionState.idle);
+    // The old server still answers READY while the switch is pending: turns are refused, so not idle.
+    rt.controls = {
+      'switch': {
+        'pending': true,
+        'target': {'label': 'Long context'},
+      },
+    };
+    await conv.refreshStatus();
+    expect(src.signal.state, CompanionState.initializing);
+    expect(src.signal.headline, 'Switching Brain');
+    expect(src.signal.detail, 'Switching the Brain to Long context.');
+    // Stopping and loading are part of the reload: still Initializing.
+    rt
+      ..brainState = 'STOPPED'
+      ..hostState = 'STOPPING';
+    await conv.refreshStatus();
+    expect(src.signal.state, CompanionState.initializing);
+    // A GPU wait during the switch keeps the FCV-10 "Waiting for GPU" (D-1); a failure is not calm either.
+    rt.hostState = 'WAITING_FOR_GPU';
+    await conv.refreshStatus();
+    expect(src.signal.state, CompanionState.unavailable);
+    expect(src.signal.headline, 'Waiting for GPU');
+    rt.hostState = 'FAILED';
+    await conv.refreshStatus();
+    expect(src.signal.state, isNot(CompanionState.initializing));
+    expect(src.signal.state, isNot(CompanionState.idle));
+    // Switch finished and the new Brain is READY: idle.
+    rt
+      ..controls = {
+        'switch': {'pending': false},
+      }
+      ..hostState = 'READY'
+      ..brainState = 'READY';
+    await conv.refreshStatus();
+    expect(src.signal.state, CompanionState.idle);
+    src.dispose();
   });
 }

@@ -27,6 +27,10 @@ const Set<String> brainHostStarting = {'STARTING_HOST', 'STARTING', 'LOADING', '
 /// runtime snapshot that still says it is starting (review R3-01).
 const Set<String> brainHostNotStarting = {'FAILED', 'STOPPED', 'STOPPING', 'RELEASE_WAIT', 'WAITING_FOR_GPU'};
 
+/// Host states during a Brain Quick Controls profile switch that are not part of the requested reload: the user
+/// needs to know (GPU wait, D-1) or the switch failed. Stopping, memory release, load and calibration are the reload.
+const Set<String> brainSwitchNotProgressing = {'FAILED', 'WAITING_FOR_GPU', 'WAITING_FOR_LEASE'};
+
 /// The detail for the unavailable look: the polled runtime state, unless the
 /// newer health report or the running host already names a different one
 /// (review R4-N2). An older or unstamped health report never overrides it,
@@ -174,6 +178,27 @@ class OiCompanionSource extends CompanionStateSource {
     }
     // brain_health is read after brain_status: its readiness is the newer fact (live FCV-R restart run showed
     // "Brain unavailable | Brain ready." for one refresh when only the older status still said not ready).
+    // Brain Quick Controls integration (review IC1-03): during a profile switch turns are refused, so the companion
+    // never shows ready/idle - not from the old server before it stops, nor from the new one before calibration. A
+    // reload in progress (old server stopping, memory release, load, calibration) is a genuine start (Initializing,
+    // D-1); a host that waits for the GPU or fails keeps its FCV-10 presentation.
+    final switching = (c.brainControls['switch'] as Map?)?['pending'] == true || c.brainStatus['switching'] == true;
+    if (switching && c.selectedRowId == 'runtime-v1') {
+      final h = c.brainHealth['host'];
+      final hs = h is Map && h['running'] == true ? h['state'] : null;
+      if (hs is String && brainSwitchNotProgressing.contains(hs)) {
+        final p = brainNotReadyPresentation(hs, c.brainHealth);
+        return CompanionSignal(
+            state: p.state, headline: p.headline, detail: p.detail, sourceName: 'URI', simulated: false);
+      }
+      final target = ((c.brainControls['switch'] as Map?)?['target'] as Map?)?['label'];
+      return CompanionSignal(
+          state: CompanionState.initializing,
+          headline: 'Switching Brain',
+          detail: target is String ? 'Switching the Brain to $target.' : 'The Brain is switching.',
+          sourceName: 'URI',
+          simulated: false);
+    }
     final state = c.brainHealth['readiness'] is String ? c.brainHealth['readiness'] : c.brainStatus['state'];
     if (state != null && state != 'READY' && c.selectedRowId == 'runtime-v1') {
       final p = brainNotReadyPresentation('$state', c.brainHealth);
