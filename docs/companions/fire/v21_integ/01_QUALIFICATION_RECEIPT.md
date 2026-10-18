@@ -145,5 +145,18 @@ milestone; verified with `git ls-remote uri-repo`). Canonical code delta: runtim
 | Runtime | `D:\uri-dev\uri-ember-rt2` materialized from `dcb5ebaa` | `evidence/runtime_materialization_receipt_dcb5ebaa.json` |
 | Live `l7-returning-cd4a` (13:30-13:33 IST, own lease, no override) | **all checks PASS, 0 failures**: Ember restored, Initializing -> idle (Brain READY 53.7 s, 135.0 tok/s), borderless, per-pixel transparency, click-through outside, Ember click reaches URI (controls shown), drag, 1.25x; lease FREE after; Brain config hash unchanged | `live/l7-returning-cd4a/` |
 
-Not re-run on `dcb5ebaa`: first-time-user journeys (conversation, stop, recovery; last run l1 on `6bdaf86e`).
+Not re-run on `dcb5ebaa`: first-time-user journeys (conversation, stop, recovery; last run l1 on `6bdaf86e`); the
+Python OI tests (backend identical to canonical `cd4a7963`). Ember was never exercised live under a non-frozen
+profile or during a profile switch; review R4 traced that path in code (switch = host restart: STOPPING/STOPPED ->
+unavailable, STARTING_HOST..CALIBRATING -> Initializing, FOREIGN_INSTANCE -> FCV-10 error) but it has no live or
+dedicated widget-test evidence (R4-03).
+
+Notes (review R4): l7 calibrated at 135.0 tok/s versus 155.7 in l6; the l7 start was AT_RISK (margin -237.9 MiB,
+1730 MiB non-local), still above the 60 tok/s threshold (R4-04). The still-frame window captures are byte-identical
+across l5-l7 (reduced-motion rendering is deterministic); each probe has its own pid, window handle and timestamp, but
+the images are not independent per-run visual evidence; per-capture hashes in `evidence/window_capture_sha256.txt`
+(R4-02). The boundary file now records its command and output (R4-01).
+
+Review R4 (independent read-only subagent) at `b6220852`: ACCEPT WITH FINDINGS (0 HIGH, 0 MEDIUM, 2 LOW, 2 INFO);
+all four addressed in this section. Report `review/R4_report.md`.
 Harness copies in `harness/` now point at runtime `uri-ember-rt2` (the only change).
