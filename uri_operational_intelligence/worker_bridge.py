@@ -75,6 +75,13 @@ PERF_SAMPLES = 48
 RESTART_GATE_S = 600.0
 # Brain host states in which no Brain runs or loads and the host only waits for the GPU (ws_brain_host.WAIT_STATES).
 HOST_WAIT_STATES = ("WAITING_FOR_GPU", "WAITING_FOR_LEASE", "RELEASE_WAIT")
+# The host loads or stops a Brain and reads only stop requests meanwhile: no profile switch is taken (R1-05).
+HOST_LOAD_STATES = ("STARTING_HOST", "STARTING", "LOADING", "CALIBRATING", "STOPPING")
+# Answer-channel context kept within the active profile's context (R1-03): tokens left for the system prompt, memory,
+# the answer and each image, and a conservative 3 characters per token for history and the current text.
+CONTEXT_RESERVE_TOKENS = 6144
+IMAGE_TOKENS = 1536
+CHARS_PER_TOKEN = 3
 DRAFT_OPS = ("undo", "redo", "restore", "discard")
 # A decision on the turn whose job is still finishing (the card is shown by an event the job emits before it records
 # the continuation) waits for that job instead of being refused (Codex WS round 1, F1).
@@ -310,7 +317,7 @@ class IntegratedTurns:
             if refusal is not None:
                 raise BridgeRefused(refusal)
         turn_id = str(uuid.uuid4())
-        history = list(self.history.get(session_id, ()))
+        history = self._fit_history(self.history.get(session_id, ()), text, images)
         # A transcript reaches the ordinary path with fillers removed; the raw transcript stays in the envelope.
         plain = TI.clean_transcript(text) if inp.is_transcript else text
         with self._lock:
@@ -326,6 +333,13 @@ class IntegratedTurns:
         if images is not None and (inp.mode in ("dictation", "draft") or schedule_intent.interpret(plain) is not None):
             # An image is a question for the answer channel only: never a draft, a Core continuation or a handoff.
             raise BridgeRefused("IMAGE_ACTION_UNSUPPORTED")
+        if images is not None and depth != "deep" and inp.mode != "command":
+            # R1-01: a request the draft desk would take as a text task (write, rewrite, correct) cannot carry the
+            # picture into a draft. Read-only check (no desk state changes); the image turn is refused, not answered
+            # in chat as if it were a question.
+            d = self.desk.active(session_id)
+            if TX.classify(plain, has_draft=d is not None and d.current is not None).is_text_task:
+                raise BridgeRefused("IMAGE_DRAFT_UNSUPPORTED")
         if continue_core and len(clarifications) != 1:
             # No arbitrary selection or bulk retirement of independent cards. Keep all records and let the
             # caller surface the ambiguous state; nothing reaches a model, Core continuation or decision.
@@ -441,6 +455,23 @@ class IntegratedTurns:
             if closing and env.get("state") == "approval_required":
                 # The worker is shutting down: nobody can decide this card. Release it as a denial now (CAP-1).
                 self._release(entry)
+
+    def _fit_history(self, history, text, images):
+        """The most recent history that fits the active profile's context with the current turn (R1-03). The stored
+        history is never changed; a smaller context only shows the Brain less of it."""
+        history = list(history)
+        ctx = int(self._active_cfg()["runtime"]["ctx"])
+        budget = (ctx - CONTEXT_RESERVE_TOKENS - IMAGE_TOKENS * len(images or ())) * CHARS_PER_TOKEN - len(text)
+        used, keep = 0, len(history)
+        for i in range(len(history) - 1, -1, -1):
+            used += len(history[i].get("content") or "")
+            if used > budget:
+                break
+            keep = i
+        out = history[keep:]
+        if out and out[0].get("role") == "assistant":
+            out = out[1:]                # never start the context with an answer to a question it does not show
+        return out
 
     def _record_history(self, session_id, user_text, answer_text):
         h = self.history.setdefault(session_id, [])
@@ -708,6 +739,8 @@ class IntegratedTurns:
             raise BridgeRefused("BRAIN_HOST_NOT_RUNNING")
         if self._restart_pending() and not self._host_took_request_and_waits(host):
             raise BridgeRefused("BRAIN_REQUEST_PENDING")
+        if (host or {}).get("state") in HOST_LOAD_STATES:
+            raise BridgeRefused("BRAIN_LOADING")       # R1-05: the host would not read the switch until the load ends
         akey = BP.key_of_described((host or {}).get("profile"))
         if akey is None:
             raise BridgeRefused("PROFILE_UNKNOWN")

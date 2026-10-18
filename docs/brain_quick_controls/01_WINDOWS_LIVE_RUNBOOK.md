@@ -98,7 +98,7 @@ name.
 | Step | What you do | What must happen |
 |---|---|---|
 | F1 📷 `f1-start.png` | Wait for the Brain to finish starting | The status says starting, then ready. Vision shows **On** only once the Brain is ready (never before). Context shows **32K**. |
-| F2 📷 `f2-menus.png` | Open the Thinking menu, then the Context menu | Thinking: Auto, Off, On, Deep, each with a one-line explanation. Context: only the sizes offered for Vision on (32K, 64K); 64K is marked "tight on GPU memory". |
+| F2 📷 `f2-menus.png` | Open the Thinking menu, then the Context menu | Thinking: Auto, Off, On, Deep, each with a one-line explanation. Context: only the sizes offered for Vision on (32K, 64K); 64K is marked "tight on GPU memory, about 300 MB spare". |
 
 ## 5. Journeys
 
@@ -142,6 +142,7 @@ Use any photo or screenshot (PNG, JPEG or WebP, any size; the app scales it down
 |---|---|---|
 | J4.1 📷 `j4-on.png` | With Vision on, attach the image with the composer's attach button and ask "What is in this picture?" | The image appears as a chip before you send. The answer describes the picture correctly. |
 | J4.2 | Attach the same image and ask "Save this picture to my documents" | Refused with a plain message that actions with pictures are not supported yet. The image is never silently dropped. |
+| J4.2b | Attach the image and ask "Write an email to Bob describing this picture" | Refused: URI cannot write a document from a picture yet, and says to ask about the picture first. No draft opens. |
 | J4.3 📷 `j4-off.png` | Turn Vision off, wait until ready, then try to attach an image | The app refuses the image and says Vision is off. |
 | J4.4 | Ask "What was in the picture I sent earlier?" | URI must not describe new details as if it could still see the picture. The history keeps only "[Attached image: name]", never the picture (it may repeat what it said in J4.1). |
 

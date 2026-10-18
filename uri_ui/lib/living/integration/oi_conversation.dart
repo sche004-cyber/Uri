@@ -57,6 +57,8 @@ String notSentMessage(String code, [List<String> images = const []]) {
           'start). Try again when the Brain status shows ready.',
       'IMAGE_ACTION_UNSUPPORTED' =>
         'Not sent: URI can answer questions about an image, but cannot act on one. Ask about the image instead.',
+      'IMAGE_DRAFT_UNSUPPORTED' => 'Not sent: URI cannot write or change a document from a picture yet. Ask about '
+          'the picture first, then ask for the document in a new message without the picture.',
       'IMAGE_DURING_CLARIFICATION' => 'Not sent: URI is waiting for your answer to its question, and that answer '
           'cannot carry a picture. Remove the picture, answer the question, then ask about the picture.',
       'IMAGES_TOO_LARGE' => 'Not sent: the images are too large. They were removed; attach one smaller image.',
@@ -875,6 +877,10 @@ class OiConversation extends ChangeNotifier {
 
   /// The Brain host's state (null without a live host).
   String? get brainHostState => profileState['host_state'] as String?;
+
+  /// The host loads or stops a Brain (also at its first start): it takes no switch meanwhile (R1-05).
+  bool get brainLoading => const {'STARTING_HOST', 'STARTING', 'LOADING', 'CALIBRATING', 'STOPPING'}
+      .contains(brainHostState);
 
   Future<void> refreshProfile() async {
     if (_disposed) return;

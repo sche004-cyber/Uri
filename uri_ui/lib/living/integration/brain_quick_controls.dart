@@ -39,8 +39,9 @@ class OiQuickControls extends StatelessWidget {
     final hasProfiles = options.isNotEmpty;
     final switching = conv.profileSwitching;
     // R1-01: while the host only waits for GPU memory nothing runs or loads, so the controls stay usable (a new
-    // choice replaces the waiting one). They lock only while the Brain stops or loads.
-    final locked = conv.busy || conv.restarting || (switching && !conv.profileWaiting) || active == null;
+    // choice replaces the waiting one). They lock only while the Brain stops or loads, also at the first start (R1-05).
+    final locked = conv.busy || conv.restarting || (switching && !conv.profileWaiting) || conv.brainLoading ||
+        active == null;
     final style = TextStyle(color: c.ink, fontSize: 12);
 
     Widget chip({required Key key, required IconData icon, required String label, String? tooltip,
@@ -141,8 +142,7 @@ class OiQuickControls extends StatelessWidget {
         for (final o in contexts)
           PopupMenuItem(
             value: (o['context'] as num).toInt(),
-            child: Text('${contextLabel((o['context'] as num).toInt())}'
-                '${o['tight'] == true ? ' · tight on GPU memory' : ''}'),
+            child: Text('${contextLabel((o['context'] as num).toInt())}${tightNote(o)}'),
           ),
       ],
       child: IgnorePointer(
@@ -267,6 +267,15 @@ Future<void> switchBrainProfile(BuildContext context, OiConversation conv,
   }
 }
 
+/// " · tight on GPU memory, about 300 MB spare" for a tight option (its measured margin, R1-04), else "".
+String tightNote(Map<String, dynamic> o) {
+  if (o['tight'] != true) return '';
+  final margin = (o['margin_mib'] as num?)?.toInt();
+  if (margin == null) return ' · tight on GPU memory';
+  if (margin <= 0) return ' · may not fit in GPU memory';
+  return ' · tight on GPU memory, about ${(margin / 50).round() * 50} MB spare';
+}
+
 /// "Vision on, 32K" (plus ", speed boost") for an offered option.
 String profileOptionLabel(Map<String, dynamic> o) => '${o['vision'] == true ? 'Vision on' : 'Vision off'}, '
     '${OiQuickControls.contextLabel((o['context'] as num).toInt())}${o['speed'] == true ? ', speed boost' : ''}';
@@ -339,6 +348,7 @@ Map<String, dynamic>? previousProfileOption(Map<String, dynamic> state, List<Map
 String profileRefusalText(String code) => switch (code) {
       'TURN_IN_PROGRESS' => 'Not switched: URI is still answering. Try again when it has finished.',
       'BRAIN_REQUEST_PENDING' => 'Not switched: the Brain is already reloading.',
+      'BRAIN_LOADING' => 'Not switched: the Brain is still starting or stopping. Try again when it is ready.',
       'BRAIN_HOST_NOT_RUNNING' => 'Not switched: the Brain host is not running. Restart URI.',
       'CONTEXT_SMALLER_THAN_CONVERSATION' => 'Not switched: the conversation is longer than that context.',
       'PROFILE_NOT_OFFERED' || 'SPEED_NEEDS_VISION_OFF' => 'Not switched: that combination does not fit the GPU.',

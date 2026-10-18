@@ -59,13 +59,18 @@ Measured device requests used by this milestone (MiB; R1 `MEASURED_MIB`, checked
   against it. An unknown or unmeasured profile in the report is UNAVAILABLE, never accepted.
 - **Session state.** The worker keeps the conversation history, pending cards and drafts across the switch; the UI
   keeps its message list. Image turns are recorded in history as text placeholders, so a later switch to Vision Off
-  never needs media tokens. A switch is refused while a turn runs or a Brain request is pending.
+  never needs media tokens. A switch is refused while a turn runs, a Brain request is pending, or the host loads or
+  stops a Brain (`BRAIN_LOADING`, also at its first start; re-review r2 R1-05). After a context shrink the worker
+  sends the Brain only the most recent history that fits the active context with the current turn (reserve for the
+  system prompt, memory, the answer and each image); the stored history is never cut (r2 R1-03).
 - **Vision on turns.** `oi_turn` gains an optional `images` list (PNG / JPEG / WebP, at most 2 images and 1.25 MiB
   of decoded image bytes per turn, decoded and type-checked; sized so the base64 JSON stays below the frozen 2 MiB
   worker frame limit `uri_core.client_contracts.FRAME_LIMIT`; the UI scales larger pictures down before sending;
   review R5-03). The answer channel sends them as OpenAI `image_url` parts. Images with Vision
   off are refused `VISION_OFF` (the UI offers "Turn on Vision"); images on a turn that triage sends to Core, a plan
-  or a harness are refused `IMAGE_ACTION_UNSUPPORTED`. Nothing is dropped silently.
+  or a harness are refused `IMAGE_ACTION_UNSUPPORTED`; a request the draft desk takes as a text task (write,
+  rewrite, correct) is refused `IMAGE_DRAFT_UNSUPPORTED` (r2 R1-01); an image while URI waits for the answer to
+  its own question is refused `IMAGE_DURING_CLARIFICATION`. Nothing is dropped silently.
 - **Truthful readiness.** Health reports the active profile, the requested profile while a switch is pending,
   and vision from the live server's `/props` modalities (not the config). The UI refreshes Brain status when health
   changes, shows "Switching to ..." during a reconfigure, and never shows Vision On unless the live server reports it.

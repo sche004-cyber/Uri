@@ -156,8 +156,8 @@ class ProfileStatus:
             return key_of_described(rep.get("profile"))     # None = unknown profile: UNAVAILABLE
         return read_choice(self.choice_dir)[0]
 
-    def active_cfg(self):
-        key = self.active_key()
+    def active_cfg(self, key=False):
+        key = self.active_key() if key is False else key
         if key is None:
             return None
         try:
@@ -166,11 +166,12 @@ class ProfileStatus:
             return None
 
     def __call__(self):
-        cfg = self.active_cfg()
+        key = self.active_key()          # read once: the config and the manager cache follow the same profile (R1-02)
+        cfg = self.active_cfg(key)
         if cfg is None:
             return R.Readiness(R.IDENTITY_MISMATCH, R.base_url(self.frozen), model_id=self.frozen["model"]["id"],
                                detail="PROFILE_UNKNOWN")
-        pid = RP.profile_id(self.active_key())
+        pid = RP.profile_id(key)
         mgr = self._managers.get(pid)
         if mgr is None:
             mgr = self._managers[pid] = self._factory(cfg)

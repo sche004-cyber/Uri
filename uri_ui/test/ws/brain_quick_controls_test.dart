@@ -45,7 +45,7 @@ class _Runtime implements IntegratedRuntime {
 
   static const options = [
     {'id': 'c32k-visgpu-mtpoff', 'vision': true, 'context': 32768, 'speed': false, 'tight': false},
-    {'id': 'c64k-visgpu-mtpoff', 'vision': true, 'context': 65536, 'speed': false, 'tight': true},
+    {'id': 'c64k-visgpu-mtpoff', 'vision': true, 'context': 65536, 'speed': false, 'tight': true, 'margin_mib': 308},
     {'id': 'c16k-visoff-mtpoff', 'vision': false, 'context': 16384, 'speed': false, 'tight': false},
     {'id': 'c32k-visoff-mtpoff', 'vision': false, 'context': 32768, 'speed': false, 'tight': false},
     {'id': 'c64k-visoff-mtpoff', 'vision': false, 'context': 65536, 'speed': false, 'tight': false},
@@ -269,7 +269,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('oi-qc-context-menu')));
     await tester.pumpAndSettle();
     expect(find.text('32K'), findsOneWidget);
-    expect(find.text('64K · tight on GPU memory'), findsOneWidget);
+    expect(find.text('64K · tight on GPU memory, about 300 MB spare'), findsOneWidget);   // R1-04: measured margin
     expect(find.text('128K'), findsNothing);
     expect(find.text('16K'), findsNothing);
   });
@@ -404,6 +404,28 @@ void main() {
     final text = notSentMessage('IMAGE_DURING_CLARIFICATION', ['a.png']);
     expect(text, contains('waiting for your answer'));
     expect(text, isNot(contains('Ask about the image instead')));
+  });
+
+  test('R1-04: a tight option names its measured margin', () {
+    expect(tightNote({'tight': false, 'margin_mib': 2000}), '');
+    expect(tightNote({'tight': true, 'margin_mib': 308}), ' · tight on GPU memory, about 300 MB spare');
+    expect(tightNote({'tight': true, 'margin_mib': -40}), ' · may not fit in GPU memory');
+    expect(tightNote({'tight': true}), ' · tight on GPU memory');
+  });
+
+  testWidgets('R1-05: Vision and Context are locked while the Brain loads at its first start', (tester) async {
+    final rt = _Runtime()
+      ..visionLive = false
+      ..extra = {'host_state': 'STARTING'};
+    final conv = await tester.runAsync(() => _ready(rt));
+    await tester.pumpWidget(_bar(conv!));
+    expect(conv.brainLoading, isTrue);
+    expect(tester.widget<PopupMenuButton<int>>(find.byKey(const ValueKey('oi-qc-context-menu'))).enabled, isFalse);
+    await tester.tap(find.byKey(const ValueKey('oi-qc-vision')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('oi-qc-confirm')), findsNothing);
+    expect(profileRefusalText('BRAIN_LOADING'), contains('still starting'));
+    expect(notSentMessage('IMAGE_DRAFT_UNSUPPORTED', ['a.png']), contains('cannot write or change a document'));
   });
 
   test('without quick-controls support the bar keeps only Thinking', () async {

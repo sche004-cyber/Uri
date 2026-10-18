@@ -13,6 +13,7 @@ from uri_operational_intelligence import brain_profile as BP
 from uri_operational_intelligence import images as IMG
 from uri_operational_intelligence import runtime_profiles as RP
 from uri_operational_intelligence import runtime_v1 as R
+from uri_operational_intelligence import worker_bridge as IW
 from uri_operational_intelligence.orchestrator import Orchestrator
 from uri_operational_intelligence.runtime_v1 import Readiness
 from uri_operational_intelligence.task_ledger import TaskLedger
@@ -196,6 +197,21 @@ def test_without_a_live_host_readiness_uses_the_persisted_choice(tmp_path):
     assert st().detail == "c16k-visoff-mtpon"
 
 
+def test_readiness_reads_the_host_profile_once_per_call(tmp_path):
+    """R1-02: the config and the manager cache come from one read; a report change between reads cannot cache the
+    wrong config under the new profile, and an unknown profile is PROFILE_UNKNOWN, never an exception."""
+    reps = iter([RP.describe(BP.config_for(frozen(), k)) for k in ((32768, "gpu", False), (65536, "off", False))]
+                + [{"id": "x", "ctx": 99, "vision": "gpu", "mtp": False}])
+    built = []
+    st = BP.ProfileStatus(frozen(), tmp_path, host_report=lambda: ({"profile": next(reps)}, True), choice_dir=tmp_path,
+                          manager_factory=lambda cfg: built.append(cfg) or FakeMgr(cfg, {"vision": True}))
+    assert st().detail == "c32k-visgpu-mtpoff"
+    assert [c["runtime"]["ctx"] for c in built] == [32768]
+    r = st()
+    assert r.detail == "VISION_UNEXPECTED" and [c["runtime"]["ctx"] for c in built] == [32768, 65536]
+    assert st().detail == "PROFILE_UNKNOWN"
+
+
 def test_frozen_profile_argv_is_unchanged_by_this_milestone():
     cfg = frozen()
     assert BP.config_for(cfg, RP.FROZEN_KEY) is cfg
@@ -312,6 +328,43 @@ def test_brain_restart_never_carries_a_reconfigure(fake, tmp_path):
     with pytest.raises(BridgeRefused) as e:
         b.handle("brain_restart", {"command": "brain_restart", "action": "reconfigure"})
     assert e.value.code == "ACTION_INVALID" and requests == []
+
+
+def test_image_with_a_draft_request_is_refused_not_answered_in_chat(fake, tmp_path):
+    """R1-01: a request the draft desk takes as a text task cannot carry the picture into a draft."""
+    b, _, _, _ = _bridge(fake, tmp_path)
+    img = [{"name": "a.png", "mime": "image/png", "data": b64(PNG)}]
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "Write an email to Bob describing this "
+                             "picture", "depth": "auto", "images": img})
+    assert e.value.code == "IMAGE_DRAFT_UNSUPPORTED" and fake.requests == [] and not b.desk.drafts
+
+
+def test_history_is_fitted_to_the_active_context(fake, tmp_path):
+    """R1-03: after a shrink the Brain sees only the most recent part that fits; the stored history is unchanged."""
+    b, _, _, _ = _bridge(fake, tmp_path)
+    b.cfg = dict(b.cfg, runtime=dict(b.cfg["runtime"], ctx=16384))
+    turn = "y" * 9000
+    b.history[SID] = [{"role": r, "content": "%d %s" % (i, turn)} for i, r in enumerate(["user", "assistant"] * 6)]
+    fitted = b._fit_history(b.history[SID], "next question", None)
+    budget = (16384 - IW.CONTEXT_RESERVE_TOKENS) * IW.CHARS_PER_TOKEN
+    assert fitted == b.history[SID][-len(fitted):] and fitted[0]["role"] == "user"
+    assert 0 < sum(len(m["content"]) for m in fitted) <= budget < sum(len(m["content"]) for m in b.history[SID])
+    assert len(b.history[SID]) == 12
+    with_images = b._fit_history(b.history[SID], "next question", (1, 2))
+    assert len(with_images) <= len(fitted)
+    b.cfg = dict(b.cfg, runtime=dict(b.cfg["runtime"], ctx=131072))
+    assert b._fit_history(b.history[SID], "q", None) == b.history[SID]
+
+
+def test_no_switch_while_the_host_loads_or_stops(fake, tmp_path):
+    """R1-05: the host reads only stop requests while it loads; a switch would wait unread and go stale."""
+    for state in ("STARTING_HOST", "STARTING", "CALIBRATING", "STOPPING"):
+        b, _, requests, host = _bridge(fake, tmp_path, host={"rep": _live((32768, "gpu", False), state=state)})
+        with pytest.raises(BridgeRefused) as e:
+            b.handle("brain_profile_set", {"command": "brain_profile_set", "vision": False, "context": 65536,
+                                           "speed": False})
+        assert e.value.code == "BRAIN_LOADING" and requests == [], state
 
 
 # ---- profile set via the bridge ------------------------------------------------------------------------------------
