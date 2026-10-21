@@ -4,7 +4,8 @@ Each POST /v1/chat/completions pops the next script from `server.scripts` (or us
 A script is a dict:
   {"chunks": [("answer"|"reasoning", text), ...], "finish": "stop"|"length"|None, "delay": s_between_chunks,
    "first_delay": s_before_first_chunk, "status": http_status, "raw": bytes_to_send_instead,
-   "drop_after": n_chunks_then_close_socket, "json": non_stream_content_string}
+   "drop_after": n_chunks_then_close_socket, "json": non_stream_content_string,
+   "error": message_of_a_non_200_reply, "timings": extra_timings_of_the_final_chunk}
 The server records every request body and whether the client disconnected mid-stream.
 """
 from __future__ import annotations
@@ -59,7 +60,7 @@ class _Handler(BaseHTTPRequestHandler):
         if body.get("stream") and "json" in script:
             script = dict(script, chunks=[("answer", script["json"])], finish=script.get("finish", "stop"))
         if script.get("status", 200) != 200:
-            self._json(script["status"], {"error": {"message": "fake failure"}})
+            self._json(script["status"], {"error": {"message": script.get("error", "fake failure")}})
             return
         if not body.get("stream"):
             content = script.get("json")
@@ -97,7 +98,8 @@ class _Handler(BaseHTTPRequestHandler):
             if script.get("finish") is not None:
                 send({"choices": [{"delta": {}, "finish_reason": script["finish"]}],
                       "timings": {"prompt_n": 12, "predicted_n": len(script.get("chunks", [])),
-                                  "predicted_per_second": 100.0}, "usage": {"completion_tokens": 3}})
+                                  "predicted_per_second": 100.0, **script.get("timings", {})},
+                      "usage": {"completion_tokens": 3}})
                 send(b"data: [DONE]\n\n")
             self.wfile.write(b"0\r\n\r\n")
             self.wfile.flush()

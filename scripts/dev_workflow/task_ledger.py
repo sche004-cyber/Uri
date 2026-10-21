@@ -923,16 +923,16 @@ class Ledger:
             store = self.dir / "reviews" / task_id
             red, nred = redact(raw.decode("utf-8", errors="replace"))
             atomic_write(store / f"{rid}.txt", red.encode("utf-8"))
+            prov = provenance or f"{kind.upper()}_FALLBACK"
             ev = self._append(task_id, "REVIEW_RECORDED", actor, {
                 "review": rid, "commit": sha, "verdict": verdict, "problem": problem, "independent": independent,
                 "independence_basis": ("reviewer differs from every implementer actor; verdict recomputed from the "
                                        "reviewer's output; exact commit named") if independent else
                 ("reviewer is an implementer" if actor in implementers else f"unusable result: {problem}"),
                 "raw_sha256": sha256(raw), "stored": str(store / f"{rid}.txt"), "redactions": nred,
-                "mechanism": mechanism, "blocking": [f.get("id") for f in blocking]})
+                "mechanism": mechanism, "provenance": prov, "blocking": [f.get("id") for f in blocking]})
             self.db.execute("INSERT INTO reviews VALUES(?,?,?,?,?,?,?,?,?)",
-                            (task_id, rid, sha, actor, provenance or f"{kind.upper()}_REVIEW", verdict,
-                             int(independent), sha256(raw), ev["seq"]))
+                            (task_id, rid, sha, actor, prov, verdict, int(independent), sha256(raw), ev["seq"]))
             if verdict is not None:
                 for f in result.get("findings") or []:
                     self._add_finding(task_id, actor, f, rid, sha)
@@ -953,25 +953,72 @@ class Ledger:
                     "blocking": [f.get("id") for f in blocking]}
 
     def accept(self, task_id: str, actor: str) -> dict:
+        """Review paths (owner clarification 2026-10-21): the Lifecycle V3 driver's independent review is primary.
+        A review recorded here (subagent, session, a CLI run outside the driver) is a FALLBACK and counts only when a
+        linked V3 run's hash chain shows the driver could not obtain an independent reviewer for this exact commit
+        (blocker NO_INDEPENDENT_REVIEWER). A driver verdict on the commit is never overridden by a fallback one."""
+        if self.db.execute("SELECT 1 FROM v3_links WHERE task_id=?", (task_id,)).fetchone():
+            self.sync_v3(task_id)                  # read the driver's latest verdicts before deciding
         with self.tx():
             t = self._task(task_id)
             self._guard_dev(t, actor, "accept")
             why = self._acceptance_problems(t)
             if why:
                 raise Refused("NOT ACCEPTED: " + "; ".join(why))
-            rev = self._accepting_review(t)
+            rev, path, basis = self._accepting_review(t)
             return self._append(task_id, "ACCEPTED", actor, {"commit": t["head_commit"], "review": rev["review_id"],
                                                              "reviewer": rev["reviewer"],
                                                              "provenance": rev["provenance"],
-                                                             "verdict": rev["verdict"]},
+                                                             "verdict": rev["verdict"], "review_path": path,
+                                                             "fallback_basis": basis},
                                 status="ACCEPTED", accepted_commit=t["head_commit"])
 
     def _accepting_review(self, t):
-        """The latest review of the current head; it must be an independent ACCEPT (a later REJECT wins)."""
-        rows = self.db.execute("SELECT * FROM reviews WHERE task_id=? AND commit_sha=? ORDER BY seq DESC",
-                               (t["task_id"], t["head_commit"] or "")).fetchall()
-        usable = [r for r in rows if r["verdict"] is not None]
-        return usable[0] if usable else None
+        """(review row, path, fallback basis) deciding acceptance of the current head, or (None, why, None).
+        Primary: the latest DRIVER_VERIFIED verdict on the head. Fallback: the latest independent non-driver review,
+        only with a fallback basis. Unverified V3 rounds never count."""
+        rows = [r for r in self.db.execute("SELECT * FROM reviews WHERE task_id=? AND commit_sha=? ORDER BY seq DESC",
+                                           (t["task_id"], t["head_commit"] or "")) if r["verdict"] is not None]
+        primary = [r for r in rows if r["provenance"] == "DRIVER_VERIFIED"]
+        if primary:
+            return primary[0], "PRIMARY_V3", None
+        fallback = [r for r in rows if r["provenance"] not in ("DRIVER_VERIFIED", "V3_UNVERIFIED")]
+        if not fallback:
+            return None, "no review of the exact head commit", None
+        basis = self._fallback_basis(t)
+        if basis is None:
+            return None, ("a fallback review counts only when the Lifecycle V3 driver could not obtain an independent "
+                          "reviewer for this exact commit: link its V3 run (blocked NO_INDEPENDENT_REVIEWER on this "
+                          "commit) or obtain the driver's review"), None
+        return fallback[0], "FALLBACK", basis
+
+    def _fallback_basis(self, t) -> dict | None:
+        """Evidence from a linked V3 run's intact hash chain that its reviewer chain is exhausted for this exact
+        commit: the current blocker (as the chain records it, like lifecycle.chained_blocker) is
+        NO_INDEPENDENT_REVIEWER and the run's current candidate is the task head."""
+        for link in self.db.execute("SELECT state_dir FROM v3_links WHERE task_id=? ORDER BY state_dir",
+                                    (t["task_id"],)).fetchall():
+            sd = Path(link["state_dir"])
+            if not (sd / "events.jsonl").is_file():
+                continue
+            evs, broken = self._v3_chain(sd)
+            if broken:
+                continue
+            blocker, blocker_ev, cand = None, None, None
+            for ev in evs:
+                d, k = ev["data"], ev["kind"]
+                if d.get("candidate"):
+                    cand = d["candidate"]
+                if k.startswith("REPAIR") and d.get("commit"):
+                    cand = d["commit"]
+                if k == "STAGE" and d.get("stage") == "BLOCKED":
+                    blocker, blocker_ev = d.get("blocker"), ev
+                elif k in ("OWNER_UNBLOCK", "REVIEWER_RECHECK") or (k == "STAGE" and d.get("stage") != "BLOCKED"):
+                    blocker, blocker_ev = None, None
+            if (blocker or {}).get("kind") == "NO_INDEPENDENT_REVIEWER" and cand == t["head_commit"]:
+                return {"v3_state_dir": str(sd), "v3_event_seq": blocker_ev["seq"], "v3_event_hash": blocker_ev["hash"],
+                        "reason": blocker.get("reason")}
+        return None
 
     def _acceptance_problems(self, t) -> list[str]:
         why = []
@@ -979,9 +1026,9 @@ class Ledger:
             why.append(f"status is {t['status']}, not IN_REVIEW")
         if not t["head_commit"]:
             why.append("no head commit recorded")
-        rev = self._accepting_review(t)
+        rev, path, _ = self._accepting_review(t)
         if rev is None:
-            why.append("no review of the exact head commit")
+            why.append(path)
         else:
             if rev["verdict"] not in VERDICTS[:2]:
                 why.append(f"latest review {rev['review_id']} of the head is {rev['verdict']}")
@@ -993,6 +1040,9 @@ class Ledger:
                             (t["task_id"],)).fetchone()["c"]
         if n:
             why.append(f"{n} open blocking finding(s)")
+        if t["head_commit"] and t["last_verified_commit"] != t["head_commit"]:
+            # Regression gates: a passing test result (with its log) on the exact commit, whatever the review path.
+            why.append("no passing test result recorded on the exact head commit")
         if self._open_steps(t["task_id"]):
             why.append("open steps")
         drift = self._drift(t)

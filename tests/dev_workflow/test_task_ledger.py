@@ -73,6 +73,24 @@ def review_file(tmp_path, commit, verdict="ACCEPT", findings=(), prior=(), name=
     return f
 
 
+def v3_blocked(tmp_path, commit, kind="NO_INDEPENDENT_REVIEWER", name="RUN"):
+    """A V3 run (real V3 State/event code) whose reviewer chain is exhausted on ``commit``."""
+    sd = tmp_path / "v3" / name / "state"
+    st = State({"state_dir": str(sd), "milestone": name})
+    if not (sd / "events.jsonl").is_file():
+        st.event("PLAN", baseline="b" * 40, candidate=commit)
+    st.event("REVIEW_STARTED", round=1, candidate=commit, provider="codex_cli", reviewer_index=0)
+    st.event("STAGE", stage="BLOCKED", frm="AUDITING", reason=kind,
+             blocker={"kind": kind, "reason": "codex_cli: QUOTA; claude_cli: AUTH", "needs": "none"})
+    st.d["stage"] = "BLOCKED"
+    st.save()
+    return sd
+
+
+def fallback_ready(lg, tid, tmp_path, commit, name="RUN"):
+    lg.link_v3(tid, DEV, str(v3_blocked(tmp_path, commit, name=name)))
+
+
 def ready_for_review(lg, repo, tid):
     lg.transition(tid, "IN_PROGRESS", DEV)
     head = _commit(repo, "b.txt", b"feature\n")
@@ -399,8 +417,12 @@ def test_ac8_subagent_accept_on_exact_head(lg, repo, tmp_path):
     head = ready_for_review(lg, repo, tid)
     r = lg.record_review(tid, REV, head, str(review_file(tmp_path, head)), mechanism="fresh read-only subagent")
     assert r["verdict"] == "ACCEPT" and r["independent"]
+    with pytest.raises(tl.Refused, match="fallback review counts only"):
+        lg.accept(tid, DEV)                            # primary V3 path not shown to be unavailable
+    fallback_ready(lg, tid, tmp_path, head)
     ev = lg.accept(tid, DEV)
     assert ev["data"]["reviewer"] == REV and lg.get(tid)["accepted_commit"] == head
+    assert ev["data"]["review_path"] == "FALLBACK" and ev["data"]["fallback_basis"]["v3_event_hash"]
     new = _commit(repo, "after.txt", b"more\n")
     lg.set_head(tid, DEV, new)                         # new code -> acceptance invalidated
     t = lg.get(tid)
@@ -412,6 +434,7 @@ def test_ac8_subagent_accept_on_exact_head(lg, repo, tmp_path):
 def test_ac8_refusals(lg, repo, tmp_path):
     tid = lg.create("ref", "o", DEV, worktree=str(repo))
     head = ready_for_review(lg, repo, tid)
+    fallback_ready(lg, tid, tmp_path, head)
     # implementer reviewing own work
     lg.set_head(tid, "codex:impl2", head)
     r = lg.record_review(tid, "codex:impl2", head, str(review_file(tmp_path, head, name="own.txt")))
@@ -431,11 +454,19 @@ def test_ac8_refusals(lg, repo, tmp_path):
     fix = _commit(repo, "fix.txt", b"fix\n")
     lg.set_head(tid, DEV, fix)
     lg.transition(tid, "IN_REVIEW", DEV)
+    v3_blocked(tmp_path, fix)                          # the driver's chain is exhausted on the repair too
+    log = tmp_path / "fix_tests.log"
+    log.write_text("2 passed", encoding="utf-8")
     r = lg.record_review(tid, REV, fix, str(review_file(tmp_path, fix, "ACCEPT", name="ok.txt")))
     with pytest.raises(tl.Refused, match="open blocking"):
         lg.accept(tid, DEV)                            # reviewer did not confirm R2-01, developer did not close it
     lg.record_review(tid, "subagent:reviewer-2", fix, str(review_file(
         tmp_path, fix, "ACCEPT", prior=[{"id": "R2-01", "status": "FIXED"}], name="ok2.txt")))
+    with pytest.raises(tl.Refused, match="no passing test"):
+        lg.accept(tid, DEV)                            # gates: the repair itself was never tested
+    with pytest.raises(tl.Refused, match="does not exist"):
+        lg.record_test(tid, DEV, fix, True, "claimed", str(tmp_path / "missing.log"))
+    lg.record_test(tid, DEV, fix, True, "2 passed", str(log))
     lg.accept(tid, DEV)
     assert lg.get(tid)["status"] == "ACCEPTED"
     with pytest.raises(tl.Refused):
@@ -446,6 +477,7 @@ def test_ac8_refusals(lg, repo, tmp_path):
 def test_ac8_integrated_needs_ancestry_and_receipt(lg, repo, tmp_path):
     tid = lg.create("int", "o", DEV, worktree=str(repo))
     head = ready_for_review(lg, repo, tid)
+    fallback_ready(lg, tid, tmp_path, head)
     lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
     lg.accept(tid, DEV)
     receipt = tmp_path / "RECEIPT.md"
@@ -498,8 +530,10 @@ def test_ac7_v3_import_verified_and_unchanged(lg, repo, tmp_path):
     lg.db.execute("UPDATE tasks SET worktree=? WHERE task_id=?", (str(repo), tid))
     lg.transition(tid, "IN_PROGRESS", DEV)
     lg.set_head(tid, DEV, head)
+    lg.record_test(tid, DEV, head, True, "suite passed")
     lg.transition(tid, "IN_REVIEW", DEV)
-    assert lg.accept(tid, DEV)["data"]["provenance"] == "DRIVER_VERIFIED"
+    ev = lg.accept(tid, DEV)
+    assert ev["data"]["provenance"] == "DRIVER_VERIFIED" and ev["data"]["review_path"] == "PRIMARY_V3"
     assert lg.verify() == []
 
 
@@ -605,3 +639,43 @@ def test_ac12_bench_runs_without_gpu():
     b = tl.bench(60)
     assert b["gpu"] == "none used" and b["packet_cache"] == ["MISS", "HIT"]
     assert b["ledger_append_ms_per_event"] > 0 and b["v3_append_ms_per_event"] > 0
+
+
+# ------------------------------------------------------------------ review paths (owner clarification 2026-10-21)
+
+def test_fallback_needs_exhausted_chain_on_the_exact_commit(lg, repo, tmp_path):
+    tid = lg.create("fb", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    lg.link_v3(tid, DEV, str(v3_blocked(tmp_path, head, kind="NO_REVIEWER", name="A")))   # bad results: owner
+    with pytest.raises(tl.Refused, match="fallback review counts only"):
+        lg.accept(tid, DEV)
+    lg.link_v3(tid, DEV, str(v3_blocked(tmp_path, "e" * 40, name="B")))                    # other commit
+    with pytest.raises(tl.Refused, match="fallback review counts only"):
+        lg.accept(tid, DEV)
+    sd = v3_blocked(tmp_path, head, name="C")
+    State({"state_dir": str(sd), "milestone": "C"}).event("REVIEWER_RECHECK", note="codex available again")
+    lg.link_v3(tid, DEV, str(sd))
+    with pytest.raises(tl.Refused, match="fallback review counts only"):
+        lg.accept(tid, DEV)
+    lg.link_v3(tid, DEV, str(v3_blocked(tmp_path, head, name="D")))
+    assert Path(lg.accept(tid, DEV)["data"]["fallback_basis"]["v3_state_dir"]).parent.name == "D"
+
+
+def test_driver_verdict_is_never_overridden_by_a_fallback(lg, repo, tmp_path):
+    tid = lg.create("ov", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    sd = tmp_path / "lc" / "OV" / "state"
+    st = State({"state_dir": str(sd), "milestone": "OV"})
+    st.event("PLAN", baseline="b" * 40, candidate=head)
+    rec = {"round": 1, "candidate": head, "independent": True, "effective_verdict": "REJECT",
+           "status": "COMPLETED_WITH_RESULT"}
+    h = write_json(sd / "rounds" / "R1" / "round.json", rec)
+    st.event("REVIEW_RECORDED", round=1, candidate=head, independent=True, imported=False,
+             status="COMPLETED_WITH_RESULT", verdict="REJECT", round_sha256=h, stdout_sha256="",
+             worker={"provider": "codex_cli"})
+    st.event("STAGE", stage="BLOCKED", blocker={"kind": "NO_INDEPENDENT_REVIEWER", "reason": "later quota"})
+    lg.link_v3(tid, DEV, str(sd))
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))   # a fallback ACCEPT after the REJECT
+    with pytest.raises(tl.Refused, match="latest review"):
+        lg.accept(tid, DEV)

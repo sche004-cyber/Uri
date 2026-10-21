@@ -1,0 +1,314 @@
+"""Context continuity beyond the Brain window (Lifecycle V3.1 amendment): CC-1..CC-10 of
+docs/dev_workflow/LIFECYCLE_V3_1_PLAN_AND_ACCEPTANCE.md section 5."""
+import json
+import math
+import time
+import tracemalloc
+
+import pytest
+
+from uri_operational_intelligence import answer as A
+from uri_operational_intelligence import context_continuity as CC
+from uri_operational_intelligence import worker_bridge as WB
+from tests.oi.test_oi_orchestrator import FakeCore
+from tests.ws.test_ws_worker_bridge import CFG, SID, Frames, fake, make  # noqa: F401
+
+SYSTEM = [{"role": "system", "content": A.URI_SYSTEM}]
+N_CTX = 32768
+RESERVE = 4000                 # NORMAL tier max_tokens
+WORST = 0.93                   # lowest estimate/actual measured with llama-tokenize (hex ids, base64): the
+                               # simulated tokenizer is that much denser than the estimator for ALL content
+
+PINS = {3: "From now on always answer with metric units only.",
+        57: "I decided the project budget is 4200 euros, do not exceed it.",
+        151: "Approved: ship the release on Friday 30 October.",
+        260: "Never mention the codename to external contacts."}
+FACT_TURN, FACT = 31, "The server room door code word is BLUEFALCON-7."
+
+
+def true_tokens(messages):
+    return sum(math.ceil(CC.base_tokens(m["content"]) / WORST) + CC.MSG_OVERHEAD_TOKENS for m in messages)
+
+
+# Real Runtime v1 tokenizer counts (llama-tokenize b11425, Qwen3.6-35B-A3B-UD-IQ3_S.gguf, vocab only, 2026-10-21).
+MEASURED = {
+    "numbers_ids": (" ".join(f"{i:08x}-{i * 7919}" for i in range(800)), 13346),
+    "test_filler": ("turn12 discussion of topic12 with details about measurements and plans number 12. " * 30, 571),
+    "url_log": ("\n".join(f"2026-10-21T12:{i % 60:02d}:{(i * 7) % 60:02d}Z GET https://example.invalid/api/v1/items/"
+                          f"{i * 977} 200 {i % 13}ms" for i in range(150)), 6514),
+    "markdown_table": ("\n".join(f"| R{i}-01 | HIGH | lifecycle.py:{i * 13} | fix the review gate ordering |"
+                                 for i in range(150)), 3703),
+    "chinese": ("这是一个关于本地助手的长对话测试，用来测量分词器的字符与令牌比例。" * 40, 760),
+}
+
+
+@pytest.mark.parametrize("name", sorted(MEASURED))
+def test_cc1_estimate_never_below_the_real_tokenizer(name, tmp_path):
+    text, actual = MEASURED[name]
+    mgr = CC.ContextManager(CC.TranscriptStore(tmp_path / "t.sqlite3"), N_CTX)
+    assert mgr.tokens(text) - CC.MSG_OVERHEAD_TOKENS >= actual
+    assert CC.base_tokens(text) >= WORST * actual
+
+
+def filler(i, n=1600):
+    words = f"turn{i} discussion of topic{i % 23} with details about measurements and plans number {i}. "
+    return (words * (n // len(words) + 1))[:n]
+
+
+def drive(mgr, store, session, turns, *, measure=True, user_chars=1600, answer_chars=1400):
+    """Simulate a conversation: write-ahead user turn, compose, 'send', feed measured usage back, record answer."""
+    cumulative, reports, worst = 0, [], 0.0
+    for i in range(1, turns + 1):
+        user = PINS.get(i) or (FACT if i == FACT_TURN else filler(i, user_chars))
+        n = store.begin(session, user)
+        hist = CC.ComposedHistory(mgr, session)
+        msgs = SYSTEM + hist.compose(fixed_messages=SYSTEM + [{"role": "user", "content": user}],
+                                     reserve_tokens=RESERVE, query=user) + [{"role": "user", "content": user}]
+        real = true_tokens(msgs)
+        worst = max(worst, (real + RESERVE) / N_CTX)
+        assert real + RESERVE <= N_CTX, f"turn {i}: real prompt {real} + reserve exceeds the window"
+        answer = f"Answer {i}: " + filler(i + 1000, answer_chars)
+        ans_tokens = math.ceil(CC.base_tokens(answer) / WORST)
+        if measure:
+            mgr.observe(session, {"prompt_n": real, "cache_n": 0, "predicted_n": ans_tokens})
+        cumulative += real + ans_tokens
+        store.finish(session, n, answer)
+        reports.append(hist.report)
+    return cumulative, reports, worst, msgs
+
+
+@pytest.fixture
+def store(tmp_path):
+    s = CC.TranscriptStore(tmp_path / "transcript.sqlite3")
+    yield s
+    s.close()
+
+
+# CC-1 CC-2 CC-3 CC-7: monitoring, checkpoint before exhaustion, compaction keeps pins, repeated rollover past 128K
+def test_cc1_long_conversation_beyond_128k_never_overflows_and_keeps_pins(store):
+    mgr = CC.ContextManager(store, N_CTX)
+    cumulative, reports, worst, last = drive(mgr, store, SID, 300)
+    assert cumulative > 4 * 128 * 1024 // 2 and cumulative > 128 * 1024          # well past 32K, 64K and 128K
+    rollovers = [r for r in reports if r["rollover"]]
+    assert len(rollovers) >= 3                                                   # repeated rollover
+    assert len(store.checkpoints(SID)) == len(rollovers)                         # each one checkpointed first
+    assert len(rollovers) < 300 / 5                                              # hysteresis: rare prefix changes
+    text = "\n".join(m["content"] for m in last)
+    for pin in PINS.values():
+        assert pin in text, pin                                                  # instructions/decisions/approvals
+    final = reports[-1]
+    assert final["status"] == "COMPACTED" and final["pinned_omitted"] == 0
+    assert final["digest_lines"] + final["digest_omitted"] + final["pinned_verbatim"] + final["pinned_excerpt"] + \
+        final["pinned_indexed"] == len([t for t in store.turns(SID) if t["n"] <= final["compacted_through"]])
+    assert mgr.token_factor > 1.0                                                # calibrated on measured usage
+    assert worst > 0.5                                                           # the window is really used
+
+
+def test_cc1_without_measurements_the_estimate_alone_stays_safe(store):
+    """With no server feedback at all (first turns, or no timings) the fitted estimate alone keeps every prompt
+    inside the window, also when every turn is dense id/number content."""
+    drive(CC.ContextManager(store, N_CTX), store, SID, 120, measure=False)
+
+
+def test_cc1_dense_content_turns_stay_inside_the_window(store):
+    mgr = CC.ContextManager(store, N_CTX)
+    dense = MEASURED["numbers_ids"][0][:3000]
+    for i in range(60):
+        n = store.begin(SID, f"log {i}: " + dense)
+        h = CC.ComposedHistory(mgr, SID)
+        msgs = SYSTEM + h.compose(fixed_messages=SYSTEM + [{"role": "user", "content": dense}],
+                                  reserve_tokens=RESERVE) + [{"role": "user", "content": dense}]
+        assert true_tokens(msgs) + RESERVE <= N_CTX
+        store.finish(SID, n, "noted")
+
+
+# CC-4: original evidence persists and is retrieved when relevant
+def test_cc4_compacted_fact_is_retrieved_for_a_related_question(store):
+    mgr = CC.ContextManager(store, N_CTX)
+    drive(mgr, store, SID, 200)
+    hist = CC.ComposedHistory(mgr, SID)
+    q = "What was the server room door code word?"
+    msgs = hist.compose(fixed_messages=SYSTEM + [{"role": "user", "content": q}], reserve_tokens=RESERVE, query=q)
+    assert 2 * FACT_TURN - 1 in hist.report["retrieved"]      # message n of user turn i is 2i-1
+    assert any(FACT in m["content"] and m["content"].startswith("RELEVANT_EARLIER_TURNS") for m in msgs)
+    assert store.turns(SID)[2 * FACT_TURN - 2]["content"] == FACT                    # original kept verbatim
+
+
+# CC-5 (no reload) and prompt-cache friendliness: the prefix only changes at a rollover
+def test_cc5_prefix_stable_between_rollovers(store):
+    mgr = CC.ContextManager(store, N_CTX)
+    drive(mgr, store, SID, 80)
+    prev = None
+    stable = changed = 0
+    for i in range(40):
+        user = filler(5000 + i)
+        n = store.begin(SID, user)
+        h = CC.ComposedHistory(mgr, SID)
+        msgs = h.compose(fixed_messages=SYSTEM + [{"role": "user", "content": user}], reserve_tokens=RESERVE)
+        block = msgs[0]["content"] if msgs and msgs[0]["content"].startswith("EARLIER_CONVERSATION") else None
+        if prev is not None:
+            if h.report["rollover"]:
+                changed += 1
+            else:
+                assert block == prev                                             # byte-identical compacted prefix
+                stable += 1
+        prev = block
+        store.finish(SID, n, "ok " + filler(i, 1200))
+    assert stable > changed
+
+
+# CC-6 Vision budget
+def test_cc6_images_are_budgeted(store):
+    mgr = CC.ContextManager(store, N_CTX)
+    drive(mgr, store, SID, 10)
+    h = CC.ComposedHistory(mgr, SID)
+    h.compose(fixed_messages=SYSTEM, reserve_tokens=RESERVE)
+    no_img = h.report["free_tokens"]
+    h.compose(fixed_messages=SYSTEM, reserve_tokens=RESERVE, images=2)
+    assert no_img - h.report["free_tokens"] == 2 * CC.IMAGE_TOKENS
+    parts = [{"type": "text", "text": "what is in this picture"}, {"type": "image_url", "image_url": {"url": "x"}}]
+    assert mgr.messages_tokens([{"role": "user", "content": parts}]) >= CC.IMAGE_TOKENS
+
+
+def test_cc6_turn_that_cannot_fit_is_reported_not_sent_silently(store):
+    mgr = CC.ContextManager(store, 8192)
+    big = "x" * 40000
+    h = CC.ComposedHistory(mgr, SID)
+    assert h.compose(fixed_messages=SYSTEM + [{"role": "user", "content": big}], reserve_tokens=900) == []
+    assert h.report["status"] == "CURRENT_TURN_TOO_LARGE"
+
+
+# CC-8: restart and interruption
+def test_cc8_restart_recovers_identical_context(tmp_path):
+    path = tmp_path / "t.sqlite3"
+    s1 = CC.TranscriptStore(path)
+    m1 = CC.ContextManager(s1, N_CTX)
+    drive(m1, s1, SID, 150)
+    h1 = CC.ComposedHistory(m1, SID)
+    a = h1.compose(fixed_messages=SYSTEM, reserve_tokens=RESERVE, query="budget")
+    cpt = m1.token_factor
+    s1.close()
+    s2 = CC.TranscriptStore(path)                                                # a new worker process
+    m2 = CC.ContextManager(s2, N_CTX)
+    h2 = CC.ComposedHistory(m2, SID)
+    b = h2.compose(fixed_messages=SYSTEM, reserve_tokens=RESERVE, query="budget")
+    assert a == b and h2.report["compacted_through"] == h1.report["compacted_through"]
+    assert m2.token_factor == cpt                              # calibration persisted
+    s2.close()
+
+
+def test_cc8_interrupted_turn_is_kept_and_marked(tmp_path):
+    path = tmp_path / "t.sqlite3"
+    s1 = CC.TranscriptStore(path)
+    n = s1.begin(SID, "Please compare the two contracts I described.")
+    s1.db.close()                                                                # crash: no finish()
+    s2 = CC.TranscriptStore(path)
+    t = s2.turns(SID)
+    assert [x["state"] for x in t] == ["interrupted"] and t[0]["n"] == n
+    msgs = CC.ContextManager(s2, N_CTX).compose(SID, fixed_messages=SYSTEM, reserve_tokens=900)[0]
+    assert "interrupted before URI answered" in msgs[0]["content"]
+    s2.close()
+
+
+def test_cc3_pinned_overflow_is_excerpted_then_indexed_and_reported(store):
+    mgr = CC.ContextManager(store, 8192)
+    for i in range(60):
+        n = store.begin(SID, f"Important: always remember requirement {i}: " + "r" * 900)
+        store.finish(SID, n, "noted " + "a" * 300)
+    h = CC.ComposedHistory(mgr, SID)
+    msgs = h.compose(fixed_messages=SYSTEM, reserve_tokens=900)
+    r = h.report
+    assert r["pinned_verbatim"] == 0 and (r["pinned_excerpt"] or r["pinned_indexed"])
+    assert true_tokens(SYSTEM + msgs) + 900 <= 8192
+    shown = r["pinned_excerpt"] + r["pinned_indexed"]
+    assert shown + r["pinned_omitted"] == len([t for t in store.turns(SID) if t["pin"] and
+                                               t["n"] <= r["compacted_through"]])
+    if r["pinned_omitted"]:
+        assert "stored but not shown" in msgs[0]["content"]
+
+
+def test_classification():
+    assert CC.classify("user", "From now on use metric units") == "instruction"
+    assert CC.classify("user", "I decided to go with option B") == "instruction"
+    assert CC.classify("user", "approved, go ahead") == "instruction"
+    assert CC.classify("user", "what's the weather like") is None
+    assert CC.classify("assistant", "[Draft version 2]\nDear...") == "evidence"
+
+
+# CC-9: performance (latency, memory) - numbers printed for the qualification record, bounds generous
+def test_cc9_compose_latency_and_memory(store, capsys):
+    mgr = CC.ContextManager(store, N_CTX)
+    for i in range(2000):
+        n = store.begin(SID, filler(i, 800))
+        store.finish(SID, n, filler(i + 7, 600))
+    def once():
+        h = CC.ComposedHistory(mgr, SID)
+        h.compose(fixed_messages=SYSTEM, reserve_tokens=RESERVE, query="topic7 measurements")
+    once()                                        # first compose loads the session's rows from SQLite
+    t0 = time.perf_counter()
+    for _ in range(10):
+        once()
+    per = (time.perf_counter() - t0) / 10         # timed without tracemalloc (it slows Python several-fold)
+    tracemalloc.start()
+    once()
+    peak = tracemalloc.get_traced_memory()[1]
+    tracemalloc.stop()
+    with capsys.disabled():
+        print(f"\nCC-9 compose over 4000 stored messages: {per * 1000:.1f} ms/turn, peak {peak / 2**20:.1f} MiB")
+    assert per < 2.0 and peak < 200 * 2**20
+
+
+# CC-10: through the real worker bridge and answer channel (fake llama-server)
+def bridge(fake, tmp_path, ctx=8192):
+    b, frames, o = make(fake, tmp_path, FakeCore())
+    b2 = WB.IntegratedTurns(orchestrator=o, cfg={**CFG, "runtime": {**CFG["runtime"], "ctx": ctx}},
+                            status=b._status, write_event=frames, transcript=tmp_path / "conv" / "t.sqlite3")
+    return b2, frames
+
+
+def ask(b, text, session=SID):
+    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": session, "text": text, "depth": "auto"})
+    b.wait(10)
+    return r
+
+
+def test_cc10_worker_bridge_long_conversation_persists_and_keeps_decisions(fake, tmp_path):
+    b, frames = bridge(fake, tmp_path)
+    ask(b, "Important: from now on always answer in metric units.")
+    for i in range(30):
+        fake.scripts.append({"chunks": [("answer", "Reply " + filler(i, 1500))], "finish": "stop",
+                             "timings": {"prompt_n": 3000}})
+        ask(b, "Question " + filler(i, 1500))
+    last = fake.requests[-1]["messages"]
+    est = CC.ContextManager(b.context.store, 8192).messages_tokens(last)
+    assert est + 900 <= 8192                                   # inside the 8K window with the answer reserve
+    assert any("always answer in metric units" in m["content"] for m in last)
+    ctx = frames.data("answer.done")[-1]["metrics"]["context"]
+    assert ctx["status"] == "COMPACTED" and ctx["n_ctx"] == 8192
+    assert len(b.context.store.checkpoints(SID)) >= 1
+    # a restarted worker continues from the durable transcript (CONTEXT-1)
+    b3, _ = bridge(fake, tmp_path)
+    ask(b3, "And what about the units?")
+    assert any("always answer in metric units" in m["content"] for m in fake.requests[-1]["messages"])
+
+
+def test_cc10_overflow_reply_from_the_server_rolls_over_and_retries_once(fake, tmp_path):
+    b, frames = bridge(fake, tmp_path, ctx=32768)
+    for i in range(6):
+        ask(b, "Turn " + filler(i, 1200))
+    fake.scripts += [{"status": 400, "error": "the request exceeds the available context size, try increasing it"},
+                     {"chunks": [("answer", "fine")], "finish": "stop"}]
+    n_before = len(fake.requests)
+    ask(b, "Next question please")
+    sent = fake.requests[n_before:]
+    assert len(sent) == 2 and len(sent[1]["messages"]) < len(sent[0]["messages"])
+    done = frames.data("answer.done")[-1]
+    assert done["metrics"]["context"]["retried_after_overflow"] is True
+    assert "".join(d["text"] for d in frames.data("answer.delta")[-1:]) == "fine"
+
+
+def test_cc10_without_transcript_the_bridge_behaves_as_before(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    assert b.context is None
+    ask(b, "Hello")
+    assert "context" not in frames.data("answer.done")[-1]["metrics"]

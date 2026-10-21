@@ -50,7 +50,7 @@ JSONL stays the format of V3 runs, which are linked and imported, never rewritte
 | Crash safety | SQLite transaction = no partial record; `step-start` writes intent before work, `step-end` closes it; `recover` turns open steps and active tasks whose session lease expired into `INTERRUPTED` (never completed); worktree HEAD/dirty drift recorded as `WORKTREE_DRIFT`; atomic file exports (`tmp` + `replace`), stray `.tmp` cleaned |
 | Concurrency | `BEGIN IMMEDIATE` serialises writers; leases: all-or-nothing multi-resource acquire in one transaction, never wait while holding (no deadlock), TTL expiry, monotonically increasing fencing token; task session lease `task:<id>` |
 | GPU boundary | the ledger refuses `gpu*` lease names: GPU arbitration stays with `uri_operational_intelligence.gpu_lease` (one source of truth); a task may record that lease as evidence |
-| Review & acceptance | `review-record` takes the reviewer's raw output file, re-parses the `AUDIT_RESULT` block with V3's own `parse_review`/`effective_verdict`, binds the exact commit, stores raw sha256 + provenance; reviewer must differ from every implementer actor; `accept` needs an independent ACCEPT/AwF on the task's current head and no open blocking finding; a new head invalidates acceptance |
+| Review & acceptance (amended 2026-10-21, see section 6) | `review-record` takes the reviewer's raw output file, re-parses the `AUDIT_RESULT` block with V3's own `parse_review`/`effective_verdict`, binds the exact commit, stores raw sha256 + provenance; reviewer must differ from every implementer actor; `accept` needs an independent ACCEPT/AwF on the task's current head and no open blocking finding; a new head invalidates acceptance |
 | V3 reuse | `link-v3` + `sync-v3` read a V3 run (chain recomputed), import review rounds as `DRIVER_VERIFIED` only when V3's `accepted_review` conditions hold (independent, COMPLETED_WITH_RESULT, round.json hash bound); V3 code unchanged |
 | Pause policy | `availability` records Claude/Codex availability; both unavailable → every active task `PAUSED` with checkpoint; only a `claude:`/`codex:` actor recorded available may resume; `antigravity:` and `subagent:` actors can never transition, resume or accept (reviewers may only record reviews; antigravity may only add notes/evidence) |
 | Handoff | `handoff` writes `<ledger dir>/handoffs/<task>.json` + `.md`: id, status, last verified commit (git-checked), completed, remaining, blocking findings, required permissions, next executable action, chain head |
@@ -97,3 +97,92 @@ The chain is tamper-evident, not tamper-proof (same statement as V3 `verify`).
 
 Milestone registry, roadmap, dependencies, owner decisions, `developmental.md` import (Milestone Manager). Reviewer
 tiers 3-5 mechanism inside the V3 driver (Q-3 `67d45317`, not integrated). Canonical integration (owner approval).
+
+## 5. Amendment (owner, 2026-10-21): runtime context continuity beyond the 32K window
+
+Received while stage 1 (the development ledger, `b12d6582`) was being implemented. Unlike stages 1-4, this part
+changes the URI runtime answer channel, so the milestone is now **INDIRECT** for this part (no new screen; the
+user-visible effect is that long conversations keep working). The criteria below were written when the amendment
+arrived, after the research map and before the code; they were not defined before stage 1.
+
+### 5.1 Research: what existed (ec2fab54, verified file:line by a read-only research pass)
+
+| Mechanism | State | Reused? |
+|---|---|---|
+| Live prompt builder `uri_operational_intelligence/answer.py:build_messages` | live; sent only the last 12 messages, no token check | extended |
+| History `worker_bridge.py` `self.history` (24 messages, memory only) | live; lost on worker restart (CONTEXT-1) | kept; durable transcript added beside it |
+| Measured usage `worker_bridge.py:_sink` (`prompt_n + cache_n + predicted_n`) | live; used only by the profile-shrink guard | reused for calibration and near-overflow detection |
+| Profile window `runtime_profiles.describe(cfg)["ctx"]`, host profile | live | reused for `n_ctx` (smaller of the two) |
+| `--ctx-checkpoints`, `--cache-ram`, stable-prefix layout (`answer.py:13-14`) | live (frozen argv) | reused: compaction keeps the prefix byte-stable between rollovers |
+| `uri_core/core/context_budget.py` (`chars // 4`), `context_trimmer.py`, `conversation_history.py`, Graphify index, evidence/experience stores | frozen, legacy path only | not reused: frozen (`scripts/ws_frozen_check.py`), not on the WS path, and a fixed `chars//4` has no feedback: in the CC-1 simulation (a pessimistic 2.6 characters per token) it overflows the 32K window at turn 32, while the calibrated estimator never does. The real Qwen ratio was not measured here |
+| Profiles with a bigger window | 64K only without Vision (P2); 64K+Vision (P1) unqualified; every change reloads the model | not used: continuity must not reload or raise VRAM |
+
+### 5.2 Design
+
+`uri_operational_intelligence/context_continuity.py` (new, not frozen), wired at `answer.build_messages` and
+`worker_bridge` (`transcript=` path under the client's `control/oi/conversation/`), launcher passes it.
+
+- **Monitoring.** Budget = `n_ctx` - answer `max_tokens` (tier) - 512 margin - fixed messages (system, memory
+  evidence, current turn) - images x 1536 (per image, Qwen-VL scale) - 8 tokens per message. Characters per token
+  start at 3.0, are used at 90 %, and are calibrated from each answer's measured `prompt_n + cache_n` (fast towards
+  denser, slow towards sparser; persisted). A measured prompt + answer above 85 % of the window forces a rollover on
+  the next turn. A server "exceeds the available context" reply before any text triggers one forced rollover and
+  one retry.
+- **Checkpoint before exhaustion.** The user turn is written (write-ahead) before the Brain is asked; every rollover
+  writes a checkpoint record (boundary, through-turn, report) before the compacted prompt is sent.
+- **Compaction.** Rollover when verbatim history would exceed 55 % of the free budget; keep the newest turns within
+  30 % (hysteresis, so the prefix changes rarely). Turns before the boundary become one deterministic block: PINNED
+  turns (user instructions, constraints, decisions, approvals; draft evidence) verbatim, else excerpts, else index
+  lines; then a one-line digest of every other turn. Counts of everything excerpted, indexed or omitted are in the
+  report and in the `answer.done` metrics (`metrics.context`); omission is announced inside the block.
+- **Retrieval.** Earlier turns relevant to the current request (IDF-weighted word overlap) are placed verbatim
+  (up to 1500 characters each, 12 % of the budget) just before the current turn, after the stable prefix.
+- **Vision and VRAM.** No profile change, no reload, no new model, no GPU work; images are budgeted when present.
+
+### 5.3 Criteria and evidence (tests/oi/test_context_continuity.py)
+
+- CC-1 Over 300 simulated turns (> 128K cumulative tokens, tokenizer denser than the default estimate), no prompt
+  plus reserve exceeds 32K; with no measurements at all the estimate alone stays inside the window.
+- CC-2 Every rollover is checkpointed before the compacted prompt is used.
+- CC-3 Pinned instructions/decisions/approvals from turns 3, 57, 151, 260 are all in the final prompt; under pinned
+  overflow, excerpts/index lines are used and every pinned turn is accounted for (shown or counted as omitted).
+- CC-4 A fact from a compacted, unpinned turn is retrieved verbatim for a related question; the original is stored.
+- CC-5 Between rollovers the compacted prefix is byte-identical (prompt-cache reuse); no reload occurs.
+- CC-6 Images reduce the budget by their token estimate; a current turn that cannot fit is reported, not sent.
+- CC-7 Repeated rollover (>= 3 in 300 turns) with hysteresis (< 1 per 5 turns).
+- CC-8 A restarted store composes the identical context and keeps the calibration; a crashed turn is kept and marked
+  interrupted.
+- CC-9 Compose latency and memory over 4000 stored messages are measured and bounded.
+- CC-10 Through the real worker bridge and answer channel (fake llama-server): an 8K window over 31 long turns stays
+  inside the budget, keeps a pinned instruction, records `metrics.context`, and a restarted worker continues from
+  the transcript; a server overflow reply is retried once after a forced rollover; without a transcript path the
+  bridge behaves as before.
+
+Not verified here (stated, affects the live part of the verdict): a long conversation against the real Runtime v1
+Brain (GPU) and through the Windows UI. The Brain was not running in this session (`/health` unreachable) and the
+GPU is shared with concurrent milestones; live recovery accuracy with the real tokenizer is therefore NOT VERIFIED.
+
+## 6. Review mechanism clarification (owner, 2026-10-21)
+
+Owner: the existing Lifecycle V3 independent review mechanism stays primary and preferred; independent Claude or
+Codex subagents are valid fallback reviewers only when it is unavailable or cannot operate; nothing replaces,
+duplicates or bypasses it; fallbacks never weaken acceptance standards.
+
+**Inspected (ec2fab54).** `lifecycle.py`: `reviewer_chain` (preferred `reviewer` then `reviewer_fallbacks`,
+`INDEPENDENT_PROVIDERS = claude_cli, codex_cli`), `select_reviewer` with bounded attempts derived from the chain,
+`is_independent` (bound CLI, driver-made config, containment, distinct session, integrity), escalation: every
+reviewer UNAVAILABLE/FAILURE -> BLOCKED `NO_INDEPENDENT_REVIEWER` (self-rechecked next run, `REVIEWER_RECHECK`);
+unusable results -> BLOCKED `NO_REVIEWER` (owner). `import_review` is never independent (D1). The tier-3 subagent
+mechanism inside the driver exists only on the unintegrated branch `67d45317` (Q-3) and is not duplicated here.
+
+**Verified gap, corrected.** The first ledger version (`b12d6582`) let `accept` use a subagent review exactly like a
+driver review. Now: a DRIVER_VERIFIED verdict on the head is decisive (a later fallback ACCEPT cannot override a
+driver REJECT); a fallback verdict counts only with a fallback basis read from a linked driver run's intact chain
+(current blocker `NO_INDEPENDENT_REVIEWER`, run candidate = task head), recorded in the ACCEPTED event; and every
+path needs a passing test result with its log on the exact head (gap found in self-review: the first version did
+not require it). Tests: `test_fallback_needs_exhausted_chain_on_the_exact_commit`,
+`test_driver_verdict_is_never_overridden_by_a_fallback`, `test_ac8_*`.
+
+**This milestone's own review** follows the same order: the V3 driver with Codex (`gpt-6-sol`, probed 2026-10-21:
+model probe and sandbox `git rev-parse HEAD` in the candidate both returned) as primary, `claude_cli` as in-driver
+fallback (logged out on 2026-10-21), and a fresh read-only subagent only if the driver ends `NO_INDEPENDENT_REVIEWER`.
