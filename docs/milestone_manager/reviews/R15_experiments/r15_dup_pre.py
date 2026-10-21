@@ -1,0 +1,11 @@
+from pre_common import *
+import shutil, scripts; print("code from", scripts.__path__)
+base = Path(tempfile.mkdtemp()); EventStore.init(base/"A","ha"); Manager(base/"A",actor="impl:a").create_milestone("MM-0","base")
+shutil.copytree(base/"A", base/"B", ignore=shutil.ignore_patterns("local")); EventStore.init_host(base/"B","hb")
+ma, mb = Manager(base/"A",actor="impl:a"), Manager(base/"B",actor="impl:b")
+ma.create_milestone("MM-X","from A"); mb.create_milestone("MM-X","from B")
+shutil.copy(base/"B/events/hb.jsonl", base/"A/events/hb.jsonl")
+m = Manager(base/"A", actor="impl:a"); m.resolve_conflict("MM-X", "reviewed")
+m.update_milestone("MM-X", candidate_commit=C1)
+m.record_review("MM-X", C1, "subagent", "rev:y", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+m.set_status("MM-X","ACCEPTED","go"); print("pre-repair: ACCEPTED ok after resolving dup")

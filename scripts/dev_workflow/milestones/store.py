@@ -719,7 +719,8 @@ class EventStore:
                 # ANCHOR_LOSS conflict for review.
                 notes = ["own segment had no anchor when this torn tail was recovered: a power loss during the "
                          "first write is the usual cause, but a cut of applied events cannot be ruled out; review "
-                         "(e.g. git history, the quarantined bytes), then `resolve-conflict LEDGER`"]
+                         "(e.g. git history, the quarantined bytes), then `resolve-conflict LEDGER --id <id shown by "
+                         "`conflicts`> --note ...`"]
             if problems and not acknowledge_loss:
                 raise StoreError("LOSS_NOT_ACKNOWLEDGED", "recover would re-base anchors that cannot vouch for the "
                                                           f"ledger ({problems[0]}); check git history and pass "

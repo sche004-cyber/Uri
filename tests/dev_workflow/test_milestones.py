@@ -2155,3 +2155,38 @@ def test_r14_02_refusal_reports_autocommit_errors(tmp_path, monkeypatch):
     assert cli.run(["--home", str(m.home), "--actor", "a", "milestone-add", "MM-B", "--title", "B"], out=out) == 1
     res = json.loads(out.getvalue())
     assert res["refused"] == "LEDGER_LOSS_RECORDED" and res["autocommit_error"] == "git: disk full"
+
+
+# ------------------------------------------------------------------ R15 regression tests (review R15 on 255b9079)
+
+def test_r15_01_conflicts_raised_by_one_event_are_resolved_by_its_id_and_accept_follows(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m1.create_milestone("MM-X", "x")
+    m2.create_milestone("MM-X", "x")  # the same id created on two hosts
+    m2.record_decision("B", "b", "2026-10-22", "AGENT-RECORD", "s", ident="LDEC-900")
+    m1.record_decision("A", "a", "2026-10-22", "AGENT-RECORD", "s", ident="LDEC-900")
+    _merge(m1, home2)
+    p = m1.projection()
+    rows = [r for r in views.conflict_rows(p) if r["entity"] == "MM-X"]
+    assert len(rows) >= 2 and len({r["id"] for r in rows}) < len(rows)  # several conflicts, one event id
+    with pytest.raises(ValidationError) as e:
+        m1.resolve_conflict("MM-X", "x", [])
+    assert str(e.value).count(rows[0]["id"]) == 1  # listed once
+    _resolve(m1, "MM-X", "duplicate creation reviewed")
+    _resolve(m1, "LDEC-900", "duplicate decision reviewed")
+    assert not views.open_conflicts(m1.projection(), "MM-X") and not views.open_conflicts(m1.projection(), "LDEC-900")
+    m1.set_status("MM-X", "IN_PROGRESS", "go")
+    m1.update_milestone("MM-X", candidate_commit=C1)
+    m1.record_review("MM-X", C1, "subagent", "subagent:r1", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    m1.set_status("MM-X", "ACCEPTED", "independent accept")
+
+
+def test_r15_02_loss_refusal_names_the_ids_to_resolve(tmp_path):
+    m = new(tmp_path)
+    init_anchors = m.store.anchors_path.read_bytes()
+    m.create_milestone("MM-A", "A")
+    m.store.anchors_path.write_bytes(init_anchors)
+    with pytest.raises(ValidationError) as e:
+        m.create_milestone("MM-B", "B")
+    cid = views.conflict_rows(m.projection())[0]["id"]
+    assert f"--id {cid}" in str(e.value)

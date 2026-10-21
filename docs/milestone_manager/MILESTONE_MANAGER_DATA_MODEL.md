@@ -200,7 +200,9 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 
 ## 20. Changes after review R14
 
-- `CONFLICT_RESOLVED.conflicts[]` now holds exactly the conflicts the caller named by id (prefix of the raising
-  event's hash, at least 8 hex digits, unique among open conflicts on that entity). Refusals `NO_CONFLICT_ID`,
+- `CONFLICT_RESOLVED.conflicts[]` now holds exactly the conflict-raising events the caller named by id (prefix of
+  the raising event's hash, at least 8 hex digits, naming exactly one such event among the open conflicts on that
+  entity; corrected after review R15: one event can raise several conflicts, e.g. VERSION and DUPLICATE_ID, which
+  share its id and are resolved together). Refusals `NO_CONFLICT_ID`,
   `UNKNOWN_CONFLICT_ID`. New read command `conflicts [--entity E]` (`{id, type, entity, subject, recorded_by, event,
   at, detail}`).

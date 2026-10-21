@@ -130,7 +130,7 @@ class Manager:
                                               "origin": "init-host --acknowledge-loss was interrupted before it "
                                                         "recorded the loss"}, {}))
                 self.last_warnings.append("recorded a pending acknowledged loss (ANCHOR_LOSS): review it, then "
-                                          "`resolve-conflict LEDGER`")
+                                          "`resolve-conflict LEDGER --id <id> --note ...`")
             adopt = self.store.anchor_warnings(segs, anchors)
             if adopt:
                 # This write anchors an own segment that had no anchor (failed first refresh, or an edited anchors
@@ -139,7 +139,8 @@ class Manager:
                 pre.append(("ANCHORS_ADOPTED", {"segment": own.name, "count": len(own.valid_events),
                                                 "head": own.valid_events[-1]["hash"], "warning": adopt[0]}, {}))
                 self.last_warnings.append("this write anchored an own segment that had no anchor and recorded "
-                                          "ANCHORS_ADOPTED: review it, then `resolve-conflict LEDGER`")
+                                          "ANCHORS_ADOPTED: review it, then `resolve-conflict LEDGER --id <id> "
+                                          "--note ...`")
             if pre:
                 written = self.store.append_many(pre, actor=self.actor, session=self.session, floor=floor)
                 if pending:
@@ -149,11 +150,12 @@ class Manager:
                         self.last_warnings.append(f"pending-loss marker not removed ({e.__class__.__name__}); its "
                                                   "loss is recorded and will not be recorded again")
                 self._refresh_after(segs, written)
-                kinds = ", ".join(ev["kind"] for ev in written)
+                kinds = ", ".join(f"{ev['kind']} [conflict {ev['hash'][:12]}]" for ev in written)
+                id_args = " ".join(f"--id {ev['hash'][:12]}" for ev in written)
                 raise ValidationError("LEDGER_LOSS_RECORDED",
-                                      f"recorded {kinds} (an ANCHOR_LOSS conflict) before this command; the command "
-                                      "was NOT executed. Review the loss (`status`, `show`, git history), then "
-                                      "`resolve-conflict LEDGER --note ...`, then run the command again")
+                                      f"recorded {kinds} (ANCHOR_LOSS) before this command; the command was NOT "
+                                      "executed. Review the loss (`conflicts`, `status`, git history), then "
+                                      f"`resolve-conflict LEDGER {id_args} --note ...`, then run the command again")
             if pending:
                 # its id is already recorded (e.g. HOST_REGISTERED before a crash): only remove it (review R12-03)
                 try:
@@ -673,15 +675,18 @@ class Manager:
                 raise ValidationError("NOT_FOUND", f"no open conflict on {entity}")
             if not ids:
                 raise ValidationError("NO_CONFLICT_ID", f"name the conflicts to resolve with --id (open on {entity}: "
-                                                        + ", ".join(M.conflict_id(c) for c in open_c)
+                                                        + ", ".join(sorted({M.conflict_id(c) for c in open_c}))
                                                         + "); see `conflicts` for details")
             chosen = []
             for x in ids:
-                hits = [c for c in open_c if len(x) >= 8 and c["event"]["hash"].startswith(x)]
-                if len(hits) != 1:
-                    raise ValidationError("UNKNOWN_CONFLICT_ID", f"{x!r} does not name exactly one open conflict on "
-                                                                 f"{entity}")
-                chosen.append(hits[0]["event"]["hash"])
+                # An id names the event that raised the conflicts; one event can raise several (e.g. VERSION and
+                # DUPLICATE_ID for a duplicate creation). All of them are displayed under that one id, so naming
+                # it resolves all of them (review R15-01). It must not be ambiguous between two events.
+                hashes = {c["event"]["hash"] for c in open_c if len(x) >= 8 and c["event"]["hash"].startswith(x)}
+                if len(hashes) != 1:
+                    raise ValidationError("UNKNOWN_CONFLICT_ID", f"{x!r} does not name exactly one conflict-raising "
+                                                                 f"event among the open conflicts on {entity}")
+                chosen.append(hashes.pop())
             return [("CONFLICT_RESOLVED", {"entity": entity, "note": note,
                                            "conflicts": sorted(set(chosen))}, {})]
         return self._write(build)

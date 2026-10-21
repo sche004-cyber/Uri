@@ -359,3 +359,10 @@ again completes it.
 
 Verified by reviewer R14 for the first time since R12: concurrency stress (5 rounds × 4 writer + 4 reader processes,
 2,847 reads, 0 false integrity alarms) and N3 (rebuild 0.18 s, CLI status 0.43 s, 4.43 MB).
+
+## 27. Changes after independent review R15 (2026-10-22, REJECT on `255b9079`)
+
+| Change | Reason |
+|---|---|
+| a conflict id names the event that raised it; naming it resolves every open conflict that event raised on the entity (they are displayed under that one id). An id is refused only when it matches no event or more than one | R15-01 (HIGH regression of the R14 repair: a duplicate creation raises VERSION and DUPLICATE_ID with one id and became unresolvable) |
+| refusal and warning texts give the exact `resolve-conflict LEDGER --id <id>` to run | R15-02 |
