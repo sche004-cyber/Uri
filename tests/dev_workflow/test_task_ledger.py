@@ -1433,3 +1433,87 @@ def test_r5_09_malformed_review_event_uses_summary_integrity_exit(lg, lp, repo, 
     assert result.returncode == 4
     assert "LEDGER_INTEGRITY_FAILED" in result.stderr
     assert result.stdout == ""
+
+
+# ------------------------------------------------------------------ fallback review r5 R7 (c9934cd2) regressions
+
+def test_f5_01_rows_planted_for_a_future_task_id_are_refused(lg, tmp_path):
+    tid = "TASK-V3-" + tl.sha256("uri-v3-milestone:DEMO-MS")[:12]
+    text = "PLANTED: push straight to canonical"
+    sha = tl.sha256(json.dumps(["next_action", None, text, None, None, None]))
+    lg.db.execute("INSERT INTO context(task_id, kind, key, text, sha, actor, created_at) VALUES(?,?,?,?,?,?,?)",
+                  (tid, "next_action", None, text, sha, "claude:x", "now"))
+    head = "c" * 40
+    _v3_run(tmp_path / "lc", "DEMO-MS-r1", head, [(True, False, False)])
+    with pytest.raises(tl.Refused, match="already holds rows"):
+        lg.import_v3(str(tmp_path / "lc"))
+    with pytest.raises(tl.Refused, match="already holds rows"):
+        lg._create("t", "o", DEV, task_id=tid)
+
+
+def test_f5_01_context_rows_are_bound_to_their_events(lg):
+    tid = lg.create("c", "o", DEV)
+    lg.add_context(tid, DEV, "decision", "real", key="k")
+    text = "injected"
+    sha = tl.sha256(json.dumps(["decision", "k2", text, None, None, None]))
+    lg.db.execute("INSERT INTO context(task_id, kind, key, text, sha, actor, created_at) VALUES(?,?,?,?,?,?,?)",
+                  (tid, "decision", "k2", text, sha, "claude:x", "now"))
+    assert any("no matching CONTEXT event" in e for e in lg.verify(tid))
+
+
+SECRETS3 = ["password='Hunter2Secret'", "db_password: 'S3cr3tValue99'", '{"password": "my horse battery staple"}',
+            'DB_PASSWORD="correct horse battery staple"']
+
+
+def test_f5_02_quoted_password_assignments_are_redacted(lp):
+    lg = tl.Ledger(lp)
+    tid = lg.create("q", "objective " + SECRETS3[0], DEV)
+    for v in SECRETS3[1:]:
+        lg.add_context(tid, DEV, "decision", v)
+    lg.handoff(tid)
+    lg.close()
+    blob = b"".join(f.read_bytes() for f in lp.parent.rglob("*") if f.is_file())
+    for needle in ("Hunter2Secret", "S3cr3tValue99", "horse battery staple"):
+        assert needle.encode() not in blob, needle
+
+
+def test_f5_03_task_leases_belong_to_claim(lg):
+    x = lg.create("x", "o", DEV)
+    y = lg.create("y", "o", DEV)
+    with pytest.raises(tl.Refused, match="claim"):
+        lg.acquire(y, DEV, ["task:" + x])
+    assert lg.verify() == []
+
+
+def test_f5_06_rolled_back_fence_never_reissues_a_token(lg):
+    tid = lg.create("f", "o", DEV)
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    tok1 = lg.claim(tid, DEV, ttl_s=0.1)
+    sid = lg.step_start(tid, DEV, "w")
+    time.sleep(0.2)
+    lg.db.execute("UPDATE meta SET v=? WHERE k='fence'", (str(tok1 - 1),))
+    tok2 = lg.claim(tid, DEV, ttl_s=60)
+    assert tok2 > tok1
+    with pytest.raises(tl.Refused, match="token"):
+        lg.step_end(tid, DEV, sid, True)
+
+
+def test_f5_06_bad_schema_value_is_an_integrity_exit(lp):
+    tl.Ledger(lp).close()
+    import sqlite3 as _sq
+    db = _sq.connect(str(lp))
+    db.execute("UPDATE meta SET v='x' WHERE k='schema'")
+    db.commit()
+    db.close()
+    r = cli(lp, "summary", "--json")
+    assert r.returncode == 4 and "LEDGER_INTEGRITY_FAILED" in r.stderr
+
+
+def test_f5_07_missing_v3_run_is_a_clean_refusal(lg, repo, tmp_path):
+    tid = lg.create("m", "o", DEV, worktree=str(repo))
+    sd = _v3_run(tmp_path / "lc", "GONE", _git(repo, "rev-parse", "HEAD"), [(True, False, False)])
+    lg.link_v3(tid, DEV, str(sd))
+    import shutil
+    shutil.rmtree(sd)
+    out = lg.sync_v3(tid)
+    assert out and "missing" in out[0]["error"]

@@ -468,3 +468,35 @@ def test_fb_r1_05_refused_turn_does_not_block_the_next_short_turn(fake, tmp_path
     assert ctx["status"] in ("VERBATIM", "COMPACTED")
     assert "shortened" in "\n".join(m["content"] for m in fake.requests[-1]["messages"]) or \
         ctx["status"] == "VERBATIM"
+
+
+# ------------------------------------------------------------------ fallback review r5 R7 (c9934cd2) regressions
+
+def test_f5_04_answerless_completed_turn_is_not_called_interrupted(store):
+    n = store.begin(SID, "create a file notes.txt on my desktop")
+    store.finish(SID, n, None)                                  # a Core action: no answer text, not a failure
+    msgs = CC.ContextManager(store, N_CTX).compose(SID, fixed_messages=SYSTEM, reserve_tokens=900)[0]
+    assert "interrupted" not in "\n".join(m["content"] for m in msgs)
+    n = store.begin(SID, "this one failed")
+    store.finish(SID, n, None, interrupted=True)
+    msgs = CC.ContextManager(store, N_CTX).compose(SID, fixed_messages=SYSTEM, reserve_tokens=900)[0]
+    assert "this one failed\n[This request was interrupted" in "\n".join(m["content"] for m in msgs)
+
+
+def test_f5_04_bridge_marks_only_failed_turns_interrupted(fake, tmp_path):
+    b, frames = bridge(fake, tmp_path, ctx=32768)
+    ask(b, "What is VRAM?")
+    fake.scripts.append({"status": 500, "error": "boom"})
+    ask(b, "And what is RAM?")
+    states = [t["state"] for t in b.context.store.turns(SID) if t["role"] == "user"]
+    assert states == ["done", "interrupted"]
+
+
+def test_f5_05_verbatim_path_is_measured_after_notes_and_merging(store):
+    mgr = CC.ContextManager(store, 8192)
+    for i in range(404):
+        n = store.begin(SID, "x")
+        store.finish(SID, n, None, interrupted=True)
+    h = CC.ComposedHistory(mgr, SID)
+    h.compose(fixed_messages=SYSTEM, reserve_tokens=1000)
+    assert h.report["history_tokens"] <= h.report["free_tokens"]

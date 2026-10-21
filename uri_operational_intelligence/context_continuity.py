@@ -47,6 +47,7 @@ IMAGE_TOKENS = 1536          # per image when the caller does not know (Qwen VL 
 VERBATIM_HIGH = 0.55         # rollover when verbatim history would exceed this share of the free budget
 VERBATIM_LOW = 0.30          # ... and keep only this share after the rollover (hysteresis: rare prefix changes)
 VERBATIM_CAP = 0.25          # one recent turn above this share of the free budget is shown as an excerpt
+INTERRUPTED_NOTE_TOKENS = 20  # "[This request was interrupted before URI answered.]"
 COMPACT_SHARE = 0.30         # pinned + digest block
 RETRIEVE_SHARE = 0.12        # relevant earlier turns for the current request
 PIN_EXCERPT = 400
@@ -200,7 +201,7 @@ class TranscriptStore:
 
     def finish(self, session: str, n: int, answer_text: str | None, *, interrupted=False) -> int | None:
         with self._lock:
-            state = "interrupted" if interrupted or not answer_text else "done"
+            state = "interrupted" if interrupted else "done"   # F5-04: Core actions/cards end without text
             row = None
             # R1-05: the user turn's state and the answer row commit together, or neither does (a crash between
             # them must leave the turn pending, i.e. interrupted at the next start, never 'done' without its answer)
@@ -311,7 +312,8 @@ class ContextManager:
         b = t.get("_base")
         if b is None:
             b = t["_base"] = base_tokens(t["content"])      # turn content never changes once written
-        return int(math.ceil(b * self._factor * TOKEN_SAFETY)) + MSG_OVERHEAD_TOKENS
+        note = INTERRUPTED_NOTE_TOKENS if t["role"] == "user" and t["state"] == "interrupted" else 0
+        return int(math.ceil(b * self._factor * TOKEN_SAFETY)) + MSG_OVERHEAD_TOKENS + note
 
     def messages_tokens(self, messages) -> int:
         total = 0
@@ -371,8 +373,11 @@ class ContextManager:
         verbatim_cost = sum(cost[b:])
         if b == 0 and verbatim_cost <= VERBATIM_HIGH * free and not force:
             msgs = self._verbatim(turns)
-            rep.update(status="VERBATIM", verbatim_turns=len(turns), history_tokens=verbatim_cost)
-            return msgs, rep
+            total = self.messages_tokens(msgs)
+            if total <= free:                       # F5-05: measured after merging and notes, like every path
+                rep.update(status="VERBATIM", verbatim_turns=len(turns), history_tokens=total)
+                return msgs, rep
+            force = True                            # fall through to a rollover
         if verbatim_cost > VERBATIM_HIGH * free or force:
             # Rollover: keep only the newest turns that fit VERBATIM_LOW of the free budget, starting at a user turn.
             keep, nb = 0, len(turns)

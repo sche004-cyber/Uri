@@ -366,7 +366,8 @@ class IntegratedTurns:
                             self.pending.pop(tid)
             self._remember(turn_id, session_id, words, out.core, out.status)
             answer = (out.answer or {}).get("text")
-            self._record_history(session_id, words, answer if out.status in ("ok", "incomplete") else None, n=n)
+            self._record_history(session_id, words, answer if out.status in ("ok", "incomplete") else None, n=n,
+                                 interrupted=out.status == "error")
             return out
 
         # A2UI slice (docs/a2ui/A2UI_ARCHITECTURE.md): a festival-greeting scheduling request is handed to the
@@ -457,11 +458,12 @@ class IntegratedTurns:
                 # The worker is shutting down: nobody can decide this card. Release it as a denial now (CAP-1).
                 self._release(entry)
 
-    def _record_history(self, session_id, user_text, answer_text, n=None):
+    def _record_history(self, session_id, user_text, answer_text, n=None, interrupted=False):
         if self.context is not None:
             if n is None:
                 n = self.context.store.begin(session_id, user_text)
-            self.context.store.finish(session_id, n, answer_text)
+            # F5-04: a turn is 'interrupted' only when it failed; Core actions, cards and plans end without text
+            self.context.store.finish(session_id, n, answer_text, interrupted=interrupted)
         h = self.history.setdefault(session_id, [])
         h.append({"role": "user", "content": user_text})
         if answer_text:

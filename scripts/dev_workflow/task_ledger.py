@@ -129,7 +129,7 @@ _SECRET_RES = [
     # KEY=VALUE / "key": "value" where the key names a secret
     ("assignment", re.compile(r"(?i)\b([A-Za-z0-9_\-]*(?:password|passwd|pass|pwd|secret|token|api[_\-]?key|apikey|"
                               r"access[_\-]?key|private[_\-]?key|client[_\-]?secret|credential)s?)"
-                              r"(\"?\s*[:=]\s*\"?)([^\s\"',;]{4,})")),
+                              r"([\"']?\s*[:=]\s*)(\"[^\"\n]*\"|'[^'\n]*'|\[REDACTED:[a-z_]+\]|[^\s\"',;}\])]+)")),
 ]
 _SECRET_PATH = re.compile(r"(?i)(^|[\\/])(\.env(\..*)?|[^\\/]*\.pem|[^\\/]*\.key|id_rsa[^\\/]*|id_ed25519[^\\/]*|"
                           r"credentials[^\\/]*|\.netrc|\.git-credentials|[^\\/]*\.p12|[^\\/]*\.pfx)$")
@@ -309,6 +309,8 @@ class Ledger:
             if row is None:
                 self.db.execute("INSERT INTO meta VALUES('schema', ?)", (str(SCHEMA_VERSION),))
                 self.db.execute("INSERT INTO meta VALUES('fence', '0')")
+            elif not str(row["v"]).isdigit():
+                raise LedgerError(f"LEDGER_INTEGRITY_FAILED: ledger schema value {row['v']!r} is not valid")
             elif int(row["v"]) > SCHEMA_VERSION:
                 raise LedgerError(f"ledger schema {row['v']} is newer than this tool ({SCHEMA_VERSION})")
         with self.tx():
@@ -466,7 +468,12 @@ class Ledger:
             raise Refused(f"{t['task_id']} is {t['status']} (terminal)")
 
     def _fence(self) -> int:
-        n = int(self.db.execute("SELECT v FROM meta WHERE k='fence'").fetchone()["v"]) + 1
+        # F5-06: the next token is above every token ever recorded (meta is not sealed; a rolled-back counter must
+        # never reissue a token a lapsed step still carries).
+        seen = [int(self.db.execute("SELECT v FROM meta WHERE k='fence'").fetchone()["v"])]
+        seen += [r["m"] or 0 for r in (self.db.execute("SELECT MAX(token) m FROM leases").fetchone(),
+                                       self.db.execute("SELECT MAX(token) m FROM steps").fetchone())]
+        n = max(seen) + 1
         self.db.execute("UPDATE meta SET v=? WHERE k='fence'", (str(n),))
         return n
 
@@ -520,6 +527,10 @@ class Ledger:
                     raise Refused(f"{tid} already exists")
             else:
                 raise LedgerError("could not allocate a unique task id")
+            for table in ("events", "context", "findings", "steps", "reviews", "leases", "v3_links", "packet_cache"):
+                if self.db.execute(f"SELECT 1 FROM {table} WHERE task_id=? LIMIT 1", (tid,)).fetchone():
+                    # F5-01: rows planted for a predictable id before the task exists would be sealed as its own
+                    raise Refused(f"LEDGER_INTEGRITY_FAILED: {table} already holds rows for {tid}")
             title_r = redact(title)[0]
             milestone_ref, branch = redact(milestone_ref)[0], redact(branch)[0]   # R1-04: every row string
             ts = now_iso()
@@ -827,6 +838,8 @@ class Ledger:
         for r in resources:
             if redact(r)[1]:
                 raise Refused("a secret-bearing lease name is not allowed (R3-01)")
+            if r.startswith("task:"):
+                raise Refused("'task:' leases are taken with `claim` on that task (F5-03)")
             if re.match(r"(?i)gpu", r):
                 raise Refused("GPU arbitration belongs to uri_operational_intelligence.gpu_lease; record that lease "
                               "as evidence instead of creating a second GPU lease here")
@@ -1399,6 +1412,8 @@ class Ledger:
     @staticmethod
     def _v3_chain(sd: Path) -> tuple[list[dict], str | None]:
         prev, evs = GENESIS, []
+        if not (sd / "events.jsonl").is_file():
+            return [], f"V3 run {sd} is missing (moved or deleted)"
         for line in (sd / "events.jsonl").read_text(encoding="utf-8").splitlines():
             ev = json.loads(line)
             if ev.get("prev") != prev or ev.get("hash") != event_hash(ev):
@@ -1671,10 +1686,19 @@ class Ledger:
                 continue  # The seal, replay and review checks require decoded event objects.
             errs += self._seal_errors(tid)
             errs += self._replay_errors(t)
+            recorded_ctx = {}
+            for r in self.db.execute("SELECT data FROM events WHERE task_id=? AND kind='CONTEXT'", (tid,)):
+                d = json.loads(r["data"])
+                recorded_ctx[d.get("id")] = d.get("sha")
             for c in self.db.execute("SELECT * FROM context WHERE task_id=?", (tid,)):
                 if sha256(json.dumps([c["kind"], c["key"], c["text"], c["path"], c["blob"], c["commit_sha"]])) \
                         != c["sha"]:
                     errs.append(f"{tid} context {c['id']} changed after recording")
+                if recorded_ctx.get(c["id"]) != c["sha"]:
+                    errs.append(f"{tid} context {c['id']} has no matching CONTEXT event")
+            present = {c["id"] for c in self.db.execute("SELECT id FROM context WHERE task_id=?", (tid,))}
+            for cid in recorded_ctx.keys() - present:
+                errs.append(f"{tid} context {cid} recorded by an event is missing")
             recorded = {json.loads(r["data"])["review"]: r for r in self.db.execute(
                 "SELECT seq, data FROM events WHERE task_id=? AND kind='REVIEW_RECORDED'", (tid,))}
             reviews = {rv["review_id"]: rv for rv in self.db.execute(
@@ -1933,7 +1957,11 @@ def main(argv=None) -> int:
     if a.cmd == "bench":
         _out(bench(a.events))
         return 0
-    lg = Ledger(a.ledger)
+    try:
+        lg = Ledger(a.ledger)
+    except LedgerError as e:
+        sys.stderr.write(f"ERROR: {e}\n")
+        return 4 if "LEDGER_INTEGRITY_FAILED" in str(e) else 2
     try:
         c = a.cmd
         if c == "new":
