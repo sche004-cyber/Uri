@@ -417,3 +417,13 @@ recover, reanchor, write successes and all refusals): ids appear only in `confli
 | the `STALE_CONFLICT_ID` refusal no longer prints the current id; it points to `conflicts --entity <entity>` | R21-01 (pasting the printed id closed changed content never displayed) |
 | `conflicts` rows also show `unknown_previous` and `adopted`; an ANCHORS_RESET loss carries its `anchor_problems` onto the conflict | R21-02 |
 | data model brought up to date (§24) | R21-03 |
+
+## 34. Changes after independent review R22 (2026-10-22, REJECT on `aa70a5ba`)
+
+| Change | Reason |
+|---|---|
+| `reanchor` and `recover` refuse secrets in actor, session and reason before taking the lock (`store.check_free_text`); CLI `recover` also checks `--reason` before recovering | R22-01 (store-level writes bypassed `_write`) |
+| the fold records `bound_commit`, the commit a positive status rests on; a candidate that differs from it (concurrent update on another host, or basis records on another commit) raises `CANDIDATE_CHANGED`; the indicator stays RED while they differ, even after the conflict is resolved; remedy: set the candidate back, or set the status back to IN_PROGRESS and review the new candidate | R22-02 (candidate lock was single-host only) |
+| `autocommit` commits only the ledger's changed paths | R22-03 |
+| `resume` output never exceeds `max(max_chars, 200)` | R22-04 |
+| `resolve-conflict --id` help names `conflicts` only | R22-05 |

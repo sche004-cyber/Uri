@@ -43,6 +43,8 @@ import sys
 import time
 from pathlib import Path
 
+from scripts.dev_workflow.milestones import model as M
+
 SCHEMA = "uri-mm-ledger/1"
 EVENT_VERSION = 1
 GENESIS = "0" * 64
@@ -50,6 +52,17 @@ HOST_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,47}$")
 LOCK_TIMEOUT_S = 30.0
 # Git as the lifecycle driver runs it: no hooks, no replace refs, no fsmonitor (lifecycle.py GIT).
 GIT = ["git", "--no-replace-objects", "-c", "core.hooksPath=" + os.devnull, "-c", "core.fsmonitor=false"]
+
+
+def check_free_text(**fields) -> None:
+    """Store-level writes (reanchor, recover) bypass the service's ``_write``, so they refuse secrets and over-long
+    actors here, before taking the lock or appending anything (review R22-01, criterion F16)."""
+    actor = fields.get("actor")
+    if actor is not None and (not isinstance(actor, str) or len(actor) > 200):
+        raise StoreError("USAGE", "--actor must be a short agent identifier")
+    for name, value in fields.items():
+        if value and M.find_secret(value):
+            raise StoreError("SECRET", f"--{name} looks like a secret; nothing was written")
 
 
 class StoreError(Exception):
@@ -636,6 +649,7 @@ class EventStore:
         ANCHOR_LOSS conflict (RED, blocks positive statuses) until someone resolves it (review R3-01)."""
         if not reason or not actor:
             raise StoreError("USAGE", "reanchor needs --actor and --reason")
+        check_free_text(actor=actor, session=session, reason=reason)
         with self.locked():
             before = self.read_anchors()
             segs = self.read_all()
@@ -698,6 +712,7 @@ class EventStore:
 
         Like `reanchor`, recover never re-bases anchors that cannot vouch for the ledger without
         ``acknowledge_loss``; acknowledged problems are recorded and open an ANCHOR_LOSS conflict (review R5-01)."""
+        check_free_text(actor=actor, session=session)
         with self.locked():
             before = self.read_anchors()
             segs = self.read_all()
@@ -773,8 +788,15 @@ class EventStore:
         add = self._git("add", "--", "events", "mm.json", ".gitignore")
         if add.returncode:
             return {"committed": False, "error": add.stderr.strip()[:300]}
-        if not self._git("diff", "--cached", "--quiet").returncode:
+        # Only the ledger's own paths are committed; anything else staged in the enclosing repository stays staged
+        # and out of the ledger commit (review R22-03).
+        changed = self._git("diff", "--cached", "--name-only", "--", "events", "mm.json", ".gitignore")
+        paths = [line for line in changed.stdout.splitlines() if line.strip()]
+        if changed.returncode or not paths:
             return {"committed": False}
-        c = self._git("-c", "user.name=URI Milestone Manager", "-c", "user.email=mm@uri.local",
-                      "commit", "--no-verify", "-q", "-m", f"mm: {label}")
+        top = self._git("rev-parse", "--show-toplevel").stdout.strip()
+        c = subprocess.run([*GIT, "-C", top or str(self.home), "-c", "user.name=URI Milestone Manager",
+                            "-c", "user.email=mm@uri.local", "commit", "--no-verify", "-q", "-m", f"mm: {label}",
+                            "--only", "--", *paths], capture_output=True, text=True, encoding="utf-8",
+                           errors="replace")
         return {"committed": c.returncode == 0, **({"error": c.stderr.strip()[:300]} if c.returncode else {})}

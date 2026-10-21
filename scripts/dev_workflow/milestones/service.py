@@ -278,7 +278,7 @@ class Manager:
             m = self._milestone(p, ident)
             base = self._version_check(p, ident, expect_version)
             if "candidate_commit" in clean and m["status"] in ("ACCEPTED", "INTEGRATED", "DONE") \
-                    and clean["candidate_commit"] != m.get("candidate_commit"):
+                    and clean["candidate_commit"] not in (m.get("candidate_commit"), m.get("bound_commit")):
                 raise ValidationError("CANDIDATE_LOCKED", f"{ident} is {m['status']} on {m.get('candidate_commit')}; "
                                                           "set it back to IN_PROGRESS before naming a new candidate "
                                                           "(the new commit needs its own independent review)")
@@ -341,7 +341,8 @@ class Manager:
                     or integ.get("candidate_commit") != m.get("candidate_commit"):
                 raise ValidationError("NO_INTEGRATION_RECORD", f"{ident} needs an integration record for its current "
                                                                f"candidate {m.get('candidate_commit')}")
-            return {"approvals": appr, "reviews": reviews, "integration": integ["target_commit"]}
+            return {"approvals": appr, "reviews": reviews, "integration": integ["target_commit"],
+                    "commit": m["candidate_commit"]}
         if status == "DONE":
             if m["status"] not in ("ACCEPTED", "INTEGRATED"):
                 raise ValidationError("NOT_ACCEPTED", f"{ident} must be ACCEPTED or INTEGRATED before DONE")
@@ -350,7 +351,7 @@ class Manager:
             open_b = [b["id"] for b in p["blockers"].values() if b["subject"] == ident and b["status"] == "OPEN"]
             if open_a or open_b:
                 raise ValidationError("OPEN_ITEMS", f"{ident} has open approvals {open_a} / blockers {open_b}")
-            return {"reviews": reviews}
+            return {"reviews": reviews, "commit": m["candidate_commit"]}
         return {}
 
     def set_status(self, ident, status, reason, expect_version=None):

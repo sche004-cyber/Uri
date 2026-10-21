@@ -236,3 +236,13 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 - Ids are printed only by `conflicts` and by the `LEDGER_LOSS_RECORDED` refusal (with each loss's detail).
   `status` (all forms), `NO_CONFLICT_ID` and `STALE_CONFLICT_ID` print no ids; they point to `conflicts --entity`.
 - ANCHOR_LOSS conflicts raised by ANCHORS_RESET carry the event's `anchor_problems`.
+
+## 25. Changes after review R22
+
+- Milestone projection gains `bound_commit`: set at STATUS_SET to ACCEPTED/INTEGRATED/DONE from `basis.commit` (or
+  the previous bound commit, or the integration record's candidate), cleared by any other status.
+- STATUS_SET bases for INTEGRATED and DONE now also carry `commit` (older events without it fall back as above).
+- New conflict type `CANDIDATE_CHANGED` (entity and subject = the milestone) with `bound`, `candidate`, `problems`;
+  the `conflicts` row detail shows these keys.
+- Store-level events ANCHORS_RESET and STORE_RECOVERED are refused (`SECRET`) when actor, session or reason match a
+  secret pattern; nothing is appended.

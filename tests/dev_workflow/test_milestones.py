@@ -2409,3 +2409,132 @@ def test_r21_02_conflicts_listing_shows_adoption_and_unknown_history(tmp_path):
     m.store.reanchor("impl:a", "anchors lost", acknowledge_loss=True)
     rows = [r for r in views.conflict_rows(m.projection(), "LEDGER") if r["recorded_by"] == "ANCHORS_RESET"]
     assert rows and rows[0]["detail"].get("unknown_previous") and rows[0]["detail"].get("anchor_problems")
+
+
+# ------------------------------------------------------------------ R22 regression tests (review R22 on aa70a5ba)
+
+AWS_KEY = "AKIA" + "ABCDEFGHIJKLMNOP"
+GH_TOKEN = "ghp_" + "c" * 36
+
+
+@pytest.mark.parametrize("kw", [{"reason": "rotated key " + AWS_KEY}, {"actor": GH_TOKEN},
+                                {"session": "xoxb-" + "1234567890abc"}])
+def test_r22_01_reanchor_refuses_secrets_before_writing(tmp_path, kw):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    args = {"actor": "impl:a", "reason": "rebase", "session": None, **kw}
+    with pytest.raises(StoreError) as e:
+        m.store.reanchor(args["actor"], args["reason"], args["session"], acknowledge_loss=True)
+    assert e.value.code == "SECRET"
+    assert seg_bytes(m) == before
+
+
+@pytest.mark.parametrize("argv", [["--actor", AWS_KEY, "recover"],
+                                  ["--actor", "impl:a", "--session", "xoxb-1234567890abc", "recover"],
+                                  ["--actor", "impl:a", "recover", "--reason", "key " + GH_TOKEN]])
+def test_r22_01_recover_refuses_secrets_before_writing(tmp_path, argv):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    with m.store.segment_path.open("ab") as f:
+        f.write(b'{"torn":')
+    before = seg_bytes(m)
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), *argv], out=out) != 0
+    assert seg_bytes(m) == before and "SECRET" in out.getvalue()
+    with pytest.raises(StoreError) as e:
+        m.store.recover(AWS_KEY)
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+def _r22_hosts(tmp_path):
+    a = new(tmp_path, actor="impl:a")
+    a.create_milestone("MM-1", "x")
+    a.update_milestone("MM-1", candidate_commit=C1)
+    clone = _clone_of(a, tmp_path, "b")
+    EventStore.init_host(clone, "hb")
+    return a, Manager(clone, actor="impl:b"), clone
+
+
+def _r22_accept(a, integrate=False):
+    a.record_review("MM-1", C1, "subagent", "rev:y", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    a.set_status("MM-1", "ACCEPTED", "go")
+    if integrate:
+        a.request_approval("MM-1", "INTEGRATION", "merge?")
+        a.resolve_approval("AP-1", "APPROVED", "yes", "chat")
+        a.record_integration("MM-1", "master", C1)
+        a.set_status("MM-1", "INTEGRATED", "merged")
+
+
+@pytest.mark.parametrize("order", ["update_first", "accept_first", "integrated"])
+def test_r22_02_concurrent_candidate_change_never_leaves_a_positive_status(tmp_path, order):
+    a, b, clone = _r22_hosts(tmp_path)
+    if order == "update_first":
+        b.update_milestone("MM-1", candidate_commit=C2)
+        _r22_accept(a)
+    else:
+        _r22_accept(a, integrate=order == "integrated")
+        b.update_milestone("MM-1", candidate_commit=C2)
+    (a.home / "events" / "hb.jsonl").write_bytes((clone / "events" / "hb.jsonl").read_bytes())
+    p = a.projection()
+    changed = [r for r in views.conflict_rows(p, "MM-1") if r["type"] == "CANDIDATE_CHANGED"]
+    assert changed and changed[0]["detail"]["bound"] == C1 and changed[0]["detail"]["candidate"] == C2
+    _resolve(a, "MM-1", "seen")
+    p = a.projection()
+    m = p["milestones"]["MM-1"]
+    assert m["candidate_commit"] == C2 and not views.open_conflicts(p, "MM-1")
+    ind = views.indicator(p, m)
+    assert ind["color"] == "RED" and "rests on" in ind["issue"]
+    out = io.StringIO()
+    cli.run(["--home", str(a.home), "status", "--json", "--no-tasks"], out=out)
+    row = [x for x in json.loads(out.getvalue())["milestones"] if x["id"] == "MM-1"][0]
+    assert row["indicator"]["color"] == "RED"
+    a.update_milestone("MM-1", candidate_commit=C1)  # the lock lets the candidate return to the bound commit
+    p = a.projection()
+    assert views.indicator(p, p["milestones"]["MM-1"])["color"] != "RED"
+
+
+def test_r22_02_single_host_flow_binds_without_conflict(tmp_path):
+    m = _accept_ready(tmp_path)
+    m.set_status("MM-A", "ACCEPTED", "ok")
+    p = m.projection()
+    assert p["milestones"]["MM-A"]["bound_commit"] == C1
+    assert not [c for c in p["conflicts"] if c["type"] == "CANDIDATE_CHANGED"]
+    with pytest.raises(ValidationError) as e:
+        m.update_milestone("MM-A", candidate_commit=C2)
+    assert e.value.code == "CANDIDATE_LOCKED"
+    m.set_status("MM-A", "IN_PROGRESS", "repair")
+    m.update_milestone("MM-A", candidate_commit=C2)
+    p = m.projection()
+    assert p["milestones"]["MM-A"]["bound_commit"] is None
+    assert views.indicator(p, p["milestones"]["MM-A"])["color"] != "RED"
+
+
+def test_r22_03_autocommit_commits_only_ledger_paths(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
+    (repo / "wip.txt").write_text("unrelated work\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "add", "wip.txt"], check=True)
+    home = repo / "ledger"
+    EventStore.init(home, "h1", autocommit=True)
+    Manager(home, actor="impl:a").create_milestone("MM-A", "A")
+    files = subprocess.run(["git", "-C", str(repo), "log", "--name-only", "--format="], capture_output=True,
+                           text=True).stdout.split()
+    assert "ledger/events/h1.jsonl" in files and "wip.txt" not in files
+    staged = subprocess.run(["git", "-C", str(repo), "diff", "--cached", "--name-only"], capture_output=True,
+                            text=True).stdout.split()
+    assert staged == ["wip.txt"]
+
+
+@pytest.mark.parametrize("limit", [0, 10, 59, 60])
+def test_r22_04_resume_bound_holds_for_small_limits(tmp_path, limit):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A", objective="o" * 3000)
+    text = views.resume_brief(m.projection(), "MM-A", {"available": False, "reason": "x"}, max_chars=limit)
+    assert len(text) <= views.MIN_RESUME_CHARS and "truncated" in text
+
+
+def test_r22_05_resolve_help_names_only_conflicts():
+    assert "`status`/`conflicts`" not in (ROOT / "scripts" / "dev_workflow" / "milestones" / "cli.py").read_text(
+        encoding="utf-8")

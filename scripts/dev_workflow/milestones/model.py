@@ -309,7 +309,7 @@ def _apply_one(p: dict, ev: dict) -> None:
                        "status": d.get("status") or "PLANNED", "depends_on": list(d.get("depends_on") or []),
                        "acceptance_ref": d.get("acceptance_ref"), "worktree": d.get("worktree"),
                        "branch": d.get("branch"), "base_commit": d.get("base_commit"), "candidate_commit": None,
-                       "next_action": d.get("next_action"), "assignment": None, "implementers": [ev["actor"]],
+                       "bound_commit": None, "next_action": d.get("next_action"), "assignment": None, "implementers": [ev["actor"]],
                        "lifecycle": [], "integration": None, "origin": d.get("origin"), "created": ref,
                        "status_history": [{"status": d.get("status") or "PLANNED", "at": ev["ts"],
                                            "by": ev["actor"], "reason": "created"}]}
@@ -319,6 +319,13 @@ def _apply_one(p: dict, ev: dict) -> None:
         if m:
             for k, v in d["fields"].items():
                 m[k] = v
+            if "candidate_commit" in d["fields"] and m["status"] in POSITIVE_STATUSES and m.get("bound_commit") \
+                    and m["candidate_commit"] != m["bound_commit"]:
+                # a concurrent host changed the candidate of a milestone accepted elsewhere (review R22-02)
+                _conflict(p, "CANDIDATE_CHANGED", d["id"], ref, kind, d["id"], bound=m["bound_commit"],
+                          candidate=m["candidate_commit"],
+                          problems=[f"candidate set to {m['candidate_commit']} while {m['status']} rests on "
+                                    f"{m['bound_commit']}"])
             _bump(p, d["id"])
     elif kind == "MILESTONE_STATUS_SET":
         m = ms.get(d["id"])
@@ -327,6 +334,7 @@ def _apply_one(p: dict, ev: dict) -> None:
             m["status"] = d["status"]
             m["status_history"].append({"status": d["status"], "at": ev["ts"], "by": ev["actor"],
                                         "reason": d.get("reason"), "basis": d.get("basis")})
+            _check_binding(p, m, d, ref)
             _bump(p, d["id"])
     elif kind == "DEPENDENCY_ADDED":
         m = ms.get(d["id"])
@@ -513,6 +521,42 @@ def _apply_one(p: dict, ev: dict) -> None:
             _conflict(p, "ANCHOR_LOSS", "LEDGER", ref, kind, None, anchor_problems=d["anchor_problems"])
     elif kind == "ANCHORS_ADOPTED":
         _conflict(p, "ANCHOR_LOSS", "LEDGER", ref, kind, None, adopted=d)
+
+
+POSITIVE_STATUSES = ("ACCEPTED", "INTEGRATED", "DONE")
+
+
+def _check_binding(p, m, d, ref) -> None:
+    """Keep the commit a positive status rests on (``bound_commit``) and compare every record of the basis with the
+    candidate in the merged history: a host that changed the candidate concurrently must not leave the milestone
+    ACCEPTED/INTEGRATED on an unreviewed commit (review R22-02)."""
+    if d["status"] not in POSITIVE_STATUSES:
+        m["bound_commit"] = None
+        return
+    basis = d.get("basis") or {}
+    cand = m.get("candidate_commit")
+    bound = basis.get("commit") or m.get("bound_commit")
+    if not bound and d["status"] == "INTEGRATED":
+        bound = (m.get("integration") or {}).get("candidate_commit")
+    problems = []
+    if bound and cand != bound:
+        problems.append(f"candidate {cand} is not the commit {bound} that {d['status']} rests on")
+    for r in basis.get("reviews") or []:
+        rc = (p["reviews"].get(r) or {}).get("commit")
+        if rc and rc != (bound or cand):
+            problems.append(f"review {r} is on {rc}")
+    for a in basis.get("approvals") or []:
+        ac = (p["approvals"].get(a) or {}).get("commit")
+        if ac != (bound or cand):
+            problems.append(f"approval {a} is bound to {ac}")
+    if d["status"] == "INTEGRATED":
+        ic = (m.get("integration") or {}).get("candidate_commit")
+        if ic != (bound or cand):
+            problems.append(f"integration record is for {ic}")
+    m["bound_commit"] = bound or cand
+    if problems:
+        _conflict(p, "CANDIDATE_CHANGED", m["id"], ref, "MILESTONE_STATUS_SET", m["id"], bound=m["bound_commit"],
+                  candidate=cand, problems=problems)
 
 
 def _check_basis(p, d, ref) -> None:

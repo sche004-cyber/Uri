@@ -14,6 +14,7 @@ import os
 import sys
 
 from scripts.dev_workflow.milestones import importers, views
+from scripts.dev_workflow.milestones import model as M
 from scripts.dev_workflow.milestones.model import ValidationError
 from scripts.dev_workflow.milestones.service import Manager
 from scripts.dev_workflow.milestones.store import EventStore, StoreError
@@ -103,7 +104,7 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("integration-record"); _p(s, "subject"); _p(s, "--target-ref", required=True)
     _p(s, "--target-commit", required=True); _p(s, "--repo")
     s = sub.add_parser("resolve-conflict"); _p(s, "entity"); _p(s, "--note", required=True)
-    _p(s, "--id", action="append", default=[], help="conflict id shown by `status`/`conflicts` (repeatable)")
+    _p(s, "--id", action="append", default=[], help="conflict id shown by `conflicts` (repeatable)")
     s = sub.add_parser("conflicts", help="list open conflicts with their ids"); _p(s, "--entity")
 
     s = sub.add_parser("import-decisions"); _p(s, "path"); _p(s, "--commit"); _p(s, "--register")
@@ -297,8 +298,9 @@ def run(argv=None, out=None) -> int:
             emit({"ok": not probs, "problems": probs})
             return 0 if not probs else 3
         elif c == "recover":
-            if not args.actor:
-                raise ValidationError("NO_ACTOR", "--actor is required")
+            mgr._require_actor()
+            if M.find_secret(args.reason or ""):  # checked before the recovery, not after it (review R22-01)
+                raise ValidationError("SECRET", "--reason looks like a secret; nothing was written")
             res = mgr.store.recover(args.actor, args.session, args.acknowledge_loss)
             try:
                 ab = mgr.abandon_batches(args.reason)

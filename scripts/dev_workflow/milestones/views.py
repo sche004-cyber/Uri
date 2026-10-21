@@ -16,6 +16,7 @@ WORD = {"GREEN": "COMPLETED", "BLUE": "IN PROGRESS", "YELLOW": "OWNER ACTION", "
         "WHITE": "NOT ACTIVE"}
 A2UI_TONE = {"GREEN": "success", "BLUE": "accent", "YELLOW": "warning", "RED": "danger", "WHITE": "neutral"}
 DONE_STATES = ("ACCEPTED", "INTEGRATED", "DONE")
+MIN_RESUME_CHARS = 200
 OWNER_BLOCKS = ("OWNER_AUTHORIZATION", "OWNER_DECISION")
 
 
@@ -102,6 +103,11 @@ def indicator(p, m, tasks: dict | None = None) -> dict:
         kinds = sorted({f"{c.get('type', 'VERSION')} on {c['entity']}" for c in own})
         reds.append(f"{len(own)} open conflict(s): {', '.join(kinds)}; review them with `conflicts --entity "
                     f"{ident}` (also lists conflicts whose subject is {ident}), then resolve by the ids shown there")
+    if m["status"] in DONE_STATES and m.get("bound_commit") and m.get("candidate_commit") != m["bound_commit"]:
+        # stays RED after its conflict is resolved: the positive status is not about this commit (review R22-02)
+        reds.append(f"candidate {m.get('candidate_commit')} is not the commit {m['bound_commit']} that "
+                    f"{m['status']} rests on; set the candidate back to {m['bound_commit']}, or set the status back "
+                    "to IN_PROGRESS and have the new candidate reviewed")
     if m["status"] in DONE_STATES:
         neg = negative_reviews_on_candidate(p, m)
         if neg:
@@ -316,8 +322,9 @@ def resume_brief(p, ident, tasks: dict | None = None, max_chars: int = 6000, emo
     if not oa:
         out.append("   - none open")
     text = "\n".join(out)
+    max_chars = max(int(max_chars), MIN_RESUME_CHARS)  # a smaller bound would cut below the notice (review R22-04)
     if len(text) > max_chars:
-        text = text[: max_chars - 60].rsplit("\n", 1)[0] + f"\n[truncated at {max_chars} chars; use `show {ident}`]"
+        text = text[: max(0, max_chars - 60)].rsplit("\n", 1)[0] + f"\n[truncated at {max_chars} chars; use `show {ident}`]"
     return text
 
 
@@ -337,5 +344,5 @@ def conflict_rows(p, entity=None) -> list[dict]:
                      "event": f"{c['event']['seg']}#{c['event']['seq']}", "at": c["event"].get("ts"),
                      "subjects": c.get("subjects"),
                      "detail": {k: c[k] for k in ("lost", "anchor_problems", "unknown_previous", "adopted",
-                                                   "missing", "expected", "actual", "duplicate", "batch") if k in c}})
+                                                   "bound", "candidate", "problems", "missing", "expected", "actual", "duplicate", "batch") if k in c}})
     return rows
