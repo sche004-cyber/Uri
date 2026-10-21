@@ -32,7 +32,8 @@ up to date by the commits that add evidence (history is never rewritten; correct
 | `d1388d8c` | three toggles (Context and Draft removed, Thinking On/Off only, default Off, stored), URI Assist toggle, accessible `QcToggle` (FocusableActionDetector + Semantics), `QcSegmented` removed; R1-03 notice, R1-04 superseded-restore record (`ws_brain_host.py`), R1-05 wording, R1-06 dialog clause, R1-02 count |
 | `708500fd` | formatting restored in `QcStyle`, non-deprecated semantics matchers, live driver |
 | `abdfaa26` | R2 repairs: worker is the Assist authority (R2-01), Depth dropdown removed from the conversation pane (R2-02), focus kept while loading (R2-03), no Assist loading look (R2-04), tests (R2-05), unreadable Assist state is "unknown" (R2-06) |
-| next commit | R3 repairs: the worker's Assist reading is trusted only while a worker is connected; a disagreement re-reads the Assist status at most once per health reading (R3-01); this record (R3-06) |
+| `b774bb85` | R3 repairs: the worker's Assist reading is trusted only while a worker is connected; a disagreement re-reads the Assist status at most once per health reading (R3-01); this record (R3-06) |
+| `a87ee0a1` | R4 repairs: of the two worker readings (Assist status, brain health) the newer wins, by timestamps `AssistController.statusAt` / `OiConversation.brainHealthAt` (R4-01: a grant shows at once, also during a turn); only a newer health reading triggers a re-read (no ping-pong); the test fake returns a fresh Map per reading and the test asserts exactly one re-read per reading (R4-03). R4-02: a new worker resets the Assist mirror with a newer timestamp, so the old worker's health reading never wins |
 
 Files: `uri_ui/lib/living/integration/{brain_quick_controls,qc_toggle,oi_conversation,oi_widgets}.dart`,
 `uri_ui/lib/living/{living_app,widgets/living_composer}.dart`, `scripts/ws_brain_host.py`,
@@ -53,7 +54,8 @@ Files: `uri_ui/lib/living/integration/{brain_quick_controls,qc_toggle,oi_convers
 R1 (on `e9ee7409`): R1-01 MEDIUM fixed (`d1388d8c`, `abdfaa26`); R1-02..R1-06 fixed; R1-07 noted in `SUCCESSOR.md`;
 R1-08 INFO unchanged (literal-only typography guard).
 R2 (on `d1388d8c`, REVISE): R2-01..R2-08 repaired in `abdfaa26`; R2-09/R2-10 are D-2/D-1/D-3 above.
-R3 (on `abdfaa26`, REVISE): R3-01 MEDIUM and R3-06 repaired in the next commit. Open LOW: R3-02 (static resync
+R3 (on `abdfaa26`, REVISE): R3-01 MEDIUM and R3-06 repaired in `b774bb85`.
+R4 (on `b774bb85`, REVISE): R4-01 MEDIUM, R4-02 LOW, R4-03 LOW, R4-04 INFO repaired in `a87ee0a1` and this record. Open LOW: R3-02 (static resync
 guard is now per health reading), R3-03 (an unreadable Assist state leaves Vision unlocked, unchanged behaviour),
 R3-04 (focus can drop when loading ends in a disabled state), R3-05 INFO (diagnostics wording).
 
@@ -63,6 +65,7 @@ R3-04 (focus can drop when loading ends in a disabled state), R3-05 INFO (diagno
 |---|---|---|---|---|---|
 | `d1388d8c` | 807 passed, 23 skipped | 874 passed, 5 skipped | 10 info (5 new, removed in `708500fd`) | rc 0 | `[]` |
 | `abdfaa26` | 807 passed, 23 skipped | 879 passed, 5 skipped | 5 info (baseline) | rc 0 | `[]` |
+| `b774bb85` | 807 passed, 23 skipped | 881 passed, 5 skipped | 5 info (baseline) | rc 0 | `[]` |
 
 Logs: `D:\uri-dev\lifecycle\URI-CONTROLS-3\gates_<commit>\` (outside git; head.txt records HEAD and a clean tree).
 
@@ -71,6 +74,6 @@ Logs: `D:\uri-dev\lifecycle\URI-CONTROLS-3\gates_<commit>\` (outside git; head.t
 | Item | Where |
 |---|---|
 | R1 review | `docs/ui/controls_typography_20261018/review/R1_report.md` |
-| R2, R3 reviews (fresh read-only subagents) | `D:\uri-dev\lifecycle\URI-CONTROLS-3\review_R2_d1388d8c.md`, `review_R3_abdfaa26.md` |
+| R2, R3, R4 reviews (fresh read-only subagents) | `docs/ui/uri_controls_3/review/` (copies of `D:\uri-dev\lifecycle\URI-CONTROLS-3\review_R*.md`) |
 | Live driver | `docs/ui/uri_controls_3/live_harness/controls3_driver.dart` |
 | Live runs | not yet run: the GPU was contended on 2026-10-21 (desktop `dwm.exe` 1.77 GB; P3 fit -976 MiB), the production host waited in WAITING_FOR_GPU as designed |
