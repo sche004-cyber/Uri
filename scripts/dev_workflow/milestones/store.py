@@ -291,58 +291,71 @@ class EventStore:
         home = Path(home)
         if not (home / "mm.json").is_file():
             raise StoreError("NOT_INITIALISED", f"{home} has no mm.json")
-        if (home / "local" / "host.json").is_file():
-            raise StoreError("ALREADY_REGISTERED", "this machine already has a host id for this ledger")
-        own_seg = home / "events" / f"{host_id}.jsonl"
-        if own_seg.exists():
-            raise StoreError("HOST_ID_TAKEN", f"segment {host_id}.jsonl exists: it belongs to another machine; "
-                                              "choose a new host id")
-        local_existed = (home / "local").is_dir()
-        gi_existed = (home / ".gitignore").is_file()
-        anchors_file = home / "local" / "anchors.json"
-        anchors_before = anchors_file.read_bytes() if anchors_file.is_file() else None
+        # Everything below runs under the ledger lock, so a concurrent `init-host` on the same home cannot slip
+        # between the checks and the undo (review R9-02).
+        with os_lock(home / ".lock"):
+            if (home / "local" / "host.json").is_file():
+                raise StoreError("ALREADY_REGISTERED", "this machine already has a host id for this ledger")
+            own_seg = home / "events" / f"{host_id}.jsonl"
+            if own_seg.exists():
+                raise StoreError("HOST_ID_TAKEN", f"segment {host_id}.jsonl exists: it belongs to another machine; "
+                                                  "choose a new host id")
+            local_existed = (home / "local").is_dir()
+            gi_existed = (home / ".gitignore").is_file()
+            anchors_file = home / "local" / "anchors.json"
+            anchors_before = anchors_file.read_bytes() if anchors_file.is_file() else None
 
-        def undo():
-            # remove exactly what this call created; restore what it changed (reviews R7-03, R8-03..R8-05)
-            own_seg.unlink(missing_ok=True)
-            (home / "local" / "host.json").unlink(missing_ok=True)
-            if anchors_before is None:
-                anchors_file.unlink(missing_ok=True)
-            else:
-                atomic_write_bytes(anchors_file, anchors_before)
-            if not gi_existed:
-                (home / ".gitignore").unlink(missing_ok=True)
-            if not local_existed:
-                try:
-                    (home / "local").rmdir()
-                except OSError:
-                    pass
+            def undo():
+                # remove exactly what this call created; restore what it changed (reviews R7-03, R8-03..R8-05)
+                own_seg.unlink(missing_ok=True)
+                (home / "local" / "host.json").unlink(missing_ok=True)
+                if anchors_before is None:
+                    anchors_file.unlink(missing_ok=True)
+                else:
+                    atomic_write_bytes(anchors_file, anchors_before)
+                if not gi_existed:
+                    (home / ".gitignore").unlink(missing_ok=True)
+                if not local_existed:
+                    try:
+                        (home / "local").rmdir()
+                    except OSError:
+                        pass
 
-        EventStore._write_local(home, host_id)
-        st = EventStore(home)
-        segs = st.read_all()
-        bad = [e for s in segs for e in s.errors]
-        if bad:
-            undo()
-            raise StoreError("CHAIN_BROKEN", "cannot adopt anchors from a ledger that fails verification: " + bad[0])
-        if st.in_git():
-            dirty = st._git("status", "--porcelain", "--", "events").stdout.strip()
-            if dirty:
-                undo()
-                raise StoreError("UNCOMMITTED_SEGMENTS", "event segments differ from the git HEAD; adopting them "
-                                                         "would hide changes (review R6-02): inspect `git status "
-                                                         "events` first")
-        try:
-            with st.locked():
+            try:
+                EventStore._write_local(home, host_id)
+                st = EventStore(home)
+                segs = st.read_all()
+                bad = [e for s in segs for e in s.errors]
+                if bad:
+                    raise StoreError("CHAIN_BROKEN", "cannot adopt anchors from a ledger that fails verification: "
+                                     + bad[0])
+                if anchors_before is not None:
+                    previous = st.read_anchors()
+                    mismatch = [x for x in st.anchor_errors(segs, previous) if "no anchor entry" not in x]
+                    if mismatch:
+                        raise StoreError("ANCHOR_MISMATCH", "this machine's earlier anchors disagree with the "
+                                                            f"segments ({mismatch[0]}); check git history, then "
+                                                            "`reanchor --acknowledge-loss`")
+                if st.in_git():
+                    dirty = st._git("status", "--porcelain", "--", "events").stdout.strip()
+                    if dirty:
+                        raise StoreError("UNCOMMITTED_SEGMENTS", "event segments differ from the git HEAD; adopting "
+                                                                 "them would hide changes (review R6-02): inspect "
+                                                                 "`git status events` first")
+                # adopt the verified segments and this host's own entry (count 0) *before* appending, so a kill
+                # between the append and the refresh leaves the documented count-0 state (review R9-03)
+                st.write_anchors(segs)
+                st._tail = None
                 st.append_many([("HOST_REGISTERED", {"host": host_id, "adopted": {s.name: len(s.valid_events)
                                                                                    for s in segs}}, {})],
                                actor=f"init-host:{host_id}", floor=lamport_floor(segs))
                 st.write_anchors(st.read_all())
-        except BaseException:
-            # never leave a half registration; the segment file was created by this very call (it did not exist
-            # before), was never anchored or committed, so removing it deletes no ledger history
-            undo()
-            raise
+                st._tail = None
+            except BaseException:
+                # never leave a half registration; the segment file was created by this very call under the lock
+                # (it did not exist before), was never anchored or committed, so removing it deletes no history
+                undo()
+                raise
         st.autocommit("HOST_REGISTERED")
         return st
 
@@ -578,7 +591,10 @@ class EventStore:
                 return {"recovered": False}
             problems = self.anchor_errors(segs, before)
             notes = []
-            if not problems and self.anchor_warnings(segs, before):
+            own_anchor = (before or {}).get(self.host) or {}
+            if not problems and own_anchor.get("count", 0) == 0:
+                # (recover only runs with a torn tail, so the own segment has bytes even when its first line is
+                # cut and no complete event remains, review R9-01)
                 # The own segment was never anchored (count 0), so nothing can tell a power loss in progress from a
                 # cut of already applied events: the bytes on disk are identical (reviews R6-01, R7-01, R8-01,
                 # R8-02). Never refuse a crash recovery for it and never pass it silently: proceed and record one

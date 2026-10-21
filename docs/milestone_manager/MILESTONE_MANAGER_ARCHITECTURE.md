@@ -122,7 +122,7 @@ plus the last handoff note and the linked lifecycle run stage. Recovery scenario
 | Event | What happens |
 |---|---|
 | Context or quota exhaustion | nothing is lost: every recorded step is already fsynced; the next session runs `resume` |
-| Session killed mid-command | lock released by OS; either the event was fully written (fsynced line) or not at all, or a torn tail exists. If it died after the append but before the anchor refresh on a host's very first write, the next write anchors the segment and records ANCHORS_ADOPTED (one ANCHOR_LOSS conflict to review and resolve) |
+| Session killed mid-command | lock released by OS; either the event was fully written (fsynced line) or not at all, or a torn tail exists. If it died after the append but before the anchor refresh on a host's very first write (including the HOST_REGISTERED write of `init-host`), the next write anchors the segment and records ANCHORS_ADOPTED (one ANCHOR_LOSS conflict to review and resolve) |
 | Power loss mid-append | torn tail ignored by reads, reported by `verify`, quarantined by `recover`; earlier events intact; complete lines of the interrupted batch stay unapplied and are abandoned by the same `recover`. When the own segment has no anchor yet (a host's first command, or a failed first anchor refresh), `recover` always proceeds and records one ANCHOR_LOSS conflict for review: the bytes on disk cannot distinguish a power loss in progress from a cut of applied events (see §20) |
 | Newest events deleted, a segment rewritten, or the anchors file lost | `local/anchors.json` (and git history) disagree or the file is missing; `verify` fails, writes are refused, status shows an integrity banner and exits 3 |
 | Crash in the middle of a multi-event command | the command's events are one batch (one write + fsync); an incomplete batch is ignored by the fold and reported as a warning; the retry succeeds |
@@ -301,3 +301,11 @@ also refused legitimate cuts (R8-01). The rule is now uniform and simple:
 exception); if registration fails, the call removes exactly what it created (its new segment file, host file,
 `.gitignore`/`local/` if new) and restores the previous anchors bytes, so a retry works inside and outside git and
 cannot take over another machine's segment.
+
+## 21. Changes after independent review R9 (2026-10-22, REJECT on `2fe3615f`)
+
+| Change | Reason |
+|---|---|
+| `recover` treats "own anchor count 0" as unanchored whenever it runs (it only runs with a torn tail, so the segment always has bytes), also when the cut falls inside the first line and no complete event remains ⇒ always one ANCHOR_LOSS | R9-01 |
+| `init-host` holds the ledger lock for its checks, writes and undo, so a concurrent registration of the same id on the same home is seen (`HOST_ID_TAKEN`) and never undone by the other call; earlier anchors that disagree with the segments are refused (`ANCHOR_MISMATCH`) | R9-02 |
+| `init-host` writes the adopted anchors (with its own entry at count 0) before appending HOST_REGISTERED, so a kill between the append and the refresh leaves the documented count-0 state (warning, next write records ANCHORS_ADOPTED) instead of a missing anchors file | R9-03 |

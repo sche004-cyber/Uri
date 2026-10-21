@@ -1710,3 +1710,90 @@ def test_r8_05_failed_init_host_restores_existing_anchors(tmp_path, monkeypatch)
         EventStore.init_host(clone, "h2")
     assert (clone / "local" / "anchors.json").read_bytes() == old
     assert not (clone / "local" / "host.json").exists()
+
+
+# ------------------------------------------------------------------ R9 regression tests (review R9 on 2fe3615f)
+
+@pytest.mark.parametrize("first", ["single", "batch"])
+@pytest.mark.parametrize("cut", [1, 30, 120])
+def test_r9_01_cut_inside_the_first_line_is_recorded(tmp_path, first, cut):
+    m = new(tmp_path)
+    init_anchors = m.store.anchors_path.read_bytes()
+    if first == "single":
+        m.create_milestone("MM-A", "A")
+    else:
+        src = tmp_path / "developmental.md"
+        src.write_bytes(REGISTER_MD.encode())
+        importers.import_register(m, src)
+    m.store.anchors_path.write_bytes(init_anchors)  # first anchor refresh failed (or power lost before it)
+    path = m.store.segment_path
+    path.write_bytes(path.read_bytes()[:cut])  # cut inside line 0: no complete event remains
+    assert cli.run(["--home", str(m.home), "--actor", "impl:a", "recover"], out=io.StringIO()) == 0
+    p = m.projection()
+    assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))
+
+
+HOLD_LOCK = r"""
+import sys, time
+sys.path.insert(0, sys.argv[1])
+from scripts.dev_workflow.milestones.store import os_lock
+from pathlib import Path
+with os_lock(Path(sys.argv[2])):
+    Path(sys.argv[3]).write_text("held")
+    time.sleep(0.8)
+    if len(sys.argv) > 4:  # another registration of the same id completes while the lock is held
+        Path(sys.argv[4]).write_bytes(b"")
+    time.sleep(1.2)
+"""
+
+
+def test_r9_02_init_host_checks_under_the_ledger_lock(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    clone = _clone_of(m, tmp_path)
+    flag = tmp_path / "held.flag"
+    proc = subprocess.Popen([sys.executable, "-c", HOLD_LOCK, str(ROOT), str(clone / ".lock"), str(flag),
+                             str(clone / "events" / "h2.jsonl")])
+    try:
+        for _ in range(200):
+            if flag.exists():
+                break
+            time.sleep(0.02)
+        assert flag.exists()
+        with pytest.raises(StoreError) as e:  # sees the segment created while it waited: never races it
+            EventStore.init_host(clone, "h2")
+        assert e.value.code == "HOST_ID_TAKEN"
+        assert (clone / "events" / "h2.jsonl").exists()  # the other registration's file is untouched
+    finally:
+        proc.wait(timeout=30)
+
+
+KILL_IN_INIT_HOST = r"""
+import os, sys
+sys.path.insert(0, sys.argv[1])
+from scripts.dev_workflow.milestones import store
+real = store.EventStore.write_anchors
+calls = {"n": 0}
+def dying(self, segs):
+    calls["n"] += 1
+    if calls["n"] == 2:   # after HOST_REGISTERED was appended, before the refresh
+        os._exit(9)
+    return real(self, segs)
+store.EventStore.write_anchors = dying
+store.EventStore.init_host(sys.argv[2], "h2")
+"""
+
+
+def test_r9_03_kill_during_init_host_leaves_the_documented_count0_state(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    clone = _clone_of(m, tmp_path)
+    r = subprocess.run([sys.executable, "-c", KILL_IN_INIT_HOST, str(ROOT), str(clone)])
+    assert r.returncode == 9
+    m2 = Manager(clone, actor="b")
+    p = m2.projection()
+    assert not p["integrity_errors"] and any("not anchored yet" in w for w in p["integrity_warnings"])
+    m2.create_milestone("MM-B", "B")  # next write adopts and records it (architecture §7)
+    p = m2.projection()
+    assert not p["integrity_errors"]
+    assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))
