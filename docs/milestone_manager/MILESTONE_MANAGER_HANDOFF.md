@@ -73,7 +73,9 @@ This file is updated at every checkpoint so work can resume without chat history
 | 44 | 2026-10-22 | `8745a8d0` | **R21 = REJECT** (1 MEDIUM, 2 LOW); R20 fixed; full output-path sweep | repair |
 | 45 | 2026-10-22 | `aa70a5ba` | R21 repaired (`reviews/R21_REPAIR.md`); 189 MM tests; N5 at `dc22ece1`: 498 passed / 5 platform-gated / 0 failed | independent re-review R22 |
 | 46 | 2026-10-22 | `aa70a5ba` | **R22 = REJECT** (1 HIGH, 2 MEDIUM, 2 LOW); R21 fixed | repair |
-| 47 | 2026-10-22 | (R22 repair commit, see `git log`) | R22 repaired (`reviews/R22_REPAIR.md`); 205 MM tests; R22 tests 16/16 fail pre-repair; frozen check exit 0; rehearsal re-run; N5 gate on `8745a8d0` stopped unfinished (superseded, not evidence) | independent re-review R23 |
+| 47 | 2026-10-22 | `a28016d3` | R22 repaired (`reviews/R22_REPAIR.md`); 205 MM tests; R22 tests 16/16 fail pre-repair; frozen check exit 0; rehearsal re-run; N5 gate on `8745a8d0` stopped unfinished (superseded, not evidence) | independent re-review R23 |
+| 48 | 2026-10-22 | `a28016d3` | **R23 = ACCEPT WITH FINDINGS** (3 LOW, 0 blocking; `reviews/R23_a28016d3.md`); N5 at `a28016d3`: 521 passed / 5 platform-gated / 0 failed (26 min, `evidence/devworkflow_a28016d3.log`); frozen check exit 0 | acceptance recorded |
+| 49 | 2026-10-22 | (acceptance docs commit, docs only) | **INDEPENDENTLY ACCEPTED on `a28016d3`**; candidate isolated, not integrated | owner: integration authorisation; follow-up for R23-01..03 |
 
 ## Verification status (exact)
 
@@ -90,3 +92,15 @@ This file is updated at every checkpoint so work can resume without chat history
 - Promote a ledger as authoritative, and where (rehearsal AP-12).
 - Is P11 Multi-Client Deployment still on the roadmap (rehearsal AP-11)?
 - Integration: P0 prerequisites unreconciled (P0 branch unpushed, OPEN-09; POL-P0-1 / OPEN-05 decides whether subagent acceptance counts for canonical). Canonical integration needs separate authorisation.
+
+## Acceptance (2026-10-22)
+
+| Item | Value |
+|---|---|
+| Accepted candidate | `a28016d3ae153ed460dc13375fc4202a5c4c8694` (code); later commits on the branch change only `docs/milestone_manager/` |
+| Review | R23, fresh isolated subagent (assurance SUBAGENT, allowed by the owner amendment), COMPLETED_WITH_RESULT, ACCEPT WITH FINDINGS, BLOCKING_OPEN 0 |
+| Review history | 23 rounds; R1-R22 REJECT, each repaired with regression tests (see `reviews/`) |
+| Tests | 205 MM tests; full `tests/dev_workflow` 521 passed / 5 platform-gated (Linux only) / 0 failed on `a28016d3` |
+| Frozen core | `scripts/ws_frozen_check.py` exit 0; additions only against `ec2fab54` |
+| Open non-blocking | R23-01 (autocommit with non-ASCII ledger path or `diff.relative`), R23-02 (CANDIDATE_CHANGED fingerprint keys), R23-03 (resume notice length) |
+| Integration | NOT integrated. Prerequisites still open: P0 branch unpushed (OPEN-09), POL-P0-1 (OPEN-05, whether subagent acceptance counts for canonical), separate owner integration authorisation |

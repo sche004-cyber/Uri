@@ -79,3 +79,9 @@ MM adds files only (`scripts/dev_workflow/milestones/`, `tests/dev_workflow/test
 `docs/milestone_manager/`). Rollback = revert the merge or fast-forward commit, or simply stop using the CLI. A
 ledger home is data outside the code; deleting the code never deletes a ledger. The markdown registers are never
 modified by MM, so they remain a complete fallback.
+
+## 7. Status (2026-10-22)
+
+Implementation complete and independently accepted on `a28016d3` (review R23, ACCEPT WITH FINDINGS, 3 LOW open).
+Full `tests/dev_workflow`: 521 passed / 5 platform-gated / 0 failed. Integration awaits the prerequisites listed in
+the handoff's Acceptance section.
