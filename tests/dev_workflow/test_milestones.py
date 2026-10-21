@@ -1507,16 +1507,19 @@ def _first_batch_power_loss(tmp_path, torn_len):
     return m, src
 
 
-@pytest.mark.parametrize("torn_len", [400])
+@pytest.mark.parametrize("torn_len", [20, 60, 65, 120, 400])
 def test_r6_01_power_loss_in_a_hosts_first_multi_event_command_recovers(tmp_path, torn_len):
-    m, src = _first_batch_power_loss(tmp_path, torn_len)  # torn bytes long enough to prove the continuation
+    """Never refused (R6-01), never silent (R7-01, R8-01/02): one ANCHOR_LOSS to review, any cut position."""
+    m, src = _first_batch_power_loss(tmp_path, torn_len)
     out = io.StringIO()
     assert cli.run(["--home", str(m.home), "--actor", "impl:a", "recover"], out=out) == 0, out.getvalue()
     res = json.loads(out.getvalue())
     assert res["recovered"] and res["abandoned_batches"]
     p = m.projection()
-    assert not p["integrity_errors"] and not views.open_conflicts(p) and not p["records"]
-    importers.import_register(m, src)  # the retry works and is not flagged
+    assert not p["integrity_errors"] and not p["records"]
+    assert [c["type"] for c in views.open_conflicts(p)] == ["ANCHOR_LOSS"]
+    m.resolve_conflict("LEDGER", "power loss during the first import; quarantined bytes checked")
+    importers.import_register(m, src)  # the retry works
     p = m.projection()
     assert len(p["records"]) == 4 and not views.open_conflicts(p)
 
@@ -1545,15 +1548,19 @@ def test_r7_01_truncated_applied_batch_is_never_hidden(tmp_path):
     assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))  # visible, needs review
 
 
-def test_r7_01_torn_tail_naming_another_batch_position_is_refused(tmp_path):
-    m, _ = _first_batch_power_loss(tmp_path, 400)
+def test_r8_02_truncation_of_an_applied_batch_past_the_batch_id_is_never_hidden(tmp_path):
+    src = tmp_path / "developmental.md"
+    src.write_bytes(REGISTER_MD.encode())
+    m = new(tmp_path)
+    init_anchors = m.store.anchors_path.read_bytes()
+    importers.import_register(m, src)  # complete and applied
+    m.store.anchors_path.write_bytes(init_anchors)  # its anchor refresh had failed
     path = m.store.segment_path
-    data = path.read_bytes()
-    head, torn = data.split(b"\n", 1)
-    path.write_bytes(head + b"\n" + torn.replace(b'"batch":{"i":1', b'"batch":{"i":3', 1))
-    with pytest.raises(StoreError) as e:
-        m.store.recover("impl:a")
-    assert e.value.code == "LOSS_NOT_ACKNOWLEDGED"
+    lines = path.read_bytes().split(b"\n")[:-1]
+    path.write_bytes(lines[0] + b"\n" + lines[1][:200])  # genuine bytes, cut deep inside line 2
+    m.store.recover("impl:a")
+    p = m.projection()
+    assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))
 
 
 def test_r6_02_init_host_refuses_uncommitted_segment_changes_and_records_itself(tmp_path):
@@ -1640,3 +1647,66 @@ def test_r7_03_init_host_failure_leaves_no_half_registration(tmp_path, monkeypat
     monkeypatch.setattr(store_mod.EventStore, "append_many", real)
     st = EventStore.init_host(clone, "h2")  # the retry works
     assert st.verify()["ok"]
+
+
+# ------------------------------------------------------------------ R8 regression tests (review R8 on ddc4e63b)
+
+def _clone_of(m, tmp_path, name="clone"):
+    clone = tmp_path / name
+    (clone / "events").mkdir(parents=True)
+    (clone / "mm.json").write_bytes((m.home / "mm.json").read_bytes())
+    for seg in (m.home / "events").glob("*.jsonl"):
+        (clone / "events" / seg.name).write_bytes(seg.read_bytes())
+    return clone
+
+
+def test_r8_03_init_host_never_takes_over_a_registered_segment(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    c2 = _clone_of(m, tmp_path, "c2")
+    EventStore.init_host(c2, "pc2")  # registered, nothing else written yet
+    c3 = tmp_path / "c3"
+    (c3 / "events").mkdir(parents=True)
+    (c3 / "mm.json").write_bytes((c2 / "mm.json").read_bytes())
+    for seg in (c2 / "events").glob("*.jsonl"):
+        (c3 / "events" / seg.name).write_bytes(seg.read_bytes())
+    with pytest.raises(StoreError) as e:
+        EventStore.init_host(c3, "pc2")
+    assert e.value.code == "HOST_ID_TAKEN"
+
+
+def test_r8_04_failed_init_host_in_git_can_be_retried(tmp_path, monkeypatch):
+    home = tmp_path / "ledger"
+    home.mkdir()
+    for args in (("init", "-q"), ("config", "user.email", "t@t"), ("config", "user.name", "t")):
+        subprocess.run(["git", "-C", str(home), *args], check=True)
+    EventStore.init(home, "h1", autocommit=True)
+    Manager(home, actor="a").create_milestone("MM-A", "A")
+    clone = tmp_path / "clone"
+    subprocess.run(["git", "clone", "-q", str(home), str(clone)], check=True)
+    from scripts.dev_workflow.milestones import store as store_mod
+    real = store_mod.EventStore.write_anchors
+    monkeypatch.setattr(store_mod.EventStore, "write_anchors",
+                        lambda self, segs: (_ for _ in ()).throw(OSError("disk")))
+    with pytest.raises(OSError):
+        EventStore.init_host(clone, "pc4")
+    monkeypatch.setattr(store_mod.EventStore, "write_anchors", real)
+    assert not (clone / "events" / "pc4.jsonl").exists()
+    st = EventStore.init_host(clone, "pc4")
+    assert st.verify()["ok"]
+
+
+def test_r8_05_failed_init_host_restores_existing_anchors(tmp_path, monkeypatch):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    clone = _clone_of(m, tmp_path)
+    (clone / "local").mkdir()
+    old = b'{"h9": {"count": 0, "head": "' + b"0" * 64 + b'"}}'
+    (clone / "local" / "anchors.json").write_bytes(old)
+    from scripts.dev_workflow.milestones import store as store_mod
+    monkeypatch.setattr(store_mod.EventStore, "append_many",
+                        lambda self, *a, **k: (_ for _ in ()).throw(StoreError("LOCK_TIMEOUT", "busy")))
+    with pytest.raises(StoreError):
+        EventStore.init_host(clone, "h2")
+    assert (clone / "local" / "anchors.json").read_bytes() == old
+    assert not (clone / "local" / "host.json").exists()

@@ -121,48 +121,6 @@ def lamport_floor(segs) -> str:
     return ts_plus(newest, 0.000001) if newest else ""
 
 
-def _only_own_registration(path, host_id) -> bool:
-    """A segment holding only HOST_REGISTERED events of ``host_id`` (left by an interrupted `init-host`)."""
-    s = read_segment(path)
-    return (not s.errors and not s.torn and all(e.get("kind") == "HOST_REGISTERED" and
-                                                (e.get("data") or {}).get("host") == host_id for e in s.events))
-
-
-def _only_unapplied_batches(seg, anchors, host) -> bool:
-    """True when every own event beyond the anchored count belongs to an incomplete batch of this segment."""
-    n = ((anchors or {}).get(host) or {}).get("count", 0)
-    tail = seg.valid_events[n:]
-    if not tail:
-        return False
-    sizes = {}
-    for e in seg.valid_events:
-        b = e.get("batch")
-        if isinstance(b, dict):
-            sizes[b["id"]] = sizes.get(b["id"], 0) + 1
-    return all(isinstance(e.get("batch"), dict) and sizes[e["batch"]["id"]] < e["batch"]["n"] for e in tail)
-
-
-_TORN_BATCH_RX = re.compile(rb'^\{"actor":.*?,"batch":\{"i":(\d+),"id":"([0-9a-f]+)"')
-
-
-def _torn_continues_batch(seg):
-    """Whether the torn tail is the next line of the incomplete batch at the end of the segment.
-
-    True: its canonical prefix names that batch and exactly the next index. False: it names something else.
-    None: too short to tell (the ``batch`` field comes third in canonical key order)."""
-    tail = seg.valid_events[-1] if seg.valid_events else None
-    b = (tail or {}).get("batch")
-    if not isinstance(b, dict):
-        return False
-    have = sum(1 for e in seg.valid_events if (e.get("batch") or {}).get("id") == b["id"])
-    m = _TORN_BATCH_RX.match(seg.torn)
-    if m:
-        return m.group(2).decode() == b["id"] and int(m.group(1)) == have
-    if b'"batch"' in seg.torn or b'"data"' in seg.torn:
-        return False  # past the batch field without naming this batch
-    return None
-
-
 # --------------------------------------------------------------------------- OS lock
 
 @contextlib.contextmanager
@@ -336,20 +294,41 @@ class EventStore:
         if (home / "local" / "host.json").is_file():
             raise StoreError("ALREADY_REGISTERED", "this machine already has a host id for this ledger")
         own_seg = home / "events" / f"{host_id}.jsonl"
-        if own_seg.exists() and not _only_own_registration(own_seg, host_id):
+        if own_seg.exists():
             raise StoreError("HOST_ID_TAKEN", f"segment {host_id}.jsonl exists: it belongs to another machine; "
                                               "choose a new host id")
+        local_existed = (home / "local").is_dir()
+        gi_existed = (home / ".gitignore").is_file()
+        anchors_file = home / "local" / "anchors.json"
+        anchors_before = anchors_file.read_bytes() if anchors_file.is_file() else None
+
+        def undo():
+            # remove exactly what this call created; restore what it changed (reviews R7-03, R8-03..R8-05)
+            own_seg.unlink(missing_ok=True)
+            (home / "local" / "host.json").unlink(missing_ok=True)
+            if anchors_before is None:
+                anchors_file.unlink(missing_ok=True)
+            else:
+                atomic_write_bytes(anchors_file, anchors_before)
+            if not gi_existed:
+                (home / ".gitignore").unlink(missing_ok=True)
+            if not local_existed:
+                try:
+                    (home / "local").rmdir()
+                except OSError:
+                    pass
+
         EventStore._write_local(home, host_id)
         st = EventStore(home)
         segs = st.read_all()
         bad = [e for s in segs for e in s.errors]
         if bad:
-            st.host_path.unlink()
+            undo()
             raise StoreError("CHAIN_BROKEN", "cannot adopt anchors from a ledger that fails verification: " + bad[0])
         if st.in_git():
             dirty = st._git("status", "--porcelain", "--", "events").stdout.strip()
             if dirty:
-                st.host_path.unlink()
+                undo()
                 raise StoreError("UNCOMMITTED_SEGMENTS", "event segments differ from the git HEAD; adopting them "
                                                          "would hide changes (review R6-02): inspect `git status "
                                                          "events` first")
@@ -360,10 +339,9 @@ class EventStore:
                                actor=f"init-host:{host_id}", floor=lamport_floor(segs))
                 st.write_anchors(st.read_all())
         except BaseException:
-            # never leave a half registration (host id without anchors), review R7-03; a segment line already
-            # written stays (append-only) and the retry continues it under the same id
-            st.host_path.unlink(missing_ok=True)
-            st.anchors_path.unlink(missing_ok=True)
+            # never leave a half registration; the segment file was created by this very call (it did not exist
+            # before), was never anchored or committed, so removing it deletes no ledger history
+            undo()
             raise
         st.autocommit("HOST_REGISTERED")
         return st
@@ -601,17 +579,13 @@ class EventStore:
             problems = self.anchor_errors(segs, before)
             notes = []
             if not problems and self.anchor_warnings(segs, before):
-                proof = _torn_continues_batch(seg) if _only_unapplied_batches(seg, before, self.host) else False
-                if proof is True:
-                    pass  # power loss inside a host's first multi-event command (review R6-01): nothing to review
-                elif proof is None:
-                    # cannot tell a mid-batch power loss from a truncated, already applied batch whose anchor
-                    # refresh had failed (review R7-01): proceed, but record it for review (ANCHOR_LOSS)
-                    notes = ["own segment was unanchored and the torn bytes are too short to prove they continue "
-                             "the incomplete batch: review whether applied events were lost, then "
-                             "`resolve-conflict LEDGER`"]
-                else:
-                    problems = self.anchor_warnings(segs, before)
+                # The own segment was never anchored (count 0), so nothing can tell a power loss in progress from a
+                # cut of already applied events: the bytes on disk are identical (reviews R6-01, R7-01, R8-01,
+                # R8-02). Never refuse a crash recovery for it and never pass it silently: proceed and record one
+                # ANCHOR_LOSS conflict for review.
+                notes = ["own segment had no anchor when this torn tail was recovered: a power loss during the "
+                         "first write is the usual cause, but a cut of applied events cannot be ruled out; review "
+                         "(e.g. git history, the quarantined bytes), then `resolve-conflict LEDGER`"]
             if problems and not acknowledge_loss:
                 raise StoreError("LOSS_NOT_ACKNOWLEDGED", "recover would re-base anchors that cannot vouch for the "
                                                           f"ledger ({problems[0]}); check git history and pass "

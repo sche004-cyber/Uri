@@ -123,7 +123,7 @@ plus the last handoff note and the linked lifecycle run stage. Recovery scenario
 |---|---|
 | Context or quota exhaustion | nothing is lost: every recorded step is already fsynced; the next session runs `resume` |
 | Session killed mid-command | lock released by OS; either the event was fully written (fsynced line) or not at all, or a torn tail exists. If it died after the append but before the anchor refresh on a host's very first write, the next write anchors the segment and records ANCHORS_ADOPTED (one ANCHOR_LOSS conflict to review and resolve) |
-| Power loss mid-append | torn tail ignored by reads, reported by `verify`, quarantined by `recover`; earlier events intact; complete lines of the interrupted batch stay unapplied and are abandoned by the same `recover`. On a host's first command (own segment not yet anchored) `recover` checks that the torn bytes continue that batch: proven ⇒ nothing to review; too short to tell ⇒ recovered and recorded as ANCHOR_LOSS for one review; contradicting ⇒ refused without `--acknowledge-loss` |
+| Power loss mid-append | torn tail ignored by reads, reported by `verify`, quarantined by `recover`; earlier events intact; complete lines of the interrupted batch stay unapplied and are abandoned by the same `recover`. When the own segment has no anchor yet (a host's first command, or a failed first anchor refresh), `recover` always proceeds and records one ANCHOR_LOSS conflict for review: the bytes on disk cannot distinguish a power loss in progress from a cut of applied events (see §20) |
 | Newest events deleted, a segment rewritten, or the anchors file lost | `local/anchors.json` (and git history) disagree or the file is missing; `verify` fails, writes are refused, status shows an integrity banner and exits 3 |
 | Crash in the middle of a multi-event command | the command's events are one batch (one write + fsync); an incomplete batch is ignored by the fold and reported as a warning; the retry succeeds |
 | Harness or agent replaced | identity is a recorded string; claims expire; the new agent claims after expiry or release |
@@ -284,3 +284,20 @@ that is only detectable from the ledger's git history or another machine's ancho
 | `recover` on an unanchored own segment decides on the torn bytes: their canonical prefix must name the incomplete batch and its next index (`_torn_continues_batch`); too short ⇒ proceed but record ANCHOR_LOSS; contradicting ⇒ `LOSS_NOT_ACKNOWLEDGED` | R7-01 (the R6-01 repair let a truncated, already applied batch disappear without review) |
 | warning text fixed | R7-02 |
 | `init-host` removes its host file and anchors if the locked registration fails; a retry may continue a segment that holds only its own HOST_REGISTERED events | R7-03 |
+
+## 20. Changes after independent review R8 (2026-10-22, REJECT on `ddc4e63b`)
+
+The R6/R7 attempts to *prove* from the torn bytes that a tail was a harmless power loss were wrong in principle: a
+genuine power-loss file and a byte-truncation of applied events are byte-identical (R8-02), and the prefix parsing
+also refused legitimate cuts (R8-01). The rule is now uniform and simple:
+
+| Situation in `recover` | Behaviour |
+|---|---|
+| anchors vouch for the segment (normal case) | quarantine the torn tail, abandon this host's incomplete batches, nothing to review |
+| own segment has no anchor (count 0) | same, and record one ANCHOR_LOSS conflict (review, then `resolve-conflict LEDGER`); never refused |
+| anchors show a loss or are missing/invalid | refused (`LOSS_NOT_ACKNOWLEDGED`) unless `--acknowledge-loss`, which records ANCHOR_LOSS |
+
+`init-host` (R8-03..R8-05): any existing segment with the requested id is refused (`HOST_ID_TAKEN`, no retry
+exception); if registration fails, the call removes exactly what it created (its new segment file, host file,
+`.gitignore`/`local/` if new) and restores the previous anchors bytes, so a retry works inside and outside git and
+cannot take over another machine's segment.
