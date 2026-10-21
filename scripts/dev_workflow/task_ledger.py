@@ -376,7 +376,8 @@ class Ledger:
                     raise Refused(f"{tid} already exists")
             else:
                 raise LedgerError("could not allocate a unique task id")
-            title_r, _ = redact(title)
+            title_r = redact(title)[0]
+            milestone_ref, branch = redact(milestone_ref)[0], redact(branch)[0]   # R1-04: every row string
             ts = now_iso()
             self.db.execute("INSERT INTO tasks(task_id, milestone_ref, title, status, version, created_at, "
                             "updated_at, head_commit, worktree, branch, chain_head) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
@@ -438,6 +439,7 @@ class Ledger:
                                 blocker=None)
 
     def set_milestone_ref(self, task_id: str, actor: str, milestone_ref: str | None) -> dict:
+        milestone_ref = redact(milestone_ref)[0]
         with self.tx():
             self._guard_dev(self._task(task_id), actor, "milestone_ref")
             return self._append(task_id, "MILESTONE_REF", actor, {"milestone_ref": milestone_ref},
@@ -467,6 +469,8 @@ class Ledger:
             self._guard_dev(t, actor, "record test")
             sha = _resolve_commit(t["worktree"], commit)
             log = None
+            if passed and not log_path:
+                raise Refused("a passing test result needs its log (--log): a claimed pass is not evidence (R1-03)")
             if log_path:
                 p = Path(log_path)
                 if is_secret_path(p):
@@ -516,8 +520,17 @@ class Ledger:
         text_r, n = redact(text)
         key_r = redact(key)[0] if key else None
         sha = sha256(json.dumps([kind, key_r, text_r, path, blob, commit]))
-        old = self.db.execute("SELECT id FROM context WHERE task_id=? AND sha=?", (task_id, sha)).fetchone()
-        if old is not None:            # deduplicated: identical content is stored once, no new event
+        old = self.db.execute("SELECT id, superseded FROM context WHERE task_id=? AND sha=?",
+                              (task_id, sha)).fetchone()
+        if old is not None:            # deduplicated: identical content is stored once
+            if key_r and old["superseded"]:
+                # R1-06: repeating an earlier keyed item makes it current again (and supersedes the newer one)
+                self.db.execute("UPDATE context SET superseded=1 WHERE task_id=? AND kind=? AND key=? AND "
+                                "superseded=0", (task_id, kind, key_r))
+                self.db.execute("UPDATE context SET superseded=0 WHERE id=?", (old["id"],))
+                self._append(task_id, "CONTEXT_RESTORED", actor, {"id": old["id"], "kind": kind, "key": key_r,
+                                                                  "sha": sha})
+                return {"id": old["id"], "sha": sha, "deduplicated": True, "restored": True}
             return {"id": old["id"], "sha": sha, "deduplicated": True}
         expires = time.time() + ttl_s if ttl_s else None
         if key_r:
@@ -897,7 +910,7 @@ class Ledger:
             return self._append(task_id, "FINDING_CLOSED", actor, {"id": finding_id, "commit": sha, "note": note})
 
     def record_review(self, task_id: str, actor: str, commit: str, output_file: str, *,
-                      mechanism: str = "", provenance: str | None = None) -> dict:
+                      mechanism: str = "") -> dict:
         """Record an independent review from the reviewer's own raw output. The verdict is recomputed with the V3
         driver's parser; the result must name the exact commit; the reviewer must not be an implementer."""
         from scripts.dev_workflow.lifecycle import effective_verdict, parse_review
@@ -923,7 +936,7 @@ class Ledger:
             store = self.dir / "reviews" / task_id
             red, nred = redact(raw.decode("utf-8", errors="replace"))
             atomic_write(store / f"{rid}.txt", red.encode("utf-8"))
-            prov = provenance or f"{kind.upper()}_FALLBACK"
+            prov = f"{kind.upper()}_FALLBACK"           # R1-01: DRIVER_VERIFIED is set only by sync_v3
             ev = self._append(task_id, "REVIEW_RECORDED", actor, {
                 "review": rid, "commit": sha, "verdict": verdict, "problem": problem, "independent": independent,
                 "independence_basis": ("reviewer differs from every implementer actor; verdict recomputed from the "
@@ -1040,8 +1053,8 @@ class Ledger:
                             (t["task_id"],)).fetchone()["c"]
         if n:
             why.append(f"{n} open blocking finding(s)")
-        if t["head_commit"] and t["last_verified_commit"] != t["head_commit"]:
-            # Regression gates: a passing test result (with its log) on the exact commit, whatever the review path.
+        if t["head_commit"] and not self._passing_test(t):
+            # Regression gates: a passing test result with its log on the exact commit, whatever the review path.
             why.append("no passing test result recorded on the exact head commit")
         if self._open_steps(t["task_id"]):
             why.append("open steps")
@@ -1049,6 +1062,19 @@ class Ledger:
         if drift and "actual_head" in drift or (drift and drift.get("problem")):
             why.append(f"worktree does not match the head: {drift}")
         return why
+
+    def _passing_test(self, t) -> dict | None:
+        """The latest TEST event on the head, if it passed and its log still has the recorded hash (R1-03)."""
+        for r in self.db.execute("SELECT data FROM events WHERE task_id=? AND kind='TEST' ORDER BY seq DESC",
+                                 (t["task_id"],)):
+            d = json.loads(r["data"])
+            if d.get("commit") != t["head_commit"]:
+                continue
+            log = d.get("log") or {}
+            p = Path(log.get("path") or "")
+            ok = d.get("passed") is True and p.is_file() and sha256(p.read_bytes()) == log.get("sha256")
+            return d if ok else None
+        return None
 
     def mark_integrated(self, task_id: str, actor: str, target_ref: str, receipt: str) -> dict:
         """INTEGRATED only on evidence: the accepted commit is an ancestor of ``target_ref`` and a receipt that names
@@ -1433,7 +1459,7 @@ def main(argv=None) -> int:
     p = cmd("test", "task", "commit"); g = p.add_mutually_exclusive_group(required=True)
     g.add_argument("--pass", dest="passed", action="store_true"); g.add_argument("--fail", dest="failed",
                                                                                action="store_true")
-    p.add_argument("--summary", required=True); p.add_argument("--log")
+    p.add_argument("--summary", required=True); p.add_argument("--log", help="required with --pass")
     p = cmd("add", "task", "kind", "text"); p.add_argument("--key"); p.add_argument("--path"); p.add_argument("--commit")
     p.add_argument("--ttl", type=float)
     p = cmd("context", "task", actor=False); p.add_argument("--budget", type=int, default=6000)

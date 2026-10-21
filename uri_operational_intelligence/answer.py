@@ -215,6 +215,16 @@ def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, cap
 
 
 _CONTEXT_OVERFLOW = re.compile(r"context|n_ctx|exceed|too long", re.I)
+CONTEXT_TOO_LARGE = "CONTEXT_TOO_LARGE"
+_OVER_BUDGET = ("CURRENT_TURN_TOO_LARGE", "COMPACTED_OVER_BUDGET")
+CONTEXT_TOO_LARGE_TEXT = ("This message, together with what this conversation must keep (instructions, decisions "
+                          "and approvals), does not fit in the local Brain's context window. Nothing was sent. "
+                          "Shorten the message or split it into parts.")
+
+
+def _over_budget(history):
+    rep = getattr(history, "report", None) or {}
+    return rep.get("status") in _OVER_BUDGET
 
 
 def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", history=(), cancel=None,
@@ -286,6 +296,9 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
     body = {"model": "local", "messages": build_messages(user_text, history, memory=memory,
                                                         capability_ids=capability_ids, reserve_tokens=reserve),
             **params}
+    if _over_budget(history):          # R1-02: a prompt the budget says cannot fit is never sent
+        return AnswerOutcome(CONTEXT_TOO_LARGE, tier, metrics={"context": dict(history.report)},
+                             error=CONTEXT_TOO_LARGE_TEXT)
     res = client.stream_chat(body, cancel=cancel, deadlines=deadlines, on_delta=relay)
     retried_context = False
     if hasattr(history, "compose") and res.status == BC.HTTP_ERROR and not displayed and not held["buf"] and             _CONTEXT_OVERFLOW.search(str(res.error or "")):
@@ -293,6 +306,9 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
         # once more. Nothing was shown, so the retry is visible only in the metrics.
         body["messages"] = build_messages(user_text, history, memory=memory, capability_ids=capability_ids,
                                           reserve_tokens=reserve, force_rollover=True)
+        if _over_budget(history):
+            return AnswerOutcome(CONTEXT_TOO_LARGE, tier, metrics={"context": dict(history.report,
+                                 retried_after_overflow=True)}, error=CONTEXT_TOO_LARGE_TEXT)
         res = client.stream_chat(body, cancel=cancel, deadlines=deadlines, on_delta=relay)
         retried_context = True
     metrics = {"ttft_s": res.ttft_s, "first_answer_s": res.first_answer_s, "total_s": res.total_s,

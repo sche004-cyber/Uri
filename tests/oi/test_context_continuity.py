@@ -312,3 +312,52 @@ def test_cc10_without_transcript_the_bridge_behaves_as_before(fake, tmp_path):
     assert b.context is None
     ask(b, "Hello")
     assert "context" not in frames.data("answer.done")[-1]["metrics"]
+
+
+# ------------------------------------------------------------------ driver round R1 regressions (LIFECYCLE-V3-1-r1)
+
+class _NoCall:
+    def stream_chat(self, *a, **k):
+        raise AssertionError("an over-budget prompt was sent")
+
+
+def test_r1_02_over_budget_prompt_is_never_sent(store):
+    mgr = CC.ContextManager(store, 4096)
+    h = CC.ComposedHistory(mgr, SID)
+    out = A.answer(_NoCall(), "x " * 6000, history=h)              # the turn alone does not fit
+    assert out.status == A.CONTEXT_TOO_LARGE and out.metrics["context"]["status"] == "CURRENT_TURN_TOO_LARGE"
+    for i in range(40):                                              # pinned instructions larger than the window
+        n = store.begin(SID, f"Important: always follow rule {i}: " + "r" * 2000)
+        store.finish(SID, n, "ok")
+    h = CC.ComposedHistory(mgr, SID)
+    h.compose(fixed_messages=SYSTEM + [{"role": "user", "content": "next"}], reserve_tokens=900)
+    assert h.report["history_tokens"] <= h.report["free_tokens"]   # compaction fits by indexing pinned turns
+    assert h.report["pinned_indexed"] + h.report["pinned_omitted"] > 0
+    # a compacted history that still cannot fit is refused, never sent
+    big = CC.ComposedHistory(mgr, SID)
+    big.compose = lambda **k: (setattr(big, "report", {"status": "COMPACTED_OVER_BUDGET"}), [])[1]
+    assert A.answer(_NoCall(), "next", history=big).status == A.CONTEXT_TOO_LARGE
+
+
+def test_r1_02_bridge_reports_too_large_without_calling_the_brain(fake, tmp_path):
+    b, frames = bridge(fake, tmp_path, ctx=4096)
+    n = len(fake.requests)
+    ask(b, "word " * 3900)                       # within the bridge's 20000-character limit, beyond a 4K window
+    assert len(fake.requests) == n
+    err = frames.data("error")[-1]
+    assert err["code"] == "BRAIN_CONTEXT_TOO_LARGE" and "Nothing was sent" in err["message"]
+
+
+def test_r1_05_answer_insert_failure_leaves_the_turn_interrupted(tmp_path):
+    path = tmp_path / "t.sqlite3"
+    s1 = CC.TranscriptStore(path)
+    s1.db.execute("CREATE TRIGGER boom BEFORE INSERT ON turns WHEN NEW.role='assistant' "
+                  "BEGIN SELECT RAISE(ABORT, 'disk full'); END")
+    n = s1.begin(SID, "compare the contracts")
+    with pytest.raises(Exception):
+        s1.finish(SID, n, "the answer")
+    assert [t["state"] for t in s1.turns(SID, include_pending=True)] == ["pending"]
+    s1.db.close()
+    s2 = CC.TranscriptStore(path)
+    assert [t["state"] for t in s2.turns(SID)] == ["interrupted"]
+    s2.close()

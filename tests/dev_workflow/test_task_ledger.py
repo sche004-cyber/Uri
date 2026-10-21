@@ -91,11 +91,17 @@ def fallback_ready(lg, tid, tmp_path, commit, name="RUN"):
     lg.link_v3(tid, DEV, str(v3_blocked(tmp_path, commit, name=name)))
 
 
+def make_log(repo, name="tests.log"):
+    p = Path(repo).parent / name
+    p.write_text("5 passed", encoding="utf-8")
+    return str(p)
+
+
 def ready_for_review(lg, repo, tid):
     lg.transition(tid, "IN_PROGRESS", DEV)
     head = _commit(repo, "b.txt", b"feature\n")
     lg.set_head(tid, DEV, head)
-    lg.record_test(tid, DEV, head, True, "unit 5 passed")
+    lg.record_test(tid, DEV, head, True, "unit 5 passed", make_log(repo))
     lg.transition(tid, "IN_REVIEW", DEV)
     return head
 
@@ -390,7 +396,8 @@ SECRETS = ["sk-ant-api03-" + "A" * 40, "ghp_" + "b" * 36, "AKIA" + "C" * 16, "hu
 
 def test_ac6_secrets_never_reach_records(lp, repo, tmp_path):
     lg = tl.Ledger(lp)
-    tid = lg.create(f"task with {SECRETS[0]}", f"objective token={SECRETS[1]}", DEV, worktree=str(repo))
+    tid = lg.create(f"task with {SECRETS[0]}", f"objective token={SECRETS[1]}", DEV, worktree=str(repo),
+                    milestone_ref="REF-sk-proj-" + "Z" * 30)               # R1-04: milestone_ref too
     lg.add_context(tid, DEV, "evidence", f"aws {SECRETS[2]} and password: {SECRETS[3]}")
     lg.add_context(tid, DEV, "note", f"Authorization: Bearer {SECRETS[4]}")
     lg.add_context(tid, DEV, "note", "-----BEGIN RSA PRIVATE KEY-----\nMIIabc\n-----END RSA PRIVATE KEY-----")
@@ -405,7 +412,7 @@ def test_ac6_secrets_never_reach_records(lp, repo, tmp_path):
         lg.add_context(tid, DEV, "evidence", "env", path=".env")
     lg.close()
     blob = b"".join(f.read_bytes() for f in lp.parent.rglob("*") if f.is_file())
-    for s in SECRETS + ["MIIabc", "pa55word"]:
+    for s in SECRETS + ["MIIabc", "pa55word", "Z" * 30]:
         assert s.encode() not in blob, s
     assert b"[REDACTED:" in blob
 
@@ -530,7 +537,7 @@ def test_ac7_v3_import_verified_and_unchanged(lg, repo, tmp_path):
     lg.db.execute("UPDATE tasks SET worktree=? WHERE task_id=?", (str(repo), tid))
     lg.transition(tid, "IN_PROGRESS", DEV)
     lg.set_head(tid, DEV, head)
-    lg.record_test(tid, DEV, head, True, "suite passed")
+    lg.record_test(tid, DEV, head, True, "suite passed", make_log(repo))
     lg.transition(tid, "IN_REVIEW", DEV)
     ev = lg.accept(tid, DEV)
     assert ev["data"]["provenance"] == "DRIVER_VERIFIED" and ev["data"]["review_path"] == "PRIMARY_V3"
@@ -679,3 +686,46 @@ def test_driver_verdict_is_never_overridden_by_a_fallback(lg, repo, tmp_path):
     lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))   # a fallback ACCEPT after the REJECT
     with pytest.raises(tl.Refused, match="latest review"):
         lg.accept(tid, DEV)
+
+
+# ------------------------------------------------------------------ driver round R1 regressions (LIFECYCLE-V3-1-r1)
+
+def test_r1_01_provenance_cannot_be_supplied_by_the_caller(lg, repo, tmp_path):
+    tid = lg.create("p", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    with pytest.raises(TypeError):
+        lg.record_review(tid, REV, head, str(review_file(tmp_path, head)), provenance="DRIVER_VERIFIED")
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    row = lg.db.execute("SELECT provenance FROM reviews WHERE task_id=?", (tid,)).fetchone()
+    assert row["provenance"] == "SUBAGENT_FALLBACK"
+    with pytest.raises(tl.Refused, match="fallback review counts only"):
+        lg.accept(tid, DEV)
+
+
+def test_r1_03_pass_needs_a_log_and_a_changed_log_is_no_evidence(lg, repo, tmp_path):
+    tid = lg.create("t", "o", DEV, worktree=str(repo))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    head = _git(repo, "rev-parse", "HEAD")
+    with pytest.raises(tl.Refused, match="needs its log"):
+        lg.record_test(tid, DEV, head, True, "claimed")
+    log = make_log(repo, "r103.log")
+    lg.record_test(tid, DEV, head, True, "5 passed", log)
+    lg.transition(tid, "IN_REVIEW", DEV)
+    fallback_ready(lg, tid, tmp_path, head)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    Path(log).write_text("3 failed", encoding="utf-8")            # the log no longer matches what was recorded
+    with pytest.raises(tl.Refused, match="no passing test"):
+        lg.accept(tid, DEV)
+    Path(log).write_text("5 passed", encoding="utf-8")
+    lg.accept(tid, DEV)
+
+
+def test_r1_06_repeating_an_earlier_keyed_decision_makes_it_current(lg):
+    tid = lg.create("k", "o", DEV)
+    lg.add_context(tid, DEV, "decision", "old choice", key="k")
+    lg.add_context(tid, DEV, "decision", "new choice", key="k")
+    r = lg.add_context(tid, DEV, "decision", "old choice", key="k")
+    assert r["deduplicated"] and r["restored"]
+    texts = [i["text"] for i in lg.packet(tid, use_cache=False)["items"] if i["kind"] == "decision"]
+    assert texts == ["old choice"]
+    assert lg.history(tid)[-1]["kind"] == "CONTEXT_RESTORED" and lg.verify() == []

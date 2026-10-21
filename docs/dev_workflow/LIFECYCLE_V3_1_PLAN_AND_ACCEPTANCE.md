@@ -186,3 +186,12 @@ not require it). Tests: `test_fallback_needs_exhausted_chain_on_the_exact_commit
 **This milestone's own review** follows the same order: the V3 driver with Codex (`gpt-6-sol`, probed 2026-10-21:
 model probe and sandbox `git rev-parse HEAD` in the candidate both returned) as primary, `claude_cli` as in-driver
 fallback (logged out on 2026-10-21), and a fresh read-only subagent only if the driver ends `NO_INDEPENDENT_REVIEWER`.
+
+## 7. Review history (auditable; corrections kept)
+
+| Round | Reviewer / path | Commit | Verdict | Outcome |
+|---|---|---|---|---|
+| r1 R1 | Lifecycle V3 driver, `codex_cli` `gpt-6-sol`, DRIVER_VERIFIED independent (session `codex_cli-430c1cf0`) | `5ee7e5c7` | REJECT, 6 blocking | All 6 reproduced by the reviewer and confirmed by the coordinator (below) |
+| r1 P1 | driver repair worker (`codex_cli`) | from `5ee7e5c7` | — | REFUSED and rolled back: `TAMPER: git hooks or config changed during the repair`. Cause verified: `.git/info/refs` of the shared repository was rewritten at 16:55:25Z (git maintenance by a concurrent session; config and hooks unchanged). Canonical `git_control_digest` hashes `.git/info/*`; the fix (digest v2 ignoring `info/refs`, `info/packs`) exists only on unintegrated Q-3 `67d45317` and is not duplicated here. The r1 run stays BLOCKED TAMPER (an owner-kind block; not unblocked by the coordinator). |
+| manual repair | coordinator | `5ee7e5c7` -> next commit | — | R1-01 provenance derived only (DRIVER_VERIFIED only from `sync_v3`); R1-02 an over-budget prompt is never sent (`CONTEXT_TOO_LARGE`, user-facing message, also before the overflow retry); R1-03 a pass needs its log and acceptance re-hashes the log of the latest TEST on the head; R1-04 every task-row string redacted (milestone_ref, branch); R1-05 answer row and turn state in one transaction; R1-06 a repeated keyed item becomes current again (CONTEXT_RESTORED event). Seven regression tests fail on `5ee7e5c7` and pass after the repair. |
+| r2 | Lifecycle V3 driver (Codex primary, claude_cli fallback) | repair commit | pending | fresh revision config `D:/uri-dev/lifecycle/LIFECYCLE-V3-1-r2` |

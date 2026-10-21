@@ -179,20 +179,31 @@ class TranscriptStore:
     def finish(self, session: str, n: int, answer_text: str | None, *, interrupted=False) -> int | None:
         with self._lock:
             state = "interrupted" if interrupted or not answer_text else "done"
-            self.db.execute("UPDATE turns SET state=? WHERE session=? AND n=?", (state, session, n))
+            row = None
+            # R1-05: the user turn's state and the answer row commit together, or neither does (a crash between
+            # them must leave the turn pending, i.e. interrupted at the next start, never 'done' without its answer)
+            self.db.execute("BEGIN IMMEDIATE")
+            try:
+                self.db.execute("UPDATE turns SET state=? WHERE session=? AND n=?", (state, session, n))
+                if answer_text:
+                    row = {"session": session, "n": self._next(session), "role": "assistant",
+                           "content": answer_text, "ts": _now(), "state": "done",
+                           "pin": classify("assistant", answer_text), "images": 0, "prompt_tokens": None,
+                           "predicted_tokens": None}
+                    self.db.execute("INSERT INTO turns(session, n, role, content, ts, state, pin) "
+                                    "VALUES(?,?,?,?,?,?,?)",
+                                    tuple(row[k] for k in ("session", "n", "role", "content", "ts", "state", "pin")))
+                self.db.execute("COMMIT")
+            except BaseException:
+                self.db.execute("ROLLBACK")
+                raise
             for r in self._cached(session):
                 if r["n"] == n:
                     r["state"] = state
-            if not answer_text:
+            if row is None:
                 return None
-            m = self._next(session)
-            row = {"session": session, "n": m, "role": "assistant", "content": answer_text, "ts": _now(),
-                   "state": "done", "pin": classify("assistant", answer_text), "images": 0, "prompt_tokens": None,
-                   "predicted_tokens": None}
-            self.db.execute("INSERT INTO turns(session, n, role, content, ts, state, pin) VALUES(?,?,?,?,?,?,?)",
-                            tuple(row[k] for k in ("session", "n", "role", "content", "ts", "state", "pin")))
             self._cached(session).append(row)
-            return m
+            return row["n"]
 
     def _next(self, session):
         rows = self._cached(session)
