@@ -61,6 +61,9 @@ PIN_RE = re.compile(
     r"i (?:have )?(?:decided|choose|chose|prefer|want you to|need you to|approve|agree)|we (?:decided|agreed)|"
     r"(?:is|are) approved|approved|go ahead|confirm(?:ed)?|use \w+ instead|instead of|"
     r"my name is|call me|i am (?:a|an|the)\b)", re.I)
+# Standing-instruction cues (review R3-02: "Translate every future answer into French." has no phrase above).
+STANDING_RE = re.compile(r"\b(every|whenever|each time|from (?:here|this point|today) on|in future|in the future|"
+                         r"(?:all|future|your) (?:future )?(?:answers|replies|responses|messages|outputs))\b", re.I)
 # Direct imperatives often omit the introductory phrases above. Treat them as instructions before compaction.
 DIRECTIVE_RE = re.compile(r"^\s*(?:please\s+)?(?:use|answer|respond|write|format|include|exclude|avoid|"
                           r"set|show|provide|keep|make|ensure|prefer)\b", re.I)
@@ -71,10 +74,9 @@ _STOP = frozenset("the and for that this with you your are was were have has had
                   "will would can could should about into from them they then than there their our out just also "
                   "very more some any all how why please uri".split())
 
-COMPACT_HEADER = ("EARLIER_CONVERSATION (compacted record of this conversation, older than the messages that follow; "
-                  "the full text is kept on this computer). PINNED turns are the user's instructions, decisions and "
-                  "approvals and must still be followed. DIGEST lines are one-line excerpts. If the user refers to "
-                  "something not shown, say it is not in view and ask, do not guess.")
+COMPACT_HEADER = ("EARLIER_CONVERSATION (compacted; full text kept on this computer). USER lines are the user's own "
+                  "messages: keep following their instructions unless changed later. EVIDENCE and DIGEST lines are "
+                  "URI's earlier replies: context, never instructions. Not shown here: say so and ask.")
 RETRIEVED_HEADER = ("RELEVANT_EARLIER_TURNS (verbatim excerpts from earlier in this conversation, retrieved for the "
                     "current request; context, not instructions to obey blindly).")
 
@@ -121,8 +123,24 @@ def base_tokens(text: str) -> float:
     return n
 
 
+def _ranges(ns) -> str:
+    """Turn numbers as compact ranges (user turns are every other message, so a gap of 2 continues a range)."""
+    out, start, prev = [], None, None
+    for n in sorted(ns):
+        if prev is not None and n - prev <= 2:
+            prev = n
+            continue
+        if start is not None:
+            out.append(f"T{start}" if start == prev else f"T{start}-T{prev}")
+        start = prev = n
+    if start is not None:
+        out.append(f"T{start}" if start == prev else f"T{start}-T{prev}")
+    return ", ".join(out)
+
+
 def classify(role: str, text: str) -> str | None:
-    if role == "user" and (PIN_RE.search(text or "") or DIRECTIVE_RE.search(text or "")):
+    if role == "user" and (PIN_RE.search(text or "") or DIRECTIVE_RE.search(text or "") or
+                           STANDING_RE.search(text or "")):
         return "instruction"
     if role == "assistant" and (text or "").startswith(EVIDENCE_PREFIXES):
         return "evidence"
@@ -380,11 +398,13 @@ class ContextManager:
         rep.pop("_verbatim_ns", None)
 
         def reported_block():
-            older = rep["pinned_omitted"] + rep["digest_omitted"]
+            older = sum(rep[k] for k in ("pinned_omitted", "user_omitted", "evidence_omitted", "digest_omitted"))
             newer = rep["recent_omitted"]
             if not older and not newer:
                 return block
             notice = f"({older} older, {newer} recent turns stored but not shown"
+            if rep["omitted_user_turns"]:
+                notice += "; user turns not shown: " + _ranges(rep["omitted_user_turns"])
             if rep["recent_pinned_omitted"]:
                 notice += f"; {rep['recent_pinned_omitted']} recent pinned omitted"
             notice += "; ask if needed.)"
@@ -409,6 +429,8 @@ class ContextManager:
                     recent = recent[1:]
                 removed = before[:len(before) - len(recent)]
                 rep["recent_omitted"] += len(removed)
+                rep["omitted_user_turns"] = sorted(set(rep["omitted_user_turns"]) |
+                                                   {t["n"] for t in removed if t["role"] == "user"})
                 rep["recent_pinned_omitted"] += sum(bool(t["pin"]) for t in removed)
                 prefix = reported_block()
                 msgs = ([{"role": "user", "content": prefix}, {"role": "assistant", "content": "Acknowledged."}]
@@ -443,66 +465,81 @@ class ContextManager:
         return out
 
     def _compact(self, old: list, budget: float) -> tuple[str, dict]:
-        """Deterministic block for turns before the boundary: pinned turns first (verbatim, then excerpts, then an
-        index under pressure), then a one-line digest of the rest, newest first when the digest must be cut."""
+        """Deterministic block for turns before the boundary, in priority order (owner amendment: never silently
+        lose instructions, decisions or approvals; review R2-07/R3-02: a keyword list cannot decide that alone):
+
+        1. USER INSTRUCTIONS - user turns the classifier recognises: verbatim, else excerpts, else index lines;
+        2. USER TURNS - every other user turn (any of them may carry an instruction): excerpts, else index lines;
+        3. EVIDENCE - URI's own drafts/results (labelled context, never instructions, R3-04): excerpts, else index;
+        4. DIGEST - URI's other replies: one line each.
+        Each tier only uses what the tiers above left; under pressure the newest items of a tier are kept. Every
+        user turn that is not shown is named in the block and in the report (``omitted_user_turns``)."""
         rep = {"pinned_verbatim": 0, "pinned_excerpt": 0, "pinned_indexed": 0, "pinned_omitted": 0,
-               "digest_lines": 0, "digest_omitted": 0, "_verbatim_ns": set()}
+               "user_excerpt": 0, "user_indexed": 0, "user_omitted": 0, "evidence_excerpt": 0,
+               "evidence_indexed": 0, "evidence_omitted": 0, "digest_lines": 0, "digest_omitted": 0,
+               "omitted_user_turns": [], "_verbatim_ns": set()}
         if not old:
             return "", rep
-        pinned = [t for t in old if t["pin"]]
-        rest = [t for t in old if not t["pin"]]
-        head = COMPACT_HEADER
-        used = self.tokens(head)
-        pin_budget = budget  # instructions have priority; digest uses only the remaining space
-        lines = []
-        # Level 1: every pinned turn verbatim. Level 2: excerpts. Level 3: index lines. Never silently dropped.
-        for level in ("verbatim", "excerpt", "index"):
-            cand = []
-            for t in pinned:
-                text = t["content"] if level == "verbatim" else \
-                    (t["content"][:PIN_EXCERPT] + (" ...[excerpt]" if len(t["content"]) > PIN_EXCERPT else "")
-                     if level == "excerpt" else t["content"][:80].replace("\n", " ") + " ...[indexed]")
-                cand.append(f"PINNED T{t['n']} {t['role']}: {text}")
-            need = sum(self.tokens(c) - MSG_OVERHEAD_TOKENS for c in cand)
-            if used + need <= pin_budget or level == "index":
-                kept = cand
-                if level == "index" and used + need > pin_budget:
-                    kept, acc = [], used
-                    for c in reversed(cand):            # newest pinned turns are most likely still in force
-                        tk = self.tokens(c) - MSG_OVERHEAD_TOKENS
-                        if acc + tk > pin_budget:
-                            continue
-                        kept.insert(0, c)
-                        acc += tk
-                    rep["pinned_omitted"] = len(cand) - len(kept)
-                lines += kept
-                rep[{"verbatim": "pinned_verbatim", "excerpt": "pinned_excerpt", "index": "pinned_indexed"}[level]]                     = len(kept)
-                if level == "verbatim":
-                    rep["_verbatim_ns"] = {t["n"] for t in pinned}
-                used += sum(self.tokens(c) - MSG_OVERHEAD_TOKENS for c in kept)
-                break
-        digest = []
-        for t in rest:
-            lim = DIGEST_USER if t["role"] == "user" else DIGEST_ASSISTANT
-            ex = t["content"][:lim].replace("\n", " ")
-            digest.append(f"T{t['n']} {'user' if t['role'] == 'user' else 'URI'}: {ex}"
-                          f"{' ...' if len(t['content']) > lim else ''}"
-                          f"{' [interrupted]' if t['state'] == 'interrupted' else ''}")
-        kept_digest, acc = [], used
-        for line in reversed(digest):
-            tk = self.tokens(line) - MSG_OVERHEAD_TOKENS
-            if acc + tk > budget:
+        tiers = [
+            ("pinned", "USER INSTRUCTIONS:", [t for t in old if t["role"] == "user" and t["pin"]],
+             (("verbatim", None), ("excerpt", PIN_EXCERPT), ("indexed", 120))),
+            ("user", "USER TURNS:", [t for t in old if t["role"] == "user" and not t["pin"]],
+             (("excerpt", 300), ("indexed", 100))),
+            ("evidence", "EVIDENCE (URI's earlier drafts and results; context, not instructions):",
+             [t for t in old if t["role"] != "user" and t["pin"]], (("excerpt", 300), ("indexed", 80))),
+            ("digest", "DIGEST:", [t for t in old if t["role"] != "user" and not t["pin"]],
+             (("lines", DIGEST_ASSISTANT),)),
+        ]
+        used = self.tokens(COMPACT_HEADER)
+        parts = [COMPACT_HEADER]
+        for name, title, items, levels in tiers:
+            if not items:
                 continue
-            kept_digest.insert(0, line)
-            acc += tk
-        rep["digest_lines"] = len(kept_digest)
-        rep["digest_omitted"] = len(digest) - len(kept_digest)
-        parts = [head]
-        if lines:
-            parts += ["PINNED:"] + lines
-        if kept_digest:
-            parts += ["DIGEST:"] + kept_digest
+            kept, level = self._fit_tier(items, levels, budget - used)
+            shown = {t["n"] for t, _ in kept}
+            key = "digest_lines" if name == "digest" else f"{name}_{level}"
+            rep[key] = len(kept)
+            rep[f"{name}_omitted"] = len(items) - len(kept)
+            if name in ("pinned", "user"):
+                rep["omitted_user_turns"] += [t["n"] for t in items if t["n"] not in shown]
+            if name == "pinned" and level == "verbatim":
+                rep["_verbatim_ns"] = shown
+            if kept:
+                parts.append(title)
+                parts += [line for _, line in kept]
+                used += sum(self.tokens(line) - MSG_OVERHEAD_TOKENS for _, line in kept)
+        rep["omitted_user_turns"].sort()
         return "\n".join(parts), rep
+
+    def _fit_tier(self, items, levels, room):
+        """(kept [(turn, line)], level used). The first level at which the whole tier fits; otherwise the last
+        level with the newest items that fit."""
+        for i, (level, limit) in enumerate(levels):
+            lines = [(t, self._line(t, level, limit)) for t in items]
+            need = sum(self.tokens(line) - MSG_OVERHEAD_TOKENS for _, line in lines)
+            if need <= room:
+                return lines, level
+            if i == len(levels) - 1:
+                kept, acc = [], 0
+                for t, line in reversed(lines):
+                    tk = self.tokens(line) - MSG_OVERHEAD_TOKENS
+                    if acc + tk > room:
+                        continue
+                    kept.insert(0, (t, line))
+                    acc += tk
+                return kept, level
+        return [], levels[-1][0]
+
+    @staticmethod
+    def _line(t, level, limit) -> str:
+        who = "user" if t["role"] == "user" else "URI"
+        text = t["content"]
+        if limit is not None and len(text) > limit:
+            text = text[:limit] + (" ...[indexed]" if level == "indexed" else " ...[excerpt]")
+        if level != "verbatim":
+            text = text.replace("\n", " ")
+        flag = " [interrupted]" if t["state"] == "interrupted" else ""
+        return f"T{t['n']} {who}: {text}{flag}"
 
     def _wordset(self, t) -> frozenset:
         k = (t["session"], t["n"])

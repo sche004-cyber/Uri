@@ -819,3 +819,74 @@ def test_r2_08_accept_rechecks_imported_driver_evidence(lg, repo, tmp_path, tamp
     with pytest.raises(tl.Refused, match="driver review evidence"):
         lg.accept(tid, DEV)
     assert lg.get(tid)["status"] == "IN_REVIEW"
+
+
+# ------------------------------------------------------------------ driver revision r2 round R3 regressions
+
+def test_r3_01_no_row_string_can_carry_a_secret(lp, repo, tmp_path):
+    secret = "sk-proj-" + "Q" * 32
+    lg = tl.Ledger(lp)
+    with pytest.raises(tl.Refused, match="worktree"):
+        lg.create("t", "o", DEV, worktree=str(tmp_path / secret))
+    tid = lg.create("t", "o", DEV, worktree=str(repo))
+    with pytest.raises(tl.Refused, match="lease name"):
+        lg.acquire(tid, DEV, [f"branch:{secret}"])
+    lg.add_context(tid, DEV, "decision", "choice", key=f"key-{secret}")          # any column, any code path
+    lg.add_finding(tid, REV, "F-9", f"HIGH {secret}", "t")
+    lg.set_milestone_ref(tid, DEV, f"M-{secret}")
+    lg.handoff(tid)
+    assert lg.verify() == []
+    lg.close()
+    blob = b"".join(f.read_bytes() for f in lp.parent.rglob("*") if f.is_file())
+    assert secret.encode() not in blob
+
+
+def test_r3_01_redaction_is_idempotent():
+    for text in ["token=abcd1234efgh", "Authorization: Bearer " + "x" * 30, "https://u:p4ss@h.invalid/x",
+                 "sk-ant-" + "a" * 30, '{"token": 12345, "password": "hunter2pw"}']:
+        once = tl.redact(text)[0]
+        assert tl.redact(once)[0] == once
+
+
+def test_r3_03_edited_projection_fails_verification_and_summary(lp, repo):
+    lg = tl.Ledger(lp)
+    tid = lg.create("p", "o", DEV, worktree=str(repo), milestone_ref="LIFECYCLE-V3-1")
+    lg.db.execute("UPDATE tasks SET status='ACCEPTED', accepted_commit=? WHERE task_id=?", ("a" * 40, tid))
+    errs = lg.verify(tid)
+    assert any("status" in e for e in errs) and any("accepted_commit" in e for e in errs)
+    lg.close()
+    r = cli(lp, "summary", "--milestone", "LIFECYCLE-V3-1", "--json")
+    assert r.returncode == 4 and "LEDGER_INTEGRITY_FAILED" in r.stderr
+
+
+def test_r3_03_findings_and_steps_rows_are_bound_to_the_chain(lg, repo):
+    tid = lg.create("f", "o", DEV, worktree=str(repo))
+    lg.add_finding(tid, REV, "F-1", "HIGH", "bug")
+    lg.db.execute("UPDATE findings SET status='CLOSED' WHERE task_id=?", (tid,))
+    assert any("findings" in e for e in lg.verify(tid))
+
+
+def test_r3_05_changed_driver_reviewer_output_voids_the_primary_review(lg, repo, tmp_path):
+    head = _git(repo, "rev-parse", "HEAD")
+    sd = tmp_path / "lc" / "SO" / "state"
+    st = State({"state_dir": str(sd), "milestone": "SO"})
+    st.event("PLAN", baseline="b" * 40, candidate=head)
+    h = write_json(sd / "rounds" / "R1" / "round.json", {"round": 1, "candidate": head, "independent": True,
+                                                         "effective_verdict": "ACCEPT",
+                                                         "status": "COMPLETED_WITH_RESULT"})
+    out = sd / "rounds" / "R1" / "reviewer_stdout.txt"
+    out.write_bytes(b"reviewer session output AUDIT_RESULT ...")
+    st.event("REVIEW_RECORDED", round=1, candidate=head, independent=True, imported=False,
+             status="COMPLETED_WITH_RESULT", verdict="ACCEPT", round_sha256=h, stdout_sha256=sha256(out.read_bytes()),
+             worker={"provider": "codex_cli"})
+    tid = lg.create("so", "o", DEV, worktree=str(repo))
+    lg.link_v3(tid, DEV, str(sd))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.set_head(tid, DEV, head)
+    lg.record_test(tid, DEV, head, True, "ok", make_log(repo, "so.log"))
+    lg.transition(tid, "IN_REVIEW", DEV)
+    out.write_bytes(b"edited after the driver recorded it")
+    with pytest.raises(tl.Refused, match="driver review evidence changed"):
+        lg.accept(tid, DEV)
+    out.write_bytes(b"reviewer session output AUDIT_RESULT ...")
+    assert lg.accept(tid, DEV)["data"]["review_path"] == "PRIMARY_V3"

@@ -253,6 +253,27 @@ CREATE TABLE IF NOT EXISTS availability(dev TEXT PRIMARY KEY, available INTEGER 
 """
 
 
+class _RedactingDB:
+    """The ledger's only SQL entry point. Every string parameter of every statement passes through ``redact``, so no
+    column (ids, names, paths, keys, titles) can carry a secret into the file, whatever code path wrote it (review
+    R1-04/R2-01/R2-05/R3-01: per-field redaction kept missing fields). ``redact`` is idempotent, so lookups with the
+    same values match what was stored. Event rows are excluded: their data is redacted field by field before it is
+    hashed, and re-redacting the serialised JSON could change bytes the chain hash covers."""
+
+    _RAW = ("INTO events", "INTO packet_cache")
+
+    def __init__(self, conn: sqlite3.Connection):
+        self.conn = conn
+
+    def execute(self, sql: str, params=()):
+        if params and not any(k in sql for k in self._RAW):
+            params = tuple(redact(v)[0] if isinstance(v, str) else v for v in params)
+        return self.conn.execute(sql, params)
+
+    def close(self):
+        self.conn.close()
+
+
 def default_path() -> Path:
     env = os.environ.get("URI_TASK_LEDGER")
     return Path(env) if env else Path.home() / ".uri-dev" / "task_ledger.sqlite3"
@@ -264,8 +285,9 @@ class Ledger:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.dir = self.path.parent
         self.cache_ttl = cache_ttl
-        self.db = sqlite3.connect(str(self.path), timeout=30, isolation_level=None)
-        self.db.row_factory = sqlite3.Row
+        conn = sqlite3.connect(str(self.path), timeout=30, isolation_level=None)
+        conn.row_factory = sqlite3.Row
+        self.db = _RedactingDB(conn)
         self.db.execute("PRAGMA busy_timeout=30000")
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA synchronous=FULL")      # a committed transaction survives power loss
@@ -381,6 +403,8 @@ class Ledger:
                 raise Refused("V3 import task identity does not match its source")
         if task_id is not None and redact(task_id)[1]:
             raise Refused("secret-bearing task identifier is not allowed")
+        if worktree and redact(str(worktree))[1]:
+            raise Refused("a secret-bearing worktree path is not allowed (R3-01)")
         wt = str(Path(worktree).resolve()) if worktree else None
         if wt and branch is None:
             branch = git(wt, "rev-parse", "--abbrev-ref", "HEAD", check=False) or None
@@ -681,6 +705,8 @@ class Ledger:
         wait while holding a lease, so leases cannot deadlock; expired leases are reclaimed."""
         _require(actor, DEVELOPERS | {"owner"}, "acquire leases")
         for r in resources:
+            if redact(r)[1]:
+                raise Refused("a secret-bearing lease name is not allowed (R3-01)")
             if re.match(r"(?i)gpu", r):
                 raise Refused("GPU arbitration belongs to uri_operational_intelligence.gpu_lease; record that lease "
                               "as evidence instead of creating a second GPU lease here")
@@ -1047,9 +1073,16 @@ class Ledger:
                            e["kind"] == "REVIEW_RECORDED"), None)
             if source is None:
                 return False
-            f = sd / "rounds" / f"R{d.get('v3_round')}" / "round.json"
-            raw = f.read_bytes()
+            rdir = sd / "rounds" / f"R{d.get('v3_round')}"
+            raw = (rdir / "round.json").read_bytes()
             if sha256(raw) != review["raw_sha256"] or sha256(raw) != source.get("round_sha256"):
+                return False
+            # The reviewer's own output, bound in the driver's REVIEW_RECORDED event (same rule as lifecycle.verify).
+            out = rdir / ("reviewer_result.txt" if source.get("imported") else "reviewer_stdout.txt")
+            if out.is_file():
+                if sha256(out.read_bytes()) != source.get("stdout_sha256"):
+                    return False
+            elif source.get("stdout_sha256"):
                 return False
             artifact = json.loads(raw)
         except (OSError, ValueError, KeyError, TypeError):
@@ -1355,6 +1388,25 @@ class Ledger:
             atomic_write(d / f"{task_id}.md", handoff_markdown(h).encode("utf-8"))
         return h
 
+    def _replay_errors(self, t) -> list[str]:
+        """R3-03: every projection a decision reads (status, accepted/head/verified commits, milestone_ref, open
+        findings, steps) must equal what the chained events define; an edited row is an integrity failure."""
+        tid = t["task_id"]
+        p = _replay((r["kind"], json.loads(r["data"])) for r in self.db.execute(
+            "SELECT kind, data FROM events WHERE task_id=? ORDER BY seq", (tid,)))
+        errs = [f"{tid} {k} is {t[k]!r} but the event chain says {p[k]!r}"
+                for k in ("status", "accepted_commit", "head_commit", "last_verified_commit", "milestone_ref")
+                if t[k] != p[k]]
+        rows = {r["finding_id"]: r["status"] for r in self.db.execute(
+            "SELECT finding_id, status FROM findings WHERE task_id=?", (tid,))}
+        if rows != p["findings"]:
+            errs.append(f"{tid} findings differ from the event chain")
+        steps = {r["step_id"]: r["status"] for r in self.db.execute(
+            "SELECT step_id, status FROM steps WHERE task_id=?", (tid,))}
+        if steps != p["steps"]:
+            errs.append(f"{tid} steps differ from the event chain")
+        return errs
+
     def history(self, task_id: str) -> list[dict]:
         return [{**dict(r), "data": json.loads(r["data"])} for r in self.db.execute(
             "SELECT seq, ts, kind, data, hash FROM events WHERE task_id=? ORDER BY seq", (task_id,))]
@@ -1376,6 +1428,7 @@ class Ledger:
                 prev = r["hash"]
             if t["version"] != n or t["chain_head"] != prev:
                 errs.append(f"{tid} task row (version {t['version']}) differs from its chain ({n} events)")
+            errs += self._replay_errors(t)
             for c in self.db.execute("SELECT * FROM context WHERE task_id=?", (tid,)):
                 if sha256(json.dumps([c["kind"], c["key"], c["text"], c["path"], c["blob"], c["commit_sha"]])) \
                         != c["sha"]:
@@ -1388,6 +1441,45 @@ class Ledger:
                         bool(d.get("independent")) != bool(rv["independent"]):
                     errs.append(f"{tid} review {rv['review_id']} differs from its REVIEW_RECORDED event")
         return errs
+
+
+def _replay(events) -> dict:
+    """Status, commits, milestone_ref, open findings and step states as the event chain defines them."""
+    p = {"status": None, "accepted_commit": None, "head_commit": None, "last_verified_commit": None,
+         "milestone_ref": None, "findings": {}, "steps": {}}
+    for kind, d in events:
+        if kind == "CREATED":
+            p.update(status="OPEN", milestone_ref=d.get("milestone_ref"),
+                     head_commit=d.get("head") if re.fullmatch(r"[0-9a-f]{40}", str(d.get("head"))) else None)
+        elif kind == "STATUS":
+            if d.get("frm") == "ACCEPTED" or d.get("to") == "REPAIR":
+                p["accepted_commit"] = None
+            p["status"] = d.get("to")
+        elif kind in ("UNBLOCKED", "RESUMED"):
+            p["status"] = d.get("to")
+        elif kind in ("BLOCKED", "INTERRUPTED", "PAUSED", "INTEGRATED"):
+            p["status"] = kind
+        elif kind == "ACCEPTED":
+            p.update(status="ACCEPTED", accepted_commit=d.get("commit"))
+        elif kind == "HEAD":
+            p["head_commit"] = d.get("commit")
+            if d.get("acceptance_invalidated"):
+                p.update(status="IN_REVIEW", accepted_commit=None)
+        elif kind == "TEST" and d.get("passed") is True:
+            p["last_verified_commit"] = d.get("commit")
+        elif kind == "MILESTONE_REF":
+            p["milestone_ref"] = d.get("milestone_ref")
+        elif kind == "FINDING":
+            p["findings"][d.get("id")] = "OPEN"
+        elif kind == "FINDING_CLOSED":
+            p["findings"][d.get("id")] = "CLOSED"
+        elif kind == "STEP_STARTED":
+            p["steps"][d.get("step")] = "STARTED"
+        elif kind == "STEP_ENDED":
+            p["steps"][d.get("step")] = d.get("status")
+        elif kind == "STEP_INTERRUPTED":
+            p["steps"][d.get("step")] = "INTERRUPTED"
+    return p
 
 
 def handoff_markdown(h: dict) -> str:
