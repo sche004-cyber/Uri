@@ -670,7 +670,7 @@ class Manager:
         return self._write(build)
 
     def resolve_conflict(self, entity, note, conflict_ids=()):
-        """Resolve exactly the conflicts named by their ids (the 12-hex prefixes `status` / `conflicts` print).
+        """Resolve exactly the conflicts named by their ids, `<event 12>.<check 6>` as `conflicts` prints them.
 
         Naming them is the proof that they were seen: a conflict recorded after its user last looked (e.g. by a write
         interrupted between recording a loss and refusing the command) cannot be closed by entity name alone

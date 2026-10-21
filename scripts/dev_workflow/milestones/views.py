@@ -90,16 +90,18 @@ def indicator(p, m, tasks: dict | None = None) -> dict:
             detail = (c.get("lost") or (c.get("anchor_problems") or [None])[0]
                       or ("own segment adopted without an anchor" if c.get("kind") == "ANCHORS_ADOPTED" else None)
                       or "unknown history")
-            reds.append(f"ledger integrity loss recorded by {c.get('kind')} [conflict {did(p, c)}]: "
-                        f"{detail}; review, then `resolve-conflict LEDGER --id {did(p, c)}`")
+            reds.append(f"ledger integrity loss recorded by {c.get('kind')}: {detail}; review every open conflict "
+                        "with `conflicts --entity LEDGER`, then resolve by the ids it shows")
         else:
-            reds.append(f"batch {c.get('batch')} was declared abandoned but is complete and applied "
-                        f"[conflict {did(p, c)}]; review, then `resolve-conflict LEDGER --id "
-                        f"{did(p, c)}`")
-    for c in open_conflicts(p, ident):
-        reds.append(f"{c.get('type', 'VERSION')} conflict on {c['entity']} [conflict {did(p, c)}] "
-                    f"(event {c['event']['seg']}#{c['event']['seq']}); resolve with `resolve-conflict "
-                    f"{c['entity']} --id {did(p, c)}`")
+            reds.append(f"batch {c.get('batch')} was declared abandoned but is complete and applied; review with "
+                        "`conflicts --entity LEDGER`")
+    # Status shows one issue line per milestone, so it never prints a ready-to-run id: an id covers every conflict
+    # its event raised on that entity, and only `conflicts` displays all of them (review R19-01).
+    own = open_conflicts(p, ident)
+    if own:
+        kinds = sorted({f"{c.get('type', 'VERSION')} on {c['entity']}" for c in own})
+        reds.append(f"{len(own)} open conflict(s): {', '.join(kinds)}; review them with `conflicts --entity "
+                    f"{ident}` (also lists conflicts whose subject is {ident}), then resolve by the ids shown there")
     if m["status"] in DONE_STATES:
         neg = negative_reviews_on_candidate(p, m)
         if neg:

@@ -352,6 +352,8 @@ again completes it.
 
 ## 26. Changes after independent review R14 (2026-10-22, REJECT on `b59c1f2a`)
 
+(Superseded in part: the id format is `<event>.<check>` since §30, and `status` no longer prints ids since §31.)
+
 | Change | Reason |
 |---|---|
 | `resolve-conflict <entity> --id <conflict id> [--id ...] --note ...`: a conflict is resolved only when named by its id (first 12 hex digits of the event hash that raised it). Ids are shown by `status` (in each issue line) and by the new `conflicts` command. Without ids the command is refused (`NO_CONFLICT_ID`, listing the open ids); unknown ids are refused (`UNKNOWN_CONFLICT_ID`). Naming the id is the proof that the conflict was displayed, so a loss recorded by an interrupted write (Ctrl-C, kill during autocommit) cannot be closed by entity name alone | R14-01 |
@@ -388,3 +390,10 @@ Verified by reviewer R14 for the first time since R12: concurrency stress (5 rou
 | the id a user sees and types is `<event>.<check>`; the check covers the content of every open conflict that event raised on that entity, so an id read before a sync changed them is refused (`STALE_CONFLICT_ID`) and the changed content must be displayed again; `seen` therefore records what was displayed | R18-01 (a sync between `conflicts` and `resolve-conflict` let changed content be closed unseen) |
 | the fold checks entity / resolved / named before computing a fingerprint, fingerprints are cached per conflict, and display ids are computed once per projection | R18-02 (fold and status were quadratic in the number of conflicts: 7.6 s at 1,000 resolved conflicts) |
 | fingerprints hash only the keys a conflict has | R18-03 (adding a key to the code would have reopened every resolved conflict) |
+
+## 31. Changes after independent review R19 (2026-10-22, REJECT on `dc22ece1`)
+
+| Change | Reason |
+|---|---|
+| `status` no longer prints a ready-to-run conflict id; its issue line counts the open conflicts of the milestone, names each type and entity, and points to `conflicts --entity <id>`, which lists every conflict with its id. Ids are displayed only where all conflicts they cover are displayed (`conflicts`, the `NO_CONFLICT_ID` refusal, the `LEDGER_LOSS_RECORDED` refusal for the conflicts it just recorded) | R19-01 (status showed one conflict but its `--id` covered others, e.g. a BASIS_INVALID behind a VERSION line) |
+| `resolve_conflict` docstring and §26 note updated to the `<event>.<check>` format | R19-02 |

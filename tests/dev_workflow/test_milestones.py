@@ -2135,12 +2135,15 @@ def test_r14_01_unseen_loss_cannot_be_resolved_by_entity_name(tmp_path, monkeypa
     assert not views.open_conflicts(m.projection())
 
 
-def test_r14_01_status_shows_the_ids_to_resolve(tmp_path, monkeypatch):
+def test_r14_01_status_points_to_the_conflicts_listing(tmp_path, monkeypatch):
+    """(Changed after R19-01: status no longer prints a ready-to-run id; `conflicts` shows every conflict and id.)"""
     m = _interrupted_loss_recording(tmp_path, monkeypatch)
     out = io.StringIO()
     cli.run(["--home", str(m.home), "--no-emoji", "status", "--no-tasks"], out=out)
-    cid = views.conflict_rows(m.projection())[0]["id"]
-    assert f"--id {cid}" in out.getvalue()
+    assert "conflicts --entity LEDGER" in out.getvalue() and "--id " not in out.getvalue().replace("--id <id>", "")
+    out = io.StringIO()
+    cli.run(["--home", str(m.home), "conflicts", "--entity", "LEDGER"], out=out)
+    assert json.loads(out.getvalue())[0]["id"] == views.conflict_rows(m.projection())[0]["id"]
 
 
 def test_r14_02_refusal_reports_autocommit_errors(tmp_path, monkeypatch):
@@ -2306,3 +2309,19 @@ def test_r18_03_adding_a_detail_key_does_not_reopen_resolved_conflicts(tmp_path,
     _resolve(m1, "MM-A", "reviewed")
     monkeypatch.setattr(model, "CONFLICT_DETAIL_KEYS", model.CONFLICT_DETAIL_KEYS + ("note_added_later",))
     assert not views.open_conflicts(m1.projection())
+
+
+# ------------------------------------------------------------------ R19 regression tests (review R19 on dc22ece1)
+
+def test_r19_01_status_never_hands_out_an_id_that_covers_unshown_conflicts(tmp_path):
+    m1, seg2 = _r17_scenario(tmp_path)
+    (m1.home / "events" / "h2.jsonl").write_bytes(b"\n".join(seg2) + b"\n")   # full sync
+    out = io.StringIO()
+    cli.run(["--home", str(m1.home), "--no-emoji", "status", "--no-tasks"], out=out)
+    text = out.getvalue()
+    assert "conflicts --entity MM-X" in text and "BASIS_INVALID" in text       # every type is named in status
+    for r in views.conflict_rows(m1.projection()):
+        assert r["id"] not in text                                             # no ready-to-run id in status
+    out = io.StringIO()
+    cli.run(["--home", str(m1.home), "conflicts", "--entity", "MM-X"], out=out)
+    assert {"VERSION", "BASIS_INVALID"} <= {r["type"] for r in json.loads(out.getvalue())}
