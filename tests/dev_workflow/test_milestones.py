@@ -1122,7 +1122,7 @@ def test_r3_01_reanchor_cannot_hide_a_detected_loss(tmp_path):
     assert e.value.code == "CONFLICT_OPEN"
     p = m.projection()
     ind = views.indicator(p, p["milestones"]["MM-A"])
-    assert ind["color"] == "RED" and "lost events" in ind["issue"]
+    assert ind["color"] == "RED" and "integrity loss" in ind["issue"]
 
 
 def test_r3_01_emptied_anchors_with_own_events_is_an_error(tmp_path):
@@ -1858,3 +1858,90 @@ def test_r10_02_init_host_mismatch_has_a_working_acknowledged_path(tmp_path, dam
     p = Manager(m.home, actor="x").projection()
     assert not p["integrity_errors"]
     assert any(c["type"] == "ANCHOR_LOSS" and c["kind"] == "HOST_REGISTERED" for c in views.open_conflicts(p))
+
+
+# ------------------------------------------------------------------ R11 regression tests (review R11 on 5bb005f6)
+
+KILL_ACK_INIT_HOST = r"""
+import os, sys
+sys.path.insert(0, sys.argv[1])
+from scripts.dev_workflow.milestones import store
+point = sys.argv[3]
+if point == "K1":
+    store.EventStore._write_local = staticmethod(lambda home, host_id: os._exit(9))
+else:
+    store.EventStore.append_many = lambda self, *a, **k: os._exit(9)
+store.EventStore.init_host(sys.argv[2], "hc", acknowledge_loss=True)
+"""
+
+
+def _lost_host_identity(tmp_path):
+    m = new(tmp_path)
+    for i in range(3):
+        m.create_milestone(f"MM-{i}", "x")
+    _truncate_last(m)
+    (m.home / "local" / "host.json").unlink()
+    return m.home
+
+
+@pytest.mark.parametrize("point", ["K1", "K2"])
+def test_r11_01_interrupted_acknowledged_registration_keeps_the_loss(tmp_path, point):
+    home = _lost_host_identity(tmp_path)
+    r = subprocess.run([sys.executable, "-c", KILL_ACK_INIT_HOST, str(ROOT), str(home), point])
+    assert r.returncode == 9
+    if point == "K1":  # not registered: a retry must still see and record the loss
+        with pytest.raises(StoreError) as e:
+            EventStore.init_host(home, "hc")
+        assert e.value.code == "ANCHOR_MISMATCH"
+        EventStore.init_host(home, "hc", acknowledge_loss=True)
+    else:  # registered without its event: the next write records it
+        m = Manager(home, actor="x")
+        assert any("pending" in w for w in m.projection()["integrity_warnings"])
+        m.create_milestone("MM-N", "n")
+    p = Manager(home, actor="x").projection()
+    assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))
+    assert not (home / "local" / "pending_loss.json").exists()
+
+
+def test_r11_02_init_host_works_without_git(tmp_path, monkeypatch):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    clone = _clone_of(m, tmp_path)
+    from scripts.dev_workflow.milestones import store as store_mod
+    real = store_mod.subprocess.run
+    def no_git(cmd, *a, **k):
+        if cmd and cmd[0] == "git":
+            raise FileNotFoundError("git not installed")
+        return real(cmd, *a, **k)
+    monkeypatch.setattr(store_mod.subprocess, "run", no_git)
+    st = EventStore.init_host(clone, "h2")
+    assert st.verify()["ok"]
+
+
+def test_r11_03_writer_refuses_when_the_host_registration_changed(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    (m.home / "local" / "host.json").write_text('{"host_id": "other"}', encoding="utf-8")
+    with pytest.raises(StoreError) as e:
+        m.create_milestone("MM-B", "B")
+    assert e.value.code == "NO_HOST_ID"
+
+
+def test_r11_04_status_shows_the_recorded_problem(tmp_path):
+    home = _lost_host_identity(tmp_path)
+    EventStore.init_host(home, "hc", acknowledge_loss=True)
+    p = Manager(home, actor="x").projection()
+    p["milestones"]["MM-0"]["status"] = "IN_PROGRESS"
+    issue = views.indicator(p, p["milestones"]["MM-0"])["issue"]
+    assert "HOST_REGISTERED" in issue and "anchored" in issue
+
+
+def test_r11_05_unreadable_host_file_can_be_replaced_by_init_host(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    (m.home / "local" / "host.json").write_text("", encoding="utf-8")
+    with pytest.raises(StoreError) as e:
+        Manager(m.home, actor="x")
+    assert e.value.code == "NO_HOST_ID" and "unreadable" in str(e.value)
+    st = EventStore.init_host(m.home, "h2")
+    assert st.verify()["ok"]

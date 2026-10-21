@@ -179,3 +179,10 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 
 - `HOST_REGISTERED.anchor_problems[]` (present only with `init-host --acknowledge-loss`) ⇒ ANCHOR_LOSS.
 - Store error `ANCHOR_MISMATCH` (init-host without acknowledgement).
+
+## 17. Changes after review R11
+
+- New kind `LOSS_RECORDED {anchor_problems[], origin}` (⇒ ANCHOR_LOSS), written by the first write after an
+  interrupted acknowledged registration.
+- Local file `local/pending_loss.json {anchor_problems[], host}` (untracked; exists only between an acknowledged
+  registration and the event that records it).

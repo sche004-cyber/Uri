@@ -316,3 +316,13 @@ cannot take over another machine's segment.
 |---|---|
 | `init-host` order: verify segments → compare earlier anchors → git check → write adopted anchors (own entry count 0) → write the host file (only now is the machine registered) → append HOST_REGISTERED → refresh. A kill before the host file leaves an unregistered home (`NO_HOST_ID`, not an integrity failure) that a retry registers; readers never see a registered host without anchors | R10-01 |
 | `init-host --acknowledge-loss`: when this machine's earlier anchors disagree with the segments (or are unreadable), registration is refused with `ANCHOR_MISMATCH` naming this option; with it, HOST_REGISTERED records `anchor_problems` and the fold opens ANCHOR_LOSS | R10-02 (the earlier message pointed to `reanchor`, which cannot run without a host id) |
+
+## 23. Changes after independent review R11 (2026-10-22, REJECT on `5bb005f6`)
+
+| Change | Reason |
+|---|---|
+| `init-host --acknowledge-loss` first writes `local/pending_loss.json` (the problems) before replacing the earlier anchors; the marker is removed only after HOST_REGISTERED records them. An interrupted registration therefore keeps the loss: a retry sees the marker (needs the flag again and records it); a registered host's next write prepends LOSS_RECORDED (ANCHOR_LOSS); status warns while it is pending | R11-01 |
+| `init-host` treats a missing `git` executable as "not a git work tree" | R11-02 |
+| every locked writer re-reads `local/host.json` under the lock and refuses (`NO_HOST_ID`) when the registration changed or vanished while it waited | R11-03 |
+| ANCHOR_LOSS status text names the recording event and its first recorded problem | R11-04 |
+| an unreadable `local/host.json` counts as unregistered: `init-host` replaces it (anchors are still compared) | R11-05 |

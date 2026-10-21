@@ -62,6 +62,10 @@ class Manager:
         warnings = [f"{s.name}: {len(s.torn)} torn bytes at the end (ignored; `recover` on that host)"
                     for s in segs if s.torn]
         warnings += self.store.anchor_warnings(segs, anchors)
+        pend = self.store.pending_loss()
+        if pend:
+            warnings.append(f"an acknowledged loss is pending and will be recorded as ANCHOR_LOSS by the next write: "
+                            f"{pend[0]}")
         abandoned = set(state.get("abandoned_ids", []))
         warnings += [f"incomplete batch {b} in segment {evs[0]['seg']} ({len(evs)} of {evs[0]['batch']['n']} "
                      "events; ignored" + ("; abandoned" if b in abandoned else "; `recover` on that host") + ")"
@@ -112,6 +116,13 @@ class Manager:
                                               "head": own.valid_events[-1]["hash"], "warning": adopt[0]}, {})] + items
                 self.last_warnings.append("this write anchored an own segment that had no anchor and recorded "
                                           "ANCHORS_ADOPTED: review it, then `resolve-conflict LEDGER` (review R6-04)")
+            pending = self.store.pending_loss()
+            if items and pending:
+                items = [("LOSS_RECORDED", {"anchor_problems": pending[:10],
+                                            "origin": "init-host --acknowledge-loss interrupted before it recorded "
+                                                      "the loss"}, {})] + items
+                self.last_warnings.append("recorded a pending acknowledged loss (ANCHOR_LOSS): review it, then "
+                                          "`resolve-conflict LEDGER`")
             for kind, data, _ in items:
                 hit = M.find_secret(data)
                 if hit:
@@ -131,6 +142,8 @@ class Manager:
             written = self.store.append_many(items, actor=self.actor, session=self.session, floor=floor)
             for ev in written:
                 M.apply(p, ev)
+            if written and pending:
+                self.store.pending_loss_path.unlink(missing_ok=True)
             if written:
                 own = read_segment(self.store.segment_path)
                 try:

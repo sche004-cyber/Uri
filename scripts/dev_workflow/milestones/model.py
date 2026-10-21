@@ -453,6 +453,8 @@ def _apply_one(p: dict, ev: dict) -> None:
         p["recoveries"].append({**d, "at": ev["ts"]})
         if d.get("anchor_problems"):
             _conflict(p, "ANCHOR_LOSS", "LEDGER", ref, kind, None, anchor_problems=d["anchor_problems"])
+    elif kind == "LOSS_RECORDED":
+        _conflict(p, "ANCHOR_LOSS", "LEDGER", ref, kind, None, anchor_problems=d.get("anchor_problems") or [])
     elif kind == "HOST_REGISTERED":
         p.setdefault("hosts", []).append({**d, "at": ev["ts"]})
         if d.get("anchor_problems"):

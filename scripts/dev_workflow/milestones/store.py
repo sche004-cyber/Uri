@@ -121,6 +121,14 @@ def lamport_floor(segs) -> str:
     return ts_plus(newest, 0.000001) if newest else ""
 
 
+def _pending_problems(raw: bytes) -> list[str]:
+    try:
+        probs = json.loads(raw.decode("utf-8")).get("anchor_problems") or []
+        return [str(x) for x in probs] or ["an acknowledged loss was pending"]
+    except (UnicodeDecodeError, ValueError, AttributeError):
+        return ["a pending-loss marker exists but is unreadable"]
+
+
 def _anchor_disagreements(raw: bytes | None, segs) -> list[str]:
     """Ways earlier anchors (raw bytes of a local anchors file, or None) disagree with ``segs``."""
     if raw is None:
@@ -271,11 +279,13 @@ class EventStore:
         try:
             self.host = json.loads(self.host_path.read_text(encoding="utf-8"))["host_id"]
         except (OSError, ValueError, KeyError, TypeError):
-            raise StoreError("NO_HOST_ID", f"{self.host_path} is missing: this machine has no host id for this "
-                                           "ledger (a clone must run `init-host --host-id <new id>`)")
+            raise StoreError("NO_HOST_ID", f"{self.host_path} is missing or unreadable: this machine has no host "
+                                           "id for this ledger (run `init-host --host-id <id>`; an unreadable file "
+                                           "is replaced by it)")
         if not HOST_RE.match(str(self.host)):
             raise StoreError("BAD_HOST_ID", f"host id must match {HOST_RE.pattern}")
         self.segment_path = self.events_dir / f"{self.host}.jsonl"
+        self.pending_loss_path = self.local_dir / "pending_loss.json"
         self._tail = None  # (good_bytes, head, count, last_ts) of our own segment, valid only while locked
 
     # ---- creation
@@ -327,8 +337,13 @@ class EventStore:
         # Everything below runs under the ledger lock (review R9-02).
         with os_lock(home / ".lock"):
             host_file = home / "local" / "host.json"
-            if host_file.is_file():
-                raise StoreError("ALREADY_REGISTERED", "this machine already has a host id for this ledger")
+            host_before = host_file.read_bytes() if host_file.is_file() else None
+            if host_before is not None:
+                try:
+                    json.loads(host_before.decode("utf-8"))["host_id"]
+                    raise StoreError("ALREADY_REGISTERED", "this machine already has a host id for this ledger")
+                except (UnicodeDecodeError, ValueError, KeyError, TypeError):
+                    pass  # unreadable: treated as unregistered and replaced (review R11-05)
             own_seg = home / "events" / f"{host_id}.jsonl"
             if own_seg.exists():
                 raise StoreError("HOST_ID_TAKEN", f"segment {host_id}.jsonl exists: it belongs to another machine; "
@@ -341,14 +356,23 @@ class EventStore:
             anchors_file = home / "local" / "anchors.json"
             anchors_before = anchors_file.read_bytes() if anchors_file.is_file() else None
             problems = _anchor_disagreements(anchors_before, segs)
+            pending_file = home / "local" / "pending_loss.json"
+            pending_before = pending_file.read_bytes() if pending_file.is_file() else None
+            if pending_before is not None:
+                # an earlier acknowledged registration was interrupted before its loss was recorded (review R11-01)
+                problems = problems + _pending_problems(pending_before)
             if problems and not acknowledge_loss:
                 raise StoreError("ANCHOR_MISMATCH", f"this machine's earlier anchors disagree with the segments "
                                                     f"({problems[0]}); check git history, then run `init-host "
                                                     "--acknowledge-loss` to register and record the loss for review")
-            in_git = subprocess.run([*GIT, "-C", str(home), "rev-parse", "--is-inside-work-tree"],
-                                    capture_output=True, text=True).stdout.strip() == "true"
-            if in_git and subprocess.run([*GIT, "-C", str(home), "status", "--porcelain", "--", "events"],
-                                         capture_output=True, text=True).stdout.strip():
+            try:
+                in_git = subprocess.run([*GIT, "-C", str(home), "rev-parse", "--is-inside-work-tree"],
+                                        capture_output=True, text=True).stdout.strip() == "true"
+                dirty = in_git and subprocess.run([*GIT, "-C", str(home), "status", "--porcelain", "--", "events"],
+                                                  capture_output=True, text=True).stdout.strip()
+            except OSError:
+                in_git, dirty = False, ""  # git not installed: not a git work tree (review R11-02)
+            if dirty:
                 raise StoreError("UNCOMMITTED_SEGMENTS", "event segments differ from the git HEAD; adopting them "
                                                          "would hide changes (review R6-02): inspect `git status "
                                                          "events` first")
@@ -358,7 +382,14 @@ class EventStore:
             def undo():
                 # remove exactly what this call created; restore what it changed (reviews R7-03, R8-03..R8-05)
                 own_seg.unlink(missing_ok=True)
-                host_file.unlink(missing_ok=True)
+                if host_before is None:
+                    host_file.unlink(missing_ok=True)
+                else:
+                    atomic_write_bytes(host_file, host_before)
+                if pending_before is None:
+                    pending_file.unlink(missing_ok=True)
+                else:
+                    atomic_write_bytes(pending_file, pending_before)
                 if anchors_before is None:
                     anchors_file.unlink(missing_ok=True)
                 else:
@@ -372,6 +403,12 @@ class EventStore:
                         pass
 
             try:
+                if problems:
+                    # make the acknowledged loss durable before the earlier anchors are replaced; it stays until an
+                    # event records it (HOST_REGISTERED here, or LOSS_RECORDED by the next write)
+                    (home / "local").mkdir(parents=True, exist_ok=True)
+                    atomic_write_bytes(pending_file, json.dumps({"anchor_problems": problems[:10],
+                                                                 "host": host_id}).encode("utf-8"))
                 adopted = {s.name: {"count": len(s.valid_events),
                                     "head": s.valid_events[-1]["hash"] if s.valid_events else GENESIS} for s in segs}
                 adopted[host_id] = {"count": 0, "head": GENESIS}
@@ -383,6 +420,7 @@ class EventStore:
                     data["anchor_problems"] = problems[:10]
                 st.append_many([("HOST_REGISTERED", data, {})], actor=f"init-host:{host_id}",
                                floor=lamport_floor(segs))
+                pending_file.unlink(missing_ok=True)  # recorded by HOST_REGISTERED now
                 st.write_anchors(st.read_all())
                 st._tail = None
             except BaseException:
@@ -398,6 +436,14 @@ class EventStore:
     @contextlib.contextmanager
     def locked(self):
         with os_lock(self.lock_path):
+            # The host registration may have been undone or replaced while this process waited (review R11-03).
+            try:
+                now_host = json.loads(self.host_path.read_text(encoding="utf-8"))["host_id"]
+            except (OSError, ValueError, KeyError, TypeError):
+                now_host = None
+            if now_host != self.host:
+                raise StoreError("NO_HOST_ID", f"this machine's host registration changed while waiting for the lock "
+                                               f"({self.host!r} -> {now_host!r}); re-run the command")
             self._tail = None
             try:
                 yield self
@@ -532,6 +578,12 @@ class EventStore:
             elif s.events[n - 1].get("hash") != a.get("head"):
                 errs.append(f"{name}: event {n} differs from the anchored head (rewritten)")
         return errs
+
+    def pending_loss(self) -> list[str] | None:
+        """Problems of an acknowledged loss that no event has recorded yet (review R11-01), or None."""
+        if not self.pending_loss_path.is_file():
+            return None
+        return _pending_problems(self.pending_loss_path.read_bytes())
 
     def anchor_warnings(self, segs, anchors) -> list[str]:
         """Own segment not yet anchored (count 0): a first write whose anchor refresh has not happened yet, or an

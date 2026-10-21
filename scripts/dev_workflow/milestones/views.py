@@ -74,7 +74,10 @@ def indicator(p, m, tasks: dict | None = None) -> dict:
         reds.append(f"LEDGER INTEGRITY: {p['integrity_errors'][0]} (run `verify`; statuses may be untrustworthy)")
     for c in _conflict_index(p)["__ledger__"]:
         if c.get("type") == "ANCHOR_LOSS":
-            reds.append(f"ledger lost events (ANCHORS_RESET {c.get('lost') or 'with unknown history'}); review, then "
+            detail = (c.get("lost") or (c.get("anchor_problems") or [None])[0]
+                      or ("own segment adopted without an anchor" if c.get("kind") == "ANCHORS_ADOPTED" else None)
+                      or "unknown history")
+            reds.append(f"ledger integrity loss recorded by {c.get('kind')}: {detail}; review, then "
                         "`resolve-conflict LEDGER`")
         else:
             reds.append(f"batch {c.get('batch')} was declared abandoned but is complete and applied; review, then "
