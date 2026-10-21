@@ -226,6 +226,9 @@ class Manager:
                          acceptance_ref=None, worktree=None, branch=None, base_commit=None, next_action=None,
                          status="PLANNED", origin=None):
         M.check_id("milestone id", ident)
+        if M.RESERVED_MILESTONE_RE.match(ident):
+            raise ValidationError("RESERVED_ID", f"{ident} looks like a generated record id or a reserved subject "
+                                                 "(RV-, AP-, BLK-, HO-, EV-, DEC-, LDEC-, REG-, PROJECT, LEDGER)")
         def build(p):
             if ident in p["milestones"]:
                 raise ValidationError("EXISTS", f"milestone {ident} already exists")
@@ -677,7 +680,7 @@ class Manager:
                 raise ValidationError("NO_CONFLICT_ID", f"name the conflicts to resolve with --id (open on {entity}: "
                                                         + ", ".join(sorted({M.conflict_id(c) for c in open_c}))
                                                         + "); see `conflicts` for details")
-            chosen = []
+            chosen, seen = [], []
             for x in ids:
                 # An id names the event that raised the conflicts; one event can raise several (e.g. VERSION and
                 # DUPLICATE_ID for a duplicate creation). All of them are displayed under that one id, so naming
@@ -686,9 +689,11 @@ class Manager:
                 if len(hashes) != 1:
                     raise ValidationError("UNKNOWN_CONFLICT_ID", f"{x!r} does not name exactly one conflict-raising "
                                                                  f"event among the open conflicts on {entity}")
-                chosen.append(hashes.pop())
-            return [("CONFLICT_RESOLVED", {"entity": entity, "note": note,
-                                           "conflicts": sorted(set(chosen))}, {})]
+                h = hashes.pop()
+                chosen.append(h)
+                seen.extend([h, c.get("type")] for c in open_c if c["event"]["hash"] == h)
+            return [("CONFLICT_RESOLVED", {"entity": entity, "note": note, "conflicts": sorted(set(chosen)),
+                                           "seen": sorted({tuple(x) for x in seen})}, {})]
         return self._write(build)
 
     def abandon_batches(self, reason):

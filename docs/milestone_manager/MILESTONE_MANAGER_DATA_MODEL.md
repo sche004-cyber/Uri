@@ -206,3 +206,9 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
   share its id and are resolved together). Refusals `NO_CONFLICT_ID`,
   `UNKNOWN_CONFLICT_ID`. New read command `conflicts [--entity E]` (`{id, type, entity, subject, recorded_by, event,
   at, detail}`).
+
+## 21. Changes after review R16
+
+- `CONFLICT_RESOLVED.seen[]`: `[event_hash, conflict_type]` pairs displayed to the resolver; only those are closed
+  (events without `seen`, written before this change, keep the hash-only rule).
+- Refusal `RESERVED_ID` for milestone ids matching `^(RV|AP|BLK|HO|EV|DEC|LDEC|REG)-` or equal to `PROJECT`/`LEDGER`.

@@ -2190,3 +2190,38 @@ def test_r15_02_loss_refusal_names_the_ids_to_resolve(tmp_path):
         m.create_milestone("MM-B", "B")
     cid = views.conflict_rows(m.projection())[0]["id"]
     assert f"--id {cid}" in str(e.value)
+
+
+# ------------------------------------------------------------------ R16 regression tests (review R16 on f07da5d0)
+
+def test_r16_01_a_conflict_raised_after_a_later_sync_is_not_closed_by_an_earlier_resolution(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m1.create_milestone("MM-X", "x")
+    m1.create_milestone("MM-Y", "y")
+    (home2 / "events" / "h1.jsonl").write_bytes(m1.store.segment_path.read_bytes())
+    m2.update_milestone("MM-X", objective="edited on h2")                              # B1
+    m2.update_milestone("MM-Y", candidate_commit=C2)
+    m2.record_review("MM-Y", C2, "subagent", "subagent:q", "SUBAGENT", "REJECT", 1, 1,
+                     "COMPLETED_WITH_RESULT", "no")                                     # RV-1 on h2
+    m1.update_milestone("MM-X", candidate_commit=C1)
+    m1.set_status("MM-X", "IN_PROGRESS", "go")
+    m1.record_review("MM-X", C1, "subagent", "subagent:r", "SUBAGENT", "ACCEPT", 0, 0,
+                     "COMPLETED_WITH_RESULT", "ok")                                     # RV-1 on h1
+    m1.set_status("MM-X", "ACCEPTED", "accepted")                                      # H
+    seg2 = (home2 / "events" / "h2.jsonl").read_bytes().split(b"\n")[:-1]
+    (m1.home / "events" / "h2.jsonl").write_bytes(seg2[0] + b"\n")                    # sync 1: only B1
+    _resolve(m1, "MM-X", "concurrent objective edit reviewed")
+    assert not views.open_conflicts(m1.projection(), "MM-X")
+    (m1.home / "events" / "h2.jsonl").write_bytes(b"\n".join(seg2) + b"\n")          # sync 2: the rest
+    p = m1.projection()
+    assert any(c["type"] == "BASIS_INVALID" for c in views.open_conflicts(p, "MM-X"))
+    assert any(r["type"] == "BASIS_INVALID" for r in views.conflict_rows(p, "MM-X"))  # displayed, then resolvable
+
+
+@pytest.mark.parametrize("ident", ["RV-1", "AP-2", "BLK-3", "HO-1", "EV-1", "DEC-001", "LDEC-001", "REG-B-X",
+                                   "PROJECT", "LEDGER"])
+def test_r16_02_milestone_ids_cannot_take_generated_or_reserved_names(tmp_path, ident):
+    m = new(tmp_path)
+    with pytest.raises(ValidationError) as e:
+        m.create_milestone(ident, "x")
+    assert e.value.code == "RESERVED_ID"

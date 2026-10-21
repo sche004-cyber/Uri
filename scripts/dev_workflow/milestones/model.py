@@ -10,6 +10,9 @@ import copy
 import re
 
 ID_RE = re.compile(r"^[A-Z0-9][A-Z0-9._-]{1,63}$")
+# Milestone ids may not look like generated record ids or the reserved subjects: versions and conflicts of all
+# entities share one namespace (review R16-02).
+RESERVED_MILESTONE_RE = re.compile(r"^(?:(?:RV|AP|BLK|HO|EV|DEC|LDEC|REG)-.*|PROJECT|LEDGER)$")
 DEC_RE = re.compile(r"^L?DEC-\d{3,5}$")  # DEC-NNN = owner register numbering; LDEC-NNN = ledger-native
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -436,7 +439,13 @@ def _apply_one(p: dict, ev: dict) -> None:
             _bump(p, d["subject"])
     elif kind == "CONFLICT_RESOLVED":
         named = set(d.get("conflicts") or [])  # exactly the conflicts the resolver saw (review R2-05)
+        # (event hash, conflict type) pairs the resolver was shown; a conflict the same event raises only after a
+        # later sync has another type and stays open (review R16-01). Older events without "seen" keep the
+        # hash-only rule.
+        seen = {tuple(x) for x in d["seen"]} if isinstance(d.get("seen"), list) else None
         for c in p["conflicts"]:
+            if seen is not None and (c["event"]["hash"], c.get("type")) not in seen:
+                continue
             if c["entity"] == d["entity"] and not c["resolved"] and c["event"]["hash"] in named:
                 c["resolved"] = True
                 c["resolution"] = {"note": d["note"], "at": ev["ts"], "by": ev["actor"]}
