@@ -467,8 +467,15 @@ class Host:
         self.report["profile"] = RP.describe(self.cfg)
         sw = dict(self.report.get("profile_switch") or {})
         if sw.get("result") != "IN_PROGRESS":
-            sw = {"id": (self.report.get("last_request") or {}).get("id"), "from": before,
-                  "t_request": round(self.now(), 3)}
+            old, sw = sw, {"id": (self.report.get("last_request") or {}).get("id"), "from": before,
+                           "t_request": round(self.now(), 3)}
+            fb = old.get("fallback") or {}
+            if fb.get("result") == "IN_PROGRESS":
+                # Review R1-04: a newer request taken while a restore waited supersedes it. Keep that record (the
+                # restore's own record is closed in memory only), and say that `from` never ran again.
+                sw.update(from_ran=False, superseded={"id": old.get("id"), "to": old.get("to"),
+                                                      "result": old.get("result"),
+                                                      "fallback": dict(fb, result="SUPERSEDED")})
         sw.update(to=self.report["profile"]["id"], required_mib=self.required_mib, result="IN_PROGRESS")
         self.report["profile_switch"] = sw
         self.sync_selection()

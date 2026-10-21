@@ -11,8 +11,8 @@ import 'package:uri_ui/theme/uri_theme.dart';
 import 'brain_quick_controls_test.dart' show QcRuntime, controls, ready, pumpControls, lvReason;
 
 /// UI-CONTROLS-TYPO-20261018: push-to-enable controls (states, glow only
-/// from verified state, coupled Vision / Context, failed-switch restore)
-/// and the single type system.
+/// from verified state, Vision coupled to the context by the catalog,
+/// failed-switch restore) and the single type system.
 
 BoxDecoration deco(WidgetTester t, String key) => t
     .widget<AnimatedContainer>(find.descendant(of: find.byKey(ValueKey(key)), matching: find.byType(AnimatedContainer)).first)
@@ -57,7 +57,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(toggle(tester, 'qc-vision').visual, QcVisual.off);
       expect(deco(tester, 'qc-vision').boxShadow, anyOf(isNull, isEmpty));
-      expect(deco(tester, 'qc-context-64K').boxShadow, isNotEmpty);
       expect(find.text('Brain switched in 30 s. Your conversation is kept.'), findsOneWidget);
     });
 
@@ -181,7 +180,7 @@ void main() {
     final rt = QcRuntime();
     final conv = await ready(rt);
     await pumpControls(tester, conv);
-    await tester.tap(find.byKey(const ValueKey('qc-context-64K')));
+    await tester.tap(find.byKey(const ValueKey('qc-vision')));
     await tester.pumpAndSettle();
     final w = tester.getSize(find.descendant(of: find.byType(Dialog), matching: find.byType(Material)).first).width;
     expect(w, lessThanOrEqualTo(520), reason: 'was full window width (REFERENCE_confirm_dialog_before.png)');
@@ -216,7 +215,7 @@ void main() {
     });
 
     test('no font family or off-scale size is hard-coded outside the theme', () {
-      // The classic dashboard is a frozen, pixel-transcribed 1024x682 board scaled as a whole (board units);
+      // Scope exclusion (not a frozen file, review R1-05): the classic dashboard is a pixel-transcribed 1024x682 board scaled as a whole (board units);
       // settings_shell.dart is a protected frozen file (scripts/ws_frozen_check.py).
       const exempt = {
         'lib/widgets/dashboard/reference_dashboard.dart',

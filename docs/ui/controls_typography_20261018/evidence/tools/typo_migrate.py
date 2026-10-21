@@ -12,7 +12,7 @@ TOK = {10: 'micro', 11: 'caption', 12: 'label', 13: 'body', 14: 'bodyLarge', 15:
 SNAP = {7.4: 10, 8: 10, 9: 10, 9.5: 10, 10: 10, 10.5: 11, 11: 11, 11.5: 12, 12: 12, 12.5: 13, 13: 13, 13.5: 14,
         14: 14, 15: 15, 16: 17, 18: 17, 19: 20, 20: 20, 22: 24, 23: 24, 24: 24, 26: 28, 30: 28, 34: 34, 38: 34,
         48: 48}
-# Not migrated: the classic dashboard is a frozen, pixel-transcribed 1024x682 board scaled as a whole (its sizes are
+# Not migrated (scope exclusion, not a frozen file; review R1-05): the classic dashboard is a pixel-transcribed 1024x682 board scaled as a whole (its sizes are
 # board units, not logical pixels; dashboard_manifest.dart says never hand-edit). uri_theme.dart is edited by hand.
 # settings_shell.dart is PROTECTED (scripts/ws_frozen_check.py) and is never edited.
 SKIP = {'lib/screens/settings/settings_shell.dart', 'lib/widgets/dashboard/reference_dashboard.dart', 'lib/theme/dashboard_manifest.dart', 'lib/theme/uri_theme.dart'}

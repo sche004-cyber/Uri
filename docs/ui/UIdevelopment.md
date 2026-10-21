@@ -33,7 +33,7 @@ Rules:
   `buildUriTheme` carries the family explicitly; never replace a role with a bare `TextStyle` (it would drop the family
   and fall back silently).
 - When a literal size is needed, write `fontSize: UriType.<token>`, never a number. The test above fails on a numeric
-  `fontSize:` outside the theme. Exceptions: the frozen classic dashboard board (`reference_dashboard.dart`,
+  `fontSize:` outside the theme. Exceptions: the classic dashboard board, excluded by scope, not frozen (`reference_dashboard.dart`,
   `dashboard_manifest.dart`: board units of a scaled 1024x682 canvas) and the protected `settings_shell.dart`.
 - Weights: 400 body, 500 labels, 600 titles and emphasis, 700 headings and metrics, 300 only for the wordmark and the
   large greeting.

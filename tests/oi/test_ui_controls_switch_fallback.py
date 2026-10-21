@@ -237,3 +237,30 @@ def test_restore_to_standard_draft_off_after_the_closure(tmp_path, monkeypatch):
         assert FakeRM.started == ["c64k-visoff-mtpoff", "c32k-visgpu-mtpoff"] and lease_mib(tmp_path) == 14360
     finally:
         h.lease.release("test")
+
+
+def test_a_request_that_supersedes_a_waiting_restore_keeps_its_record(host):
+    """Review R1-04: the superseded restore is persisted with the new switch, and `from` is marked as not running."""
+    H, h = host
+    h.mgr = None                          # the failed switch stopped the Brain; the restore waits for GPU memory
+    h.report["profile_switch"] = {"id": "req-1", "from": "frozen", "to": "c64k-visoff-mtpoff", "result": "FAILED",
+                                  "fallback": {"to": "frozen", "label": "Standard", "result": "IN_PROGRESS"}}
+    h.report["last_request"] = {"id": "req-2"}
+    h.pending_profile = tuple(LONG)
+    assert h.apply_pending_profile() is True
+    sw = h.report["profile_switch"]
+    assert sw["id"] == "req-2" and sw["result"] == "IN_PROGRESS" and sw["from_ran"] is False
+    assert sw["superseded"] == {"id": "req-1", "to": "c64k-visoff-mtpoff", "result": "FAILED",
+                                "fallback": {"to": "frozen", "label": "Standard", "result": "SUPERSEDED"}}
+    written = json.loads((h.report_dirs[0] / H.REPORT_FILE).read_text())
+    assert written["profile_switch"]["superseded"]["fallback"]["result"] == "SUPERSEDED"
+
+
+def test_an_ordinary_new_switch_has_no_superseded_record(host):
+    H, h = host
+    h.mgr = None
+    h.report["profile_switch"] = {"id": "req-1", "result": "READY"}
+    h.report["last_request"] = {"id": "req-2"}
+    h.pending_profile = tuple(LONG)
+    h.apply_pending_profile()
+    assert "superseded" not in h.report["profile_switch"] and "from_ran" not in h.report["profile_switch"]

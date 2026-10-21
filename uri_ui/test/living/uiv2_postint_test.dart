@@ -26,8 +26,9 @@ Future<void> openDraft(FakeRuntime rt, OiConversation conv, String turn) async {
   await pumpEventQueue();
 }
 
-Future<(FakeRuntime, LivingServices)> pumpRoot(WidgetTester tester, Size size) async {
-  SharedPreferences.setMockInitialValues({'uri.living.onboardingDone': true});
+Future<(FakeRuntime, LivingServices)> pumpRoot(WidgetTester tester, Size size,
+    {Map<String, Object> prefs = const {}}) async {
+  SharedPreferences.setMockInitialValues({'uri.living.onboardingDone': true, ...prefs});
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);

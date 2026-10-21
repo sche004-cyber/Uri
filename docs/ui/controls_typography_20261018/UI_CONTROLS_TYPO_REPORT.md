@@ -71,7 +71,7 @@ so"); Cancel (text button) and **Switch Brain** (filled, icon).
   half steps rounded up (12.5 -> 13, 13.5 -> 14, 11.5 -> 12 ...), others to the nearest step. Georgia replaced by
   Segoe UI (Light 300 for the wordmark and the greeting). Default body text (`bodyMedium`) moves 13.5 -> 14.
 - After (`evidence/typography_counts_after.json`): 0 numeric literals and 0 family literals outside the exceptions;
-  the whole tree still has 18 literals with 9 values, all in the two documented exceptions: the frozen classic
+  the whole tree still has 18 literals with 9 values, all in the two documented exceptions: the scope-excluded (not frozen, R1-05) classic
   dashboard board (`reference_dashboard.dart`, pixel-transcribed 1024x682 board units, "never hand-edit") and the
   protected `settings_shell.dart` (ws_frozen_check PROTECTED).
 - Guard: `test/living/ui_controls_typography_test.dart` fails on a new numeric `fontSize`, any `fontFamily` string
@@ -101,7 +101,7 @@ size"), every run started the production host with `--profile 32768,gpu,0` (P3, 
 | Run | Code | Result | Evidence |
 |-----|------|--------|----------|
 | ui-1 | `a4935c2b` | stopped by me after 15 checks. The restore worked live; 1 FAIL `UT-restored-notice` was a **driver defect** (`textOf` searched descendants of a key that sits on the Text itself; `05-restored-after-failed-start.png` shows the notice), and the driver waited for READY while Long context came up DEGRADED (slow, GPU short). Driver repaired; run kept as history. | `evidence/live/ui-1/` |
-| **ui-2** | `22b53b78` | **30/30 PASS**, exit 0, end ui-finished | `evidence/live/ui-2/` |
+| **ui-2** | `22b53b78` | **26/26 PASS** (corrected by URI-CONTROLS-3, review R1-02: `observations.json` holds 26 check rows; conditional checks such as Draft did not run), exit 0, end ui-finished | `evidence/live/ui-2/` |
 | **uiv2-1** | `22b53b78` | **UI V2 journeys 68/68 PASS** (canonical driver unchanged, fresh prefs incl. onboarding) | `evidence/live/uiv2-1/` |
 
 ui-2 journey and outcomes (from `live/ui-2/observations.json`, `samples.json`, `injection.json`):
@@ -154,7 +154,7 @@ Preliminary gates at `7bab14fe` were superseded and not kept.
 | C1 dialog | MET | `before/confirm_dialog_before_live_20261018.png` vs `live/ui-2/04, 06, 09`; width test |
 | D1-D4 gates | MET | section 4 |
 | D5 UI V2 journeys | MET | uiv2-1 68/68 |
-| D6 live run | MET | ui-2 30/30 |
+| D6 live run | MET | ui-2 26/26 (was misstated as 30/30, R1-02) |
 | D7 no performance regression | PARTIAL | by construction (no new animation, shader or font; one shadow per enabled control) and the idle-frame test; no before/after frame-time or memory measurement taken; Brain speed today is limited by the owner's desktop GPU use, so no speed number from these runs is attributable to this change |
 
 ## 6. Findings and limitations

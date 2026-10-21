@@ -198,7 +198,23 @@ class OiConversation extends ChangeNotifier {
   OiConfirmation? pendingConfirmation;
   String? lastError;
   bool workerExited = false;
-  OiDepth depth = OiDepth.auto;
+  /// Turn depth for the next message. The Thinking toggle is On / Off only
+  /// (URI-CONTROLS-3): Off (fast) until the user turns it on; LivingApp
+  /// restores the user's last choice at start ([restoreDepth]).
+  OiDepth depth = OiDepth.fast;
+
+  /// Called after the user changes the depth (LivingApp stores it).
+  void Function(OiDepth depth)? onDepthChanged;
+
+  /// Restores a stored depth by name; unknown names are ignored.
+  void restoreDepth(String? name) {
+    for (final d in OiDepth.values) {
+      if (d.name == name && d != depth) {
+        depth = d;
+        notifyListeners();
+      }
+    }
+  }
 
   /// Text intelligence: the session's current draft (null when none), the
   /// desk's open clarification question, and generation progress.
@@ -778,6 +794,7 @@ class OiConversation extends ChangeNotifier {
   void setDepth(OiDepth d) {
     depth = d;
     notifyListeners();
+    onDepthChanged?.call(d);
   }
 
   // ---- Brain Quick Controls (BRAIN-QC-20261018) ---------------------------

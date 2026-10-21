@@ -1,26 +1,36 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/uri_theme.dart';
+import '../assist/assist_controller.dart';
 import 'oi_conversation.dart';
 import 'qc_toggle.dart';
 
-/// Brain Quick Controls (BRAIN-QC-20261018): Thinking, Vision and Context
-/// under the chat box.
+/// Brain Quick Controls under the chat box: exactly three ON / OFF toggles
+/// (owner decision 2026-10-21, URI-CONTROLS-3), each switched on its own:
 ///
-/// * Thinking is per message (turn depth: Off = fast, On = normal, Auto =
-///   URI decides). Nothing reloads. The chip also says what the latest
-///   answer actually did (its tier), not only what was asked.
-/// * Vision and Context choose a qualified Brain profile from the worker's
+/// * Thinking is per message (turn depth: Off = fast, On = normal). Nothing
+///   reloads. The tooltip also says what the latest answer actually did
+///   (its tier), not only what was asked. The choice is kept across a
+///   restart (LivingApp stores it).
+/// * Vision chooses a qualified Brain profile from the worker's
 ///   `brain_health.controls`. A change is a controlled Brain reload, asked
 ///   for only after the user confirmed it; the conversation stays.
+/// * URI Assist is the worker's Assist session (`uri_assist`). On starts the
+///   consent flow (the Assist view, where the user chooses what URI may see:
+///   nothing is seen before a grant); Off stops the session at once (one tap,
+///   A0 spec). It glows only while the worker reports a grant.
 /// * Truthfulness: a value is shown as current only when the worker verified
-///   the running Brain against it (`controls.active`). While a switch runs
-///   the controls say so, and an unqualified combination is listed disabled
-///   with its reason, never offered.
-/// * Push-to-enable (UI-CONTROLS-TYPO-20261018): Thinking and Vision are
-///   toggles, Context is a selection ([QcToggle], [QcSegmented]). The
-///   enabled glow follows the verified state only: a click asks, the
-///   worker's `controls.active` decides what glows.
+///   it (`controls.active` for Vision, the Assist status for URI Assist).
+///   While a switch runs the controls say so, and an unqualified choice is
+///   disabled with its reason, never offered.
+/// * Push-to-enable (UI-CONTROLS-TYPO-20261018, [QcToggle]): a click asks,
+///   the worker's verified state decides what glows. Keyboard (Tab, Enter,
+///   Space) and screen readers operate every toggle (review R1-01).
+///
+/// Context size and the speculative draft are no longer quick controls
+/// (owner decision: exactly these three). The Vision toggle may still change
+/// the context, because vision and context are coupled by the qualified
+/// catalog; its tooltip and the confirmation say so.
 
 class QcOption {
   QcOption(this.raw);
@@ -109,71 +119,6 @@ List<QcChoice> visionChoices(List<QcOption> options, Map<String, dynamic>? activ
   return out;
 }
 
-/// Context sizes known to the catalog. Prefers keeping vision as it is; when
-/// that combination is not qualified, the qualified profile with that context
-/// is offered and the menu says that vision changes too.
-List<QcChoice> contextChoices(List<QcOption> options, Map<String, dynamic>? active) {
-  final out = <QcChoice>[];
-  final activeOn = active == null ? null : active['vision_on'] == true;
-  final activeCtx = (active?['ctx'] as num?)?.toInt();
-  final sizes = {for (final o in options) o.ctx}.toList()..sort();
-  for (final ctx in sizes) {
-    final title = ctxLabel(ctx);
-    if (activeCtx == ctx) {
-      out.add(QcChoice(title: title, current: true, note: 'Current: ${active!['label'] ?? ''}'));
-      continue;
-    }
-    final same = options.where((o) => o.ctx == ctx && (activeOn == null || o.visionOn == activeOn));
-    final exact = _firstQualified(same);
-    if (exact != null) {
-      out.add(QcChoice(title: title, target: exact, note: '${exact.label}: ${exact.summary}'));
-      continue;
-    }
-    final blocked = _firstUnqualified(same);
-    final other = _firstQualified(options.where((o) => o.ctx == ctx));
-    if (blocked != null) {
-      out.add(QcChoice(
-          title: '$title with vision ${activeOn == true ? 'on' : 'off'}',
-          blocked: blocked.reason ?? 'Not qualified.'));
-    }
-    if (other != null) {
-      out.add(QcChoice(
-          title: title,
-          target: other,
-          note: activeOn != null && other.visionOn != activeOn
-              ? 'Turns vision ${other.visionOn ? 'on' : 'off'} (${other.label})'
-              : '${other.label}: ${other.summary}'));
-    } else if (blocked == null) {
-      out.add(QcChoice(title: title, blocked: 'No qualified Brain profile offers this.'));
-    }
-  }
-  return out;
-}
-
-/// Draft (speculative decoding, MTP) On / Off at the running context and
-/// vision (closure D2/D6): offered only where two qualified profiles differ
-/// in the draft alone (Standard and Standard, draft off). Vision and context
-/// stay as they are. Empty when there is nothing to choose.
-List<QcChoice> draftChoices(List<QcOption> options, Map<String, dynamic>? active) {
-  if (active == null) return const [];
-  final activeCtx = (active['ctx'] as num?)?.toInt();
-  final activeOn = active['vision_on'] == true;
-  final activeMtp = active['mtp'] == true;
-  final same = options.where((o) => o.switchable && o.ctx == activeCtx && o.visionOn == activeOn).toList();
-  if ({for (final o in same) o.mtp}.length < 2) return const [];
-  final out = <QcChoice>[];
-  for (final on in [true, false]) {
-    final title = on ? 'On' : 'Off';
-    if (activeMtp == on) {
-      out.add(QcChoice(title: title, current: true, note: 'Current: ${active['label'] ?? ''}'));
-      continue;
-    }
-    final t = _firstQualified(same.where((o) => o.mtp == on));
-    if (t != null) out.add(QcChoice(title: title, target: t, note: '${t.label}: ${t.summary}'));
-  }
-  return out;
-}
-
 /// Closure D2/D6: while URI Assist holds a grant ([locked]), a choice that
 /// would turn vision off is shown disabled with the reason.
 List<QcChoice> lockVision(List<QcChoice> xs, bool locked, Map<String, dynamic>? active) {
@@ -214,10 +159,8 @@ String thinkingLabel(OiDepth d) => switch (d) {
 
 /// The choice a push-to-enable toggle makes (UI-CONTROLS-TYPO-20261018):
 /// the first qualified, not-current entry of [choices] whose title starts
-/// with [want] ('On' / 'Off', or a context label), and the reasons of the
-/// entries for [want] that are blocked (shown with the control, never
-/// hidden). Works for any choice list ([visionChoices], [contextChoices],
-/// and later a Draft list).
+/// with [want] ('On' / 'Off'), and the reasons of the entries for [want]
+/// that are blocked (shown with the control, never hidden).
 ({QcChoice? choice, List<String> blocked}) toggleChoice(List<QcChoice> choices, String want) {
   QcChoice? choice;
   final blocked = <String>[];
@@ -238,8 +181,15 @@ String thinkingLabel(OiDepth d) => switch (d) {
 enum QcOutcome { none, ok, restored, warning, error }
 
 class BrainQuickControls extends StatelessWidget {
-  const BrainQuickControls({super.key, required this.conversation});
+  const BrainQuickControls({super.key, required this.conversation, this.assist, this.openAssist});
   final OiConversation conversation;
+
+  /// The worker's URI Assist mirror (null in the mock preview: the toggle is
+  /// then shown unavailable, with the reason).
+  final AssistController? assist;
+
+  /// Shows the Assist view, where the user grants what URI may see.
+  final VoidCallback? openAssist;
 
   @override
   Widget build(BuildContext context) {
@@ -257,24 +207,29 @@ class BrainQuickControls extends StatelessWidget {
     final (notice, outcome) = _notice(conv, switchState);
 
     // Thinking: per message, nothing reloads. One click turns it On (think
-    // first), the next Off (answer directly). Auto, the default, lets URI
-    // decide per message and is chosen from the small menu next to it.
+    // first), the next Off (answer directly).
     final thinkingOn = conv.depth == OiDepth.normal || conv.depth == OiDepth.deep;
     final thinkingEnabled = !conv.restarting && !conv.workerExited;
+    final tier = conv.lastAnswerTier;
+    final lastAnswer = tier == null
+        ? ''
+        : ' Last answer: ${tier == 'NORMAL' ? 'thought first' : tier == 'FAST' ? 'answered directly' : tier}.';
     final controlsRow = <Widget>[
       QcToggle(
         key: const ValueKey('qc-thinking'),
         icon: Icons.psychology_alt_outlined,
         label: 'Thinking',
+        // An older caller may still have set Auto; it is shown as what it is, never as On or Off.
         status: conv.depth == OiDepth.auto ? 'Auto' : null,
         visual: thinkingOn ? QcVisual.on : QcVisual.off,
-        tooltip: thinkingOn
-            ? 'Thinking is on: URI thinks before answering your next message. Click to turn it off. Nothing reloads.'
-            : conv.depth == OiDepth.auto
-                ? 'Thinking is Auto: URI decides for each message. Click to turn it on. Nothing reloads.'
-                : 'Thinking is off: URI answers directly (fastest). Click to turn it on. Nothing reloads.',
+        tooltip: !thinkingEnabled
+            ? 'Thinking can be changed once URI has restarted.'
+            : (thinkingOn
+                    ? 'Thinking is on: URI thinks before answering your next message. Click to turn it off. '
+                        'Nothing reloads.'
+                    : 'Thinking is off: URI answers directly (fastest). Click to turn it on. Nothing reloads.') +
+                lastAnswer,
         onPressed: thinkingEnabled ? () => conv.setDepth(thinkingOn ? OiDepth.fast : OiDepth.normal) : null,
-        trailing: _thinkingMenu(context, thinkingEnabled),
       ),
     ];
 
@@ -335,44 +290,6 @@ class BrainQuickControls extends StatelessWidget {
             : null,
       ));
 
-      // Context: one size at a time, so a selection, not toggles.
-      final ctxChoices = lockVision(contextChoices(options, active), locked, active);
-      final activeCtx = (active?['ctx'] as num?)?.toInt();
-      final sizes = {for (final o in options) o.ctx}.toList()..sort();
-      controlsRow.add(QcSegmented(
-        key: const ValueKey('qc-context'),
-        icon: Icons.notes_rounded,
-        label: 'Context',
-        status: unverified,
-        loading: pending,
-        error: errorLook,
-        tooltip: why ?? 'How much of the conversation the Brain reads at once. Changing it reloads the Brain.',
-        segments: [
-          for (final ctx in sizes) _contextSegment(ctx, ctxChoices, active, activeCtx, why, canSwitch && !pending, context),
-        ],
-      ));
-
-      // Draft (closure D2/D6): a toggle, offered only where two qualified profiles differ in the draft alone
-      // (Standard = On, Standard, draft off = Off). Vision and context stay.
-      final draft = draftChoices(options, active);
-      if (draft.isNotEmpty) {
-        final draftOn = active?['mtp'] == true;
-        final dt = toggleChoice(draft, draftOn ? 'Off' : 'On');
-        controlsRow.add(QcToggle(
-          key: const ValueKey('qc-draft'),
-          icon: Icons.bolt_outlined,
-          label: 'Draft',
-          visual: draftOn ? QcVisual.on : QcVisual.off,
-          tooltip: why ??
-              'Draft is ${draftOn ? 'on' : 'off'}. A speculative draft speeds up structured answers; Off uses about '
-                  '1.2 GB less GPU memory. Vision and context stay. Click to turn it ${draftOn ? 'off' : 'on'}; '
-                  'the Brain reloads.',
-          onPressed: canSwitch && !pending && dt.choice != null
-              ? () => _confirmAndSwitch(context, dt.choice!, blocked: dt.blocked)
-              : null,
-        ));
-      }
-
       if (pending) {
         final last = (switchState['last'] as Map?)?.cast<String, dynamic>();
         final target = (switchState['target'] as Map?)?.cast<String, dynamic>();
@@ -391,6 +308,11 @@ class BrainQuickControls extends StatelessWidget {
         ));
       }
     }
+
+    // URI Assist: after Vision, so the three controls keep one order.
+    controlsRow.add(assist == null
+        ? _assistToggle(context, null)
+        : ListenableBuilder(listenable: assist!, builder: (ctx, _) => _assistToggle(ctx, assist)));
 
     final noticeColor = switch (outcome) {
       QcOutcome.error => c.danger,
@@ -427,28 +349,6 @@ class BrainQuickControls extends StatelessWidget {
     );
   }
 
-  QcSegment _contextSegment(int ctx, List<QcChoice> ctxChoices, Map<String, dynamic>? active, int? activeCtx,
-      String? why, bool canSwitch, BuildContext context) {
-    final title = ctxLabel(ctx);
-    final t = toggleChoice(ctxChoices, title);
-    final selected = activeCtx == ctx;
-    return QcSegment(
-      key: ValueKey('qc-context-$title'),
-      label: title,
-      selected: selected,
-      tooltip: selected
-          ? 'Current: ${active!['label'] ?? title}'
-          : why ??
-              (t.choice == null
-                  ? (t.blocked.isEmpty ? 'No qualified Brain profile offers this.' : t.blocked.join(' '))
-                  : '${t.choice!.note}. The Brain reloads; your conversation stays.'
-                      '${t.blocked.isEmpty ? '' : ' (${t.blocked.join(' ')})'}'),
-      onTap: canSwitch && !selected && t.choice != null
-          ? () => _confirmAndSwitch(context, t.choice!, blocked: t.blocked)
-          : null,
-    );
-  }
-
   /// The outcome of this UI's latest switch request, in plain words.
   (String?, QcOutcome) _notice(OiConversation conv, Map<String, dynamic> switchState) {
     if (conv.profileNotice != null) return (conv.profileNotice, QcOutcome.warning);
@@ -482,6 +382,11 @@ class BrainQuickControls extends StatelessWidget {
           QcOutcome.restored
         );
       }
+      // Review R1-03: the worker's 600 s gate can expire while the host is still going back; that is not a failure.
+      final fbResult = '${fb?['result']}';
+      if (fb != null && (fbResult == 'IN_PROGRESS' || fbResult.startsWith('WAITING_'))) {
+        return ('The Brain did not start with the new setting; URI is still going back to $prev.', QcOutcome.warning);
+      }
       if (fb != null && fb['result'] == 'STOPPED') {
         return ('The new setting did not start and going back was stopped; the Brain is not running.', QcOutcome.error);
       }
@@ -500,45 +405,58 @@ class BrainQuickControls extends StatelessWidget {
     return ('The switch ended without a ready Brain. Choose a setting again or Restart Brain.', QcOutcome.error);
   }
 
-  Widget _thinkingMenu(BuildContext context, bool enabled) {
-    final c = UriColors.of(context);
+  /// The URI Assist toggle. Its state is the worker's: the Assist status
+  /// when this UI has read it, else the worker's own `controls.assist`.
+  Widget _assistToggle(BuildContext context, AssistController? a) {
     final conv = conversation;
-    return PopupMenuButton<OiDepth>(
-      key: const ValueKey('qc-thinking-menu'),
-      tooltip: 'Thinking: Auto, On or Off',
-      enabled: enabled,
-      onSelected: conv.setDepth,
-      padding: EdgeInsets.zero,
-      itemBuilder: (_) => [
-        _item(context, OiDepth.auto, 'Auto', 'URI decides for each message', selected: conv.depth == OiDepth.auto),
-        _item(context, OiDepth.normal, 'On', 'Thinks first, within a fixed budget',
-            selected: conv.depth == OiDepth.normal),
-        _item(context, OiDepth.fast, 'Off', 'Answers directly (fastest)', selected: conv.depth == OiDepth.fast),
-        if (conv.lastAnswerTier != null)
-          PopupMenuItem<OiDepth>(
-            enabled: false,
-            height: 28,
-            child: Text(
-              conv.lastAnswerTier == 'NORMAL'
-                  ? 'Last answer: thought first'
-                  : conv.lastAnswerTier == 'FAST'
-                      ? 'Last answer: answered directly'
-                      : 'Last answer: ${conv.lastAnswerTier}',
-              key: const ValueKey('qc-thinking-last'),
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: UriType.caption, color: c.inkFaint),
-            ),
-          ),
-      ],
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 3, 6, 3),
-        child: Icon(Icons.arrow_drop_down_rounded,
-            size: 16,
-            color: conv.depth == OiDepth.normal
-                ? c.accentInk
-                : enabled
-                    ? c.inkSoft
-                    : c.inkFaint),
-      ),
+    final controls = conv.brainControls;
+    final worker = (controls['assist'] as Map?)?.cast<String, dynamic>();
+    final granted = a != null && a.loaded ? (a.active || a.paused) : worker?['granted'] == true;
+    final paused = a != null && a.loaded && a.paused;
+    final String? unavailable = a == null
+        ? 'URI Assist needs the URI worker; it is not connected here.'
+        : conv.workerExited || conv.restarting || !a.available
+            ? 'URI Assist is not available while URI is not running or restarting. A restarted URI starts with '
+                'URI Assist off.'
+            : controls.isNotEmpty && worker == null
+                ? 'URI Assist is not available in this URI worker.'
+                : null;
+    final err = a?.lastError;
+    final String tip;
+    if (unavailable != null) {
+      tip = unavailable;
+    } else if (granted) {
+      tip = '${paused ? 'URI Assist is paused' : 'URI Assist is on'}: URI may look only at what you allowed. '
+          'Click to stop it; URI forgets what it saw. Vision stays on while URI Assist is on.';
+    } else {
+      tip = 'URI Assist is off: URI sees nothing on your screen. Click to choose what URI may look at '
+          '(a window or the screen); nothing is seen before you allow it.';
+    }
+    return QcToggle(
+      key: const ValueKey('qc-assist'),
+      icon: Icons.visibility_outlined,
+      label: 'URI Assist',
+      status: unavailable != null
+          ? 'unavailable'
+          : paused
+              ? 'Paused'
+              : null,
+      visual: a != null && a.busy
+          ? QcVisual.loading
+          : granted
+              ? QcVisual.on
+              : QcVisual.off,
+      tooltip: err == null || unavailable != null ? tip : '$tip (Last refusal: $err.)',
+      onPressed: unavailable != null
+          ? null
+          : granted
+              ? () => a!.revoke()
+              : openAssist == null
+                  ? null
+                  : () {
+                      openAssist!();
+                      a!.refresh();
+                    },
     );
   }
 
@@ -565,22 +483,6 @@ class BrainQuickControls extends StatelessWidget {
     await conv.reconfigureBrain(target.id);
   }
 
-  PopupMenuItem<T> _item<T>(BuildContext context, T value, String title, String subtitle, {bool selected = false}) {
-    final c = UriColors.of(context);
-    final tt = Theme.of(context).textTheme;
-    return PopupMenuItem<T>(
-      key: ValueKey('qc-thinking-$title'),
-      value: value,
-      child: ListTile(
-        dense: true,
-        contentPadding: EdgeInsets.zero,
-        leading: Icon(selected ? Icons.check_rounded : Icons.circle_outlined,
-            size: 16, color: selected ? c.success : c.inkFaint),
-        title: Text(title, style: tt.bodyMedium!.copyWith(fontSize: UriType.body, color: c.ink, height: 1.3)),
-        subtitle: Text(subtitle, style: tt.bodySmall!.copyWith(fontSize: UriType.caption, color: c.inkSoft)),
-      ),
-    );
-  }
 }
 
 /// The Brain switch confirmation (UI-CONTROLS-TYPO-20261018): what changes
@@ -690,7 +592,8 @@ class QcSwitchDialog extends StatelessWidget {
                 Icons.shield_outlined,
                 running
                     ? 'If URI sees before the switch that it does not fit in GPU memory, it keeps the current Brain. '
-                        'If the new setting fails to start, URI goes back to the current one automatically.'
+                        'If the new setting fails to start, URI goes back to the current one automatically. If GPU '
+                        'memory is taken by another program meanwhile, URI waits and says so.'
                     : 'If it does not fit in GPU memory, URI waits. If the new setting fails to start, URI says so '
                         'and you can choose again.'),
             if (brainStopped)
