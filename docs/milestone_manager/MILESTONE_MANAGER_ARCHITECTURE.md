@@ -334,3 +334,18 @@ cannot take over another machine's segment.
 | ledger-loss events a write has to record (LOSS_RECORDED for a pending acknowledged loss, ANCHORS_ADOPTED for an unanchored own segment) are appended as their own batch and folded *before* the command is validated, so the ANCHOR_LOSS they open blocks a positive status requested by that same command; they are recorded even when the command itself is then refused | R12-01 |
 | the pending-loss marker carries an id; HOST_REGISTERED / LOSS_RECORDED record it (`pending_id`); a marker whose id is already recorded is removed and never recorded twice | R12-03 |
 | marker removal retries Windows sharing violations and never fails a write that is already fsynced (warning instead) | R12-02 |
+
+## 25. Changes after independent review R13 (2026-10-22, REJECT on `3da86259`)
+
+The R12 design (record ledger-loss events and then run the command against the updated state) let one
+`resolve-conflict` close a loss it had just recorded (R13-01), broke `recover`'s output (R13-02) and wrote events for
+refused commands (R13-03). Replaced by one rule:
+
+| Situation in any write | Behaviour |
+|---|---|
+| a pending acknowledged loss whose id is not yet recorded, or an own segment without anchor | record LOSS_RECORDED / ANCHORS_ADOPTED as their own batch (ANCHOR_LOSS), refresh anchors, remove the marker, then **refuse the command** with `LEDGER_LOSS_RECORDED` — it is not executed. The user reviews, resolves (`resolve-conflict LEDGER`) and runs it again |
+| otherwise | the command runs as before |
+
+So no command (including `resolve-conflict`) ever acts on, or closes, a loss its user has not seen. The CLI prints the
+warnings with the refusal. `recover` prints its own result and the refusal of its follow-up step; running `recover`
+again completes it.

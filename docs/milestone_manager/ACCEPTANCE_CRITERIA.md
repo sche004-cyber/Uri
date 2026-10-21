@@ -63,3 +63,4 @@ Every criterion names how it is checked. "Test" means an automated pytest in `te
 |---|---|---|
 | 2026-10-21 | F6, F11, F13 rescoped from tasks to milestones; tasks read via `uri-dev/task-ledger-contract/1` | ownership split agreed with the parallel Lifecycle V3.1 session (`v1-2e`); avoids two sources of truth for tasks |
 | 2026-10-21 | F17 amended: no projection cache | review R1 showed a cache that guards read can be forged or stale; full verified fold measured at 0.3 s for 10k events (N3) |
+| 2026-10-22 | F5 clarified: a refused command writes nothing of its own; when the write first finds an unrecorded ledger loss, that loss is recorded on its own (LEDGER_LOSS_RECORDED) and the command is not executed | review R13-03; architecture §25 |

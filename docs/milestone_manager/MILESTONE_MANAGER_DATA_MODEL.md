@@ -192,3 +192,8 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 
 - `HOST_REGISTERED.pending_id`, `LOSS_RECORDED.pending_id`: id of the pending-loss marker they record; folded into
   `recorded_pending_ids`.
+
+## 19. Changes after review R13
+
+- Refusal code `LEDGER_LOSS_RECORDED`: the write recorded LOSS_RECORDED and/or ANCHORS_ADOPTED and did not execute the
+  requested command.

@@ -39,6 +39,14 @@ def new(tmp_path, actor="impl:a", host="h1", **kw):
     return Manager(home, actor=actor, session="s1", **kw)
 
 
+def _loss_first(fn):
+    """Since review R13 a write that records a ledger loss is refused once (LEDGER_LOSS_RECORDED); the retry runs."""
+    with pytest.raises(ValidationError) as e:
+        fn()
+    assert e.value.code == "LEDGER_LOSS_RECORDED"
+    return fn()
+
+
 def seg_bytes(mgr):
     return mgr.store.segment_path.read_bytes()
 
@@ -1338,9 +1346,9 @@ def test_r4_05_first_write_without_anchor_refresh_does_not_block_the_next(tmp_pa
     p = m.projection()
     assert not p["integrity_errors"] and any("not anchored yet" in w for w in p["integrity_warnings"])
     monkeypatch.setattr(m.store, "write_anchors", real)
-    m.create_milestone("MM-B", "B")
+    _loss_first(lambda: m.create_milestone("MM-B", "B"))
     p = m.projection()
-    assert not p["integrity_errors"] and not p["integrity_warnings"]
+    assert not p["integrity_errors"] and not p["integrity_warnings"] and "MM-B" in p["milestones"]
     # adopting the unanchored own segment is recorded and must be reviewed (R5-04)
     assert any(c["type"] == "ANCHOR_LOSS" and c["kind"] == "ANCHORS_ADOPTED" for c in views.open_conflicts(p))
 
@@ -1417,7 +1425,8 @@ def test_r5_04_write_over_unanchored_truncation_is_recorded_and_blocks(tmp_path)
     anchors = json.loads(m.store.anchors_path.read_text(encoding="utf-8"))
     anchors["h1"] = {"count": 0, "head": "0" * 64}
     m.store.anchors_path.write_text(json.dumps(anchors), encoding="utf-8")
-    m.record_review("MM-A", C1, "subagent", "subagent:r2", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    _loss_first(lambda: m.record_review("MM-A", C1, "subagent", "subagent:r2", "SUBAGENT", "ACCEPT", 0, 0,
+                                        "COMPLETED_WITH_RESULT", "ok"))
     with pytest.raises(ValidationError) as e:
         m.set_status("MM-A", "ACCEPTED", "try")
     assert e.value.code == "CONFLICT_OPEN"
@@ -1612,8 +1621,14 @@ def test_r6_04_adopting_write_reports_it(tmp_path, monkeypatch):
     monkeypatch.setattr(m.store, "write_anchors", lambda segs: (_ for _ in ()).throw(PermissionError("x")))
     m.create_milestone("MM-A", "A")
     monkeypatch.undo()
-    m.create_milestone("MM-B", "B")
+    with pytest.raises(ValidationError) as e:
+        m.create_milestone("MM-B", "B")
+    assert e.value.code == "LEDGER_LOSS_RECORDED" and "ANCHORS_ADOPTED" in str(e.value)
     assert any("ANCHORS_ADOPTED" in w for w in m.last_warnings)
+    out = io.StringIO()  # the CLI shows the warnings with the refusal
+    m.store.anchors_path.write_text(json.dumps({"h1": {"count": 0, "head": "0" * 64}}), encoding="utf-8")
+    assert cli.run(["--home", str(m.home), "--actor", "a", "milestone-add", "MM-C", "--title", "C"], out=out) == 1
+    assert "warnings" in json.loads(out.getvalue())
 
 
 # ------------------------------------------------------------------ R7 regression tests (review R7 on 5b2a1427)
@@ -1793,7 +1808,7 @@ def test_r9_03_kill_during_init_host_leaves_the_documented_count0_state(tmp_path
     m2 = Manager(clone, actor="b")
     p = m2.projection()
     assert not p["integrity_errors"] and any("not anchored yet" in w for w in p["integrity_warnings"])
-    m2.create_milestone("MM-B", "B")  # next write adopts and records it (architecture §7)
+    _loss_first(lambda: m2.create_milestone("MM-B", "B"))  # next write adopts and records it (architecture §7)
     p = m2.projection()
     assert not p["integrity_errors"]
     assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))
@@ -1897,7 +1912,7 @@ def test_r11_01_interrupted_acknowledged_registration_keeps_the_loss(tmp_path, p
     else:  # registered without its event: the next write records it
         m = Manager(home, actor="x")
         assert any("pending" in w for w in m.projection()["integrity_warnings"])
-        m.create_milestone("MM-N", "n")
+        _loss_first(lambda: m.create_milestone("MM-N", "n"))
     p = Manager(home, actor="x").projection()
     assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))
     assert not (home / "local" / "pending_loss.json").exists()
@@ -1984,8 +1999,12 @@ def test_r12_01_loss_recorded_by_a_write_blocks_that_same_positive_status(tmp_pa
                         "1" if with_loss else "0"])
     assert r.returncode == 9
     m = Manager(home, actor="impl:a")
-    with pytest.raises(ValidationError) as e:
+    with pytest.raises(ValidationError) as e:  # the loss is recorded first; the command is not executed
         m.set_status("MM-A", "ACCEPTED", "try right after the interruption")
+    assert e.value.code == "LEDGER_LOSS_RECORDED"
+    assert m.projection()["milestones"]["MM-A"]["status"] == "IN_PROGRESS"
+    with pytest.raises(ValidationError) as e:  # and it blocks the retry until reviewed
+        m.set_status("MM-A", "ACCEPTED", "retry")
     assert e.value.code == "CONFLICT_OPEN"
     kinds = [e["kind"] for s in m.store.read_all() for e in s.events]
     assert ("LOSS_RECORDED" in kinds) if with_loss else ("ANCHORS_ADOPTED" in kinds)
@@ -1998,7 +2017,9 @@ def test_r12_02_marker_removal_failure_is_a_warning_and_never_records_twice(tmp_
     from scripts.dev_workflow.milestones import service as service_mod
     monkeypatch.setattr(service_mod, "unlink_retry", lambda path: (_ for _ in ()).throw(PermissionError("busy")))
     m = Manager(home, actor="x")
-    m.create_milestone("MM-N", "n")  # succeeds
+    with pytest.raises(ValidationError) as e:
+        m.create_milestone("MM-N", "n")
+    assert e.value.code == "LEDGER_LOSS_RECORDED"
     assert any("marker not removed" in w for w in m.last_warnings)
     monkeypatch.undo()
     m.create_milestone("MM-M", "m")
@@ -2012,7 +2033,62 @@ def test_r12_03_marker_left_after_a_recorded_registration_is_not_recorded_again(
     assert r.returncode == 9
     assert (home / "local" / "pending_loss.json").exists()
     m = Manager(home, actor="x")
-    m.create_milestone("MM-N", "n")
+    _loss_first(lambda: m.create_milestone("MM-N", "n"))  # (the unrefreshed own anchor is adopted first)
     kinds = [e["kind"] for s in m.store.read_all() for e in s.events]
     assert kinds.count("LOSS_RECORDED") == 0 and "HOST_REGISTERED" in kinds
     assert not (home / "local" / "pending_loss.json").exists()
+
+
+# ------------------------------------------------------------------ R13 regression tests (review R13 on 3da86259)
+
+def test_r13_01_resolve_conflict_cannot_close_a_loss_it_just_recorded(tmp_path):
+    home = _accept_ready_then_lose_identity(tmp_path)
+    r = subprocess.run([sys.executable, "-c", KILL_INIT_HOST_AT, str(ROOT), str(home), "K2", "1"])
+    assert r.returncode == 9
+    m = Manager(home, actor="x")
+    assert not views.open_conflicts(m.projection())
+    with pytest.raises(ValidationError) as e:
+        m.resolve_conflict("LEDGER", "reviewed")  # nothing was open when the user typed this
+    assert e.value.code == "LEDGER_LOSS_RECORDED"
+    assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(m.projection()))
+    m.resolve_conflict("LEDGER", "now reviewed")  # an explicit second resolution closes it
+    assert not views.open_conflicts(m.projection())
+
+
+@pytest.mark.parametrize("case", ["pending", "adopt"])
+def test_r13_02_recover_with_a_pending_loss_reports_cleanly(tmp_path, case):
+    if case == "pending":
+        home = _accept_ready_then_lose_identity(tmp_path)
+        r = subprocess.run([sys.executable, "-c", KILL_INIT_HOST_AT, str(ROOT), str(home), "K2", "1"])
+        assert r.returncode == 9
+        m = Manager(home, actor="x")
+    else:
+        m = new(tmp_path)
+        init_anchors = m.store.anchors_path.read_bytes()
+        m.create_milestone("MM-A", "A")
+        m.store.anchors_path.write_bytes(init_anchors)
+        home = m.home
+    out = io.StringIO()
+    rc = cli.run(["--home", str(home), "--actor", "x", "recover"], out=out)
+    res = json.loads(out.getvalue())
+    assert rc in (0, 2) and "KeyError" not in out.getvalue()
+    assert "LEDGER_LOSS_RECORDED" in res.get("abandon_error", "") or rc == 0
+    out = io.StringIO()
+    assert cli.run(["--home", str(home), "--actor", "x", "recover"], out=out) == 0  # re-run is clean
+
+
+def test_r13_03_stale_update_after_a_recorded_loss_writes_only_the_loss(tmp_path):
+    m = new(tmp_path)
+    init_anchors = m.store.anchors_path.read_bytes()
+    m.create_milestone("MM-A", "A")
+    m.store.anchors_path.write_bytes(init_anchors)
+    before = len(m.store.read_all()[0].events)
+    with pytest.raises(ValidationError) as e:
+        m.update_milestone("MM-A", expect_version=99, objective="x")
+    assert e.value.code == "LEDGER_LOSS_RECORDED"
+    evs = m.store.read_all()[0].events
+    assert [x["kind"] for x in evs[before:]] == ["ANCHORS_ADOPTED"]
+    with pytest.raises(ValidationError) as e:
+        m.update_milestone("MM-A", expect_version=99, objective="x")
+    assert e.value.code == "CONFLICT"
+    assert len(m.store.read_all()[0].events) == before + 1  # the refused update wrote nothing (F5)

@@ -97,9 +97,11 @@ class Manager:
         """``build(p)`` validates against the verified projection ``p`` and returns [(kind, data, base), ...].
 
         All events of one call are appended as one batch (single write + fsync); the fold applies a batch only when
-        it is complete, so a crash never leaves half a command applied (R1-15). Ledger-loss events this write has to
-        record (a pending acknowledged loss, an own segment adopted without anchor) are written first as their own
-        batch and folded *before* the command is validated, so their ANCHOR_LOSS applies to the command (R12-01)."""
+        it is complete, so a crash never leaves half a command applied (R1-15).
+
+        Ledger-loss events (a pending acknowledged loss, an own segment adopted without anchor) are recorded on
+        their own and the command is then refused with LEDGER_LOSS_RECORDED and not executed (review R13): nobody
+        can act on, or resolve, a loss they have not yet seen. The next attempt runs normally."""
         self._require_actor()
         with self.store.locked():
             anchors = self.store.read_anchors()
@@ -138,42 +140,49 @@ class Manager:
                                                 "head": own.valid_events[-1]["hash"], "warning": adopt[0]}, {}))
                 self.last_warnings.append("this write anchored an own segment that had no anchor and recorded "
                                           "ANCHORS_ADOPTED: review it, then `resolve-conflict LEDGER`")
-            written = []
             if pre:
-                written += self.store.append_many(pre, actor=self.actor, session=self.session, floor=floor)
-                for ev in written:
-                    M.apply(p, ev)
-                floor = _plus(written[-1]["ts"], 0.000001)
+                written = self.store.append_many(pre, actor=self.actor, session=self.session, floor=floor)
+                if pending:
+                    try:
+                        unlink_retry(self.store.pending_loss_path)
+                    except OSError as e:
+                        self.last_warnings.append(f"pending-loss marker not removed ({e.__class__.__name__}); its "
+                                                  "loss is recorded and will not be recorded again")
+                self._refresh_after(segs, written)
+                kinds = ", ".join(ev["kind"] for ev in written)
+                raise ValidationError("LEDGER_LOSS_RECORDED",
+                                      f"recorded {kinds} (an ANCHOR_LOSS conflict) before this command; the command "
+                                      "was NOT executed. Review the loss (`status`, `show`, git history), then "
+                                      "`resolve-conflict LEDGER --note ...`, then run the command again")
             if pending:
-                # recorded now or earlier (its id is in the ledger): the marker has done its job (review R12-03)
+                # its id is already recorded (e.g. HOST_REGISTERED before a crash): only remove it (review R12-03)
                 try:
                     unlink_retry(self.store.pending_loss_path)
                 except OSError as e:
                     self.last_warnings.append(f"pending-loss marker not removed ({e.__class__.__name__}); its loss "
-                                              "is recorded and will not be recorded again")
-            try:
-                items = build(p)
-                for kind, data, _ in items:
-                    hit = M.find_secret(data)
-                    if hit:
-                        raise ValidationError("SECRET", f"{kind} contains what looks like a {hit}; secrets are "
-                                                        "never stored (record a reference instead)")
-                main = self.store.append_many(items, actor=self.actor, session=self.session, floor=floor)
-                for ev in main:
-                    M.apply(p, ev)
-                written += main
-            finally:
-                if written:
-                    own = read_segment(self.store.segment_path)
-                    try:
-                        self.store.write_anchors([s for s in segs if s.name != own.name] + [own])
-                    except OSError as e:
-                        # The events are already fsynced: report, never fail the write (review R2-02); the next
-                        # successful write refreshes the anchors.
-                        self.last_warnings.append(f"anchors not refreshed ({e.__class__.__name__}); the write "
-                                                  "itself succeeded")
-                    self.last_autocommit = self.store.autocommit(f"{written[-1]['kind']} by {self.actor}")
-            return [e for e in written if e["kind"] not in ("LOSS_RECORDED", "ANCHORS_ADOPTED")] or written
+                                              "is already recorded")
+            items = build(p)
+            for kind, data, _ in items:
+                hit = M.find_secret(data)
+                if hit:
+                    raise ValidationError("SECRET", f"{kind} contains what looks like a {hit}; secrets are never "
+                                                    "stored (record a reference instead)")
+            written = self.store.append_many(items, actor=self.actor, session=self.session, floor=floor)
+            for ev in written:
+                M.apply(p, ev)
+            if written:
+                self._refresh_after(segs, written)
+            return written
+
+    def _refresh_after(self, segs, written):
+        own = read_segment(self.store.segment_path)
+        try:
+            self.store.write_anchors([s for s in segs if s.name != own.name] + [own])
+        except OSError as e:
+            # The events are already fsynced: report, never fail the write (review R2-02); the next successful
+            # write refreshes the anchors.
+            self.last_warnings.append(f"anchors not refreshed ({e.__class__.__name__}); the write itself succeeded")
+        self.last_autocommit = self.store.autocommit(f"{written[-1]['kind']} by {self.actor}")
 
     @staticmethod
     def _version_check(p, entity, expect_version):

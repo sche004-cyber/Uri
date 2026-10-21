@@ -150,6 +150,8 @@ def run(argv=None, out=None) -> int:
     args = build_parser().parse_args(argv)
     emoji = not args.no_emoji
 
+    mgr_ref = {"mgr": None}
+
     def emit(obj):
         if isinstance(obj, str):
             out.write(obj + "\n")
@@ -173,6 +175,7 @@ def run(argv=None, out=None) -> int:
             emit({"initialised": str(st.home), "host_id": st.host, "autocommit": st.config["autocommit"]})
             return 0
         mgr = Manager(args.home, args.actor, args.session)
+        mgr_ref["mgr"] = mgr
         integrity_rc = lambda p: 3 if p.get("integrity_errors") else 0  # noqa: E731
         tasks = (lambda ref: mgr.task_summaries(ref)) if not getattr(args, "no_tasks", False) else None
         c = args.cmd
@@ -317,7 +320,10 @@ def run(argv=None, out=None) -> int:
         emit(r)
         return 0
     except ValidationError as e:
-        emit({"refused": e.code, "message": str(e)})
+        out_obj = {"refused": e.code, "message": str(e)}
+        if mgr_ref.get("mgr") is not None and mgr_ref["mgr"].last_warnings:
+            out_obj["warnings"] = mgr_ref["mgr"].last_warnings
+        emit(out_obj)
         return 1
     except StoreError as e:
         emit({"error": e.code, "message": str(e)})
