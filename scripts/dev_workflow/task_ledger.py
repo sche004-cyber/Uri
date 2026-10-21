@@ -683,6 +683,7 @@ class Ledger:
         return {"id": cur.lastrowid, "sha": sha, "deduplicated": False, "redactions": n}
 
     def context_get(self, task_id: str, sha_prefix: str) -> dict:
+        self._require_current(task_id)
         rows = self.db.execute("SELECT * FROM context WHERE task_id=? AND sha LIKE ?",
                                (task_id, sha_prefix + "%")).fetchall()
         if len(rows) != 1:
@@ -736,13 +737,12 @@ class Ledger:
         params = json.dumps([budget, query, item_chars])
         key = sha256(f"{params}|{fp}|{sorted(stale)}")
         nowt = time.time()
+        cached = None
         if use_cache:
             c = self.db.execute("SELECT * FROM packet_cache WHERE task_id=? AND cache_key=?",
                                 (task_id, key)).fetchone()
             if c is not None and c["version"] == t["version"] and c["valid_until"] > nowt:
-                p = json.loads(c["packet"])
-                p["cache"] = "HIT"
-                return p
+                cached = c["packet"]
         live = [r for r in rows if r["id"] not in stale]
         done_keys = {r["key"] for r in live if r["kind"] == "done" and r["key"]}
         by_kind: dict[str, list] = {}
@@ -778,13 +778,21 @@ class Ledger:
         p = {"task": self._summary(t), "items": items, "open_findings": findings,
              "stale": [{"id": i, "why": w} for i, w in sorted(stale.items())], "omitted": omitted,
              "chars": used, "version": t["version"], "cache": "MISS"}
+        packet_json = json.dumps(p, sort_keys=True)
+        if cached is not None:
+            # Cache rows are outside the event chain. Compare the exact stored bytes with the packet rebuilt from
+            # sealed projections before using a hit; a database edit must never become continuation context.
+            if cached != packet_json:
+                raise Refused(f"LEDGER_INTEGRITY_FAILED: {task_id} packet cache changed")
+            p["cache"] = "HIT"
+            return p
         expiries = [r["expires_at"] for r in live if r["expires_at"] is not None]
         valid = min([nowt + self.cache_ttl, *expiries])
         with self.tx():
             self.db.execute("DELETE FROM packet_cache WHERE task_id=? AND (version<>? OR valid_until<=?)",
                             (task_id, t["version"], nowt))
             self.db.execute("INSERT OR REPLACE INTO packet_cache VALUES(?,?,?,?,?)",
-                            (task_id, key, t["version"], json.dumps(p, sort_keys=True), valid))
+                            (task_id, key, t["version"], packet_json, valid))
         return p
 
     # ----------------------------------------------------------------- steps, claims, leases
@@ -1475,6 +1483,9 @@ class Ledger:
 
     def summaries(self, milestone_ref: str | None = None) -> list[dict]:
         """The Milestone Manager read contract (docs/dev_workflow/contracts/task_ledger_contract.json)."""
+        errs = self.verify()
+        if errs:
+            raise Refused("LEDGER_INTEGRITY_FAILED: " + "; ".join(errs[:10]))
         return [self._summary(self._task(t["task_id"])) for t in self.list(milestone_ref)]
 
     def handoff(self, task_id: str, *, write: bool = True) -> dict:
@@ -1569,7 +1580,21 @@ class Ledger:
     def verify(self, task_id: str | None = None) -> list[str]:
         """Recompute every task's chain and check the projections against it."""
         errs = []
-        tasks = [self._task(task_id)] if task_id else self.db.execute("SELECT * FROM tasks").fetchall()
+        if task_id is None:
+            tasks = self.db.execute("SELECT * FROM tasks").fetchall()
+        else:
+            task = self.db.execute("SELECT * FROM tasks WHERE task_id=?", (task_id,)).fetchone()
+            tasks = [task] if task is not None else []
+        orphan_query = "SELECT DISTINCT e.task_id FROM events e LEFT JOIN tasks t ON t.task_id=e.task_id " \
+                       "WHERE t.task_id IS NULL"
+        orphan_params = ()
+        if task_id is not None:
+            orphan_query += " AND e.task_id=?"
+            orphan_params = (task_id,)
+        orphans = self.db.execute(orphan_query + " ORDER BY e.task_id", orphan_params).fetchall()
+        errs.extend(f"{r['task_id']} task row missing for its event chain" for r in orphans)
+        if task_id is not None and not tasks and not orphans:
+            raise Refused(f"no task {task_id}")
         for t in tasks:
             tid, prev, n = t["task_id"], GENESIS, 0
             for r in self.db.execute("SELECT * FROM events WHERE task_id=? ORDER BY seq", (tid,)):
@@ -1861,10 +1886,12 @@ def main(argv=None) -> int:
                   for t in lg.list(a.milestone)])
         elif c == "summary":
             # Milestone Manager contract: a summary is never served from a ledger whose chains fail verification.
-            rows = lg.summaries(a.milestone)
-            errs = [e for r in rows for e in lg.verify(r["task_id"])]
-            if errs:
-                sys.stderr.write("LEDGER_INTEGRITY_FAILED: " + "; ".join(errs[:10]) + "\n")
+            try:
+                rows = lg.summaries(a.milestone)
+            except Refused as e:
+                if not str(e).startswith("LEDGER_INTEGRITY_FAILED:"):
+                    raise
+                sys.stderr.write(str(e) + "\n")
                 return 4
             _out(rows)
         elif c == "status":

@@ -1245,3 +1245,51 @@ def test_r4_seal_a_later_write_never_blesses_an_outside_edit(lp, repo):
     assert {"task_id": bad, "action": "INTEGRITY_FAILED"}.items() <= next(o for o in out if o["task_id"] == bad).items()
     assert any(o["task_id"] == good and o["action"] == "INTERRUPTED" for o in out)   # others still recovered
     assert lg.verify(good) == [] and lg.verify(bad) != []
+
+
+def test_r5_01_deleted_task_cannot_hide_its_event_chain(lg, lp):
+    tid = lg.create("deleted", "objective", DEV, milestone_ref="M")
+    assert lg.verify() == []
+    lg.db.execute("DELETE FROM tasks WHERE task_id=?", (tid,))
+    assert any(tid in error and "missing" in error for error in lg.verify())
+    assert any(tid in error and "missing" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.summaries("M")
+    result = cli(lp, "summary", "--milestone", "M", "--json")
+    assert result.returncode == 4 and "LEDGER_INTEGRITY_FAILED" in result.stderr
+
+
+@pytest.mark.parametrize("tamper", ["empty", "valid_json"])
+def test_r5_02_edited_packet_cache_is_refused(lg, tamper):
+    tid = lg.create("cache", "objective", DEV)
+    assert lg.packet(tid)["cache"] == "MISS"
+    assert lg.packet(tid)["cache"] == "HIT"
+    if tamper == "empty":
+        forged = "{}"
+    else:
+        packet = json.loads(lg.db.execute("SELECT packet FROM packet_cache WHERE task_id=?", (tid,))
+                            .fetchone()["packet"])
+        packet["items"][0]["text"] = "forged instruction"
+        forged = json.dumps(packet, sort_keys=True)
+    lg.db.execute("UPDATE packet_cache SET packet=? WHERE task_id=?", (forged, tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.packet(tid)
+
+
+def test_r5_03_filtered_summary_checks_tasks_outside_filter(lg, lp):
+    tid = lg.create("moved", "objective", DEV, milestone_ref="M")
+    lg.db.execute("UPDATE tasks SET milestone_ref='N' WHERE task_id=?", (tid,))
+    assert lg.verify(tid)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.summaries("M")
+    result = cli(lp, "summary", "--milestone", "M", "--json")
+    assert result.returncode == 4 and "LEDGER_INTEGRITY_FAILED" in result.stderr
+
+
+def test_r5_04_context_get_checks_seal(lg):
+    tid = lg.create("context", "objective", DEV)
+    saved = lg.add_context(tid, DEV, "note", "real instruction")
+    lg.db.execute("UPDATE context SET text='forged instruction' WHERE task_id=? AND sha=?",
+                  (tid, saved["sha"]))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.context_get(tid, saved["sha"][:12])
