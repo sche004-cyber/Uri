@@ -1372,3 +1372,22 @@ def test_r5_08_malformed_event_data_uses_summary_integrity_exit(lg, lp, bad_data
     assert result.returncode == 4
     assert "LEDGER_INTEGRITY_FAILED" in result.stderr
     assert result.stdout == ""
+
+
+@pytest.mark.parametrize("bad_data", ["{}", '{"review": []}', '{"review": "V1"}'])
+def test_r5_09_malformed_review_event_uses_summary_integrity_exit(lg, lp, repo, tmp_path, bad_data):
+    tid = lg.create("broken review", "objective", DEV, worktree=str(repo), milestone_ref="M")
+    head = _git(repo, "rev-parse", "HEAD")
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    assert lg.verify(tid) == []
+    seq = lg.db.execute("SELECT seq FROM events WHERE task_id=? AND kind='REVIEW_RECORDED'",
+                        (tid,)).fetchone()["seq"]
+    lg.db.execute("UPDATE events SET data=? WHERE task_id=? AND seq=?", (bad_data, tid, seq))
+
+    assert any(f"event {seq}" in error and "review" in error.lower() for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.summaries("M")
+    result = cli(lp, "summary", "--milestone", "M", "--json")
+    assert result.returncode == 4
+    assert "LEDGER_INTEGRITY_FAILED" in result.stderr
+    assert result.stdout == ""

@@ -1640,9 +1640,20 @@ class Ledger:
                       "prev": r["prev"]}
                 if r["seq"] != n:
                     errs.append(f"{tid} event seq {r['seq']} out of order (expected {n})")
+                    malformed = True
                 if r["prev"] != prev or r["hash"] != event_hash(ev):
                     errs.append(f"{tid} event {r['seq']} chain broken")
+                    malformed = True
                 prev = r["hash"]
+                if r["kind"] == "REVIEW_RECORDED":
+                    required = ("review", "commit", "verdict", "independent", "provenance", "raw_sha256")
+                    if (any(key not in data for key in required) or
+                            not isinstance(data.get("review"), str) or not data["review"] or
+                            not isinstance(data.get("independent"), bool) or
+                            (data.get("v3_state_dir") is not None and
+                             not isinstance(data["v3_state_dir"], str))):
+                        errs.append(f"{tid} event {r['seq']} has malformed REVIEW_RECORDED data")
+                        malformed = True
             if t["version"] != n or t["chain_head"] != prev:
                 errs.append(f"{tid} task row (version {t['version']}) differs from its chain ({n} events)")
             if malformed:
