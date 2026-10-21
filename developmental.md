@@ -306,6 +306,7 @@ owner-attested tier; never weaken gates. Antigravity: housekeeping and evidence 
 | 2026-10-17 | `7893aaed`, `3e769fdf`, `348677b7`, `cd4a7963` | Office completion + LOW repairs, UI V2 freeze, auditor fallback, runtime profiles | `docs/operational_intelligence/RUNTIME_PROFILES_INTEGRATION_PLAN.md`; `INTEGRATION_RECEIPT_348677b7.md` |
 | 2026-10-18 | `feaabe3f`, `ec2fab54` | Brain Quick Controls, Brain QC closure | `docs/integration/qc_ember_20261018/01_BRAIN_QC_INTEGRATION_RECEIPT.md`; `D:\uri-dev\lifecycle\BRAIN-QC-CLOSURE\INTEGRATION_RECEIPT_ec2fab54.md` (outside git) |
 | 2026-10-21 | none | P0 audit; no canonical change | — |
+| 2026-10-21 | FF `ec2fab54` -> `9488c0fd` (17:06Z, `git ls-remote` verified) | Ember V2.1 (DEC-091): candidate `68061d85` + receipt commit `9488c0fd` | `docs/integration/qc_ember_20261018/04_EMBER_V21_CANONICAL_INTEGRATION_RECEIPT.md` (in canonical) |
 
 Dates and some SHAs before 2026-10-16 are taken from receipts and memory notes; ancestry of every listed SHA in
 canonical was verified by the P0 evidence agents (`git merge-base --is-ancestor`).
@@ -352,3 +353,43 @@ evidence files 10-60):
 | Uncommitted research evidence in `C:\Users\cheta\Development\uri-adaptive-runtime` (135 entries) | Preserved by P0 as a copy: `D:\uri-dev\preservation\p0-20261021\uri-adaptive-runtime\untracked_and_modified.tar`, SHA-256 `82b357c97bd5e42a7472ad416614a4fc3531a73dfde1821b0f3a225329995035`; source worktree untouched |
 | UI-controls R1 review existed only as an untracked file | Copied to `docs/audit/p0_20261021/evidence/preserved/` (SHA-256 `8d3eeb20...50fc12`) |
 | Personal information sovereignty has no prior design or ruling | Recorded as new owner policy in `decisions.md` (DEC-089); design is P2 |
+
+---
+
+## O. 2026-10-21 integration session: Ember V2.1 (DEC-091) and URI Controls (DEC-092)
+
+Appended after P0; the rows above are kept as they were. Corrections to them are listed here.
+
+### O.1 Ember V2.1 (CAP-UI2): YELLOW -> GREEN (integrated; two journeys missing)
+
+| Item | Value |
+|---|---|
+| Canonical before / after | `ec2fab5493578a4f5a805642153d56b4d5ea59fa` -> `9488c0fd50bc5937bb2008dd33c85b14304daeeb` (fast-forward, pushed 2026-10-21 ~17:06Z; `git ls-remote uri-repo refs/heads/integration/git-sync-20261008` returned `9488c0fd`) |
+| Integrated commit | `9488c0fd` = candidate `68061d85` + receipt `docs/integration/qc_ember_20261018/04_EMBER_V21_CANONICAL_INTEGRATION_RECEIPT.md` |
+| Reviewed code | `bb61e976`; `git diff bb61e976 68061d85` docs only (re-checked) |
+| Independent reviews (existing, recognised) | R1-R4, stage-2, FINAL: ACCEPT WITH FINDINGS (fresh subagents) |
+| Checks run this session on `68061d85` | `ws_frozen_check`: `unapproved_protected_changes: []`, `unapproved_drift: []`; Flutter Ember companion + transparency + companion orb + UI V2 tests: 103 passed |
+| Live (existing, same code) | `p3-ember-switch` and `p3-uiv2` 68/68 at `bb61e976`; `e-first` at `8f883bbf` |
+| Missing | UI V2 returning (12) / perf (3) with Ember: attempt 16:27-17:05Z produced no result (GPU contended: `dwm.exe` 1.77 GB, P3 fit -976 MiB; host waited in WAITING_FOR_GPU). Follow-up for the next free GPU window (`D:\uri-dev\uri-controls-live\chain_ember.sh`, remove the `stop-session` files first) |
+| Carried | AC-F1/AC-F3 fidelity, T4, F-SIZE-1, F-LIGHT-1, F-START-GAP, AC-P1, F-5, HARN-2, PERF-1; OD-2 distribution gate (reference art now in private canonical history) |
+| Rollback | `git revert --no-edit ec2fab54..9488c0fd` (new commit, no force-push) |
+
+### O.2 URI Controls (CAP-UI3 + CAP-RT6): BLUE, ACCEPTED, NOT INTEGRATED
+
+| Item | Value |
+|---|---|
+| Branch / worktree | `milestone/uri-controls-3-20261021`, `D:\uri-dev\uri-controls-3` (local only, not pushed) |
+| Final reviewed commit | `1741e97e` (code = `a87ee0a1`); base `68061d85` + merge of `e9ee7409` (`5f9e5cc6`) |
+| Result | exactly three ON/OFF toggles under the chat box: Thinking (turn depth fast/normal, default Off, stored `uri.living.thinking`), Vision (qualified profile reconfigure with confirmation), URI Assist (On opens the consent view; Off revokes; state from the worker); Context, Draft chip, Thinking Auto menu and the conversation-pane Depth dropdown removed; R1-01 keyboard/screen-reader/focus repaired |
+| Reviews | R1 AwF (`e9ee7409`); R2 REVISE (`d1388d8c`); R3 REVISE (`abdfaa26`); R4 REVISE (`b774bb85`); **R5 ACCEPT WITH FINDINGS (`1741e97e`)**; all fresh read-only subagents; copies in `docs/ui/uri_controls_3/review/` |
+| Gates at `1741e97e` | pytest oi/ws 807 passed / 23 skipped; Flutter 882 passed / 5 skipped; analyze 5 info (baseline); Windows release build rc 0; `ws_frozen_check` clean (logs `D:\uri-dev\lifecycle\URI-CONTROLS-3\gates_1741e97e\`) |
+| Blocker | Lifecycle V3 Stage 8 live Windows UI qualification: no result. Attempt 17:07-17:43Z (`chain_c3.sh`, runtime materialised from `abdfaa26`, installation `c3` port 18360): production host WAITING_FOR_GPU (fit -1066 MiB), stopped safely |
+| Open | LOW R3-03, R3-04, R5-01, R5-02; INFO R3-05, R5-03; owner preference items D-1 (Thinking default Off), D-2 (Long context only via Vision Off; P3 not selectable in UI) |
+| Next | free GPU window -> `chain_c3.sh` (c3-1 three-toggle journey with one injected failed start, then UI V2 main/returning/perf) -> merge canonical `9488c0fd` (docs only) -> integrate. Owner authorisation already given (DEC-092), conditional on these checks |
+| Record | `docs/ui/uri_controls_3/URI_CONTROLS_3_REPORT.md` on the branch |
+
+### O.3 Corrections to earlier rows
+
+- §A/§L "canonical `ec2fab54`": canonical is `9488c0fd` from 2026-10-21 ~17:06Z.
+- §H Q-1: done (O.1). Q-2: repaired and accepted, integration blocked only by the live run (O.2).
+- §J UI-R1-01..R1-06: repaired on the URI Controls branch (not in canonical until O.2 integrates).
