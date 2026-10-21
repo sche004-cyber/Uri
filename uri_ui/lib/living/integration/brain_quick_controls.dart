@@ -411,16 +411,6 @@ class BrainQuickControls extends StatelessWidget {
     final conv = conversation;
     final controls = conv.brainControls;
     final worker = (controls['assist'] as Map?)?.cast<String, dynamic>();
-    // Review R2-01: the worker's own state (polled with brain health) is the authority. The worker ends a grant by
-    // itself (time limit, target lost), so the Assist status this UI read last can be stale: when the two disagree
-    // the worker's value is shown and both are read again.
-    final workerGranted = worker?['granted'] is bool ? worker!['granted'] as bool : null;
-    final mirrorGranted = a != null && a.loaded ? (a.active || a.paused) : null;
-    final granted = workerGranted ?? mirrorGranted ?? false;
-    final paused = granted && a != null && a.loaded && a.paused;
-    if (a != null && workerGranted != null && mirrorGranted != null && workerGranted != mirrorGranted && !a.busy) {
-      _resyncAssist(conv, a);
-    }
     final String? unavailable = a == null
         ? 'URI Assist needs the URI worker; it is not connected here.'
         : conv.workerExited || conv.restarting || !a.available
@@ -429,6 +419,20 @@ class BrainQuickControls extends StatelessWidget {
             : controls.isNotEmpty && worker == null
                 ? 'URI Assist is not available in this URI worker.'
                 : null;
+    // Review R2-01: the worker's own state (polled with brain health) is the authority. The worker ends a grant by
+    // itself (time limit, target lost), so the Assist status this UI read last can be stale: when the two disagree
+    // the worker's value is shown and the Assist status is read again, once per health reading.
+    // Review R3-01: only while a worker is connected. Without one there is no grant (a restarted worker starts with
+    // URI Assist off) and the last health reading is not trusted.
+    final connected = !conv.workerExited && !conv.restarting && (a == null || a.available);
+    final workerGranted = connected && worker?['granted'] is bool ? worker!['granted'] as bool : null;
+    final mirrorGranted = connected && a != null && a.loaded ? (a.active || a.paused) : null;
+    final granted = workerGranted ?? mirrorGranted ?? false;
+    final paused = granted && a != null && a.loaded && a.paused;
+    if (a != null && unavailable == null && workerGranted != null && mirrorGranted != null &&
+        workerGranted != mirrorGranted && !a.busy) {
+      _resyncAssist(conv, a);
+    }
     final err = a?.lastError;
     final String tip;
     if (unavailable != null) {
@@ -468,20 +472,16 @@ class BrainQuickControls extends StatelessWidget {
     );
   }
 
-  static bool _resyncing = false;
+  /// The brain-health reading a resync was last made for (review R3-01: at most one per reading, so a stale or
+  /// failing source never makes a call per frame; the next health poll brings the next chance).
+  static final _resyncedFor = Expando<bool>('qc-assist-resync');
 
-  /// Reads the worker's Assist status and brain health again after the two disagreed (once at a time).
+  /// Reads the worker's Assist status again after it disagreed with the worker's health reading.
   static void _resyncAssist(OiConversation conv, AssistController a) {
-    if (_resyncing) return;
-    _resyncing = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        await a.refresh();
-        await conv.refreshHealth();
-      } finally {
-        _resyncing = false;
-      }
-    });
+    final reading = conv.brainHealth;
+    if (_resyncedFor[reading] == true) return;
+    _resyncedFor[reading] = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => a.refresh());
   }
 
   Future<void> _confirmAndSwitch(BuildContext context, QcChoice choice, {List<String> blocked = const []}) async {

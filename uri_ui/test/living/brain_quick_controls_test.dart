@@ -686,6 +686,51 @@ void main() {
       expect(toggle(tester, 'qc-vision').onPressed, isNotNull, reason: 'vision lock lifted with the grant');
     });
 
+    testWidgets('R3-01: the worker goes away while Assist is granted: off, unavailable, and no call loop',
+        (tester) async {
+      final rt = QcRuntime()
+        ..assistStatus = {'state': 'ACTIVE'}
+        ..assistLinked = true;
+      var connected = true;
+      final conv = await ready(rt);
+      final assist = AssistController(runtime: () => connected ? rt : null);
+      addTearDown(assist.dispose);
+      await assist.refresh();
+      await pumpControls(tester, conv, assist: assist, openAssist: () {});
+      expect(toggle(tester, 'qc-assist').visual, QcVisual.on);
+      connected = false;                           // the worker exits; the last health reading still says granted
+      await assist.refresh();                      // what the worker change does: the mirror resets (WORKER_NOT_CONNECTED)
+      final calls = rt.commands.length;
+      for (var i = 0; i < 50; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(toggle(tester, 'qc-assist').visual, QcVisual.off, reason: 'no worker, no grant');
+      expect(toggle(tester, 'qc-assist').onPressed, isNull);
+      expect(rt.commands.length, calls, reason: 'no calls while unavailable');
+    });
+
+    testWidgets('R3-01: a failing Assist status is read again at most once per health reading', (tester) async {
+      final rt = QcRuntime()..assistStatus = {'state': 'OFF'};
+      rt.health = {'state': 'READY', 'controls': controls(active: 'standard', visionLocked: true)};
+      final conv = await ready(rt);
+      final assist = AssistController(runtime: () => rt);
+      addTearDown(assist.dispose);
+      await assist.refresh();                      // mirror OFF, worker health says granted: they disagree
+      await pumpControls(tester, conv, assist: assist, openAssist: () {});
+      int statusCalls() => rt.commands.where((c) => c['command'] == 'assist_status').length;
+      final before = statusCalls();
+      for (var i = 0; i < 50; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(statusCalls() - before, lessThanOrEqualTo(1), reason: 'one resync for this reading');
+      expect(toggle(tester, 'qc-assist').visual, QcVisual.on, reason: 'the worker reading is shown');
+      await conv.refreshHealth();                  // the next poll: one more chance, not more
+      for (var i = 0; i < 50; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(statusCalls() - before, lessThanOrEqualTo(2));
+    });
+
     testWidgets('an unreadable worker Assist state falls back to the Assist status (R2-06)', (tester) async {
       final rt = QcRuntime()..assistStatus = {'state': 'ACTIVE'};
       rt.health = {'state': 'READY', 'controls': {...controls(active: 'standard'),
