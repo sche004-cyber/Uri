@@ -264,7 +264,8 @@ def test_ac4_concurrent_writers_keep_chains_intact(lp):
         assert p.returncode == 0, err
     lg = tl.Ledger(lp)
     assert lg.verify() == []
-    assert lg.get(shared)["version"] == 1 + 1 + 6 * 30     # CREATED + objective + notes
+    work = [e for e in lg.history(shared) if e["kind"] != "SEAL"]
+    assert len(work) == 1 + 1 + 6 * 30                      # CREATED + objective + notes (plus one SEAL per write)
     seqs = [e["seq"] for e in lg.history(shared)]
     assert seqs == list(range(1, len(seqs) + 1))
 
@@ -775,7 +776,8 @@ def test_r1_06_repeating_an_earlier_keyed_decision_makes_it_current(lg):
     assert r["deduplicated"] and r["restored"]
     texts = [i["text"] for i in lg.packet(tid, use_cache=False)["items"] if i["kind"] == "decision"]
     assert texts == ["old choice"]
-    assert lg.history(tid)[-1]["kind"] == "CONTEXT_RESTORED" and lg.verify() == []
+    assert [e for e in lg.history(tid) if e["kind"] != "SEAL"][-1]["kind"] == "CONTEXT_RESTORED"
+    assert lg.verify() == []
 
 
 # ------------------------------------------------------------------ driver round R2 regressions (LIFECYCLE-V3-1-r2)
@@ -1119,3 +1121,127 @@ def test_fb_r1_06_new_head_voids_acceptance_in_any_status(lg, repo, tmp_path):
     lg.unblock(tid, "owner:chetan", "ok")
     t = lg.get(tid)
     assert t["status"] == "IN_REVIEW" and t["accepted_commit"] is None and lg.verify(tid) == []
+
+
+# ------------------------------------------------------------------ driver revision r4 regressions (manual P8)
+
+EDITS = [
+    ("delete a context row", "DELETE FROM context WHERE task_id=? AND kind='decision'"),
+    ("edit review provenance", "UPDATE reviews SET provenance='DRIVER_VERIFIED' WHERE task_id=?"),
+    ("edit a finding title", "UPDATE findings SET title='harmless' WHERE task_id=?"),
+    ("edit the worktree", "UPDATE tasks SET worktree='C:/elsewhere' WHERE task_id=?"),
+    ("insert a context row", "INSERT INTO context(task_id, kind, key, text, sha, actor, created_at) "
+                             "VALUES(?, 'decision', 'k', 'injected', 'x', 'claude:x', 'now')"),
+    ("delete a V3 link", "DELETE FROM v3_links WHERE task_id=?"),
+    ("edit a step", "UPDATE steps SET name='other' WHERE task_id=?"),
+    ("extend a lease", "UPDATE leases SET expires_at=expires_at+99999 WHERE task_id=?"),
+]
+
+
+@pytest.mark.parametrize("what,sql", EDITS, ids=[e[0] for e in EDITS])
+def test_r4_seal_any_row_edit_is_detected_before_any_use(what, sql, lp, repo, tmp_path):
+    lg = tl.Ledger(lp)
+    tid = lg.create("s", "o", DEV, worktree=str(repo))
+    lg.add_context(tid, DEV, "decision", "keep SQLite", key="db")
+    head = ready_for_review(lg, repo, tid)
+    lg.claim(tid, DEV)
+    fallback_ready(lg, tid, tmp_path, head)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head, "ACCEPT WITH FINDINGS", [
+        {"id": "R1-01", "severity": "LOW", "title": "nit"}])))
+    assert lg.verify(tid) == []
+    if "step" in what:
+        lg.db.execute("INSERT INTO steps VALUES(?,?,?,?,?,?,?,?)", (tid, "S9", "x", "COMPLETED", DEV, 1, "t", "t"))
+        lg.close()
+        lg = tl.Ledger(lp)
+        assert lg.verify(tid) != []                     # an inserted step row is caught too
+        return
+    lg.db.execute(sql, (tid,))
+    errs = lg.verify(tid)
+    assert any("seal" in e or "projection" in e or "differ" in e or "changed" in e for e in errs), errs
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.packet(tid, use_cache=False)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.handoff(tid, write=False)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.accept(tid, DEV)
+    lg.close()
+
+
+def test_r4_seal_edited_availability_cannot_unpause(lg, repo):
+    tid = lg.create("a", "o", DEV, worktree=str(repo))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.set_availability("codex:c", "codex", False)
+    lg.set_availability(DEV, "claude", False)
+    lg.db.execute("UPDATE availability SET available=1 WHERE dev='claude'")
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.resume(tid, DEV)
+
+
+def test_r4_06_quoted_and_separated_cli_passwords(lp):
+    lg = tl.Ledger(lp)
+    tid = lg.create("p", "o", DEV)
+    for v in ['mysql -p "hunter2 Secret Value"', "mysql -p 'hunter2SecretValue'", "mysql -phunter2SecretValue",
+              'psql --password "two words secret"', "app --password=hunter2SecretValue",
+              "tool --token 'abc def secret'"]:
+        lg.add_context(tid, DEV, "note", v)
+    lg.handoff(tid)
+    lg.close()
+    blob = b"".join(f.read_bytes() for f in lp.parent.rglob("*") if f.is_file())
+    for needle in ("hunter2", "two words secret", "abc def secret"):
+        assert needle.encode() not in blob, needle
+
+
+def test_r4_07_uncommitted_changes_refuse_acceptance(lg, repo, tmp_path):
+    tid = lg.create("u", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    fallback_ready(lg, tid, tmp_path, head)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    (repo / "b.txt").write_bytes(b"changed after review\n")
+    with pytest.raises(tl.Refused, match="worktree does not match"):
+        lg.accept(tid, DEV)
+    _git(repo, "checkout", "--", "b.txt")
+    lg.accept(tid, DEV)
+
+
+def test_r4_legacy_ledger_without_seals_is_sealed_once_on_open(lp):
+    lg = tl.Ledger(lp)
+    tid = lg.create("l", "o", DEV)
+    lg.db.execute("DELETE FROM events WHERE task_id=? AND kind='SEAL'", (tid,))
+    seqs = [r["seq"] for r in lg.db.execute("SELECT seq FROM events WHERE task_id=? ORDER BY seq", (tid,))]
+    lg.close()
+    # rebuild a seal-less but otherwise consistent chain (what a pre-seal ledger looks like)
+    import sqlite3 as _sq
+    db = _sq.connect(str(lp))
+    rows = db.execute("SELECT seq, ts, kind, data FROM events WHERE task_id=? ORDER BY seq", (tid,)).fetchall()
+    db.execute("DELETE FROM events WHERE task_id=?", (tid,))
+    prev = tl.GENESIS
+    for i, (_, ts, kind, data) in enumerate(rows, 1):
+        ev = {"seq": i, "ts": ts, "kind": kind, "data": json.loads(data), "prev": prev}
+        h = tl.event_hash(ev)
+        db.execute("INSERT INTO events VALUES(?,?,?,?,?,?,?)", (tid, i, ts, kind, data, prev, h))
+        prev = h
+    db.execute("UPDATE tasks SET version=?, chain_head=? WHERE task_id=?", (len(rows), prev, tid))
+    db.commit()
+    db.close()
+    assert seqs
+    lg = tl.Ledger(lp)
+    assert lg.history(tid)[-1]["kind"] == "SEAL" and lg.verify() == []
+
+
+def test_r4_seal_a_later_write_never_blesses_an_outside_edit(lp, repo):
+    lg = tl.Ledger(lp)
+    bad = lg.create("bad", "o", DEV, worktree=str(repo))
+    good = lg.create("good", "o", DEV, worktree=str(repo))
+    lg.transition(good, "IN_PROGRESS", DEV)
+    lg.claim(good, DEV, ttl_s=0.1)
+    lg.step_start(good, DEV, "work")
+    lg.add_context(bad, DEV, "decision", "keep", key="k")
+    lg.db.execute("DELETE FROM context WHERE task_id=? AND kind='decision'", (bad,))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.add_context(bad, DEV, "note", "a later write")      # would have re-sealed the edit
+    assert lg.verify(bad) != []
+    time.sleep(0.2)
+    out = lg.recover()
+    assert {"task_id": bad, "action": "INTEGRITY_FAILED"}.items() <= next(o for o in out if o["task_id"] == bad).items()
+    assert any(o["task_id"] == good and o["action"] == "INTERRUPTED" for o in out)   # others still recovered
+    assert lg.verify(good) == [] and lg.verify(bad) != []

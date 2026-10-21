@@ -124,7 +124,7 @@ _SECRET_RES = [
     ("npm_token", re.compile(r"\bnpm_[A-Za-z0-9]{30,}")),
     ("azure_key", re.compile(r"(?i)\b(AccountKey|SharedAccessKey|sig)=([A-Za-z0-9+/%]{16,}=*)")),
     ("cli_password", re.compile(r"(?i)(--?(?:password|passwd|pass|pwd|token|secret|api-key)(?:=|\s+)|"
-                                r"(?<!\S)-p)([^\s\"']{4,})")),
+                                r"(?<!\S)-p\s?)(\"[^\"\n]+\"|'[^'\n]+'|[^\s\"']{4,})")),
     ("url_credentials", re.compile(r"(?i)\b([a-z][a-z0-9+.\-]*://)[^\s/:@]+:[^\s/@]+@")),
     # KEY=VALUE / "key": "value" where the key names a secret
     ("assignment", re.compile(r"(?i)\b([A-Za-z0-9_\-]*(?:password|passwd|pass|pwd|secret|token|api[_\-]?key|apikey|"
@@ -311,6 +311,11 @@ class Ledger:
                 self.db.execute("INSERT INTO meta VALUES('fence', '0')")
             elif int(row["v"]) > SCHEMA_VERSION:
                 raise LedgerError(f"ledger schema {row['v']} is newer than this tool ({SCHEMA_VERSION})")
+        with self.tx():
+            # Ledgers written before the seal existed: seal their current rows once (recorded as migrated).
+            for r in self.db.execute("SELECT task_id FROM tasks WHERE task_id NOT IN (SELECT task_id FROM events "
+                                     "WHERE kind='SEAL')").fetchall():
+                self._touched.add(r["task_id"])
         self._clean_stray_tmp()
 
     def close(self) -> None:
@@ -321,11 +326,16 @@ class Ledger:
         """One serialised write transaction (BEGIN IMMEDIATE takes the write lock up front: no lock upgrade
         deadlock between processes). Either everything in it is committed or nothing is."""
         self.db.execute("BEGIN IMMEDIATE")
+        self._touched, self._checked, self._in_tx = set(), {}, True
         try:
             yield
+            for tid in sorted(self._touched):
+                self._seal(tid)
         except BaseException:
+            self._touched, self._checked, self._in_tx = set(), {}, False
             self.db.execute("ROLLBACK")
             raise
+        self._touched, self._checked, self._in_tx = set(), {}, False
         self.db.execute("COMMIT")
 
     def _clean_stray_tmp(self) -> None:
@@ -339,11 +349,34 @@ class Ledger:
         row = self.db.execute("SELECT * FROM tasks WHERE task_id=?", (task_id,)).fetchone()
         if row is None:
             raise Refused(f"no task {task_id}")
+        if getattr(self, "_in_tx", False) and task_id not in self._checked:
+            # First use of a sealed task in a write transaction: it must match its last seal BEFORE anything is
+            # written, otherwise the seal at commit would bless an outside edit (laundering).
+            self._checked[task_id] = None
+            sealed = self.db.execute("SELECT 1 FROM events WHERE task_id=? AND kind='SEAL' LIMIT 1",
+                                     (task_id,)).fetchone()
+            errs = self._fast_errors(task_id) if sealed else []
+            self._checked[task_id] = errs
+            if errs:
+                raise Refused("LEDGER_INTEGRITY_FAILED: " + "; ".join(errs[:5]))
+        elif getattr(self, "_in_tx", False) and self._checked.get(task_id):
+            raise Refused("LEDGER_INTEGRITY_FAILED: " + "; ".join(self._checked[task_id][:5]))
         return row
+
+    def _intact(self, task_id: str) -> bool:
+        """For whole-ledger operations (recover, pause): True when the task may be written; a tampered task is
+        skipped and reported instead of stopping the operation for every other task."""
+        try:
+            self._task(task_id)
+            return True
+        except Refused:
+            return False
 
     def _append(self, task_id: str, kind: str, actor: str, data: dict, *, expected_version: int | None = None,
                 **updates) -> dict:
         parse_actor(actor)  # All event writers, including internal V3 sync, share the actor guard.
+        if kind != "SEAL":
+            self._touched.add(task_id)
         t = self._task(task_id)
         if expected_version is not None and t["version"] != expected_version:
             raise Refused(f"{task_id} is at version {t['version']}, not {expected_version} (changed by another "
@@ -357,6 +390,53 @@ class Ledger:
         self.db.execute(f"UPDATE tasks SET {', '.join(f'{k}=?' for k in cols)} WHERE task_id=?",
                         (*cols.values(), task_id))
         return ev
+
+    def _projection_digest(self, task_id: str) -> str:
+        """Digest of every projection row a decision, handoff or retrieval can read for this task (all columns of
+        the task row except the chain bookkeeping, findings, reviews, context, steps, V3 links, its leases) and of
+        the development availability rows. Sealed into the chain after every write transaction."""
+        t = dict(self._task(task_id))
+        for k in ("version", "chain_head", "updated_at"):
+            t.pop(k)
+        parts = {"task": t}
+        for table, order in (("findings", "finding_id"), ("reviews", "review_id"), ("context", "id"),
+                             ("steps", "step_id"), ("v3_links", "state_dir"), ("leases", "resource")):
+            parts[table] = [dict(r) for r in self.db.execute(
+                f"SELECT * FROM {table} WHERE task_id=? ORDER BY {order}", (task_id,))]
+        parts["availability"] = [dict(r) for r in self.db.execute("SELECT * FROM availability ORDER BY dev")]
+        return sha256(json.dumps(parts, sort_keys=True, default=str))
+
+    def _seal(self, task_id: str) -> None:
+        """Class fix for edited projection rows (R3-03, FB R1-01, R4-02..R4-05, R4-08): after each write
+        transaction the task's projection digest is chained as a SEAL event, so ANY later edit, insert or delete of
+        a row outside the ledger API - in any table, any column - no longer matches the last seal."""
+        self._append(task_id, "SEAL", "system:ledger", {"digest": self._projection_digest(task_id)})
+
+    def _fast_errors(self, task_id: str) -> list[str]:
+        """O(rows) check used before every write and every read of projections: the task row's chain tip is the
+        last event, that event is a SEAL, and its digest equals the current projection rows. Any row edit, insert or
+        delete fails here. Editing an old event row is caught by the full replay (``verify``), which every decision
+        (accept, unblock, resume, integrated, summary) runs."""
+        t = self.db.execute("SELECT version, chain_head FROM tasks WHERE task_id=?", (task_id,)).fetchone()
+        last = self.db.execute("SELECT seq, hash FROM events WHERE task_id=? ORDER BY seq DESC LIMIT 1",
+                               (task_id,)).fetchone()
+        if t is None or last is None or last["seq"] != t["version"] or last["hash"] != t["chain_head"]:
+            return [f"{task_id} task row does not match the tip of its event chain"]
+        return self._seal_errors(task_id)
+
+    def _require_current(self, task_id: str) -> None:
+        errs = self._fast_errors(task_id)
+        if errs:
+            raise Refused("LEDGER_INTEGRITY_FAILED: " + "; ".join(errs[:5]))
+
+    def _seal_errors(self, task_id: str) -> list[str]:
+        last = self.db.execute("SELECT kind, data FROM events WHERE task_id=? ORDER BY seq DESC LIMIT 1",
+                               (task_id,)).fetchone()
+        if last is None or last["kind"] != "SEAL":
+            return [f"{task_id} has changes after its last seal"]
+        if json.loads(last["data"]).get("digest") != self._projection_digest(task_id):
+            return [f"{task_id} projection rows changed since the last sealed transaction"]
+        return []
 
     def _availability(self) -> dict:
         return {r["dev"]: bool(r["available"]) for r in self.db.execute("SELECT * FROM availability")}
@@ -648,6 +728,7 @@ class Ledger:
     def packet(self, task_id: str, *, budget: int = 6000, query: str = "", item_chars: int = 600,
                use_cache: bool = True) -> dict:
         """Relevant context for continuing a task, deterministic, under ``budget`` characters of item text."""
+        self._require_current(task_id)            # R4-08: never serve context from edited or deleted rows
         t = self._task(task_id)
         rows = self.db.execute("SELECT * FROM context WHERE task_id=? AND superseded=0 ORDER BY id",
                                (task_id,)).fetchall()
@@ -776,6 +857,7 @@ class Ledger:
                 else self._fence()
             self.db.execute("INSERT OR REPLACE INTO leases VALUES(?,?,?,?,?,?)",
                             (res, task_id, actor, tok, now_iso(), nowt + ttl_s))
+            self._touched.add(task_id)
             if cur is None or cur["token"] != tok:
                 self._append(task_id, "CLAIM", actor, {"token": tok, "ttl_s": ttl_s})
             return tok
@@ -842,6 +924,9 @@ class Ledger:
                 tid = t["task_id"]
                 if t["status"] in TERMINAL:
                     continue
+                if not self._intact(tid):
+                    out.append({"task_id": tid, "action": "INTEGRITY_FAILED", "errors": self._checked[tid][:5]})
+                    continue
                 cur = self._lease(f"task:{tid}")
                 lapsed = cur is None or cur["expires_at"] <= nowt
                 if t["status"] in ACTIVE and lapsed:
@@ -855,6 +940,7 @@ class Ledger:
                         out.append({"task_id": tid, "action": "INTERRUPTED", "steps": steps})
                 if cur is not None and lapsed:
                     self.db.execute("DELETE FROM leases WHERE resource=?", (f"task:{tid}",))
+                    self._touched.add(tid)
                 drift = self._drift(self._task(tid))
                 if drift:
                     last = self.db.execute("SELECT data FROM events WHERE task_id=? AND kind='WORKTREE_DRIFT' "
@@ -862,6 +948,9 @@ class Ledger:
                     if last is None or {k: v for k, v in json.loads(last["data"]).items() if k != "actor"} != drift:
                         self._append(tid, "WORKTREE_DRIFT", actor, drift)
                         out.append({"task_id": tid, "action": "WORKTREE_DRIFT", **drift})
+            for r in self.db.execute("SELECT DISTINCT task_id FROM leases WHERE expires_at<=? AND resource NOT LIKE "
+                                     "'task:%' AND task_id IS NOT NULL", (nowt,)).fetchall():
+                self._touched.add(r["task_id"])
             self.db.execute("DELETE FROM leases WHERE expires_at<=? AND resource NOT LIKE 'task:%'", (nowt,))
         return out
 
@@ -933,11 +1022,16 @@ class Ledger:
             raise Refused(f"only {dev} itself (or the owner) can record {dev} available")
         paused = []
         with self.tx():
+            intact = [r["task_id"] for r in self.db.execute("SELECT task_id FROM tasks").fetchall()
+                      if self._intact(r["task_id"])]
+            self._touched.update(intact)   # availability is part of every intact task's sealed projection
             self.db.execute("INSERT OR REPLACE INTO availability VALUES(?,?,?,?,?)",
                             (dev, int(available), redact(reason)[0], actor, now_iso()))
             if self.development_paused():
                 for t in self.db.execute("SELECT * FROM tasks WHERE status NOT IN ('PAUSED','INTEGRATED',"
                                          "'ABANDONED')").fetchall():
+                    if t["task_id"] not in intact:
+                        continue                       # tampered: reported by verify/recover, never re-sealed
                     steps = self._interrupt_steps(t["task_id"], "development paused")
                     target = t["resume_to"] if t["status"] in ("INTERRUPTED", "BLOCKED") and t["resume_to"] \
                         else t["status"]
@@ -1201,7 +1295,8 @@ class Ledger:
         if self._open_steps(t["task_id"]):
             why.append("open steps")
         drift = self._drift(t)
-        if drift and "actual_head" in drift or (drift and drift.get("problem")):
+        if drift and ("actual_head" in drift or drift.get("problem") or drift.get("uncommitted")):
+            # R4-07: the review and tests bind the head commit; uncommitted changes are not part of it.
             why.append(f"worktree does not match the head: {drift}")
         return why
 
@@ -1384,7 +1479,7 @@ class Ledger:
 
     def handoff(self, task_id: str, *, write: bool = True) -> dict:
         """Compact, self-sufficient handoff built from the ledger alone (no chat)."""
-        self._require_integrity(task_id)
+        self._require_current(task_id)
         t = self._task(task_id)
         s = self._summary(t)
         ctx = lambda kind: [dict(r) for r in self.db.execute(  # noqa: E731
@@ -1488,6 +1583,7 @@ class Ledger:
                 prev = r["hash"]
             if t["version"] != n or t["chain_head"] != prev:
                 errs.append(f"{tid} task row (version {t['version']}) differs from its chain ({n} events)")
+            errs += self._seal_errors(tid)
             errs += self._replay_errors(t)
             for c in self.db.execute("SELECT * FROM context WHERE task_id=?", (tid,)):
                 if sha256(json.dumps([c["kind"], c["key"], c["text"], c["path"], c["blob"], c["commit_sha"]])) \
