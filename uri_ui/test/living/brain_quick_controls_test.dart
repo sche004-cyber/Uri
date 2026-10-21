@@ -534,7 +534,7 @@ void main() {
       final vision = tester.getSemantics(find.byKey(const ValueKey('qc-vision')));
       expect(
           vision,
-          containsSemantics(
+          isSemantics(
               label: 'Vision',
               isButton: true,
               hasToggledState: true,
@@ -545,14 +545,14 @@ void main() {
               hasTapAction: true));
       expect(
           tester.getSemantics(find.byKey(const ValueKey('qc-thinking'))),
-          containsSemantics(label: 'Thinking', isButton: true, hasToggledState: true, isToggled: false,
+          isSemantics(label: 'Thinking', isButton: true, hasToggledState: true, isToggled: false,
               hasTapAction: true));
       expect(
           tester.getSemantics(find.byKey(const ValueKey('qc-assist'))),
-          containsSemantics(label: 'URI Assist', isButton: true, hasToggledState: true, value: 'unavailable',
+          isSemantics(label: 'URI Assist', isButton: true, hasToggledState: true, value: 'unavailable',
               hasTapAction: false));
       // the screen reader's tap does what a click does
-      tester.binding.pipelineOwner.semanticsOwner!.performAction(vision.id, SemanticsAction.tap);
+      tester.binding.renderViews.first.owner!.semanticsOwner!.performAction(vision.id, SemanticsAction.tap);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('qc-confirm-switch')), findsOneWidget);
       handle.dispose();

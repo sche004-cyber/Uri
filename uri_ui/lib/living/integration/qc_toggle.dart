@@ -28,17 +28,12 @@ class QcStyle {
 
   /// The enabled glow: one soft accent shadow, stronger on hover.
   static List<BoxShadow> glow(UriColors c, {bool hover = false}) => [
-    // ui-1 live review: .32 / blur 9 read as faint on the dark companion themes; still one static shadow.
-    BoxShadow(
-      color: c.accent.withValues(alpha: hover ? .55 : .42),
-      blurRadius: hover ? 14 : 12,
-      spreadRadius: .5,
-    ),
-  ];
+        // ui-1 live review: .32 / blur 9 read as faint on the dark companion themes; still one static shadow.
+        BoxShadow(color: c.accent.withValues(alpha: hover ? .55 : .42), blurRadius: hover ? 14 : 12, spreadRadius: .5),
+      ];
 
   static Color fill(UriColors c, QcVisual v, {bool hover = false, bool pressed = false, bool enabled = true}) {
-    if (v == QcVisual.on)
-      return pressed ? Color.alphaBlend(c.accent.withValues(alpha: .18), c.accentSoft) : c.accentSoft;
+    if (v == QcVisual.on) return pressed ? Color.alphaBlend(c.accent.withValues(alpha: .18), c.accentSoft) : c.accentSoft;
     if (!enabled) return Colors.transparent;
     if (pressed) return c.ink.withValues(alpha: .12);
     if (hover) return c.ink.withValues(alpha: .06);
@@ -46,41 +41,34 @@ class QcStyle {
   }
 
   static Color border(UriColors c, QcVisual v, {bool hover = false, bool enabled = true}) => switch (v) {
-    QcVisual.on => c.accent,
-    QcVisual.error => c.danger,
-    QcVisual.loading => c.accent.withValues(alpha: .55),
-    QcVisual.off =>
-      !enabled
-          ? c.border.withValues(alpha: .6)
-          : hover
-          ? c.inkFaint
-          : c.border,
-  };
+        QcVisual.on => c.accent,
+        QcVisual.error => c.danger,
+        QcVisual.loading => c.accent.withValues(alpha: .55),
+        QcVisual.off => !enabled ? c.border.withValues(alpha: .6) : hover ? c.inkFaint : c.border,
+      };
 
   /// The keyboard focus ring: drawn inside the control's edge, so focus never
   /// changes the layout. Ink, not accent, so it differs from the "on" border.
   static BoxDecoration focusRing(UriColors c) => BoxDecoration(
-    border: Border.all(color: c.ink, width: 2),
-    borderRadius: BorderRadius.circular(radius),
-  );
+        border: Border.all(color: c.ink, width: 2),
+        borderRadius: BorderRadius.circular(radius),
+      );
 
   static Color ink(UriColors c, QcVisual v, {bool enabled = true}) => switch (v) {
-    QcVisual.on => c.accentInk,
-    QcVisual.error => c.danger,
-    QcVisual.loading => c.inkSoft,
-    QcVisual.off => enabled ? c.inkSoft : c.inkFaint,
-  };
+        QcVisual.on => c.accentInk,
+        QcVisual.error => c.danger,
+        QcVisual.loading => c.inkSoft,
+        QcVisual.off => enabled ? c.inkSoft : c.inkFaint,
+      };
 
-  static TextStyle text(BuildContext context, Color color, {bool strong = false}) => Theme.of(context)
-      .textTheme
-      .labelMedium!
-      .copyWith(
-        fontSize: UriType.label,
-        color: color,
-        fontWeight: strong ? FontWeight.w600 : FontWeight.w500,
-        height: 1.2,
-        letterSpacing: 0,
-      );
+  static TextStyle text(BuildContext context, Color color, {bool strong = false}) =>
+      Theme.of(context).textTheme.labelMedium!.copyWith(
+            fontSize: UriType.label,
+            color: color,
+            fontWeight: strong ? FontWeight.w600 : FontWeight.w500,
+            height: 1.2,
+            letterSpacing: 0,
+          );
 }
 
 /// Hover / pressed tracking.
