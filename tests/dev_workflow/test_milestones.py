@@ -1776,7 +1776,7 @@ real = store.EventStore.write_anchors
 calls = {"n": 0}
 def dying(self, segs):
     calls["n"] += 1
-    if calls["n"] == 2:   # after HOST_REGISTERED was appended, before the refresh
+    if calls["n"] == 1:   # after HOST_REGISTERED was appended, before the refresh
         os._exit(9)
     return real(self, segs)
 store.EventStore.write_anchors = dying
@@ -1797,3 +1797,64 @@ def test_r9_03_kill_during_init_host_leaves_the_documented_count0_state(tmp_path
     p = m2.projection()
     assert not p["integrity_errors"]
     assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))
+
+
+# ------------------------------------------------------------------ R10 regression tests (review R10 on 1838e2df)
+
+KILL_BEFORE_HOST_FILE = r"""
+import os, sys
+sys.path.insert(0, sys.argv[1])
+from scripts.dev_workflow.milestones import store
+def dying(home, host_id):
+    os._exit(9)
+store.EventStore._write_local = staticmethod(dying)
+store.EventStore.init_host(sys.argv[2], "h2")
+"""
+
+
+def test_r10_01_kill_before_the_host_file_leaves_an_unregistered_home(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    clone = _clone_of(m, tmp_path)
+    r = subprocess.run([sys.executable, "-c", KILL_BEFORE_HOST_FILE, str(ROOT), str(clone)])
+    assert r.returncode == 9
+    with pytest.raises(StoreError) as e:  # not an integrity failure: simply not registered yet
+        Manager(clone, actor="b")
+    assert e.value.code == "NO_HOST_ID"
+    st = EventStore.init_host(clone, "h2")  # retry registers normally
+    assert st.verify()["ok"] and not views.open_conflicts(Manager(clone, actor="b").projection())
+
+
+def test_r10_01_anchors_exist_before_the_machine_is_registered(tmp_path, monkeypatch):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    clone = _clone_of(m, tmp_path)
+    from scripts.dev_workflow.milestones import store as store_mod
+    real = store_mod.EventStore._write_local
+    seen = {}
+    def spy(home, host_id):
+        seen["anchors"] = (Path(home) / "local" / "anchors.json").is_file()
+        return real(home, host_id)
+    monkeypatch.setattr(store_mod.EventStore, "_write_local", staticmethod(spy))
+    EventStore.init_host(clone, "h2")
+    assert seen["anchors"] is True
+
+
+@pytest.mark.parametrize("damage", ["truncate", "corrupt"])
+def test_r10_02_init_host_mismatch_has_a_working_acknowledged_path(tmp_path, damage):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    m.create_milestone("MM-B", "B")
+    if damage == "truncate":
+        _truncate_last(m)
+    else:
+        m.store.anchors_path.write_text("{corrupt", encoding="utf-8")
+    (m.home / "local" / "host.json").unlink()  # local identity lost, earlier anchors kept
+    with pytest.raises(StoreError) as e:
+        EventStore.init_host(m.home, "h2")
+    assert e.value.code == "ANCHOR_MISMATCH" and "init-host" in str(e.value)
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "init-host", "--host-id", "h2", "--acknowledge-loss"], out=out) == 0
+    p = Manager(m.home, actor="x").projection()
+    assert not p["integrity_errors"]
+    assert any(c["type"] == "ANCHOR_LOSS" and c["kind"] == "HOST_REGISTERED" for c in views.open_conflicts(p))

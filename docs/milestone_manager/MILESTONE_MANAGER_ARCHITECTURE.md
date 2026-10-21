@@ -309,3 +309,10 @@ cannot take over another machine's segment.
 | `recover` treats "own anchor count 0" as unanchored whenever it runs (it only runs with a torn tail, so the segment always has bytes), also when the cut falls inside the first line and no complete event remains ⇒ always one ANCHOR_LOSS | R9-01 |
 | `init-host` holds the ledger lock for its checks, writes and undo, so a concurrent registration of the same id on the same home is seen (`HOST_ID_TAKEN`) and never undone by the other call; earlier anchors that disagree with the segments are refused (`ANCHOR_MISMATCH`) | R9-02 |
 | `init-host` writes the adopted anchors (with its own entry at count 0) before appending HOST_REGISTERED, so a kill between the append and the refresh leaves the documented count-0 state (warning, next write records ANCHORS_ADOPTED) instead of a missing anchors file | R9-03 |
+
+## 22. Changes after independent review R10 (2026-10-22, REJECT on `1838e2df`)
+
+| Change | Reason |
+|---|---|
+| `init-host` order: verify segments → compare earlier anchors → git check → write adopted anchors (own entry count 0) → write the host file (only now is the machine registered) → append HOST_REGISTERED → refresh. A kill before the host file leaves an unregistered home (`NO_HOST_ID`, not an integrity failure) that a retry registers; readers never see a registered host without anchors | R10-01 |
+| `init-host --acknowledge-loss`: when this machine's earlier anchors disagree with the segments (or are unreadable), registration is refused with `ANCHOR_MISMATCH` naming this option; with it, HOST_REGISTERED records `anchor_problems` and the fold opens ANCHOR_LOSS | R10-02 (the earlier message pointed to `reanchor`, which cannot run without a host id) |

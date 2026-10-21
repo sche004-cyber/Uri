@@ -121,6 +121,31 @@ def lamport_floor(segs) -> str:
     return ts_plus(newest, 0.000001) if newest else ""
 
 
+def _anchor_disagreements(raw: bytes | None, segs) -> list[str]:
+    """Ways earlier anchors (raw bytes of a local anchors file, or None) disagree with ``segs``."""
+    if raw is None:
+        return []
+    try:
+        a = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return ["earlier anchors file is unreadable"]
+    if not isinstance(a, dict) or not all(isinstance(v, dict) and type(v.get("count")) is int and v["count"] >= 0
+                                          and isinstance(v.get("head"), str) for v in a.values()):
+        return ["earlier anchors file is malformed"]
+    by_name, out = {s.name: s for s in segs}, []
+    for name, v in sorted(a.items()):
+        n, s = v["count"], by_name.get(name)
+        if n == 0:
+            continue
+        if s is None:
+            out.append(f"{name}: segment missing (anchored at {n} events)")
+        elif len(s.events) < n:
+            out.append(f"{name}: has {len(s.events)} events but {n} were anchored (newest events deleted)")
+        elif s.events[n - 1].get("hash") != v["head"]:
+            out.append(f"{name}: event {n} differs from the anchored head (rewritten)")
+    return out
+
+
 # --------------------------------------------------------------------------- OS lock
 
 @contextlib.contextmanager
@@ -283,32 +308,57 @@ class EventStore:
         return st
 
     @staticmethod
-    def init_host(home: str | os.PathLike, host_id: str) -> "EventStore":
+    def init_host(home: str | os.PathLike, host_id: str, acknowledge_loss: bool = False) -> "EventStore":
         """Register this machine on an existing (e.g. cloned) ledger with a host id of its own.
 
-        Refuses a host id whose segment already exists (that segment belongs to another machine) and adopts the
-        current verified segments as this machine's anchors."""
+        Refuses a host id whose segment already exists (that segment belongs to another machine). Adopts the current
+        verified segments as this machine's anchors. If this machine still has earlier anchors that disagree with the
+        segments (or are unreadable), it refuses unless ``acknowledge_loss``; then the HOST_REGISTERED event records
+        the problems and the fold opens an ANCHOR_LOSS conflict (review R10-02).
+
+        Order (review R10-01): verify, write anchors, then the host file, then append. A kill before the host file
+        exists leaves an unregistered home that a retry registers normally; a kill after it leaves a registered host
+        whose anchors already exist (count-0 own entry, the documented state)."""
         home = Path(home)
         if not (home / "mm.json").is_file():
             raise StoreError("NOT_INITIALISED", f"{home} has no mm.json")
-        # Everything below runs under the ledger lock, so a concurrent `init-host` on the same home cannot slip
-        # between the checks and the undo (review R9-02).
+        if not HOST_RE.match(host_id or ""):
+            raise StoreError("BAD_HOST_ID", f"host id must match {HOST_RE.pattern}")
+        # Everything below runs under the ledger lock (review R9-02).
         with os_lock(home / ".lock"):
-            if (home / "local" / "host.json").is_file():
+            host_file = home / "local" / "host.json"
+            if host_file.is_file():
                 raise StoreError("ALREADY_REGISTERED", "this machine already has a host id for this ledger")
             own_seg = home / "events" / f"{host_id}.jsonl"
             if own_seg.exists():
                 raise StoreError("HOST_ID_TAKEN", f"segment {host_id}.jsonl exists: it belongs to another machine; "
                                                   "choose a new host id")
-            local_existed = (home / "local").is_dir()
-            gi_existed = (home / ".gitignore").is_file()
+            segs = [read_segment(path) for path in sorted((home / "events").glob("*.jsonl"))]
+            bad = [x for s in segs for x in s.errors]
+            if bad:
+                raise StoreError("CHAIN_BROKEN", "cannot adopt anchors from a ledger that fails verification: "
+                                 + bad[0])
             anchors_file = home / "local" / "anchors.json"
             anchors_before = anchors_file.read_bytes() if anchors_file.is_file() else None
+            problems = _anchor_disagreements(anchors_before, segs)
+            if problems and not acknowledge_loss:
+                raise StoreError("ANCHOR_MISMATCH", f"this machine's earlier anchors disagree with the segments "
+                                                    f"({problems[0]}); check git history, then run `init-host "
+                                                    "--acknowledge-loss` to register and record the loss for review")
+            in_git = subprocess.run([*GIT, "-C", str(home), "rev-parse", "--is-inside-work-tree"],
+                                    capture_output=True, text=True).stdout.strip() == "true"
+            if in_git and subprocess.run([*GIT, "-C", str(home), "status", "--porcelain", "--", "events"],
+                                         capture_output=True, text=True).stdout.strip():
+                raise StoreError("UNCOMMITTED_SEGMENTS", "event segments differ from the git HEAD; adopting them "
+                                                         "would hide changes (review R6-02): inspect `git status "
+                                                         "events` first")
+            local_existed = (home / "local").is_dir()
+            gi_existed = (home / ".gitignore").is_file()
 
             def undo():
                 # remove exactly what this call created; restore what it changed (reviews R7-03, R8-03..R8-05)
                 own_seg.unlink(missing_ok=True)
-                (home / "local" / "host.json").unlink(missing_ok=True)
+                host_file.unlink(missing_ok=True)
                 if anchors_before is None:
                     anchors_file.unlink(missing_ok=True)
                 else:
@@ -322,33 +372,17 @@ class EventStore:
                         pass
 
             try:
-                EventStore._write_local(home, host_id)
+                adopted = {s.name: {"count": len(s.valid_events),
+                                    "head": s.valid_events[-1]["hash"] if s.valid_events else GENESIS} for s in segs}
+                adopted[host_id] = {"count": 0, "head": GENESIS}
+                atomic_write_bytes(anchors_file, json.dumps(adopted, indent=1, sort_keys=True).encode("utf-8"))
+                EventStore._write_local(home, host_id)  # host file last: only now is the machine registered
                 st = EventStore(home)
-                segs = st.read_all()
-                bad = [e for s in segs for e in s.errors]
-                if bad:
-                    raise StoreError("CHAIN_BROKEN", "cannot adopt anchors from a ledger that fails verification: "
-                                     + bad[0])
-                if anchors_before is not None:
-                    previous = st.read_anchors()
-                    mismatch = [x for x in st.anchor_errors(segs, previous) if "no anchor entry" not in x]
-                    if mismatch:
-                        raise StoreError("ANCHOR_MISMATCH", "this machine's earlier anchors disagree with the "
-                                                            f"segments ({mismatch[0]}); check git history, then "
-                                                            "`reanchor --acknowledge-loss`")
-                if st.in_git():
-                    dirty = st._git("status", "--porcelain", "--", "events").stdout.strip()
-                    if dirty:
-                        raise StoreError("UNCOMMITTED_SEGMENTS", "event segments differ from the git HEAD; adopting "
-                                                                 "them would hide changes (review R6-02): inspect "
-                                                                 "`git status events` first")
-                # adopt the verified segments and this host's own entry (count 0) *before* appending, so a kill
-                # between the append and the refresh leaves the documented count-0 state (review R9-03)
-                st.write_anchors(segs)
-                st._tail = None
-                st.append_many([("HOST_REGISTERED", {"host": host_id, "adopted": {s.name: len(s.valid_events)
-                                                                                   for s in segs}}, {})],
-                               actor=f"init-host:{host_id}", floor=lamport_floor(segs))
+                data = {"host": host_id, "adopted": {s.name: len(s.valid_events) for s in segs}}
+                if problems:
+                    data["anchor_problems"] = problems[:10]
+                st.append_many([("HOST_REGISTERED", data, {})], actor=f"init-host:{host_id}",
+                               floor=lamport_floor(segs))
                 st.write_anchors(st.read_all())
                 st._tail = None
             except BaseException:

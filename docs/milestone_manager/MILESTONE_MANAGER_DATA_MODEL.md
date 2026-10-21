@@ -174,3 +174,8 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 
 - New kind `HOST_REGISTERED {host, adopted{segment: count}}` (written by `init-host`; informational, folded into
   `hosts[]`). Store error `UNCOMMITTED_SEGMENTS`.
+
+## 16. Changes after review R10
+
+- `HOST_REGISTERED.anchor_problems[]` (present only with `init-host --acknowledge-loss`) ⇒ ANCHOR_LOSS.
+- Store error `ANCHOR_MISMATCH` (init-host without acknowledgement).

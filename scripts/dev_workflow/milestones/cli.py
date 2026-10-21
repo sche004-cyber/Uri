@@ -34,6 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("init-host", help="register this machine on a cloned ledger with a new host id")
     _p(s, "--host-id", required=True)
+    _p(s, "--acknowledge-loss", action="store_true", help="register although earlier anchors disagree; recorded")
     s = sub.add_parser("reanchor", help="explicitly re-base this machine's anchors (recorded)")
     _p(s, "--reason", required=True)
     _p(s, "--acknowledge-loss", action="store_true", help="record a detected loss of events explicitly")
@@ -159,7 +160,7 @@ def run(argv=None, out=None) -> int:
         if not args.home:
             raise StoreError("NO_HOME", "pass --home or set URI_MM_HOME")
         if args.cmd == "init-host":
-            st = EventStore.init_host(args.home, args.host_id)
+            st = EventStore.init_host(args.home, args.host_id, args.acknowledge_loss)
             emit({"registered": st.host, "home": str(st.home)})
             return 0
         if args.cmd == "reanchor":
