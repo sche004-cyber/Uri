@@ -413,14 +413,17 @@ class Ledger:
         self._append(task_id, "SEAL", "system:ledger", {"digest": self._projection_digest(task_id)})
 
     def _fast_errors(self, task_id: str) -> list[str]:
-        """O(rows) check used before every write and every read of projections: the task row's chain tip is the
-        last event, that event is a SEAL, and its digest equals the current projection rows. Any row edit, insert or
-        delete fails here. Editing an old event row is caught by the full replay (``verify``), which every decision
-        (accept, unblock, resume, integrated, summary) runs."""
+        """Check the event chain and sealed projection before a write or context read."""
         t = self.db.execute("SELECT version, chain_head FROM tasks WHERE task_id=?", (task_id,)).fetchone()
-        last = self.db.execute("SELECT seq, hash FROM events WHERE task_id=? ORDER BY seq DESC LIMIT 1",
-                               (task_id,)).fetchone()
-        if t is None or last is None or last["seq"] != t["version"] or last["hash"] != t["chain_head"]:
+        prev, count = GENESIS, 0
+        for r in self.db.execute("SELECT * FROM events WHERE task_id=? ORDER BY seq", (task_id,)):
+            count += 1
+            ev = {"seq": r["seq"], "ts": r["ts"], "kind": r["kind"], "data": json.loads(r["data"]),
+                  "prev": r["prev"]}
+            if r["seq"] != count or r["prev"] != prev or r["hash"] != event_hash(ev):
+                return [f"{task_id} event {r['seq']} chain broken"]
+            prev = r["hash"]
+        if t is None or not count or count != t["version"] or prev != t["chain_head"]:
             return [f"{task_id} task row does not match the tip of its event chain"]
         return self._seal_errors(task_id)
 
@@ -525,9 +528,16 @@ class Ledger:
         return tid
 
     def get(self, task_id: str) -> dict:
+        errs = self.verify(task_id)
+        if errs:
+            raise Refused("LEDGER_INTEGRITY_FAILED: " + "; ".join(errs[:10]))
         return dict(self._task(task_id))
 
     def list(self, milestone_ref: str | None = None) -> list[dict]:
+        # Verify before applying the filter: an edited milestone_ref must not hide a corrupted task.
+        errs = self.verify()
+        if errs:
+            raise Refused("LEDGER_INTEGRITY_FAILED: " + "; ".join(errs[:10]))
         q, a = "SELECT * FROM tasks", ()
         if milestone_ref is not None:
             q, a = q + " WHERE milestone_ref=?", (milestone_ref,)
@@ -1880,7 +1890,8 @@ def main(argv=None) -> int:
                             branch=a.branch)
             _out(lg._summary(lg._task(tid)))
         elif c == "show":
-            _out({**lg._summary(lg._task(a.task)), "resume_to": lg.get(a.task)["resume_to"]})
+            t = lg.get(a.task)
+            _out({**lg._summary(t), "resume_to": t["resume_to"]})
         elif c == "list":
             _out([{k: t[k] for k in ("task_id", "status", "milestone_ref", "title", "updated_at")}
                   for t in lg.list(a.milestone)])

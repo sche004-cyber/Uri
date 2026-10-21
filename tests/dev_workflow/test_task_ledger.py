@@ -925,7 +925,9 @@ def test_fb_r1_02_edited_resume_target_cannot_reach_integrated(lg, repo):
     assert any("resume_to" in e for e in lg.verify(tid))
     with pytest.raises(tl.Refused):
         lg.unblock(tid, "owner:chetan", "go")
-    assert lg.get(tid)["status"] == "BLOCKED"
+    assert lg.db.execute("SELECT status FROM tasks WHERE task_id=?", (tid,)).fetchone()["status"] == "BLOCKED"
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.get(tid)
     lg.db.execute("UPDATE tasks SET resume_to='IN_PROGRESS' WHERE task_id=?", (tid,))
     lg.unblock(tid, "owner:chetan", "go")
     assert lg.get(tid)["status"] == "IN_PROGRESS" and lg.verify(tid) == []
@@ -1105,7 +1107,9 @@ def test_r4_05_created_task_fields_bound_to_chain_before_accept_and_handoff(lg, 
     assert any(column in error for error in lg.verify(tid))
     with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
         lg.accept(tid, DEV)
-    assert lg.get(tid)["status"] == "IN_REVIEW"
+    assert lg.db.execute("SELECT status FROM tasks WHERE task_id=?", (tid,)).fetchone()["status"] == "IN_REVIEW"
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.get(tid)
     with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
         lg.handoff(tid, write=False)
 
@@ -1293,3 +1297,46 @@ def test_r5_04_context_get_checks_seal(lg):
                   (tid, saved["sha"]))
     with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
         lg.context_get(tid, saved["sha"][:12])
+
+
+def test_r5_05_forged_seal_payload_cannot_serve_context_or_authorize_write(lg):
+    tid = lg.create("context", "objective", DEV)
+    saved = lg.add_context(tid, DEV, "note", "real instruction")
+    before = lg.get(tid)["version"]
+    lg.db.execute("UPDATE context SET text='forged instruction' WHERE task_id=? AND sha=?",
+                  (tid, saved["sha"]))
+    seal = lg.db.execute("SELECT data FROM events WHERE task_id=? AND seq=?", (tid, before)).fetchone()
+    payload = json.loads(seal["data"])
+    payload["digest"] = lg._projection_digest(tid)
+    lg.db.execute("UPDATE events SET data=? WHERE task_id=? AND seq=?",
+                  (json.dumps(payload, sort_keys=True), tid, before))
+    assert any("chain broken" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.context_get(tid, saved["sha"][:12])
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.packet(tid, use_cache=False)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.add_context(tid, DEV, "note", "later write")
+    assert lg.db.execute("SELECT version FROM tasks WHERE task_id=?", (tid,)).fetchone()["version"] == before
+    assert lg.db.execute("SELECT COUNT(*) FROM context WHERE task_id=?", (tid,)).fetchone()[0] == 2
+
+
+def test_r5_06_get_list_and_show_refuse_edited_task_fields(lg, lp):
+    tid = lg.create("original", "objective", DEV, milestone_ref="M")
+    lg.db.execute("UPDATE tasks SET status='ACCEPTED', title='forged' WHERE task_id=?", (tid,))
+    assert lg.verify(tid)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.get(tid)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.list("M")
+    for args in (("show", tid), ("list", "--milestone", "M")):
+        result = cli(lp, *args)
+        assert result.returncode != 0 and "LEDGER_INTEGRITY_FAILED" in result.stderr
+        assert "forged" not in result.stdout
+
+
+def test_r5_06_filtered_list_checks_tasks_outside_filter(lg):
+    tid = lg.create("moved", "objective", DEV, milestone_ref="M")
+    lg.db.execute("UPDATE tasks SET milestone_ref='N' WHERE task_id=?", (tid,))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.list("M")
