@@ -1,0 +1,4341 @@
+[
+  {
+    "utc": "2026-10-18T12:48:26.056103Z",
+    "t": 1792327706.057,
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput",
+    "pointer": "flutter_test tap and synthesized mouse hover",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "Brain_Core_worker_mocked": false
+  },
+  {
+    "utc": "2026-10-18T12:48:39.739344Z",
+    "t": 1792327719.739,
+    "label": "window",
+    "logical_size": "Size(1264.0, 681.0)",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T12:48:40.576182Z",
+    "t": 1792327720.576,
+    "label": "start-profile",
+    "id": "standard-nodraft"
+  },
+  {
+    "utc": "2026-10-18T12:48:40.585333Z",
+    "t": 1792327720.58,
+    "label": "check",
+    "id": "UT-ready-visuals",
+    "result": "PASS",
+    "state": "READY",
+    "reasons": [],
+    "explain": "Brain ready (61 tok/s).",
+    "active": "standard-nodraft",
+    "pending": false,
+    "configured": "c32k-visgpu-mtpoff",
+    "last": null,
+    "vision_visual": "on",
+    "vision_status": null,
+    "draft_visual": "off",
+    "mismatch": null,
+    "context_selected": "32K",
+    "context_loading": false,
+    "context_status": null,
+    "switching_text": null,
+    "notice": null,
+    "header_brain": "READY"
+  },
+  {
+    "utc": "2026-10-18T12:48:41.740985Z",
+    "t": 1792327721.74,
+    "label": "check",
+    "id": "UT-thinking-on-click",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T12:48:51.842855Z",
+    "t": 1792327731.842,
+    "label": "turn",
+    "scenario": "thinking-on",
+    "request": "Compare a bicycle and an electric scooter for a 3 km city commute in two short sentences.",
+    "text": "A bicycle provides a reliable, zero-emission workout but can be tiring in traffic or heat. An electric scooter offers faster, effortless commuting but requires charging and may be less stable on rough roads.",
+    "route": "answer",
+    "tier": "NORMAL",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 7.6701,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 415,
+      "predicted_per_second": 59.60621885791029,
+      "prompt_n": 759,
+      "prompt_per_second": 819.79430615591,
+      "reasoning_chars": 1660,
+      "retried": false,
+      "total_s": 8.356,
+      "ttft_s": 1.408
+    },
+    "depth_sent": "normal",
+    "seconds": 9.651,
+    "error": null
+  },
+  {
+    "utc": "2026-10-18T12:48:51.842855Z",
+    "t": 1792327731.842,
+    "label": "check",
+    "id": "UT-thinking-on-tier",
+    "result": "PASS",
+    "tier": "NORMAL",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T12:48:52.472209Z",
+    "t": 1792327732.472,
+    "label": "check",
+    "id": "UT-thinking-off-click",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T12:49:00.627063Z",
+    "t": 1792327740.627,
+    "label": "turn",
+    "scenario": "tell-fact",
+    "request": "Quick arithmetic game. The secret number is 4817. Reply with just OK.",
+    "text": "OK",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 755,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.5617,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 2,
+      "predicted_per_second": 49.02922141596391,
+      "prompt_n": 79,
+      "prompt_per_second": 186.56452062364502,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.5823,
+      "ttft_s": 0.5617
+    },
+    "depth_sent": "fast",
+    "seconds": 8.154,
+    "error": null
+  },
+  {
+    "utc": "2026-10-18T12:49:00.628071Z",
+    "t": 1792327740.628,
+    "label": "check",
+    "id": "UT-thinking-off-tier",
+    "result": "PASS",
+    "tier": "FAST",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T12:49:02.337356Z",
+    "t": 1792327742.337,
+    "label": "check",
+    "id": "UT-tooltip-shown",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T12:49:04.521785Z",
+    "t": 1792327744.521,
+    "label": "check",
+    "id": "UT-confirm-coupled-change",
+    "result": "PASS",
+    "texts": [
+      "Switch the Brain to Long context?",
+      "64K context, vision off",
+      "Vision",
+      "On",
+      "Off",
+      "Context",
+      "32K",
+      "64K",
+      "GPU memory",
+      "14.0 GB",
+      "13.3 GB",
+      "The Brain reloads, which takes about half a minute. Messages wait until it is ready.",
+      "Your conversation stays: URI keeps it and the Brain reads it again after the switch.",
+      "If URI sees before the switch that it does not fit in GPU memory, it keeps the current Brain. If the new setting fails to start, URI goes back to the current one automatically.",
+      "Cancel",
+      "Switch Brain"
+    ]
+  },
+  {
+    "utc": "2026-10-18T12:49:47.378875Z",
+    "t": 1792327787.378,
+    "label": "restore",
+    "rows": [
+      {
+        "t": 1792327746.012,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": null,
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327747.21,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": null,
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327748.437,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": null,
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327751.687,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_STOPPED",
+          "HOST_STOPPING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STOPPED"
+      },
+      {
+        "t": 1792327761.057,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_STOPPED",
+          "HOST_STARTING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "STOPPED"
+      },
+      {
+        "t": 1792327762.487,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327763.943,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327765.364,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327766.664,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327768.155,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327769.45,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327770.641,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327771.943,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327773.936,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327775.674,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327776.885,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327778.125,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327779.471,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_LOADING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327780.638,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327781.818,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327783.065,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327784.249,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327785.49,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "explain": "The Brain did not start with Long context. URI is going back to Standard, draft off; your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327786.745,
+        "state": "READY",
+        "reasons": [],
+        "explain": "Brain ready (60 tok/s).",
+        "active": "standard-nodraft",
+        "pending": false,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "READY",
+            "seconds": 33.4,
+            "t_done": 1792327786.102,
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": true,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "on",
+        "vision_status": null,
+        "draft_visual": "off",
+        "mismatch": null,
+        "context_selected": "32K",
+        "context_loading": false,
+        "context_status": null,
+        "switching_text": null,
+        "notice": "The Brain did not start with the new setting, so URI went back to Standard, draft off. Your conversation is kept.",
+        "header_brain": "READY"
+      }
+    ],
+    "last": {
+      "fallback": {
+        "after": {
+          "detail": "INJECTED_START_FAILURE",
+          "state": "FAILED"
+        },
+        "label": "Standard, draft off",
+        "result": "READY",
+        "seconds": 33.4,
+        "t_done": 1792327786.102,
+        "t_start": 1792327752.691,
+        "to": "c32k-visgpu-mtpoff"
+      },
+      "fit_before": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 681.3,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 438.3,
+            "name": "chrome.exe",
+            "parent": "chrome.exe",
+            "pid": 14668,
+            "role": null
+          },
+          {
+            "dedicated_mib": 214.5,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 15536,
+            "role": null
+          }
+        ],
+        "free_mib": 14569.6,
+        "margin_mib": 911.6,
+        "others_mib": 1798.4,
+        "owner_mib": 13004.3,
+        "required_mib": 13658,
+        "unattributed_mib": 0.0,
+        "verdict": "FITS"
+      },
+      "from": "c32k-visgpu-mtpoff",
+      "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+      "required_mib": 13658,
+      "restored": true,
+      "result": "FAILED",
+      "seconds": 7.4,
+      "started_stopped_brain": false,
+      "t_done": 1792327752.641,
+      "t_request": 1792327745.284,
+      "t_stopped": 1792327748.936,
+      "to": "c64k-visoff-mtpoff"
+    },
+    "active": "standard-nodraft",
+    "notice": "The Brain did not start with the new setting, so URI went back to Standard, draft off. Your conversation is kept."
+  },
+  {
+    "utc": "2026-10-18T12:49:47.383911Z",
+    "t": 1792327787.383,
+    "label": "check",
+    "id": "UT-glow-honest-restore",
+    "result": "PASS",
+    "rows": 24,
+    "violations": 0,
+    "first_violation": null
+  },
+  {
+    "utc": "2026-10-18T12:49:47.386974Z",
+    "t": 1792327787.386,
+    "label": "check",
+    "id": "UT-failed-start-recorded",
+    "result": "PASS",
+    "last": {
+      "fallback": {
+        "after": {
+          "detail": "INJECTED_START_FAILURE",
+          "state": "FAILED"
+        },
+        "label": "Standard, draft off",
+        "result": "READY",
+        "seconds": 33.4,
+        "t_done": 1792327786.102,
+        "t_start": 1792327752.691,
+        "to": "c32k-visgpu-mtpoff"
+      },
+      "fit_before": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 681.3,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 438.3,
+            "name": "chrome.exe",
+            "parent": "chrome.exe",
+            "pid": 14668,
+            "role": null
+          },
+          {
+            "dedicated_mib": 214.5,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 15536,
+            "role": null
+          }
+        ],
+        "free_mib": 14569.6,
+        "margin_mib": 911.6,
+        "others_mib": 1798.4,
+        "owner_mib": 13004.3,
+        "required_mib": 13658,
+        "unattributed_mib": 0.0,
+        "verdict": "FITS"
+      },
+      "from": "c32k-visgpu-mtpoff",
+      "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+      "required_mib": 13658,
+      "restored": true,
+      "result": "FAILED",
+      "seconds": 7.4,
+      "started_stopped_brain": false,
+      "t_done": 1792327752.641,
+      "t_request": 1792327745.284,
+      "t_stopped": 1792327748.936,
+      "to": "c64k-visoff-mtpoff"
+    }
+  },
+  {
+    "utc": "2026-10-18T12:49:47.389057Z",
+    "t": 1792327787.389,
+    "label": "check",
+    "id": "UT-restored-to-start-profile",
+    "result": "PASS",
+    "active": "standard-nodraft"
+  },
+  {
+    "utc": "2026-10-18T12:49:47.391075Z",
+    "t": 1792327787.391,
+    "label": "check",
+    "id": "UT-switching-indicated",
+    "result": "PASS",
+    "saw_going_back_text": true
+  },
+  {
+    "utc": "2026-10-18T12:49:47.394593Z",
+    "t": 1792327787.394,
+    "label": "check",
+    "id": "UT-restored-notice",
+    "result": "PASS",
+    "notice": "The Brain did not start with the new setting, so URI went back to Standard, draft off. Your conversation is kept."
+  },
+  {
+    "utc": "2026-10-18T12:49:47.397606Z",
+    "t": 1792327787.397,
+    "label": "check",
+    "id": "UT-restored-visuals",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T12:49:48.700944Z",
+    "t": 1792327788.7,
+    "label": "check",
+    "id": "UT-confirm-dialog",
+    "result": "PASS",
+    "texts": [
+      "Switch the Brain to Long context?",
+      "64K context, vision off",
+      "Vision",
+      "On",
+      "Off",
+      "Context",
+      "32K",
+      "64K",
+      "GPU memory",
+      "14.0 GB",
+      "13.3 GB",
+      "64K with vision on: Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+      "The Brain reloads, which takes about half a minute. Messages wait until it is ready.",
+      "Your conversation stays: URI keeps it and the Brain reads it again after the switch.",
+      "If URI sees before the switch that it does not fit in GPU memory, it keeps the current Brain. If the new setting fails to start, URI goes back to the current one automatically.",
+      "Cancel",
+      "Switch Brain"
+    ]
+  },
+  {
+    "utc": "2026-10-18T12:50:25.860621Z",
+    "t": 1792327825.86,
+    "label": "long",
+    "rows": [
+      {
+        "t": 1792327791.68,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "READY",
+            "seconds": 33.4,
+            "t_done": 1792327786.102,
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": true,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327793.076,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "READY",
+            "seconds": 33.4,
+            "t_done": 1792327786.102,
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": true,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327794.532,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "READY",
+            "seconds": 33.4,
+            "t_done": 1792327786.102,
+            "t_start": 1792327752.691,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 214.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14569.6,
+            "margin_mib": 911.6,
+            "others_mib": 1798.4,
+            "owner_mib": 13004.3,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "3f2ddcab-e778-4b22-b7af-f41bc1b83e1e",
+          "required_mib": 13658,
+          "restored": true,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792327752.641,
+          "t_request": 1792327745.284,
+          "t_stopped": 1792327748.936,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STOPPED"
+      },
+      {
+        "t": 1792327801.91,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_STOPPED",
+          "HOST_STARTING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STOPPED"
+      },
+      {
+        "t": 1792327804.133,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327805.377,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327806.696,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327808.06,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327809.276,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327810.518,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327811.846,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327813.245,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327814.5,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327816.11,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "RUNTIME_LOADING",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792327817.316,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_LOADING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327818.999,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327820.198,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327821.369,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327822.748,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327823.998,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "HOST_CALIBRATING"
+        ],
+        "explain": "Switching the Brain to Long context. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327825.228,
+        "state": "DEGRADED",
+        "reasons": [
+          "DECODE_THROUGHPUT_LOW"
+        ],
+        "explain": "The Brain is running slowly (59 tok/s, healthy is above 60). GPU memory was short when it loaded. Restart it when the GPU is free.",
+        "active": "long",
+        "pending": false,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "DEGRADED",
+          "seconds": 33.9,
+          "started_stopped_brain": false,
+          "t_done": 1792327824.316,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "off",
+        "vision_status": null,
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": "64K",
+        "context_loading": false,
+        "context_status": null,
+        "switching_text": null,
+        "notice": "Brain switched, but it is running slowly (GPU memory was short).",
+        "header_brain": "READY"
+      }
+    ],
+    "active": "long"
+  },
+  {
+    "utc": "2026-10-18T12:50:25.862129Z",
+    "t": 1792327825.862,
+    "label": "check",
+    "id": "UT-glow-honest-long",
+    "result": "PASS",
+    "rows": 21,
+    "violations": 0,
+    "first_violation": null
+  },
+  {
+    "utc": "2026-10-18T12:50:25.876723Z",
+    "t": 1792327825.872,
+    "label": "check",
+    "id": "UT-long-visuals",
+    "result": "PASS",
+    "state": "DEGRADED",
+    "reasons": [
+      "DECODE_THROUGHPUT_LOW"
+    ],
+    "explain": "The Brain is running slowly (59 tok/s, healthy is above 60). GPU memory was short when it loaded. Restart it when the GPU is free.",
+    "active": "long",
+    "pending": false,
+    "configured": "c64k-visoff-mtpoff",
+    "last": {
+      "fit_before": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 681.3,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 438.3,
+            "name": "chrome.exe",
+            "parent": "chrome.exe",
+            "pid": 14668,
+            "role": null
+          },
+          {
+            "dedicated_mib": 229.8,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 15536,
+            "role": null
+          }
+        ],
+        "free_mib": 14554.3,
+        "margin_mib": 896.3,
+        "others_mib": 1813.7,
+        "owner_mib": 12935.6,
+        "required_mib": 13658,
+        "unattributed_mib": 0.0,
+        "verdict": "FITS"
+      },
+      "from": "c32k-visgpu-mtpoff",
+      "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+      "required_mib": 13658,
+      "result": "DEGRADED",
+      "seconds": 33.9,
+      "started_stopped_brain": false,
+      "t_done": 1792327824.316,
+      "t_request": 1792327790.413,
+      "t_stopped": 1792327794.115,
+      "to": "c64k-visoff-mtpoff"
+    },
+    "vision_visual": "off",
+    "vision_status": null,
+    "draft_visual": null,
+    "mismatch": null,
+    "context_selected": "64K",
+    "context_loading": false,
+    "context_status": null,
+    "switching_text": null,
+    "notice": "Brain switched, but it is running slowly (GPU memory was short).",
+    "header_brain": "READY"
+  },
+  {
+    "utc": "2026-10-18T12:50:28.930534Z",
+    "t": 1792327828.93,
+    "label": "turn",
+    "scenario": "recall-long",
+    "request": "What was the secret number I gave you at the start of this conversation? Reply with the number only.",
+    "text": "4817",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 1.3285,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 5,
+      "predicted_per_second": 55.63437091435089,
+      "prompt_n": 870,
+      "prompt_per_second": 743.8243343413435,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 1.3993,
+      "ttft_s": 1.3285
+    },
+    "depth_sent": "fast",
+    "seconds": 2.589,
+    "error": null
+  },
+  {
+    "utc": "2026-10-18T12:50:28.933043Z",
+    "t": 1792327828.933,
+    "label": "check",
+    "id": "UT-continuity-long",
+    "result": "PASS",
+    "answer": "4817",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T12:50:29.786088Z",
+    "t": 1792327829.786,
+    "label": "check",
+    "id": "UT-confirm-explains-unqualified",
+    "result": "PASS",
+    "texts": [
+      "Switch the Brain to Standard?",
+      "32K context, vision on (the default Runtime v1)",
+      "Vision",
+      "Off",
+      "On",
+      "Context",
+      "64K",
+      "32K",
+      "Draft",
+      "Off",
+      "On",
+      "GPU memory",
+      "13.3 GB",
+      "15.3 GB",
+      "On at 64K: Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+      "The Brain reloads, which takes about half a minute. Messages wait until it is ready.",
+      "Your conversation stays: URI keeps it and the Brain reads it again after the switch.",
+      "If URI sees before the switch that it does not fit in GPU memory, it keeps the current Brain. If the new setting fails to start, URI goes back to the current one automatically.",
+      "Cancel",
+      "Switch Brain"
+    ]
+  },
+  {
+    "utc": "2026-10-18T12:50:36.111179Z",
+    "t": 1792327836.111,
+    "label": "vision-on",
+    "rows": [
+      {
+        "t": 1792327831.259,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "DECODE_THROUGHPUT_LOW"
+        ],
+        "explain": "Switching the Brain to Standard. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "DEGRADED",
+          "seconds": 33.9,
+          "started_stopped_brain": false,
+          "t_done": 1792327824.316,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Standard…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327832.904,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "DECODE_THROUGHPUT_LOW"
+        ],
+        "explain": "Switching the Brain to Standard. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "DEGRADED",
+          "seconds": 33.9,
+          "started_stopped_brain": false,
+          "t_done": 1792327824.316,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Standard…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327834.247,
+        "state": "RECOVERING",
+        "reasons": [
+          "PROFILE_SWITCH",
+          "DECODE_THROUGHPUT_LOW"
+        ],
+        "explain": "Switching the Brain to Standard. It reloads (about half a minute); your conversation stays.",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 229.8,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14554.3,
+            "margin_mib": 896.3,
+            "others_mib": 1813.7,
+            "owner_mib": 12935.6,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "FITS"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "38472870-16c8-4c71-b154-372d63e4bb75",
+          "required_mib": 13658,
+          "result": "DEGRADED",
+          "seconds": 33.9,
+          "started_stopped_brain": false,
+          "t_done": 1792327824.316,
+          "t_request": 1792327790.413,
+          "t_stopped": 1792327794.115,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": null,
+        "context_loading": true,
+        "context_status": "switching",
+        "switching_text": "Switching to Standard…",
+        "notice": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792327835.469,
+        "state": "DEGRADED",
+        "reasons": [
+          "DECODE_THROUGHPUT_LOW"
+        ],
+        "explain": "The Brain is running slowly (59 tok/s, healthy is above 60). GPU memory was short when it loaded. Restart it when the GPU is free.",
+        "active": "long",
+        "pending": false,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 14.2 GB is free. In use by: dwm.exe (desktop compositor, 0.7 GB), chrome.exe from chrome.exe (0.4 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+          "fit": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 228.3,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14551.3,
+            "margin_mib": -1074.7,
+            "others_mib": 1816.7,
+            "owner_mib": 12473.5,
+            "required_mib": 15626,
+            "unattributed_mib": 0.0,
+            "verdict": "CONTENDED"
+          },
+          "from": "c64k-visoff-mtpoff",
+          "id": "8dbb8776-aa3e-4da4-adb1-3682c739595a",
+          "result": "REFUSED_DOES_NOT_FIT",
+          "t_request": 1792327830.494,
+          "to": "frozen"
+        },
+        "vision_visual": "off",
+        "vision_status": null,
+        "draft_visual": null,
+        "mismatch": null,
+        "context_selected": "64K",
+        "context_loading": false,
+        "context_status": null,
+        "switching_text": null,
+        "notice": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 14.2 GB is free. In use by: dwm.exe (desktop compositor, 0.7 GB), chrome.exe from chrome.exe (0.4 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+        "header_brain": "READY"
+      }
+    ],
+    "last": {
+      "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 14.2 GB is free. In use by: dwm.exe (desktop compositor, 0.7 GB), chrome.exe from chrome.exe (0.4 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+      "fit": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 681.3,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 438.3,
+            "name": "chrome.exe",
+            "parent": "chrome.exe",
+            "pid": 14668,
+            "role": null
+          },
+          {
+            "dedicated_mib": 228.3,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 15536,
+            "role": null
+          }
+        ],
+        "free_mib": 14551.3,
+        "margin_mib": -1074.7,
+        "others_mib": 1816.7,
+        "owner_mib": 12473.5,
+        "required_mib": 15626,
+        "unattributed_mib": 0.0,
+        "verdict": "CONTENDED"
+      },
+      "from": "c64k-visoff-mtpoff",
+      "id": "8dbb8776-aa3e-4da4-adb1-3682c739595a",
+      "result": "REFUSED_DOES_NOT_FIT",
+      "t_request": 1792327830.494,
+      "to": "frozen"
+    },
+    "active": "long",
+    "notice": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 14.2 GB is free. In use by: dwm.exe (desktop compositor, 0.7 GB), chrome.exe from chrome.exe (0.4 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them."
+  },
+  {
+    "utc": "2026-10-18T12:50:36.113690Z",
+    "t": 1792327836.113,
+    "label": "check",
+    "id": "UT-glow-honest-vision-on",
+    "result": "PASS",
+    "rows": 4,
+    "violations": 0,
+    "first_violation": null
+  },
+  {
+    "utc": "2026-10-18T12:50:36.121224Z",
+    "t": 1792327836.121,
+    "label": "vision-on-outcome",
+    "result": "REFUSED_DOES_NOT_FIT",
+    "active": "long",
+    "notice": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 14.2 GB is free. In use by: dwm.exe (desktop compositor, 0.7 GB), chrome.exe from chrome.exe (0.4 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them."
+  },
+  {
+    "utc": "2026-10-18T12:50:36.127757Z",
+    "t": 1792327836.129,
+    "label": "check",
+    "id": "UT-refusal-keeps-long",
+    "result": "PASS",
+    "notice": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 14.2 GB is free. In use by: dwm.exe (desktop compositor, 0.7 GB), chrome.exe from chrome.exe (0.4 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+    "last": {
+      "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 14.2 GB is free. In use by: dwm.exe (desktop compositor, 0.7 GB), chrome.exe from chrome.exe (0.4 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+      "fit": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 681.3,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 438.3,
+            "name": "chrome.exe",
+            "parent": "chrome.exe",
+            "pid": 14668,
+            "role": null
+          },
+          {
+            "dedicated_mib": 228.3,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 15536,
+            "role": null
+          }
+        ],
+        "free_mib": 14551.3,
+        "margin_mib": -1074.7,
+        "others_mib": 1816.7,
+        "owner_mib": 12473.5,
+        "required_mib": 15626,
+        "unattributed_mib": 0.0,
+        "verdict": "CONTENDED"
+      },
+      "from": "c64k-visoff-mtpoff",
+      "id": "8dbb8776-aa3e-4da4-adb1-3682c739595a",
+      "result": "REFUSED_DOES_NOT_FIT",
+      "t_request": 1792327830.494,
+      "to": "frozen"
+    }
+  },
+  {
+    "utc": "2026-10-18T12:50:38.209956Z",
+    "t": 1792327838.209,
+    "label": "turn",
+    "scenario": "recall-2",
+    "request": "Once more: what was the secret number I gave you at the start of this conversation? Reply with the number only.",
+    "text": "4817",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 874,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.4018,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 5,
+      "predicted_per_second": 55.47388566832164,
+      "prompt_n": 38,
+      "prompt_per_second": 137.2351451983951,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.4741,
+      "ttft_s": 0.4018
+    },
+    "depth_sent": "fast",
+    "seconds": 1.622,
+    "error": null
+  },
+  {
+    "utc": "2026-10-18T12:50:38.212194Z",
+    "t": 1792327838.212,
+    "label": "check",
+    "id": "UT-continuity-2",
+    "result": "PASS",
+    "answer": "4817",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T12:50:38.220505Z",
+    "t": 1792327838.22,
+    "label": "draft-skipped",
+    "reason": "no Draft toggle at long (only at 32K + vision)"
+  },
+  {
+    "utc": "2026-10-18T12:50:38.226819Z",
+    "t": 1792327838.226,
+    "label": "check",
+    "id": "UT-no-mismatch-line",
+    "result": "PASS",
+    "mismatch": null
+  },
+  {
+    "utc": "2026-10-18T12:50:39.980326Z",
+    "t": 1792327839.98,
+    "label": "check",
+    "id": "UT-thinking-auto-restored",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T12:50:39.982835Z",
+    "t": 1792327839.982,
+    "label": "check",
+    "id": "UT-same-worker-and-session",
+    "result": "PASS",
+    "session_after": "a47532a1-9e90-4e10-987f-6fbbdcd1c374"
+  },
+  {
+    "utc": "2026-10-18T12:50:43.057767Z",
+    "t": 1792327843.057,
+    "label": "surface",
+    "name": "20-workspace-conversation",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T12:50:46.118141Z",
+    "t": 1792327846.118,
+    "label": "surface",
+    "name": "21-workspace-tasks",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T12:50:49.185909Z",
+    "t": 1792327849.185,
+    "label": "surface",
+    "name": "22-workspace-intelligence-diagnostics",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T12:50:53.357405Z",
+    "t": 1792327853.357,
+    "label": "surface",
+    "name": "23-workspace-settings",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T12:50:56.430972Z",
+    "t": 1792327856.43,
+    "label": "surface",
+    "name": "24-dashboard",
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-18T12:50:59.521616Z",
+    "t": 1792327859.521,
+    "label": "surface",
+    "name": "25-assist",
+    "mode": "assist"
+  },
+  {
+    "utc": "2026-10-18T12:51:02.579046Z",
+    "t": 1792327862.579,
+    "label": "surface",
+    "name": "26-companion",
+    "mode": "companion"
+  },
+  {
+    "utc": "2026-10-18T12:51:04.760904Z",
+    "t": 1792327864.76,
+    "label": "check",
+    "id": "UT-typography-tour",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T12:51:04.762910Z",
+    "t": 1792327864.762,
+    "label": "check",
+    "id": "UT-no-flutter-errors",
+    "result": "PASS",
+    "count": 0,
+    "first": null
+  },
+  {
+    "utc": "2026-10-18T12:51:04.771011Z",
+    "t": 1792327864.771,
+    "label": "final",
+    "failures": [],
+    "controls": {
+      "active": {
+        "active": true,
+        "ctx": 65536,
+        "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+        "id": "long",
+        "label": "Long context",
+        "mtp": false,
+        "qualified": true,
+        "required_mib": 13658,
+        "summary": "64K context, vision off",
+        "switchable": true,
+        "vision": "off",
+        "vision_on": false
+      },
+      "assist": {
+        "asking": false,
+        "granted": false
+      },
+      "can_switch": true,
+      "cannot_switch_reason": null,
+      "configured": {
+        "ctx": 65536,
+        "frozen": false,
+        "id": "c64k-visoff-mtpoff",
+        "mtp": false,
+        "qualified": false,
+        "required_mib": 13658,
+        "vision": "off"
+      },
+      "host_profile": {
+        "ctx": 65536,
+        "frozen": false,
+        "id": "c64k-visoff-mtpoff",
+        "mtp": false,
+        "qualified": false,
+        "required_mib": 13658,
+        "vision": "off"
+      },
+      "mismatch": null,
+      "options": [
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+          "id": "standard",
+          "label": "Standard",
+          "mtp": true,
+          "qualified": true,
+          "required_mib": 15620,
+          "summary": "32K context, vision on (the default Runtime v1)",
+          "switchable": true,
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": true,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+          "id": "long",
+          "label": "Long context",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 13658,
+          "summary": "64K context, vision off",
+          "switchable": true,
+          "vision": "off",
+          "vision_on": false
+        },
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw5/sw6",
+          "id": "standard-nodraft",
+          "label": "Standard, draft off",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 14360,
+          "summary": "32K context, vision on, no speculative draft (about 1.2 GB less GPU memory)",
+          "switchable": true,
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P1: FAIL",
+          "id": "long-vision",
+          "label": "Long context with vision",
+          "mtp": false,
+          "qualified": false,
+          "reason": "Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+          "required_mib": 14764,
+          "summary": "64K context, vision on",
+          "switchable": false,
+          "vision": "gpu",
+          "vision_on": true
+        }
+      ],
+      "schema": "uri.brain.quick_controls.v1",
+      "switch": {
+        "context_tokens": 917,
+        "last": {
+          "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 14.2 GB is free. In use by: dwm.exe (desktop compositor, 0.7 GB), chrome.exe from chrome.exe (0.4 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+          "fit": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 681.3,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 438.3,
+                "name": "chrome.exe",
+                "parent": "chrome.exe",
+                "pid": 14668,
+                "role": null
+              },
+              {
+                "dedicated_mib": 228.3,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 15536,
+                "role": null
+              }
+            ],
+            "free_mib": 14551.3,
+            "margin_mib": -1074.7,
+            "others_mib": 1816.7,
+            "owner_mib": 12473.5,
+            "required_mib": 15626,
+            "unattributed_mib": 0.0,
+            "verdict": "CONTENDED"
+          },
+          "from": "c64k-visoff-mtpoff",
+          "id": "8dbb8776-aa3e-4da4-adb1-3682c739595a",
+          "result": "REFUSED_DOES_NOT_FIT",
+          "t_request": 1792327830.494,
+          "to": "frozen"
+        },
+        "pending": false,
+        "target": null
+      },
+      "thinking": {
+        "auto": "auto",
+        "off": "fast",
+        "on": "normal",
+        "reload": false
+      },
+      "vision_locked": false
+    },
+    "health_state": "DEGRADED"
+  }
+]

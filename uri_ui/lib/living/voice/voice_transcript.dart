@@ -73,7 +73,7 @@ class VoiceTranscript extends StatelessWidget {
                         label,
                         key: const ValueKey('voice-transcript-label'),
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: UriType.caption,
                           letterSpacing: 0.8,
                           fontWeight: FontWeight.w600,
                           color: c.inkSoft,
@@ -84,7 +84,7 @@ class VoiceTranscript extends StatelessWidget {
                         Text(
                           'SIMULATED',
                           style: TextStyle(
-                            fontSize: 9.5,
+                            fontSize: UriType.micro,
                             letterSpacing: 0.8,
                             fontWeight: FontWeight.w700,
                             color: c.warning,

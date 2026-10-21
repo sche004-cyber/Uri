@@ -83,7 +83,7 @@ class _BlockList extends StatelessWidget {
                 color: i == sel ? colors.accentSoft.withValues(alpha: .45) : null,
                 padding: EdgeInsets.fromLTRB(8.0 + 10.0 * ((level ?? 3) - 0).clamp(0, 3), 6, 8, 6),
                 child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: level != null ? 13 : 12,
+                    style: TextStyle(fontSize: level != null ? UriType.body : UriType.label,
                         fontWeight: level != null ? FontWeight.w600 : FontWeight.normal,
                         color: b['locked'] != null ? colors.inkSoft : null)),
               ),
@@ -148,7 +148,7 @@ class _Pages extends StatelessWidget {
               onPressed: page > 1 ? () => e.showPage(page - 1) : null, icon: const Icon(Icons.chevron_left_rounded)),
           Flexible(
             child: Text('Page $page of $pages · preview drawn by LibreOffice', key: const ValueKey('authoring-page-label'),
-                maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+                maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: UriType.label)),
           ),
           IconButton(key: const ValueKey('authoring-page-next'), tooltip: 'Next page',
               onPressed: page < pages ? () => e.showPage(page + 1) : null,
@@ -169,7 +169,7 @@ class _BlockPanel extends StatelessWidget {
     final e = editor;
     final b = e.selectedBlockView;
     final i = e.selectedBlock;
-    const eyebrow = TextStyle(fontSize: 11, letterSpacing: 1.2);
+    const eyebrow = TextStyle(fontSize: UriType.caption, letterSpacing: 1.2);
     return ListView(
       key: ValueKey('authoring-block-panel-$i-${b?['expect']}'),
       padding: const EdgeInsets.all(UriSpace.sm),
@@ -179,7 +179,7 @@ class _BlockPanel extends StatelessWidget {
           const SizedBox(height: UriSpace.xs),
           if (b['locked'] != null)
             Text('This paragraph has ${b['locked']}, which URI keeps as it is.',
-                key: const ValueKey('authoring-block-locked'), style: const TextStyle(fontSize: 12)),
+                key: const ValueKey('authoring-block-locked'), style: const TextStyle(fontSize: UriType.label)),
           if (b['kind'] == 'paragraph' && b['locked'] == null) ..._paragraph(context, e, i, b),
           if (b['kind'] == 'table') ..._table(e, i, b),
           const SizedBox(height: UriSpace.xs),
@@ -405,7 +405,7 @@ class _FindReplaceState extends State<_FindReplace> {
           '${(r['split_across_formatting'] ?? 0) > 0 ? ' ${r['split_across_formatting']} more cross formatting changes and were left as they are.' : ''}'
           '${(r['skipped'] ?? 0) > 0 ? ' ${r['skipped']} in tracked changes or fields were left as they are.' : ''}',
           key: const ValueKey('authoring-replace-result'),
-          style: const TextStyle(fontSize: 12),
+          style: const TextStyle(fontSize: UriType.label),
         ),
     ]);
   }

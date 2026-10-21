@@ -1,0 +1,43 @@
+00:00 +0: loading D:/uri-dev/uri-ui-controls-typo/uri_ui/integration_test/ui_typo_native_test.dart
+Building Windows application...                                 
+Nuget is not installed.
+Building Windows application...                                   111.0s
+√ Built build\windows\x64\runner\Debug\uri_ui.exe
+00:00 +0: UI-TYPO: push-to-enable controls and typography on the production main with the real Brain
+02:49 +0: UI-TYPO: push-to-enable controls and typography on the production main with the real Brain - did not complete [E]
+02:49 +0: (tearDownAll) - did not complete [E]
+02:49 +0: Some tests failed.
+
+Failing tests:
+  D:/uri-dev/uri-ui-controls-typo/uri_ui/integration_test/ui_typo_native_test.dart: (tearDownAll) (did not complete)
+  D:/uri-dev/uri-ui-controls-typo/uri_ui/integration_test/ui_typo_native_test.dart: UI-TYPO: push-to-enable controls and typography on the production main with the real Brain (did not complete)
+No tests were found.
+The Flutter CLI developer tool uses Google Analytics to report usage and diagnostic
+data along with package dependencies, and crash reporting to send basic crash
+reports. This data is used to help improve the Dart platform, Flutter framework,
+and related tools.
+
+Telemetry is not sent on the very first run. To disable reporting of telemetry,
+run this terminal command:
+
+    flutter --disable-analytics
+
+If you opt out of telemetry, an opt-out event will be sent, and then no further
+information will be sent. This data is collected in accordance with the Google
+Privacy Policy (https://policies.google.com/privacy).
+
+unhandled error during finalization of test:
+D:/uri-dev/uri-ui-controls-typo/uri_ui/integration_test/ui_typo_native_test.dart
+PathNotFoundException: Deletion failed, path = 'C:\Users\cheta\AppData\Local\Temp\claude\ui_typo\fixtures\ui-1\local\temp\flutter_tools.88996efc\flutter_test_listener.9122f818' (OS Error: The system cannot find the path specified, errno = 3)
+#0      _Directory._deleteSync (dart:io/directory_impl.dart:216:7)
+#1      FileSystemEntity.deleteSync (dart:io/file_system_entity.dart:425:7)
+#2      ForwardingFileSystemEntity.deleteSync (package:file/src/forwarding/forwarding_file_system_entity.dart:70:16)
+#3      ErrorHandlingDirectory.deleteSync.<anonymous closure> (package:flutter_tools/src/base/error_handling_io.dart:717:22)
+#4      _runSync (package:flutter_tools/src/base/error_handling_io.dart:1118:16)
+#5      ErrorHandlingDirectory.deleteSync (package:flutter_tools/src/base/error_handling_io.dart:716:12)
+#6      FlutterPlatform._createListenerDart.<anonymous closure> (package:flutter_tools/src/test/flutter_platform.dart:786:15)
+#7      FlutterPlatform._startTest.finalize (package:flutter_tools/src/test/flutter_platform.dart:591:26)
+<asynchronous suspension>
+#8      FlutterPlatform._startTest (package:flutter_tools/src/test/flutter_platform.dart:762:7)
+<asynchronous suspension>
+

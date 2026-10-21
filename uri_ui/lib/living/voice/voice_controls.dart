@@ -236,7 +236,7 @@ class VoiceNoticeLine extends StatelessWidget {
               Expanded(
                 child: Text(
                   n,
-                  style: TextStyle(color: c.inkSoft, fontSize: 12),
+                  style: TextStyle(color: c.inkSoft, fontSize: UriType.label),
                 ),
               ),
             ],

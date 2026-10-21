@@ -89,7 +89,7 @@ class _DraftPanelState extends State<DraftPanel> {
                       key: const ValueKey('draft-version'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: c.inkSoft, fontSize: 12),
+                      style: TextStyle(color: c.inkSoft, fontSize: UriType.label),
                     ),
                   ),
                 ],
@@ -111,7 +111,7 @@ class _DraftPanelState extends State<DraftPanel> {
               if (cur.summary.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text(cur.summary, style: TextStyle(color: c.inkSoft, fontSize: 12)),
+                  child: Text(cur.summary, style: TextStyle(color: c.inkSoft, fontSize: UriType.label)),
                 ),
               const SizedBox(height: 8),
               SegmentedButton<DraftView>(
@@ -169,7 +169,7 @@ class _DraftPanelState extends State<DraftPanel> {
                             runSpacing: 4,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              Text('Missing:', style: TextStyle(color: c.inkSoft, fontSize: 12)),
+                              Text('Missing:', style: TextStyle(color: c.inkSoft, fontSize: UriType.label)),
                               for (final m in cur.missing) _Tag(m, tone: c.warning),
                             ],
                           ),
@@ -347,7 +347,7 @@ class _OriginalView extends StatelessWidget {
       key: const ValueKey('draft-original'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(label, style: TextStyle(color: draft.simulatedTranscript ? c.warning : c.inkSoft, fontSize: 12)),
+        Text(label, style: TextStyle(color: draft.simulatedTranscript ? c.warning : c.inkSoft, fontSize: UriType.label)),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.all(8),
@@ -357,7 +357,7 @@ class _OriginalView extends StatelessWidget {
         ),
         if (draft.first != null) ...[
           const SizedBox(height: 10),
-          Text('First version (URI\'s interpretation)', style: TextStyle(color: c.inkSoft, fontSize: 12)),
+          Text('First version (URI\'s interpretation)', style: TextStyle(color: c.inkSoft, fontSize: UriType.label)),
           const SizedBox(height: 4),
           SelectableText(draft.first!.text, style: TextStyle(color: c.ink, height: 1.45)),
         ],
@@ -382,7 +382,7 @@ class _Banner extends StatelessWidget {
         children: [
           Icon(icon, size: 15, color: tone),
           const SizedBox(width: 6),
-          Expanded(child: Text(text, style: TextStyle(color: tone, fontSize: 12))),
+          Expanded(child: Text(text, style: TextStyle(color: tone, fontSize: UriType.label))),
           ?action,
         ],
       ),
@@ -405,7 +405,7 @@ class _Tag extends StatelessWidget {
         border: Border.all(color: t.withValues(alpha: 0.6)),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(label, style: TextStyle(color: t, fontSize: 11)),
+      child: Text(label, style: TextStyle(color: t, fontSize: UriType.caption)),
     );
   }
 }

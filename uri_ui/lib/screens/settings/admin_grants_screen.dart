@@ -281,7 +281,7 @@ class _AdminGrantsScreenState extends State<AdminGrantsScreen> {
                                 '(${u.userId})',
                                 style: TextStyle(
                                   color: colors.inkFaint,
-                                  fontSize: 12,
+                                  fontSize: UriType.label,
                                 ),
                               ),
                             ],
@@ -390,7 +390,7 @@ class _GrantsList extends StatelessWidget {
                 ),
                 subtitle: Text(
                   capId,
-                  style: TextStyle(color: colors.inkFaint, fontSize: 12),
+                  style: TextStyle(color: colors.inkFaint, fontSize: UriType.label),
                 ),
                 value: isGranted,
                 activeThumbColor: colors.accent,

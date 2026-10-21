@@ -849,7 +849,7 @@ class _CommandNotice extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       'URI opened ${p.mode.label}',
-                      style: TextStyle(fontSize: 12.5, color: c.ink),
+                      style: TextStyle(fontSize: UriType.body, color: c.ink),
                     ),
                     const SizedBox(width: 6),
                     TextButton(
@@ -917,7 +917,7 @@ class _QuestionBubble extends StatelessWidget {
                 child: Text(
                   text ?? '',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12.5, color: c.ink),
+                  style: TextStyle(fontSize: UriType.body, color: c.ink),
                 ),
               ),
             ),
