@@ -19,7 +19,7 @@ from scripts.dev_workflow.milestones.store import file_sha256, sha256_text
 DECISION_COLUMNS = ("id", "date", "title", "decision", "reasoning", "alternatives_rejected", "corrections_text",
                     "scope", "approval_requirement", "related", "applicability", "sources", "evidence_class_raw")
 SUPERSEDE_RX = re.compile(r"(?i)\bsuperseded\b(?P<mid>[^|.]{0,60}?)\bby\b(?P<tail>[^|]{0,160})")
-PARTIAL_RX = re.compile(r"(?i)in part|partly|partially|for later phases|run-scoped|in practice")
+PARTIAL_RX = re.compile(r"(?i)in part|partly|partially|for later phases|run-scoped|in practice|\bonly\b")
 SOURCE_STATUS = (("PARTLY SUPERSEDED", "PARTIALLY_SUPERSEDED"), ("SUPERSEDED", "SUPERSEDED"), ("UNCLEAR", "UNCLEAR"),
                  ("NOT OWNER DECISION", "NOT_OWNER_DECISION"), ("ACTIVE", "ACTIVE"))
 
@@ -34,9 +34,13 @@ def successor_ids(tail: str) -> list[str]:
 
 
 def source_status(applicability: str) -> str:
+    """Status stated by the Applicability column. A SUPERSEDED with a limiting phrase ("in part", "for later
+    phases", "(run-scoped)", "only") is a partial supersession (review R1-11)."""
     up = (applicability or "").upper()
     for key, value in SOURCE_STATUS:
         if up.startswith(key):
+            if value == "SUPERSEDED" and PARTIAL_RX.search(applicability[len(key):]):
+                return "PARTIALLY_SUPERSEDED"
             return value
     return "UNCLEAR"
 
@@ -139,25 +143,33 @@ def import_decisions(mgr, path, commit=None) -> dict:
                               {row["id"]: p["versions"].get(row["id"], 0)}))
                 report["revised"] += 1
         # Supersession links stated in the "Later corrections / supersession" column.
-        ids = set(p["decisions"]) | {r[2]["id"] for r in decisions}
-        for _, _, row in decisions:
-            text = row["corrections_text"] + " | " + row["applicability"]
-            for mt in SUPERSEDE_RX.finditer(text):
-                partial = bool(PARTIAL_RX.search(mt.group("mid") + " " + mt.group("tail")[:40]))
-                for by in successor_ids(mt.group("tail")):
-                    if by not in ids or by == row["id"]:
-                        continue
-                    old = p["decisions"].get(row["id"])
-                    if old and any(s["by"] == by for s in old["superseded_by"]):
-                        continue
-                    if any(k == "DECISION_SUPERSEDED" and d["id"] == row["id"] and d["by"] == by
-                           for k, d, _ in items):
-                        continue
-                    # link_only: the imported row's own status column stays authoritative for its status.
-                    items.append(("DECISION_SUPERSEDED", {"id": row["id"], "by": by, "partial": partial,
-                                                          "link_only": True,
-                                                          "note": f"from source text: {mt.group(0)[:200]}"}, {}))
-                    report["supersessions"] += 1
+        secret_ids = set(report["skipped_secret"])
+        ids = (set(p["decisions"]) | {r[2]["id"] for r in decisions}) - secret_ids
+        for line_no, _, row in decisions:
+            if row["id"] in secret_ids:
+                continue  # never read text out of a row refused for secrets (R1-10)
+            for column in ("corrections_text", "applicability"):
+                text = row[column]
+                for mt in SUPERSEDE_RX.finditer(text):
+                    # the limiting phrase may precede the match ("For X only, superseded by ...") or follow it
+                    window = text[max(0, mt.start() - 60): mt.start()] + " " + mt.group("mid") + " " + \
+                        mt.group("tail")[:40]
+                    partial = bool(PARTIAL_RX.search(window))
+                    for by in successor_ids(mt.group("tail")):
+                        if by not in ids or by == row["id"]:
+                            continue
+                        old = p["decisions"].get(row["id"])
+                        if old and any(s["by"] == by for s in old["superseded_by"]):
+                            continue
+                        if any(k == "DECISION_SUPERSEDED" and d["id"] == row["id"] and d["by"] == by
+                               for k, d, _ in items):
+                            continue
+                        # link_only: the imported row's own status column stays authoritative for its status.
+                        # The note is a row reference, never copied source text (R1-10).
+                        items.append(("DECISION_SUPERSEDED", {"id": row["id"], "by": by, "partial": partial,
+                                                              "link_only": True,
+                                                              "note": f"source line {line_no}, column {column}"}, {}))
+                        report["supersessions"] += 1
         for line_no, raw, row in opens:
             if M.find_secret(raw):
                 report["skipped_secret"].append(row["alias"])
@@ -262,7 +274,7 @@ def import_register(mgr, path, commit=None) -> dict:
 
 def _lifecycle_hash(ev: dict) -> str:
     # Exactly as lifecycle.py State.event / verify(): sha256 over json.dumps(..., sort_keys=True) with defaults.
-    return hashlib.sha256(json.dumps({k: ev[k] for k in ("seq", "ts", "kind", "data", "prev")},
+    return hashlib.sha256(json.dumps({k: ev.get(k) for k in ("seq", "ts", "kind", "data", "prev")},
                                      sort_keys=True).encode()).hexdigest()
 
 
@@ -272,7 +284,12 @@ def read_lifecycle_snapshot(state_dir) -> dict:
     state_path, events_path = d / "state.json", d / "events.jsonl"
     if not state_path.is_file():
         raise ValidationError("NOT_FOUND", f"{state_path} does not exist")
-    state = json.loads(state_path.read_text(encoding="utf-8"))
+    try:
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+    except ValueError as e:
+        raise ValidationError("BAD_LIFECYCLE_STATE", f"{state_path} is not JSON ({e.__class__.__name__})")
+    if not isinstance(state, dict):
+        raise ValidationError("BAD_LIFECYCLE_STATE", f"{state_path} is not a JSON object")
     errors, prev, events = [], "0" * 64, []
     raw_lines = events_path.read_text(encoding="utf-8").splitlines() if events_path.is_file() else []
     for n, line in enumerate(raw_lines, 1):
@@ -281,19 +298,23 @@ def read_lifecycle_snapshot(state_dir) -> dict:
         except ValueError:
             errors.append(f"line {n} is not JSON")
             continue
+        if not isinstance(ev, dict):
+            errors.append(f"line {n} is not an event object")
+            continue
         if ev.get("prev") != prev or ev.get("hash") != _lifecycle_hash(ev):
             errors.append(f"event {ev.get('seq')} chain broken")
         prev = ev.get("hash")
         events.append(ev)
-    hist = state.get("history") or []
+    hist = [h for h in (state.get("history") or []) if isinstance(h, dict)]
     if len(hist) != len(events) or any(a.get("hash") != b.get("hash") for a, b in zip(hist, events)):
         errors.append("state history and event log differ")
     review = None
     for ev in events:
-        if ev.get("kind") == "REVIEW_RECORDED":
+        if ev.get("kind") == "REVIEW_RECORDED" and isinstance(ev.get("data"), dict):
             review = {k: ev["data"].get(k) for k in ("round", "candidate", "verdict", "independent", "outcome",
                                                       "provider", "status")}
     blocker = state.get("blocker") if state.get("stage") == "BLOCKED" else None
+    blocker = blocker if isinstance(blocker, dict) else None
     integ = state.get("integration") or None
     receipt = d / "receipt.json"
     return {"milestone": state.get("milestone"), "stage": state.get("stage"),

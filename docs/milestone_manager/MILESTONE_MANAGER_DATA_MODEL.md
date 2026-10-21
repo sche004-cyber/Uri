@@ -9,7 +9,7 @@ must match it, and the tests in `tests/dev_workflow/test_milestones.py` check th
 |---|---|---|
 | `<home>/mm.json` | `uri-mm-ledger/1`: `{schema, host_id, autocommit, created_at}` | yes (config) |
 | `<home>/events/<host_id>.jsonl` | one event per line (§2) | **yes — the only state truth** |
-| `<home>/cache/projection.json` | `uri-mm-projection/1`: `{schema, segments: {name: {offset, head, count}}, state}` | no (rebuildable) |
+| `<home>/anchors.json` | `{<segment>: {count, head}}` high-water marks; never move backwards | integrity anchor (not state) |
 | `<home>/quarantine/<host>.<ts>.torn` | raw bytes of a torn tail | evidence only |
 | `status --json` output | `uri-mm-status/1` (§6) | export contract for Mission Control |
 
@@ -29,6 +29,7 @@ must match it, and the tests in `tests/dev_workflow/test_milestones.py` check th
 | `actor` | writer identity (required for every write; never a secret) |
 | `base` | entity versions the writer validated against; a mismatch after a merge is recorded as a conflict |
 | `prev` | previous event hash in the same segment; genesis `0`×64 |
+| `batch` | optional `{id, n, i}` when one command wrote `n` events; the fold applies the batch only when complete |
 | `hash` | `sha256` of the canonical JSON (`sort_keys`, `separators=(",", ":")`, UTF-8) of every field except `hash` |
 
 ## 3. Event kinds and their `data`
@@ -126,3 +127,11 @@ message 2026-10-21). MM passes its milestone id as `milestone_ref`.
 | `decisions.md` §3 OPEN-01..OPEN-10 | `APPROVAL_REQUESTED` kind DECISION, subject PROJECT, `alias` = OPEN id |
 | `developmental.md` §B, §C, §J, §K rows | `RECORD_IMPORTED` (capability, roadmap, defect, next_action) with colour word and raw fields |
 | owner roadmap (prompt 2026-10-21) | `MILESTONE_CREATED` per milestone (priority field) — done in the migration rehearsal, not by an importer |
+
+## 10. Conflicts (derived, after review R1)
+
+`{type, entity, subject, event, kind, resolved[, expected, actual][, kept, duplicate][, missing]}` with `type`:
+VERSION (an event was built on an older entity version, e.g. after a merge), DUPLICATE_ID (two events created the
+same id; both records are kept, the later one under `<id>@<seg>.<seq>`; a duplicate MILESTONE_CREATED is kept in
+`duplicates[]`), BASIS_INVALID (a positive status names reviews/approvals that do not support it). Additional refusal
+codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); integrity failure exit 3.

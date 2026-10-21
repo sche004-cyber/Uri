@@ -35,7 +35,7 @@ Every criterion names how it is checked. "Test" means an automated pytest in `te
 | F14 | Importers for `developmental.md` roadmap/capabilities and `decisions.md` keep source path, commit (when given), line and file SHA-256; re-import is idempotent; a changed source row is recorded as a new revision, never an overwrite | test |
 | F15 | Lifecycle link/sync reads a Lifecycle V3 state dir read-only, verifies its event chain, and records stage, blocker, candidate and verdict with hashes | test (fixture state dir built by the real driver helpers or a byte-identical sample) |
 | F16 | Secret-like strings (API keys, tokens, private keys, passwords) are refused in any free-text field | test |
-| F17 | Projection cache is disposable: deleting it and rebuilding gives the same state; incremental rebuild reads only new bytes | test |
+| F17 | State is always derived from the verified log; no cache is trusted (amended 2026-10-21 after review R1-02/06/08: was "projection cache is disposable; incremental rebuild") | test |
 | F18 | `status --json` has a versioned, documented schema for Mission Control and other consumers | test |
 
 ## Non-functional
@@ -62,3 +62,4 @@ Every criterion names how it is checked. "Test" means an automated pytest in `te
 | Date | Change | Reason |
 |---|---|---|
 | 2026-10-21 | F6, F11, F13 rescoped from tasks to milestones; tasks read via `uri-dev/task-ledger-contract/1` | ownership split agreed with the parallel Lifecycle V3.1 session (`v1-2e`); avoids two sources of truth for tasks |
+| 2026-10-21 | F17 amended: no projection cache | review R1 showed a cache that guards read can be forged or stale; full verified fold measured at 0.3 s for 10k events (N3) |

@@ -76,15 +76,16 @@
  "decisions": {
   "ACTIVE": 74,
   "NOT_OWNER_DECISION": 1,
-  "PARTIALLY_SUPERSEDED": 3,
-  "SUPERSEDED": 8,
+  "PARTIALLY_SUPERSEDED": 7,
+  "SUPERSEDED": 4,
   "UNCLEAR": 7
  },
- "generated_at": "2026-10-21T16:29:12Z",
+ "generated_at": "2026-10-21T16:45:59Z",
  "ledger": {
   "conflicts_open": 0,
   "events": 217,
-  "integrity_errors": []
+  "integrity_errors": [],
+  "integrity_warnings": []
  },
  "milestones": [
   {

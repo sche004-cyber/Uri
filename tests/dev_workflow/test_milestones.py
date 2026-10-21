@@ -88,7 +88,7 @@ def test_f3_torn_tail_read_ignored_then_recovered(tmp_path):
         f.write(torn)
     rep = m.store.verify()
     assert not rep["ok"] and rep["torn"] == [{"segment": "h1", "bytes": len(torn)}]
-    p = m.projection(use_cache=False)
+    p = m.projection()
     assert set(p["milestones"]) == {"MM-A", "MM-B"}
     with pytest.raises(StoreError) as e:
         m.create_milestone("MM-C", "C")
@@ -534,20 +534,16 @@ def test_f16_no_false_positive_on_prose(tmp_path, text):
     assert model.find_secret(text) is None
 
 
-def test_f17_projection_cache_disposable_and_incremental(tmp_path):
+def test_f17_projection_always_derived_from_verified_log(tmp_path):
+    """Amended F17 (after R1-02/06/08): no projection cache exists; a stray cache file is never read."""
     m = new(tmp_path)
     for i in range(30):
         m.create_milestone(f"MM-{i}", f"t{i}")
-    full = m.rebuild()
-    m.cache_path.unlink()
-    again = m.projection()
-    assert again["milestones"] == full["milestones"] and again["events"] == full["events"]
-    m.cache_path.write_text("{corrupt", encoding="utf-8")
-    assert m.projection()["events"] == 30
-    m.create_milestone("MM-X", "x")
-    cache = json.loads(m.cache_path.read_text(encoding="utf-8"))
-    assert cache["segments"]["h1"]["count"] == 31
-    assert m.projection(use_cache=True)["milestones"] == m.projection(use_cache=False)["milestones"]
+    cache = m.home / "cache" / "projection.json"
+    cache.parent.mkdir(exist_ok=True)
+    cache.write_text(json.dumps({"state": {"milestones": {"FORGED": {}}}}), encoding="utf-8")
+    p = m.projection()
+    assert "FORGED" not in p["milestones"] and len(p["milestones"]) == 30 and p["events"] == 30
 
 
 def test_f18_status_json_schema(tmp_path):
@@ -640,3 +636,249 @@ def test_n3_performance_10k_events(tmp_path):
     print("N3", json.dumps(record))
     assert p["events"] == 10_001
     assert t_rebuild < 3.0 and t_status < 1.0 and size < 10 * 1024 * 1024
+
+
+# ------------------------------------------------------------------ R1 regression tests (review R1 on 2ae7a79f)
+
+def test_r1_01_candidate_locked_after_accept_and_integration_bound_to_candidate(tmp_path):
+    m = _accept_ready(tmp_path)
+    m.set_status("MM-A", "ACCEPTED", "ok")
+    with pytest.raises(ValidationError) as e:
+        m.update_milestone("MM-A", candidate_commit=C2)
+    assert e.value.code == "CANDIDATE_LOCKED"
+    # demote, change candidate: the old ACCEPT no longer counts
+    m.set_status("MM-A", "IN_PROGRESS", "new candidate")
+    m.update_milestone("MM-A", candidate_commit=C2)
+    with pytest.raises(ValidationError) as e:
+        m.set_status("MM-A", "ACCEPTED", "try")
+    assert e.value.code == "NO_INDEPENDENT_ACCEPT"
+
+
+def test_r1_01_integration_record_must_match_current_candidate(tmp_path):
+    m = _accept_ready(tmp_path)
+    m.record_integration("MM-A", "canonical", C1)
+    m.set_status("MM-A", "ACCEPTED", "ok")
+    m.request_approval("MM-A", "INTEGRATION", "integrate?")
+    m.resolve_approval("AP-1", "APPROVED", owner_words="yes", source="chat")
+    # forge: integration record for another candidate (fold-level edit is impossible via API; use the guard path)
+    p = m.projection()
+    mm = dict(p["milestones"]["MM-A"])
+    mm["integration"] = {**mm["integration"], "candidate_commit": C2}
+    with pytest.raises(ValidationError) as e:
+        m.guard_status(p, mm, "INTEGRATED")
+    assert e.value.code == "NO_INTEGRATION_RECORD"
+
+
+def test_r1_02_guard_does_not_trust_cache_and_fold_flags_unbacked_basis(tmp_path):
+    m = _accept_ready(tmp_path, verdict="REJECT", blocking=1)
+    cache = m.home / "cache" / "projection.json"
+    cache.parent.mkdir(exist_ok=True)
+    cache.write_text('{"schema": "uri-mm-projection/1", "segments": {}, "state": {}}', encoding="utf-8")
+    with pytest.raises(ValidationError):
+        m.set_status("MM-A", "ACCEPTED", "try")
+    # an ACCEPTED event whose basis names no real review (e.g. written by an old or forged writer) is flagged RED
+    with m.store.locked():
+        m.store.append("MILESTONE_STATUS_SET", {"id": "MM-A", "status": "ACCEPTED", "reason": "x",
+                                                "basis": {"reviews": ["RV-99"]}}, actor="forger")
+    p = m.projection()
+    assert any(c["type"] == "BASIS_INVALID" for c in views.open_conflicts(p, "MM-A"))
+    assert views.indicator(p, p["milestones"]["MM-A"])["color"] == "RED"
+
+
+def test_r1_03_later_reject_blocks_done_and_integrated_and_shows_red(tmp_path):
+    m = _accept_ready(tmp_path)
+    m.set_status("MM-A", "ACCEPTED", "ok")
+    m.record_review("MM-A", C1, "subagent", "subagent:r2", "SUBAGENT", "REJECT", 2, 2, "COMPLETED_WITH_RESULT", "no")
+    with pytest.raises(ValidationError) as e:
+        m.set_status("MM-A", "DONE", "close")
+    assert e.value.code == "LATER_NEGATIVE_REVIEW"
+    p = m.projection()
+    ind = views.indicator(p, p["milestones"]["MM-A"])
+    assert ind["color"] == "RED" and "REJECT" in ind["issue"]
+
+
+def test_r1_04_tampered_events_not_folded_and_reported(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    m.set_status("MM-A", "IN_PROGRESS", "go")
+    path = m.store.segment_path
+    path.write_bytes(path.read_bytes().replace(b'"status":"IN_PROGRESS"', b'"status":"ACCEPTED"'))
+    p = m.projection()
+    assert p["integrity_errors"]
+    assert p["milestones"]["MM-A"]["status"] == "PLANNED"  # the edited event is not trusted
+    out = io.StringIO()
+    rc = cli.run(["--home", str(m.home), "--no-emoji", "status", "--no-tasks"], out=out)
+    assert rc == 3 and "LEDGER INTEGRITY FAILURE" in out.getvalue()
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "resume", "MM-A", "--no-tasks"], out=out) == 3
+    assert "LEDGER INTEGRITY FAILURE" in out.getvalue()
+
+
+def _two_hosts(tmp_path):
+    m1 = new(tmp_path, actor="h1:agent")
+    home2 = tmp_path / "ledger2"
+    EventStore.init(home2, "h2")
+    m2 = Manager(home2, actor="h2:agent")
+    return m1, m2, home2
+
+
+def _merge(m1, home2):
+    (m1.home / "events" / "h2.jsonl").write_bytes((home2 / "events" / "h2.jsonl").read_bytes())
+
+
+def test_r1_05_same_ids_on_two_hosts_never_overwrite(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    for m in (m1, m2):
+        m.create_milestone("MM-A", "A")
+    m1.record_decision("Keep X", "keep", "2026-10-21", "AGENT-RECORD", "h1")
+    m2.record_decision("Drop X", "drop", "2026-10-21", "AGENT-RECORD", "h2")
+    m1.update_milestone("MM-A", candidate_commit=C1)
+    m1.record_review("MM-A", C1, "subagent", "r1", "SUBAGENT", "REJECT", 1, 1, "COMPLETED_WITH_RESULT", "h1 reject")
+    m2.update_milestone("MM-A", candidate_commit=C1)
+    m2.record_review("MM-A", C1, "subagent", "r2", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "h2 accept")
+    _merge(m1, home2)
+    p = m1.projection()
+    decisions = {d["decision"] for d in p["decisions"].values()}
+    assert decisions == {"keep", "drop"}
+    verdicts = sorted(r["verdict"] for r in p["reviews"].values())
+    assert verdicts == ["ACCEPT", "REJECT"]
+    assert any(c["type"] == "DUPLICATE_ID" for c in views.open_conflicts(p))
+    with pytest.raises(ValidationError) as e:
+        m1.set_status("MM-A", "ACCEPTED", "try")
+    assert e.value.code == "CONFLICT_OPEN"
+
+
+def test_r1_06_tamper_in_other_hosts_segment_blocks_writes(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m2.create_milestone("MM-B", "Bee")
+    _merge(m1, home2)
+    m1.create_milestone("MM-A", "A")
+    seg = m1.home / "events" / "h2.jsonl"
+    seg.write_bytes(seg.read_bytes().replace(b'"Bee"', b'"Bxx"'))
+    with pytest.raises(StoreError) as e:
+        m1.create_milestone("MM-C", "C")
+    assert e.value.code == "CHAIN_BROKEN"
+    assert not m1.store.verify()["ok"]
+
+
+def test_r1_07_deleting_newest_events_detected(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    m.record_decision("D", "d", "2026-10-21", "AGENT-RECORD", "s")
+    path = m.store.segment_path
+    lines = path.read_bytes().split(b"\n")[:-1]
+    path.write_bytes(b"\n".join(lines[:-1]) + b"\n")
+    rep = m.store.verify()
+    assert not rep["ok"] and any("deleted" in x for x in rep["errors"])
+    with pytest.raises(StoreError):
+        m.create_milestone("MM-B", "B")
+
+
+def test_r1_08_events_arriving_during_a_write_are_folded(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m1.create_milestone("MM-A", "A")
+    m2.create_milestone("MM-B", "B")
+    _merge(m1, home2)  # arrives "outside the lock" (e.g. git pull)
+    m1.create_milestone("MM-C", "C")
+    assert set(m1.projection()["milestones"]) == {"MM-A", "MM-B", "MM-C"}
+
+
+@pytest.mark.parametrize("secret", [
+    "key sk_" + "live_" + "4eC39HqLyjWDarjtT1zdp7dcAbCdEf",
+    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
+    "password = hunter",
+    "token=" + "9f86d081884c7d659a2feaa0c55ad015",
+    "hf_" + "AbCdEfGhIjKlMnOpQrStUvWxYz012345",
+    "https://user:pa55word@example.com/repo",
+    "client_secret: abcd1234efgh",
+])
+def test_r1_09_more_secret_forms_refused(secret):
+    assert model.find_secret(secret), secret
+
+
+@pytest.mark.parametrize("text", ["pwd=D:/uri-dev/worktree1", "api_key: env-var-NAME1", "API_KEY=$OPENAI_API_KEY",
+                                  "token: TAVILY_API_KEY", "password: required", "see https://example.com/a:b"])
+def test_r1_09_no_false_positive_on_paths_and_env_names(text):
+    assert model.find_secret(text) is None, text
+
+
+def test_r1_10_secret_row_skipped_without_refusing_import(tmp_path):
+    src = tmp_path / "decisions.md"
+    bad = "| DEC-004 | 2026-09-12 | Bad | x | — | — | Superseded by DEC-003 after password: hunter2abc9 | " \
+          "s | — | — | SUPERSEDED | CAN | REPO-RECORD |\n"
+    src.write_bytes((DECISIONS_MD.split("\n## 3.")[0] + bad).encode())
+    m = new(tmp_path)
+    r = importers.import_decisions(m, src)
+    assert r["skipped_secret"] == ["DEC-004"] and r["recorded"] == 3
+    assert "DEC-004" not in m.projection()["decisions"]
+
+
+def test_r1_11_partial_supersession_statuses():
+    assert importers.source_status("SUPERSEDED in part (no paid licences)") == "PARTIALLY_SUPERSEDED"
+    assert importers.source_status("SUPERSEDED for later phases by per-phase rules") == "PARTIALLY_SUPERSEDED"
+    assert importers.source_status("SUPERSEDED (run-scoped)") == "PARTIALLY_SUPERSEDED"
+    assert importers.source_status("SUPERSEDED (history)") == "SUPERSEDED"
+    assert importers.source_status("SUPERSEDED by DEC-004") == "SUPERSEDED"
+    assert importers.source_status("PARTLY SUPERSEDED (x)") == "PARTIALLY_SUPERSEDED"
+
+
+def test_r1_11_real_decisions_partial_links_if_present(tmp_path):
+    dec = Path("D:/uri-dev/uri-p0-audit/decisions.md")
+    if not dec.is_file():
+        pytest.skip("P0 audit worktree not present on this host")
+    m = new(tmp_path)
+    importers.import_decisions(m, dec)
+    d = m.projection()["decisions"]
+    assert d["DEC-053"]["status"] == "PARTIALLY_SUPERSEDED"
+    assert d["DEC-062"]["status"] == "PARTIALLY_SUPERSEDED"
+    assert d["DEC-003"]["status"] == "SUPERSEDED"
+    assert all(s["partial"] for s in d["DEC-012"]["superseded_by"] if s["by"] == "DEC-066")
+
+
+def test_r1_12_cli_errors_are_json_with_exit_2(tmp_path):
+    home = tmp_path / "h"
+    run = lambda *a: cli.run(["--home", str(home), "--actor", "a", *a], out=io.StringIO())
+    run("init", "--host-id", "h")
+    run("milestone-add", "MM-A", "--title", "A")
+    assert run("import-decisions", str(tmp_path / "missing.md")) == 2
+    assert run("evidence-add", "MM-A", "--kind", "log", "--ref", "x", "--result", "COMPLETED_WITH_RESULT",
+               "--summary", "s", "--file", str(tmp_path / "nope.log")) == 2
+    sd = tmp_path / "lc"
+    sd.mkdir()
+    (sd / "state.json").write_text('{"stage": "BLOCKED", "history": [{}]}', encoding="utf-8")
+    (sd / "events.jsonl").write_text('[1,2]\n{"seq": 1}\n', encoding="utf-8")
+    snap = importers.read_lifecycle_snapshot(sd)
+    assert snap["chain_ok"] is False and snap["errors"]
+    run("link-lifecycle", "MM-A", str(sd))
+    assert run("sync-lifecycle", "MM-A", str(sd)) == 0
+
+
+def test_r1_14_reviewer_identity_case_insensitive(tmp_path):
+    m = _accept_ready(tmp_path, reviewer="IMPL:A ")
+    with pytest.raises(ValidationError) as e:
+        m.set_status("MM-A", "ACCEPTED", "self")
+    assert e.value.code == "NO_INDEPENDENT_ACCEPT"
+
+
+def test_r1_15_multi_event_command_is_atomic(tmp_path, monkeypatch):
+    m = new(tmp_path)
+    m.record_decision("Old", "old", "2026-10-21", "AGENT-RECORD", "s")
+    # crash after the first line of a two-event batch: simulate by writing only the first event of the batch
+    real = m.store.append_many
+    def half(items, actor, session=None, ts=None):
+        evs = real(items, actor, session, ts)
+        path = m.store.segment_path
+        lines = path.read_bytes().split(b"\n")[:-1]
+        path.write_bytes(b"\n".join(lines[:-1]) + b"\n" + lines[-1][:20])  # second event torn
+        raise OSError("ENOSPC simulated")
+    monkeypatch.setattr(m.store, "append_many", half)
+    with pytest.raises(OSError):
+        m.record_decision("New", "new", "2026-10-22", "AGENT-RECORD", "s", supersedes="DEC-001")
+    monkeypatch.undo()
+    m.store.recover("impl:a")
+    p = m.projection()
+    assert set(p["decisions"]) == {"DEC-001"} and p["decisions"]["DEC-001"]["status"] == "ACTIVE"
+    assert any("incomplete batch" in w for w in p["integrity_warnings"])
+    m.record_decision("New", "new", "2026-10-22", "AGENT-RECORD", "s", supersedes="DEC-001")  # retry works
+    p = m.projection()
+    assert p["decisions"]["DEC-001"]["status"] == "SUPERSEDED" and p["decisions"]["DEC-002"]["decision"] == "new"

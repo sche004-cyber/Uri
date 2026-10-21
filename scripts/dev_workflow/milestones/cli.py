@@ -157,6 +157,7 @@ def run(argv=None, out=None) -> int:
             emit({"initialised": str(st.home), "host_id": st.host, "autocommit": st.config["autocommit"]})
             return 0
         mgr = Manager(args.home, args.actor, args.session)
+        integrity_rc = lambda p: 3 if p.get("integrity_errors") else 0  # noqa: E731
         tasks = (lambda ref: mgr.task_summaries(ref)) if not getattr(args, "no_tasks", False) else None
         c = args.cmd
         if c == "milestone-add":
@@ -225,19 +226,24 @@ def run(argv=None, out=None) -> int:
                 emit(a2ui_surface(st) if args.a2ui else st)
             else:
                 emit("\n".join(views.status_lines(p, emoji, tasks, args.milestone)) or "(no milestones)")
-            return 0
+            return integrity_rc(p)
         elif c == "show":
-            emit(_show(mgr.projection(), args.id))
-            return 0
+            p = mgr.projection()
+            emit({**_show(p, args.id), **({"ledger_integrity_errors": p["integrity_errors"]}
+                                          if p.get("integrity_errors") else {})})
+            return integrity_rc(p)
         elif c == "resume":
             p = mgr.projection()
             emit(views.resume_brief(p, args.id, tasks(args.id) if tasks else None, args.max_chars, emoji))
-            return 0
+            return integrity_rc(p)
         elif c == "ready":
-            emit(views.ready(mgr.projection(), args.actor))
-            return 0
+            p = mgr.projection()
+            emit(views.ready(p, args.actor) if not p.get("integrity_errors") else
+                 {"error": "INTEGRITY", "message": "ledger fails verification; no milestone is ready",
+                  "integrity_errors": p["integrity_errors"]})
+            return integrity_rc(p)
         elif c == "log":
-            evs = [e for s in mgr.store.read_all() for e in s.events]
+            evs = [e for s in mgr.store.read_all() for e in s.valid_events]
             evs.sort(key=lambda e: (e["ts"], e["seg"], e["seq"]))
             if args.entity:
                 evs = [e for e in evs if args.entity in json.dumps(e["data"]) or args.entity in e.get("base", {})]
@@ -245,8 +251,9 @@ def run(argv=None, out=None) -> int:
             return 0
         elif c == "verify":
             rep = mgr.store.verify()
-            p = mgr.rebuild()
+            p = mgr.projection()
             rep["conflicts_open"] = len(views.open_conflicts(p))
+            rep["warnings"] = p.get("integrity_warnings", [])
             emit(rep)
             return 0 if rep["ok"] else 3
         elif c == "verify-evidence":
@@ -260,9 +267,9 @@ def run(argv=None, out=None) -> int:
             mgr.rebuild()
             return 0
         elif c == "rebuild":
-            p = mgr.rebuild()
+            p = mgr.projection()
             emit({"events": p["events"], "integrity_errors": p.get("integrity_errors", [])})
-            return 0
+            return integrity_rc(p)
         else:  # pragma: no cover - argparse restricts choices
             raise ValidationError("USAGE", c)
         if isinstance(r, list):
@@ -277,6 +284,12 @@ def run(argv=None, out=None) -> int:
         return 1
     except StoreError as e:
         emit({"error": e.code, "message": str(e)})
+        return 2
+    except OSError as e:  # missing or unreadable file named on the command line (R1-12)
+        emit({"error": "IO", "message": f"{e.__class__.__name__}: {e}"})
+        return 2
+    except (ValueError, KeyError, TypeError, AttributeError) as e:  # malformed input file
+        emit({"error": "INPUT", "message": f"{e.__class__.__name__}: {e}"})
         return 2
 
 

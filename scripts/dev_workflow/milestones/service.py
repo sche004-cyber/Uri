@@ -15,10 +15,9 @@ from pathlib import Path
 
 from scripts.dev_workflow.milestones import model as M
 from scripts.dev_workflow.milestones.model import ValidationError
-from scripts.dev_workflow.milestones.store import (GIT, EventStore, StoreError, atomic_write_bytes, canonical,
+from scripts.dev_workflow.milestones.store import (GIT, EventStore, StoreError, canonical,
                                                    file_sha256, read_segment, sha256_text)
 
-CACHE_SCHEMA = "uri-mm-projection/1"
 LEASE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
@@ -34,62 +33,29 @@ class Manager:
         self.session = session
         self.clock = clock or (lambda: datetime.datetime.now(datetime.timezone.utc))
         self.task_source = task_source
-        self.cache_path = self.home / "cache" / "projection.json"
         self.last_autocommit = None
 
     # ------------------------------------------------------------------ projection
 
-    def _load_cache(self):
-        try:
-            c = json.loads(self.cache_path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            return None
-        if c.get("schema") != CACHE_SCHEMA or not isinstance(c.get("segments"), dict):
-            return None
-        return c
-
-    def projection(self, use_cache: bool = True) -> dict:
-        """Current projection. Incremental from the cache when every new event sorts after the cached ones."""
-        cache = self._load_cache() if use_cache else None
-        paths = self.store.segment_paths()
-        if cache is not None:
-            new_events, segs, ok = [], {}, True
-            for path in paths:
-                info = cache["segments"].get(path.stem, {"offset": 0, "head": "0" * 64, "count": 0})
-                size = path.stat().st_size
-                if size < info["offset"]:
-                    ok = False
-                    break
-                seg = read_segment(path, info["offset"], info["head"], info["count"])
-                if seg.errors:
-                    ok = False
-                    break
-                new_events.extend(seg.events)
-                segs[path.stem] = {"offset": seg.good_bytes, "head": seg.head, "count": info["count"] + len(seg.events)}
-            if ok and set(cache["segments"]) <= set(segs):
-                new_events.sort(key=M.event_key)
-                last = cache["state"].get("last_key")
-                if not new_events or last is None or M.event_key(new_events[0]) > last:
-                    state = M.fold(new_events, cache["state"]) if new_events else cache["state"]
-                    if new_events:
-                        self._save_cache(segs, state)
-                    return state
-        return self.rebuild()
-
-    def rebuild(self) -> dict:
+    def projection(self) -> dict:
+        """Fold of the verified log. Always derived from the event segments; nothing is trusted from a cache
+        (review R1-02/R1-06/R1-08: a cache that guards read could be forged or stale). 10,000 events fold in well
+        under a second (criterion N3)."""
         segs = self.store.read_all()
-        bad = [e for s in segs for e in s.errors]
-        state = M.fold(M.ordered(segs))
-        if not bad:
-            self._save_cache({s.name: {"offset": s.good_bytes, "head": s.head, "count": len(s.events)} for s in segs},
-                             state)
-        state["integrity_errors"] = bad
-        return state
+        return self._fold_segments(segs)
 
-    def _save_cache(self, segs: dict, state: dict) -> None:
-        state = {k: v for k, v in state.items() if k != "integrity_errors"}
-        data = json.dumps({"schema": CACHE_SCHEMA, "segments": segs, "state": state}, sort_keys=True)
-        atomic_write_bytes(self.cache_path, data.encode("utf-8"))
+    rebuild = projection
+
+    def _fold_segments(self, segs) -> dict:
+        state = M.fold(M.ordered(segs))
+        errors = [e for s in segs for e in s.errors] + self.store.anchor_errors(segs)
+        warnings = [f"{s.name}: {len(s.torn)} torn bytes at the end (ignored; `recover` on that host)"
+                    for s in segs if s.torn]
+        warnings += [f"incomplete batch {b} ({len(evs)} of {evs[0]['batch']['n']} events; ignored)"
+                     for b, evs in state.get("pending_batches", {}).items()]
+        state["integrity_errors"] = errors
+        state["integrity_warnings"] = warnings
+        return state
 
     # ------------------------------------------------------------------ write helper
 
@@ -100,11 +66,15 @@ class Manager:
             raise ValidationError("SECRET", "actor/session looks like a secret")
 
     def _write(self, build):
-        """``build(p)`` validates against projection ``p`` and returns [(kind, data, base), ...] to append."""
+        """``build(p)`` validates against the verified projection ``p`` and returns [(kind, data, base), ...].
+
+        All events of one call are appended as one batch (single write + fsync); the fold applies a batch only when
+        it is complete, so a crash never leaves half a command applied (R1-15)."""
         self._require_actor()
         with self.store.locked():
-            p = self.projection()
-            if p.get("integrity_errors"):
+            segs = self.store.read_all()
+            p = self._fold_segments(segs)
+            if p["integrity_errors"]:
                 raise StoreError("CHAIN_BROKEN", "ledger fails verification; run `verify` (" +
                                  "; ".join(p["integrity_errors"][:2]) + ")")
             items = build(p)
@@ -113,18 +83,12 @@ class Manager:
                 if hit:
                     raise ValidationError("SECRET", f"{kind} contains what looks like a {hit}; secrets are never "
                                                     "stored (record a reference instead)")
-            written = []
-            for kind, data, base in items:
-                ev = self.store.append(kind, data, actor=self.actor, session=self.session, base=base)
+            written = self.store.append_many(items, actor=self.actor, session=self.session)
+            for ev in written:
                 M.apply(p, ev)
-                written.append(ev)
             if written:
-                segs = {}
-                for path in self.store.segment_paths():
-                    s = read_segment(path)
-                    segs[s.name] = {"offset": s.good_bytes, "head": s.head, "count": len(s.events)}
-                p.pop("integrity_errors", None)
-                self._save_cache(segs, p)
+                own = read_segment(self.store.segment_path)
+                self.store.write_anchors([s for s in segs if s.name != own.name] + [own])
                 self.last_autocommit = self.store.autocommit(f"{written[-1]['kind']} by {self.actor}")
             return written
 
@@ -196,63 +160,76 @@ class Manager:
         if not clean:
             raise ValidationError("MISSING", "nothing to update")
         def build(p):
-            self._milestone(p, ident)
+            m = self._milestone(p, ident)
             base = self._version_check(p, ident, expect_version)
+            if "candidate_commit" in clean and m["status"] in ("ACCEPTED", "INTEGRATED", "DONE") \
+                    and clean["candidate_commit"] != m.get("candidate_commit"):
+                raise ValidationError("CANDIDATE_LOCKED", f"{ident} is {m['status']} on {m.get('candidate_commit')}; "
+                                                          "set it back to IN_PROGRESS before naming a new candidate "
+                                                          "(the new commit needs its own independent review)")
             return [("MILESTONE_UPDATED", {"id": ident, "fields": clean}, base)]
         return self._write(build)
+
+    def _independent_accept(self, p, m) -> list[str]:
+        """Qualifying independent ACCEPT reviews on the current candidate; raises unless the latest review on that
+        commit is positive (a later negative review outranks an earlier ACCEPT, R1-03)."""
+        ident = m["id"]
+        cand = m.get("candidate_commit")
+        if not cand:
+            raise ValidationError("NO_CANDIDATE", f"{ident} has no candidate_commit; record the exact commit first")
+        implementers = {M.norm_id(a) for a in m["implementers"]}
+        on_cand = [r for r in p["reviews"].values() if r["subject"] == ident and r["commit"] == cand
+                   and r["result_class"] == "COMPLETED_WITH_RESULT"]
+        good = [r["id"] for r in on_cand
+                if r["verdict"] in M.POSITIVE_VERDICTS and r["blocking_open"] == 0
+                and r["assurance"] in M.QUALIFYING_ASSURANCE and M.norm_id(r["reviewer"]["id"]) not in implementers]
+        if not good:
+            raise ValidationError("NO_INDEPENDENT_ACCEPT",
+                                  f"{ident} needs an independent review (reviewer not among implementers "
+                                  f"{m['implementers']}) with ACCEPT / ACCEPT WITH FINDINGS, no open blocking "
+                                  f"finding, result COMPLETED_WITH_RESULT and a qualifying assurance class, on "
+                                  f"commit {cand}")
+        latest = max(on_cand, key=lambda r: (r["recorded"]["ts"], r["recorded"]["seg"], r["recorded"]["seq"]))
+        if latest["verdict"] not in M.POSITIVE_VERDICTS or latest["blocking_open"]:
+            raise ValidationError("LATER_NEGATIVE_REVIEW", f"latest review {latest['id']} on {cand} is "
+                                                           f"{latest['verdict']} / {latest['blocking_open']} blocking")
+        return good
 
     def guard_status(self, p, m, status) -> dict:
         """Evidence a positive status needs. Returns the basis recorded with the status, or raises."""
         ident = m["id"]
+        if status in ("ACCEPTED", "INTEGRATED", "DONE"):
+            open_c = [c for c in p["conflicts"] if not c["resolved"] and (c.get("subject") == ident
+                                                                           or c["entity"] == ident)]
+            if open_c:
+                raise ValidationError("CONFLICT_OPEN", f"{ident} has {len(open_c)} unresolved conflict(s) "
+                                                       f"({open_c[0]['type']}); resolve them first")
         if status == "ACCEPTED":
-            cand = m.get("candidate_commit")
-            if not cand:
-                raise ValidationError("NO_CANDIDATE", f"{ident} has no candidate_commit; record the exact commit first")
-            good = []
-            for r in p["reviews"].values():
-                if r["subject"] != ident or r["commit"] != cand:
-                    continue
-                if (r["verdict"] in M.POSITIVE_VERDICTS and r["blocking_open"] == 0
-                        and r["result_class"] == "COMPLETED_WITH_RESULT"
-                        and r["assurance"] in M.QUALIFYING_ASSURANCE
-                        and r["reviewer"]["id"] not in m["implementers"]):
-                    good.append(r["id"])
-            if not good:
-                raise ValidationError("NO_INDEPENDENT_ACCEPT",
-                                      f"{ident} needs an independent review (reviewer not among implementers "
-                                      f"{m['implementers']}) with ACCEPT / ACCEPT WITH FINDINGS, no open blocking "
-                                      f"finding, result COMPLETED_WITH_RESULT and a qualifying assurance class, on "
-                                      f"commit {cand}")
-            # A later negative review on the same commit outranks an earlier ACCEPT.
-            latest = max((r for r in p["reviews"].values() if r["subject"] == ident and r["commit"] == cand
-                          and r["result_class"] == "COMPLETED_WITH_RESULT"),
-                         key=lambda r: M.event_key({"ts": r["recorded"]["ts"], "seg": r["recorded"]["seg"],
-                                                    "seq": r["recorded"]["seq"]}))
-            if latest["verdict"] not in M.POSITIVE_VERDICTS or latest["blocking_open"]:
-                raise ValidationError("LATER_NEGATIVE_REVIEW", f"latest review {latest['id']} on {cand} is "
-                                                               f"{latest['verdict']} / {latest['blocking_open']} blocking")
-            return {"reviews": good, "commit": cand}
+            return {"reviews": self._independent_accept(p, m), "commit": m["candidate_commit"]}
         if status == "INTEGRATED":
+            if m["status"] not in ("ACCEPTED", "INTEGRATED"):
+                raise ValidationError("NOT_ACCEPTED", f"{ident} must be ACCEPTED before INTEGRATED")
+            reviews = self._independent_accept(p, m)
             appr = [a["id"] for a in p["approvals"].values()
                     if a["subject"] == ident and a["kind"] == "INTEGRATION" and a["status"] == "APPROVED"]
             if not appr:
                 raise ValidationError("NO_OWNER_INTEGRATION_APPROVAL",
                                       f"{ident} needs an APPROVED owner approval of kind INTEGRATION")
             integ = m.get("integration")
-            if not integ or not integ.get("contains_candidate"):
-                raise ValidationError("NO_INTEGRATION_RECORD", f"{ident} needs an integration record whose target "
-                                                               "commit contains the candidate commit")
-            if m["status"] not in ("ACCEPTED", "INTEGRATED"):
-                raise ValidationError("NOT_ACCEPTED", f"{ident} must be ACCEPTED before INTEGRATED")
-            return {"approvals": appr, "integration": integ["target_commit"]}
+            if not integ or not integ.get("contains_candidate") \
+                    or integ.get("candidate_commit") != m.get("candidate_commit"):
+                raise ValidationError("NO_INTEGRATION_RECORD", f"{ident} needs an integration record for its current "
+                                                               f"candidate {m.get('candidate_commit')}")
+            return {"approvals": appr, "reviews": reviews, "integration": integ["target_commit"]}
         if status == "DONE":
             if m["status"] not in ("ACCEPTED", "INTEGRATED"):
                 raise ValidationError("NOT_ACCEPTED", f"{ident} must be ACCEPTED or INTEGRATED before DONE")
+            reviews = self._independent_accept(p, m)
             open_a = [a["id"] for a in p["approvals"].values() if a["subject"] == ident and a["status"] == "REQUESTED"]
             open_b = [b["id"] for b in p["blockers"].values() if b["subject"] == ident and b["status"] == "OPEN"]
             if open_a or open_b:
                 raise ValidationError("OPEN_ITEMS", f"{ident} has open approvals {open_a} / blockers {open_b}")
-            return {}
+            return {"reviews": reviews}
         return {}
 
     def set_status(self, ident, status, reason, expect_version=None):

@@ -4,14 +4,20 @@ Layout of a ledger home (see docs/milestone_manager/MILESTONE_MANAGER_ARCHITECTU
 
     <home>/mm.json                config (schema, host id, autocommit)
     <home>/events/<host>.jsonl    one append-only segment per host; each line is one event
-    <home>/cache/projection.json  disposable fold cache (owned by service.py)
+    (no projection cache: every read and write folds the verified log; review R1-02)
+    <home>/anchors.json           per-segment high-water marks {count, head} written after every write
     <home>/quarantine/            torn tails moved aside by recover()
     <home>/.lock                  OS lock file
 
 Guarantees:
 - every append is flushed and fsynced before the call returns;
 - an event's ``hash`` is sha256 over its canonical JSON without ``hash``; ``prev`` is the previous hash in the same
-  segment (genesis 64 zeros), so editing, deleting, inserting or reordering a line breaks the chain;
+  segment (genesis 64 zeros), so editing, inserting, reordering or deleting a line *before the last one* breaks the
+  chain. Deleting the newest line(s) leaves a valid shorter chain; that is detected against ``anchors.json`` (and,
+  stronger, against git history when autocommit is on), not by the chain itself;
+- several events written by one command form a batch that is written with a single write + fsync; the fold applies
+  a batch only when all its events are present, so a crash never leaves half a command applied;
+- events after the first chain error in a segment are never trusted (``Segment.valid_events``);
 - a torn last line (power loss mid-write) is ignored by reads, reported by verify() and moved aside by recover();
 - writers are serialised by an OS lock that the OS releases when the process dies (no stale lock files).
 
@@ -137,12 +143,19 @@ def os_lock(path: Path, timeout: float = LOCK_TIMEOUT_S):
 class Segment:
     """Parsed view of one segment file: complete events, the byte length they cover, and any torn tail."""
 
-    def __init__(self, name: str, events: list[dict], good_bytes: int, torn: bytes, errors: list[str]):
+    def __init__(self, name: str, events: list[dict], good_bytes: int, torn: bytes, errors: list[str],
+                 first_bad: int | None = None):
         self.name = name
         self.events = events
         self.good_bytes = good_bytes
         self.torn = torn
         self.errors = errors
+        self.first_bad = first_bad  # index into ``events`` of the first untrustworthy event, or None
+
+    @property
+    def valid_events(self) -> list[dict]:
+        """The trusted prefix: every event before the first chain, hash, sequence or parse error."""
+        return self.events if self.first_bad is None else self.events[: self.first_bad]
 
     @property
     def head(self) -> str:
@@ -156,19 +169,22 @@ def read_segment(path: Path, start: int = 0, prev: str | None = None, seq0: int 
     body = data[start:]
     nl = body.rfind(b"\n")
     complete, torn = (body[: nl + 1], body[nl + 1:]) if nl >= 0 else (b"", body)
-    events, errors = [], []
+    events, errors, first_bad = [], [], None
     prev = GENESIS if prev is None else prev
     seq = seq0
     for i, line in enumerate(complete.split(b"\n")[:-1]):
+        n_err = len(errors)
         try:
             ev = json.loads(line.decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError) as e:
             errors.append(f"{name}: line {seq + 1} is not valid JSON ({e.__class__.__name__})")
             seq += 1
+            first_bad = len(events) if first_bad is None else first_bad
             continue
         seq += 1
         if not isinstance(ev, dict) or "hash" not in ev:
             errors.append(f"{name}: line {seq} is not an event object")
+            first_bad = len(events) if first_bad is None else first_bad
             continue
         if ev.get("seg") != name:
             errors.append(f"{name}: event {seq} names segment {ev.get('seg')!r}")
@@ -178,9 +194,11 @@ def read_segment(path: Path, start: int = 0, prev: str | None = None, seq0: int 
             errors.append(f"{name}: event {seq} prev does not match the previous hash (chain broken)")
         if event_hash(ev) != ev["hash"]:
             errors.append(f"{name}: event {seq} content does not match its hash (edited)")
+        if len(errors) > n_err and first_bad is None:
+            first_bad = len(events)
         prev = ev["hash"]
         events.append(ev)
-    return Segment(name, events, start + len(complete), torn, errors)
+    return Segment(name, events, start + len(complete), torn, errors, first_bad)
 
 
 # --------------------------------------------------------------------------- store
@@ -240,7 +258,16 @@ class EventStore:
 
     def append(self, kind: str, data: dict, actor: str, session: str | None = None, base: dict | None = None,
                ts: str | None = None) -> dict:
-        """Append one event to this host's segment. Caller must hold the lock (``with store.locked():``)."""
+        """Append one event. Caller must hold the lock (``with store.locked():``)."""
+        return self.append_many([(kind, data, base)], actor, session, ts)[0]
+
+    def append_many(self, items, actor: str, session: str | None = None, ts: str | None = None) -> list[dict]:
+        """Append ``[(kind, data, base), ...]`` as one batch: one write, one fsync, same timestamp.
+
+        With more than one item every event carries ``batch = {id, n, i}``; the fold applies the batch only when all
+        ``n`` events are present. Caller must hold the lock."""
+        if not items:
+            return []
         if self._tail is None:
             seg = read_segment(self.segment_path)
             if seg.torn:
@@ -250,19 +277,66 @@ class EventStore:
                 raise StoreError("CHAIN_BROKEN", "; ".join(seg.errors[:3]))
             self._tail = (seg.good_bytes, seg.head, len(seg.events))
         good, head, count = self._tail
-        ev = {"v": EVENT_VERSION, "seg": self.host, "seq": count + 1, "ts": ts or utc_now(), "actor": actor,
-              "session": session, "kind": kind, "data": data, "base": base or {}, "prev": head}
-        ev["hash"] = event_hash(ev)
-        line = (canonical(ev) + "\n").encode("utf-8")
+        ts = ts or utc_now()
+        batch_id = sha256_text(f"{self.host}:{count + 1}:{ts}")[:16] if len(items) > 1 else None
+        events, blob = [], b""
+        for i, (kind, data, base) in enumerate(items):
+            ev = {"v": EVENT_VERSION, "seg": self.host, "seq": count + 1 + i, "ts": ts, "actor": actor,
+                  "session": session, "kind": kind, "data": data, "base": base or {}, "prev": head}
+            if batch_id:
+                ev["batch"] = {"id": batch_id, "n": len(items), "i": i}
+            ev["hash"] = event_hash(ev)
+            head = ev["hash"]
+            events.append(ev)
+            blob += (canonical(ev) + "\n").encode("utf-8")
         self.events_dir.mkdir(parents=True, exist_ok=True)
         with self.segment_path.open("ab") as f:
             if f.tell() != good:
                 raise StoreError("CONCURRENT_WRITE", f"{self.segment_path.name} changed outside the lock")
-            f.write(line)
+            f.write(blob)
             f.flush()
             os.fsync(f.fileno())
-        self._tail = (good + len(line), ev["hash"], count + 1)
-        return ev
+        self._tail = (good + len(blob), head, count + len(items))
+        return events
+
+    # ---- anchors (truncation detection)
+
+    @property
+    def anchors_path(self) -> Path:
+        return self.home / "anchors.json"
+
+    def read_anchors(self) -> dict:
+        try:
+            a = json.loads(self.anchors_path.read_text(encoding="utf-8"))
+            return a if isinstance(a, dict) else {}
+        except (OSError, ValueError):
+            return {}
+
+    def write_anchors(self, segs) -> None:
+        """Record per-segment {count, head} of the trusted prefix; never moves backwards."""
+        anchors = self.read_anchors()
+        for s in segs:
+            cur = anchors.get(s.name)
+            valid = s.valid_events
+            if cur is None or len(valid) >= cur.get("count", 0):
+                anchors[s.name] = {"count": len(valid), "head": valid[-1]["hash"] if valid else GENESIS}
+        atomic_write_bytes(self.anchors_path, json.dumps(anchors, indent=1, sort_keys=True).encode("utf-8"))
+
+    def anchor_errors(self, segs) -> list[str]:
+        """Truncation or rewrite of anchored events: the anchored event must still be at its position."""
+        errs, by_name = [], {s.name: s for s in segs}
+        for name, a in sorted(self.read_anchors().items()):
+            s = by_name.get(name)
+            n = a.get("count", 0) if isinstance(a, dict) else 0
+            if n == 0:
+                continue
+            if s is None:
+                errs.append(f"{name}: segment missing (anchored at {n} events)")
+            elif len(s.events) < n:
+                errs.append(f"{name}: has {len(s.events)} events but {n} were anchored (newest events deleted)")
+            elif s.events[n - 1].get("hash") != a.get("head"):
+                errs.append(f"{name}: event {n} differs from the anchored head (rewritten)")
+        return errs
 
     # ---- verification and recovery
 
@@ -270,6 +344,7 @@ class EventStore:
         segs = self.read_all()
         errors, torn, heads, total = [], [], {}, 0
         seen_names = set()
+        errors.extend(self.anchor_errors(segs))
         for s in segs:
             errors.extend(s.errors)
             if s.torn:
@@ -302,6 +377,7 @@ class EventStore:
             info = {"segment": self.host, "bytes": len(seg.torn), "sha256": hashlib.sha256(seg.torn).hexdigest(),
                     "quarantine": f"quarantine/{qname}"}
             self.append("STORE_RECOVERED", info, actor=actor, session=session)
+            self.write_anchors([read_segment(self.segment_path)])
             self.autocommit("STORE_RECOVERED")
             return {"recovered": True, **info}
 
@@ -321,7 +397,7 @@ class EventStore:
     def git_state(self) -> dict:
         if not self.in_git():
             return {"tracked": False}
-        p = self._git("status", "--porcelain", "--", "events", "mm.json")
+        p = self._git("status", "--porcelain", "--", "events", "mm.json", "anchors.json")
         dirty = [line[3:] for line in p.stdout.splitlines() if line.strip()]
         return {"tracked": True, "uncommitted": dirty}
 
@@ -331,7 +407,7 @@ class EventStore:
         A failure is reported, not raised: the event is already fsynced; verify() shows uncommitted segments."""
         if not self.config.get("autocommit") or not self.in_git():
             return {"committed": False}
-        add = self._git("add", "--", "events", "mm.json")
+        add = self._git("add", "--", "events", "mm.json", "anchors.json")
         if add.returncode:
             return {"committed": False, "error": add.stderr.strip()[:300]}
         if not self._git("diff", "--cached", "--quiet").returncode:

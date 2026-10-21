@@ -47,10 +47,35 @@ SECRET_PATTERNS = [
     ("slack token", re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}")),
     ("private key block", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
     ("bearer token", re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/-]{24,}")),
-    ("credential assignment", re.compile(
-        r"(?i)\b(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?token|auth[_-]?token)\s*[:=]\s*"
-        r"['\"]?(?=[^\s'\"]*[0-9])(?=[^\s'\"]*[A-Za-z])[^\s'\"]{8,}")),
+    ("stripe key", re.compile(r"\b(?:sk|rk|pk)_(?:live|test)_[A-Za-z0-9]{16,}")),
+    ("hugging face token", re.compile(r"\bhf_[A-Za-z0-9]{30,}")),
+    ("json web token", re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}")),
+    ("credentials in URL", re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^/\s:@]+:[^/\s@]+@")),
 ]
+# key [:=] value, checked in code so paths, env-var names and placeholders are not refused.
+ASSIGNMENT_RX = re.compile(
+    r"(?i)\b(?P<key>password|passwd|pwd|passphrase|secret|client[_-]?secret|api[_-]?key|access[_-]?key|"
+    r"access[_-]?token|auth[_-]?token|refresh[_-]?token|token|private[_-]?key)\s*[:=]\s*['\"]?(?P<val>[^\s'\",;]+)")
+PLACEHOLDER_VALUES = {"required", "optional", "none", "null", "redacted", "unset", "set", "missing", "empty",
+                      "true", "false", "yes", "no", "n/a", "***", "<redacted>", "xxx", "changeme?"}
+
+
+def _assignment_secret(text: str) -> bool:
+    for m in ASSIGNMENT_RX.finditer(text):
+        val = m.group("val")
+        low = val.lower()
+        if len(val) < 4 or low in PLACEHOLDER_VALUES or set(val) <= {"*", "x", "X", "."}:
+            continue
+        if val[:1] in "$%<{" or val.startswith(("env:", "env-", "ENV_", "${")):
+            continue  # variable reference or placeholder
+        if re.fullmatch(r"[A-Z][A-Z0-9_]{2,}", val):
+            continue  # environment variable name
+        if "/" in val or "\\" in val or re.match(r"^[A-Za-z]:", val):
+            continue  # filesystem path (e.g. pwd=D:/uri-dev/x)
+        if m.group("key").lower() == "pwd" and not re.search(r"[0-9]", val):
+            continue
+        return True
+    return False
 
 
 class ValidationError(Exception):
@@ -65,7 +90,7 @@ def find_secret(value) -> str | None:
         for name, rx in SECRET_PATTERNS:
             if rx.search(value):
                 return name
-        return None
+        return "credential assignment" if _assignment_secret(value) else None
     if isinstance(value, dict):
         for v in value.values():
             hit = find_secret(v)
@@ -122,7 +147,24 @@ def check_sha(name: str, value, required: bool = False, rx=SHA_RE) -> str | None
 def empty_projection() -> dict:
     return {"milestones": {}, "decisions": {}, "approvals": {}, "evidence": {}, "reviews": {}, "blockers": {},
             "handoffs": {}, "records": {}, "imports": [], "conflicts": [], "recoveries": [], "counters": {},
-            "versions": {}, "last_key": None, "events": 0}
+            "versions": {}, "duplicates": [], "pending_batches": {}, "last_key": None, "events": 0}
+
+
+def norm_id(value) -> str:
+    """Identity comparison form for actors and reviewers (case- and whitespace-insensitive)."""
+    return " ".join(str(value or "").split()).casefold()
+
+
+# Creation kinds whose ``data.id`` names a record in a projection collection (and the field holding its origin).
+CREATION = {"MILESTONE_CREATED": ("milestones", "created"), "REVIEW_RECORDED": ("reviews", "recorded"),
+            "DECISION_RECORDED": ("decisions", "recorded"), "APPROVAL_REQUESTED": ("approvals", "requested"),
+            "BLOCKER_ADDED": ("blockers", "opened"), "HANDOFF_RECORDED": ("handoffs", "recorded"),
+            "RECORD_IMPORTED": ("records", "recorded")}
+
+
+def _conflict(p, ctype, entity, ref, kind, subject=None, **extra):
+    p["conflicts"].append({"type": ctype, "entity": entity, "subject": subject, "event": ref, "kind": kind,
+                           "resolved": False, **extra})
 
 
 def _bump(p: dict, entity: str) -> None:
@@ -140,13 +182,51 @@ def event_key(ev: dict) -> list:
 
 
 def apply(p: dict, ev: dict) -> None:
-    """Fold one event into projection ``p`` (in place). Unknown kinds are kept as counted no-ops."""
+    """Fold one event into ``p`` (in place). Events of a multi-event batch wait until the whole batch is present."""
+    b = ev.get("batch")
+    if isinstance(b, dict) and b.get("n", 1) > 1:
+        pend = p.setdefault("pending_batches", {}).setdefault(b["id"], [])
+        if any(x["hash"] == ev["hash"] for x in pend):
+            return
+        pend.append(ev)
+        if len(pend) < b["n"]:
+            return
+        del p["pending_batches"][b["id"]]
+        for x in sorted(pend, key=lambda x: x["batch"]["i"]):
+            _apply_one(p, x)
+        return
+    _apply_one(p, ev)
+
+
+def _subject_of(p, entity):
+    for coll in ("reviews", "approvals", "blockers", "handoffs"):
+        if entity in p[coll]:
+            return p[coll][entity].get("subject")
+    return entity if entity in p["milestones"] else None
+
+
+def _apply_one(p: dict, ev: dict) -> None:
+    """Fold one event. Unknown kinds are counted no-ops. Never overwrites a record created by another event."""
     d, kind = ev["data"], ev["kind"]
     ref = {"seg": ev["seg"], "seq": ev["seq"], "hash": ev["hash"], "ts": ev["ts"], "actor": ev["actor"]}
     for entity, seen in (ev.get("base") or {}).items():
         if p["versions"].get(entity, 0) != seen:
-            p["conflicts"].append({"entity": entity, "expected": seen, "actual": p["versions"].get(entity, 0),
-                                   "event": ref, "kind": kind, "resolved": False})
+            _conflict(p, "VERSION", entity, ref, kind, _subject_of(p, entity), expected=seen,
+                      actual=p["versions"].get(entity, 0))
+    if kind in CREATION and isinstance(d, dict) and d.get("id") is not None:
+        coll, origin = CREATION[kind]
+        existing = p[coll].get(d["id"])
+        if existing is not None and (existing.get(origin) or {}).get("hash") != ev["hash"]:
+            # Same id created by another event (another host, or a merge): keep both, never replace.
+            alt = f"{d['id']}@{ev['seg']}.{ev['seq']}"
+            subject = d.get("subject") or (d["id"] if kind == "MILESTONE_CREATED" else None)
+            _conflict(p, "DUPLICATE_ID", d["id"], ref, kind, subject, kept=d["id"], duplicate=alt)
+            if kind == "MILESTONE_CREATED":
+                p["duplicates"].append({"id": d["id"], "as": alt, "data": d, "event": ref})
+                p["events"] += 1
+                p["last_key"] = event_key(ev)
+                return
+            d = {**d, "id": alt, "duplicate_of": d["id"]}
     p["events"] += 1
     p["last_key"] = event_key(ev)
     ms = p["milestones"]
@@ -170,6 +250,7 @@ def apply(p: dict, ev: dict) -> None:
             _bump(p, d["id"])
     elif kind == "MILESTONE_STATUS_SET":
         m = ms.get(d["id"])
+        _check_basis(p, d, ref)
         if m:
             m["status"] = d["status"]
             m["status_history"].append({"status": d["status"], "at": ev["ts"], "by": ev["actor"],
@@ -190,7 +271,7 @@ def apply(p: dict, ev: dict) -> None:
         if m:
             m["assignment"] = {"agent": d["agent"], "session": d.get("session"), "worktree": d.get("worktree"),
                                "expires_at": d["expires_at"], "since": ev["ts"], "takeover_of": d.get("takeover_of")}
-            if d["agent"] not in m["implementers"]:
+            if norm_id(d["agent"]) not in map(norm_id, m["implementers"]):
                 m["implementers"].append(d["agent"])
             _bump(p, d["id"])
     elif kind == "MILESTONE_RELEASED":
@@ -200,7 +281,7 @@ def apply(p: dict, ev: dict) -> None:
             _bump(p, d["id"])
     elif kind == "IMPLEMENTER_RECORDED":
         m = ms.get(d["id"])
-        if m and d["agent"] not in m["implementers"]:
+        if m and norm_id(d["agent"]) not in map(norm_id, m["implementers"]):
             m["implementers"].append(d["agent"])
             _bump(p, d["id"])
     elif kind == "BLOCKER_ADDED":
@@ -277,7 +358,7 @@ def apply(p: dict, ev: dict) -> None:
         _count(p, "HO", d["id"])
         p["handoffs"][d["id"]] = {**d, "recorded": ref}
         m = ms.get(d["subject"])
-        if m and ev["actor"] not in m["implementers"]:
+        if m and norm_id(ev["actor"]) not in map(norm_id, m["implementers"]):
             m["implementers"].append(ev["actor"])
         _bump(p, d["id"])
     elif kind == "LIFECYCLE_LINKED":
@@ -307,6 +388,25 @@ def apply(p: dict, ev: dict) -> None:
         p["recoveries"].append({**d, "at": ev["ts"]})
 
 
+def _check_basis(p, d, ref) -> None:
+    """A positive status must name records that exist in the fold; otherwise flag it (forged cache or merge)."""
+    basis = d.get("basis") or {}
+    bad = []
+    if d.get("status") == "ACCEPTED":
+        names = basis.get("reviews") or []
+        bad = [r for r in names if (p["reviews"].get(r) or {}).get("subject") != d["id"]
+               or p["reviews"][r].get("verdict") not in POSITIVE_VERDICTS]
+        if not names:
+            bad = ["(no review named)"]
+    elif d.get("status") == "INTEGRATED":
+        names = basis.get("approvals") or []
+        bad = [a for a in names if (p["approvals"].get(a) or {}).get("status") != "APPROVED"]
+        if not names:
+            bad = ["(no approval named)"]
+    if bad:
+        _conflict(p, "BASIS_INVALID", d["id"], ref, "MILESTONE_STATUS_SET", d["id"], missing=bad)
+
+
 def fold(events, p: dict | None = None) -> dict:
     p = copy.deepcopy(p) if p is not None else empty_projection()
     for ev in events:
@@ -315,7 +415,7 @@ def fold(events, p: dict | None = None) -> dict:
 
 
 def ordered(segments) -> list[dict]:
-    evs = [ev for s in segments for ev in s.events]
+    evs = [ev for s in segments for ev in s.valid_events]
     evs.sort(key=event_key)
     return evs
 

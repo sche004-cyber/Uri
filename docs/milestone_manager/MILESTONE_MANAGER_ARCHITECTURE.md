@@ -30,15 +30,15 @@ its records to MM tasks.
 | Concurrency on one PC | OS file lock (msvcrt/fcntl) released on process death; optimistic version checks | `BEGIN IMMEDIATE` | none | engine lock = one process |
 | Multi-machine / cloud sessions | one segment per host; git merges never conflict textually; semantic conflicts detected by versions | binary DB cannot be merged; needs export/import | text merges conflict | no |
 | Review by humans and agents | readable JSON lines, diffable in git | needs a tool | readable | needs a tool |
-| Query speed at 10k events | fold ~0.1-0.5 s, cached projection | fastest | n/a | fast |
+| Query speed at 10k events | full verified fold 0.3 s measured (no cache) | fastest | n/a | fast |
 | Dependencies | stdlib | stdlib | none | runtime package import |
 | Code size | ~1 small store module | similar | none | coupling cost |
 | Domain fit | development records | development records | yes | **no**: runtime product state (MM-F9) |
 
 Decision: **A**. In plain words: an append-only diary of small JSON lines is easy to keep in git, easy to read, and
 cannot silently lose old entries; the folder lock and fsync give the safety SQLite would give, at our tiny volume.
-SQLite (B) stays a fallback: if event volume ever makes the fold slow, a SQLite *projection cache* can be added under
-`cache/` without changing the authoritative log. C fails continuity and integrity needs. D crosses the runtime /
+SQLite (B) stays a fallback: if event volume ever makes the fold slow, a projection index can be added, but it must
+be bound to verified segment heads and must never be trusted by a guard (review R1-02). C fails continuity and integrity needs. D crosses the runtime /
 development boundary.
 
 ## 3. Components
@@ -58,7 +58,7 @@ Ledger home (data, not code): a directory chosen by `--home` or `URI_MM_HOME`:
 ```
 <home>/mm.json                 config: schema, host id, autocommit flag
 <home>/events/<host>.jsonl     authoritative, append-only, hash-chained segment (one per host)
-<home>/cache/projection.json   disposable fold cache (offsets + state); safe to delete
+<home>/anchors.json            per-segment high-water marks {count, head}; detects deletion of the newest events
 <home>/quarantine/             torn tails moved here by `recover`
 <home>/.lock                   OS lock file (contents irrelevant)
 ```
@@ -122,7 +122,8 @@ plus the last handoff note and the linked lifecycle run stage. Recovery scenario
 | Context or quota exhaustion | nothing is lost: every recorded step is already fsynced; the next session runs `resume` |
 | Session killed mid-command | lock released by OS; either the event was fully written (fsynced line) or not at all, or a torn tail exists |
 | Power loss mid-append | torn tail ignored by reads, reported by `verify`, quarantined by `recover`; earlier events intact |
-| Projection cache corrupted | `rebuild` (or automatic on parse failure) refolds from events |
+| Newest events deleted or a segment rewritten | `anchors.json` (and git history) disagree; `verify` fails, writes are refused, status shows an integrity banner and exits 3 |
+| Crash in the middle of a multi-event command | the command's events are one batch (one write + fsync); an incomplete batch is ignored by the fold and reported as a warning; the retry succeeds |
 | Harness or agent replaced | identity is a recorded string; claims expire; the new agent claims after expiry or release |
 | Worktree deleted | MM stores commits and paths; `verify-evidence` reports missing files and SHA mismatches |
 | Partial implementation | the last checkpoint names files and commit; lifecycle link shows the run stage |
@@ -178,3 +179,18 @@ full fold ≈ sub-second; memory < 50 MB. Measured values are recorded in the im
   approval record as well.
 - Remaining limitation (stated): tamper-evident, not tamper-proof; someone able to rewrite a whole segment can rebuild
   a consistent chain. Git commits of the ledger and the head hashes printed by `verify` are the anchor.
+
+## 13. Changes after independent review R1 (2026-10-21, REJECT on `2ae7a79f`)
+
+Recorded, not silently overwritten (details: `reviews/R1_2ae7a79f.md`, `reviews/R1_REPAIR.md`):
+
+| Change | Reason |
+|---|---|
+| Projection cache removed; every read and write folds the verified log | R1-02 (forged cache satisfied a guard), R1-06 (tamper in another segment unseen), R1-08 (stale offsets) |
+| Events after a segment's first chain error are not folded; status/show/resume/ready print an integrity banner and exit 3 | R1-04 |
+| `anchors.json` high-water marks | R1-07 (deleting the newest events left a valid shorter chain) |
+| Fold never replaces a record with the same id from another event; duplicates kept under `<id>@<seg>.<seq>` and flagged as DUPLICATE_ID conflicts; positive status refused while a conflict on the milestone is open | R1-05 |
+| Fold flags a positive status whose basis names no real review/approval (BASIS_INVALID) | R1-02 defence in depth |
+| ACCEPTED/INTEGRATED/DONE all re-run the independent-accept check on the current candidate (latest review wins); candidate locked while ACCEPTED/INTEGRATED/DONE; integration record must match the candidate; RED when the latest review contradicts a positive status | R1-01, R1-03 |
+| Multi-event commands are atomic batches | R1-15 |
+| Identity comparison case/whitespace-insensitive | R1-14 |

@@ -26,7 +26,16 @@ def open_blockers(p, subject):
 
 
 def open_conflicts(p, entity=None):
-    return [c for c in p["conflicts"] if not c["resolved"] and (entity is None or c["entity"] == entity)]
+    """Unresolved conflicts; with ``entity``, those on that entity or whose subject is that milestone."""
+    return [c for c in p["conflicts"] if not c["resolved"]
+            and (entity is None or c["entity"] == entity or c.get("subject") == entity)]
+
+
+def latest_review_on_candidate(p, m):
+    cand = m.get("candidate_commit")
+    on = [r for r in p["reviews"].values() if r["subject"] == m["id"] and r["commit"] == cand
+          and r["result_class"] == "COMPLETED_WITH_RESULT"]
+    return max(on, key=lambda r: (r["recorded"]["ts"], r["recorded"]["seg"], r["recorded"]["seq"])) if on else None
 
 
 def unmet_dependencies(p, m):
@@ -39,8 +48,15 @@ def indicator(p, m, tasks: dict | None = None) -> dict:
     reds, yellows = [], []
     for b in open_blockers(p, ident):
         reds.append(f"blocker {b['id']} ({b['kind']}): {b['reason']} | needs: {b['needs']}")
+    if p.get("integrity_errors"):
+        reds.append(f"LEDGER INTEGRITY: {p['integrity_errors'][0]} (run `verify`; statuses may be untrustworthy)")
     for c in open_conflicts(p, ident):
-        reds.append(f"concurrent-update conflict on {ident} (event {c['event']['seg']}#{c['event']['seq']})")
+        reds.append(f"{c.get('type', 'VERSION')} conflict on {c['entity']} (event {c['event']['seg']}#"
+                    f"{c['event']['seq']}); resolve with `resolve-conflict`")
+    if m["status"] in DONE_STATES:
+        lr = latest_review_on_candidate(p, m)
+        if lr and (lr["verdict"] not in ("ACCEPT", "ACCEPT WITH FINDINGS") or lr["blocking_open"]):
+            reds.append(f"latest review {lr['id']} on the candidate is {lr['verdict']} after status {m['status']}")
     for lc in m["lifecycle"]:
         s = lc.get("snapshot")
         if not s:
@@ -108,6 +124,11 @@ def _prio_key(m):
 
 def status_lines(p, emoji=True, task_source=None, milestone=None) -> list[str]:
     lines = []
+    if p.get("integrity_errors"):
+        lines.append(f"!! LEDGER INTEGRITY FAILURE ({len(p['integrity_errors'])}): {p['integrity_errors'][0]}")
+        lines.append("!! Statuses below may be untrustworthy. Run `verify`; writes are refused until resolved.")
+    for w in (p.get("integrity_warnings") or [])[:3]:
+        lines.append(f"warning: {w}")
     ms = sorted(p["milestones"].values(), key=_prio_key)
     if milestone:
         ms = [m for m in ms if m["id"] == milestone]
@@ -142,7 +163,8 @@ def status_json(p, task_source=None, now=None) -> dict:
     out = {"schema": STATUS_SCHEMA,
            "generated_at": now or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
            "ledger": {"events": p["events"], "conflicts_open": len(open_conflicts(p)),
-                      "integrity_errors": p.get("integrity_errors", [])},
+                      "integrity_errors": p.get("integrity_errors", []),
+                      "integrity_warnings": p.get("integrity_warnings", [])},
            "milestones": [], "approvals_open": [], "decisions": {}}
     rdy = set(ready(p))
     for m in sorted(p["milestones"].values(), key=_prio_key):
@@ -177,10 +199,13 @@ def resume_brief(p, ident, tasks: dict | None = None, max_chars: int = 6000, emo
         return f"No milestone {ident}."
     ind = indicator(p, m, tasks)
     ev = [e for e in p["evidence"].values() if e["subject"] == ident]
+    banner = []
+    if p.get("integrity_errors"):
+        banner = [f"!! LEDGER INTEGRITY FAILURE: {p['integrity_errors'][0]} - do not trust this brief; run `verify`"]
     rv = sorted((r for r in p["reviews"].values() if r["subject"] == ident), key=lambda r: r["recorded"]["ts"])
     ho = sorted((h for h in p["handoffs"].values() if h["subject"] == ident), key=lambda h: h["recorded"]["ts"])
     rel_dec = [d for d in p["decisions"].values() if ident in " ".join(d.get("related") or [])]
-    out = [f"RESUME {ident} - {m['title']}",
+    out = banner + [f"RESUME {ident} - {m['title']}",
            f"{ind['emoji'] + ' ' if emoji else ''}{ind['word']} | priority {m.get('priority') or '-'} | phase "
            f"{m['phase']} | status {m['status']} | worktree {m.get('worktree') or '-'} | branch {m.get('branch') or '-'}",
            f"candidate commit: {m.get('candidate_commit') or '-'} | base: {m.get('base_commit') or '-'}"]
