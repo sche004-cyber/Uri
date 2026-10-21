@@ -190,6 +190,7 @@ def event_key(ev: dict) -> list:
 
 def apply(p: dict, ev: dict) -> None:
     """Fold one event into ``p`` (in place). Events of a multi-event batch wait until the whole batch is present."""
+    p.pop("_cidx", None)  # views' conflict index is derived; any event may change it (review R5-07)
     b = ev.get("batch")
     if isinstance(b, dict) and b.get("n", 1) > 1:
         pend = p.setdefault("pending_batches", {}).setdefault(b["id"], [])
@@ -390,9 +391,14 @@ def _apply_one(p: dict, ev: dict) -> None:
     elif kind in ("RECORD_IMPORTED", "RECORD_SOURCE_REVISED"):
         r = p["records"].get(d["id"])
         if r is None or kind == "RECORD_IMPORTED":
-            p["records"][d["id"]] = {**d, "revisions": [], "recorded": ref}
+            p["records"][d["id"]] = {**d, "revisions": [], "recorded": ref,
+                                     "original": {"fields": d.get("fields"), "color": d.get("color"),
+                                                  "source": d.get("source")}}
         else:
-            r["revisions"].append({"fields": d.get("fields"), "color": d.get("color"), "source": d.get("source"),
+            # keep the values being replaced, so the original row and every later version stay readable (R5-03)
+            r["revisions"].append({"previous": {"fields": r.get("fields"), "color": r.get("color"),
+                                                "source": r.get("source")},
+                                   "fields": d.get("fields"), "color": d.get("color"), "source": d.get("source"),
                                    "at": ev["ts"]})
             r["fields"], r["color"], r["source"] = d.get("fields"), d.get("color"), d.get("source")
         _bump(p, d["id"])
@@ -445,6 +451,10 @@ def _apply_one(p: dict, ev: dict) -> None:
                       unknown_previous=bool(d.get("unknown_previous")))
     elif kind == "STORE_RECOVERED":
         p["recoveries"].append({**d, "at": ev["ts"]})
+        if d.get("anchor_problems"):
+            _conflict(p, "ANCHOR_LOSS", "LEDGER", ref, kind, None, anchor_problems=d["anchor_problems"])
+    elif kind == "ANCHORS_ADOPTED":
+        _conflict(p, "ANCHOR_LOSS", "LEDGER", ref, kind, None, adopted=d)
 
 
 def _check_basis(p, d, ref) -> None:

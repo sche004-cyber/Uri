@@ -62,12 +62,24 @@
   },
   {
    "id": "AP-11",
+   "kind": "DECISION",
+   "question": "URI Controls D-1: Thinking default Off (fast) - keep, or default On? (the previous default \"Auto\" no longer exists under the ON/OFF rule) (context: preference only; one-line change; where: `docs/ui/uri_controls_3/URI_CONTROLS_3_REPORT.md` \u00a73 (branch `milestone/uri-controls-3-20261021`))",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-12",
+   "kind": "DECISION",
+   "question": "URI Controls D-2: with exactly three controls, 64K context is reachable only through Vision Off and P3 (\"Standard, draft off\") not at all from the UI (host flag only) - accept, or add a Settings place later? (context: consequence of DEC-092; where: same, \u00a73)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-13",
    "kind": "SCOPE",
    "question": "Is P11 Multi-Client Deployment (DEC-088) still on the roadmap? It is absent from the 2026-10-21 P0..P10 list (LDEC-001).",
    "subject": "PROJECT"
   },
   {
-   "id": "AP-12",
+   "id": "AP-14",
    "kind": "POLICY",
    "question": "Promote a Milestone Manager ledger as authoritative (replacing developmental.md / decisions.md as the place of record), and where should it live (recommended: a dedicated git worktree on an orphan branch ledger/milestones, autocommit on, push only with approval)?",
    "subject": "MILESTONE-MANAGER"
@@ -80,10 +92,10 @@
   "SUPERSEDED": 4,
   "UNCLEAR": 7
  },
- "generated_at": "2026-10-21T17:37:57Z",
+ "generated_at": "2026-10-21T17:55:44Z",
  "ledger": {
   "conflicts_open": 0,
-  "events": 220,
+  "events": 222,
   "integrity_errors": [],
   "integrity_warnings": []
  },
@@ -96,15 +108,15 @@
    "id": "MILESTONE-MANAGER",
    "indicator": {
     "color": "YELLOW",
-    "issue": "owner approval AP-12 (POLICY): Promote a Milestone Manager ledger as authoritative (replacing developmental.md / decisions.md as the place of record), and where should it live (recommended: a dedicated git worktree on an orphan branch ledger/milestones, autocommit on, push only with approval)?",
-    "next_action": "owner decides AP-12",
+    "issue": "owner approval AP-14 (POLICY): Promote a Milestone Manager ledger as authoritative (replacing developmental.md / decisions.md as the place of record), and where should it live (recommended: a dedicated git worktree on an orphan branch ledger/milestones, autocommit on, push only with approval)?",
+    "next_action": "owner decides AP-14",
     "tone": "warning",
     "word": "OWNER ACTION"
    },
    "integration": null,
    "lifecycle": [],
    "open_approvals": [
-    "AP-12"
+    "AP-14"
    ],
    "open_blockers": [],
    "phase": "TESTING",

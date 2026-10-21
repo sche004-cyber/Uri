@@ -1341,6 +1341,8 @@ def test_r4_05_first_write_without_anchor_refresh_does_not_block_the_next(tmp_pa
     m.create_milestone("MM-B", "B")
     p = m.projection()
     assert not p["integrity_errors"] and not p["integrity_warnings"]
+    # adopting the unanchored own segment is recorded and must be reviewed (R5-04)
+    assert any(c["type"] == "ANCHOR_LOSS" and c["kind"] == "ANCHORS_ADOPTED" for c in views.open_conflicts(p))
 
 
 def test_r4_06_status_scales_with_many_conflicts():
@@ -1357,3 +1359,134 @@ def test_r4_06_status_scales_with_many_conflicts():
     views.status_json(p)
     views.status_lines(p)
     assert time.perf_counter() - t0 < 1.0
+
+
+# ------------------------------------------------------------------ R5 regression tests (review R5 on 7c8e0a29)
+
+def test_r5_01_recover_cannot_rebase_unvouched_anchors(tmp_path):
+    m = _accept_ready(tmp_path, verdict="REJECT", blocking=1)
+    m.store.anchors_path.unlink()
+    _truncate_last(m)
+    with m.store.segment_path.open("ab") as f:
+        f.write(b'{"v')
+    with pytest.raises(StoreError) as e:
+        m.store.recover("impl:a")
+    assert e.value.code == "LOSS_NOT_ACKNOWLEDGED"
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "impl:a", "recover"], out=out) == 2
+    m.store.recover("impl:a", acknowledge_loss=True)
+    m.record_review("MM-A", C1, "subagent", "subagent:r2", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    with pytest.raises(ValidationError) as e:
+        m.set_status("MM-A", "ACCEPTED", "try")
+    assert e.value.code == "CONFLICT_OPEN"
+
+
+REGISTER_OTHER = REGISTER_MD.replace("# register", "# Some other project's register").replace("Thing", "Unrelated")
+
+
+def test_r5_02_register_rows_of_another_register_collide(tmp_path):
+    src = tmp_path / "developmental.md"
+    src.write_bytes(REGISTER_MD.encode())
+    m = new(tmp_path)
+    importers.import_register(m, src)
+    other = tmp_path / "other.md"
+    other.write_bytes(REGISTER_OTHER.encode())
+    r = importers.import_register(m, other)
+    assert "REG-B-CAP-1" in r["collisions"] and r["revised"] == 0
+    assert m.projection()["records"]["REG-B-CAP-1"]["fields"]["capability"] == "Thing"
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "a", "import-register", str(other)], out=out) == 1
+
+
+def test_r5_03_record_revision_keeps_the_original(tmp_path):
+    src = tmp_path / "developmental.md"
+    src.write_bytes(REGISTER_MD.encode())
+    m = new(tmp_path)
+    importers.import_register(m, src)
+    src.write_bytes(REGISTER_MD.replace("Thing", "Thing v2").encode())
+    importers.import_register(m, src)
+    r = m.projection()["records"]["REG-B-CAP-1"]
+    assert r["original"]["fields"]["capability"] == "Thing"
+    assert r["revisions"][0]["previous"]["fields"]["capability"] == "Thing"
+    assert r["fields"]["capability"] == "Thing v2"
+
+
+def test_r5_04_write_over_unanchored_truncation_is_recorded_and_blocks(tmp_path):
+    m = _accept_ready(tmp_path, verdict="REJECT", blocking=1)
+    _truncate_last(m)
+    anchors = json.loads(m.store.anchors_path.read_text(encoding="utf-8"))
+    anchors["h1"] = {"count": 0, "head": "0" * 64}
+    m.store.anchors_path.write_text(json.dumps(anchors), encoding="utf-8")
+    m.record_review("MM-A", C1, "subagent", "subagent:r2", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    with pytest.raises(ValidationError) as e:
+        m.set_status("MM-A", "ACCEPTED", "try")
+    assert e.value.code == "CONFLICT_OPEN"
+    kinds = [e["kind"] for s in m.store.read_all() for e in s.events]
+    assert "ANCHORS_ADOPTED" in kinds
+
+
+def test_r5_05_reanchor_and_recover_are_lamport_floored(tmp_path, monkeypatch):
+    import datetime as dt
+    from scripts.dev_workflow.milestones import store as store_mod
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m2.create_milestone("MM-B", "B")
+    _merge(m1, home2)
+    m1.create_milestone("MM-A", "A")
+    newest = max(e["ts"] for s in m1.store.read_all() for e in s.events)
+    behind = lambda: (dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    monkeypatch.setattr(store_mod, "utc_now", behind)
+    m1.store.reanchor("impl:a", "test")
+    with m1.store.segment_path.open("ab") as f:
+        f.write(b'{"v')
+    m1.store.recover("impl:a")
+    evs = [e for e in m1.store.read_all() if e.name == "h1"][0].events
+    assert all(e["ts"] > newest for e in evs if e["kind"] in ("ANCHORS_RESET", "STORE_RECOVERED"))
+
+
+def test_r5_06_future_warning_names_the_earliest_future_segment(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m2.create_milestone("MM-F", "F")
+    with m2.store.locked():
+        m2.store.append("MILESTONE_UPDATED", {"id": "MM-F", "fields": {"objective": "x"}}, actor="h2",
+                        base={"MM-F": 1}, ts="2099-01-01T00:00:00.000000Z")
+    _merge(m1, home2)
+    m1.create_milestone("MM-A", "A")  # pinned after h2's future event
+    w = [x for x in m1.projection()["integrity_warnings"] if "ahead" in x]
+    assert len(w) == 1 and "segment h2" in w[0] and "segment h1" not in w[0]
+
+
+def test_r5_07_conflict_index_tracks_in_place_resolution(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m1.create_milestone("MM-A", "A")
+    (home2 / "events" / "h1.jsonl").write_bytes(m1.store.segment_path.read_bytes())
+    m1.update_milestone("MM-A", objective="1")
+    m2.update_milestone("MM-A", objective="2")
+    _merge(m1, home2)
+    p = m1.projection()
+    c = views.open_conflicts(p, "MM-A")
+    assert c
+    model.apply(p, {"v": 1, "seg": "h1", "seq": 99, "ts": "2099-01-01T00:00:00.000000Z", "actor": "x",
+                    "session": None, "kind": "CONFLICT_RESOLVED",
+                    "data": {"entity": "MM-A", "note": "n", "conflicts": [x["event"]["hash"] for x in c]},
+                    "base": {}, "prev": "0" * 64, "hash": "zz"})
+    assert views.open_conflicts(p, "MM-A") == []
+
+
+def test_r5_08_malformed_anchor_entry_is_an_integrity_error(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    m.store.anchors_path.write_text(json.dumps({"h1": {"count": "1", "head": "0" * 64}}), encoding="utf-8")
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "status", "--no-tasks"], out=out) == 3
+    assert cli.run(["--home", str(m.home), "verify"], out=io.StringIO()) == 3
+
+
+def test_r5_09_bom_prefixed_register_imports(tmp_path):
+    src = tmp_path / "decisions.md"
+    src.write_bytes(b"\xef\xbb\xbf" + DECISIONS_MD.encode())
+    m = new(tmp_path)
+    assert importers.import_decisions(m, src)["recorded"] == 3
+    plain = tmp_path / "plain.md"
+    plain.write_bytes(DECISIONS_MD.encode())
+    r = importers.import_decisions(m, plain)
+    assert r["collisions"] == [] and r["unchanged"] == 3

@@ -1,4 +1,4 @@
-Owner decisions waiting: 12
+Owner decisions waiting: 14
   OWNER DECISION AP-1 [PROJECT] DECISION: Integrate Ember V2.1 `68061d85` into canonical? **DECIDED 2026-10-21 by DEC-091 (integrated `9488c0fd`).** (context: technically ready (subagent-class AwF); carries owner items AC-F1/AC-F3, T4, F-SIZE
   OWNER DECISION AP-2 [PROJECT] DECISION: Disable the `\URIServer` scheduled task (context: starts the legacy pre-SSRF server at logon; where: `docs/audit/p0_20261021/P0_AUDIT_REPORT.md` §N)
   OWNER DECISION AP-3 [PROJECT] DECISION: P1 profile: retire, or approve the E1' crash investigation (context: CRASH-1, DEMOTE-P1; where: DEC-082 D3)
@@ -9,11 +9,13 @@ Owner decisions waiting: 12
   OWNER DECISION AP-8 [PROJECT] DECISION: `_V1` line (M36 memory, M37 Edge, dynamic planning slice 1, dictation): salvage, keep as donor, or retire (context: no ledger decision; where: `developmental.md` CAP-V1)
   OWNER DECISION AP-9 [PROJECT] DECISION: Push the P0 audit branch and the local-only research/preserve branches to `uri-repo` (context: outward action; where: P0 report §N)
   OWNER DECISION AP-10 [PROJECT] DECISION: Carried from earlier: CONS-1..CONS-7, P-4/P-6 `main` rename, EXE-1b, C6 decision 3, Phase 2 freeze, C7 cutover, OI-SEC-1 API key, OD-U3b, OD-U4, PA-1..PA-13 (context: consolidation / Phase 2; where: `
-  OWNER DECISION AP-11 [PROJECT] SCOPE: Is P11 Multi-Client Deployment (DEC-088) still on the roadmap? It is absent from the 2026-10-21 P0..P10 list (LDEC-001).
-  OWNER DECISION AP-12 [MILESTONE-MANAGER] POLICY: Promote a Milestone Manager ledger as authoritative (replacing developmental.md / decisions.md as the place of record), and where should it live (recommended: a dedicated git worktree on an orphan bra
+  OWNER DECISION AP-11 [PROJECT] DECISION: URI Controls D-1: Thinking default Off (fast) - keep, or default On? (the previous default "Auto" no longer exists under the ON/OFF rule) (context: preference only; one-line change; where: `docs/ui/ur
+  OWNER DECISION AP-12 [PROJECT] DECISION: URI Controls D-2: with exactly three controls, 64K context is reachable only through Vision Off and P3 ("Standard, draft off") not at all from the UI (host flag only) - accept, or add a Settings place
+  OWNER DECISION AP-13 [PROJECT] SCOPE: Is P11 Multi-Client Deployment (DEC-088) still on the roadmap? It is absent from the 2026-10-21 P0..P10 list (LDEC-001).
+  OWNER DECISION AP-14 [MILESTONE-MANAGER] POLICY: Promote a Milestone Manager ledger as authoritative (replacing developmental.md / decisions.md as the place of record), and where should it live (recommended: a dedicated git worktree on an orphan bra
 OWNER ACTION | MILESTONE-MANAGER | P0 | phase TESTING | status IN_PROGRESS
-    issue: owner approval AP-12 (POLICY): Promote a Milestone Manager ledger as authoritative (replacing developmental.md / decisions.md as the place of record), and where should it live (recommended: a dedicated git worktree on an orphan branch ledger/milestones, autocommit on, push only with approval)?
-    next: owner decides AP-12
+    issue: owner approval AP-14 (POLICY): Promote a Milestone Manager ledger as authoritative (replacing developmental.md / decisions.md as the place of record), and where should it live (recommended: a dedicated git worktree on an orphan branch ledger/milestones, autocommit on, push only with approval)?
+    next: owner decides AP-14
 IN PROGRESS  | LIFECYCLE-V3-1 | P1 | phase IMPLEMENTATION | status IN_PROGRESS
 NOT ACTIVE   | PERSONAL-DATA-SOVEREIGNTY | P2 | phase RESEARCH | status PLANNED
 NOT ACTIVE   | WRITING-INTELLIGENCE | P3 | phase RESEARCH | status PLANNED

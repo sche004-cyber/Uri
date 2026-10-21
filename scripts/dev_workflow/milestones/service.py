@@ -68,9 +68,14 @@ class Manager:
                      for b, evs in state.get("pending_batches", {}).items() if b not in abandoned
                      or evs[0]["seg"] != self.store.host]
         now = store_now()
-        ahead = sorted({s.name for s in segs for e in s.valid_events[-1:] if e["ts"] > _plus(now, 300)})
-        warnings += [f"segment {name} has events stamped more than 5 minutes ahead of this machine's clock: that "
-                     "host's clock may be ahead (or this one behind)" for name in ahead]
+        limit = _plus(now, 300)
+        future = [(e["ts"], s.name) for s in segs for e in s.valid_events if e["ts"] > limit]
+        if future:
+            first_ts, first_seg = min(future)
+            warnings.append(f"events up to {max(future)[0]} are stamped more than 5 minutes ahead of this machine's "
+                            f"clock; the earliest such event ({first_ts}) is in segment {first_seg}: that host's clock "
+                            "was probably ahead (later events of other hosts are pinned after it by the ordering "
+                            "rule), or this machine's clock is behind")
         state["integrity_errors"] = errors
         state["integrity_warnings"] = warnings
         return state
@@ -97,6 +102,13 @@ class Manager:
                 raise StoreError("CHAIN_BROKEN", "ledger fails verification; run `verify` (" +
                                  "; ".join(p["integrity_errors"][:2]) + ")")
             items = build(p)
+            adopt = self.store.anchor_warnings(segs, anchors)
+            if items and adopt:
+                # This write will anchor an own segment that had no anchor (failed first refresh, or an edited
+                # anchors file): record it so it is visible and needs review (review R5-04).
+                own = next(s for s in segs if s.name == self.store.host)
+                items = [("ANCHORS_ADOPTED", {"segment": own.name, "count": len(own.valid_events),
+                                              "head": own.valid_events[-1]["hash"], "warning": adopt[0]}, {})] + items
             for kind, data, _ in items:
                 hit = M.find_secret(data)
                 if hit:
@@ -110,8 +122,10 @@ class Manager:
             now = store_now()
             if newest[0] and newest[0] > now:
                 self.last_warnings.append(f"newest ledger event ({newest[0]}, segment {newest[1]}) is later than this "
-                                          f"machine's clock ({now}): this clock is behind or that host's clock is "
-                                          "ahead; the new event is stamped just after it")
+                                          f"machine's clock ({now}): this clock is behind, or ledger time was "
+                                          "pushed forward by a host whose clock was ahead (see the status warnings "
+                                          "for the earliest future-stamped segment); the new event is stamped just "
+                                          "after it")
             written = self.store.append_many(items, actor=self.actor, session=self.session, floor=floor)
             for ev in written:
                 M.apply(p, ev)

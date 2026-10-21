@@ -162,3 +162,10 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 - Conflict type `ABANDONED_BATCH_COMPLETED` (entity `LEDGER`, field `batch`).
 - `local/anchors.json` always holds this machine's own entry (`count` 0 until the first refresh).
 - Event `ts` of a write is strictly later than every event the writer had verified (Lamport floor + 1 µs).
+
+## 14. Changes after review R5
+
+- `STORE_RECOVERED.anchor_problems[]` (non-empty ⇒ ANCHOR_LOSS); new kind `ANCHORS_ADOPTED {segment, count, head,
+  warning}` (always ⇒ ANCHOR_LOSS).
+- Records keep `original {fields, color, source}`; each revision holds `previous` and the new values.
+- `import-register` reports `collisions` like `import-decisions`.

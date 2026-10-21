@@ -245,5 +245,20 @@ for other hosts' segments.
 | Docstring and handoff table corrected | R4-07 |
 
 Residual (stated): a host whose own clock is ahead cannot detect that from its own clock; other hosts name its segment
-in warnings. An own anchor entry edited to count 0 is shown as a warning (not blocking) and makes `reanchor` require
-acknowledgement; the ledger is tamper-evident, not tamper-proof.
+in warnings. An own anchor entry at count 0 is shown as a warning and makes `reanchor` require acknowledgement; after
+review R5 the next write records ANCHORS_ADOPTED, which opens ANCHOR_LOSS (see §17). The ledger is tamper-evident,
+not tamper-proof.
+
+## 17. Changes after independent review R5 (2026-10-21, REJECT on `7c8e0a29`)
+
+| Change | Reason |
+|---|---|
+| `recover` computes anchor problems against the previous anchors and refuses (`LOSS_NOT_ACKNOWLEDGED`) unless `--acknowledge-loss`; acknowledged problems are recorded on STORE_RECOVERED and open ANCHOR_LOSS | R5-01 |
+| `import-register` applies the register-identity collision rule (exit 1 `ID_COLLISION`) | R5-02 |
+| record revisions keep `original` and each revision's `previous` values | R5-03 |
+| a write that anchors an own segment with no anchor (count 0) first appends ANCHORS_ADOPTED in the same batch; the fold opens ANCHOR_LOSS (RED, blocks positive statuses until `resolve-conflict LEDGER`). Consequence, accepted: after a failed first anchor refresh the owner or an agent must review and resolve that conflict once | R5-04 |
+| ANCHORS_RESET and STORE_RECOVERED use the Lamport floor | R5-05 |
+| future-stamp warning names only the segment with the earliest future-stamped event and explains pinning | R5-06 |
+| conflict index invalidated on every applied event | R5-07 |
+| malformed anchor entries (non-integer/negative count, bad head) = unreadable anchors = integrity error (exit 3) | R5-08 |
+| registers read as `utf-8-sig` (BOM tolerated) | R5-09 |

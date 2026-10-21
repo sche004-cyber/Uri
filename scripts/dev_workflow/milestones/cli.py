@@ -117,6 +117,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("verify")
     sub.add_parser("verify-evidence")
     s = sub.add_parser("recover"); _p(s, "--reason", default="torn tail / incomplete batch after a crash")
+    _p(s, "--acknowledge-loss", action="store_true", help="record anchor problems explicitly (ANCHOR_LOSS)")
     sub.add_parser("rebuild")
     return ap
 
@@ -237,6 +238,10 @@ def run(argv=None, out=None) -> int:
                 return 1
         elif c == "import-register":
             r = importers.import_register(mgr, args.path, args.commit, args.register)
+            if r["collisions"]:
+                emit({**r, "refused": "ID_COLLISION", "message": "rows whose id belongs to another register were "
+                                                                  "not imported"})
+                return 1
         elif c == "status":
             p = mgr.projection()
             if args.json or args.a2ui:
@@ -284,7 +289,7 @@ def run(argv=None, out=None) -> int:
         elif c == "recover":
             if not args.actor:
                 raise ValidationError("NO_ACTOR", "--actor is required")
-            res = mgr.store.recover(args.actor, args.session)
+            res = mgr.store.recover(args.actor, args.session, args.acknowledge_loss)
             ab = mgr.abandon_batches(args.reason)
             res["abandoned_batches"] = [b for e in ab for b in e["data"]["batches"]]
             emit(res)

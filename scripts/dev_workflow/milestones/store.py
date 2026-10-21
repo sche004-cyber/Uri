@@ -108,6 +108,19 @@ def atomic_write_bytes(path: Path, data: bytes) -> None:
             time.sleep(0.025 * (attempt + 1))
 
 
+def ts_plus(ts: str, seconds: float) -> str:
+    """Event timestamp ``ts`` plus ``seconds`` (same format)."""
+    fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+    dt = datetime.datetime.strptime(ts, fmt).replace(tzinfo=datetime.timezone.utc)
+    return (dt + datetime.timedelta(seconds=seconds)).strftime(fmt)
+
+
+def lamport_floor(segs) -> str:
+    """Strictly after the newest verified event of ``segs`` ("" for an empty ledger)."""
+    newest = max((e["ts"] for s in segs for e in s.valid_events), default="")
+    return ts_plus(newest, 0.000001) if newest else ""
+
+
 # --------------------------------------------------------------------------- OS lock
 
 @contextlib.contextmanager
@@ -380,8 +393,10 @@ class EventStore:
                 time.sleep(0.01 * (attempt + 1))
             except (OSError, ValueError):
                 return None
-        if not isinstance(a, dict) or not all(isinstance(v, dict) for v in a.values()):
-            return None
+        if not isinstance(a, dict) or not all(
+                isinstance(v, dict) and type(v.get("count")) is int and v["count"] >= 0
+                and isinstance(v.get("head"), str) and len(v["head"]) == 64 for v in a.values()):
+            return None  # malformed entries are an unreadable anchors file, reported as an integrity error (R5-08)
         return a
 
     def write_anchors(self, segs) -> None:
@@ -472,7 +487,8 @@ class EventStore:
                                  "; check git history and pass --acknowledge-loss to record the loss explicitly")
             info = {"reason": reason, "previous": before, "lost": lost, "unknown_previous": unknown,
                     "anchor_problems": problems[:10], "counts": {s.name: len(s.events) for s in segs}}
-            self.append("ANCHORS_RESET", info, actor=actor, session=session)
+            with_floor = lamport_floor(segs)
+            self.append_many([("ANCHORS_RESET", info, {})], actor=actor, session=session, floor=with_floor)
             self.write_anchors_force(self.read_all())
             self.autocommit("ANCHORS_RESET")
             return info
@@ -504,15 +520,25 @@ class EventStore:
         report["git"] = self.git_state()
         return report
 
-    def recover(self, actor: str, session: str | None = None) -> dict:
-        """Move a torn tail of this host's segment to quarantine and record that as an event."""
+    def recover(self, actor: str, session: str | None = None, acknowledge_loss: bool = False) -> dict:
+        """Move a torn tail of this host's segment to quarantine and record that as an event.
+
+        Like `reanchor`, recover never re-bases anchors that cannot vouch for the ledger without
+        ``acknowledge_loss``; acknowledged problems are recorded and open an ANCHOR_LOSS conflict (review R5-01)."""
         with self.locked():
+            before = self.read_anchors()
+            segs = self.read_all()
             seg = read_segment(self.segment_path)
             if seg.errors:
                 raise StoreError("CHAIN_BROKEN", "recover only repairs a torn tail; chain errors need an owner "
                                                  "decision: " + "; ".join(seg.errors[:3]))
             if not seg.torn:
                 return {"recovered": False}
+            problems = self.anchor_errors(segs, before) + self.anchor_warnings(segs, before)
+            if problems and not acknowledge_loss:
+                raise StoreError("LOSS_NOT_ACKNOWLEDGED", "recover would re-base anchors that cannot vouch for the "
+                                                          f"ledger ({problems[0]}); check git history and pass "
+                                                          "--acknowledge-loss")
             self.quarantine_dir.mkdir(parents=True, exist_ok=True)
             qname = f"{self.host}.{utc_now().replace(':', '').replace('.', '')}.torn"
             atomic_write_bytes(self.quarantine_dir / qname, seg.torn)
@@ -521,8 +547,9 @@ class EventStore:
                 f.flush()
                 os.fsync(f.fileno())
             info = {"segment": self.host, "bytes": len(seg.torn), "sha256": hashlib.sha256(seg.torn).hexdigest(),
-                    "quarantine": f"quarantine/{qname}"}
-            self.append("STORE_RECOVERED", info, actor=actor, session=session)
+                    "quarantine": f"quarantine/{qname}", "anchor_problems": problems[:10]}
+            self.append_many([("STORE_RECOVERED", info, {})], actor=actor, session=session,
+                             floor=lamport_floor(segs))
             self.write_anchors([read_segment(self.segment_path)])
             self.autocommit("STORE_RECOVERED")
             return {"recovered": True, **info}

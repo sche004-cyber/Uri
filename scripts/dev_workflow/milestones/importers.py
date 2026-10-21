@@ -74,7 +74,7 @@ def register_identity(path: Path, explicit: str | None = None) -> str:
     value, else the document's first level-1 heading (e.g. "URI Owner Decisions Register (`decisions.md`)")."""
     if explicit:
         return explicit
-    for line in Path(path).read_text(encoding="utf-8").splitlines()[:40]:
+    for line in Path(path).read_text(encoding="utf-8-sig").splitlines()[:40]:
         if line.startswith("# "):
             return line[2:].strip()
     raise ValidationError("NO_REGISTER_ID", f"{path} has no level-1 heading; pass --register to name the register")
@@ -106,7 +106,7 @@ def _text(v, limit=M.MAX_TEXT):
 # --------------------------------------------------------------------------- decisions.md
 
 def parse_decisions(path: Path):
-    lines = Path(path).read_text(encoding="utf-8").splitlines()
+    lines = Path(path).read_text(encoding="utf-8-sig").splitlines()
     decisions, opens = [], []
     for i, line in enumerate(lines, 1):
         cells = split_row(line)
@@ -226,7 +226,7 @@ SECTION_TYPES = {"B": "capability", "C": "roadmap", "J": "defect", "K": "next_ac
 
 
 def parse_register(path: Path):
-    lines = Path(path).read_text(encoding="utf-8").splitlines()
+    lines = Path(path).read_text(encoding="utf-8-sig").splitlines()
     section, header, rows = None, None, []
     for i, line in enumerate(lines, 1):
         h = re.match(r"^## ([A-Z])\.", line)
@@ -256,7 +256,7 @@ def import_register(mgr, path, commit=None, register=None) -> dict:
     register = register_identity(path, register)
     rows = parse_register(path)
     report = {"source": str(path), "file_sha256": file_hash, "commit": commit, "recorded": 0, "revised": 0,
-              "unchanged": 0, "skipped_secret": [], "skipped_bad_id": []}
+              "unchanged": 0, "skipped_secret": [], "skipped_bad_id": [], "collisions": []}
 
     def build(p):
         items, used = [], set()
@@ -282,6 +282,9 @@ def import_register(mgr, path, commit=None, register=None) -> dict:
                 items.append(("RECORD_IMPORTED", {"id": rid, "record_type": rtype, "fields": fields,
                                                   "color": _color(status_text), "source": src}, {rid: 0}))
                 report["recorded"] += 1
+            elif _register_of(existing.get("source")) != register:
+                # a row of another register with the same first-column value is never a revision (review R5-02)
+                report["collisions"].append(rid)
             elif existing["source"]["row_sha256"] == src["row_sha256"]:
                 report["unchanged"] += 1
             else:
