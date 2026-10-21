@@ -1025,7 +1025,8 @@ class Ledger:
             atomic_write(store / f"{rid}.txt", red.encode("utf-8"))
             prov = f"{kind.upper()}_FALLBACK"           # R1-01: DRIVER_VERIFIED is set only by sync_v3
             ev = self._append(task_id, "REVIEW_RECORDED", actor, {
-                "review": rid, "commit": sha, "verdict": verdict, "problem": problem, "independent": independent,
+                "review": rid, "reviewer": actor, "commit": sha, "verdict": verdict,
+                "problem": problem, "independent": independent,
                 "independence_basis": ("reviewer differs from every implementer actor; verdict recomputed from the "
                                        "reviewer's output; exact commit named") if independent else
                 ("reviewer is an implementer" if actor in implementers else f"unusable result: {problem}"),
@@ -1305,7 +1306,8 @@ class Ledger:
                     reviewer = f"v3:{(d.get('worker') or {}).get('provider') or d.get('provider') or 'reviewer'}" \
                                f"/{sd.parent.name}/R{d.get('round')}"
                     ev = self._append(task_id, "REVIEW_RECORDED", actor, {
-                        "review": rid, "commit": d.get("candidate"), "verdict": d.get("verdict"),
+                        "review": rid, "reviewer": reviewer, "commit": d.get("candidate"),
+                        "verdict": d.get("verdict"),
                         "independent": ok, "provenance": prov, "v3_state_dir": str(sd), "v3_round": d.get("round"),
                         "v3_event_hash": e["hash"], "raw_sha256": d.get("round_sha256") or ""})
                     self.db.execute("INSERT INTO reviews VALUES(?,?,?,?,?,?,?,?,?)",
@@ -1382,6 +1384,7 @@ class Ledger:
 
     def handoff(self, task_id: str, *, write: bool = True) -> dict:
         """Compact, self-sufficient handoff built from the ledger alone (no chat)."""
+        self._require_integrity(task_id)
         t = self._task(task_id)
         s = self._summary(t)
         ctx = lambda kind: [dict(r) for r in self.db.execute(  # noqa: E731
@@ -1452,9 +1455,10 @@ class Ledger:
                           "resume_to") if t[k] != p[k]]
         errs += [f"{tid} {v}" for v in p["violations"]]
         rows = {r["finding_id"]: {"status": r["status"], "blocking": r["blocking"], "severity": r["severity"],
+                                  "title": r["title"],
                                   "owner_decision": r["owner_decision"], "review_id": r["review_id"],
                                   "commit_sha": r["commit_sha"]} for r in self.db.execute(
-            "SELECT finding_id, status, blocking, severity, owner_decision, review_id, commit_sha "
+            "SELECT finding_id, status, blocking, severity, title, owner_decision, review_id, commit_sha "
             "FROM findings WHERE task_id=?", (tid,))}
         if rows != p["findings"]:
             errs.append(f"{tid} findings differ from the event chain")
@@ -1490,14 +1494,39 @@ class Ledger:
                 if sha256(json.dumps([c["kind"], c["key"], c["text"], c["path"], c["blob"], c["commit_sha"]])) \
                         != c["sha"]:
                     errs.append(f"{tid} context {c['id']} changed after recording")
-            recorded = {json.loads(r["data"])["review"]: json.loads(r["data"]) for r in self.db.execute(
-                "SELECT data FROM events WHERE task_id=? AND kind='REVIEW_RECORDED'", (tid,))}
-            for rv in self.db.execute("SELECT * FROM reviews WHERE task_id=?", (tid,)):
-                d = recorded.get(rv["review_id"])
+            recorded = {json.loads(r["data"])["review"]: r for r in self.db.execute(
+                "SELECT seq, data FROM events WHERE task_id=? AND kind='REVIEW_RECORDED'", (tid,))}
+            reviews = {rv["review_id"]: rv for rv in self.db.execute(
+                "SELECT * FROM reviews WHERE task_id=?", (tid,))}
+            for rid, rv in reviews.items():
+                event = recorded.get(rid)
+                d = json.loads(event["data"]) if event else None
+                reviewer = self._event_reviewer(d) if event else None
                 if d is None or d.get("commit") != rv["commit_sha"] or d.get("verdict") != rv["verdict"] or \
-                        bool(d.get("independent")) != bool(rv["independent"]):
+                        bool(d.get("independent")) != bool(rv["independent"]) or \
+                        d.get("provenance") != rv["provenance"] or reviewer != rv["reviewer"] or \
+                        d.get("raw_sha256") != rv["raw_sha256"] or event["seq"] != rv["seq"]:
                     errs.append(f"{tid} review {rv['review_id']} differs from its REVIEW_RECORDED event")
+            for rid in recorded.keys() - reviews.keys():
+                errs.append(f"{tid} review {rid} is missing its REVIEW_RECORDED projection")
         return errs
+
+    def _event_reviewer(self, d) -> str | None:
+        """Read reviewer from the event, including reviews recorded before that field was added."""
+        if "reviewer" in d:
+            return d["reviewer"]
+        if not d.get("v3_state_dir"):
+            return d.get("actor")
+        sd = Path(d["v3_state_dir"])
+        evs, broken = self._v3_chain(sd)
+        if broken:
+            return None
+        source = next((e["data"] for e in evs if e["hash"] == d.get("v3_event_hash") and
+                       e["kind"] == "REVIEW_RECORDED"), None)
+        if source is None:
+            return None
+        return (f"v3:{(source.get('worker') or {}).get('provider') or source.get('provider') or 'reviewer'}"
+                f"/{sd.parent.name}/R{d.get('v3_round')}")
 
 
 def _replay(events) -> dict:
@@ -1540,7 +1569,7 @@ def _replay(events) -> dict:
             p["milestone_ref"] = d.get("milestone_ref")
         elif kind == "FINDING":
             p["findings"][d.get("id")] = {"status": "OPEN", "blocking": int(bool(d.get("blocking"))),
-                                          "severity": d.get("severity"),
+                                          "severity": d.get("severity"), "title": d.get("title"),
                                           "owner_decision": int(bool(d.get("owner_decision"))),
                                           "review_id": d.get("review"), "commit_sha": d.get("commit")}
         elif kind == "FINDING_CLOSED" and d.get("id") in p["findings"]:

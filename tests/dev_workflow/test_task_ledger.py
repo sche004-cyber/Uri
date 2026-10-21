@@ -525,22 +525,22 @@ def test_ac8_integrated_needs_ancestry_and_receipt(lg, repo, tmp_path):
 
 # ------------------------------------------------------------------ AC-7 Lifecycle V3 reviews and migration
 
-def _v3_run(root, name, candidate, rounds):
+def _v3_run(root, name, candidate, rounds, verdict="ACCEPT"):
     """A V3 run written with the real V3 State/event code: rounds = [(independent, imported, tamper)]."""
     sd = root / name / "state"
     st = State({"state_dir": str(sd), "milestone": name})
     st.d["candidate"] = candidate
     st.event("PLAN", baseline="b" * 40)
     for i, (indep, imported, tamper) in enumerate(rounds, 1):
-        rec = {"round": i, "candidate": candidate, "independent": indep, "effective_verdict": "ACCEPT",
+        rec = {"round": i, "candidate": candidate, "independent": indep, "effective_verdict": verdict,
                "status": "COMPLETED_WITH_RESULT"}
         h = write_json(sd / "rounds" / f"R{i}" / "round.json", rec)
         st.event("REVIEW_RECORDED", round=i, candidate=candidate, independent=indep, imported=imported,
-                 status="COMPLETED_WITH_RESULT", verdict="ACCEPT", round_sha256=h, stdout_sha256="",
+                 status="COMPLETED_WITH_RESULT", verdict=verdict, round_sha256=h, stdout_sha256="",
                  worker={"provider": "codex_cli"})
         if tamper:
             (sd / "rounds" / f"R{i}" / "round.json").write_text("{}", encoding="utf-8")
-    st.d["stage"] = "VERIFIED"
+    st.d["stage"] = "VERIFIED" if verdict == "ACCEPT" else "BLOCKED"
     st.save()
     return sd
 
@@ -1042,6 +1042,38 @@ def test_r4_02_finding_provenance_is_verified_before_review(lg, repo, tmp_path, 
             tmp_path, head, prior=[{"id": "F1", "status": "FIXED"}])))
     assert lg.db.execute("SELECT status FROM findings WHERE task_id=? AND finding_id='F1'",
                          (tid,)).fetchone()["status"] == "OPEN"
+
+
+@pytest.mark.parametrize("column,value", [
+    ("provenance", "V3_UNVERIFIED"),
+    ("reviewer", "v3:other/review/R1"),
+    ("seq", -1),
+    ("raw_sha256", "0" * 64),
+])
+def test_r4_03_review_projection_must_match_recorded_event(lg, repo, tmp_path, column, value):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    sd = _v3_run(tmp_path / "driver", "DRIVER", head, [(True, False, False)], verdict="REJECT")
+    lg.link_v3(tid, DEV, str(sd))
+    lg.sync_v3(tid)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    assert lg.verify(tid) == []
+    with pytest.raises(tl.Refused, match="latest review"):
+        lg.accept(tid, DEV)
+    lg.db.execute(f"UPDATE reviews SET {column}=? WHERE task_id=? AND provenance='DRIVER_VERIFIED'",
+                  (value, tid))
+    assert any("review" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.accept(tid, DEV)
+
+
+def test_r4_04_edited_finding_title_cannot_change_handoff(lg, repo):
+    tid = lg.create("finding", "o", DEV, worktree=str(repo))
+    lg.add_finding(tid, "owner:chetan", "F1", "HIGH", "Requires owner action", owner_decision=True)
+    assert lg.handoff(tid, write=False)["required_permissions"][-1].endswith("Requires owner action")
+    lg.db.execute("UPDATE findings SET title='No action needed' WHERE task_id=? AND finding_id='F1'", (tid,))
+    assert any("findings" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.handoff(tid, write=False)
 
 
 def test_fb_r1_06_new_head_voids_acceptance_in_any_status(lg, repo, tmp_path):
