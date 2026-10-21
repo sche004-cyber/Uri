@@ -1,0 +1,25 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "uri-dev/task-ledger-contract/1",
+ "title": "Lifecycle V3.1 task summary (read contract for the Milestone Manager)",
+ "description": "Ownership split. Lifecycle V3.1 owns task execution state: task ids, task context and evidence, execution transitions, review and acceptance gates, checkpoints, leases and recovery. The Milestone Manager owns the milestone registry, roadmap, dependencies, owner decisions and high-level development state. The ledger stores milestone_ref as an opaque string it never interprets or validates against a registry; the Milestone Manager never writes task state. The Milestone Manager reads task summaries with `python -m scripts.dev_workflow.task_ledger summary --milestone <ref> --json` (or task_ledger.Ledger.summaries(milestone_ref)), which return an array of objects matching this schema. Additive fields may appear; consumers must ignore unknown fields. A breaking change bumps the $id version.",
+ "type": "object",
+ "required": ["task_id", "milestone_ref", "title", "status", "version", "updated_at", "head_commit", "last_verified_commit", "accepted_commit", "open_blocking_findings", "paused", "chain_head"],
+ "properties": {
+  "task_id": {"type": "string", "pattern": "^TASK-(\\d{8}-[0-9a-f]{8}|V3-[0-9a-f]{12})$"},
+  "milestone_ref": {"type": ["string", "null"], "description": "Opaque reference owned by the Milestone Manager (e.g. its milestone id). Null when the task is not attached to a milestone."},
+  "title": {"type": "string"},
+  "status": {"enum": ["OPEN", "IN_PROGRESS", "IN_REVIEW", "REPAIR", "ACCEPTED", "INTEGRATED", "INTERRUPTED", "PAUSED", "BLOCKED", "ABANDONED"]},
+  "version": {"type": "integer", "minimum": 1},
+  "updated_at": {"type": "string", "format": "date-time"},
+  "head_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+  "last_verified_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$", "description": "Latest commit with a recorded passing test/gate result."},
+  "accepted_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$", "description": "Commit an independent review accepted. Null unless status is ACCEPTED or INTEGRATED."},
+  "open_blocking_findings": {"type": "integer", "minimum": 0},
+  "paused": {"type": "boolean"},
+  "chain_head": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+  "next_action": {"type": ["string", "null"]},
+  "v3_runs": {"type": "array", "items": {"type": "string"}, "description": "Linked Lifecycle V3 run state directories."}
+ },
+ "additionalProperties": true
+}
