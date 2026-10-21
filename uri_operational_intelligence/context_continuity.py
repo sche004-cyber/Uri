@@ -334,7 +334,8 @@ class ContextManager:
                "turns_total": len(turns), "token_factor": round(self._factor, 3), "rollover": False,
                "compacted_through": 0, "pinned_verbatim": 0, "pinned_excerpt": 0, "pinned_indexed": 0,
                "pinned_omitted": 0, "digest_lines": 0, "digest_omitted": 0, "retrieved": [], "verbatim_turns": 0,
-               "history_tokens": 0, "interrupted_turns": sum(1 for t in turns if t["state"] == "interrupted")}
+               "recent_omitted": 0, "recent_pinned_omitted": 0, "history_tokens": 0,
+               "interrupted_turns": sum(1 for t in turns if t["state"] == "interrupted")}
         if free <= 0:
             rep["status"] = "CURRENT_TURN_TOO_LARGE"
             rep["history_omitted"] = len(turns)
@@ -374,9 +375,22 @@ class ContextManager:
         retrieved, rtoks = self._retrieve(old, query, RETRIEVE_SHARE * free, crep["_verbatim_ns"])
         rep["retrieved"] = [t["n"] for t in retrieved]
         rep.pop("_verbatim_ns", None)
+
+        def reported_block():
+            older = rep["pinned_omitted"] + rep["digest_omitted"]
+            newer = rep["recent_omitted"]
+            if not older and not newer:
+                return block
+            notice = f"({older} older, {newer} recent turns stored but not shown"
+            if rep["recent_pinned_omitted"]:
+                notice += f"; {rep['recent_pinned_omitted']} recent pinned omitted"
+            notice += "; ask if needed.)"
+            return block + "\n" + notice if block else notice
+
         msgs = []
-        if block:
-            msgs += [{"role": "user", "content": block}, {"role": "assistant", "content": "Acknowledged."}]
+        prefix = reported_block()
+        if prefix:
+            msgs += [{"role": "user", "content": prefix}, {"role": "assistant", "content": "Acknowledged."}]
         msgs += self._verbatim(recent)
         if retrieved:
             text = RETRIEVED_HEADER + "\n" + "\n".join(
@@ -386,11 +400,16 @@ class ContextManager:
         rep.update(status="COMPACTED", verbatim_turns=len(recent), history_tokens=total)
         if total > free:            # safety net: never send a prompt the estimate says cannot fit
             while total > free and len(recent) > 1:
+                before = recent
                 recent = recent[1:]
                 while recent and recent[0]["role"] != "user":
                     recent = recent[1:]
-                msgs = ([{"role": "user", "content": block}, {"role": "assistant", "content": "Acknowledged."}]
-                        if block else []) + self._verbatim(recent)
+                removed = before[:len(before) - len(recent)]
+                rep["recent_omitted"] += len(removed)
+                rep["recent_pinned_omitted"] += sum(bool(t["pin"]) for t in removed)
+                prefix = reported_block()
+                msgs = ([{"role": "user", "content": prefix}, {"role": "assistant", "content": "Acknowledged."}]
+                        if prefix else []) + self._verbatim(recent)
                 total = self.messages_tokens(msgs)
                 rep["verbatim_turns"] = len(recent)
                 rep["retrieved"] = []
@@ -480,9 +499,6 @@ class ContextManager:
             parts += ["PINNED:"] + lines
         if kept_digest:
             parts += ["DIGEST:"] + kept_digest
-        if rep["digest_omitted"] or rep["pinned_omitted"]:
-            parts.append(f"({rep['digest_omitted'] + rep['pinned_omitted']} older turns are stored but not shown "
-                         f"here; ask the user or rely on retrieved excerpts.)")
         return "\n".join(parts), rep
 
     def _wordset(self, t) -> frozenset:

@@ -169,6 +169,8 @@ def is_secret_path(path: str) -> bool:
 # --------------------------------------------------------------------------- actors
 
 def parse_actor(actor: str) -> tuple[str, str]:
+    if redact(actor)[1]:
+        raise Refused("secret-bearing actor identifier is not allowed")
     kind, sep, ident = str(actor or "").partition(":")
     if not sep or not ident.strip() or kind not in ACTOR_KINDS:
         raise Refused(f"actor must be '<kind>:<id>' with kind in {sorted(ACTOR_KINDS)}; got {actor!r}")
@@ -308,6 +310,7 @@ class Ledger:
 
     def _append(self, task_id: str, kind: str, actor: str, data: dict, *, expected_version: int | None = None,
                 **updates) -> dict:
+        parse_actor(actor)  # All event writers, including internal V3 sync, share the actor guard.
         t = self._task(task_id)
         if expected_version is not None and t["version"] != expected_version:
             raise Refused(f"{task_id} is at version {t['version']}, not {expected_version} (changed by another "
@@ -923,11 +926,9 @@ class Ledger:
             if t["status"] in TERMINAL:
                 raise Refused(f"{task_id} is terminal")
             sha = _resolve_commit(t["worktree"], commit)
-            if result is not None and str(result.get("candidate", "")).lower() not in (sha, ""):
-                if not sha.startswith(str(result.get("candidate")).lower()) or len(str(result.get("candidate"))) < 7:
-                    problem = f"review names candidate {result.get('candidate')}, not {sha}"
-            if result is not None and not result.get("candidate"):
-                problem = "review result does not name the candidate commit it reviewed"
+            if result is not None and result.get("candidate") != sha:
+                problem = ("review result does not name the candidate commit it reviewed" if not result.get("candidate")
+                           else f"review names candidate {result.get('candidate')}, not {sha}")
             verdict, blocking = (effective_verdict(result) if result is not None and not problem else (None, []))
             implementers = self._implementers(task_id)
             independent = verdict is not None and actor not in implementers
@@ -1153,8 +1154,9 @@ class Ledger:
                           f.is_file() and sha256(f.read_bytes()) == d.get("round_sha256"))
                     if ok:
                         r = json.loads(f.read_text(encoding="utf-8"))
-                        ok = (r.get("candidate") == d.get("candidate") and r.get("independent") is True and
-                              r.get("effective_verdict") == d.get("verdict"))
+                        ok = (r.get("round") == d.get("round") and r.get("candidate") == d.get("candidate") and
+                              r.get("independent") is True and r.get("effective_verdict") == d.get("verdict") and
+                              r.get("status") == "COMPLETED_WITH_RESULT")
                     n = self.db.execute("SELECT COUNT(*) c FROM reviews WHERE task_id=?",
                                         (task_id,)).fetchone()["c"] + 1
                     rid = f"V{n}"

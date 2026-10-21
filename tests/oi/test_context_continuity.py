@@ -339,6 +339,28 @@ def test_r1_02_over_budget_prompt_is_never_sent(store):
     assert A.answer(_NoCall(), "next", history=big).status == A.CONTEXT_TOO_LARGE
 
 
+def test_r2_02_safety_trim_reports_and_announces_recent_omissions(store):
+    for i in range(15):
+        n = store.begin(SID, f"Important: always keep rule {i}")
+        store.finish(SID, n, f"reply {i}")
+    mgr = CC.ContextManager(store, 680)
+    messages, report = mgr.compose(SID, fixed_messages=[], reserve_tokens=0)
+    turns = store.turns(SID)
+    old = [t for t in turns if t["n"] <= report["compacted_through"]]
+    recent = turns[len(old):]
+    assert report["status"] == "COMPACTED"
+    assert report["history_tokens"] <= report["free_tokens"]
+    assert report["recent_omitted"] == len(recent) - report["verbatim_turns"] > 0
+    assert report["recent_pinned_omitted"] == sum(bool(t["pin"]) for t in recent[:report["recent_omitted"]])
+    assert report["recent_pinned_omitted"] > 0
+    prompt = "\n".join(m["content"] for m in messages)
+    assert "recent turns stored but not shown" in prompt
+    assert f"{report['recent_omitted']} recent turns" in prompt
+    assert f"{report['recent_pinned_omitted']} recent pinned omitted" in prompt
+    assert store.checkpoints(SID)[-1]["report"]["recent_omitted"] == report["recent_omitted"]
+    assert store.checkpoints(SID)[-1]["report"]["recent_pinned_omitted"] == report["recent_pinned_omitted"]
+
+
 def test_r1_02_bridge_reports_too_large_without_calling_the_brain(fake, tmp_path):
     b, frames = bridge(fake, tmp_path, ctx=4096)
     n = len(fake.requests)

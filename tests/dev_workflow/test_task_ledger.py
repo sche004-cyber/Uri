@@ -417,6 +417,22 @@ def test_ac6_secrets_never_reach_records(lp, repo, tmp_path):
     assert b"[REDACTED:" in blob
 
 
+def test_r2_01_secret_bearing_actor_is_rejected_before_any_ledger_write(lp):
+    secret = "sk-proj-" + "Q" * 24
+    actor = "claude:" + secret
+    lg = tl.Ledger(lp)
+    with pytest.raises(tl.Refused, match="secret-bearing actor"):
+        lg.create("title", "objective", actor)
+    tid = lg.create("title", "objective", DEV)
+    with pytest.raises(tl.Refused, match="secret-bearing actor"):
+        lg.add_context(tid, actor, "evidence", "ordinary note")
+    with pytest.raises(tl.Refused, match="secret-bearing actor"):
+        lg.set_availability(actor, "claude", False)
+    lg.close()
+    blob = b"".join(p.read_bytes() for p in lp.parent.rglob("*") if p.is_file())
+    assert secret.encode() not in blob
+
+
 # ------------------------------------------------------------------ AC-8 independent subagent acceptance
 
 def test_ac8_subagent_accept_on_exact_head(lg, repo, tmp_path):
@@ -479,6 +495,15 @@ def test_ac8_refusals(lg, repo, tmp_path):
     with pytest.raises(tl.Refused):
         lg.transition(tid, "ACCEPTED", DEV)
     assert lg.verify() == []
+
+
+def test_r2_03_fallback_review_must_name_the_full_head(lg, repo, tmp_path):
+    tid = lg.create("review", "objective", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    result = lg.record_review(tid, REV, head, str(review_file(tmp_path, head[:7])))
+    assert result["verdict"] is None
+    assert "names candidate" in result["problem"]
+    assert not result["independent"]
 
 
 def test_ac8_integrated_needs_ancestry_and_receipt(lg, repo, tmp_path):
@@ -556,6 +581,26 @@ def test_ac7_broken_v3_chain_imports_nothing(lg, tmp_path):
     (sd / "events.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
     rep = lg.import_v3(str(root))
     assert rep["runs"][0]["reviews"][0]["error"].startswith("V3 chain broken")
+
+
+@pytest.mark.parametrize("round_number,status", [(2, "COMPLETED_WITH_RESULT"), (1, "NOT_INDEPENDENT")])
+def test_r2_04_v3_round_file_must_match_round_and_completed_status(lg, repo, tmp_path,
+                                                                     round_number, status):
+    head = _git(repo, "rev-parse", "HEAD")
+    tid = lg.create("v3", "objective", DEV, worktree=str(repo))
+    sd = tmp_path / "v3" / "R2" / "state"
+    st = State({"state_dir": str(sd), "milestone": "R2"})
+    st.event("PLAN", baseline="b" * 40, candidate=head)
+    rec = {"round": round_number, "candidate": head, "independent": True,
+           "effective_verdict": "ACCEPT", "status": status}
+    digest = write_json(sd / "rounds" / "R1" / "round.json", rec)
+    st.event("REVIEW_RECORDED", round=1, candidate=head, independent=True, imported=False,
+             status="COMPLETED_WITH_RESULT", verdict="ACCEPT", round_sha256=digest,
+             stdout_sha256="", worker={"provider": "codex_cli"})
+    lg.link_v3(tid, DEV, str(sd))
+    synced = lg.sync_v3(tid)
+    assert synced[0]["provenance"] == "V3_UNVERIFIED"
+    assert lg.db.execute("SELECT provenance FROM reviews WHERE task_id=?", (tid,)).fetchone()[0] == "V3_UNVERIFIED"
 
 
 # ------------------------------------------------------------------ AC-11 development pause
