@@ -155,7 +155,11 @@ class Manager:
                 all_open = [c for c in p["conflicts"] if not c["resolved"]]
                 shown = {ev["hash"]: next((M.display_id(all_open, c) for c in all_open
                                            if c["event"]["hash"] == ev["hash"]), ev["hash"][:12]) for ev in written}
-                kinds = ", ".join(f"{ev['kind']} [conflict {shown[ev['hash']]}]" for ev in written)
+                def _detail(ev):
+                    d = ev["data"]
+                    return d.get("anchor_problems") or d.get("warning") or d.get("lost") or ""
+                kinds = ", ".join(f"{ev['kind']} [conflict {shown[ev['hash']]}: ANCHOR_LOSS, {_detail(ev)}]"
+                                  for ev in written)
                 id_args = " ".join(f"--id {shown[ev['hash']]}" for ev in written)
                 raise ValidationError("LEDGER_LOSS_RECORDED",
                                       f"recorded {kinds} (ANCHOR_LOSS) before this command; the command was NOT "
@@ -683,9 +687,10 @@ class Manager:
                 raise ValidationError("NOT_FOUND", f"no open conflict on {entity}")
             all_open = [c for c in p["conflicts"] if not c["resolved"]]
             if not ids:
-                raise ValidationError("NO_CONFLICT_ID", f"name the conflicts to resolve with --id (open on {entity}: "
-                                                        + ", ".join(sorted({M.display_id(all_open, c) for c in open_c}))
-                                                        + "); see `conflicts` for details")
+                # no ids here: an id may only be displayed together with every conflict it covers (review R20-01)
+                raise ValidationError("NO_CONFLICT_ID", f"{len(open_c)} open conflict(s) on {entity}; review them with "
+                                                        f"`conflicts --entity {entity}` and name the ids shown there "
+                                                        "with --id")
             chosen, seen = [], []
             for x in ids:
                 # An id is `<event hash 12>.<check 6>` as displayed. The event part may name several conflicts that

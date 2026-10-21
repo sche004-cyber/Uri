@@ -322,12 +322,20 @@ def resume_brief(p, ident, tasks: dict | None = None, max_chars: int = 6000, emo
 
 
 def conflict_rows(p, entity=None) -> list[dict]:
-    """Open conflicts with their ids, for the `conflicts` command."""
+    """Open conflicts with their ids, for the `conflicts` command.
+
+    Filtered by ``entity`` (an entity or a milestone named as subject), the listing still contains every member of
+    each (entity, event) group it shows, because one id resolves the whole group (review R20-02)."""
+    listed = open_conflicts(p, entity) if entity else open_conflicts(p)
+    if entity:
+        groups = {(c["entity"], c["event"]["hash"]) for c in listed}
+        listed = [c for c in open_conflicts(p) if (c["entity"], c["event"]["hash"]) in groups]
     rows = []
-    for c in open_conflicts(p, entity) if entity else open_conflicts(p):
+    for c in listed:
         rows.append({"id": did(p, c), "type": c.get("type"), "entity": c["entity"],
                      "subject": c.get("subject"), "recorded_by": c.get("kind"),
                      "event": f"{c['event']['seg']}#{c['event']['seq']}", "at": c["event"].get("ts"),
+                     "subjects": c.get("subjects"),
                      "detail": {k: c[k] for k in ("lost", "anchor_problems", "missing", "expected", "actual",
                                                    "duplicate", "batch") if k in c}})
     return rows

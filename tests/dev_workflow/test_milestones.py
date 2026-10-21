@@ -2174,7 +2174,7 @@ def test_r15_01_conflicts_raised_by_one_event_are_resolved_by_its_id_and_accept_
     assert len(rows) >= 2 and len({r["id"] for r in rows}) < len(rows)  # several conflicts, one event id
     with pytest.raises(ValidationError) as e:
         m1.resolve_conflict("MM-X", "x", [])
-    assert str(e.value).count(rows[0]["id"]) == 1  # listed once
+    assert rows[0]["id"] not in str(e.value)  # since R20-01 the refusal points to `conflicts` instead of listing ids
     _resolve(m1, "MM-X", "duplicate creation reviewed")
     _resolve(m1, "LDEC-900", "duplicate decision reviewed")
     assert not views.open_conflicts(m1.projection(), "MM-X") and not views.open_conflicts(m1.projection(), "LDEC-900")
@@ -2325,3 +2325,43 @@ def test_r19_01_status_never_hands_out_an_id_that_covers_unshown_conflicts(tmp_p
     out = io.StringIO()
     cli.run(["--home", str(m1.home), "conflicts", "--entity", "MM-X"], out=out)
     assert {"VERSION", "BASIS_INVALID"} <= {r["type"] for r in json.loads(out.getvalue())}
+
+
+# ------------------------------------------------------------------ R20 regression tests (review R20 on e008d3ff)
+
+def test_r20_01_no_id_refusal_prints_no_ids(tmp_path):
+    m1, seg2 = _r17_scenario(tmp_path)
+    (m1.home / "events" / "h2.jsonl").write_bytes(b"\n".join(seg2) + b"\n")
+    with pytest.raises(ValidationError) as e:
+        m1.resolve_conflict("MM-X", "x", [])
+    assert e.value.code == "NO_CONFLICT_ID" and "conflicts --entity MM-X" in str(e.value)
+    for r in views.conflict_rows(m1.projection()):
+        assert r["id"] not in str(e.value) and r["id"].split(".")[0] not in str(e.value)
+
+
+def test_r20_01_loss_refusal_shows_the_loss_detail(tmp_path):
+    m = new(tmp_path)
+    init_anchors = m.store.anchors_path.read_bytes()
+    m.create_milestone("MM-A", "A")
+    m.store.anchors_path.write_bytes(init_anchors)
+    with pytest.raises(ValidationError) as e:
+        m.create_milestone("MM-B", "B")
+    assert "not anchored yet" in str(e.value)
+
+
+def test_r20_02_filtered_listing_contains_the_whole_group_behind_each_id(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    for m in (m1, m2):
+        m.create_milestone("MM-1", "1")
+        m.create_milestone("MM-2", "2")
+    m2.update_milestone("MM-2", candidate_commit=C2)
+    m2.record_review("MM-2", C2, "subagent", "r:b", "SUBAGENT", "REJECT", 1, 1, "COMPLETED_WITH_RESULT", "no")
+    m1.update_milestone("MM-1", candidate_commit=C1)
+    m1.record_review("MM-1", C1, "subagent", "r:a", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    _merge(m1, home2)
+    p = m1.projection()
+    for target in ("MM-1", "MM-2"):
+        rows = views.conflict_rows(p, target)
+        for r in rows:  # every conflict carrying a listed id is in the listing
+            same = [x for x in views.conflict_rows(p) if x["id"] == r["id"] and x["entity"] == r["entity"]]
+            assert all(x in rows for x in same)

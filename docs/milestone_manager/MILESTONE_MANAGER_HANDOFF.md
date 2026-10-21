@@ -68,12 +68,14 @@ This file is updated at every checkpoint so work can resume without chat history
 | 39 | 2026-10-22 | (R18 repair commit, see `git log`) | R18 repaired (`reviews/R18_REPAIR.md`); 182 MM tests; R18 tests 3/3 fail pre-repair; N5 at `f07da5d0`: 483 passed / 5 platform-gated / 0 failed | independent re-review R19 |
 | 40 | 2026-10-22 | `dc22ece1` | **R19 = REJECT** (1 MEDIUM, 1 LOW); R18 fixed | repair |
 | 41 | 2026-10-22 | (R19 repair commit, see `git log`) | R19 repaired (`reviews/R19_REPAIR.md`); 183 MM tests; R19 tests fail pre-repair | independent re-review R20 |
+| 42 | 2026-10-22 | `e008d3ff` | **R20 = REJECT** (2 MEDIUM); R19 fixed | repair |
+| 43 | 2026-10-22 | (R20 repair commit, see `git log`) | R20 repaired (`reviews/R20_REPAIR.md`); 186 MM tests; R20 tests 3/3 fail pre-repair | independent re-review R21 |
 
 ## Verification status (exact)
 
 | Check | Status | Evidence |
 |---|---|---|
-| MM tests | COMPLETED_WITH_RESULT per candidate: 49 `7ab9263c`, 77 `4a54ebe1`, 93 `5bce5bdf`, 101 `c992b5ae`, 111 `7c8e0a29`, 120 `3ba9af68`, 124 `5b2a1427`, 129 `ddc4e63b`, 136 `2fe3615f`, 144 `1838e2df`, 148 `5bb005f6`, 154 `61b01ac4`, 158 `3da86259`, 162 `b59c1f2a`, 165 `255b9079`, 167 `f07da5d0`, 178 `4f462be7`, 179 `c455dee2`, 182 `dc22ece1` (each also re-run by the reviewer), 183 on the R19 repair commit | reviewer re-runs on each candidate |
+| MM tests | COMPLETED_WITH_RESULT per candidate: 49 `7ab9263c`, 77 `4a54ebe1`, 93 `5bce5bdf`, 101 `c992b5ae`, 111 `7c8e0a29`, 120 `3ba9af68`, 124 `5b2a1427`, 129 `ddc4e63b`, 136 `2fe3615f`, 144 `1838e2df`, 148 `5bb005f6`, 154 `61b01ac4`, 158 `3da86259`, 162 `b59c1f2a`, 165 `255b9079`, 167 `f07da5d0`, 178 `4f462be7`, 179 `c455dee2`, 182 `dc22ece1`, 183 `e008d3ff` (each also re-run by the reviewer), 186 on the R20 repair commit | reviewer re-runs on each candidate |
 | R1 regression proof | COMPLETED_WITH_RESULT: new R1 tests on pre-repair code: 23 failed, 5 passed | `reviews/R1_REPAIR.md` |
 | Frozen core (`scripts/ws_frozen_check.py`) | COMPLETED_WITH_RESULT at `7ab9263c`: ok; MM changes only add files under `scripts/dev_workflow/milestones/`, `tests/dev_workflow/test_milestones.py`, `docs/milestone_manager/` | `D:/uri-dev/mm-evidence/frozen_check_7ab9263c.log` |
 | N5 full `tests/dev_workflow` regression | COMPLETED_WITH_RESULT at `7ab9263c`: 365 passed / 5 platform-gated / 0 failed (31 min); at `5bce5bdf`: 409 passed / 5 platform-gated / 0 failed (28 min); at `3ba9af68`: 436 passed / 5 platform-gated / 0 failed (28 min); at `ddc4e63b`: 445 passed / 5 platform-gated / 0 failed (29 min); at `1838e2df`: 460 passed / 5 platform-gated / 0 failed (29 min); at `61b01ac4`: 470 passed / 5 platform-gated / 0 failed (28 min); at `b59c1f2a`: 478 passed / 5 platform-gated / 0 failed (27 min); at `f07da5d0`: 483 passed / 5 platform-gated / 0 failed (28 min). To be re-run on the accepted commit. | `evidence/devworkflow_7ab9263c.log`, `evidence/devworkflow_5bce5bdf.log`, `evidence/devworkflow_3ba9af68.log`, `evidence/devworkflow_ddc4e63b.log`, `evidence/devworkflow_1838e2df.log`, `evidence/devworkflow_61b01ac4.log`, `evidence/devworkflow_b59c1f2a.log`, `evidence/devworkflow_f07da5d0.log` |
