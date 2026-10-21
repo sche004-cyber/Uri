@@ -123,7 +123,8 @@ _SECRET_RES = [
     ("gitlab_token", re.compile(r"\bglpat-[A-Za-z0-9_\-]{16,}")),
     ("npm_token", re.compile(r"\bnpm_[A-Za-z0-9]{30,}")),
     ("azure_key", re.compile(r"(?i)\b(AccountKey|SharedAccessKey|sig)=([A-Za-z0-9+/%]{16,}=*)")),
-    ("cli_password", re.compile(r"(?i)(--?(?:password|passwd|pass|pwd|token|secret|api-key)(?:=|\s+))([^\s\"']{4,})")),
+    ("cli_password", re.compile(r"(?i)(--?(?:password|passwd|pass|pwd|token|secret|api-key)(?:=|\s+)|"
+                                r"(?<!\S)-p)([^\s\"']{4,})")),
     ("url_credentials", re.compile(r"(?i)\b([a-z][a-z0-9+.\-]*://)[^\s/:@]+:[^\s/@]+@")),
     # KEY=VALUE / "key": "value" where the key names a secret
     ("assignment", re.compile(r"(?i)\b([A-Za-z0-9_\-]*(?:password|passwd|pass|pwd|secret|token|api[_\-]?key|apikey|"
@@ -913,8 +914,7 @@ class Ledger:
         return to
 
     def _require_integrity(self, task_id: str) -> None:
-        """Every decision (accept, unblock, resume, integrated) first replays the task's chain: an edited row can
-        never steer a decision (FB R1-01/R1-02, class of R3-03)."""
+        """Replay the task's chain before recording a review or making a decision, so edited rows cannot steer it."""
         errs = self.verify(task_id)
         if errs:
             raise Refused("LEDGER_INTEGRITY_FAILED: " + "; ".join(errs[:5]))
@@ -1008,6 +1008,7 @@ class Ledger:
         result, problem = parse_review(raw.decode("utf-8", errors="replace"))
         with self.tx():
             t = self._task(task_id)
+            self._require_integrity(task_id)
             if t["status"] in TERMINAL:
                 raise Refused(f"{task_id} is terminal")
             sha = _resolve_commit(t["worktree"], commit)
@@ -1042,13 +1043,19 @@ class Ledger:
                     if str(pf.get("status", "")).upper() != "FIXED" or not decisive:
                         continue
                     raw = str(pf.get("id") or "")
-                    for row in self.db.execute(
-                            "SELECT finding_id FROM findings WHERE task_id=? AND status='OPEN' AND review_id IS NOT "
-                            "NULL AND review_id<>? AND finding_id LIKE ?", (task_id, rid, "%/" + raw)).fetchall():
-                        self.db.execute("UPDATE findings SET status='CLOSED', closed_by=? WHERE task_id=? AND "
-                                        "finding_id=?", (actor, task_id, row["finding_id"]))
-                        self._append(task_id, "FINDING_CLOSED", actor, {"id": row["finding_id"], "commit": sha,
-                                                                        "note": f"reviewer {rid}: FIXED"})
+                    earlier = self.db.execute(
+                        "SELECT finding_id, review_id FROM findings WHERE task_id=? AND status='OPEN' AND "
+                        "review_id IS NOT NULL AND review_id<>?", (task_id, rid)).fetchall()
+                    matches = [row for row in earlier if row["finding_id"] == raw]
+                    if not matches:
+                        matches = [row for row in earlier if row["finding_id"] == f"{row['review_id']}/{raw}"]
+                    if len(matches) != 1:
+                        continue  # A reused short ID does not identify which earlier review found it.
+                    finding_id = matches[0]["finding_id"]
+                    self.db.execute("UPDATE findings SET status='CLOSED', closed_by=? WHERE task_id=? AND "
+                                    "finding_id=?", (actor, task_id, finding_id))
+                    self._append(task_id, "FINDING_CLOSED", actor, {"id": finding_id, "commit": sha,
+                                                                    "note": f"reviewer {rid}: FIXED"})
             if verdict == "REJECT" and self._task(task_id)["status"] in ("IN_REVIEW", "ACCEPTED"):
                 self._append(task_id, "STATUS", "system:ledger", {"frm": self._task(task_id)["status"],
                                                                   "to": "REPAIR", "reason": f"{rid} REJECT"},
@@ -1445,8 +1452,10 @@ class Ledger:
                           "resume_to") if t[k] != p[k]]
         errs += [f"{tid} {v}" for v in p["violations"]]
         rows = {r["finding_id"]: {"status": r["status"], "blocking": r["blocking"], "severity": r["severity"],
-                                  "owner_decision": r["owner_decision"]} for r in self.db.execute(
-            "SELECT finding_id, status, blocking, severity, owner_decision FROM findings WHERE task_id=?", (tid,))}
+                                  "owner_decision": r["owner_decision"], "review_id": r["review_id"],
+                                  "commit_sha": r["commit_sha"]} for r in self.db.execute(
+            "SELECT finding_id, status, blocking, severity, owner_decision, review_id, commit_sha "
+            "FROM findings WHERE task_id=?", (tid,))}
         if rows != p["findings"]:
             errs.append(f"{tid} findings differ from the event chain")
         steps = {r["step_id"]: r["status"] for r in self.db.execute(
@@ -1532,7 +1541,8 @@ def _replay(events) -> dict:
         elif kind == "FINDING":
             p["findings"][d.get("id")] = {"status": "OPEN", "blocking": int(bool(d.get("blocking"))),
                                           "severity": d.get("severity"),
-                                          "owner_decision": int(bool(d.get("owner_decision")))}
+                                          "owner_decision": int(bool(d.get("owner_decision"))),
+                                          "review_id": d.get("review"), "commit_sha": d.get("commit")}
         elif kind == "FINDING_CLOSED" and d.get("id") in p["findings"]:
             p["findings"][d.get("id")]["status"] = "CLOSED"
         elif kind == "STEP_STARTED":

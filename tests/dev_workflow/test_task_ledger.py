@@ -985,6 +985,65 @@ def test_fb_r1_04_more_secret_formats_are_redacted(lp):
         assert tl.redact(once)[0] == once
 
 
+def test_fb_r1_04_mysql_short_password_is_absent_from_ledger_and_handoff(lp):
+    secret = "Secret12345678901234567890"
+    lg = tl.Ledger(lp)
+    tid = lg.create("mysql", "o", DEV)
+    lg.add_context(tid, DEV, "note", "mysql -p" + secret)
+    handoff = lg.handoff(tid)
+    assert secret not in json.dumps(handoff)
+    lg.close()
+    for path in lp.parent.rglob("*"):
+        if path.is_file():
+            assert secret.encode() not in path.read_bytes(), path
+    assert tl.redact("mysql -p" + secret)[0] == "mysql -p[REDACTED:cli_password]"
+
+
+@pytest.mark.parametrize("claim", ["%", "R2_07"])
+def test_r4_01_prior_finding_id_is_literal(lg, repo, tmp_path, claim):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    lg.record_review(tid, "subagent:first", head, str(review_file(tmp_path, head, "REJECT", [
+        {"id": "R2-07", "severity": "HIGH", "title": "still broken"}], name="first.txt")))
+    lg.record_review(tid, "subagent:second", head, str(review_file(
+        tmp_path, head, prior=[{"id": claim, "status": "FIXED"}], name="second.txt")))
+    assert lg.db.execute("SELECT status FROM findings WHERE task_id=? AND finding_id='V1/R2-07'",
+                         (tid,)).fetchone()["status"] == "OPEN"
+    assert lg.verify(tid) == []
+    with pytest.raises(tl.Refused, match="open blocking"):
+        lg.accept(tid, DEV)
+
+
+def test_r4_01_reused_short_id_needs_review_identity(lg, repo, tmp_path):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    for reviewer, name in (("subagent:first", "first.txt"), ("subagent:second", "second.txt")):
+        lg.record_review(tid, reviewer, head, str(review_file(tmp_path, head, "REJECT", [
+            {"id": "R1-01", "severity": "HIGH", "title": name}], name=name)))
+    lg.record_review(tid, "subagent:third", head, str(review_file(
+        tmp_path, head, prior=[{"id": "R1-01", "status": "FIXED"}], name="third.txt")))
+    statuses = {r["finding_id"]: r["status"] for r in lg.db.execute(
+        "SELECT finding_id, status FROM findings WHERE task_id=?", (tid,))}
+    assert statuses == {"V1/R1-01": "OPEN", "V2/R1-01": "OPEN"}
+    lg.record_review(tid, "subagent:fourth", head, str(review_file(
+        tmp_path, head, prior=[{"id": "V1/R1-01", "status": "FIXED"}], name="fourth.txt")))
+    statuses = {r["finding_id"]: r["status"] for r in lg.db.execute(
+        "SELECT finding_id, status FROM findings WHERE task_id=?", (tid,))}
+    assert statuses == {"V1/R1-01": "CLOSED", "V2/R1-01": "OPEN"}
+    assert lg.verify(tid) == []
+
+
+@pytest.mark.parametrize("column,value", [("review_id", "V0"), ("commit_sha", "f" * 40)])
+def test_r4_02_finding_provenance_is_verified_before_review(lg, repo, tmp_path, column, value):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    lg.add_finding(tid, "owner:chetan", "F1", "HIGH", "owner concern")
+    lg.db.execute(f"UPDATE findings SET {column}=? WHERE task_id=? AND finding_id='F1'", (value, tid))
+    assert any("findings" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.record_review(tid, REV, head, str(review_file(
+            tmp_path, head, prior=[{"id": "F1", "status": "FIXED"}])))
+    assert lg.db.execute("SELECT status FROM findings WHERE task_id=? AND finding_id='F1'",
+                         (tid,)).fetchone()["status"] == "OPEN"
+
+
 def test_fb_r1_06_new_head_voids_acceptance_in_any_status(lg, repo, tmp_path):
     tid, head = _fallback_ready_task(lg, repo, tmp_path)
     lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
