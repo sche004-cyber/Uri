@@ -164,6 +164,9 @@ class OiConversation extends ChangeNotifier {
   Map<String, dynamic> turnStatus = const {};
   Map<String, dynamic> brainHealth = const {};
 
+  /// When [brainHealth] was last read successfully (microseconds since epoch; 0 = never).
+  int brainHealthAt = 0;
+
   final List<OiMessage> messages = [];
 
   final _a2uiHandoffs = StreamController<Map<String, dynamic>>.broadcast();
@@ -296,6 +299,7 @@ class OiConversation extends ChangeNotifier {
       if (!_active(rt)) return;
       final changed = brainHealth.isNotEmpty && health['state'] != brainHealth['state'];
       brainHealth = health;
+      brainHealthAt = DateTime.now().microsecondsSinceEpoch;
       // BRAIN-QC (review R1-01 correction): the readiness the header shows is re-read on a health change AND on every
       // poll while the Brain is recovering or switching. During a profile switch it never reads "ready": the old
       // server still answers READY until it is stopped, and the new one before its calibration, but neither is the

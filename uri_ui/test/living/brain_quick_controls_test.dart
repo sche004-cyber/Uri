@@ -85,6 +85,9 @@ class QcRuntime implements IntegratedRuntime {
   /// When set, brain_health's controls.assist follows [assistStatus], as the real worker's does.
   bool assistLinked = false;
 
+  /// When set, assist_status fails with this code.
+  String? assistError;
+
   @override
   Stream<Map<String, dynamic>> get events => _events.stream;
   @override
@@ -103,7 +106,8 @@ class QcRuntime implements IntegratedRuntime {
     switch (command['command']) {
       case 'brain_health':
         final c = health['controls'];
-        if (!assistLinked || c is! Map) return health;
+        // a fresh Map per reading, as a decoded worker reply is (review R4-03)
+        if (!assistLinked || c is! Map) return Map.of(health);
         final granted = assistStatus['state'] == 'ACTIVE' || assistStatus['state'] == 'PAUSED';
         return {...health, 'controls': {...c, 'assist': {'asking': false, 'granted': granted}, 'vision_locked': granted}};
       case 'brain_status':
@@ -116,7 +120,10 @@ class QcRuntime implements IntegratedRuntime {
       case 'oi_turn':
         return {'turn_id': 't${commands.length}', 'accepted': true};
       case 'assist_status':
+        if (assistError != null) throw IntegratedRuntimeException(assistError!);
         return assistStatus;
+      case 'assist_grant':
+        return assistStatus = {'state': 'ACTIVE'};
       case 'assist_revoke':
         return assistStatus = {'state': 'OFF'};
       default:
@@ -709,26 +716,51 @@ void main() {
       expect(rt.commands.length, calls, reason: 'no calls while unavailable');
     });
 
-    testWidgets('R3-01: a failing Assist status is read again at most once per health reading', (tester) async {
+    testWidgets('R3-01 / R4-03: a failing Assist status is read again exactly once per newer health reading',
+        (tester) async {
       final rt = QcRuntime()..assistStatus = {'state': 'OFF'};
       rt.health = {'state': 'READY', 'controls': controls(active: 'standard', visionLocked: true)};
       final conv = await ready(rt);
       final assist = AssistController(runtime: () => rt);
       addTearDown(assist.dispose);
-      await assist.refresh();                      // mirror OFF, worker health says granted: they disagree
-      await pumpControls(tester, conv, assist: assist, openAssist: () {});
+      await assist.refresh();                      // mirror OFF ...
+      await conv.refreshHealth();                  // ... then a newer worker reading says granted: they disagree
+      rt.assistError = 'WORKER_TIMEOUT';           // and the Assist status keeps failing
       int statusCalls() => rt.commands.where((c) => c['command'] == 'assist_status').length;
       final before = statusCalls();
+      await pumpControls(tester, conv, assist: assist, openAssist: () {});
       for (var i = 0; i < 50; i++) {
         await tester.pump(const Duration(milliseconds: 16));
       }
-      expect(statusCalls() - before, lessThanOrEqualTo(1), reason: 'one resync for this reading');
-      expect(toggle(tester, 'qc-assist').visual, QcVisual.on, reason: 'the worker reading is shown');
-      await conv.refreshHealth();                  // the next poll: one more chance, not more
+      expect(statusCalls() - before, 1, reason: 'one re-read for this health reading');
+      expect(toggle(tester, 'qc-assist').visual, QcVisual.on, reason: 'the newer (worker) reading is shown');
+      await conv.refreshHealth();                  // the next poll: exactly one more re-read
       for (var i = 0; i < 50; i++) {
         await tester.pump(const Duration(milliseconds: 16));
       }
-      expect(statusCalls() - before, lessThanOrEqualTo(2));
+      expect(statusCalls() - before, 2);
+    });
+
+    testWidgets('R4-01: a grant made in the consent view shows at once, also while a turn runs', (tester) async {
+      final rt = QcRuntime()..assistLinked = true;
+      final conv = await ready(rt);                // worker reading: no grant
+      final assist = AssistController(runtime: () => rt);
+      addTearDown(assist.dispose);
+      await assist.refresh();
+      await pumpControls(tester, conv, assist: assist, openAssist: () {});
+      expect(toggle(tester, 'qc-assist').visual, QcVisual.off);
+      await conv.send('hello');                    // a turn runs: no health poll meanwhile
+      expect(conv.busy, isTrue);
+      await assist.grant('desktop_window', 'w1', suggest: false);   // what the consent view does
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(toggle(tester, 'qc-assist').visual, QcVisual.on, reason: 'the newer Assist status wins');
+      expect(toggle(tester, 'qc-assist').tooltip, contains('URI Assist is on'));
+      await tester.tap(find.byKey(const ValueKey('qc-assist')));   // a click now stops it
+      await tester.pumpAndSettle();
+      expect(rt.commands.where((c) => c['command'] == 'assist_revoke'), hasLength(1));
+      expect(toggle(tester, 'qc-assist').visual, QcVisual.off);
     });
 
     testWidgets('an unreadable worker Assist state falls back to the Assist status (R2-06)', (tester) async {

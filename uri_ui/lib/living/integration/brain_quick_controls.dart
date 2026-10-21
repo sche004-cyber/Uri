@@ -421,16 +421,22 @@ class BrainQuickControls extends StatelessWidget {
                 : null;
     // Review R2-01: the worker's own state (polled with brain health) is the authority. The worker ends a grant by
     // itself (time limit, target lost), so the Assist status this UI read last can be stale: when the two disagree
-    // the worker's value is shown and the Assist status is read again, once per health reading.
+    // the Assist status is read again, once per newer health reading (R4-01 below).
     // Review R3-01: only while a worker is connected. Without one there is no grant (a restarted worker starts with
     // URI Assist off) and the last health reading is not trusted.
     final connected = !conv.workerExited && !conv.restarting && (a == null || a.available);
     final workerGranted = connected && worker?['granted'] is bool ? worker!['granted'] as bool : null;
     final mirrorGranted = connected && a != null && a.loaded ? (a.active || a.paused) : null;
-    final granted = workerGranted ?? mirrorGranted ?? false;
+    // Review R4-01: both readings are the worker's; the newer one wins (a grant made in the consent view shows at
+    // once, a grant the worker ended shows with the next health poll). Only a newer health reading triggers a re-read
+    // of the Assist status, so the two never ping-pong.
+    final mirrorNewer = a != null && a.statusAt > conv.brainHealthAt;
+    final granted = workerGranted != null && mirrorGranted != null
+        ? (mirrorNewer ? mirrorGranted : workerGranted)
+        : workerGranted ?? mirrorGranted ?? false;
     final paused = granted && a != null && a.loaded && a.paused;
     if (a != null && unavailable == null && workerGranted != null && mirrorGranted != null &&
-        workerGranted != mirrorGranted && !a.busy) {
+        workerGranted != mirrorGranted && !mirrorNewer && !a.busy) {
       _resyncAssist(conv, a);
     }
     final err = a?.lastError;
