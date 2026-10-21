@@ -1340,3 +1340,35 @@ def test_r5_06_filtered_list_checks_tasks_outside_filter(lg):
     lg.db.execute("UPDATE tasks SET milestone_ref='N' WHERE task_id=?", (tid,))
     with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
         lg.list("M")
+
+
+def test_r5_07_reassigned_lease_keeps_previous_task_sealed(lg):
+    first = lg.create("first", "objective", DEV)
+    second = lg.create("second", "objective", DEV)
+    old_token = lg.acquire(first, DEV, ["shared:resource"], ttl_s=-1)["shared:resource"]
+    assert lg.verify() == []
+
+    new_token = lg.acquire(second, DEV, ["shared:resource"])["shared:resource"]
+
+    assert new_token > old_token
+    assert lg.verify() == []
+    assert lg.get(first)["task_id"] == first
+    assert lg.get(second)["task_id"] == second
+    assert lg.leases()[0]["task_id"] == second
+    assert any(e["kind"] == "LEASE_REASSIGNED" for e in lg.history(first))
+
+
+@pytest.mark.parametrize("bad_data, event_seq", [("not json", 1), ("[]", -1)])
+def test_r5_08_malformed_event_data_uses_summary_integrity_exit(lg, lp, bad_data, event_seq):
+    tid = lg.create("broken", "objective", DEV, milestone_ref="M")
+    if event_seq == -1:
+        event_seq = lg.get(tid)["version"]
+    lg.db.execute("UPDATE events SET data=? WHERE task_id=? AND seq=?", (bad_data, tid, event_seq))
+
+    assert any(f"event {event_seq}" in error and "data" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.summaries("M")
+    result = cli(lp, "summary", "--milestone", "M", "--json")
+    assert result.returncode == 4
+    assert "LEDGER_INTEGRITY_FAILED" in result.stderr
+    assert result.stdout == ""

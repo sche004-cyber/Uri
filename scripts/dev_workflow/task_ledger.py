@@ -418,7 +418,13 @@ class Ledger:
         prev, count = GENESIS, 0
         for r in self.db.execute("SELECT * FROM events WHERE task_id=? ORDER BY seq", (task_id,)):
             count += 1
-            ev = {"seq": r["seq"], "ts": r["ts"], "kind": r["kind"], "data": json.loads(r["data"]),
+            try:
+                data = json.loads(r["data"])
+            except (TypeError, ValueError):
+                return [f"{task_id} event {r['seq']} has malformed JSON data"]
+            if not isinstance(data, dict):
+                return [f"{task_id} event {r['seq']} data is not an object"]
+            ev = {"seq": r["seq"], "ts": r["ts"], "kind": r["kind"], "data": data,
                   "prev": r["prev"]}
             if r["seq"] != count or r["prev"] != prev or r["hash"] != event_hash(ev):
                 return [f"{task_id} event {r['seq']} chain broken"]
@@ -838,12 +844,21 @@ class Ledger:
                                       "expires_in_s": round(cur["expires_at"] - nowt, 1)})
             if conflicts:
                 raise Refused("LEASE_CONFLICT " + json.dumps(conflicts))
+            previous = {}
+            for r in sorted(set(resources)):
+                cur = self._lease(r)
+                if cur is not None and cur["task_id"] and cur["task_id"] != task_id:
+                    self._task(cur["task_id"])  # Check its seal before changing its lease projection.
+                    previous[r] = (cur["task_id"], cur["token"])
             tokens = {}
             for r in sorted(set(resources)):
                 tok = self._fence()
                 self.db.execute("INSERT OR REPLACE INTO leases VALUES(?,?,?,?,?,?)",
                                 (r, task_id, actor, tok, now_iso(), nowt + ttl_s))
                 tokens[r] = tok
+            for r, (prior_task, prior_token) in previous.items():
+                self._append(prior_task, "LEASE_REASSIGNED", actor,
+                             {"resource": r, "token": prior_token, "new_task": task_id})
             if task_id:
                 self._append(task_id, "LEASES", actor, {"acquired": tokens, "ttl_s": ttl_s})
             return tokens
@@ -1606,10 +1621,22 @@ class Ledger:
         if task_id is not None and not tasks and not orphans:
             raise Refused(f"no task {task_id}")
         for t in tasks:
-            tid, prev, n = t["task_id"], GENESIS, 0
+            tid, prev, n, malformed = t["task_id"], GENESIS, 0, False
             for r in self.db.execute("SELECT * FROM events WHERE task_id=? ORDER BY seq", (tid,)):
                 n += 1
-                ev = {"seq": r["seq"], "ts": r["ts"], "kind": r["kind"], "data": json.loads(r["data"]),
+                try:
+                    data = json.loads(r["data"])
+                except (TypeError, ValueError):
+                    errs.append(f"{tid} event {r['seq']} has malformed JSON data")
+                    malformed = True
+                    prev = r["hash"]
+                    continue
+                if not isinstance(data, dict):
+                    errs.append(f"{tid} event {r['seq']} data is not an object")
+                    malformed = True
+                    prev = r["hash"]
+                    continue
+                ev = {"seq": r["seq"], "ts": r["ts"], "kind": r["kind"], "data": data,
                       "prev": r["prev"]}
                 if r["seq"] != n:
                     errs.append(f"{tid} event seq {r['seq']} out of order (expected {n})")
@@ -1618,6 +1645,8 @@ class Ledger:
                 prev = r["hash"]
             if t["version"] != n or t["chain_head"] != prev:
                 errs.append(f"{tid} task row (version {t['version']}) differs from its chain ({n} events)")
+            if malformed:
+                continue  # The seal, replay and review checks require decoded event objects.
             errs += self._seal_errors(tid)
             errs += self._replay_errors(t)
             for c in self.db.execute("SELECT * FROM context WHERE task_id=?", (tid,)):
