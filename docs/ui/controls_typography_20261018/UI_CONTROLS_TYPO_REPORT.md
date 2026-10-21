@@ -1,5 +1,10 @@
 # UI-CONTROLS-TYPO-20261018 - Interactive Controls & Typography Refinement: implementation report
 
+> **Superseded in part (2026-10-21, URI-CONTROLS-3):** the owner decided that the quick controls are exactly three
+> ON/OFF toggles: Thinking, Vision, URI Assist. The Context selection, the Draft chip and the Thinking Auto menu
+> described below no longer exist. Typography, the push-to-enable toggle look and the host restore stay. Current
+> record: `docs/ui/uri_controls_3/URI_CONTROLS_3_REPORT.md`.
+
 Branch `milestone/ui-controls-typography-20261018`, worktree `D:\uri-dev\uri-ui-controls-typo`, cut from canonical
 `feaabe3f`, merged with canonical `ec2fab54` (Brain QC closure) at `a4935c2b`. Local only: not pushed, not integrated.
 The acceptance criteria were written first: `00_ACCEPTANCE_CRITERIA.md` (unchanged since). Conventions for future work:

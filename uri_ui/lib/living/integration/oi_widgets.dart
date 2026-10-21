@@ -570,27 +570,8 @@ class OiBrainBar extends StatelessWidget {
                   ? null
                   : (v) => v == null ? null : conv.selectBrain(v),
             )),
-          fit(DropdownButton<OiDepth>(
-            key: const ValueKey('oi-depth'),
-            value: conv.depth,
-            isDense: true,
-            isExpanded: true,
-            underline: const SizedBox.shrink(),
-            style: TextStyle(color: c.ink, fontSize: UriType.label),
-            items: const [
-              DropdownMenuItem(value: OiDepth.auto, child: Text('Depth: auto', overflow: TextOverflow.ellipsis)),
-              DropdownMenuItem(value: OiDepth.fast, child: Text('Depth: fast', overflow: TextOverflow.ellipsis)),
-              DropdownMenuItem(
-                value: OiDepth.normal,
-                child: Text('Depth: thinking', overflow: TextOverflow.ellipsis),
-              ),
-              DropdownMenuItem(
-                value: OiDepth.deep,
-                child: Text('Depth: deep (offer a stronger tool)', overflow: TextOverflow.ellipsis),
-              ),
-            ],
-            onChanged: (v) => v == null ? null : conv.setDepth(v),
-          )),
+          // URI-CONTROLS-3 (review R2-02): no Depth picker here; the Thinking toggle under the chat box is
+          // the one Thinking control (On / Off).
           IconButton(
             tooltip: 'Refresh Brain status',
             icon: const Icon(Icons.refresh_rounded, size: 16),

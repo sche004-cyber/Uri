@@ -692,7 +692,8 @@ class IntegratedTurns:
         try:
             return fn()
         except Exception:                 # Assist state is advisory for the controls; never breaks a status read
-            return None
+            # Review R2-06: Assist exists but its state could not be read: say so instead of "no Assist" (None).
+            return {"asking": False, "granted": None, "error": "ASSIST_STATE_UNREADABLE"}
 
     def _largest_context(self):
         """The largest last-answer context of any session in this worker (0 when none is known)."""

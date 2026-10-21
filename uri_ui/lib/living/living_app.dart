@@ -209,6 +209,7 @@ class _LivingAppState extends State<LivingApp> {
     super.initState();
     widget.configureServices?.call(_services);
     _services.oi?.onDepthChanged = (d) async {
+      if (d != OiDepth.fast && d != OiDepth.normal) return;   // only the Thinking toggle's two values are kept
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(LivingPrefs.thinking, d.name);
     };

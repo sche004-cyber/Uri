@@ -411,8 +411,16 @@ class BrainQuickControls extends StatelessWidget {
     final conv = conversation;
     final controls = conv.brainControls;
     final worker = (controls['assist'] as Map?)?.cast<String, dynamic>();
-    final granted = a != null && a.loaded ? (a.active || a.paused) : worker?['granted'] == true;
-    final paused = a != null && a.loaded && a.paused;
+    // Review R2-01: the worker's own state (polled with brain health) is the authority. The worker ends a grant by
+    // itself (time limit, target lost), so the Assist status this UI read last can be stale: when the two disagree
+    // the worker's value is shown and both are read again.
+    final workerGranted = worker?['granted'] is bool ? worker!['granted'] as bool : null;
+    final mirrorGranted = a != null && a.loaded ? (a.active || a.paused) : null;
+    final granted = workerGranted ?? mirrorGranted ?? false;
+    final paused = granted && a != null && a.loaded && a.paused;
+    if (a != null && workerGranted != null && mirrorGranted != null && workerGranted != mirrorGranted && !a.busy) {
+      _resyncAssist(conv, a);
+    }
     final String? unavailable = a == null
         ? 'URI Assist needs the URI worker; it is not connected here.'
         : conv.workerExited || conv.restarting || !a.available
@@ -441,16 +449,16 @@ class BrainQuickControls extends StatelessWidget {
           : paused
               ? 'Paused'
               : null,
-      visual: a != null && a.busy
-          ? QcVisual.loading
-          : granted
-              ? QcVisual.on
-              : QcVisual.off,
+      // Review R2-04: no loading look; Assist asks and checks share the controller's busy flag.
+      visual: granted ? QcVisual.on : QcVisual.off,
       tooltip: err == null || unavailable != null ? tip : '$tip (Last refusal: $err.)',
       onPressed: unavailable != null
           ? null
           : granted
-              ? () => a!.revoke()
+              ? () async {
+                  await a!.revoke();
+                  await conv.refreshHealth();
+                }
               : openAssist == null
                   ? null
                   : () {
@@ -458,6 +466,22 @@ class BrainQuickControls extends StatelessWidget {
                       a!.refresh();
                     },
     );
+  }
+
+  static bool _resyncing = false;
+
+  /// Reads the worker's Assist status and brain health again after the two disagreed (once at a time).
+  static void _resyncAssist(OiConversation conv, AssistController a) {
+    if (_resyncing) return;
+    _resyncing = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await a.refresh();
+        await conv.refreshHealth();
+      } finally {
+        _resyncing = false;
+      }
+    });
   }
 
   Future<void> _confirmAndSwitch(BuildContext context, QcChoice choice, {List<String> blocked = const []}) async {

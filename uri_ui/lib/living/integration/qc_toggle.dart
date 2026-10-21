@@ -131,8 +131,8 @@ class _QcToggleState extends State<QcToggle> with _Pointer {
       button: true,
       toggled: on,
       enabled: enabled,
-      focusable: enabled,
-      focused: enabled && focused,
+      focusable: enabled || v == QcVisual.loading,
+      focused: (enabled || v == QcVisual.loading) && focused,
       label: widget.label,
       value:
           widget.status ??
@@ -145,7 +145,9 @@ class _QcToggleState extends State<QcToggle> with _Pointer {
       onTap: enabled ? _activate : null,
       excludeSemantics: true,
       child: FocusableActionDetector(
-        enabled: enabled,
+        // Review R2-03: still focusable while loading (a switch runs and the caller offers no action), so focus
+        // does not jump away; activation stays guarded by [_enabled].
+        enabled: widget.onPressed != null || v == QcVisual.loading,
         actions: _actions,
         onShowFocusHighlight: (f) => focused == f ? null : setState(() => focused = f),
         child: MouseRegion(
@@ -172,7 +174,7 @@ class _QcToggleState extends State<QcToggle> with _Pointer {
                   borderRadius: BorderRadius.circular(QcStyle.radius),
                   boxShadow: on ? QcStyle.glow(c, hover: h) : const [],
                 ),
-                foregroundDecoration: enabled && focused ? QcStyle.focusRing(c) : null,
+                foregroundDecoration: (enabled || v == QcVisual.loading) && focused ? QcStyle.focusRing(c) : null,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

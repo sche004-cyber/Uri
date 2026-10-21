@@ -12,6 +12,7 @@ import 'package:uri_ui/living/integration/oi_conversation.dart';
 import 'package:uri_ui/living/integration/qc_toggle.dart';
 import 'package:uri_ui/living/presentation/presentation_controller.dart';
 import 'package:uri_ui/services/integrated_runtime.dart';
+import 'package:uri_ui/theme/uri_theme.dart';
 
 import '../ws/ws_integration_test.dart' show host;
 import 'uiv2_postint_test.dart' show pumpRoot, settle;
@@ -81,6 +82,9 @@ class QcRuntime implements IntegratedRuntime {
   String? statusError;
   Map<String, dynamic> assistStatus = {'state': 'OFF'};
 
+  /// When set, brain_health's controls.assist follows [assistStatus], as the real worker's does.
+  bool assistLinked = false;
+
   @override
   Stream<Map<String, dynamic>> get events => _events.stream;
   @override
@@ -98,7 +102,10 @@ class QcRuntime implements IntegratedRuntime {
     commands.add(command);
     switch (command['command']) {
       case 'brain_health':
-        return health;
+        final c = health['controls'];
+        if (!assistLinked || c is! Map) return health;
+        final granted = assistStatus['state'] == 'ACTIVE' || assistStatus['state'] == 'PAUSED';
+        return {...health, 'controls': {...c, 'assist': {'asking': false, 'granted': granted}, 'vision_locked': granted}};
       case 'brain_status':
         if (statusError != null) throw IntegratedRuntimeException(statusError!);
         return status;
@@ -519,6 +526,10 @@ void main() {
       await pumpControls(tester, conv);
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);   // Thinking
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);   // Vision is disabled: focus moves past it
+      await tester.pumpAndSettle();
+      final visionNode = Focus.of(tester.element(find.descendant(
+          of: find.byKey(const ValueKey('qc-vision')), matching: find.byType(AnimatedContainer))));
+      expect(visionNode.hasPrimaryFocus, isFalse, reason: 'a disabled toggle never takes focus');
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('qc-confirm-switch')), findsNothing);
@@ -559,10 +570,60 @@ void main() {
     });
   });
 
+  testWidgets('R2-03: a focused toggle keeps focus while it shows loading', (tester) async {
+    final rt = QcRuntime();
+    final conv = await ready(rt);
+    await pumpControls(tester, conv);
+    final inner = find.descendant(of: find.byKey(const ValueKey('qc-vision')), matching: find.byType(AnimatedContainer));
+    Focus.of(tester.element(inner)).requestFocus();
+    await tester.pumpAndSettle();
+    expect(Focus.of(tester.element(inner)).hasPrimaryFocus, isTrue);
+    rt.health = {'state': 'RECOVERING', 'controls': controls(pending: true)};
+    await conv.refreshHealth();
+    await tester.pump(const Duration(milliseconds: 500));  // the spinner never settles
+    expect(toggle(tester, 'qc-vision').visual, QcVisual.loading);
+    expect(Focus.of(tester.element(inner)).hasPrimaryFocus, isTrue, reason: 'focus does not jump to the composer');
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump(const Duration(milliseconds: 500));  // the spinner never settles
+    expect(find.byKey(const ValueKey('qc-confirm-switch')), findsNothing, reason: 'loading: activation guarded');
+  });
+
+  testWidgets('R1-03: a restore still running after the worker gate is a warning, not "failed too"', (tester) async {
+    final rt = QcRuntime();
+    final conv = await ready(rt);
+    await conv.reconfigureBrain('long');
+    rt.health = {
+      'state': 'UNAVAILABLE',
+      'controls': controls(last: {'id': 'req-1', 'result': 'FAILED', 'restored': false,
+          'fallback': {'to': 'frozen', 'label': 'Standard', 'result': 'IN_PROGRESS'}}),
+    };
+    await conv.refreshHealth();
+    await pumpControls(tester, conv);
+    expect(find.text('The Brain did not start with the new setting; URI is still going back to Standard.'),
+        findsOneWidget);
+    expect(find.textContaining('failed too'), findsNothing);
+    expect(toggle(tester, 'qc-vision').visual, isNot(QcVisual.error));
+    final notice = tester.widget<Text>(find.byKey(const ValueKey('qc-notice')));
+    expect(notice.style!.color, UriColors.of(tester.element(find.byKey(const ValueKey('qc-notice')))).warning);
+  });
+
+  testWidgets('R2-02: the conversation pane has no second Depth picker', (tester) async {
+    final (_, services) = await pumpRoot(tester, const Size(1280, 860));
+    services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.conversation);
+    await settle(tester);
+    expect(find.byKey(const ValueKey('oi-depth')), findsNothing);
+    expect(find.textContaining('Depth: '), findsNothing);
+    services.oi!.setDepth(OiDepth.deep);                      // an old caller: never stored, never restored
+    await tester.pump();
+    expect((await SharedPreferences.getInstance()).getString('uri.living.thinking'), isNull);
+  });
+
   group('URI Assist toggle', () {
     Future<(QcRuntime, OiConversation, AssistController)> withAssist(WidgetTester tester,
         {Map<String, dynamic> status = const {'state': 'OFF'}, void Function()? open}) async {
-      final rt = QcRuntime()..assistStatus = Map.of(status);
+      final rt = QcRuntime()
+        ..assistStatus = Map.of(status)
+        ..assistLinked = true;
       final conv = await ready(rt);
       final assist = AssistController(runtime: () => rt);
       addTearDown(assist.dispose);
@@ -600,6 +661,42 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('qc-assist')));
       await tester.pumpAndSettle();
       expect(rt.commands.where((c) => c['command'] == 'assist_revoke'), hasLength(1));
+    });
+
+    testWidgets('R2-01: the worker ended the grant: the toggle follows the worker and both are read again',
+        (tester) async {
+      final rt = QcRuntime()..assistStatus = {'state': 'ACTIVE'};
+      rt.health = {'state': 'READY', 'controls': controls(active: 'standard', visionLocked: true)};
+      final conv = await ready(rt);
+      final assist = AssistController(runtime: () => rt);
+      addTearDown(assist.dispose);
+      await assist.refresh();
+      await pumpControls(tester, conv, assist: assist, openAssist: () {});
+      expect(toggle(tester, 'qc-assist').visual, QcVisual.on);
+      // the worker ends the grant by itself (time limit / target lost); its next health says so
+      rt.assistStatus = {'state': 'OFF'};
+      rt.health = {'state': 'READY', 'controls': controls(active: 'standard')};
+      await conv.refreshHealth();
+      final reads = rt.commands.where((c) => c['command'] == 'assist_status').length;
+      await tester.pumpAndSettle();
+      expect(toggle(tester, 'qc-assist').visual, QcVisual.off, reason: 'the worker is the authority');
+      expect(rt.commands.where((c) => c['command'] == 'assist_status').length, greaterThan(reads),
+          reason: 'the stale mirror is read again');
+      expect(assist.state, 'OFF');
+      expect(toggle(tester, 'qc-vision').onPressed, isNotNull, reason: 'vision lock lifted with the grant');
+    });
+
+    testWidgets('an unreadable worker Assist state falls back to the Assist status (R2-06)', (tester) async {
+      final rt = QcRuntime()..assistStatus = {'state': 'ACTIVE'};
+      rt.health = {'state': 'READY', 'controls': {...controls(active: 'standard'),
+          'assist': {'asking': false, 'granted': null, 'error': 'ASSIST_STATE_UNREADABLE'}}};
+      final conv = await ready(rt);
+      final assist = AssistController(runtime: () => rt);
+      addTearDown(assist.dispose);
+      await assist.refresh();
+      await pumpControls(tester, conv, assist: assist, openAssist: () {});
+      expect(toggle(tester, 'qc-assist').visual, QcVisual.on);
+      expect(toggle(tester, 'qc-assist').onPressed, isNotNull, reason: 'not "unavailable"');
     });
 
     testWidgets('a worker without URI Assist shows it unavailable, with the reason', (tester) async {

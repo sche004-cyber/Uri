@@ -490,7 +490,10 @@ def test_assist_state_failure_never_breaks_controls(fake, tmp_path):  # noqa: F8
     def boom():
         raise RuntimeError("x")
     b.assist_state = boom
-    assert b._controls("READY", rep, True, False)["assist"] is None
+    c = b._controls("READY", rep, True, False)
+    # URI-CONTROLS-3 review R2-06: Assist exists but its state is unknown (not "no Assist"); vision is not locked.
+    assert c["assist"] == {"asking": False, "granted": None, "error": "ASSIST_STATE_UNREADABLE"}
+    assert c["vision_locked"] is False
 
 
 def test_worker_wires_assist_state_after_assist_is_created():
