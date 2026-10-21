@@ -52,15 +52,17 @@ This file is updated at every checkpoint so work can resume without chat history
 | 23 | 2026-10-22 | (R10 repair commit, see `git log`) | R10 repaired (`reviews/R10_REPAIR.md`); 148 MM tests; N5 at `ddc4e63b`: 445 passed / 5 platform-gated / 0 failed | independent re-review R11 |
 | 24 | 2026-10-22 | `5bb005f6` | **R11 = REJECT** (5: 1 MEDIUM, 4 LOW); R10 findings fixed | repair |
 | 25 | 2026-10-22 | (R11 repair commit, see `git log`) | R11 repaired (`reviews/R11_REPAIR.md`); 154 MM tests; R11 tests 6/6 fail pre-repair | independent re-review R12 |
+| 26 | 2026-10-22 | `61b01ac4` | **R12 = REJECT** (3: 1 MEDIUM, 2 LOW); R11 all fixed | repair |
+| 27 | 2026-10-22 | (R12 repair commit, see `git log`) | R12 repaired (`reviews/R12_REPAIR.md`); 158 MM tests; N5 at `1838e2df`: 460 passed / 5 platform-gated / 0 failed | independent re-review R13 |
 
 ## Verification status (exact)
 
 | Check | Status | Evidence |
 |---|---|---|
-| MM tests | COMPLETED_WITH_RESULT per candidate: 49 `7ab9263c`, 77 `4a54ebe1`, 93 `5bce5bdf`, 101 `c992b5ae`, 111 `7c8e0a29`, 120 `3ba9af68`, 124 `5b2a1427`, 129 `ddc4e63b`, 136 `2fe3615f`, 144 `1838e2df`, 148 `5bb005f6` (each also re-run by the reviewer), 154 on the R11 repair commit | reviewer re-runs on each candidate |
+| MM tests | COMPLETED_WITH_RESULT per candidate: 49 `7ab9263c`, 77 `4a54ebe1`, 93 `5bce5bdf`, 101 `c992b5ae`, 111 `7c8e0a29`, 120 `3ba9af68`, 124 `5b2a1427`, 129 `ddc4e63b`, 136 `2fe3615f`, 144 `1838e2df`, 148 `5bb005f6`, 154 `61b01ac4` (each also re-run by the reviewer), 158 on the R12 repair commit | reviewer re-runs on each candidate |
 | R1 regression proof | COMPLETED_WITH_RESULT: new R1 tests on pre-repair code: 23 failed, 5 passed | `reviews/R1_REPAIR.md` |
 | Frozen core (`scripts/ws_frozen_check.py`) | COMPLETED_WITH_RESULT at `7ab9263c`: ok; MM changes only add files under `scripts/dev_workflow/milestones/`, `tests/dev_workflow/test_milestones.py`, `docs/milestone_manager/` | `D:/uri-dev/mm-evidence/frozen_check_7ab9263c.log` |
-| N5 full `tests/dev_workflow` regression | COMPLETED_WITH_RESULT at `7ab9263c`: 365 passed / 5 platform-gated / 0 failed (31 min); at `5bce5bdf`: 409 passed / 5 platform-gated / 0 failed (28 min); at `3ba9af68`: 436 passed / 5 platform-gated / 0 failed (28 min); at `ddc4e63b`: 445 passed / 5 platform-gated / 0 failed (29 min). To be re-run on the accepted commit. | `evidence/devworkflow_7ab9263c.log`, `evidence/devworkflow_5bce5bdf.log`, `evidence/devworkflow_3ba9af68.log`, `evidence/devworkflow_ddc4e63b.log` |
+| N5 full `tests/dev_workflow` regression | COMPLETED_WITH_RESULT at `7ab9263c`: 365 passed / 5 platform-gated / 0 failed (31 min); at `5bce5bdf`: 409 passed / 5 platform-gated / 0 failed (28 min); at `3ba9af68`: 436 passed / 5 platform-gated / 0 failed (28 min); at `ddc4e63b`: 445 passed / 5 platform-gated / 0 failed (29 min); at `1838e2df`: 460 passed / 5 platform-gated / 0 failed (29 min). To be re-run on the accepted commit. | `evidence/devworkflow_7ab9263c.log`, `evidence/devworkflow_5bce5bdf.log`, `evidence/devworkflow_3ba9af68.log`, `evidence/devworkflow_ddc4e63b.log`, `evidence/devworkflow_1838e2df.log` |
 | Migration rehearsal | COMPLETED_WITH_RESULT, re-run on every repair commit (event count changes as the P0 working copy changes; see the file) | `evidence/rehearsal/verify.json`, `import_reports.json` |
 
 ## Open questions for the owner (not blocking development)

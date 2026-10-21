@@ -17,6 +17,7 @@ from pathlib import Path
 from scripts.dev_workflow.milestones import model as M
 from scripts.dev_workflow.milestones.model import ValidationError
 from scripts.dev_workflow.milestones.store import utc_now as store_now
+from scripts.dev_workflow.milestones.store import unlink_retry
 from scripts.dev_workflow.milestones.store import (GIT, EventStore, StoreError, canonical,
                                                    file_sha256, read_segment, sha256_text)
 
@@ -63,9 +64,9 @@ class Manager:
                     for s in segs if s.torn]
         warnings += self.store.anchor_warnings(segs, anchors)
         pend = self.store.pending_loss()
-        if pend:
+        if pend and pend["id"] not in state.get("recorded_pending_ids", []):
             warnings.append(f"an acknowledged loss is pending and will be recorded as ANCHOR_LOSS by the next write: "
-                            f"{pend[0]}")
+                            f"{pend['problems'][0]}")
         abandoned = set(state.get("abandoned_ids", []))
         warnings += [f"incomplete batch {b} in segment {evs[0]['seg']} ({len(evs)} of {evs[0]['batch']['n']} "
                      "events; ignored" + ("; abandoned" if b in abandoned else "; `recover` on that host") + ")"
@@ -96,7 +97,9 @@ class Manager:
         """``build(p)`` validates against the verified projection ``p`` and returns [(kind, data, base), ...].
 
         All events of one call are appended as one batch (single write + fsync); the fold applies a batch only when
-        it is complete, so a crash never leaves half a command applied (R1-15)."""
+        it is complete, so a crash never leaves half a command applied (R1-15). Ledger-loss events this write has to
+        record (a pending acknowledged loss, an own segment adopted without anchor) are written first as their own
+        batch and folded *before* the command is validated, so their ANCHOR_LOSS applies to the command (R12-01)."""
         self._require_actor()
         with self.store.locked():
             anchors = self.store.read_anchors()
@@ -105,31 +108,8 @@ class Manager:
             if p["integrity_errors"]:
                 raise StoreError("CHAIN_BROKEN", "ledger fails verification; run `verify` (" +
                                  "; ".join(p["integrity_errors"][:2]) + ")")
-            items = build(p)
             self.last_warnings = []
-            adopt = self.store.anchor_warnings(segs, anchors)
-            if items and adopt:
-                # This write will anchor an own segment that had no anchor (failed first refresh, or an edited
-                # anchors file): record it so it is visible and needs review (review R5-04).
-                own = next(s for s in segs if s.name == self.store.host)
-                items = [("ANCHORS_ADOPTED", {"segment": own.name, "count": len(own.valid_events),
-                                              "head": own.valid_events[-1]["hash"], "warning": adopt[0]}, {})] + items
-                self.last_warnings.append("this write anchored an own segment that had no anchor and recorded "
-                                          "ANCHORS_ADOPTED: review it, then `resolve-conflict LEDGER` (review R6-04)")
-            pending = self.store.pending_loss()
-            if items and pending:
-                items = [("LOSS_RECORDED", {"anchor_problems": pending[:10],
-                                            "origin": "init-host --acknowledge-loss interrupted before it recorded "
-                                                      "the loss"}, {})] + items
-                self.last_warnings.append("recorded a pending acknowledged loss (ANCHOR_LOSS): review it, then "
-                                          "`resolve-conflict LEDGER`")
-            for kind, data, _ in items:
-                hit = M.find_secret(data)
-                if hit:
-                    raise ValidationError("SECRET", f"{kind} contains what looks like a {hit}; secrets are never "
-                                                    "stored (record a reference instead)")
-            # Lamport floor: stamp strictly after every event already seen, so an answer can never tie with or sort
-            # before what it answers, whatever the segment names (reviews R3-04, R4-02).
+            # Lamport floor: stamp strictly after every event already seen (reviews R3-04, R4-02).
             newest = max(((e["ts"], s.name) for s in segs for e in s.valid_events), default=("", ""))
             floor = _plus(newest[0], 0.000001) if newest[0] else ""
             now = store_now()
@@ -139,22 +119,61 @@ class Manager:
                                           "pushed forward by a host whose clock was ahead (see the status warnings "
                                           "for the earliest future-stamped segment); the new event is stamped just "
                                           "after it")
-            written = self.store.append_many(items, actor=self.actor, session=self.session, floor=floor)
-            for ev in written:
-                M.apply(p, ev)
-            if written and pending:
-                self.store.pending_loss_path.unlink(missing_ok=True)
-            if written:
-                own = read_segment(self.store.segment_path)
+            pre = []
+            pending = self.store.pending_loss()
+            pending_new = pending and pending["id"] not in p.get("recorded_pending_ids", []) if pending else False
+            if pending_new:
+                pre.append(("LOSS_RECORDED", {"anchor_problems": pending["problems"][:10],
+                                              "pending_id": pending["id"] or None,
+                                              "origin": "init-host --acknowledge-loss was interrupted before it "
+                                                        "recorded the loss"}, {}))
+                self.last_warnings.append("recorded a pending acknowledged loss (ANCHOR_LOSS): review it, then "
+                                          "`resolve-conflict LEDGER`")
+            adopt = self.store.anchor_warnings(segs, anchors)
+            if adopt:
+                # This write anchors an own segment that had no anchor (failed first refresh, or an edited anchors
+                # file): record it so it is visible and needs review (reviews R5-04, R6-04).
+                own = next(s for s in segs if s.name == self.store.host)
+                pre.append(("ANCHORS_ADOPTED", {"segment": own.name, "count": len(own.valid_events),
+                                                "head": own.valid_events[-1]["hash"], "warning": adopt[0]}, {}))
+                self.last_warnings.append("this write anchored an own segment that had no anchor and recorded "
+                                          "ANCHORS_ADOPTED: review it, then `resolve-conflict LEDGER`")
+            written = []
+            if pre:
+                written += self.store.append_many(pre, actor=self.actor, session=self.session, floor=floor)
+                for ev in written:
+                    M.apply(p, ev)
+                floor = _plus(written[-1]["ts"], 0.000001)
+            if pending:
+                # recorded now or earlier (its id is in the ledger): the marker has done its job (review R12-03)
                 try:
-                    self.store.write_anchors([s for s in segs if s.name != own.name] + [own])
+                    unlink_retry(self.store.pending_loss_path)
                 except OSError as e:
-                    # The events are already fsynced: report, never fail the write (review R2-02); the next
-                    # successful write refreshes the anchors.
-                    self.last_warnings.append(f"anchors not refreshed ({e.__class__.__name__}); the write itself "
-                                              "succeeded")
-                self.last_autocommit = self.store.autocommit(f"{written[-1]['kind']} by {self.actor}")
-            return written
+                    self.last_warnings.append(f"pending-loss marker not removed ({e.__class__.__name__}); its loss "
+                                              "is recorded and will not be recorded again")
+            try:
+                items = build(p)
+                for kind, data, _ in items:
+                    hit = M.find_secret(data)
+                    if hit:
+                        raise ValidationError("SECRET", f"{kind} contains what looks like a {hit}; secrets are "
+                                                        "never stored (record a reference instead)")
+                main = self.store.append_many(items, actor=self.actor, session=self.session, floor=floor)
+                for ev in main:
+                    M.apply(p, ev)
+                written += main
+            finally:
+                if written:
+                    own = read_segment(self.store.segment_path)
+                    try:
+                        self.store.write_anchors([s for s in segs if s.name != own.name] + [own])
+                    except OSError as e:
+                        # The events are already fsynced: report, never fail the write (review R2-02); the next
+                        # successful write refreshes the anchors.
+                        self.last_warnings.append(f"anchors not refreshed ({e.__class__.__name__}); the write "
+                                                  "itself succeeded")
+                    self.last_autocommit = self.store.autocommit(f"{written[-1]['kind']} by {self.actor}")
+            return [e for e in written if e["kind"] not in ("LOSS_RECORDED", "ANCHORS_ADOPTED")] or written
 
     @staticmethod
     def _version_check(p, entity, expect_version):

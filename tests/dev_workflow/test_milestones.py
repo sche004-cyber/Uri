@@ -1945,3 +1945,74 @@ def test_r11_05_unreadable_host_file_can_be_replaced_by_init_host(tmp_path):
     assert e.value.code == "NO_HOST_ID" and "unreadable" in str(e.value)
     st = EventStore.init_host(m.home, "h2")
     assert st.verify()["ok"]
+
+
+# ------------------------------------------------------------------ R12 regression tests (review R12 on 61b01ac4)
+
+KILL_INIT_HOST_AT = r"""
+import os, sys
+sys.path.insert(0, sys.argv[1])
+from scripts.dev_workflow.milestones import store
+point, ack = sys.argv[3], sys.argv[4] == "1"
+if point == "K2":        # registered, before the HOST_REGISTERED append
+    store.EventStore.append_many = lambda self, *a, **k: os._exit(9)
+elif point == "K3m":     # after the append, before the pending-loss marker is removed
+    store.unlink_retry = lambda path: os._exit(9)
+else:                    # K3: after the append, before the anchor refresh
+    store.EventStore.write_anchors = lambda self, segs: os._exit(9)
+store.EventStore.init_host(sys.argv[2], "hc", acknowledge_loss=ack)
+"""
+
+
+def _accept_ready_then_lose_identity(tmp_path, with_loss=True):
+    m = new(tmp_path, actor="impl:a")
+    m.create_milestone("MM-A", "A")
+    m.set_status("MM-A", "IN_PROGRESS", "go")
+    m.update_milestone("MM-A", candidate_commit=C1)
+    m.record_review("MM-A", C1, "subagent", "subagent:r1", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    m.create_milestone("MM-X", "x")
+    if with_loss:
+        _truncate_last(m)
+    (m.home / "local" / "host.json").unlink()
+    return m.home
+
+
+@pytest.mark.parametrize("point,with_loss", [("K2", True), ("K3", False)])
+def test_r12_01_loss_recorded_by_a_write_blocks_that_same_positive_status(tmp_path, point, with_loss):
+    home = _accept_ready_then_lose_identity(tmp_path, with_loss)
+    r = subprocess.run([sys.executable, "-c", KILL_INIT_HOST_AT, str(ROOT), str(home), point,
+                        "1" if with_loss else "0"])
+    assert r.returncode == 9
+    m = Manager(home, actor="impl:a")
+    with pytest.raises(ValidationError) as e:
+        m.set_status("MM-A", "ACCEPTED", "try right after the interruption")
+    assert e.value.code == "CONFLICT_OPEN"
+    kinds = [e["kind"] for s in m.store.read_all() for e in s.events]
+    assert ("LOSS_RECORDED" in kinds) if with_loss else ("ANCHORS_ADOPTED" in kinds)
+
+
+def test_r12_02_marker_removal_failure_is_a_warning_and_never_records_twice(tmp_path, monkeypatch):
+    home = _accept_ready_then_lose_identity(tmp_path)
+    r = subprocess.run([sys.executable, "-c", KILL_INIT_HOST_AT, str(ROOT), str(home), "K2", "1"])
+    assert r.returncode == 9
+    from scripts.dev_workflow.milestones import service as service_mod
+    monkeypatch.setattr(service_mod, "unlink_retry", lambda path: (_ for _ in ()).throw(PermissionError("busy")))
+    m = Manager(home, actor="x")
+    m.create_milestone("MM-N", "n")  # succeeds
+    assert any("marker not removed" in w for w in m.last_warnings)
+    monkeypatch.undo()
+    m.create_milestone("MM-M", "m")
+    kinds = [e["kind"] for s in m.store.read_all() for e in s.events]
+    assert kinds.count("LOSS_RECORDED") == 1
+
+
+def test_r12_03_marker_left_after_a_recorded_registration_is_not_recorded_again(tmp_path):
+    home = _accept_ready_then_lose_identity(tmp_path)
+    r = subprocess.run([sys.executable, "-c", KILL_INIT_HOST_AT, str(ROOT), str(home), "K3m", "1"])
+    assert r.returncode == 9
+    assert (home / "local" / "pending_loss.json").exists()
+    m = Manager(home, actor="x")
+    m.create_milestone("MM-N", "n")
+    kinds = [e["kind"] for s in m.store.read_all() for e in s.events]
+    assert kinds.count("LOSS_RECORDED") == 0 and "HOST_REGISTERED" in kinds
+    assert not (home / "local" / "pending_loss.json").exists()

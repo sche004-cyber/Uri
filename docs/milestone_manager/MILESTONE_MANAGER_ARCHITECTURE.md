@@ -326,3 +326,11 @@ cannot take over another machine's segment.
 | every locked writer re-reads `local/host.json` under the lock and refuses (`NO_HOST_ID`) when the registration changed or vanished while it waited | R11-03 |
 | ANCHOR_LOSS status text names the recording event and its first recorded problem | R11-04 |
 | an unreadable `local/host.json` counts as unregistered: `init-host` replaces it (anchors are still compared) | R11-05 |
+
+## 24. Changes after independent review R12 (2026-10-22, REJECT on `61b01ac4`)
+
+| Change | Reason |
+|---|---|
+| ledger-loss events a write has to record (LOSS_RECORDED for a pending acknowledged loss, ANCHORS_ADOPTED for an unanchored own segment) are appended as their own batch and folded *before* the command is validated, so the ANCHOR_LOSS they open blocks a positive status requested by that same command; they are recorded even when the command itself is then refused | R12-01 |
+| the pending-loss marker carries an id; HOST_REGISTERED / LOSS_RECORDED record it (`pending_id`); a marker whose id is already recorded is removed and never recorded twice | R12-03 |
+| marker removal retries Windows sharing violations and never fails a write that is already fsynced (warning instead) | R12-02 |

@@ -121,12 +121,18 @@ def lamport_floor(segs) -> str:
     return ts_plus(newest, 0.000001) if newest else ""
 
 
-def _pending_problems(raw: bytes) -> list[str]:
+def _pending_info(raw: bytes) -> dict:
+    """{"id", "problems"} of a pending-loss marker (unreadable markers still count as a loss)."""
     try:
-        probs = json.loads(raw.decode("utf-8")).get("anchor_problems") or []
-        return [str(x) for x in probs] or ["an acknowledged loss was pending"]
+        d = json.loads(raw.decode("utf-8"))
+        probs = [str(x) for x in (d.get("anchor_problems") or [])] or ["an acknowledged loss was pending"]
+        return {"id": str(d.get("id") or ""), "problems": probs}
     except (UnicodeDecodeError, ValueError, AttributeError):
-        return ["a pending-loss marker exists but is unreadable"]
+        return {"id": "", "problems": ["a pending-loss marker exists but is unreadable"]}
+
+
+def _pending_problems(raw: bytes) -> list[str]:
+    return _pending_info(raw)["problems"]
 
 
 def _anchor_disagreements(raw: bytes | None, segs) -> list[str]:
@@ -152,6 +158,18 @@ def _anchor_disagreements(raw: bytes | None, segs) -> list[str]:
         elif s.events[n - 1].get("hash") != v["head"]:
             out.append(f"{name}: event {n} differs from the anchored head (rewritten)")
     return out
+
+
+def unlink_retry(path: Path) -> None:
+    """Delete ``path`` (missing is fine), retrying Windows sharing violations like atomic_write_bytes (R12-02)."""
+    for attempt in range(40):
+        try:
+            Path(path).unlink(missing_ok=True)
+            return
+        except PermissionError:
+            if attempt == 39:
+                raise
+            time.sleep(0.025 * (attempt + 1))
 
 
 # --------------------------------------------------------------------------- OS lock
@@ -407,8 +425,9 @@ class EventStore:
                     # make the acknowledged loss durable before the earlier anchors are replaced; it stays until an
                     # event records it (HOST_REGISTERED here, or LOSS_RECORDED by the next write)
                     (home / "local").mkdir(parents=True, exist_ok=True)
-                    atomic_write_bytes(pending_file, json.dumps({"anchor_problems": problems[:10],
-                                                                 "host": host_id}).encode("utf-8"))
+                    pending_id = sha256_text(f"{host_id}:{utc_now()}:{os.getpid()}")[:16]
+                    atomic_write_bytes(pending_file, json.dumps({"anchor_problems": problems[:10], "host": host_id,
+                                                                 "id": pending_id}).encode("utf-8"))
                 adopted = {s.name: {"count": len(s.valid_events),
                                     "head": s.valid_events[-1]["hash"] if s.valid_events else GENESIS} for s in segs}
                 adopted[host_id] = {"count": 0, "head": GENESIS}
@@ -418,9 +437,13 @@ class EventStore:
                 data = {"host": host_id, "adopted": {s.name: len(s.valid_events) for s in segs}}
                 if problems:
                     data["anchor_problems"] = problems[:10]
+                    data["pending_id"] = pending_id
                 st.append_many([("HOST_REGISTERED", data, {})], actor=f"init-host:{host_id}",
                                floor=lamport_floor(segs))
-                pending_file.unlink(missing_ok=True)  # recorded by HOST_REGISTERED now
+                try:
+                    unlink_retry(pending_file)  # recorded by HOST_REGISTERED now (its pending_id names it)
+                except OSError:
+                    pass  # a leftover marker is skipped later: its id is already recorded (review R12-03)
                 st.write_anchors(st.read_all())
                 st._tail = None
             except BaseException:
@@ -579,11 +602,20 @@ class EventStore:
                 errs.append(f"{name}: event {n} differs from the anchored head (rewritten)")
         return errs
 
-    def pending_loss(self) -> list[str] | None:
-        """Problems of an acknowledged loss that no event has recorded yet (review R11-01), or None."""
-        if not self.pending_loss_path.is_file():
+    def pending_loss(self) -> dict | None:
+        """{"id", "problems"} of an acknowledged loss marker (review R11-01), or None. Whether an event already
+        recorded it is decided against the projection (``recorded_pending_ids``)."""
+        try:
+            raw = self.pending_loss_path.read_bytes()
+        except FileNotFoundError:
             return None
-        return _pending_problems(self.pending_loss_path.read_bytes())
+        except PermissionError:
+            time.sleep(0.05)
+            try:
+                raw = self.pending_loss_path.read_bytes()
+            except FileNotFoundError:
+                return None
+        return _pending_info(raw)
 
     def anchor_warnings(self, segs, anchors) -> list[str]:
         """Own segment not yet anchored (count 0): a first write whose anchor refresh has not happened yet, or an

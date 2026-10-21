@@ -184,5 +184,11 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 
 - New kind `LOSS_RECORDED {anchor_problems[], origin}` (⇒ ANCHOR_LOSS), written by the first write after an
   interrupted acknowledged registration.
-- Local file `local/pending_loss.json {anchor_problems[], host}` (untracked; exists only between an acknowledged
-  registration and the event that records it).
+- Local file `local/pending_loss.json {anchor_problems[], host, id}` (untracked). It normally exists only between an
+  acknowledged registration and the event that records it; after a crash it can outlive that event, and is then
+  removed by the next write without being recorded again (its `id` is already in the ledger, review R12-03).
+
+## 18. Changes after review R12
+
+- `HOST_REGISTERED.pending_id`, `LOSS_RECORDED.pending_id`: id of the pending-loss marker they record; folded into
+  `recorded_pending_ids`.
