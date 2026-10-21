@@ -1445,14 +1445,13 @@ class Ledger:
         return h
 
     def _replay_errors(self, t) -> list[str]:
-        """R3-03: every projection a decision reads (status, accepted/head/verified commits, milestone_ref, open
-        findings, steps) must equal what the chained events define; an edited row is an integrity failure."""
+        """Every projection used by decisions or handoffs must match the chained events."""
         tid = t["task_id"]
         p = _replay((r["kind"], json.loads(r["data"])) for r in self.db.execute(
             "SELECT kind, data FROM events WHERE task_id=? ORDER BY seq", (tid,)))
         errs = [f"{tid} {k} is {t[k]!r} but the event chain says {p[k]!r}"
                 for k in ("status", "accepted_commit", "head_commit", "last_verified_commit", "milestone_ref",
-                          "resume_to") if t[k] != p[k]]
+                          "resume_to", "worktree", "title", "branch") if t[k] != p[k]]
         errs += [f"{tid} {v}" for v in p["violations"]]
         rows = {r["finding_id"]: {"status": r["status"], "blocking": r["blocking"], "severity": r["severity"],
                                   "title": r["title"],
@@ -1530,12 +1529,14 @@ class Ledger:
 
 
 def _replay(events) -> dict:
-    """Status, commits, milestone_ref, open findings and step states as the event chain defines them."""
+    """Task fields, findings and step states as the event chain defines them."""
     p = {"status": None, "accepted_commit": None, "head_commit": None, "last_verified_commit": None,
-         "milestone_ref": None, "resume_to": None, "findings": {}, "steps": {}, "violations": []}
+         "milestone_ref": None, "resume_to": None, "worktree": None, "title": None, "branch": None,
+         "findings": {}, "steps": {}, "violations": []}
     for kind, d in events:
         if kind == "CREATED":
-            p.update(status="OPEN", milestone_ref=d.get("milestone_ref"),
+            p.update(status="OPEN", milestone_ref=d.get("milestone_ref"), worktree=d.get("worktree"),
+                     title=d.get("title"), branch=d.get("branch"),
                      head_commit=d.get("head") if re.fullmatch(r"[0-9a-f]{40}", str(d.get("head"))) else None)
         elif kind == "STATUS":
             if d.get("frm") == "ACCEPTED" or d.get("to") == "REPAIR":

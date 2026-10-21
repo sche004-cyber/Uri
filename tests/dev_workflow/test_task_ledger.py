@@ -550,16 +550,18 @@ def test_ac7_v3_import_verified_and_unchanged(lg, repo, tmp_path):
     root = tmp_path / "lifecycle"
     _v3_run(root, "DEMO-MS-r1", head, [(False, True, False), (True, False, True)])
     _v3_run(root, "DEMO-MS-r2", head, [(True, False, False)])
+    tid = "TASK-V3-" + sha256("uri-v3-milestone:DEMO-MS")[:12]
+    lg.create("DEMO-MS (imported Lifecycle V3 milestone)", "", DEV,
+              milestone_ref="DEMO-MS", worktree=str(repo), task_id=tid)
     rep = lg.import_v3(str(root))
     assert rep["source_unchanged"] and rep["source_files"] > 0
     assert len(rep["tasks"]) == 1                       # revisions share one persistent task identity
-    tid = next(iter(rep["tasks"]))
+    assert next(iter(rep["tasks"])) == tid
     provs = sorted(r["provenance"] for run in rep["runs"] for r in run["reviews"])
     assert provs == ["DRIVER_VERIFIED", "V3_UNVERIFIED", "V3_UNVERIFIED"]
     again = lg.import_v3(str(root))                      # idempotent
     assert all(run["reviews"] == [] for run in again["runs"]) and again["source_unchanged"]
     # a DRIVER_VERIFIED V3 review accepts the task on its exact commit
-    lg.db.execute("UPDATE tasks SET worktree=? WHERE task_id=?", (str(repo), tid))
     lg.transition(tid, "IN_PROGRESS", DEV)
     lg.set_head(tid, DEV, head)
     lg.record_test(tid, DEV, head, True, "suite passed", make_log(repo))
@@ -1072,6 +1074,36 @@ def test_r4_04_edited_finding_title_cannot_change_handoff(lg, repo):
     assert lg.handoff(tid, write=False)["required_permissions"][-1].endswith("Requires owner action")
     lg.db.execute("UPDATE findings SET title='No action needed' WHERE task_id=? AND finding_id='F1'", (tid,))
     assert any("findings" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.handoff(tid, write=False)
+
+
+@pytest.mark.parametrize("column", ["worktree", "title", "branch"])
+def test_r4_05_created_task_fields_bound_to_chain_before_accept_and_handoff(lg, repo, tmp_path, column):
+    tid = lg.create("Original task", "objective", DEV, worktree=str(repo), branch="main")
+    head = ready_for_review(lg, repo, tid)
+    sd = _v3_run(tmp_path / "driver", "R4-05", head, [(True, False, False)])
+    lg.link_v3(tid, DEV, str(sd))
+    lg.sync_v3(tid)
+    assert lg.verify(tid) == []
+
+    if column == "worktree":
+        clean = tmp_path / "clean"
+        subprocess.run(["git", "clone", "-q", str(repo), str(clean)], check=True)
+        assert _git(clean, "rev-parse", "HEAD") == head
+        (repo / "uncommitted.txt").write_text("unfinished", encoding="utf-8")
+        assert lg._drift(lg._task(tid))["uncommitted"]
+        value = str(clean)
+    else:
+        value = "Forged task" if column == "title" else "forged-branch"
+    lg.db.execute(f"UPDATE tasks SET {column}=? WHERE task_id=?", (value, tid))
+    if column == "worktree":
+        assert lg._drift(lg._task(tid)) is None
+
+    assert any(column in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.accept(tid, DEV)
+    assert lg.get(tid)["status"] == "IN_REVIEW"
     with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
         lg.handoff(tid, write=False)
 
