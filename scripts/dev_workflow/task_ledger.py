@@ -868,6 +868,8 @@ class Ledger:
             cur = self._lease(resource)
             if cur is None or cur["token"] != token or cur["holder"] != actor:
                 raise Refused(f"{actor} does not hold {resource} with token {token}")
+            if cur["task_id"]:
+                self._task(cur["task_id"])  # Check the sealed lease projection before deleting it.
             self.db.execute("DELETE FROM leases WHERE resource=?", (resource,))
             if cur["task_id"]:
                 self._append(cur["task_id"], "LEASE_RELEASED", actor, {"resource": resource, "token": token})
@@ -981,10 +983,19 @@ class Ledger:
                     if last is None or {k: v for k, v in json.loads(last["data"]).items() if k != "actor"} != drift:
                         self._append(tid, "WORKTREE_DRIFT", actor, drift)
                         out.append({"task_id": tid, "action": "WORKTREE_DRIFT", **drift})
-            for r in self.db.execute("SELECT DISTINCT task_id FROM leases WHERE expires_at<=? AND resource NOT LIKE "
-                                     "'task:%' AND task_id IS NOT NULL", (nowt,)).fetchall():
-                self._touched.add(r["task_id"])
-            self.db.execute("DELETE FROM leases WHERE expires_at<=? AND resource NOT LIKE 'task:%'", (nowt,))
+            failed = {r["task_id"] for r in out if r["action"] == "INTEGRITY_FAILED"}
+            for r in self.db.execute("SELECT resource, task_id FROM leases WHERE expires_at<=? AND resource NOT LIKE "
+                                     "'task:%' ORDER BY resource", (nowt,)).fetchall():
+                tid = r["task_id"]
+                if tid and not self._intact(tid):
+                    if tid not in failed:
+                        out.append({"task_id": tid, "action": "INTEGRITY_FAILED",
+                                    "errors": (self._checked.get(tid) or [f"no task {tid}"])[:5]})
+                        failed.add(tid)
+                    continue
+                self.db.execute("DELETE FROM leases WHERE resource=?", (r["resource"],))
+                if tid:
+                    self._touched.add(tid)
         return out
 
     def _drift(self, t) -> dict | None:

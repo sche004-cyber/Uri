@@ -1358,6 +1358,48 @@ def test_r5_07_reassigned_lease_keeps_previous_task_sealed(lg):
     assert any(e["kind"] == "LEASE_REASSIGNED" for e in lg.history(first))
 
 
+def test_r5_10_releasing_task_lease_keeps_projection_sealed(lg):
+    tid = lg.create("leased", "objective", DEV)
+    token = lg.acquire(tid, DEV, ["worktree:leased"])["worktree:leased"]
+    assert lg.verify() == []
+
+    lg.release(DEV, "worktree:leased", token)
+
+    assert lg.leases() == []
+    assert lg.verify() == []
+    assert any(e["kind"] == "LEASE_RELEASED" for e in lg.history(tid))
+
+
+def test_r5_11_recover_expires_terminal_task_resource_lease(lg):
+    tid = lg.create("terminal", "objective", DEV)
+    lg.acquire(tid, DEV, ["worktree:terminal"], ttl_s=-1)
+    lg.transition(tid, "ABANDONED", DEV)
+    assert lg.verify() == []
+
+    assert lg.recover() == []
+
+    assert lg.leases() == []
+    assert lg.get(tid)["status"] == "ABANDONED"
+    assert lg.verify() == []
+
+
+def test_r5_11_recover_skips_corrupt_lease_owner_and_cleans_intact_owner(lg):
+    bad = lg.create("bad", "objective", DEV)
+    good = lg.create("good", "objective", DEV)
+    lg.acquire(bad, DEV, ["worktree:bad"], ttl_s=-1)
+    lg.acquire(good, DEV, ["worktree:good"], ttl_s=-1)
+    lg.transition(bad, "ABANDONED", DEV)
+    lg.transition(good, "ABANDONED", DEV)
+    lg.db.execute("UPDATE tasks SET title='tampered' WHERE task_id=?", (bad,))
+
+    out = lg.recover()
+
+    assert any(r["task_id"] == bad and r["action"] == "INTEGRITY_FAILED" for r in out)
+    assert [r["resource"] for r in lg.leases()] == ["worktree:bad"]
+    assert lg.verify(good) == []
+    assert lg.verify(bad) != []
+
+
 @pytest.mark.parametrize("bad_data, event_seq", [("not json", 1), ("[]", -1)])
 def test_r5_08_malformed_event_data_uses_summary_integrity_exit(lg, lp, bad_data, event_seq):
     tid = lg.create("broken", "objective", DEV, milestone_ref="M")
