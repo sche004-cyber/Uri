@@ -10,7 +10,7 @@ import copy
 import re
 
 ID_RE = re.compile(r"^[A-Z0-9][A-Z0-9._-]{1,63}$")
-DEC_RE = re.compile(r"^DEC-\d{3,5}$")
+DEC_RE = re.compile(r"^L?DEC-\d{3,5}$")  # DEC-NNN = owner register numbering; LDEC-NNN = ledger-native
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
@@ -56,6 +56,8 @@ SECRET_PATTERNS = [
 ASSIGNMENT_RX = re.compile(
     r"(?i)\b(?P<key>password|passwd|pwd|passphrase|secret|client[_-]?secret|api[_-]?key|access[_-]?key|"
     r"access[_-]?token|auth[_-]?token|refresh[_-]?token|token|private[_-]?key)\s*[:=]\s*['\"]?(?P<val>[^\s'\",;]+)")
+STATUS_WORDS = {"expired", "rotated", "revoked", "invalid", "valid", "budget", "limit", "count", "present",
+                "absent", "stored", "encrypted", "configured", "unavailable", "disabled", "enabled", "hidden"}
 PLACEHOLDER_VALUES = {"required", "optional", "none", "null", "redacted", "unset", "set", "missing", "empty",
                       "true", "false", "yes", "no", "n/a", "***", "<redacted>", "xxx", "changeme?"}
 
@@ -66,6 +68,8 @@ def _assignment_secret(text: str) -> bool:
         low = val.lower()
         if len(val) < 4 or low in PLACEHOLDER_VALUES or set(val) <= {"*", "x", "X", "."}:
             continue
+        if val.isdigit() or low in STATUS_WORDS:
+            continue  # a number ("token: 65536") or a state word ("access_token: expired"), not a credential
         if val[:1] in "$%<{" or val.startswith(("env:", "env-", "ENV_", "${")):
             continue  # variable reference or placeholder
         if re.fullmatch(r"[A-Z][A-Z0-9_]{2,}", val):
@@ -198,6 +202,19 @@ def apply(p: dict, ev: dict) -> None:
     _apply_one(p, ev)
 
 
+def _find(p, coll, ident, target):
+    """Record a later event refers to. With ``target`` (the creation event hash) the binding is exact even when the
+    same id was created on two hosts; without it (legacy/import events) the plain id is used."""
+    origin = {"approvals": "requested", "blockers": "opened", "decisions": "recorded"}[coll]
+    rec = p[coll].get(ident)
+    if not target or (rec and (rec.get(origin) or {}).get("hash") == target):
+        return ident, rec
+    for key, r in p[coll].items():
+        if (r.get(origin) or {}).get("hash") == target:
+            return key, r
+    return ident, None
+
+
 def _subject_of(p, entity):
     for coll in ("reviews", "approvals", "blockers", "handoffs"):
         if entity in p[coll]:
@@ -220,7 +237,8 @@ def _apply_one(p: dict, ev: dict) -> None:
             # Same id created by another event (another host, or a merge): keep both, never replace.
             alt = f"{d['id']}@{ev['seg']}.{ev['seq']}"
             subject = d.get("subject") or (d["id"] if kind == "MILESTONE_CREATED" else None)
-            _conflict(p, "DUPLICATE_ID", d["id"], ref, kind, subject, kept=d["id"], duplicate=alt)
+            _conflict(p, "DUPLICATE_ID", d["id"], ref, kind, subject, kept=d["id"], duplicate=alt,
+                      subjects=sorted({s for s in (subject, existing.get("subject")) if s}))
             if kind == "MILESTONE_CREATED":
                 p["duplicates"].append({"id": d["id"], "as": alt, "data": d, "event": ref})
                 p["events"] += 1
@@ -289,11 +307,13 @@ def _apply_one(p: dict, ev: dict) -> None:
         p["blockers"][d["id"]] = {**d, "status": "OPEN", "opened": ref, "resolution": None}
         _bump(p, d["id"])
     elif kind == "BLOCKER_RESOLVED":
-        b = p["blockers"].get(d["id"])
+        key, b = _find(p, "blockers", d["id"], d.get("target"))
+        if b is None and d.get("target"):
+            _conflict(p, "UNBOUND_REFERENCE", d["id"], ref, kind, None)
         if b:
             b["status"] = "RESOLVED"
             b["resolution"] = {"text": d["resolution"], "at": ev["ts"], "by": ev["actor"]}
-            _bump(p, d["id"])
+            _bump(p, key)
     elif kind == "EVIDENCE_ADDED":
         p["evidence"].setdefault(d["id"], {**d, "recorded": ref})
         _bump(p, d["id"])
@@ -306,20 +326,24 @@ def _apply_one(p: dict, ev: dict) -> None:
         p["approvals"][d["id"]] = {**d, "status": "REQUESTED", "requested": ref, "resolution": None}
         _bump(p, d["id"])
     elif kind == "APPROVAL_RESOLVED":
-        a = p["approvals"].get(d["id"])
+        key, a = _find(p, "approvals", d["id"], d.get("target"))
+        if a is None and d.get("target"):
+            _conflict(p, "UNBOUND_REFERENCE", d["id"], ref, kind, None)
         if a:
             a["status"] = d["outcome"]
             a["resolution"] = {**d, "at": ev["ts"], "relayed_by": ev["actor"]}
-            _bump(p, d["id"])
+            _bump(p, key)
     elif kind == "DECISION_RECORDED":
         _count(p, "DEC", d["id"])
+        _count(p, "LDEC", d["id"])
         # An imported row starts in the status its source states (e.g. SUPERSEDED without a named successor).
         p["decisions"][d["id"]] = {**d, "status": d.get("source_status") or "ACTIVE", "superseded_by": [],
                                    "supersedes": [],
                                    "corrections": [], "source_revisions": [], "recorded": ref}
         _bump(p, d["id"])
     elif kind == "DECISION_SUPERSEDED":
-        old, new = p["decisions"].get(d["id"]), p["decisions"].get(d["by"])
+        okey, old = _find(p, "decisions", d["id"], d.get("target"))
+        nkey, new = _find(p, "decisions", d["by"], d.get("by_target"))
         if old:
             old["superseded_by"].append({"by": d["by"], "partial": bool(d.get("partial")), "note": d.get("note"),
                                          "at": ev["ts"]})
@@ -329,15 +353,15 @@ def _apply_one(p: dict, ev: dict) -> None:
                 old["status"] = "SUPERSEDED"
             elif old["status"] == "ACTIVE":
                 old["status"] = "PARTIALLY_SUPERSEDED"
-            _bump(p, d["id"])
+            _bump(p, okey)
         if new:
-            new["supersedes"].append({"id": d["id"], "partial": bool(d.get("partial"))})
-            _bump(p, d["by"])
+            new["supersedes"].append({"id": okey, "partial": bool(d.get("partial"))})
+            _bump(p, nkey)
     elif kind == "DECISION_CORRECTED":
-        dec = p["decisions"].get(d["id"])
+        key, dec = _find(p, "decisions", d["id"], d.get("target"))
         if dec:
             dec["corrections"].append({**d, "at": ev["ts"], "by": ev["actor"]})
-            _bump(p, d["id"])
+            _bump(p, key)
     elif kind == "DECISION_SOURCE_REVISED":
         dec = p["decisions"].get(d["id"])
         if dec:
@@ -380,10 +404,16 @@ def _apply_one(p: dict, ev: dict) -> None:
             m["integration"] = {**d, "at": ev["ts"], "by": ev["actor"]}
             _bump(p, d["subject"])
     elif kind == "CONFLICT_RESOLVED":
+        named = set(d.get("conflicts") or [])  # exactly the conflicts the resolver saw (review R2-05)
         for c in p["conflicts"]:
-            if c["entity"] == d["entity"] and not c["resolved"]:
+            if c["entity"] == d["entity"] and not c["resolved"] and c["event"]["hash"] in named:
                 c["resolved"] = True
                 c["resolution"] = {"note": d["note"], "at": ev["ts"], "by": ev["actor"]}
+    elif kind == "BATCH_ABANDONED":
+        for b in d.get("batches") or []:
+            if p.get("pending_batches", {}).pop(b, None) is not None:
+                p.setdefault("abandoned_batches", []).append({"id": b, "at": ev["ts"], "by": ev["actor"],
+                                                              "reason": d.get("reason")})
     elif kind == "STORE_RECOVERED":
         p["recoveries"].append({**d, "at": ev["ts"]})
 
@@ -415,9 +445,20 @@ def fold(events, p: dict | None = None) -> dict:
 
 
 def ordered(segments) -> list[dict]:
-    evs = [ev for s in segments for ev in s.valid_events]
-    evs.sort(key=event_key)
-    return evs
+    """Merge segments by (ts, seg, seq) while never reordering events inside one segment (review R2-06): a host
+    clock that stepped back cannot move a later event of that host before an earlier one."""
+    import heapq
+    heads, out = [], []
+    lists = [s.valid_events for s in segments]
+    for n, evs in enumerate(lists):
+        if evs:
+            heapq.heappush(heads, (event_key(evs[0]), n, 0))
+    while heads:
+        _, n, i = heapq.heappop(heads)
+        out.append(lists[n][i])
+        if i + 1 < len(lists[n]):
+            heapq.heappush(heads, (event_key(lists[n][i + 1]), n, i + 1))
+    return out
 
 
 def would_cycle(milestones: dict, node: str, on: str) -> bool:

@@ -7,9 +7,10 @@ must match it, and the tests in `tests/dev_workflow/test_milestones.py` check th
 
 | File | Schema id | Authoritative? |
 |---|---|---|
-| `<home>/mm.json` | `uri-mm-ledger/1`: `{schema, host_id, autocommit, created_at}` | yes (config) |
+| `<home>/mm.json` | `uri-mm-ledger/1`: `{schema, autocommit, created_at, dec_namespace}` (`LDEC` until promotion, then `DEC`) | yes (shared config, tracked) |
+| `<home>/local/host.json` | `{host_id, registered_at}` | per machine, untracked |
 | `<home>/events/<host_id>.jsonl` | one event per line (§2) | **yes — the only state truth** |
-| `<home>/anchors.json` | `{<segment>: {count, head}}` high-water marks; never move backwards | integrity anchor (not state) |
+| `<home>/local/anchors.json` | `{<segment>: {count, head}}` high-water marks; never move backwards except by a recorded `ANCHORS_RESET` | per machine, untracked integrity anchor |
 | `<home>/quarantine/<host>.<ts>.torn` | raw bytes of a torn tail | evidence only |
 | `status --json` output | `uri-mm-status/1` (§6) | export contract for Mission Control |
 
@@ -135,3 +136,15 @@ VERSION (an event was built on an older entity version, e.g. after a merge), DUP
 same id; both records are kept, the later one under `<id>@<seg>.<seq>`; a duplicate MILESTONE_CREATED is kept in
 `duplicates[]`), BASIS_INVALID (a positive status names reviews/approvals that do not support it). Additional refusal
 codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); integrity failure exit 3.
+
+## 11. Changes after review R2
+
+- `APPROVAL_REQUESTED.commit` (required binding for kind INTEGRATION: the candidate at request time).
+- `APPROVAL_RESOLVED.target`, `BLOCKER_RESOLVED.target`, `DECISION_SUPERSEDED.target/by_target`,
+  `DECISION_CORRECTED.target`: creation-event hash of the referenced record (fold binds by it).
+- `CONFLICT_RESOLVED.conflicts`: hashes of the conflict events the resolver saw; only those are resolved.
+- New kinds: `ANCHORS_RESET {reason, previous, counts}`, `BATCH_ABANDONED {batches[], reason}`.
+- New conflict type `UNBOUND_REFERENCE` (a resolve whose target record is absent).
+- Decision ids: `DEC-NNN` (owner register numbering, import only until promotion) and `LDEC-NNN` (ledger-native).
+- Refusal codes: `NEGATIVE_REVIEW` (replaces `LATER_NEGATIVE_REVIEW`), `DEC_NAMESPACE`; store errors `NO_HOST_ID`,
+  `HOST_ID_TAKEN`, `ALREADY_REGISTERED`; CLI `import-decisions` exits 1 with `ID_COLLISION` when rows collide.

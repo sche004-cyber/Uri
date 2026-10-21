@@ -28,7 +28,15 @@ def open_blockers(p, subject):
 def open_conflicts(p, entity=None):
     """Unresolved conflicts; with ``entity``, those on that entity or whose subject is that milestone."""
     return [c for c in p["conflicts"] if not c["resolved"]
-            and (entity is None or c["entity"] == entity or c.get("subject") == entity)]
+            and (entity is None or c["entity"] == entity or c.get("subject") == entity
+                 or entity in (c.get("subjects") or []))]
+
+
+def negative_reviews_on_candidate(p, m):
+    cand = m.get("candidate_commit")
+    return [r for r in p["reviews"].values() if r["subject"] == m["id"] and r["commit"] == cand
+            and r["result_class"] == "COMPLETED_WITH_RESULT"
+            and (r["verdict"] not in ("ACCEPT", "ACCEPT WITH FINDINGS") or r["blocking_open"])]
 
 
 def latest_review_on_candidate(p, m):
@@ -54,9 +62,10 @@ def indicator(p, m, tasks: dict | None = None) -> dict:
         reds.append(f"{c.get('type', 'VERSION')} conflict on {c['entity']} (event {c['event']['seg']}#"
                     f"{c['event']['seq']}); resolve with `resolve-conflict`")
     if m["status"] in DONE_STATES:
-        lr = latest_review_on_candidate(p, m)
-        if lr and (lr["verdict"] not in ("ACCEPT", "ACCEPT WITH FINDINGS") or lr["blocking_open"]):
-            reds.append(f"latest review {lr['id']} on the candidate is {lr['verdict']} after status {m['status']}")
+        neg = negative_reviews_on_candidate(p, m)
+        if neg:
+            reds.append(f"review {neg[0]['id']} on the candidate is {neg[0]['verdict']} although status is "
+                        f"{m['status']}")
     for lc in m["lifecycle"]:
         s = lc.get("snapshot")
         if not s:

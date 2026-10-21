@@ -32,6 +32,10 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--no-emoji", action="store_true", help="plain text indicators only")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
+    s = sub.add_parser("init-host", help="register this machine on a cloned ledger with a new host id")
+    _p(s, "--host-id", required=True)
+    s = sub.add_parser("reanchor", help="explicitly re-base this machine's anchors (recorded)")
+    _p(s, "--reason", required=True)
     s = sub.add_parser("init", help="create a ledger home")
     _p(s, "--host-id")
     _p(s, "--autocommit", action="store_true", help="git-commit every append when the home is a git work tree")
@@ -74,7 +78,7 @@ def build_parser() -> argparse.ArgumentParser:
     _p(s, "--result", required=True); _p(s, "--summary", required=True); _p(s, "--evidence", nargs="*", default=[])
 
     s = sub.add_parser("approval-request"); _p(s, "subject"); _p(s, "--kind", required=True)
-    _p(s, "--question", required=True)
+    _p(s, "--question", required=True); _p(s, "--commit", help="commit the approval is for (INTEGRATION: candidate)")
     s = sub.add_parser("approval-resolve"); _p(s, "id"); _p(s, "outcome")
     _p(s, "--owner-words", help="the owner's own words, verbatim"); _p(s, "--source", help="where the owner said it")
     _p(s, "--reason")
@@ -111,7 +115,7 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("log"); _p(s, "--entity"); _p(s, "--limit", type=int, default=30)
     sub.add_parser("verify")
     sub.add_parser("verify-evidence")
-    sub.add_parser("recover")
+    s = sub.add_parser("recover"); _p(s, "--reason", default="torn tail / incomplete batch after a crash")
     sub.add_parser("rebuild")
     return ap
 
@@ -152,6 +156,15 @@ def run(argv=None, out=None) -> int:
     try:
         if not args.home:
             raise StoreError("NO_HOME", "pass --home or set URI_MM_HOME")
+        if args.cmd == "init-host":
+            st = EventStore.init_host(args.home, args.host_id)
+            emit({"registered": st.host, "home": str(st.home)})
+            return 0
+        if args.cmd == "reanchor":
+            if not args.actor:
+                raise ValidationError("NO_ACTOR", "--actor is required")
+            emit(EventStore(args.home).reanchor(args.actor, args.reason, args.session))
+            return 0
         if args.cmd == "init":
             st = EventStore.init(args.home, args.host_id, args.autocommit)
             emit({"initialised": str(st.home), "host_id": st.host, "autocommit": st.config["autocommit"]})
@@ -194,7 +207,7 @@ def run(argv=None, out=None) -> int:
                                   args.verdict, args.blocking_open, args.findings_total, args.result, args.summary,
                                   args.evidence)
         elif c == "approval-request":
-            r = mgr.request_approval(args.subject, args.kind, args.question)
+            r = mgr.request_approval(args.subject, args.kind, args.question, commit=args.commit)
         elif c == "approval-resolve":
             r = mgr.resolve_approval(args.id, args.outcome, args.owner_words, args.source, args.reason)
         elif c == "decision-add":
@@ -217,6 +230,10 @@ def run(argv=None, out=None) -> int:
             r = mgr.resolve_conflict(args.entity, args.note)
         elif c == "import-decisions":
             r = importers.import_decisions(mgr, args.path, args.commit)
+            if r["collisions"]:
+                emit({**r, "refused": "ID_COLLISION", "message": "rows whose id is already used by an unrelated "
+                                                                  "decision were not imported"})
+                return 1
         elif c == "import-register":
             r = importers.import_register(mgr, args.path, args.commit)
         elif c == "status":
@@ -247,8 +264,11 @@ def run(argv=None, out=None) -> int:
             evs.sort(key=lambda e: (e["ts"], e["seg"], e["seq"]))
             if args.entity:
                 evs = [e for e in evs if args.entity in json.dumps(e["data"]) or args.entity in e.get("base", {})]
-            emit([{k: e[k] for k in ("seg", "seq", "ts", "actor", "kind", "data")} for e in evs[-args.limit:]])
-            return 0
+            out_rows = [{k: e[k] for k in ("seg", "seq", "ts", "actor", "kind", "data")} for e in evs[-args.limit:]]
+            p = mgr.projection()
+            emit({"events": out_rows, "integrity_errors": p["integrity_errors"]} if p.get("integrity_errors")
+                 else out_rows)
+            return integrity_rc(p)
         elif c == "verify":
             rep = mgr.store.verify()
             p = mgr.projection()
@@ -263,8 +283,10 @@ def run(argv=None, out=None) -> int:
         elif c == "recover":
             if not args.actor:
                 raise ValidationError("NO_ACTOR", "--actor is required")
-            emit(mgr.store.recover(args.actor, args.session))
-            mgr.rebuild()
+            res = mgr.store.recover(args.actor, args.session)
+            ab = mgr.abandon_batches(args.reason)
+            res["abandoned_batches"] = [b for e in ab for b in e["data"]["batches"]]
+            emit(res)
             return 0
         elif c == "rebuild":
             p = mgr.projection()
@@ -277,6 +299,8 @@ def run(argv=None, out=None) -> int:
                               "id": e["data"].get("id") or e["data"].get("subject")} for e in r]}
             if mgr.last_autocommit and mgr.last_autocommit.get("error"):
                 r["autocommit_error"] = mgr.last_autocommit["error"]
+            if mgr.last_warnings:
+                r["warnings"] = mgr.last_warnings
         emit(r)
         return 0
     except ValidationError as e:

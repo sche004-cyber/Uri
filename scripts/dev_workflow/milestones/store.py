@@ -2,10 +2,12 @@
 
 Layout of a ledger home (see docs/milestone_manager/MILESTONE_MANAGER_ARCHITECTURE.md section 3):
 
-    <home>/mm.json                config (schema, host id, autocommit)
-    <home>/events/<host>.jsonl    one append-only segment per host; each line is one event
+    <home>/mm.json                shared config (schema, autocommit, decision id namespace); git-tracked
+    <home>/events/<host>.jsonl    one append-only segment per host; each line is one event; git-tracked
+    <home>/local/host.json        this machine's host id (never tracked: a clone must run `init-host`)
+    <home>/local/anchors.json     this machine's per-segment high-water marks (never tracked; review R2-04)
+    <home>/.gitignore             ignores local/ and .lock
     (no projection cache: every read and write folds the verified log; review R1-02)
-    <home>/anchors.json           per-segment high-water marks {count, head} written after every write
     <home>/quarantine/            torn tails moved aside by recover()
     <home>/.lock                  OS lock file
 
@@ -13,8 +15,11 @@ Guarantees:
 - every append is flushed and fsynced before the call returns;
 - an event's ``hash`` is sha256 over its canonical JSON without ``hash``; ``prev`` is the previous hash in the same
   segment (genesis 64 zeros), so editing, inserting, reordering or deleting a line *before the last one* breaks the
-  chain. Deleting the newest line(s) leaves a valid shorter chain; that is detected against ``anchors.json`` (and,
-  stronger, against git history when autocommit is on), not by the chain itself;
+  chain. Deleting the newest line(s) leaves a valid shorter chain; that is detected against ``local/anchors.json``
+  (and, stronger, against git history when autocommit is on), not by the chain itself. A missing or unreadable
+  anchors file while events exist is itself an integrity error (review R2-03); `reanchor` records an explicit reset;
+- timestamps never go backwards inside a segment, and segments are merged preserving each segment's order
+  (review R2-06);
 - several events written by one command form a batch that is written with a single write + fsync; the fold applies
   a batch only when all its events are present, so a crash never leaves half a command applied;
 - events after the first chain error in a segment are never trusted (``Segment.valid_events``);
@@ -92,7 +97,15 @@ def atomic_write_bytes(path: Path, data: bytes) -> None:
         f.write(data)
         f.flush()
         os.fsync(f.fileno())
-    os.replace(tmp, path)
+    # Windows refuses to replace a file another process has open (a reader); retry briefly (review R2-02).
+    for attempt in range(40):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            if attempt == 39:
+                raise
+            time.sleep(0.025 * (attempt + 1))
 
 
 # --------------------------------------------------------------------------- OS lock
@@ -208,6 +221,8 @@ class EventStore:
         self.home = Path(home)
         self.config_path = self.home / "mm.json"
         self.events_dir = self.home / "events"
+        self.local_dir = self.home / "local"
+        self.host_path = self.local_dir / "host.json"
         self.lock_path = self.home / ".lock"
         self.quarantine_dir = self.home / "quarantine"
         if not self.config_path.is_file():
@@ -215,11 +230,27 @@ class EventStore:
         self.config = json.loads(self.config_path.read_text(encoding="utf-8"))
         if self.config.get("schema") != SCHEMA:
             raise StoreError("SCHEMA", f"unsupported ledger schema {self.config.get('schema')!r}")
-        self.host = self.config["host_id"]
+        try:
+            self.host = json.loads(self.host_path.read_text(encoding="utf-8"))["host_id"]
+        except (OSError, ValueError, KeyError, TypeError):
+            raise StoreError("NO_HOST_ID", f"{self.host_path} is missing: this machine has no host id for this "
+                                           "ledger (a clone must run `init-host --host-id <new id>`)")
+        if not HOST_RE.match(str(self.host)):
+            raise StoreError("BAD_HOST_ID", f"host id must match {HOST_RE.pattern}")
         self.segment_path = self.events_dir / f"{self.host}.jsonl"
-        self._tail = None  # (good_bytes, head, seq) of our own segment, valid only while the lock is held
+        self._tail = None  # (good_bytes, head, count, last_ts) of our own segment, valid only while locked
 
     # ---- creation
+
+    @staticmethod
+    def _write_local(home: Path, host_id: str) -> None:
+        if not HOST_RE.match(host_id or ""):
+            raise StoreError("BAD_HOST_ID", f"host id must match {HOST_RE.pattern}")
+        atomic_write_bytes(home / "local" / "host.json",
+                           (json.dumps({"host_id": host_id, "registered_at": utc_now()}, indent=1) + "\n").encode())
+        gi = home / ".gitignore"
+        if not gi.is_file():
+            atomic_write_bytes(gi, b"local/\n.lock\n*.tmp\n")
 
     @staticmethod
     def init(home: str | os.PathLike, host_id: str | None = None, autocommit: bool = False) -> "EventStore":
@@ -229,11 +260,37 @@ class EventStore:
             raise StoreError("BAD_HOST_ID", f"host id must match {HOST_RE.pattern}")
         cfg_path = home / "mm.json"
         if cfg_path.is_file():
-            raise StoreError("ALREADY_INITIALISED", f"{cfg_path} exists")
+            raise StoreError("ALREADY_INITIALISED", f"{cfg_path} exists (a clone uses `init-host`)")
         (home / "events").mkdir(parents=True, exist_ok=True)
-        cfg = {"schema": SCHEMA, "host_id": host_id, "autocommit": bool(autocommit), "created_at": utc_now()}
+        cfg = {"schema": SCHEMA, "autocommit": bool(autocommit), "created_at": utc_now(), "dec_namespace": "LDEC"}
         atomic_write_bytes(cfg_path, (json.dumps(cfg, indent=1, sort_keys=True) + "\n").encode("utf-8"))
-        return EventStore(home)
+        EventStore._write_local(home, host_id)
+        st = EventStore(home)
+        st.write_anchors([])
+        return st
+
+    @staticmethod
+    def init_host(home: str | os.PathLike, host_id: str) -> "EventStore":
+        """Register this machine on an existing (e.g. cloned) ledger with a host id of its own.
+
+        Refuses a host id whose segment already exists (that segment belongs to another machine) and adopts the
+        current verified segments as this machine's anchors."""
+        home = Path(home)
+        if not (home / "mm.json").is_file():
+            raise StoreError("NOT_INITIALISED", f"{home} has no mm.json")
+        if (home / "local" / "host.json").is_file():
+            raise StoreError("ALREADY_REGISTERED", "this machine already has a host id for this ledger")
+        if (home / "events" / f"{host_id}.jsonl").exists():
+            raise StoreError("HOST_ID_TAKEN", f"segment {host_id}.jsonl exists: it belongs to another machine; "
+                                              "choose a new host id")
+        EventStore._write_local(home, host_id)
+        st = EventStore(home)
+        segs = st.read_all()
+        bad = [e for s in segs for e in s.errors]
+        if bad:
+            raise StoreError("CHAIN_BROKEN", "cannot adopt anchors from a ledger that fails verification: " + bad[0])
+        st.write_anchors(segs)
+        return st
 
     # ---- locking
 
@@ -275,9 +332,9 @@ class EventStore:
                                               "bytes; run `recover` first")
             if seg.errors:
                 raise StoreError("CHAIN_BROKEN", "; ".join(seg.errors[:3]))
-            self._tail = (seg.good_bytes, seg.head, len(seg.events))
-        good, head, count = self._tail
-        ts = ts or utc_now()
+            self._tail = (seg.good_bytes, seg.head, len(seg.events), seg.events[-1]["ts"] if seg.events else "")
+        good, head, count, last_ts = self._tail
+        ts = max(ts or utc_now(), last_ts)  # never earlier than this segment's last event (clock steps back)
         batch_id = sha256_text(f"{self.host}:{count + 1}:{ts}")[:16] if len(items) > 1 else None
         events, blob = [], b""
         for i, (kind, data, base) in enumerate(items):
@@ -296,25 +353,28 @@ class EventStore:
             f.write(blob)
             f.flush()
             os.fsync(f.fileno())
-        self._tail = (good + len(blob), head, count + len(items))
+        self._tail = (good + len(blob), head, count + len(items), ts)
         return events
 
     # ---- anchors (truncation detection)
 
     @property
     def anchors_path(self) -> Path:
-        return self.home / "anchors.json"
+        return self.local_dir / "anchors.json"
 
-    def read_anchors(self) -> dict:
+    def read_anchors(self) -> dict | None:
+        """The anchors, or None when the file is missing or unreadable."""
         try:
             a = json.loads(self.anchors_path.read_text(encoding="utf-8"))
-            return a if isinstance(a, dict) else {}
         except (OSError, ValueError):
-            return {}
+            return None
+        if not isinstance(a, dict) or not all(isinstance(v, dict) for v in a.values()):
+            return None
+        return a
 
     def write_anchors(self, segs) -> None:
         """Record per-segment {count, head} of the trusted prefix; never moves backwards."""
-        anchors = self.read_anchors()
+        anchors = self.read_anchors() or {}
         for s in segs:
             cur = anchors.get(s.name)
             valid = s.valid_events
@@ -325,7 +385,13 @@ class EventStore:
     def anchor_errors(self, segs) -> list[str]:
         """Truncation or rewrite of anchored events: the anchored event must still be at its position."""
         errs, by_name = [], {s.name: s for s in segs}
-        for name, a in sorted(self.read_anchors().items()):
+        anchors = self.read_anchors()
+        if anchors is None:
+            if any(s.events for s in segs):
+                errs.append(f"{self.anchors_path} is missing or unreadable while the ledger holds events: deletion "
+                            "of the newest events cannot be ruled out (check git history, then `reanchor`)")
+            return errs
+        for name, a in sorted(anchors.items()):
             s = by_name.get(name)
             n = a.get("count", 0) if isinstance(a, dict) else 0
             if n == 0:
@@ -337,6 +403,29 @@ class EventStore:
             elif s.events[n - 1].get("hash") != a.get("head"):
                 errs.append(f"{name}: event {n} differs from the anchored head (rewritten)")
         return errs
+
+    def reanchor(self, actor: str, reason: str, session: str | None = None) -> dict:
+        """Explicitly re-base the anchors on the current segments, recorded as an ANCHORS_RESET event."""
+        if not reason or not actor:
+            raise StoreError("USAGE", "reanchor needs --actor and --reason")
+        with self.locked():
+            segs = self.read_all()
+            bad = [e for s in segs for e in s.errors]
+            if bad:
+                raise StoreError("CHAIN_BROKEN", "reanchor only re-bases anchors; chain errors need an owner "
+                                                 "decision: " + bad[0])
+            before = self.read_anchors()
+            info = {"reason": reason, "previous": before,
+                    "counts": {s.name: len(s.events) for s in segs}}
+            self.append("ANCHORS_RESET", info, actor=actor, session=session)
+            self.write_anchors_force(self.read_all())
+            self.autocommit("ANCHORS_RESET")
+            return info
+
+    def write_anchors_force(self, segs) -> None:
+        anchors = {s.name: {"count": len(s.valid_events),
+                            "head": s.valid_events[-1]["hash"] if s.valid_events else GENESIS} for s in segs}
+        atomic_write_bytes(self.anchors_path, json.dumps(anchors, indent=1, sort_keys=True).encode("utf-8"))
 
     # ---- verification and recovery
 
@@ -397,7 +486,7 @@ class EventStore:
     def git_state(self) -> dict:
         if not self.in_git():
             return {"tracked": False}
-        p = self._git("status", "--porcelain", "--", "events", "mm.json", "anchors.json")
+        p = self._git("status", "--porcelain", "--", "events", "mm.json", ".gitignore")
         dirty = [line[3:] for line in p.stdout.splitlines() if line.strip()]
         return {"tracked": True, "uncommitted": dirty}
 
@@ -407,7 +496,7 @@ class EventStore:
         A failure is reported, not raised: the event is already fsynced; verify() shows uncommitted segments."""
         if not self.config.get("autocommit") or not self.in_git():
             return {"committed": False}
-        add = self._git("add", "--", "events", "mm.json", "anchors.json")
+        add = self._git("add", "--", "events", "mm.json", ".gitignore")
         if add.returncode:
             return {"committed": False, "error": add.stderr.strip()[:300]}
         if not self._git("diff", "--cached", "--quiet").returncode:

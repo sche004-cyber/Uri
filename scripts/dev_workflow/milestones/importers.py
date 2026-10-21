@@ -110,7 +110,7 @@ def import_decisions(mgr, path, commit=None) -> dict:
     file_hash = file_sha256(path)
     decisions, opens = parse_decisions(path)
     report = {"source": str(path), "file_sha256": file_hash, "commit": commit, "recorded": 0, "revised": 0,
-              "unchanged": 0, "skipped_secret": [], "supersessions": 0, "open_questions": 0}
+              "unchanged": 0, "skipped_secret": [], "supersessions": 0, "open_questions": 0, "collisions": []}
 
     def build(p):
         items = []
@@ -133,6 +133,11 @@ def import_decisions(mgr, path, commit=None) -> dict:
                                             "evidence_class_raw")}}
                 items.append(("DECISION_RECORDED", data, {row["id"]: 0}))
                 report["recorded"] += 1
+            elif not existing.get("imported") or (existing.get("source") or {}).get("path") != src["path"]:
+                # Same id already used by a ledger-native decision or another source: never treat this row as a
+                # revision of an unrelated record (review R2-07). Reported; nothing written for this row.
+                report["collisions"].append(row["id"])
+                continue
             else:
                 known = {existing.get("source", {}).get("row_sha256")} | {
                     r["source"]["row_sha256"] for r in existing.get("source_revisions", [])}
@@ -143,7 +148,7 @@ def import_decisions(mgr, path, commit=None) -> dict:
                               {row["id"]: p["versions"].get(row["id"], 0)}))
                 report["revised"] += 1
         # Supersession links stated in the "Later corrections / supersession" column.
-        secret_ids = set(report["skipped_secret"])
+        secret_ids = set(report["skipped_secret"]) | set(report["collisions"])
         ids = (set(p["decisions"]) | {r[2]["id"] for r in decisions}) - secret_ids
         for line_no, _, row in decisions:
             if row["id"] in secret_ids:
@@ -154,7 +159,9 @@ def import_decisions(mgr, path, commit=None) -> dict:
                     # the limiting phrase may precede the match ("For X only, superseded by ...") or follow it
                     window = text[max(0, mt.start() - 60): mt.start()] + " " + mt.group("mid") + " " + \
                         mt.group("tail")[:40]
-                    partial = bool(PARTIAL_RX.search(window))
+                    # a row whose own status is partial or unclear never records a full supersession (R2-09)
+                    partial = bool(PARTIAL_RX.search(window)) or \
+                        source_status(row["applicability"]) in ("PARTIALLY_SUPERSEDED", "UNCLEAR")
                     for by in successor_ids(mt.group("tail")):
                         if by not in ids or by == row["id"]:
                             continue

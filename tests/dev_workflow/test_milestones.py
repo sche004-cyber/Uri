@@ -221,7 +221,7 @@ def test_f7_later_reject_outranks_earlier_accept(tmp_path):
     m.record_review("MM-A", C1, "subagent", "subagent:r2", "SUBAGENT", "REJECT", 1, 1, "COMPLETED_WITH_RESULT", "no")
     with pytest.raises(ValidationError) as e:
         m.set_status("MM-A", "ACCEPTED", "try")
-    assert e.value.code == "LATER_NEGATIVE_REVIEW"
+    assert e.value.code == "NEGATIVE_REVIEW"
 
 
 def test_f7_positive_verdict_with_blocking_findings_refused(tmp_path):
@@ -293,18 +293,21 @@ def test_f9_owner_approval_needs_owner_words_and_source(tmp_path):
 
 def test_f10_decisions_never_overwritten(tmp_path):
     m = new(tmp_path)
-    m.record_decision("Use JSONL", "Ledger is JSONL", "2026-10-21", "OWNER-PROMPT", "prompt", ident="DEC-091")
+    m.record_decision("Use JSONL", "Ledger is JSONL", "2026-10-21", "OWNER-PROMPT", "prompt", ident="LDEC-091")
     with pytest.raises(ValidationError) as e:
-        m.record_decision("Other", "x", "2026-10-21", "OWNER-PROMPT", "prompt", ident="DEC-091")
+        m.record_decision("Other", "x", "2026-10-21", "OWNER-PROMPT", "prompt", ident="LDEC-091")
     assert e.value.code == "EXISTS"
     m.record_decision("Use SQLite", "Ledger is SQLite", "2026-10-22", "OWNER-PROMPT", "prompt",
-                      supersedes="DEC-091", reasoning="scale")
-    m.correct_decision("DEC-091", "date was 2026-10-21 UTC", "AGENT-RECORD", "review R1")
+                      supersedes="LDEC-091", reasoning="scale")
+    m.correct_decision("LDEC-091", "date was 2026-10-21 UTC", "AGENT-RECORD", "review R1")
     p = m.projection()
-    old, new_ = p["decisions"]["DEC-091"], p["decisions"]["DEC-092"]
+    old, new_ = p["decisions"]["LDEC-091"], p["decisions"]["LDEC-092"]
     assert old["decision"] == "Ledger is JSONL" and old["status"] == "SUPERSEDED"
-    assert old["superseded_by"][0]["by"] == "DEC-092" and new_["supersedes"][0]["id"] == "DEC-091"
+    assert old["superseded_by"][0]["by"] == "LDEC-092" and new_["supersedes"][0]["id"] == "LDEC-091"
     assert old["corrections"][0]["correction"].startswith("date")
+    with pytest.raises(ValidationError) as e:  # owner-register numbering is reserved until promotion (R2-07)
+        m.record_decision("X", "x", "2026-10-21", "OWNER-PROMPT", "prompt", ident="DEC-200")
+    assert e.value.code == "DEC_NAMESPACE"
 
 
 def test_f11_dependencies_cycles_and_ready(tmp_path):
@@ -358,6 +361,7 @@ def test_f13_resume_answers_seven_questions_bounded(tmp_path):
                        depends_on=[], next_action="write tests")
     m.create_milestone("MM-B", "B", depends_on=["MM-A"])
     m.set_status("MM-A", "IN_PROGRESS", "go")
+    m.update_milestone("MM-A", candidate_commit=C1)
     m.add_evidence("MM-A", "test_run", "pytest tests/x", "COMPLETED_WITH_RESULT", "40 passed", sha256="a" * 64)
     m.record_review("MM-A", C1, "subagent", "subagent:r1", "SUBAGENT", "REJECT", 2, 3, "COMPLETED_WITH_RESULT",
                     "two HIGH findings")
@@ -691,7 +695,7 @@ def test_r1_03_later_reject_blocks_done_and_integrated_and_shows_red(tmp_path):
     m.record_review("MM-A", C1, "subagent", "subagent:r2", "SUBAGENT", "REJECT", 2, 2, "COMPLETED_WITH_RESULT", "no")
     with pytest.raises(ValidationError) as e:
         m.set_status("MM-A", "DONE", "close")
-    assert e.value.code == "LATER_NEGATIVE_REVIEW"
+    assert e.value.code == "NEGATIVE_REVIEW"
     p = m.projection()
     ind = views.indicator(p, p["milestones"]["MM-A"])
     assert ind["color"] == "RED" and "REJECT" in ind["issue"]
@@ -873,12 +877,224 @@ def test_r1_15_multi_event_command_is_atomic(tmp_path, monkeypatch):
         raise OSError("ENOSPC simulated")
     monkeypatch.setattr(m.store, "append_many", half)
     with pytest.raises(OSError):
-        m.record_decision("New", "new", "2026-10-22", "AGENT-RECORD", "s", supersedes="DEC-001")
+        m.record_decision("New", "new", "2026-10-22", "AGENT-RECORD", "s", supersedes="LDEC-001")
     monkeypatch.undo()
     m.store.recover("impl:a")
     p = m.projection()
-    assert set(p["decisions"]) == {"DEC-001"} and p["decisions"]["DEC-001"]["status"] == "ACTIVE"
+    assert set(p["decisions"]) == {"LDEC-001"} and p["decisions"]["LDEC-001"]["status"] == "ACTIVE"
     assert any("incomplete batch" in w for w in p["integrity_warnings"])
-    m.record_decision("New", "new", "2026-10-22", "AGENT-RECORD", "s", supersedes="DEC-001")  # retry works
+    m.record_decision("New", "new", "2026-10-22", "AGENT-RECORD", "s", supersedes="LDEC-001")  # retry works
     p = m.projection()
-    assert p["decisions"]["DEC-001"]["status"] == "SUPERSEDED" and p["decisions"]["DEC-002"]["decision"] == "new"
+    assert p["decisions"]["LDEC-001"]["status"] == "SUPERSEDED" and p["decisions"]["LDEC-002"]["decision"] == "new"
+
+
+# ------------------------------------------------------------------ R2 regression tests (review R2 on 4a54ebe1)
+
+def test_r2_01_resolve_binds_to_its_own_record_across_hosts(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    for m in (m1, m2):
+        m.create_milestone("MM-X", "X")
+        m.create_milestone("MM-Y", "Y")
+    m1.request_approval("MM-Y", "SCOPE", "Y scope?")
+    m1.add_blocker("MM-Y", "TECHNICAL", "y broken", "fix")
+    m2.request_approval("MM-X", "SCOPE", "X scope?")
+    m2.resolve_approval("AP-1", "APPROVED", owner_words="yes, X", source="chat")
+    m2.add_blocker("MM-X", "TECHNICAL", "x broken", "fix")
+    m2.resolve_blocker("BLK-1", "fixed x")
+    _merge(m1, home2)
+    p = m1.projection()
+    ap = {a["subject"]: a["status"] for a in p["approvals"].values()}
+    bl = {b["subject"]: b["status"] for b in p["blockers"].values()}
+    assert ap == {"MM-Y": "REQUESTED", "MM-X": "APPROVED"}
+    assert bl == {"MM-Y": "OPEN", "MM-X": "RESOLVED"}
+    assert views.open_conflicts(p, "MM-Y") and views.open_conflicts(p, "MM-X")  # both subjects flagged
+
+
+def test_r2_02_anchor_refresh_failure_is_a_warning_not_a_failed_write(tmp_path, monkeypatch):
+    m = new(tmp_path)
+    def boom(segs):
+        raise PermissionError("anchors open by a reader")
+    monkeypatch.setattr(m.store, "write_anchors", boom)
+    written = m.create_milestone("MM-A", "A")
+    assert written and m.last_warnings and "succeeded" in m.last_warnings[0]
+    monkeypatch.undo()
+    assert "MM-A" in m.projection()["milestones"]
+
+
+@pytest.mark.windows_only
+def test_r2_02_atomic_replace_retries_while_a_reader_holds_the_file(tmp_path):
+    import threading
+    from scripts.dev_workflow.milestones.store import atomic_write_bytes
+    target = tmp_path / "a.json"
+    target.write_bytes(b"old")
+    f = target.open("rb")
+    threading.Timer(0.3, f.close).start()
+    atomic_write_bytes(target, b"new")
+    assert target.read_bytes() == b"new"
+
+
+def test_r2_03_missing_or_corrupt_anchors_are_integrity_errors(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    m.create_milestone("MM-B", "B")
+    m.store.anchors_path.unlink()
+    rep = m.store.verify()
+    assert not rep["ok"] and any("anchors" in x for x in rep["errors"])
+    with pytest.raises(StoreError):
+        m.create_milestone("MM-C", "C")
+    m.store.anchors_path.write_text("{corrupt", encoding="utf-8")
+    assert not m.store.verify()["ok"]
+    m.store.reanchor("impl:a", "anchors file lost; checked segment against git history")
+    assert m.store.verify()["ok"]
+    m.create_milestone("MM-C", "C")
+    kinds = [e["kind"] for s in m.store.read_all() for e in s.events]
+    assert "ANCHORS_RESET" in kinds
+
+
+def test_r2_04_clone_needs_its_own_host_id_and_local_files_are_untracked(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    assert "local/" in (m.home / ".gitignore").read_text(encoding="utf-8")
+    clone = tmp_path / "clone"
+    (clone / "events").mkdir(parents=True)
+    (clone / "mm.json").write_bytes((m.home / "mm.json").read_bytes())
+    (clone / "events" / "h1.jsonl").write_bytes(m.store.segment_path.read_bytes())
+    with pytest.raises(StoreError) as e:
+        Manager(clone, actor="b")
+    assert e.value.code == "NO_HOST_ID"
+    with pytest.raises(StoreError) as e:
+        EventStore.init_host(clone, "h1")
+    assert e.value.code == "HOST_ID_TAKEN"
+    EventStore.init_host(clone, "h2")
+    m2 = Manager(clone, actor="b")
+    assert m2.store.verify()["ok"]
+    m2.create_milestone("MM-B", "B")
+    assert (clone / "events" / "h2.jsonl").is_file()
+    assert not (clone / "anchors.json").exists() and (clone / "local" / "anchors.json").is_file()
+
+
+def test_r2_05_resolve_only_the_conflicts_the_resolver_saw(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    home3 = tmp_path / "ledger3"
+    EventStore.init(home3, "h3")
+    m3 = Manager(home3, actor="h3:agent")
+    m1.create_milestone("MM-A", "A")
+    seg1 = m1.store.segment_path.read_bytes()
+    for home in (home2, home3):
+        (home / "events" / "h1.jsonl").write_bytes(seg1)
+    m3.update_milestone("MM-A", next_action="h3: do NOT ship")      # earlier timestamp, merged later
+    m1.update_milestone("MM-A", next_action="h1")
+    m2.update_milestone("MM-A", next_action="h2")
+    _merge(m1, home2)
+    m1.resolve_conflict("MM-A", "saw h2 only")
+    (m1.home / "events" / "h3.jsonl").write_bytes((home3 / "events" / "h3.jsonl").read_bytes())
+    p = m1.projection()
+    assert [c for c in views.open_conflicts(p, "MM-A")]  # h3's conflict stays open
+
+
+def test_r2_06_clock_step_back_keeps_segment_order(tmp_path):
+    clock = Clock()
+    m = new(tmp_path, clock=clock)
+    m.create_milestone("MM-A", "A")
+    with m.store.locked():  # simulate a later write stamped earlier by a stepped-back clock
+        ev = m.store.append("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"objective": "later"}}, actor="x",
+                            base={"MM-A": 1}, ts="2000-01-01T00:00:00.000000Z")
+    assert ev["ts"] >= m.store.read_all()[0].events[0]["ts"]  # clamped, never earlier than the previous event
+    assert m.projection()["milestones"]["MM-A"]["objective"] == "later"
+    # a foreign segment whose timestamps go backwards is still folded in its own order
+    from scripts.dev_workflow.milestones.store import read_segment
+    s = read_segment(m.store.segment_path)
+    evs = [dict(e) for e in s.events]
+    evs[1]["ts"] = "1999-01-01T00:00:00.000000Z"
+    class S:
+        valid_events = evs
+    order = [e["seq"] for e in model.ordered([S()])]
+    assert order == [1, 2]
+
+
+def test_r2_07_import_never_revises_an_unrelated_ledger_decision(tmp_path):
+    src = tmp_path / "decisions.md"
+    src.write_bytes(DECISIONS_MD.encode())
+    m = new(tmp_path)
+    importers.import_decisions(m, src)
+    m.store.config["dec_namespace"] = "DEC"  # simulate a promoted ledger that numbers DEC- itself
+    m.record_decision("Ledger-native", "native", "2026-10-22", "AGENT-RECORD", "s", ident="DEC-004")
+    src.write_bytes((DECISIONS_MD.split("\n## 3.")[0] + "| DEC-004 | 2026-10-23 | P0 later | other | — | — | — | "
+                     "s | — | — | ACTIVE | CAN | REPO-RECORD |\n").encode())
+    r = importers.import_decisions(m, src)
+    assert r["collisions"] == ["DEC-004"] and r["revised"] == 0
+    d = m.projection()["decisions"]["DEC-004"]
+    assert d["decision"] == "native" and not d["source_revisions"]
+
+
+def test_r2_08_integration_approval_bound_to_candidate(tmp_path):
+    m = _accept_ready(tmp_path)
+    m.set_status("MM-A", "ACCEPTED", "ok")
+    m.request_approval("MM-A", "INTEGRATION", "integrate C1?")
+    m.resolve_approval("AP-1", "APPROVED", owner_words="yes integrate C1", source="chat")
+    assert m.projection()["approvals"]["AP-1"]["commit"] == C1
+    m.set_status("MM-A", "IN_PROGRESS", "new candidate")
+    m.update_milestone("MM-A", candidate_commit=C2)
+    m.record_review("MM-A", C2, "subagent", "subagent:r9", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    m.set_status("MM-A", "ACCEPTED", "ok")
+    m.record_integration("MM-A", "canonical", C2)
+    with pytest.raises(ValidationError) as e:
+        m.set_status("MM-A", "INTEGRATED", "try with the old approval")
+    assert e.value.code == "NO_OWNER_INTEGRATION_APPROVAL"
+
+
+def test_r2_09_unclear_or_partial_rows_never_record_full_supersession(tmp_path):
+    src = tmp_path / "decisions.md"
+    row = "| DEC-004 | 2026-09-12 | Q | quota | — | — | Its premise is superseded by DEC-003 | s | — | — | " \
+          "UNCLEAR (partly superseded) | CAN | REPO-RECORD |\n"
+    src.write_bytes((DECISIONS_MD.split("\n## 3.")[0] + row).encode())
+    m = new(tmp_path)
+    importers.import_decisions(m, src)
+    d = m.projection()["decisions"]["DEC-004"]
+    assert d["status"] == "UNCLEAR" and all(s["partial"] for s in d["superseded_by"])
+    real = Path("D:/uri-dev/uri-p0-audit/decisions.md")
+    if real.is_file():
+        m2 = Manager(m.home, actor="x")
+        h = tmp_path / "real"
+        EventStore.init(h, "r")
+        mr = Manager(h, actor="x")
+        importers.import_decisions(mr, real)
+        d30 = mr.projection()["decisions"]["DEC-030"]
+        assert d30["superseded_by"] and all(s["partial"] for s in d30["superseded_by"])
+
+
+def test_r2_12_log_reports_integrity(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    m.create_milestone("MM-B", "Bee")
+    path = m.store.segment_path
+    path.write_bytes(path.read_bytes().replace(b'"Bee"', b'"Bxx"'))
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "log"], out=out) == 3
+    assert "integrity_errors" in out.getvalue()
+
+
+@pytest.mark.parametrize("text", ["token: 65536 context", "token=4096 budget", "access_token: expired",
+                                  "secret: rotated"])
+def test_r2_13_numbers_and_state_words_are_not_secrets(text):
+    assert model.find_secret(text) is None
+
+
+def test_r2_14_recover_acknowledges_incomplete_batches(tmp_path):
+    m = new(tmp_path)
+    m.record_decision("Old", "old", "2026-10-21", "AGENT-RECORD", "s")
+    with m.store.locked():
+        evs = m.store.append_many([("BLOCKER_ADDED", {"id": "BLK-1", "subject": "PROJECT", "kind": "OTHER",
+                                                      "reason": "r", "needs": "n"}, {}),
+                                   ("BLOCKER_ADDED", {"id": "BLK-2", "subject": "PROJECT", "kind": "OTHER",
+                                                      "reason": "r", "needs": "n"}, {})], actor="x")
+    path = m.store.segment_path
+    lines = path.read_bytes().split(b"\n")[:-1]
+    path.write_bytes(b"\n".join(lines[:-1]) + b"\n" + lines[-1][:10])
+    m.store.recover("impl:a")
+    assert any("incomplete batch" in w for w in m.projection()["integrity_warnings"])
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "impl:a", "recover"], out=out) == 0
+    assert json.loads(out.getvalue())["abandoned_batches"]
+    p = m.projection()
+    assert not p["integrity_warnings"] and not p["blockers"]

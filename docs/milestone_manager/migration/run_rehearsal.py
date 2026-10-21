@@ -73,7 +73,7 @@ def main():
         "Intelligence, P4 Meeting Intelligence, P5 Office Client Installer, P6 Mission Control, P7 Skill Command "
         "Center, P8 Developer Studio, P9 Advanced Vision Assist, P10 Brain Runtime Optimization. Priorities do not "
         "automatically imply strict sequential dependencies.",
-        "2026-10-21", "OWNER-PROMPT", OWNER_PROMPT, ident="DEC-091",
+        "2026-10-21", "OWNER-PROMPT", OWNER_PROMPT, ident="LDEC-001",
         reasoning="Stated in the owner prompt; no further reasoning recorded.",
         consequences="Milestone Manager and Lifecycle V3.1 are separate milestones (DEC-088 combined them as P1). "
                      "DEC-088's P11 Multi-Client Deployment is not in this list: status asked as an open question.",
@@ -85,7 +85,7 @@ def main():
         "and controlled integration in an isolated worktree; independent subagents qualify as reviewers; no routine "
         "owner involvement in review/repair; canonical integration only with separate owner authorisation after P0 "
         "prerequisites, gates, independent acceptance, frozen-core integrity and no blocking findings.",
-        "2026-10-21", "OWNER-PROMPT", AMENDMENT, ident="DEC-092", related=["MILESTONE-MANAGER"])
+        "2026-10-21", "OWNER-PROMPT", AMENDMENT, ident="LDEC-002", related=["MILESTONE-MANAGER"])
     m.record_decision(
         "Task state belongs to Lifecycle V3.1; Milestone Manager reads it through a contract",
         "Lifecycle V3.1 owns task ids, task context/evidence, execution transitions, review/acceptance gates, "
@@ -94,7 +94,7 @@ def main():
         "(uri-dev/task-ledger-contract/1).",
         "2026-10-21", "AGENT-RECORD",
         "agreement between the Milestone Manager session and the Lifecycle V3.1 session v1-2e, 2026-10-21 (messages)",
-        ident="DEC-093", related=["MILESTONE-MANAGER", "LIFECYCLE-V3-1"],
+        ident="LDEC-003", related=["MILESTONE-MANAGER", "LIFECYCLE-V3-1"],
         alternatives_rejected="Milestone Manager keeps its own task list with leases and checkpoints (two sources of "
                               "truth for tasks).",
         reasoning="Owner prompt section G: avoid duplicate sources of truth; Lifecycle manages execution.")
@@ -112,7 +112,7 @@ def main():
     if a.candidate_commit:
         m.update_milestone("MILESTONE-MANAGER", candidate_commit=a.candidate_commit)
     m.request_approval("PROJECT", "SCOPE", "Is P11 Multi-Client Deployment (DEC-088) still on the roadmap? It is "
-                                           "absent from the 2026-10-21 P0..P10 list (DEC-091).")
+                                           "absent from the 2026-10-21 P0..P10 list (LDEC-001).")
     m.request_approval("MILESTONE-MANAGER", "POLICY",
                        "Promote a Milestone Manager ledger as authoritative (replacing developmental.md / "
                        "decisions.md as the place of record), and where should it live (recommended: a dedicated git "

@@ -28,7 +28,7 @@ its records to MM tasks.
 | History / never overwrite | inherent (append-only file, chain) | needs triggers (as scheduler does) | manual discipline | partial |
 | Tamper evidence | per-segment chain + git history when committed | chain in table; binary file not diffable | none | scheduler yes, OI no |
 | Concurrency on one PC | OS file lock (msvcrt/fcntl) released on process death; optimistic version checks | `BEGIN IMMEDIATE` | none | engine lock = one process |
-| Multi-machine / cloud sessions | one segment per host; git merges never conflict textually; semantic conflicts detected by versions | binary DB cannot be merged; needs export/import | text merges conflict | no |
+| Multi-machine / cloud sessions | one segment per host; segments never conflict textually in a git merge (host id and anchors are untracked, per machine); semantic conflicts detected by versions and duplicate ids | binary DB cannot be merged; needs export/import | text merges conflict | no |
 | Review by humans and agents | readable JSON lines, diffable in git | needs a tool | readable | needs a tool |
 | Query speed at 10k events | full verified fold 0.3 s measured (no cache) | fastest | n/a | fast |
 | Dependencies | stdlib | stdlib | none | runtime package import |
@@ -58,7 +58,9 @@ Ledger home (data, not code): a directory chosen by `--home` or `URI_MM_HOME`:
 ```
 <home>/mm.json                 config: schema, host id, autocommit flag
 <home>/events/<host>.jsonl     authoritative, append-only, hash-chained segment (one per host)
-<home>/anchors.json            per-segment high-water marks {count, head}; detects deletion of the newest events
+<home>/local/host.json         this machine's host id (untracked; a clone runs `init-host --host-id <new>`)
+<home>/local/anchors.json      this machine's per-segment high-water marks; detects deletion of the newest events
+<home>/.gitignore              ignores local/ and .lock
 <home>/quarantine/             torn tails moved here by `recover`
 <home>/.lock                   OS lock file (contents irrelevant)
 ```
@@ -81,8 +83,8 @@ Promotion of a ledger to authoritative is an owner decision (see implementation 
 
 | Claim | Required evidence (checked when the status is set) |
 |---|---|
-| milestone `ACCEPTED` | a review on that milestone, verdict ACCEPT or ACCEPT WITH FINDINGS, `blocking_open = 0`, commit equal to the milestone's `candidate_commit`, reviewer identity different from every implementer actor recorded on the milestone, result class `COMPLETED_WITH_RESULT` |
-| milestone `INTEGRATED` | an APPROVED owner approval of kind INTEGRATION for the milestone, and an integration record naming the target commit and that it contains the candidate |
+| milestone `ACCEPTED` | a review on that milestone, verdict ACCEPT or ACCEPT WITH FINDINGS, `blocking_open = 0`, commit equal to the milestone's `candidate_commit`, reviewer identity different from every implementer actor recorded on the milestone, result class `COMPLETED_WITH_RESULT`, and **no** completed negative review on that commit (a repair is a new commit) |
+| milestone `INTEGRATED` | the ACCEPTED evidence again, an APPROVED owner approval of kind INTEGRATION **bound to the current candidate commit**, and an integration record for that candidate whose target contains it |
 | milestone `DONE` | no approval request open, no blocker open, and status already ACCEPTED or INTEGRATED |
 | approval `APPROVED`/`DENIED` | the owner's own words and a source reference; assurance `OWNER_RELAYED` (the recording agent is named) |
 | decision text | never edited; `supersede` and `correct` add events and links both ways |
@@ -122,7 +124,7 @@ plus the last handoff note and the linked lifecycle run stage. Recovery scenario
 | Context or quota exhaustion | nothing is lost: every recorded step is already fsynced; the next session runs `resume` |
 | Session killed mid-command | lock released by OS; either the event was fully written (fsynced line) or not at all, or a torn tail exists |
 | Power loss mid-append | torn tail ignored by reads, reported by `verify`, quarantined by `recover`; earlier events intact |
-| Newest events deleted or a segment rewritten | `anchors.json` (and git history) disagree; `verify` fails, writes are refused, status shows an integrity banner and exits 3 |
+| Newest events deleted, a segment rewritten, or the anchors file lost | `local/anchors.json` (and git history) disagree or the file is missing; `verify` fails, writes are refused, status shows an integrity banner and exits 3 |
 | Crash in the middle of a multi-event command | the command's events are one batch (one write + fsync); an incomplete batch is ignored by the fold and reported as a warning; the retry succeeds |
 | Harness or agent replaced | identity is a recorded string; claims expire; the new agent claims after expiry or release |
 | Worktree deleted | MM stores commits and paths; `verify-evidence` reports missing files and SHA mismatches |
@@ -191,6 +193,24 @@ Recorded, not silently overwritten (details: `reviews/R1_2ae7a79f.md`, `reviews/
 | `anchors.json` high-water marks | R1-07 (deleting the newest events left a valid shorter chain) |
 | Fold never replaces a record with the same id from another event; duplicates kept under `<id>@<seg>.<seq>` and flagged as DUPLICATE_ID conflicts; positive status refused while a conflict on the milestone is open | R1-05 |
 | Fold flags a positive status whose basis names no real review/approval (BASIS_INVALID) | R1-02 defence in depth |
-| ACCEPTED/INTEGRATED/DONE all re-run the independent-accept check on the current candidate (latest review wins); candidate locked while ACCEPTED/INTEGRATED/DONE; integration record must match the candidate; RED when the latest review contradicts a positive status | R1-01, R1-03 |
+| ACCEPTED/INTEGRATED/DONE all re-run the independent-accept check on the current candidate (after R2: any negative review on that commit blocks); candidate locked while ACCEPTED/INTEGRATED/DONE; integration record must match the candidate; RED when the latest review contradicts a positive status | R1-01, R1-03 |
 | Multi-event commands are atomic batches | R1-15 |
 | Identity comparison case/whitespace-insensitive | R1-14 |
+
+## 14. Changes after independent review R2 (2026-10-21, REJECT on `4a54ebe1`)
+
+| Change | Reason |
+|---|---|
+| Resolve, supersede and correct events carry the creation-event hash of their target; the fold binds by hash, so a duplicated id never redirects an answer to another milestone's record; DUPLICATE_ID conflicts name both subjects | R2-01 |
+| Anchor refresh failure after a successful append is a warning; replace retries while a reader holds the file | R2-02 |
+| Missing/unreadable anchors while events exist = integrity error; `reanchor --reason` records an explicit reset | R2-03 |
+| Host id and anchors are local, untracked files (`local/`); a clone must `init-host` with a new id (refused if that segment exists) | R2-04 |
+| `resolve-conflict` names the exact conflicts it saw | R2-05 |
+| Timestamps never go backwards within a segment; the merge preserves each segment's order; acceptance no longer depends on cross-host clock order (any negative review on the candidate blocks) | R2-06 |
+| Ledger-native decisions use `LDEC-NNN` until promotion; an imported row whose id belongs to a non-imported decision is reported as a collision, never as a revision | R2-07 |
+| INTEGRATION approvals are bound to the candidate commit | R2-08 |
+| A row whose own status is partial/unclear never records a full supersession | R2-09 |
+| `log` reports integrity (exit 3); numbers and state words are not secrets; `recover` acknowledges incomplete batches (BATCH_ABANDONED) | R2-12..R2-14 |
+
+Second-host procedure: clone the ledger repository, then `python -m scripts.dev_workflow.milestones --home <clone>
+init-host --host-id <unique-id>`; never copy another machine's `local/` folder.
