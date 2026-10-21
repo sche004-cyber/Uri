@@ -890,3 +890,109 @@ def test_r3_05_changed_driver_reviewer_output_voids_the_primary_review(lg, repo,
         lg.accept(tid, DEV)
     out.write_bytes(b"reviewer session output AUDIT_RESULT ...")
     assert lg.accept(tid, DEV)["data"]["review_path"] == "PRIMARY_V3"
+
+
+# ------------------------------------------------------------------ fallback review r3 R1 (ac9143e1) regressions
+
+def _fallback_ready_task(lg, repo, tmp_path, name="FB"):
+    tid = lg.create("fb", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    fallback_ready(lg, tid, tmp_path, head, name=name)
+    return tid, head
+
+
+def test_fb_r1_01_edited_blocking_flag_is_an_integrity_failure(lg, repo, tmp_path):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    lg.add_finding(tid, "owner:chetan", "F-1", "HIGH", "must fix")
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    with pytest.raises(tl.Refused, match="open blocking"):
+        lg.accept(tid, DEV)
+    lg.db.execute("UPDATE findings SET blocking=0 WHERE task_id=?", (tid,))
+    assert any("findings" in e for e in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.accept(tid, DEV)
+
+
+def test_fb_r1_02_edited_resume_target_cannot_reach_integrated(lg, repo):
+    tid = lg.create("rt", "o", DEV, worktree=str(repo))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.block(tid, DEV, "x", "y")
+    lg.db.execute("UPDATE tasks SET resume_to='INTEGRATED' WHERE task_id=?", (tid,))
+    assert any("resume_to" in e for e in lg.verify(tid))
+    with pytest.raises(tl.Refused):
+        lg.unblock(tid, "owner:chetan", "go")
+    assert lg.get(tid)["status"] == "BLOCKED"
+    lg.db.execute("UPDATE tasks SET resume_to='IN_PROGRESS' WHERE task_id=?", (tid,))
+    lg.unblock(tid, "owner:chetan", "go")
+    assert lg.get(tid)["status"] == "IN_PROGRESS" and lg.verify(tid) == []
+
+
+def test_fb_r1_03_non_decisive_review_never_closes_findings(lg, repo, tmp_path):
+    tid = lg.create("nd", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    lg.record_review(tid, "subagent:a", head, str(review_file(tmp_path, head, "REJECT", [
+        {"id": "R1-01", "severity": "HIGH", "title": "bug"}], name="a.txt")))
+    # no fallback basis: a later FIXED claim is evidence only
+    lg.record_review(tid, "subagent:b", head, str(review_file(tmp_path, head, prior=[{"id": "R1-01",
+                                                                                  "status": "FIXED"}], name="b.txt")))
+    assert lg.db.execute("SELECT status FROM findings WHERE task_id=? AND finding_id='V1/R1-01'",
+                         (tid,)).fetchone()["status"] == "OPEN"
+    # paused: also evidence only
+    fallback_ready(lg, tid, tmp_path, head, name="P")
+    lg.set_availability("codex:c", "codex", False)
+    lg.set_availability(DEV, "claude", False)
+    lg.record_review(tid, "subagent:c", head, str(review_file(tmp_path, head, prior=[{"id": "R1-01",
+                                                                                  "status": "FIXED"}], name="c.txt")))
+    assert lg.db.execute("SELECT status FROM findings WHERE task_id=? AND finding_id='V1/R1-01'",
+                         (tid,)).fetchone()["status"] == "OPEN"
+    # owner findings are never closed by a reviewer's FIXED claim
+    lg.set_availability(DEV, "claude", True)
+    lg.resume(tid, DEV)
+    lg.add_finding(tid, "owner:chetan", "OWN-1", "HIGH", "owner concern")
+    lg.record_review(tid, "subagent:d", head, str(review_file(tmp_path, head, prior=[
+        {"id": "R1-01", "status": "FIXED"}, {"id": "OWN-1", "status": "FIXED"}], name="d.txt")))
+    rows = {r["finding_id"]: r["status"] for r in lg.db.execute("SELECT * FROM findings WHERE task_id=?", (tid,))}
+    assert rows["V1/R1-01"] == "CLOSED" and rows["OWN-1"] == "OPEN"
+    assert lg.verify(tid) == []
+
+
+def test_fb_self_found_review_cannot_close_its_own_findings(lg, repo, tmp_path):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    r = lg.record_review(tid, REV, head, str(review_file(tmp_path, head, "REJECT", [
+        {"id": "R1-01", "severity": "HIGH", "title": "new bug"}], prior=[{"id": "R1-01", "status": "FIXED"}])))
+    assert r["verdict"] == "REJECT"
+    assert lg.summaries()[0]["open_blocking_findings"] == 1
+
+
+SECRETS2 = ["Authorization: Basic dXNlcjpodW50ZXIyU3VwZXJTZWNyZXQ=", "mysql --password hunter2SuperSecret",
+            "pass=hunter2SuperSecret", "PWD: hunter2SuperSecret", "hf_" + "a" * 34, "pypi-AgEIcHlwaS5vcmcCJ" + "b" * 20,
+            "sk_live_" + "c" * 24, "glpat-" + "d" * 20, "AccountKey=" + "e" * 40 + "=="]
+
+
+def test_fb_r1_04_more_secret_formats_are_redacted(lp):
+    lg = tl.Ledger(lp)
+    tid = lg.create("s", "o", DEV)
+    for s_ in SECRETS2:
+        lg.add_context(tid, DEV, "note", "value: " + s_)
+    lg.handoff(tid)
+    lg.close()
+    blob = b"".join(f.read_bytes() for f in lp.parent.rglob("*") if f.is_file())
+    for needle in ("dXNlcjpodW50ZXIyU3VwZXJTZWNyZXQ", "hunter2SuperSecret", "a" * 34, "b" * 20, "c" * 24, "d" * 20,
+                   "e" * 40):
+        assert needle.encode() not in blob, needle
+    for s_ in SECRETS2:
+        once = tl.redact(s_)[0]
+        assert tl.redact(once)[0] == once
+
+
+def test_fb_r1_06_new_head_voids_acceptance_in_any_status(lg, repo, tmp_path):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    lg.accept(tid, DEV)
+    lg.block(tid, DEV, "wait", "x")
+    new = _commit(repo, "n.txt", b"n")
+    lg.set_head(tid, DEV, new)
+    assert lg.get(tid)["accepted_commit"] is None
+    lg.unblock(tid, "owner:chetan", "ok")
+    t = lg.get(tid)
+    assert t["status"] == "IN_REVIEW" and t["accepted_commit"] is None and lg.verify(tid) == []

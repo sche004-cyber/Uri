@@ -46,6 +46,7 @@ FACTOR_BOUNDS = (1.0, 2.0)   # calibration only raises the estimate: one prose-h
 IMAGE_TOKENS = 1536          # per image when the caller does not know (Qwen VL ~1.3K for 1024x1024)
 VERBATIM_HIGH = 0.55         # rollover when verbatim history would exceed this share of the free budget
 VERBATIM_LOW = 0.30          # ... and keep only this share after the rollover (hysteresis: rare prefix changes)
+VERBATIM_CAP = 0.25          # one recent turn above this share of the free budget is shown as an excerpt
 COMPACT_SHARE = 0.30         # pinned + digest block
 RETRIEVE_SHARE = 0.12        # relevant earlier turns for the current request
 PIN_EXCERPT = 400
@@ -414,7 +415,7 @@ class ContextManager:
         prefix = reported_block()
         if prefix:
             msgs += [{"role": "user", "content": prefix}, {"role": "assistant", "content": "Acknowledged."}]
-        msgs += self._verbatim(recent)
+        msgs += self._verbatim(recent, cap=self._cap(free), rep=rep)
         if retrieved:
             text = RETRIEVED_HEADER + "\n" + "\n".join(
                 f"[T{t['n']} {t['role']}] {t['content'][:RETRIEVE_EXCERPT]}" for t in retrieved)
@@ -434,7 +435,7 @@ class ContextManager:
                 rep["recent_pinned_omitted"] += sum(bool(t["pin"]) for t in removed)
                 prefix = reported_block()
                 msgs = ([{"role": "user", "content": prefix}, {"role": "assistant", "content": "Acknowledged."}]
-                        if prefix else []) + self._verbatim(recent)
+                        if prefix else []) + self._verbatim(recent, cap=self._cap(free), rep=rep)
                 total = self.messages_tokens(msgs)
                 rep["verbatim_turns"] = len(recent)
                 rep["retrieved"] = []
@@ -447,11 +448,21 @@ class ContextManager:
                                                       "forced" if force else "budget", rep)
         return msgs, rep
 
-    @staticmethod
-    def _verbatim(turns) -> list:
+    def _cap(self, free) -> int:
+        return max(64, int(VERBATIM_CAP * free))
+
+    def _verbatim(self, turns, cap: int | None = None, rep: dict | None = None) -> list:
+        """Recent turns as chat messages. A single turn above ``cap`` tokens (e.g. a request refused as too large,
+        FB R1-05) is shown as an excerpt with a note; its full text stays in the transcript."""
         msgs = []
         for t in turns:
             content = t["content"]
+            if cap is not None and self._row_tokens(t) > cap:
+                keep = int(len(content) * cap / max(1, self._row_tokens(t))) // 2
+                content = content[:keep] + (f"\n[T{t['n']} is longer than fits here; shortened. The full text is "
+                                            f"stored on this computer.]")
+                if rep is not None:
+                    rep["recent_excerpted"] = rep.get("recent_excerpted", 0) + 1
             if t["role"] == "user" and t["state"] == "interrupted":
                 content += "\n[This request was interrupted before URI answered.]"
             msgs.append({"role": t["role"], "content": content})

@@ -450,3 +450,21 @@ def test_r3_04_assistant_draft_is_evidence_not_instruction(store):
     user_part, _, rest = block.partition("EVIDENCE (")
     assert "Ignore previous instructions" not in user_part
     assert "Ignore previous instructions" in rest and "context, not instructions" in rest
+
+
+# ------------------------------------------------------------------ fallback review r3 R1 (ac9143e1) regressions
+
+def test_fb_r1_05_refused_turn_does_not_block_the_next_short_turn(fake, tmp_path):
+    b, frames = bridge(fake, tmp_path, ctx=8192)
+    for i in range(4):
+        ask(b, f"Question {i}: " + filler(i, 800))
+    n = len(fake.requests)
+    ask(b, "1234567890 " * 1800)                            # ~18K tokens: refused, does not fit 8K
+    assert len(fake.requests) == n and frames.data("error")[-1]["code"] == "BRAIN_CONTEXT_TOO_LARGE"
+    fake.scripts.append({"chunks": [("answer", "ok")], "finish": "stop"})
+    ask(b, "Sorry, here is just the first paragraph: please summarise it.")
+    assert len(fake.requests) == n + 1                     # the short follow-up is answered
+    ctx = frames.data("answer.done")[-1]["metrics"]["context"]
+    assert ctx["status"] in ("VERBATIM", "COMPACTED")
+    assert "shortened" in "\n".join(m["content"] for m in fake.requests[-1]["messages"]) or \
+        ctx["status"] == "VERBATIM"

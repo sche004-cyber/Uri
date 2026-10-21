@@ -116,9 +116,17 @@ _SECRET_RES = [
     ("aws_key", re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
     ("jwt", re.compile(r"\beyJ[A-Za-z0-9_\-]{8,}\.[A-Za-z0-9_\-]{8,}\.[A-Za-z0-9_\-]{8,}")),
     ("bearer", re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._\-~+/]{16,}=*")),
+    ("basic_auth", re.compile(r"(?i)\bbasic\s+[A-Za-z0-9+/]{8,}={0,2}")),
+    ("hf_token", re.compile(r"\bhf_[A-Za-z0-9]{20,}")),
+    ("pypi_token", re.compile(r"\bpypi-[A-Za-z0-9_\-]{16,}")),
+    ("stripe_key", re.compile(r"\b(?:sk|rk|pk)_(?:live|test)_[A-Za-z0-9]{16,}")),
+    ("gitlab_token", re.compile(r"\bglpat-[A-Za-z0-9_\-]{16,}")),
+    ("npm_token", re.compile(r"\bnpm_[A-Za-z0-9]{30,}")),
+    ("azure_key", re.compile(r"(?i)\b(AccountKey|SharedAccessKey|sig)=([A-Za-z0-9+/%]{16,}=*)")),
+    ("cli_password", re.compile(r"(?i)(--?(?:password|passwd|pass|pwd|token|secret|api-key)(?:=|\s+))([^\s\"']{4,})")),
     ("url_credentials", re.compile(r"(?i)\b([a-z][a-z0-9+.\-]*://)[^\s/:@]+:[^\s/@]+@")),
     # KEY=VALUE / "key": "value" where the key names a secret
-    ("assignment", re.compile(r"(?i)\b([A-Za-z0-9_\-]*(?:password|passwd|secret|token|api[_\-]?key|apikey|"
+    ("assignment", re.compile(r"(?i)\b([A-Za-z0-9_\-]*(?:password|passwd|pass|pwd|secret|token|api[_\-]?key|apikey|"
                               r"access[_\-]?key|private[_\-]?key|client[_\-]?secret|credential)s?)"
                               r"(\"?\s*[:=]\s*\"?)([^\s\"',;]{4,})")),
 ]
@@ -139,6 +147,8 @@ def redact(text: str) -> tuple[str, int]:
                 return f"{m.group(1)}{m.group(2)}[REDACTED:{label}]"
             if label == "url_credentials":
                 return f"{m.group(1)}[REDACTED:{label}]@"
+            if label in ("cli_password", "azure_key"):
+                return f"{m.group(1)}{'=' if label == 'azure_key' else ''}[REDACTED:{label}]"
             return f"[REDACTED:{label}]"
         text = rx.sub(sub, text)
     return text, n
@@ -468,7 +478,8 @@ class Ledger:
                 raise Refused(f"{task_id} is already {t['status']}")
             blocker = json.dumps(redact_obj({"reason": reason, "needs": needs})[0])
             self._interrupt_steps(task_id, "task blocked")
-            return self._append(task_id, "BLOCKED", actor, {"frm": t["status"], "reason": reason, "needs": needs},
+            return self._append(task_id, "BLOCKED", actor, {"frm": t["status"], "reason": reason, "needs": needs,
+                                                            "resume_to": t["status"]},
                                 status="BLOCKED", resume_to=t["status"], blocker=blocker)
 
     def unblock(self, task_id: str, actor: str, note: str) -> dict:
@@ -477,8 +488,8 @@ class Ledger:
             self._guard_dev(t, actor, "unblock")
             if t["status"] != "BLOCKED":
                 raise Refused(f"{task_id} is not BLOCKED")
-            to = t["resume_to"] or "IN_PROGRESS"
-            to = "IN_REVIEW" if to == "ACCEPTED" and not self._acceptance_still_valid(t) else to
+            self._require_integrity(task_id)
+            to = self._resume_target(t)
             return self._append(task_id, "UNBLOCKED", actor, {"to": to, "note": note}, status=to, resume_to=None,
                                 blocker=None)
 
@@ -498,9 +509,12 @@ class Ledger:
             sha = _resolve_commit(t["worktree"], commit)
             upd = {"head_commit": sha}
             data = {"commit": sha, "previous": t["head_commit"]}
-            if t["status"] == "ACCEPTED" and sha != t["accepted_commit"]:
-                # The acceptance was for the exact previous commit; a new commit needs a new review.
-                upd.update(status="IN_REVIEW", accepted_commit=None)
+            if t["accepted_commit"] and sha != t["accepted_commit"]:
+                # The acceptance was for the exact previous commit; a new commit needs a new review (FB R1-06: in
+                # every status, not only ACCEPTED).
+                upd["accepted_commit"] = None
+                if t["status"] == "ACCEPTED":
+                    upd["status"] = "IN_REVIEW"
                 data["acceptance_invalidated"] = t["accepted_commit"]
             ev = self._append(task_id, "HEAD", actor, data, **upd)
             self._add_context(task_id, actor, "commit", f"head {sha}", commit=sha, key=f"commit:{sha}")
@@ -835,8 +849,8 @@ class Ledger:
                         why = "claim lapsed (session ended, crashed or ran out of quota)"
                         self._interrupt_steps(tid, why)
                         self._append(tid, "INTERRUPTED", actor, {"frm": t["status"], "open_steps": steps,
-                                                                 "why": why}, status="INTERRUPTED",
-                                     resume_to=t["status"])
+                                                                 "why": why, "resume_to": t["status"]},
+                                     status="INTERRUPTED", resume_to=t["status"])
                         out.append({"task_id": tid, "action": "INTERRUPTED", "steps": steps})
                 if cur is not None and lapsed:
                     self.db.execute("DELETE FROM leases WHERE resource=?", (f"task:{tid}",))
@@ -876,9 +890,8 @@ class Ledger:
                               f"first")
             if t["status"] not in ("INTERRUPTED", "PAUSED"):
                 raise Refused(f"{task_id} is {t['status']}, not INTERRUPTED/PAUSED")
-            to = t["resume_to"] or "IN_PROGRESS"
-            if to == "ACCEPTED" and not self._acceptance_still_valid(t):
-                to = "IN_REVIEW"
+            self._require_integrity(task_id)
+            to = self._resume_target(t)
             drift = self._drift(t)
             return self._append(task_id, "RESUMED", actor, {"frm": t["status"], "to": to, "note": note,
                                                             "worktree_check": drift or "clean, head as recorded"},
@@ -886,6 +899,25 @@ class Ledger:
 
     def _acceptance_still_valid(self, t) -> bool:
         return bool(t["accepted_commit"]) and t["accepted_commit"] == t["head_commit"]
+
+    RESUMABLE = ("OPEN", "IN_PROGRESS", "IN_REVIEW", "REPAIR", "ACCEPTED")
+
+    def _resume_target(self, t) -> str:
+        """Where an unblock/resume may go (FB R1-02): an ordinary working status, or ACCEPTED only while the
+        acceptance still holds for the head. Never INTEGRATED, terminal or another hold."""
+        to = t["resume_to"] or "IN_PROGRESS"
+        if to not in self.RESUMABLE:
+            raise Refused(f"resume target {to!r} is not allowed; the task row may have been edited")
+        if to == "ACCEPTED" and not self._acceptance_still_valid(t):
+            to = "IN_REVIEW"
+        return to
+
+    def _require_integrity(self, task_id: str) -> None:
+        """Every decision (accept, unblock, resume, integrated) first replays the task's chain: an edited row can
+        never steer a decision (FB R1-01/R1-02, class of R3-03)."""
+        errs = self.verify(task_id)
+        if errs:
+            raise Refused("LEDGER_INTEGRITY_FAILED: " + "; ".join(errs[:5]))
 
     # ----------------------------------------------------------------- development pause
 
@@ -907,12 +939,13 @@ class Ledger:
                 for t in self.db.execute("SELECT * FROM tasks WHERE status NOT IN ('PAUSED','INTEGRATED',"
                                          "'ABANDONED')").fetchall():
                     steps = self._interrupt_steps(t["task_id"], "development paused")
+                    target = t["resume_to"] if t["status"] in ("INTERRUPTED", "BLOCKED") and t["resume_to"] \
+                        else t["status"]
                     self._append(t["task_id"], "PAUSED", actor,
-                                 {"frm": t["status"], "reason": reason, "checkpoint": {
+                                 {"frm": t["status"], "reason": reason, "resume_to": target, "checkpoint": {
                                      "head": t["head_commit"], "last_verified": t["last_verified_commit"],
                                      "interrupted_steps": steps}},
-                                 status="PAUSED", resume_to=t["resume_to"] if t["status"] in (
-                                     "INTERRUPTED", "BLOCKED") and t["resume_to"] else t["status"])
+                                 status="PAUSED", resume_to=target)
                     paused.append(t["task_id"])
         return paused
 
@@ -932,18 +965,24 @@ class Ledger:
 
     def _add_finding(self, task_id, actor, f: dict, review_id, commit) -> dict:
         from scripts.dev_workflow.lifecycle import is_blocking
-        fid = str(f.get("id") or f"F{secrets.token_hex(3)}")
-        if redact(fid)[1]:
+        raw_id = str(f.get("id") or f"F{secrets.token_hex(3)}")
+        if redact(raw_id)[1]:
             raise Refused("secret-bearing finding identifier is not allowed")
+        # Reviewers number findings per round (R1-01 ...); stored ids are namespaced by the recording review so a
+        # later review's R1-01 never replaces or closes another review's R1-01.
+        fid = f"{review_id}/{raw_id}" if review_id else raw_id
+        if self.db.execute("SELECT 1 FROM findings WHERE task_id=? AND finding_id=?", (task_id, fid)).fetchone():
+            raise Refused(f"finding {fid} already exists")
         blocking = is_blocking({k: v for k, v in f.items() if k != "blocking" or v is not None})
         title = redact(str(f.get("title") or ""))[0]
         severity = redact(str(f.get("severity") or ""))[0]
-        self.db.execute("INSERT OR REPLACE INTO findings VALUES(?,?,?,?,?,?,?,?,?,?)",
-                        (task_id, fid, severity, int(blocking), int(bool(f.get("owner_decision"))), title,
+        owner_decision = bool(f.get("owner_decision"))
+        self.db.execute("INSERT INTO findings VALUES(?,?,?,?,?,?,?,?,?,?)",
+                        (task_id, fid, severity, int(blocking), int(owner_decision), title,
                          "OPEN", commit, review_id, None))
-        return self._append(task_id, "FINDING", actor, {"id": fid, "severity": severity,
-                                                         "blocking": blocking, "title": title,
-                                                         "review": review_id, "commit": commit})
+        return self._append(task_id, "FINDING", actor, {"id": fid, "raw_id": raw_id, "severity": severity,
+                                                         "blocking": blocking, "owner_decision": owner_decision,
+                                                         "title": title, "review": review_id, "commit": commit})
 
     def close_finding(self, task_id: str, actor: str, finding_id: str, commit: str, note: str) -> dict:
         with self.tx():
@@ -993,18 +1032,23 @@ class Ledger:
                 "mechanism": mechanism, "provenance": prov, "blocking": [f.get("id") for f in blocking]})
             self.db.execute("INSERT INTO reviews VALUES(?,?,?,?,?,?,?,?,?)",
                             (task_id, rid, sha, actor, prov, verdict, int(independent), sha256(raw), ev["seq"]))
+            # FB R1-03: a FIXED claim closes earlier review findings only when this review could decide
+            # acceptance (fallback basis present, development not paused); otherwise it stays evidence only.
+            decisive = independent and not self.development_paused() and self._fallback_basis(t) is not None
             if verdict is not None:
                 for f in result.get("findings") or []:
                     self._add_finding(task_id, actor, f, rid, sha)
                 for pf in result.get("prior_findings") or []:
-                    if str(pf.get("status", "")).upper() == "FIXED" and independent:
-                        row = self.db.execute("SELECT status FROM findings WHERE task_id=? AND finding_id=?",
-                                              (task_id, pf.get("id"))).fetchone()
-                        if row is not None and row["status"] == "OPEN":
-                            self.db.execute("UPDATE findings SET status='CLOSED', closed_by=? WHERE task_id=? AND "
-                                            "finding_id=?", (actor, task_id, pf.get("id")))
-                            self._append(task_id, "FINDING_CLOSED", actor, {"id": pf.get("id"), "commit": sha,
-                                                                            "note": f"reviewer {rid}: FIXED"})
+                    if str(pf.get("status", "")).upper() != "FIXED" or not decisive:
+                        continue
+                    raw = str(pf.get("id") or "")
+                    for row in self.db.execute(
+                            "SELECT finding_id FROM findings WHERE task_id=? AND status='OPEN' AND review_id IS NOT "
+                            "NULL AND review_id<>? AND finding_id LIKE ?", (task_id, rid, "%/" + raw)).fetchall():
+                        self.db.execute("UPDATE findings SET status='CLOSED', closed_by=? WHERE task_id=? AND "
+                                        "finding_id=?", (actor, task_id, row["finding_id"]))
+                        self._append(task_id, "FINDING_CLOSED", actor, {"id": row["finding_id"], "commit": sha,
+                                                                        "note": f"reviewer {rid}: FIXED"})
             if verdict == "REJECT" and self._task(task_id)["status"] in ("IN_REVIEW", "ACCEPTED"):
                 self._append(task_id, "STATUS", "system:ledger", {"frm": self._task(task_id)["status"],
                                                                   "to": "REPAIR", "reason": f"{rid} REJECT"},
@@ -1022,6 +1066,7 @@ class Ledger:
         with self.tx():
             t = self._task(task_id)
             self._guard_dev(t, actor, "accept")
+            self._require_integrity(task_id)
             why = self._acceptance_problems(t)
             if why:
                 raise Refused("NOT ACCEPTED: " + "; ".join(why))
@@ -1173,6 +1218,7 @@ class Ledger:
             _require(actor, DEVELOPERS | {"owner"}, "mark integrated")
             if t["status"] != "ACCEPTED" or not t["accepted_commit"]:
                 raise Refused(f"{task_id} is {t['status']}; only an ACCEPTED task can be marked integrated")
+            self._require_integrity(task_id)
             if not t["worktree"]:
                 raise Refused("needs a worktree to check ancestry")
             target = _resolve_commit(t["worktree"], target_ref)
@@ -1395,10 +1441,12 @@ class Ledger:
         p = _replay((r["kind"], json.loads(r["data"])) for r in self.db.execute(
             "SELECT kind, data FROM events WHERE task_id=? ORDER BY seq", (tid,)))
         errs = [f"{tid} {k} is {t[k]!r} but the event chain says {p[k]!r}"
-                for k in ("status", "accepted_commit", "head_commit", "last_verified_commit", "milestone_ref")
-                if t[k] != p[k]]
-        rows = {r["finding_id"]: r["status"] for r in self.db.execute(
-            "SELECT finding_id, status FROM findings WHERE task_id=?", (tid,))}
+                for k in ("status", "accepted_commit", "head_commit", "last_verified_commit", "milestone_ref",
+                          "resume_to") if t[k] != p[k]]
+        errs += [f"{tid} {v}" for v in p["violations"]]
+        rows = {r["finding_id"]: {"status": r["status"], "blocking": r["blocking"], "severity": r["severity"],
+                                  "owner_decision": r["owner_decision"]} for r in self.db.execute(
+            "SELECT finding_id, status, blocking, severity, owner_decision FROM findings WHERE task_id=?", (tid,))}
         if rows != p["findings"]:
             errs.append(f"{tid} findings differ from the event chain")
         steps = {r["step_id"]: r["status"] for r in self.db.execute(
@@ -1446,7 +1494,7 @@ class Ledger:
 def _replay(events) -> dict:
     """Status, commits, milestone_ref, open findings and step states as the event chain defines them."""
     p = {"status": None, "accepted_commit": None, "head_commit": None, "last_verified_commit": None,
-         "milestone_ref": None, "findings": {}, "steps": {}}
+         "milestone_ref": None, "resume_to": None, "findings": {}, "steps": {}, "violations": []}
     for kind, d in events:
         if kind == "CREATED":
             p.update(status="OPEN", milestone_ref=d.get("milestone_ref"),
@@ -1456,23 +1504,37 @@ def _replay(events) -> dict:
                 p["accepted_commit"] = None
             p["status"] = d.get("to")
         elif kind in ("UNBLOCKED", "RESUMED"):
-            p["status"] = d.get("to")
-        elif kind in ("BLOCKED", "INTERRUPTED", "PAUSED", "INTEGRATED"):
-            p["status"] = kind
+            to = d.get("to")
+            if to not in ("OPEN", "IN_PROGRESS", "IN_REVIEW", "REPAIR", "ACCEPTED") or \
+                    (to == "ACCEPTED" and (not p["accepted_commit"] or p["accepted_commit"] != p["head_commit"])):
+                p["violations"].append(f"{kind} to {to!r} without the evidence that status needs")
+            p.update(status=to, resume_to=None)
+        elif kind in ("BLOCKED", "INTERRUPTED"):
+            p.update(status=kind, resume_to=d.get("resume_to", d.get("frm")))
+        elif kind == "PAUSED":
+            target = d.get("resume_to") or (p["resume_to"] if d.get("frm") in ("INTERRUPTED", "BLOCKED") and
+                                            p["resume_to"] else d.get("frm"))
+            p.update(status="PAUSED", resume_to=target)
+        elif kind == "INTEGRATED":
+            p["status"] = "INTEGRATED"
         elif kind == "ACCEPTED":
             p.update(status="ACCEPTED", accepted_commit=d.get("commit"))
         elif kind == "HEAD":
             p["head_commit"] = d.get("commit")
             if d.get("acceptance_invalidated"):
-                p.update(status="IN_REVIEW", accepted_commit=None)
+                if p["status"] == "ACCEPTED":
+                    p["status"] = "IN_REVIEW"
+                p["accepted_commit"] = None
         elif kind == "TEST" and d.get("passed") is True:
             p["last_verified_commit"] = d.get("commit")
         elif kind == "MILESTONE_REF":
             p["milestone_ref"] = d.get("milestone_ref")
         elif kind == "FINDING":
-            p["findings"][d.get("id")] = "OPEN"
-        elif kind == "FINDING_CLOSED":
-            p["findings"][d.get("id")] = "CLOSED"
+            p["findings"][d.get("id")] = {"status": "OPEN", "blocking": int(bool(d.get("blocking"))),
+                                          "severity": d.get("severity"),
+                                          "owner_decision": int(bool(d.get("owner_decision")))}
+        elif kind == "FINDING_CLOSED" and d.get("id") in p["findings"]:
+            p["findings"][d.get("id")]["status"] = "CLOSED"
         elif kind == "STEP_STARTED":
             p["steps"][d.get("step")] = "STARTED"
         elif kind == "STEP_ENDED":
