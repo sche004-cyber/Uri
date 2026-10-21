@@ -61,6 +61,9 @@ PIN_RE = re.compile(
     r"i (?:have )?(?:decided|choose|chose|prefer|want you to|need you to|approve|agree)|we (?:decided|agreed)|"
     r"(?:is|are) approved|approved|go ahead|confirm(?:ed)?|use \w+ instead|instead of|"
     r"my name is|call me|i am (?:a|an|the)\b)", re.I)
+# Direct imperatives often omit the introductory phrases above. Treat them as instructions before compaction.
+DIRECTIVE_RE = re.compile(r"^\s*(?:please\s+)?(?:use|answer|respond|write|format|include|exclude|avoid|"
+                          r"set|show|provide|keep|make|ensure|prefer)\b", re.I)
 EVIDENCE_PREFIXES = ("[Draft version",)
 _RUN = re.compile(r"[A-Za-z]+|[0-9]+|[^\x00-\x7f]|\s+|[^A-Za-z0-9\s\x80-\U0010ffff]")
 _WORD = re.compile(r"[a-z0-9][a-z0-9_\-]{2,}")
@@ -119,7 +122,7 @@ def base_tokens(text: str) -> float:
 
 
 def classify(role: str, text: str) -> str | None:
-    if role == "user" and PIN_RE.search(text or ""):
+    if role == "user" and (PIN_RE.search(text or "") or DIRECTIVE_RE.search(text or "")):
         return "instruction"
     if role == "assistant" and (text or "").startswith(EVIDENCE_PREFIXES):
         return "evidence"
@@ -450,7 +453,7 @@ class ContextManager:
         rest = [t for t in old if not t["pin"]]
         head = COMPACT_HEADER
         used = self.tokens(head)
-        pin_budget = budget * 0.65
+        pin_budget = budget  # instructions have priority; digest uses only the remaining space
         lines = []
         # Level 1: every pinned turn verbatim. Level 2: excerpts. Level 3: index lines. Never silently dropped.
         for level in ("verbatim", "excerpt", "index"):

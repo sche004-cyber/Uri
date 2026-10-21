@@ -235,6 +235,19 @@ def test_classification():
     assert CC.classify("assistant", "[Draft version 2]\nDear...") == "evidence"
 
 
+def test_r2_07_direct_user_instruction_survives_compaction(store):
+    instruction = "Use metric units for every measurement."
+    assert CC.classify("user", instruction) == "instruction"
+    n = store.begin(SID, instruction)
+    store.finish(SID, n, "Understood.")
+    for i in range(60):
+        n = store.begin(SID, f"Question {i}: " + filler(i, 300))
+        store.finish(SID, n, "Answer noted.")
+    block, report = CC.ContextManager(store, 8192)._compact(store.turns(SID), 180)
+    assert instruction in block
+    assert report["pinned_omitted"] == 0
+
+
 # CC-9: performance (latency, memory) - numbers printed for the qualification record, bounds generous
 def test_cc9_compose_latency_and_memory(store, capsys):
     mgr = CC.ContextManager(store, N_CTX)

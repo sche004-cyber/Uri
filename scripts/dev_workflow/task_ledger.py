@@ -362,8 +362,25 @@ class Ledger:
 
     def create(self, title: str, objective: str, actor: str, *, milestone_ref: str | None = None,
                worktree: str | None = None, branch: str | None = None, task_id: str | None = None) -> str:
-        if task_id is None:
+        return self._create(title, objective, actor, milestone_ref=milestone_ref, worktree=worktree,
+                            branch=branch, task_id=task_id)
+
+    def _create(self, title: str, objective: str, actor: str, *, milestone_ref: str | None = None,
+                worktree: str | None = None, branch: str | None = None, task_id: str | None = None,
+                import_source: Path | None = None) -> str:
+        if import_source is None:
             _require(actor, DEVELOPERS | {"owner"}, "create")
+        else:
+            # Only the V3 importer may use the system actor; bind the deterministic id to a real run.
+            if actor != "system:import-v3" or not (import_source / "events.jsonl").is_file() or \
+                    not (import_source / "state.json").is_file():
+                raise Refused("system task creation is only allowed for a V3 import source")
+            state = json.loads((import_source / "state.json").read_text(encoding="utf-8"))
+            base = re.sub(r"(-(r|c|u)\d+)+$", "", state.get("milestone") or import_source.parent.name)
+            if task_id != "TASK-V3-" + sha256(f"uri-v3-milestone:{base}")[:12] or milestone_ref != base:
+                raise Refused("V3 import task identity does not match its source")
+        if task_id is not None and redact(task_id)[1]:
+            raise Refused("secret-bearing task identifier is not allowed")
         wt = str(Path(worktree).resolve()) if worktree else None
         if wt and branch is None:
             branch = git(wt, "rev-parse", "--abbrev-ref", "HEAD", check=False) or None
@@ -890,12 +907,15 @@ class Ledger:
     def _add_finding(self, task_id, actor, f: dict, review_id, commit) -> dict:
         from scripts.dev_workflow.lifecycle import is_blocking
         fid = str(f.get("id") or f"F{secrets.token_hex(3)}")
+        if redact(fid)[1]:
+            raise Refused("secret-bearing finding identifier is not allowed")
         blocking = is_blocking({k: v for k, v in f.items() if k != "blocking" or v is not None})
         title = redact(str(f.get("title") or ""))[0]
+        severity = redact(str(f.get("severity") or ""))[0]
         self.db.execute("INSERT OR REPLACE INTO findings VALUES(?,?,?,?,?,?,?,?,?,?)",
-                        (task_id, fid, f.get("severity"), int(blocking), int(bool(f.get("owner_decision"))), title,
+                        (task_id, fid, severity, int(blocking), int(bool(f.get("owner_decision"))), title,
                          "OPEN", commit, review_id, None))
-        return self._append(task_id, "FINDING", actor, {"id": fid, "severity": f.get("severity"),
+        return self._append(task_id, "FINDING", actor, {"id": fid, "severity": severity,
                                                          "blocking": blocking, "title": title,
                                                          "review": review_id, "commit": commit})
 
@@ -995,6 +1015,8 @@ class Ledger:
                                            (t["task_id"], t["head_commit"] or "")) if r["verdict"] is not None]
         primary = [r for r in rows if r["provenance"] == "DRIVER_VERIFIED"]
         if primary:
+            if not self._driver_review_intact(t["task_id"], primary[0]):
+                return None, "driver review evidence changed or is missing", None
             return primary[0], "PRIMARY_V3", None
         fallback = [r for r in rows if r["provenance"] not in ("DRIVER_VERIFIED", "V3_UNVERIFIED")]
         if not fallback:
@@ -1005,6 +1027,39 @@ class Ledger:
                           "reviewer for this exact commit: link its V3 run (blocked NO_INDEPENDENT_REVIEWER on this "
                           "commit) or obtain the driver's review"), None
         return fallback[0], "FALLBACK", basis
+
+    def _driver_review_intact(self, task_id: str, review: sqlite3.Row) -> bool:
+        """Recheck the selected imported verdict against its linked V3 event chain and round artifact."""
+        recorded = self.db.execute("SELECT data FROM events WHERE task_id=? AND seq=? AND kind='REVIEW_RECORDED'",
+                                   (task_id, review["seq"])).fetchone()
+        if recorded is None:
+            return False
+        d = json.loads(recorded["data"])
+        sd = Path(d.get("v3_state_dir") or "")
+        if not self.db.execute("SELECT 1 FROM v3_links WHERE task_id=? AND state_dir=?",
+                               (task_id, str(sd))).fetchone():
+            return False
+        try:
+            evs, broken = self._v3_chain(sd)
+            if broken:
+                return False
+            source = next((e["data"] for e in evs if e["hash"] == d.get("v3_event_hash") and
+                           e["kind"] == "REVIEW_RECORDED"), None)
+            if source is None:
+                return False
+            f = sd / "rounds" / f"R{d.get('v3_round')}" / "round.json"
+            raw = f.read_bytes()
+            if sha256(raw) != review["raw_sha256"] or sha256(raw) != source.get("round_sha256"):
+                return False
+            artifact = json.loads(raw)
+        except (OSError, ValueError, KeyError, TypeError):
+            return False
+        return (source.get("round") == d.get("v3_round") == artifact.get("round") and
+                source.get("candidate") == d.get("commit") == review["commit_sha"] == artifact.get("candidate") and
+                source.get("verdict") == d.get("verdict") == review["verdict"] == artifact.get("effective_verdict") and
+                source.get("independent") is True and artifact.get("independent") is True and
+                not source.get("imported") and source.get("status") == artifact.get("status") ==
+                "COMPLETED_WITH_RESULT")
 
     def _fallback_basis(self, t) -> dict | None:
         """Evidence from a linked V3 run's intact hash chain that its reviewer chain is exhausted for this exact
@@ -1196,8 +1251,12 @@ class Ledger:
             base = re.sub(r"(-(r|c|u)\d+)+$", "", name)
             tid = "TASK-V3-" + sha256(f"uri-v3-milestone:{base}")[:12]
             if self.db.execute("SELECT 1 FROM tasks WHERE task_id=?", (tid,)).fetchone() is None:
-                self.create(f"{base} (imported Lifecycle V3 milestone)", "", actor, milestone_ref=base,
-                            task_id=tid)
+                if parse_actor(actor)[0] == "system":
+                    self._create(f"{base} (imported Lifecycle V3 milestone)", "", actor,
+                                 milestone_ref=base, task_id=tid, import_source=d)
+                else:
+                    self.create(f"{base} (imported Lifecycle V3 milestone)", "", actor,
+                                milestone_ref=base, task_id=tid)
             linked = self.db.execute("SELECT 1 FROM v3_links WHERE task_id=? AND state_dir=?",
                                      (tid, str(d))).fetchone()
             if not linked:

@@ -774,3 +774,48 @@ def test_r1_06_repeating_an_earlier_keyed_decision_makes_it_current(lg):
     texts = [i["text"] for i in lg.packet(tid, use_cache=False)["items"] if i["kind"] == "decision"]
     assert texts == ["old choice"]
     assert lg.history(tid)[-1]["kind"] == "CONTEXT_RESTORED" and lg.verify() == []
+
+
+# ------------------------------------------------------------------ driver round R2 regressions (LIFECYCLE-V3-1-r2)
+
+def test_r2_05_finding_identifiers_cannot_store_secrets(lp):
+    secret = "ghp_" + "S" * 36
+    lg = tl.Ledger(lp)
+    tid = lg.create("findings", "objective", DEV)
+    with pytest.raises(tl.Refused, match="secret-bearing finding identifier"):
+        lg.add_finding(tid, REV, secret, "HIGH", "issue")
+    lg.add_finding(tid, REV, "R2-05", "LOW " + secret, "issue")
+    assert lg.verify(tid) == []
+    lg.close()
+    assert secret.encode() not in lp.read_bytes()
+
+
+@pytest.mark.parametrize("actor", [REV, "antigravity:loop", "system:import-v3"])
+def test_r2_06_supplied_task_id_does_not_bypass_actor_authority(lg, actor):
+    with pytest.raises(tl.Refused, match="create needs an actor"):
+        lg.create("task", "objective", actor, task_id="TASK-20261021-12345678")
+    assert lg.list() == []
+
+
+@pytest.mark.parametrize("tamper", ["removed", "changed", "chain"])
+def test_r2_08_accept_rechecks_imported_driver_evidence(lg, repo, tmp_path, tamper):
+    tid = lg.create("driver", "objective", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    sd = _v3_run(tmp_path / "v3", "RECHECK", head, [(True, False, False)])
+    lg.link_v3(tid, DEV, str(sd))
+    assert lg.sync_v3(tid)[0]["provenance"] == "DRIVER_VERIFIED"
+    round_file = sd / "rounds" / "R1" / "round.json"
+    if tamper == "removed":
+        round_file.unlink()
+    elif tamper == "changed":
+        round_file.write_text("{}", encoding="utf-8")
+    else:
+        events = sd / "events.jsonl"
+        lines = events.read_text(encoding="utf-8").splitlines()
+        first = json.loads(lines[0])
+        first["ts"] = "2000-01-01T00:00:00Z"
+        lines[0] = json.dumps(first, sort_keys=True)
+        events.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    with pytest.raises(tl.Refused, match="driver review evidence"):
+        lg.accept(tid, DEV)
+    assert lg.get(tid)["status"] == "IN_REVIEW"
