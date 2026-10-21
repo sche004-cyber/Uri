@@ -2365,3 +2365,47 @@ def test_r20_02_filtered_listing_contains_the_whole_group_behind_each_id(tmp_pat
         for r in rows:  # every conflict carrying a listed id is in the listing
             same = [x for x in views.conflict_rows(p) if x["id"] == r["id"] and x["entity"] == r["entity"]]
             assert all(x in rows for x in same)
+
+
+# ------------------------------------------------------------------ R21 regression tests (review R21 on 8745a8d0)
+
+ID_TOKEN = __import__("re").compile(r"\b[0-9a-f]{12}\.[0-9a-f]{6}\b")
+
+
+def test_r21_01_stale_refusal_prints_no_id(tmp_path):
+    m1, seg2 = _r17_scenario(tmp_path)
+    (m1.home / "events" / "h2.jsonl").write_bytes(seg2[0] + b"\n")
+    shown = [r["id"] for r in views.conflict_rows(m1.projection()) if r["entity"] == "MM-X"]
+    (m1.home / "events" / "h2.jsonl").write_bytes(b"\n".join(seg2) + b"\n")
+    with pytest.raises(ValidationError) as e:
+        m1.resolve_conflict("MM-X", "x", shown[:1])
+    assert e.value.code == "STALE_CONFLICT_ID"
+    assert ID_TOKEN.findall(str(e.value)) == [shown[0]]  # only the id the user typed, never a new one
+
+
+def test_r21_01_no_refusal_or_warning_hands_out_ids(tmp_path):
+    """Only `conflicts` (and the loss refusal for the losses it just recorded) may print ids."""
+    m1, seg2 = _r17_scenario(tmp_path)
+    (m1.home / "events" / "h2.jsonl").write_bytes(b"\n".join(seg2) + b"\n")
+    for ids in ([], ["0123456789ab.abcdef"], ["0123"]):
+        with pytest.raises(ValidationError) as e:
+            m1.resolve_conflict("MM-X", "x", ids)
+        assert not [i for i in ID_TOKEN.findall(str(e.value)) if i not in ids]
+    with pytest.raises(ValidationError) as e:
+        m1.set_status("MM-X", "DONE", "x")
+    assert not ID_TOKEN.findall(str(e.value))
+
+
+def test_r21_02_conflicts_listing_shows_adoption_and_unknown_history(tmp_path):
+    m = new(tmp_path)
+    init_anchors = m.store.anchors_path.read_bytes()
+    m.create_milestone("MM-A", "A")
+    m.store.anchors_path.write_bytes(init_anchors)
+    with pytest.raises(ValidationError):
+        m.create_milestone("MM-B", "B")
+    rows = views.conflict_rows(m.projection(), "LEDGER")
+    assert rows and rows[0]["detail"].get("adopted")
+    m.store.anchors_path.unlink()
+    m.store.reanchor("impl:a", "anchors lost", acknowledge_loss=True)
+    rows = [r for r in views.conflict_rows(m.projection(), "LEDGER") if r["recorded_by"] == "ANCHORS_RESET"]
+    assert rows and rows[0]["detail"].get("unknown_previous") and rows[0]["detail"].get("anchor_problems")

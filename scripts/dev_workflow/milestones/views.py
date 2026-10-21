@@ -336,6 +336,6 @@ def conflict_rows(p, entity=None) -> list[dict]:
                      "subject": c.get("subject"), "recorded_by": c.get("kind"),
                      "event": f"{c['event']['seg']}#{c['event']['seq']}", "at": c["event"].get("ts"),
                      "subjects": c.get("subjects"),
-                     "detail": {k: c[k] for k in ("lost", "anchor_problems", "missing", "expected", "actual",
-                                                   "duplicate", "batch") if k in c}})
+                     "detail": {k: c[k] for k in ("lost", "anchor_problems", "unknown_previous", "adopted",
+                                                   "missing", "expected", "actual", "duplicate", "batch") if k in c}})
     return rows

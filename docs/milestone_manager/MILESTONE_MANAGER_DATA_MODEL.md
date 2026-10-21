@@ -226,3 +226,13 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
   all open conflicts that event raised on that entity. `resolve-conflict` refuses a bare event part
   (`UNKNOWN_CONFLICT_ID`) and an id whose check no longer matches (`STALE_CONFLICT_ID`).
 - Fingerprints are cached on the in-memory conflict (`_fp`, never written to the ledger).
+
+## 24. Changes after reviews R19–R21
+
+- `conflicts [--entity E]` rows: `{id, type, entity, subject, subjects, recorded_by, event, at, detail}`; `detail` may
+  hold `lost`, `anchor_problems`, `unknown_previous`, `adopted`, `missing`, `expected`, `actual`, `duplicate`,
+  `batch`. Filtered by E (an entity, or a milestone named as subject/subjects), the listing contains every open
+  member of each (entity, event) group it shows (one id resolves the whole group).
+- Ids are printed only by `conflicts` and by the `LEDGER_LOSS_RECORDED` refusal (with each loss's detail).
+  `status` (all forms), `NO_CONFLICT_ID` and `STALE_CONFLICT_ID` print no ids; they point to `conflicts --entity`.
+- ANCHOR_LOSS conflicts raised by ANCHORS_RESET carry the event's `anchor_problems`.

@@ -395,7 +395,7 @@ Verified by reviewer R14 for the first time since R12: concurrency stress (5 rou
 
 | Change | Reason |
 |---|---|
-| `status` no longer prints a ready-to-run conflict id; its issue line counts the open conflicts of the milestone, names each type and entity, and points to `conflicts --entity <id>`, which lists every conflict with its id. Ids are displayed only where all conflicts they cover are displayed (`conflicts`, and the `LEDGER_LOSS_RECORDED` refusal for the single conflict each event it just recorded raised; corrected after review R20: the `NO_CONFLICT_ID` refusal listed bare ids and no longer does) | R19-01 (status showed one conflict but its `--id` covered others, e.g. a BASIS_INVALID behind a VERSION line) |
+| `status` no longer prints a ready-to-run conflict id; its issue line counts the open conflicts of the milestone, names each type and entity, and points to `conflicts --entity <id>`, which lists every conflict with its id. Ids are displayed only where all conflicts they cover are displayed (`conflicts`, and the `LEDGER_LOSS_RECORDED` refusal for the single conflict each event it just recorded raised; corrected after review R20: the `NO_CONFLICT_ID` refusal listed bare ids and no longer does; corrected after review R21: the `STALE_CONFLICT_ID` refusal printed the new id and no longer does) | R19-01 (status showed one conflict but its `--id` covered others, e.g. a BASIS_INVALID behind a VERSION line) |
 | `resolve_conflict` docstring and §26 note updated to the `<event>.<check>` format | R19-02 |
 
 ## 32. Changes after independent review R20 (2026-10-22, REJECT on `e008d3ff`)
@@ -405,3 +405,15 @@ Verified by reviewer R14 for the first time since R12: concurrency stress (5 rou
 | the `NO_CONFLICT_ID` refusal prints no ids; it states the count and points to `conflicts --entity <entity>` | R20-01 (bare ids could be pasted without seeing what they covered) |
 | the `LEDGER_LOSS_RECORDED` refusal shows each recorded loss's detail with its id | R20-01 (weaker form) |
 | `conflicts --entity X` includes every member of each (entity, event) group it lists, plus `subjects`; one id never covers a conflict that the listing omits | R20-02 (a duplicate review id raised VERSION for MM-1 and DUPLICATE_ID for MM-1/MM-2 under one id; the MM-2 listing showed only the latter) |
+
+## 33. Changes after independent review R21 (2026-10-22, REJECT on `8745a8d0`)
+
+R21 swept every CLI output path (status in all forms, show, resume, ready, log, verify, verify-evidence, rebuild,
+recover, reanchor, write successes and all refusals): ids appear only in `conflicts` and in the
+`LEDGER_LOSS_RECORDED` refusal, except one leak fixed here.
+
+| Change | Reason |
+|---|---|
+| the `STALE_CONFLICT_ID` refusal no longer prints the current id; it points to `conflicts --entity <entity>` | R21-01 (pasting the printed id closed changed content never displayed) |
+| `conflicts` rows also show `unknown_previous` and `adopted`; an ANCHORS_RESET loss carries its `anchor_problems` onto the conflict | R21-02 |
+| data model brought up to date (§24) | R21-03 |

@@ -495,7 +495,8 @@ def _apply_one(p: dict, ev: dict) -> None:
                                                   "lost": d.get("lost") or {}})
         if d.get("lost") or d.get("unknown_previous") or d.get("anchor_problems"):
             _conflict(p, "ANCHOR_LOSS", "LEDGER", ref, kind, None, lost=d.get("lost") or {},
-                      unknown_previous=bool(d.get("unknown_previous")))
+                      unknown_previous=bool(d.get("unknown_previous")),
+                      **({"anchor_problems": d["anchor_problems"]} if d.get("anchor_problems") else {}))
     elif kind == "STORE_RECOVERED":
         p["recoveries"].append({**d, "at": ev["ts"]})
         if d.get("anchor_problems"):

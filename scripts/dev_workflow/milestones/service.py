@@ -706,8 +706,9 @@ class Manager:
                 h = next(iter(hashes))
                 current = M.display_id(all_open, next(c for c in open_c if c["event"]["hash"] == h))
                 if current.split(".", 1)[1] != check:
-                    raise ValidationError("STALE_CONFLICT_ID", f"{x!r} was read before these conflicts changed (now "
-                                                               f"{current}); run `conflicts` again and review")
+                    # no new id here: it may only be shown together with the changed conflicts (review R21-01)
+                    raise ValidationError("STALE_CONFLICT_ID", f"{x!r} was read before these conflicts changed; "
+                                                               f"review them again with `conflicts --entity {entity}`")
                 h = hashes.pop()
                 chosen.append(h)
                 seen.extend([h, c.get("type"), M.conflict_fingerprint(c)] for c in open_c
