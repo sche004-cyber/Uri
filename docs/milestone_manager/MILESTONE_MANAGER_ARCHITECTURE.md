@@ -122,8 +122,8 @@ plus the last handoff note and the linked lifecycle run stage. Recovery scenario
 | Event | What happens |
 |---|---|
 | Context or quota exhaustion | nothing is lost: every recorded step is already fsynced; the next session runs `resume` |
-| Session killed mid-command | lock released by OS; either the event was fully written (fsynced line) or not at all, or a torn tail exists |
-| Power loss mid-append | torn tail ignored by reads, reported by `verify`, quarantined by `recover`; earlier events intact |
+| Session killed mid-command | lock released by OS; either the event was fully written (fsynced line) or not at all, or a torn tail exists. If it died after the append but before the anchor refresh on a host's very first write, the next write anchors the segment and records ANCHORS_ADOPTED (one ANCHOR_LOSS conflict to review and resolve) |
+| Power loss mid-append | torn tail ignored by reads, reported by `verify`, quarantined by `recover`; earlier events intact; complete lines of the interrupted batch stay unapplied and are abandoned by the same `recover` (also on a host's first command) |
 | Newest events deleted, a segment rewritten, or the anchors file lost | `local/anchors.json` (and git history) disagree or the file is missing; `verify` fails, writes are refused, status shows an integrity banner and exits 3 |
 | Crash in the middle of a multi-event command | the command's events are one batch (one write + fsync); an incomplete batch is ignored by the fold and reported as a warning; the retry succeeds |
 | Harness or agent replaced | identity is a recorded string; claims expire; the new agent claims after expiry or release |
@@ -262,3 +262,17 @@ not tamper-proof.
 | conflict index invalidated on every applied event | R5-07 |
 | malformed anchor entries (non-integer/negative count, bad head) = unreadable anchors = integrity error (exit 3) | R5-08 |
 | registers read as `utf-8-sig` (BOM tolerated) | R5-09 |
+
+## 18. Changes after independent review R6 (2026-10-21, REJECT on `3ba9af68`)
+
+| Change | Reason |
+|---|---|
+| `recover` does not count an own count-0 anchor as a problem when every own event beyond it belongs to this segment's incomplete batches (power loss in a host's first multi-event command) | R6-01 |
+| `init-host` refuses when the ledger is a git work tree whose event segments differ from HEAD (`UNCOMMITTED_SEGMENTS`) and records HOST_REGISTERED with the adopted counts | R6-02 |
+| acknowledged `recover` re-bases anchors explicitly (like `reanchor --acknowledge-loss`); the CLI prints the recovery result even when the follow-up batch abandonment fails | R6-03 |
+| the count-0 warning and the adopting write both say that ANCHORS_ADOPTED / ANCHOR_LOSS follows | R6-04 |
+| handoff references the rehearsal evidence file instead of quoting a count | R6-05 |
+
+Residual (stated): outside git, a machine whose `local/` folder was deleted can register a new host id and adopt the
+segments as they are; the HOST_REGISTERED event records the adopted counts, but a truncation that happened before
+that is only detectable from the ledger's git history or another machine's anchors.

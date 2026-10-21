@@ -102,6 +102,7 @@ class Manager:
                 raise StoreError("CHAIN_BROKEN", "ledger fails verification; run `verify` (" +
                                  "; ".join(p["integrity_errors"][:2]) + ")")
             items = build(p)
+            self.last_warnings = []
             adopt = self.store.anchor_warnings(segs, anchors)
             if items and adopt:
                 # This write will anchor an own segment that had no anchor (failed first refresh, or an edited
@@ -109,12 +110,13 @@ class Manager:
                 own = next(s for s in segs if s.name == self.store.host)
                 items = [("ANCHORS_ADOPTED", {"segment": own.name, "count": len(own.valid_events),
                                               "head": own.valid_events[-1]["hash"], "warning": adopt[0]}, {})] + items
+                self.last_warnings.append("this write anchored an own segment that had no anchor and recorded "
+                                          "ANCHORS_ADOPTED: review it, then `resolve-conflict LEDGER` (review R6-04)")
             for kind, data, _ in items:
                 hit = M.find_secret(data)
                 if hit:
                     raise ValidationError("SECRET", f"{kind} contains what looks like a {hit}; secrets are never "
                                                     "stored (record a reference instead)")
-            self.last_warnings = []
             # Lamport floor: stamp strictly after every event already seen, so an answer can never tie with or sort
             # before what it answers, whatever the segment names (reviews R3-04, R4-02).
             newest = max(((e["ts"], s.name) for s in segs for e in s.valid_events), default=("", ""))

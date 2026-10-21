@@ -169,3 +169,8 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
   warning}` (always ⇒ ANCHOR_LOSS).
 - Records keep `original {fields, color, source}`; each revision holds `previous` and the new values.
 - `import-register` reports `collisions` like `import-decisions`.
+
+## 15. Changes after review R6
+
+- New kind `HOST_REGISTERED {host, adopted{segment: count}}` (written by `init-host`; informational, folded into
+  `hosts[]`). Store error `UNCOMMITTED_SEGMENTS`.

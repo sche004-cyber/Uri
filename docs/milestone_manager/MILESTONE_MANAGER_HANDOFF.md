@@ -40,16 +40,18 @@ This file is updated at every checkpoint so work can resume without chat history
 | 11 | 2026-10-21 | (R4 repair commit, see `git log`) | R4 repaired (`reviews/R4_REPAIR.md`); 111 MM tests; R4 tests 10/10 fail pre-repair; rehearsal re-run (P0 working copy now differs from `8e1d6324`, imported with commit None) | independent re-review R5 |
 | 12 | 2026-10-21 | `7c8e0a29` | **R5 = REJECT** (9: 2 MEDIUM, 7 LOW); reviewer file-safety clean | repair |
 | 13 | 2026-10-21 | (R5 repair commit, see `git log`) | R5 repaired (`reviews/R5_REPAIR.md`); 120 MM tests; R5 tests 10/10 fail pre-repair | independent re-review R6 |
+| 14 | 2026-10-21 | `3ba9af68` | **R6 = REJECT** (5: 1 MEDIUM, 4 LOW); reviewer file-safety clean | repair |
+| 15 | 2026-10-21 | (R6 repair commit, see `git log`) | R6 repaired (`reviews/R6_REPAIR.md`); 124 MM tests; R6 tests 4/4 fail pre-repair | independent re-review R7 |
 
 ## Verification status (exact)
 
 | Check | Status | Evidence |
 |---|---|---|
-| MM tests | COMPLETED_WITH_RESULT per candidate: 49 `7ab9263c`, 77 `4a54ebe1`, 93 `5bce5bdf`, 101 `c992b5ae`, 111 `7c8e0a29` (each also re-run by the reviewer), 120 on the R5 repair commit | reviewer re-runs on each candidate |
+| MM tests | COMPLETED_WITH_RESULT per candidate: 49 `7ab9263c`, 77 `4a54ebe1`, 93 `5bce5bdf`, 101 `c992b5ae`, 111 `7c8e0a29`, 120 `3ba9af68` (each also re-run by the reviewer), 124 on the R6 repair commit | reviewer re-runs on each candidate |
 | R1 regression proof | COMPLETED_WITH_RESULT: new R1 tests on pre-repair code: 23 failed, 5 passed | `reviews/R1_REPAIR.md` |
 | Frozen core (`scripts/ws_frozen_check.py`) | COMPLETED_WITH_RESULT at `7ab9263c`: ok; MM changes only add files under `scripts/dev_workflow/milestones/`, `tests/dev_workflow/test_milestones.py`, `docs/milestone_manager/` | `D:/uri-dev/mm-evidence/frozen_check_7ab9263c.log` |
 | N5 full `tests/dev_workflow` regression | COMPLETED_WITH_RESULT at `7ab9263c`: 365 passed / 5 platform-gated / 0 failed (31 min); at `5bce5bdf`: 409 passed / 5 platform-gated / 0 failed (28 min). To be re-run on the accepted commit. | `evidence/devworkflow_7ab9263c.log`, `evidence/devworkflow_5bce5bdf.log` |
-| Migration rehearsal | COMPLETED_WITH_RESULT on repaired code: 217 events, verify ok | `evidence/rehearsal/` |
+| Migration rehearsal | COMPLETED_WITH_RESULT, re-run on every repair commit (event count changes as the P0 working copy changes; see the file) | `evidence/rehearsal/verify.json`, `import_reports.json` |
 
 ## Open questions for the owner (not blocking development)
 

@@ -1490,3 +1490,79 @@ def test_r5_09_bom_prefixed_register_imports(tmp_path):
     plain.write_bytes(DECISIONS_MD.encode())
     r = importers.import_decisions(m, plain)
     assert r["collisions"] == [] and r["unchanged"] == 3
+
+
+# ------------------------------------------------------------------ R6 regression tests (review R6 on 3ba9af68)
+
+def test_r6_01_power_loss_in_a_hosts_first_multi_event_command_recovers(tmp_path):
+    src = tmp_path / "developmental.md"
+    src.write_bytes(REGISTER_MD.encode())
+    m = new(tmp_path)
+    init_anchors = m.store.anchors_path.read_bytes()  # as `init` left them: own count 0
+    importers.import_register(m, src)  # first command: one multi-event batch
+    m.store.anchors_path.write_bytes(init_anchors)  # power lost before the anchor refresh
+    path = m.store.segment_path
+    lines = path.read_bytes().split(b"\n")[:-1]
+    path.write_bytes(lines[0] + b"\n" + lines[1][:20])  # power loss: 1 complete line + torn bytes
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "impl:a", "recover"], out=out) == 0, out.getvalue()
+    res = json.loads(out.getvalue())
+    assert res["recovered"] and res["abandoned_batches"]
+    p = m.projection()
+    assert not p["integrity_errors"] and not views.open_conflicts(p) and not p["records"]
+    importers.import_register(m, src)  # the retry works and is not flagged
+    p = m.projection()
+    assert len(p["records"]) == 4 and not views.open_conflicts(p)
+
+
+def test_r6_02_init_host_refuses_uncommitted_segment_changes_and_records_itself(tmp_path):
+    home = tmp_path / "ledger"
+    home.mkdir()
+    subprocess.run(["git", "-C", str(home), "init", "-q"], check=True)
+    subprocess.run(["git", "-C", str(home), "config", "user.email", "t@t"], check=True)
+    subprocess.run(["git", "-C", str(home), "config", "user.name", "t"], check=True)
+    EventStore.init(home, "h1", autocommit=True)
+    m = Manager(home, actor="a")
+    m.create_milestone("MM-A", "A")
+    m.create_milestone("MM-B", "B")
+    _truncate_last(m)
+    import shutil
+    shutil.rmtree(home / "local")  # e.g. `git clean -xdf`
+    with pytest.raises(StoreError) as e:
+        EventStore.init_host(home, "h2")
+    assert e.value.code == "UNCOMMITTED_SEGMENTS"
+    assert not (home / "local" / "host.json").exists()
+    clone = tmp_path / "clone"
+    (clone / "events").mkdir(parents=True)
+    (clone / "mm.json").write_bytes((home / "mm.json").read_bytes())
+    subprocess.run(["git", "-C", str(home), "checkout", "--", "events"], check=True)
+    (clone / "events" / "h1.jsonl").write_bytes((home / "events" / "h1.jsonl").read_bytes())
+    st = EventStore.init_host(clone, "h3")
+    kinds = [e["kind"] for s in st.read_all() for e in s.events]
+    assert "HOST_REGISTERED" in kinds and st.verify()["ok"]
+
+
+def test_r6_03_acknowledged_recover_rebases_and_keeps_the_loss_visible(tmp_path):
+    m = new(tmp_path)
+    for i in range(4):
+        m.create_milestone(f"MM-{i}", "x")
+    path = m.store.segment_path
+    lines = path.read_bytes().split(b"\n")[:-1]
+    path.write_bytes(b"\n".join(lines[:-2]) + b"\n" + b'{"v')  # 2 events lost + torn tail
+    with pytest.raises(StoreError):
+        m.store.recover("impl:a")
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "impl:a", "recover", "--acknowledge-loss"], out=out) == 0
+    assert "quarantine" in out.getvalue()
+    p = m.projection()
+    assert not p["integrity_errors"]
+    assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))
+
+
+def test_r6_04_adopting_write_reports_it(tmp_path, monkeypatch):
+    m = new(tmp_path)
+    monkeypatch.setattr(m.store, "write_anchors", lambda segs: (_ for _ in ()).throw(PermissionError("x")))
+    m.create_milestone("MM-A", "A")
+    monkeypatch.undo()
+    m.create_milestone("MM-B", "B")
+    assert any("ANCHORS_ADOPTED" in w for w in m.last_warnings)

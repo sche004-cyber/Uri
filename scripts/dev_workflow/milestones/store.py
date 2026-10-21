@@ -121,6 +121,20 @@ def lamport_floor(segs) -> str:
     return ts_plus(newest, 0.000001) if newest else ""
 
 
+def _only_unapplied_batches(seg, anchors, host) -> bool:
+    """True when every own event beyond the anchored count belongs to an incomplete batch of this segment."""
+    n = ((anchors or {}).get(host) or {}).get("count", 0)
+    tail = seg.valid_events[n:]
+    if not tail:
+        return False
+    sizes = {}
+    for e in seg.valid_events:
+        b = e.get("batch")
+        if isinstance(b, dict):
+            sizes[b["id"]] = sizes.get(b["id"], 0) + 1
+    return all(isinstance(e.get("batch"), dict) and sizes[e["batch"]["id"]] < e["batch"]["n"] for e in tail)
+
+
 # --------------------------------------------------------------------------- OS lock
 
 @contextlib.contextmanager
@@ -301,8 +315,21 @@ class EventStore:
         segs = st.read_all()
         bad = [e for s in segs for e in s.errors]
         if bad:
+            st.host_path.unlink()
             raise StoreError("CHAIN_BROKEN", "cannot adopt anchors from a ledger that fails verification: " + bad[0])
-        st.write_anchors(segs)
+        if st.in_git():
+            dirty = st._git("status", "--porcelain", "--", "events").stdout.strip()
+            if dirty:
+                st.host_path.unlink()
+                raise StoreError("UNCOMMITTED_SEGMENTS", "event segments differ from the git HEAD; adopting them "
+                                                         "would hide changes (review R6-02): inspect `git status "
+                                                         "events` first")
+        with st.locked():
+            st.append_many([("HOST_REGISTERED", {"host": host_id, "adopted": {s.name: len(s.valid_events)
+                                                                               for s in segs}}, {})],
+                           actor=f"init-host:{host_id}", floor=lamport_floor(segs))
+            st.write_anchors(st.read_all())
+        st.autocommit("HOST_REGISTERED")
         return st
 
     # ---- locking
@@ -452,6 +479,7 @@ class EventStore:
         a = (anchors or {}).get(self.host)
         if own is not None and own.events and isinstance(a, dict) and a.get("count", 0) == 0:
             return [f"{self.host}: own segment ({len(own.events)} events) not anchored yet; the next successful write "
+                    "anchors it and records ANCHORS_ADOPTED (an ANCHOR_LOSS conflict to review once); "
                     "anchors it; `reanchor` will require --acknowledge-loss until then"]
         return []
 
@@ -534,7 +562,13 @@ class EventStore:
                                                  "decision: " + "; ".join(seg.errors[:3]))
             if not seg.torn:
                 return {"recovered": False}
-            problems = self.anchor_errors(segs, before) + self.anchor_warnings(segs, before)
+            problems = self.anchor_errors(segs, before)
+            if not problems and self.anchor_warnings(segs, before) and not _only_unapplied_batches(seg, before,
+                                                                                                    self.host):
+                problems = self.anchor_warnings(segs, before)
+            # (an own count-0 warning whose events all belong to this segment's incomplete batches is the normal
+            # power-loss case for a host's first multi-event command, review R6-01: those events were never
+            # applied and are abandoned by the same recover)
             if problems and not acknowledge_loss:
                 raise StoreError("LOSS_NOT_ACKNOWLEDGED", "recover would re-base anchors that cannot vouch for the "
                                                           f"ledger ({problems[0]}); check git history and pass "
@@ -550,7 +584,11 @@ class EventStore:
                     "quarantine": f"quarantine/{qname}", "anchor_problems": problems[:10]}
             self.append_many([("STORE_RECOVERED", info, {})], actor=actor, session=session,
                              floor=lamport_floor(segs))
-            self.write_anchors([read_segment(self.segment_path)])
+            if problems:
+                # acknowledged: re-base explicitly, as `reanchor --acknowledge-loss` does (review R6-03)
+                self.write_anchors_force(self.read_all())
+            else:
+                self.write_anchors([read_segment(self.segment_path)])
             self.autocommit("STORE_RECOVERED")
             return {"recovered": True, **info}
 

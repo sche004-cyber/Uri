@@ -290,8 +290,14 @@ def run(argv=None, out=None) -> int:
             if not args.actor:
                 raise ValidationError("NO_ACTOR", "--actor is required")
             res = mgr.store.recover(args.actor, args.session, args.acknowledge_loss)
-            ab = mgr.abandon_batches(args.reason)
-            res["abandoned_batches"] = [b for e in ab for b in e["data"]["batches"]]
+            try:
+                ab = mgr.abandon_batches(args.reason)
+                res["abandoned_batches"] = [b for e in ab for b in e["data"]["batches"]]
+            except (StoreError, ValidationError) as e:
+                # the recovery itself is done and recorded; report it together with the follow-up error (R6-03)
+                res["abandon_error"] = str(e)
+                emit(res)
+                return 2
             emit(res)
             return 0
         elif c == "rebuild":
