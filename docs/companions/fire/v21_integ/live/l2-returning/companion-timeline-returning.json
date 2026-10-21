@@ -1,0 +1,38 @@
+[
+  {
+    "utc": "2026-10-18T04:42:44.335964Z",
+    "t_s": 9.767,
+    "state": "unavailable",
+    "headline": "Brain not running",
+    "detail": "The Brain is not running. Start it with the URI Working System launcher.",
+    "source": "URI",
+    "simulated": false,
+    "brain_status": "STOPPED",
+    "readiness": "STOPPED",
+    "host": null
+  },
+  {
+    "utc": "2026-10-18T04:43:29.306405Z",
+    "t_s": 54.737,
+    "state": "initializing",
+    "headline": "Loading model",
+    "detail": "The Brain is loading its model into memory. URI can answer when it is ready.",
+    "source": "URI",
+    "simulated": false,
+    "brain_status": "LOADING",
+    "readiness": "LOADING",
+    "host": null
+  },
+  {
+    "utc": "2026-10-18T04:43:49.063869Z",
+    "t_s": 74.495,
+    "state": "idle",
+    "headline": null,
+    "detail": null,
+    "source": "URI",
+    "simulated": false,
+    "brain_status": "LOADING",
+    "readiness": "READY",
+    "host": null
+  }
+]

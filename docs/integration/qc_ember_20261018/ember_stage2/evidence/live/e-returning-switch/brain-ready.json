@@ -1,0 +1,137 @@
+{
+ "state": "READY",
+ "load_s": 64.67,
+ "utc": "2026-10-18T11:45:31.047612+00:00",
+ "host": {
+  "schema": "uri.ws.brain_host.v1",
+  "host_pid": 2752,
+  "host_started": 1792323866.375,
+  "state": "READY",
+  "history": [
+   {
+    "t": 1792323869.9,
+    "state": "STARTING",
+    "detail": null
+   },
+   {
+    "t": 1792323905.186,
+    "state": "LOADING",
+    "detail": null
+   },
+   {
+    "t": 1792323925.916,
+    "state": "CALIBRATING",
+    "detail": null
+   },
+   {
+    "t": 1792323930.951,
+    "state": "READY",
+    "detail": null
+   }
+  ],
+  "override": null,
+  "profile": {
+   "id": "frozen",
+   "ctx": 32768,
+   "vision": "gpu",
+   "mtp": true,
+   "frozen": true
+  },
+  "lease": {
+   "held": true,
+   "acquired_at": 1792323866.384,
+   "recovered_from": null
+  },
+  "gpu": {
+   "fit": {
+    "verdict": "AT_RISK",
+    "card_mib": 16368,
+    "required_mib": 15626,
+    "others_mib": 980.4,
+    "unattributed_mib": 0.0,
+    "owner_mib": 0,
+    "free_mib": 15387.6,
+    "margin_mib": -238.4,
+    "consumers": [
+     {
+      "pid": 1580,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 403.3,
+      "role": "desktop compositor"
+     }
+    ]
+   },
+   "explain": "GPU memory is 238 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading.",
+   "census_t": 1792323866.386,
+   "census_s": 3.51
+  },
+  "detail": null,
+  "explain": "Brain ready (150 tok/s).",
+  "updated_at": 1792323930.951,
+  "heartbeat_at": 1792323926.588,
+  "server": {
+   "pid": 3480,
+   "owned": true,
+   "load_seconds": 24.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s"
+  },
+  "residency": {
+   "t": 1792323927.423,
+   "dedicated_mib": 14946.2,
+   "non_local_mib": 1730.1,
+   "others_mib": 1033.7,
+   "verdict_now": "AT_RISK",
+   "consumers": [
+    {
+     "pid": 1580,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "dedicated_mib": 403.3,
+     "role": "desktop compositor"
+    },
+    {
+     "pid": 4560,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "dedicated_mib": 180.0,
+     "role": null
+    }
+   ]
+  },
+  "calibration": {
+   "t": 1792323925.967,
+   "tokens": 160,
+   "threshold_tps": 60.0,
+   "server_pid": 3480,
+   "server_create_time": 1792323901.6480064,
+   "reason": "START",
+   "decode_tps": 150.5,
+   "predicted_n": 160,
+   "prompt_ms": 149.072,
+   "residency": {
+    "t": 1792323927.423,
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1,
+    "others_mib": 1033.7,
+    "verdict_now": "AT_RISK",
+    "consumers": [
+     {
+      "pid": 1580,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "dedicated_mib": 403.3,
+      "role": "desktop compositor"
+     },
+     {
+      "pid": 4560,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "dedicated_mib": 180.0,
+      "role": null
+     }
+    ]
+   }
+  }
+ }
+}

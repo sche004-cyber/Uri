@@ -1,0 +1,1701 @@
+[
+  {
+    "utc": "2026-10-18T11:48:42.256870Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput + synthesized key events",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "first_run": "1",
+    "visual": "v2"
+  },
+  {
+    "utc": "2026-10-18T11:48:42.287388Z",
+    "label": "preferences at start",
+    "keys": []
+  },
+  {
+    "utc": "2026-10-18T11:48:50.179930Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 7.889,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792324130.0625849,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 17912,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-18T11:48:50.653041Z",
+    "label": "memory at start",
+    "facts": [],
+    "run_fact": "the project room code is K30180"
+  },
+  {
+    "utc": "2026-10-18T11:48:55.789630Z",
+    "label": "onboarding shown",
+    "shown": true
+  },
+  {
+    "utc": "2026-10-18T11:49:07.166963Z",
+    "label": "onboarding steps",
+    "titles": [
+      "What URI is",
+      "Connect",
+      "Harness",
+      "Brain",
+      "Permissions",
+      "Sign-in & qualification",
+      "Your workspace",
+      "Ready?"
+    ]
+  },
+  {
+    "utc": "2026-10-18T11:49:07.166963Z",
+    "label": "check",
+    "id": "J1-v2-is-default",
+    "result": "PASS",
+    "visualV2": true,
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-18T11:49:07.173534Z",
+    "label": "check",
+    "id": "J1-dashboard-first",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:49:07.678295Z",
+    "label": "raw-codes-on-screen",
+    "where": "start",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-18T11:49:07.679800Z",
+    "label": "check",
+    "id": "J1-brain-ready",
+    "result": "PASS",
+    "brain": {
+      "artifacts": "MATCH",
+      "checked_at": 1792324145.178925,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 17912,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-18T11:49:18.181707Z",
+    "label": "perf-window",
+    "window": "idle-dashboard",
+    "seconds": 10,
+    "frames": 609,
+    "build_ms_p50": 0.63,
+    "build_ms_p95": 1.086,
+    "build_ms_max": 30.984,
+    "raster_ms_p50": 2.673,
+    "raster_ms_p95": 3.461,
+    "raster_ms_max": 603.507,
+    "total_ms_p95": 17.565,
+    "over_16ms": 80
+  },
+  {
+    "utc": "2026-10-18T11:49:18.883225Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#f9e58(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:18.884226Z",
+    "label": "check",
+    "id": "J2-ctrl-workspace",
+    "result": "PASS",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:49:19.384119Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode workspace",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-18T11:49:20.103427Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#f9e58(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:20.104934Z",
+    "label": "check",
+    "id": "J2-ctrl-dashboard",
+    "result": "PASS",
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-18T11:49:20.592625Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode dashboard",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-18T11:49:21.263771Z",
+    "label": "key",
+    "key": "ctrl+4",
+    "focus_before": "FocusNode#f9e58(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "assist",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:21.264770Z",
+    "label": "check",
+    "id": "J2-ctrl-assist",
+    "result": "PASS",
+    "mode": "assist"
+  },
+  {
+    "utc": "2026-10-18T11:49:21.736500Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode assist",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-18T11:49:22.391951Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#f9e58(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:22.391951Z",
+    "label": "check",
+    "id": "J2-ctrl-dashboard",
+    "result": "PASS",
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-18T11:49:22.876647Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode dashboard",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-18T11:49:23.547703Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#f9e58(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:24.669376Z",
+    "label": "check",
+    "id": "J2-nav-Conversation",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "conversation"
+  },
+  {
+    "utc": "2026-10-18T11:49:25.830375Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#f9e58(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:26.939372Z",
+    "label": "check",
+    "id": "J2-nav-Tasks",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "tasks"
+  },
+  {
+    "utc": "2026-10-18T11:49:28.098533Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#f9e58(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:29.191349Z",
+    "label": "check",
+    "id": "J2-nav-Documents",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "documents"
+  },
+  {
+    "utc": "2026-10-18T11:49:30.381838Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#f9e58(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:31.847163Z",
+    "label": "check",
+    "id": "J2-nav-Settings",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "settings"
+  },
+  {
+    "utc": "2026-10-18T11:49:32.986934Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#f9e58(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:35.920332Z",
+    "label": "turn",
+    "scenario": "greeting",
+    "request": "Hello URI",
+    "text": "Hello! How can I help you today?",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": 6,
+      "draft_n_accepted": 6,
+      "first_answer_s": 1.3067,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 10,
+      "predicted_per_second": 85.86721112839055,
+      "prompt_n": 744,
+      "prompt_per_second": 784.0310577464165,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 1.4093,
+      "ttft_s": 1.3067
+    },
+    "application_seconds": 2.049,
+    "frames_during_turn": {
+      "frames": 108,
+      "build_ms_p50": 0.511,
+      "build_ms_p95": 22.179,
+      "build_ms_max": 47.851,
+      "raster_ms_p50": 2.645,
+      "raster_ms_p95": 3.461,
+      "raster_ms_max": 4.579,
+      "total_ms_p95": 28.649,
+      "over_16ms": 23
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:49:35.920332Z",
+    "label": "check",
+    "id": "J3-greeting-replied",
+    "result": "PASS",
+    "text": "Hello! How can I help you today?",
+    "code": null
+  },
+  {
+    "utc": "2026-10-18T11:49:36.985322Z",
+    "label": "turn",
+    "scenario": "fact question",
+    "request": "In one short sentence: what is the capital of France?",
+    "text": "The capital of France is Paris.",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 753,
+      "draft_n": 6,
+      "draft_n_accepted": 4,
+      "first_answer_s": 0.3434,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 8,
+      "predicted_per_second": 67.00552316955269,
+      "prompt_n": 26,
+      "prompt_per_second": 98.55166950318586,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.4483,
+      "ttft_s": 0.3434
+    },
+    "application_seconds": 1.063,
+    "frames_during_turn": {
+      "frames": 52,
+      "build_ms_p50": 0.848,
+      "build_ms_p95": 26.424,
+      "build_ms_max": 32.1,
+      "raster_ms_p50": 2.903,
+      "raster_ms_p95": 3.634,
+      "raster_ms_max": 3.737,
+      "total_ms_p95": 32.999,
+      "over_16ms": 17
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:49:36.985322Z",
+    "label": "check",
+    "id": "J3-fact",
+    "result": "PASS",
+    "text": "The capital of France is Paris."
+  },
+  {
+    "utc": "2026-10-18T11:49:37.488810Z",
+    "label": "raw-codes-on-screen",
+    "where": "conversation",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-18T11:49:45.245054Z",
+    "label": "turn",
+    "scenario": "missing fact clarification",
+    "request": "remember that",
+    "text": "",
+    "core_message": "What would you like me to remember?",
+    "route": "core",
+    "answer_status": null,
+    "core_code": "INTENT_CLARIFICATION",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {},
+    "application_seconds": 7.754,
+    "frames_during_turn": {
+      "frames": 406,
+      "build_ms_p50": 0.547,
+      "build_ms_p95": 1.117,
+      "build_ms_max": 26.644,
+      "raster_ms_p50": 2.674,
+      "raster_ms_p95": 3.493,
+      "raster_ms_max": 7.32,
+      "total_ms_p95": 18.397,
+      "over_16ms": 72
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:49:45.245558Z",
+    "label": "check",
+    "id": "J4-clarification-asked",
+    "result": "PASS",
+    "code": "INTENT_CLARIFICATION",
+    "text": ""
+  },
+  {
+    "utc": "2026-10-18T11:49:49.173761Z",
+    "label": "turn",
+    "scenario": "clarification answer",
+    "request": "the project room code is K30180",
+    "text": "",
+    "core_message": "Please confirm before I continue: request_text = remember that the project room code is K30180",
+    "route": "core",
+    "answer_status": null,
+    "core_code": "INTENT_CONFIRMATION_REQUIRED",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {},
+    "application_seconds": 3.926,
+    "frames_during_turn": {
+      "frames": 219,
+      "build_ms_p50": 0.487,
+      "build_ms_p95": 1.31,
+      "build_ms_max": 26.14,
+      "raster_ms_p50": 2.593,
+      "raster_ms_p95": 3.349,
+      "raster_ms_max": 4.767,
+      "total_ms_p95": 17.759,
+      "over_16ms": 37
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:49:49.174767Z",
+    "label": "check",
+    "id": "J4-confirmation-asked",
+    "result": "PASS",
+    "code": "INTENT_CONFIRMATION_REQUIRED",
+    "text": ""
+  },
+  {
+    "utc": "2026-10-18T11:49:50.348883Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:50.349888Z",
+    "label": "check",
+    "id": "J9-dashboard-counts-decision",
+    "result": "PASS",
+    "texts": [
+      "1 review needed",
+      "1 pending decision",
+      "Shared context and pending decisions stay with you."
+    ]
+  },
+  {
+    "utc": "2026-10-18T11:49:51.952763Z",
+    "label": "check",
+    "id": "J9-review-opens-tasks",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:49:53.114015Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:49:57.518760Z",
+    "label": "approval card",
+    "capability": "remember_fact",
+    "arguments": {
+      "action": "remember_fact",
+      "inputs": {
+        "request_text": "remember that the project room code is K30180"
+      }
+    }
+  },
+  {
+    "utc": "2026-10-18T11:49:58.016236Z",
+    "label": "raw-codes-on-screen",
+    "where": "approval card",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-18T11:50:00.249684Z",
+    "label": "check",
+    "id": "J9-deny-honoured",
+    "result": "PASS",
+    "memory": [],
+    "last_code": "APPROVAL_DENIED"
+  },
+  {
+    "utc": "2026-10-18T11:50:05.036229Z",
+    "label": "turn",
+    "scenario": "remember again",
+    "request": "remember that",
+    "text": "",
+    "core_message": "This request is already confirmed but has not been carried out. Confirm it again to continue, or say what to change.",
+    "route": "core",
+    "answer_status": null,
+    "core_code": "INTENT_CONFIRMED_NOT_EXECUTED",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {},
+    "application_seconds": 4.308,
+    "frames_during_turn": {
+      "frames": 243,
+      "build_ms_p50": 0.406,
+      "build_ms_p95": 0.893,
+      "build_ms_max": 21.68,
+      "raster_ms_p50": 2.772,
+      "raster_ms_p95": 3.37,
+      "raster_ms_max": 4.171,
+      "total_ms_p95": 17.813,
+      "over_16ms": 41
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:50:10.762179Z",
+    "label": "turn",
+    "scenario": "remember again: the fact",
+    "request": "the project room code is K30180",
+    "text": "",
+    "core_message": "This request is already confirmed but has not been carried out. Confirm it again to continue, or say what to change.",
+    "route": "core",
+    "answer_status": null,
+    "core_code": "INTENT_CONFIRMED_NOT_EXECUTED",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {},
+    "application_seconds": 5.724,
+    "frames_during_turn": {
+      "frames": 311,
+      "build_ms_p50": 0.447,
+      "build_ms_p95": 1.044,
+      "build_ms_max": 40.243,
+      "raster_ms_p50": 2.897,
+      "raster_ms_p95": 3.773,
+      "raster_ms_max": 6.408,
+      "total_ms_p95": 18.778,
+      "over_16ms": 65
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:50:18.442076Z",
+    "label": "check",
+    "id": "J5-tool-settled",
+    "result": "PASS",
+    "code": "SETTLED_VERIFIED",
+    "text": ""
+  },
+  {
+    "utc": "2026-10-18T11:50:18.443580Z",
+    "label": "check",
+    "id": "J5-memory-written",
+    "result": "PASS",
+    "memory": [
+      "the project room code is K30180"
+    ]
+  },
+  {
+    "utc": "2026-10-18T11:50:19.870014Z",
+    "label": "turn",
+    "scenario": "recall",
+    "request": "What is the project room code? Answer from what I asked you to remember.",
+    "text": "You asked URI to remember: the project room code is K30180.",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 685,
+      "draft_n": 12,
+      "draft_n_accepted": 12,
+      "first_answer_s": 0.679,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 19,
+      "predicted_per_second": 88.09753375848551,
+      "prompt_n": 189,
+      "prompt_per_second": 354.36591937331605,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.8837,
+      "ttft_s": 0.679
+    },
+    "application_seconds": 1.425,
+    "frames_during_turn": {
+      "frames": 72,
+      "build_ms_p50": 0.65,
+      "build_ms_p95": 21.792,
+      "build_ms_max": 27.492,
+      "raster_ms_p50": 3.241,
+      "raster_ms_p95": 4.151,
+      "raster_ms_max": 5.761,
+      "total_ms_p95": 33.76,
+      "over_16ms": 24
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:50:19.870519Z",
+    "label": "check",
+    "id": "J5-recall",
+    "result": "PASS",
+    "text": "You asked URI to remember: the project room code is K30180.",
+    "semantic_review_required": true
+  },
+  {
+    "utc": "2026-10-18T11:50:21.049038Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:50:23.219776Z",
+    "label": "check",
+    "id": "J6-letter-opens-conversation",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:50:26.232571Z",
+    "label": "turn",
+    "scenario": "start new work: letter",
+    "request": "Draft a letter",
+    "text": "Please provide the recipient's name, the purpose of the letter, and any specific details you want included.",
+    "core_code": null,
+    "route": "draft",
+    "metrics": {
+      "cache_n": 0,
+      "model_used": true,
+      "predicted_n": 142,
+      "predicted_per_second": 64.3910298272037,
+      "prompt_n": 737,
+      "retried": false,
+      "total_s": 3.0774,
+      "ttft_s": 0.8873
+    }
+  },
+  {
+    "utc": "2026-10-18T11:50:26.233085Z",
+    "label": "check",
+    "id": "J6-letter-real-turn",
+    "result": "PASS",
+    "simulated_items": 0
+  },
+  {
+    "utc": "2026-10-18T11:50:26.704724Z",
+    "label": "draft open after letter",
+    "open": false,
+    "question": "Please provide the recipient's name, the purpose of the letter, and any specific details you want included."
+  },
+  {
+    "utc": "2026-10-18T11:50:27.372491Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#679ed(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:50:28.268446Z",
+    "label": "check",
+    "id": "J14-no-testing-controls",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:50:28.421933Z",
+    "label": "turn",
+    "scenario": "drop letter question",
+    "request": "never mind",
+    "text": "Okay, I have dropped that question. Nothing was changed.",
+    "core_message": null,
+    "route": "draft",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "model_used": false
+    },
+    "application_seconds": 0.152,
+    "frames_during_turn": {
+      "frames": 5,
+      "build_ms_p50": 0.278,
+      "build_ms_p95": 6.686,
+      "build_ms_max": 6.686,
+      "raster_ms_p50": 2.812,
+      "raster_ms_p95": 3.117,
+      "raster_ms_max": 3.117,
+      "total_ms_p95": 19.929,
+      "over_16ms": 2
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:50:36.434236Z",
+    "label": "turn",
+    "scenario": "create warden letter",
+    "request": "Draft a short formal letter to the hostel warden saying that seven students left the hostel on Monday without permission.",
+    "text": "Letter (version 1 of 1): A formal letter reporting that seven students left the hostel on Monday without permission. Missing: [Date], [Hostel Name], [Institution Name], [Your Designation/Class], [Your Name], [Your Roll Number]. Nothing has been sent or saved.",
+    "core_message": null,
+    "route": "draft",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 703,
+      "model_used": true,
+      "predicted_n": 532,
+      "predicted_per_second": 74.77762107179848,
+      "prompt_n": 52,
+      "retried": false,
+      "total_s": 7.4605,
+      "ttft_s": 0.359
+    },
+    "application_seconds": 8.01,
+    "frames_during_turn": {
+      "frames": 424,
+      "build_ms_p50": 0.429,
+      "build_ms_p95": 3.188,
+      "build_ms_max": 93.859,
+      "raster_ms_p50": 2.848,
+      "raster_ms_p95": 3.818,
+      "raster_ms_max": 6.062,
+      "total_ms_p95": 20.15,
+      "over_16ms": 96
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:50:36.435235Z",
+    "label": "check",
+    "id": "J14-draft-open",
+    "result": "PASS",
+    "question": null
+  },
+  {
+    "utc": "2026-10-18T11:50:36.939478Z",
+    "label": "check",
+    "id": "J14-target-chip-shown",
+    "result": "PASS",
+    "default_target_draft": false
+  },
+  {
+    "utc": "2026-10-18T11:50:38.438598Z",
+    "label": "turn",
+    "scenario": "chat with a draft open (live l9)",
+    "request": "Say hello in three words.",
+    "text": "Hello there, friend!",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 685,
+      "draft_n": 8,
+      "draft_n_accepted": 1,
+      "first_answer_s": 0.7247,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 6,
+      "predicted_per_second": 36.92898556076664,
+      "prompt_n": 401,
+      "prompt_per_second": 670.9938238448783,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.8604,
+      "ttft_s": 0.7247
+    },
+    "application_seconds": 1.497,
+    "frames_during_turn": {
+      "frames": 79,
+      "build_ms_p50": 0.679,
+      "build_ms_p95": 26.557,
+      "build_ms_max": 36.975,
+      "raster_ms_p50": 3.635,
+      "raster_ms_p95": 4.484,
+      "raster_ms_max": 5.608,
+      "total_ms_p95": 34.842,
+      "over_16ms": 18
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:50:38.439603Z",
+    "label": "check",
+    "id": "J14-chat-answered",
+    "result": "PASS",
+    "text": "Hello there, friend!",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T11:50:38.439603Z",
+    "label": "check",
+    "id": "J14-chat-does-not-edit",
+    "result": "PASS",
+    "before": 1,
+    "after": 1,
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T11:50:44.102344Z",
+    "label": "turn",
+    "scenario": "target conversation",
+    "request": "Make it shorter and tell me a joke in a formal tone.",
+    "text": "Hello.\n\nWhy did the scarecrow win an award? Because he was outstanding in his field.",
+    "core_message": "I can only act on an explicit request in this mode (for example: 'remember that ...').",
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": "CONVERSATION",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 685,
+      "draft_n": 16,
+      "draft_n_accepted": 12,
+      "first_answer_s": 0.7069,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 21,
+      "predicted_per_second": 75.71512939715613,
+      "prompt_n": 410,
+      "prompt_per_second": 685.857288153739,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.9714,
+      "ttft_s": 0.7069
+    },
+    "application_seconds": 5.16,
+    "frames_during_turn": {
+      "frames": 258,
+      "build_ms_p50": 0.326,
+      "build_ms_p95": 3.416,
+      "build_ms_max": 39.295,
+      "raster_ms_p50": 3.46,
+      "raster_ms_p95": 4.259,
+      "raster_ms_max": 11.252,
+      "total_ms_p95": 22.096,
+      "over_16ms": 45
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:50:44.105003Z",
+    "label": "check",
+    "id": "J14-target-conversation-never-edits",
+    "result": "PASS",
+    "before": 1,
+    "after": 1,
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-18T11:50:45.059929Z",
+    "label": "check",
+    "id": "J14-target-draft-chosen",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:50:49.022600Z",
+    "label": "turn",
+    "scenario": "explicit edit",
+    "request": "Make it shorter.",
+    "text": "Letter (version 2 of 2): Condensed the body paragraphs to be more concise while retaining all key facts. Missing: [Date], [Hostel Name], [Institution Name], [Your Designation/Class], [Your Name], [Your Roll Number]. Nothing has been sent or saved.",
+    "core_message": null,
+    "route": "draft",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 0,
+      "model_used": true,
+      "predicted_n": 165,
+      "predicted_per_second": 71.91055379457524,
+      "prompt_n": 1085,
+      "retried": false,
+      "total_s": 3.4678,
+      "ttft_s": 1.1869
+    },
+    "application_seconds": 3.962,
+    "frames_during_turn": {
+      "frames": 200,
+      "build_ms_p50": 0.375,
+      "build_ms_p95": 3.614,
+      "build_ms_max": 30.419,
+      "raster_ms_p50": 3.504,
+      "raster_ms_p95": 4.244,
+      "raster_ms_max": 5.629,
+      "total_ms_p95": 19.15,
+      "over_16ms": 29
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:50:49.024104Z",
+    "label": "check",
+    "id": "J14-explicit-edit-applies",
+    "result": "PASS",
+    "before": 1,
+    "after": 2,
+    "route": "draft",
+    "text": "Letter (version 2 of 2): Condensed the body paragraphs to be more concise while retaining all key facts. Missing: [Date], [Hostel Name], [Institution Name], [Your Designation/Class], [Your Name], [Your Roll Number]. Nothing has been sent or saved."
+  },
+  {
+    "utc": "2026-10-18T11:50:49.976201Z",
+    "label": "check",
+    "id": "J14-target-back-to-conversation",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:50:55.453784Z",
+    "label": "turn",
+    "scenario": "new document replaces",
+    "request": "Draft a new notice that the library will open at 8 am from Monday.",
+    "text": "Notice (version 1 of 1): A notice informing users that the library opens at 8 AM from Monday. Missing: [Date], [Designation], [Library Name], [Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "core_message": null,
+    "route": "draft",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 703,
+      "model_used": true,
+      "predicted_n": 296,
+      "predicted_per_second": 70.15721399282067,
+      "prompt_n": 46,
+      "retried": false,
+      "total_s": 4.6137,
+      "ttft_s": 0.4084
+    },
+    "application_seconds": 5.476,
+    "frames_during_turn": {
+      "frames": 279,
+      "build_ms_p50": 0.357,
+      "build_ms_p95": 3.322,
+      "build_ms_max": 37.178,
+      "raster_ms_p50": 3.246,
+      "raster_ms_p95": 4.087,
+      "raster_ms_max": 6.192,
+      "total_ms_p95": 19.46,
+      "over_16ms": 41
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:50:55.455790Z",
+    "label": "check",
+    "id": "J14-new-document-keeps-old",
+    "result": "PASS",
+    "replaced": "letter",
+    "route": "draft",
+    "question": null
+  },
+  {
+    "utc": "2026-10-18T11:50:56.396078Z",
+    "label": "undo button before tap",
+    "rect": "Rect.fromLTRB(216.0, 478.0, 306.8, 526.0)",
+    "enabled": true,
+    "can_undo": true,
+    "blocked": false,
+    "view": "Size(1264.0, 681.0)"
+  },
+  {
+    "utc": "2026-10-18T11:50:56.520003Z",
+    "label": "check",
+    "id": "J14-undo-restores",
+    "result": "PASS",
+    "version": 2
+  },
+  {
+    "utc": "2026-10-18T11:50:57.131040Z",
+    "label": "check",
+    "id": "J14-redo-returns",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:50:57.255903Z",
+    "label": "draft for later journeys",
+    "id": "ce6a787b-a34f-4866-a94c-ad4cc709b5aa",
+    "version": 2
+  },
+  {
+    "utc": "2026-10-18T11:50:57.927649Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:02.499766Z",
+    "label": "tile with draft target",
+    "before": "ce6a787b-a34f-4866-a94c-ad4cc709b5aa:2",
+    "after": "ce6a787b-a34f-4866-a94c-ad4cc709b5aa:2",
+    "last_check": "J14-redo-returns"
+  },
+  {
+    "utc": "2026-10-18T11:51:02.500836Z",
+    "label": "check",
+    "id": "J16-tile-never-revises-open-draft",
+    "result": "PASS",
+    "before": 2,
+    "after": 2,
+    "same_draft": true
+  },
+  {
+    "utc": "2026-10-18T11:51:02.997407Z",
+    "label": "J16 close step skipped",
+    "reason": "the tile did not start a new draft (e.g. a question was asked)"
+  },
+  {
+    "utc": "2026-10-18T11:51:03.667342Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#679ed(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:08.464787Z",
+    "label": "check",
+    "id": "J10-navigation-while-busy",
+    "result": "PASS",
+    "nav_ms": {
+      "3": 96.332,
+      "2": 94.511
+    },
+    "busy_seen": true
+  },
+  {
+    "utc": "2026-10-18T11:51:08.466294Z",
+    "label": "perf-window",
+    "window": "brain-turn-with-navigation",
+    "frames": 169,
+    "build_ms_p50": 0.506,
+    "build_ms_p95": 23.042,
+    "build_ms_max": 73.795,
+    "raster_ms_p50": 3.486,
+    "raster_ms_p95": 5.556,
+    "raster_ms_max": 8.859,
+    "total_ms_p95": 34.609,
+    "over_16ms": 52,
+    "metrics": {
+      "cache_n": 685,
+      "draft_n": 62,
+      "draft_n_accepted": 47,
+      "first_answer_s": 0.939,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 79,
+      "predicted_per_second": 75.6932482592979,
+      "prompt_n": 581,
+      "prompt_per_second": 702.4339760422863,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 1.9698,
+      "ttft_s": 0.939
+    },
+    "answer_chars": 405
+  },
+  {
+    "utc": "2026-10-18T11:51:08.724197Z",
+    "label": "flutter-error",
+    "error": "A RenderFlex overflowed by 75 pixels on the right.",
+    "detail": "══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞══════════════════════\nThe following assertion was thrown during layout:\nA RenderFlex overflowed by 75 pixels on the right.\n\nThe relevant error-causing widget was:\n  Row\n  Row:file:///D:/uri-dev/uri-integ-ember/uri_ui/lib/living/integration/oi_health_widgets.dart:94:13\n\nThe overflowing RenderFlex has an orientation of Axis.horizontal.\nThe edge of the RenderFlex that is overflowing has been marked in\nthe rendering with a yellow and black striped pattern. This is\nusually caused by the contents being too big for the RenderFlex.\nConsider applying a flex factor (e.g. using an Expanded widget)\nto force the children of the RenderFlex to fit within the\navailable space instead of being sized to their natural size.\nThis is considered an error condition because it indicates that\nthere is content that cannot be seen. If the content is\nlegitimately bigger than the available space, consider clipping\nit with a ClipRect widget before putting it in the flex, or using\na scrollable container rather than a Flex, like a ListView.\nThe specific RenderFlex in question is: RenderFlex#8b39b relayoutBoundary=up10 OVERFLOWING:\n  parentData: offset=Offset(0.0, 0.0); flex=null; fit=null (can use\n    size)\n  constraints: BoxConstraints(0.0<=w<=176.0, 0.0<=h<=Infinity)\n  size: Size(176.0, 20.0)\n  direction: horizontal\n  mainAxisAlignment: start\n  mainAxisSize: max\n  crossAxisAlignment: center\n  textDirection: ltr\n  verticalDirection: down\n  spacing: 0.0\n◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤\n═════════════════════════════════════════════════════════════════\n",
+    "stack": "null"
+  },
+  {
+    "utc": "2026-10-18T11:51:09.280147Z",
+    "label": "key",
+    "key": "ctrl+1",
+    "focus_before": "FocusNode#679ed(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "companion",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:10.937767Z",
+    "label": "check",
+    "id": "J7-window-440x680",
+    "result": "PASS",
+    "size": "Size(440.0, 680.0)"
+  },
+  {
+    "utc": "2026-10-18T11:51:10.938775Z",
+    "label": "check",
+    "id": "J7-shaped-region",
+    "result": "PASS",
+    "facts": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 255
+    }
+  },
+  {
+    "utc": "2026-10-18T11:51:11.494077Z",
+    "label": "check",
+    "id": "J7-native-rejects-nan",
+    "result": "PASS",
+    "code": "INVALID_LAYOUT"
+  },
+  {
+    "utc": "2026-10-18T11:51:11.496388Z",
+    "label": "check",
+    "id": "J7-native-rejects-infinite",
+    "result": "PASS",
+    "code": "INVALID_LAYOUT"
+  },
+  {
+    "utc": "2026-10-18T11:51:11.505521Z",
+    "label": "check",
+    "id": "J7-native-rejects-inverted",
+    "result": "PASS",
+    "code": "INVALID_LAYOUT"
+  },
+  {
+    "utc": "2026-10-18T11:51:11.509545Z",
+    "label": "check",
+    "id": "J7-region-kept-after-reject",
+    "result": "PASS",
+    "before": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 255
+    },
+    "after": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 255
+    }
+  },
+  {
+    "utc": "2026-10-18T11:51:21.554477Z",
+    "label": "perf-window",
+    "window": "idle-companion",
+    "seconds": 10,
+    "frames": 317,
+    "build_ms_p50": 0.379,
+    "build_ms_p95": 0.579,
+    "build_ms_max": 3.336,
+    "raster_ms_p50": 1.703,
+    "raster_ms_p95": 2.155,
+    "raster_ms_max": 2.529,
+    "total_ms_p95": 17.426,
+    "over_16ms": 40
+  },
+  {
+    "utc": "2026-10-18T11:51:22.599407Z",
+    "label": "check",
+    "id": "J7-single-click-controls",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:22.600409Z",
+    "label": "companion region with controls",
+    "facts": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 397
+    }
+  },
+  {
+    "utc": "2026-10-18T11:51:23.119395Z",
+    "label": "flutter-error",
+    "error": "A RenderFlex overflowed by 7.0 pixels on the right.",
+    "detail": "══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞══════════════════════\nThe following assertion was thrown during layout:\nA RenderFlex overflowed by 7.0 pixels on the right.\n\nThe relevant error-causing widget was:\n  Row\n  Row:file:///D:/uri-dev/uri-integ-ember/uri_ui/lib/living/integration/oi_health_widgets.dart:94:13\n\nThe overflowing RenderFlex has an orientation of Axis.horizontal.\nThe edge of the RenderFlex that is overflowing has been marked in\nthe rendering with a yellow and black striped pattern. This is\nusually caused by the contents being too big for the RenderFlex.\nConsider applying a flex factor (e.g. using an Expanded widget)\nto force the children of the RenderFlex to fit within the\navailable space instead of being sized to their natural size.\nThis is considered an error condition because it indicates that\nthere is content that cannot be seen. If the content is\nlegitimately bigger than the available space, consider clipping\nit with a ClipRect widget before putting it in the flex, or using\na scrollable container rather than a Flex, like a ListView.\nThe specific RenderFlex in question is: RenderFlex#30807 relayoutBoundary=up14 OVERFLOWING:\n  parentData: offset=Offset(0.0, 0.0); flex=null; fit=null (can use\n    size)\n  constraints: BoxConstraints(0.0<=w<=228.8, 0.0<=h<=Infinity)\n  size: Size(228.8, 20.0)\n  direction: horizontal\n  mainAxisAlignment: start\n  mainAxisSize: max\n  crossAxisAlignment: center\n  textDirection: ltr\n  verticalDirection: down\n  spacing: 0.0\n◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤\n═════════════════════════════════════════════════════════════════\n",
+    "stack": "null"
+  },
+  {
+    "utc": "2026-10-18T11:51:24.086553Z",
+    "label": "check",
+    "id": "J7-detached-chat",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:24.087058Z",
+    "label": "check",
+    "id": "J7-draft-note",
+    "result": "PASS",
+    "draft_open": true
+  },
+  {
+    "utc": "2026-10-18T11:51:25.912934Z",
+    "label": "turn",
+    "scenario": "companion chat",
+    "request": "Say hello in three words.",
+    "text": "Hello there, friend!",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 685,
+      "draft_n": 4,
+      "draft_n_accepted": 4,
+      "first_answer_s": 0.7344,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 6,
+      "predicted_per_second": 69.05218964493363,
+      "prompt_n": 508,
+      "prompt_per_second": 774.8674488556977,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.8073,
+      "ttft_s": 0.7344
+    },
+    "application_seconds": 1.817,
+    "frames_during_turn": {
+      "frames": 97,
+      "build_ms_p50": 0.413,
+      "build_ms_p95": 9.175,
+      "build_ms_max": 14.458,
+      "raster_ms_p50": 3.502,
+      "raster_ms_p95": 4.661,
+      "raster_ms_max": 6.499,
+      "total_ms_p95": 19.287,
+      "over_16ms": 11
+    },
+    "mode": "companion"
+  },
+  {
+    "utc": "2026-10-18T11:51:25.913944Z",
+    "label": "check",
+    "id": "J7-chat-reply",
+    "result": "PASS",
+    "text": "Hello there, friend!"
+  },
+  {
+    "utc": "2026-10-18T11:51:25.922923Z",
+    "label": "check",
+    "id": "J7-draft-untouched",
+    "result": "PASS",
+    "before": 2,
+    "after": 2,
+    "route": "answer",
+    "note": "UIV2-F1, live l9 repeat"
+  },
+  {
+    "utc": "2026-10-18T11:51:25.931601Z",
+    "label": "check",
+    "id": "J7-stays-companion",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:27.072260Z",
+    "label": "key",
+    "key": "Escape",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "companion",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:27.073763Z",
+    "label": "check",
+    "id": "J7-escape-closes-chat",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:29.273138Z",
+    "label": "check",
+    "id": "J7-double-click-dashboard",
+    "result": "PASS",
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-18T11:51:29.274643Z",
+    "label": "check",
+    "id": "J7-window-restored",
+    "result": "PASS",
+    "before": "Size(1280.0, 720.0)",
+    "after": "Size(1280.0, 720.0)"
+  },
+  {
+    "utc": "2026-10-18T11:51:30.532058Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:32.571017Z",
+    "label": "draft closed after J7",
+    "open": true
+  },
+  {
+    "utc": "2026-10-18T11:51:33.227772Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#679ed(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:36.051832Z",
+    "label": "gallery open attempts",
+    "attempts": 1
+  },
+  {
+    "utc": "2026-10-18T11:51:36.053927Z",
+    "label": "check",
+    "id": "J8-gallery-opens",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:39.270283Z",
+    "label": "check",
+    "id": "J8-preview-isolated",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:40.761063Z",
+    "label": "check",
+    "id": "J8-apply",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:43.131581Z",
+    "label": "check",
+    "id": "J8-theme",
+    "result": "PASS",
+    "theme": "snowArchive"
+  },
+  {
+    "utc": "2026-10-18T11:51:44.288443Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:45.493183Z",
+    "label": "lunar edge (UIV2-F4)",
+    "found": true,
+    "rect": "Rect.fromLTRB(596.0, 205.5, 876.0, 485.5)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 1020,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-18T11:51:45.495276Z",
+    "label": "check",
+    "id": "J15-lunar-edge-invisible-light-theme",
+    "result": "PASS",
+    "found": true,
+    "rect": "Rect.fromLTRB(596.0, 205.5, 876.0, 485.5)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 1020,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-18T11:51:45.684666Z",
+    "label": "check",
+    "id": "J13-classic-reachable",
+    "result": "PASS",
+    "note": "checked below"
+  },
+  {
+    "utc": "2026-10-18T11:51:46.364484Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:47.464629Z",
+    "label": "check",
+    "id": "J13-classic-entry-present",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:49.511631Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:50.005811Z",
+    "label": "resize",
+    "requested": "Size(1366.0, 768.0)",
+    "view": "Size(1350.0, 729.0)",
+    "composer_visible_without_scroll": true,
+    "expected_layout": "medium (composer in view)",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-18T11:51:50.007314Z",
+    "label": "check",
+    "id": "J11-composer-in-view-1366",
+    "result": "PASS",
+    "view": "Size(1350.0, 729.0)"
+  },
+  {
+    "utc": "2026-10-18T11:51:50.014852Z",
+    "label": "check",
+    "id": "J11-no-layout-error-1366",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:50.718570Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:53.335201Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:53.817514Z",
+    "label": "resize",
+    "requested": "Size(1280.0, 800.0)",
+    "view": "Size(1264.0, 761.0)",
+    "composer_visible_without_scroll": true,
+    "expected_layout": "medium (composer in view)",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-18T11:51:53.818514Z",
+    "label": "check",
+    "id": "J11-composer-in-view-1280",
+    "result": "PASS",
+    "view": "Size(1264.0, 761.0)"
+  },
+  {
+    "utc": "2026-10-18T11:51:53.825481Z",
+    "label": "check",
+    "id": "J11-no-layout-error-1280",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:54.491158Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:57.084879Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:51:57.560822Z",
+    "label": "resize",
+    "requested": "Size(1024.0, 768.0)",
+    "view": "Size(1008.0, 729.0)",
+    "composer_visible_without_scroll": true,
+    "expected_layout": "medium (composer in view)",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-18T11:51:57.560822Z",
+    "label": "check",
+    "id": "J11-composer-in-view-1024",
+    "result": "PASS",
+    "view": "Size(1008.0, 729.0)"
+  },
+  {
+    "utc": "2026-10-18T11:51:57.568377Z",
+    "label": "check",
+    "id": "J11-no-layout-error-1024",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:51:58.273551Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:52:00.762199Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:52:01.363801Z",
+    "label": "resize",
+    "requested": "Size(900.0, 640.0)",
+    "view": "Size(884.0, 601.0)",
+    "composer_visible_without_scroll": false,
+    "expected_layout": "scrolling column",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-18T11:52:01.365305Z",
+    "label": "check",
+    "id": "J11-no-layout-error-900",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:52:02.047886Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:52:04.525988Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:52:04.988390Z",
+    "label": "resize",
+    "requested": "Size(800.0, 600.0)",
+    "view": "Size(784.0, 561.0)",
+    "composer_visible_without_scroll": false,
+    "expected_layout": "scrolling column",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-18T11:52:04.989827Z",
+    "label": "check",
+    "id": "J11-no-layout-error-800",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-18T11:52:05.666679Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:52:16.601616Z",
+    "label": "check",
+    "id": "J12-brain-not-ready-seen",
+    "result": "PASS",
+    "brain": {
+      "artifacts": "MATCH",
+      "checked_at": 1792324329.1644726,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-18T11:52:17.270252Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:52:18.412192Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#7f649(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-18T11:52:23.485271Z",
+    "label": "turn",
+    "scenario": "turn without Brain",
+    "request": "Hello again URI",
+    "text": "",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (STOPPED).",
+    "metrics": {},
+    "application_seconds": 4.133,
+    "frames_during_turn": {
+      "frames": 226,
+      "build_ms_p50": 0.304,
+      "build_ms_p95": 2.752,
+      "build_ms_max": 28.408,
+      "raster_ms_p50": 3.164,
+      "raster_ms_p95": 3.731,
+      "raster_ms_max": 4.233,
+      "total_ms_p95": 17.069,
+      "over_16ms": 16
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-18T11:52:23.487316Z",
+    "label": "turn without brain",
+    "text": "",
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (STOPPED).",
+    "recovery": [
+      "start_brain",
+      "retry",
+      "choose_other_source"
+    ]
+  },
+  {
+    "utc": "2026-10-18T11:52:23.981755Z",
+    "label": "raw-codes-on-screen",
+    "where": "brain stopped",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-18T11:52:23.982761Z",
+    "label": "summary",
+    "failures": [],
+    "flutter_errors": 2,
+    "elapsed_s": 221.692
+  }
+]

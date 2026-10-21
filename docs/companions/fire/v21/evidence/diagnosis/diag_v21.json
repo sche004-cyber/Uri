@@ -1,0 +1,40 @@
+{
+ "visible_share": {
+  "idle": {
+   "v2": 0.792,
+   "v21": 0.958
+  },
+  "joyful": {
+   "v2": 0.906,
+   "v21": 0.98
+  },
+  "fierce": {
+   "v2": 0.801,
+   "v21": 0.948
+  },
+  "depleted": {
+   "v2": 0.888,
+   "v21": 0.983
+  }
+ },
+ "v2_reproduction": {
+  "v2_atlas": "git b73bd26c:uri_ui/assets/companions/ember/idle.webp",
+  "mean_abs_diff": 0.0022,
+  "max_abs_diff": 0.0586
+ },
+ "live_check": {
+  "box_px": 316,
+  "centre": [
+   632,
+   246
+  ],
+  "mad_measured": 0.0216,
+  "mad_pack_canvas": 0.0228,
+  "surround_rgb_255": [
+   29.1,
+   20.0,
+   11.0
+  ],
+  "note": "live frame index unknown (animation), so residual includes motion; inner disc only"
+ }
+}

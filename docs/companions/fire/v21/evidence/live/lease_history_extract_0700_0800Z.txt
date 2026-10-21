@@ -1,0 +1,18 @@
+# Extract of LOCALAPPDATA/URI/gpu/history.jsonl (machine-wide GPU lease), 2026-10-15 07:00-08:00 UTC.
+# Sessions: uri-fire-companion-v2-rt = this milestone's disposable runtime (live run 1); benchmark pid 4172 = perf attempt 3;
+# uri-fcv-recovery-20261014 = the parallel FCV recovery session (not touched).
+07:00:29 RELEASED pid 13504 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fcv-recovery-20261014\candidate override True
+07:02:53 ACQUIRED pid 12356 regression_chain 'FCV recovery candidate chain (CPU; held to keep competing GPU-heavy tests off)' session - override False
+07:28:06 RELEASED pid 12356 regression_chain 'FCV recovery candidate chain (CPU; held to keep competing GPU-heavy tests off)' session - override False
+07:28:06 ACQUIRED pid 4172 benchmark 'Ember V2.1 perf series (fire-companion-v21)' session - override False
+07:34:22 RELEASED pid 4172 benchmark 'Ember V2.1 perf series (fire-companion-v21)' session - override False
+07:37:03 ACQUIRED pid 6384 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fire-companion-v2-rt override True
+07:40:13 RELEASED pid 6384 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fire-companion-v2-rt override True
+07:40:42 ACQUIRED pid 4280 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fire-companion-v2-rt override True
+07:42:35 RELEASED pid 4280 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fire-companion-v2-rt override True
+07:44:57 ACQUIRED pid 20708 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fcv-recovery-20261014\candidate override True
+07:50:13 RELEASED pid 20708 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fcv-recovery-20261014\candidate override True
+07:51:43 ACQUIRED pid 20396 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fcv-recovery-20261014\candidate override True
+07:53:42 RELEASED pid 20396 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fcv-recovery-20261014\candidate override True
+07:55:28 ACQUIRED pid 7648 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fcv-recovery-20261014\candidate override True
+07:59:03 RELEASED pid 7648 runtime_v1_brain 'WS Brain host' session C:\Users\cheta\Development\uri-fcv-recovery-20261014\candidate override True

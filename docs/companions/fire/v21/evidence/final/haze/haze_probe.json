@@ -1,0 +1,300 @@
+{
+ "gates_shipped": {
+  "H1_outside_circle": true,
+  "H2_corners": true,
+  "H3_footprint": true
+ },
+ "rows": [
+  "h0_current",
+  "h1_pool_tight",
+  "h2_pool_tighter",
+  "h3_tight_45",
+  "h4_none",
+  "shipped"
+ ],
+ "columns": [
+  "white",
+  "grey",
+  "blue",
+  "dark"
+ ],
+ "results": {
+  "h0_current": {
+   "stage": {
+    "glow": {
+     "sigma": 18,
+     "gain": 2.0,
+     "cap": 0.45
+    },
+    "texture": true,
+    "strength": 0.6,
+    "pool": [
+     0.35,
+     0.95
+    ],
+    "edge": 0.08,
+    "edge_margin": 0.03
+   },
+   "worst": {
+    "footprint_pct": 44.67,
+    "outside_circle_px": 4115,
+    "corner_max": 0.1457,
+    "fill_ratio": 0.63,
+    "max_alpha_away": 0.624
+   },
+   "frames": [
+    {
+     "footprint_pct": 44.64,
+     "outside_circle_px": 4115,
+     "corner_max": 0.1457,
+     "fill_ratio": 0.629,
+     "max_alpha_away": 0.624
+    },
+    {
+     "footprint_pct": 44.54,
+     "outside_circle_px": 4114,
+     "corner_max": 0.1457,
+     "fill_ratio": 0.628,
+     "max_alpha_away": 0.624
+    },
+    {
+     "footprint_pct": 44.67,
+     "outside_circle_px": 4114,
+     "corner_max": 0.1457,
+     "fill_ratio": 0.63,
+     "max_alpha_away": 0.624
+    }
+   ]
+  },
+  "h1_pool_tight": {
+   "stage": {
+    "glow": {
+     "sigma": 18,
+     "gain": 2.0,
+     "cap": 0.45
+    },
+    "texture": true,
+    "strength": 0.6,
+    "pool": [
+     0.15,
+     0.7
+    ],
+    "edge": 0.08,
+    "edge_margin": 0.03
+   },
+   "worst": {
+    "footprint_pct": 19.51,
+    "outside_circle_px": 0,
+    "corner_max": 0.0,
+    "fill_ratio": 0.457,
+    "max_alpha_away": 0.608
+   },
+   "frames": [
+    {
+     "footprint_pct": 19.51,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.457,
+     "max_alpha_away": 0.608
+    },
+    {
+     "footprint_pct": 19.46,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.439,
+     "max_alpha_away": 0.608
+    },
+    {
+     "footprint_pct": 19.49,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.442,
+     "max_alpha_away": 0.608
+    }
+   ]
+  },
+  "h2_pool_tighter": {
+   "stage": {
+    "glow": {
+     "sigma": 18,
+     "gain": 2.0,
+     "cap": 0.45
+    },
+    "texture": true,
+    "strength": 0.6,
+    "pool": [
+     0.1,
+     0.6
+    ],
+    "edge": 0.08,
+    "edge_margin": 0.03
+   },
+   "worst": {
+    "footprint_pct": 11.43,
+    "outside_circle_px": 0,
+    "corner_max": 0.0,
+    "fill_ratio": 0.368,
+    "max_alpha_away": 0.6
+   },
+   "frames": [
+    {
+     "footprint_pct": 11.42,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.365,
+     "max_alpha_away": 0.6
+    },
+    {
+     "footprint_pct": 11.43,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.368,
+     "max_alpha_away": 0.6
+    },
+    {
+     "footprint_pct": 11.4,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.366,
+     "max_alpha_away": 0.6
+    }
+   ]
+  },
+  "h3_tight_45": {
+   "stage": {
+    "glow": {
+     "sigma": 18,
+     "gain": 2.0,
+     "cap": 0.45
+    },
+    "texture": true,
+    "strength": 0.45,
+    "pool": [
+     0.15,
+     0.7
+    ],
+    "edge": 0.08,
+    "edge_margin": 0.03
+   },
+   "worst": {
+    "footprint_pct": 17.44,
+    "outside_circle_px": 0,
+    "corner_max": 0.0,
+    "fill_ratio": 0.437,
+    "max_alpha_away": 0.463
+   },
+   "frames": [
+    {
+     "footprint_pct": 17.44,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.436,
+     "max_alpha_away": 0.463
+    },
+    {
+     "footprint_pct": 17.44,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.413,
+     "max_alpha_away": 0.463
+    },
+    {
+     "footprint_pct": 17.42,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.437,
+     "max_alpha_away": 0.463
+    }
+   ]
+  },
+  "h4_none": {
+   "stage": {
+    "glow": {
+     "sigma": 18,
+     "gain": 2.0,
+     "cap": 0.45
+    },
+    "strength": 0.0
+   },
+   "worst": {
+    "footprint_pct": 0.0,
+    "outside_circle_px": 0,
+    "corner_max": 0.0,
+    "fill_ratio": 0.0,
+    "max_alpha_away": 0.075
+   },
+   "frames": [
+    {
+     "footprint_pct": 0.0,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.0,
+     "max_alpha_away": 0.075
+    },
+    {
+     "footprint_pct": 0.0,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.0,
+     "max_alpha_away": 0.063
+    },
+    {
+     "footprint_pct": 0.0,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.0,
+     "max_alpha_away": 0.059
+    }
+   ]
+  },
+  "shipped": {
+   "stage": {
+    "_comment": "Depleted only: the painted backdrop as a 60 % translucent haze (P3: smoke reads 73.8 without it, 79.0 with it), held close to the figure (pool [0.10, 0.60], Ember V2.1 final: the earlier [0.35, 0.95] pool read as a grey rounded rectangle on light desktops; evidence/final/haze/). Still transparent: nothing darkens a white desktop by 6 % or more outside the central circle.",
+    "glow": {
+     "sigma": 18,
+     "gain": 2.0,
+     "cap": 0.45
+    },
+    "texture": true,
+    "strength": 0.6,
+    "pool": [
+     0.1,
+     0.6
+    ],
+    "edge": 0.08,
+    "edge_margin": 0.03,
+    "panel_feather": 20
+   },
+   "worst": {
+    "footprint_pct": 11.44,
+    "outside_circle_px": 0,
+    "corner_max": 0.0,
+    "fill_ratio": 0.368,
+    "max_alpha_away": 0.6
+   },
+   "frames": [
+    {
+     "footprint_pct": 11.42,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.365,
+     "max_alpha_away": 0.6
+    },
+    {
+     "footprint_pct": 11.44,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.368,
+     "max_alpha_away": 0.6
+    },
+    {
+     "footprint_pct": 11.4,
+     "outside_circle_px": 0,
+     "corner_max": 0.0,
+     "fill_ratio": 0.366,
+     "max_alpha_away": 0.6
+    }
+   ]
+  }
+ }
+}

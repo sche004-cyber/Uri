@@ -1,0 +1,76 @@
+HEAD=bb61e976ed452c0dd27b1dbc99acad24d9a25c0a
+{
+ "tree": "D:\\uri-dev\\uri-integ-ember",
+ "ok": true,
+ "recognized_exact_blobs": {
+  "scripts/phase1_offline_rollback.py": {
+   "sha256": "50f8540da21f0a3f812bf5e807129ef7eb6f805767c91c980b28c4b67498d70e",
+   "decisions": [
+    "OWNER-FCV01-20261014"
+   ],
+   "commits": [
+    "0d3e12245cd8522b2b1785daa45f48564f7adc9e"
+   ],
+   "provenance": [
+    "docs/governance/fcv_recovery/FCV01_ROLLBACK_AMENDMENT_AUTHORIZATION.md"
+   ],
+   "anchor": "0d3e12245cd8522b2b1785daa45f48564f7adc9e"
+  },
+  "scripts/uri_client.ps1": {
+   "sha256": "3a01127775a6075a5a971fc63944ef4ce7d8fb3f62af8f1866553587ecd3e34e",
+   "decisions": [
+    "OWNER-FCV05-20261015"
+   ],
+   "commits": [
+    "e1fb4708a149d8a5d0cab603ae5866e043ab7ba2"
+   ],
+   "provenance": [
+    "docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md"
+   ],
+   "anchor": "e1fb4708a149d8a5d0cab603ae5866e043ab7ba2"
+  },
+  "uri_core/app/server.py": {
+   "sha256": "59cfde59c709fa7f83df84e957f5962701276afce54cb196541134a9a43cf4f8",
+   "decisions": [
+    "GRAPHIFY-LEAK-1/D12"
+   ],
+   "commits": [
+    "9ae7c60cd02b3a7be87a465db4170705d28f9d72",
+    "6c62281fb6b37acfc486fa29468e66824912e151"
+   ],
+   "provenance": [
+    "docs/graphify/GRAPHIFY_LEAK_1_PLAN_AND_ACCEPTANCE.md"
+   ]
+  },
+  "uri_core/tools/fetch_url.py": {
+   "sha256": "404e60921c207753868589b8a16f409ee80f35a01b0a33e8400d8780d93139e8",
+   "decisions": [
+    "SSRF-1/D2",
+    "IDN-1b/D33"
+   ],
+   "commits": [
+    "f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7",
+    "a5a31435035c88ab5c3a868796f96232bc036759",
+    "6a33c1b5dbfe0c3694963416310945db8ee06b9d"
+   ],
+   "provenance": [
+    "docs/ssrf/SSRF_1_PLAN_AND_ACCEPTANCE.md",
+    "docs/web/IDN_1B_PLAN_AND_ACCEPTANCE.md"
+   ]
+  }
+ },
+ "phase1_frozen": {
+  "checked": 121,
+  "drift": [
+   "scripts/phase1_offline_rollback.py",
+   "scripts/uri_client.ps1",
+   "uri_core/app/server.py"
+  ],
+  "unapproved_drift": []
+ },
+ "protected_changed_vs_baseline": [
+  "uri_core/app/server.py",
+  "uri_core/tools/fetch_url.py"
+ ],
+ "unapproved_protected_changes": []
+}

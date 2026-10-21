@@ -1,0 +1,27 @@
+{
+ "label": "l4-input",
+ "mode": "input",
+ "fresh_prefs": false,
+ "source_head": "6bdaf86e0e1bba05ab503cc69735b273c363cb24",
+ "source_tree": "f61d9581230e802a2cffe4ffcc439b5e6ee05727",
+ "source_status_before": "M docs/companions/fire/v21_integ/00_ACCEPTANCE_CRITERIA.md",
+ "port": 18300,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/ember_live_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "9de00bf34a5964eae9f489542ca4254fbeee269e967cce9cda79e1c079351fcb",
+ "entry": "original production main() via integration_test; window checks via Win32 probe with SendInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "microphone_qualified": false,
+ "started_utc": "2026-10-18T04:47:13.410495+00:00",
+ "rc": 0,
+ "seconds": 55.6,
+ "source_status_after": "M docs/companions/fire/v21_integ/00_ACCEPTANCE_CRITERIA.md",
+ "finished_utc": "2026-10-18T04:48:09.017772+00:00"
+}

@@ -1,0 +1,25 @@
+{
+ "label": "p3-ember-switch",
+ "source_head": "bb61e976ed452c0dd27b1dbc99acad24d9a25c0a",
+ "source_tree": "801c7bca0bb5c2fafbcecc92d002ec5658855e4f",
+ "source_status_before": "",
+ "port": 18300,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/ember_live_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "7a0087a581fd8ac531de4a1caa4b0814c795976a2fe3402aed630237748c9e1c",
+ "entry": "original production main() via integration_test (Debug build); taps and TestTextInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "started_utc": "2026-10-18T12:28:11.096680+00:00",
+ "exit_code": 0,
+ "elapsed_s": 216.25,
+ "finished_utc": "2026-10-18T12:31:47.349963+00:00",
+ "source_status_after": "",
+ "ui_binary_sha256": "a096a44f681161761bd4b9ca9ff20beee441e687eafe4bc2db2c930668d18921"
+}

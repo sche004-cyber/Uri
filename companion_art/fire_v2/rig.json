@@ -1,0 +1,254 @@
+{
+ "_comment": "Landmarks on each reference panel, in panel pixels (crop of uri_emotions_sheet.png given by 'crop' = x0,y0,x1,y1). Read by hand from grid renders (work/grid_*.png). Ellipses are centre x, centre y, radius x, radius y. 'erase' rectangles are inpainted before matting (artist signature, generator mark). Eye ellipses refined from 3x face crops (work/face_*.png). 'smoke' = box (x0,y0,x1,y1) where painted smoke darker than the background belongs to the character. 'solid_robe': the robe inside its outline is opaque even where its grey is close to the background.",
+ "idle": {
+  "crop": [
+   0,
+   95,
+   448,
+   575
+  ],
+  "head": [
+   268,
+   243,
+   102,
+   68
+  ],
+  "eyes": [
+   [
+    225,
+    262,
+    33,
+    32
+   ],
+   [
+    312,
+    258,
+    19,
+    31
+   ]
+  ],
+  "mouth": [
+   262,
+   303
+  ],
+  "neck": [
+   262,
+   318
+  ],
+  "hands": [
+   [
+    208,
+    384
+   ],
+   [
+    316,
+    382
+   ]
+  ],
+  "feet": [
+   [
+    248,
+    448
+   ],
+   [
+    276,
+    448
+   ]
+  ],
+  "erase": [
+   [
+    398,
+    402,
+    448,
+    430
+   ]
+  ]
+ },
+ "joyful": {
+  "crop": [
+   448,
+   95,
+   896,
+   598
+  ],
+  "head": [
+   201,
+   238,
+   82,
+   62
+  ],
+  "eyes": [
+   [
+    162,
+    235,
+    21,
+    18
+   ],
+   [
+    248,
+    238,
+    27,
+    17
+   ]
+  ],
+  "mouth": [
+   201,
+   272,
+   14,
+   11
+  ],
+  "neck": [
+   205,
+   306
+  ],
+  "hands": [
+   [
+    128,
+    288
+   ],
+   [
+    297,
+    288
+   ]
+  ],
+  "feet": [
+   [
+    216,
+    458
+   ],
+   [
+    246,
+    436
+   ]
+  ],
+  "erase": []
+ },
+ "fierce": {
+  "crop": [
+   0,
+   625,
+   448,
+   1140
+  ],
+  "head": [
+   268,
+   250,
+   92,
+   68
+  ],
+  "eyes": [
+   [
+    234,
+    268,
+    24,
+    17
+   ],
+   [
+    317,
+    265,
+    19,
+    17
+   ]
+  ],
+  "mouth": [
+   279,
+   297
+  ],
+  "neck": [
+   272,
+   320
+  ],
+  "hands": [
+   [
+    170,
+    356
+   ],
+   [
+    360,
+    352
+   ]
+  ],
+  "feet": [
+   [
+    195,
+    480
+   ],
+   [
+    322,
+    478
+   ]
+  ],
+  "erase": []
+ },
+ "depleted": {
+  "crop": [
+   448,
+   625,
+   896,
+   1140
+  ],
+  "head": [
+   210,
+   265,
+   86,
+   74
+  ],
+  "eyes": [
+   [
+    164,
+    288,
+    23,
+    20
+   ],
+   [
+    234,
+    284,
+    30,
+    20
+   ]
+  ],
+  "mouth": [
+   203,
+   324
+  ],
+  "neck": [
+   235,
+   345
+  ],
+  "hands": [
+   [
+    205,
+    430
+   ],
+   [
+    278,
+    425
+   ]
+  ],
+  "feet": [
+   [
+    240,
+    478
+   ],
+   [
+    266,
+    478
+   ]
+  ],
+  "erase": [
+   [
+    292,
+    422,
+    362,
+    490
+   ]
+  ],
+  "smoke": [
+   110,
+   0,
+   340,
+   230
+  ],
+  "solid_robe": true
+ }
+}

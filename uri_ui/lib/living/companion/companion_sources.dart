@@ -409,13 +409,17 @@ class MockCompanionSource extends CompanionStateSource {
 /// states win over activity, which wins over idle, so a mock "speaking"
 /// never hides a real "awaiting approval".
 class CompositeCompanionSource extends CompanionStateSource {
-  CompositeCompanionSource(this.sources) {
+  CompositeCompanionSource(this.sources, {this.owned = const []}) {
     for (final s in sources) {
       s.addListener(notifyListeners);
     }
   }
 
   final List<CompanionStateSource> sources;
+
+  /// Sources created for this composite alone; it disposes them with itself
+  /// (the integrated Oi source holds the Ember success-hold timer).
+  final List<CompanionStateSource> owned;
 
   /// Adds a source after construction (the voice session joins the merged
   /// signal this way, whichever services builder made the composite).
@@ -438,6 +442,7 @@ class CompositeCompanionSource extends CompanionStateSource {
     CompanionState.listening,
     CompanionState.success,
     CompanionState.unavailable,
+    CompanionState.initializing,
     CompanionState.idle,
   ];
 
@@ -462,6 +467,9 @@ class CompositeCompanionSource extends CompanionStateSource {
   void dispose() {
     for (final s in sources) {
       s.removeListener(notifyListeners);
+    }
+    for (final s in owned) {
+      s.dispose();
     }
     super.dispose();
   }

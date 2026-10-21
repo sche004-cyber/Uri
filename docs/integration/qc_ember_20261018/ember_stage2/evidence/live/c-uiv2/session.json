@@ -1,0 +1,153 @@
+{
+ "label": "c-uiv2",
+ "started_utc": "2026-10-18T11:47:21.008638+00:00",
+ "runtime": "D:\\uri-dev\\uri-integ-rt-e",
+ "port": 18300,
+ "receipt": {
+  "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "candidate_source": "D:\\uri-dev\\uri-integ-ember",
+  "candidate_head": "b07bd496c31004593ff6e508a054a739b43ef6d1",
+  "candidate_tree": "733fe8117bffdc42d656b52bf663fb1907d3dec8"
+ },
+ "brain_config_sha256_before": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "override": false,
+ "runtime_verified": {
+  "ok": true,
+  "checked": 361,
+  "mismatched": []
+ },
+ "server_pid": 14640,
+ "server_listening": true,
+ "lease_free_utc": "2026-10-18T11:47:28.128071+00:00",
+ "host_pid": 17124,
+ "host_argv": [
+  "ws_brain_host.py",
+  "--report-dir",
+  "D:\\uri-dev\\uri-integ-rt-e\\work\\c1\\ws-integ-e\\client\\control\\oi",
+  "--minutes",
+  "45"
+ ],
+ "brain_stopped_by_driver_utc": "2026-10-18T11:52:07.539021+00:00",
+ "end_reason": "ui-finished",
+ "result": "COMPLETED",
+ "finished_utc": "2026-10-18T11:52:27.576729+00:00",
+ "host_exit": 0,
+ "host_final": {
+  "detail": "HOST_EXIT",
+  "explain": "The Brain host has exited.",
+  "gpu": {
+   "census_s": 3.46,
+   "census_t": 1792324048.514,
+   "explain": "GPU memory is 109 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 401.8,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 15517.3,
+    "margin_mib": -108.7,
+    "others_mib": 850.7,
+    "owner_mib": 0,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   }
+  },
+  "heartbeat_at": 1792324320.68,
+  "history": [
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792324051.978
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792324058.353
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792324076.118
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792324081.083
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792324328.009
+   },
+   {
+    "detail": "HOST_EXIT",
+    "state": "STOPPED",
+    "t": 1792324328.661
+   }
+  ],
+  "host_pid": 5012,
+  "host_started": 1792324048.496,
+  "lease": {
+   "held": false
+  },
+  "override": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": true,
+   "id": "frozen",
+   "mtp": true,
+   "vision": "gpu"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 650.6,
+     "name": "chrome.exe",
+     "parent": "chrome.exe",
+     "pid": 14668,
+     "role": null
+    },
+    {
+     "dedicated_mib": 529.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 194.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 7616,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14082.2,
+   "non_local_mib": 2657.9,
+   "others_mib": 1836.0,
+   "t": 1792324268.812,
+   "verdict_now": "CONTENDED"
+  },
+  "schema": "uri.ws.brain_host.v1",
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "state": "STOPPED",
+  "updated_at": 1792324328.661
+ },
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_config_sha256_after": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "brain_listener_after": null
+}
