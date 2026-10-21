@@ -3,7 +3,7 @@
   {
    "id": "AP-1",
    "kind": "DECISION",
-   "question": "Integrate Ember V2.1 `68061d85` into canonical? (context: technically ready (subagent-class AwF); carries owner items AC-F1/AC-F3, T4, F-SIZE-1, F-LIGHT-1; reference art is in its git history (private remote only); where: `docs/audit/p0_20261021/P0_INTEGRATION_PLAN.md` Q-1)",
+   "question": "Integrate Ember V2.1 `68061d85` into canonical? **DECIDED 2026-10-21 by DEC-091 (integrated `9488c0fd`).** (context: technically ready (subagent-class AwF); carries owner items AC-F1/AC-F3, T4, F-SIZE-1, F-LIGHT-1; reference art is in its git history (private remote only); where: `docs/audit/p0_20261021/P0_INTEGRATION_PLAN.md` Q-1)",
    "subject": "PROJECT"
   },
   {
@@ -74,16 +74,16 @@
   }
  ],
  "decisions": {
-  "ACTIVE": 74,
+  "ACTIVE": 77,
   "NOT_OWNER_DECISION": 1,
   "PARTIALLY_SUPERSEDED": 7,
   "SUPERSEDED": 4,
   "UNCLEAR": 7
  },
- "generated_at": "2026-10-21T17:03:06Z",
+ "generated_at": "2026-10-21T17:37:57Z",
  "ledger": {
   "conflicts_open": 0,
-  "events": 217,
+  "events": 220,
   "integrity_errors": [],
   "integrity_warnings": []
  },

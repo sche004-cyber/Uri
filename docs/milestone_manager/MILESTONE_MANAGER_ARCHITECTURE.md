@@ -231,3 +231,19 @@ init-host --host-id <unique-id>`; never copy another machine's `local/` folder.
 Residual (stated, not hidden): a removed anchors entry for *another* host's segment is not detectable from this
 machine's anchors alone (that segment may simply not be anchored here yet); git history of the ledger is the anchor
 for other hosts' segments.
+
+## 16. Changes after independent review R4 (2026-10-21, REJECT on `c992b5ae`)
+
+| Change | Reason |
+|---|---|
+| `reanchor` treats anything the anchors cannot vouch for (missing file, missing own entry, own count 0 with events, lost/rewritten events) as unknown history: refused without `--acknowledge-loss`, recorded as ANCHOR_LOSS when acknowledged | R4-01 |
+| Lamport floor is strictly after the newest seen event (+1 µs), so an answer never ties with or sorts before what it answers, whatever the host names; segments stamped > 5 min ahead of this clock are named in warnings; the "clock behind" warning names the segment and both possibilities | R4-02 |
+| `recover` abandons only this machine's own incomplete batches; an abandoned batch that later turns out complete is applied and flagged (ABANDONED_BATCH_COMPLETED, RED, `resolve-conflict LEDGER`) instead of being dropped | R4-03 |
+| Import register identity = the document's first level-1 heading (or `--register`), not the file name or path | R4-04 |
+| This machine's own anchor entry always exists (count 0 until first refresh); count 0 with events is a visible warning, not an error, so a failed first refresh does not block the next write | R4-05 |
+| Open conflicts indexed once per projection (status no longer milestones × conflicts); `evidence/perf_n3.py` committed with its output | R4-06 |
+| Docstring and handoff table corrected | R4-07 |
+
+Residual (stated): a host whose own clock is ahead cannot detect that from its own clock; other hosts name its segment
+in warnings. An own anchor entry edited to count 0 is shown as a warning (not blocking) and makes `reanchor` require
+acknowledgement; the ledger is tamper-evident, not tamper-proof.

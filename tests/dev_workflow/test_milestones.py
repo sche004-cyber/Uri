@@ -1131,7 +1131,7 @@ def test_r3_01_emptied_anchors_with_own_events_is_an_error(tmp_path):
     m.create_milestone("MM-B", "B")
     m.store.anchors_path.write_text("{}", encoding="utf-8")
     rep = m.store.verify()
-    assert not rep["ok"] and any("not anchored" in x for x in rep["errors"])
+    assert not rep["ok"] and any("no anchor entry" in x for x in rep["errors"])
 
 
 def test_r3_02_supersede_links_bind_to_the_right_duplicate(tmp_path):
@@ -1208,7 +1208,7 @@ def test_r3_06_abandonment_applies_whatever_the_order():
                                               "needs": "n"},
             "base": {}, "prev": "0" * 64, "hash": "x2", "batch": {"id": "b1", "n": 2, "i": 0}}
     p = model.fold([ab, half])
-    assert not p["pending_batches"] and not p["blockers"]
+    assert not p["blockers"] and "b1" in p["abandoned_ids"]  # stays unapplied; never silently applied or lost
 
 
 def test_r3_07_long_numeric_credentials_refused():
@@ -1216,3 +1216,144 @@ def test_r3_07_long_numeric_credentials_refused():
     assert model.find_secret("password: 12345678")
     assert model.find_secret("token: 123456789012")
     assert model.find_secret("token: 65536 context") is None
+
+
+# ------------------------------------------------------------------ R4 regression tests (review R4 on c992b5ae)
+
+def _truncate_last(m):
+    path = m.store.segment_path
+    lines = path.read_bytes().split(b"\n")[:-1]
+    path.write_bytes(b"\n".join(lines[:-1]) + b"\n")
+
+
+@pytest.mark.parametrize("edit", ["remove_own", "empty", "zero_own"])
+def test_r4_01_reanchor_needs_acknowledgement_when_anchors_cannot_vouch(tmp_path, edit):
+    m = _accept_ready(tmp_path, verdict="REJECT", blocking=1)
+    anchors = json.loads(m.store.anchors_path.read_text(encoding="utf-8"))
+    if edit == "remove_own":
+        anchors.pop("h1")
+    elif edit == "empty":
+        anchors = {}
+    else:
+        anchors["h1"] = {"count": 0, "head": "0" * 64}
+    m.store.anchors_path.write_text(json.dumps(anchors), encoding="utf-8")
+    _truncate_last(m)  # the REJECT review disappears
+    p = m.projection()
+    assert p["integrity_errors"] or p["integrity_warnings"]  # never silently clean
+    with pytest.raises(StoreError) as e:
+        m.store.reanchor("impl:a", "routine")
+    assert e.value.code == "LOSS_NOT_ACKNOWLEDGED"
+    m.store.reanchor("impl:a", "checked git", acknowledge_loss=True)
+    m.record_review("MM-A", C1, "subagent", "subagent:r2", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    with pytest.raises(ValidationError) as e:
+        m.set_status("MM-A", "ACCEPTED", "try")
+    assert e.value.code == "CONFLICT_OPEN"
+
+
+def test_r4_02_lagging_host_that_sorts_first_still_orders_after(tmp_path, monkeypatch):
+    import datetime as dt
+    from scripts.dev_workflow.milestones import store as store_mod, service as service_mod
+    mb = new(tmp_path, actor="b:agent", host="b")
+    home_a = tmp_path / "ledger_a"
+    EventStore.init(home_a, "a")
+    ma = Manager(home_a, actor="a:agent")
+    mb.create_milestone("MM-A", "A")
+    mb.request_approval("MM-A", "SCOPE", "ok?")
+    (home_a / "events" / "b.jsonl").write_bytes(mb.store.segment_path.read_bytes())
+    behind = lambda: (dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    monkeypatch.setattr(store_mod, "utc_now", behind)
+    monkeypatch.setattr(service_mod, "store_now", behind)
+    ma.resolve_approval("AP-1", "APPROVED", owner_words="yes", source="chat")
+    assert any("segment b" in w for w in ma.last_warnings)
+    monkeypatch.undo()
+    (mb.home / "events" / "a.jsonl").write_bytes((home_a / "events" / "a.jsonl").read_bytes())
+    for m in (ma, mb):
+        p = m.projection()
+        assert p["approvals"]["AP-1"]["status"] == "APPROVED" and not views.open_conflicts(p)
+
+
+def test_r4_02_future_stamped_segment_is_named_in_warnings(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m2.create_milestone("MM-F", "F")
+    with m2.store.locked():
+        m2.store.append("MILESTONE_UPDATED", {"id": "MM-F", "fields": {"objective": "x"}}, actor="h2",
+                        base={"MM-F": 1}, ts="2099-01-01T00:00:00.000000Z")
+    _merge(m1, home2)
+    assert any("segment h2" in w and "ahead" in w for w in m1.projection()["integrity_warnings"])
+
+
+def test_r4_03_recover_never_abandons_another_hosts_batch(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m2.record_decision("Base", "base", "2026-10-21", "AGENT-RECORD", "s")
+    m2.record_decision("New", "new", "2026-10-21", "AGENT-RECORD", "s", supersedes="LDEC-001")  # 2-event batch
+    seg2 = (home2 / "events" / "h2.jsonl").read_bytes()
+    partial = b"\n".join(seg2.split(b"\n")[:-2]) + b"\n"  # incomplete sync: last line missing
+    (m1.home / "events" / "h2.jsonl").write_bytes(partial)
+    m1.create_milestone("MM-A", "A")
+    out = io.StringIO()
+    assert cli.run(["--home", str(m1.home), "--actor", "h1:agent", "recover"], out=out) == 0
+    assert json.loads(out.getvalue())["abandoned_batches"] == []
+    _merge(m1, home2)  # full sync
+    d = m1.projection()["decisions"]
+    assert d["LDEC-001"]["status"] == "SUPERSEDED" and d["LDEC-002"]["decision"] == "new"
+
+
+def test_r4_03_an_abandoned_batch_that_completes_is_applied_and_flagged():
+    mk = lambda seq, i, ts: {"v": 1, "seg": "h2", "seq": seq, "ts": ts, "actor": "a", "session": None,
+                             "kind": "BLOCKER_ADDED", "data": {"id": f"BLK-{seq}", "subject": "PROJECT",
+                                                              "kind": "OTHER", "reason": "r", "needs": "n"},
+                             "base": {}, "prev": "0" * 64, "hash": f"h{seq}", "batch": {"id": "b1", "n": 2, "i": i}}
+    ab = {"v": 1, "seg": "h1", "seq": 1, "ts": "2026-10-21T10:00:00.000000Z", "actor": "a", "session": None,
+          "kind": "BATCH_ABANDONED", "data": {"batches": ["b1"], "reason": "crash"}, "base": {}, "prev": "0" * 64,
+          "hash": "x1"}
+    p = model.fold([ab, mk(1, 0, "2026-10-21T11:00:00.000000Z"), mk(2, 1, "2026-10-21T11:00:00.000000Z")])
+    assert len(p["blockers"]) == 2
+    assert any(c["type"] == "ABANDONED_BATCH_COMPLETED" for c in p["conflicts"])
+
+
+def test_r4_04_register_identity_is_the_document_not_the_file_name(tmp_path):
+    src = tmp_path / "decisions.md"
+    src.write_bytes(DECISIONS_MD.encode())
+    m = new(tmp_path)
+    importers.import_decisions(m, src)
+    other = tmp_path / "other" / "decisions.md"
+    other.parent.mkdir()
+    other.write_bytes(DECISIONS_MD.replace("# decisions", "# Another project's decisions")
+                      .replace("the loop", "unrelated").encode())
+    r = importers.import_decisions(m, other)
+    assert r["collisions"] == ["DEC-001", "DEC-002", "DEC-003"] and r["revised"] == 0
+    renamed = tmp_path / "decisions_2026-10-21.md"
+    renamed.write_bytes(DECISIONS_MD.encode())
+    r = importers.import_decisions(m, renamed)
+    assert r["collisions"] == [] and r["unchanged"] == 3
+
+
+def test_r4_05_first_write_without_anchor_refresh_does_not_block_the_next(tmp_path, monkeypatch):
+    m = new(tmp_path)
+    real = m.store.write_anchors
+    def boom(segs):
+        raise PermissionError("busy")
+    monkeypatch.setattr(m.store, "write_anchors", boom)
+    m.create_milestone("MM-A", "A")
+    p = m.projection()
+    assert not p["integrity_errors"] and any("not anchored yet" in w for w in p["integrity_warnings"])
+    monkeypatch.setattr(m.store, "write_anchors", real)
+    m.create_milestone("MM-B", "B")
+    p = m.projection()
+    assert not p["integrity_errors"] and not p["integrity_warnings"]
+
+
+def test_r4_06_status_scales_with_many_conflicts():
+    p = model.empty_projection()
+    for i in range(500):
+        p["milestones"][f"MM-{i}"] = {"id": f"MM-{i}", "title": "t", "priority": "P1", "phase": "RESEARCH",
+                                      "status": "IN_PROGRESS", "depends_on": [], "lifecycle": [], "assignment": None,
+                                      "implementers": [], "status_history": []}
+    ref = {"seg": "h", "seq": 1, "hash": "x", "ts": "t", "actor": "a"}
+    for i in range(5000):
+        p["conflicts"].append({"type": "VERSION", "entity": f"MM-{i % 500}", "subject": f"MM-{i % 500}",
+                               "event": ref, "kind": "K", "resolved": False})
+    t0 = time.perf_counter()
+    views.status_json(p)
+    views.status_lines(p)
+    assert time.perf_counter() - t0 < 1.0

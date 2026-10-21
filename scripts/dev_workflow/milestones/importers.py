@@ -69,14 +69,24 @@ def split_row(line: str) -> list[str] | None:
     return cells
 
 
-def _source(path: Path, commit, line_no: int, raw: str, file_hash: str) -> dict:
-    # ``register`` identifies the source independent of where it is checked out (review R3-03).
-    return {"path": str(path).replace("\\", "/"), "register": Path(path).name, "commit": commit, "line": line_no,
+def register_identity(path: Path, explicit: str | None = None) -> str:
+    """The register a file belongs to, independent of its name or checkout path (reviews R3-03, R4-04): an explicit
+    value, else the document's first level-1 heading (e.g. "URI Owner Decisions Register (`decisions.md`)")."""
+    if explicit:
+        return explicit
+    for line in Path(path).read_text(encoding="utf-8").splitlines()[:40]:
+        if line.startswith("# "):
+            return line[2:].strip()
+    raise ValidationError("NO_REGISTER_ID", f"{path} has no level-1 heading; pass --register to name the register")
+
+
+def _source(path: Path, commit, line_no: int, raw: str, file_hash: str, register: str) -> dict:
+    return {"path": str(path).replace("\\", "/"), "register": register, "commit": commit, "line": line_no,
             "file_sha256": file_hash, "row_sha256": sha256_text(raw.strip())}
 
 
-def _register_of(source: dict) -> str:
-    return (source or {}).get("register") or Path((source or {}).get("path") or "").name
+def _register_of(source: dict) -> str | None:
+    return (source or {}).get("register")
 
 
 def _evidence_class(raw: str) -> str:
@@ -110,9 +120,10 @@ def parse_decisions(path: Path):
     return decisions, opens
 
 
-def import_decisions(mgr, path, commit=None) -> dict:
+def import_decisions(mgr, path, commit=None, register=None) -> dict:
     path = Path(path)
     file_hash = file_sha256(path)
+    register = register_identity(path, register)
     decisions, opens = parse_decisions(path)
     report = {"source": str(path), "file_sha256": file_hash, "commit": commit, "recorded": 0, "revised": 0,
               "unchanged": 0, "skipped_secret": [], "supersessions": 0, "open_questions": 0, "collisions": []}
@@ -120,7 +131,7 @@ def import_decisions(mgr, path, commit=None) -> dict:
     def build(p):
         items = []
         for line_no, raw, row in decisions:
-            src = _source(path, commit, line_no, raw, file_hash)
+            src = _source(path, commit, line_no, raw, file_hash, register)
             if M.find_secret(raw):
                 report["skipped_secret"].append(row["id"])
                 continue
@@ -198,7 +209,7 @@ def import_decisions(mgr, path, commit=None) -> dict:
                                                  "question": _text(f"{row['question']} (context: {row['context']}; "
                                                                    f"where: {row['where']})"),
                                                  "alias": row["alias"],
-                                                 "origin": _source(path, commit, line_no, raw, file_hash)}, {aid: 0}))
+                                                 "origin": _source(path, commit, line_no, raw, file_hash, register)}, {aid: 0}))
             report["open_questions"] += 1
         items.append(("IMPORT_RECORDED", {"importer": "decisions.md", "source": str(path).replace("\\", "/"),
                                           "commit": commit, "file_sha256": file_hash,
@@ -239,9 +250,10 @@ def _color(text: str):
     return m.group(1) if m else None
 
 
-def import_register(mgr, path, commit=None) -> dict:
+def import_register(mgr, path, commit=None, register=None) -> dict:
     path = Path(path)
     file_hash = file_sha256(path)
+    register = register_identity(path, register)
     rows = parse_register(path)
     report = {"source": str(path), "file_sha256": file_hash, "commit": commit, "recorded": 0, "revised": 0,
               "unchanged": 0, "skipped_secret": [], "skipped_bad_id": []}
@@ -262,7 +274,7 @@ def import_register(mgr, path, commit=None) -> dict:
             if M.find_secret(raw):
                 report["skipped_secret"].append(rid)
                 continue
-            src = _source(path, commit, line_no, raw, file_hash)
+            src = _source(path, commit, line_no, raw, file_hash, register)
             status_text = row.get("status") or row.get("state 2026-10-21") or ""
             fields = {k: _text(v, 1500) for k, v in row.items()}
             existing = p["records"].get(rid)

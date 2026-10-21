@@ -154,3 +154,11 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 - Reference targets may be `"BATCH"`: the record with that id created by an earlier event of the same batch.
 - `source.register` (file name of the register) identifies an import source independent of the checkout path.
 - Conflict type `ANCHOR_LOSS` (entity `LEDGER`); refusal `LOSS_NOT_ACKNOWLEDGED` for `reanchor`.
+
+## 13. Changes after review R4
+
+- `source.register` = the register document's first level-1 heading (or an explicit `--register`).
+- `ANCHORS_RESET.anchor_problems[]`: anchor errors/warnings the reset acknowledged (non-empty ⇒ ANCHOR_LOSS).
+- Conflict type `ABANDONED_BATCH_COMPLETED` (entity `LEDGER`, field `batch`).
+- `local/anchors.json` always holds this machine's own entry (`count` 0 until the first refresh).
+- Event `ts` of a write is strictly later than every event the writer had verified (Lamport floor + 1 µs).

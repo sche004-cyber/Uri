@@ -103,8 +103,8 @@ def build_parser() -> argparse.ArgumentParser:
     _p(s, "--target-commit", required=True); _p(s, "--repo")
     s = sub.add_parser("resolve-conflict"); _p(s, "entity"); _p(s, "--note", required=True)
 
-    s = sub.add_parser("import-decisions"); _p(s, "path"); _p(s, "--commit")
-    s = sub.add_parser("import-register"); _p(s, "path"); _p(s, "--commit")
+    s = sub.add_parser("import-decisions"); _p(s, "path"); _p(s, "--commit"); _p(s, "--register")
+    s = sub.add_parser("import-register"); _p(s, "path"); _p(s, "--commit"); _p(s, "--register")
 
     s = sub.add_parser("status"); _p(s, "--milestone"); _p(s, "--json", action="store_true")
     _p(s, "--a2ui", action="store_true", help="emit an A2UI surface description (JSON)")
@@ -230,13 +230,13 @@ def run(argv=None, out=None) -> int:
         elif c == "resolve-conflict":
             r = mgr.resolve_conflict(args.entity, args.note)
         elif c == "import-decisions":
-            r = importers.import_decisions(mgr, args.path, args.commit)
+            r = importers.import_decisions(mgr, args.path, args.commit, args.register)
             if r["collisions"]:
                 emit({**r, "refused": "ID_COLLISION", "message": "rows whose id is already used by an unrelated "
                                                                   "decision were not imported"})
                 return 1
         elif c == "import-register":
-            r = importers.import_register(mgr, args.path, args.commit)
+            r = importers.import_register(mgr, args.path, args.commit, args.register)
         elif c == "status":
             p = mgr.projection()
             if args.json or args.a2ui:

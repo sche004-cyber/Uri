@@ -23,6 +23,12 @@ from scripts.dev_workflow.milestones.store import (GIT, EventStore, StoreError, 
 LEASE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
+def _plus(ts: str, seconds: float) -> str:
+    """``ts`` (event timestamp format) plus ``seconds``."""
+    dt = datetime.datetime.strptime(ts, LEASE_FORMAT).replace(tzinfo=datetime.timezone.utc)
+    return (dt + datetime.timedelta(seconds=seconds)).strftime(LEASE_FORMAT)
+
+
 def _iso(dt: datetime.datetime) -> str:
     return dt.astimezone(datetime.timezone.utc).strftime(LEASE_FORMAT)
 
@@ -55,8 +61,16 @@ class Manager:
         errors = [e for s in segs for e in s.errors] + self.store.anchor_errors(segs, anchors)
         warnings = [f"{s.name}: {len(s.torn)} torn bytes at the end (ignored; `recover` on that host)"
                     for s in segs if s.torn]
-        warnings += [f"incomplete batch {b} ({len(evs)} of {evs[0]['batch']['n']} events; ignored)"
-                     for b, evs in state.get("pending_batches", {}).items()]
+        warnings += self.store.anchor_warnings(segs, anchors)
+        abandoned = set(state.get("abandoned_ids", []))
+        warnings += [f"incomplete batch {b} in segment {evs[0]['seg']} ({len(evs)} of {evs[0]['batch']['n']} "
+                     "events; ignored" + ("; abandoned" if b in abandoned else "; `recover` on that host") + ")"
+                     for b, evs in state.get("pending_batches", {}).items() if b not in abandoned
+                     or evs[0]["seg"] != self.store.host]
+        now = store_now()
+        ahead = sorted({s.name for s in segs for e in s.valid_events[-1:] if e["ts"] > _plus(now, 300)})
+        warnings += [f"segment {name} has events stamped more than 5 minutes ahead of this machine's clock: that "
+                     "host's clock may be ahead (or this one behind)" for name in ahead]
         state["integrity_errors"] = errors
         state["integrity_warnings"] = warnings
         return state
@@ -89,13 +103,16 @@ class Manager:
                     raise ValidationError("SECRET", f"{kind} contains what looks like a {hit}; secrets are never "
                                                     "stored (record a reference instead)")
             self.last_warnings = []
-            # Lamport floor: never stamp an event earlier than any event already seen (review R3-04)
-            seen_max = max((e["ts"] for s in segs for e in s.valid_events), default="")
+            # Lamport floor: stamp strictly after every event already seen, so an answer can never tie with or sort
+            # before what it answers, whatever the segment names (reviews R3-04, R4-02).
+            newest = max(((e["ts"], s.name) for s in segs for e in s.valid_events), default=("", ""))
+            floor = _plus(newest[0], 0.000001) if newest[0] else ""
             now = store_now()
-            if seen_max and seen_max > now:
-                self.last_warnings.append(f"this machine's clock ({now}) is behind the newest ledger event "
-                                          f"({seen_max}); events are stamped at that time instead")
-            written = self.store.append_many(items, actor=self.actor, session=self.session, floor=seen_max)
+            if newest[0] and newest[0] > now:
+                self.last_warnings.append(f"newest ledger event ({newest[0]}, segment {newest[1]}) is later than this "
+                                          f"machine's clock ({now}): this clock is behind or that host's clock is "
+                                          "ahead; the new event is stamped just after it")
+            written = self.store.append_many(items, actor=self.actor, session=self.session, floor=floor)
             for ev in written:
                 M.apply(p, ev)
             if written:
@@ -198,8 +215,8 @@ class Manager:
         return self._write(build)
 
     def _independent_accept(self, p, m) -> list[str]:
-        """Qualifying independent ACCEPT reviews on the current candidate; raises unless the latest review on that
-        commit is positive (a later negative review outranks an earlier ACCEPT, R1-03)."""
+        """Qualifying independent ACCEPT reviews on the current candidate. Raises when there is none, or when any
+        completed negative review exists on that commit, in any order (reviews R1-03, R2-06)."""
         ident = m["id"]
         cand = m.get("candidate_commit")
         if not cand:
@@ -598,7 +615,10 @@ class Manager:
         """Acknowledge incomplete batches left by a crash so they stop warning (review R2-14). They stay unapplied."""
         M.check_text("reason", reason, True)
         def build(p):
-            pending = sorted(b for b in p.get("pending_batches", {}) if b not in p.get("abandoned_ids", []))
+            # Only this machine's own incomplete batches (the ones `recover` truncated); another host's batch may just
+            # be incompletely synced (review R4-03).
+            pending = sorted(b for b, evs in p.get("pending_batches", {}).items()
+                             if b not in p.get("abandoned_ids", []) and evs[0]["seg"] == self.store.host)
             if not pending:
                 return []
             return [("BATCH_ABANDONED", {"batches": pending, "reason": reason}, {})]

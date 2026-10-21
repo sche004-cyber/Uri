@@ -52,6 +52,12 @@ ROADMAP = [
 ]
 
 
+def committed_matches(repo: Path, commit: str, name: str) -> bool:
+    import subprocess
+    r = subprocess.run(["git", "-C", str(repo), "show", f"{commit}:{name}"], capture_output=True)
+    return r.returncode == 0 and r.stdout == (repo / name).read_bytes()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--home", required=True)
@@ -65,8 +71,13 @@ def main():
         sys.exit(f"{home} already holds a ledger; rehearsals start fresh")
     EventStore.init(home, "owner-pc")
     m = Manager(home, actor=ACTOR, session="rehearsal")
-    rep_dec = importers.import_decisions(m, Path(a.p0) / "decisions.md", a.p0_commit)
-    rep_reg = importers.import_register(m, Path(a.p0) / "developmental.md", a.p0_commit)
+    provenance = {}
+    for name in ("decisions.md", "developmental.md"):
+        provenance[name] = a.p0_commit if committed_matches(Path(a.p0), a.p0_commit, name) else None
+    # A source commit is recorded only when the file's bytes equal that commit's blob; an uncommitted working copy
+    # is imported with commit None (its file SHA-256 is still recorded).
+    rep_dec = importers.import_decisions(m, Path(a.p0) / "decisions.md", provenance["decisions.md"])
+    rep_reg = importers.import_register(m, Path(a.p0) / "developmental.md", provenance["developmental.md"])
     m.record_decision(
         "Roadmap order P0..P10 (Milestone Manager first)",
         "Approved priority order: P0 Milestone Manager, P1 Lifecycle V3.1, P2 Personal Data Sovereignty, P3 Writing "
@@ -122,7 +133,8 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     p = m.rebuild()
     verify = m.store.verify()
-    (out / "import_reports.json").write_bytes(json.dumps({"decisions": rep_dec, "register": rep_reg}, indent=1,
+    (out / "import_reports.json").write_bytes(json.dumps({"decisions": rep_dec, "register": rep_reg,
+                                                         "provenance_commit": provenance}, indent=1,
                                                          sort_keys=True, default=str).encode())
     (out / "verify.json").write_bytes(json.dumps(verify, indent=1, sort_keys=True).encode())
     (out / "status.txt").write_bytes("\n".join(views.status_lines(p, emoji=False)).encode())

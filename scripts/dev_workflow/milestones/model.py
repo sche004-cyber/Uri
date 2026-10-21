@@ -192,8 +192,6 @@ def apply(p: dict, ev: dict) -> None:
     """Fold one event into ``p`` (in place). Events of a multi-event batch wait until the whole batch is present."""
     b = ev.get("batch")
     if isinstance(b, dict) and b.get("n", 1) > 1:
-        if b["id"] in p.setdefault("abandoned_ids", []):
-            return  # acknowledged as abandoned, whatever order the events arrive in (review R3-06)
         pend = p.setdefault("pending_batches", {}).setdefault(b["id"], [])
         if any(x["hash"] == ev["hash"] for x in pend):
             return
@@ -201,6 +199,12 @@ def apply(p: dict, ev: dict) -> None:
         if len(pend) < b["n"]:
             return
         del p["pending_batches"][b["id"]]
+        if b["id"] in p.setdefault("abandoned_ids", []):
+            # A batch someone declared abandoned turned out complete: apply it and flag it, never drop recorded work
+            # silently (review R4-03).
+            _conflict(p, "ABANDONED_BATCH_COMPLETED", "LEDGER", {"seg": ev["seg"], "seq": ev["seq"],
+                                                                 "hash": ev["hash"], "ts": ev["ts"],
+                                                                 "actor": ev["actor"]}, "BATCH", None, batch=b["id"])
         for x in sorted(pend, key=lambda x: x["batch"]["i"]):
             _apply_one(p, x)
         return
@@ -436,7 +440,7 @@ def _apply_one(p: dict, ev: dict) -> None:
     elif kind == "ANCHORS_RESET":
         p.setdefault("anchor_resets", []).append({"at": ev["ts"], "by": ev["actor"], "reason": d.get("reason"),
                                                   "lost": d.get("lost") or {}})
-        if d.get("lost") or d.get("unknown_previous"):
+        if d.get("lost") or d.get("unknown_previous") or d.get("anchor_problems"):
             _conflict(p, "ANCHOR_LOSS", "LEDGER", ref, kind, None, lost=d.get("lost") or {},
                       unknown_previous=bool(d.get("unknown_previous")))
     elif kind == "STORE_RECOVERED":

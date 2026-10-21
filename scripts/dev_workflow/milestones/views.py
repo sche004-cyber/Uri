@@ -25,11 +25,29 @@ def open_blockers(p, subject):
     return [b for b in p["blockers"].values() if b["subject"] == subject and b["status"] == "OPEN"]
 
 
+def _conflict_index(p):
+    """Open conflicts indexed once per projection by entity/subject (review R4-06: status was milestones x
+    conflicts)."""
+    key = id(p["conflicts"]), len(p["conflicts"])
+    cached = p.get("_cidx")
+    if cached and cached[0] == key:
+        return cached[1]
+    idx = {None: [], "__ledger__": []}
+    for c in p["conflicts"]:
+        if c["resolved"]:
+            continue
+        idx[None].append(c)
+        if c.get("type") in ("ANCHOR_LOSS", "ABANDONED_BATCH_COMPLETED"):
+            idx["__ledger__"].append(c)
+        for k in {c["entity"], c.get("subject"), *(c.get("subjects") or [])} - {None}:
+            idx.setdefault(k, []).append(c)
+    p["_cidx"] = (key, idx)
+    return idx
+
+
 def open_conflicts(p, entity=None):
     """Unresolved conflicts; with ``entity``, those on that entity or whose subject is that milestone."""
-    return [c for c in p["conflicts"] if not c["resolved"]
-            and (entity is None or c["entity"] == entity or c.get("subject") == entity
-                 or entity in (c.get("subjects") or []))]
+    return list(_conflict_index(p).get(entity, []))
 
 
 def negative_reviews_on_candidate(p, m):
@@ -54,9 +72,13 @@ def indicator(p, m, tasks: dict | None = None) -> dict:
         reds.append(f"blocker {b['id']} ({b['kind']}): {b['reason']} | needs: {b['needs']}")
     if p.get("integrity_errors"):
         reds.append(f"LEDGER INTEGRITY: {p['integrity_errors'][0]} (run `verify`; statuses may be untrustworthy)")
-    for c in [c for c in p["conflicts"] if not c["resolved"] and c.get("type") == "ANCHOR_LOSS"]:
-        reds.append(f"ledger lost events (ANCHORS_RESET {c.get('lost') or 'with unknown history'}); review, then "
-                    "`resolve-conflict LEDGER`")
+    for c in _conflict_index(p)["__ledger__"]:
+        if c.get("type") == "ANCHOR_LOSS":
+            reds.append(f"ledger lost events (ANCHORS_RESET {c.get('lost') or 'with unknown history'}); review, then "
+                        "`resolve-conflict LEDGER`")
+        else:
+            reds.append(f"batch {c.get('batch')} was declared abandoned but is complete and applied; review, then "
+                        "`resolve-conflict LEDGER`")
     for c in open_conflicts(p, ident):
         reds.append(f"{c.get('type', 'VERSION')} conflict on {c['entity']} (event {c['event']['seg']}#"
                     f"{c['event']['seq']}); resolve with `resolve-conflict`")

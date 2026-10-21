@@ -392,6 +392,9 @@ class EventStore:
             valid = s.valid_events
             if cur is None or len(valid) >= cur.get("count", 0):
                 anchors[s.name] = {"count": len(valid), "head": valid[-1]["hash"] if valid else GENESIS}
+        # This machine's own entry always exists (count 0 until its first refresh), so "missing" can only mean the
+        # file was emptied or edited (review R4-05).
+        anchors.setdefault(self.host, {"count": 0, "head": GENESIS})
         atomic_write_bytes(self.anchors_path, json.dumps(anchors, indent=1, sort_keys=True).encode("utf-8"))
 
     _UNSET = object()
@@ -411,8 +414,9 @@ class EventStore:
             return errs
         own = by_name.get(self.host)
         if own is not None and own.events and self.host not in anchors:
-            errs.append(f"{self.host}: this machine's own segment holds {len(own.events)} events but is not anchored "
-                        "(anchors file emptied or edited); check git history, then `reanchor`")
+            errs.append(f"{self.host}: this machine's own segment holds {len(own.events)} events but has no anchor "
+                        "entry (anchors file emptied or edited); check git history, then "
+                        "`reanchor --acknowledge-loss`")
         for name, a in sorted(anchors.items()):
             s = by_name.get(name)
             n = a.get("count", 0) if isinstance(a, dict) else 0
@@ -425,6 +429,16 @@ class EventStore:
             elif s.events[n - 1].get("hash") != a.get("head"):
                 errs.append(f"{name}: event {n} differs from the anchored head (rewritten)")
         return errs
+
+    def anchor_warnings(self, segs, anchors) -> list[str]:
+        """Own segment not yet anchored (count 0): a first write whose anchor refresh has not happened yet, or an
+        edited file. Visible, not blocking; the next successful write anchors it (review R4-05)."""
+        own = next((s for s in segs if s.name == self.host), None)
+        a = (anchors or {}).get(self.host)
+        if own is not None and own.events and isinstance(a, dict) and a.get("count", 0) == 0:
+            return [f"{self.host}: own segment ({len(own.events)} events) not anchored yet; the next successful write "
+                    "anchors it; `reanchor` will require --acknowledge-loss until then"]
+        return []
 
     def reanchor(self, actor: str, reason: str, session: str | None = None, acknowledge_loss: bool = False) -> dict:
         """Explicitly re-base the anchors on the current segments, recorded as an ANCHORS_RESET event.
@@ -448,13 +462,16 @@ class EventStore:
                 have = len(s.events) if s else 0
                 if n and (have < n or s.events[n - 1].get("hash") != a.get("head")):
                     lost[name] = {"anchored": n, "now": have}
-            unknown = before is None and any(s.events for s in segs)
+            # Anything the current anchors cannot vouch for counts as unknown history (review R4-01): a missing file,
+            # a missing own entry, or an own entry at count 0 while the segment holds events.
+            problems = self.anchor_errors(segs, before) + self.anchor_warnings(segs, before)
+            unknown = (before is None and any(s.events for s in segs)) or bool(problems and not lost)
             if (lost or unknown) and not acknowledge_loss:
                 raise StoreError("LOSS_NOT_ACKNOWLEDGED",
                                  f"reanchor would hide {'lost events ' + str(lost) if lost else 'an unknown history'}"
                                  "; check git history and pass --acknowledge-loss to record the loss explicitly")
             info = {"reason": reason, "previous": before, "lost": lost, "unknown_previous": unknown,
-                    "counts": {s.name: len(s.events) for s in segs}}
+                    "anchor_problems": problems[:10], "counts": {s.name: len(s.events) for s in segs}}
             self.append("ANCHORS_RESET", info, actor=actor, session=session)
             self.write_anchors_force(self.read_all())
             self.autocommit("ANCHORS_RESET")
@@ -463,6 +480,7 @@ class EventStore:
     def write_anchors_force(self, segs) -> None:
         anchors = {s.name: {"count": len(s.valid_events),
                             "head": s.valid_events[-1]["hash"] if s.valid_events else GENESIS} for s in segs}
+        anchors.setdefault(self.host, {"count": 0, "head": GENESIS})
         atomic_write_bytes(self.anchors_path, json.dumps(anchors, indent=1, sort_keys=True).encode("utf-8"))
 
     # ---- verification and recovery
