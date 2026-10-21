@@ -380,3 +380,11 @@ Verified by reviewer R14 for the first time since R12: concurrency stress (5 rou
 |---|---|
 | a resolution binds to (event hash, conflict type, content fingerprint) of what was displayed; when a later sync changes a resolved conflict's content (e.g. a VERSION gap that now covers another concurrent edit) it is open again | R17-01 |
 | the fold re-checks reviewer independence for an ACCEPTED status: if, in the merged history, a reviewer named in the basis is an implementer of the milestone, BASIS_INVALID is raised | R17-01 (the hidden concurrent edit made the reviewer an implementer) |
+
+## 30. Changes after independent review R18 (2026-10-22, REJECT on `c455dee2`)
+
+| Change | Reason |
+|---|---|
+| the id a user sees and types is `<event>.<check>`; the check covers the content of every open conflict that event raised on that entity, so an id read before a sync changed them is refused (`STALE_CONFLICT_ID`) and the changed content must be displayed again; `seen` therefore records what was displayed | R18-01 (a sync between `conflicts` and `resolve-conflict` let changed content be closed unseen) |
+| the fold checks entity / resolved / named before computing a fingerprint, fingerprints are cached per conflict, and display ids are computed once per projection | R18-02 (fold and status were quadratic in the number of conflicts: 7.6 s at 1,000 resolved conflicts) |
+| fingerprints hash only the keys a conflict has | R18-03 (adding a key to the code would have reopened every resolved conflict) |

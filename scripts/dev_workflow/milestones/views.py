@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import datetime
 
+from scripts.dev_workflow.milestones import model as M
+
 STATUS_SCHEMA = "uri-mm-status/1"
 EMOJI = {"GREEN": "\U0001F7E2", "BLUE": "\U0001F535", "YELLOW": "\U0001F7E1", "RED": "\U0001F534",
          "WHITE": "⚪"}
@@ -32,17 +34,28 @@ def _conflict_index(p):
     cached = p.get("_cidx")
     if cached and cached[0] == key:
         return cached[1]
-    idx = {None: [], "__ledger__": []}
+    idx = {None: [], "__ledger__": [], "__ids__": {}}
+    groups = {}
     for c in p["conflicts"]:
         if c["resolved"]:
             continue
         idx[None].append(c)
+        groups.setdefault((c["entity"], c["event"]["hash"]), []).append(c)
         if c.get("type") in ("ANCHOR_LOSS", "ABANDONED_BATCH_COMPLETED"):
             idx["__ledger__"].append(c)
         for k in {c["entity"], c.get("subject"), *(c.get("subjects") or [])} - {None}:
             idx.setdefault(k, []).append(c)
+    for members in groups.values():  # one display id per (entity, event), computed once (review R18-02)
+        shown = M.display_id(members, members[0])
+        for c in members:
+            idx["__ids__"][id(c)] = shown
     p["_cidx"] = (key, idx)
     return idx
+
+
+def did(p, c) -> str:
+    """Display id of conflict ``c`` (see model.display_id)."""
+    return _conflict_index(p)["__ids__"].get(id(c)) or M.display_id(open_conflicts(p), c)
 
 
 def open_conflicts(p, entity=None):
@@ -77,16 +90,16 @@ def indicator(p, m, tasks: dict | None = None) -> dict:
             detail = (c.get("lost") or (c.get("anchor_problems") or [None])[0]
                       or ("own segment adopted without an anchor" if c.get("kind") == "ANCHORS_ADOPTED" else None)
                       or "unknown history")
-            reds.append(f"ledger integrity loss recorded by {c.get('kind')} [conflict {c['event']['hash'][:12]}]: "
-                        f"{detail}; review, then `resolve-conflict LEDGER --id {c['event']['hash'][:12]}`")
+            reds.append(f"ledger integrity loss recorded by {c.get('kind')} [conflict {did(p, c)}]: "
+                        f"{detail}; review, then `resolve-conflict LEDGER --id {did(p, c)}`")
         else:
             reds.append(f"batch {c.get('batch')} was declared abandoned but is complete and applied "
-                        f"[conflict {c['event']['hash'][:12]}]; review, then `resolve-conflict LEDGER --id "
-                        f"{c['event']['hash'][:12]}`")
+                        f"[conflict {did(p, c)}]; review, then `resolve-conflict LEDGER --id "
+                        f"{did(p, c)}`")
     for c in open_conflicts(p, ident):
-        reds.append(f"{c.get('type', 'VERSION')} conflict on {c['entity']} [conflict {c['event']['hash'][:12]}] "
+        reds.append(f"{c.get('type', 'VERSION')} conflict on {c['entity']} [conflict {did(p, c)}] "
                     f"(event {c['event']['seg']}#{c['event']['seq']}); resolve with `resolve-conflict "
-                    f"{c['entity']} --id {c['event']['hash'][:12]}`")
+                    f"{c['entity']} --id {did(p, c)}`")
     if m["status"] in DONE_STATES:
         neg = negative_reviews_on_candidate(p, m)
         if neg:
@@ -310,7 +323,7 @@ def conflict_rows(p, entity=None) -> list[dict]:
     """Open conflicts with their ids, for the `conflicts` command."""
     rows = []
     for c in open_conflicts(p, entity) if entity else open_conflicts(p):
-        rows.append({"id": c["event"]["hash"][:12], "type": c.get("type"), "entity": c["entity"],
+        rows.append({"id": did(p, c), "type": c.get("type"), "entity": c["entity"],
                      "subject": c.get("subject"), "recorded_by": c.get("kind"),
                      "event": f"{c['event']['seg']}#{c['event']['seq']}", "at": c["event"].get("ts"),
                      "detail": {k: c[k] for k in ("lost", "anchor_problems", "missing", "expected", "actual",

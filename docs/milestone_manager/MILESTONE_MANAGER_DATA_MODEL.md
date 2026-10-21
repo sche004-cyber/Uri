@@ -216,6 +216,13 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 ## 22. Changes after review R17
 
 - `CONFLICT_RESOLVED.seen[]` entries are `[event_hash, conflict_type, fingerprint]` (fingerprint = first 16 hex of
-  sha256 over the conflict's displayed fields). Older `[hash, type]` entries keep matching on hash and type.
+  sha256 over the conflict's recorded detail fields; corrected after review R18: only the keys the conflict has). Older `[hash, type]` entries keep matching on hash and type.
 - BASIS_INVALID is also raised when a reviewer named in an ACCEPTED basis is an implementer of the milestone in the
   merged history.
+
+## 23. Changes after review R18
+
+- Conflict ids as displayed and typed: `<event hash, 12 hex>.<check, 6 hex>`; the check digests the fingerprints of
+  all open conflicts that event raised on that entity. `resolve-conflict` refuses a bare event part
+  (`UNKNOWN_CONFLICT_ID`) and an id whose check no longer matches (`STALE_CONFLICT_ID`).
+- Fingerprints are cached on the in-memory conflict (`_fp`, never written to the ledger).

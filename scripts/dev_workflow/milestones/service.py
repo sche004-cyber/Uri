@@ -150,8 +150,13 @@ class Manager:
                         self.last_warnings.append(f"pending-loss marker not removed ({e.__class__.__name__}); its "
                                                   "loss is recorded and will not be recorded again")
                 self._refresh_after(segs, written)
-                kinds = ", ".join(f"{ev['kind']} [conflict {ev['hash'][:12]}]" for ev in written)
-                id_args = " ".join(f"--id {ev['hash'][:12]}" for ev in written)
+                for ev in written:
+                    M.apply(p, ev)
+                all_open = [c for c in p["conflicts"] if not c["resolved"]]
+                shown = {ev["hash"]: next((M.display_id(all_open, c) for c in all_open
+                                           if c["event"]["hash"] == ev["hash"]), ev["hash"][:12]) for ev in written}
+                kinds = ", ".join(f"{ev['kind']} [conflict {shown[ev['hash']]}]" for ev in written)
+                id_args = " ".join(f"--id {shown[ev['hash']]}" for ev in written)
                 raise ValidationError("LEDGER_LOSS_RECORDED",
                                       f"recorded {kinds} (ANCHOR_LOSS) before this command; the command was NOT "
                                       "executed. Review the loss (`conflicts`, `status`, git history), then "
@@ -676,19 +681,28 @@ class Manager:
             open_c = [c for c in p["conflicts"] if c["entity"] == entity and not c["resolved"]]
             if not open_c:
                 raise ValidationError("NOT_FOUND", f"no open conflict on {entity}")
+            all_open = [c for c in p["conflicts"] if not c["resolved"]]
             if not ids:
                 raise ValidationError("NO_CONFLICT_ID", f"name the conflicts to resolve with --id (open on {entity}: "
-                                                        + ", ".join(sorted({M.conflict_id(c) for c in open_c}))
+                                                        + ", ".join(sorted({M.display_id(all_open, c) for c in open_c}))
                                                         + "); see `conflicts` for details")
             chosen, seen = [], []
             for x in ids:
-                # An id names the event that raised the conflicts; one event can raise several (e.g. VERSION and
-                # DUPLICATE_ID for a duplicate creation). All of them are displayed under that one id, so naming
-                # it resolves all of them (review R15-01). It must not be ambiguous between two events.
-                hashes = {c["event"]["hash"] for c in open_c if len(x) >= 8 and c["event"]["hash"].startswith(x)}
-                if len(hashes) != 1:
+                # An id is `<event hash 12>.<check 6>` as displayed. The event part may name several conflicts that
+                # event raised (shown together, review R15-01); the check proves their content is what was shown
+                # (review R18-01).
+                event_part, _, check = x.partition(".")
+                hashes = {c["event"]["hash"] for c in open_c
+                          if len(event_part) >= 8 and c["event"]["hash"].startswith(event_part)}
+                if len(hashes) != 1 or not check:
                     raise ValidationError("UNKNOWN_CONFLICT_ID", f"{x!r} does not name exactly one conflict-raising "
-                                                                 f"event among the open conflicts on {entity}")
+                                                                 f"event among the open conflicts on {entity} (use the "
+                                                                 "id exactly as `conflicts` shows it)")
+                h = next(iter(hashes))
+                current = M.display_id(all_open, next(c for c in open_c if c["event"]["hash"] == h))
+                if current.split(".", 1)[1] != check:
+                    raise ValidationError("STALE_CONFLICT_ID", f"{x!r} was read before these conflicts changed (now "
+                                                               f"{current}); run `conflicts` again and review")
                 h = hashes.pop()
                 chosen.append(h)
                 seen.extend([h, c.get("type"), M.conflict_fingerprint(c)] for c in open_c

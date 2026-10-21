@@ -2254,3 +2254,55 @@ def test_r17_01_a_resolved_conflict_whose_content_grows_is_open_again(tmp_path):
     assert "VERSION" in types                       # the shown VERSION conflict changed: open again
     assert "BASIS_INVALID" in types                 # and the ACCEPTED basis is no longer independent
     assert views.indicator(p, p["milestones"]["MM-X"])["color"] == "RED"
+
+
+# ------------------------------------------------------------------ R18 regression tests (review R18 on c455dee2)
+
+def test_r18_01_an_id_read_before_a_sync_is_stale(tmp_path):
+    m1, seg2 = _r17_scenario(tmp_path)
+    (m1.home / "events" / "h2.jsonl").write_bytes(seg2[0] + b"\n")            # sync U1
+    shown = [r["id"] for r in views.conflict_rows(m1.projection()) if r["entity"] == "MM-X"]
+    (m1.home / "events" / "h2.jsonl").write_bytes(b"\n".join(seg2) + b"\n")   # sync U2 lands before the resolve
+    with pytest.raises(ValidationError) as e:
+        m1.resolve_conflict("MM-X", "harmless", shown)
+    assert e.value.code in ("STALE_CONFLICT_ID", "UNKNOWN_CONFLICT_ID")
+    p = m1.projection()
+    assert any(c["type"] == "BASIS_INVALID" for c in views.open_conflicts(p, "MM-X"))
+    with pytest.raises(ValidationError) as e:  # the bare event part is not enough either
+        m1.resolve_conflict("MM-X", "harmless", [s.split(".")[0] for s in shown])
+    assert e.value.code == "UNKNOWN_CONFLICT_ID"
+
+
+def test_r18_02_fold_with_many_resolved_conflicts_is_fast(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    n = 1000
+    with m.store.locked():
+        for i in range(n):  # n concurrent-looking updates, each raising one VERSION conflict
+            m.store.append("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"objective": str(i)}}, actor="x",
+                           base={"MM-A": 0})
+    p = m.projection()
+    rows = [c for c in views.open_conflicts(p, "MM-A")]
+    with m.store.locked():
+        for c in rows:
+            m.store.append("CONFLICT_RESOLVED", {"entity": "MM-A", "note": "n", "conflicts": [c["event"]["hash"]],
+                                                 "seen": [[c["event"]["hash"], c["type"],
+                                                           model.conflict_fingerprint(c)]]}, actor="x")
+        m.store.write_anchors(m.store.read_all())
+    t0 = time.perf_counter()
+    p = m.projection()
+    views.status_json(p)
+    assert time.perf_counter() - t0 < 1.5
+    assert not views.open_conflicts(p)
+
+
+def test_r18_03_adding_a_detail_key_does_not_reopen_resolved_conflicts(tmp_path, monkeypatch):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m1.create_milestone("MM-A", "A")
+    (home2 / "events" / "h1.jsonl").write_bytes(m1.store.segment_path.read_bytes())
+    m1.update_milestone("MM-A", objective="1")
+    m2.update_milestone("MM-A", objective="2")
+    _merge(m1, home2)
+    _resolve(m1, "MM-A", "reviewed")
+    monkeypatch.setattr(model, "CONFLICT_DETAIL_KEYS", model.CONFLICT_DETAIL_KEYS + ("note_added_later",))
+    assert not views.open_conflicts(m1.projection())

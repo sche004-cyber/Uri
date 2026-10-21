@@ -177,17 +177,33 @@ CONFLICT_DETAIL_KEYS = ("type", "entity", "subject", "subjects", "kind", "expect
 
 
 def conflict_fingerprint(c) -> str:
-    """Digest of what a conflict shows (its type and details). A resolution binds to it, so a conflict whose content
-    grows after a later sync (e.g. VERSION expected 2 / actual 3 becoming actual 4) is open again (review R17-01)."""
-    import hashlib as _h
-    import json as _j
-    body = _j.dumps({k: c.get(k) for k in CONFLICT_DETAIL_KEYS}, sort_keys=True, separators=(",", ":"), default=str)
-    return _h.sha256(body.encode("utf-8")).hexdigest()[:16]
+    """Digest of a conflict's recorded detail fields (only the keys it has, so adding a key to the code never changes
+    existing fingerprints, review R18-03). A resolution binds to it, so a conflict whose content grows after a later
+    sync (e.g. VERSION expected 2 / actual 3 becoming actual 4) is open again (review R17-01). Cached on the conflict
+    (its detail fields never change after it is raised), review R18-02."""
+    fp = c.get("_fp")
+    if fp is None:
+        import hashlib as _h
+        import json as _j
+        body = _j.dumps({k: c[k] for k in CONFLICT_DETAIL_KEYS if k in c}, sort_keys=True, separators=(",", ":"),
+                        default=str)
+        fp = c["_fp"] = _h.sha256(body.encode("utf-8")).hexdigest()[:16]
+    return fp
 
 
 def conflict_id(c) -> str:
-    """Short, stable id of a conflict: the first 12 hex digits of the event hash that raised it."""
+    """The event part of a conflict id: the first 12 hex digits of the event hash that raised it."""
     return c["event"]["hash"][:12]
+
+
+def display_id(open_conflicts, c) -> str:
+    """The id users see and must type: ``<event hash 12>.<check 6>``. The check digests the content of every open
+    conflict that event raised on that entity, so an id read before a sync changed them is refused as stale
+    (review R18-01)."""
+    import hashlib as _h
+    group = sorted(conflict_fingerprint(x) for x in open_conflicts
+                   if x["entity"] == c["entity"] and x["event"]["hash"] == c["event"]["hash"])
+    return f"{conflict_id(c)}.{_h.sha256(','.join(group).encode()).hexdigest()[:6]}"
 
 
 def _conflict(p, ctype, entity, ref, kind, subject=None, **extra):
@@ -457,13 +473,15 @@ def _apply_one(p: dict, ev: dict) -> None:
         # hash-only rule.
         seen = {tuple(x) for x in d["seen"]} if isinstance(d.get("seen"), list) else None
         for c in p["conflicts"]:
+            # cheap filters first (review R18-02)
+            if c["resolved"] or c["entity"] != d["entity"] or c["event"]["hash"] not in named:
+                continue
             # new resolutions store (hash, type, fingerprint); pre-R17 ones (hash, type) - either form must match
             if seen is not None and (c["event"]["hash"], c.get("type"), conflict_fingerprint(c)) not in seen \
                     and (c["event"]["hash"], c.get("type")) not in seen:
                 continue
-            if c["entity"] == d["entity"] and not c["resolved"] and c["event"]["hash"] in named:
-                c["resolved"] = True
-                c["resolution"] = {"note": d["note"], "at": ev["ts"], "by": ev["actor"]}
+            c["resolved"] = True
+            c["resolution"] = {"note": d["note"], "at": ev["ts"], "by": ev["actor"]}
     elif kind == "BATCH_ABANDONED":
         for b in d.get("batches") or []:
             p.setdefault("abandoned_ids", [])
