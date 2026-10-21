@@ -691,7 +691,8 @@ class Manager:
                                                                  f"event among the open conflicts on {entity}")
                 h = hashes.pop()
                 chosen.append(h)
-                seen.extend([h, c.get("type")] for c in open_c if c["event"]["hash"] == h)
+                seen.extend([h, c.get("type"), M.conflict_fingerprint(c)] for c in open_c
+                            if c["event"]["hash"] == h)
             return [("CONFLICT_RESOLVED", {"entity": entity, "note": note, "conflicts": sorted(set(chosen)),
                                            "seen": sorted({tuple(x) for x in seen})}, {})]
         return self._write(build)

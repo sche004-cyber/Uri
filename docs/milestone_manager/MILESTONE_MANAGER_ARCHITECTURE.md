@@ -373,3 +373,10 @@ Verified by reviewer R14 for the first time since R12: concurrency stress (5 rou
 |---|---|
 | a resolution records the (event, conflict type) pairs it was shown (`seen`); the fold closes only those, so a conflict of another type that the same event raises after a later sync (e.g. BASIS_INVALID when a merged segment renames the review a status relied on) stays open and visible | R16-01 |
 | milestone ids may not look like generated record ids or reserved subjects (`RV-`, `AP-`, `BLK-`, `HO-`, `EV-`, `DEC-`, `LDEC-`, `REG-`, `PROJECT`, `LEDGER`): `RESERVED_ID` | R16-02 (all entities share one version/conflict namespace) |
+
+## 29. Changes after independent review R17 (2026-10-22, REJECT on `4f462be7`)
+
+| Change | Reason |
+|---|---|
+| a resolution binds to (event hash, conflict type, content fingerprint) of what was displayed; when a later sync changes a resolved conflict's content (e.g. a VERSION gap that now covers another concurrent edit) it is open again | R17-01 |
+| the fold re-checks reviewer independence for an ACCEPTED status: if, in the merged history, a reviewer named in the basis is an implementer of the milestone, BASIS_INVALID is raised | R17-01 (the hidden concurrent edit made the reviewer an implementer) |

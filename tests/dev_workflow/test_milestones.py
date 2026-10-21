@@ -2225,3 +2225,32 @@ def test_r16_02_milestone_ids_cannot_take_generated_or_reserved_names(tmp_path, 
     with pytest.raises(ValidationError) as e:
         m.create_milestone(ident, "x")
     assert e.value.code == "RESERVED_ID"
+
+
+# ------------------------------------------------------------------ R17 regression tests (review R17 on 4f462be7)
+
+def _r17_scenario(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m1.create_milestone("MM-X", "x")
+    (home2 / "events" / "h1.jsonl").write_bytes(m1.store.segment_path.read_bytes())
+    m2.update_milestone("MM-X", next_action="harmless")                       # U1
+    m2.record_implementer("MM-X", "rev:y")                                     # U2: the reviewer becomes implementer
+    m1.update_milestone("MM-X", candidate_commit=C1)
+    m1.set_status("MM-X", "IN_PROGRESS", "go")
+    m1.record_review("MM-X", C1, "subagent", "rev:y", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    m1.set_status("MM-X", "ACCEPTED", "accepted")                              # H
+    seg2 = (home2 / "events" / "h2.jsonl").read_bytes().split(b"\n")[:-1]
+    return m1, seg2
+
+
+def test_r17_01_a_resolved_conflict_whose_content_grows_is_open_again(tmp_path):
+    m1, seg2 = _r17_scenario(tmp_path)
+    (m1.home / "events" / "h2.jsonl").write_bytes(seg2[0] + b"\n")            # sync U1 only
+    _resolve(m1, "MM-X", "next_action edit is harmless")
+    assert not views.open_conflicts(m1.projection(), "MM-X")
+    (m1.home / "events" / "h2.jsonl").write_bytes(b"\n".join(seg2) + b"\n")   # sync U2
+    p = m1.projection()
+    types = {c["type"] for c in views.open_conflicts(p, "MM-X")}
+    assert "VERSION" in types                       # the shown VERSION conflict changed: open again
+    assert "BASIS_INVALID" in types                 # and the ACCEPTED basis is no longer independent
+    assert views.indicator(p, p["milestones"]["MM-X"])["color"] == "RED"

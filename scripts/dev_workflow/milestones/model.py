@@ -172,6 +172,19 @@ CREATION = {"MILESTONE_CREATED": ("milestones", "created"), "REVIEW_RECORDED": (
             "RECORD_IMPORTED": ("records", "recorded")}
 
 
+CONFLICT_DETAIL_KEYS = ("type", "entity", "subject", "subjects", "kind", "expected", "actual", "missing", "kept",
+                        "duplicate", "lost", "anchor_problems", "unknown_previous", "adopted", "batch")
+
+
+def conflict_fingerprint(c) -> str:
+    """Digest of what a conflict shows (its type and details). A resolution binds to it, so a conflict whose content
+    grows after a later sync (e.g. VERSION expected 2 / actual 3 becoming actual 4) is open again (review R17-01)."""
+    import hashlib as _h
+    import json as _j
+    body = _j.dumps({k: c.get(k) for k in CONFLICT_DETAIL_KEYS}, sort_keys=True, separators=(",", ":"), default=str)
+    return _h.sha256(body.encode("utf-8")).hexdigest()[:16]
+
+
 def conflict_id(c) -> str:
     """Short, stable id of a conflict: the first 12 hex digits of the event hash that raised it."""
     return c["event"]["hash"][:12]
@@ -444,7 +457,9 @@ def _apply_one(p: dict, ev: dict) -> None:
         # hash-only rule.
         seen = {tuple(x) for x in d["seen"]} if isinstance(d.get("seen"), list) else None
         for c in p["conflicts"]:
-            if seen is not None and (c["event"]["hash"], c.get("type")) not in seen:
+            # new resolutions store (hash, type, fingerprint); pre-R17 ones (hash, type) - either form must match
+            if seen is not None and (c["event"]["hash"], c.get("type"), conflict_fingerprint(c)) not in seen \
+                    and (c["event"]["hash"], c.get("type")) not in seen:
                 continue
             if c["entity"] == d["entity"] and not c["resolved"] and c["event"]["hash"] in named:
                 c["resolved"] = True
@@ -487,8 +502,12 @@ def _check_basis(p, d, ref) -> None:
     bad = []
     if d.get("status") == "ACCEPTED":
         names = basis.get("reviews") or []
+        implementers = {norm_id(a) for a in (p["milestones"].get(d["id"]) or {}).get("implementers", [])}
         bad = [r for r in names if (p["reviews"].get(r) or {}).get("subject") != d["id"]
-               or p["reviews"][r].get("verdict") not in POSITIVE_VERDICTS]
+               or p["reviews"][r].get("verdict") not in POSITIVE_VERDICTS
+               # independence re-checked in the merged history: an implementer recorded concurrently (another
+               # host) can make the named reviewer non-independent (review R17-01)
+               or norm_id((p["reviews"][r].get("reviewer") or {}).get("id")) in implementers]
         if not names:
             bad = ["(no review named)"]
     elif d.get("status") == "INTEGRATED":

@@ -212,3 +212,10 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 - `CONFLICT_RESOLVED.seen[]`: `[event_hash, conflict_type]` pairs displayed to the resolver; only those are closed
   (events without `seen`, written before this change, keep the hash-only rule).
 - Refusal `RESERVED_ID` for milestone ids matching `^(RV|AP|BLK|HO|EV|DEC|LDEC|REG)-` or equal to `PROJECT`/`LEDGER`.
+
+## 22. Changes after review R17
+
+- `CONFLICT_RESOLVED.seen[]` entries are `[event_hash, conflict_type, fingerprint]` (fingerprint = first 16 hex of
+  sha256 over the conflict's displayed fields). Older `[hash, type]` entries keep matching on hash and type.
+- BASIS_INVALID is also raised when a reviewer named in an ACCEPTED basis is an implementer of the milestone in the
+  merged history.
