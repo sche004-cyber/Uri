@@ -869,8 +869,8 @@ def test_r1_15_multi_event_command_is_atomic(tmp_path, monkeypatch):
     m.record_decision("Old", "old", "2026-10-21", "AGENT-RECORD", "s")
     # crash after the first line of a two-event batch: simulate by writing only the first event of the batch
     real = m.store.append_many
-    def half(items, actor, session=None, ts=None):
-        evs = real(items, actor, session, ts)
+    def half(items, actor, session=None, ts=None, floor=""):
+        evs = real(items, actor, session, ts, floor)
         path = m.store.segment_path
         lines = path.read_bytes().split(b"\n")[:-1]
         path.write_bytes(b"\n".join(lines[:-1]) + b"\n" + lines[-1][:20])  # second event torn
@@ -944,7 +944,10 @@ def test_r2_03_missing_or_corrupt_anchors_are_integrity_errors(tmp_path):
         m.create_milestone("MM-C", "C")
     m.store.anchors_path.write_text("{corrupt", encoding="utf-8")
     assert not m.store.verify()["ok"]
-    m.store.reanchor("impl:a", "anchors file lost; checked segment against git history")
+    with pytest.raises(StoreError) as e:  # an unknown history cannot be re-based silently (R3-01)
+        m.store.reanchor("impl:a", "anchors file lost")
+    assert e.value.code == "LOSS_NOT_ACKNOWLEDGED"
+    m.store.reanchor("impl:a", "anchors file lost; checked segment against git history", acknowledge_loss=True)
     assert m.store.verify()["ok"]
     m.create_milestone("MM-C", "C")
     kinds = [e["kind"] for s in m.store.read_all() for e in s.events]
@@ -1098,3 +1101,118 @@ def test_r2_14_recover_acknowledges_incomplete_batches(tmp_path):
     assert json.loads(out.getvalue())["abandoned_batches"]
     p = m.projection()
     assert not p["integrity_warnings"] and not p["blockers"]
+
+
+# ------------------------------------------------------------------ R3 regression tests (review R3 on 5bce5bdf)
+
+def test_r3_01_reanchor_cannot_hide_a_detected_loss(tmp_path):
+    m = _accept_ready(tmp_path, verdict="REJECT", blocking=1)
+    path = m.store.segment_path
+    lines = path.read_bytes().split(b"\n")[:-1]
+    path.write_bytes(b"\n".join(lines[:-1]) + b"\n")  # delete the REJECT review
+    assert not m.store.verify()["ok"]
+    with pytest.raises(StoreError) as e:
+        m.store.reanchor("impl:a", "routine")
+    assert e.value.code == "LOSS_NOT_ACKNOWLEDGED"
+    info = m.store.reanchor("impl:a", "deleted review confirmed in git", acknowledge_loss=True)
+    assert info["lost"] == {"h1": {"anchored": len(lines), "now": len(lines) - 1}}
+    m.record_review("MM-A", C1, "subagent", "subagent:r2", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "ok")
+    with pytest.raises(ValidationError) as e:
+        m.set_status("MM-A", "ACCEPTED", "try")
+    assert e.value.code == "CONFLICT_OPEN"
+    p = m.projection()
+    ind = views.indicator(p, p["milestones"]["MM-A"])
+    assert ind["color"] == "RED" and "lost events" in ind["issue"]
+
+
+def test_r3_01_emptied_anchors_with_own_events_is_an_error(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    m.create_milestone("MM-B", "B")
+    m.store.anchors_path.write_text("{}", encoding="utf-8")
+    rep = m.store.verify()
+    assert not rep["ok"] and any("not anchored" in x for x in rep["errors"])
+
+
+def test_r3_02_supersede_links_bind_to_the_right_duplicate(tmp_path):
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m1.record_decision("Base", "base", "2026-10-21", "AGENT-RECORD", "s")          # LDEC-001 on h1
+    (home2 / "events" / "h1.jsonl").write_bytes(m1.store.segment_path.read_bytes())
+    m1.record_decision("A-side", "a", "2026-10-21", "AGENT-RECORD", "s")           # LDEC-002 on h1
+    m2.record_decision("B-side", "b", "2026-10-21", "AGENT-RECORD", "s", supersedes="LDEC-001")  # LDEC-002 on h2
+    _merge(m1, home2)
+    d = m1.projection()["decisions"]
+    b_key = next(k for k, v in d.items() if v["decision"] == "b")
+    a_key = next(k for k, v in d.items() if v["decision"] == "a")
+    assert [s["by"] for s in d["LDEC-001"]["superseded_by"]] == [b_key]
+    assert d[b_key]["supersedes"] == [{"id": "LDEC-001", "partial": False}]
+    assert d[a_key]["supersedes"] == []
+
+
+def test_r3_03_reimport_through_another_path_is_unchanged(tmp_path, monkeypatch):
+    src = tmp_path / "decisions.md"
+    src.write_bytes(DECISIONS_MD.encode())
+    other = tmp_path / "clone" / "decisions.md"
+    other.parent.mkdir()
+    other.write_bytes(DECISIONS_MD.encode())
+    m = new(tmp_path)
+    assert importers.import_decisions(m, src)["recorded"] == 3
+    monkeypatch.chdir(tmp_path)
+    r = importers.import_decisions(m, Path("decisions.md"))
+    assert r["collisions"] == [] and r["unchanged"] == 3
+    r = importers.import_decisions(m, other)
+    assert r["collisions"] == [] and r["unchanged"] == 3
+
+
+def test_r3_04_a_clock_behind_still_orders_after_what_it_saw(tmp_path, monkeypatch):
+    import datetime as dt
+    from scripts.dev_workflow.milestones import store as store_mod, service as service_mod
+    m1, m2, home2 = _two_hosts(tmp_path)
+    m1.create_milestone("MM-A", "A")
+    m1.request_approval("MM-A", "SCOPE", "ok?")
+    (home2 / "events" / "h1.jsonl").write_bytes(m1.store.segment_path.read_bytes())
+    behind = lambda: (dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    monkeypatch.setattr(store_mod, "utc_now", behind)
+    monkeypatch.setattr(service_mod, "store_now", behind)
+    m2.resolve_approval("AP-1", "APPROVED", owner_words="yes", source="chat")
+    assert any("behind" in w for w in m2.last_warnings)
+    monkeypatch.undo()
+    _merge(m1, home2)
+    for m in (m1, m2):
+        p = m.projection()
+        assert p["approvals"]["AP-1"]["status"] == "APPROVED" and not views.open_conflicts(p)
+
+
+def test_r3_05_transient_sharing_violation_is_not_missing_anchors(tmp_path, monkeypatch):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    real = Path.read_text
+    calls = {"n": 0}
+    def flaky(self, *a, **k):
+        if self.name == "anchors.json" and calls["n"] < 3:
+            calls["n"] += 1
+            raise PermissionError("sharing violation")
+        return real(self, *a, **k)
+    monkeypatch.setattr(Path, "read_text", flaky)
+    assert m.store.read_anchors() and calls["n"] == 3
+    calls["n"] = 0
+    assert not m.projection()["integrity_errors"]
+
+
+def test_r3_06_abandonment_applies_whatever_the_order():
+    ab = {"v": 1, "seg": "h1", "seq": 1, "ts": "2026-10-21T10:00:00.000000Z", "actor": "a", "session": None,
+          "kind": "BATCH_ABANDONED", "data": {"batches": ["b1"], "reason": "crash"}, "base": {}, "prev": "0" * 64,
+          "hash": "x1"}
+    half = {"v": 1, "seg": "h2", "seq": 1, "ts": "2026-10-21T11:00:00.000000Z", "actor": "a", "session": None,
+            "kind": "BLOCKER_ADDED", "data": {"id": "BLK-1", "subject": "PROJECT", "kind": "OTHER", "reason": "r",
+                                              "needs": "n"},
+            "base": {}, "prev": "0" * 64, "hash": "x2", "batch": {"id": "b1", "n": 2, "i": 0}}
+    p = model.fold([ab, half])
+    assert not p["pending_batches"] and not p["blockers"]
+
+
+def test_r3_07_long_numeric_credentials_refused():
+    assert model.find_secret("api_key: 123456789012345678901234567890")
+    assert model.find_secret("password: 12345678")
+    assert model.find_secret("token: 123456789012")
+    assert model.find_secret("token: 65536 context") is None

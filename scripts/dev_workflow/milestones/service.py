@@ -16,6 +16,7 @@ from pathlib import Path
 
 from scripts.dev_workflow.milestones import model as M
 from scripts.dev_workflow.milestones.model import ValidationError
+from scripts.dev_workflow.milestones.store import utc_now as store_now
 from scripts.dev_workflow.milestones.store import (GIT, EventStore, StoreError, canonical,
                                                    file_sha256, read_segment, sha256_text)
 
@@ -42,15 +43,16 @@ class Manager:
     def projection(self) -> dict:
         """Fold of the verified log. Always derived from the event segments; nothing is trusted from a cache
         (review R1-02/R1-06/R1-08: a cache that guards read could be forged or stale). 10,000 events fold in well
-        under a second (criterion N3)."""
+        under a second (criterion N3). Anchors are read before the segments (review R3-05)."""
+        anchors = self.store.read_anchors()
         segs = self.store.read_all()
-        return self._fold_segments(segs)
+        return self._fold_segments(segs, anchors)
 
     rebuild = projection
 
-    def _fold_segments(self, segs) -> dict:
+    def _fold_segments(self, segs, anchors) -> dict:
         state = M.fold(M.ordered(segs))
-        errors = [e for s in segs for e in s.errors] + self.store.anchor_errors(segs)
+        errors = [e for s in segs for e in s.errors] + self.store.anchor_errors(segs, anchors)
         warnings = [f"{s.name}: {len(s.torn)} torn bytes at the end (ignored; `recover` on that host)"
                     for s in segs if s.torn]
         warnings += [f"incomplete batch {b} ({len(evs)} of {evs[0]['batch']['n']} events; ignored)"
@@ -74,8 +76,9 @@ class Manager:
         it is complete, so a crash never leaves half a command applied (R1-15)."""
         self._require_actor()
         with self.store.locked():
+            anchors = self.store.read_anchors()
             segs = self.store.read_all()
-            p = self._fold_segments(segs)
+            p = self._fold_segments(segs, anchors)
             if p["integrity_errors"]:
                 raise StoreError("CHAIN_BROKEN", "ledger fails verification; run `verify` (" +
                                  "; ".join(p["integrity_errors"][:2]) + ")")
@@ -85,10 +88,16 @@ class Manager:
                 if hit:
                     raise ValidationError("SECRET", f"{kind} contains what looks like a {hit}; secrets are never "
                                                     "stored (record a reference instead)")
-            written = self.store.append_many(items, actor=self.actor, session=self.session)
+            self.last_warnings = []
+            # Lamport floor: never stamp an event earlier than any event already seen (review R3-04)
+            seen_max = max((e["ts"] for s in segs for e in s.valid_events), default="")
+            now = store_now()
+            if seen_max and seen_max > now:
+                self.last_warnings.append(f"this machine's clock ({now}) is behind the newest ledger event "
+                                          f"({seen_max}); events are stamped at that time instead")
+            written = self.store.append_many(items, actor=self.actor, session=self.session, floor=seen_max)
             for ev in written:
                 M.apply(p, ev)
-            self.last_warnings = []
             if written:
                 own = read_segment(self.store.segment_path)
                 try:
@@ -221,7 +230,8 @@ class Manager:
         ident = m["id"]
         if status in ("ACCEPTED", "INTEGRATED", "DONE"):
             open_c = [c for c in p["conflicts"] if not c["resolved"] and (
-                c.get("subject") == ident or c["entity"] == ident or ident in (c.get("subjects") or []))]
+                c.get("subject") == ident or c["entity"] == ident or ident in (c.get("subjects") or [])
+                or c.get("type") == "ANCHOR_LOSS")]
             if open_c:
                 raise ValidationError("CONFLICT_OPEN", f"{ident} has {len(open_c)} unresolved conflict(s) "
                                                        f"({open_c[0]['type']}); resolve them first")
@@ -483,7 +493,7 @@ class Manager:
             if supersedes:
                 _, old_target = self._target(p, "decisions", supersedes)
                 items.append(("DECISION_SUPERSEDED", {"id": supersedes, "target": old_target, "by": did,
-                                                      "by_target": None, "partial": bool(partial), "note": note},
+                                                      "by_target": "BATCH", "partial": bool(partial), "note": note},
                               {supersedes: p["versions"].get(supersedes, 0)}))
             return items
         return self._write(build)
@@ -588,7 +598,7 @@ class Manager:
         """Acknowledge incomplete batches left by a crash so they stop warning (review R2-14). They stay unapplied."""
         M.check_text("reason", reason, True)
         def build(p):
-            pending = sorted(p.get("pending_batches", {}))
+            pending = sorted(b for b in p.get("pending_batches", {}) if b not in p.get("abandoned_ids", []))
             if not pending:
                 return []
             return [("BATCH_ABANDONED", {"batches": pending, "reason": reason}, {})]

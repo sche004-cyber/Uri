@@ -1,0 +1,15 @@
+from common import *
+import shutil, os, io
+src = Path("D:/uri-dev/uri-p0-audit/decisions.md")
+w = Path(tempfile.mkdtemp()); (w/"repoA").mkdir(); (w/"repoB").mkdir()
+shutil.copy(src, w/"repoA"/"decisions.md"); shutil.copy(src, w/"repoB"/"decisions.md")
+m = new()
+r1 = importers.import_decisions(m, w/"repoA"/"decisions.md", "8e1d6324")
+print("first:", r1["recorded"], "collisions", len(r1["collisions"]), "skipped_secret", r1["skipped_secret"])
+os.chdir(w/"repoA")
+r2 = importers.import_decisions(m, "decisions.md", "8e1d6324")
+print("same file, relative path:", "recorded", r2["recorded"], "unchanged", r2["unchanged"], "collisions", len(r2["collisions"]))
+r3 = importers.import_decisions(m, w/"repoB"/"decisions.md", "8e1d6324")
+print("identical file in another clone:", "unchanged", r3["unchanged"], "collisions", len(r3["collisions"]))
+o = io.StringIO(); rc = cli.run(["--home", str(m.home), "--actor", "impl:a", "import-decisions", "decisions.md", "--commit", "8e1d6324"], out=o)
+print("CLI rc", rc, json.loads(o.getvalue()).get("refused"))

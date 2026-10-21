@@ -318,7 +318,8 @@ class EventStore:
         """Append one event. Caller must hold the lock (``with store.locked():``)."""
         return self.append_many([(kind, data, base)], actor, session, ts)[0]
 
-    def append_many(self, items, actor: str, session: str | None = None, ts: str | None = None) -> list[dict]:
+    def append_many(self, items, actor: str, session: str | None = None, ts: str | None = None,
+                    floor: str = "") -> list[dict]:
         """Append ``[(kind, data, base), ...]`` as one batch: one write, one fsync, same timestamp.
 
         With more than one item every event carries ``batch = {id, n, i}``; the fold applies the batch only when all
@@ -334,7 +335,9 @@ class EventStore:
                 raise StoreError("CHAIN_BROKEN", "; ".join(seg.errors[:3]))
             self._tail = (seg.good_bytes, seg.head, len(seg.events), seg.events[-1]["ts"] if seg.events else "")
         good, head, count, last_ts = self._tail
-        ts = max(ts or utc_now(), last_ts)  # never earlier than this segment's last event (clock steps back)
+        # never earlier than this segment's last event, nor than any event the writer has seen (Lamport floor,
+        # reviews R2-06 / R3-04)
+        ts = max(ts or utc_now(), last_ts, floor or "")
         batch_id = sha256_text(f"{self.host}:{count + 1}:{ts}")[:16] if len(items) > 1 else None
         events, blob = [], b""
         for i, (kind, data, base) in enumerate(items):
@@ -363,11 +366,20 @@ class EventStore:
         return self.local_dir / "anchors.json"
 
     def read_anchors(self) -> dict | None:
-        """The anchors, or None when the file is missing or unreadable."""
-        try:
-            a = json.loads(self.anchors_path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            return None
+        """The anchors, or None when the file is missing or unreadable.
+
+        A Windows sharing violation while a writer replaces the file is transient: retried, never reported as
+        "missing" (review R3-05)."""
+        for attempt in range(40):
+            try:
+                a = json.loads(self.anchors_path.read_text(encoding="utf-8"))
+                break
+            except PermissionError:
+                if attempt == 39:
+                    raise
+                time.sleep(0.01 * (attempt + 1))
+            except (OSError, ValueError):
+                return None
         if not isinstance(a, dict) or not all(isinstance(v, dict) for v in a.values()):
             return None
         return a
@@ -382,15 +394,25 @@ class EventStore:
                 anchors[s.name] = {"count": len(valid), "head": valid[-1]["hash"] if valid else GENESIS}
         atomic_write_bytes(self.anchors_path, json.dumps(anchors, indent=1, sort_keys=True).encode("utf-8"))
 
-    def anchor_errors(self, segs) -> list[str]:
-        """Truncation or rewrite of anchored events: the anchored event must still be at its position."""
+    _UNSET = object()
+
+    def anchor_errors(self, segs, anchors=_UNSET) -> list[str]:
+        """Truncation or rewrite of anchored events: the anchored event must still be at its position.
+
+        Pass ``anchors`` read *before* the segments, so anchors can never be ahead of what the caller read
+        (review R3-05). This machine's own non-empty segment must be anchored (review R3-01)."""
         errs, by_name = [], {s.name: s for s in segs}
-        anchors = self.read_anchors()
+        if anchors is EventStore._UNSET:
+            anchors = self.read_anchors()
         if anchors is None:
             if any(s.events for s in segs):
                 errs.append(f"{self.anchors_path} is missing or unreadable while the ledger holds events: deletion "
                             "of the newest events cannot be ruled out (check git history, then `reanchor`)")
             return errs
+        own = by_name.get(self.host)
+        if own is not None and own.events and self.host not in anchors:
+            errs.append(f"{self.host}: this machine's own segment holds {len(own.events)} events but is not anchored "
+                        "(anchors file emptied or edited); check git history, then `reanchor`")
         for name, a in sorted(anchors.items()):
             s = by_name.get(name)
             n = a.get("count", 0) if isinstance(a, dict) else 0
@@ -404,18 +426,34 @@ class EventStore:
                 errs.append(f"{name}: event {n} differs from the anchored head (rewritten)")
         return errs
 
-    def reanchor(self, actor: str, reason: str, session: str | None = None) -> dict:
-        """Explicitly re-base the anchors on the current segments, recorded as an ANCHORS_RESET event."""
+    def reanchor(self, actor: str, reason: str, session: str | None = None, acknowledge_loss: bool = False) -> dict:
+        """Explicitly re-base the anchors on the current segments, recorded as an ANCHORS_RESET event.
+
+        When the reset would hide a detected loss (a segment shorter than, or different from, its anchor) it is
+        refused unless ``acknowledge_loss``; then the event carries ``lost`` and the fold keeps an open
+        ANCHOR_LOSS conflict (RED, blocks positive statuses) until someone resolves it (review R3-01)."""
         if not reason or not actor:
             raise StoreError("USAGE", "reanchor needs --actor and --reason")
         with self.locked():
+            before = self.read_anchors()
             segs = self.read_all()
             bad = [e for s in segs for e in s.errors]
             if bad:
                 raise StoreError("CHAIN_BROKEN", "reanchor only re-bases anchors; chain errors need an owner "
                                                  "decision: " + bad[0])
-            before = self.read_anchors()
-            info = {"reason": reason, "previous": before,
+            by_name = {s.name: s for s in segs}
+            lost = {}
+            for name, a in sorted((before or {}).items()):
+                s, n = by_name.get(name), a.get("count", 0)
+                have = len(s.events) if s else 0
+                if n and (have < n or s.events[n - 1].get("hash") != a.get("head")):
+                    lost[name] = {"anchored": n, "now": have}
+            unknown = before is None and any(s.events for s in segs)
+            if (lost or unknown) and not acknowledge_loss:
+                raise StoreError("LOSS_NOT_ACKNOWLEDGED",
+                                 f"reanchor would hide {'lost events ' + str(lost) if lost else 'an unknown history'}"
+                                 "; check git history and pass --acknowledge-loss to record the loss explicitly")
+            info = {"reason": reason, "previous": before, "lost": lost, "unknown_previous": unknown,
                     "counts": {s.name: len(s.events) for s in segs}}
             self.append("ANCHORS_RESET", info, actor=actor, session=session)
             self.write_anchors_force(self.read_all())
@@ -430,10 +468,11 @@ class EventStore:
     # ---- verification and recovery
 
     def verify(self) -> dict:
+        anchors = self.read_anchors()
         segs = self.read_all()
         errors, torn, heads, total = [], [], {}, 0
         seen_names = set()
-        errors.extend(self.anchor_errors(segs))
+        errors.extend(self.anchor_errors(segs, anchors))
         for s in segs:
             errors.extend(s.errors)
             if s.torn:

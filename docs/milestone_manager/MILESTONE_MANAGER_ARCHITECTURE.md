@@ -167,7 +167,7 @@ plus the last handoff note and the linked lifecycle run stage. Recovery scenario
 
 ## 11. Resource expectations
 
-Stdlib Python only; one process per command; no daemon. Expected: ~300-500 bytes per event; 10,000 events ≈ 4-5 MB;
+Stdlib Python only; one process per command; no daemon. Measured: ~440-690 bytes per event; 10,000 events ≈ 4.4-6.9 MB (6.89 MB measured by reviewer R2/R3);
 full fold ≈ sub-second; memory < 50 MB. Measured values are recorded in the implementation evidence (criterion N3).
 
 ## 12. Self-review (criteria R2, R3, R5)
@@ -193,7 +193,7 @@ Recorded, not silently overwritten (details: `reviews/R1_2ae7a79f.md`, `reviews/
 | `anchors.json` high-water marks | R1-07 (deleting the newest events left a valid shorter chain) |
 | Fold never replaces a record with the same id from another event; duplicates kept under `<id>@<seg>.<seq>` and flagged as DUPLICATE_ID conflicts; positive status refused while a conflict on the milestone is open | R1-05 |
 | Fold flags a positive status whose basis names no real review/approval (BASIS_INVALID) | R1-02 defence in depth |
-| ACCEPTED/INTEGRATED/DONE all re-run the independent-accept check on the current candidate (after R2: any negative review on that commit blocks); candidate locked while ACCEPTED/INTEGRATED/DONE; integration record must match the candidate; RED when the latest review contradicts a positive status | R1-01, R1-03 |
+| ACCEPTED/INTEGRATED/DONE all re-run the independent-accept check on the current candidate (after R2: any negative review on that commit blocks); candidate locked while ACCEPTED/INTEGRATED/DONE; integration record must match the candidate; RED when any negative review on the candidate contradicts a positive status | R1-01, R1-03 |
 | Multi-event commands are atomic batches | R1-15 |
 | Identity comparison case/whitespace-insensitive | R1-14 |
 
@@ -214,3 +214,20 @@ Recorded, not silently overwritten (details: `reviews/R1_2ae7a79f.md`, `reviews/
 
 Second-host procedure: clone the ledger repository, then `python -m scripts.dev_workflow.milestones --home <clone>
 init-host --host-id <unique-id>`; never copy another machine's `local/` folder.
+
+## 15. Changes after independent review R3 (2026-10-21, REJECT on `5bce5bdf`)
+
+| Change | Reason |
+|---|---|
+| `reanchor` refuses to hide a detected loss (shorter/different segment, or unknown history) unless `--acknowledge-loss`; the recorded loss becomes an open ANCHOR_LOSS conflict: RED on every milestone and blocks positive statuses until `resolve-conflict LEDGER`; an anchors file without this machine's own non-empty segment is an integrity error | R3-01 |
+| Decision supersession links bind by creation hash, or to the record created in the same batch (`"BATCH"`); both link lists store the actual (possibly duplicate) keys; UNBOUND_REFERENCE for decision links/corrections; importer links carry targets | R3-02 |
+| Import source identity is the register name (`decisions.md`), not the checkout path | R3-03 |
+| Lamport floor: a write is stamped no earlier than the newest event the writer has seen; a clock found behind is reported as a warning | R3-04 |
+| Anchors are read before segments; transient Windows sharing violations are retried, not reported as missing | R3-05 |
+| BATCH_ABANDONED applies by batch id whatever the order; `recover` reports only effective abandonments | R3-06 |
+| Numeric exemption limited to small numbers for `token`/`secret`; numeric passwords/keys refused | R3-07 |
+| Doc figures corrected; dead helper removed | R3-08 |
+
+Residual (stated, not hidden): a removed anchors entry for *another* host's segment is not detectable from this
+machine's anchors alone (that segment may simply not be anchored here yet); git history of the ledger is the anchor
+for other hosts' segments.

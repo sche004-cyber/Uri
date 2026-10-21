@@ -70,8 +70,13 @@ def split_row(line: str) -> list[str] | None:
 
 
 def _source(path: Path, commit, line_no: int, raw: str, file_hash: str) -> dict:
-    return {"path": str(path).replace("\\", "/"), "commit": commit, "line": line_no, "file_sha256": file_hash,
-            "row_sha256": sha256_text(raw.strip())}
+    # ``register`` identifies the source independent of where it is checked out (review R3-03).
+    return {"path": str(path).replace("\\", "/"), "register": Path(path).name, "commit": commit, "line": line_no,
+            "file_sha256": file_hash, "row_sha256": sha256_text(raw.strip())}
+
+
+def _register_of(source: dict) -> str:
+    return (source or {}).get("register") or Path((source or {}).get("path") or "").name
 
 
 def _evidence_class(raw: str) -> str:
@@ -133,7 +138,7 @@ def import_decisions(mgr, path, commit=None) -> dict:
                                             "evidence_class_raw")}}
                 items.append(("DECISION_RECORDED", data, {row["id"]: 0}))
                 report["recorded"] += 1
-            elif not existing.get("imported") or (existing.get("source") or {}).get("path") != src["path"]:
+            elif not existing.get("imported") or _register_of(existing.get("source")) != src["register"]:
                 # Same id already used by a ledger-native decision or another source: never treat this row as a
                 # revision of an unrelated record (review R2-07). Reported; nothing written for this row.
                 report["collisions"].append(row["id"])
@@ -173,7 +178,11 @@ def import_decisions(mgr, path, commit=None) -> dict:
                             continue
                         # link_only: the imported row's own status column stays authoritative for its status.
                         # The note is a row reference, never copied source text (R1-10).
-                        items.append(("DECISION_SUPERSEDED", {"id": row["id"], "by": by, "partial": partial,
+                        tgt = (p["decisions"][row["id"]]["recorded"]["hash"] if row["id"] in p["decisions"]
+                               else "BATCH")
+                        btgt = p["decisions"][by]["recorded"]["hash"] if by in p["decisions"] else "BATCH"
+                        items.append(("DECISION_SUPERSEDED", {"id": row["id"], "target": tgt, "by": by,
+                                                              "by_target": btgt, "partial": partial,
                                                               "link_only": True,
                                                               "note": f"source line {line_no}, column {column}"}, {}))
                         report["supersessions"] += 1

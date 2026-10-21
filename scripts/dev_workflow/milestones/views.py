@@ -39,11 +39,7 @@ def negative_reviews_on_candidate(p, m):
             and (r["verdict"] not in ("ACCEPT", "ACCEPT WITH FINDINGS") or r["blocking_open"])]
 
 
-def latest_review_on_candidate(p, m):
-    cand = m.get("candidate_commit")
-    on = [r for r in p["reviews"].values() if r["subject"] == m["id"] and r["commit"] == cand
-          and r["result_class"] == "COMPLETED_WITH_RESULT"]
-    return max(on, key=lambda r: (r["recorded"]["ts"], r["recorded"]["seg"], r["recorded"]["seq"])) if on else None
+
 
 
 def unmet_dependencies(p, m):
@@ -58,6 +54,9 @@ def indicator(p, m, tasks: dict | None = None) -> dict:
         reds.append(f"blocker {b['id']} ({b['kind']}): {b['reason']} | needs: {b['needs']}")
     if p.get("integrity_errors"):
         reds.append(f"LEDGER INTEGRITY: {p['integrity_errors'][0]} (run `verify`; statuses may be untrustworthy)")
+    for c in [c for c in p["conflicts"] if not c["resolved"] and c.get("type") == "ANCHOR_LOSS"]:
+        reds.append(f"ledger lost events (ANCHORS_RESET {c.get('lost') or 'with unknown history'}); review, then "
+                    "`resolve-conflict LEDGER`")
     for c in open_conflicts(p, ident):
         reds.append(f"{c.get('type', 'VERSION')} conflict on {c['entity']} (event {c['event']['seg']}#"
                     f"{c['event']['seq']}); resolve with `resolve-conflict`")

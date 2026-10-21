@@ -34,6 +34,8 @@ This file is updated at every checkpoint so work can resume without chat history
 | 5 | 2026-10-21 | (R1 repair commit, see `git log`) | **R1 = REJECT** (15 findings: 5 HIGH, 8 MEDIUM, 2 LOW), all repaired (`reviews/R1_REPAIR.md`); 77 MM tests pass | independent re-review R2 on the repair commit |
 | 6 | 2026-10-21 | `4a54ebe1` | **R2 = REJECT** (14 new: 1 HIGH, 9 MEDIUM, 4 LOW; R1 11 fixed / 4 partial) | repair |
 | 7 | 2026-10-21 | (R2 repair commit, see `git log`) | all R2 findings repaired (`reviews/R2_REPAIR.md`); 93 MM tests pass; R2 tests fail 16/16 on pre-repair code; N5 at `7ab9263c` 365 passed / 5 platform-gated / 0 failed; frozen check exit 0 | independent re-review R3; N5 re-run on the repair commit |
+| 8 | 2026-10-21 | `5bce5bdf` | **R3 = REJECT** (8: 5 MEDIUM, 3 LOW; all R2 fixed) | repair |
+| 9 | 2026-10-21 | (R3 repair commit, see `git log`) | R3 repaired (`reviews/R3_REPAIR.md`); 101 MM tests; R3 tests 8/8 fail pre-repair; N5 on `5bce5bdf` running (`D:/uri-dev/mm-gate-5bce5bdf`) | independent re-review R4 |
 
 ## Verification status (exact)
 

@@ -36,6 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     _p(s, "--host-id", required=True)
     s = sub.add_parser("reanchor", help="explicitly re-base this machine's anchors (recorded)")
     _p(s, "--reason", required=True)
+    _p(s, "--acknowledge-loss", action="store_true", help="record a detected loss of events explicitly")
     s = sub.add_parser("init", help="create a ledger home")
     _p(s, "--host-id")
     _p(s, "--autocommit", action="store_true", help="git-commit every append when the home is a git work tree")
@@ -163,7 +164,7 @@ def run(argv=None, out=None) -> int:
         if args.cmd == "reanchor":
             if not args.actor:
                 raise ValidationError("NO_ACTOR", "--actor is required")
-            emit(EventStore(args.home).reanchor(args.actor, args.reason, args.session))
+            emit(EventStore(args.home).reanchor(args.actor, args.reason, args.session, args.acknowledge_loss))
             return 0
         if args.cmd == "init":
             st = EventStore.init(args.home, args.host_id, args.autocommit)

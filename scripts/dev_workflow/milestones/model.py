@@ -68,8 +68,11 @@ def _assignment_secret(text: str) -> bool:
         low = val.lower()
         if len(val) < 4 or low in PLACEHOLDER_VALUES or set(val) <= {"*", "x", "X", "."}:
             continue
-        if val.isdigit() or low in STATUS_WORDS:
-            continue  # a number ("token: 65536") or a state word ("access_token: expired"), not a credential
+        key = m.group("key").lower().replace("-", "_")
+        if low in STATUS_WORDS:
+            continue  # a state word ("access_token: expired"), not a credential
+        if val.isdigit() and key in ("token", "secret") and len(val) <= 7:
+            continue  # a small number ("token: 65536" context size), not a credential (review R3-07)
         if val[:1] in "$%<{" or val.startswith(("env:", "env-", "ENV_", "${")):
             continue  # variable reference or placeholder
         if re.fullmatch(r"[A-Z][A-Z0-9_]{2,}", val):
@@ -189,6 +192,8 @@ def apply(p: dict, ev: dict) -> None:
     """Fold one event into ``p`` (in place). Events of a multi-event batch wait until the whole batch is present."""
     b = ev.get("batch")
     if isinstance(b, dict) and b.get("n", 1) > 1:
+        if b["id"] in p.setdefault("abandoned_ids", []):
+            return  # acknowledged as abandoned, whatever order the events arrive in (review R3-06)
         pend = p.setdefault("pending_batches", {}).setdefault(b["id"], [])
         if any(x["hash"] == ev["hash"] for x in pend):
             return
@@ -202,10 +207,14 @@ def apply(p: dict, ev: dict) -> None:
     _apply_one(p, ev)
 
 
-def _find(p, coll, ident, target):
-    """Record a later event refers to. With ``target`` (the creation event hash) the binding is exact even when the
-    same id was created on two hosts; without it (legacy/import events) the plain id is used."""
+def _find(p, coll, ident, target, ev=None):
+    """Record a later event refers to. ``target`` is the creation-event hash (exact even when the same id was
+    created on two hosts), or ``"BATCH"`` for a record created by an earlier event of the same batch (review R3-02).
+    Without a target (legacy events) the plain id is used."""
     origin = {"approvals": "requested", "blockers": "opened", "decisions": "recorded"}[coll]
+    if target == "BATCH":
+        key = (p.get("batch_keys", {}).get(((ev or {}).get("batch") or {}).get("id")) or {}).get((coll, ident))
+        return (key, p[coll].get(key)) if key else (ident, None)
     rec = p[coll].get(ident)
     if not target or (rec and (rec.get(origin) or {}).get("hash") == target):
         return ident, rec
@@ -245,6 +254,9 @@ def _apply_one(p: dict, ev: dict) -> None:
                 p["last_key"] = event_key(ev)
                 return
             d = {**d, "id": alt, "duplicate_of": d["id"]}
+    if kind in CREATION and isinstance(d, dict) and d.get("id") is not None and isinstance(ev.get("batch"), dict):
+        coll = CREATION[kind][0]
+        p.setdefault("batch_keys", {}).setdefault(ev["batch"]["id"], {})[(coll, ev["data"]["id"])] = d["id"]
     p["events"] += 1
     p["last_key"] = event_key(ev)
     ms = p["milestones"]
@@ -342,10 +354,12 @@ def _apply_one(p: dict, ev: dict) -> None:
                                    "corrections": [], "source_revisions": [], "recorded": ref}
         _bump(p, d["id"])
     elif kind == "DECISION_SUPERSEDED":
-        okey, old = _find(p, "decisions", d["id"], d.get("target"))
-        nkey, new = _find(p, "decisions", d["by"], d.get("by_target"))
+        okey, old = _find(p, "decisions", d["id"], d.get("target"), ev)
+        nkey, new = _find(p, "decisions", d["by"], d.get("by_target"), ev)
+        if (old is None and d.get("target")) or (new is None and d.get("by_target")):
+            _conflict(p, "UNBOUND_REFERENCE", d["id"], ref, kind, None)
         if old:
-            old["superseded_by"].append({"by": d["by"], "partial": bool(d.get("partial")), "note": d.get("note"),
+            old["superseded_by"].append({"by": nkey, "partial": bool(d.get("partial")), "note": d.get("note"),
                                          "at": ev["ts"]})
             if d.get("link_only"):
                 pass
@@ -358,7 +372,9 @@ def _apply_one(p: dict, ev: dict) -> None:
             new["supersedes"].append({"id": okey, "partial": bool(d.get("partial"))})
             _bump(p, nkey)
     elif kind == "DECISION_CORRECTED":
-        key, dec = _find(p, "decisions", d["id"], d.get("target"))
+        key, dec = _find(p, "decisions", d["id"], d.get("target"), ev)
+        if dec is None and d.get("target"):
+            _conflict(p, "UNBOUND_REFERENCE", d["id"], ref, kind, None)
         if dec:
             dec["corrections"].append({**d, "at": ev["ts"], "by": ev["actor"]})
             _bump(p, key)
@@ -411,9 +427,18 @@ def _apply_one(p: dict, ev: dict) -> None:
                 c["resolution"] = {"note": d["note"], "at": ev["ts"], "by": ev["actor"]}
     elif kind == "BATCH_ABANDONED":
         for b in d.get("batches") or []:
-            if p.get("pending_batches", {}).pop(b, None) is not None:
-                p.setdefault("abandoned_batches", []).append({"id": b, "at": ev["ts"], "by": ev["actor"],
-                                                              "reason": d.get("reason")})
+            p.setdefault("abandoned_ids", [])
+            if b not in p["abandoned_ids"]:
+                p["abandoned_ids"].append(b)
+            p.get("pending_batches", {}).pop(b, None)
+            p.setdefault("abandoned_batches", []).append({"id": b, "at": ev["ts"], "by": ev["actor"],
+                                                          "reason": d.get("reason")})
+    elif kind == "ANCHORS_RESET":
+        p.setdefault("anchor_resets", []).append({"at": ev["ts"], "by": ev["actor"], "reason": d.get("reason"),
+                                                  "lost": d.get("lost") or {}})
+        if d.get("lost") or d.get("unknown_previous"):
+            _conflict(p, "ANCHOR_LOSS", "LEDGER", ref, kind, None, lost=d.get("lost") or {},
+                      unknown_previous=bool(d.get("unknown_previous")))
     elif kind == "STORE_RECOVERED":
         p["recoveries"].append({**d, "at": ev["ts"]})
 

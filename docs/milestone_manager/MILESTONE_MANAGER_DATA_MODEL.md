@@ -143,8 +143,14 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 - `APPROVAL_RESOLVED.target`, `BLOCKER_RESOLVED.target`, `DECISION_SUPERSEDED.target/by_target`,
   `DECISION_CORRECTED.target`: creation-event hash of the referenced record (fold binds by it).
 - `CONFLICT_RESOLVED.conflicts`: hashes of the conflict events the resolver saw; only those are resolved.
-- New kinds: `ANCHORS_RESET {reason, previous, counts}`, `BATCH_ABANDONED {batches[], reason}`.
+- New kinds: `ANCHORS_RESET {reason, previous, lost, unknown_previous, counts}` (after R3: a non-empty `lost` or `unknown_previous` creates an ANCHOR_LOSS conflict), `BATCH_ABANDONED {batches[], reason}`.
 - New conflict type `UNBOUND_REFERENCE` (a resolve whose target record is absent).
 - Decision ids: `DEC-NNN` (owner register numbering, import only until promotion) and `LDEC-NNN` (ledger-native).
 - Refusal codes: `NEGATIVE_REVIEW` (replaces `LATER_NEGATIVE_REVIEW`), `DEC_NAMESPACE`; store errors `NO_HOST_ID`,
   `HOST_ID_TAKEN`, `ALREADY_REGISTERED`; CLI `import-decisions` exits 1 with `ID_COLLISION` when rows collide.
+
+## 12. Changes after review R3
+
+- Reference targets may be `"BATCH"`: the record with that id created by an earlier event of the same batch.
+- `source.register` (file name of the register) identifies an import source independent of the checkout path.
+- Conflict type `ANCHOR_LOSS` (entity `LEDGER`); refusal `LOSS_NOT_ACKNOWLEDGED` for `reanchor`.
