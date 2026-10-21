@@ -123,7 +123,7 @@ plus the last handoff note and the linked lifecycle run stage. Recovery scenario
 |---|---|
 | Context or quota exhaustion | nothing is lost: every recorded step is already fsynced; the next session runs `resume` |
 | Session killed mid-command | lock released by OS; either the event was fully written (fsynced line) or not at all, or a torn tail exists. If it died after the append but before the anchor refresh on a host's very first write, the next write anchors the segment and records ANCHORS_ADOPTED (one ANCHOR_LOSS conflict to review and resolve) |
-| Power loss mid-append | torn tail ignored by reads, reported by `verify`, quarantined by `recover`; earlier events intact; complete lines of the interrupted batch stay unapplied and are abandoned by the same `recover` (also on a host's first command) |
+| Power loss mid-append | torn tail ignored by reads, reported by `verify`, quarantined by `recover`; earlier events intact; complete lines of the interrupted batch stay unapplied and are abandoned by the same `recover`. On a host's first command (own segment not yet anchored) `recover` checks that the torn bytes continue that batch: proven ⇒ nothing to review; too short to tell ⇒ recovered and recorded as ANCHOR_LOSS for one review; contradicting ⇒ refused without `--acknowledge-loss` |
 | Newest events deleted, a segment rewritten, or the anchors file lost | `local/anchors.json` (and git history) disagree or the file is missing; `verify` fails, writes are refused, status shows an integrity banner and exits 3 |
 | Crash in the middle of a multi-event command | the command's events are one batch (one write + fsync); an incomplete batch is ignored by the fold and reported as a warning; the retry succeeds |
 | Harness or agent replaced | identity is a recorded string; claims expire; the new agent claims after expiry or release |
@@ -276,3 +276,11 @@ not tamper-proof.
 Residual (stated): outside git, a machine whose `local/` folder was deleted can register a new host id and adopt the
 segments as they are; the HOST_REGISTERED event records the adopted counts, but a truncation that happened before
 that is only detectable from the ledger's git history or another machine's anchors.
+
+## 19. Changes after independent review R7 (2026-10-21, REJECT on `5b2a1427`)
+
+| Change | Reason |
+|---|---|
+| `recover` on an unanchored own segment decides on the torn bytes: their canonical prefix must name the incomplete batch and its next index (`_torn_continues_batch`); too short ⇒ proceed but record ANCHOR_LOSS; contradicting ⇒ `LOSS_NOT_ACKNOWLEDGED` | R7-01 (the R6-01 repair let a truncated, already applied batch disappear without review) |
+| warning text fixed | R7-02 |
+| `init-host` removes its host file and anchors if the locked registration fails; a retry may continue a segment that holds only its own HOST_REGISTERED events | R7-03 |

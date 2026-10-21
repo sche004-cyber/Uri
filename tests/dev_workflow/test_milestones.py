@@ -1494,7 +1494,7 @@ def test_r5_09_bom_prefixed_register_imports(tmp_path):
 
 # ------------------------------------------------------------------ R6 regression tests (review R6 on 3ba9af68)
 
-def test_r6_01_power_loss_in_a_hosts_first_multi_event_command_recovers(tmp_path):
+def _first_batch_power_loss(tmp_path, torn_len):
     src = tmp_path / "developmental.md"
     src.write_bytes(REGISTER_MD.encode())
     m = new(tmp_path)
@@ -1503,7 +1503,13 @@ def test_r6_01_power_loss_in_a_hosts_first_multi_event_command_recovers(tmp_path
     m.store.anchors_path.write_bytes(init_anchors)  # power lost before the anchor refresh
     path = m.store.segment_path
     lines = path.read_bytes().split(b"\n")[:-1]
-    path.write_bytes(lines[0] + b"\n" + lines[1][:20])  # power loss: 1 complete line + torn bytes
+    path.write_bytes(lines[0] + b"\n" + lines[1][:torn_len])  # 1 complete line + part of the 2nd
+    return m, src
+
+
+@pytest.mark.parametrize("torn_len", [400])
+def test_r6_01_power_loss_in_a_hosts_first_multi_event_command_recovers(tmp_path, torn_len):
+    m, src = _first_batch_power_loss(tmp_path, torn_len)  # torn bytes long enough to prove the continuation
     out = io.StringIO()
     assert cli.run(["--home", str(m.home), "--actor", "impl:a", "recover"], out=out) == 0, out.getvalue()
     res = json.loads(out.getvalue())
@@ -1513,6 +1519,41 @@ def test_r6_01_power_loss_in_a_hosts_first_multi_event_command_recovers(tmp_path
     importers.import_register(m, src)  # the retry works and is not flagged
     p = m.projection()
     assert len(p["records"]) == 4 and not views.open_conflicts(p)
+
+
+def test_r7_01_short_torn_tail_is_recovered_but_recorded_for_review(tmp_path):
+    m, _ = _first_batch_power_loss(tmp_path, 20)  # too short to prove anything
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "impl:a", "recover"], out=out) == 0, out.getvalue()
+    p = m.projection()
+    assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))
+
+
+def test_r7_01_truncated_applied_batch_is_never_hidden(tmp_path):
+    src = tmp_path / "developmental.md"
+    src.write_bytes(REGISTER_MD.encode())
+    m = new(tmp_path)
+    init_anchors = m.store.anchors_path.read_bytes()
+    importers.import_register(m, src)  # complete and applied
+    m.store.anchors_path.write_bytes(init_anchors)  # its anchor refresh had failed
+    assert m.projection()["records"]
+    path = m.store.segment_path
+    lines = path.read_bytes().split(b"\n")[:-1]
+    path.write_bytes(lines[0] + b"\n" + b'{"x')  # later: complete lines cut, junk appended
+    m.store.recover("impl:a")
+    p = m.projection()
+    assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(p))  # visible, needs review
+
+
+def test_r7_01_torn_tail_naming_another_batch_position_is_refused(tmp_path):
+    m, _ = _first_batch_power_loss(tmp_path, 400)
+    path = m.store.segment_path
+    data = path.read_bytes()
+    head, torn = data.split(b"\n", 1)
+    path.write_bytes(head + b"\n" + torn.replace(b'"batch":{"i":1', b'"batch":{"i":3', 1))
+    with pytest.raises(StoreError) as e:
+        m.store.recover("impl:a")
+    assert e.value.code == "LOSS_NOT_ACKNOWLEDGED"
 
 
 def test_r6_02_init_host_refuses_uncommitted_segment_changes_and_records_itself(tmp_path):
@@ -1566,3 +1607,36 @@ def test_r6_04_adopting_write_reports_it(tmp_path, monkeypatch):
     monkeypatch.undo()
     m.create_milestone("MM-B", "B")
     assert any("ANCHORS_ADOPTED" in w for w in m.last_warnings)
+
+
+# ------------------------------------------------------------------ R7 regression tests (review R7 on 5b2a1427)
+
+def test_r7_02_count0_warning_text_is_clean(tmp_path):
+    m = new(tmp_path)
+    m.store.anchors_path.write_bytes(m.store.anchors_path.read_bytes())
+    real = m.store.write_anchors
+    m.store.write_anchors = lambda segs: (_ for _ in ()).throw(PermissionError("x"))
+    m.create_milestone("MM-A", "A")
+    m.store.write_anchors = real
+    w = m.projection()["integrity_warnings"][0]
+    assert w.count("anchors it") == 1
+
+
+def test_r7_03_init_host_failure_leaves_no_half_registration(tmp_path, monkeypatch):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    clone = tmp_path / "clone"
+    (clone / "events").mkdir(parents=True)
+    (clone / "mm.json").write_bytes((m.home / "mm.json").read_bytes())
+    (clone / "events" / "h1.jsonl").write_bytes(m.store.segment_path.read_bytes())
+    from scripts.dev_workflow.milestones import store as store_mod
+    real = store_mod.EventStore.append_many
+    def boom(self, *a, **k):
+        raise StoreError("LOCK_TIMEOUT", "busy")
+    monkeypatch.setattr(store_mod.EventStore, "append_many", boom)
+    with pytest.raises(StoreError):
+        EventStore.init_host(clone, "h2")
+    assert not (clone / "local" / "host.json").exists()
+    monkeypatch.setattr(store_mod.EventStore, "append_many", real)
+    st = EventStore.init_host(clone, "h2")  # the retry works
+    assert st.verify()["ok"]
