@@ -47,6 +47,12 @@ def _loss_first(fn):
     return fn()
 
 
+def _resolve(m, entity, note):
+    """Resolve every open conflict on ``entity`` by the ids `status`/`conflicts` show (review R14-01)."""
+    ids = [r["id"] for r in views.conflict_rows(m.projection()) if r["entity"] == entity]
+    return m.resolve_conflict(entity, note, ids)
+
+
 def seg_bytes(mgr):
     return mgr.store.segment_path.read_bytes()
 
@@ -186,7 +192,7 @@ def test_cross_host_concurrent_update_is_a_conflict(tmp_path):
     conflicts = views.open_conflicts(p, "MM-A")
     assert len(conflicts) == 1
     assert views.indicator(p, p["milestones"]["MM-A"])["color"] == "RED"
-    m1.resolve_conflict("MM-A", "kept h2 objective")
+    _resolve(m1, "MM-A", "kept h2 objective")
     p = m1.projection()
     assert not views.open_conflicts(p)
 
@@ -997,7 +1003,7 @@ def test_r2_05_resolve_only_the_conflicts_the_resolver_saw(tmp_path):
     m1.update_milestone("MM-A", next_action="h1")
     m2.update_milestone("MM-A", next_action="h2")
     _merge(m1, home2)
-    m1.resolve_conflict("MM-A", "saw h2 only")
+    _resolve(m1, "MM-A", "saw h2 only")
     (m1.home / "events" / "h3.jsonl").write_bytes((home3 / "events" / "h3.jsonl").read_bytes())
     p = m1.projection()
     assert [c for c in views.open_conflicts(p, "MM-A")]  # h3's conflict stays open
@@ -1527,7 +1533,7 @@ def test_r6_01_power_loss_in_a_hosts_first_multi_event_command_recovers(tmp_path
     p = m.projection()
     assert not p["integrity_errors"] and not p["records"]
     assert [c["type"] for c in views.open_conflicts(p)] == ["ANCHOR_LOSS"]
-    m.resolve_conflict("LEDGER", "power loss during the first import; quarantined bytes checked")
+    _resolve(m, "LEDGER", "power loss during the first import; quarantined bytes checked")
     importers.import_register(m, src)  # the retry works
     p = m.projection()
     assert len(p["records"]) == 4 and not views.open_conflicts(p)
@@ -2048,10 +2054,10 @@ def test_r13_01_resolve_conflict_cannot_close_a_loss_it_just_recorded(tmp_path):
     m = Manager(home, actor="x")
     assert not views.open_conflicts(m.projection())
     with pytest.raises(ValidationError) as e:
-        m.resolve_conflict("LEDGER", "reviewed")  # nothing was open when the user typed this
+        m.resolve_conflict("LEDGER", "reviewed", ["deadbeef0000"])  # nothing was open when the user typed this
     assert e.value.code == "LEDGER_LOSS_RECORDED"
     assert any(c["type"] == "ANCHOR_LOSS" for c in views.open_conflicts(m.projection()))
-    m.resolve_conflict("LEDGER", "now reviewed")  # an explicit second resolution closes it
+    _resolve(m, "LEDGER", "now reviewed")  # an explicit second resolution, naming what was shown, closes it
     assert not views.open_conflicts(m.projection())
 
 
@@ -2092,3 +2098,60 @@ def test_r13_03_stale_update_after_a_recorded_loss_writes_only_the_loss(tmp_path
         m.update_milestone("MM-A", expect_version=99, objective="x")
     assert e.value.code == "CONFLICT"
     assert len(m.store.read_all()[0].events) == before + 1  # the refused update wrote nothing (F5)
+
+
+# ------------------------------------------------------------------ R14 regression tests (review R14 on b59c1f2a)
+
+def _interrupted_loss_recording(tmp_path, monkeypatch):
+    """A write records ANCHORS_ADOPTED and is interrupted (Ctrl-C) before it can refuse and tell its user."""
+    m = new(tmp_path)
+    init_anchors = m.store.anchors_path.read_bytes()
+    m.create_milestone("MM-A", "A")
+    m.store.anchors_path.write_bytes(init_anchors)
+    def interrupted(label):
+        raise KeyboardInterrupt()
+    monkeypatch.setattr(m.store, "autocommit", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        m.create_milestone("MM-B", "B")
+    monkeypatch.undo()
+    return m
+
+
+def test_r14_01_unseen_loss_cannot_be_resolved_by_entity_name(tmp_path, monkeypatch):
+    m = _interrupted_loss_recording(tmp_path, monkeypatch)
+    assert views.open_conflicts(m.projection(), "LEDGER")  # recorded, but its user was never told
+    for ids in ([], ["deadbeef0000"]):
+        with pytest.raises(ValidationError) as e:
+            m.resolve_conflict("LEDGER", "routine", ids)
+        assert e.value.code in ("NO_CONFLICT_ID", "UNKNOWN_CONFLICT_ID")
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "a", "resolve-conflict", "LEDGER", "--note", "x"], out=out) == 1
+    out = io.StringIO()
+    cli.run(["--home", str(m.home), "conflicts"], out=out)
+    shown = [r["id"] for r in json.loads(out.getvalue())]
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "a", "resolve-conflict", "LEDGER", "--note", "reviewed",
+                    *[a for i in shown for a in ("--id", i)]], out=out) == 0
+    assert not views.open_conflicts(m.projection())
+
+
+def test_r14_01_status_shows_the_ids_to_resolve(tmp_path, monkeypatch):
+    m = _interrupted_loss_recording(tmp_path, monkeypatch)
+    out = io.StringIO()
+    cli.run(["--home", str(m.home), "--no-emoji", "status", "--no-tasks"], out=out)
+    cid = views.conflict_rows(m.projection())[0]["id"]
+    assert f"--id {cid}" in out.getvalue()
+
+
+def test_r14_02_refusal_reports_autocommit_errors(tmp_path, monkeypatch):
+    m = new(tmp_path)
+    init_anchors = m.store.anchors_path.read_bytes()
+    m.create_milestone("MM-A", "A")
+    m.store.anchors_path.write_bytes(init_anchors)
+    from scripts.dev_workflow.milestones import store as store_mod
+    monkeypatch.setattr(store_mod.EventStore, "autocommit", lambda self, label: {"committed": False,
+                                                                                  "error": "git: disk full"})
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "a", "milestone-add", "MM-B", "--title", "B"], out=out) == 1
+    res = json.loads(out.getvalue())
+    assert res["refused"] == "LEDGER_LOSS_RECORDED" and res["autocommit_error"] == "git: disk full"

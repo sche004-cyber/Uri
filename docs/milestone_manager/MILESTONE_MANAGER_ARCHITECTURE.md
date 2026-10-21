@@ -346,6 +346,16 @@ refused commands (R13-03). Replaced by one rule:
 | a pending acknowledged loss whose id is not yet recorded, or an own segment without anchor | record LOSS_RECORDED / ANCHORS_ADOPTED as their own batch (ANCHOR_LOSS), refresh anchors, remove the marker, then **refuse the command** with `LEDGER_LOSS_RECORDED` — it is not executed. The user reviews, resolves (`resolve-conflict LEDGER`) and runs it again |
 | otherwise | the command runs as before |
 
-So no command (including `resolve-conflict`) ever acts on, or closes, a loss its user has not seen. The CLI prints the
+So no command acts on a loss in the same call that records it. (Correction after review R14: this alone did not guarantee that a loss is *seen* before it is resolved — a write interrupted between recording and refusing told nobody; §26 adds the explicit proof.) The CLI prints the
 warnings with the refusal. `recover` prints its own result and the refusal of its follow-up step; running `recover`
 again completes it.
+
+## 26. Changes after independent review R14 (2026-10-22, REJECT on `b59c1f2a`)
+
+| Change | Reason |
+|---|---|
+| `resolve-conflict <entity> --id <conflict id> [--id ...] --note ...`: a conflict is resolved only when named by its id (first 12 hex digits of the event hash that raised it). Ids are shown by `status` (in each issue line) and by the new `conflicts` command. Without ids the command is refused (`NO_CONFLICT_ID`, listing the open ids); unknown ids are refused (`UNKNOWN_CONFLICT_ID`). Naming the id is the proof that the conflict was displayed, so a loss recorded by an interrupted write (Ctrl-C, kill during autocommit) cannot be closed by entity name alone | R14-01 |
+| a refusal that follows a recorded loss also reports a git autocommit error | R14-02 |
+
+Verified by reviewer R14 for the first time since R12: concurrency stress (5 rounds × 4 writer + 4 reader processes,
+2,847 reads, 0 false integrity alarms) and N3 (rebuild 0.18 s, CLI status 0.43 s, 4.43 MB).

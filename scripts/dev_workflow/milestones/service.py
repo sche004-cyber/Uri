@@ -659,13 +659,31 @@ class Manager:
                      {subject: p["versions"].get(subject, 0)})]
         return self._write(build)
 
-    def resolve_conflict(self, entity, note):
+    def resolve_conflict(self, entity, note, conflict_ids=()):
+        """Resolve exactly the conflicts named by their ids (the 12-hex prefixes `status` / `conflicts` print).
+
+        Naming them is the proof that they were seen: a conflict recorded after its user last looked (e.g. by a write
+        interrupted between recording a loss and refusing the command) cannot be closed by entity name alone
+        (reviews R2-05, R13-01, R14-01)."""
         M.check_text("note", note, True)
+        ids = [str(x).strip().lower() for x in (conflict_ids or []) if str(x).strip()]
         def build(p):
-            seen = [c["event"]["hash"] for c in p["conflicts"] if c["entity"] == entity and not c["resolved"]]
-            if not seen:
+            open_c = [c for c in p["conflicts"] if c["entity"] == entity and not c["resolved"]]
+            if not open_c:
                 raise ValidationError("NOT_FOUND", f"no open conflict on {entity}")
-            return [("CONFLICT_RESOLVED", {"entity": entity, "note": note, "conflicts": seen}, {})]
+            if not ids:
+                raise ValidationError("NO_CONFLICT_ID", f"name the conflicts to resolve with --id (open on {entity}: "
+                                                        + ", ".join(M.conflict_id(c) for c in open_c)
+                                                        + "); see `conflicts` for details")
+            chosen = []
+            for x in ids:
+                hits = [c for c in open_c if len(x) >= 8 and c["event"]["hash"].startswith(x)]
+                if len(hits) != 1:
+                    raise ValidationError("UNKNOWN_CONFLICT_ID", f"{x!r} does not name exactly one open conflict on "
+                                                                 f"{entity}")
+                chosen.append(hits[0]["event"]["hash"])
+            return [("CONFLICT_RESOLVED", {"entity": entity, "note": note,
+                                           "conflicts": sorted(set(chosen))}, {})]
         return self._write(build)
 
     def abandon_batches(self, reason):

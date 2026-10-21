@@ -169,6 +169,11 @@ CREATION = {"MILESTONE_CREATED": ("milestones", "created"), "REVIEW_RECORDED": (
             "RECORD_IMPORTED": ("records", "recorded")}
 
 
+def conflict_id(c) -> str:
+    """Short, stable id of a conflict: the first 12 hex digits of the event hash that raised it."""
+    return c["event"]["hash"][:12]
+
+
 def _conflict(p, ctype, entity, ref, kind, subject=None, **extra):
     p["conflicts"].append({"type": ctype, "entity": entity, "subject": subject, "event": ref, "kind": kind,
                            "resolved": False, **extra})

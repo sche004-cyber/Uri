@@ -103,6 +103,8 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("integration-record"); _p(s, "subject"); _p(s, "--target-ref", required=True)
     _p(s, "--target-commit", required=True); _p(s, "--repo")
     s = sub.add_parser("resolve-conflict"); _p(s, "entity"); _p(s, "--note", required=True)
+    _p(s, "--id", action="append", default=[], help="conflict id shown by `status`/`conflicts` (repeatable)")
+    s = sub.add_parser("conflicts", help="list open conflicts with their ids"); _p(s, "--entity")
 
     s = sub.add_parser("import-decisions"); _p(s, "path"); _p(s, "--commit"); _p(s, "--register")
     s = sub.add_parser("import-register"); _p(s, "path"); _p(s, "--commit"); _p(s, "--register")
@@ -233,7 +235,7 @@ def run(argv=None, out=None) -> int:
         elif c == "integration-record":
             r = mgr.record_integration(args.subject, args.target_ref, args.target_commit, args.repo)
         elif c == "resolve-conflict":
-            r = mgr.resolve_conflict(args.entity, args.note)
+            r = mgr.resolve_conflict(args.entity, args.note, args.id)
         elif c == "import-decisions":
             r = importers.import_decisions(mgr, args.path, args.commit, args.register)
             if r["collisions"]:
@@ -253,6 +255,10 @@ def run(argv=None, out=None) -> int:
                 emit(a2ui_surface(st) if args.a2ui else st)
             else:
                 emit("\n".join(views.status_lines(p, emoji, tasks, args.milestone)) or "(no milestones)")
+            return integrity_rc(p)
+        elif c == "conflicts":
+            p = mgr.projection()
+            emit(views.conflict_rows(p, args.entity))
             return integrity_rc(p)
         elif c == "show":
             p = mgr.projection()
@@ -323,6 +329,9 @@ def run(argv=None, out=None) -> int:
         out_obj = {"refused": e.code, "message": str(e)}
         if mgr_ref.get("mgr") is not None and mgr_ref["mgr"].last_warnings:
             out_obj["warnings"] = mgr_ref["mgr"].last_warnings
+        ac = mgr_ref["mgr"].last_autocommit if mgr_ref.get("mgr") is not None else None
+        if ac and ac.get("error"):
+            out_obj["autocommit_error"] = ac["error"]
         emit(out_obj)
         return 1
     except StoreError as e:

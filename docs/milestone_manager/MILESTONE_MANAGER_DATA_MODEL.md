@@ -197,3 +197,10 @@ codes: `CANDIDATE_LOCKED`, `CONFLICT_OPEN`; CLI errors `IO`, `INPUT` (exit 2); i
 
 - Refusal code `LEDGER_LOSS_RECORDED`: the write recorded LOSS_RECORDED and/or ANCHORS_ADOPTED and did not execute the
   requested command.
+
+## 20. Changes after review R14
+
+- `CONFLICT_RESOLVED.conflicts[]` now holds exactly the conflicts the caller named by id (prefix of the raising
+  event's hash, at least 8 hex digits, unique among open conflicts on that entity). Refusals `NO_CONFLICT_ID`,
+  `UNKNOWN_CONFLICT_ID`. New read command `conflicts [--entity E]` (`{id, type, entity, subject, recorded_by, event,
+  at, detail}`).

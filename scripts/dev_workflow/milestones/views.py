@@ -77,14 +77,16 @@ def indicator(p, m, tasks: dict | None = None) -> dict:
             detail = (c.get("lost") or (c.get("anchor_problems") or [None])[0]
                       or ("own segment adopted without an anchor" if c.get("kind") == "ANCHORS_ADOPTED" else None)
                       or "unknown history")
-            reds.append(f"ledger integrity loss recorded by {c.get('kind')}: {detail}; review, then "
-                        "`resolve-conflict LEDGER`")
+            reds.append(f"ledger integrity loss recorded by {c.get('kind')} [conflict {c['event']['hash'][:12]}]: "
+                        f"{detail}; review, then `resolve-conflict LEDGER --id {c['event']['hash'][:12]}`")
         else:
-            reds.append(f"batch {c.get('batch')} was declared abandoned but is complete and applied; review, then "
-                        "`resolve-conflict LEDGER`")
+            reds.append(f"batch {c.get('batch')} was declared abandoned but is complete and applied "
+                        f"[conflict {c['event']['hash'][:12]}]; review, then `resolve-conflict LEDGER --id "
+                        f"{c['event']['hash'][:12]}`")
     for c in open_conflicts(p, ident):
-        reds.append(f"{c.get('type', 'VERSION')} conflict on {c['entity']} (event {c['event']['seg']}#"
-                    f"{c['event']['seq']}); resolve with `resolve-conflict`")
+        reds.append(f"{c.get('type', 'VERSION')} conflict on {c['entity']} [conflict {c['event']['hash'][:12]}] "
+                    f"(event {c['event']['seg']}#{c['event']['seq']}); resolve with `resolve-conflict "
+                    f"{c['entity']} --id {c['event']['hash'][:12]}`")
     if m["status"] in DONE_STATES:
         neg = negative_reviews_on_candidate(p, m)
         if neg:
@@ -185,7 +187,8 @@ def status_lines(p, emoji=True, task_source=None, milestone=None) -> list[str]:
             lines.append(f"    next: {ind['next_action'][:300]}")
     oc = open_conflicts(p)
     if oc:
-        lines.append(f"Unresolved conflicts: {len(oc)} (run `show` on the entity, then `resolve-conflict`)")
+        lines.append(f"Unresolved conflicts: {len(oc)} (list them with `conflicts`; resolve with "
+                     "`resolve-conflict <entity> --id <id> --note ...`)")
     reviews = len(p["reviews"])
     if reviews:
         lines.append(f"Reviews recorded: {reviews} (routine detail: `show <milestone>`)")
@@ -301,3 +304,15 @@ def resume_brief(p, ident, tasks: dict | None = None, max_chars: int = 6000, emo
     if len(text) > max_chars:
         text = text[: max_chars - 60].rsplit("\n", 1)[0] + f"\n[truncated at {max_chars} chars; use `show {ident}`]"
     return text
+
+
+def conflict_rows(p, entity=None) -> list[dict]:
+    """Open conflicts with their ids, for the `conflicts` command."""
+    rows = []
+    for c in open_conflicts(p, entity) if entity else open_conflicts(p):
+        rows.append({"id": c["event"]["hash"][:12], "type": c.get("type"), "entity": c["entity"],
+                     "subject": c.get("subject"), "recorded_by": c.get("kind"),
+                     "event": f"{c['event']['seg']}#{c['event']['seq']}", "at": c["event"].get("ts"),
+                     "detail": {k: c[k] for k in ("lost", "anchor_problems", "missing", "expected", "actual",
+                                                   "duplicate", "batch") if k in c}})
+    return rows
