@@ -55,8 +55,8 @@ R1 (on `e9ee7409`): R1-01 MEDIUM fixed (`d1388d8c`, `abdfaa26`); R1-02..R1-06 fi
 R1-08 INFO unchanged (literal-only typography guard).
 R2 (on `d1388d8c`, REVISE): R2-01..R2-08 repaired in `abdfaa26`; R2-09/R2-10 are D-2/D-1/D-3 above.
 R3 (on `abdfaa26`, REVISE): R3-01 MEDIUM and R3-06 repaired in `b774bb85`.
-R4 (on `b774bb85`, REVISE): R4-01 MEDIUM, R4-02 LOW, R4-03 LOW, R4-04 INFO repaired in `a87ee0a1` and this record. Open LOW: R3-02 (static resync
-guard is now per health reading), R3-03 (an unreadable Assist state leaves Vision unlocked, unchanged behaviour),
+R4 (on `b774bb85`, REVISE): R4-01 MEDIUM, R4-02 LOW, R4-03 LOW, R4-04 INFO repaired in `a87ee0a1` and this record. R3-02 resolved in `b774bb85` (the
+resync guard is per health reading; confirmed by R4). Open LOW: R3-03 (an unreadable Assist state leaves Vision unlocked, unchanged behaviour),
 R3-04 (focus can drop when loading ends in a disabled state), R3-05 INFO (diagnostics wording).
 
 ## 5. Gates
@@ -66,6 +66,7 @@ R3-04 (focus can drop when loading ends in a disabled state), R3-05 INFO (diagno
 | `d1388d8c` | 807 passed, 23 skipped | 874 passed, 5 skipped | 10 info (5 new, removed in `708500fd`) | rc 0 | `[]` |
 | `abdfaa26` | 807 passed, 23 skipped | 879 passed, 5 skipped | 5 info (baseline) | rc 0 | `[]` |
 | `b774bb85` | 807 passed, 23 skipped | 881 passed, 5 skipped | 5 info (baseline) | rc 0 | `[]` |
+| `1741e97e` | 807 passed, 23 skipped | 882 passed, 5 skipped | 5 info (baseline) | rc 0 | `[]` |
 
 Logs: `D:\uri-dev\lifecycle\URI-CONTROLS-3\gates_<commit>\` (outside git; head.txt records HEAD and a clean tree).
 
@@ -76,4 +77,15 @@ Logs: `D:\uri-dev\lifecycle\URI-CONTROLS-3\gates_<commit>\` (outside git; head.t
 | R1 review | `docs/ui/controls_typography_20261018/review/R1_report.md` |
 | R2, R3, R4 reviews (fresh read-only subagents) | `docs/ui/uri_controls_3/review/` (copies of `D:\uri-dev\lifecycle\URI-CONTROLS-3\review_R*.md`) |
 | Live driver | `docs/ui/uri_controls_3/live_harness/controls3_driver.dart` |
-| Live runs | not yet run: the GPU was contended on 2026-10-21 (desktop `dwm.exe` 1.77 GB; P3 fit -976 MiB), the production host waited in WAITING_FOR_GPU as designed |
+| Live runs | NOT RUN (BLOCKED). Attempt 2026-10-21 17:07-17:43Z, chain `D:\uri-dev\uri-controls-live\chain_c3.sh` (runtime `D:\uri-dev\uri-controls-live\runtime` materialised from `abdfaa26`, Python identical at `1741e97e`; installation `c3`, port 18360; P3 profile): the production Brain host waited in WAITING_FOR_GPU for 35 min (GPU_CONTENDED, fit -1066 MiB; desktop `dwm.exe` 1.77 GB), so no Brain started; stopped with the harness stop file. Earlier Ember attempt 16:27-17:05Z: same cause. No live result exists (NO_OUTPUT; nothing is counted as evidence). |
+| Gates at the reviewed commit | `1741e97e`: pytest 807 passed / 23 skipped; flutter 882 passed / 5 skipped; analyze 5 info (baseline); release build rc 0; `ws_frozen_check` clean |
+| Final review | R5 on `1741e97e` (code = `a87ee0a1`): ACCEPT WITH FINDINGS (R5-01 LOW wall-clock ordering of the two Assist readings; R5-02 LOW Vision-off offered up to one poll after a fresh grant, refused by the worker with ASSIST_NEEDS_VISION; R5-03 INFO docs). `docs/ui/uri_controls_3/review/review_R5_1741e97e.md` |
+
+## 7. Status (2026-10-21)
+
+**ACCEPTED (R5 ACCEPT WITH FINDINGS) - NOT INTEGRATED.** Blocker: the Lifecycle V3 Stage 8 live Windows UI
+qualification (canonical policy DEV-LIFECYCLE-3, UI-first) has no result on this code because the GPU was contended
+for the whole session. Next step: in a free GPU window run `bash D:/uri-dev/uri-controls-live/chain_c3.sh` (remove the
+`stop-session` files under `D:\uri-dev\uri-controls-live\live\c3-*` first, or use new labels), check
+`observations.json` of `c3-1` (driver `controls3_driver.dart`) and the UI V2 main / returning / perf runs, then merge
+canonical `9488c0fd` (docs only since `68061d85`) and integrate. Open LOW: R3-03, R3-04, R5-01, R5-02; INFO R3-05, R5-03.
