@@ -198,7 +198,7 @@ class _LivingComposerState extends State<LivingComposer> {
                       ),
                       label: Text(
                         oi.draftTarget ? 'To: ${draft.docType} draft' : 'To: conversation',
-                        style: TextStyle(fontSize: 12, color: c.ink),
+                        style: TextStyle(fontSize: UriType.label, color: c.ink),
                       ),
                       onPressed: () => oi.setDraftTarget(!oi.draftTarget),
                     ),
@@ -219,7 +219,7 @@ class _LivingComposerState extends State<LivingComposer> {
                 if (qcCompact)
                   IconButton(
                     key: const ValueKey('qc-compact'),
-                    tooltip: 'Brain settings: Thinking, Vision, Context',
+                    tooltip: 'Brain settings: Thinking, Vision, URI Assist',
                     icon: const Icon(Icons.tune_rounded, size: 18),
                     color: c.inkSoft,
                     onPressed: () => showDialog<void>(
@@ -229,7 +229,14 @@ class _LivingComposerState extends State<LivingComposer> {
                         title: const Text('Brain settings'),
                         content: ListenableBuilder(
                           listenable: oi,
-                          builder: (_, _) => BrainQuickControls(conversation: oi),
+                          builder: (_, _) => BrainQuickControls(
+                            conversation: oi,
+                            assist: LivingScope.maybeOf(context)?.assist,
+                            openAssist: () {
+                              Navigator.pop(ctx);
+                              LivingScope.maybeOf(context)?.presentation.setMode(UiPresentationMode.assist);
+                            },
+                          ),
                         ),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
@@ -300,7 +307,7 @@ class _LivingComposerState extends State<LivingComposer> {
                       minLines: 1,
                       maxLines: widget.compact ? 3 : 5,
                       onChanged: appState.setComposerDraft,
-                      style: TextStyle(color: c.ink, fontSize: 14),
+                      style: TextStyle(color: c.ink, fontSize: UriType.bodyLarge),
                       decoration: InputDecoration(
                         isDense: widget.floating,
                         hintText: office is OfficeRequestHint
@@ -390,12 +397,16 @@ class _LivingComposerState extends State<LivingComposer> {
               ],
             );
             }),
-            // BRAIN-QC-20261018: Thinking / Vision / Context under the chat box (full composer only). They step
+            // Quick controls (URI-CONTROLS-3): Thinking / Vision / URI Assist under the chat box (full composer only). They step
             // aside in a small window (UIV2-F3: nothing may overflow while it shrinks into Companion).
             if (oi != null && office == null && qcFull && qcRoom(context))
               Align(
                 alignment: Alignment.centerLeft,
-                child: BrainQuickControls(conversation: oi),
+                child: BrainQuickControls(
+                  conversation: oi,
+                  assist: LivingScope.maybeOf(context)?.assist,
+                  openAssist: () => LivingScope.maybeOf(context)?.presentation.setMode(UiPresentationMode.assist),
+                ),
               ),
             if (voice != null && !widget.minimal)
               VoiceNoticeLine(controller: voice),

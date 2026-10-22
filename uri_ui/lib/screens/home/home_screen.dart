@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   'SYSTEM OVERVIEW',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: UriType.caption,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.2,
                     color: colors.inkFaint,
@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   'SUGGESTED ACTIONS',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: UriType.caption,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.2,
                     color: colors.inkFaint,
@@ -123,7 +123,7 @@ class _GreetingBanner extends StatelessWidget {
               Text(
                 'Welcome back, $username',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: UriType.headline,
                   fontWeight: FontWeight.w700,
                   color: colors.ink,
                   letterSpacing: -0.5,
@@ -133,7 +133,7 @@ class _GreetingBanner extends StatelessWidget {
               Text(
                 'Here is your current operational status and pending actions.',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: UriType.body,
                   color: colors.inkSoft,
                 ),
               ),
@@ -367,7 +367,7 @@ class _MetricTileCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: UriType.micro,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
                         color: colors.inkFaint,
@@ -388,7 +388,7 @@ class _MetricTileCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: UriType.headline,
                   fontWeight: FontWeight.w700,
                   color: isError ? colors.warning : colors.ink,
                   letterSpacing: -0.5,
@@ -400,7 +400,7 @@ class _MetricTileCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: UriType.label,
                   color: isError ? colors.warning : colors.inkSoft,
                 ),
               ),
@@ -535,7 +535,7 @@ class _SuggestedActionsPanel extends StatelessWidget {
                       Text(
                         item.title,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: UriType.body,
                           fontWeight: FontWeight.w600,
                           color: colors.ink,
                         ),
@@ -544,7 +544,7 @@ class _SuggestedActionsPanel extends StatelessWidget {
                       Text(
                         item.subtitle,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: UriType.label,
                           color: colors.inkSoft,
                         ),
                       ),
@@ -560,7 +560,7 @@ class _SuggestedActionsPanel extends StatelessWidget {
                       vertical: 8,
                     ),
                   ),
-                  child: Text(item.buttonLabel, style: const TextStyle(fontSize: 12)),
+                  child: Text(item.buttonLabel, style: const TextStyle(fontSize: UriType.label)),
                 ),
               ],
             ),

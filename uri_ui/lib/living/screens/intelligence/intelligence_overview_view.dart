@@ -258,7 +258,7 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                             child: Text(
                               s.sourceName ?? 'none',
                               style: TextStyle(
-                                fontSize: 11.5,
+                                fontSize: UriType.label,
                                 color: c.inkFaint,
                               ),
                             ),
@@ -268,7 +268,7 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                               '${s.state.label}${s.detail != null ? ' · ${s.detail}' : ''}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 12.5, color: c.ink),
+                              style: TextStyle(fontSize: UriType.body, color: c.ink),
                             ),
                           ),
                           if (s.simulated)
@@ -279,7 +279,7 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                   const SizedBox(height: 4),
                   Text(
                     'The orb shows the highest-priority signal above. Nothing here is URI\'s internal reasoning; these are observed states.',
-                    style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                    style: TextStyle(fontSize: UriType.label, color: c.inkFaint),
                   ),
                 ],
               ),
@@ -315,7 +315,7 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                       child: Text(
                         'PROTOTYPE: not connected to a memory backend. Nodes are the ${services.appDataIsMock ? 'mock client\'s' : 'client\'s'} memory entries (${snap.memoryNodes.length}); edges join entries that share a word.',
                         key: const ValueKey('memory-graph-disclaimer'),
-                        style: TextStyle(fontSize: 11, color: c.warning),
+                        style: TextStyle(fontSize: UriType.caption, color: c.warning),
                       ),
                     ),
                   ],
@@ -351,7 +351,7 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                               '${w.title} · ${w.state.label}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 12.5, color: c.ink),
+                              style: TextStyle(fontSize: UriType.body, color: c.ink),
                             ),
                           ),
                           if (w.simulated)
@@ -371,7 +371,7 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                               '${t.description} · Needs approval',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 12.5, color: c.ink),
+                              style: TextStyle(fontSize: UriType.body, color: c.ink),
                             ),
                           ),
                           if (services.appDataIsMock)
@@ -383,7 +383,7 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                       appState.tasks.isEmpty)
                     Text(
                       'Nothing active.',
-                      style: TextStyle(fontSize: 12.5, color: c.inkFaint),
+                      style: TextStyle(fontSize: UriType.body, color: c.inkFaint),
                     ),
                 ],
               ),
@@ -434,7 +434,7 @@ class _PrototypeBadge extends StatelessWidget {
       child: Text(
         'PROTOTYPE',
         style: TextStyle(
-          fontSize: 9.5,
+          fontSize: UriType.micro,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.6,
           color: c.warning,
@@ -459,13 +459,13 @@ class _Fact extends StatelessWidget {
         children: [
           SizedBox(
             width: 90,
-            child: Text(k, style: TextStyle(fontSize: 11.5, color: c.inkFaint)),
+            child: Text(k, style: TextStyle(fontSize: UriType.label, color: c.inkFaint)),
           ),
           Expanded(
             child: Text(
               v,
               style: TextStyle(
-                fontSize: 12.5,
+                fontSize: UriType.body,
                 color: danger ? c.danger : c.ink,
               ),
             ),
@@ -511,7 +511,7 @@ class _PipelineStrip extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: UriType.label,
                                 fontWeight: f.state == StageState.active
                                     ? FontWeight.w700
                                     : FontWeight.w500,
@@ -525,7 +525,7 @@ class _PipelineStrip extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 10.5,
+                                fontSize: UriType.caption,
                                 color: c.inkFaint,
                               ),
                             ),
@@ -592,7 +592,7 @@ class _MemoryGraphPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(
           text: 'No memory entries',
-          style: TextStyle(color: faint, fontSize: 12),
+          style: TextStyle(color: faint, fontSize: UriType.label),
         ),
         textDirection: TextDirection.ltr,
       )..layout();
@@ -629,7 +629,7 @@ class _MemoryGraphPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(
           text: label,
-          style: TextStyle(color: ink, fontSize: 10.5),
+          style: TextStyle(color: ink, fontSize: UriType.caption),
         ),
         textDirection: TextDirection.ltr,
         maxLines: 1,

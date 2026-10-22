@@ -1,0 +1,75 @@
+[
+ {
+  "utc": "2026-10-15T10:06:08.164848+00:00",
+  "event": "start",
+  "manifest": "C:\\Users\\cheta\\Development\\uri-fire-companion-v2-rt\\work\\c1\\ws-firev2\\client\\client-manifest.json",
+  "port": 18300
+ },
+ {
+  "utc": "2026-10-15T10:11:23.909172+00:00",
+  "event": "ui ready -> launcher -NoUi -OverrideGpu",
+  "lease": {
+   "state": "FREE",
+   "last": {
+    "acquired_at": 1792057234.442,
+    "create_time": 1792057234.23,
+    "expected_vram_mib": null,
+    "heartbeat_at": 1792057234.442,
+    "label": "FCV recovery candidate chain (CPU; held to keep competing GPU-heavy tests off)",
+    "max_hold_s": 5400.0,
+    "override": null,
+    "pid": 20224,
+    "process": "python.exe",
+    "purpose": "regression_chain",
+    "release_reason": "released",
+    "released_at": 1792059079.079,
+    "schema": "uri.gpu.lease.v1",
+    "session": "",
+    "state": "released"
+   },
+   "stale_record": false
+  }
+ },
+ {
+  "utc": "2026-10-15T10:11:28.669023+00:00",
+  "event": "launcher",
+  "rc": 0,
+  "out": "Integrated server: port 18300, identity proven\nGPU override: owner-authorized start next to other GPU processes (recorded)\nBrain host: starting (GPU check, load and speed check run in the background; URI shows the state)\n",
+  "err": ""
+ },
+ {
+  "utc": "2026-10-15T10:14:45.058433+00:00",
+  "event": "brain host stop",
+  "reason": "recoverable-error journey",
+  "pids": [
+   2520,
+   3196
+  ],
+  "killed_after_wait": []
+ },
+ {
+  "utc": "2026-10-15T10:15:12.193853+00:00",
+  "event": "brain host restarted",
+  "rc": 0,
+  "out": "Integrated server: port 18300, identity proven\nGPU override: owner-authorized start next to other GPU processes (recorded)\nBrain host: starting (GPU check, load and speed check run in the background; URI shows the state)\n"
+ },
+ {
+  "utc": "2026-10-15T10:17:14.459490+00:00",
+  "event": "flutter test finished",
+  "rc": 0
+ },
+ {
+  "utc": "2026-10-15T10:17:16.481914+00:00",
+  "event": "brain host stop",
+  "reason": "end of run",
+  "pids": [
+   1404,
+   10636
+  ],
+  "killed_after_wait": []
+ },
+ {
+  "utc": "2026-10-15T10:17:16.487330+00:00",
+  "event": "driver removed"
+ }
+]

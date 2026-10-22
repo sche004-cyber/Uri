@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'companion_preferences.dart' show CompanionLook;
 import 'companion_state.dart';
 import 'effects_settings.dart';
+import 'ember_companion.dart';
 import 'frame_clock.dart';
 
 /// Which living companion is active.
@@ -29,6 +30,11 @@ enum CompanionIdentity {
   /// because the owner asked whether the two could be one companion; it is a
   /// separate identity rather than a mode of either.
   moonlit,
+
+  /// Warmth and character. A small fire spirit with a face, painted (2.5D,
+  /// painting-derived clips built with `companion_art/fire_v2/`) and played by
+  /// [EmberCompanion]; it has no shader of its own.
+  ember,
 }
 
 extension CompanionIdentityInfo on CompanionIdentity {
@@ -37,6 +43,7 @@ extension CompanionIdentityInfo on CompanionIdentity {
     CompanionIdentity.sakura => 'Sakura',
     CompanionIdentity.lunar => 'Lunar',
     CompanionIdentity.moonlit => 'Moonlit Blossom',
+    CompanionIdentity.ember => 'Ember',
   };
 
   /// One line for a picker.
@@ -45,6 +52,7 @@ extension CompanionIdentityInfo on CompanionIdentity {
     CompanionIdentity.sakura => 'Grace and life',
     CompanionIdentity.lunar => 'Calm and mystery',
     CompanionIdentity.moonlit => 'Moonlight and blossom',
+    CompanionIdentity.ember => 'Warmth and character',
   };
 
   String get shaderAsset => switch (this) {
@@ -52,7 +60,14 @@ extension CompanionIdentityInfo on CompanionIdentity {
     CompanionIdentity.sakura => 'shaders/companion_sakura.frag',
     CompanionIdentity.lunar => 'shaders/companion_lunar.frag',
     CompanionIdentity.moonlit => 'shaders/companion_moonlit.frag',
+    // Not a shader identity; [CompanionOrb] hands it to [EmberCompanion]
+    // before any program is loaded. Kept non-empty so a stray load fails
+    // like any missing asset instead of asserting.
+    CompanionIdentity.ember => 'shaders/companion_ember.unused',
   };
+
+  /// Whether this identity is drawn by a fragment shader.
+  bool get usesShader => this != CompanionIdentity.ember;
 
   /// How much of the shorter side the companion body occupies. The rest is
   /// deliberately left for the corona, the petals or the cloud, which is the
@@ -62,6 +77,8 @@ extension CompanionIdentityInfo on CompanionIdentity {
     CompanionIdentity.sakura => 0.30,
     CompanionIdentity.lunar => 0.33,
     CompanionIdentity.moonlit => 0.32,
+    // Half the width of the character's head and flame at its widest.
+    CompanionIdentity.ember => 0.42,
   };
 }
 
@@ -155,7 +172,7 @@ class CompanionParams {
 
   /// The parameter table for one identity, covering every [CompanionState].
   ///
-  /// It covers all nine, not the five in the visual brief: `CompanionState` is
+  /// It covers all ten, not the five in the visual brief: `CompanionState` is
   /// an existing contract driven by authoritative facts, and a companion that
   /// cannot express `awaitingApproval` or `unavailable` would silently fall
   /// back to some other state's appearance and misreport what URI is doing.
@@ -170,6 +187,10 @@ class CompanionParams {
     // The hybrid is a lunar scene carrying petals, so it reads the lunar
     // table. Its own shader interprets `particles` as petals as well as mist.
     CompanionIdentity.moonlit: _lunar,
+    // Ember plays rendered clips and does not read these parameters; it
+    // shares Solar's warm table so any caller that asks still gets a
+    // complete, fire-like answer.
+    CompanionIdentity.ember: _solar,
   };
 
   static const Map<CompanionState, CompanionParams> _solar =
@@ -177,6 +198,10 @@ class CompanionParams {
         CompanionState.unavailable: CompanionParams(
           energy: 0.06, turbulence: 0.05, flare: 0.00,
           particles: 0.05, focus: 0.95, exposure: 0.72,
+        ),
+        CompanionState.initializing: CompanionParams(
+          energy: 0.14, turbulence: 0.10, flare: 0.04,
+          particles: 0.16, focus: 0.88, exposure: 0.88,
         ),
         CompanionState.idle: CompanionParams(
           energy: 0.22, turbulence: 0.16, flare: 0.10,
@@ -218,6 +243,10 @@ class CompanionParams {
           energy: 0.06, turbulence: 0.05, flare: 0.00,
           particles: 0.06, focus: 0.95, exposure: 0.74,
         ),
+        CompanionState.initializing: CompanionParams(
+          energy: 0.15, turbulence: 0.11, flare: 0.04,
+          particles: 0.20, focus: 0.84, exposure: 0.88,
+        ),
         CompanionState.idle: CompanionParams(
           energy: 0.24, turbulence: 0.18, flare: 0.10,
           particles: 0.34, focus: 0.80, exposure: 1.00,
@@ -257,6 +286,10 @@ class CompanionParams {
         CompanionState.unavailable: CompanionParams(
           energy: 0.05, turbulence: 0.10, flare: 0.00,
           particles: 0.06, focus: 0.30, exposure: 0.70,
+        ),
+        CompanionState.initializing: CompanionParams(
+          energy: 0.14, turbulence: 0.15, flare: 0.05,
+          particles: 0.18, focus: 0.55, exposure: 0.86,
         ),
         CompanionState.idle: CompanionParams(
           energy: 0.22, turbulence: 0.24, flare: 0.12,
@@ -325,6 +358,11 @@ class CompanionShaderCache {
       _loading[id] ??= _doLoad(id);
 
   static Future<ui.FragmentProgram?> _doLoad(CompanionIdentity id) async {
+    if (!id.usesShader) {
+      // Ember plays rendered clips; there is no program to load.
+      _failures[id] = 'not a shader identity';
+      return null;
+    }
     try {
       final program = await ui.FragmentProgram.fromAsset(id.shaderAsset);
       _programs[id] = program;
@@ -514,9 +552,11 @@ class _CompanionOrbState extends State<CompanionOrb>
   }
 
   /// Under reduced motion the companion is a still image once its blend and
-  /// attention have settled, so it stops asking for frames.
+  /// attention have settled, so it stops asking for frames. Ember animates
+  /// itself, so this state asks for none.
   @override
   bool get wantsFrames {
+    if (!widget.identity.usesShader) return false;
     if (!_reducedMotion) return true;
     final goal = widget.attention ? 1.0 : 0.0;
     return _blend < 1 || (goal - _attention).abs() > 0.01;
@@ -547,6 +587,17 @@ class _CompanionOrbState extends State<CompanionOrb>
   @override
   Widget build(BuildContext context) {
     final effects = EffectsSettings.of(context);
+    if (!widget.identity.usesShader) {
+      if (effects.reducedEffects) {
+        return widget.fallback ?? const SizedBox.expand();
+      }
+      return EmberCompanion(
+        state: widget.state,
+        attention: widget.attention,
+        look: widget.look,
+        fallback: widget.fallback,
+      );
+    }
     // Reduced motion freezes the clock at a representative moment instead of
     // stopping the widget: the state must still be readable, it just must not
     // move. Reduced effects drops the shader entirely.

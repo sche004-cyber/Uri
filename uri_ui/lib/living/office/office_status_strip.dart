@@ -54,7 +54,7 @@ class OfficeStatusStrip extends StatelessWidget {
       color: colors.surfaceSunken,
       padding: const EdgeInsets.symmetric(horizontal: UriSpace.sm, vertical: UriSpace.xs),
       child: DefaultTextStyle.merge(
-        style: const TextStyle(fontSize: 12),
+        style: const TextStyle(fontSize: UriType.label),
         child: wrap
             ? Wrap(spacing: UriSpace.md, runSpacing: 2, children: children)
             : Row(children: [

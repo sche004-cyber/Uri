@@ -1,0 +1,352 @@
+{
+ "_comment": "Ember V2 expression table. Each clip animates one reference panel (rig.json) with animate.py. loop = frames at fps; every periodic term completes whole cycles per loop. motion keys: flow_base/flow_tip (px of flame turbulence at the root/tips), flow_tiles (tiles scrolled per loop, one per noise octave), sway_px, bob_px/bob_cycles/hop, tilt_deg/tilt_osc, smoke, flicker, bright, spark_rise/spark_cycles (painted sparks), sparks (extra procedural), handles (hand puppet offsets). face keys: lid (0 open .. 1 closed), lid_tilt (+ worried, - stern), gaze [dx, dy] px, eye_scale, mouth {src panel, at [x, y], scale, open} and talk (mouth open cycles per loop). blink: lid levels for the runtime blink overlay; omitted = no blink (smiling or closed eyes).",
+ "fps": 24,
+ "cell": 320,
+ "frame": {
+  "_comment": "V2.1: a square of `side` panel pixels centred on the panel. The companion host draws the cell at presence scale 0.5/0.42 and fades it to a disc ending at its box, so the box shows side/1.19 = 540 panel px: the whole painting composition, feet and crest inside the disc. V2 was side 490 around the neck with the feet at 0.955 (feet and crest cut by the disc).",
+  "side": 643,
+  "center": "panel"
+ },
+ "stage": {
+  "_comment": "Transparency-ready (owner directive 'URI UI V2 compatibility', 2026-10-15): no opaque backdrop. The clips' V2 aura pool is off (strength 0); light from the flames is a translucent emissive glow (export_v2.Framing.glow, alpha <= 0.45), fading before the cell border. panel_feather (Ember V2.1 final): Ember's own alpha fades over the last 20 panel px, so painted light reaching the panel edge (the ground glow under the feet) never ends in a straight line. Fidelity cost and choice: evidence/fidelity/P3_RESULTS.md. V2.1's painted opaque backdrop (9933ca2b) was: texture, pool [5, 6], edge 0.04, strength 1.0.",
+  "strength": 0.0,
+  "glow": {
+   "sigma": 18,
+   "gain": 2.0,
+   "cap": 0.45
+  },
+  "panel_feather": 20
+ },
+ "clips": {
+  "idle": {
+   "panel": "idle",
+   "reference": "01. IDLE",
+   "loop": 72,
+   "motion": {
+    "flow_base": 1.0,
+    "flow_tip": 8.0,
+    "flow_tiles": [
+     1,
+     2
+    ],
+    "sway_px": 6.0,
+    "bob_px": 1.5,
+    "flicker": 0.1,
+    "spark_rise": 40,
+    "aura": 0.95
+   },
+   "face": {},
+   "blink": [
+    0.45,
+    0.85,
+    1.0
+   ]
+  },
+  "joyful": {
+   "panel": "joyful",
+   "reference": "02. JOYFUL",
+   "loop": 48,
+   "motion": {
+    "flow_base": 1.2,
+    "flow_tip": 7.0,
+    "flow_tiles": [
+     2,
+     3
+    ],
+    "sway_px": 5.0,
+    "bob_px": 4.0,
+    "hop": true,
+    "bob_cycles": 2,
+    "flicker": 0.12,
+    "bright": 1.04,
+    "spark_rise": 70,
+    "spark_cycles": 1,
+    "sparks": 10,
+    "handles": [
+     {
+      "hand": 0,
+      "dy": 3,
+      "dx": -2,
+      "cycles": 2,
+      "sigma": 20
+     },
+     {
+      "hand": 1,
+      "dy": 3,
+      "dx": 2,
+      "cycles": 2,
+      "phase": 0.25,
+      "sigma": 20
+     }
+    ],
+    "aura": 0.95,
+    "airborne": true
+   },
+   "face": {}
+  },
+  "fierce": {
+   "panel": "fierce",
+   "reference": "03. FIERCE (rendered and scored; not mapped to any operational state)",
+   "loop": 48,
+   "ship": false,
+   "motion": {
+    "flow_base": 1.5,
+    "flow_tip": 8.0,
+    "flow_tiles": [
+     2,
+     3
+    ],
+    "sway_px": 6.0,
+    "bob_px": 1.2,
+    "bob_cycles": 2,
+    "flicker": 0.16,
+    "bright": 1.05,
+    "spark_rise": 80,
+    "sparks": 8,
+    "aura": 0.95,
+    "flow_cap": 4.0
+   },
+   "face": {},
+   "blink": [
+    0.5,
+    0.85,
+    1.0
+   ]
+  },
+  "depleted": {
+   "panel": "depleted",
+   "reference": "04. DEPLETED",
+   "loop": 72,
+   "motion": {
+    "flow_base": 0.6,
+    "flow_tip": 3.0,
+    "flow_tiles": [
+     1,
+     2
+    ],
+    "sway_px": 1.5,
+    "bob_px": 1.2,
+    "smoke": 1.0,
+    "flicker": 0.18,
+    "spark_rise": 30,
+    "aura": 0.95
+   },
+   "face": {},
+   "blink": [
+    0.75,
+    0.92,
+    1.0
+   ],
+   "stage": {
+    "_comment": "Depleted only: the painted backdrop as a 60 % translucent haze (P3: smoke reads 73.8 without it, 79.0 with it), held close to the figure (pool [0.10, 0.60], Ember V2.1 final: the earlier [0.35, 0.95] pool read as a grey rounded rectangle on light desktops; evidence/final/haze/). Still transparent: nothing darkens a white desktop by 6 % or more outside the central circle.",
+    "glow": {
+     "sigma": 18,
+     "gain": 2.0,
+     "cap": 0.45
+    },
+    "texture": true,
+    "strength": 0.6,
+    "pool": [
+     0.10,
+     0.60
+    ],
+    "edge": 0.08,
+    "edge_margin": 0.03,
+    "panel_feather": 20
+   }
+  },
+  "listening": {
+   "panel": "idle",
+   "reference": "derived from 01. IDLE: attentive, head tilted, calmer flame",
+   "loop": 48,
+   "motion": {
+    "flow_base": 0.8,
+    "flow_tip": 4.5,
+    "flow_tiles": [
+     1,
+     2
+    ],
+    "sway_px": 2.5,
+    "bob_px": 1.2,
+    "tilt_deg": -4.0,
+    "flicker": 0.08,
+    "spark_rise": 30,
+    "aura": 0.95
+   },
+   "face": {
+    "eye_scale": 1.05
+   },
+   "blink": [
+    0.45,
+    0.85,
+    1.0
+   ]
+  },
+  "thinking": {
+   "panel": "idle",
+   "reference": "derived from 01. IDLE: gaze up and aside, slow swirling flame",
+   "loop": 72,
+   "motion": {
+    "flow_base": 1.0,
+    "flow_tip": 7.0,
+    "flow_tiles": [
+     1,
+     1
+    ],
+    "sway_px": 6.0,
+    "sway_cycles": 1,
+    "bob_px": 1.2,
+    "tilt_deg": 3.0,
+    "flicker": 0.08,
+    "spark_rise": 35,
+    "aura": 0.95
+   },
+   "face": {
+    "gaze": [
+     -5,
+     -6
+    ],
+    "lid": 0.12
+   },
+   "blink": [
+    0.5,
+    0.85,
+    1.0
+   ]
+  },
+  "speaking": {
+   "panel": "idle",
+   "reference": "derived from 01. IDLE + mouth from 02. JOYFUL",
+   "loop": 48,
+   "motion": {
+    "flow_base": 1.0,
+    "flow_tip": 6.5,
+    "flow_tiles": [
+     2,
+     3
+    ],
+    "sway_px": 4.0,
+    "bob_px": 1.2,
+    "bob_cycles": 2,
+    "flicker": 0.1,
+    "bright": 1.04,
+    "spark_rise": 45,
+    "aura": 0.95
+   },
+   "face": {
+    "mouth": {
+     "src": "joyful",
+     "at": [
+      265,
+      297
+     ],
+     "scale": 0.8
+    },
+    "talk": [
+     3,
+     5,
+     7
+    ]
+   },
+   "blink": [
+    0.45,
+    0.85,
+    1.0
+   ]
+  },
+  "focused": {
+   "panel": "idle",
+   "reference": "derived from 01. IDLE: concentrating (working), flame brighter and faster",
+   "loop": 48,
+   "motion": {
+    "flow_base": 1.4,
+    "flow_tip": 7.5,
+    "flow_tiles": [
+     2,
+     3
+    ],
+    "sway_px": 3.0,
+    "bob_px": 1.2,
+    "bob_cycles": 2,
+    "flicker": 0.12,
+    "bright": 1.08,
+    "spark_rise": 60,
+    "sparks": 6,
+    "aura": 0.95
+   },
+   "face": {
+    "lid": 0.24,
+    "lid_tilt": -0.55
+   },
+   "blink": [
+    0.6,
+    0.9,
+    1.0
+   ]
+  },
+  "concerned": {
+   "panel": "idle",
+   "reference": "derived from 01. IDLE + mouth from 04. DEPLETED: worried, flame dimmer",
+   "loop": 48,
+   "motion": {
+    "flow_base": 0.7,
+    "flow_tip": 4.0,
+    "flow_tiles": [
+     1,
+     2
+    ],
+    "sway_px": 2.0,
+    "bob_px": 1.2,
+    "tilt_deg": 2.5,
+    "flicker": 0.14,
+    "bright": 0.82,
+    "spark_rise": 25,
+    "aura": 0.95
+   },
+   "face": {
+    "lid": 0.26,
+    "lid_tilt": 0.9,
+    "mouth": {
+     "src": "depleted",
+     "at": [
+      265,
+      301
+     ],
+     "scale": 1.5
+    }
+   },
+   "blink": [
+    0.6,
+    0.9,
+    1.0
+   ]
+  },
+  "kindling": {
+   "panel": "idle",
+   "reference": "derived from 01. IDLE: initializing (Brain loading) - calm, softly glowing, low flame; shown for CompanionState.initializing (owner-approved direction, Ember V2.1 final; 04_STARTUP_PROPOSAL_V21.md)",
+   "loop": 96,
+   "motion": {
+    "flow_base": 0.6,
+    "flow_tip": 4.0,
+    "flow_tiles": [
+     1,
+     2
+    ],
+    "sway_px": 2.5,
+    "bob_px": 1.0,
+    "flicker": 0.05,
+    "bright": 0.8,
+    "spark_rise": 20,
+    "aura": 0.95
+   },
+   "face": {
+    "lid": 0.35
+   },
+   "blink": [
+    0.6,
+    0.9,
+    1.0
+   ]
+  }
+ }
+}

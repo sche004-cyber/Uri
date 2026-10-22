@@ -1,0 +1,25 @@
+{
+ "label": "uiv2-1",
+ "source_head": "22b53b78b3969bba4e668772dd799e67b44f9dbe",
+ "source_tree": "429e221d3f46781514ba4ae860eb7061337591fe",
+ "source_status_before": "",
+ "port": 18350,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/uiv2_native_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "884902e27569099645ed1367e6ce9bf5a39c8588d734708d0ae86e67130a16e6",
+ "entry": "original production main() via integration_test (Debug build); taps and TestTextInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "started_utc": "2026-10-18T12:52:10.505597+00:00",
+ "exit_code": 0,
+ "elapsed_s": 256.37,
+ "finished_utc": "2026-10-18T12:56:26.874034+00:00",
+ "source_status_after": "",
+ "ui_binary_sha256": "a646c32498878dff1b333ac1d644c731531091cdfbbcbb96a5f6e1ef05f8e24b"
+}

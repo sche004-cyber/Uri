@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/uri_theme.dart';
 import '../../companion/companion_design.dart';
+import '../../companion/companion_orb.dart' show CompanionIdentity;
 import '../../companion/companion_preferences.dart';
 import '../../companion/companion_state.dart';
 import '../../companion/effects_settings.dart';
@@ -249,7 +250,10 @@ class _CompanionGalleryState extends State<CompanionGallery> {
                                     child: Column(
                                       children: [
                                         Text(
-                                          '${_design.displayName} · live procedural 2D renderer',
+                                          // Ember plays pre-rendered painted clips (EMBER-V21-INTEG R1-09).
+                                          _design.choice.identity == CompanionIdentity.ember
+                                              ? '${_design.displayName} · painted animated clips'
+                                              : '${_design.displayName} · live procedural 2D renderer',
                                         ),
                                         const Text(
                                           'Model rotation unavailable: this renderer is not a 3D mesh.',

@@ -164,6 +164,9 @@ class OiConversation extends ChangeNotifier {
   Map<String, dynamic> turnStatus = const {};
   Map<String, dynamic> brainHealth = const {};
 
+  /// When [brainHealth] was last read successfully (microseconds since epoch; 0 = never).
+  int brainHealthAt = 0;
+
   final List<OiMessage> messages = [];
 
   final _a2uiHandoffs = StreamController<Map<String, dynamic>>.broadcast();
@@ -198,7 +201,23 @@ class OiConversation extends ChangeNotifier {
   OiConfirmation? pendingConfirmation;
   String? lastError;
   bool workerExited = false;
-  OiDepth depth = OiDepth.auto;
+  /// Turn depth for the next message. The Thinking toggle is On / Off only
+  /// (URI-CONTROLS-3): Off (fast) until the user turns it on; LivingApp
+  /// restores the user's last choice at start ([restoreDepth]).
+  OiDepth depth = OiDepth.fast;
+
+  /// Called after the user changes the depth (LivingApp stores it).
+  void Function(OiDepth depth)? onDepthChanged;
+
+  /// Restores a stored depth by name; unknown names are ignored.
+  void restoreDepth(String? name) {
+    for (final d in OiDepth.values) {
+      if (d.name == name && d != depth) {
+        depth = d;
+        notifyListeners();
+      }
+    }
+  }
 
   /// Text intelligence: the session's current draft (null when none), the
   /// desk's open clarification question, and generation progress.
@@ -280,6 +299,7 @@ class OiConversation extends ChangeNotifier {
       if (!_active(rt)) return;
       final changed = brainHealth.isNotEmpty && health['state'] != brainHealth['state'];
       brainHealth = health;
+      brainHealthAt = DateTime.now().microsecondsSinceEpoch;
       // BRAIN-QC (review R1-01 correction): the readiness the header shows is re-read on a health change AND on every
       // poll while the Brain is recovering or switching. During a profile switch it never reads "ready": the old
       // server still answers READY until it is stopped, and the new one before its calibration, but neither is the
@@ -778,6 +798,7 @@ class OiConversation extends ChangeNotifier {
   void setDepth(OiDepth d) {
     depth = d;
     notifyListeners();
+    onDepthChanged?.call(d);
   }
 
   // ---- Brain Quick Controls (BRAIN-QC-20261018) ---------------------------

@@ -636,7 +636,13 @@ void main() {
       ) as Map<String, dynamic>;
       final tables = json['tables'] as Map<String, dynamic>;
       for (final id in CompanionIdentity.values) {
-        final fam = id == CompanionIdentity.moonlit ? 'lunar' : id.name;
+        // Moonlit reads the lunar table; Ember (sprite clips, no shader)
+        // shares Solar's so any caller still gets fire-like values.
+        final fam = switch (id) {
+          CompanionIdentity.moonlit => 'lunar',
+          CompanionIdentity.ember => 'solar',
+          _ => id.name,
+        };
         final t = tables[fam] as Map<String, dynamic>;
         for (final st in CompanionState.values) {
           final row = (t[st.name] as List).cast<num>();

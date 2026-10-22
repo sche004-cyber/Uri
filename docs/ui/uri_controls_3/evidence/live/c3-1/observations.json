@@ -1,0 +1,3841 @@
+[
+  {
+    "utc": "2026-10-22T01:49:30.308893Z",
+    "t": 1792633770.309,
+    "label": "automation input transport",
+    "keyboard": "Flutter sendKeyEvent + TestTextInput",
+    "pointer": "flutter_test tap and synthesized mouse hover",
+    "screen_reader": "semantics tree + SemanticsAction.tap (no Narrator)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "narrator_qualified": false,
+    "Brain_Core_worker_mocked": false
+  },
+  {
+    "utc": "2026-10-22T01:49:45.424668Z",
+    "t": 1792633785.424,
+    "label": "window",
+    "logical_size": "Size(1264.0, 681.0)",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:49:46.258432Z",
+    "t": 1792633786.258,
+    "label": "start-profile",
+    "id": "standard-nodraft"
+  },
+  {
+    "utc": "2026-10-22T01:49:46.262459Z",
+    "t": 1792633786.262,
+    "label": "check",
+    "id": "C3-exactly-three-controls",
+    "result": "PASS",
+    "toggles": [
+      "qc-thinking",
+      "qc-vision",
+      "qc-assist"
+    ]
+  },
+  {
+    "utc": "2026-10-22T01:49:46.273503Z",
+    "t": 1792633786.268,
+    "label": "check",
+    "id": "C3-ready-visuals",
+    "result": "PASS",
+    "state": "READY",
+    "active": "standard-nodraft",
+    "pending": false,
+    "configured": "c32k-visgpu-mtpoff",
+    "last": null,
+    "vision_visual": "on",
+    "vision_status": null,
+    "thinking_visual": "off",
+    "assist_visual": "off",
+    "assist_status": null,
+    "worker_assist": {
+      "asking": false,
+      "granted": false
+    },
+    "switching_text": null,
+    "notice": null,
+    "mismatch": null,
+    "header_brain": "READY"
+  },
+  {
+    "utc": "2026-10-22T01:49:46.788566Z",
+    "t": 1792633786.788,
+    "label": "check",
+    "id": "C3-semantics-toggle-buttons",
+    "result": "PASS",
+    "qc-thinking": {
+      "label": "Thinking",
+      "value": "",
+      "toggled": false,
+      "tap": true,
+      "focusable": true
+    },
+    "qc-vision": {
+      "label": "Vision",
+      "value": "",
+      "toggled": true,
+      "tap": true,
+      "focusable": true
+    },
+    "qc-assist": {
+      "label": "URI Assist",
+      "value": "",
+      "toggled": false,
+      "tap": true,
+      "focusable": true
+    }
+  },
+  {
+    "utc": "2026-10-22T01:49:47.762200Z",
+    "t": 1792633787.762,
+    "label": "keyboard",
+    "toggle": "qc-thinking",
+    "key": " ",
+    "focused": true,
+    "focus_ring": true
+  },
+  {
+    "utc": "2026-10-22T01:49:47.763200Z",
+    "t": 1792633787.763,
+    "label": "check",
+    "id": "C3-thinking-on-by-keyboard",
+    "result": "PASS",
+    "depth": "normal"
+  },
+  {
+    "utc": "2026-10-22T01:49:54.572263Z",
+    "t": 1792633794.572,
+    "label": "turn",
+    "scenario": "thinking-on",
+    "request": "Compare a bicycle and an electric scooter for a 3 km city commute in two short sentences.",
+    "text": "A bicycle provides a reliable, zero-emission workout but can be tiring in traffic or heat. An electric scooter offers faster, effortless commuting but requires charging and may be less stable on rough roads.",
+    "route": "answer",
+    "tier": "NORMAL",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 4.6457,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 415,
+      "predicted_per_second": 99.91384241125408,
+      "prompt_n": 759,
+      "prompt_per_second": 1442.6064991418486,
+      "reasoning_chars": 1660,
+      "retried": false,
+      "total_s": 5.0492,
+      "ttft_s": 0.9053
+    },
+    "depth_sent": "normal",
+    "seconds": 6.348,
+    "error": null
+  },
+  {
+    "utc": "2026-10-22T01:49:54.573271Z",
+    "t": 1792633794.573,
+    "label": "check",
+    "id": "C3-thinking-on-tier",
+    "result": "PASS",
+    "tier": "NORMAL",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-22T01:49:55.205528Z",
+    "t": 1792633795.205,
+    "label": "check",
+    "id": "C3-thinking-off-click",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:50:01.513061Z",
+    "t": 1792633801.513,
+    "label": "turn",
+    "scenario": "tell-fact",
+    "request": "Quick arithmetic game. The secret number is 4817. Reply with just OK.",
+    "text": "OK",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 755,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.3769,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 2,
+      "predicted_per_second": 58.592605613171614,
+      "prompt_n": 79,
+      "prompt_per_second": 325.65904734422986,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.3943,
+      "ttft_s": 0.3769
+    },
+    "depth_sent": "fast",
+    "seconds": 6.306,
+    "error": null
+  },
+  {
+    "utc": "2026-10-22T01:50:01.514087Z",
+    "t": 1792633801.514,
+    "label": "check",
+    "id": "C3-thinking-off-tier",
+    "result": "PASS",
+    "tier": "FAST",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-22T01:50:01.514087Z",
+    "t": 1792633801.514,
+    "label": "check",
+    "id": "C3-thinking-persisted",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:50:02.364263Z",
+    "t": 1792633802.364,
+    "label": "check",
+    "id": "C3-confirm-coupled-change",
+    "result": "PASS",
+    "texts": [
+      "Switch the Brain to Long context?",
+      "64K context, vision off",
+      "Vision",
+      "On",
+      "Off",
+      "Context",
+      "32K",
+      "64K",
+      "GPU memory",
+      "14.0 GB",
+      "13.3 GB",
+      "The Brain reloads, which takes about half a minute. Messages wait until it is ready.",
+      "Your conversation stays: URI keeps it and the Brain reads it again after the switch.",
+      "If URI sees before the switch that it does not fit in GPU memory, it keeps the current Brain. If the new setting fails to start, URI goes back to the current one automatically. If GPU memory is taken by another program meanwhile, URI waits and says so.",
+      "Cancel",
+      "Switch Brain"
+    ]
+  },
+  {
+    "utc": "2026-10-22T01:50:43.902086Z",
+    "t": 1792633843.902,
+    "label": "restore",
+    "rows": [
+      {
+        "t": 1792633803.788,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": null,
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633805.018,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": null,
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633806.178,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": null,
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633809.438,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STOPPED"
+      },
+      {
+        "t": 1792633819.812,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633821.043,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633822.381,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633824.295,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633825.489,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633826.851,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633828.512,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633829.749,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633831.09,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633832.296,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633833.663,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633834.947,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633836.188,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633837.444,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633839.297,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633840.499,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633841.657,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "IN_PROGRESS",
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": false,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Did not start; going back to Standard, draft off…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633843.27,
+        "state": "READY",
+        "active": "standard-nodraft",
+        "pending": false,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "READY",
+            "seconds": 31.4,
+            "t_done": 1792633842.084,
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": true,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "on",
+        "vision_status": null,
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": null,
+        "notice": "The Brain did not start with the new setting, so URI went back to Standard, draft off. Your conversation is kept.",
+        "mismatch": null,
+        "header_brain": "READY"
+      }
+    ],
+    "last": {
+      "fallback": {
+        "after": {
+          "detail": "INJECTED_START_FAILURE",
+          "state": "FAILED"
+        },
+        "label": "Standard, draft off",
+        "result": "READY",
+        "seconds": 31.4,
+        "t_done": 1792633842.084,
+        "t_start": 1792633810.685,
+        "to": "c32k-visgpu-mtpoff"
+      },
+      "fit_before": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 1696.4,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 209.5,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 12960,
+            "role": null
+          }
+        ],
+        "free_mib": 13869.7,
+        "margin_mib": 211.7,
+        "others_mib": 2498.3,
+        "owner_mib": 14603.8,
+        "required_mib": 13658,
+        "unattributed_mib": 0.0,
+        "verdict": "AT_RISK"
+      },
+      "from": "c32k-visgpu-mtpoff",
+      "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+      "required_mib": 13658,
+      "restored": true,
+      "result": "FAILED",
+      "seconds": 7.4,
+      "started_stopped_brain": false,
+      "t_done": 1792633810.643,
+      "t_request": 1792633803.266,
+      "t_stopped": 1792633806.878,
+      "to": "c64k-visoff-mtpoff"
+    },
+    "active": "standard-nodraft",
+    "notice": "The Brain did not start with the new setting, so URI went back to Standard, draft off. Your conversation is kept."
+  },
+  {
+    "utc": "2026-10-22T01:50:43.907118Z",
+    "t": 1792633843.907,
+    "label": "check",
+    "id": "C3-glow-honest-restore",
+    "result": "PASS",
+    "rows": 22,
+    "violations": 0,
+    "first_violation": null
+  },
+  {
+    "utc": "2026-10-22T01:50:43.914163Z",
+    "t": 1792633843.914,
+    "label": "check",
+    "id": "C3-failed-start-restored",
+    "result": "PASS",
+    "last": {
+      "fallback": {
+        "after": {
+          "detail": "INJECTED_START_FAILURE",
+          "state": "FAILED"
+        },
+        "label": "Standard, draft off",
+        "result": "READY",
+        "seconds": 31.4,
+        "t_done": 1792633842.084,
+        "t_start": 1792633810.685,
+        "to": "c32k-visgpu-mtpoff"
+      },
+      "fit_before": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 1696.4,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 209.5,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 12960,
+            "role": null
+          }
+        ],
+        "free_mib": 13869.7,
+        "margin_mib": 211.7,
+        "others_mib": 2498.3,
+        "owner_mib": 14603.8,
+        "required_mib": 13658,
+        "unattributed_mib": 0.0,
+        "verdict": "AT_RISK"
+      },
+      "from": "c32k-visgpu-mtpoff",
+      "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+      "required_mib": 13658,
+      "restored": true,
+      "result": "FAILED",
+      "seconds": 7.4,
+      "started_stopped_brain": false,
+      "t_done": 1792633810.643,
+      "t_request": 1792633803.266,
+      "t_stopped": 1792633806.878,
+      "to": "c64k-visoff-mtpoff"
+    }
+  },
+  {
+    "utc": "2026-10-22T01:50:43.920710Z",
+    "t": 1792633843.92,
+    "label": "check",
+    "id": "C3-switching-indicated",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:50:43.927800Z",
+    "t": 1792633843.927,
+    "label": "check",
+    "id": "C3-restored-notice",
+    "result": "PASS",
+    "notice": "The Brain did not start with the new setting, so URI went back to Standard, draft off. Your conversation is kept."
+  },
+  {
+    "utc": "2026-10-22T01:50:43.932356Z",
+    "t": 1792633843.932,
+    "label": "check",
+    "id": "C3-restored-visuals",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:50:45.345322Z",
+    "t": 1792633845.345,
+    "label": "keyboard",
+    "toggle": "qc-vision",
+    "key": "Enter",
+    "focused": true,
+    "focus_ring": false
+  },
+  {
+    "utc": "2026-10-22T01:50:45.347831Z",
+    "t": 1792633845.347,
+    "label": "check",
+    "id": "C3-vision-enter-opens-confirm",
+    "result": "FAIL",
+    "texts": [
+      "Switch the Brain to Long context?",
+      "64K context, vision off",
+      "Vision",
+      "On",
+      "Off",
+      "Context",
+      "32K",
+      "64K",
+      "GPU memory",
+      "14.0 GB",
+      "13.3 GB",
+      "The Brain reloads, which takes about half a minute. Messages wait until it is ready.",
+      "Your conversation stays: URI keeps it and the Brain reads it again after the switch.",
+      "If URI sees before the switch that it does not fit in GPU memory, it keeps the current Brain. If the new setting fails to start, URI goes back to the current one automatically. If GPU memory is taken by another program meanwhile, URI waits and says so.",
+      "Cancel",
+      "Switch Brain"
+    ]
+  },
+  {
+    "utc": "2026-10-22T01:51:20.118159Z",
+    "t": 1792633880.119,
+    "label": "long",
+    "rows": [
+      {
+        "t": 1792633846.799,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "READY",
+            "seconds": 31.4,
+            "t_done": 1792633842.084,
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": true,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633848.265,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "READY",
+            "seconds": 31.4,
+            "t_done": 1792633842.084,
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": true,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633849.502,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c32k-visgpu-mtpoff",
+        "last": {
+          "fallback": {
+            "after": {
+              "detail": "INJECTED_START_FAILURE",
+              "state": "FAILED"
+            },
+            "label": "Standard, draft off",
+            "result": "READY",
+            "seconds": 31.4,
+            "t_done": 1792633842.084,
+            "t_start": 1792633810.685,
+            "to": "c32k-visgpu-mtpoff"
+          },
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 209.5,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13869.7,
+            "margin_mib": 211.7,
+            "others_mib": 2498.3,
+            "owner_mib": 14603.8,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "d06c53dd-bf6c-4ff6-8b0a-c63c8b8b0a57",
+          "required_mib": 13658,
+          "restored": true,
+          "result": "FAILED",
+          "seconds": 7.4,
+          "started_stopped_brain": false,
+          "t_done": 1792633810.643,
+          "t_request": 1792633803.266,
+          "t_stopped": 1792633806.878,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633859.134,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STOPPED"
+      },
+      {
+        "t": 1792633860.798,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633862.027,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633863.46,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633864.662,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633866.036,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633867.243,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633869.244,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633870.6,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633871.876,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "LOADING"
+      },
+      {
+        "t": 1792633873.567,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633874.716,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633875.879,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633877.043,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633878.299,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "IN_PROGRESS",
+          "started_stopped_brain": false,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Long context…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633879.485,
+        "state": "READY",
+        "active": "long",
+        "pending": false,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "READY",
+          "seconds": 32.2,
+          "started_stopped_brain": false,
+          "t_done": 1792633878.567,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "off",
+        "vision_status": null,
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": null,
+        "notice": "Brain switched in 32 s. Your conversation is kept.",
+        "mismatch": null,
+        "header_brain": "READY"
+      }
+    ],
+    "last": {
+      "fit_before": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 1696.4,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 219.7,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 12960,
+            "role": null
+          }
+        ],
+        "free_mib": 13859.5,
+        "margin_mib": 201.5,
+        "others_mib": 2508.5,
+        "owner_mib": 14535.1,
+        "required_mib": 13658,
+        "unattributed_mib": 0.0,
+        "verdict": "AT_RISK"
+      },
+      "from": "c32k-visgpu-mtpoff",
+      "id": "f874be15-5c08-4693-aacb-21781688e60b",
+      "required_mib": 13658,
+      "result": "READY",
+      "seconds": 32.2,
+      "started_stopped_brain": false,
+      "t_done": 1792633878.567,
+      "t_request": 1792633846.365,
+      "t_stopped": 1792633849.988,
+      "to": "c64k-visoff-mtpoff"
+    },
+    "active": "long",
+    "notice": "Brain switched in 32 s. Your conversation is kept."
+  },
+  {
+    "utc": "2026-10-22T01:51:20.120669Z",
+    "t": 1792633880.12,
+    "label": "check",
+    "id": "C3-glow-honest-long",
+    "result": "PASS",
+    "rows": 19,
+    "violations": 0,
+    "first_violation": null
+  },
+  {
+    "utc": "2026-10-22T01:51:20.132223Z",
+    "t": 1792633880.128,
+    "label": "check",
+    "id": "C3-long-visuals",
+    "result": "PASS",
+    "state": "READY",
+    "active": "long",
+    "pending": false,
+    "configured": "c64k-visoff-mtpoff",
+    "last": {
+      "fit_before": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 1696.4,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 219.7,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 12960,
+            "role": null
+          }
+        ],
+        "free_mib": 13859.5,
+        "margin_mib": 201.5,
+        "others_mib": 2508.5,
+        "owner_mib": 14535.1,
+        "required_mib": 13658,
+        "unattributed_mib": 0.0,
+        "verdict": "AT_RISK"
+      },
+      "from": "c32k-visgpu-mtpoff",
+      "id": "f874be15-5c08-4693-aacb-21781688e60b",
+      "required_mib": 13658,
+      "result": "READY",
+      "seconds": 32.2,
+      "started_stopped_brain": false,
+      "t_done": 1792633878.567,
+      "t_request": 1792633846.365,
+      "t_stopped": 1792633849.988,
+      "to": "c64k-visoff-mtpoff"
+    },
+    "vision_visual": "off",
+    "vision_status": null,
+    "thinking_visual": "off",
+    "assist_visual": "off",
+    "assist_status": null,
+    "worker_assist": {
+      "asking": false,
+      "granted": false
+    },
+    "switching_text": null,
+    "notice": "Brain switched in 32 s. Your conversation is kept.",
+    "mismatch": null,
+    "header_brain": "READY"
+  },
+  {
+    "utc": "2026-10-22T01:51:22.533080Z",
+    "t": 1792633882.533,
+    "label": "turn",
+    "scenario": "recall-long",
+    "request": "What was the secret number I gave you at the start of this conversation? Reply with the number only.",
+    "text": "4817",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.7321,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 5,
+      "predicted_per_second": 90.45067046559483,
+      "prompt_n": 870,
+      "prompt_per_second": 1316.5999034493404,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.7894,
+      "ttft_s": 0.7321
+    },
+    "depth_sent": "fast",
+    "seconds": 1.943,
+    "error": null
+  },
+  {
+    "utc": "2026-10-22T01:51:22.535128Z",
+    "t": 1792633882.535,
+    "label": "check",
+    "id": "C3-continuity-long",
+    "result": "PASS",
+    "answer": "4817",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-22T01:51:23.397274Z",
+    "t": 1792633883.397,
+    "label": "check",
+    "id": "C3-semantics-tap-opens-confirm",
+    "result": "PASS",
+    "texts": [
+      "Switch the Brain to Standard?",
+      "32K context, vision on (the default Runtime v1)",
+      "Vision",
+      "Off",
+      "On",
+      "Context",
+      "64K",
+      "32K",
+      "Draft",
+      "Off",
+      "On",
+      "GPU memory",
+      "13.3 GB",
+      "15.3 GB",
+      "On at 64K: Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+      "The Brain reloads, which takes about half a minute. Messages wait until it is ready.",
+      "Your conversation stays: URI keeps it and the Brain reads it again after the switch.",
+      "If URI sees before the switch that it does not fit in GPU memory, it keeps the current Brain. If the new setting fails to start, URI goes back to the current one automatically. If GPU memory is taken by another program meanwhile, URI waits and says so.",
+      "Cancel",
+      "Switch Brain"
+    ]
+  },
+  {
+    "utc": "2026-10-22T01:51:28.930979Z",
+    "t": 1792633888.93,
+    "label": "vision-on",
+    "rows": [
+      {
+        "t": 1792633884.817,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "READY",
+          "seconds": 32.2,
+          "started_stopped_brain": false,
+          "t_done": 1792633878.567,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Standard…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633885.97,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "READY",
+          "seconds": 32.2,
+          "started_stopped_brain": false,
+          "t_done": 1792633878.567,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Standard…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633887.13,
+        "state": "RECOVERING",
+        "active": null,
+        "pending": true,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "fit_before": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 219.7,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13859.5,
+            "margin_mib": 201.5,
+            "others_mib": 2508.5,
+            "owner_mib": 14535.1,
+            "required_mib": 13658,
+            "unattributed_mib": 0.0,
+            "verdict": "AT_RISK"
+          },
+          "from": "c32k-visgpu-mtpoff",
+          "id": "f874be15-5c08-4693-aacb-21781688e60b",
+          "required_mib": 13658,
+          "result": "READY",
+          "seconds": 32.2,
+          "started_stopped_brain": false,
+          "t_done": 1792633878.567,
+          "t_request": 1792633846.365,
+          "t_stopped": 1792633849.988,
+          "to": "c64k-visoff-mtpoff"
+        },
+        "vision_visual": "loading",
+        "vision_status": "switching",
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": "Switching to Standard…",
+        "notice": null,
+        "mismatch": null,
+        "header_brain": "STARTING"
+      },
+      {
+        "t": 1792633888.298,
+        "state": "READY",
+        "active": "long",
+        "pending": false,
+        "configured": "c64k-visoff-mtpoff",
+        "last": {
+          "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+          "fit": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 222.0,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13857.2,
+            "margin_mib": -1768.8,
+            "others_mib": 2510.8,
+            "owner_mib": 13895.2,
+            "required_mib": 15626,
+            "unattributed_mib": 0.0,
+            "verdict": "CONTENDED"
+          },
+          "from": "c64k-visoff-mtpoff",
+          "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+          "result": "REFUSED_DOES_NOT_FIT",
+          "t_request": 1792633884.236,
+          "to": "frozen"
+        },
+        "vision_visual": "off",
+        "vision_status": null,
+        "thinking_visual": "off",
+        "assist_visual": "off",
+        "assist_status": null,
+        "worker_assist": {
+          "asking": false,
+          "granted": false
+        },
+        "switching_text": null,
+        "notice": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+        "mismatch": null,
+        "header_brain": "READY"
+      }
+    ],
+    "last": {
+      "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+      "fit": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 1696.4,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 222.0,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 12960,
+            "role": null
+          }
+        ],
+        "free_mib": 13857.2,
+        "margin_mib": -1768.8,
+        "others_mib": 2510.8,
+        "owner_mib": 13895.2,
+        "required_mib": 15626,
+        "unattributed_mib": 0.0,
+        "verdict": "CONTENDED"
+      },
+      "from": "c64k-visoff-mtpoff",
+      "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+      "result": "REFUSED_DOES_NOT_FIT",
+      "t_request": 1792633884.236,
+      "to": "frozen"
+    },
+    "active": "long",
+    "notice": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them."
+  },
+  {
+    "utc": "2026-10-22T01:51:28.933493Z",
+    "t": 1792633888.933,
+    "label": "check",
+    "id": "C3-glow-honest-vision-on",
+    "result": "PASS",
+    "rows": 4,
+    "violations": 0,
+    "first_violation": null
+  },
+  {
+    "utc": "2026-10-22T01:51:28.941569Z",
+    "t": 1792633888.941,
+    "label": "vision-on-outcome",
+    "result": "REFUSED_DOES_NOT_FIT",
+    "active": "long",
+    "notice": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them."
+  },
+  {
+    "utc": "2026-10-22T01:51:28.948115Z",
+    "t": 1792633888.948,
+    "label": "check",
+    "id": "C3-refusal-keeps-long",
+    "result": "PASS",
+    "notice": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+    "last": {
+      "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+      "fit": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 1696.4,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 222.0,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 12960,
+            "role": null
+          }
+        ],
+        "free_mib": 13857.2,
+        "margin_mib": -1768.8,
+        "others_mib": 2510.8,
+        "owner_mib": 13895.2,
+        "required_mib": 15626,
+        "unattributed_mib": 0.0,
+        "verdict": "CONTENDED"
+      },
+      "from": "c64k-visoff-mtpoff",
+      "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+      "result": "REFUSED_DOES_NOT_FIT",
+      "t_request": 1792633884.236,
+      "to": "frozen"
+    }
+  },
+  {
+    "utc": "2026-10-22T01:51:30.381735Z",
+    "t": 1792633890.381,
+    "label": "turn",
+    "scenario": "recall-2",
+    "request": "Once more: what was the secret number I gave you at the start of this conversation? Reply with the number only.",
+    "text": "4817",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 874,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.293,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 5,
+      "predicted_per_second": 93.05571711061998,
+      "prompt_n": 38,
+      "prompt_per_second": 208.1917994345949,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.3362,
+      "ttft_s": 0.293
+    },
+    "depth_sent": "fast",
+    "seconds": 1.429,
+    "error": null
+  },
+  {
+    "utc": "2026-10-22T01:51:30.383756Z",
+    "t": 1792633890.383,
+    "label": "check",
+    "id": "C3-continuity-2",
+    "result": "PASS",
+    "answer": "4817",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-22T01:51:32.018874Z",
+    "t": 1792633892.018,
+    "label": "check",
+    "id": "C3-assist-on-opens-consent",
+    "result": "PASS",
+    "mode": "assist",
+    "state": "OFF",
+    "error": null
+  },
+  {
+    "utc": "2026-10-22T01:51:32.642531Z",
+    "t": 1792633892.642,
+    "label": "assist-targets",
+    "listed": {
+      "desktop_window": {
+        "n": 0,
+        "error": "ADAPTER_UNAVAILABLE"
+      },
+      "browser_tab": {
+        "n": 0,
+        "error": "ADAPTER_UNAVAILABLE"
+      }
+    },
+    "granted": null,
+    "state": "OFF"
+  },
+  {
+    "utc": "2026-10-22T01:51:34.493427Z",
+    "t": 1792633894.489,
+    "label": "check",
+    "id": "C3-assist-no-grant-stays-off",
+    "result": "PASS",
+    "listed": {
+      "desktop_window": {
+        "n": 0,
+        "error": "ADAPTER_UNAVAILABLE"
+      },
+      "browser_tab": {
+        "n": 0,
+        "error": "ADAPTER_UNAVAILABLE"
+      }
+    },
+    "state": "READY",
+    "active": "long",
+    "pending": false,
+    "configured": "c64k-visoff-mtpoff",
+    "last": {
+      "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+      "fit": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 1696.4,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 222.0,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 12960,
+            "role": null
+          }
+        ],
+        "free_mib": 13857.2,
+        "margin_mib": -1768.8,
+        "others_mib": 2510.8,
+        "owner_mib": 13895.2,
+        "required_mib": 15626,
+        "unattributed_mib": 0.0,
+        "verdict": "CONTENDED"
+      },
+      "from": "c64k-visoff-mtpoff",
+      "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+      "result": "REFUSED_DOES_NOT_FIT",
+      "t_request": 1792633884.236,
+      "to": "frozen"
+    },
+    "vision_visual": "off",
+    "vision_status": null,
+    "thinking_visual": "off",
+    "assist_visual": "off",
+    "assist_status": null,
+    "worker_assist": {
+      "asking": false,
+      "granted": false
+    },
+    "switching_text": null,
+    "notice": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+    "mismatch": null,
+    "header_brain": "READY"
+  },
+  {
+    "utc": "2026-10-22T01:51:41.507564Z",
+    "t": 1792633901.503,
+    "label": "check",
+    "id": "C3-restart-consistent",
+    "result": "PASS",
+    "state": "READY",
+    "active": "long",
+    "pending": false,
+    "configured": "c64k-visoff-mtpoff",
+    "last": {
+      "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+      "fit": {
+        "card_mib": 16368,
+        "consumers": [
+          {
+            "dedicated_mib": 1696.4,
+            "name": "dwm.exe",
+            "parent": "winlogon.exe",
+            "pid": 1580,
+            "role": "desktop compositor"
+          },
+          {
+            "dedicated_mib": 222.0,
+            "name": "uri_ui.exe",
+            "parent": "dartvm.exe",
+            "pid": 12960,
+            "role": null
+          }
+        ],
+        "free_mib": 13857.2,
+        "margin_mib": -1768.8,
+        "others_mib": 2510.8,
+        "owner_mib": 13895.2,
+        "required_mib": 15626,
+        "unattributed_mib": 0.0,
+        "verdict": "CONTENDED"
+      },
+      "from": "c64k-visoff-mtpoff",
+      "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+      "result": "REFUSED_DOES_NOT_FIT",
+      "t_request": 1792633884.236,
+      "to": "frozen"
+    },
+    "vision_visual": "off",
+    "vision_status": null,
+    "thinking_visual": "on",
+    "assist_visual": "off",
+    "assist_status": null,
+    "worker_assist": {
+      "asking": false,
+      "granted": false
+    },
+    "switching_text": null,
+    "notice": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+    "mismatch": null,
+    "header_brain": "READY"
+  },
+  {
+    "utc": "2026-10-22T01:51:41.511073Z",
+    "t": 1792633901.511,
+    "label": "check",
+    "id": "C3-restart-responsive",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:51:42.146405Z",
+    "t": 1792633902.146,
+    "label": "check",
+    "id": "C3-restart-thinking-toggles",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:51:47.830767Z",
+    "t": 1792633907.83,
+    "label": "turn",
+    "scenario": "after-restart",
+    "request": "Reply with exactly the word ready.",
+    "text": "ready",
+    "route": "answer",
+    "tier": "FAST",
+    "status": "ok",
+    "answer_status": "COMPLETE",
+    "metrics": {
+      "cache_n": 730,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.4714,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 2,
+      "predicted_per_second": 72.63219058686809,
+      "prompt_n": 19,
+      "prompt_per_second": 119.82467757701889,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.4853,
+      "ttft_s": 0.4714
+    },
+    "depth_sent": "fast",
+    "seconds": 5.682,
+    "error": null
+  },
+  {
+    "utc": "2026-10-22T01:51:47.833070Z",
+    "t": 1792633907.833,
+    "label": "check",
+    "id": "C3-turn-after-restart",
+    "result": "PASS",
+    "text": "ready"
+  },
+  {
+    "utc": "2026-10-22T01:51:48.296719Z",
+    "t": 1792633908.296,
+    "label": "check",
+    "id": "C3-no-mismatch-line",
+    "result": "PASS",
+    "mismatch": null
+  },
+  {
+    "utc": "2026-10-22T01:51:48.298240Z",
+    "t": 1792633908.298,
+    "label": "check",
+    "id": "C3-no-flutter-errors",
+    "result": "PASS",
+    "count": 0,
+    "first": null
+  },
+  {
+    "utc": "2026-10-22T01:51:48.304772Z",
+    "t": 1792633908.304,
+    "label": "final",
+    "failures": [
+      "C3-vision-enter-opens-confirm"
+    ],
+    "controls": {
+      "active": {
+        "active": true,
+        "ctx": 65536,
+        "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+        "id": "long",
+        "label": "Long context",
+        "mtp": false,
+        "qualified": true,
+        "required_mib": 13658,
+        "summary": "64K context, vision off",
+        "switchable": true,
+        "vision": "off",
+        "vision_on": false
+      },
+      "assist": {
+        "asking": false,
+        "granted": false
+      },
+      "can_switch": true,
+      "cannot_switch_reason": null,
+      "configured": {
+        "ctx": 65536,
+        "frozen": false,
+        "id": "c64k-visoff-mtpoff",
+        "mtp": false,
+        "qualified": false,
+        "required_mib": 13658,
+        "vision": "off"
+      },
+      "host_profile": {
+        "ctx": 65536,
+        "frozen": false,
+        "id": "c64k-visoff-mtpoff",
+        "mtp": false,
+        "qualified": false,
+        "required_mib": 13658,
+        "vision": "off"
+      },
+      "mismatch": null,
+      "options": [
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "Runtime v1 freeze record (frozen 2026-10-07); verified default and fallback",
+          "id": "standard",
+          "label": "Standard",
+          "mtp": true,
+          "qualified": true,
+          "required_mib": 15620,
+          "summary": "32K context, vision on (the default Runtime v1)",
+          "switchable": true,
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": true,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+          "id": "long",
+          "label": "Long context",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 13658,
+          "summary": "64K context, vision off",
+          "switchable": true,
+          "vision": "off",
+          "vision_on": false
+        },
+        {
+          "active": false,
+          "ctx": 32768,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw5/sw6",
+          "id": "standard-nodraft",
+          "label": "Standard, draft off",
+          "mtp": false,
+          "qualified": true,
+          "required_mib": 14360,
+          "summary": "32K context, vision on, no speculative draft (about 1.2 GB less GPU memory)",
+          "switchable": true,
+          "vision": "gpu",
+          "vision_on": true
+        },
+        {
+          "active": false,
+          "ctx": 65536,
+          "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P1: FAIL",
+          "id": "long-vision",
+          "label": "Long context with vision",
+          "mtp": false,
+          "qualified": false,
+          "reason": "Not qualified yet: in tests it crashed once and slowed to a fifth of its speed next to a browser (findings CRASH-1, DEMOTE-P1).",
+          "required_mib": 14764,
+          "summary": "64K context, vision on",
+          "switchable": false,
+          "vision": "gpu",
+          "vision_on": true
+        }
+      ],
+      "schema": "uri.brain.quick_controls.v1",
+      "switch": {
+        "context_tokens": 751,
+        "last": {
+          "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+          "fit": {
+            "card_mib": 16368,
+            "consumers": [
+              {
+                "dedicated_mib": 1696.4,
+                "name": "dwm.exe",
+                "parent": "winlogon.exe",
+                "pid": 1580,
+                "role": "desktop compositor"
+              },
+              {
+                "dedicated_mib": 222.0,
+                "name": "uri_ui.exe",
+                "parent": "dartvm.exe",
+                "pid": 12960,
+                "role": null
+              }
+            ],
+            "free_mib": 13857.2,
+            "margin_mib": -1768.8,
+            "others_mib": 2510.8,
+            "owner_mib": 13895.2,
+            "required_mib": 15626,
+            "unattributed_mib": 0.0,
+            "verdict": "CONTENDED"
+          },
+          "from": "c64k-visoff-mtpoff",
+          "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+          "result": "REFUSED_DOES_NOT_FIT",
+          "t_request": 1792633884.236,
+          "to": "frozen"
+        },
+        "pending": false,
+        "target": null
+      },
+      "thinking": {
+        "auto": "auto",
+        "off": "fast",
+        "on": "normal",
+        "reload": false
+      },
+      "vision_locked": false
+    },
+    "health_state": "READY",
+    "session_before": "3d779efc-e351-4ba4-91a7-83f69584aaaa",
+    "session_after": "3d779efc-e351-4ba4-91a7-83f69584aaaa"
+  }
+]

@@ -6,6 +6,7 @@ import '../companion/effects_settings.dart';
 import 'voice_session.dart';
 import 'voice_transcript.dart';
 import 'voice_waveform.dart';
+import 'package:uri_ui/theme/uri_theme.dart';
 
 /// The voice exchange inside the app shell: the shared waveform with the
 /// transcript, beside the companion rather than in place of it.
@@ -106,7 +107,7 @@ class _VoiceStageState extends State<VoiceStage> {
                               ? 'You'
                               : 'URI speaking',
                           style: TextStyle(
-                            fontSize: 14 * widget.visualScale,
+                            fontSize: UriType.bodyLarge * widget.visualScale,
                             color: const Color(0xFFF1EEE5),
                             shadows: const [
                               Shadow(color: Color(0xCC000000), blurRadius: 4),
@@ -117,7 +118,7 @@ class _VoiceStageState extends State<VoiceStage> {
                           const Text(
                             'SIMULATED',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: UriType.micro,
                               color: Color(0xFFF1EEE5),
                             ),
                           ),
@@ -192,7 +193,7 @@ class _VoiceStageState extends State<VoiceStage> {
             SizedBox(
               width: w,
               height: tH,
-              child: _transcript(session, speaker, lines: 2, fontSize: 15),
+              child: _transcript(session, speaker, lines: 2, fontSize: UriType.title),
             ),
           ],
         );
@@ -229,7 +230,7 @@ class _VoiceStageState extends State<VoiceStage> {
             const SizedBox(width: 10),
           ],
           Expanded(
-            child: _transcript(session, speaker, lines: 1, fontSize: 13),
+            child: _transcript(session, speaker, lines: 1, fontSize: UriType.body),
           ),
         ],
       ),

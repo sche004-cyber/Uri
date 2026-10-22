@@ -1,0 +1,25 @@
+HEAD a4935c2bfd9580cd69de117a32950ece0f0527e8
+STATUS_PORCELAIN_BEGIN
+STATUS_PORCELAIN_END
+START 2026-10-18T18:04:45+05:30
+........................................................................ [  8%]
+........................................................................ [ 17%]
+.ssssssss............................................................... [ 26%]
+...........................................................s............ [ 34%]
+........................................................................ [ 43%]
+........................................................................ [ 52%]
+........................................................................ [ 60%]
+........................................................................ [ 69%]
+................ss...................................................... [ 78%]
+........................................................................ [ 86%]
+........................................................................ [ 95%]
+........................ssssssssssss                                     [100%]
+============================== warnings summary ===============================
+C:\Users\cheta\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\testclient.py:53
+  C:\Users\cheta\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+805 passed, 23 skipped, 1 warning in 240.76s (0:04:00)
+EXIT 0
+END 2026-10-18T18:08:47+05:30

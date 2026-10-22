@@ -1,0 +1,154 @@
+{
+ "state": "READY",
+ "utc": "2026-10-18T12:52:08.915631+00:00",
+ "host": {
+  "calibration": {
+   "decode_tps": 63.4,
+   "predicted_n": 160,
+   "prompt_ms": 289.969,
+   "reason": "START",
+   "residency": {
+    "consumers": [
+     {
+      "dedicated_mib": 677.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 438.3,
+      "name": "chrome.exe",
+      "parent": "chrome.exe",
+      "pid": 14668,
+      "role": null
+     }
+    ],
+    "dedicated_mib": 12935.6,
+    "non_local_mib": 2097.3,
+    "others_mib": 1576.0,
+    "t": 1792327925.303,
+    "verdict_now": "AT_RISK"
+   },
+   "server_create_time": 1792327905.264662,
+   "server_pid": 1844,
+   "t": 1792327922.185,
+   "threshold_tps": 60.0,
+   "tokens": 160
+  },
+  "detail": null,
+  "explain": "Brain ready (63 tok/s).",
+  "gpu": {
+   "census_s": 3.46,
+   "census_t": 1792327897.148,
+   "explain": "The Brain fits with a small margin (432 MB); other GPU apps may slow it down.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 677.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 438.3,
+      "name": "chrome.exe",
+      "parent": "chrome.exe",
+      "pid": 14668,
+      "role": null
+     }
+    ],
+    "free_mib": 14792.0,
+    "margin_mib": 432.0,
+    "others_mib": 1576.0,
+    "owner_mib": 0,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   }
+  },
+  "heartbeat_at": 1792327927.219,
+  "history": [
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792327900.607
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792327906.013
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792327922.108
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792327928.713
+   }
+  ],
+  "host_pid": 13124,
+  "host_started": 1792327897.116,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "8dbb8776-aa3e-4da4-adb1-3682c739595a",
+   "result": "ACCEPTED",
+   "t": 1792327928.759
+  },
+  "lease": {
+   "acquired_at": 1792327897.147,
+   "held": true,
+   "recovered_from": null
+  },
+  "override": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "requests": {
+   "8dbb8776-aa3e-4da4-adb1-3682c739595a": "ACCEPTED"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 677.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 438.3,
+     "name": "chrome.exe",
+     "parent": "chrome.exe",
+     "pid": 14668,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 12935.6,
+   "non_local_mib": 2097.3,
+   "others_mib": 1576.0,
+   "t": 1792327925.303,
+   "verdict_now": "AT_RISK"
+  },
+  "schema": "uri.ws.brain_host.v1",
+  "server": {
+   "load_seconds": 16.9,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 1844
+  },
+  "state": "READY",
+  "updated_at": 1792327928.713
+ }
+}

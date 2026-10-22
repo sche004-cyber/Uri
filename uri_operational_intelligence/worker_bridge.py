@@ -38,6 +38,7 @@ from . import brain_health
 from . import brain_quick_controls as QC
 from . import runtime_profiles as RP
 from . import cloud_policy
+from . import context_continuity as CC
 from . import schedule_intent
 from . import text_input as TI
 from . import text_intent as TX
@@ -164,7 +165,7 @@ def assist_state_of(assist) -> dict:
 
 class IntegratedTurns:
     def __init__(self, *, orchestrator, cfg, status, write_event, memory=None, cloud=None, defer_start=False,
-                 host_report=None, host_request=None):
+                 host_report=None, host_request=None, transcript=None):
         """
         orchestrator: an OI Orchestrator whose `core` is the paired Core gateway for this client.
         cfg:          the frozen Runtime v1 configuration (already loaded).
@@ -175,6 +176,8 @@ class IntegratedTurns:
                       The reply that carries the turn id therefore always precedes the turn's first event frame.
         host_report:  callable() -> (Brain host report | None, host_alive) (read-only), or None without a host.
         host_request: callable(action) that writes one explicit request for the Brain host, or None.
+        transcript:   path of the durable conversation transcript (context continuity beyond the Brain's window),
+                      or None to keep only the bounded in-memory history.
         """
         self.o, self.cfg, self._status, self._write = orchestrator, cfg, status, write_event
         self._memory, self.cloud = memory, cloud or cloud_policy.CloudSpendPolicy()
@@ -201,6 +204,8 @@ class IntegratedTurns:
         self._turn_session = {}
         self._perf_ident = None       # (pid, create_time) of the server the timing samples belong to
         self.desk = DraftDesk(orchestrator)   # text intelligence: drafts per session (language work only)
+        # Context continuity (Lifecycle V3.1 amendment): durable transcript + budgeted, compacted history.
+        self.context = CC.ContextManager(CC.TranscriptStore(transcript), self._context_window)             if transcript is not None else None
 
     # ---- state ---------------------------------------------------------------------------------
     @property
@@ -295,6 +300,8 @@ class IntegratedTurns:
             if ev["type"] == "answer.done":
                 m = ev["data"].get("metrics") or {}
                 ctx_n = sum(int(m.get(k) or 0) for k in ("prompt_n", "cache_n", "predicted_n"))
+                if ctx_n and self.context is not None and self._turn_session.get(turn_id):
+                    self.context.observe(self._turn_session[turn_id], m)
                 if ctx_n:
                     sid = self._turn_session.get(turn_id)
                     self._context_tokens.pop(sid, None)          # re-insert: the dict order is least recently used
@@ -324,7 +331,7 @@ class IntegratedTurns:
         self._turn_session[turn_id] = session_id
         while len(self._turn_session) > MAX_PENDING:
             self._turn_session.pop(next(iter(self._turn_session)))
-        history = list(self.history.get(session_id, ()))
+        history = self.context.history(session_id) if self.context is not None else             list(self.history.get(session_id, ()))
         # A transcript reaches the ordinary path with fillers removed; the raw transcript stays in the envelope.
         plain = TI.clean_transcript(text) if inp.is_transcript else text
         with self._lock:
@@ -340,8 +347,15 @@ class IntegratedTurns:
 
         def ordinary(sink, request=None):
             words = request if request is not None else plain
-            out = self.o.handle_turn(words, session_id, depth=depth, history=history, sink=sink, turn_id=turn_id,
-                                     core_clarification=continue_core)
+            # Write-ahead: the request is in the transcript before the Brain sees it; a crash leaves it interrupted.
+            n = self.context.store.begin(session_id, words) if self.context is not None else None
+            try:
+                out = self.o.handle_turn(words, session_id, depth=depth, history=history, sink=sink,
+                                         turn_id=turn_id, core_clarification=continue_core)
+            except BaseException:
+                if n is not None:
+                    self.context.store.finish(session_id, n, None, interrupted=True)
+                raise
             out.events = getattr(sink, "events", out.events)
             if continue_core and out.core is not None:
                 # Core returned the replacement state. Retire only the questions it continued; never an
@@ -352,7 +366,8 @@ class IntegratedTurns:
                             self.pending.pop(tid)
             self._remember(turn_id, session_id, words, out.core, out.status)
             answer = (out.answer or {}).get("text")
-            self._record_history(session_id, words, answer if out.status in ("ok", "incomplete") else None)
+            self._record_history(session_id, words, answer if out.status in ("ok", "incomplete") else None, n=n,
+                                 interrupted=out.status == "error")
             return out
 
         # A2UI slice (docs/a2ui/A2UI_ARCHITECTURE.md): a festival-greeting scheduling request is handed to the
@@ -443,7 +458,12 @@ class IntegratedTurns:
                 # The worker is shutting down: nobody can decide this card. Release it as a denial now (CAP-1).
                 self._release(entry)
 
-    def _record_history(self, session_id, user_text, answer_text):
+    def _record_history(self, session_id, user_text, answer_text, n=None, interrupted=False):
+        if self.context is not None:
+            if n is None:
+                n = self.context.store.begin(session_id, user_text)
+            # F5-04: a turn is 'interrupted' only when it failed; Core actions, cards and plans end without text
+            self.context.store.finish(session_id, n, answer_text, interrupted=interrupted)
         h = self.history.setdefault(session_id, [])
         h.append({"role": "user", "content": user_text})
         if answer_text:
@@ -641,10 +661,17 @@ class IntegratedTurns:
         pending = self._restart_pending()
         switching = pending and self._switch is not None
         if switching:
-            out.update(state=brain_health.RECOVERING, reasons=["PROFILE_SWITCH"] + list(out.get("reasons") or []),
-                       recovery_options=[],
-                       explain="Switching the Brain to %s. It reloads (about half a minute); your conversation stays."
+            explain = ("Switching the Brain to %s. It reloads (about half a minute); your conversation stays."
                        % self._switch["label"])
+            # UI-CONTROLS-TYPO-20261018: the host restores the previous profile after a failed start; say so.
+            last = ((host or {}).get("profile_switch") or {}) if alive else {}
+            fb = last.get("fallback") if last.get("id") == self._switch.get("id") else None
+            if isinstance(fb, dict) and fb.get("result") == "IN_PROGRESS":
+                prev = QC.entry_by_profile_id(fb.get("to"))
+                explain = ("The Brain did not start with %s. URI is going back to %s; your conversation stays."
+                           % (self._switch["label"], (prev or {}).get("label", "the previous setting")))
+            out.update(state=brain_health.RECOVERING, reasons=["PROFILE_SWITCH"] + list(out.get("reasons") or []),
+                       recovery_options=[], explain=explain)
         elif pending and out["state"] != brain_health.RECOVERING:
             out.update(state=brain_health.RECOVERING, reasons=["RESTART_REQUESTED"] + list(out.get("reasons") or []),
                        recovery_options=[], explain="The Brain restart was requested; URI is waiting for it.")
@@ -685,7 +712,20 @@ class IntegratedTurns:
         try:
             return fn()
         except Exception:                 # Assist state is advisory for the controls; never breaks a status read
-            return None
+            # Review R2-06: Assist exists but its state could not be read: say so instead of "no Assist" (None).
+            return {"asking": False, "granted": None, "error": "ASSIST_STATE_UNREADABLE"}
+
+    def _context_window(self) -> int:
+        """The running window: the followed profile's ctx, or the host's own profile when it runs a smaller one."""
+        ctx = int(RP.describe(self.cfg)["ctx"])
+        try:
+            host, alive = self._host()
+            hp = (host or {}).get("profile") if alive else None
+            if hp:
+                ctx = min(ctx, int(QC.key_of(hp)[0]))
+        except Exception:
+            pass
+        return ctx
 
     def _largest_context(self):
         """The largest last-answer context of any session in this worker (0 when none is known)."""

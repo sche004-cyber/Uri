@@ -27,6 +27,7 @@ import 'services/window_visibility.dart';
 import 'services/live_voice_service.dart';
 import 'services/windows_voice_catalog.dart';
 import 'working_system_app.dart';
+import 'package:uri_ui/theme/uri_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -197,7 +198,7 @@ class _ClassicLoaderState extends State<_ClassicLoader> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(color: const Color(0xCC101820), borderRadius: BorderRadius.circular(8)),
-                    child: const Text('Living Companion', style: TextStyle(color: Color(0xFFE6F7FF), fontSize: 12)),
+                    child: const Text('Living Companion', style: TextStyle(color: Color(0xFFE6F7FF), fontSize: UriType.label)),
                   ),
                 ),
               ),

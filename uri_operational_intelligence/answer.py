@@ -161,7 +161,10 @@ CAPABILITY_WORDS = {
 }
 
 
-def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, capability_ids=()):
+def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, capability_ids=(), reserve_tokens=0,
+                   force_rollover=False):
+    """A history with ``compose`` (context_continuity.ComposedHistory) is budgeted against the Brain's window,
+    keeping ``reserve_tokens`` for the answer; a plain list keeps its last 12 messages as before."""
     if capability_ids:
         known = [CAPABILITY_WORDS[c] for c in sorted(capability_ids) if c in CAPABILITY_WORDS]
         if known:
@@ -199,11 +202,29 @@ def build_messages(user_text, history=(), system=URI_SYSTEM, *, memory=None, cap
         msgs += [{"role": "user", "content": "MEMORY_EVIDENCE\n" +
                   json.dumps(memory, sort_keys=True, ensure_ascii=True)},
                  {"role": "assistant", "content": "Acknowledged."}]
-    for turn in list(history)[-12:]:
-        if turn.get("role") in ("user", "assistant") and isinstance(turn.get("content"), str):
-            msgs.append({"role": turn["role"], "content": turn["content"]})
-    msgs.append({"role": "user", "content": user_text})
+    current = {"role": "user", "content": user_text}
+    if hasattr(history, "compose"):
+        msgs += history.compose(fixed_messages=msgs + [current], reserve_tokens=reserve_tokens, query=user_text,
+                                force_rollover=force_rollover)
+    else:
+        for turn in list(history)[-12:]:
+            if turn.get("role") in ("user", "assistant") and isinstance(turn.get("content"), str):
+                msgs.append({"role": turn["role"], "content": turn["content"]})
+    msgs.append(current)
     return msgs
+
+
+_CONTEXT_OVERFLOW = re.compile(r"context|n_ctx|exceed|too long", re.I)
+CONTEXT_TOO_LARGE = "CONTEXT_TOO_LARGE"
+_OVER_BUDGET = ("CURRENT_TURN_TOO_LARGE", "COMPACTED_OVER_BUDGET")
+CONTEXT_TOO_LARGE_TEXT = ("This message, together with what this conversation must keep (instructions, decisions "
+                          "and approvals), does not fit in the local Brain's context window. Nothing was sent. "
+                          "Shorten the message or split it into parts.")
+
+
+def _over_budget(history):
+    rep = getattr(history, "report", None) or {}
+    return rep.get("status") in _OVER_BUDGET
 
 
 def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", history=(), cancel=None,
@@ -270,10 +291,26 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
         held["released"] = True
         safe_emit(held["buf"])
 
+    params = tier_params(tier, use=use, max_tokens=max_tokens)
+    reserve = int(params.get("max_tokens") or 0)
     body = {"model": "local", "messages": build_messages(user_text, history, memory=memory,
-                                                        capability_ids=capability_ids),
-            **tier_params(tier, use=use, max_tokens=max_tokens)}
+                                                        capability_ids=capability_ids, reserve_tokens=reserve),
+            **params}
+    if _over_budget(history):          # R1-02: a prompt the budget says cannot fit is never sent
+        return AnswerOutcome(CONTEXT_TOO_LARGE, tier, metrics={"context": dict(history.report)},
+                             error=CONTEXT_TOO_LARGE_TEXT)
     res = client.stream_chat(body, cancel=cancel, deadlines=deadlines, on_delta=relay)
+    retried_context = False
+    if hasattr(history, "compose") and res.status == BC.HTTP_ERROR and not displayed and not held["buf"] and             _CONTEXT_OVERFLOW.search(str(res.error or "")):
+        # The server refused the prompt as too long (the estimate was optimistic): roll the context over and ask
+        # once more. Nothing was shown, so the retry is visible only in the metrics.
+        body["messages"] = build_messages(user_text, history, memory=memory, capability_ids=capability_ids,
+                                          reserve_tokens=reserve, force_rollover=True)
+        if _over_budget(history):
+            return AnswerOutcome(CONTEXT_TOO_LARGE, tier, metrics={"context": dict(history.report,
+                                 retried_after_overflow=True)}, error=CONTEXT_TOO_LARGE_TEXT)
+        res = client.stream_chat(body, cancel=cancel, deadlines=deadlines, on_delta=relay)
+        retried_context = True
     metrics = {"ttft_s": res.ttft_s, "first_answer_s": res.first_answer_s, "total_s": res.total_s,
                "prompt_n": res.timings.get("prompt_n"), "prompt_per_second": res.timings.get("prompt_per_second"),
                "predicted_n": res.timings.get("predicted_n"),
@@ -281,6 +318,8 @@ def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", histor
                "cache_n": res.timings.get("cache_n"), "draft_n": res.timings.get("draft_n"),
                "draft_n_accepted": res.timings.get("draft_n_accepted"),
                "reasoning_chars": len(res.reasoning), "retried": res.retried}
+    if getattr(history, "report", None) is not None:
+        metrics["context"] = dict(history.report, retried_after_overflow=retried_context)
     if held["marker"] or (res.text.strip().strip("`").strip() == ACTION_MARKER):
         return AnswerOutcome("ACTION_REQUESTED", tier, metrics=metrics)
     if not held["released"] and held["buf"]:

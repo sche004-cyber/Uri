@@ -90,11 +90,11 @@ class _CaptureController extends ChangeNotifier {
     final dir = Directory(outDir);
     if (!dir.existsSync()) dir.createSync(recursive: true);
 
+    // Shader companions only: Ember has its own harness (ember_perf_app.dart).
+    final shaded = CompanionIdentity.values.where((i) => i.usesShader);
     final wanted = only.isEmpty
-        ? CompanionIdentity.values
-        : CompanionIdentity.values
-              .where((i) => only.split(',').contains(i.name))
-              .toList();
+        ? shaded.toList()
+        : shaded.where((i) => only.split(',').contains(i.name)).toList();
 
     var written = 0;
     var failed = 0;

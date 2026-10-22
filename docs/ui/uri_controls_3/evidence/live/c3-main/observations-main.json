@@ -1,0 +1,1687 @@
+[
+  {
+    "utc": "2026-10-22T01:53:16.490425Z",
+    "label": "automation input transport",
+    "keyboard": "Flutter TestTextInput + synthesized key events",
+    "pointer": "flutter_test tap (synthesized)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "first_run": "1",
+    "visual": "v2"
+  },
+  {
+    "utc": "2026-10-22T01:53:16.509734Z",
+    "label": "preferences at start",
+    "keys": []
+  },
+  {
+    "utc": "2026-10-22T01:53:22.150221Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 5.635,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792634001.1430898,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 14616,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-22T01:53:22.370242Z",
+    "label": "memory at start",
+    "facts": [],
+    "run_fact": "the project room code is K2150"
+  },
+  {
+    "utc": "2026-10-22T01:53:27.905913Z",
+    "label": "onboarding shown",
+    "shown": true
+  },
+  {
+    "utc": "2026-10-22T01:53:38.810907Z",
+    "label": "onboarding steps",
+    "titles": [
+      "What URI is",
+      "Connect",
+      "Harness",
+      "Brain",
+      "Permissions",
+      "Sign-in & qualification",
+      "Your workspace",
+      "Ready?"
+    ]
+  },
+  {
+    "utc": "2026-10-22T01:53:38.812412Z",
+    "label": "check",
+    "id": "J1-v2-is-default",
+    "result": "PASS",
+    "visualV2": true,
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-22T01:53:38.818952Z",
+    "label": "check",
+    "id": "J1-dashboard-first",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:53:39.292470Z",
+    "label": "raw-codes-on-screen",
+    "where": "start",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-22T01:53:39.293480Z",
+    "label": "check",
+    "id": "J1-brain-ready",
+    "result": "PASS",
+    "brain": {
+      "artifacts": "MATCH",
+      "checked_at": 1792634016.9126644,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 14616,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-22T01:53:49.767860Z",
+    "label": "perf-window",
+    "window": "idle-dashboard",
+    "seconds": 10,
+    "frames": 1440,
+    "build_ms_p50": 0.353,
+    "build_ms_p95": 0.602,
+    "build_ms_max": 23.812,
+    "raster_ms_p50": 2.542,
+    "raster_ms_p95": 3.112,
+    "raster_ms_max": 3.938,
+    "total_ms_p95": 4.861,
+    "over_16ms": 2
+  },
+  {
+    "utc": "2026-10-22T01:53:50.446778Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#82d3d(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:53:50.448282Z",
+    "label": "check",
+    "id": "J2-ctrl-workspace",
+    "result": "PASS",
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:53:50.910506Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode workspace",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-22T01:53:51.567796Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#82d3d(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:53:51.568328Z",
+    "label": "check",
+    "id": "J2-ctrl-dashboard",
+    "result": "PASS",
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-22T01:53:52.047688Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode dashboard",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-22T01:53:52.726796Z",
+    "label": "key",
+    "key": "ctrl+4",
+    "focus_before": "FocusNode#82d3d(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "assist",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:53:52.728301Z",
+    "label": "check",
+    "id": "J2-ctrl-assist",
+    "result": "PASS",
+    "mode": "assist"
+  },
+  {
+    "utc": "2026-10-22T01:53:53.187984Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode assist",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-22T01:53:53.838487Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#82d3d(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:53:53.838487Z",
+    "label": "check",
+    "id": "J2-ctrl-dashboard",
+    "result": "PASS",
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-22T01:53:54.301716Z",
+    "label": "raw-codes-on-screen",
+    "where": "mode dashboard",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-22T01:53:54.930413Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#82d3d(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:53:56.012746Z",
+    "label": "check",
+    "id": "J2-nav-Conversation",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "conversation"
+  },
+  {
+    "utc": "2026-10-22T01:53:57.113130Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#82d3d(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:53:58.166363Z",
+    "label": "check",
+    "id": "J2-nav-Tasks",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "tasks"
+  },
+  {
+    "utc": "2026-10-22T01:53:59.273113Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#82d3d(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:54:00.326636Z",
+    "label": "check",
+    "id": "J2-nav-Documents",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "documents"
+  },
+  {
+    "utc": "2026-10-22T01:54:01.426705Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusNode#82d3d(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:54:02.926953Z",
+    "label": "check",
+    "id": "J2-nav-Settings",
+    "result": "PASS",
+    "mode": "workspace",
+    "focus": "settings"
+  },
+  {
+    "utc": "2026-10-22T01:54:04.061404Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#82d3d(living-shell [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:54:06.611569Z",
+    "label": "turn",
+    "scenario": "greeting",
+    "request": "Hello URI",
+    "text": "Hello! How can I help you today?",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 0,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.9804,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 10,
+      "predicted_per_second": 93.13203017477777,
+      "prompt_n": 744,
+      "prompt_per_second": 1419.5709995382579,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 1.0646,
+      "ttft_s": 0.9804
+    },
+    "application_seconds": 1.71,
+    "frames_during_turn": {
+      "frames": 211,
+      "build_ms_p50": 0.539,
+      "build_ms_p95": 2.595,
+      "build_ms_max": 60.085,
+      "raster_ms_p50": 2.514,
+      "raster_ms_p95": 3.417,
+      "raster_ms_max": 4.339,
+      "total_ms_p95": 6.266,
+      "over_16ms": 6
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:54:06.613076Z",
+    "label": "check",
+    "id": "J3-greeting-replied",
+    "result": "PASS",
+    "text": "Hello! How can I help you today?",
+    "code": null
+  },
+  {
+    "utc": "2026-10-22T01:54:07.531927Z",
+    "label": "turn",
+    "scenario": "fact question",
+    "request": "In one short sentence: what is the capital of France?",
+    "text": "The capital of France is Paris.",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 753,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.2465,
+      "memory_context": {
+        "fact_count": 0,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 8,
+      "predicted_per_second": 89.23790826343031,
+      "prompt_n": 26,
+      "prompt_per_second": 144.20250468658142,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.3253,
+      "ttft_s": 0.2465
+    },
+    "application_seconds": 0.917,
+    "frames_during_turn": {
+      "frames": 101,
+      "build_ms_p50": 0.632,
+      "build_ms_p95": 6.886,
+      "build_ms_max": 32.176,
+      "raster_ms_p50": 2.946,
+      "raster_ms_p95": 3.854,
+      "raster_ms_max": 4.376,
+      "total_ms_p95": 21.08,
+      "over_16ms": 6
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:54:07.532936Z",
+    "label": "check",
+    "id": "J3-fact",
+    "result": "PASS",
+    "text": "The capital of France is Paris."
+  },
+  {
+    "utc": "2026-10-22T01:54:08.009720Z",
+    "label": "raw-codes-on-screen",
+    "where": "conversation",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-22T01:54:14.017582Z",
+    "label": "turn",
+    "scenario": "missing fact clarification",
+    "request": "remember that",
+    "text": "",
+    "core_message": "What would you like me to remember?",
+    "route": "core",
+    "answer_status": null,
+    "core_code": "INTENT_CLARIFICATION",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {},
+    "application_seconds": 6.006,
+    "frames_during_turn": {
+      "frames": 832,
+      "build_ms_p50": 0.301,
+      "build_ms_p95": 0.844,
+      "build_ms_max": 42.046,
+      "raster_ms_p50": 2.579,
+      "raster_ms_p95": 3.273,
+      "raster_ms_max": 4.962,
+      "total_ms_p95": 5.021,
+      "over_16ms": 2
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:54:14.018588Z",
+    "label": "check",
+    "id": "J4-clarification-asked",
+    "result": "PASS",
+    "code": "INTENT_CLARIFICATION",
+    "text": ""
+  },
+  {
+    "utc": "2026-10-22T01:54:17.855527Z",
+    "label": "turn",
+    "scenario": "clarification answer",
+    "request": "the project room code is K2150",
+    "text": "",
+    "core_message": "Please confirm before I continue: request_text = remember that the project room code is K2150",
+    "route": "core",
+    "answer_status": null,
+    "core_code": "INTENT_CONFIRMATION_REQUIRED",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {},
+    "application_seconds": 3.836,
+    "frames_during_turn": {
+      "frames": 524,
+      "build_ms_p50": 0.289,
+      "build_ms_p95": 0.88,
+      "build_ms_max": 27.33,
+      "raster_ms_p50": 2.624,
+      "raster_ms_p95": 3.496,
+      "raster_ms_max": 6.597,
+      "total_ms_p95": 5.17,
+      "over_16ms": 2
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:54:17.857033Z",
+    "label": "check",
+    "id": "J4-confirmation-asked",
+    "result": "PASS",
+    "code": "INTENT_CONFIRMATION_REQUIRED",
+    "text": ""
+  },
+  {
+    "utc": "2026-10-22T01:54:18.964761Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:54:18.966271Z",
+    "label": "check",
+    "id": "J9-dashboard-counts-decision",
+    "result": "PASS",
+    "texts": [
+      "1 review needed",
+      "1 pending decision",
+      "Shared context and pending decisions stay with you."
+    ]
+  },
+  {
+    "utc": "2026-10-22T01:54:20.499626Z",
+    "label": "check",
+    "id": "J9-review-opens-tasks",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:54:21.585763Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:54:25.698240Z",
+    "label": "approval card",
+    "capability": "remember_fact",
+    "arguments": {
+      "action": "remember_fact",
+      "inputs": {
+        "request_text": "remember that the project room code is K2150"
+      }
+    }
+  },
+  {
+    "utc": "2026-10-22T01:54:26.165018Z",
+    "label": "raw-codes-on-screen",
+    "where": "approval card",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-22T01:54:28.200992Z",
+    "label": "check",
+    "id": "J9-deny-honoured",
+    "result": "PASS",
+    "memory": [],
+    "last_code": "APPROVAL_DENIED"
+  },
+  {
+    "utc": "2026-10-22T01:54:32.229702Z",
+    "label": "turn",
+    "scenario": "remember again",
+    "request": "remember that",
+    "text": "",
+    "core_message": "This request is already confirmed but has not been carried out. Confirm it again to continue, or say what to change.",
+    "route": "core",
+    "answer_status": null,
+    "core_code": "INTENT_CONFIRMED_NOT_EXECUTED",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {},
+    "application_seconds": 3.567,
+    "frames_during_turn": {
+      "frames": 489,
+      "build_ms_p50": 0.282,
+      "build_ms_p95": 0.739,
+      "build_ms_max": 26.05,
+      "raster_ms_p50": 2.749,
+      "raster_ms_p95": 3.42,
+      "raster_ms_max": 5.387,
+      "total_ms_p95": 5.245,
+      "over_16ms": 1
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:54:36.792188Z",
+    "label": "turn",
+    "scenario": "remember again: the fact",
+    "request": "the project room code is K2150",
+    "text": "",
+    "core_message": "This request is already confirmed but has not been carried out. Confirm it again to continue, or say what to change.",
+    "route": "core",
+    "answer_status": null,
+    "core_code": "INTENT_CONFIRMED_NOT_EXECUTED",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {},
+    "application_seconds": 4.559,
+    "frames_during_turn": {
+      "frames": 608,
+      "build_ms_p50": 0.31,
+      "build_ms_p95": 0.657,
+      "build_ms_max": 41.935,
+      "raster_ms_p50": 2.844,
+      "raster_ms_p95": 3.607,
+      "raster_ms_max": 6.328,
+      "total_ms_p95": 5.454,
+      "over_16ms": 4
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:54:44.123198Z",
+    "label": "check",
+    "id": "J5-tool-settled",
+    "result": "PASS",
+    "code": "SETTLED_VERIFIED",
+    "text": ""
+  },
+  {
+    "utc": "2026-10-22T01:54:44.124299Z",
+    "label": "check",
+    "id": "J5-memory-written",
+    "result": "PASS",
+    "memory": [
+      "the project room code is K2150"
+    ]
+  },
+  {
+    "utc": "2026-10-22T01:54:45.237163Z",
+    "label": "turn",
+    "scenario": "recall",
+    "request": "What is the project room code? Answer from what I asked you to remember.",
+    "text": "You asked URI to remember: the project room code is K2150.",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 685,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.4228,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 18,
+      "predicted_per_second": 94.50272112246996,
+      "prompt_n": 186,
+      "prompt_per_second": 556.557958329967,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.6031,
+      "ttft_s": 0.4228
+    },
+    "application_seconds": 1.112,
+    "frames_during_turn": {
+      "frames": 120,
+      "build_ms_p50": 0.432,
+      "build_ms_p95": 18.665,
+      "build_ms_max": 31.311,
+      "raster_ms_p50": 3.235,
+      "raster_ms_p95": 4.12,
+      "raster_ms_max": 4.956,
+      "total_ms_p95": 22.547,
+      "over_16ms": 7
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:54:45.238161Z",
+    "label": "check",
+    "id": "J5-recall",
+    "result": "PASS",
+    "text": "You asked URI to remember: the project room code is K2150.",
+    "semantic_review_required": true
+  },
+  {
+    "utc": "2026-10-22T01:54:46.354411Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:54:48.436713Z",
+    "label": "check",
+    "id": "J6-letter-opens-conversation",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:54:50.723228Z",
+    "label": "turn",
+    "scenario": "start new work: letter",
+    "request": "Draft a letter",
+    "text": "Please provide the recipient's name, the subject of the letter, and the specific content or purpose you wish to convey.",
+    "core_code": null,
+    "route": "draft",
+    "metrics": {
+      "cache_n": 0,
+      "model_used": true,
+      "predicted_n": 145,
+      "predicted_per_second": 78.75945113413609,
+      "prompt_n": 737,
+      "retried": false,
+      "total_s": 2.4328,
+      "ttft_s": 0.6042
+    }
+  },
+  {
+    "utc": "2026-10-22T01:54:50.724732Z",
+    "label": "check",
+    "id": "J6-letter-real-turn",
+    "result": "PASS",
+    "simulated_items": 0
+  },
+  {
+    "utc": "2026-10-22T01:54:51.199871Z",
+    "label": "draft open after letter",
+    "open": false,
+    "question": "Please provide the recipient's name, the subject of the letter, and the specific content or purpose you wish to convey."
+  },
+  {
+    "utc": "2026-10-22T01:54:51.836151Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#5408e(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:54:52.691820Z",
+    "label": "check",
+    "id": "J14-no-testing-controls",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:54:52.824657Z",
+    "label": "turn",
+    "scenario": "drop letter question",
+    "request": "never mind",
+    "text": "Okay, I have dropped that question. Nothing was changed.",
+    "core_message": null,
+    "route": "draft",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "model_used": false
+    },
+    "application_seconds": 0.132,
+    "frames_during_turn": {
+      "frames": 13,
+      "build_ms_p50": 0.293,
+      "build_ms_p95": 0.377,
+      "build_ms_max": 7.439,
+      "raster_ms_p50": 3.228,
+      "raster_ms_p95": 3.458,
+      "raster_ms_max": 3.618,
+      "total_ms_p95": 5.273,
+      "over_16ms": 0
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:54:59.037239Z",
+    "label": "turn",
+    "scenario": "create warden letter",
+    "request": "Draft a short formal letter to the hostel warden saying that seven students left the hostel on Monday without permission.",
+    "text": "Letter (version 1 of 1): A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission. Missing: [Address], [Hostel Name/Institution Name], [Hostel Warden's Designation], [Hostel Warden's Name], [Your Designation], [Your Name]. Nothing has been sent or saved.",
+    "core_message": null,
+    "route": "draft",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 703,
+      "model_used": true,
+      "predicted_n": 502,
+      "predicted_per_second": 90.52216654777729,
+      "prompt_n": 52,
+      "retried": false,
+      "total_s": 5.7539,
+      "ttft_s": 0.219
+    },
+    "application_seconds": 6.21,
+    "frames_during_turn": {
+      "frames": 782,
+      "build_ms_p50": 0.27,
+      "build_ms_p95": 0.968,
+      "build_ms_max": 28.535,
+      "raster_ms_p50": 2.944,
+      "raster_ms_p95": 3.767,
+      "raster_ms_max": 4.631,
+      "total_ms_p95": 5.956,
+      "over_16ms": 17
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:54:59.037239Z",
+    "label": "check",
+    "id": "J14-draft-open",
+    "result": "PASS",
+    "question": null
+  },
+  {
+    "utc": "2026-10-22T01:54:59.520606Z",
+    "label": "check",
+    "id": "J14-target-chip-shown",
+    "result": "PASS",
+    "default_target_draft": false
+  },
+  {
+    "utc": "2026-10-22T01:55:00.601949Z",
+    "label": "turn",
+    "scenario": "chat with a draft open (live l9)",
+    "request": "Say hello in three words.",
+    "text": "Hello there, friend!",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 685,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.4178,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 6,
+      "predicted_per_second": 92.16419973825367,
+      "prompt_n": 378,
+      "prompt_per_second": 1096.7775630647097,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.4723,
+      "ttft_s": 0.4178
+    },
+    "application_seconds": 1.079,
+    "frames_during_turn": {
+      "frames": 121,
+      "build_ms_p50": 0.374,
+      "build_ms_p95": 4.636,
+      "build_ms_max": 33.466,
+      "raster_ms_p50": 3.315,
+      "raster_ms_p95": 4.673,
+      "raster_ms_max": 6.589,
+      "total_ms_p95": 12.054,
+      "over_16ms": 4
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:55:00.602453Z",
+    "label": "check",
+    "id": "J14-chat-answered",
+    "result": "PASS",
+    "text": "Hello there, friend!",
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-22T01:55:00.603460Z",
+    "label": "check",
+    "id": "J14-chat-does-not-edit",
+    "result": "PASS",
+    "before": 1,
+    "after": 1,
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-22T01:55:05.152752Z",
+    "label": "turn",
+    "scenario": "target conversation",
+    "request": "Make it shorter and tell me a joke in a formal tone.",
+    "text": "Hello.\n\nWhy did the scarecrow win an award? Because he was outstanding in his field.",
+    "core_message": "I can only act on an explicit request in this mode (for example: 'remember that ...').",
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": "CONVERSATION",
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 685,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.4444,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 21,
+      "predicted_per_second": 96.28067743084641,
+      "prompt_n": 387,
+      "prompt_per_second": 1087.4818753020784,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.6523,
+      "ttft_s": 0.4444
+    },
+    "application_seconds": 4.058,
+    "frames_during_turn": {
+      "frames": 507,
+      "build_ms_p50": 0.288,
+      "build_ms_p95": 1.329,
+      "build_ms_max": 34.896,
+      "raster_ms_p50": 3.653,
+      "raster_ms_p95": 4.637,
+      "raster_ms_max": 7.492,
+      "total_ms_p95": 6.98,
+      "over_16ms": 8
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:55:05.153260Z",
+    "label": "check",
+    "id": "J14-target-conversation-never-edits",
+    "result": "PASS",
+    "before": 1,
+    "after": 1,
+    "route": "answer"
+  },
+  {
+    "utc": "2026-10-22T01:55:06.088007Z",
+    "label": "check",
+    "id": "J14-target-draft-chosen",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:55:08.808383Z",
+    "label": "turn",
+    "scenario": "explicit edit",
+    "request": "Make it shorter.",
+    "text": "Letter (version 2 of 2): Condensed the body paragraph to be more concise while retaining all key facts. Missing: [Address], [Hostel Name/Institution Name], [Hostel Warden's Designation], [Hostel Warden's Name], [Your Designation], [Your Name]. Nothing has been sent or saved.",
+    "core_message": null,
+    "route": "draft",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 0,
+      "model_used": true,
+      "predicted_n": 131,
+      "predicted_per_second": 77.22549011454322,
+      "prompt_n": 1024,
+      "retried": false,
+      "total_s": 2.2618,
+      "ttft_s": 0.578
+    },
+    "application_seconds": 2.718,
+    "frames_during_turn": {
+      "frames": 335,
+      "build_ms_p50": 0.287,
+      "build_ms_p95": 1.95,
+      "build_ms_max": 43.878,
+      "raster_ms_p50": 3.594,
+      "raster_ms_p95": 4.636,
+      "raster_ms_max": 5.51,
+      "total_ms_p95": 7.32,
+      "over_16ms": 7
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:55:08.809384Z",
+    "label": "check",
+    "id": "J14-explicit-edit-applies",
+    "result": "PASS",
+    "before": 1,
+    "after": 2,
+    "route": "draft",
+    "text": "Letter (version 2 of 2): Condensed the body paragraph to be more concise while retaining all key facts. Missing: [Address], [Hostel Name/Institution Name], [Hostel Warden's Designation], [Hostel Warden's Name], [Your Designation], [Your Name]. Nothing has been sent or saved."
+  },
+  {
+    "utc": "2026-10-22T01:55:09.722678Z",
+    "label": "check",
+    "id": "J14-target-back-to-conversation",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:55:14.242576Z",
+    "label": "turn",
+    "scenario": "new document replaces",
+    "request": "Draft a new notice that the library will open at 8 am from Monday.",
+    "text": "Notice (version 1 of 1): A notice informing that the library opening time is changed to 8 AM starting from Monday. Missing: [Date], [Designation], [Name], Date of the notice, Specific date for the Monday start, Name of the sender. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "core_message": null,
+    "route": "draft",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 703,
+      "model_used": true,
+      "predicted_n": 315,
+      "predicted_per_second": 84.9617901936236,
+      "prompt_n": 46,
+      "retried": false,
+      "total_s": 4.0475,
+      "ttft_s": 0.3516
+    },
+    "application_seconds": 4.517,
+    "frames_during_turn": {
+      "frames": 573,
+      "build_ms_p50": 0.283,
+      "build_ms_p95": 1.206,
+      "build_ms_max": 31.849,
+      "raster_ms_p50": 3.257,
+      "raster_ms_p95": 4.172,
+      "raster_ms_max": 5.53,
+      "total_ms_p95": 6.877,
+      "over_16ms": 11
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:55:14.243607Z",
+    "label": "check",
+    "id": "J14-new-document-keeps-old",
+    "result": "PASS",
+    "replaced": "letter",
+    "route": "draft",
+    "question": null
+  },
+  {
+    "utc": "2026-10-22T01:55:15.166157Z",
+    "label": "undo button before tap",
+    "rect": "Rect.fromLTRB(216.0, 478.0, 306.8, 526.0)",
+    "enabled": true,
+    "can_undo": true,
+    "blocked": false,
+    "view": "Size(1264.0, 681.0)"
+  },
+  {
+    "utc": "2026-10-22T01:55:15.284266Z",
+    "label": "check",
+    "id": "J14-undo-restores",
+    "result": "PASS",
+    "version": 2
+  },
+  {
+    "utc": "2026-10-22T01:55:15.903096Z",
+    "label": "check",
+    "id": "J14-redo-returns",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:55:16.027935Z",
+    "label": "draft for later journeys",
+    "id": "c27af242-c888-4d1c-b98a-896d02fbd1c9",
+    "version": 2
+  },
+  {
+    "utc": "2026-10-22T01:55:16.673168Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:55:20.880073Z",
+    "label": "tile with draft target",
+    "before": "c27af242-c888-4d1c-b98a-896d02fbd1c9:2",
+    "after": "c27af242-c888-4d1c-b98a-896d02fbd1c9:2",
+    "last_check": "J14-redo-returns"
+  },
+  {
+    "utc": "2026-10-22T01:55:20.881079Z",
+    "label": "check",
+    "id": "J16-tile-never-revises-open-draft",
+    "result": "PASS",
+    "before": 2,
+    "after": 2,
+    "same_draft": true
+  },
+  {
+    "utc": "2026-10-22T01:55:21.370815Z",
+    "label": "J16 close step skipped",
+    "reason": "the tile did not start a new draft (e.g. a question was asked)"
+  },
+  {
+    "utc": "2026-10-22T01:55:22.008661Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#5408e(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:55:26.564152Z",
+    "label": "check",
+    "id": "J10-navigation-while-busy",
+    "result": "PASS",
+    "nav_ms": {
+      "3": 78.84,
+      "2": 76.627
+    },
+    "busy_seen": true
+  },
+  {
+    "utc": "2026-10-22T01:55:26.566664Z",
+    "label": "perf-window",
+    "window": "brain-turn-with-navigation",
+    "frames": 351,
+    "build_ms_p50": 0.262,
+    "build_ms_p95": 11.822,
+    "build_ms_max": 66.86,
+    "raster_ms_p50": 3.158,
+    "raster_ms_p95": 5.166,
+    "raster_ms_max": 9.666,
+    "total_ms_p95": 15.639,
+    "over_16ms": 9,
+    "metrics": {
+      "cache_n": 685,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.5049,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 75,
+      "predicted_per_second": 96.28433544942014,
+      "prompt_n": 572,
+      "prompt_per_second": 1409.0960599506323,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 1.2737,
+      "ttft_s": 0.5049
+    },
+    "answer_chars": 408
+  },
+  {
+    "utc": "2026-10-22T01:55:27.307131Z",
+    "label": "key",
+    "key": "ctrl+1",
+    "focus_before": "FocusNode#5408e(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "companion",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:55:28.885408Z",
+    "label": "check",
+    "id": "J7-window-440x680",
+    "result": "PASS",
+    "size": "Size(440.0, 680.0)"
+  },
+  {
+    "utc": "2026-10-22T01:55:28.885408Z",
+    "label": "check",
+    "id": "J7-shaped-region",
+    "result": "PASS",
+    "facts": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 255
+    }
+  },
+  {
+    "utc": "2026-10-22T01:55:29.339987Z",
+    "label": "check",
+    "id": "J7-native-rejects-nan",
+    "result": "PASS",
+    "code": "INVALID_LAYOUT"
+  },
+  {
+    "utc": "2026-10-22T01:55:29.344006Z",
+    "label": "check",
+    "id": "J7-native-rejects-infinite",
+    "result": "PASS",
+    "code": "INVALID_LAYOUT"
+  },
+  {
+    "utc": "2026-10-22T01:55:29.348511Z",
+    "label": "check",
+    "id": "J7-native-rejects-inverted",
+    "result": "PASS",
+    "code": "INVALID_LAYOUT"
+  },
+  {
+    "utc": "2026-10-22T01:55:29.355616Z",
+    "label": "check",
+    "id": "J7-region-kept-after-reject",
+    "result": "PASS",
+    "before": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 255
+    },
+    "after": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 255
+    }
+  },
+  {
+    "utc": "2026-10-22T01:55:39.372853Z",
+    "label": "perf-window",
+    "window": "idle-companion",
+    "seconds": 10,
+    "frames": 1135,
+    "build_ms_p50": 0.22,
+    "build_ms_p95": 0.408,
+    "build_ms_max": 3.519,
+    "raster_ms_p50": 1.537,
+    "raster_ms_p95": 1.975,
+    "raster_ms_max": 2.887,
+    "total_ms_p95": 3.679,
+    "over_16ms": 0
+  },
+  {
+    "utc": "2026-10-22T01:55:40.381794Z",
+    "label": "check",
+    "id": "J7-single-click-controls",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:55:40.382799Z",
+    "label": "companion region with controls",
+    "facts": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 397
+    }
+  },
+  {
+    "utc": "2026-10-22T01:55:41.799656Z",
+    "label": "check",
+    "id": "J7-detached-chat",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:55:41.800696Z",
+    "label": "check",
+    "id": "J7-draft-note",
+    "result": "PASS",
+    "draft_open": true
+  },
+  {
+    "utc": "2026-10-22T01:55:42.973165Z",
+    "label": "turn",
+    "scenario": "companion chat",
+    "request": "Say hello in three words.",
+    "text": "Hello there, friend!",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": "COMPLETE",
+    "core_code": null,
+    "error_code": null,
+    "error_message": null,
+    "metrics": {
+      "cache_n": 685,
+      "draft_n": null,
+      "draft_n_accepted": null,
+      "first_answer_s": 0.4748,
+      "memory_context": {
+        "fact_count": 1,
+        "status": "available",
+        "truncated": false
+      },
+      "predicted_n": 6,
+      "predicted_per_second": 84.81620328747604,
+      "prompt_n": 517,
+      "prompt_per_second": 1284.484814755923,
+      "reasoning_chars": 0,
+      "retried": false,
+      "total_s": 0.5341,
+      "ttft_s": 0.4748
+    },
+    "application_seconds": 1.165,
+    "frames_during_turn": {
+      "frames": 142,
+      "build_ms_p50": 0.308,
+      "build_ms_p95": 8.642,
+      "build_ms_max": 26.031,
+      "raster_ms_p50": 3.595,
+      "raster_ms_p95": 4.52,
+      "raster_ms_max": 5.136,
+      "total_ms_p95": 14.075,
+      "over_16ms": 2
+    },
+    "mode": "companion"
+  },
+  {
+    "utc": "2026-10-22T01:55:42.977181Z",
+    "label": "check",
+    "id": "J7-chat-reply",
+    "result": "PASS",
+    "text": "Hello there, friend!"
+  },
+  {
+    "utc": "2026-10-22T01:55:42.986285Z",
+    "label": "check",
+    "id": "J7-draft-untouched",
+    "result": "PASS",
+    "before": 2,
+    "after": 2,
+    "route": "answer",
+    "note": "UIV2-F1, live l9 repeat"
+  },
+  {
+    "utc": "2026-10-22T01:55:42.992337Z",
+    "label": "check",
+    "id": "J7-stays-companion",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:55:44.106846Z",
+    "label": "key",
+    "key": "Escape",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "companion",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:55:44.108351Z",
+    "label": "check",
+    "id": "J7-escape-closes-chat",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:55:46.323410Z",
+    "label": "check",
+    "id": "J7-double-click-dashboard",
+    "result": "PASS",
+    "mode": "dashboard"
+  },
+  {
+    "utc": "2026-10-22T01:55:46.324410Z",
+    "label": "check",
+    "id": "J7-window-restored",
+    "result": "PASS",
+    "before": "Size(1280.0, 720.0)",
+    "after": "Size(1280.0, 720.0)"
+  },
+  {
+    "utc": "2026-10-22T01:55:47.535232Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:55:49.533940Z",
+    "label": "draft closed after J7",
+    "open": true
+  },
+  {
+    "utc": "2026-10-22T01:55:50.188079Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusNode#5408e(living-composer [PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:55:52.918324Z",
+    "label": "gallery open attempts",
+    "attempts": 1
+  },
+  {
+    "utc": "2026-10-22T01:55:52.921340Z",
+    "label": "check",
+    "id": "J8-gallery-opens",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:55:55.916244Z",
+    "label": "check",
+    "id": "J8-preview-isolated",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:55:57.332371Z",
+    "label": "check",
+    "id": "J8-apply",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:55:59.586020Z",
+    "label": "check",
+    "id": "J8-theme",
+    "result": "PASS",
+    "theme": "snowArchive"
+  },
+  {
+    "utc": "2026-10-22T01:56:00.702589Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:01.858258Z",
+    "label": "lunar edge (UIV2-F4)",
+    "found": true,
+    "rect": "Rect.fromLTRB(596.0, 205.5, 876.0, 485.5)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 1020,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-22T01:56:01.859762Z",
+    "label": "check",
+    "id": "J15-lunar-edge-invisible-light-theme",
+    "result": "PASS",
+    "found": true,
+    "rect": "Rect.fromLTRB(596.0, 205.5, 876.0, 485.5)",
+    "view": "Size(1264.0, 681.0)",
+    "samples": 1020,
+    "max_channel_diff": 0,
+    "worst": [],
+    "theme": "snowArchive",
+    "identity": "lunar"
+  },
+  {
+    "utc": "2026-10-22T01:56:01.868293Z",
+    "label": "check",
+    "id": "J13-classic-reachable",
+    "result": "PASS",
+    "note": "checked below"
+  },
+  {
+    "utc": "2026-10-22T01:56:02.548732Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:03.596157Z",
+    "label": "check",
+    "id": "J13-classic-entry-present",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:56:05.551947Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:06.020341Z",
+    "label": "resize",
+    "requested": "Size(1366.0, 768.0)",
+    "view": "Size(1350.0, 729.0)",
+    "composer_visible_without_scroll": true,
+    "expected_layout": "medium (composer in view)",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-22T01:56:06.020887Z",
+    "label": "check",
+    "id": "J11-composer-in-view-1366",
+    "result": "PASS",
+    "view": "Size(1350.0, 729.0)"
+  },
+  {
+    "utc": "2026-10-22T01:56:06.027923Z",
+    "label": "check",
+    "id": "J11-no-layout-error-1366",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:56:06.700909Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:09.164403Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:09.646325Z",
+    "label": "resize",
+    "requested": "Size(1280.0, 800.0)",
+    "view": "Size(1264.0, 761.0)",
+    "composer_visible_without_scroll": true,
+    "expected_layout": "medium (composer in view)",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-22T01:56:09.647334Z",
+    "label": "check",
+    "id": "J11-composer-in-view-1280",
+    "result": "PASS",
+    "view": "Size(1264.0, 761.0)"
+  },
+  {
+    "utc": "2026-10-22T01:56:09.653667Z",
+    "label": "check",
+    "id": "J11-no-layout-error-1280",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:56:10.318696Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:12.852555Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:13.335043Z",
+    "label": "resize",
+    "requested": "Size(1024.0, 768.0)",
+    "view": "Size(1008.0, 729.0)",
+    "composer_visible_without_scroll": true,
+    "expected_layout": "medium (composer in view)",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-22T01:56:13.337107Z",
+    "label": "check",
+    "id": "J11-composer-in-view-1024",
+    "result": "PASS",
+    "view": "Size(1008.0, 729.0)"
+  },
+  {
+    "utc": "2026-10-22T01:56:13.352522Z",
+    "label": "check",
+    "id": "J11-no-layout-error-1024",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:56:14.022432Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:16.460489Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:16.922119Z",
+    "label": "resize",
+    "requested": "Size(900.0, 640.0)",
+    "view": "Size(884.0, 601.0)",
+    "composer_visible_without_scroll": false,
+    "expected_layout": "scrolling column",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-22T01:56:16.923623Z",
+    "label": "check",
+    "id": "J11-no-layout-error-900",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:56:17.573152Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:19.983382Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:20.436271Z",
+    "label": "resize",
+    "requested": "Size(800.0, 600.0)",
+    "view": "Size(784.0, 561.0)",
+    "composer_visible_without_scroll": false,
+    "expected_layout": "scrolling column",
+    "new_flutter_errors": 0
+  },
+  {
+    "utc": "2026-10-22T01:56:20.437776Z",
+    "label": "check",
+    "id": "J11-no-layout-error-800",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T01:56:21.095780Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:26.480594Z",
+    "label": "check",
+    "id": "J12-brain-not-ready-seen",
+    "result": "PASS",
+    "brain": {
+      "artifacts": "MATCH",
+      "checked_at": 1792634185.9760885,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    }
+  },
+  {
+    "utc": "2026-10-22T01:56:27.136778Z",
+    "label": "key",
+    "key": "ctrl+3",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "dashboard",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:28.298531Z",
+    "label": "key",
+    "key": "ctrl+2",
+    "focus_before": "FocusScopeNode#d22b5(_ModalScopeState<dynamic> Focus Scope [PRIMARY FOCUS])(context: _FocusScopeWithExternalFocusNode, PRIMARY FOCUS)",
+    "mode_after": "workspace",
+    "can_pop": false
+  },
+  {
+    "utc": "2026-10-22T01:56:33.767866Z",
+    "label": "turn",
+    "scenario": "turn without Brain",
+    "request": "Hello again URI",
+    "text": "",
+    "core_message": null,
+    "route": "answer",
+    "answer_status": null,
+    "core_code": null,
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (STOPPED).",
+    "metrics": {},
+    "application_seconds": 4.588,
+    "frames_during_turn": {
+      "frames": 606,
+      "build_ms_p50": 0.258,
+      "build_ms_p95": 0.654,
+      "build_ms_max": 28.488,
+      "raster_ms_p50": 2.767,
+      "raster_ms_p95": 3.356,
+      "raster_ms_max": 4.128,
+      "total_ms_p95": 5.276,
+      "over_16ms": 3
+    },
+    "mode": "workspace"
+  },
+  {
+    "utc": "2026-10-22T01:56:33.768871Z",
+    "label": "turn without brain",
+    "text": "",
+    "error_code": "BRAIN_UNAVAILABLE",
+    "error_message": "The local Brain is not ready (STOPPED).",
+    "recovery": [
+      "start_brain",
+      "retry",
+      "choose_other_source"
+    ]
+  },
+  {
+    "utc": "2026-10-22T01:56:34.261301Z",
+    "label": "raw-codes-on-screen",
+    "where": "brain stopped",
+    "codes": []
+  },
+  {
+    "utc": "2026-10-22T01:56:34.262805Z",
+    "label": "summary",
+    "failures": [],
+    "flutter_errors": 0,
+    "elapsed_s": 197.748
+  }
+]

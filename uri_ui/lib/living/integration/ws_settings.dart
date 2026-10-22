@@ -45,7 +45,7 @@ class _WorkingSystemSettingsSectionState extends State<WorkingSystemSettingsSect
     final shell = WorkingSystemShellSwitch.maybeOf(context);
     final conv = widget.conversation;
     TextStyle h = TextStyle(color: c.ink, fontWeight: FontWeight.w600);
-    TextStyle small = TextStyle(color: c.inkSoft, fontSize: 12);
+    TextStyle small = TextStyle(color: c.inkSoft, fontSize: UriType.label);
     return ListenableBuilder(
       listenable: conv,
       builder: (context, _) {
@@ -74,7 +74,7 @@ class _WorkingSystemSettingsSectionState extends State<WorkingSystemSettingsSect
                         size: 18,
                         color: r['selectable'] == true ? c.accent : c.inkFaint,
                       ),
-                      title: Text('${r['display']}', style: TextStyle(color: c.ink, fontSize: 13)),
+                      title: Text('${r['display']}', style: TextStyle(color: c.ink, fontSize: UriType.body)),
                       subtitle: Text(
                         '${r['state']}${r['why_not'] != null ? ' · ${r['why_not']}' : ''}${r['note'] != null ? ' · ${r['note']}' : ''}',
                         style: small,
@@ -105,7 +105,7 @@ class _WorkingSystemSettingsSectionState extends State<WorkingSystemSettingsSect
                   for (final f in conv.memory)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Text('• $f', key: const ValueKey('ws-memory-fact'), style: TextStyle(color: c.ink, fontSize: 13)),
+                      child: Text('• $f', key: const ValueKey('ws-memory-fact'), style: TextStyle(color: c.ink, fontSize: UriType.body)),
                     ),
                   const SizedBox(height: 4),
                   Text('To add a fact, say "remember that …" and approve the card.', style: small),

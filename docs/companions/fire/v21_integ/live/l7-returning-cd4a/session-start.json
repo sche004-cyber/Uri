@@ -1,0 +1,24 @@
+{
+ "label": "l7-returning-cd4a",
+ "port": 18300,
+ "started_utc": "2026-10-18T08:00:33.897834+00:00",
+ "no_brain": false,
+ "verified": {
+  "ok": true,
+  "mismatched": [],
+  "checked_files": 358,
+  "runtime_head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "materialized_from": "dcb5ebaa47254a2a865701b1e9048d1ddaabe2f6",
+  "source_head": "dcb5ebaa47254a2a865701b1e9048d1ddaabe2f6"
+ },
+ "brain_config_sha256_before": "e7d5de94053ddac1ba124c623944fb7583bc5a6b791a0b4b8d1edd79883c72ee",
+ "lease_before": {
+  "state": "FREE",
+  "holder": null
+ },
+ "override": false,
+ "server_pid": 2480,
+ "server_listener_pid": 11892,
+ "server_listen_s": 7.624,
+ "server_listening": true
+}

@@ -1,0 +1,47 @@
+00:00 +0: loading D:/uri-dev/uri-ui-controls-typo/uri_ui/integration_test/uiv2_native_test.dart
+Building Windows application...                                 
+Nuget is not installed.
+Building Windows application...                                    29.7s
+√ Built build\windows\x64\runner\Debug\uri_ui.exe
+00:00 +0: UI V2 completion: production main, real worker, Core and Brain
+
+Warning: A call to tap() with finder "Found 1 widget with key [<'draft-close'>] (ignoring all but first): [
+  TextButton-[<'draft-close'>](dependencies: [IconTheme, InheritedCupertinoTheme, MediaQuery, _InheritedTheme, _LocalizationsScope-[GlobalKey#4724a], _ScrollableScope], state: _ButtonStyleState#8d4d5),
+]" derived an Offset (Offset(548.5, 583.9)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderSemanticsAnnotations#8aa23 relayoutBoundary=up2
+The hit test result at that offset is: HitTestResult(_RenderDecoration#67617@Offset(270.5, 4.9), RenderSemanticsAnnotations#8afad@Offset(270.5, 4.9), RenderPointerListener#bd21b@Offset(270.5, 4.9), RenderSemanticsAnnotations#2e1c5@Offset(270.5, 4.9), RenderIgnorePointer#d3167@Offset(270.5, 4.9), RenderTapRegion#87738@Offset(270.5, 4.9), RenderMouseRegion#a5ea4@Offset(270.5, 4.9), RenderSemanticsAnnotations#b3b00@Offset(270.5, 4.9), RenderFlex#f9b75@Offset(318.5, 4.9), _RenderLayoutBuilder#617e4@Offset(318.5, 4.9), RenderFlex#b5e65@Offset(318.5, 39.9), RenderPadding#c826f@Offset(332.5, 45.9), _RenderInkFeatures#a7e91@Offset(332.5, 45.9), RenderCustomPaint#9203d@Offset(332.5, 45.9), RenderClipPath#8839f@Offset(332.5, 45.9), RenderStack#9f54c@Offset(332.5, 45.9), RenderDecoratedBox#3b788@Offset(332.5, 45.9), RenderBackdropFilter#fbcb2@Offset(332.5, 45.9), RenderClipRRect#ac9b0@Offset(332.5, 45.9), RenderPadding#982ec@Offset(348.5, 45.9), RenderFlex#f6b91@Offset(348.5, 527.9), RenderAnimatedOpacity#45478@Offset(348.5, 527.9), RenderStack#f3aa3@Offset(348.5, 527.9), RenderFlex#9e3bf@Offset(348.5, 583.9), RenderFlex#7629a@Offset(548.5, 583.9), _RenderLayoutBuilder#80b9f@Offset(548.5, 583.9), RenderAnimatedOpacity#1ba78@Offset(548.5, 583.9), RenderStack#beee4@Offset(548.5, 583.9), RenderStack#d3ba1@Offset(548.5, 583.9), _RenderInkFeatures#af790@Offset(548.5, 583.9), RenderPhysicalModel#e6fc2@Offset(548.5, 583.9), RenderCustomMultiChildLayoutBox#21914@Offset(548.5, 583.9), _RenderInkFeatures#7e3f3@Offset(548.5, 583.9), RenderPhysicalModel#a0eaa@Offset(548.5, 583.9), RenderSemanticsAnnotations#0f653@Offset(548.5, 583.9), RenderSemanticsAnnotations#52437@Offset(548.5, 583.9), _RenderLayoutBuilder#0dbd8@Offset(548.5, 583.9), RenderSemanticsAnnotations#1de4a@Offset(548.5, 583.9), RenderRepaintBoundary#f62e3@Offset(548.5, 583.9), RenderIgnorePointer#11843@Offset(548.5, 583.9), _RenderSnapshotWidget#a5b5e@Offset(548.5, 583.9), _RenderSnapshotWidget#299e4@Offset(548.5, 583.9), _RenderSnapshotWidget#839c3@Offset(548.5, 583.9), _RenderSnapshotWidget#b5351@Offset(548.5, 583.9), RenderRepaintBoundary#fee00@Offset(548.5, 583.9), RenderSemanticsAnnotations#97349@Offset(548.5, 583.9), RenderOffstage#b4962@Offset(548.5, 583.9), RenderSemanticsAnnotations#8026f@Offset(548.5, 583.9), _RenderTheater#06ee2@Offset(548.5, 583.9), RenderAbsorbPointer#25597@Offset(548.5, 583.9), RenderPointerListener#2693c@Offset(548.5, 583.9), RenderSemanticsAnnotations#91ce0@Offset(548.5, 583.9), RenderSemanticsAnnotations#7506a@Offset(548.5, 583.9), RenderSemanticsAnnotations#e0f60@Offset(548.5, 583.9), RenderSemanticsAnnotations#67af0@Offset(548.5, 583.9), RenderTapRegionSurface#f8ac1@Offset(548.5, 583.9), RenderSemanticsAnnotations#82796@Offset(548.5, 583.9), RenderSemanticsAnnotations#552ab@Offset(548.5, 583.9), HitTestEntry<HitTestTarget>#08eb7(_ReusableRenderView#96fa0), HitTestEntry<HitTestTarget>#fb86d(<IntegrationTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure>.<anonymous closure> (file:///D:/uri-dev/uri-ui-controls-typo/uri_ui/integration_test/uiv2_native_test.dart:684:21)
+<asynchronous suspension>
+#4      main.<anonymous closure>.step (file:///D:/uri-dev/uri-ui-controls-typo/uri_ui/integration_test/uiv2_native_test.dart:171:9)
+<asynchronous suspension>
+#5      main.<anonymous closure> (file:///D:/uri-dev/uri-ui-controls-typo/uri_ui/integration_test/uiv2_native_test.dart:608:9)
+<asynchronous suspension>
+#6      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#7      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#8      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+03:39 +1: (tearDownAll)
+03:39 +1: All tests passed!
+The Flutter CLI developer tool uses Google Analytics to report usage and diagnostic
+data along with package dependencies, and crash reporting to send basic crash
+reports. This data is used to help improve the Dart platform, Flutter framework,
+and related tools.
+
+Telemetry is not sent on the very first run. To disable reporting of telemetry,
+run this terminal command:
+
+    flutter --disable-analytics
+
+If you opt out of telemetry, an opt-out event will be sent, and then no further
+information will be sent. This data is collected in accordance with the Google
+Privacy Policy (https://policies.google.com/privacy).
+

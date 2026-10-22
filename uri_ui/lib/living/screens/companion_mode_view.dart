@@ -101,7 +101,7 @@ class CompanionModeView extends StatefulWidget {
       final text = TextPainter(
         text: TextSpan(
           text: CompanionActions.labels[action],
-          style: const TextStyle(fontSize: 14, fontFamily: 'Segoe UI'),
+          style: const TextStyle(fontSize: UriType.bodyLarge, fontFamily: UriType.family),
         ),
         textDirection: TextDirection.ltr,
         textScaler: TextScaler.linear(textScale),
@@ -475,7 +475,7 @@ class _DetachedChat extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'Conversation',
-                          style: TextStyle(fontSize: referenceSize ? 18 : 16),
+                          style: TextStyle(fontSize: referenceSize ? UriType.titleLarge : UriType.titleLarge),
                         ),
                       ),
                       IconButton(
@@ -594,7 +594,7 @@ class _DetachedClassicConversation extends StatelessWidget {
                   : c.surface,
               borderRadius: BorderRadius.circular(referenceSize ? 20 : 14),
             ),
-            child: Text(text, style: TextStyle(fontSize: 14, color: c.ink)),
+            child: Text(text, style: TextStyle(fontSize: UriType.bodyLarge, color: c.ink)),
           ),
         );
         final messages = <Widget>[];
@@ -621,7 +621,7 @@ class _DetachedClassicConversation extends StatelessWidget {
                   _ => '',
                 },
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: UriType.bodyLarge,
                   color: turn.stage == TurnStage.failed ? c.danger : c.inkSoft,
                 ),
               ),
@@ -632,7 +632,7 @@ class _DetachedClassicConversation extends StatelessWidget {
           messages.add(
             Text(
               'Ask URI anything to begin.',
-              style: TextStyle(color: c.inkSoft, fontSize: 14),
+              style: TextStyle(color: c.inkSoft, fontSize: UriType.bodyLarge),
             ),
           );
         }

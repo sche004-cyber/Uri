@@ -399,7 +399,7 @@ class _SlideStrip extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(4),
                       child: Text('${i + 1}. ${(s['title'] as String?)?.isNotEmpty == true ? s['title'] : s['layout']}',
-                          maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11)),
+                          maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: UriType.caption)),
                     ),
                   ]),
                 ),
@@ -466,11 +466,11 @@ class AuthoringPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final pid = editor.previewId;
     if (pid == null || editor.previewFailed) {
-      return const Center(child: Text('No preview', style: TextStyle(fontSize: 11)));
+      return const Center(child: Text('No preview', style: TextStyle(fontSize: UriType.caption)));
     }
     if (!editor.previewReady) {
       return const Center(child: Text('Updating…', key: ValueKey('authoring-preview-updating'),
-          style: TextStyle(fontSize: 11)));
+          style: TextStyle(fontSize: UriType.caption)));
     }
     return FutureBuilder<Uint8List?>(
       key: ValueKey('$pid/$page/$width'),
@@ -506,7 +506,7 @@ class _SlidePreview extends StatelessWidget {
           ),
         ),
         Text('Slide ${e.selectedIndex + 1} of ${e.slides.length} · preview drawn by LibreOffice',
-            key: const ValueKey('authoring-slide-label'), style: const TextStyle(fontSize: 12)),
+            key: const ValueKey('authoring-slide-label'), style: const TextStyle(fontSize: UriType.label)),
       ]),
     );
   }
@@ -529,7 +529,7 @@ class _ItemsPanel extends StatelessWidget {
       key: ValueKey('authoring-items-$sid'),
       padding: const EdgeInsets.all(UriSpace.sm),
       children: [
-        Text('SLIDE ${e.selectedIndex + 1}', style: const TextStyle(fontSize: 11, letterSpacing: 1.2)),
+        Text('SLIDE ${e.selectedIndex + 1}', style: const TextStyle(fontSize: UriType.caption, letterSpacing: 1.2)),
         const SizedBox(height: UriSpace.xs),
         if (titleId != null)
           AuthoringTextField(
@@ -552,7 +552,7 @@ class _ItemsPanel extends StatelessWidget {
           onApply: (t) => e.op({'op': 'set_notes', 'slide': sid, 'text': t}),
         ),
         const Divider(),
-        const Text('INSERT', style: TextStyle(fontSize: 11, letterSpacing: 1.2)),
+        const Text('INSERT', style: TextStyle(fontSize: UriType.caption, letterSpacing: 1.2)),
         Wrap(spacing: UriSpace.xs, children: [
           OutlinedButton.icon(
             key: const ValueKey('authoring-insert-text'),
@@ -650,7 +650,7 @@ class _ItemsPanel extends StatelessWidget {
       case 'table':
         final cells = [for (final r in (it['cells'] as List? ?? const [])) [for (final c in (r as List)) '$c']];
         return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Row(children: [const Text('Table', style: TextStyle(fontSize: 12)), const Spacer(), remove]),
+          Row(children: [const Text('Table', style: TextStyle(fontSize: UriType.label)), const Spacer(), remove]),
           for (var r = 0; r < cells.length; r++)
             Row(children: [
               for (var col = 0; col < cells[r].length; col++)
@@ -678,7 +678,7 @@ class _ItemsPanel extends StatelessWidget {
           'picture' => 'Picture',
           _ => '${it['name']}',
         };
-        return Row(children: [Expanded(child: Text(label, style: const TextStyle(fontSize: 12))), remove]);
+        return Row(children: [Expanded(child: Text(label, style: const TextStyle(fontSize: UriType.label))), remove]);
     }
   }
 }
@@ -728,7 +728,7 @@ class _AuthoringTextFieldState extends State<AuthoringTextField> {
       enabled: widget.enabled,
       minLines: widget.multiline ? 2 : 1,
       maxLines: widget.multiline ? 6 : 1,
-      style: TextStyle(fontSize: widget.dense ? 12 : 14),
+      style: TextStyle(fontSize: widget.dense ? UriType.label : UriType.bodyLarge),
       decoration: InputDecoration(
         labelText: widget.label.isEmpty ? null : widget.label,
         isDense: true,

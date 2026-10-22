@@ -34,7 +34,7 @@ class UriWordmark extends StatelessWidget {
       'URI',
       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
         color: colors.ink,
-        fontSize: markSize >= 40 ? 24 : 20,
+        fontSize: markSize >= 40 ? UriType.headline : UriType.heading,
         fontWeight: FontWeight.w800,
         letterSpacing: 1.4,
       ),
@@ -66,7 +66,7 @@ class UriWordmark extends StatelessWidget {
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: colors.accentInk,
                       fontWeight: FontWeight.w800,
-                      fontSize: 9,
+                      fontSize: UriType.micro,
                       letterSpacing: 0.5,
                     ),
                   ),

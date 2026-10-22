@@ -19,12 +19,12 @@ export const SHADERS = {
   hybridH:  { family: 'lunar',  title: 'H - Moonlit Blossom',       src: LUNAR_SAKURA, radius: 0.32 },
 };
 
-// The nine states of URI's existing `CompanionState` contract
+// The ten states of URI's existing `CompanionState` contract
 // (lib/living/companion/companion_state.dart). The companion is an expression
 // of an authoritative fact, so the shader has to cover every state the rest of
 // the app can already report - not only the five in the visual brief.
 export const STATE_NAMES = [
-  'unavailable', 'idle', 'listening', 'thinking', 'speaking',
+  'unavailable', 'initializing', 'idle', 'listening', 'thinking', 'speaking',
   'working', 'awaitingApproval', 'success', 'error',
 ];
 
@@ -36,6 +36,7 @@ export const STATE_TABLES = {
   // ember the drifting field, focus the coherence of the arcs.
   solar: {
     unavailable:      S(0.06, 0.05, 0.00, 0.05, 0.95, 0.72),
+    initializing:     S(0.14, 0.10, 0.04, 0.16, 0.88, 0.88),
     idle:             S(0.22, 0.16, 0.10, 0.28, 0.85, 1.00),
     listening:        S(0.15, 0.09, 0.05, 0.18, 0.95, 0.97),
     thinking:         S(0.30, 0.46, 0.04, 0.12, 0.97, 0.84),
@@ -49,6 +50,7 @@ export const STATE_TABLES = {
   // focus how tightly the petals hold their arms.
   sakura: {
     unavailable:      S(0.06, 0.05, 0.00, 0.06, 0.95, 0.74),
+    initializing:     S(0.15, 0.11, 0.04, 0.20, 0.84, 0.88),
     idle:             S(0.24, 0.18, 0.10, 0.34, 0.80, 1.00),
     listening:        S(0.16, 0.10, 0.05, 0.26, 0.94, 0.98),
     thinking:         S(0.30, 0.42, 0.05, 0.24, 0.97, 0.85),
@@ -62,6 +64,7 @@ export const STATE_TABLES = {
   // ember the stars and mist. Low focus obscures the moon.
   lunar: {
     unavailable:      S(0.05, 0.10, 0.00, 0.06, 0.30, 0.70),
+    initializing:     S(0.14, 0.15, 0.05, 0.18, 0.55, 0.86),
     idle:             S(0.22, 0.24, 0.12, 0.30, 0.55, 1.00),
     listening:        S(0.15, 0.14, 0.07, 0.24, 0.80, 0.98),
     thinking:         S(0.28, 0.46, 0.05, 0.24, 0.44, 0.85),

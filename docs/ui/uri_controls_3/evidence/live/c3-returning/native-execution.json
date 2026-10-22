@@ -1,0 +1,25 @@
+{
+ "label": "c3-returning",
+ "source_head": "c49256e2d2d1be6c9b3b640d267efac5b74614fd",
+ "source_tree": "8c63ee50f240310280760ffb1e27baf1e528bf76",
+ "source_status_before": "M docs/ui/uri_controls_3/live_harness/controls3_driver.dart",
+ "port": 18361,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/uiv2_native_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "884902e27569099645ed1367e6ce9bf5a39c8588d734708d0ae86e67130a16e6",
+ "entry": "original production main() via integration_test (Debug build); taps and TestTextInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "started_utc": "2026-10-22T01:57:15.917007+00:00",
+ "exit_code": 0,
+ "elapsed_s": 85.86,
+ "finished_utc": "2026-10-22T01:58:41.780944+00:00",
+ "source_status_after": "M docs/ui/uri_controls_3/live_harness/controls3_driver.dart",
+ "ui_binary_sha256": "d83492e4f391f7600ded06134d2056fab5a036cd11b170be913a5737273e8c81"
+}

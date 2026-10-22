@@ -40,6 +40,9 @@ class LivingPrefs {
   static const onboardingDone = 'uri.living.onboardingDone';
   static const reducedEffects = 'uri.living.reducedEffects';
   static const themeChoice = 'uri.living.themeChoice';
+
+  /// The Thinking quick control (`fast` = Off, `normal` = On), kept across restarts.
+  static const thinking = 'uri.living.thinking';
 }
 
 /// Namespaced replacement for the Hybrid [PreferencesStore].
@@ -165,17 +168,17 @@ class LivingApp extends StatefulWidget {
   }) {
     final demo = MockCompanionSource();
     final work = MockWorkSimulator(seed: !visualV2);
+    final oiCompanion = OiCompanionSource(oi);
     return LivingServices(
       presentation: UiPresentationController(
         initialMode: visualV2
             ? UiPresentationMode.dashboard
             : UiPresentationMode.companion,
       ),
-      companion: CompositeCompanionSource([
-        OiCompanionSource(oi),
-        work.companion,
-        demo,
-      ]),
+      companion: CompositeCompanionSource(
+        [oiCompanion, work.companion, demo],
+        owned: [oiCompanion],
+      ),
       work: work,
       readiness: OiReadinessSource(oi),
       effects: EffectsSettings(),
@@ -205,6 +208,11 @@ class _LivingAppState extends State<LivingApp> {
   void initState() {
     super.initState();
     widget.configureServices?.call(_services);
+    _services.oi?.onDepthChanged = (d) async {
+      if (d != OiDepth.fast && d != OiDepth.normal) return;   // only the Thinking toggle's two values are kept
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(LivingPrefs.thinking, d.name);
+    };
     _loadPrefs();
   }
 
@@ -217,6 +225,8 @@ class _LivingAppState extends State<LivingApp> {
     final reduced = prefs.getBool(LivingPrefs.reducedEffects);
     final themeName = prefs.getString(LivingPrefs.themeChoice);
     _services.companionPrefs.restoreFrom(prefs);
+    final thinking = prefs.getString(LivingPrefs.thinking);
+    if (thinking == 'fast' || thinking == 'normal') _services.oi?.restoreDepth(thinking);
     setState(() {
       _onboardingDone = done;
       if (reduced != null) _services.effects.setReducedEffects(reduced);

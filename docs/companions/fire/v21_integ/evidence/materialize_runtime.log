@@ -1,0 +1,46 @@
+{
+ "dest": "D:\\uri-dev\\uri-ember-rt",
+ "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+ "head_is_base": true,
+ "overlay_commit": "759d0d4e4069ddb490e6ce52ac58bf86ef0248f0",
+ "overlay_paths": 273,
+ "candidate_source": "D:\\uri-dev\\uri-ember-v21-integ",
+ "candidate_head": "0533d2a4ecfc6cba3ce41c98f62fe684c0f07208",
+ "candidate_tree": "239b8071d6b25c4b96caa11557ea3ac3e4b7f522",
+ "security_patch_sha256": "ba9249dad002e62c6cf1698284e8a2ada325d0afa1444579a371af7fa9caea02",
+ "security_transitions": {
+  "uri_core/app/server.py": {
+   "before_sha256": "7b455f05ae97f7f6cbc944ba5c93998ea64063402568ea9750b70356db4f366b",
+   "after_sha256": "59cfde59c709fa7f83df84e957f5962701276afce54cb196541134a9a43cf4f8"
+  },
+  "uri_core/tools/fetch_url.py": {
+   "before_sha256": "f097006211c2b2c4abc9a4aaf7aa64063ee00a55030559caf857724ce2af9bff",
+   "after_sha256": "404e60921c207753868589b8a16f409ee80f35a01b0a33e8400d8780d93139e8"
+  },
+  "scripts/uri_client.ps1": {
+   "before_sha256": "c8401bc06caa2fdd82838d69e9a93698bd19d741296f596b38ac6929e0409404",
+   "after_sha256": "3a01127775a6075a5a971fc63944ef4ce7d8fb3f62af8f1866553587ecd3e34e"
+  }
+ },
+ "porcelain_entries": 192,
+ "venv_source": "D:/uri-dev/uri-o2i-live/runtime/.venv",
+ "oi_tests_included": true,
+ "replaced_accepted_files": {
+  "tests/phase2a/test_frozen_core.py": {
+   "overlay_sha256": "5a83fcd22565bd183fd8bde1acc7b0b000763a773952a3a3e0e2238b95012957",
+   "integration_sha256": "0487dffd33aeecf97c19465e6d107682237dc498719782e32051b6a3e52439f1"
+  },
+  "scripts/phase2close_chain.py": {
+   "overlay_sha256": "cef35662cc8f122d584fa88b5cf02c18969e30249f568af840255c013d3004eb",
+   "integration_sha256": "5d5934239853160bbf185f6125b2314eb09d3128458c7881d5a210f7540cfbb6"
+  }
+ },
+ "installed_wheels": {},
+ "runtime_modules_checked": [
+  "pypdf",
+  "docx",
+  "pptx",
+  "openpyxl",
+  "lxml"
+ ]
+}

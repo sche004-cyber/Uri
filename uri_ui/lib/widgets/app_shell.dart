@@ -146,7 +146,7 @@ class AppShellState extends State<AppShell> {
             Text(
               '/ ${widget.sections[_index].label}',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: UriType.bodyLarge,
                 color: colors.inkSoft,
                 fontWeight: FontWeight.w500,
               ),
@@ -206,7 +206,7 @@ class _ShellTopbar extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: UriType.title,
               fontWeight: FontWeight.w600,
               color: colors.ink,
             ),
@@ -359,7 +359,7 @@ class _Sidebar extends StatelessWidget {
                           child: Text(
                             'URI System Active',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: UriType.caption,
                               color: colors.inkFaint,
                             ),
                           ),
@@ -458,7 +458,7 @@ class _ExpandedNavItem extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: UriType.body,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                     color: selected ? colors.accent : colors.ink,
                   ),

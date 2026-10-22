@@ -1,0 +1,373 @@
+[
+  {
+    "utc": "2026-10-18T04:47:41.045207Z",
+    "label": "automation input transport",
+    "driver": "Flutter integration_test on production main()",
+    "window_checks": "tools/win_probe.py (Win32 + SendInput)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "mode": "input"
+  },
+  {
+    "utc": "2026-10-18T04:47:41.056265Z",
+    "label": "preferences at start",
+    "keys": [
+      "uri.clientDeviceId",
+      "uri.living.companion.choice",
+      "uri.living.companion.look.ember"
+    ],
+    "choice": "ember"
+  },
+  {
+    "utc": "2026-10-18T04:47:50.230301Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 9.172,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": null,
+      "checked_at": 1792298865.356344,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": null,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "STOPPED",
+      "url": "http://127.0.0.1:18470"
+    },
+    "restored_choice": "ember"
+  },
+  {
+    "utc": "2026-10-18T04:47:50.232306Z",
+    "label": "check",
+    "id": "G-installed-12-with-ember",
+    "result": "PASS",
+    "ids": "[solar, sakura, lunar, moonlit, ember, classic-nebula, classic-halo, classic-swarm, classic-glass, classic-flow, classic-mesh, classic-energy]"
+  },
+  {
+    "utc": "2026-10-18T04:48:04.531661Z",
+    "label": "probe",
+    "step": "input-diag",
+    "result": {
+      "window": {
+        "hwnd": 1574054,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          10,
+          10,
+          450,
+          690
+        ],
+        "dwm_extended_frame": [
+          10,
+          10,
+          450,
+          690
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "ember_point": [
+        226,
+        275
+      ],
+      "companion": 1574054,
+      "backdrop": 4457562,
+      "nchittest_toplevel": 0,
+      "nchittest_child": 1,
+      "child_at_point": 7209184,
+      "click": {
+        "backdrop_clicks_delta": 0,
+        "clicks": [],
+        "foreground_before": 1574054,
+        "foreground_after": 1574054
+      },
+      "drag": {
+        "rect_before": [
+          10,
+          10,
+          450,
+          690
+        ],
+        "rect_after": [
+          0,
+          67,
+          440,
+          747
+        ],
+        "backdrop_clicks_delta": 0
+      },
+      "utc": "2026-10-18T04:48:04Z"
+    }
+  },
+  {
+    "utc": "2026-10-18T04:48:06.104648Z",
+    "label": "input diagnosis",
+    "probe": {
+      "window": {
+        "hwnd": 1574054,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          10,
+          10,
+          450,
+          690
+        ],
+        "dwm_extended_frame": [
+          10,
+          10,
+          450,
+          690
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "ember_point": [
+        226,
+        275
+      ],
+      "companion": 1574054,
+      "backdrop": 4457562,
+      "nchittest_toplevel": 0,
+      "nchittest_child": 1,
+      "child_at_point": 7209184,
+      "click": {
+        "backdrop_clicks_delta": 0,
+        "clicks": [],
+        "foreground_before": 1574054,
+        "foreground_after": 1574054
+      },
+      "drag": {
+        "rect_before": [
+          10,
+          10,
+          450,
+          690
+        ],
+        "rect_after": [
+          0,
+          67,
+          440,
+          747
+        ],
+        "backdrop_clicks_delta": 0
+      },
+      "utc": "2026-10-18T04:48:04Z"
+    },
+    "flutter_pointer_events": [
+      {
+        "utc": "2026-10-18T04:47:50.646032Z",
+        "type": "PointerRemovedEvent",
+        "pos": [
+          1262.0,
+          679.0
+        ],
+        "kind": "mouse",
+        "buttons": 0
+      },
+      {
+        "utc": "2026-10-18T04:47:59.935780Z",
+        "type": "PointerAddedEvent",
+        "pos": [
+          216.0,
+          265.0
+        ],
+        "kind": "mouse",
+        "buttons": 0
+      },
+      {
+        "utc": "2026-10-18T04:48:00.105083Z",
+        "type": "PointerDownEvent",
+        "pos": [
+          216.0,
+          265.0
+        ],
+        "kind": "mouse",
+        "buttons": 1
+      },
+      {
+        "utc": "2026-10-18T04:48:00.142296Z",
+        "type": "PointerUpEvent",
+        "pos": [
+          216.0,
+          265.0
+        ],
+        "kind": "mouse",
+        "buttons": 0
+      },
+      {
+        "utc": "2026-10-18T04:48:01.742539Z",
+        "type": "PointerDownEvent",
+        "pos": [
+          216.0,
+          265.0
+        ],
+        "kind": "mouse",
+        "buttons": 1
+      },
+      {
+        "utc": "2026-10-18T04:48:02.052861Z",
+        "type": "PointerMoveEvent",
+        "pos": [
+          210.0,
+          268.0
+        ],
+        "kind": "mouse",
+        "buttons": 1
+      },
+      {
+        "utc": "2026-10-18T04:48:02.091104Z",
+        "type": "PointerCancelEvent",
+        "pos": [
+          210.0,
+          268.0
+        ],
+        "kind": "mouse",
+        "buttons": 1
+      },
+      {
+        "utc": "2026-10-18T04:48:02.091104Z",
+        "type": "PointerRemovedEvent",
+        "pos": [
+          210.0,
+          268.0
+        ],
+        "kind": "mouse",
+        "buttons": 0
+      }
+    ],
+    "facts_before": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 255
+    },
+    "chat_control_visible": true
+  },
+  {
+    "utc": "2026-10-18T04:48:06.549453Z",
+    "label": "final",
+    "failures": [],
+    "timeline_rows": 1
+  }
+]

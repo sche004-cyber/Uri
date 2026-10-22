@@ -1,0 +1,298 @@
+{
+ "label": "ui-1",
+ "started_utc": "2026-10-18T12:42:09.377386+00:00",
+ "runtime": "D:\\uri-dev\\uri-ui-typo-live\\runtime",
+ "port": 18350,
+ "receipt": {
+  "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "candidate_source": "D:\\uri-dev\\uri-ui-controls-typo",
+  "candidate_head": "a4935c2bfd9580cd69de117a32950ece0f0527e8",
+  "candidate_tree": "bc69969e083374384b37451e7437e5a4187384e6"
+ },
+ "brain_config_sha256_before": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "override": false,
+ "runtime_verified": {
+  "ok": true,
+  "checked": 362,
+  "mismatched": []
+ },
+ "server_pid": 2152,
+ "server_listening": true,
+ "lease_free_utc": "2026-10-18T12:42:12.582507+00:00",
+ "inject_fail_once": "c64k-visoff-mtpoff",
+ "host_profile_arg": [
+  "--profile",
+  "32768,gpu,0"
+ ],
+ "host_pid": 10920,
+ "host_argv": [
+  "ws_brain_host.py",
+  "--report-dir",
+  "D:\\uri-dev\\uri-ui-typo-live\\runtime\\work\\c1\\ws-ui-typo\\client\\control\\oi",
+  "--minutes",
+  "50",
+  "--profile",
+  "32768,gpu,0"
+ ],
+ "end_reason": "stop",
+ "result": "COMPLETED",
+ "finished_utc": "2026-10-18T12:46:52.151047+00:00",
+ "host_exit": 0,
+ "host_final": {
+  "detail": "HOST_EXIT",
+  "explain": "The Brain host has exited.",
+  "gpu": {
+   "census_s": 3.64,
+   "census_t": 1792327554.66,
+   "explain": "The Brain fits in GPU memory (margin 894 MB).",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 681.3,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 438.3,
+      "name": "chrome.exe",
+      "parent": "chrome.exe",
+      "pid": 14668,
+      "role": null
+     },
+     {
+      "dedicated_mib": 231.8,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 6012,
+      "role": null
+     }
+    ],
+    "free_mib": 14552.3,
+    "margin_mib": 894.3,
+    "others_mib": 1815.7,
+    "owner_mib": 0,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "FITS"
+   },
+   "since_stop_s": 3.7
+  },
+  "heartbeat_at": 1792327604.389,
+  "history": [
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792327336.61
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792327342.099
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792327359.129
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792327365.739
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792327509.94
+   },
+   {
+    "detail": "INJECTED_START_FAILURE",
+    "state": "FAILED",
+    "t": 1792327513.731
+   },
+   {
+    "detail": "SWITCH_FALLBACK",
+    "state": "STARTING",
+    "t": 1792327513.834
+   },
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792327517.505
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792327522.878
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792327540.445
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792327547.211
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792327554.546
+   },
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792327558.307
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792327563.935
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792327578.609
+   },
+   {
+    "detail": "DECODE_THROUGHPUT_LOW",
+    "state": "DEGRADED",
+    "t": 1792327585.473
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792327608.968
+   },
+   {
+    "detail": "HOST_EXIT",
+    "state": "STOPPED",
+    "t": 1792327609.036
+   }
+  ],
+  "host_pid": 16300,
+  "host_started": 1792327332.91,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "DEGRADED",
+   "id": "f87d146b-80fa-4b25-8309-904b5c21378f",
+   "result": "DONE",
+   "t": 1792327550.875,
+   "t_done": 1792327585.604
+  },
+  "lease": {
+   "held": false
+  },
+  "override": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 681.3,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 438.3,
+      "name": "chrome.exe",
+      "parent": "chrome.exe",
+      "pid": 14668,
+      "role": null
+     },
+     {
+      "dedicated_mib": 224.3,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 6012,
+      "role": null
+     }
+    ],
+    "free_mib": 14559.8,
+    "margin_mib": 901.8,
+    "others_mib": 1808.2,
+    "owner_mib": 12935.6,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "FITS"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "f87d146b-80fa-4b25-8309-904b5c21378f",
+   "required_mib": 13658,
+   "result": "DEGRADED",
+   "seconds": 34.6,
+   "started_stopped_brain": false,
+   "t_done": 1792327585.529,
+   "t_request": 1792327550.944,
+   "t_stopped": 1792327554.604,
+   "to": "c64k-visoff-mtpoff"
+  },
+  "release_measurement": {
+   "since_stop_s": 3.7,
+   "unattributed_mib": 0.0,
+   "verdict": "FITS"
+  },
+  "requests": {
+   "d8907f89-1770-47eb-af6b-91e3bb647549": "DONE",
+   "f87d146b-80fa-4b25-8309-904b5c21378f": "DONE"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 681.3,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 438.3,
+     "name": "chrome.exe",
+     "parent": "chrome.exe",
+     "pid": 14668,
+     "role": null
+    },
+    {
+     "dedicated_mib": 224.3,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6012,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 12409.8,
+   "non_local_mib": 1983.5,
+   "others_mib": 1808.2,
+   "t": 1792327585.656,
+   "verdict_now": "FITS"
+  },
+  "schema": "uri.ws.brain_host.v1",
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "state": "STOPPED",
+  "updated_at": 1792327609.036
+ },
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_config_sha256_after": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "brain_listener_after": null
+}

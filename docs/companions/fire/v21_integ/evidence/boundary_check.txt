@@ -1,0 +1,19 @@
+# boundary check 2026-10-18T08:56:08+05:30 HEAD=ce972cc222abe0749ad1e7a3b7cb7593f9e62779
+parents: 348677b79610d6e261885531bb2e2a95b5253315 d6a8313109ad58d4dd6d51431afba33491b1ac32
+--- protected changed vs 348677b7:
+--- end
+--- excluded paths present in tree:
+0
+--- handoff files vs d6a83131 (differences):
+uri_ui/lib/living/companion/companion_design.dart
+uri_ui/lib/living/companion/companion_preferences.dart
+uri_ui/lib/living/companion/companion_state.dart
+uri_ui/lib/living/companion/living_companion.dart
+uri_ui/lib/living/integration/oi_sources.dart
+uri_ui/lib/living/screens/settings/companion_settings_section.dart
+uri_ui/lib/living/screens/settings/voice_input_settings.dart
+uri_ui/pubspec.yaml
+uri_ui/test/living/companion_settings_test.dart
+uri_ui/test/living/live_voice_test.dart
+uri_ui/test/ws/ws_integration_test.dart
+uri_ui/tool/capture/ui_v2_capture.dart

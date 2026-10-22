@@ -147,13 +147,13 @@ class FrostDashboard extends StatelessWidget {
                     children: [
                       Text(
                         '0${i + 1}',
-                        style: TextStyle(fontSize: 12, color: c.accent),
+                        style: TextStyle(fontSize: UriType.label, color: c.accent),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           cards[i].$1,
-                          style: TextStyle(fontSize: 14, color: c.ink),
+                          style: TextStyle(fontSize: UriType.bodyLarge, color: c.ink),
                         ),
                       ),
                       const Icon(Icons.north_east, size: 14),
@@ -165,7 +165,7 @@ class FrostDashboard extends StatelessWidget {
                     maxLines: medium ? 1 : 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: UriType.bodyLarge,
                       height: 1.2,
                       color: c.inkSoft,
                     ),
@@ -239,7 +239,7 @@ class FrostDashboard extends StatelessWidget {
               padding: EdgeInsets.all(14),
               child: Text(
                 'WORKSPACE',
-                style: TextStyle(fontSize: 11, letterSpacing: 1.2),
+                style: TextStyle(fontSize: UriType.caption, letterSpacing: 1.2),
               ),
             ),
             for (final item in nav)
@@ -260,7 +260,7 @@ class FrostDashboard extends StatelessWidget {
                       leading: Icon(item.$2, size: 18),
                       title: Text(
                         item.$1,
-                        style: const TextStyle(fontSize: 14),
+                        style: const TextStyle(fontSize: UriType.bodyLarge),
                       ),
                       onTap: item.$3,
                     ),
@@ -297,7 +297,7 @@ class FrostDashboard extends StatelessWidget {
                       children: [
                         const Text(
                           'Personal workspace / Dashboard',
-                          style: TextStyle(fontSize: 12),
+                          style: TextStyle(fontSize: UriType.label),
                         ),
                         reviewButton(),
                       ],
@@ -329,7 +329,7 @@ class FrostDashboard extends StatelessWidget {
             Text(
               'URI / COMMAND CHAMBER',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: UriType.label,
                 letterSpacing: 1.6,
                 color: c.accent,
               ),
@@ -338,24 +338,24 @@ class FrostDashboard extends StatelessWidget {
             Text(
               'Your work, connected.',
               style: TextStyle(
-                fontFamily: 'Georgia',
+                fontWeight: FontWeight.w300,
                 fontSize: wide
-                    ? 38
+                    ? UriType.display
                     : medium
-                    ? 30
-                    : 24,
+                    ? UriType.headlineLarge
+                    : UriType.headline,
                 color: c.ink,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'A clear view of your intelligence, your context, and what needs you.',
-              style: TextStyle(fontSize: 14, color: c.inkSoft),
+              style: TextStyle(fontSize: UriType.bodyLarge, color: c.inkSoft),
             ),
             if (services.appDataIsMock && services.oi == null)
               Text(
                 'SIMULATED PREVIEW · no backend connected',
-                style: TextStyle(fontSize: 12, color: c.accent),
+                style: TextStyle(fontSize: UriType.label, color: c.accent),
               ),
           ],
         );
@@ -364,21 +364,21 @@ class FrostDashboard extends StatelessWidget {
           children: [
             Text(
               '◇   Static conduits show association. They do not signal execution.',
-              style: TextStyle(fontSize: 12, color: c.inkSoft),
+              style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
             ),
             const SizedBox(height: 14),
             Divider(color: c.border.withValues(alpha: .5)),
             const SizedBox(height: 16),
             const Text(
               'CONTINUE YOUR WORK',
-              style: TextStyle(fontSize: 11, letterSpacing: 1),
+              style: TextStyle(fontSize: UriType.caption, letterSpacing: 1),
             ),
             const SizedBox(height: 14),
             const LivingComposer(hint: 'What would you like to work on?'),
             const SizedBox(height: 12),
             Text(
               'Shared context and pending decisions stay with you.',
-              style: TextStyle(fontSize: 12, color: c.inkSoft),
+              style: TextStyle(fontSize: UriType.label, color: c.inkSoft),
             ),
           ],
         );
@@ -416,12 +416,12 @@ class FrostDashboard extends StatelessWidget {
                               ? 'Reply received'
                               : signal.title,
                           key: const ValueKey('dashboard-state-line'),
-                          style: const TextStyle(fontSize: 18),
+                          style: const TextStyle(fontSize: UriType.titleLarge),
                         ),
                         const SizedBox(height: 12),
                         Text(
                           '${CompanionDesign.active(services.companionPrefs).displayName}${signal.simulated ? ' · simulated' : ''}',
-                          style: TextStyle(fontSize: 14, color: c.accent),
+                          style: TextStyle(fontSize: UriType.bodyLarge, color: c.accent),
                         ),
                         const SizedBox(height: 12),
                         OutlinedButton(
@@ -553,7 +553,7 @@ class FrostDashboard extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 14, color: inkSoft),
+            style: TextStyle(fontSize: UriType.bodyLarge, color: inkSoft),
           ),
         ),
         Positioned(
@@ -566,14 +566,14 @@ class FrostDashboard extends StatelessWidget {
             children: [
               const Text(
                 'CONTINUE YOUR WORK',
-                style: TextStyle(fontSize: 11, letterSpacing: 1),
+                style: TextStyle(fontSize: UriType.caption, letterSpacing: 1),
               ),
               const SizedBox(height: 10),
               const LivingComposer(hint: 'What would you like to work on?'),
               const SizedBox(height: 8),
               Text(
                 'Shared context and pending decisions stay with you.',
-                style: TextStyle(fontSize: 12, color: inkSoft),
+                style: TextStyle(fontSize: UriType.label, color: inkSoft),
               ),
             ],
           ),
@@ -611,12 +611,12 @@ class _ConnectionsUnavailable extends StatelessWidget {
           children: [
             Text(
               'Accounts such as Gmail and Google Drive are not connected or managed in this working system yet. Nothing on this screen is connected for URI.',
-              style: TextStyle(fontSize: 15, color: c.ink),
+              style: TextStyle(fontSize: UriType.title, color: c.ink),
             ),
             const SizedBox(height: 8),
             Text(
               'The Brain, cloud providers and what URI remembers are in Settings.',
-              style: TextStyle(fontSize: 13, color: c.inkSoft),
+              style: TextStyle(fontSize: UriType.body, color: c.inkSoft),
             ),
             const SizedBox(height: 20),
             Wrap(

@@ -8,6 +8,7 @@ import 'package:uri_ui/living/companion/companion_state.dart';
 import 'package:uri_ui/living/integration/oi_conversation.dart';
 import 'package:uri_ui/living/office/office_bridge.dart';
 import 'package:uri_ui/living/presentation/presentation_controller.dart';
+import 'package:uri_ui/living/screens/settings/voice_input_settings.dart';
 import 'package:uri_ui/living/voice/voice_controls.dart';
 import 'package:uri_ui/living/voice/voice_interaction.dart';
 import 'package:uri_ui/living/voice/voice_session.dart';
@@ -1134,6 +1135,55 @@ void main() {
       final b = completeSentences(text, a.last.$1, finished: true);
       expect(b.map((e) => e.$2), ['Three without end']);
     });
+  });
+
+  testWidgets('opening voice settings does not notify listeners during build (PRE-1)', (tester) async {
+    final prefs = CompanionPreferences();
+    final ctl = VoiceInteractionController(
+      service: svc,
+      preferences: prefs,
+      presentation: UiPresentationController(),
+    );
+    final show = ValueNotifier<bool>(false);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildUriTheme(UriColors.graphite),
+        home: CompanionPreferencesScope(
+          preferences: prefs,
+          child: Scaffold(
+            body: Column(
+              children: [
+                // Another listener of the voice status in a different branch
+                // of the tree, already built (the shell's voice dock).
+                ValueListenableBuilder(
+                  valueListenable: svc.status,
+                  builder: (_, s, _) => Text('${s.state}'),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: show,
+                      builder: (_, on, _) => on
+                          ? VoiceInputSettings(controller: ctl)
+                          : const SizedBox(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    show.value = true;
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(tester.takeException(), isNull);
+    // The settings did start the service (after the frame, not during it).
+    expect(svc.status.value.state, isNot(VoiceServiceState.stopped));
+    await tester.pumpWidget(const SizedBox());
+    ctl.dispose();
   });
 }
 

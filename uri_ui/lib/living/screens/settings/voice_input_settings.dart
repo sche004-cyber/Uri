@@ -56,9 +56,9 @@ class _VoiceInputSettingsState extends State<VoiceInputSettings> {
     final c = UriColors.of(context);
     final prefs = CompanionPreferences.of(context);
     final ctl = widget.controller;
-    final note = TextStyle(fontSize: 12, color: c.inkSoft);
+    final note = TextStyle(fontSize: UriType.label, color: c.inkSoft);
     final label = TextStyle(
-      fontSize: 13,
+      fontSize: UriType.body,
       fontWeight: FontWeight.w600,
       color: c.ink,
     );
@@ -155,7 +155,7 @@ class _VoiceInputSettingsState extends State<VoiceInputSettings> {
               Text(
                 'The chosen microphone (${vp.microphone}) is not connected; '
                 'the Windows default is used until it is.',
-                style: TextStyle(fontSize: 12, color: c.warning),
+                style: TextStyle(fontSize: UriType.label, color: c.warning),
               ),
             const SizedBox(height: 8),
             Text('What spoken words do', style: note),
