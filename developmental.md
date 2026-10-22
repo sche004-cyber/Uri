@@ -433,3 +433,16 @@ Appended; rows above are kept. Full record: `docs/audit/p0_20261021/P0_CLOSURE_2
 | F-1 | approved design direction (owner 2026-10-22); not implemented |
 | Live runs (URI Controls Stage 8, Ember returning/perf, V3.1 conversation) | BLOCKED by GPU contention (see O.5); owner action needed for headroom |
 
+
+### O.6 2026-10-22: Ember follow-up live PASS; URI Controls Stage 8 PASS and INTEGRATED
+
+| Item | Value |
+|---|---|
+| GPU headroom | owner-approved: Copilot window closed by a normal request; `chrome.exe` and `ChatGPT.exe` ended (owner chose "Terminate those two"). Others 2,984 -> 2,281 MiB; P3 fit CONTENDED -976 -> AT_RISK -273 MiB. No Brain configuration or safety rule changed |
+| Harness findings | (1) Core principal sessions expire after 24 h: an installation older than a day fails Core journeys with `401 PRINCIPAL_SESSION_INVALID` (re-provision before live runs). (2) The runtime-identity dependency digest includes the `git` executable path: provision from the same shell that launches the server (PowerShell vs Git Bash give different digests -> `DEPENDENCY_MANIFEST_MISMATCH`) |
+| Ember follow-up (closes O.1 "Missing") | on canonical `9488c0fd`: UI V2 main 68/68, returning 12/12, perf 3/3 (95.7-98.1 tok/s). Receipt `docs/integration/qc_ember_20261018/05_EMBER_V21_FOLLOWUP_LIVE_20261022.md` |
+| URI Controls Stage 8 | on `c49256e2` (= reviewed `1741e97e` code): three-toggle journey `c3-1b` 30/30 (first run `c3-1` 29/30, one driver-timing false negative, fixed and disclosed), UI V2 main 68/68, returning 12/12, perf 3/3 |
+| Final-commit review | R6 (fresh subagent) on `0acf58d7`: ACCEPT WITH FINDINGS (R6-01 LOW docs status text, R6-02..04 INFO) |
+| Final gates on `0acf58d7` | pytest 807/23; Flutter 882/5; analyze 5 info (baseline); release build rc 0; frozen check clean |
+| **Canonical move** | **`9488c0fd` -> `0acf58d7`** fast-forward, 2026-10-22 02:15Z, `git ls-remote` verified (DEC-092 authorisation, DEC-094 order) |
+| Status | CAP-UI3 / CAP-RT6: GREEN (integrated, tested, reviewed, live). Combined Ember + Controls live check on `0acf58d7`: see O.7 |
