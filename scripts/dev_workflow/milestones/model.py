@@ -60,7 +60,7 @@ CREDENTIAL_KEY = (r"password|passwd|pwd|passphrase|secret|client[_-]?secret|api[
                   r"access[_-]?token|auth[_-]?token|refresh[_-]?token|token|private[_-]?key")
 CREDENTIAL_KEY_RX = re.compile(rf"(?i)(?:{CREDENTIAL_KEY})\Z")
 ASSIGNMENT_RX = re.compile(
-    rf"(?i)\b(?P<key>{CREDENTIAL_KEY})\s*[:=]\s*['\"]?(?P<val>[^\s'\";]+)")
+    rf"(?i)\b(?P<key>{CREDENTIAL_KEY})\s*[:=]\s*(?P<val>[^;\r\n|]+)")
 STATUS_WORDS = {"expired", "rotated", "revoked", "invalid", "valid", "budget", "limit", "count", "present",
                 "absent", "stored", "encrypted", "configured", "unavailable", "disabled", "enabled", "hidden"}
 PLACEHOLDER_VALUES = {"required", "optional", "none", "null", "redacted", "unset", "set", "missing", "empty",
@@ -82,8 +82,8 @@ def _credential_value_secret(key: str, val: str) -> bool:
     if low in PLACEHOLDER_VALUES or low in STATUS_WORDS or set(val) <= {"*", "x", "X", "."}:
         return False
     key = key.lower().replace("-", "_")
-    if val.isdigit() and key in ("token", "secret") and len(val) <= 7:
-        return False  # a small number ("token: 65536" context size), not a credential (review R3-07)
+    if key in ("token", "secret") and re.fullmatch(r"\d{1,7}(?:[ \t]+(?:context|budget))?", val, re.I):
+        return False  # a small number ("token: 65536 context"), not a credential (review R3-07)
     if REFERENCE_RX.fullmatch(val):
         return False
     return True
@@ -91,7 +91,7 @@ def _credential_value_secret(key: str, val: str) -> bool:
 
 def _assignment_secret(text: str) -> bool:
     for m in ASSIGNMENT_RX.finditer(text):
-        if _credential_value_secret(m.group("key"), m.group("val").rstrip(",")):
+        if _credential_value_secret(m.group("key"), m.group("val").strip().rstrip(",")):
             return True
     return False
 

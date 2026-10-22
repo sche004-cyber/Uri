@@ -2901,3 +2901,22 @@ def test_d2_01_direct_store_refuses_short_password_without_writing(tmp_path):
     with m.store.locked(), pytest.raises(StoreError) as e:
         m.store.append("MILESTONE_UPDATED", data, actor="impl:a")
     assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+@pytest.mark.parametrize("value", ["${PASSWORD} hunter2", '"${PASSWORD} hunter2"', "${PASSWORD} 'hunter2'",
+                                   "%PASSWORD% hunter2", "env:DB_PASSWORD hunter2"])
+def test_d2_02_reference_followed_by_password_is_secret(value):
+    assert model.find_secret(f"password: {value}") == "credential assignment"
+
+
+def test_d2_02_service_and_direct_store_refuse_reference_followed_by_password(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    value = "password: ${PASSWORD} hunter2"
+    with pytest.raises(ValidationError) as e:
+        m.update_milestone("MM-A", objective=value)
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"objective": value}}, actor="impl:a")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
