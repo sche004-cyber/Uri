@@ -463,3 +463,11 @@ Canonical is `2aa0141e` (URI Controls integrated at `0acf58d7`; see O.6/O.7). Mi
 test merge `ca0a4867`, frozen ok, 205 MM tests, `tests/dev_workflow` 521 / 5 Linux-gated / 0 failed. V3.1 tip
 `e474f510` contains `2aa0141e`. Details: `docs/audit/p0_20261021/P0_CLOSURE_20261022.md` Addendum A.
 
+### P.2 Correction (2026-10-22 ~09:50 IST): Milestone Manager NOT READY
+
+First Lifecycle V3 driver review (Codex, independent) REJECTED `a28016d3` (D1-02 HIGH secret text; later R2-01,
+R3-01 HIGH); repairs `07921779`, `1adce295`, `d63544d8`; round 4 not reviewed because the run is BLOCKED TAMPER
+(false positive: `.git/info/refs` rewritten 09:45:59 IST). R23 no longer qualifies; test merges `c19e17dc`,
+`ca0a4867` superseded. Next: owner unblock of the TAMPER block (or digest-v2 repair I-5 first), then driver round 4.
+Details: `P0_CLOSURE_20261022.md` Addendum B.
+
