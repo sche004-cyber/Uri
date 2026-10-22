@@ -13,3 +13,13 @@ did not qualify, and the driver REJECTED a28016d3.
 
 Fallback reviews on the blocked commits: `FB_f76c2e17.md`, `FB2_de0354ef.md`, `FB3_4aa3d40b.md` (all REJECT, repaired).
 Owner decision 2026-10-22: F16 bounded to an explicit contract (ACCEPTANCE_CRITERIA.md).
+
+## Later runs
+
+| Run | Dir | Candidates | Outcome |
+|---|---|---|---|
+| d5 | `D:/uri-dev/lifecycle/MILESTONE-MANAGER-d5` | 1483a4ea | BLOCKED NO_INDEPENDENT_REVIEWER; fallback FB4 REJECT, repaired 10d07848 |
+| d6 | `D:/uri-dev/lifecycle/MILESTONE-MANAGER-d6` | 10d07848 → 9fa84ba6 → 4cde2935 → f5347587 | Codex R1-R3 REJECT (D6-01..03, repaired by the driver), R4 ACCEPT WITH FINDINGS; VERIFIED (gates, no new failures); BLOCKED INTEGRATION not fast-forward (based on ec2fab54) |
+
+Record: `DRIVER_d6_f5347587.md`. The integration candidate merges f5347587 onto canonical and is reviewed again by a
+v2 driver run (see the handoff).

@@ -133,3 +133,14 @@ the exact candidate and the gates pass.
 | Full gates (dev_workflow; oi+ws; a2ui/assist/ssrf/web; ws_frozen_check) | not yet completed on a current candidate; runs on earlier candidates were stopped as superseded and marked "not evidence" in `D:/uri-dev/mm-evidence/gate_*` |
 | Open LOW (non-blocking) | R23-01 (autocommit with non-ASCII ledger path or `diff.relative`), R23-02 (CANDIDATE_CHANGED keys not in the fingerprint), R23-03 (resume notice length), FB3-07 (crafted edge cases), FB3-08 (malformed hash-valid event makes the fold raise), FB3-10 / FB2-07 (prose false positives), FB4-06 remainder |
 | Accepted | NO |
+
+## Primary-path acceptance and integration preparation (2026-10-22)
+
+| # | Date | Commit | State | Next action |
+|---|---|---|---|---|
+| 56 | 2026-10-22 | 10d07848 | gates: dev_workflow 785/0, oi+ws 793/0, a2ui/assist 25 failures identical on baseline ec2fab54 (node playwright missing), frozen ok | driver d6 |
+| 57 | 2026-10-22 | f5347587 | driver d6 VERIFIED: Codex R4 ACCEPT WITH FINDINGS, gates no new failures; blocked only at fast-forward (based on ec2fab54) | owner go-ahead (2026-10-22) to merge onto canonical |
+| 58 | 2026-10-22 | (integration candidate, see `git log`) | f5347587 + these records merged with canonical 38a6d124 on branch integ/milestone-manager-on-38a6d124 | v2 driver run d7 to VERIFIED, then owner integration authorisation |
+
+Open LOW at f5347587: R23-01, R23-02, R23-03, FB2-05, FB2-07, FB3-07, FB3-08, FB3-10, FB4-06 (and D6 R4 findings, see
+the d6 receipt). Canonical integration is not authorised (owner directive 2026-10-22).
