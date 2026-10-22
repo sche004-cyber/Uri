@@ -2658,3 +2658,45 @@ def test_r22_04_resume_bound_holds_for_small_limits(tmp_path, limit):
 def test_r22_05_resolve_help_names_only_conflicts():
     assert "`status`/`conflicts`" not in (ROOT / "scripts" / "dev_workflow" / "milestones" / "cli.py").read_text(
         encoding="utf-8")
+
+
+@pytest.mark.parametrize("data", [
+    {"details": {"access_token": "abc123def456ghi789jkl012mno345"}},
+    {"details": [{"credentials": {"access_token": "abc123def456ghi789jkl012mno345"}}]},
+    {"details": {"api_key": 123456789012345678901234567890}},
+])
+def test_r3_01_direct_store_append_refuses_nested_credential_value(tmp_path, data):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append("MILESTONE_UPDATED", data, actor="impl:a")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+def test_r3_02_ready_requires_dependency_status_bound_to_candidate(tmp_path):
+    m = _accept_ready(tmp_path)
+    m.create_milestone("MM-B", "dependent")
+    m.add_dependency("MM-B", "MM-A")
+    m.set_status("MM-A", "ACCEPTED", "accepted")
+    p = m.projection()
+    a = p["milestones"]["MM-A"]
+    assert a["bound_commit"] == C1
+    p["reviews"]["RV-2"] = {**next(iter(p["reviews"].values())), "id": "RV-2", "commit": C2}
+    a["candidate_commit"] = C2
+    assert model.independent_accept_reviews(p, a)
+    assert "MM-A" in views.unmet_dependencies(p, p["milestones"]["MM-B"])
+    assert "MM-B" not in views.ready(p)
+
+
+def test_r3_02_ready_rejects_dependency_with_open_conflict(tmp_path):
+    m = _accept_ready(tmp_path)
+    m.create_milestone("MM-B", "dependent")
+    m.add_dependency("MM-B", "MM-A")
+    m.set_status("MM-A", "ACCEPTED", "accepted")
+    p = m.projection()
+    p["conflicts"].append({"type": "VERSION", "entity": "MM-A", "subject": "MM-A", "resolved": False,
+                           "event": {"hash": "f" * 64}})
+    assert views.open_conflicts(p, "MM-A")
+    assert "MM-A" in views.unmet_dependencies(p, p["milestones"]["MM-B"])
+    assert "MM-B" not in views.ready(p)

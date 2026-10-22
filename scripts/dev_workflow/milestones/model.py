@@ -103,6 +103,9 @@ def find_secret(value) -> str | None:
         return "credential assignment" if _assignment_secret(value) else None
     if isinstance(value, dict):
         for key, item in value.items():
+            if isinstance(key, str) and isinstance(item, (str, int, float)) \
+                    and _assignment_secret(f"{key}: {item}"):
+                return "credential assignment"
             for part in (key, item):
                 hit = find_secret(part)
                 if hit:

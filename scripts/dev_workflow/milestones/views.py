@@ -75,9 +75,17 @@ def negative_reviews_on_candidate(p, m):
 
 
 def unmet_dependencies(p, m):
-    return [d for d in m["depends_on"] if (p["milestones"].get(d) or {}).get("status") not in DONE_STATES
-            or not M.independent_accept_reviews(p, p["milestones"][d])
-            or negative_reviews_on_candidate(p, p["milestones"][d])]
+    unmet = []
+    for d in m["depends_on"]:
+        prerequisite = p["milestones"].get(d)
+        if (not prerequisite or prerequisite["status"] not in DONE_STATES
+                or not prerequisite.get("bound_commit")
+                or prerequisite["bound_commit"] != prerequisite.get("candidate_commit")
+                or open_conflicts(p, d)
+                or not M.independent_accept_reviews(p, prerequisite)
+                or negative_reviews_on_candidate(p, prerequisite)):
+            unmet.append(d)
+    return unmet
 
 
 def indicator(p, m, tasks: dict | None = None) -> dict:
