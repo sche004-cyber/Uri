@@ -80,7 +80,7 @@ DESCRIPTIVE_WORDS = NUMERIC_WORDS | PATH_WORDS | ENUM_WORDS
 COMPOUND_SUFFIXES = ("password", "passwd", "token", "secret", "apikey")
 KEY_SEP_RX = re.compile(r"(?:([\"'])([^\"'\n]{1,60})\1\s*[\])]?|(?<![A-Za-z0-9_.])[_0-9]*([A-Za-z][A-Za-z0-9_.-]*))"
                         r"\s*[:=]")
-FLAG_SPACE_RX = re.compile(r"(?<![A-Za-z0-9_.-])-{1,2}([A-Za-z][A-Za-z0-9_.-]*)[ \t]+(?!-)(\S+)")
+FLAG_SPACE_RX = re.compile(r"(?<![A-Za-z0-9_.-])-{1,2}([A-Za-z][A-Za-z0-9_.-]*)[ \t]+(?!-)(\"[^\"\n]*\"|'[^'\n]*'|\S+)")
 STATUS_WORDS = {"expired", "rotated", "revoked", "invalid", "valid", "budget", "limit", "count", "present",
                 "absent", "stored", "encrypted", "configured", "unavailable", "disabled", "enabled", "hidden"}
 PLACEHOLDER_VALUES = {"required", "optional", "none", "null", "redacted", "unset", "set", "missing", "empty",

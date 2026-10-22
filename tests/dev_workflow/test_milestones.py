@@ -16,7 +16,7 @@ import pytest
 from scripts.dev_workflow.milestones import cli, importers, model, views
 from scripts.dev_workflow.milestones.model import ValidationError
 from scripts.dev_workflow.milestones.service import Manager
-from scripts.dev_workflow.milestones.store import EventStore, StoreError, read_segment
+from scripts.dev_workflow.milestones.store import EventStore, StoreError, check_free_text, read_segment
 
 ROOT = Path(__file__).resolve().parents[2]
 C1 = "1" * 40
@@ -3108,3 +3108,36 @@ def test_fb4_cli_refuses_subscripted_key_without_writing(tmp_path):
     assert cli.run(["--home", str(m.home), "--actor", "impl:a", "milestone-update", "MM-A", "--objective",
                     "os.environ['DB_PASSWORD'] = 'hunter2'"], out=out) != 0
     assert seg_bytes(m) == before and "SECRET" in out.getvalue()
+
+
+@pytest.mark.parametrize("value", [
+    '--password "required hunter2"',
+    '-pwd "%DB_PASSWORD% hunter2"',
+    '--api-key "<redacted> abc123xyz"',
+    "--password 'required hunter2'",
+])
+def test_d6_01_quoted_flag_value_refuses_secret_after_allowed_prefix(value):
+    assert model.find_secret(value) == "credential assignment"
+
+
+def test_d6_01_store_preflight_refuses_quoted_flag_value():
+    with pytest.raises(StoreError) as e:
+        check_free_text(data={"title": '--password "required hunter2"'})
+    assert e.value.code == "SECRET"
+
+
+@pytest.mark.parametrize("value", [
+    '--password "required hunter2"',
+    '-pwd "%DB_PASSWORD% hunter2"',
+    '--api-key "<redacted> abc123xyz"',
+    "--password 'required hunter2'",
+])
+def test_d6_01_store_refuses_quoted_flag_value_without_writing(tmp_path, value):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    with pytest.raises(StoreError) as e:
+        m.store.append_many([("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"title": value}}, {})],
+                            actor="impl:a")
+    assert e.value.code == "SECRET"
+    assert seg_bytes(m) == before
