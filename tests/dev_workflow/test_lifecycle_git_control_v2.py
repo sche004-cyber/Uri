@@ -54,6 +54,30 @@ def test_digest_v2_ignores_only_the_generated_files(tmp_path):
     assert L.git_control_digest(repo) != d0
 
 
+def test_v2_checks_do_not_read_generated_info_files(tmp_path, monkeypatch):
+    cfg, repo, wt = waiting(tmp_path)
+    generated = info_dir(repo) / "refs"
+    generated.write_text("abc\trefs/heads/x\n")
+    expected = L.git_control_digest(repo)
+    read_bytes = Path.read_bytes
+
+    def unreadable_generated(self):
+        if self == generated:
+            raise PermissionError("generated info/refs is temporarily unreadable")
+        return read_bytes(self)
+
+    monkeypatch.setattr(Path, "read_bytes", unreadable_generated)
+    assert L.git_control_digest(repo) == expected
+    assert L.control_state(cfg)["git_control_v2"] == expected
+    assert L.control_drift(cfg, L.State(cfg)) is None
+    try:
+        L.git_control_digest(repo, legacy=True)
+    except PermissionError:
+        pass
+    else:
+        raise AssertionError("legacy digest must still read generated info/refs")
+
+
 def test_a_run_bound_with_the_legacy_digest_is_upgraded_only_when_clean(tmp_path):
     cfg, repo, wt = waiting(tmp_path)
     st = L.State(cfg)
@@ -102,10 +126,11 @@ def test_g1_02_upgrade_binds_the_state_it_compared_not_a_later_read(tmp_path, mo
     clean = real(cfg["repo"])
     reads = []
 
-    def racing(repo_):
+    def racing(repo_, *, include_legacy=True):
         # first read sees the clean state; every later read sees a control change that lands right after it
         reads.append(1)
-        return dict(clean) if len(reads) == 1 else {"legacy": "changed-legacy", "v2": "changed-v2"}
+        result = dict(clean) if len(reads) == 1 else {"legacy": "changed-legacy", "v2": "changed-v2"}
+        return result if include_legacy else {"v2": result["v2"]}
 
     monkeypatch.setattr(L, "git_control_digests", racing)
     L.run(cfg)
