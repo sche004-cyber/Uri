@@ -81,6 +81,32 @@ Logs: `D:\uri-dev\lifecycle\URI-CONTROLS-3\gates_<commit>\` (outside git; head.t
 | Gates at the reviewed commit | `1741e97e`: pytest 807 passed / 23 skipped; flutter 882 passed / 5 skipped; analyze 5 info (baseline); release build rc 0; `ws_frozen_check` clean |
 | Final review | R5 on `1741e97e` (code = `a87ee0a1`): ACCEPT WITH FINDINGS (R5-01 LOW wall-clock ordering of the two Assist readings; R5-02 LOW Vision-off offered up to one poll after a fresh grant, refused by the worker with ASSIST_NEEDS_VISION; R5-03 INFO docs). `docs/ui/uri_controls_3/review/review_R5_1741e97e.md` |
 
+## 6b. Stage 8 live Windows qualification (2026-10-22) - PASS
+
+GPU headroom: the owner chose (2026-10-22) to close Copilot's window by a normal close request and then to end
+`chrome.exe` and `ChatGPT.exe` (no other process touched, no Brain configuration or safety rule changed). Census
+after: other processes 2,281 MiB (dwm.exe 1,693), P3 fit AT_RISK -273 MiB (start limit -512). Installation `c3b`
+(port 18361) re-provisioned from Git Bash: the PowerShell-provisioned `c3` refused every server start with
+`DEPENDENCY_MANIFEST_MISMATCH` because the runtime-identity dependency digest includes the `git` executable path
+(`Git\cmd\git.EXE` from PowerShell, `Git\mingw64\bin\git.EXE` from Bash). Harness finding, no product defect.
+
+Runtime `D:\uri-dev\uri-controls-live\runtime` (materialised from `abdfaa26`; the Python files are identical at
+`1741e97e`); candidate UI built from `c49256e2` (= `1741e97e` code). Start profile P3 (`--profile 32768,gpu,0`).
+Production main, real worker, paired Core, Runtime v1 Brain; automation input (synthesized keys, taps, semantics
+actions), no physical keyboard, mouse or Narrator.
+
+| Run | Result | Notes |
+|---|---|---|
+| `c3-1` | 29/30 | one FAIL `C3-vision-enter-opens-confirm`: Enter on the focused Vision toggle did open the confirmation, but the focus ring was read before any key event (Flutter shows focus rings only in keyboard highlight mode, and the earlier taps had set touch mode). Driver timing defect, fixed (a key press first, as a keyboard user does) |
+| `c3-1b` (fixed driver, sha256 `fc42ddbd...a2efeec`) | **30/30** | exactly three toggles; semantics of all three (button, toggled, focusable, tap action); Thinking On by Space (ring shown) -> NORMAL tier, Off by click -> FAST tier, stored; Vision Off -> injected failed start of Long -> URI went back to P3 by itself, notice and glow honest; Vision Off by Enter (ring shown) -> Long, recall of the secret number kept; Vision On by a screen-reader tap action -> Standard REFUSED_DOES_NOT_FIT before anything stopped (Long kept, reason shown; D-2 consequence); URI Assist On -> consent view, no grant possible (perception adapters ADAPTER_UNAVAILABLE, finding D14), toggle stayed off; worker restart -> controls consistent and responsive, Assist off, turn answered; no Flutter errors |
+| `c3-main` UI V2 main journey | **68/68** | |
+| `c3-returning` | **12/12** | prefs from `c3-main` |
+| `c3-perf` | **3/3** | decode 93.7-97.2 tok/s (P3, desktop at AT_RISK) |
+
+Records: `docs/ui/uri_controls_3/evidence/live/` (observations, native-execution with source head and driver hash,
+session and Brain records; screenshots of `c3-1b`). Earlier attempts (GPU contended; expired or mismatched
+installations) are kept outside git under `D:\uri-dev\uri-controls-live\live\*-attempt*` and produced no evidence.
+
 ## 7. Status (2026-10-21)
 
 **ACCEPTED (R5 ACCEPT WITH FINDINGS) - NOT INTEGRATED.** Blocker: the Lifecycle V3 Stage 8 live Windows UI

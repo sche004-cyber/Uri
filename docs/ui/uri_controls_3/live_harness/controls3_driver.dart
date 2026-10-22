@@ -108,6 +108,9 @@ void main() {
     Future<bool> keyOn(String key, LogicalKeyboardKey k) async {
       final inner = find.descendant(of: find.byKey(ValueKey(key)), matching: find.byType(AnimatedContainer)).first;
       final node = Focus.of(t.element(inner));
+      // A keyboard user's first key switches Flutter to keyboard highlight mode (focus rings show only then); after
+      // the earlier taps the mode is "touch". Live run c3-1 (2026-10-22) measured the ring before any key: false.
+      await t.sendKeyEvent(LogicalKeyboardKey.shiftLeft);
       node.requestFocus();
       await settle(300);
       final focused = node.hasPrimaryFocus;
