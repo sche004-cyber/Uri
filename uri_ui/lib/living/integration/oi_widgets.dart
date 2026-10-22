@@ -92,7 +92,7 @@ class _OiConversationPaneState extends State<OiConversationPane> {
                     key: const ValueKey('companion-draft-note'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: c.inkSoft, fontSize: 11),
+                    style: TextStyle(color: c.inkSoft, fontSize: UriType.caption),
                   ),
                 ),
               ),
@@ -253,7 +253,7 @@ class _MessageTile extends StatelessWidget {
     if (m.role == OiRole.system) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Text(m.text, style: TextStyle(color: c.warning, fontSize: 12)),
+        child: Text(m.text, style: TextStyle(color: c.warning, fontSize: UriType.label)),
       );
     }
     final chips = <Widget>[
@@ -307,7 +307,7 @@ class _MessageTile extends StatelessWidget {
                 child: Tooltip(
                   message: m.errorCode!,
                   child: Text(m.errorMessage ?? 'Something went wrong. Try again.',
-                      key: const ValueKey('oi-error'), style: TextStyle(color: c.danger, fontSize: 12)),
+                      key: const ValueKey('oi-error'), style: TextStyle(color: c.danger, fontSize: UriType.label)),
                 ),
               ),
             if (metrics != null)
@@ -316,7 +316,7 @@ class _MessageTile extends StatelessWidget {
                 child: Text(
                   metrics,
                   key: const ValueKey('oi-metrics'),
-                  style: TextStyle(color: c.inkFaint, fontSize: 11),
+                  style: TextStyle(color: c.inkFaint, fontSize: UriType.caption),
                 ),
               ),
           ],
@@ -374,7 +374,7 @@ class _Chip extends StatelessWidget {
         border: Border.all(color: t.withValues(alpha: 0.6)),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(label, style: TextStyle(color: t, fontSize: 11)),
+      child: Text(label, style: TextStyle(color: t, fontSize: UriType.caption)),
     );
   }
 }
@@ -406,7 +406,7 @@ class OiApprovalCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             for (final e in inputs.entries)
-              Text('${oiArgumentLabel('${e.key}')}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
+              Text('${oiArgumentLabel('${e.key}')}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: UriType.body)),
             if (a.effect != null || a.reversible != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
@@ -417,14 +417,14 @@ class OiApprovalCard extends StatelessWidget {
                       if (a.effect != null) oiEffectLabel(a.effect!),
                       if (a.reversible != null) a.reversible! ? 'Can be undone' : 'Cannot be undone',
                     ].join(' · '),
-                    style: TextStyle(color: c.inkFaint, fontSize: 12),
+                    style: TextStyle(color: c.inkFaint, fontSize: UriType.label),
                   ),
                 ),
               ),
             const SizedBox(height: 4),
             Text(
               'Only these buttons approve. Typed text never does.',
-              style: TextStyle(color: c.inkFaint, fontSize: 11),
+              style: TextStyle(color: c.inkFaint, fontSize: UriType.caption),
             ),
             const SizedBox(height: 8),
             Row(
@@ -470,7 +470,7 @@ class OiConfirmationCard extends StatelessWidget {
           children: [
             Text(p.message ?? 'Is this what you meant?', style: TextStyle(color: c.ink)),
             for (final e in args.entries)
-              Text('${oiArgumentLabel('${e.key}')}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: 13)),
+              Text('${oiArgumentLabel('${e.key}')}: ${e.value}', style: TextStyle(color: c.inkSoft, fontSize: UriType.body)),
             const SizedBox(height: 8),
             // UIV2-F3 (C1-03): the buttons wrap in a narrow pane instead of overflowing.
             Wrap(
@@ -548,7 +548,7 @@ class OiBrainBar extends StatelessWidget {
           Text(
             'Brain: ${conv.brainStatus['model_id'] ?? 'Runtime v1'} · $state',
             key: const ValueKey('oi-brain-state'),
-            style: TextStyle(color: c.inkSoft, fontSize: 12),
+            style: TextStyle(color: c.inkSoft, fontSize: UriType.label),
           ),
           if (health != null) OiHealthChip(conversation: conv),
           if (selectable.length > 1)
@@ -558,7 +558,7 @@ class OiBrainBar extends StatelessWidget {
               isDense: true,
               isExpanded: true,
               underline: const SizedBox.shrink(),
-              style: TextStyle(color: c.ink, fontSize: 12),
+              style: TextStyle(color: c.ink, fontSize: UriType.label),
               items: [
                 for (final r in selectable)
                   DropdownMenuItem(
@@ -570,27 +570,8 @@ class OiBrainBar extends StatelessWidget {
                   ? null
                   : (v) => v == null ? null : conv.selectBrain(v),
             )),
-          fit(DropdownButton<OiDepth>(
-            key: const ValueKey('oi-depth'),
-            value: conv.depth,
-            isDense: true,
-            isExpanded: true,
-            underline: const SizedBox.shrink(),
-            style: TextStyle(color: c.ink, fontSize: 12),
-            items: const [
-              DropdownMenuItem(value: OiDepth.auto, child: Text('Depth: auto', overflow: TextOverflow.ellipsis)),
-              DropdownMenuItem(value: OiDepth.fast, child: Text('Depth: fast', overflow: TextOverflow.ellipsis)),
-              DropdownMenuItem(
-                value: OiDepth.normal,
-                child: Text('Depth: thinking', overflow: TextOverflow.ellipsis),
-              ),
-              DropdownMenuItem(
-                value: OiDepth.deep,
-                child: Text('Depth: deep (offer a stronger tool)', overflow: TextOverflow.ellipsis),
-              ),
-            ],
-            onChanged: (v) => v == null ? null : conv.setDepth(v),
-          )),
+          // URI-CONTROLS-3 (review R2-02): no Depth picker here; the Thinking toggle under the chat box is
+          // the one Thinking control (On / Off).
           IconButton(
             tooltip: 'Refresh Brain status',
             icon: const Icon(Icons.refresh_rounded, size: 16),

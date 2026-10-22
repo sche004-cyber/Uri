@@ -57,7 +57,7 @@ class OiHealthChip extends StatelessWidget {
       decoration: BoxDecoration(border: Border.all(color: tone.withValues(alpha: 0.6)), borderRadius: BorderRadius.circular(999)),
       child: Text(
         [healthLabel(st), if (speed?.tps != null) '${speed!.tps!.toStringAsFixed(0)} tok/s'].join(' · '),
-        style: TextStyle(color: tone, fontSize: 11),
+        style: TextStyle(color: tone, fontSize: UriType.caption),
       ),
     );
   }
@@ -100,23 +100,23 @@ class OiHealthBanner extends StatelessWidget {
             if (warning != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text(warning, key: const ValueKey('oi-health-warning'), style: TextStyle(color: c.warning, fontSize: 12.5)),
+                child: Text(warning, key: const ValueKey('oi-health-warning'), style: TextStyle(color: c.warning, fontSize: UriType.body)),
               ),
             if (h['explain'] != null && warning == null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text('${h['explain']}', key: const ValueKey('oi-health-explain'), style: TextStyle(color: c.inkSoft, fontSize: 12.5)),
+                child: Text('${h['explain']}', key: const ValueKey('oi-health-explain'), style: TextStyle(color: c.inkSoft, fontSize: UriType.body)),
               ),
             if (options.contains('close_gpu_apps') && consumers.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text('Using the GPU: ${consumers.join(', ')}. URI never closes other apps.',
-                    style: TextStyle(color: c.inkFaint, fontSize: 12)),
+                    style: TextStyle(color: c.inkFaint, fontSize: UriType.label)),
               ),
             if (options.contains('start_from_launcher'))
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text('Start the Brain with "Launch URI Working System".', style: TextStyle(color: c.inkFaint, fontSize: 12)),
+                child: Text('Start the Brain with "Launch URI Working System".', style: TextStyle(color: c.inkFaint, fontSize: UriType.label)),
               ),
             if (options.any(_actionLabels.containsKey))
               Padding(
@@ -164,7 +164,7 @@ class OiWorkerBanner extends StatelessWidget {
           children: [
             Icon(Icons.report_gmailerrorred_rounded, size: 18, color: c.warning),
             const SizedBox(width: 8),
-            Expanded(child: Text(text, key: const ValueKey('oi-worker-text'), style: TextStyle(color: c.ink, fontSize: 13))),
+            Expanded(child: Text(text, key: const ValueKey('oi-worker-text'), style: TextStyle(color: c.ink, fontSize: UriType.body))),
             if (conv.turnStalled && conv.busy)
               Padding(
                 padding: const EdgeInsets.only(left: 8),
@@ -202,8 +202,8 @@ class OiBrainCard extends StatelessWidget {
     final g = (h['gpu'] as Map?) ?? const {};
     final speed = measuredSpeed(h);
     final reasons = [for (final r in (h['reasons'] as List? ?? const [])) '$r'];
-    final small = TextStyle(fontSize: 12, color: c.inkSoft);
-    final faint = TextStyle(fontSize: 11.5, color: c.inkFaint);
+    final small = TextStyle(fontSize: UriType.label, color: c.inkSoft);
+    final faint = TextStyle(fontSize: UriType.label, color: c.inkFaint);
     final lastTier = conv.messages.reversed.firstWhere((m) => m.tier != null, orElse: () => OiMessage(role: OiRole.uri, text: '')).tier;
     String gpuLine() {
       if (g['measured'] != true) return 'GPU: not measured (no Brain host report)';
@@ -225,14 +225,14 @@ class OiBrainCard extends StatelessWidget {
         Row(children: [
           Expanded(
             child: Text('${b['provider'] ?? 'Runtime v1 (local)'}',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: c.ink)),
+                style: TextStyle(fontSize: UriType.titleLarge, fontWeight: FontWeight.w600, color: c.ink)),
           ),
           Container(
             key: const ValueKey('oi-brain-card-state'),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
                 border: Border.all(color: healthColor(c, st).withValues(alpha: 0.6)), borderRadius: BorderRadius.circular(999)),
-            child: Text(st ?? 'CHECKING', style: TextStyle(fontSize: 11, color: healthColor(c, st))),
+            child: Text(st ?? 'CHECKING', style: TextStyle(fontSize: UriType.caption, color: healthColor(c, st))),
           ),
         ]),
         Text('${b['model_id'] ?? conv.brainStatus['model_id'] ?? '—'}', style: small),
@@ -250,7 +250,7 @@ class OiBrainCard extends StatelessWidget {
             style: faint),
         Text(gpuLine(), key: const ValueKey('oi-brain-card-gpu'), style: faint),
         if (reasons.isNotEmpty && st != 'READY' && st != 'BUSY')
-          Text('Why: ${reasons.join(', ')}', key: const ValueKey('oi-brain-card-reasons'), style: TextStyle(fontSize: 11.5, color: c.warning)),
+          Text('Why: ${reasons.join(', ')}', key: const ValueKey('oi-brain-card-reasons'), style: TextStyle(fontSize: UriType.label, color: c.warning)),
         if (h['explain'] != null && st != 'READY' && st != 'BUSY') Text('${h['explain']}', style: small),
         const SizedBox(height: 6),
         Wrap(spacing: 8, children: [

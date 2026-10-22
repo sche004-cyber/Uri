@@ -190,7 +190,7 @@ class _RecentTile extends StatelessWidget {
         _ => Icons.description_outlined,
       }, size: 18),
       title: Text(name, overflow: TextOverflow.ellipsis),
-      subtitle: Text(path, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11)),
+      subtitle: Text(path, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: UriType.caption)),
       // A recent entry is not a grant: opening it asks the picker again (plan §5 recent.py).
       onTap: kind == 'xlsx' ? onOpenSheet : (c.busy ? null : c.pickAndOpenDocument),
       trailing: IconButton(

@@ -1,0 +1,25 @@
+{
+ "label": "ui-1",
+ "source_head": "a4935c2bfd9580cd69de117a32950ece0f0527e8",
+ "source_tree": "bc69969e083374384b37451e7437e5a4187384e6",
+ "source_status_before": "",
+ "port": 18350,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/ui_typo_native_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "1b3cdc6fa7aa856c45c59eedb33d680f810240093b604ba5a38207a10f21c0a4",
+ "entry": "original production main() via integration_test (Debug build); taps and TestTextInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "started_utc": "2026-10-18T12:42:09.136520+00:00",
+ "exit_code": 79,
+ "elapsed_s": 286.25,
+ "finished_utc": "2026-10-18T12:46:55.389648+00:00",
+ "source_status_after": "",
+ "ui_binary_sha256": "a646c32498878dff1b333ac1d644c731531091cdfbbcbb96a5f6e1ef05f8e24b"
+}

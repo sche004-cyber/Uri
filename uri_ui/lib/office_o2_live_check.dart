@@ -111,7 +111,7 @@ class _LiveState extends State<_Live> {
                   Padding(
                     padding: const EdgeInsets.all(6),
                     child: Text('URI Office O2 scripted live check (by Claude, not the owner): $step',
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: UriType.label)),
                   ),
                   Expanded(
                     child: Align(

@@ -661,10 +661,17 @@ class IntegratedTurns:
         pending = self._restart_pending()
         switching = pending and self._switch is not None
         if switching:
-            out.update(state=brain_health.RECOVERING, reasons=["PROFILE_SWITCH"] + list(out.get("reasons") or []),
-                       recovery_options=[],
-                       explain="Switching the Brain to %s. It reloads (about half a minute); your conversation stays."
+            explain = ("Switching the Brain to %s. It reloads (about half a minute); your conversation stays."
                        % self._switch["label"])
+            # UI-CONTROLS-TYPO-20261018: the host restores the previous profile after a failed start; say so.
+            last = ((host or {}).get("profile_switch") or {}) if alive else {}
+            fb = last.get("fallback") if last.get("id") == self._switch.get("id") else None
+            if isinstance(fb, dict) and fb.get("result") == "IN_PROGRESS":
+                prev = QC.entry_by_profile_id(fb.get("to"))
+                explain = ("The Brain did not start with %s. URI is going back to %s; your conversation stays."
+                           % (self._switch["label"], (prev or {}).get("label", "the previous setting")))
+            out.update(state=brain_health.RECOVERING, reasons=["PROFILE_SWITCH"] + list(out.get("reasons") or []),
+                       recovery_options=[], explain=explain)
         elif pending and out["state"] != brain_health.RECOVERING:
             out.update(state=brain_health.RECOVERING, reasons=["RESTART_REQUESTED"] + list(out.get("reasons") or []),
                        recovery_options=[], explain="The Brain restart was requested; URI is waiting for it.")
@@ -705,7 +712,8 @@ class IntegratedTurns:
         try:
             return fn()
         except Exception:                 # Assist state is advisory for the controls; never breaks a status read
-            return None
+            # Review R2-06: Assist exists but its state could not be read: say so instead of "no Assist" (None).
+            return {"asking": False, "granted": None, "error": "ASSIST_STATE_UNREADABLE"}
 
     def _context_window(self) -> int:
         """The running window: the followed profile's ctx, or the host's own profile when it runs a smaller one."""

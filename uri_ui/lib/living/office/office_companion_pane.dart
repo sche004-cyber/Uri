@@ -227,11 +227,11 @@ class _OfficeSheetCompanionState extends State<OfficeSheetCompanion> {
         Text(
           missing ? 'What is each file for?' : 'Files',
           key: const ValueKey('office-roles-title'),
-          style: TextStyle(color: missing ? colors.warning : colors.inkSoft, fontSize: 12, fontWeight: FontWeight.w600),
+          style: TextStyle(color: missing ? colors.warning : colors.inkSoft, fontSize: UriType.label, fontWeight: FontWeight.w600),
         ),
         if (missing)
           Text('Choose a reference (URI only reads it) or the working file (URI checks or edits it; one at a time).',
-              style: TextStyle(color: colors.inkSoft, fontSize: 12)),
+              style: TextStyle(color: colors.inkSoft, fontSize: UriType.label)),
         const SizedBox(height: 4),
         for (final s in c.sources) _roleRow(context, c, s),
         Wrap(spacing: 6, runSpacing: 4, children: [
@@ -269,9 +269,9 @@ class _OfficeSheetCompanionState extends State<OfficeSheetCompanion> {
           Expanded(child: Text('$id ${s['label']}', overflow: TextOverflow.ellipsis)),
           if (working)
             Text('Working file', key: ValueKey('office-working-$id'),
-                style: TextStyle(color: colors.accent, fontSize: 12, fontWeight: FontWeight.w600))
+                style: TextStyle(color: colors.accent, fontSize: UriType.label, fontWeight: FontWeight.w600))
           else if (role == 'reference')
-            Text('Reference', style: TextStyle(color: colors.inkSoft, fontSize: 12)),
+            Text('Reference', style: TextStyle(color: colors.inkSoft, fontSize: UriType.label)),
         ]),
         const SizedBox(height: 2),
         SegmentedButton<String>(
@@ -458,7 +458,7 @@ class _OfficeCompanionPaneState extends State<OfficeCompanionPane> {
           borderRadius: BorderRadius.circular(UriRadius.sm),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(l.target, style: TextStyle(fontSize: 11, color: colors.inkFaint)),
+          Text(l.target, style: TextStyle(fontSize: UriType.caption, color: colors.inkFaint)),
           Text(l.speaker == OfficeSpeaker.uri ? 'URI: ${l.text}' : l.text,
               style: TextStyle(color: l.speaker == OfficeSpeaker.notice ? colors.warning : colors.ink)),
           if (chips.isNotEmpty)

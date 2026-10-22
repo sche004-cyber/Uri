@@ -1,0 +1,214 @@
+{
+ "label": "uiv2-1",
+ "started_utc": "2026-10-18T12:51:31.809902+00:00",
+ "runtime": "D:\\uri-dev\\uri-ui-typo-live\\runtime",
+ "port": 18350,
+ "receipt": {
+  "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "candidate_source": "D:\\uri-dev\\uri-ui-controls-typo",
+  "candidate_head": "a4935c2bfd9580cd69de117a32950ece0f0527e8",
+  "candidate_tree": "bc69969e083374384b37451e7437e5a4187384e6"
+ },
+ "brain_config_sha256_before": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "override": false,
+ "runtime_verified": {
+  "ok": true,
+  "checked": 362,
+  "mismatched": []
+ },
+ "server_pid": 18152,
+ "server_listening": true,
+ "lease_free_utc": "2026-10-18T12:51:36.819788+00:00",
+ "inject_fail_once": null,
+ "host_profile_arg": [
+  "--profile",
+  "32768,gpu,0"
+ ],
+ "host_pid": 19332,
+ "host_argv": [
+  "ws_brain_host.py",
+  "--report-dir",
+  "D:\\uri-dev\\uri-ui-typo-live\\runtime\\work\\c1\\ws-ui-typo\\client\\control\\oi",
+  "--minutes",
+  "50",
+  "--profile",
+  "32768,gpu,0"
+ ],
+ "brain_stopped_by_driver_utc": "2026-10-18T12:56:16.428110+00:00",
+ "end_reason": "ui-finished",
+ "result": "COMPLETED",
+ "finished_utc": "2026-10-18T12:56:30.444872+00:00",
+ "host_exit": 0,
+ "host_final": {
+  "detail": "HOST_EXIT",
+  "explain": "The Brain host has exited.",
+  "gpu": {
+   "census_s": 3.46,
+   "census_t": 1792327897.148,
+   "explain": "The Brain fits with a small margin (432 MB); other GPU apps may slow it down.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 677.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 438.3,
+      "name": "chrome.exe",
+      "parent": "chrome.exe",
+      "pid": 14668,
+      "role": null
+     }
+    ],
+    "free_mib": 14792.0,
+    "margin_mib": 432.0,
+    "others_mib": 1576.0,
+    "owner_mib": 0,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   }
+  },
+  "heartbeat_at": 1792328168.538,
+  "history": [
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792327900.607
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792327906.013
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792327922.108
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792327928.713
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792328176.434
+   },
+   {
+    "detail": "HOST_EXIT",
+    "state": "STOPPED",
+    "t": 1792328176.495
+   }
+  ],
+  "host_pid": 13124,
+  "host_started": 1792327897.116,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "8dbb8776-aa3e-4da4-adb1-3682c739595a",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792327928.759,
+   "t_done": 1792327932.245
+  },
+  "lease": {
+   "held": false
+  },
+  "override": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 14.4 GB is free. In use by: dwm.exe (desktop compositor, 0.7 GB), chrome.exe from chrome.exe (0.4 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 677.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 438.3,
+      "name": "chrome.exe",
+      "parent": "chrome.exe",
+      "pid": 14668,
+      "role": null
+     }
+    ],
+    "free_mib": 14792.0,
+    "margin_mib": -834.0,
+    "others_mib": 1576.0,
+    "owner_mib": 12935.6,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "8dbb8776-aa3e-4da4-adb1-3682c739595a",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792327928.81,
+   "to": "frozen"
+  },
+  "requests": {
+   "8dbb8776-aa3e-4da4-adb1-3682c739595a": "REFUSED_DOES_NOT_FIT"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 681.3,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 438.3,
+     "name": "chrome.exe",
+     "parent": "chrome.exe",
+     "pid": 14668,
+     "role": null
+    },
+    {
+     "dedicated_mib": 260.5,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 17436,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13004.8,
+   "non_local_mib": 2097.3,
+   "others_mib": 1843.9,
+   "t": 1792328116.265,
+   "verdict_now": "AT_RISK"
+  },
+  "schema": "uri.ws.brain_host.v1",
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "state": "STOPPED",
+  "updated_at": 1792328176.495
+ },
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_config_sha256_after": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "brain_listener_after": null
+}

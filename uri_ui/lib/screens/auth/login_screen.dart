@@ -97,8 +97,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text(
                         'URI',
                         style: TextStyle(
-                          fontFamily: 'Georgia',
-                          fontSize: 48,
+                          fontWeight: FontWeight.w300,
+                          fontSize: UriType.hero,
                           letterSpacing: 4,
                           color: colors.ink,
                         ),
@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text(
                         'YOUR PERSONAL WORKSPACE',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: UriType.label,
                           letterSpacing: 1.8,
                           color: colors.accent,
                         ),

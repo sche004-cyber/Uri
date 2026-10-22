@@ -57,7 +57,7 @@ class FrameStatsOverlay extends StatelessWidget {
                     Text(
                       l,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: UriType.caption,
                         height: 1.35,
                         color: c.inkSoft,
                         fontFeatures: const [FontFeature.tabularFigures()],

@@ -399,6 +399,40 @@ class UriRadius {
   static const double lg = 22;
 }
 
+/// URI's single type system (UI-CONTROLS-TYPO-20261018).
+///
+/// One UI family for the whole application: the Windows system UI font
+/// (Segoe UI), already installed on every supported Windows, so there is no
+/// font package, no bundled font file and no extra glyph cache. Monospace
+/// (Consolas, also a Windows system font) is used only for code. Every
+/// [TextStyle] size in the app comes from this scale; half-step sizes were
+/// rounded up to the next step for Windows readability.
+class UriType {
+  UriType._();
+
+  static const String family = 'Segoe UI';
+  static const String mono = 'Consolas';
+
+  static const double micro = 10; // dense badges and footers only
+  static const double caption = 11; // meta lines, notices, timestamps
+  static const double label = 12; // chips, controls, small labels
+  static const double body = 13; // compact body, menus, lists
+  static const double bodyLarge = 14; // default reading text, inputs
+  static const double title = 15; // card and section titles
+  static const double titleLarge = 17; // dialog titles, panel headings
+  static const double heading = 20; // page headings
+  static const double headline = 24; // large headings, metrics
+  static const double headlineLarge = 28; // hero metrics
+  static const double display = 34; // display headings
+  static const double hero = 48; // the URI wordmark
+
+  /// The scale in ascending order (tests assert every literal is on it).
+  static const List<double> scale = [
+    micro, caption, label, body, bodyLarge, title, titleLarge, heading,
+    headline, headlineLarge, display, hero,
+  ];
+}
+
 /// Semantic typography roles for the compact dashboard.  These derive from
 /// the active [TextTheme] so every surface shares the application font,
 /// weight, spacing, and brightness-aware colours rather than introducing
@@ -422,10 +456,11 @@ extension UriDashboardTextTheme on TextTheme {
     height: 1.35,
   );
 
-  TextStyle get keyValue => bodyMedium!.copyWith(fontSize: 11, height: 1.35);
+  TextStyle get keyValue =>
+      bodyMedium!.copyWith(fontSize: UriType.caption, height: 1.35);
 
   TextStyle get footerCaption => labelSmall!.copyWith(
-    fontSize: 9,
+    fontSize: UriType.micro,
     fontWeight: FontWeight.w500,
     letterSpacing: 0,
     height: 1.3,
@@ -556,62 +591,55 @@ ThemeData buildUriTheme(UriColors palette) {
       surface: palette.surface,
     ),
     scaffoldBackgroundColor: palette.canvas,
-    fontFamily: 'Segoe UI',
+    fontFamily: UriType.family,
   );
 
-  final textTheme = base.textTheme.copyWith(
-    displaySmall: TextStyle(
-      fontSize: 34,
-      fontWeight: FontWeight.w700,
-      letterSpacing: -0.8,
-      color: palette.ink,
-      height: 1.15,
-    ),
-    headlineMedium: TextStyle(
-      fontSize: 24,
-      fontWeight: FontWeight.w700,
-      letterSpacing: -0.4,
-      color: palette.ink,
-      height: 1.2,
-    ),
-    headlineSmall: TextStyle(
-      fontSize: 19,
-      fontWeight: FontWeight.w700,
-      letterSpacing: -0.2,
-      color: palette.ink,
-      height: 1.25,
-    ),
-    titleMedium: TextStyle(
-      fontSize: 15,
-      fontWeight: FontWeight.w600,
-      color: palette.ink,
-      height: 1.3,
-    ),
-    bodyLarge: TextStyle(
-      fontSize: 15,
-      fontWeight: FontWeight.w400,
-      color: palette.inkSoft,
-      height: 1.5,
-    ),
-    bodyMedium: TextStyle(
-      fontSize: 13.5,
-      fontWeight: FontWeight.w400,
-      color: palette.inkSoft,
-      height: 1.5,
-    ),
-    labelLarge: TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w600,
-      color: palette.ink,
-      letterSpacing: 0.1,
-    ),
-    labelSmall: TextStyle(
-      fontSize: 11.5,
-      fontWeight: FontWeight.w600,
-      color: palette.inkFaint,
-      letterSpacing: 0.4,
-    ),
-  );
+  // Every role is defined here, on the URI scale, and the family is applied
+  // to all of them: a role replaced with a bare TextStyle would otherwise
+  // drop the family and fall back to the engine default silently.
+  TextStyle role(double size, FontWeight weight, Color color,
+          {double? height, double letterSpacing = 0}) =>
+      TextStyle(
+        fontSize: size,
+        fontWeight: weight,
+        color: color,
+        height: height,
+        letterSpacing: letterSpacing,
+      );
+  final textTheme = base.textTheme
+      .copyWith(
+        displayLarge: role(UriType.hero, FontWeight.w300, palette.ink,
+            height: 1.1, letterSpacing: -0.5),
+        displayMedium: role(UriType.display, FontWeight.w600, palette.ink,
+            height: 1.15, letterSpacing: -0.6),
+        displaySmall: role(UriType.display, FontWeight.w700, palette.ink,
+            height: 1.15, letterSpacing: -0.8),
+        headlineLarge: role(UriType.headlineLarge, FontWeight.w700,
+            palette.ink, height: 1.2, letterSpacing: -0.4),
+        headlineMedium: role(UriType.headline, FontWeight.w700, palette.ink,
+            height: 1.2, letterSpacing: -0.4),
+        headlineSmall: role(UriType.heading, FontWeight.w700, palette.ink,
+            height: 1.2, letterSpacing: -0.2),
+        titleLarge: role(UriType.titleLarge, FontWeight.w600, palette.ink,
+            height: 1.3),
+        titleMedium: role(UriType.title, FontWeight.w600, palette.ink,
+            height: 1.3),
+        titleSmall: role(UriType.body, FontWeight.w600, palette.ink,
+            height: 1.35),
+        bodyLarge: role(UriType.title, FontWeight.w400, palette.inkSoft,
+            height: 1.5),
+        bodyMedium: role(UriType.bodyLarge, FontWeight.w400, palette.inkSoft,
+            height: 1.5),
+        bodySmall: role(UriType.label, FontWeight.w400, palette.inkSoft,
+            height: 1.4),
+        labelLarge: role(UriType.body, FontWeight.w600, palette.ink,
+            letterSpacing: 0.1),
+        labelMedium: role(UriType.label, FontWeight.w500, palette.inkSoft,
+            letterSpacing: 0.1),
+        labelSmall: role(UriType.label, FontWeight.w600, palette.inkFaint,
+            letterSpacing: 0.4),
+      )
+      .apply(fontFamily: UriType.family);
 
   return base.copyWith(
     extensions: [palette, UriGlass.fromPalette(palette)],
@@ -640,7 +668,8 @@ ThemeData buildUriTheme(UriColors palette) {
           borderRadius: BorderRadius.circular(UriRadius.sm),
         ),
         textStyle: const TextStyle(
-          fontSize: 14,
+          fontFamily: UriType.family,
+          fontSize: UriType.bodyLarge,
           fontWeight: FontWeight.w600,
           height: 1.25,
         ),
@@ -659,7 +688,8 @@ ThemeData buildUriTheme(UriColors palette) {
           borderRadius: BorderRadius.circular(UriRadius.sm),
         ),
         textStyle: const TextStyle(
-          fontSize: 14,
+          fontFamily: UriType.family,
+          fontSize: UriType.bodyLarge,
           fontWeight: FontWeight.w600,
           height: 1.25,
         ),
@@ -676,7 +706,8 @@ ThemeData buildUriTheme(UriColors palette) {
           borderRadius: BorderRadius.circular(UriRadius.sm),
         ),
         textStyle: const TextStyle(
-          fontSize: 14,
+          fontFamily: UriType.family,
+          fontSize: UriType.bodyLarge,
           fontWeight: FontWeight.w600,
           height: 1.25,
         ),
@@ -689,7 +720,8 @@ ThemeData buildUriTheme(UriColors palette) {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         visualDensity: VisualDensity.standard,
         textStyle: const TextStyle(
-          fontSize: 14,
+          fontFamily: UriType.family,
+          fontSize: UriType.bodyLarge,
           fontWeight: FontWeight.w600,
           height: 1.25,
         ),

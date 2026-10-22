@@ -1,0 +1,5304 @@
+[
+ {
+  "utc": "2026-10-22T01:52:03.618817+00:00",
+  "t": 1792633923.619,
+  "host_alive": false,
+  "state": "STOPPED",
+  "detail": "HOST_EXIT",
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1696.4,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 222.0,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 12960,
+      "role": null
+     }
+    ],
+    "free_mib": 13857.2,
+    "margin_mib": -1768.8,
+    "others_mib": 2510.8,
+    "owner_mib": 13895.2,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633884.236,
+   "to": "frozen"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 235.7,
+     "name": null,
+     "parent": null,
+     "pid": 12960,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13900.5,
+   "non_local_mib": 561.8,
+   "others_mib": 2524.5,
+   "t": 1792633905.897,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 201.5,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633884.189,
+   "t_done": 1792633887.815
+  },
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:52:09.121474+00:00",
+  "t": 1792633929.121,
+  "host_alive": true,
+  "state": "STARTING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": null,
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": null,
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": null,
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:52:14.793274+00:00",
+  "t": 1792633934.793,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": null,
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": null,
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": null,
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13101.0,
+    "non_local_mib": 402.5
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:52:20.433470+00:00",
+  "t": 1792633940.433,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": null,
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": null,
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": null,
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13542.0,
+    "non_local_mib": 402.5
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:52:25.987025+00:00",
+  "t": 1792633945.987,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": null,
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": null,
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": null,
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:52:31.501726+00:00",
+  "t": 1792633951.502,
+  "host_alive": true,
+  "state": "CALIBRATING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": null,
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": null,
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:52:37.041718+00:00",
+  "t": 1792633957.042,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:52:42.565666+00:00",
+  "t": 1792633962.566,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:52:48.214961+00:00",
+  "t": 1792633968.215,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:52:53.738575+00:00",
+  "t": 1792633973.739,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:52:59.349814+00:00",
+  "t": 1792633979.35,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:53:04.944947+00:00",
+  "t": 1792633984.945,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:53:10.433656+00:00",
+  "t": 1792633990.434,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:53:15.969049+00:00",
+  "t": 1792633995.969,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 14.2,
+    "non_local_mib": 2.7
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:53:21.520172+00:00",
+  "t": 1792634001.52,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 75.4,
+    "non_local_mib": 3.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:53:27.049099+00:00",
+  "t": 1792634007.049,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 220.7,
+    "non_local_mib": 3.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:53:32.612039+00:00",
+  "t": 1792634012.612,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1692.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2281.2,
+   "t": 1792633946.193,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 238.0,
+    "non_local_mib": 3.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:53:38.201653+00:00",
+  "t": 1792634018.202,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 238.0,
+    "non_local_mib": 3.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:53:43.780800+00:00",
+  "t": 1792634023.781,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 213.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:53:49.307705+00:00",
+  "t": 1792634029.308,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 217.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:53:54.867724+00:00",
+  "t": 1792634034.868,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 229.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:00.409858+00:00",
+  "t": 1792634040.41,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 233.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:05.993778+00:00",
+  "t": 1792634045.994,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 185.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:11.613732+00:00",
+  "t": 1792634051.614,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14601.5,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 195.0,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:17.245941+00:00",
+  "t": 1792634057.246,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.0,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 193.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:22.847612+00:00",
+  "t": 1792634062.848,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.0,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 144.0,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:28.391680+00:00",
+  "t": 1792634068.392,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.0,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 201.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:34.037457+00:00",
+  "t": 1792634074.037,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.0,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 199.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:39.636605+00:00",
+  "t": 1792634079.637,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 238.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2526.8,
+   "t": 1792634010.053,
+   "verdict_now": "CONTENDED"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.0,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 201.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:45.249632+00:00",
+  "t": 1792634085.25,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.0,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 211.0,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:50.835439+00:00",
+  "t": 1792634090.835,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.0,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 209.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:54:56.439390+00:00",
+  "t": 1792634096.439,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 211.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:02.039676+00:00",
+  "t": 1792634102.04,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 213.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:07.668049+00:00",
+  "t": 1792634107.668,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 221.0,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:13.358916+00:00",
+  "t": 1792634113.359,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 217.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:18.945757+00:00",
+  "t": 1792634118.946,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 168.0,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:24.550006+00:00",
+  "t": 1792634124.55,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 232.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:30.085194+00:00",
+  "t": 1792634130.085,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1694.1,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 195.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:35.636228+00:00",
+  "t": 1792634135.636,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1694.1,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 195.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:41.250205+00:00",
+  "t": 1792634141.25,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 203.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.0,
+   "non_local_mib": 497.8,
+   "others_mib": 2492.0,
+   "t": 1792634073.8,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1694.1,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 186.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:46.840652+00:00",
+  "t": 1792634146.841,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1694.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 188.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2472.2,
+   "t": 1792634137.573,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 248.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:52.440993+00:00",
+  "t": 1792634152.441,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1694.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 188.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2472.2,
+   "t": 1792634137.573,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 185.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:55:57.965986+00:00",
+  "t": 1792634157.966,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1694.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 188.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2472.2,
+   "t": 1792634137.573,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 187.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:56:03.563936+00:00",
+  "t": 1792634163.564,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1694.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 188.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2472.2,
+   "t": 1792634137.573,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 189.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:56:09.121364+00:00",
+  "t": 1792634169.121,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1694.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 188.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2472.2,
+   "t": 1792634137.573,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1697.6,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 190.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:56:14.893354+00:00",
+  "t": 1792634174.893,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1694.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 188.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2472.2,
+   "t": 1792634137.573,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1695.6,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 282.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:56:20.433024+00:00",
+  "t": 1792634180.433,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1694.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 188.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2472.2,
+   "t": 1792634137.573,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "14616": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14604.3,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1695.6,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 175.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T01:56:25.969618+00:00",
+  "t": 1792634185.97,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "load_seconds": 17.3,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 14616
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 14616,
+   "t": 1792633944.302,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1694.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 188.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2472.2,
+   "t": 1792634137.573,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 197.0,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": "FREE"
+ },
+ {
+  "utc": "2026-10-22T01:56:31.555489+00:00",
+  "t": 1792634191.555,
+  "host_alive": false,
+  "state": "STOPPED",
+  "detail": "HOST_EXIT",
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1694.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 188.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2472.2,
+   "t": 1792634137.573,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.4,
+    "non_local_mib": 53.1
+   },
+   "6848": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 199.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 24044,
+    "create_time": 1792633996.948
+   },
+   {
+    "pid": 24280,
+    "create_time": 1792633996.995
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": "FREE"
+ },
+ {
+  "utc": "2026-10-22T01:56:37.075672+00:00",
+  "t": 1792634197.076,
+  "host_alive": false,
+  "state": "STOPPED",
+  "detail": "HOST_EXIT",
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.8 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1692.6,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     }
+    ],
+    "free_mib": 14086.8,
+    "margin_mib": -1539.2,
+    "others_mib": 2281.2,
+    "owner_mib": 14535.1,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792633949.775,
+   "to": "frozen"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1694.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 188.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 6848,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14604.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2472.2,
+   "t": 1792634137.573,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -273.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "a29feb7c-c737-4520-80f8-ff1c30c01f1d",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792633949.728,
+   "t_done": 1792633953.301
+  },
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1692.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": "FREE"
+ }
+]

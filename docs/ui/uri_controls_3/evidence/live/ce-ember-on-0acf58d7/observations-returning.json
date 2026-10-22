@@ -1,0 +1,1330 @@
+[
+  {
+    "utc": "2026-10-22T02:16:28.406048Z",
+    "label": "automation input transport",
+    "driver": "Flutter integration_test on production main()",
+    "window_checks": "tools/win_probe.py (Win32 + SendInput)",
+    "physical_keyboard_qualified": false,
+    "physical_mouse_qualified": false,
+    "microphone_qualified": false,
+    "Brain_Core_worker_mocked": false,
+    "mode": "returning"
+  },
+  {
+    "utc": "2026-10-22T02:16:28.450508Z",
+    "label": "preferences at start",
+    "keys": [
+      "uri.clientDeviceId",
+      "uri.living.companion.choice",
+      "uri.living.companion.look.ember",
+      "uri.v2.companion.position"
+    ],
+    "choice": "ember"
+  },
+  {
+    "utc": "2026-10-22T02:16:34.930591Z",
+    "label": "production main connected",
+    "seconds_to_living_scope": 6.472,
+    "visualV2": true,
+    "mode": "dashboard",
+    "brain_status": {
+      "artifacts": "MATCH",
+      "checked_at": 1792635394.2196462,
+      "detail": null,
+      "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+      "owned": false,
+      "pid": 12780,
+      "selected": {
+        "kind": "server_local_model",
+        "model": "qwen3.6-35b-a3b-ud-iq3_s",
+        "provider": "llamacpp-runtime-v1"
+      },
+      "state": "READY",
+      "url": "http://127.0.0.1:18470"
+    },
+    "restored_choice": "ember"
+  },
+  {
+    "utc": "2026-10-22T02:16:34.931596Z",
+    "label": "check",
+    "id": "G-installed-12-with-ember",
+    "result": "PASS",
+    "ids": "[solar, sakura, lunar, moonlit, ember, classic-nebula, classic-halo, classic-swarm, classic-glass, classic-flow, classic-mesh, classic-energy]"
+  },
+  {
+    "utc": "2026-10-22T02:16:34.949720Z",
+    "label": "check",
+    "id": "R-ember-restored",
+    "result": "PASS",
+    "choice": "ember"
+  },
+  {
+    "utc": "2026-10-22T02:16:43.576861Z",
+    "label": "probe",
+    "step": "returning",
+    "result": {
+      "window": {
+        "hwnd": 39453864,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "dwm_extended_frame": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "alpha_summary": {
+        "size": [
+          440,
+          680
+        ],
+        "transparent_frac": 0.9085,
+        "opaque_frac": 0.0138,
+        "blended_frac": 0.0778,
+        "edge_alpha_max": 0,
+        "edge_alpha_mean": 0.0,
+        "silhouette_bbox": [
+          159,
+          173,
+          301,
+          349
+        ],
+        "transparent_frac_inside_bbox": 0.0573
+      },
+      "per_pixel_transparent": true,
+      "rect": [
+        0,
+        181,
+        440,
+        861
+      ],
+      "utc": "2026-10-22T02:16:43Z"
+    }
+  },
+  {
+    "utc": "2026-10-22T02:16:43.577366Z",
+    "label": "check",
+    "id": "R-idle-after-ready",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T02:16:43.583388Z",
+    "label": "check",
+    "id": "R-initializing-seen",
+    "result": "FAIL"
+  },
+  {
+    "utc": "2026-10-22T02:16:52.284347Z",
+    "label": "probe",
+    "step": "transparent-1.0",
+    "result": {
+      "window": {
+        "hwnd": 39453864,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "dwm_extended_frame": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "alpha_summary": {
+        "size": [
+          440,
+          680
+        ],
+        "transparent_frac": 0.9083,
+        "opaque_frac": 0.0203,
+        "blended_frac": 0.0714,
+        "edge_alpha_max": 0,
+        "edge_alpha_mean": 0.0,
+        "silhouette_bbox": [
+          158,
+          173,
+          301,
+          349
+        ],
+        "transparent_frac_inside_bbox": 0.0572
+      },
+      "per_pixel_transparent": true,
+      "rect": [
+        0,
+        181,
+        440,
+        861
+      ],
+      "utc": "2026-10-22T02:16:51Z"
+    }
+  },
+  {
+    "utc": "2026-10-22T02:16:52.284347Z",
+    "label": "check",
+    "id": "W-borderless",
+    "result": "PASS",
+    "probe": {
+      "no_nonclient_area": true,
+      "client_size": [
+        440,
+        680
+      ],
+      "window_size": [
+        440,
+        680
+      ],
+      "style_bits_borderless": false,
+      "shadow_frame_px": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "style": "0x14cb0000",
+      "exstyle": "0x100",
+      "region": "COMPLEXREGION"
+    }
+  },
+  {
+    "utc": "2026-10-22T02:16:52.284347Z",
+    "label": "check",
+    "id": "W-per-pixel-transparency",
+    "result": "PASS",
+    "probe": {
+      "size": [
+        440,
+        680
+      ],
+      "transparent_frac": 0.9083,
+      "opaque_frac": 0.0203,
+      "blended_frac": 0.0714,
+      "edge_alpha_max": 0,
+      "edge_alpha_mean": 0.0,
+      "silhouette_bbox": [
+        158,
+        173,
+        301,
+        349
+      ],
+      "transparent_frac_inside_bbox": 0.0572
+    }
+  },
+  {
+    "utc": "2026-10-22T02:17:00.967514Z",
+    "label": "probe",
+    "step": "click-through",
+    "result": {
+      "window": {
+        "hwnd": 39453864,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "dwm_extended_frame": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "transparent_point": [
+        6,
+        187
+      ],
+      "ember_point": [
+        229,
+        442
+      ],
+      "root_at_transparent": 5047568,
+      "root_at_ember": 39453864,
+      "companion": 39453864,
+      "backdrop": 5047568,
+      "input_skipped": [],
+      "outside_reached_backdrop": true,
+      "ember_click_reached_uri": true,
+      "backdrop_clicks": [
+        0,
+        1,
+        1
+      ],
+      "utc": "2026-10-22T02:17:00Z"
+    }
+  },
+  {
+    "utc": "2026-10-22T02:17:00.967514Z",
+    "label": "check",
+    "id": "W-click-through-outside",
+    "result": "PASS",
+    "probe": {
+      "window": {
+        "hwnd": 39453864,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "dwm_extended_frame": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "transparent_point": [
+        6,
+        187
+      ],
+      "ember_point": [
+        229,
+        442
+      ],
+      "root_at_transparent": 5047568,
+      "root_at_ember": 39453864,
+      "companion": 39453864,
+      "backdrop": 5047568,
+      "input_skipped": [],
+      "outside_reached_backdrop": true,
+      "ember_click_reached_uri": true,
+      "backdrop_clicks": [
+        0,
+        1,
+        1
+      ],
+      "utc": "2026-10-22T02:17:00Z"
+    }
+  },
+  {
+    "utc": "2026-10-22T02:17:00.967514Z",
+    "label": "check",
+    "id": "W-click-on-ember-reaches-uri",
+    "result": "PASS",
+    "probe": {
+      "window": {
+        "hwnd": 39453864,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "dwm_extended_frame": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "transparent_point": [
+        6,
+        187
+      ],
+      "ember_point": [
+        229,
+        442
+      ],
+      "root_at_transparent": 5047568,
+      "root_at_ember": 39453864,
+      "companion": 39453864,
+      "backdrop": 5047568,
+      "input_skipped": [],
+      "outside_reached_backdrop": true,
+      "ember_click_reached_uri": true,
+      "backdrop_clicks": [
+        0,
+        1,
+        1
+      ],
+      "utc": "2026-10-22T02:17:00Z"
+    }
+  },
+  {
+    "utc": "2026-10-22T02:17:02.565750Z",
+    "label": "controls after Ember click",
+    "chat_control_visible": true,
+    "facts": {
+      "cornerHit": false,
+      "dpi": 96,
+      "regionKind": 3,
+      "regionWidth": 397
+    }
+  },
+  {
+    "utc": "2026-10-22T02:17:10.772850Z",
+    "label": "probe",
+    "step": "drag",
+    "result": {
+      "window": {
+        "hwnd": 39453864,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "dwm_extended_frame": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "root_at_ember": 39453864,
+      "ember_point": [
+        219,
+        403
+      ],
+      "rect_before": [
+        0,
+        181,
+        440,
+        861
+      ],
+      "rect_after": [
+        0,
+        238,
+        440,
+        918
+      ],
+      "moved": true,
+      "delta": [
+        0,
+        57
+      ],
+      "utc": "2026-10-22T02:17:10Z"
+    }
+  },
+  {
+    "utc": "2026-10-22T02:17:10.772850Z",
+    "label": "check",
+    "id": "W-drag-moves-window",
+    "result": "PASS",
+    "probe": {
+      "window": {
+        "hwnd": 39453864,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "dwm_extended_frame": [
+          0,
+          181,
+          440,
+          861
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "root_at_ember": 39453864,
+      "ember_point": [
+        219,
+        403
+      ],
+      "rect_before": [
+        0,
+        181,
+        440,
+        861
+      ],
+      "rect_after": [
+        0,
+        238,
+        440,
+        918
+      ],
+      "moved": true,
+      "delta": [
+        0,
+        57
+      ],
+      "utc": "2026-10-22T02:17:10Z"
+    }
+  },
+  {
+    "utc": "2026-10-22T02:17:19.060562Z",
+    "label": "probe",
+    "step": "transparent-1.25",
+    "result": {
+      "window": {
+        "hwnd": 39453864,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          0,
+          238,
+          440,
+          918
+        ],
+        "dwm_extended_frame": [
+          0,
+          238,
+          440,
+          918
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "alpha_summary": {
+        "size": [
+          440,
+          680
+        ],
+        "transparent_frac": 0.8756,
+        "opaque_frac": 0.0539,
+        "blended_frac": 0.0705,
+        "edge_alpha_max": 0,
+        "edge_alpha_mean": 0.0,
+        "silhouette_bbox": [
+          21,
+          91,
+          418,
+          353
+        ],
+        "transparent_frac_inside_bbox": 0.6421
+      },
+      "per_pixel_transparent": true,
+      "rect": [
+        0,
+        238,
+        440,
+        918
+      ],
+      "crop": {
+        "bbox": [
+          21,
+          91,
+          418,
+          353
+        ],
+        "window": [
+          440,
+          680
+        ],
+        "touches_window_edge": false
+      },
+      "utc": "2026-10-22T02:17:18Z"
+    }
+  },
+  {
+    "utc": "2026-10-22T02:17:19.074602Z",
+    "label": "check",
+    "id": "W-scale-1.25-transparent",
+    "result": "PASS",
+    "probe": {
+      "size": [
+        440,
+        680
+      ],
+      "transparent_frac": 0.8756,
+      "opaque_frac": 0.0539,
+      "blended_frac": 0.0705,
+      "edge_alpha_max": 0,
+      "edge_alpha_mean": 0.0,
+      "silhouette_bbox": [
+        21,
+        91,
+        418,
+        353
+      ],
+      "transparent_frac_inside_bbox": 0.6421
+    }
+  },
+  {
+    "utc": "2026-10-22T02:17:19.094174Z",
+    "label": "F-SIZE-1 measurement",
+    "crop": {
+      "bbox": [
+        21,
+        91,
+        418,
+        353
+      ],
+      "window": [
+        440,
+        680
+      ],
+      "touches_window_edge": false
+    }
+  },
+  {
+    "utc": "2026-10-22T02:17:28.706770Z",
+    "label": "turn",
+    "id": "fact",
+    "text": "Quick arithmetic game. The secret number is 4817. Reply with just OK.",
+    "status": "ok",
+    "reply": "OK",
+    "states": [
+      "thinking",
+      "speaking",
+      "success"
+    ]
+  },
+  {
+    "utc": "2026-10-22T02:17:28.708273Z",
+    "label": "check",
+    "id": "S-fact-ok",
+    "result": "PASS",
+    "status": "ok",
+    "reply": "OK"
+  },
+  {
+    "utc": "2026-10-22T02:17:29.155703Z",
+    "label": "reconfigure request",
+    "to": "long",
+    "result": {
+      "host_state": "READY",
+      "request_id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+      "requested": "reconfigure",
+      "target": {
+        "active": true,
+        "ctx": 65536,
+        "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P2: journeys 68/68 + 12/12, soak 60 min, switch sw4",
+        "id": "long",
+        "label": "Long context",
+        "mtp": false,
+        "qualified": true,
+        "required_mib": 13658,
+        "summary": "64K context, vision off",
+        "switchable": true,
+        "vision": "off",
+        "vision_on": false
+      }
+    }
+  },
+  {
+    "utc": "2026-10-22T02:18:05.050599Z",
+    "label": "check",
+    "id": "S-long-initializing-while-switching",
+    "result": "PASS",
+    "rows": 2
+  },
+  {
+    "utc": "2026-10-22T02:18:05.051642Z",
+    "label": "check",
+    "id": "S-long-never-idle-while-switching",
+    "result": "PASS",
+    "pending_states": [
+      "initializing"
+    ]
+  },
+  {
+    "utc": "2026-10-22T02:18:05.052646Z",
+    "label": "check",
+    "id": "S-long-idle-after",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T02:18:08.471956Z",
+    "label": "turn",
+    "id": "recall-long",
+    "text": "What was the secret number I gave you at the start of this conversation? Reply with the number only.",
+    "status": "ok",
+    "reply": "4817",
+    "states": [
+      "thinking",
+      "speaking",
+      "success"
+    ]
+  },
+  {
+    "utc": "2026-10-22T02:18:08.472964Z",
+    "label": "check",
+    "id": "S-recall-long",
+    "result": "PASS",
+    "status": "ok",
+    "reply": "4817"
+  },
+  {
+    "utc": "2026-10-22T02:18:15.877372Z",
+    "label": "probe",
+    "step": "transparent-long",
+    "result": {
+      "window": {
+        "hwnd": 39453864,
+        "class_name": "FLUTTER_RUNNER_WIN32_WINDOW",
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "style_flags": {
+          "CAPTION": true,
+          "BORDER": true,
+          "DLGFRAME": true,
+          "THICKFRAME": false,
+          "SYSMENU": true,
+          "POPUP": false
+        },
+        "ex_flags": {
+          "DLGMODALFRAME": false,
+          "CLIENTEDGE": false,
+          "WINDOWEDGE": true,
+          "STATICEDGE": false,
+          "LAYERED": false,
+          "TOPMOST": false,
+          "NOREDIRECTIONBITMAP": false,
+          "TRANSPARENT": false
+        },
+        "rect": [
+          0,
+          238,
+          440,
+          918
+        ],
+        "dwm_extended_frame": [
+          0,
+          238,
+          440,
+          918
+        ],
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "region_kind": "COMPLEXREGION",
+        "style_borderless": false,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "no_nonclient_area": true
+      },
+      "borderless": true,
+      "borderless_detail": {
+        "no_nonclient_area": true,
+        "client_size": [
+          440,
+          680
+        ],
+        "window_size": [
+          440,
+          680
+        ],
+        "style_bits_borderless": false,
+        "shadow_frame_px": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "style": "0x14cb0000",
+        "exstyle": "0x100",
+        "region": "COMPLEXREGION"
+      },
+      "alpha_summary": {
+        "size": [
+          440,
+          680
+        ],
+        "transparent_frac": 0.8982,
+        "opaque_frac": 0.0474,
+        "blended_frac": 0.0544,
+        "edge_alpha_max": 0,
+        "edge_alpha_mean": 0.0,
+        "silhouette_bbox": [
+          65,
+          14,
+          362,
+          407
+        ],
+        "transparent_frac_inside_bbox": 0.7392
+      },
+      "per_pixel_transparent": true,
+      "rect": [
+        0,
+        238,
+        440,
+        918
+      ],
+      "utc": "2026-10-22T02:18:15Z"
+    }
+  },
+  {
+    "utc": "2026-10-22T02:18:15.878683Z",
+    "label": "check",
+    "id": "S-long-transparent",
+    "result": "PASS",
+    "probe": {
+      "size": [
+        440,
+        680
+      ],
+      "transparent_frac": 0.8982,
+      "opaque_frac": 0.0474,
+      "blended_frac": 0.0544,
+      "edge_alpha_max": 0,
+      "edge_alpha_mean": 0.0,
+      "silhouette_bbox": [
+        65,
+        14,
+        362,
+        407
+      ],
+      "transparent_frac_inside_bbox": 0.7392
+    }
+  },
+  {
+    "utc": "2026-10-22T02:18:16.337081Z",
+    "label": "reconfigure request",
+    "to": "standard-nodraft",
+    "result": {
+      "host_state": "READY",
+      "request_id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+      "requested": "reconfigure",
+      "target": {
+        "active": true,
+        "ctx": 32768,
+        "evidence": "docs/operational_intelligence/profiles_live/RUNTIME_PROFILES_LIVE_RESULTS.md section 2, P3: journeys 68/68 + 12/12, soak 60 min, Assist 3/3, switch sw5/sw6",
+        "id": "standard-nodraft",
+        "label": "Standard, draft off",
+        "mtp": false,
+        "qualified": true,
+        "required_mib": 14360,
+        "summary": "32K context, vision on, no speculative draft (about 1.2 GB less GPU memory)",
+        "switchable": true,
+        "vision": "gpu",
+        "vision_on": true
+      }
+    }
+  },
+  {
+    "utc": "2026-10-22T02:18:54.481074Z",
+    "label": "check",
+    "id": "S-standard-nodraft-initializing-while-switching",
+    "result": "PASS",
+    "rows": 2
+  },
+  {
+    "utc": "2026-10-22T02:18:54.482075Z",
+    "label": "check",
+    "id": "S-standard-nodraft-never-idle-while-switching",
+    "result": "PASS",
+    "pending_states": [
+      "initializing"
+    ]
+  },
+  {
+    "utc": "2026-10-22T02:18:54.489495Z",
+    "label": "check",
+    "id": "S-standard-nodraft-idle-after",
+    "result": "PASS"
+  },
+  {
+    "utc": "2026-10-22T02:18:58.003005Z",
+    "label": "turn",
+    "id": "recall-standard",
+    "text": "What was the secret number I gave you at the start of this conversation? Reply with the number only.",
+    "status": "ok",
+    "reply": "4817",
+    "states": [
+      "thinking",
+      "speaking",
+      "success"
+    ]
+  },
+  {
+    "utc": "2026-10-22T02:18:58.004028Z",
+    "label": "check",
+    "id": "S-recall-standard",
+    "result": "PASS",
+    "status": "ok",
+    "reply": "4817"
+  },
+  {
+    "utc": "2026-10-22T02:18:58.004028Z",
+    "label": "final",
+    "failures": [
+      "R-initializing-seen"
+    ],
+    "timeline_rows": 15
+  }
+]

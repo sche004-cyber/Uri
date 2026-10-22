@@ -1,0 +1,25 @@
+{
+ "label": "e-perf",
+ "source_head": "9488c0fd50bc5937bb2008dd33c85b14304daeeb",
+ "source_tree": "0253a76547b5ba8fa1e469636f03be366e3dbdde",
+ "source_status_before": "",
+ "port": 18301,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/uiv2_native_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "884902e27569099645ed1367e6ce9bf5a39c8588d734708d0ae86e67130a16e6",
+ "entry": "original production main() via integration_test (Debug build); taps and TestTextInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "started_utc": "2026-10-22T01:45:45.597671+00:00",
+ "exit_code": 0,
+ "elapsed_s": 177.14,
+ "finished_utc": "2026-10-22T01:48:42.733849+00:00",
+ "source_status_after": "",
+ "ui_binary_sha256": "a096a44f681161761bd4b9ca9ff20beee441e687eafe4bc2db2c930668d18921"
+}

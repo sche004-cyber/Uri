@@ -171,7 +171,7 @@ class _OfficePrintViewState extends State<OfficePrintView> {
       if (area['printable_mm'] is List)
         Text('Printable area ${(area['printable_mm'] as List)[2]} × ${(area['printable_mm'] as List)[3]} mm on '
             '${(area['paper_mm'] as List?)?.join(' × ')} mm paper',
-            style: TextStyle(color: colors.inkSoft, fontSize: 12)),
+            style: TextStyle(color: colors.inkSoft, fontSize: UriType.label)),
       for (final w in (pv['warnings'] as List? ?? const [])) Text('$w', style: TextStyle(color: colors.warning)),
       SizedBox(
         height: 230,
@@ -239,7 +239,7 @@ class ConnectPrinterCard extends StatelessWidget {
               onPressed: () => c.loadPrinters(refresh: true), child: const Text('Check again')),
         ]),
         Text('URI does not install drivers, add printers or change your default printer.',
-            style: TextStyle(color: colors.inkSoft, fontSize: 12)),
+            style: TextStyle(color: colors.inkSoft, fontSize: UriType.label)),
       ]),
     );
   }

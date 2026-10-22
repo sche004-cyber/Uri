@@ -115,7 +115,7 @@ class OfficeNavPane extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: UriSpace.xs),
               child: Text('${g['title']}', key: ValueKey('office-goal-${g['id']}'),
-                  style: TextStyle(color: colors.inkSoft, fontSize: 12, fontWeight: FontWeight.w600)),
+                  style: TextStyle(color: colors.inkSoft, fontSize: UriType.label, fontWeight: FontWeight.w600)),
             ),
             for (final cap in caps)
               ListTile(
@@ -126,7 +126,7 @@ class OfficeNavPane extends StatelessWidget {
                 subtitle: cap['ready'] == true
                     ? null
                     : Text(officeErrorText['${cap['unready_reason']}'] ?? 'Not ready yet.',
-                        style: TextStyle(color: colors.warning, fontSize: 11)),
+                        style: TextStyle(color: colors.warning, fontSize: UriType.caption)),
                 onTap: c.busy ? null : () => _navigate(context, () => c.chip('${cap['id']}')),
               ),
           ],

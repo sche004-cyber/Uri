@@ -55,6 +55,10 @@ class AssistController extends ChangeNotifier {
 
   /// Last `assist_status` reply (state, scope, permissions, adapters, vision).
   Map<String, dynamic> status = const {'state': 'OFF'};
+
+  /// When [status] was last set (microseconds since epoch; 0 = never), so a
+  /// view can tell which of two readings of the same worker state is newer.
+  int statusAt = 0;
   bool loaded = false;
   bool busy = false;
 
@@ -106,6 +110,7 @@ class AssistController extends ChangeNotifier {
     if (rt == null) {
       lastError = 'WORKER_NOT_CONNECTED';
       status = const {'state': 'OFF'};
+      statusAt = DateTime.now().microsecondsSinceEpoch;
       notifyListeners();
       return null;
     }
@@ -118,6 +123,7 @@ class AssistController extends ChangeNotifier {
       lastError = null;
       if (updatesStatus) {
         status = v;
+        statusAt = DateTime.now().microsecondsSinceEpoch;
         loaded = true;
       }
       return v;
@@ -133,6 +139,7 @@ class AssistController extends ChangeNotifier {
   void _resetForNewWorker() {
     // A restarted worker starts with Assist OFF; never show the old grant.
     status = const {'state': 'OFF'};
+    statusAt = DateTime.now().microsecondsSinceEpoch;
     _discardDerived();
     researchJobId = null;
     _poll?.cancel();

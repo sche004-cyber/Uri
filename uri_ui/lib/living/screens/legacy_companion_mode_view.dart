@@ -65,7 +65,7 @@ class LegacyCompanionModeView extends StatelessWidget {
                             signal.title,
                             key: const ValueKey('companion-state-label'),
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: UriType.title,
                               fontWeight: FontWeight.w600,
                               color: c.ink,
                               letterSpacing: 0.2,
@@ -89,7 +89,7 @@ class LegacyCompanionModeView extends StatelessWidget {
                               textAlign: TextAlign.center,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 13, color: c.inkSoft),
+                              style: TextStyle(fontSize: UriType.body, color: c.inkSoft),
                             ),
                           ),
                         ),
@@ -169,7 +169,7 @@ class LegacyCompanionModeView extends StatelessWidget {
                 Text(
                   'Click the orb to ask; double-click opens the workspace',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: UriType.caption,
                     color: glass.isDark ? c.inkFaint : c.inkSoft,
                   ),
                 ),
@@ -241,7 +241,7 @@ class _ModeChip extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12.5,
+                  fontSize: UriType.body,
                   color: c.ink,
                   fontWeight: FontWeight.w600,
                 ),
