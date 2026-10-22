@@ -1,0 +1,25 @@
+{
+ "label": "ce-ember",
+ "source_head": "0acf58d7b66fbdb4953a904131cf83763caf9f62",
+ "source_tree": "81c4b9dd64c8e495a63a7868c20d190c0c135061",
+ "source_status_before": "",
+ "port": 18361,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/ember_live_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "7a0087a581fd8ac531de4a1caa4b0814c795976a2fe3402aed630237748c9e1c",
+ "entry": "original production main() via integration_test (Debug build); taps and TestTextInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "started_utc": "2026-10-22T02:15:41.440326+00:00",
+ "exit_code": 0,
+ "elapsed_s": 199.06,
+ "finished_utc": "2026-10-22T02:19:00.499913+00:00",
+ "source_status_after": "",
+ "ui_binary_sha256": "d83492e4f391f7600ded06134d2056fab5a036cd11b170be913a5737273e8c81"
+}

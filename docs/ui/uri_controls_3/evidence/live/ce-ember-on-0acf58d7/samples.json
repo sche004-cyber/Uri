@@ -1,0 +1,3383 @@
+[
+ {
+  "utc": "2026-10-22T02:15:51.130356+00:00",
+  "t": 1792635351.13,
+  "host_alive": false,
+  "state": "STOPPED",
+  "detail": "HOST_EXIT",
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "explain": "The Brain was not switched. The Brain needs 15.3 GB of GPU memory but only 13.5 GB is free. In use by: dwm.exe (desktop compositor, 1.7 GB), uri_ui.exe from dartvm.exe (0.2 GB). Close those or wait; URI will not stop them.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1696.4,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 224.0,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 26456,
+      "role": null
+     }
+    ],
+    "free_mib": 13855.2,
+    "margin_mib": -1770.8,
+    "others_mib": 2512.8,
+    "owner_mib": 13895.2,
+    "required_mib": 15626,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t_request": 1792634727.997,
+   "to": "frozen"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1696.4,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 235.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 26456,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13895.2,
+   "non_local_mib": 561.8,
+   "others_mib": 2524.5,
+   "t": 1792634737.109,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 193.7,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "REFUSED_DOES_NOT_FIT",
+   "t": 1792634727.935,
+   "t_done": 1792634731.556
+  },
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1691.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:15:56.723462+00:00",
+  "t": 1792635356.723,
+  "host_alive": true,
+  "state": "STARTING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": null,
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": null,
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": null,
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1691.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:02.443053+00:00",
+  "t": 1792635362.443,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": null,
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": null,
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": null,
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13037.0,
+    "non_local_mib": 402.5
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1691.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:08.170818+00:00",
+  "t": 1792635368.171,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": null,
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": null,
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": null,
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13479.5,
+    "non_local_mib": 402.5
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1691.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:13.755518+00:00",
+  "t": 1792635373.756,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": null,
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": null,
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": null,
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14267.0,
+    "non_local_mib": 495.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1691.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:19.346926+00:00",
+  "t": 1792635379.347,
+  "host_alive": true,
+  "state": "CALIBRATING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": null,
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": null,
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1691.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:24.919899+00:00",
+  "t": 1792635384.92,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1691.6,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:30.454718+00:00",
+  "t": 1792635390.455,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1700.4,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 67.7,
+    "non_local_mib": 3.7
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:36.002664+00:00",
+  "t": 1792635396.003,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1695.4,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 76.4,
+    "non_local_mib": 3.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:41.572784+00:00",
+  "t": 1792635401.573,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 130.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:47.078834+00:00",
+  "t": 1792635407.079,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 130.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:52.587291+00:00",
+  "t": 1792635412.587,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1711.4,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 130.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:16:58.068005+00:00",
+  "t": 1792635418.068,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1696.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 130.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:17:03.690898+00:00",
+  "t": 1792635423.691,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 129.2,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:17:09.211499+00:00",
+  "t": 1792635429.212,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1708.4,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 129.7,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:17:14.730167+00:00",
+  "t": 1792635434.73,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 131.0,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:17:20.255865+00:00",
+  "t": 1792635440.256,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1708.4,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 131.0,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:17:25.806230+00:00",
+  "t": 1792635445.806,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1691.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2280.2,
+   "t": 1792635376.597,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14603.8,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 173.0,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:17:31.372687+00:00",
+  "t": 1792635451.373,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": null,
+  "server": {
+   "load_seconds": 19.6,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 12780
+  },
+  "calibration": {
+   "decode_tps": 106.1,
+   "server_pid": 12780,
+   "t": 1792635374.524,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 173.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14603.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2456.2,
+   "t": 1792635441.075,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "27fd5fe6-ca1b-46a4-900e-379622ff39d2",
+   "result": "IGNORED_INVALID_OR_STALE",
+   "t": 1792635380.627
+  },
+  "gpu": {
+   "12780": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14603.8,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 167.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:17:36.905834+00:00",
+  "t": 1792635456.906,
+  "host_alive": true,
+  "state": "STOPPING",
+  "detail": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 167.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13917.3,
+    "margin_mib": 259.3,
+    "others_mib": 2450.7,
+    "owner_mib": 14603.8,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "required_mib": 13658,
+   "result": "IN_PROGRESS",
+   "started_stopped_brain": false,
+   "t_request": 1792635448.785,
+   "t_stopped": 1792635452.378,
+   "to": "c64k-visoff-mtpoff"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 173.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14603.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2456.2,
+   "t": 1792635441.075,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -272.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "result": "ACCEPTED",
+   "t": 1792635448.727
+  },
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 167.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 65536, \"vision\": \"off\", \"mtp\": false}",
+  "lease": 13658
+ },
+ {
+  "utc": "2026-10-22T02:17:42.466522+00:00",
+  "t": 1792635462.467,
+  "host_alive": true,
+  "state": "STARTING",
+  "detail": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 167.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13917.3,
+    "margin_mib": 259.3,
+    "others_mib": 2450.7,
+    "owner_mib": 14603.8,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "required_mib": 13658,
+   "result": "IN_PROGRESS",
+   "started_stopped_brain": false,
+   "t_request": 1792635448.785,
+   "t_stopped": 1792635452.378,
+   "to": "c64k-visoff-mtpoff"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 173.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14603.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2456.2,
+   "t": 1792635441.075,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 259.3,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "result": "ACCEPTED",
+   "t": 1792635448.727
+  },
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 167.5,
+    "non_local_mib": 4.8
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 65536, \"vision\": \"off\", \"mtp\": false}",
+  "lease": 13658
+ },
+ {
+  "utc": "2026-10-22T02:17:48.165476+00:00",
+  "t": 1792635468.165,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 167.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13917.3,
+    "margin_mib": 259.3,
+    "others_mib": 2450.7,
+    "owner_mib": 14603.8,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "required_mib": 13658,
+   "result": "IN_PROGRESS",
+   "started_stopped_brain": false,
+   "t_request": 1792635448.785,
+   "t_stopped": 1792635452.378,
+   "to": "c64k-visoff-mtpoff"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 173.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14603.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2456.2,
+   "t": 1792635441.075,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 259.3,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "result": "ACCEPTED",
+   "t": 1792635448.727
+  },
+  "gpu": {
+   "4712": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13081.0,
+    "non_local_mib": 402.5
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 167.7,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 65536, \"vision\": \"off\", \"mtp\": false}",
+  "lease": 13658
+ },
+ {
+  "utc": "2026-10-22T02:17:53.843859+00:00",
+  "t": 1792635473.844,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 167.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13917.3,
+    "margin_mib": 259.3,
+    "others_mib": 2450.7,
+    "owner_mib": 14603.8,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "required_mib": 13658,
+   "result": "IN_PROGRESS",
+   "started_stopped_brain": false,
+   "t_request": 1792635448.785,
+   "t_stopped": 1792635452.378,
+   "to": "c64k-visoff-mtpoff"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 173.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14603.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2456.2,
+   "t": 1792635441.075,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 259.3,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "result": "ACCEPTED",
+   "t": 1792635448.727
+  },
+  "gpu": {
+   "4712": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13515.5,
+    "non_local_mib": 402.5
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 167.7,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 65536, \"vision\": \"off\", \"mtp\": false}",
+  "lease": 13658
+ },
+ {
+  "utc": "2026-10-22T02:17:59.400299+00:00",
+  "t": 1792635479.4,
+  "host_alive": true,
+  "state": "CALIBRATING",
+  "detail": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 167.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13917.3,
+    "margin_mib": 259.3,
+    "others_mib": 2450.7,
+    "owner_mib": 14603.8,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "required_mib": 13658,
+   "result": "IN_PROGRESS",
+   "started_stopped_brain": false,
+   "t_request": 1792635448.785,
+   "t_stopped": 1792635452.378,
+   "to": "c64k-visoff-mtpoff"
+  },
+  "server": {
+   "load_seconds": 13.9,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 4712
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 173.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14603.3,
+   "non_local_mib": 497.8,
+   "others_mib": 2456.2,
+   "t": 1792635441.075,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 259.3,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "result": "ACCEPTED",
+   "t": 1792635448.727
+  },
+  "gpu": {
+   "4712": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13831.6,
+    "non_local_mib": 561.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 167.7,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 65536, \"vision\": \"off\", \"mtp\": false}",
+  "lease": 13658
+ },
+ {
+  "utc": "2026-10-22T02:18:04.892057+00:00",
+  "t": 1792635484.892,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 167.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13917.3,
+    "margin_mib": 259.3,
+    "others_mib": 2450.7,
+    "owner_mib": 14603.8,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "required_mib": 13658,
+   "result": "READY",
+   "seconds": 31.3,
+   "started_stopped_brain": false,
+   "t_done": 1792635480.089,
+   "t_request": 1792635448.785,
+   "t_stopped": 1792635452.378,
+   "to": "c64k-visoff-mtpoff"
+  },
+  "server": {
+   "load_seconds": 13.9,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 4712
+  },
+  "calibration": {
+   "decode_tps": 105.9,
+   "server_pid": 4712,
+   "t": 1792635474.519,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 167.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13831.6,
+   "non_local_mib": 561.8,
+   "others_mib": 2450.9,
+   "t": 1792635476.523,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 259.3,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "result": "DONE",
+   "t": 1792635448.727,
+   "t_done": 1792635480.141
+  },
+  "gpu": {
+   "4712": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13831.6,
+    "non_local_mib": 561.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 167.7,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 65536, \"vision\": \"off\", \"mtp\": false}",
+  "lease": 13658
+ },
+ {
+  "utc": "2026-10-22T02:18:10.404184+00:00",
+  "t": 1792635490.404,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 167.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13917.3,
+    "margin_mib": 259.3,
+    "others_mib": 2450.7,
+    "owner_mib": 14603.8,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "required_mib": 13658,
+   "result": "READY",
+   "seconds": 31.3,
+   "started_stopped_brain": false,
+   "t_done": 1792635480.089,
+   "t_request": 1792635448.785,
+   "t_stopped": 1792635452.378,
+   "to": "c64k-visoff-mtpoff"
+  },
+  "server": {
+   "load_seconds": 13.9,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 4712
+  },
+  "calibration": {
+   "decode_tps": 105.9,
+   "server_pid": 4712,
+   "t": 1792635474.519,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 167.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13831.6,
+   "non_local_mib": 561.8,
+   "others_mib": 2450.9,
+   "t": 1792635476.523,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 259.3,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "result": "DONE",
+   "t": 1792635448.727,
+   "t_done": 1792635480.141
+  },
+  "gpu": {
+   "4712": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13894.7,
+    "non_local_mib": 561.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 160.0,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 65536, \"vision\": \"off\", \"mtp\": false}",
+  "lease": 13658
+ },
+ {
+  "utc": "2026-10-22T02:18:15.909262+00:00",
+  "t": 1792635495.909,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 167.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13917.3,
+    "margin_mib": 259.3,
+    "others_mib": 2450.7,
+    "owner_mib": 14603.8,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "required_mib": 13658,
+   "result": "READY",
+   "seconds": 31.3,
+   "started_stopped_brain": false,
+   "t_done": 1792635480.089,
+   "t_request": 1792635448.785,
+   "t_stopped": 1792635452.378,
+   "to": "c64k-visoff-mtpoff"
+  },
+  "server": {
+   "load_seconds": 13.9,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 4712
+  },
+  "calibration": {
+   "decode_tps": 105.9,
+   "server_pid": 4712,
+   "t": 1792635474.519,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 167.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13831.6,
+   "non_local_mib": 561.8,
+   "others_mib": 2450.9,
+   "t": 1792635476.523,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 259.3,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "result": "DONE",
+   "t": 1792635448.727,
+   "t_done": 1792635480.141
+  },
+  "gpu": {
+   "4712": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13894.7,
+    "non_local_mib": 561.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1711.4,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 160.0,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 65536, \"vision\": \"off\", \"mtp\": false}",
+  "lease": 13658
+ },
+ {
+  "utc": "2026-10-22T02:18:21.429805+00:00",
+  "t": 1792635501.43,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 167.5,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13917.3,
+    "margin_mib": 259.3,
+    "others_mib": 2450.7,
+    "owner_mib": 14603.8,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c32k-visgpu-mtpoff",
+   "id": "dd7f10c0-fa1d-4083-a48e-dc0e37728f4f",
+   "required_mib": 13658,
+   "result": "READY",
+   "seconds": 31.3,
+   "started_stopped_brain": false,
+   "t_done": 1792635480.089,
+   "t_request": 1792635448.785,
+   "t_stopped": 1792635452.378,
+   "to": "c64k-visoff-mtpoff"
+  },
+  "server": {
+   "load_seconds": 13.9,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 4712
+  },
+  "calibration": {
+   "decode_tps": 105.9,
+   "server_pid": 4712,
+   "t": 1792635474.519,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 167.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13831.6,
+   "non_local_mib": 561.8,
+   "others_mib": 2450.9,
+   "t": 1792635476.523,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 259.3,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "result": "ACCEPTED",
+   "t": 1792635496.22
+  },
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 181.0,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:18:26.963083+00:00",
+  "t": 1792635506.963,
+  "host_alive": true,
+  "state": "STOPPING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 181.0,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13903.8,
+    "margin_mib": -456.2,
+    "others_mib": 2464.2,
+    "owner_mib": 13894.7,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "required_mib": 14360,
+   "result": "IN_PROGRESS",
+   "started_stopped_brain": false,
+   "t_request": 1792635496.271,
+   "t_stopped": 1792635499.837,
+   "to": "c32k-visgpu-mtpoff"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 167.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13831.6,
+   "non_local_mib": 561.8,
+   "others_mib": 2450.9,
+   "t": 1792635476.523,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": 259.3,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "result": "ACCEPTED",
+   "t": 1792635496.22
+  },
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 181.0,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:18:32.621678+00:00",
+  "t": 1792635512.622,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 181.0,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13903.8,
+    "margin_mib": -456.2,
+    "others_mib": 2464.2,
+    "owner_mib": 13894.7,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "required_mib": 14360,
+   "result": "IN_PROGRESS",
+   "started_stopped_brain": false,
+   "t_request": 1792635496.271,
+   "t_stopped": 1792635499.837,
+   "to": "c32k-visgpu-mtpoff"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 167.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13831.6,
+   "non_local_mib": 561.8,
+   "others_mib": 2450.9,
+   "t": 1792635476.523,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -456.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "result": "ACCEPTED",
+   "t": 1792635496.22
+  },
+  "gpu": {
+   "10140": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 12820.5,
+    "non_local_mib": 402.5
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 181.0,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:18:38.275602+00:00",
+  "t": 1792635518.276,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 181.0,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13903.8,
+    "margin_mib": -456.2,
+    "others_mib": 2464.2,
+    "owner_mib": 13894.7,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "required_mib": 14360,
+   "result": "IN_PROGRESS",
+   "started_stopped_brain": false,
+   "t_request": 1792635496.271,
+   "t_stopped": 1792635499.837,
+   "to": "c32k-visgpu-mtpoff"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 167.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13831.6,
+   "non_local_mib": 561.8,
+   "others_mib": 2450.9,
+   "t": 1792635476.523,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -456.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "result": "ACCEPTED",
+   "t": 1792635496.22
+  },
+  "gpu": {
+   "10140": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 13283.5,
+    "non_local_mib": 402.5
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 181.0,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:18:43.973779+00:00",
+  "t": 1792635523.974,
+  "host_alive": true,
+  "state": "LOADING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 181.0,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13903.8,
+    "margin_mib": -456.2,
+    "others_mib": 2464.2,
+    "owner_mib": 13894.7,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "required_mib": 14360,
+   "result": "IN_PROGRESS",
+   "started_stopped_brain": false,
+   "t_request": 1792635496.271,
+   "t_stopped": 1792635499.837,
+   "to": "c32k-visgpu-mtpoff"
+  },
+  "server": {
+   "owned": false,
+   "pid": null,
+   "stopped_clean": true
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 167.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13831.6,
+   "non_local_mib": 561.8,
+   "others_mib": 2450.9,
+   "t": 1792635476.523,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -456.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "result": "ACCEPTED",
+   "t": 1792635496.22
+  },
+  "gpu": {
+   "10140": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14267.0,
+    "non_local_mib": 495.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 181.0,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:18:49.529280+00:00",
+  "t": 1792635529.529,
+  "host_alive": true,
+  "state": "CALIBRATING",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 181.0,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13903.8,
+    "margin_mib": -456.2,
+    "others_mib": 2464.2,
+    "owner_mib": 13894.7,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "required_mib": 14360,
+   "result": "IN_PROGRESS",
+   "started_stopped_brain": false,
+   "t_request": 1792635496.271,
+   "t_stopped": 1792635499.837,
+   "to": "c32k-visgpu-mtpoff"
+  },
+  "server": {
+   "load_seconds": 17.4,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 10140
+  },
+  "calibration": {
+   "decode_tps": null,
+   "server_pid": null,
+   "t": null,
+   "reason": null
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 167.7,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13831.6,
+   "non_local_mib": 561.8,
+   "others_mib": 2450.9,
+   "t": 1792635476.523,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -456.2,
+  "last_request": {
+   "action": "reconfigure",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "result": "ACCEPTED",
+   "t": 1792635496.22
+  },
+  "gpu": {
+   "10140": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 181.0,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:18:55.070591+00:00",
+  "t": 1792635535.071,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 181.0,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13903.8,
+    "margin_mib": -456.2,
+    "others_mib": 2464.2,
+    "owner_mib": 13894.7,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "required_mib": 14360,
+   "result": "READY",
+   "seconds": 34.7,
+   "started_stopped_brain": false,
+   "t_done": 1792635530.956,
+   "t_request": 1792635496.271,
+   "t_stopped": 1792635499.837,
+   "to": "c32k-visgpu-mtpoff"
+  },
+  "server": {
+   "load_seconds": 17.4,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 10140
+  },
+  "calibration": {
+   "decode_tps": 105.5,
+   "server_pid": 10140,
+   "t": 1792635525.465,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 181.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2464.2,
+   "t": 1792635527.362,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -456.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "result": "DONE",
+   "t": 1792635496.22,
+   "t_done": 1792635531.007
+  },
+  "gpu": {
+   "10140": {
+    "name": "llama-server.exe",
+    "dedicated_mib": 14535.1,
+    "non_local_mib": 497.8
+   },
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   },
+   "27472": {
+    "name": "uri_ui.exe",
+    "dedicated_mib": 181.0,
+    "non_local_mib": 4.9
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": 14360
+ },
+ {
+  "utc": "2026-10-22T02:19:00.673660+00:00",
+  "t": 1792635540.674,
+  "host_alive": true,
+  "state": "READY",
+  "detail": null,
+  "profile": {
+   "ctx": 32768,
+   "frozen": false,
+   "id": "c32k-visgpu-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 14360,
+   "vision": "gpu"
+  },
+  "profile_switch": {
+   "fit_before": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 1693.1,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 181.0,
+      "name": "uri_ui.exe",
+      "parent": "dartvm.exe",
+      "pid": 27472,
+      "role": null
+     }
+    ],
+    "free_mib": 13903.8,
+    "margin_mib": -456.2,
+    "others_mib": 2464.2,
+    "owner_mib": 13894.7,
+    "required_mib": 14360,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   },
+   "from": "c64k-visoff-mtpoff",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "required_mib": 14360,
+   "result": "READY",
+   "seconds": 34.7,
+   "started_stopped_brain": false,
+   "t_done": 1792635530.956,
+   "t_request": 1792635496.271,
+   "t_stopped": 1792635499.837,
+   "to": "c32k-visgpu-mtpoff"
+  },
+  "server": {
+   "load_seconds": 17.4,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 10140
+  },
+  "calibration": {
+   "decode_tps": 105.5,
+   "server_pid": 10140,
+   "t": 1792635525.465,
+   "reason": "START"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 1693.1,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 181.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 27472,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 14535.1,
+   "non_local_mib": 497.8,
+   "others_mib": 2464.2,
+   "t": 1792635531.057,
+   "verdict_now": "AT_RISK"
+  },
+  "residency_alert": null,
+  "fit": "AT_RISK",
+  "fit_margin_mib": -456.2,
+  "last_request": {
+   "action": "reconfigure",
+   "done_state": "READY",
+   "id": "f2293a70-5b7d-44f8-b403-cc33a6597d7c",
+   "result": "DONE",
+   "t": 1792635496.22,
+   "t_done": 1792635531.007
+  },
+  "gpu": {
+   "1580": {
+    "name": "dwm.exe",
+    "dedicated_mib": 1693.1,
+    "non_local_mib": 53.1
+   }
+  },
+  "workers": [
+   {
+    "pid": 4160,
+    "create_time": 1792635389.01
+   },
+   {
+    "pid": 14544,
+    "create_time": 1792635389.083
+   }
+  ],
+  "selection_file": "{\"schema\": \"uri.runtime.profile_selection.v1\", \"ctx\": 32768, \"vision\": \"gpu\", \"mtp\": false}",
+  "lease": "FREE"
+ }
+]

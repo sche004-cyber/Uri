@@ -107,6 +107,28 @@ Records: `docs/ui/uri_controls_3/evidence/live/` (observations, native-execution
 session and Brain records; screenshots of `c3-1b`). Earlier attempts (GPU contended; expired or mismatched
 installations) are kept outside git under `D:\uri-dev\uri-controls-live\live\*-attempt*` and produced no evidence.
 
+## 7a. Status (2026-10-22) - INTEGRATED (supersedes section 7 and the "Live runs: NOT RUN (BLOCKED)" row of section 6, kept below as history; review R6-01)
+
+- Final-commit review R6 (fresh subagent) on `0acf58d7`: ACCEPT WITH FINDINGS (R6-01 LOW = this status text, fixed
+  here; R6-02 INFO 68 rows = 67 unique names, `J2-ctrl-dashboard` twice, from the unchanged UI V2 driver; R6-03 INFO
+  local paths with the Windows user name in evidence; R6-04 INFO `c3-1b` ran with the driver fix not yet committed,
+  hash equal to the committed driver). `review/review_R6_0acf58d7.md`.
+- Gates on `0acf58d7`: pytest 807/23; Flutter 882/5; analyze 5 info; release build rc 0; frozen check clean.
+- **Canonical `uri-repo/integration/git-sync-20261008`: `9488c0fd` -> `0acf58d7`** (fast-forward, 2026-10-22
+  02:15:05Z, `git ls-remote` verified). Authority: DEC-092 (conditional approval), order DEC-094.
+- Combined Ember + URI Controls on canonical `0acf58d7` (run `ce-ember`, Ember driver
+  `docs/integration/qc_ember_20261018/ember_stage2/harness/ember_live_driver.dart`, Win32 probe, P3 -> Long -> P3,
+  source clean at `0acf58d7`): 19/20. PASS: 12 designs with Ember, Ember restored, borderless, per-pixel transparency
+  (1.0 and 1.25x), click-through, Ember click reaches URI, drag, companion Initializing and never idle during both
+  switches, idle after, recall after both switches, transparent on Long. FAIL `R-initializing-seen`: not applicable
+  in this harness (Brain READY 02:16:21Z before the first app sample 02:16:34Z; the same case as `p3-ember-switch`,
+  receipt 02); startup Initializing was verified live in `e-first` and in unit tests. Evidence
+  `evidence/live/ce-ember-on-0acf58d7/`.
+- Rollback: `git revert --no-edit 9488c0fd..0acf58d7` as a new commit (no force-push).
+- Open (unchanged, LOW): R3-03, R3-04, R5-01, R5-02; INFO R3-05, R5-03, R6-02..04. Owner preferences OPEN-11 (Thinking
+  default Off), OPEN-12 (64K only via Vision Off; P3 not in the UI). Next planned: UI-SEL-1 Environment / Workspace
+  Selector (DEC-094), separate branch from this canonical.
+
 ## 7. Status (2026-10-21)
 
 **ACCEPTED (R5 ACCEPT WITH FINDINGS) - NOT INTEGRATED.** Blocker: the Lifecycle V3 Stage 8 live Windows UI
