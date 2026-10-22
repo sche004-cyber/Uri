@@ -31,6 +31,7 @@ PROVENANCE = {
     "docs/web/IDN_1B_PLAN_AND_ACCEPTANCE.md": "387a29366348a5b492885fd121d97a81d60f0080fff30ad9dda3aee069aeb71b",
     "docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md": "06c3b5384d69478958869193b6f7c5abcdfb95a2d1f7f026ae10ef3273c67e20",
     "docs/governance/fcv_recovery/FCV01_ROLLBACK_AMENDMENT_AUTHORIZATION.md": "f73e7c4be82808df141287f1e92edb70b6732e527f171dba651bb8bd28df3c43",
+    "docs/graphify/GRF_P0_1_PLAN_AND_ACCEPTANCE.md": "df0cb604ea81bf49167c513c067e40f32c0f866191d34ca9ad7b70e54fd932fa",
 }
 APPROVED = {
     "uri_core/app/server.py": {
@@ -61,6 +62,15 @@ APPROVED = {
         "commits": ["e1fb4708a149d8a5d0cab603ae5866e043ab7ba2"],
         "provenance": ["docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md"],
         "anchor": "e1fb4708a149d8a5d0cab603ae5866e043ab7ba2",
+    },
+    # GRF-P0-1: owner-authorized frozen exception OPEN-14 (2026-10-22): the paired path applies the canonical
+    # Graphify hint rule. Anchored to the commit that introduced it, like FCV-01/FCV-05.
+    "uri_core/core/paired_reasoning.py": {
+        "sha256": "69a19588c326f0665428a354bf613923a1b123f7cf878f3b1434895bc4179230",
+        "decisions": ["OWNER-OPEN-14-GRF-P0-1-20261022"],
+        "commits": ["a40d25453a9861030d95c40164c7d8fce98af7cb"],
+        "provenance": ["docs/graphify/GRF_P0_1_PLAN_AND_ACCEPTANCE.md"],
+        "anchor": "a40d25453a9861030d95c40164c7d8fce98af7cb",
     },
 }
 
