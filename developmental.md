@@ -471,3 +471,10 @@ R3-01 HIGH); repairs `07921779`, `1adce295`, `d63544d8`; round 4 not reviewed be
 `ca0a4867` superseded. Next: owner unblock of the TAMPER block (or digest-v2 repair I-5 first), then driver round 4.
 Details: `P0_CLOSURE_20261022.md` Addendum B.
 
+### P.3 Lifecycle V3.1 accepted (2026-10-22)
+
+`4ef707ba`: driver r6 R2 Codex ACCEPT (primary, independent), gates green vs baseline `2aa0141e`, frozen clean (P0
+re-check), live Brain long-conversation PASS (on `e474f510`, reported). Remaining before owner integration approval:
+driver EVIDENCE block (git `info/*` false positive; owner unblock or digest-v2 repair) and a Windows UI live run.
+Details: `P0_CLOSURE_20261022.md` Addendum C.
+
