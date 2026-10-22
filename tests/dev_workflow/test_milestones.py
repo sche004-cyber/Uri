@@ -2710,6 +2710,42 @@ def test_r4_01_find_secret_keeps_credential_context_through_containers():
         assert model.find_secret({"api_key": {"value": [value]}}) is None
 
 
+@pytest.mark.parametrize("value", [
+    {"credentials": {"password": {"value": "s3cret/abc123"}}},
+    {"credentials": {"access_token": [{"value": "abc123/def456ghi789"}]}},
+    {"password": {"value": r"s3cret\abc123"}},
+    "password=s3cret/abc123",
+])
+def test_r5_01_find_secret_refuses_slash_credential(value):
+    assert model.find_secret(value) == "credential assignment"
+
+
+@pytest.mark.parametrize("credential", [
+    {"credentials": {"password": {"value": "s3cret/abc123"}}},
+    {"credentials": {"access_token": [{"value": "abc123/def456ghi789"}]}},
+    {"password": {"value": r"s3cret\abc123"}},
+])
+def test_r5_01_direct_store_append_refuses_nested_slash_credential(tmp_path, credential):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    data = {"id": "MM-A", "fields": {"details": credential}}
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append("MILESTONE_UPDATED", data, actor="impl:a")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+def test_r5_01_direct_store_batch_refuses_later_slash_credential_atomically(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    items = [("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"objective": "safe"}}, {}),
+             ("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"credentials": {"token": "abc123/def456"}}}, {})]
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append_many(items, actor="impl:a")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
 def test_r3_02_ready_requires_dependency_status_bound_to_candidate(tmp_path):
     m = _accept_ready(tmp_path)
     m.create_milestone("MM-B", "dependent")

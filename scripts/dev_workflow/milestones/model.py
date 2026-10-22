@@ -80,8 +80,8 @@ def _assignment_secret(text: str) -> bool:
             continue  # variable reference or placeholder
         if re.fullmatch(r"[A-Z][A-Z0-9_]{2,}", val):
             continue  # environment variable name
-        if "/" in val or "\\" in val or re.match(r"^[A-Za-z]:", val):
-            continue  # filesystem path (e.g. pwd=D:/uri-dev/x)
+        if re.match(r"^(?:[A-Za-z]:[/\\]|[/\\]|\.{1,2}[/\\])", val):
+            continue  # recognizable filesystem path (e.g. pwd=D:/uri-dev/x), not any value with a slash
         if m.group("key").lower() == "pwd" and not re.search(r"[0-9]", val):
             continue
         return True
