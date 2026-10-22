@@ -79,7 +79,7 @@ def _credential_value_secret(key: str, val: str) -> bool:
     a small number under ``token``/``secret`` (context sizes) or an exact variable reference."""
     val = val.strip().strip("'\"")
     low = val.lower()
-    if len(val) < 4 or low in PLACEHOLDER_VALUES or low in STATUS_WORDS or set(val) <= {"*", "x", "X", "."}:
+    if low in PLACEHOLDER_VALUES or low in STATUS_WORDS or set(val) <= {"*", "x", "X", "."}:
         return False
     key = key.lower().replace("-", "_")
     if val.isdigit() and key in ("token", "secret") and len(val) <= 7:

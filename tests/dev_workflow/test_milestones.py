@@ -2885,3 +2885,19 @@ def test_d1_default_deny_refused_by_service_and_store(tmp_path):
     with pytest.raises(StoreError) as e:
         m.store.reanchor("impl:a", "password: $uperS3cret!", acknowledge_loss=True)
     assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+@pytest.mark.parametrize("value", ["abc", "123", "pw"])
+def test_d2_01_short_password_is_secret_in_nested_and_inline_values(value):
+    assert model.find_secret({"password": {"value": value}}) == "credential assignment"
+    assert model.find_secret(f"password={value}") == "credential assignment"
+
+
+def test_d2_01_direct_store_refuses_short_password_without_writing(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    data = {"id": "MM-A", "fields": {"details": {"password": {"value": "abc"}}}}
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append("MILESTONE_UPDATED", data, actor="impl:a")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
