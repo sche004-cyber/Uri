@@ -1,0 +1,25 @@
+{
+ "label": "canon-long-1",
+ "source_head": "8ff6186b7c42bc4e8f997ba38b4581dc9fc5a20e",
+ "source_tree": "d4e0ef63450eeec2243585d088f5a9e48d5bc6dd",
+ "source_status_before": "",
+ "port": 18310,
+ "command": [
+  "C:\\Users\\cheta\\flutter\\bin\\flutter.bat",
+  "test",
+  "integration_test/v31_long_test.dart",
+  "-d",
+  "windows",
+  "--no-pub"
+ ],
+ "driver_sha256": "5ea240e8000fb4054d0850e742eef59496b826dd4e595469e306f482c28fcc6a",
+ "entry": "original production main() via integration_test (Debug build); taps and TestTextInput",
+ "physical_keyboard_qualified": false,
+ "physical_mouse_qualified": false,
+ "started_utc": "2026-10-22T17:04:01.896020+00:00",
+ "exit_code": 1,
+ "elapsed_s": 429.63,
+ "finished_utc": "2026-10-22T17:11:11.524879+00:00",
+ "source_status_after": "",
+ "ui_binary_sha256": "5e35357ce7131b9e62d94f674466a91a3e80d746916181ec37f1560942ea741d"
+}

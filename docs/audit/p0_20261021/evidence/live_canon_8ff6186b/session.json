@@ -1,0 +1,200 @@
+{
+ "label": "canon-long-1",
+ "started_utc": "2026-10-22T17:03:21.131854+00:00",
+ "runtime": "D:\\uri-dev\\uri-canon-live\\runtime",
+ "port": 18310,
+ "receipt": {
+  "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "candidate_source": "D:\\uri-dev\\uri-canon-8ff6186b",
+  "candidate_head": "8ff6186b7c42bc4e8f997ba38b4581dc9fc5a20e",
+  "candidate_tree": "d4e0ef63450eeec2243585d088f5a9e48d5bc6dd"
+ },
+ "brain_config_sha256_before": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "override": false,
+ "runtime_verified": {
+  "ok": true,
+  "checked": 365,
+  "mismatched": []
+ },
+ "server_pid": 11540,
+ "server_listening": true,
+ "lease_free_utc": "2026-10-22T17:03:24.638716+00:00",
+ "inject_fail_once": null,
+ "host_profile_arg": [
+  "--profile",
+  "65536,off,0"
+ ],
+ "host_pid": 23204,
+ "host_argv": [
+  "ws_brain_host.py",
+  "--report-dir",
+  "D:\\uri-dev\\uri-canon-live\\runtime\\work\\c1\\ws-canon\\client\\control\\oi",
+  "--minutes",
+  "95",
+  "--profile",
+  "65536,off,0"
+ ],
+ "end_reason": "ui-finished",
+ "result": "COMPLETED",
+ "finished_utc": "2026-10-22T17:11:15.674055+00:00",
+ "host_exit": 0,
+ "host_final": {
+  "calibration": {
+   "decode_tps": 103.9,
+   "predicted_n": 160,
+   "prompt_ms": 162.503,
+   "reason": "START",
+   "residency": {
+    "consumers": [
+     {
+      "dedicated_mib": 2115.7,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 317.5,
+      "name": "chrome.exe",
+      "parent": "chrome.exe",
+      "pid": 18572,
+      "role": null
+     }
+    ],
+    "dedicated_mib": 13831.6,
+    "non_local_mib": 561.8,
+    "others_mib": 2936.2,
+    "t": 1792688633.292,
+    "verdict_now": "AT_RISK"
+   },
+   "server_create_time": 1792688613.9070468,
+   "server_pid": 15472,
+   "t": 1792688631.287,
+   "threshold_tps": 60.0,
+   "tokens": 160
+  },
+  "detail": null,
+  "explain": "Stopping the Brain.",
+  "gpu": {
+   "census_s": 3.74,
+   "census_t": 1792688605.117,
+   "explain": "GPU memory is 250 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading.",
+   "fit": {
+    "card_mib": 16368,
+    "consumers": [
+     {
+      "dedicated_mib": 2115.7,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1580,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 341.8,
+      "name": "chrome.exe",
+      "parent": "chrome.exe",
+      "pid": 18572,
+      "role": null
+     }
+    ],
+    "free_mib": 13407.5,
+    "margin_mib": -250.5,
+    "others_mib": 2960.5,
+    "owner_mib": 0,
+    "required_mib": 13658,
+    "unattributed_mib": 0.0,
+    "verdict": "AT_RISK"
+   }
+  },
+  "heartbeat_at": 1792689058.04,
+  "history": [
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1792688608.861
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1792688615.812
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1792688631.246
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1792688636.885
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1792689072.095
+   }
+  ],
+  "host_pid": 21140,
+  "host_started": 1792688605.089,
+  "lease": {
+   "acquired_at": 1792688605.114,
+   "held": true,
+   "recovered_from": null
+  },
+  "override": null,
+  "profile": {
+   "ctx": 65536,
+   "frozen": false,
+   "id": "c64k-visoff-mtpoff",
+   "mtp": false,
+   "qualified": false,
+   "required_mib": 13658,
+   "vision": "off"
+  },
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 2119.5,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1580,
+     "role": "desktop compositor"
+    },
+    {
+     "dedicated_mib": 317.5,
+     "name": "chrome.exe",
+     "parent": "chrome.exe",
+     "pid": 18572,
+     "role": null
+    },
+    {
+     "dedicated_mib": 247.2,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 2216,
+     "role": null
+    }
+   ],
+   "dedicated_mib": 13982.7,
+   "non_local_mib": 583.1,
+   "others_mib": 3190.9,
+   "t": 1792689016.266,
+   "verdict_now": "AT_RISK"
+  },
+  "schema": "uri.ws.brain_host.v1",
+  "server": {
+   "load_seconds": 17.4,
+   "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+   "owned": true,
+   "pid": 15472
+  },
+  "state": "STOPPING",
+  "updated_at": 1792689072.095
+ },
+ "lease_after": {
+  "state": "FREE",
+  "holder": null
+ },
+ "brain_config_sha256_after": "112c059504739f0541e7fd5d6d17426e642f2f5e876b7e236c310f8f83b90b95",
+ "brain_listener_after": null
+}
