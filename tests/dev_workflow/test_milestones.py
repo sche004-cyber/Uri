@@ -814,7 +814,7 @@ def test_r1_09_more_secret_forms_refused(secret):
     assert model.find_secret(secret), secret
 
 
-@pytest.mark.parametrize("text", ["worktree=D:/uri-dev/worktree1", "api_key: env-var-NAME1", "API_KEY=$OPENAI_API_KEY",
+@pytest.mark.parametrize("text", ["worktree=D:/uri-dev/worktree1", "api_key: env:VAR_NAME1", "API_KEY=$OPENAI_API_KEY",
                                   "token: TAVILY_API_KEY", "password: required", "see https://example.com/a:b"])
 def test_r1_09_no_false_positive_on_paths_and_env_names(text):
     assert model.find_secret(text) is None, text
@@ -2850,3 +2850,38 @@ def test_r3_02_ready_rejects_dependency_with_open_conflict(tmp_path):
     assert views.open_conflicts(p, "MM-A")
     assert "MM-A" in views.unmet_dependencies(p, p["milestones"]["MM-B"])
     assert "MM-B" not in views.ready(p)
+
+
+# ------------------------------------------------------------------ driver review MILESTONE-MANAGER-d1, rounds 4-8:
+# one bypass per round in the credential-value exemptions; repaired once as a class (default deny).
+
+@pytest.mark.parametrize("value", [
+    "$uperS3cret!", "$ecret-abc123", "s3cret/abc123", "/s3cret123", "abc,def123", "env-hunter22", "{s3cret123}",
+    "%s3cret123", "<s3cret123", "HUNTER22", "D:/uri-dev/worktree1", "pa55 word",
+])
+@pytest.mark.parametrize("shape", ["dict", "nested", "text"])
+def test_d1_default_deny_credential_values(value, shape):
+    data = {"dict": {"password": value}, "nested": {"auth": {"password": {"value": [value]}}},
+            "text": f"password={value}" if " " not in value else None}[shape]
+    if data is None:
+        return
+    assert model.find_secret(data) == "credential assignment", (shape, value)
+
+
+@pytest.mark.parametrize("value", ["${DB_PASSWORD}", "%API_KEY%", "env:OPENAI_KEY", "$OPENAI_API_KEY",
+                                   "TAVILY_API_KEY", "<redacted>", "********", "expired", "none"])
+def test_d1_default_deny_keeps_exact_references(value):
+    assert model.find_secret({"api_key": {"value": [value]}}) is None, value
+    assert model.find_secret(f"api_key: {value}") is None, value
+
+
+def test_d1_default_deny_refused_by_service_and_store(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-0", "0")
+    before = seg_bytes(m)
+    with pytest.raises(ValidationError) as e:
+        m.create_milestone("MM-A", "A", objective="password=$uperS3cret!")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+    with pytest.raises(StoreError) as e:
+        m.store.reanchor("impl:a", "password: $uperS3cret!", acknowledge_loss=True)
+    assert e.value.code == "SECRET" and seg_bytes(m) == before

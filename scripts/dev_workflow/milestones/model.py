@@ -67,19 +67,25 @@ PLACEHOLDER_VALUES = {"required", "optional", "none", "null", "redacted", "unset
                       "true", "false", "yes", "no", "n/a", "***", "<redacted>", "xxx", "changeme?"}
 
 
+# The only values under a credential key that are not refused: exact references to a variable (${NAME}, %NAME%,
+# env:NAME, or an upper-case environment-variable name with an underscore, optionally after $), never a value that
+# merely starts like one (driver review rounds 4-8 found a bypass in every looser exemption).
+REFERENCE_RX = re.compile(r"\$\{[A-Za-z_][A-Za-z0-9_]*\}|%[A-Za-z_][A-Za-z0-9_]*%|env:[A-Za-z_][A-Za-z0-9_]*"
+                          r"|\$?[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+|<[a-z][a-z _-]{0,40}>")
+
+
 def _credential_value_secret(key: str, val: str) -> bool:
+    """Default deny: any value under a credential key is a secret unless it is a placeholder, a state word, a mask,
+    a small number under ``token``/``secret`` (context sizes) or an exact variable reference."""
+    val = val.strip().strip("'\"")
     low = val.lower()
-    if len(val) < 4 or low in PLACEHOLDER_VALUES or set(val) <= {"*", "x", "X", "."}:
+    if len(val) < 4 or low in PLACEHOLDER_VALUES or low in STATUS_WORDS or set(val) <= {"*", "x", "X", "."}:
         return False
     key = key.lower().replace("-", "_")
-    if low in STATUS_WORDS:
-        return False  # a state word ("access_token: expired"), not a credential
     if val.isdigit() and key in ("token", "secret") and len(val) <= 7:
         return False  # a small number ("token: 65536" context size), not a credential (review R3-07)
-    if val[:1] in "$%<{" or val.startswith(("env:", "env-", "ENV_", "${")):
-        return False  # variable reference or placeholder
-    if re.fullmatch(r"[A-Z][A-Z0-9_]{2,}", val):
-        return False  # environment variable name
+    if REFERENCE_RX.fullmatch(val):
+        return False
     return True
 
 
