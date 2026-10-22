@@ -2920,3 +2920,53 @@ def test_d2_02_service_and_direct_store_refuse_reference_followed_by_password(tm
     with m.store.locked(), pytest.raises(StoreError) as e:
         m.store.append("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"objective": value}}, actor="impl:a")
     assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+# ------------------------------------------------------------------ fallback review of f76c2e17 (FB-01..FB-05):
+# credential keys recognised by their words; quoted keys; leaf dict keys under a credential key; NFKC.
+
+FB_SECRETS = [
+    "DB_PASSWORD=hunter2bypass1", "github_token=abcdefbypass3", "myPassword=bypass4", "passwordValue: hunter22",
+    '{"password": "hunter2bypass2"}', "{'password': 'hunter2'}", '"password"="hunter2"', 'config {"api_key":"abc123def"}',
+    "password=HUNTER_TWO", "secret=1234567", "password\uff1dhunter22", "pass\u200bword=hunter22",
+    "password: env:DB_PASSWORD hunter2", 'note: x, client-secret: "s3cr3tvalue"',
+    {"db_password": "hunter22"}, {"clientSecret": "abc123"}, {"password": {"BYPASS_b2y": None}},
+    {"password": {"BYPASS_b2y": True}}, {"auth": {"apiKey": ["abc123def"]}},
+]
+FB_CLEAN = [
+    "max_tokens=4096", "token_count=12", "token: 128k context", "token: 32768 tokens", "password_policy: strong",
+    "api_key: ${KEY}, model: x", "worktree=D:/uri-dev/x", "api_key: TAVILY_API_KEY", "API_KEY=$OPENAI_API_KEY",
+    "the token expired", "D:/secrets/readme", {"api_key": {"value": ["<redacted>"]}}, {"token_count": 5},
+]
+
+
+@pytest.mark.parametrize("value", FB_SECRETS)
+def test_fb_credential_keys_by_words_are_refused(value):
+    assert model.find_secret(value), value
+
+
+@pytest.mark.parametrize("value", FB_CLEAN)
+def test_fb_descriptive_keys_and_references_pass(value):
+    assert model.find_secret(value) is None, value
+
+
+@pytest.mark.parametrize("argv", [["milestone-update", "MM-A", "--objective", "DB_PASSWORD=hunter2bypass1"],
+                                  ["milestone-update", "MM-A", "--next-action", '{"password": "hunter2bypass2"}']])
+def test_fb_cli_refuses_without_writing(tmp_path, argv):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "impl:a", *argv], out=out) != 0
+    assert seg_bytes(m) == before and "SECRET" in out.getvalue()
+
+
+def test_fb_direct_store_refuses_leaf_key_and_prefixed_key(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    for data in ({"id": "X", "password": {"BYPASS_b2y": None}}, {"id": "X", "db_password": "hunter22"}):
+        with pytest.raises(StoreError) as e:
+            m.store.append_many([("HANDOFF_RECORDED", data, {})], actor="impl:a")
+        assert e.value.code == "SECRET"
+    assert seg_bytes(m) == before
