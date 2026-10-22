@@ -509,6 +509,9 @@ class EventStore:
         ``n`` events are present. Caller must hold the lock."""
         if not items:
             return []
+        check_free_text(actor=actor, session=session)
+        for _, data, _ in items:
+            check_free_text(data=data)
         if self._tail is None:
             seg = read_segment(self.segment_path)
             if seg.torn:

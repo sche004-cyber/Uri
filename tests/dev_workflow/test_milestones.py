@@ -2510,6 +2510,83 @@ def test_r22_02_single_host_flow_binds_without_conflict(tmp_path):
     assert views.indicator(p, p["milestones"]["MM-A"])["color"] != "RED"
 
 
+@pytest.mark.parametrize("status", ["ACCEPTED", "INTEGRATED", "DONE"])
+@pytest.mark.parametrize("membership", ["recorded", "assigned", "handoff"])
+def test_d1_01_positive_status_rechecks_reviewer_independence(tmp_path, status, membership):
+    m = _accept_ready(tmp_path, reviewer="rev:y")
+    m.set_status("MM-A", "ACCEPTED", "accepted")
+    if status == "INTEGRATED":
+        m.request_approval("MM-A", "INTEGRATION", "integrate?")
+        m.resolve_approval("AP-1", "APPROVED", "yes", "chat")
+        m.record_integration("MM-A", "master", C1)
+        m.set_status("MM-A", "INTEGRATED", "integrated")
+    elif status == "DONE":
+        m.set_status("MM-A", "DONE", "done")
+
+    reviewer = Manager(m.home, actor=" REV:Y ", session="s2")
+    if membership == "recorded":
+        m.record_implementer("MM-A", " REV:Y ")
+    elif membership == "assigned":
+        reviewer.assign("MM-A")
+    else:
+        reviewer.record_handoff("MM-A", "implementation handoff")
+
+    p = m.projection()
+    milestone = p["milestones"]["MM-A"]
+    assert milestone["status"] == status
+    assert any(c["type"] == "BASIS_INVALID" for c in views.open_conflicts(p, "MM-A"))
+    ind = views.indicator(p, milestone)
+    assert ind["color"] == "RED"
+    assert views.status_json(p)["milestones"][0]["indicator"]["color"] == "RED"
+
+    # Acknowledging the conflict alone cannot make the stale status look valid.
+    _resolve(m, "MM-A", "reviewer became an implementer")
+    p = m.projection()
+    ind = views.indicator(p, p["milestones"]["MM-A"])
+    assert ind["color"] == "RED" and "independent" in ind["issue"]
+
+    # A separate qualifying review on the same candidate restores the claim.
+    m.record_review("MM-A", C1, "subagent", "rev:z", "SUBAGENT", "ACCEPT", 0, 0,
+                    "COMPLETED_WITH_RESULT", "independent review")
+    p = m.projection()
+    assert views.indicator(p, p["milestones"]["MM-A"])["color"] != "RED"
+
+
+def test_d1_01_invalid_positive_status_does_not_satisfy_dependency(tmp_path):
+    m = _accept_ready(tmp_path, reviewer="rev:y")
+    m.create_milestone("MM-B", "dependent")
+    m.add_dependency("MM-B", "MM-A")
+    m.set_status("MM-A", "ACCEPTED", "accepted")
+    assert "MM-B" in views.ready(m.projection())
+    m.record_implementer("MM-A", "rev:y")
+    assert "MM-B" not in views.ready(m.projection())
+
+
+@pytest.mark.parametrize("field,secret", [("actor", "password=12345678"),
+                                           ("session", "token=123456789012"),
+                                           ("data", "api_key: 12345678901234567890")])
+def test_d1_02_direct_store_append_refuses_secrets_without_writing(tmp_path, field, secret):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    data = {"id": "MM-A", "fields": {"objective": secret if field == "data" else "safe"}}
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append("MILESTONE_UPDATED", data, actor=secret if field == "actor" else "impl:a",
+                       session=secret if field == "session" else "s1")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+def test_d1_02_direct_store_batch_refuses_secret_in_later_item_atomically(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    items = [("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"objective": "safe"}}, {}),
+             ("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"objective": "password=12345678"}}, {})]
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append_many(items, actor="impl:a", session="s1")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
 def test_r22_03_autocommit_commits_only_ledger_paths(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()

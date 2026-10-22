@@ -75,7 +75,8 @@ def negative_reviews_on_candidate(p, m):
 
 
 def unmet_dependencies(p, m):
-    return [d for d in m["depends_on"] if (p["milestones"].get(d) or {}).get("status") not in DONE_STATES]
+    return [d for d in m["depends_on"] if (p["milestones"].get(d) or {}).get("status") not in DONE_STATES
+            or not M.independent_accept_reviews(p, p["milestones"][d])]
 
 
 def indicator(p, m, tasks: dict | None = None) -> dict:
@@ -109,6 +110,9 @@ def indicator(p, m, tasks: dict | None = None) -> dict:
                     f"{m['status']} rests on; set the candidate back to {m['bound_commit']}, or set the status back "
                     "to IN_PROGRESS and have the new candidate reviewed")
     if m["status"] in DONE_STATES:
+        if not M.independent_accept_reviews(p, m):
+            reds.append(f"{m['status']} has no independent qualifying ACCEPT review on candidate "
+                        f"{m.get('candidate_commit')}; record an independent review")
         neg = negative_reviews_on_candidate(p, m)
         if neg:
             reds.append(f"review {neg[0]['id']} on the candidate is {neg[0]['verdict']} although status is "

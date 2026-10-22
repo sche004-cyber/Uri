@@ -292,12 +292,9 @@ class Manager:
         cand = m.get("candidate_commit")
         if not cand:
             raise ValidationError("NO_CANDIDATE", f"{ident} has no candidate_commit; record the exact commit first")
-        implementers = {M.norm_id(a) for a in m["implementers"]}
         on_cand = [r for r in p["reviews"].values() if r["subject"] == ident and r["commit"] == cand
                    and r["result_class"] == "COMPLETED_WITH_RESULT"]
-        good = [r["id"] for r in on_cand
-                if r["verdict"] in M.POSITIVE_VERDICTS and r["blocking_open"] == 0
-                and r["assurance"] in M.QUALIFYING_ASSURANCE and M.norm_id(r["reviewer"]["id"]) not in implementers]
+        good = [r["id"] for r in M.independent_accept_reviews(p, m)]
         if not good:
             raise ValidationError("NO_INDEPENDENT_ACCEPT",
                                   f"{ident} needs an independent review (reviewer not among implementers "

@@ -165,6 +165,16 @@ def norm_id(value) -> str:
     return " ".join(str(value or "").split()).casefold()
 
 
+def independent_accept_reviews(p: dict, m: dict) -> list[dict]:
+    """Current qualifying reviews, including independence from every recorded implementer."""
+    implementers = {norm_id(a) for a in m["implementers"]}
+    return [r for r in p["reviews"].values()
+            if r["subject"] == m["id"] and r["commit"] == m.get("candidate_commit")
+            and r["result_class"] == "COMPLETED_WITH_RESULT" and r["verdict"] in POSITIVE_VERDICTS
+            and r["blocking_open"] == 0 and r["assurance"] in QUALIFYING_ASSURANCE
+            and norm_id(r["reviewer"]["id"]) not in implementers]
+
+
 # Creation kinds whose ``data.id`` names a record in a projection collection (and the field holding its origin).
 CREATION = {"MILESTONE_CREATED": ("milestones", "created"), "REVIEW_RECORDED": ("reviews", "recorded"),
             "DECISION_RECORDED": ("decisions", "recorded"), "APPROVAL_REQUESTED": ("approvals", "requested"),
@@ -353,6 +363,7 @@ def _apply_one(p: dict, ev: dict) -> None:
                                "expires_at": d["expires_at"], "since": ev["ts"], "takeover_of": d.get("takeover_of")}
             if norm_id(d["agent"]) not in map(norm_id, m["implementers"]):
                 m["implementers"].append(d["agent"])
+                _check_current_basis(p, m, ref, kind)
             _bump(p, d["id"])
     elif kind == "MILESTONE_RELEASED":
         m = ms.get(d["id"])
@@ -363,6 +374,7 @@ def _apply_one(p: dict, ev: dict) -> None:
         m = ms.get(d["id"])
         if m and norm_id(d["agent"]) not in map(norm_id, m["implementers"]):
             m["implementers"].append(d["agent"])
+            _check_current_basis(p, m, ref, kind)
             _bump(p, d["id"])
     elif kind == "BLOCKER_ADDED":
         _count(p, "BLK", d["id"])
@@ -455,6 +467,7 @@ def _apply_one(p: dict, ev: dict) -> None:
         m = ms.get(d["subject"])
         if m and norm_id(ev["actor"]) not in map(norm_id, m["implementers"]):
             m["implementers"].append(ev["actor"])
+            _check_current_basis(p, m, ref, kind)
         _bump(p, d["id"])
     elif kind == "LIFECYCLE_LINKED":
         m = ms.get(d["subject"])
@@ -559,11 +572,17 @@ def _check_binding(p, m, d, ref) -> None:
                   candidate=cand, problems=problems)
 
 
-def _check_basis(p, d, ref) -> None:
+def _check_current_basis(p, m, ref, kind) -> None:
+    if m["status"] in POSITIVE_STATUSES and not independent_accept_reviews(p, m):
+        _check_basis(p, {"id": m["id"], "status": m["status"],
+                         "basis": m["status_history"][-1].get("basis")}, ref, kind)
+
+
+def _check_basis(p, d, ref, kind="MILESTONE_STATUS_SET") -> None:
     """A positive status must name records that exist in the fold; otherwise flag it (forged cache or merge)."""
     basis = d.get("basis") or {}
     bad = []
-    if d.get("status") == "ACCEPTED":
+    if d.get("status") in POSITIVE_STATUSES:
         names = basis.get("reviews") or []
         implementers = {norm_id(a) for a in (p["milestones"].get(d["id"]) or {}).get("implementers", [])}
         bad = [r for r in names if (p["reviews"].get(r) or {}).get("subject") != d["id"]
@@ -573,13 +592,13 @@ def _check_basis(p, d, ref) -> None:
                or norm_id((p["reviews"][r].get("reviewer") or {}).get("id")) in implementers]
         if not names:
             bad = ["(no review named)"]
-    elif d.get("status") == "INTEGRATED":
+    if d.get("status") == "INTEGRATED":
         names = basis.get("approvals") or []
-        bad = [a for a in names if (p["approvals"].get(a) or {}).get("status") != "APPROVED"]
+        bad += [a for a in names if (p["approvals"].get(a) or {}).get("status") != "APPROVED"]
         if not names:
-            bad = ["(no approval named)"]
+            bad.append("(no approval named)")
     if bad:
-        _conflict(p, "BASIS_INVALID", d["id"], ref, "MILESTONE_STATUS_SET", d["id"], missing=bad)
+        _conflict(p, "BASIS_INVALID", d["id"], ref, kind, d["id"], missing=bad)
 
 
 def fold(events, p: dict | None = None) -> dict:
