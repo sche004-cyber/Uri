@@ -2809,6 +2809,21 @@ def test_r6_01_actual_path_fields_remain_allowed(tmp_path):
     assert m.projection()["milestones"]["MM-A"]["worktree"] == path
 
 
+@pytest.mark.parametrize("password", ["abc,defghi9", "abc, defghi9"])
+def test_r7_01_direct_store_refuses_comma_in_nested_password_without_writing(tmp_path, password):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    data = {"id": "MM-A", "fields": {"details": {"metadata": {"password": password}}}}
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append("MILESTONE_UPDATED", data, actor="impl:a")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+def test_r7_01_inline_comma_password_is_secret():
+    assert model.find_secret("password=abc,defghi9") == "credential assignment"
+
+
 def test_r3_02_ready_requires_dependency_status_bound_to_candidate(tmp_path):
     m = _accept_ready(tmp_path)
     m.create_milestone("MM-B", "dependent")

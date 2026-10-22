@@ -56,31 +56,37 @@ SECRET_PATTERNS = [
     ("credentials in URL", re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^/\s:@]+:[^/\s@]+@")),
 ]
 # Credential key [:=] value; path fields do not match these keys. Env-var names and placeholders are exempted below.
+CREDENTIAL_KEY = (r"password|passwd|pwd|passphrase|secret|client[_-]?secret|api[_-]?key|access[_-]?key|"
+                  r"access[_-]?token|auth[_-]?token|refresh[_-]?token|token|private[_-]?key")
+CREDENTIAL_KEY_RX = re.compile(rf"(?i)(?:{CREDENTIAL_KEY})\Z")
 ASSIGNMENT_RX = re.compile(
-    r"(?i)\b(?P<key>password|passwd|pwd|passphrase|secret|client[_-]?secret|api[_-]?key|access[_-]?key|"
-    r"access[_-]?token|auth[_-]?token|refresh[_-]?token|token|private[_-]?key)\s*[:=]\s*['\"]?(?P<val>[^\s'\",;]+)")
+    rf"(?i)\b(?P<key>{CREDENTIAL_KEY})\s*[:=]\s*['\"]?(?P<val>[^\s'\";]+)")
 STATUS_WORDS = {"expired", "rotated", "revoked", "invalid", "valid", "budget", "limit", "count", "present",
                 "absent", "stored", "encrypted", "configured", "unavailable", "disabled", "enabled", "hidden"}
 PLACEHOLDER_VALUES = {"required", "optional", "none", "null", "redacted", "unset", "set", "missing", "empty",
                       "true", "false", "yes", "no", "n/a", "***", "<redacted>", "xxx", "changeme?"}
 
 
+def _credential_value_secret(key: str, val: str) -> bool:
+    low = val.lower()
+    if len(val) < 4 or low in PLACEHOLDER_VALUES or set(val) <= {"*", "x", "X", "."}:
+        return False
+    key = key.lower().replace("-", "_")
+    if low in STATUS_WORDS:
+        return False  # a state word ("access_token: expired"), not a credential
+    if val.isdigit() and key in ("token", "secret") and len(val) <= 7:
+        return False  # a small number ("token: 65536" context size), not a credential (review R3-07)
+    if val[:1] in "$%<{" or val.startswith(("env:", "env-", "ENV_", "${")):
+        return False  # variable reference or placeholder
+    if re.fullmatch(r"[A-Z][A-Z0-9_]{2,}", val):
+        return False  # environment variable name
+    return True
+
+
 def _assignment_secret(text: str) -> bool:
     for m in ASSIGNMENT_RX.finditer(text):
-        val = m.group("val")
-        low = val.lower()
-        if len(val) < 4 or low in PLACEHOLDER_VALUES or set(val) <= {"*", "x", "X", "."}:
-            continue
-        key = m.group("key").lower().replace("-", "_")
-        if low in STATUS_WORDS:
-            continue  # a state word ("access_token: expired"), not a credential
-        if val.isdigit() and key in ("token", "secret") and len(val) <= 7:
-            continue  # a small number ("token: 65536" context size), not a credential (review R3-07)
-        if val[:1] in "$%<{" or val.startswith(("env:", "env-", "ENV_", "${")):
-            continue  # variable reference or placeholder
-        if re.fullmatch(r"[A-Z][A-Z0-9_]{2,}", val):
-            continue  # environment variable name
-        return True
+        if _credential_value_secret(m.group("key"), m.group("val").rstrip(",")):
+            return True
     return False
 
 
@@ -95,7 +101,7 @@ def find_secret(value) -> str | None:
     def walk(part, keys: tuple[str, ...]) -> str | None:
         if isinstance(part, (str, int, float)):
             for key in keys:
-                if _assignment_secret(f"{key}: {part}"):
+                if CREDENTIAL_KEY_RX.fullmatch(key) and _credential_value_secret(key, str(part).strip()):
                     return "credential assignment"
             if isinstance(part, str):
                 for name, rx in SECRET_PATTERNS:
