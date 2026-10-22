@@ -393,3 +393,23 @@ Appended after P0; the rows above are kept as they were. Corrections to them are
 - §A/§L "canonical `ec2fab54`": canonical is `9488c0fd` from 2026-10-21 ~17:06Z.
 - §H Q-1: done (O.1). Q-2: repaired and accepted, integration blocked only by the live run (O.2).
 - §J UI-R1-01..R1-06: repaired on the URI Controls branch (not in canonical until O.2 integrates).
+
+### O.4 Planned follow-up: UI-SEL-1 Environment / Workspace Selector (DEC-094) - WHITE (not started)
+
+| Item | Value |
+|---|---|
+| Scope | an Environment / Workspace selector directly above the chat input; reuses the existing workspace, session and permission infrastructure; keeps the three quick controls (Thinking / Vision / URI Assist) unchanged |
+| Dependencies (all must hold first) | D1 Ember V2.1 returning + perf live journeys pass on canonical; D2 URI Controls Stage 8 live qualification passes; D3 URI Controls integrated into canonical (controlled integration, DEC-092); D4 Ember + URI Controls verified together on that canonical commit; D5 enough GPU headroom for live runs (see O.5) |
+| Method | separate isolated branch and worktree cut from the canonical commit of D4; Lifecycle V3 (research first, acceptance criteria, independent review, Stage 8 live, owner integration approval) |
+| Status | planned only; no branch, no code |
+
+### O.5 GPU contention investigation (2026-10-22 00:30Z)
+
+Measured with the production census (`uri_operational_intelligence.gpu_lease.census` / `assess_fit`, unchanged):
+card 16,368 MiB; other processes 2,984 MiB (dwm.exe 1,770; chrome.exe 380; copilotapphost + copilotapp 177;
+Microsoft.AAD.BrokerPlugin 107; ChatGPT 91; msedgewebview2 89; Antigravity 66; claude 62; explorer 46; others small).
+Fit: P3 (14,360) CONTENDED margin -976; Long context (13,658) AT_RISK -274; frozen Standard (15,626) CONTENDED -2,242.
+A start needs margin > -512 MiB (CONTENDED threshold). Display: one 2560x1440 @ 144 Hz monitor; dwm.exe has run for
+about 4 days (its dedicated memory includes composition surfaces of open windows). The frozen Brain configurations
+and the fit rule are not changed. Headroom can come only from fewer GPU consumers on the desktop (owner's
+applications), which is an owner action.
