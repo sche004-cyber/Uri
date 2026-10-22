@@ -361,6 +361,40 @@ def test_ac5_missing_commit_is_stale(lg, repo):
     assert any("no longer exists" in s["why"] for s in p["stale"])
 
 
+def test_r6_01_already_stale_item_expiring_refreshes_packet(lg, repo, monkeypatch):
+    tid = lg.create("expiry", "o", DEV, worktree=str(repo))
+    item = lg.add_context(tid, DEV, "evidence", "a.txt says one", path="a.txt", ttl_s=10)
+    expires = lg.db.execute("SELECT expires_at FROM context WHERE id=?", (item["id"],)).fetchone()[0]
+    (repo / "a.txt").write_bytes(b"two\n")
+    monkeypatch.setattr(tl.time, "time", lambda: expires - 1)
+    before = lg.packet(tid)
+    assert before["cache"] == "MISS"
+    assert before["stale"] == [{"id": item["id"], "why": "a.txt changed since it was recorded"}]
+    assert lg.packet(tid)["cache"] == "HIT"
+
+    monkeypatch.setattr(tl.time, "time", lambda: expires + 1)
+    after = lg.packet(tid)
+    assert after["cache"] == "MISS"
+    assert after["stale"] == [{"id": item["id"], "why": "expired"}]
+    assert lg.packet(tid)["cache"] == "HIT"
+
+
+def test_r6_02_commit_bound_item_stale_when_worktree_missing(lg, repo):
+    tid = lg.create("missing worktree", "o", DEV, worktree=str(repo))
+    commit = _git(repo, "rev-parse", "HEAD")
+    item = lg.add_context(tid, DEV, "evidence", "bound to commit", commit=commit)
+    assert any(i["text"] == "bound to commit" for i in lg.packet(tid)["items"])
+
+    repo.rename(repo.with_name("moved_repo"))
+    packet = lg.packet(tid)
+    assert packet["cache"] == "MISS"
+    assert packet["stale"] == [{"id": item["id"],
+                                "why": f"commit {commit[:12]} cannot be verified: worktree unavailable"}]
+    assert all(i["text"] != "bound to commit" for i in packet["items"])
+    repo.with_name("moved_repo").rename(repo)
+    assert any(i["text"] == "bound to commit" for i in lg.packet(tid)["items"])
+
+
 def test_ac5_dedup_compression_supersession(lg):
     tid = lg.create("d", "o", DEV)
     a = lg.add_context(tid, DEV, "evidence", "same text")

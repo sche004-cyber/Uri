@@ -721,7 +721,7 @@ class Ledger:
         """(staleness by context id, fingerprint of everything retrieval depends on outside the ledger)."""
         stale, parts = {}, []
         wt = t["worktree"]
-        head = git(wt, "rev-parse", "HEAD", check=False) if wt and Path(wt).is_dir() else None
+        head = (git(wt, "rev-parse", "HEAD", check=False) or None) if wt and Path(wt).is_dir() else None
         parts.append(f"head={head}")
         paths = sorted({r["path"] for r in rows if r["path"]})
         if paths:
@@ -738,15 +738,16 @@ class Ledger:
                     stale[r["id"]] = f"{r['path']} changed since it was recorded"
         commits = sorted({r["commit_sha"] for r in rows if r["commit_sha"]})
         if commits:
-            if wt and Path(wt).is_dir():
+            if head is not None:
                 out = git(wt, "cat-file", "--batch-check", check=False, inp="\n".join(commits) + "\n").splitlines()
                 missing = {c for c, line in zip(commits, out) if line.endswith("missing")}
             else:
-                missing = set()
+                missing = set(commits)
             parts.append("missing=" + ",".join(sorted(missing)))
             for r in rows:
                 if r["commit_sha"] in missing:
-                    stale[r["id"]] = f"commit {r['commit_sha'][:12]} no longer exists"
+                    stale[r["id"]] = (f"commit {r['commit_sha'][:12]} no longer exists" if head is not None else
+                                       f"commit {r['commit_sha'][:12]} cannot be verified: worktree unavailable")
         nowt = time.time()
         for r in rows:
             if r["expires_at"] is not None and r["expires_at"] <= nowt:
@@ -762,7 +763,7 @@ class Ledger:
                                (task_id,)).fetchall()
         stale, fp = self._freshness(t, rows)
         params = json.dumps([budget, query, item_chars])
-        key = sha256(f"{params}|{fp}|{sorted(stale)}")
+        key = sha256(f"{params}|{fp}|{sorted(stale.items())}")
         nowt = time.time()
         cached = None
         if use_cache:
