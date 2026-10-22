@@ -505,3 +505,20 @@ G1-02 follow-up `7ee76f10` built (review pending). GRF-P0-1 `6a10d9b7`: frozen e
 `ws_frozen_check`, fallback-accepted, ready for separate owner approval. Canonical still `2aa0141e`.
 Details: `P0_CLOSURE_20261022.md` Addendum G.
 
+### P.8 OPEN-19 done; canonical `38a6d124` (2026-10-22)
+
+V3.1 (`4ef707ba`) and the git-control v2 fix (`38a6d124`) integrated (receipt
+`docs/audit/p0_20261021/INTEGRATION_RECEIPT_20261022_V31_GITCTL.md`). G1-02 follow-up `ac3dcbae` VERIFIED (Codex),
+awaiting owner integration approval. GRF-P0-1 runtime-reach defect found and repaired (`eb6bf6c8`); re-review and
+differential gates running. New findings PH1-GATE-1 (Phase 1 full gate uncollectable: undeclared `jsonschema`) and
+GATE-ENV-1. `\URIServer`: evidence says obsolete; disabling needs elevation. MM d6 VERIFIED on `f5347587`, not yet
+on canonical. Details: `P0_CLOSURE_20261022.md` Addendum H.
+
+### P.9 Planned follow-up milestone: LIFECYCLE-V3.1-STORAGE (post-integration memory and storage optimization)
+
+Owner-approved follow-up (recorded 2026-10-22; not started; no destructive cleanup in P0). Scope: compact task
+closure summaries; hot/warm/cold evidence storage; deduplication and indexing of evidence; safe, reversible cleanup of
+disposable worktrees (about 95 runtime materialisations plus many review and gate trees), caches, logs, test
+installations, screenshots and temporary artefacts; recovery and retrieval of archived evidence. Depends on Lifecycle
+V3.1 (integrated) and the Milestone Manager. Owner: development lifecycle thread. Status: WHITE (planned).
+
