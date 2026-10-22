@@ -496,3 +496,12 @@ the owner's r6 unblock (OPEN-17) and integration approval. Details: `P0_CLOSURE_
 WITH FINDINGS (3 LOW); gate 321/5/0; frozen clean. Ready for owner integration approval. Details:
 `P0_CLOSURE_20261022.md` Addendum F.
 
+### P.7 Consolidated directive execution (2026-10-22 ~13:35 IST)
+
+V3.1 `4ef707ba`: OPEN-17 resolved, driver VERIFIED (`evidence_ok_for_candidate: true`), awaiting the canonical push,
+which this session's permission check refused (owner push or permission rule needed). Git-control fix pushed to
+`uri-repo/repair/lifecycle-git-control-v2-20261022`; combined candidate `38a6d124` on V3.1 green (428/5/0).
+G1-02 follow-up `7ee76f10` built (review pending). GRF-P0-1 `6a10d9b7`: frozen exception OPEN-14 recorded in
+`ws_frozen_check`, fallback-accepted, ready for separate owner approval. Canonical still `2aa0141e`.
+Details: `P0_CLOSURE_20261022.md` Addendum G.
+

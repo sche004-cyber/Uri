@@ -1,0 +1,29 @@
+Source: final hand-back message of the fresh, isolated, read-only reviewer subagent launched by the P0 coordinator
+session (b14d94) on 2026-10-22 after the driver recorded BLOCKED NO_INDEPENDENT_REVIEWER on 6a10d9b7 at
+2026-10-22T06:38:06Z (D:/uri-dev/lifecycle/GRF-P0-1/state; codex_cli 2x QUOTA, claude_cli 2x AUTH). Coordinator's
+verbatim copy of the AUDIT_RESULT block (the result arrived by hand-back). Reviewer prompt = driver round R2 prompt
+(state/rounds/R2/reviewer_prompt.md) with fallback round id FB1, checkout D:/uri-dev/review-grf-6a10d9b7, temp dir
+C:/Users/cheta/AppData/Local/Temp/uri_review_grf_FB1/.
+Reviewer disclosure (kept): its first pytest run inside the checkout wrote git-ignored runtime files
+(uri_workspace/{friction_log.json, graph.sqlite3, skill_memory.json, sessions/}, work/c1/*); tracked content unchanged
+(coordinator re-checked: `git diff --quiet HEAD` clean; ignored files listed by `git status --ignored`).
+
+AUDIT_RESULT_BEGIN
+{"candidate": "6a10d9b7848c4baae64b77b705577b1a8c97241f", "baseline": "2aa0141e4fa5a1b76a369644335350e867cf3309", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [{"id": "GR-01", "severity": "LOW", "blocking": false, "category": "documentation", "owner_decision": false, "title": "Plan names the frozen-exception decision id differently from the recorded APPROVED entry", "files": ["docs/graphify/GRF_P0_1_PLAN_AND_ACCEPTANCE.md:33", "scripts/ws_frozen_check.py:70"], "evidence": "The plan says the exception record carries decision `OPEN-14/GRF-P0-1`; ws_frozen_check APPROVED records decisions [\"OWNER-OPEN-14-GRF-P0-1-20261022\"]. Labels only; the check does not use decision ids, so behaviour is unaffected.", "suggested_fix": "Align the plan text with the recorded id. The plan file is pinned by PROVENANCE sha256, so this needs a re-pin, or can be deferred to the closure record."}],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "PYTHONPATH=. pytest -c scripts/phase2d_pytest.ini --rootdir=. -p no:cacheprovider tests/graphify test_decision_engine.py test_graphify_index.py (checkout)", "result": "88 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/graphify/test_grf_p0_1_paired_hint.py on git-archive copy of 2aa0141e (new test file copied in)", "result": "9 failed (all 9, as AC-8 claims)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/graphify/test_grf_p0_1_paired_hint.py on git-archive copy of 6a10d9b7", "result": "9 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/graphify tests/oi tests/ws test_graphify_index.py test_decision_engine.py test_turn_state.py test_turn_state_projection_review.py test_c5_*.py (base vs cand archive copies)", "result": "base 910 passed/9 failed/23 skipped/68 errors; cand 919 passed/23 skipped/68 errors; non-pass sets identical except the 9 new tests; all 68 errors are C5 ISOLATED_INTERPRETER_REQUIRED (environmental)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "C5 suites (test_c5_brain_transport/intent_adversarial/intent_discovery/loop)", "result": "68 setup errors ISOLATED_INTERPRETER_REQUIRED on both trees; no evidence either way", "status": "BLOCKED"},
+  {"command": "test_phase1_offline_components.py (Phase 1 boundary incl. test_canonical_preparation_reuses_core_and_exact_private_ports)", "result": "setup errors ISOLATED_INTERPRETER_REQUIRED (needs checkout .venv)", "status": "BLOCKED"},
+  {"command": "python scripts/ws_frozen_check.py . (checkout and shared clone at 6a10d9b7)", "result": "ok=True, unapproved=[], paired_reasoning.py recognized as exact blob", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "ws_frozen_check tamper matrix in throwaway clone (wc edit, other protected edit, provenance edit, committed edit, committed revert to baseline blob, staged-only edit, assume-unchanged, baseline tree)", "result": "all tampers ok=False; baseline tree ok=True; restored ok=True", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "real-component probe of prepare_canonical_context (8 registry descriptors, GRAPHIFY_HINT_ENABLED=1/0) on base vs cand copies", "result": "base leaks capability:generate_document into hint regardless of killswitch; cand hint None and reported unavailable; request minus hint and graphify subset identical", "status": "COMPLETED_WITH_RESULT"}],
+ "inspected": ["git diff 2aa0141e..6a10d9b7 (all 4 files)", "uri_core/core/paired_reasoning.py (full prepare_canonical_context)", "uri_core/core/decision_engine.py:65-66,465-476,1040-1080", "uri_core/core/graphify_index.py relevant_subset/build_index", "uri_core/core/turn_state.py hint handling (via grep)", "scripts/ws_frozen_check.py (full)", "docs/graphify/GRF_P0_1_PLAN_AND_ACCEPTANCE.md (full)", "tests/graphify/test_grf_p0_1_paired_hint.py (full)", "test_phase1_offline_components.py:210-235", "repo-wide callers of relevant_subset/prepare_canonical_context/capability_index_hint", "sha256 of pinned blob at worktree/HEAD/anchor and of provenance doc"],
+ "evidence_reviewed_only": ["Owner decision OPEN-14 (2026-10-22) itself: only referenced by the implementer's plan doc and the coordinator's prompt; the owner directive text is not in the repo"],
+ "live_observed": [],
+ "unverified": ["Owner authorization text for OPEN-14 (not in repo; relied on coordinator statement; affects authority, not code correctness)", "Phase 1 boundary and C5 suites: BLOCKED locally (need checkout .venv isolated interpreter); coordinator gates cover these against 2aa0141e", "Live paired runtime turn with a real Brain (not run)"]}
+AUDIT_RESULT_END
