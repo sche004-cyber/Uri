@@ -413,3 +413,23 @@ A start needs margin > -512 MiB (CONTENDED threshold). Display: one 2560x1440 @ 
 about 4 days (its dedicated memory includes composition surfaces of open windows). The frozen Brain configurations
 and the fit rule are not changed. Headroom can come only from fewer GPU consumers on the desktop (owner's
 applications), which is an owner action.
+
+## P. 2026-10-22 P0 closure (DEC-095)
+
+Appended; rows above are kept. Full record: `docs/audit/p0_20261021/P0_CLOSURE_20261022.md`.
+
+| Item | State 2026-10-22 ~06:30 IST |
+|---|---|
+| Canonical | `9488c0fd` (verified by fetch and `ls-remote`) |
+| P0 audit branch | pushed to `uri-repo/audit/p0-comprehensive-20261021` (first push `e1341363`; later commits pushed with this section); not merged into canonical |
+| POL-P0-1 | CLASSIFIED: reconciled by the V3.1 `SKILL.md` "Persistent task ledger" rule (driver primary; fallback only with driver `NO_INDEPENDENT_REVIEWER` on the exact commit and equal gates). Q-3 `67d45317` SUPERSEDED as a reviewer system; its digest-v2 fix to be ported as a narrow repair (I-5). Past subagent-reviewed integrations stay as recorded, not requalified |
+| CAP-LC2 (`67d45317`) | BLUE -> WHITE (superseded; branch kept) |
+| CAP-LC3 Lifecycle V3.1 | WHITE -> BLUE: `319398b8`, driver r1-r5 REJECT + repairs, r6 driver review 08:35 IST |
+| CAP-LC3 Milestone Manager | WHITE -> BLUE: `a28016d3` technically ready on current canonical (test merge `c19e17dc`: frozen ok, 205 MM tests, `tests/dev_workflow` 521 passed / 5 Linux-gated / 0 failed); review qualification pending a driver review (R23 is subagent-only, no driver attempt on that commit) |
+| GRF-P0-1 | MEDIUM; fix lies in PROTECTED `uri_core/` -> needs frozen exception (owner) |
+| D01, D10 | MEDIUM; not protected; queued lifecycle repairs |
+| D14 | capability gap, roadmap P9 |
+| VRAM-R1 | integrated `cd4a7963`; do not integrate again |
+| F-1 | approved design direction (owner 2026-10-22); not implemented |
+| Live runs (URI Controls Stage 8, Ember returning/perf, V3.1 conversation) | BLOCKED by GPU contention (see O.5); owner action needed for headroom |
+
