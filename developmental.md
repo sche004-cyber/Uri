@@ -456,3 +456,10 @@ Appended; rows above are kept. Full record: `docs/audit/p0_20261021/P0_CLOSURE_2
 | **Canonical now** | **`2aa0141e`** (code = `0acf58d7`) |
 | Dependencies of UI-SEL-1 (O.4) | D1 met (O.6), D2 met, D3 met, D4 met (this table). D5 (GPU headroom) holds only while the owner keeps Chrome/ChatGPT closed; dwm.exe still holds about 1.7 GB |
 | Next | UI-SEL-1 may start in its own branch/worktree from `2aa0141e` (DEC-094) |
+
+### P.1 Correction (2026-10-22 ~08:30 IST)
+
+Canonical is `2aa0141e` (URI Controls integrated at `0acf58d7`; see O.6/O.7). Milestone Manager re-qualified on it:
+test merge `ca0a4867`, frozen ok, 205 MM tests, `tests/dev_workflow` 521 / 5 Linux-gated / 0 failed. V3.1 tip
+`e474f510` contains `2aa0141e`. Details: `docs/audit/p0_20261021/P0_CLOSURE_20261022.md` Addendum A.
+

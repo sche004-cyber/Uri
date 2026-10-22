@@ -1,0 +1,23 @@
+HEAD=ca0a4867d3cb3534a3c9cffb97a109f808060187 start=2026-10-22T07:58:00+05:30
+........................................................................ [ 13%]
+..........................s.ssss........................................ [ 27%]
+........................................................................ [ 41%]
+........................................................................ [ 54%]
+........................................................................ [ 68%]
+........................................................................ [ 82%]
+........................................................................ [ 95%]
+......................                                                   [100%]
+============================== warnings summary ===============================
+scripts\dev_workflow\auditor.py:41
+  D:\uri-dev\uri-mm-integ\scripts\dev_workflow\auditor.py:41: PytestCollectionWarning: cannot collect test class 'TestExecutionResult' because it has a __init__ constructor (from: tests/dev_workflow/test_workflow.py)
+    @dataclass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============== PLATFORM-GATED: 5 test(s) NOT VERIFIED on win32 ===============
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r8_01_setsid_child_of_a_worker_cannot_inject_env_into_the_reviewer_config
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r8_01_setsid_child_of_a_gate_or_test_command_is_killed
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r10_01_timed_out_command_with_setsid_child_holding_stdout_returns_and_is_swept
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r10_01_timed_out_worker_with_setsid_child_holding_stdout_returns_and_is_swept
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r10_01_pipe_holder_outside_the_swept_tree_cannot_block_the_driver
+521 passed, 5 skipped, 1 warning in 1579.53s (0:26:19)
+rc=0 end=2026-10-22T08:24:20+05:30
