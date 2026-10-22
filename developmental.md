@@ -478,3 +478,10 @@ re-check), live Brain long-conversation PASS (on `e474f510`, reported). Remainin
 driver EVIDENCE block (git `info/*` false positive; owner unblock or digest-v2 repair) and a Windows UI live run.
 Details: `P0_CLOSURE_20261022.md` Addendum C.
 
+### P.4 Driver blocks and git-control v2 fix (2026-10-22)
+
+MM d1 unblocked by the MM session (owner), then BLOCKED BUDGET; MM revision d2 running on `36245a43`. V3.1 r6
+EVIDENCE block not unblocked (P0 command refused by permission check; owner action OPEN-17 stays). Fix I-5 ported:
+`repair/lifecycle-git-control-v2-20261022` @ `3def4023` (code `c9f3953c`), tests green, frozen clean; driver review
+queued after MM d2. Details: `P0_CLOSURE_20261022.md` Addendum D.
+
