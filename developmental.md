@@ -485,3 +485,8 @@ EVIDENCE block not unblocked (P0 command refused by permission check; owner acti
 `repair/lifecycle-git-control-v2-20261022` @ `3def4023` (code `c9f3953c`), tests green, frozen clean; driver review
 queued after MM d2. Details: `P0_CLOSURE_20261022.md` Addendum D.
 
+### P.5 V3.1 Windows UI live PASS (2026-10-22)
+
+`v31-long-p3b` on runtime from `4ef707ba`: 10/10 checks PASS (P3 profile, automation input). V3.1 now needs only
+the owner's r6 unblock (OPEN-17) and integration approval. Details: `P0_CLOSURE_20261022.md` Addendum E.
+
