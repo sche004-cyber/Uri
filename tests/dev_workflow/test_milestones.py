@@ -814,10 +814,14 @@ def test_r1_09_more_secret_forms_refused(secret):
     assert model.find_secret(secret), secret
 
 
-@pytest.mark.parametrize("text", ["pwd=D:/uri-dev/worktree1", "api_key: env-var-NAME1", "API_KEY=$OPENAI_API_KEY",
+@pytest.mark.parametrize("text", ["worktree=D:/uri-dev/worktree1", "api_key: env-var-NAME1", "API_KEY=$OPENAI_API_KEY",
                                   "token: TAVILY_API_KEY", "password: required", "see https://example.com/a:b"])
 def test_r1_09_no_false_positive_on_paths_and_env_names(text):
     assert model.find_secret(text) is None, text
+
+
+def test_r6_01_pwd_path_assignment_is_a_credential():
+    assert model.find_secret("pwd=D:/uri-dev/worktree1") == "credential assignment"
 
 
 def test_r1_10_secret_row_skipped_without_refusing_import(tmp_path):
@@ -2706,8 +2710,9 @@ def test_r4_01_direct_store_batch_refuses_later_credential_container_atomically(
 def test_r4_01_find_secret_keeps_credential_context_through_containers():
     assert model.find_secret({"api_key": {"value": "abcd1234xyz9876"}}) == "credential assignment"
     assert model.find_secret({"access_token": [{"details": ["abc123def456ghi789"]}]}) == "credential assignment"
-    for value in ("expired", "<redacted>", "$OPENAI_API_KEY", "D:/uri-dev/worktree1"):
+    for value in ("expired", "<redacted>", "$OPENAI_API_KEY"):
         assert model.find_secret({"api_key": {"value": [value]}}) is None
+    assert model.find_secret({"api_key": {"value": ["D:/uri-dev/worktree1"]}}) == "credential assignment"
 
 
 @pytest.mark.parametrize("value", [
@@ -2744,6 +2749,64 @@ def test_r5_01_direct_store_batch_refuses_later_slash_credential_atomically(tmp_
     with m.store.locked(), pytest.raises(StoreError) as e:
         m.store.append_many(items, actor="impl:a")
     assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+@pytest.mark.parametrize("credential", [
+    {"password": {"value": "/s3cret99"}},
+    {"access_token": [{"value": "/abc123def456"}]},
+    {"pwd": {"value": "/secretword"}},
+])
+def test_r6_01_slash_prefixed_nested_credentials_are_secrets(credential):
+    assert model.find_secret(credential) == "credential assignment"
+    assert model.find_secret({"worktree": "/uri-dev/worktree1", "details": credential}) == "credential assignment"
+
+
+def test_r6_01_public_service_refuses_slash_prefixed_password(tmp_path):
+    m = new(tmp_path)
+    before = seg_bytes(m) if m.store.segment_path.exists() else b""
+    with pytest.raises(ValidationError) as e:
+        m.create_milestone("MM-A", "A", objective="password=/s3cret99")
+    assert e.value.code == "SECRET"
+    assert (seg_bytes(m) if m.store.segment_path.exists() else b"") == before
+
+
+@pytest.mark.parametrize("credential", [
+    {"password": {"value": "/s3cret99"}},
+    {"access_token": [{"value": "/abc123def456"}]},
+    {"pwd": {"value": "/secretword"}},
+])
+def test_r6_01_service_write_refuses_nested_credential_without_writing(tmp_path, credential):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    data = {"id": "MM-A", "fields": {"details": credential}}
+    with pytest.raises(ValidationError) as e:
+        m._write(lambda p: [("MILESTONE_UPDATED", data, {"MM-A": p["versions"]["MM-A"]})])
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+@pytest.mark.parametrize("credential", [
+    {"password": {"value": "/s3cret99"}},
+    {"access_token": [{"value": "/abc123def456"}]},
+    {"pwd": {"value": "/secretword"}},
+])
+def test_r6_01_direct_store_append_refuses_nested_credential_without_writing(tmp_path, credential):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    data = {"id": "MM-A", "fields": {"details": credential}}
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append("MILESTONE_UPDATED", data, actor="impl:a")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+def test_r6_01_actual_path_fields_remain_allowed(tmp_path):
+    path = "/uri-dev/worktree1"
+    assert model.find_secret({"worktree": path}) is None
+    assert model.find_secret(f"worktree={path}") is None
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A", worktree=path)
+    assert m.projection()["milestones"]["MM-A"]["worktree"] == path
 
 
 def test_r3_02_ready_requires_dependency_status_bound_to_candidate(tmp_path):

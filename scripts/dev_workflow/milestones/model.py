@@ -55,7 +55,7 @@ SECRET_PATTERNS = [
     ("json web token", re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}")),
     ("credentials in URL", re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^/\s:@]+:[^/\s@]+@")),
 ]
-# key [:=] value, checked in code so paths, env-var names and placeholders are not refused.
+# Credential key [:=] value; path fields do not match these keys. Env-var names and placeholders are exempted below.
 ASSIGNMENT_RX = re.compile(
     r"(?i)\b(?P<key>password|passwd|pwd|passphrase|secret|client[_-]?secret|api[_-]?key|access[_-]?key|"
     r"access[_-]?token|auth[_-]?token|refresh[_-]?token|token|private[_-]?key)\s*[:=]\s*['\"]?(?P<val>[^\s'\",;]+)")
@@ -80,10 +80,6 @@ def _assignment_secret(text: str) -> bool:
             continue  # variable reference or placeholder
         if re.fullmatch(r"[A-Z][A-Z0-9_]{2,}", val):
             continue  # environment variable name
-        if re.match(r"^(?:[A-Za-z]:[/\\]|[/\\]|\.{1,2}[/\\])", val):
-            continue  # recognizable filesystem path (e.g. pwd=D:/uri-dev/x), not any value with a slash
-        if m.group("key").lower() == "pwd" and not re.search(r"[0-9]", val):
-            continue
         return True
     return False
 
