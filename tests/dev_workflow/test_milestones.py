@@ -3141,3 +3141,40 @@ def test_d6_01_store_refuses_quoted_flag_value_without_writing(tmp_path, value):
                             actor="impl:a")
     assert e.value.code == "SECRET"
     assert seg_bytes(m) == before
+
+
+@pytest.mark.parametrize("value", [
+    '{"password":{"value":"hunter2"}}',
+    "{'password': {'value': 'hunter2'}}",
+    'config {"credentials":{"password":{"value":"hunter2"}}}',
+])
+def test_d6_02_inline_nested_credential_is_secret_in_free_text(value):
+    assert model.find_secret(value) == "credential assignment"
+    with pytest.raises(StoreError) as e:
+        check_free_text(data={"title": value})
+    assert e.value.code == "SECRET"
+
+
+@pytest.mark.parametrize("value", [
+    '{"password":{"value":"hunter2"}}',
+    "{'password': {'value': 'hunter2'}}",
+])
+def test_d6_02_batch_refuses_inline_nested_credential_before_append(tmp_path, value):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    items = [("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"title": "safe"}}, {}),
+             ("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"title": value}}, {})]
+    with pytest.raises(StoreError) as e:
+        m.store.append_many(items, actor="impl:a")
+    assert e.value.code == "SECRET"
+    assert seg_bytes(m) == before
+
+
+@pytest.mark.parametrize("value", [
+    '{"password":{"value":["<redacted>"]}}',
+    "{'api_key': {'value': ['${API_KEY}']}}",
+])
+def test_d6_02_inline_nested_credential_references_remain_writable(value):
+    assert model.find_secret(value) is None
+    check_free_text(data={"title": value})

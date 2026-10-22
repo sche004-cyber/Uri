@@ -6,7 +6,9 @@ version are applied and recorded as conflicts, so nothing is silently lost or si
 """
 from __future__ import annotations
 
+import ast
 import copy
+import json
 import re
 
 ID_RE = re.compile(r"^[A-Z0-9][A-Z0-9._-]{1,63}$")
@@ -258,6 +260,45 @@ def _assignment_secret(text: str) -> bool:
     return False
 
 
+def _inline_mapping_secret(text: str) -> str | None:
+    """Check JSON/Python mappings embedded in free text with the same rules as structured values."""
+    closing = {"{": "}", "[": "]", "(": ")"}
+    for match in re.finditer(r"\{(?=\s*['\"])", text):
+        start = match.start()
+        stack, quote, escaped = [], None, False
+        for end in range(start, len(text)):
+            char = text[end]
+            if quote:
+                if escaped:
+                    escaped = False
+                elif char == "\\":
+                    escaped = True
+                elif char == quote:
+                    quote = None
+            elif char in "\"'":
+                quote = char
+            elif char in closing:
+                stack.append(closing[char])
+            elif char in closing.values():
+                if not stack or stack.pop() != char:
+                    break
+                if not stack:
+                    literal = text[start:end + 1]
+                    try:
+                        parsed = json.loads(literal)
+                    except (ValueError, RecursionError):
+                        try:
+                            parsed = ast.literal_eval(literal)
+                        except (ValueError, SyntaxError, RecursionError):
+                            break
+                    if isinstance(parsed, dict):
+                        hit = find_secret(parsed)
+                        if hit:
+                            return hit
+                    break
+    return None
+
+
 class ValidationError(Exception):
     def __init__(self, code: str, message: str):
         super().__init__(f"{code}: {message}")
@@ -279,6 +320,9 @@ def find_secret(value) -> str | None:
                 for name, rx in SECRET_PATTERNS:
                     if rx.search(text):
                         return name
+                hit = _inline_mapping_secret(text) if "{" in text else None
+                if hit:
+                    return hit
                 return "credential assignment" if _assignment_secret(text) else None
             return None
         if isinstance(part, dict):
