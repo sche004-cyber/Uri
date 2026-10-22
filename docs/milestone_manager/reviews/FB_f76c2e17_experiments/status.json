@@ -1,0 +1,39 @@
+{
+ "approvals_open": [],
+ "decisions": {},
+ "generated_at": "2026-10-22T05:32:32Z",
+ "ledger": {
+  "conflicts_open": 0,
+  "events": 6,
+  "integrity_errors": [],
+  "integrity_warnings": []
+ },
+ "milestones": [
+  {
+   "assignment": null,
+   "branch": null,
+   "candidate_commit": "1111111111111111111111111111111111111111",
+   "depends_on": [],
+   "id": "MM-A",
+   "indicator": {
+    "color": "BLUE",
+    "issue": null,
+    "next_action": null,
+    "tone": "accent",
+    "word": "IN PROGRESS"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "RESEARCH",
+   "priority": null,
+   "ready": false,
+   "status": "ACCEPTED",
+   "tasks": null,
+   "title": "A",
+   "worktree": null
+  }
+ ],
+ "schema": "uri-mm-status/1"
+}

@@ -1,0 +1,22 @@
+init (0, ['}'])
+add (0, ['}'])
+CLI handoff 'API key: 9f8e7d6c5b4a3f2e1d0c' (0, ['}'])
+CLI next-action 'API key: 9f8e7d6c5b4a3f2e1d0c' (0, ['}'])
+CLI handoff '| DB password | hunter2 |' (0, ['}'])
+CLI next-action '| DB password | hunter2 |' (0, ['}'])
+CLI handoff '| password | correct horse battery staple |' (0, ['}'])
+CLI next-action '| password | correct horse battery staple |' (0, ['}'])
+CLI handoff '__password__: hunter2' (0, ['}'])
+CLI next-action '__password__: hunter2' (0, ['}'])
+CLI handoff 'password: |\n  none\n  hunter2' (0, ['}'])
+CLI next-action 'password: |\n  none\n  hunter2' (0, ['}'])
+CLI handoff 'PGPASSWORD=hunter2' (0, ['}'])
+CLI next-action 'PGPASSWORD=hunter2' (0, ['}'])
+store append_many ACCEPTED {'note': 'Secret key: 9f8e7d6c5b4a3f2e'}
+in segment: 9f8e7d6c5b4a3f2e1d0c True
+in segment: DB password | hunter2 True
+in segment: correct horse battery staple True
+in segment: __password__: hunter2 True
+in segment: PGPASSWORD=hunter2 True
+in segment: Secret key: 9f8e True
+verify (2, ['}'])

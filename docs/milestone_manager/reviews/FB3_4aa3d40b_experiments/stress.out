@@ -1,0 +1,10 @@
+worker 0 errors 0
+worker 1 errors 0
+worker 2 errors 0
+worker 3 errors 0
+worker 4 errors 0
+worker 5 errors 0
+elapsed 5.5
+verify rc 0 {  "conflicts_open": 0,  "errors": [],  "events": 241,  "git": {   "tracked": false  },  "ok": true,  "segments": {   "h1": {    "events": 241,    "head": "6a520be27b0a32106a5ba30386462fe498b585192feb82bc91c7257aed546e31"   }  },  "torn": [],  "warnings": [] }
+conflicts []
+handoffs 240 integrity_errors []

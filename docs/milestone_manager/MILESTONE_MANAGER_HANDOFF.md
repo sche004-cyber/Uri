@@ -104,3 +104,20 @@ This file is updated at every checkpoint so work can resume without chat history
 | Frozen core | `scripts/ws_frozen_check.py` exit 0; additions only against `ec2fab54` |
 | Open non-blocking | R23-01 (autocommit with non-ASCII ledger path or `diff.relative`), R23-02 (CANDIDATE_CHANGED fingerprint keys), R23-03 (resume notice length) |
 | Integration | NOT integrated. Prerequisites still open: P0 branch unpushed (OPEN-09), POL-P0-1 (OPEN-05, whether subagent acceptance counts for canonical), separate owner integration authorisation |
+
+## Correction (2026-10-22, later the same day)
+
+The Acceptance section above is superseded and kept for history. The owner restated that the Lifecycle V3 driver
+review is primary; R23 was a subagent review without a driver NO_INDEPENDENT_REVIEWER on a28016d3, so it did not
+qualify. The driver then REJECTED a28016d3 with HIGH secret-refusal findings. Runs d1-d4, the fallback reviews FB,
+FB2 and FB3 and their repairs are recorded in `reviews/DRIVER_RUNS_d1_d4.md` and `reviews/FB*_*.md`. The candidate
+moved to branch `review/milestone-manager-a28016d3` (worktree `D:/uri-dev/mm-driver-a28016d3`). The milestone is
+NOT accepted until a driver review, or a fallback review on a commit with a driver NO_INDEPENDENT_REVIEWER, accepts
+the exact candidate and the gates pass.
+
+| # | Date | Commit | State | Next action |
+|---|---|---|---|---|
+| 50 | 2026-10-22 | a28016d3 | driver d1 REJECT (8 rounds), BUDGET; owner: manual default-deny + budget 12 | d2 |
+| 51 | 2026-10-22 | f76c2e17 | d2 REJECT x2 then NO_INDEPENDENT_REVIEWER; fallback FB REJECT | repair de0354ef |
+| 52 | 2026-10-22 | de0354ef | d3 NO_INDEPENDENT_REVIEWER; fallback FB2 REJECT; owner: bounded F16 contract | repair 4aa3d40b |
+| 53 | 2026-10-22 | 4aa3d40b | d4 NO_INDEPENDENT_REVIEWER; fallback FB3 REJECT (5 blocking) | repair FB3-01..06 + docs; driver d5 / fallback FB4 |
