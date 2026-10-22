@@ -522,3 +522,10 @@ disposable worktrees (about 95 runtime materialisations plus many review and gat
 installations, screenshots and temporary artefacts; recovery and retrieval of archived evidence. Depends on Lifecycle
 V3.1 (integrated) and the Milestone Manager. Owner: development lifecycle thread. Status: WHITE (planned).
 
+### P.10 Canonical `8ff6186b` (2026-10-22)
+
+V3.1 -> git-control v2 -> Milestone Manager (MM session) -> GRF-P0-1 integrated, each by fast-forward with its own
+receipt (`P0_CLOSURE_20261022.md` Addendum J). CAP-LC3 (Lifecycle V3.1, Milestone Manager): GREEN. CAP-GR1 GRF-P0-1:
+repaired and integrated (live paired turn NOT VERIFIED). Remaining: OPEN-21 (G1-02), OPEN-02 (`\URIServer`),
+OPEN-22 (PH1-GATE-1), FLAKY-1, GATE-ENV-1, storage milestone P.9.
+
