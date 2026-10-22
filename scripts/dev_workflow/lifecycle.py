@@ -432,9 +432,15 @@ def _user_git_control(repo) -> list[str]:
     return parts
 
 
-def git_control_digest(repo) -> str:
+# Written by `git update-server-info`, which `git repack` runs during any session's auto-gc: transport metadata for
+# dumb protocols, never read by git for local behaviour. Bound by the legacy digest only.
+GENERATED_INFO = {"refs", "packs"}
+
+
+def git_control_digest(repo, legacy: bool = False) -> str:
     """Hooks and config of the shared repository, plus user/system-level git control files: a worker that plants a
-    hook or rewrites config is caught."""
+    hook or rewrites config is caught. ``legacy`` keeps the pre-v2 digest (generated info files included) for runs
+    whose control state was bound with it."""
     common = Path(git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir"))
     parts = _user_git_control(repo)
     for p in sorted((common / "hooks").glob("*")) if (common / "hooks").is_dir() else []:
@@ -444,7 +450,7 @@ def git_control_digest(repo) -> str:
     parts.append("config:" + (sha256("\0".join(_control_config(cfgf))) if cfgf.is_file() else "-"))
     info = common / "info"  # grafts rewrite history; attributes change how files are read
     for p in sorted(info.glob("*")) if info.is_dir() else []:
-        if p.is_file():
+        if p.is_file() and (legacy or p.name not in GENERATED_INFO):
             parts.append(f"info/{p.name}:{sha256(p.read_bytes())}")
     return sha256("\n".join(parts))
 
@@ -469,7 +475,7 @@ def control_state(cfg) -> dict:
     """Repository state that must not change at all during a milestone: hooks/config/info, replace refs, the
     reviewer CLI's identity (R6-01) and the system-wide managed CLI policy (R7-01). The milestone's own refs move
     legitimately (repair commits, the integration target) and are checked per step."""
-    return {"git_control": git_control_digest(cfg["repo"]),
+    return {"git_control_v2": git_control_digest(cfg["repo"]),
             "replace_refs": sha256(git(cfg["repo"], "for-each-ref", "--format=%(refname) %(objectname)", "refs/replace/",
                                        check=False)),
             "reviewer_exec": reviewer_executable(cfg["reviewer"]),
@@ -493,6 +499,9 @@ def control_drift(cfg, st: State) -> str | None:
     cur, anchor = control_state(cfg), control_anchor(st)
     if anchor is None:
         return "no git control state bound in the event chain"
+    if "git_control_v2" not in anchor:  # bound before v2: compared exactly as before
+        cur.pop("git_control_v2")
+        cur["git_control"] = git_control_digest(cfg["repo"], legacy=True)
     bad = [k for k in cur if cur[k] != anchor.get(k)]
     return ("GIT_CONTROL: " + ", ".join(bad) + " changed since the plan (git hooks/config/info, user/system git "
             "config/attributes/ignore, replace refs, the reviewer CLI or managed CLI policy)") if bad else None
@@ -1779,6 +1788,10 @@ def run(cfg, max_steps: int = 50) -> S:
         st.event("CONTROL_ANCHORED", control=control_state(cfg))
     elif "reviewer_policy" not in anchor:  # planned before R7-01: bind only the new key, the others stay as bound
         st.event("CONTROL_ANCHORED", control={**anchor, "reviewer_policy": control_state(cfg)["reviewer_policy"]})
+    anchor = control_anchor(st)
+    if anchor and "git_control_v2" not in anchor and not control_drift(cfg, st):
+        # bound before v2 and unchanged now: bind the v2 digest too; from here on generated info files are ignored
+        st.event("CONTROL_ANCHORED", control={**anchor, "git_control_v2": git_control_digest(cfg["repo"])})
     b = chained_blocker(st)
     if st.stage == S.BLOCKED and not errs and (b or {}).get("kind") == NO_INDEPENDENT_REVIEWER and             (st.d.get("blocker") or {}).get("kind") == NO_INDEPENDENT_REVIEWER:
         # not an owner matter: re-check reviewer availability now, preferred reviewer first
