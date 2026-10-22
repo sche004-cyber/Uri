@@ -490,3 +490,9 @@ queued after MM d2. Details: `P0_CLOSURE_20261022.md` Addendum D.
 `v31-long-p3b` on runtime from `4ef707ba`: 10/10 checks PASS (P3 profile, automation input). V3.1 now needs only
 the owner's r6 unblock (OPEN-17) and integration approval. Details: `P0_CLOSURE_20261022.md` Addendum E.
 
+### P.6 git-control v2 fix accepted (2026-10-22)
+
+`3def4023` (code `c9f3953c`): driver recorded `NO_INDEPENDENT_REVIEWER` on that commit; fallback subagent FB1 ACCEPT
+WITH FINDINGS (3 LOW); gate 321/5/0; frozen clean. Ready for owner integration approval. Details:
+`P0_CLOSURE_20261022.md` Addendum F.
+

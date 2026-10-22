@@ -1,0 +1,20 @@
+HEAD=3def402337fcc0bf7746a072b1791eb8a9a9c5c2 start=2026-10-22T10:58:17+05:30
+........................................................................ [ 22%]
+..........................s.ssss........................................ [ 44%]
+........................................................................ [ 66%]
+........................................................................ [ 88%]
+......................................                                   [100%]
+============================== warnings summary ===============================
+scripts\dev_workflow\auditor.py:41
+  D:\uri-dev\uri-gitctl-v2\scripts\dev_workflow\auditor.py:41: PytestCollectionWarning: cannot collect test class 'TestExecutionResult' because it has a __init__ constructor (from: tests/dev_workflow/test_workflow.py)
+    @dataclass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============== PLATFORM-GATED: 5 test(s) NOT VERIFIED on win32 ===============
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r8_01_setsid_child_of_a_worker_cannot_inject_env_into_the_reviewer_config
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r8_01_setsid_child_of_a_gate_or_test_command_is_killed
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r10_01_timed_out_command_with_setsid_child_holding_stdout_returns_and_is_swept
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r10_01_timed_out_worker_with_setsid_child_holding_stdout_returns_and_is_swept
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r10_01_pipe_holder_outside_the_swept_tree_cannot_block_the_driver
+321 passed, 5 skipped, 1 warning in 1602.62s (0:26:42)
+rc=0 end=2026-10-22T11:25:01+05:30

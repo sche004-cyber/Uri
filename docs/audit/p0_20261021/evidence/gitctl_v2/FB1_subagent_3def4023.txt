@@ -1,0 +1,40 @@
+Source: final hand-back message of the fresh, isolated, read-only reviewer subagent launched by the P0 coordinator
+session (b14d94) on 2026-10-22 after the driver recorded BLOCKED NO_INDEPENDENT_REVIEWER on 3def4023 (events seq 12-14,
+D:/uri-dev/lifecycle/LIFECYCLE-GITCTL-V2/state). The subagent transcript file was empty (result delivered by
+hand-back), so this record is the coordinator's verbatim copy of the AUDIT_RESULT block. Reviewer prompt = driver
+round R2 prompt (state/rounds/R2/reviewer_prompt.md) with fallback round id FB1, checkout
+D:/uri-dev/review-gitctl-3def4023 and temp dir C:/Users/cheta/AppData/Local/Temp/uri_review_gitctl_FB1/.
+Checkouts verified clean after the review (git status --porcelain: 0 lines).
+
+AUDIT_RESULT_BEGIN
+{"candidate": "3def402337fcc0bf7746a072b1791eb8a9a9c5c2", "baseline": "2aa0141e4fa5a1b76a369644335350e867cf3309", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [
+  {"id": "G1-01", "severity": "LOW", "blocking": false, "category": "documentation", "owner_decision": false,
+   "title": "GENERATED_INFO 'packs' is not a file git writes under .git/info; comment and plan rationale are inaccurate",
+   "files": ["scripts/dev_workflow/lifecycle.py:435-437", "docs/dev_workflow/LIFECYCLE_GIT_CONTROL_V2_PLAN_AND_ACCEPTANCE.md:10-11"],
+   "evidence": "Probe in temp repo: after `git repack -a -d` + `git update-server-info`, files are .git/info/{exclude,refs} and .git/objects/info/packs; nothing named .git/info/packs. The v1 digest only globbed <common>/info, so objects/info/packs never caused drift. Excluding info/packs is harmless (git does not read it) but the comment says both names are written by update-server-info.",
+   "suggested_fix": "Either drop 'packs' from GENERATED_INFO or correct the comment/doc to say it is excluded defensively and that objects/info/packs was never bound."},
+  {"id": "G1-02", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "v1->v2 upgrade binds a digest computed after, not by, the clean check",
+   "files": ["scripts/dev_workflow/lifecycle.py:1792-1794"],
+   "evidence": "`if anchor and 'git_control_v2' not in anchor and not control_drift(cfg, st): st.event('CONTROL_ANCHORED', control={**anchor, 'git_control_v2': git_control_digest(cfg['repo'])})` reads hooks/config/info twice; a control change landing between the two reads is bound into the v2 anchor without ever being compared. Window is small (no live repro).",
+   "suggested_fix": "Compute the legacy and v2 digests from one read of the control files (e.g. return both parts lists from one pass), compare legacy with the anchor, and bind the v2 value derived from that same read."},
+  {"id": "G1-03", "severity": "LOW", "blocking": false, "category": "documentation", "owner_decision": false,
+   "title": "State dirs planned/unblocked by the v2 driver stop with a false GIT_CONTROL tamper if resumed by a pre-v2 driver copy",
+   "files": ["scripts/dev_workflow/lifecycle.py:478", "scripts/dev_workflow/lifecycle.py:2119", "docs/dev_workflow/LIFECYCLE_GIT_CONTROL_V2_PLAN_AND_ACCEPTANCE.md:41"],
+   "evidence": "v2 control_state has no 'git_control' key; baseline control_drift computes `bad = [k for k in cur if cur[k] != anchor.get(k)]` with cur['git_control'] set and anchor.get('git_control') None, so it reports drift. Fail-closed (not a bypass). Upgraded anchors keep 'git_control' and are unaffected. AC-8 only covers the reverse direction.",
+   "suggested_fix": "State in AC-8/the plan that a state dir touched by the v2 driver must not be resumed by a pre-v2 driver copy (or keep binding the legacy 'git_control' key alongside v2 in PLAN/OWNER_UNBLOCK)."}
+ ],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "PYTHONPATH=. python -m pytest -c scripts/phase2d_pytest.ini --rootdir=. -p no:cacheprovider --basetemp=<tmp>/pt_cand tests/dev_workflow/test_lifecycle_git_control_v2.py -q (candidate)", "result": "5 passed in 38.17s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "same new test file run against baseline 2aa0141e tree extracted with git archive to <tmp>/base", "result": "4 failed, 1 passed (attributes guard passes) - matches AC-6 claim", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "PYTHONPATH=. python -m pytest ... tests/dev_workflow/test_lifecycle.py test_lifecycle_auditor_fallback.py test_lifecycle_windows_cli.py -k 'control or tamper or hook or config or info or graft or replace or policy or reviewer_exec or user_level or unblock or repair' (candidate)", "result": "40 passed, 1 skipped (Linux-gated), 114 deselected in 369.88s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "probe: baseline git_control_digest vs candidate git_control_digest(legacy=True) and v2 on 4 temp repos (plain; repack+update-server-info; info/refs+packs+exclude+subdir; hook+sparse-checkout)", "result": "legacy == baseline on all 4; v2 differs from legacy only where info/refs or info/packs exist", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "probe: git update-server-info output locations; planted .git/info/refs and .git/info/packs then for-each-ref, ls-remote, clone", "result": "update-server-info writes .git/info/refs and .git/objects/info/packs; planted info files do not affect local refs, ls-remote or clone", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "inspected": ["git diff 2aa0141e..3def4023 (all 3 files)", "docs/dev_workflow/LIFECYCLE_GIT_CONTROL_V2_PLAN_AND_ACCEPTANCE.md (full)", "scripts/dev_workflow/lifecycle.py: _user_git_control, git_control_digest, control_state, control_anchor, control_drift, evidence_ok, do_review snapshot, diagnosis snapshot, do_repair control window, init/PLAN, run() anchoring and per-step drift check, unblock, State.event, _chained_events, verify, write_receipt", "tests/dev_workflow/test_lifecycle_git_control_v2.py", "repo-wide grep for git_control/control_drift/control_state consumers", "git log 2aa0141e..HEAD; changed-path list vs protected paths", "67d45317 GENERATED_INFO/legacy/review_snapshot lines (to confirm no reviewer-tier code was ported)"],
+ "evidence_reviewed_only": ["Plan document claims of recorded false TAMPER/EVIDENCE stops (LIFECYCLE-V3-1 r1/r4/r6, MILESTONE-MANAGER-d1)", "Plan document claim: full tests/dev_workflow 321 passed, 5 skipped on c9f3953c", "Plan document claim: ws_frozen_check unapproved_protected_changes: []"],
+ "live_observed": [],
+ "unverified": ["Full tests/dev_workflow suite not run by this reviewer (coordinator gate); does not affect verdict given targeted tests pass", "Historical false-alarm stops not reproduced from real state dirs; does not affect verdict", "ws_frozen_check tool not executed; protected-path scope checked by path matching only", "Symlinked .git/info directory behaviour (exists before this change, not altered by the diff)"]}
+AUDIT_RESULT_END
