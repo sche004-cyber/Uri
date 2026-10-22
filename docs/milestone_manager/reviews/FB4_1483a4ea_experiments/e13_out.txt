@@ -1,0 +1,12 @@
+== malformed
+unknown kind | fold OK | cli verify rc 0 {  "conflicts_open": 0,  "errors": [],  "events": 2,  "git": {   "tracked": false  },  "ok": true,  "segments": {   "h1"
+handoff no id | fold KeyError 'id' at model.py:642 | cli verify rc 2 {  "error": "INPUT",  "message": "KeyError: 'id'" }
+status-set no id | fold KeyError 'id' at model.py:518 | cli verify rc 2 {  "error": "INPUT",  "message": "KeyError: 'id'" }
+data list | fold TypeError list indices must be integers or slices, not str at model.py:494 | cli verify rc 2 {  "error": "INPUT",  "message": "TypeError: list indices must be integers or slices, not str" }
+== r2301
+ascii {'committed': True}
+non-ascii {'committed': False, 'error': 'error: pathspec \'"l\\303\\251dger/.gitignore"\' did not match any file(s) known to git\nerror: pathspec \'"l\\303\\251dger/events/h1.jsonl"\' did not match any file(s) known to git\nerror: pathspec \'"l\\303\\251dger/m
+diff.relative {'committed': False, 'error': "error: pathspec '.gitignore' did not match any file(s) known to git\nerror: pathspec 'events/h1.jsonl' did not match any file(s) known to git\nerror: pathspec 'mm.json' did not match any file(s) known to git"}
+== r2303
+first lines lens [75, 83, 29, 0, 37, 13]
+max resume len over title lengths 1..119 at max_chars=200: 242

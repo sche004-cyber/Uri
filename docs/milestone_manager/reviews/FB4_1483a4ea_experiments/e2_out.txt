@@ -1,0 +1,124 @@
+ok   'kv =': 'password=Zq81mPx0aa' -> credential assignment
+ok   'kv :': 'password: Zq81mPx0aa' -> credential assignment
+ok   'kv spaced': 'password = Zq81mPx0aa' -> credential assignment
+ok   'prefix': 'db_password=Zq81mPx0aa' -> credential assignment
+ok   'UPPER': 'DB_PASSWORD=Zq81mPx0aa' -> credential assignment
+ok   'camel': 'dbPassword: Zq81mPx0aa' -> credential assignment
+ok   'dash': 'github-token: Zq81mPx0aa' -> credential assignment
+ok   'api key words': 'API key: Zq81mPx0aa' -> credential assignment
+ok   'secret key words': '- Secret key = Zq81mPx0aa' -> credential assignment
+ok   'DB password': 'DB password: Zq81mPx0aa' -> credential assignment
+ok   'three-word': 'Prod DB password: Zq81mPx0aa' -> credential assignment
+ok   'client secret': 'client secret: Zq81mPx0aa' -> credential assignment
+ok   'json': '{"password": "Zq81mPx0aa"}' -> credential assignment
+ok   'json nospace': '{"user":"bob","password":"Zq81mPx0aa"}' -> credential assignment
+ok   'json spaced key': '{"db password": "Zq81mPx0aa"}' -> credential assignment
+ok   'py dict': "{'api_key': 'Zq81mPx0aa'}" -> credential assignment
+ok   'yaml inline': 'db:\n  password: Zq81mPx0aa\n' -> credential assignment
+ok   'yaml block': 'password:\n  Zq81mPx0aa\n' -> credential assignment
+ok   'yaml literal': 'password: |\n  line1\n  Zq81mPx0aa\n' -> credential assignment
+ok   'yaml folded 2nd line': 'token: >\n  ok\n  Zq81mPx0aa\n' -> credential assignment
+ok   'yaml block nested in list': '- name: x\n  password:\n    Zq81mPx0aa\n' -> credential assignment
+ok   'yaml quoted': "password: 'Zq81mPx0aa'" -> credential assignment
+ok   'md bold': '**password**: Zq81mPx0aa' -> credential assignment
+ok   'md bold colon inside': '**Password:** Zq81mPx0aa' -> credential assignment
+ok   'md code': '`api_key`: Zq81mPx0aa' -> credential assignment
+ok   'md underscore': '__password__: Zq81mPx0aa' -> credential assignment
+ok   'md strike': '~~password~~: Zq81mPx0aa' -> credential assignment
+ok   'md single underscore': '_password_: Zq81mPx0aa' -> credential assignment
+ok   'md bold underscore multiword': '__API key__: Zq81mPx0aa' -> credential assignment
+ok   'md list bold': '- **DB password**: Zq81mPx0aa' -> credential assignment
+ok   'table': '| password | Zq81mPx0aa |' -> credential assignment
+ok   'table multiword key': '| DB password | Zq81mPx0aa |' -> credential assignment
+ok   'table quoted key': "| 'password' | Zq81mPx0aa |" -> credential assignment
+ok   'table 3col': '| svc | password | Zq81mPx0aa |' -> credential assignment
+ok   'table multiword value': '| password | Zq81mPx0aa and more |' -> credential assignment
+ok   'table md key': '| **password** | Zq81mPx0aa |' -> credential assignment
+ok   'table code key': '| `api_key` | Zq81mPx0aa |' -> credential assignment
+ok   'flag =': '--password=Zq81mPx0aa' -> credential assignment
+ok   'flag space': '--password Zq81mPx0aa' -> credential assignment
+ok   'flag single dash': '-pwd Zq81mPx0aa' -> credential assignment
+ok   'flag in cmd': 'psql -h db --db-password Zq81mPx0aa -U x' -> credential assignment
+ok   'flag quoted': '--password "Zq81mPx0aa"' -> credential assignment
+ok   'compound one-word': 'PGPASSWORD=Zq81mPx0aa' -> credential assignment
+ok   'compound lower': 'accesstoken: Zq81mPx0aa' -> credential assignment
+ok   'compound mixed': 'MyApiKey=Zq81mPx0aa' -> credential assignment
+ok   'basic auth': 'Authorization: Basic dXNlcjpwYXNzd29yZA==' -> basic auth header
+ok   'bearer': 'Authorization: Bearer aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -> bearer token
+ok   'url creds': 'postgres://user:hunter2@db/x' -> credentials in URL
+ok   'sk key': 'sk-aaaaaaaaaaaaaaaaaaaaaaaa' -> openai/anthropic-style key
+ok   'ghp': 'ghp_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -> github token
+ok   'AKIA': 'AKIAAAAAAAAAAAAAAAAA' -> aws access key
+ok   'jwt': 'eyJhbGciOiJI.eyJzdWIiOiIx.c2lnbmF0dXJl' -> json web token
+ok   'privkey': '-----BEGIN RSA PRIVATE KEY-----' -> private key block
+ok   'hf': 'hf_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -> hugging face token
+ok   'stripe': 'sk_live_aaaaaaaaaaaaaaaaaaaa' -> stripe key
+ok   'slack': 'xoxb-1234567890-abc' -> slack token
+ok   'fullwidth eq': 'password＝Zq81mPx0aa' -> credential assignment
+ok   'zero width': 'pass\u200bword=Zq81mPx0aa' -> credential assignment
+ok   'ref then secret': 'password: ${DB_PASSWORD} Zq81mPx0aa' -> credential assignment
+ok   'env then secret': 'password: env:X Zq81mPx0aa' -> credential assignment
+ok   'short pw': 'password: abc' -> credential assignment
+ok   'dollar pw': 'password: $uperS3cret!' -> credential assignment
+ok   'slash pw': 'password: /s3cret99' -> credential assignment
+ok   'comma pw': 'password: abc,defghi9' -> credential assignment
+ok   '7digit token': 'token: 1234567' -> credential assignment
+ok   'placeholder+secret': 'password: <redacted> Zq81mPx0aa' -> credential assignment
+ok   'two kv one line': 'user: bob password: Zq81mPx0aa' -> credential assignment
+ok   'semicolon conn': 'Server=x;User Id=u;Password=Zq81mPx0aa;' -> credential assignment
+ok   'kv after prose': 'Use this, password=Zq81mPx0aa ok' -> credential assignment
+ok   'ini': '[db]\npassword = Zq81mPx0aa\n' -> credential assignment
+ok   'env export': 'export API_KEY=Zq81mPx0aa' -> credential assignment
+ok   'env set': 'set DB_PASSWORD=Zq81mPx0aa' -> credential assignment
+ok   'toml': 'password = "Zq81mPx0aa"' -> credential assignment
+ok   'python kwarg': 'connect(user="u", password="Zq81mPx0aa")' -> credential assignment
+ok   'dict json nested': '{"db": {"password": "Zq81mPx0aa"}}' -> credential assignment
+ok   'json array of obj': '[{"token": "Zq81mPx0aa"}]' -> credential assignment
+ok   'yaml dash key': '- password: Zq81mPx0aa' -> credential assignment
+MISS 'table dash key': '| - password | Zq81mPx0aa |' -> None
+ok   'key with dot': 'db.password=Zq81mPx0aa' -> credential assignment
+ok   'header style': 'X-Api-Key: Zq81mPx0aa' -> credential assignment
+ok   'secret_access_key': 'aws_secret_access_key = Zq81mPx0aa' -> credential assignment
+ok   'passphrase': 'passphrase: Zq81mPx0aa' -> credential assignment
+ok   'passcode': 'passcode=Zq81mPx0aa' -> credential assignment
+ok   'session_key': 'session_key=Zq81mPx0aa' -> credential assignment
+ok   'value with dash start': 'password: -Zq81mPx0aa' -> credential assignment
+ok   'yaml block after comment': 'password: # note\n  Zq81mPx0aa\n' -> credential assignment
+ok   'yaml block anchor': 'password: &a\n  Zq81mPx0aa\n' -> credential assignment
+ok   'yaml tag': 'password: !!str Zq81mPx0aa' -> credential assignment
+ok   'json escaped quote key': '{"password" :\t"Zq81mPx0aa"}' -> credential assignment
+ok   'md table w/ emphasis value': '| password | **Zq81mPx0aa** |' -> credential assignment
+ok   'md heading key': '### password: Zq81mPx0aa' -> credential assignment
+MISS 'html-ish': '<b>password</b>: Zq81mPx0aa' -> None
+ok   'bold value': 'password: **Zq81mPx0aa**' -> credential assignment
+ok   'code value': 'password: `Zq81mPx0aa`' -> credential assignment
+ok   'tilde fence key': '~password~: Zq81mPx0aa' -> credential assignment
+MISS 'triple underscore': '___password___: Zq81mPx0aa' -> None
+ok   'quoted key yaml block': '"password":\n  Zq81mPx0aa\n' -> credential assignment
+ok   'yaml block deeper first blank': 'password:\n\n  Zq81mPx0aa\n' -> credential assignment
+ok   'CRLF yaml block': 'password:\r\n  Zq81mPx0aa\r\n' -> credential assignment
+ok   'CRLF kv': 'x: 1\r\npassword: Zq81mPx0aa\r\n' -> credential assignment
+ok   'tab table': '|\tpassword\t|\tZq81mPx0aa\t|' -> credential assignment
+ok   'flag tab': '--password\tZq81mPx0aa' -> credential assignment
+ok   'plus-sign flag': '+password=Zq81mPx0aa' -> credential assignment
+ok   'colon-eq': 'password := Zq81mPx0aa' -> credential assignment
+ok   'arrow': 'password => Zq81mPx0aa' -> credential assignment
+---- normal use
+ok   'id': 'PASSWORD-RESET milestone' -> None
+ok   'ref': 'password: ${DB_PASSWORD}' -> None
+ok   'env': 'api_key: $OPENAI_API_KEY' -> None
+ok   'placeholder': 'password: <redacted>' -> None
+ok   'state': 'token: expired' -> None
+ok   'ctx': 'token: 128k context' -> None
+ok   'count': 'token_count: 4096' -> None
+ok   'file': 'password_file: /etc/x.txt' -> None
+ok   'type': 'api_key_type: bearer' -> None
+ok   'prose': 'We rotated the password yesterday.' -> None
+ok   'header': '| Token | Value |' -> None
+ok   'milestone ids': 'MM-TOKEN-REFRESH depends on API-KEY-ROTATION' -> None
+ok   'mask': 'password: ********' -> None
+ok   'decision': 'DEC-012: secrets live in the OS keyring, never in the ledger' -> None
+ok   'md list': '- secret refusal: done' -> None
+FP   'yaml list ok': 'password:\n  - required\n' -> credential assignment
+MISSES: ['table dash key', 'html-ish', 'triple underscore']
+FALSE POSITIVES: ['yaml list ok']

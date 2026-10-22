@@ -442,3 +442,8 @@ explicit contract (ACCEPTANCE_CRITERIA.md). The detector (`model.find_secret`) n
 | descriptive keys (`token_count`, `password_file`, `api_key_type`) are checked by the shape their last word implies | FB2-04 |
 | YAML block values, key/value table rows, command-line flags, `Authorization: Basic` | FB2-01, FB2-02, FB2-05 |
 | NFKC normalisation without zero-width characters | FB-04 |
+
+Correction after fallback review FB4 (2026-10-22): between 61729a8d and 1483a4ea the `base` of a direct append was
+flattened to keys and values, so a credential pair in `base` was not refused (FB4-01). Since the FB4 repair, base keys
+are checked as free text only when every value is a version number (ids such as PASSWORD-RESET stay writable);
+any other `base` is checked as a dict, pairs included.

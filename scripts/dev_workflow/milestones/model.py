@@ -54,7 +54,7 @@ SECRET_PATTERNS = [
     ("hugging face token", re.compile(r"\bhf_[A-Za-z0-9]{30,}")),
     ("json web token", re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}")),
     ("credentials in URL", re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^/\s:@]+:[^/\s@]+@")),
-    ("basic auth header", re.compile(r"(?i)\bauthorization\s*[:=]\s*basic\s+[A-Za-z0-9+/]{8,}=*")),
+    ("basic auth header", re.compile(r"(?i)\bauthorization\W{0,8}basic\s+[A-Za-z0-9+/]{8,}=*")),
 ]
 # F16 contract (owner decision 2026-10-22, ACCEPTANCE_CRITERIA.md): refused are the known token formats above and
 # credential key/value pairs in standard notations - key=v, key: v, JSON/Python dicts (quoted keys, also with
@@ -64,7 +64,8 @@ SECRET_PATTERNS = [
 #
 # Credential keys are recognised by their words, so prefixes, suffixes, camelCase and quotes do not hide them
 # (fallback review FB-01/FB-02): db_password, DB_PASSWORD, myPassword, "api_key", github-token, clientSecret.
-CREDENTIAL_WORDS = {"password", "passwd", "pwd", "passphrase", "passcode", "secret", "secrets", "token",
+CREDENTIAL_WORDS = {"password", "passwords", "passwd", "pwd", "passphrase", "passcode", "secret", "secrets", "token",
+                    "authkey",
                     "credential", "credentials", "apikey", "privatekey", "accesskey", "sessionkey"}
 CREDENTIAL_PAIRS = {("api", "key"), ("access", "key"), ("private", "key"), ("secret", "key"), ("auth", "key"),
                     ("session", "key")}
@@ -77,7 +78,8 @@ ENUM_WORDS = {"type", "policy", "policies", "rotation", "usage", "kind", "mode",
               "embd"}
 DESCRIPTIVE_WORDS = NUMERIC_WORDS | PATH_WORDS | ENUM_WORDS
 COMPOUND_SUFFIXES = ("password", "passwd", "token", "secret", "apikey")
-KEY_SEP_RX = re.compile(r"(?:([\"'])([^\"'\n]{1,60})\1|(?<![A-Za-z0-9_.])([A-Za-z][A-Za-z0-9_.-]*))\s*[:=]")
+KEY_SEP_RX = re.compile(r"(?:([\"'])([^\"'\n]{1,60})\1\s*[\])]?|(?<![A-Za-z0-9_.])[_0-9]*([A-Za-z][A-Za-z0-9_.-]*))"
+                        r"\s*[:=]")
 FLAG_SPACE_RX = re.compile(r"(?<![A-Za-z0-9_.-])-{1,2}([A-Za-z][A-Za-z0-9_.-]*)[ \t]+(?!-)(\S+)")
 STATUS_WORDS = {"expired", "rotated", "revoked", "invalid", "valid", "budget", "limit", "count", "present",
                 "absent", "stored", "encrypted", "configured", "unavailable", "disabled", "enabled", "hidden"}
@@ -161,7 +163,8 @@ def _credential_value_secret(key: str, val: str) -> bool:
     """Default deny: every word of a value under a credential key must be a placeholder, a state word, a mask, an
     exact variable reference, a context size (token keys) or match the shape of a descriptive key."""
     cls = key_class(key) or "credential"
-    words = [w for w in re.split(r"[\s,;|]+", normalise(str(val)).strip()) if w.strip("'\"{}()[]")]
+    words = [w for w in re.split(r"[\s,;|]+", normalise(str(val)).strip()) if w.strip("'\"{}()[]")
+             and w not in ("-", "*")]
     context = any(w.lower().strip("'\"{}()[]") in CONTEXT_WORDS for w in words)
     return bool(words) and not all(_exempt_word(cls, key, w, context)
                                    or _exempt_word(cls, key, w.strip("'\"{}()[]"), context) for w in words)
@@ -170,7 +173,10 @@ def _credential_value_secret(key: str, val: str) -> bool:
 STRUCT_SEP_RX = re.compile(r"[,;{\[\n]\s*\Z")
 
 
-EMPHASIS_RX = re.compile(r"(?<![A-Za-z0-9])[_~]{1,2}([A-Za-z][A-Za-z0-9._-]*?)[_~]{1,2}(?=\s*[:=])")
+EMPHASIS_RX = re.compile(r"(?<![A-Za-z0-9])[_~]{1,3}([A-Za-z][A-Za-z0-9._-]*?)[_~]{1,3}(?=\s*[:=])")
+
+
+ID_LIKE_RX = re.compile(r"[A-Z0-9]+(?:-[A-Z0-9]+)+")
 
 
 def _bare_key(text: str, m) -> str:
@@ -213,6 +219,8 @@ def _block_value(text: str, m, lines: list[str]) -> str:
 def _table_pair(a: str, b: str) -> bool:
     """| password | x |, | DB password | x |, | password | several words | (FB2-02, FB3-02); a multi-word key over a
     multi-word value is a prose table, not an assignment (P0 registers), and "| Token | Value |" is a header."""
+    if ID_LIKE_RX.fullmatch(a):
+        return False  # "| PASSWORD-RESET | ACCEPTED |" names a milestone (FB4-05)
     one_key = re.fullmatch(r"[A-Za-z][\w.-]*", a)
     short_key = re.fullmatch(r"[A-Za-z][\w.-]*(?: [A-Za-z][\w.-]*){1,2}", a)
     one_value = re.fullmatch(r"\S+", b)
@@ -228,8 +236,8 @@ def _assignment_secret(text: str) -> bool:
     marks = list(KEY_SEP_RX.finditer(text))
     for i, m in enumerate(marks):
         key = _bare_key(text, m)
-        if not credential_key(key):
-            continue
+        if not credential_key(key) or (m.group(3) and ID_LIKE_RX.fullmatch(key)):
+            continue  # "PASSWORD-RESET: done" names a milestone (FB4-05)
         # the value runs to the next assignment that follows a structural separator ("a: x, b: y", '{"a": 1, "b"'),
         # so "password: env:DB_PASSWORD hunter2" is read whole (driver D2-02)
         nxt = [n for n in marks[i + 1:] if STRUCT_SEP_RX.search(text, 0, n.start())]
@@ -263,6 +271,9 @@ def find_secret(value) -> str | None:
             for key in keys:
                 if credential_key(key) and _credential_value_secret(key, str(part).strip()):
                     return "credential assignment"
+            if isinstance(part, str) and any("authorization" in _key_words(k) for k in keys) \
+                    and re.match(r"(?i)\s*basic\s+[A-Za-z0-9+/]{8,}", part):
+                return "basic auth header"
             if isinstance(part, str):
                 text = normalise(part)
                 for name, rx in SECRET_PATTERNS:

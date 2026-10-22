@@ -121,3 +121,15 @@ the exact candidate and the gates pass.
 | 51 | 2026-10-22 | f76c2e17 | d2 REJECT x2 then NO_INDEPENDENT_REVIEWER; fallback FB REJECT | repair de0354ef |
 | 52 | 2026-10-22 | de0354ef | d3 NO_INDEPENDENT_REVIEWER; fallback FB2 REJECT; owner: bounded F16 contract | repair 4aa3d40b |
 | 53 | 2026-10-22 | 4aa3d40b | d4 NO_INDEPENDENT_REVIEWER; fallback FB3 REJECT (5 blocking) | repair FB3-01..06 + docs; driver d5 / fallback FB4 |
+| 54 | 2026-10-22 | 1483a4ea | d5 NO_INDEPENDENT_REVIEWER; fallback FB4 REJECT (FB4-01 regression, FB4-02/03) | repair FB4 |
+| 55 | 2026-10-22 | (FB4 repair, see `git log`) | FB4-01..06 repaired; 469 MM tests; frozen check to run on the commit | driver d6 when Codex returns (~13:38 IST), else fallback FB5; gates |
+
+## Verification after the driver runs (living)
+
+| Item | Value |
+|---|---|
+| Current candidate | head of `review/milestone-manager-a28016d3` (see `git log`) |
+| MM tests | 469 passed on the FB4 repair commit |
+| Full gates (dev_workflow; oi+ws; a2ui/assist/ssrf/web; ws_frozen_check) | not yet completed on a current candidate; runs on earlier candidates were stopped as superseded and marked "not evidence" in `D:/uri-dev/mm-evidence/gate_*` |
+| Open LOW (non-blocking) | R23-01 (autocommit with non-ASCII ledger path or `diff.relative`), R23-02 (CANDIDATE_CHANGED keys not in the fingerprint), R23-03 (resume notice length), FB3-07 (crafted edge cases), FB3-08 (malformed hash-valid event makes the fold raise), FB3-10 / FB2-07 (prose false positives), FB4-06 remainder |
+| Accepted | NO |

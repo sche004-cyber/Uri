@@ -3062,3 +3062,49 @@ def test_fb3_05_credential_words_in_milestone_ids_stay_writable(tmp_path, ident)
     m.update_milestone(ident, next_action="continue")
     m.set_status(ident, "IN_PROGRESS", "start")
     assert m.projection()["milestones"][ident]["status"] == "IN_PROGRESS"
+
+
+# ------------------------------------------------------------------ fallback review of 1483a4ea (FB4-01..FB4-06)
+
+FB4_SECRETS = [
+    "_password = 'hunter2'", "__password = 'hunter2'", "_DB_PASSWORD=hunter2", "export _TOKEN=abc123def",
+    "_api_key: abc123def", "1password: hunter2", "___password___: hunter2", "os.environ['DB_PASSWORD'] = 'hunter2'",
+    "cfg['password'] = 'hunter2'", 'cfg["api_key"]="abc123def"', {"Authorization": "Basic dXNlcjpodW50ZXIy"},
+    '{"Authorization": "Basic dXNlcjpodW50ZXIy"}', "| Authorization | Basic dXNlcjpodW50ZXIy |",
+    "**Authorization**: Basic dXNlcjpodW50ZXIy", "AUTHKEY=abc123", "passwords: hunter2",
+]
+FB4_CLEAN = ["PASSWORD-RESET: done", "- PASSWORD-RESET: ACCEPTED", "| PASSWORD-RESET | ACCEPTED |",
+             "OAUTH-TOKEN: implemented refresh flow", "Blocked: TOKEN-REFRESH: waiting on owner", "password:\n  - required",
+             "authorization: owner approved"]
+
+
+@pytest.mark.parametrize("value", FB4_SECRETS)
+def test_fb4_prefixed_subscripted_and_basic_forms_are_refused(value):
+    assert model.find_secret(value), value
+
+
+@pytest.mark.parametrize("value", FB4_CLEAN)
+def test_fb4_milestone_ids_and_list_markup_pass(value):
+    assert model.find_secret(value) is None, value
+
+
+@pytest.mark.parametrize("base", [{"password": "hunter2xyz"}, {"api_key": "abc123def456"},
+                                  {"db_password": "Tr0ub4dor&3"}, {"MM-A": 0, "token": "abc123def456"}])
+def test_fb4_01_store_base_pairs_stay_checked(tmp_path, base):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append_many([("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"objective": "x"}}, base)],
+                            actor="impl:a")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+def test_fb4_cli_refuses_subscripted_key_without_writing(tmp_path):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "impl:a", "milestone-update", "MM-A", "--objective",
+                    "os.environ['DB_PASSWORD'] = 'hunter2'"], out=out) != 0
+    assert seg_bytes(m) == before and "SECRET" in out.getvalue()
