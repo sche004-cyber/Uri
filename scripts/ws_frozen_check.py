@@ -67,7 +67,7 @@ APPROVED = {
     # Graphify hint rule. Anchored to the commit that introduced it, like FCV-01/FCV-05.
     "uri_core/core/paired_reasoning.py": {
         "sha256": "69a19588c326f0665428a354bf613923a1b123f7cf878f3b1434895bc4179230",
-        "decisions": ["OWNER-OPEN-14-GRF-P0-1-20261022"],
+        "decisions": ["OPEN-14/GRF-P0-1"],
         "commits": ["a40d25453a9861030d95c40164c7d8fce98af7cb"],
         "provenance": ["docs/graphify/GRF_P0_1_PLAN_AND_ACCEPTANCE.md"],
         "anchor": "a40d25453a9861030d95c40164c7d8fce98af7cb",
