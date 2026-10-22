@@ -1,0 +1,8 @@
+# Test-only dependencies (never needed by the URI runtime; install in addition to requirements.txt to run the
+# full test suites):  python -m pip install -r requirements.txt -r requirements-test.txt
+#
+# PH1-GATE-1 (P0 audit, owner decision OPEN-22, 2026-10-22): tests/office/test_sheet_name_contract.py and
+# tests/office/test_xb1_brain_status.py validate the Office Brain JSON schema with jsonschema (Draft 2020-12).
+# No runtime module imports it, so it is not a production dependency. Without it the whole-repository Phase 1
+# collection stops at those two modules.
+jsonschema>=4.18
