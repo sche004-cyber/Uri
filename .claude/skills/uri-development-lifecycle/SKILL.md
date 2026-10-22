@@ -124,6 +124,33 @@ lifecycle numbers in the first column.
    then stop BLOCKED NO_ACTIONABLE_FINDINGS or even reach VERIFIED), do not edit the bound config: start a revision
    config (see "Revision configs") with `claude_cli` and a full audit from round 1.
 
+## Persistent task ledger (Lifecycle V3.1, 2026-10-21)
+
+`scripts/dev_workflow/task_ledger.py` keeps every development task across sessions, models, worktrees and restarts
+(one SQLite file outside every worktree: `URI_TASK_LEDGER`, default `~/.uri-dev/task_ledger.sqlite3`). It does not
+replace the driver: driver runs stay the source of review rounds, gates and integration; the ledger links them
+(`link-v3`, `sync-v3`, `import-v3`, read-only) and adds what the driver lacks: task ids, context, write-ahead steps,
+claims, leases, recovery, handoffs. Milestones, roadmap and owner decisions belong to the Milestone Manager.
+
+- Start of a session: `task_ledger recover --actor claude:<session>`, then `task_ledger handoff <task>` - the
+  handoff (also written to `<ledger dir>/handoffs/<task>.md`) is the starting point, not the chat.
+- While working: `claim` the task, `step-start` before a step and `step-end` after it, `add` decisions,
+  constraints, evidence and the `next_action`, `head` for each commit, `test` with its log for each gate run.
+- Review paths (owner clarification 2026-10-21): the driver's independent review (Codex, then claude_cli, in the
+  reviewer chain) is **primary**. A fresh isolated Claude or Codex subagent/session review is a **fallback** only
+  when that mechanism cannot operate: record it with `task_ledger review` (the verdict is re-parsed from the
+  reviewer's own output and bound to the exact commit). `task_ledger accept` takes a fallback verdict only when a
+  linked driver run's hash chain shows `NO_INDEPENDENT_REVIEWER` on that exact commit, never over a driver verdict
+  on that commit, and only with a passing test result recorded on that commit. Fallback reviewers never lower the
+  bar: same exact-commit evidence, same findings rules, same gates, a persistent receipt. Item 3 of "Auditor
+  selection" (imported review not driver-counted) still governs the driver's own state; the ledger records the
+  fallback path and its basis.
+- Development pause: `availability --dev claude|codex --unavailable` for both pauses every task with a checkpoint;
+  only Claude or Codex, recorded available again, can `resume`. Antigravity and subagents can never resume,
+  transition or accept (Antigravity may add notes/evidence).
+- Canonical integration is unchanged (driver `integration` with owner authorisation); `task_ledger integrated`
+  only records it from ancestry and the receipt.
+
 ## Revision configs
 
 A revision (`<milestone>-c` for a new auditor, `<milestone>-u<n>` after a UX repair, `<milestone>-final`) is a new

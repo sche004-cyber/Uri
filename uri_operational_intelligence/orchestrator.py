@@ -251,7 +251,8 @@ class Orchestrator:
         if res.escalation_candidate:
             emit("escalation.offer", reason="normal_budget_exhausted", options=H.choose(self.harness_statuses()).to_dict())
         if res.status not in (BC.COMPLETE, BC.INCOMPLETE_LENGTH, BC.CANCELLED):
-            emit("error", code="BRAIN_" + res.status, message="The local Brain did not finish this answer.",
+            emit("error", code="BRAIN_" + res.status, message=res.error if res.status == A.CONTEXT_TOO_LARGE
+                 else "The local Brain did not finish this answer.",
                  recoverable=True, recovery_options=["retry"] + (["keep_partial"] if res.text else []))
         status = {"COMPLETE": "ok", "INCOMPLETE_LENGTH": "incomplete", "CANCELLED": "cancelled"}.get(res.status, "error")
         return TurnOutcome(turn_id, "answer", tri.to_dict(), tier.to_dict(), status, answer=res.to_dict())

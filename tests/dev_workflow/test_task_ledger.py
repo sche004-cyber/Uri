@@ -1,0 +1,1553 @@
+"""Lifecycle V3.1 task ledger: acceptance criteria AC-1..AC-12 of docs/dev_workflow/LIFECYCLE_V3_1_PLAN_AND_ACCEPTANCE.md."""
+import json
+import os
+import sqlite3
+import subprocess
+import sys
+import textwrap
+import time
+from pathlib import Path
+
+import pytest
+
+from scripts.dev_workflow import task_ledger as tl
+from scripts.dev_workflow.lifecycle import State, sha256, write_json
+
+ROOT = Path(__file__).resolve().parents[2]
+DEV = "claude:impl-session"
+REV = "subagent:reviewer-1"
+
+
+def _git(repo, *a):
+    return subprocess.run(["git", "-C", str(repo), *a], capture_output=True, text=True, check=True).stdout.strip()
+
+
+@pytest.fixture
+def repo(tmp_path):
+    r = tmp_path / "repo"
+    r.mkdir()
+    _git(r, "init", "-q", "-b", "main")
+    _git(r, "config", "user.email", "t@example.invalid")
+    _git(r, "config", "user.name", "t")
+    _git(r, "config", "core.autocrlf", "false")
+    (r / "a.txt").write_bytes(b"one\n")
+    _git(r, "add", ".")
+    _git(r, "commit", "-q", "-m", "c1")
+    return r
+
+
+def _commit(repo, name, data):
+    (repo / name).write_bytes(data)
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-q", "-m", name)
+    return _git(repo, "rev-parse", "HEAD")
+
+
+@pytest.fixture
+def lp(tmp_path):
+    return tmp_path / "ledger" / "ledger.sqlite3"
+
+
+@pytest.fixture
+def lg(lp):
+    x = tl.Ledger(lp)
+    yield x
+    x.close()
+
+
+def cli(lp, *args):
+    return subprocess.run([sys.executable, "-m", "scripts.dev_workflow.task_ledger", "--ledger", str(lp), *args],
+                          capture_output=True, text=True, cwd=ROOT)
+
+
+def py(code):
+    return subprocess.Popen([sys.executable, "-c", textwrap.dedent(code)], cwd=ROOT, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, text=True)
+
+
+def review_file(tmp_path, commit, verdict="ACCEPT", findings=(), prior=(), name="review.txt"):
+    f = tmp_path / name
+    body = {"candidate": commit, "baseline": "x", "verdict": verdict, "findings": list(findings),
+            "prior_findings": list(prior)}
+    f.write_text("review notes\nAUDIT_RESULT_BEGIN\n" + json.dumps(body) + "\nAUDIT_RESULT_END\n", encoding="utf-8")
+    return f
+
+
+def v3_blocked(tmp_path, commit, kind="NO_INDEPENDENT_REVIEWER", name="RUN"):
+    """A V3 run (real V3 State/event code) whose reviewer chain is exhausted on ``commit``."""
+    sd = tmp_path / "v3" / name / "state"
+    st = State({"state_dir": str(sd), "milestone": name})
+    if not (sd / "events.jsonl").is_file():
+        st.event("PLAN", baseline="b" * 40, candidate=commit)
+    st.event("REVIEW_STARTED", round=1, candidate=commit, provider="codex_cli", reviewer_index=0)
+    st.event("STAGE", stage="BLOCKED", frm="AUDITING", reason=kind,
+             blocker={"kind": kind, "reason": "codex_cli: QUOTA; claude_cli: AUTH", "needs": "none"})
+    st.d["stage"] = "BLOCKED"
+    st.save()
+    return sd
+
+
+def fallback_ready(lg, tid, tmp_path, commit, name="RUN"):
+    lg.link_v3(tid, DEV, str(v3_blocked(tmp_path, commit, name=name)))
+
+
+def make_log(repo, name="tests.log"):
+    p = Path(repo).parent / name
+    p.write_text("5 passed", encoding="utf-8")
+    return str(p)
+
+
+def ready_for_review(lg, repo, tid):
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    head = _commit(repo, "b.txt", b"feature\n")
+    lg.set_head(tid, DEV, head)
+    lg.record_test(tid, DEV, head, True, "unit 5 passed", make_log(repo))
+    lg.transition(tid, "IN_REVIEW", DEV)
+    return head
+
+
+# ------------------------------------------------------------------ AC-1 identity
+
+def test_ac1_identity_survives_restart(lp, repo):
+    lg = tl.Ledger(lp)
+    tid = lg.create("t", "objective X", DEV, worktree=str(repo), milestone_ref="LIFECYCLE-V3-1")
+    lg.close()
+    r = cli(lp, "show", tid)
+    assert r.returncode == 0, r.stderr
+    s = json.loads(r.stdout)
+    assert s["task_id"] == tid and s["milestone_ref"] == "LIFECYCLE-V3-1" and s["status"] == "OPEN"
+    assert tl.Ledger(lp).verify() == []
+
+
+def test_ac1_ids_unique_under_concurrent_creation(lp):
+    tl.Ledger(lp).close()
+    procs = [py(f"""
+        from scripts.dev_workflow.task_ledger import Ledger
+        lg = Ledger(r"{lp}")
+        for i in range(15):
+            print(lg.create("p{n}-%d" % i, "o", "claude:p{n}"))
+        """) for n in range(6)]
+    ids = []
+    for p in procs:
+        out, err = p.communicate(timeout=120)
+        assert p.returncode == 0, err
+        ids += out.split()
+    assert len(ids) == 90 and len(set(ids)) == 90
+    assert tl.Ledger(lp).verify() == []
+
+
+# ------------------------------------------------------------------ AC-2 context continuity, AC-10 handoff
+
+def _rich_task(lg, repo):
+    tid = lg.create("ctx", "Deliver persistent task ids", DEV, worktree=str(repo))
+    lg.add_context(tid, DEV, "constraint", "no new dependencies")
+    lg.add_context(tid, DEV, "decision", "use SQLite WAL", key="storage")
+    lg.add_context(tid, DEV, "todo", "write migration", key="mig")
+    lg.add_context(tid, DEV, "todo", "write docs", key="docs")
+    lg.add_context(tid, DEV, "done", "docs written", key="docs")
+    lg.add_context(tid, DEV, "next_action", "run the V3 import against D:/uri-dev/lifecycle")
+    lg.add_context(tid, DEV, "evidence", "bench shows 0.4 ms per append")
+    head = ready_for_review(lg, repo, tid)
+    lg.add_finding(tid, REV, "F-1", "HIGH", "redaction misses bearer tokens")
+    return tid, head
+
+
+def test_ac2_context_survives_session_replacement(lp, repo):
+    lg = tl.Ledger(lp)
+    tid, head = _rich_task(lg, repo)
+    mine = lg.packet(tid, use_cache=False)
+    lg.close()
+    r = cli(lp, "context", tid)
+    assert r.returncode == 0, r.stderr
+    other = json.loads(r.stdout)
+    for k in ("items", "open_findings", "task"):
+        assert other[k] == mine[k]
+    texts = " | ".join(i["text"] for i in other["items"])
+    for must in ("Deliver persistent task ids", "no new dependencies", "use SQLite WAL", "write migration",
+                 "run the V3 import", "PASS @", head[:12]):
+        assert must in texts
+    assert "write docs" not in texts                     # a todo marked done is not 'remaining'
+    assert other["open_findings"][0]["finding_id"] == "F-1"
+    assert other["task"]["last_verified_commit"] == head
+
+
+def test_ac10_handoff_from_ledger_only(lp, repo):
+    lg = tl.Ledger(lp)
+    tid, head = _rich_task(lg, repo)
+    lg.close()
+    r = cli(lp, "handoff", tid)
+    assert r.returncode == 0, r.stderr
+    h = json.loads(r.stdout)
+    assert h["task_id"] == tid and h["status"] == "IN_REVIEW"
+    assert h["last_verified_commit"] == {"commit": head, "exists": True, "on_branch": True}
+    assert h["next_executable_action"].startswith("run the V3 import")
+    assert [f["id"] for f in h["blocking_findings"]] == ["F-1"]
+    assert h["remaining"] == ["write migration"] and "docs written" in h["completed"]
+    md = (lp.parent / "handoffs" / f"{tid}.md").read_text(encoding="utf-8")
+    assert tid in md and "run the V3 import" in md and "F-1" in md
+
+
+# ------------------------------------------------------------------ AC-3 interruption
+
+def test_ac3_interrupted_step_never_completes_and_resumes(lp, repo):
+    lg = tl.Ledger(lp)
+    tid = lg.create("crash", "o", DEV, worktree=str(repo))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.close()
+    p = py(f"""
+        import os
+        from scripts.dev_workflow.task_ledger import Ledger
+        lg = Ledger(r"{lp}")
+        lg.claim("{tid}", "{DEV}", ttl_s=0.3)
+        print(lg.step_start("{tid}", "{DEV}", "edit files"), flush=True)
+        os._exit(9)                                  # process dies mid-step
+        """)
+    out, err = p.communicate(timeout=60)
+    assert p.returncode == 9 and out.strip() == "S1", err
+    lg = tl.Ledger(lp)
+    assert lg.recover() == []                         # claim still live: never interrupt a running session
+    time.sleep(0.4)
+    rec = lg.recover()
+    assert rec and rec[0]["action"] == "INTERRUPTED" and rec[0]["steps"] == ["S1"]
+    t = lg.get(tid)
+    assert t["status"] == "INTERRUPTED" and t["resume_to"] == "IN_PROGRESS"
+    with pytest.raises(tl.Refused):
+        lg.step_end(tid, DEV, "S1", True)
+    with pytest.raises(tl.Refused):
+        lg.accept(tid, DEV)
+    assert lg.recover() == []                         # idempotent
+    lg.resume(tid, DEV, "checked worktree")
+    assert lg.get(tid)["status"] == "IN_PROGRESS"
+    h = lg.handoff(tid, write=False)
+    assert h["interrupted_steps"] == ["S1 edit files"] and h["completed"] == []
+    assert lg.verify() == []
+
+
+def test_ac3_fencing_old_claim_cannot_close_step(lg, repo):
+    tid = lg.create("fence", "o", DEV, worktree=str(repo))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.claim(tid, DEV, ttl_s=0.2)
+    sid = lg.step_start(tid, DEV, "work")
+    time.sleep(0.3)
+    lg.claim(tid, DEV, ttl_s=60)                      # lapsed claim re-taken -> new fencing token
+    with pytest.raises(tl.Refused, match="token"):
+        lg.step_end(tid, DEV, sid, True)
+
+
+def test_ac3_worktree_drift_recorded(lg, repo):
+    tid = lg.create("drift", "o", DEV, worktree=str(repo))
+    _commit(repo, "x.txt", b"unexpected\n")
+    (repo / "dirty.txt").write_bytes(b"d")
+    rec = lg.recover()
+    d = [r for r in rec if r["action"] == "WORKTREE_DRIFT"][0]
+    assert d["actual_head"] != d["expected_head"] and "dirty.txt" in d["uncommitted"]
+    assert lg.recover() == []                         # same drift is not re-recorded
+    assert lg.handoff(tid, write=False)["worktree_drift"]
+
+
+# ------------------------------------------------------------------ AC-4 concurrency
+
+def test_ac4_concurrent_writers_keep_chains_intact(lp):
+    lg = tl.Ledger(lp)
+    shared = lg.create("shared", "o", DEV)
+    lg.close()
+    procs = [py(f"""
+        from scripts.dev_workflow.task_ledger import Ledger
+        lg = Ledger(r"{lp}")
+        own = lg.create("own{n}", "o", "claude:w{n}")
+        for i in range(30):
+            lg.add_context("{shared}", "claude:w{n}", "note", "w{n} item %d" % i)
+            lg.add_context(own, "claude:w{n}", "note", "own %d" % i)
+        """) for n in range(6)]
+    for p in procs:
+        _, err = p.communicate(timeout=180)
+        assert p.returncode == 0, err
+    lg = tl.Ledger(lp)
+    assert lg.verify() == []
+    work = [e for e in lg.history(shared) if e["kind"] != "SEAL"]
+    assert len(work) == 1 + 1 + 6 * 30                      # CREATED + objective + notes (plus one SEAL per write)
+    seqs = [e["seq"] for e in lg.history(shared)]
+    assert seqs == list(range(1, len(seqs) + 1))
+
+
+def test_ac4_lease_contention_one_holder_no_deadlock(lp):
+    tl.Ledger(lp).close()
+    procs = [py(f"""
+        import sys
+        from scripts.dev_workflow.task_ledger import Ledger, Refused
+        lg = Ledger(r"{lp}")
+        res = ["worktree:A", "branch:B"] if {n} % 2 else ["branch:B", "worktree:A"]
+        try:
+            lg.acquire(None, "claude:c{n}", res, ttl_s=60)
+            print("WON")
+        except Refused as e:
+            print("LOST")
+        """) for n in range(8)]
+    outs = []
+    t0 = time.time()
+    for p in procs:
+        out, err = p.communicate(timeout=120)
+        assert p.returncode == 0, err
+        outs.append(out.strip())
+    assert outs.count("WON") == 1 and outs.count("LOST") == 7
+    assert time.time() - t0 < 100
+    holders = {x["holder"] for x in tl.Ledger(lp).leases()}
+    assert len(holders) == 1
+
+
+def test_ac4_killed_writer_leaves_no_partial_record(lp):
+    lg = tl.Ledger(lp)
+    tid = lg.create("k", "o", DEV)
+    v = lg.get(tid)["version"]
+    lg.close()
+    p = py(f"""
+        import os
+        from scripts.dev_workflow.task_ledger import Ledger
+        lg = Ledger(r"{lp}")
+        lg.db.execute("BEGIN IMMEDIATE")
+        lg._append("{tid}", "PARTIAL", "{DEV}", {{"x": 1}})
+        os._exit(9)                                   # dies before COMMIT
+        """)
+    p.communicate(timeout=60)
+    lg = tl.Ledger(lp)
+    assert lg.get(tid)["version"] == v and lg.verify() == []
+    assert all(e["kind"] != "PARTIAL" for e in lg.history(tid))
+
+
+def test_ac4_gpu_lease_belongs_to_gpu_lease_module(lg):
+    with pytest.raises(tl.Refused, match="gpu_lease"):
+        lg.acquire(None, DEV, ["gpu:0"])
+
+
+def test_ac4_optimistic_version(lg):
+    tid = lg.create("v", "o", DEV)
+    with pytest.raises(tl.Refused, match="version"):
+        lg.transition(tid, "IN_PROGRESS", DEV, expected_version=1)
+    lg.transition(tid, "IN_PROGRESS", DEV, expected_version=lg.get(tid)["version"])
+
+
+# ------------------------------------------------------------------ AC-5 cache invalidation
+
+def test_ac5_cache_and_invalidation(lg, repo):
+    tid = lg.create("cache", "o", DEV, worktree=str(repo))
+    lg.add_context(tid, DEV, "evidence", "a.txt says one", path="a.txt")
+    assert lg.packet(tid)["cache"] == "MISS"
+    assert lg.packet(tid)["cache"] == "HIT"
+    (repo / "a.txt").write_bytes(b"two\n")              # bound file changed
+    p = lg.packet(tid)
+    assert p["cache"] == "MISS" and p["stale"] and all("a.txt says" not in i["text"] for i in p["items"])
+    (repo / "a.txt").write_bytes(b"one\n")
+    assert lg.packet(tid)["stale"] == []
+    lg.add_context(tid, DEV, "note", "new event")      # new event -> new version
+    assert lg.packet(tid)["cache"] == "MISS"
+    lg.packet(tid)
+    _commit(repo, "c.txt", b"c")                       # new HEAD
+    assert lg.packet(tid)["cache"] == "MISS"
+    lg.add_context(tid, DEV, "evidence", "short-lived", ttl_s=0.2)
+    assert any("short-lived" in i["text"] for i in lg.packet(tid)["items"])
+    time.sleep(0.3)
+    p = lg.packet(tid)
+    assert p["cache"] == "MISS" and not any("short-lived" in i["text"] for i in p["items"])
+
+
+def test_ac5_missing_commit_is_stale(lg, repo):
+    tid = lg.create("gc", "o", DEV, worktree=str(repo))
+    tmp = _commit(repo, "t.txt", b"temp\n")
+    lg.add_context(tid, DEV, "evidence", "built at temp commit", commit=tmp)
+    _git(repo, "reset", "-q", "--hard", "HEAD~1")
+    _git(repo, "reflog", "expire", "--expire=now", "--all")
+    _git(repo, "gc", "-q", "--prune=now")
+    p = lg.packet(tid)
+    assert any("no longer exists" in s["why"] for s in p["stale"])
+
+
+def test_r6_01_already_stale_item_expiring_refreshes_packet(lg, repo, monkeypatch):
+    tid = lg.create("expiry", "o", DEV, worktree=str(repo))
+    item = lg.add_context(tid, DEV, "evidence", "a.txt says one", path="a.txt", ttl_s=10)
+    expires = lg.db.execute("SELECT expires_at FROM context WHERE id=?", (item["id"],)).fetchone()[0]
+    (repo / "a.txt").write_bytes(b"two\n")
+    monkeypatch.setattr(tl.time, "time", lambda: expires - 1)
+    before = lg.packet(tid)
+    assert before["cache"] == "MISS"
+    assert before["stale"] == [{"id": item["id"], "why": "a.txt changed since it was recorded"}]
+    assert lg.packet(tid)["cache"] == "HIT"
+
+    monkeypatch.setattr(tl.time, "time", lambda: expires + 1)
+    after = lg.packet(tid)
+    assert after["cache"] == "MISS"
+    assert after["stale"] == [{"id": item["id"], "why": "expired"}]
+    assert lg.packet(tid)["cache"] == "HIT"
+
+
+def test_r6_02_commit_bound_item_stale_when_worktree_missing(lg, repo):
+    tid = lg.create("missing worktree", "o", DEV, worktree=str(repo))
+    commit = _git(repo, "rev-parse", "HEAD")
+    item = lg.add_context(tid, DEV, "evidence", "bound to commit", commit=commit)
+    assert any(i["text"] == "bound to commit" for i in lg.packet(tid)["items"])
+
+    repo.rename(repo.with_name("moved_repo"))
+    packet = lg.packet(tid)
+    assert packet["cache"] == "MISS"
+    assert packet["stale"] == [{"id": item["id"],
+                                "why": f"commit {commit[:12]} cannot be verified: worktree unavailable"}]
+    assert all(i["text"] != "bound to commit" for i in packet["items"])
+    repo.with_name("moved_repo").rename(repo)
+    assert any(i["text"] == "bound to commit" for i in lg.packet(tid)["items"])
+
+
+def test_ac5_dedup_compression_supersession(lg):
+    tid = lg.create("d", "o", DEV)
+    a = lg.add_context(tid, DEV, "evidence", "same text")
+    b = lg.add_context(tid, DEV, "evidence", "same text")
+    assert b["deduplicated"] and a["id"] == b["id"]
+    lg.add_context(tid, DEV, "decision", "old choice", key="k")
+    lg.add_context(tid, DEV, "decision", "new choice", key="k")
+    lg.add_context(tid, DEV, "evidence", "L" * 5000)
+    p = lg.packet(tid, item_chars=100)
+    texts = [i["text"] for i in p["items"]]
+    assert "new choice" in texts and "old choice" not in texts
+    long = [t for t in texts if t.startswith("LLLL")][0]
+    assert len(long) < 200 and "context-get" in long
+    sha = long.split("context-get ")[1].rstrip("]")
+    assert lg.context_get(tid, sha)["text"] == "L" * 5000
+    small = lg.packet(tid, budget=20)
+    assert small["omitted"] > 0 and small["chars"] <= 20
+
+
+def test_ac5_query_ranks_evidence(lg):
+    tid = lg.create("q", "o", DEV)
+    for i in range(10):
+        lg.add_context(tid, DEV, "evidence", f"item {i} about topic{i}")
+    p = lg.packet(tid, query="topic3", budget=60)
+    ev = [i["text"] for i in p["items"] if i["kind"] == "evidence"]
+    assert ev[0] == "item 3 about topic3"
+
+
+# ------------------------------------------------------------------ AC-6 sensitive data
+
+SECRETS = ["sk-ant-api03-" + "A" * 40, "ghp_" + "b" * 36, "AKIA" + "C" * 16, "hunter2-super-secret-pw",
+           "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"]
+
+
+def test_ac6_secrets_never_reach_records(lp, repo, tmp_path):
+    lg = tl.Ledger(lp)
+    tid = lg.create(f"task with {SECRETS[0]}", f"objective token={SECRETS[1]}", DEV, worktree=str(repo),
+                    milestone_ref="REF-sk-proj-" + "Z" * 30)               # R1-04: milestone_ref too
+    lg.add_context(tid, DEV, "evidence", f"aws {SECRETS[2]} and password: {SECRETS[3]}")
+    lg.add_context(tid, DEV, "note", f"Authorization: Bearer {SECRETS[4]}")
+    lg.add_context(tid, DEV, "note", "-----BEGIN RSA PRIVATE KEY-----\nMIIabc\n-----END RSA PRIVATE KEY-----")
+    lg.add_context(tid, DEV, "note", "clone https://user:pa55word@example.invalid/x.git")
+    head = ready_for_review(lg, repo, tid)
+    rf = review_file(tmp_path, head, "ACCEPT WITH FINDINGS",
+                     [{"id": "R1-01", "severity": "LOW", "title": f"leaked {SECRETS[1]}"}])
+    lg.record_review(tid, REV, head, str(rf))
+    lg.handoff(tid)
+    (repo / ".env").write_bytes(b"API_KEY=x\n")
+    with pytest.raises(tl.Refused, match="secret"):
+        lg.add_context(tid, DEV, "evidence", "env", path=".env")
+    lg.close()
+    blob = b"".join(f.read_bytes() for f in lp.parent.rglob("*") if f.is_file())
+    for s in SECRETS + ["MIIabc", "pa55word", "Z" * 30]:
+        assert s.encode() not in blob, s
+    assert b"[REDACTED:" in blob
+
+
+def test_r2_01_secret_bearing_actor_is_rejected_before_any_ledger_write(lp):
+    secret = "sk-proj-" + "Q" * 24
+    actor = "claude:" + secret
+    lg = tl.Ledger(lp)
+    with pytest.raises(tl.Refused, match="secret-bearing actor"):
+        lg.create("title", "objective", actor)
+    tid = lg.create("title", "objective", DEV)
+    with pytest.raises(tl.Refused, match="secret-bearing actor"):
+        lg.add_context(tid, actor, "evidence", "ordinary note")
+    with pytest.raises(tl.Refused, match="secret-bearing actor"):
+        lg.set_availability(actor, "claude", False)
+    lg.close()
+    blob = b"".join(p.read_bytes() for p in lp.parent.rglob("*") if p.is_file())
+    assert secret.encode() not in blob
+
+
+# ------------------------------------------------------------------ AC-8 independent subagent acceptance
+
+def test_ac8_subagent_accept_on_exact_head(lg, repo, tmp_path):
+    tid = lg.create("acc", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    r = lg.record_review(tid, REV, head, str(review_file(tmp_path, head)), mechanism="fresh read-only subagent")
+    assert r["verdict"] == "ACCEPT" and r["independent"]
+    with pytest.raises(tl.Refused, match="fallback review counts only"):
+        lg.accept(tid, DEV)                            # primary V3 path not shown to be unavailable
+    fallback_ready(lg, tid, tmp_path, head)
+    ev = lg.accept(tid, DEV)
+    assert ev["data"]["reviewer"] == REV and lg.get(tid)["accepted_commit"] == head
+    assert ev["data"]["review_path"] == "FALLBACK" and ev["data"]["fallback_basis"]["v3_event_hash"]
+    new = _commit(repo, "after.txt", b"more\n")
+    lg.set_head(tid, DEV, new)                         # new code -> acceptance invalidated
+    t = lg.get(tid)
+    assert t["status"] == "IN_REVIEW" and t["accepted_commit"] is None
+    with pytest.raises(tl.Refused, match="no review of the exact head"):
+        lg.accept(tid, DEV)
+
+
+def test_ac8_refusals(lg, repo, tmp_path):
+    tid = lg.create("ref", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    fallback_ready(lg, tid, tmp_path, head)
+    # implementer reviewing own work
+    lg.set_head(tid, "codex:impl2", head)
+    r = lg.record_review(tid, "codex:impl2", head, str(review_file(tmp_path, head, name="own.txt")))
+    assert r["verdict"] == "ACCEPT" and not r["independent"]
+    with pytest.raises(tl.Refused, match="not independent"):
+        lg.accept(tid, DEV)
+    # wrong commit named in the result
+    r = lg.record_review(tid, REV, head, str(review_file(tmp_path, "0" * 40, name="wrong.txt")))
+    assert r["verdict"] is None and "names candidate" in r["problem"]
+    # non-reviewer actor kinds
+    with pytest.raises(tl.Refused):
+        lg.record_review(tid, "antigravity:ag", head, str(review_file(tmp_path, head, name="ag.txt")))
+    # REJECT -> REPAIR with blocking finding; fix + re-review
+    r = lg.record_review(tid, REV, head, str(review_file(tmp_path, head, "REJECT",
+                         [{"id": "R2-01", "severity": "HIGH", "title": "bug"}], name="rej.txt")))
+    assert r["verdict"] == "REJECT" and lg.get(tid)["status"] == "REPAIR"
+    fix = _commit(repo, "fix.txt", b"fix\n")
+    lg.set_head(tid, DEV, fix)
+    lg.transition(tid, "IN_REVIEW", DEV)
+    v3_blocked(tmp_path, fix)                          # the driver's chain is exhausted on the repair too
+    log = tmp_path / "fix_tests.log"
+    log.write_text("2 passed", encoding="utf-8")
+    r = lg.record_review(tid, REV, fix, str(review_file(tmp_path, fix, "ACCEPT", name="ok.txt")))
+    with pytest.raises(tl.Refused, match="open blocking"):
+        lg.accept(tid, DEV)                            # reviewer did not confirm R2-01, developer did not close it
+    lg.record_review(tid, "subagent:reviewer-2", fix, str(review_file(
+        tmp_path, fix, "ACCEPT", prior=[{"id": "R2-01", "status": "FIXED"}], name="ok2.txt")))
+    with pytest.raises(tl.Refused, match="no passing test"):
+        lg.accept(tid, DEV)                            # gates: the repair itself was never tested
+    with pytest.raises(tl.Refused, match="does not exist"):
+        lg.record_test(tid, DEV, fix, True, "claimed", str(tmp_path / "missing.log"))
+    lg.record_test(tid, DEV, fix, True, "2 passed", str(log))
+    lg.accept(tid, DEV)
+    assert lg.get(tid)["status"] == "ACCEPTED"
+    with pytest.raises(tl.Refused):
+        lg.transition(tid, "ACCEPTED", DEV)
+    assert lg.verify() == []
+
+
+def test_r2_03_fallback_review_must_name_the_full_head(lg, repo, tmp_path):
+    tid = lg.create("review", "objective", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    result = lg.record_review(tid, REV, head, str(review_file(tmp_path, head[:7])))
+    assert result["verdict"] is None
+    assert "names candidate" in result["problem"]
+    assert not result["independent"]
+
+
+def test_ac8_integrated_needs_ancestry_and_receipt(lg, repo, tmp_path):
+    tid = lg.create("int", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    fallback_ready(lg, tid, tmp_path, head)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    lg.accept(tid, DEV)
+    receipt = tmp_path / "RECEIPT.md"
+    receipt.write_text("integrated other", encoding="utf-8")
+    with pytest.raises(tl.Refused, match="receipt"):
+        lg.mark_integrated(tid, DEV, "main", str(receipt))
+    receipt.write_text(f"integrated {head}", encoding="utf-8")
+    with pytest.raises(tl.Refused, match="ancestor"):
+        lg.mark_integrated(tid, DEV, "HEAD~1", str(receipt))
+    lg.mark_integrated(tid, DEV, "main", str(receipt))
+    assert lg.get(tid)["status"] == "INTEGRATED"
+
+
+# ------------------------------------------------------------------ AC-7 Lifecycle V3 reviews and migration
+
+def _v3_run(root, name, candidate, rounds, verdict="ACCEPT"):
+    """A V3 run written with the real V3 State/event code: rounds = [(independent, imported, tamper)]."""
+    sd = root / name / "state"
+    st = State({"state_dir": str(sd), "milestone": name})
+    st.d["candidate"] = candidate
+    st.event("PLAN", baseline="b" * 40)
+    for i, (indep, imported, tamper) in enumerate(rounds, 1):
+        rec = {"round": i, "candidate": candidate, "independent": indep, "effective_verdict": verdict,
+               "status": "COMPLETED_WITH_RESULT"}
+        h = write_json(sd / "rounds" / f"R{i}" / "round.json", rec)
+        st.event("REVIEW_RECORDED", round=i, candidate=candidate, independent=indep, imported=imported,
+                 status="COMPLETED_WITH_RESULT", verdict=verdict, round_sha256=h, stdout_sha256="",
+                 worker={"provider": "codex_cli"})
+        if tamper:
+            (sd / "rounds" / f"R{i}" / "round.json").write_text("{}", encoding="utf-8")
+    st.d["stage"] = "VERIFIED" if verdict == "ACCEPT" else "BLOCKED"
+    st.save()
+    return sd
+
+
+def test_ac7_v3_import_verified_and_unchanged(lg, repo, tmp_path):
+    head = _git(repo, "rev-parse", "HEAD")
+    root = tmp_path / "lifecycle"
+    _v3_run(root, "DEMO-MS-r1", head, [(False, True, False), (True, False, True)])
+    _v3_run(root, "DEMO-MS-r2", head, [(True, False, False)])
+    tid = "TASK-V3-" + sha256("uri-v3-milestone:DEMO-MS")[:12]
+    lg.create("DEMO-MS (imported Lifecycle V3 milestone)", "", DEV,
+              milestone_ref="DEMO-MS", worktree=str(repo), task_id=tid)
+    rep = lg.import_v3(str(root))
+    assert rep["source_unchanged"] and rep["source_files"] > 0
+    assert len(rep["tasks"]) == 1                       # revisions share one persistent task identity
+    assert next(iter(rep["tasks"])) == tid
+    provs = sorted(r["provenance"] for run in rep["runs"] for r in run["reviews"])
+    assert provs == ["DRIVER_VERIFIED", "V3_UNVERIFIED", "V3_UNVERIFIED"]
+    again = lg.import_v3(str(root))                      # idempotent
+    assert all(run["reviews"] == [] for run in again["runs"]) and again["source_unchanged"]
+    # a DRIVER_VERIFIED V3 review accepts the task on its exact commit
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.set_head(tid, DEV, head)
+    lg.record_test(tid, DEV, head, True, "suite passed", make_log(repo))
+    lg.transition(tid, "IN_REVIEW", DEV)
+    ev = lg.accept(tid, DEV)
+    assert ev["data"]["provenance"] == "DRIVER_VERIFIED" and ev["data"]["review_path"] == "PRIMARY_V3"
+    assert lg.verify() == []
+
+
+def test_ac7_broken_v3_chain_imports_nothing(lg, tmp_path):
+    root = tmp_path / "lc"
+    sd = _v3_run(root, "BROKEN", "c" * 40, [(True, False, False)])
+    lines = (sd / "events.jsonl").read_text(encoding="utf-8").splitlines()
+    ev = json.loads(lines[1])
+    ev["data"]["independent"] = True
+    ev["data"]["verdict"] = "ACCEPT"
+    ev["ts"] = "2000-01-01T00:00:00Z"
+    lines[1] = json.dumps(ev, sort_keys=True)
+    (sd / "events.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    rep = lg.import_v3(str(root))
+    assert rep["runs"][0]["reviews"][0]["error"].startswith("V3 chain broken")
+
+
+@pytest.mark.parametrize("round_number,status", [(2, "COMPLETED_WITH_RESULT"), (1, "NOT_INDEPENDENT")])
+def test_r2_04_v3_round_file_must_match_round_and_completed_status(lg, repo, tmp_path,
+                                                                     round_number, status):
+    head = _git(repo, "rev-parse", "HEAD")
+    tid = lg.create("v3", "objective", DEV, worktree=str(repo))
+    sd = tmp_path / "v3" / "R2" / "state"
+    st = State({"state_dir": str(sd), "milestone": "R2"})
+    st.event("PLAN", baseline="b" * 40, candidate=head)
+    rec = {"round": round_number, "candidate": head, "independent": True,
+           "effective_verdict": "ACCEPT", "status": status}
+    digest = write_json(sd / "rounds" / "R1" / "round.json", rec)
+    st.event("REVIEW_RECORDED", round=1, candidate=head, independent=True, imported=False,
+             status="COMPLETED_WITH_RESULT", verdict="ACCEPT", round_sha256=digest,
+             stdout_sha256="", worker={"provider": "codex_cli"})
+    lg.link_v3(tid, DEV, str(sd))
+    synced = lg.sync_v3(tid)
+    assert synced[0]["provenance"] == "V3_UNVERIFIED"
+    assert lg.db.execute("SELECT provenance FROM reviews WHERE task_id=?", (tid,)).fetchone()[0] == "V3_UNVERIFIED"
+
+
+# ------------------------------------------------------------------ AC-11 development pause
+
+def test_ac11_pause_policy(lg, repo):
+    tid = lg.create("p", "o", DEV, worktree=str(repo))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.claim(tid, DEV)
+    lg.step_start(tid, DEV, "half done")
+    assert lg.set_availability("codex:cx", "codex", False, "weekly quota") == []
+    paused = lg.set_availability(DEV, "claude", False, "quota exhausted")
+    assert paused == [tid] and lg.development_paused()
+    t = lg.get(tid)
+    assert t["status"] == "PAUSED" and t["resume_to"] == "IN_PROGRESS"
+    for actor in ("antigravity:ag", "subagent:s1"):
+        with pytest.raises(tl.Refused):
+            lg.resume(tid, actor)
+        with pytest.raises(tl.Refused):
+            lg.transition(tid, "IN_REVIEW", actor)
+        with pytest.raises(tl.Refused):
+            lg.set_availability(actor, "claude", True)
+    with pytest.raises(tl.Refused, match="DEVELOPMENT_PAUSED"):
+        lg.create("new", "o", DEV)
+    lg.add_context(tid, "antigravity:ag", "evidence", "preserved log path")   # evidence preservation allowed
+    with pytest.raises(tl.Refused, match="unavailable"):
+        lg.resume(tid, DEV)
+    with pytest.raises(tl.Refused):
+        lg.set_availability("codex:cx", "claude", True)   # one developer cannot vouch for the other
+    lg.set_availability(DEV, "claude", True, "quota reset")
+    lg.resume(tid, DEV, "back")
+    assert lg.get(tid)["status"] == "IN_PROGRESS"
+    assert lg.handoff(tid, write=False)["interrupted_steps"] == ["S1 half done"]
+
+
+# ------------------------------------------------------------------ Milestone Manager contract, recovery hygiene
+
+def test_mm_summary_contract_and_integrity_exit(lp, repo):
+    lg = tl.Ledger(lp)
+    tid = lg.create("mm", "o", DEV, milestone_ref="LIFECYCLE-V3-1", worktree=str(repo))
+    lg.create("other", "o", DEV, milestone_ref="MILESTONE-MANAGER")
+    lg.close()
+    r = cli(lp, "summary", "--milestone", "LIFECYCLE-V3-1", "--json")
+    assert r.returncode == 0, r.stderr
+    rows = json.loads(r.stdout)
+    schema = json.loads((ROOT / "docs/dev_workflow/contracts/task_ledger_contract.json").read_text(encoding="utf-8"))
+    assert len(rows) == 1 and rows[0]["task_id"] == tid
+    for k in schema["required"]:
+        assert k in rows[0]
+    db = sqlite3.connect(str(lp))
+    db.execute("UPDATE events SET data='{}' WHERE task_id=? AND seq=1", (tid,))
+    db.commit()
+    db.close()
+    r = cli(lp, "summary", "--milestone", "LIFECYCLE-V3-1", "--json")
+    assert r.returncode == 4 and "LEDGER_INTEGRITY_FAILED" in r.stderr and r.stdout == ""
+
+
+def test_stray_partial_handoff_cleaned(lp, repo):
+    lg = tl.Ledger(lp)
+    tid = lg.create("h", "o", DEV)
+    lg.handoff(tid)
+    lg.close()
+    stray = lp.parent / "handoffs" / f"{tid}.json.999.tmp"
+    stray.write_bytes(b'{"half')
+    tl.Ledger(lp).close()
+    assert not stray.exists()
+    assert json.loads((lp.parent / "handoffs" / f"{tid}.json").read_text(encoding="utf-8"))["task_id"] == tid
+
+
+def test_actor_and_transition_rules(lg):
+    tid = lg.create("r", "o", DEV)
+    with pytest.raises(tl.Refused):
+        lg.transition(tid, "IN_PROGRESS", "nobody")
+    with pytest.raises(tl.Refused):
+        lg.transition(tid, "IN_REVIEW", DEV)            # OPEN -> IN_REVIEW not allowed
+    with pytest.raises(tl.Refused):
+        lg.step_start(tid, DEV, "x")                     # not active
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    with pytest.raises(tl.Refused, match="claim"):
+        lg.step_start(tid, DEV, "x")                     # steps need a live claim
+    lg.block(tid, DEV, "needs owner", "owner decision")
+    lg.unblock(tid, "owner:chetan", "decided")
+    assert lg.get(tid)["status"] == "IN_PROGRESS"
+
+
+# ------------------------------------------------------------------ AC-12 performance smoke
+
+def test_ac12_bench_runs_without_gpu():
+    b = tl.bench(60)
+    assert b["gpu"] == "none used" and b["packet_cache"] == ["MISS", "HIT"]
+    assert b["ledger_append_ms_per_event"] > 0 and b["v3_append_ms_per_event"] > 0
+
+
+# ------------------------------------------------------------------ review paths (owner clarification 2026-10-21)
+
+def test_fallback_needs_exhausted_chain_on_the_exact_commit(lg, repo, tmp_path):
+    tid = lg.create("fb", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    lg.link_v3(tid, DEV, str(v3_blocked(tmp_path, head, kind="NO_REVIEWER", name="A")))   # bad results: owner
+    with pytest.raises(tl.Refused, match="fallback review counts only"):
+        lg.accept(tid, DEV)
+    lg.link_v3(tid, DEV, str(v3_blocked(tmp_path, "e" * 40, name="B")))                    # other commit
+    with pytest.raises(tl.Refused, match="fallback review counts only"):
+        lg.accept(tid, DEV)
+    sd = v3_blocked(tmp_path, head, name="C")
+    State({"state_dir": str(sd), "milestone": "C"}).event("REVIEWER_RECHECK", note="codex available again")
+    lg.link_v3(tid, DEV, str(sd))
+    with pytest.raises(tl.Refused, match="fallback review counts only"):
+        lg.accept(tid, DEV)
+    lg.link_v3(tid, DEV, str(v3_blocked(tmp_path, head, name="D")))
+    assert Path(lg.accept(tid, DEV)["data"]["fallback_basis"]["v3_state_dir"]).parent.name == "D"
+
+
+def test_driver_verdict_is_never_overridden_by_a_fallback(lg, repo, tmp_path):
+    tid = lg.create("ov", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    sd = tmp_path / "lc" / "OV" / "state"
+    st = State({"state_dir": str(sd), "milestone": "OV"})
+    st.event("PLAN", baseline="b" * 40, candidate=head)
+    rec = {"round": 1, "candidate": head, "independent": True, "effective_verdict": "REJECT",
+           "status": "COMPLETED_WITH_RESULT"}
+    h = write_json(sd / "rounds" / "R1" / "round.json", rec)
+    st.event("REVIEW_RECORDED", round=1, candidate=head, independent=True, imported=False,
+             status="COMPLETED_WITH_RESULT", verdict="REJECT", round_sha256=h, stdout_sha256="",
+             worker={"provider": "codex_cli"})
+    st.event("STAGE", stage="BLOCKED", blocker={"kind": "NO_INDEPENDENT_REVIEWER", "reason": "later quota"})
+    lg.link_v3(tid, DEV, str(sd))
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))   # a fallback ACCEPT after the REJECT
+    with pytest.raises(tl.Refused, match="latest review"):
+        lg.accept(tid, DEV)
+
+
+# ------------------------------------------------------------------ driver round R1 regressions (LIFECYCLE-V3-1-r1)
+
+def test_r1_01_provenance_cannot_be_supplied_by_the_caller(lg, repo, tmp_path):
+    tid = lg.create("p", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    with pytest.raises(TypeError):
+        lg.record_review(tid, REV, head, str(review_file(tmp_path, head)), provenance="DRIVER_VERIFIED")
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    row = lg.db.execute("SELECT provenance FROM reviews WHERE task_id=?", (tid,)).fetchone()
+    assert row["provenance"] == "SUBAGENT_FALLBACK"
+    with pytest.raises(tl.Refused, match="fallback review counts only"):
+        lg.accept(tid, DEV)
+
+
+def test_r1_03_pass_needs_a_log_and_a_changed_log_is_no_evidence(lg, repo, tmp_path):
+    tid = lg.create("t", "o", DEV, worktree=str(repo))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    head = _git(repo, "rev-parse", "HEAD")
+    with pytest.raises(tl.Refused, match="needs its log"):
+        lg.record_test(tid, DEV, head, True, "claimed")
+    log = make_log(repo, "r103.log")
+    lg.record_test(tid, DEV, head, True, "5 passed", log)
+    lg.transition(tid, "IN_REVIEW", DEV)
+    fallback_ready(lg, tid, tmp_path, head)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    Path(log).write_text("3 failed", encoding="utf-8")            # the log no longer matches what was recorded
+    with pytest.raises(tl.Refused, match="no passing test"):
+        lg.accept(tid, DEV)
+    Path(log).write_text("5 passed", encoding="utf-8")
+    lg.accept(tid, DEV)
+
+
+def test_r1_06_repeating_an_earlier_keyed_decision_makes_it_current(lg):
+    tid = lg.create("k", "o", DEV)
+    lg.add_context(tid, DEV, "decision", "old choice", key="k")
+    lg.add_context(tid, DEV, "decision", "new choice", key="k")
+    r = lg.add_context(tid, DEV, "decision", "old choice", key="k")
+    assert r["deduplicated"] and r["restored"]
+    texts = [i["text"] for i in lg.packet(tid, use_cache=False)["items"] if i["kind"] == "decision"]
+    assert texts == ["old choice"]
+    assert [e for e in lg.history(tid) if e["kind"] != "SEAL"][-1]["kind"] == "CONTEXT_RESTORED"
+    assert lg.verify() == []
+
+
+# ------------------------------------------------------------------ driver round R2 regressions (LIFECYCLE-V3-1-r2)
+
+def test_r2_05_finding_identifiers_cannot_store_secrets(lp):
+    secret = "ghp_" + "S" * 36
+    lg = tl.Ledger(lp)
+    tid = lg.create("findings", "objective", DEV)
+    with pytest.raises(tl.Refused, match="secret-bearing finding identifier"):
+        lg.add_finding(tid, REV, secret, "HIGH", "issue")
+    lg.add_finding(tid, REV, "R2-05", "LOW " + secret, "issue")
+    assert lg.verify(tid) == []
+    lg.close()
+    assert secret.encode() not in lp.read_bytes()
+
+
+@pytest.mark.parametrize("actor", [REV, "antigravity:loop", "system:import-v3"])
+def test_r2_06_supplied_task_id_does_not_bypass_actor_authority(lg, actor):
+    with pytest.raises(tl.Refused, match="create needs an actor"):
+        lg.create("task", "objective", actor, task_id="TASK-20261021-12345678")
+    assert lg.list() == []
+
+
+@pytest.mark.parametrize("tamper", ["removed", "changed", "chain"])
+def test_r2_08_accept_rechecks_imported_driver_evidence(lg, repo, tmp_path, tamper):
+    tid = lg.create("driver", "objective", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    sd = _v3_run(tmp_path / "v3", "RECHECK", head, [(True, False, False)])
+    lg.link_v3(tid, DEV, str(sd))
+    assert lg.sync_v3(tid)[0]["provenance"] == "DRIVER_VERIFIED"
+    round_file = sd / "rounds" / "R1" / "round.json"
+    if tamper == "removed":
+        round_file.unlink()
+    elif tamper == "changed":
+        round_file.write_text("{}", encoding="utf-8")
+    else:
+        events = sd / "events.jsonl"
+        lines = events.read_text(encoding="utf-8").splitlines()
+        first = json.loads(lines[0])
+        first["ts"] = "2000-01-01T00:00:00Z"
+        lines[0] = json.dumps(first, sort_keys=True)
+        events.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    with pytest.raises(tl.Refused, match="driver review evidence"):
+        lg.accept(tid, DEV)
+    assert lg.get(tid)["status"] == "IN_REVIEW"
+
+
+# ------------------------------------------------------------------ driver revision r2 round R3 regressions
+
+def test_r3_01_no_row_string_can_carry_a_secret(lp, repo, tmp_path):
+    secret = "sk-proj-" + "Q" * 32
+    lg = tl.Ledger(lp)
+    with pytest.raises(tl.Refused, match="worktree"):
+        lg.create("t", "o", DEV, worktree=str(tmp_path / secret))
+    tid = lg.create("t", "o", DEV, worktree=str(repo))
+    with pytest.raises(tl.Refused, match="lease name"):
+        lg.acquire(tid, DEV, [f"branch:{secret}"])
+    lg.add_context(tid, DEV, "decision", "choice", key=f"key-{secret}")          # any column, any code path
+    lg.add_finding(tid, REV, "F-9", f"HIGH {secret}", "t")
+    lg.set_milestone_ref(tid, DEV, f"M-{secret}")
+    lg.handoff(tid)
+    assert lg.verify() == []
+    lg.close()
+    blob = b"".join(f.read_bytes() for f in lp.parent.rglob("*") if f.is_file())
+    assert secret.encode() not in blob
+
+
+def test_r3_01_redaction_is_idempotent():
+    for text in ["token=abcd1234efgh", "Authorization: Bearer " + "x" * 30, "https://u:p4ss@h.invalid/x",
+                 "sk-ant-" + "a" * 30, '{"token": 12345, "password": "hunter2pw"}']:
+        once = tl.redact(text)[0]
+        assert tl.redact(once)[0] == once
+
+
+def test_r3_03_edited_projection_fails_verification_and_summary(lp, repo):
+    lg = tl.Ledger(lp)
+    tid = lg.create("p", "o", DEV, worktree=str(repo), milestone_ref="LIFECYCLE-V3-1")
+    lg.db.execute("UPDATE tasks SET status='ACCEPTED', accepted_commit=? WHERE task_id=?", ("a" * 40, tid))
+    errs = lg.verify(tid)
+    assert any("status" in e for e in errs) and any("accepted_commit" in e for e in errs)
+    lg.close()
+    r = cli(lp, "summary", "--milestone", "LIFECYCLE-V3-1", "--json")
+    assert r.returncode == 4 and "LEDGER_INTEGRITY_FAILED" in r.stderr
+
+
+def test_r3_03_findings_and_steps_rows_are_bound_to_the_chain(lg, repo):
+    tid = lg.create("f", "o", DEV, worktree=str(repo))
+    lg.add_finding(tid, REV, "F-1", "HIGH", "bug")
+    lg.db.execute("UPDATE findings SET status='CLOSED' WHERE task_id=?", (tid,))
+    assert any("findings" in e for e in lg.verify(tid))
+
+
+def test_r3_05_changed_driver_reviewer_output_voids_the_primary_review(lg, repo, tmp_path):
+    head = _git(repo, "rev-parse", "HEAD")
+    sd = tmp_path / "lc" / "SO" / "state"
+    st = State({"state_dir": str(sd), "milestone": "SO"})
+    st.event("PLAN", baseline="b" * 40, candidate=head)
+    h = write_json(sd / "rounds" / "R1" / "round.json", {"round": 1, "candidate": head, "independent": True,
+                                                         "effective_verdict": "ACCEPT",
+                                                         "status": "COMPLETED_WITH_RESULT"})
+    out = sd / "rounds" / "R1" / "reviewer_stdout.txt"
+    out.write_bytes(b"reviewer session output AUDIT_RESULT ...")
+    st.event("REVIEW_RECORDED", round=1, candidate=head, independent=True, imported=False,
+             status="COMPLETED_WITH_RESULT", verdict="ACCEPT", round_sha256=h, stdout_sha256=sha256(out.read_bytes()),
+             worker={"provider": "codex_cli"})
+    tid = lg.create("so", "o", DEV, worktree=str(repo))
+    lg.link_v3(tid, DEV, str(sd))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.set_head(tid, DEV, head)
+    lg.record_test(tid, DEV, head, True, "ok", make_log(repo, "so.log"))
+    lg.transition(tid, "IN_REVIEW", DEV)
+    out.write_bytes(b"edited after the driver recorded it")
+    with pytest.raises(tl.Refused, match="driver review evidence changed"):
+        lg.accept(tid, DEV)
+    out.write_bytes(b"reviewer session output AUDIT_RESULT ...")
+    assert lg.accept(tid, DEV)["data"]["review_path"] == "PRIMARY_V3"
+
+
+# ------------------------------------------------------------------ fallback review r3 R1 (ac9143e1) regressions
+
+def _fallback_ready_task(lg, repo, tmp_path, name="FB"):
+    tid = lg.create("fb", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    fallback_ready(lg, tid, tmp_path, head, name=name)
+    return tid, head
+
+
+def test_fb_r1_01_edited_blocking_flag_is_an_integrity_failure(lg, repo, tmp_path):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    lg.add_finding(tid, "owner:chetan", "F-1", "HIGH", "must fix")
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    with pytest.raises(tl.Refused, match="open blocking"):
+        lg.accept(tid, DEV)
+    lg.db.execute("UPDATE findings SET blocking=0 WHERE task_id=?", (tid,))
+    assert any("findings" in e for e in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.accept(tid, DEV)
+
+
+def test_fb_r1_02_edited_resume_target_cannot_reach_integrated(lg, repo):
+    tid = lg.create("rt", "o", DEV, worktree=str(repo))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.block(tid, DEV, "x", "y")
+    lg.db.execute("UPDATE tasks SET resume_to='INTEGRATED' WHERE task_id=?", (tid,))
+    assert any("resume_to" in e for e in lg.verify(tid))
+    with pytest.raises(tl.Refused):
+        lg.unblock(tid, "owner:chetan", "go")
+    assert lg.db.execute("SELECT status FROM tasks WHERE task_id=?", (tid,)).fetchone()["status"] == "BLOCKED"
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.get(tid)
+    lg.db.execute("UPDATE tasks SET resume_to='IN_PROGRESS' WHERE task_id=?", (tid,))
+    lg.unblock(tid, "owner:chetan", "go")
+    assert lg.get(tid)["status"] == "IN_PROGRESS" and lg.verify(tid) == []
+
+
+def test_fb_r1_03_non_decisive_review_never_closes_findings(lg, repo, tmp_path):
+    tid = lg.create("nd", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    lg.record_review(tid, "subagent:a", head, str(review_file(tmp_path, head, "REJECT", [
+        {"id": "R1-01", "severity": "HIGH", "title": "bug"}], name="a.txt")))
+    # no fallback basis: a later FIXED claim is evidence only
+    lg.record_review(tid, "subagent:b", head, str(review_file(tmp_path, head, prior=[{"id": "R1-01",
+                                                                                  "status": "FIXED"}], name="b.txt")))
+    assert lg.db.execute("SELECT status FROM findings WHERE task_id=? AND finding_id='V1/R1-01'",
+                         (tid,)).fetchone()["status"] == "OPEN"
+    # paused: also evidence only
+    fallback_ready(lg, tid, tmp_path, head, name="P")
+    lg.set_availability("codex:c", "codex", False)
+    lg.set_availability(DEV, "claude", False)
+    lg.record_review(tid, "subagent:c", head, str(review_file(tmp_path, head, prior=[{"id": "R1-01",
+                                                                                  "status": "FIXED"}], name="c.txt")))
+    assert lg.db.execute("SELECT status FROM findings WHERE task_id=? AND finding_id='V1/R1-01'",
+                         (tid,)).fetchone()["status"] == "OPEN"
+    # owner findings are never closed by a reviewer's FIXED claim
+    lg.set_availability(DEV, "claude", True)
+    lg.resume(tid, DEV)
+    lg.add_finding(tid, "owner:chetan", "OWN-1", "HIGH", "owner concern")
+    lg.record_review(tid, "subagent:d", head, str(review_file(tmp_path, head, prior=[
+        {"id": "R1-01", "status": "FIXED"}, {"id": "OWN-1", "status": "FIXED"}], name="d.txt")))
+    rows = {r["finding_id"]: r["status"] for r in lg.db.execute("SELECT * FROM findings WHERE task_id=?", (tid,))}
+    assert rows["V1/R1-01"] == "CLOSED" and rows["OWN-1"] == "OPEN"
+    assert lg.verify(tid) == []
+
+
+def test_fb_self_found_review_cannot_close_its_own_findings(lg, repo, tmp_path):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    r = lg.record_review(tid, REV, head, str(review_file(tmp_path, head, "REJECT", [
+        {"id": "R1-01", "severity": "HIGH", "title": "new bug"}], prior=[{"id": "R1-01", "status": "FIXED"}])))
+    assert r["verdict"] == "REJECT"
+    assert lg.summaries()[0]["open_blocking_findings"] == 1
+
+
+SECRETS2 = ["Authorization: Basic dXNlcjpodW50ZXIyU3VwZXJTZWNyZXQ=", "mysql --password hunter2SuperSecret",
+            "pass=hunter2SuperSecret", "PWD: hunter2SuperSecret", "hf_" + "a" * 34, "pypi-AgEIcHlwaS5vcmcCJ" + "b" * 20,
+            "sk_live_" + "c" * 24, "glpat-" + "d" * 20, "AccountKey=" + "e" * 40 + "=="]
+
+
+def test_fb_r1_04_more_secret_formats_are_redacted(lp):
+    lg = tl.Ledger(lp)
+    tid = lg.create("s", "o", DEV)
+    for s_ in SECRETS2:
+        lg.add_context(tid, DEV, "note", "value: " + s_)
+    lg.handoff(tid)
+    lg.close()
+    blob = b"".join(f.read_bytes() for f in lp.parent.rglob("*") if f.is_file())
+    for needle in ("dXNlcjpodW50ZXIyU3VwZXJTZWNyZXQ", "hunter2SuperSecret", "a" * 34, "b" * 20, "c" * 24, "d" * 20,
+                   "e" * 40):
+        assert needle.encode() not in blob, needle
+    for s_ in SECRETS2:
+        once = tl.redact(s_)[0]
+        assert tl.redact(once)[0] == once
+
+
+def test_fb_r1_04_mysql_short_password_is_absent_from_ledger_and_handoff(lp):
+    secret = "Secret12345678901234567890"
+    lg = tl.Ledger(lp)
+    tid = lg.create("mysql", "o", DEV)
+    lg.add_context(tid, DEV, "note", "mysql -p" + secret)
+    handoff = lg.handoff(tid)
+    assert secret not in json.dumps(handoff)
+    lg.close()
+    for path in lp.parent.rglob("*"):
+        if path.is_file():
+            assert secret.encode() not in path.read_bytes(), path
+    assert tl.redact("mysql -p" + secret)[0] == "mysql -p[REDACTED:cli_password]"
+
+
+@pytest.mark.parametrize("claim", ["%", "R2_07"])
+def test_r4_01_prior_finding_id_is_literal(lg, repo, tmp_path, claim):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    lg.record_review(tid, "subagent:first", head, str(review_file(tmp_path, head, "REJECT", [
+        {"id": "R2-07", "severity": "HIGH", "title": "still broken"}], name="first.txt")))
+    lg.record_review(tid, "subagent:second", head, str(review_file(
+        tmp_path, head, prior=[{"id": claim, "status": "FIXED"}], name="second.txt")))
+    assert lg.db.execute("SELECT status FROM findings WHERE task_id=? AND finding_id='V1/R2-07'",
+                         (tid,)).fetchone()["status"] == "OPEN"
+    assert lg.verify(tid) == []
+    with pytest.raises(tl.Refused, match="open blocking"):
+        lg.accept(tid, DEV)
+
+
+def test_r4_01_reused_short_id_needs_review_identity(lg, repo, tmp_path):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    for reviewer, name in (("subagent:first", "first.txt"), ("subagent:second", "second.txt")):
+        lg.record_review(tid, reviewer, head, str(review_file(tmp_path, head, "REJECT", [
+            {"id": "R1-01", "severity": "HIGH", "title": name}], name=name)))
+    lg.record_review(tid, "subagent:third", head, str(review_file(
+        tmp_path, head, prior=[{"id": "R1-01", "status": "FIXED"}], name="third.txt")))
+    statuses = {r["finding_id"]: r["status"] for r in lg.db.execute(
+        "SELECT finding_id, status FROM findings WHERE task_id=?", (tid,))}
+    assert statuses == {"V1/R1-01": "OPEN", "V2/R1-01": "OPEN"}
+    lg.record_review(tid, "subagent:fourth", head, str(review_file(
+        tmp_path, head, prior=[{"id": "V1/R1-01", "status": "FIXED"}], name="fourth.txt")))
+    statuses = {r["finding_id"]: r["status"] for r in lg.db.execute(
+        "SELECT finding_id, status FROM findings WHERE task_id=?", (tid,))}
+    assert statuses == {"V1/R1-01": "CLOSED", "V2/R1-01": "OPEN"}
+    assert lg.verify(tid) == []
+
+
+@pytest.mark.parametrize("column,value", [("review_id", "V0"), ("commit_sha", "f" * 40)])
+def test_r4_02_finding_provenance_is_verified_before_review(lg, repo, tmp_path, column, value):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    lg.add_finding(tid, "owner:chetan", "F1", "HIGH", "owner concern")
+    lg.db.execute(f"UPDATE findings SET {column}=? WHERE task_id=? AND finding_id='F1'", (value, tid))
+    assert any("findings" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.record_review(tid, REV, head, str(review_file(
+            tmp_path, head, prior=[{"id": "F1", "status": "FIXED"}])))
+    assert lg.db.execute("SELECT status FROM findings WHERE task_id=? AND finding_id='F1'",
+                         (tid,)).fetchone()["status"] == "OPEN"
+
+
+@pytest.mark.parametrize("column,value", [
+    ("provenance", "V3_UNVERIFIED"),
+    ("reviewer", "v3:other/review/R1"),
+    ("seq", -1),
+    ("raw_sha256", "0" * 64),
+])
+def test_r4_03_review_projection_must_match_recorded_event(lg, repo, tmp_path, column, value):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    sd = _v3_run(tmp_path / "driver", "DRIVER", head, [(True, False, False)], verdict="REJECT")
+    lg.link_v3(tid, DEV, str(sd))
+    lg.sync_v3(tid)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    assert lg.verify(tid) == []
+    with pytest.raises(tl.Refused, match="latest review"):
+        lg.accept(tid, DEV)
+    lg.db.execute(f"UPDATE reviews SET {column}=? WHERE task_id=? AND provenance='DRIVER_VERIFIED'",
+                  (value, tid))
+    assert any("review" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.accept(tid, DEV)
+
+
+def test_r4_04_edited_finding_title_cannot_change_handoff(lg, repo):
+    tid = lg.create("finding", "o", DEV, worktree=str(repo))
+    lg.add_finding(tid, "owner:chetan", "F1", "HIGH", "Requires owner action", owner_decision=True)
+    assert lg.handoff(tid, write=False)["required_permissions"][-1].endswith("Requires owner action")
+    lg.db.execute("UPDATE findings SET title='No action needed' WHERE task_id=? AND finding_id='F1'", (tid,))
+    assert any("findings" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.handoff(tid, write=False)
+
+
+@pytest.mark.parametrize("column", ["worktree", "title", "branch"])
+def test_r4_05_created_task_fields_bound_to_chain_before_accept_and_handoff(lg, repo, tmp_path, column):
+    tid = lg.create("Original task", "objective", DEV, worktree=str(repo), branch="main")
+    head = ready_for_review(lg, repo, tid)
+    sd = _v3_run(tmp_path / "driver", "R4-05", head, [(True, False, False)])
+    lg.link_v3(tid, DEV, str(sd))
+    lg.sync_v3(tid)
+    assert lg.verify(tid) == []
+
+    if column == "worktree":
+        clean = tmp_path / "clean"
+        subprocess.run(["git", "clone", "-q", str(repo), str(clean)], check=True)
+        assert _git(clean, "rev-parse", "HEAD") == head
+        (repo / "uncommitted.txt").write_text("unfinished", encoding="utf-8")
+        assert lg._drift(lg._task(tid))["uncommitted"]
+        value = str(clean)
+    else:
+        value = "Forged task" if column == "title" else "forged-branch"
+    lg.db.execute(f"UPDATE tasks SET {column}=? WHERE task_id=?", (value, tid))
+    if column == "worktree":
+        assert lg._drift(lg._task(tid)) is None
+
+    assert any(column in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.accept(tid, DEV)
+    assert lg.db.execute("SELECT status FROM tasks WHERE task_id=?", (tid,)).fetchone()["status"] == "IN_REVIEW"
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.get(tid)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.handoff(tid, write=False)
+
+
+def test_fb_r1_06_new_head_voids_acceptance_in_any_status(lg, repo, tmp_path):
+    tid, head = _fallback_ready_task(lg, repo, tmp_path)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    lg.accept(tid, DEV)
+    lg.block(tid, DEV, "wait", "x")
+    new = _commit(repo, "n.txt", b"n")
+    lg.set_head(tid, DEV, new)
+    assert lg.get(tid)["accepted_commit"] is None
+    lg.unblock(tid, "owner:chetan", "ok")
+    t = lg.get(tid)
+    assert t["status"] == "IN_REVIEW" and t["accepted_commit"] is None and lg.verify(tid) == []
+
+
+# ------------------------------------------------------------------ driver revision r4 regressions (manual P8)
+
+EDITS = [
+    ("delete a context row", "DELETE FROM context WHERE task_id=? AND kind='decision'"),
+    ("edit review provenance", "UPDATE reviews SET provenance='DRIVER_VERIFIED' WHERE task_id=?"),
+    ("edit a finding title", "UPDATE findings SET title='harmless' WHERE task_id=?"),
+    ("edit the worktree", "UPDATE tasks SET worktree='C:/elsewhere' WHERE task_id=?"),
+    ("insert a context row", "INSERT INTO context(task_id, kind, key, text, sha, actor, created_at) "
+                             "VALUES(?, 'decision', 'k', 'injected', 'x', 'claude:x', 'now')"),
+    ("delete a V3 link", "DELETE FROM v3_links WHERE task_id=?"),
+    ("edit a step", "UPDATE steps SET name='other' WHERE task_id=?"),
+    ("extend a lease", "UPDATE leases SET expires_at=expires_at+99999 WHERE task_id=?"),
+]
+
+
+@pytest.mark.parametrize("what,sql", EDITS, ids=[e[0] for e in EDITS])
+def test_r4_seal_any_row_edit_is_detected_before_any_use(what, sql, lp, repo, tmp_path):
+    lg = tl.Ledger(lp)
+    tid = lg.create("s", "o", DEV, worktree=str(repo))
+    lg.add_context(tid, DEV, "decision", "keep SQLite", key="db")
+    head = ready_for_review(lg, repo, tid)
+    lg.claim(tid, DEV)
+    fallback_ready(lg, tid, tmp_path, head)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head, "ACCEPT WITH FINDINGS", [
+        {"id": "R1-01", "severity": "LOW", "title": "nit"}])))
+    assert lg.verify(tid) == []
+    if "step" in what:
+        lg.db.execute("INSERT INTO steps VALUES(?,?,?,?,?,?,?,?)", (tid, "S9", "x", "COMPLETED", DEV, 1, "t", "t"))
+        lg.close()
+        lg = tl.Ledger(lp)
+        assert lg.verify(tid) != []                     # an inserted step row is caught too
+        return
+    lg.db.execute(sql, (tid,))
+    errs = lg.verify(tid)
+    assert any("seal" in e or "projection" in e or "differ" in e or "changed" in e for e in errs), errs
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.packet(tid, use_cache=False)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.handoff(tid, write=False)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.accept(tid, DEV)
+    lg.close()
+
+
+def test_r4_seal_edited_availability_cannot_unpause(lg, repo):
+    tid = lg.create("a", "o", DEV, worktree=str(repo))
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.set_availability("codex:c", "codex", False)
+    lg.set_availability(DEV, "claude", False)
+    lg.db.execute("UPDATE availability SET available=1 WHERE dev='claude'")
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.resume(tid, DEV)
+
+
+def test_r4_06_quoted_and_separated_cli_passwords(lp):
+    lg = tl.Ledger(lp)
+    tid = lg.create("p", "o", DEV)
+    for v in ['mysql -p "hunter2 Secret Value"', "mysql -p 'hunter2SecretValue'", "mysql -phunter2SecretValue",
+              'psql --password "two words secret"', "app --password=hunter2SecretValue",
+              "tool --token 'abc def secret'"]:
+        lg.add_context(tid, DEV, "note", v)
+    lg.handoff(tid)
+    lg.close()
+    blob = b"".join(f.read_bytes() for f in lp.parent.rglob("*") if f.is_file())
+    for needle in ("hunter2", "two words secret", "abc def secret"):
+        assert needle.encode() not in blob, needle
+
+
+def test_r4_07_uncommitted_changes_refuse_acceptance(lg, repo, tmp_path):
+    tid = lg.create("u", "o", DEV, worktree=str(repo))
+    head = ready_for_review(lg, repo, tid)
+    fallback_ready(lg, tid, tmp_path, head)
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    (repo / "b.txt").write_bytes(b"changed after review\n")
+    with pytest.raises(tl.Refused, match="worktree does not match"):
+        lg.accept(tid, DEV)
+    _git(repo, "checkout", "--", "b.txt")
+    lg.accept(tid, DEV)
+
+
+def test_r4_legacy_ledger_without_seals_is_sealed_once_on_open(lp):
+    lg = tl.Ledger(lp)
+    tid = lg.create("l", "o", DEV)
+    lg.db.execute("DELETE FROM events WHERE task_id=? AND kind='SEAL'", (tid,))
+    seqs = [r["seq"] for r in lg.db.execute("SELECT seq FROM events WHERE task_id=? ORDER BY seq", (tid,))]
+    lg.close()
+    # rebuild a seal-less but otherwise consistent chain (what a pre-seal ledger looks like)
+    import sqlite3 as _sq
+    db = _sq.connect(str(lp))
+    rows = db.execute("SELECT seq, ts, kind, data FROM events WHERE task_id=? ORDER BY seq", (tid,)).fetchall()
+    db.execute("DELETE FROM events WHERE task_id=?", (tid,))
+    prev = tl.GENESIS
+    for i, (_, ts, kind, data) in enumerate(rows, 1):
+        ev = {"seq": i, "ts": ts, "kind": kind, "data": json.loads(data), "prev": prev}
+        h = tl.event_hash(ev)
+        db.execute("INSERT INTO events VALUES(?,?,?,?,?,?,?)", (tid, i, ts, kind, data, prev, h))
+        prev = h
+    db.execute("UPDATE tasks SET version=?, chain_head=? WHERE task_id=?", (len(rows), prev, tid))
+    db.commit()
+    db.close()
+    assert seqs
+    lg = tl.Ledger(lp)
+    assert lg.history(tid)[-1]["kind"] == "SEAL" and lg.verify() == []
+
+
+def test_r4_seal_a_later_write_never_blesses_an_outside_edit(lp, repo):
+    lg = tl.Ledger(lp)
+    bad = lg.create("bad", "o", DEV, worktree=str(repo))
+    good = lg.create("good", "o", DEV, worktree=str(repo))
+    lg.transition(good, "IN_PROGRESS", DEV)
+    lg.claim(good, DEV, ttl_s=0.1)
+    lg.step_start(good, DEV, "work")
+    lg.add_context(bad, DEV, "decision", "keep", key="k")
+    lg.db.execute("DELETE FROM context WHERE task_id=? AND kind='decision'", (bad,))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.add_context(bad, DEV, "note", "a later write")      # would have re-sealed the edit
+    assert lg.verify(bad) != []
+    time.sleep(0.2)
+    out = lg.recover()
+    assert {"task_id": bad, "action": "INTEGRITY_FAILED"}.items() <= next(o for o in out if o["task_id"] == bad).items()
+    assert any(o["task_id"] == good and o["action"] == "INTERRUPTED" for o in out)   # others still recovered
+    assert lg.verify(good) == [] and lg.verify(bad) != []
+
+
+def test_r5_01_deleted_task_cannot_hide_its_event_chain(lg, lp):
+    tid = lg.create("deleted", "objective", DEV, milestone_ref="M")
+    assert lg.verify() == []
+    lg.db.execute("DELETE FROM tasks WHERE task_id=?", (tid,))
+    assert any(tid in error and "missing" in error for error in lg.verify())
+    assert any(tid in error and "missing" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.summaries("M")
+    result = cli(lp, "summary", "--milestone", "M", "--json")
+    assert result.returncode == 4 and "LEDGER_INTEGRITY_FAILED" in result.stderr
+
+
+@pytest.mark.parametrize("tamper", ["empty", "valid_json"])
+def test_r5_02_edited_packet_cache_is_refused(lg, tamper):
+    tid = lg.create("cache", "objective", DEV)
+    assert lg.packet(tid)["cache"] == "MISS"
+    assert lg.packet(tid)["cache"] == "HIT"
+    if tamper == "empty":
+        forged = "{}"
+    else:
+        packet = json.loads(lg.db.execute("SELECT packet FROM packet_cache WHERE task_id=?", (tid,))
+                            .fetchone()["packet"])
+        packet["items"][0]["text"] = "forged instruction"
+        forged = json.dumps(packet, sort_keys=True)
+    lg.db.execute("UPDATE packet_cache SET packet=? WHERE task_id=?", (forged, tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.packet(tid)
+
+
+def test_r5_03_filtered_summary_checks_tasks_outside_filter(lg, lp):
+    tid = lg.create("moved", "objective", DEV, milestone_ref="M")
+    lg.db.execute("UPDATE tasks SET milestone_ref='N' WHERE task_id=?", (tid,))
+    assert lg.verify(tid)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.summaries("M")
+    result = cli(lp, "summary", "--milestone", "M", "--json")
+    assert result.returncode == 4 and "LEDGER_INTEGRITY_FAILED" in result.stderr
+
+
+def test_r5_04_context_get_checks_seal(lg):
+    tid = lg.create("context", "objective", DEV)
+    saved = lg.add_context(tid, DEV, "note", "real instruction")
+    lg.db.execute("UPDATE context SET text='forged instruction' WHERE task_id=? AND sha=?",
+                  (tid, saved["sha"]))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.context_get(tid, saved["sha"][:12])
+
+
+def test_r5_05_forged_seal_payload_cannot_serve_context_or_authorize_write(lg):
+    tid = lg.create("context", "objective", DEV)
+    saved = lg.add_context(tid, DEV, "note", "real instruction")
+    before = lg.get(tid)["version"]
+    lg.db.execute("UPDATE context SET text='forged instruction' WHERE task_id=? AND sha=?",
+                  (tid, saved["sha"]))
+    seal = lg.db.execute("SELECT data FROM events WHERE task_id=? AND seq=?", (tid, before)).fetchone()
+    payload = json.loads(seal["data"])
+    payload["digest"] = lg._projection_digest(tid)
+    lg.db.execute("UPDATE events SET data=? WHERE task_id=? AND seq=?",
+                  (json.dumps(payload, sort_keys=True), tid, before))
+    assert any("chain broken" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.context_get(tid, saved["sha"][:12])
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.packet(tid, use_cache=False)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.add_context(tid, DEV, "note", "later write")
+    assert lg.db.execute("SELECT version FROM tasks WHERE task_id=?", (tid,)).fetchone()["version"] == before
+    assert lg.db.execute("SELECT COUNT(*) FROM context WHERE task_id=?", (tid,)).fetchone()[0] == 2
+
+
+def test_r5_06_get_list_and_show_refuse_edited_task_fields(lg, lp):
+    tid = lg.create("original", "objective", DEV, milestone_ref="M")
+    lg.db.execute("UPDATE tasks SET status='ACCEPTED', title='forged' WHERE task_id=?", (tid,))
+    assert lg.verify(tid)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.get(tid)
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.list("M")
+    for args in (("show", tid), ("list", "--milestone", "M")):
+        result = cli(lp, *args)
+        assert result.returncode != 0 and "LEDGER_INTEGRITY_FAILED" in result.stderr
+        assert "forged" not in result.stdout
+
+
+def test_r5_06_filtered_list_checks_tasks_outside_filter(lg):
+    tid = lg.create("moved", "objective", DEV, milestone_ref="M")
+    lg.db.execute("UPDATE tasks SET milestone_ref='N' WHERE task_id=?", (tid,))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.list("M")
+
+
+def test_r5_07_reassigned_lease_keeps_previous_task_sealed(lg):
+    first = lg.create("first", "objective", DEV)
+    second = lg.create("second", "objective", DEV)
+    old_token = lg.acquire(first, DEV, ["shared:resource"], ttl_s=-1)["shared:resource"]
+    assert lg.verify() == []
+
+    new_token = lg.acquire(second, DEV, ["shared:resource"])["shared:resource"]
+
+    assert new_token > old_token
+    assert lg.verify() == []
+    assert lg.get(first)["task_id"] == first
+    assert lg.get(second)["task_id"] == second
+    assert lg.leases()[0]["task_id"] == second
+    assert any(e["kind"] == "LEASE_REASSIGNED" for e in lg.history(first))
+
+
+def test_r5_10_releasing_task_lease_keeps_projection_sealed(lg):
+    tid = lg.create("leased", "objective", DEV)
+    token = lg.acquire(tid, DEV, ["worktree:leased"])["worktree:leased"]
+    assert lg.verify() == []
+
+    lg.release(DEV, "worktree:leased", token)
+
+    assert lg.leases() == []
+    assert lg.verify() == []
+    assert any(e["kind"] == "LEASE_RELEASED" for e in lg.history(tid))
+
+
+def test_r5_11_recover_expires_terminal_task_resource_lease(lg):
+    tid = lg.create("terminal", "objective", DEV)
+    lg.acquire(tid, DEV, ["worktree:terminal"], ttl_s=-1)
+    lg.transition(tid, "ABANDONED", DEV)
+    assert lg.verify() == []
+
+    assert lg.recover() == []
+
+    assert lg.leases() == []
+    assert lg.get(tid)["status"] == "ABANDONED"
+    assert lg.verify() == []
+
+
+def test_r5_11_recover_skips_corrupt_lease_owner_and_cleans_intact_owner(lg):
+    bad = lg.create("bad", "objective", DEV)
+    good = lg.create("good", "objective", DEV)
+    lg.acquire(bad, DEV, ["worktree:bad"], ttl_s=-1)
+    lg.acquire(good, DEV, ["worktree:good"], ttl_s=-1)
+    lg.transition(bad, "ABANDONED", DEV)
+    lg.transition(good, "ABANDONED", DEV)
+    lg.db.execute("UPDATE tasks SET title='tampered' WHERE task_id=?", (bad,))
+
+    out = lg.recover()
+
+    assert any(r["task_id"] == bad and r["action"] == "INTEGRITY_FAILED" for r in out)
+    assert [r["resource"] for r in lg.leases()] == ["worktree:bad"]
+    assert lg.verify(good) == []
+    assert lg.verify(bad) != []
+
+
+@pytest.mark.parametrize("bad_data, event_seq", [("not json", 1), ("[]", -1)])
+def test_r5_08_malformed_event_data_uses_summary_integrity_exit(lg, lp, bad_data, event_seq):
+    tid = lg.create("broken", "objective", DEV, milestone_ref="M")
+    if event_seq == -1:
+        event_seq = lg.get(tid)["version"]
+    lg.db.execute("UPDATE events SET data=? WHERE task_id=? AND seq=?", (bad_data, tid, event_seq))
+
+    assert any(f"event {event_seq}" in error and "data" in error for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.summaries("M")
+    result = cli(lp, "summary", "--milestone", "M", "--json")
+    assert result.returncode == 4
+    assert "LEDGER_INTEGRITY_FAILED" in result.stderr
+    assert result.stdout == ""
+
+
+@pytest.mark.parametrize("bad_data", ["{}", '{"review": []}', '{"review": "V1"}'])
+def test_r5_09_malformed_review_event_uses_summary_integrity_exit(lg, lp, repo, tmp_path, bad_data):
+    tid = lg.create("broken review", "objective", DEV, worktree=str(repo), milestone_ref="M")
+    head = _git(repo, "rev-parse", "HEAD")
+    lg.record_review(tid, REV, head, str(review_file(tmp_path, head)))
+    assert lg.verify(tid) == []
+    seq = lg.db.execute("SELECT seq FROM events WHERE task_id=? AND kind='REVIEW_RECORDED'",
+                        (tid,)).fetchone()["seq"]
+    lg.db.execute("UPDATE events SET data=? WHERE task_id=? AND seq=?", (bad_data, tid, seq))
+
+    assert any(f"event {seq}" in error and "review" in error.lower() for error in lg.verify(tid))
+    with pytest.raises(tl.Refused, match="LEDGER_INTEGRITY_FAILED"):
+        lg.summaries("M")
+    result = cli(lp, "summary", "--milestone", "M", "--json")
+    assert result.returncode == 4
+    assert "LEDGER_INTEGRITY_FAILED" in result.stderr
+    assert result.stdout == ""
+
+
+# ------------------------------------------------------------------ fallback review r5 R7 (c9934cd2) regressions
+
+def test_f5_01_rows_planted_for_a_future_task_id_are_refused(lg, tmp_path):
+    tid = "TASK-V3-" + tl.sha256("uri-v3-milestone:DEMO-MS")[:12]
+    text = "PLANTED: push straight to canonical"
+    sha = tl.sha256(json.dumps(["next_action", None, text, None, None, None]))
+    lg.db.execute("INSERT INTO context(task_id, kind, key, text, sha, actor, created_at) VALUES(?,?,?,?,?,?,?)",
+                  (tid, "next_action", None, text, sha, "claude:x", "now"))
+    head = "c" * 40
+    _v3_run(tmp_path / "lc", "DEMO-MS-r1", head, [(True, False, False)])
+    with pytest.raises(tl.Refused, match="already holds rows"):
+        lg.import_v3(str(tmp_path / "lc"))
+    with pytest.raises(tl.Refused, match="already holds rows"):
+        lg._create("t", "o", DEV, task_id=tid)
+
+
+def test_f5_01_context_rows_are_bound_to_their_events(lg):
+    tid = lg.create("c", "o", DEV)
+    lg.add_context(tid, DEV, "decision", "real", key="k")
+    text = "injected"
+    sha = tl.sha256(json.dumps(["decision", "k2", text, None, None, None]))
+    lg.db.execute("INSERT INTO context(task_id, kind, key, text, sha, actor, created_at) VALUES(?,?,?,?,?,?,?)",
+                  (tid, "decision", "k2", text, sha, "claude:x", "now"))
+    assert any("no matching CONTEXT event" in e for e in lg.verify(tid))
+
+
+SECRETS3 = ["password='Hunter2Secret'", "db_password: 'S3cr3tValue99'", '{"password": "my horse battery staple"}',
+            'DB_PASSWORD="correct horse battery staple"']
+
+
+def test_f5_02_quoted_password_assignments_are_redacted(lp):
+    lg = tl.Ledger(lp)
+    tid = lg.create("q", "objective " + SECRETS3[0], DEV)
+    for v in SECRETS3[1:]:
+        lg.add_context(tid, DEV, "decision", v)
+    lg.handoff(tid)
+    lg.close()
+    blob = b"".join(f.read_bytes() for f in lp.parent.rglob("*") if f.is_file())
+    for needle in ("Hunter2Secret", "S3cr3tValue99", "horse battery staple"):
+        assert needle.encode() not in blob, needle
+
+
+def test_f5_03_task_leases_belong_to_claim(lg):
+    x = lg.create("x", "o", DEV)
+    y = lg.create("y", "o", DEV)
+    with pytest.raises(tl.Refused, match="claim"):
+        lg.acquire(y, DEV, ["task:" + x])
+    assert lg.verify() == []
+
+
+def test_f5_06_rolled_back_fence_never_reissues_a_token(lg):
+    tid = lg.create("f", "o", DEV)
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    tok1 = lg.claim(tid, DEV, ttl_s=0.1)
+    sid = lg.step_start(tid, DEV, "w")
+    time.sleep(0.2)
+    lg.db.execute("UPDATE meta SET v=? WHERE k='fence'", (str(tok1 - 1),))
+    tok2 = lg.claim(tid, DEV, ttl_s=60)
+    assert tok2 > tok1
+    with pytest.raises(tl.Refused, match="token"):
+        lg.step_end(tid, DEV, sid, True)
+
+
+def test_f5_06_bad_schema_value_is_an_integrity_exit(lp):
+    tl.Ledger(lp).close()
+    import sqlite3 as _sq
+    db = _sq.connect(str(lp))
+    db.execute("UPDATE meta SET v='x' WHERE k='schema'")
+    db.commit()
+    db.close()
+    r = cli(lp, "summary", "--json")
+    assert r.returncode == 4 and "LEDGER_INTEGRITY_FAILED" in r.stderr
+
+
+def test_f5_07_missing_v3_run_is_a_clean_refusal(lg, repo, tmp_path):
+    tid = lg.create("m", "o", DEV, worktree=str(repo))
+    sd = _v3_run(tmp_path / "lc", "GONE", _git(repo, "rev-parse", "HEAD"), [(True, False, False)])
+    lg.link_v3(tid, DEV, str(sd))
+    import shutil
+    shutil.rmtree(sd)
+    out = lg.sync_v3(tid)
+    assert out and "missing" in out[0]["error"]
