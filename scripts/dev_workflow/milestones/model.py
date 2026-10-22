@@ -44,6 +44,11 @@ MILESTONE_FIELDS = ("title", "objective", "priority", "phase", "next_action", "w
                     "candidate_commit", "acceptance_ref")
 
 # Secret-looking content is refused in any free-text field (no redaction: the caller must fix the input).
+# A Basic token can encode even ":" in four Base64 characters ("Og=="). Preserve the existing
+# conservative check for long token-shaped values; short values must be complete Base64 quanta.
+BASIC_TOKEN = (r"(?:[A-Za-z0-9+/]{8,}=*|"
+               r"(?:[A-Za-z0-9+/]{4})+|(?:[A-Za-z0-9+/]{4})*[A-Za-z0-9+/]{2}=="
+               r"|(?:[A-Za-z0-9+/]{4})*[A-Za-z0-9+/]{3}=)(?![A-Za-z0-9+/=])")
 SECRET_PATTERNS = [
     ("openai/anthropic-style key", re.compile(r"\bsk-(?:ant-)?[A-Za-z0-9_-]{20,}")),
     ("github token", re.compile(r"\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{30,}|\bgithub_pat_[A-Za-z0-9_]{30,}")),
@@ -56,7 +61,7 @@ SECRET_PATTERNS = [
     ("hugging face token", re.compile(r"\bhf_[A-Za-z0-9]{30,}")),
     ("json web token", re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}")),
     ("credentials in URL", re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^/\s:@]+:[^/\s@]+@")),
-    ("basic auth header", re.compile(r"(?i)\bauthorization\W{0,8}basic\s+[A-Za-z0-9+/]{8,}=*")),
+    ("basic auth header", re.compile(r"(?i)\bauthorization\W{0,8}basic\s+" + BASIC_TOKEN)),
 ]
 # F16 contract (owner decision 2026-10-22, ACCEPTANCE_CRITERIA.md): refused are the known token formats above and
 # credential key/value pairs in standard notations - key=v, key: v, JSON/Python dicts (quoted keys, also with
@@ -313,7 +318,7 @@ def find_secret(value) -> str | None:
                 if credential_key(key) and _credential_value_secret(key, str(part).strip()):
                     return "credential assignment"
             if isinstance(part, str) and any("authorization" in _key_words(k) for k in keys) \
-                    and re.match(r"(?i)\s*basic\s+[A-Za-z0-9+/]{8,}", part):
+                    and re.match(r"(?i)\s*basic\s+" + BASIC_TOKEN, part):
                 return "basic auth header"
             if isinstance(part, str):
                 text = normalise(part)

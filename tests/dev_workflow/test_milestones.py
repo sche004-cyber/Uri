@@ -3178,3 +3178,33 @@ def test_d6_02_batch_refuses_inline_nested_credential_before_append(tmp_path, va
 def test_d6_02_inline_nested_credential_references_remain_writable(value):
     assert model.find_secret(value) is None
     check_free_text(data={"title": value})
+
+
+@pytest.mark.parametrize("value", [
+    "Authorization: Basic YTpi",
+    {"Authorization": "Basic YTpi"},
+    "| Authorization | Basic YTpi |",
+    "Authorization: Basic Og==",
+])
+def test_d6_03_short_basic_credentials_are_refused(value):
+    assert model.find_secret(value) == "basic auth header"
+    with pytest.raises(StoreError) as e:
+        check_free_text(data={"title": value})
+    assert e.value.code == "SECRET"
+
+
+@pytest.mark.parametrize("value", [
+    "Authorization: Basic YTpi",
+    {"Authorization": "Basic YTpi"},
+    "| Authorization | Basic YTpi |",
+])
+def test_d6_03_batch_refuses_short_basic_before_append(tmp_path, value):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    items = [("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"title": "safe"}}, {}),
+             ("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"title": value}}, {})]
+    with pytest.raises(StoreError) as e:
+        m.store.append_many(items, actor="impl:a")
+    assert e.value.code == "SECRET"
+    assert seg_bytes(m) == before
