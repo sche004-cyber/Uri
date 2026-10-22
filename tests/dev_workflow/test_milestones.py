@@ -2562,6 +2562,20 @@ def test_d1_01_invalid_positive_status_does_not_satisfy_dependency(tmp_path):
     assert "MM-B" not in views.ready(m.projection())
 
 
+def test_r2_02_negative_review_invalidates_ready_dependency(tmp_path):
+    m = _accept_ready(tmp_path)
+    m.create_milestone("MM-B", "dependent")
+    m.add_dependency("MM-B", "MM-A")
+    m.set_status("MM-A", "ACCEPTED", "accepted")
+    assert "MM-B" in views.ready(m.projection())
+    m.record_review("MM-A", C1, "subagent", "subagent:r2", "SUBAGENT", "REJECT", 1, 1,
+                    "COMPLETED_WITH_RESULT", "blocking finding")
+    p = m.projection()
+    assert views.indicator(p, p["milestones"]["MM-A"])["color"] == "RED"
+    assert "MM-A" in views.unmet_dependencies(p, p["milestones"]["MM-B"])
+    assert "MM-B" not in views.ready(p)
+
+
 @pytest.mark.parametrize("field,secret", [("actor", "password=12345678"),
                                            ("session", "token=123456789012"),
                                            ("data", "api_key: 12345678901234567890")])
@@ -2584,6 +2598,35 @@ def test_d1_02_direct_store_batch_refuses_secret_in_later_item_atomically(tmp_pa
              ("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"objective": "password=12345678"}}, {})]
     with m.store.locked(), pytest.raises(StoreError) as e:
         m.store.append_many(items, actor="impl:a", session="s1")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+@pytest.mark.parametrize("field", ["base_key", "base_value", "kind", "ts"])
+def test_r2_01_direct_store_append_refuses_secret_metadata_without_writing(tmp_path, field):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    secret = "password=12345678"
+    base = {secret: 0} if field == "base_key" else {"safe": secret} if field == "base_value" else {}
+    kind = secret if field == "kind" else "MILESTONE_UPDATED"
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append(kind, {"id": "MM-A", "fields": {"objective": "safe"}}, actor="impl:a",
+                       base=base, ts=secret if field == "ts" else None)
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+@pytest.mark.parametrize("field", ["base_key", "base_value", "kind", "floor"])
+def test_r2_01_direct_store_batch_refuses_secret_metadata_atomically(tmp_path, field):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    secret = "password=12345678"
+    later_base = {secret: 0} if field == "base_key" else {"safe": secret} if field == "base_value" else {}
+    later_kind = secret if field == "kind" else "MILESTONE_UPDATED"
+    data = {"id": "MM-A", "fields": {"objective": "safe"}}
+    items = [("MILESTONE_UPDATED", data, {}), (later_kind, data, later_base)]
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append_many(items, actor="impl:a", floor=secret if field == "floor" else "")
     assert e.value.code == "SECRET" and seg_bytes(m) == before
 
 

@@ -76,7 +76,8 @@ def negative_reviews_on_candidate(p, m):
 
 def unmet_dependencies(p, m):
     return [d for d in m["depends_on"] if (p["milestones"].get(d) or {}).get("status") not in DONE_STATES
-            or not M.independent_accept_reviews(p, p["milestones"][d])]
+            or not M.independent_accept_reviews(p, p["milestones"][d])
+            or negative_reviews_on_candidate(p, p["milestones"][d])]
 
 
 def indicator(p, m, tasks: dict | None = None) -> dict:
