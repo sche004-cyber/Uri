@@ -1,0 +1,391 @@
+{
+ "approvals_open": [
+  {
+   "id": "AP-1",
+   "kind": "DECISION",
+   "question": "Integrate Ember V2.1 `68061d85` into canonical? **DECIDED 2026-10-21 by DEC-091 (integrated `9488c0fd`).** (context: technically ready (subagent-class AwF); carries owner items AC-F1/AC-F3, T4, F-SIZE-1, F-LIGHT-1; reference art is in its git history (private remote only); where: `docs/audit/p0_20261021/P0_INTEGRATION_PLAN.md` Q-1)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-2",
+   "kind": "DECISION",
+   "question": "Disable the `\\URIServer` scheduled task (context: starts the legacy pre-SSRF server at logon; where: `docs/audit/p0_20261021/P0_AUDIT_REPORT.md` \u00a7N)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-3",
+   "kind": "DECISION",
+   "question": "P1 profile: retire, or approve the E1' crash investigation (context: CRASH-1, DEMOTE-P1; where: DEC-082 D3)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-4",
+   "kind": "DECISION",
+   "question": "\"F-1\": automatic Standard -> 32K-no-MTP vision fallback, or keep the refusal (context: ui-2 live refusal; where: `developmental.md` CAP-RT5)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-5",
+   "kind": "DECISION",
+   "question": "POL-P0-1: integrate reviewer tiers (`67d45317`) after its review, or amend the canonical SKILL.md text now (context: canonical text contradicts the 2026-10-17 policy used for recent integrations; where: `developmental.md` \u00a7J)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-6",
+   "kind": "DECISION",
+   "question": "D08: FCV secure rollback tree cannot import `uri_web` (context: MEDIUM; where: FCV-R records)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-7",
+   "kind": "DECISION",
+   "question": "Qwen3.8-27B role (Antigravity OD-7 is only a recommendation) (context: r4 review pending; where: DEC-072)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-8",
+   "kind": "DECISION",
+   "question": "`_V1` line (M36 memory, M37 Edge, dynamic planning slice 1, dictation): salvage, keep as donor, or retire (context: no ledger decision; where: `developmental.md` CAP-V1)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-9",
+   "kind": "DECISION",
+   "question": "Push the P0 audit branch and the local-only research/preserve branches to `uri-repo` (context: outward action; where: P0 report \u00a7N)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-10",
+   "kind": "DECISION",
+   "question": "Carried from earlier: CONS-1..CONS-7, P-4/P-6 `main` rename, EXE-1b, C6 decision 3, Phase 2 freeze, C7 cutover, OI-SEC-1 API key, OD-U3b, OD-U4, PA-1..PA-13 (context: consolidation / Phase 2; where: `docs/governance/consolidation/URI_OUTSTANDING_AND_PHYSICAL_ACCEPTANCE.md`)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-11",
+   "kind": "DECISION",
+   "question": "URI Controls D-1: Thinking default Off (fast) - keep, or default On? (the previous default \"Auto\" no longer exists under the ON/OFF rule) (context: preference only; one-line change; where: `docs/ui/uri_controls_3/URI_CONTROLS_3_REPORT.md` \u00a73 (branch `milestone/uri-controls-3-20261021`))",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-12",
+   "kind": "DECISION",
+   "question": "URI Controls D-2: with exactly three controls, 64K context is reachable only through Vision Off and P3 (\"Standard, draft off\") not at all from the UI (host flag only) - accept, or add a Settings place later? (context: consequence of DEC-092; where: same, \u00a73)",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-13",
+   "kind": "SCOPE",
+   "question": "Is P11 Multi-Client Deployment (DEC-088) still on the roadmap? It is absent from the 2026-10-21 P0..P10 list (LDEC-001).",
+   "subject": "PROJECT"
+  },
+  {
+   "id": "AP-14",
+   "kind": "POLICY",
+   "question": "Promote a Milestone Manager ledger as authoritative (replacing developmental.md / decisions.md as the place of record), and where should it live (recommended: a dedicated git worktree on an orphan branch ledger/milestones, autocommit on, push only with approval)?",
+   "subject": "MILESTONE-MANAGER"
+  }
+ ],
+ "decisions": {
+  "ACTIVE": 77,
+  "NOT_OWNER_DECISION": 1,
+  "PARTIALLY_SUPERSEDED": 7,
+  "SUPERSEDED": 4,
+  "UNCLEAR": 7
+ },
+ "generated_at": "2026-10-21T21:46:00Z",
+ "ledger": {
+  "conflicts_open": 0,
+  "events": 222,
+  "integrity_errors": [],
+  "integrity_warnings": []
+ },
+ "milestones": [
+  {
+   "assignment": null,
+   "branch": "milestone/milestone-manager-20261021",
+   "candidate_commit": "7ab9263ce3de5fbc840e44ed30e63ec58d735d12",
+   "depends_on": [],
+   "id": "MILESTONE-MANAGER",
+   "indicator": {
+    "color": "YELLOW",
+    "issue": "owner approval AP-14 (POLICY): Promote a Milestone Manager ledger as authoritative (replacing developmental.md / decisions.md as the place of record), and where should it live (recommended: a dedicated git worktree on an orphan branch ledger/milestones, autocommit on, push only with approval)?",
+    "next_action": "owner decides AP-14",
+    "tone": "warning",
+    "word": "OWNER ACTION"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [
+    "AP-14"
+   ],
+   "open_blockers": [],
+   "phase": "TESTING",
+   "priority": "P0",
+   "ready": false,
+   "status": "IN_PROGRESS",
+   "tasks": null,
+   "title": "Milestone Manager",
+   "worktree": "D:/uri-dev/uri-milestone-manager"
+  },
+  {
+   "assignment": null,
+   "branch": "milestone/lifecycle-v3-1-task-intelligence-20261021",
+   "candidate_commit": null,
+   "depends_on": [],
+   "id": "LIFECYCLE-V3-1",
+   "indicator": {
+    "color": "BLUE",
+    "issue": null,
+    "next_action": null,
+    "tone": "accent",
+    "word": "IN PROGRESS"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "IMPLEMENTATION",
+   "priority": "P1",
+   "ready": true,
+   "status": "IN_PROGRESS",
+   "tasks": null,
+   "title": "Lifecycle V3.1 (task intelligence)",
+   "worktree": "D:/uri-dev/uri-lifecycle-v31"
+  },
+  {
+   "assignment": null,
+   "branch": null,
+   "candidate_commit": null,
+   "depends_on": [],
+   "id": "PERSONAL-DATA-SOVEREIGNTY",
+   "indicator": {
+    "color": "WHITE",
+    "issue": null,
+    "next_action": null,
+    "tone": "neutral",
+    "word": "NOT ACTIVE"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "RESEARCH",
+   "priority": "P2",
+   "ready": true,
+   "status": "PLANNED",
+   "tasks": null,
+   "title": "Personal Data Sovereignty",
+   "worktree": null
+  },
+  {
+   "assignment": null,
+   "branch": null,
+   "candidate_commit": null,
+   "depends_on": [],
+   "id": "WRITING-INTELLIGENCE",
+   "indicator": {
+    "color": "WHITE",
+    "issue": null,
+    "next_action": null,
+    "tone": "neutral",
+    "word": "NOT ACTIVE"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "RESEARCH",
+   "priority": "P3",
+   "ready": true,
+   "status": "PLANNED",
+   "tasks": null,
+   "title": "Writing Intelligence",
+   "worktree": null
+  },
+  {
+   "assignment": null,
+   "branch": null,
+   "candidate_commit": null,
+   "depends_on": [
+    "PERSONAL-DATA-SOVEREIGNTY"
+   ],
+   "id": "MEETING-INTELLIGENCE",
+   "indicator": {
+    "color": "WHITE",
+    "issue": "waits for PERSONAL-DATA-SOVEREIGNTY",
+    "next_action": null,
+    "tone": "neutral",
+    "word": "NOT ACTIVE"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "RESEARCH",
+   "priority": "P4",
+   "ready": false,
+   "status": "PLANNED",
+   "tasks": null,
+   "title": "Meeting Intelligence",
+   "worktree": null
+  },
+  {
+   "assignment": null,
+   "branch": null,
+   "candidate_commit": null,
+   "depends_on": [],
+   "id": "OFFICE-CLIENT-INSTALLER",
+   "indicator": {
+    "color": "WHITE",
+    "issue": null,
+    "next_action": null,
+    "tone": "neutral",
+    "word": "NOT ACTIVE"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "RESEARCH",
+   "priority": "P5",
+   "ready": true,
+   "status": "PLANNED",
+   "tasks": null,
+   "title": "URI Office Client Installer",
+   "worktree": null
+  },
+  {
+   "assignment": null,
+   "branch": null,
+   "candidate_commit": null,
+   "depends_on": [
+    "MILESTONE-MANAGER"
+   ],
+   "id": "MISSION-CONTROL",
+   "indicator": {
+    "color": "WHITE",
+    "issue": "waits for MILESTONE-MANAGER",
+    "next_action": null,
+    "tone": "neutral",
+    "word": "NOT ACTIVE"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "RESEARCH",
+   "priority": "P6",
+   "ready": false,
+   "status": "PLANNED",
+   "tasks": null,
+   "title": "Mission Control",
+   "worktree": null
+  },
+  {
+   "assignment": null,
+   "branch": null,
+   "candidate_commit": null,
+   "depends_on": [
+    "MILESTONE-MANAGER"
+   ],
+   "id": "SKILL-COMMAND-CENTER",
+   "indicator": {
+    "color": "WHITE",
+    "issue": "waits for MILESTONE-MANAGER",
+    "next_action": null,
+    "tone": "neutral",
+    "word": "NOT ACTIVE"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "RESEARCH",
+   "priority": "P7",
+   "ready": false,
+   "status": "PLANNED",
+   "tasks": null,
+   "title": "Skill Command Center",
+   "worktree": null
+  },
+  {
+   "assignment": null,
+   "branch": null,
+   "candidate_commit": null,
+   "depends_on": [
+    "MILESTONE-MANAGER",
+    "LIFECYCLE-V3-1"
+   ],
+   "id": "DEVELOPER-STUDIO",
+   "indicator": {
+    "color": "WHITE",
+    "issue": "waits for MILESTONE-MANAGER, LIFECYCLE-V3-1",
+    "next_action": null,
+    "tone": "neutral",
+    "word": "NOT ACTIVE"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "RESEARCH",
+   "priority": "P8",
+   "ready": false,
+   "status": "PLANNED",
+   "tasks": null,
+   "title": "URI Developer Studio",
+   "worktree": null
+  },
+  {
+   "assignment": null,
+   "branch": null,
+   "candidate_commit": null,
+   "depends_on": [],
+   "id": "ADVANCED-VISION-ASSIST",
+   "indicator": {
+    "color": "WHITE",
+    "issue": null,
+    "next_action": null,
+    "tone": "neutral",
+    "word": "NOT ACTIVE"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "RESEARCH",
+   "priority": "P9",
+   "ready": true,
+   "status": "PLANNED",
+   "tasks": null,
+   "title": "Advanced Vision Assist",
+   "worktree": null
+  },
+  {
+   "assignment": null,
+   "branch": null,
+   "candidate_commit": null,
+   "depends_on": [],
+   "id": "BRAIN-RUNTIME-OPTIMIZATION",
+   "indicator": {
+    "color": "WHITE",
+    "issue": null,
+    "next_action": null,
+    "tone": "neutral",
+    "word": "NOT ACTIVE"
+   },
+   "integration": null,
+   "lifecycle": [],
+   "open_approvals": [],
+   "open_blockers": [],
+   "phase": "RESEARCH",
+   "priority": "P10",
+   "ready": true,
+   "status": "PLANNED",
+   "tasks": null,
+   "title": "Brain Runtime Optimization",
+   "worktree": null
+  }
+ ],
+ "schema": "uri-mm-status/1"
+}

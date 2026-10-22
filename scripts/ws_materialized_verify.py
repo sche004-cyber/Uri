@@ -46,6 +46,9 @@ BEFORE = {
 # frozen checker's exact authorization (F.APPROVED). The FCV-01 rollback tool is a source-tree tool and is not here.
 RUNTIME_AMENDMENTS = {
     "scripts/uri_client.ps1": "c8401bc06caa2fdd82838d69e9a93698bd19d741296f596b38ac6929e0409404",
+    # Owner 2026-10-22 (OPEN-14, GRF-P0-1): the working-system runtime serves paired turns from the overlay's
+    # paired_reasoning.py, so the authorized Graphify hint repair is carried as an amendment (before = overlay blob).
+    "uri_core/core/paired_reasoning.py": "af96445db074792ae0489a3707ffd00819730f1cc4820d673f31424e0bebb871",
 }
 RUNTIME_TRANSITIONS = {**BEFORE, **RUNTIME_AMENDMENTS}
 

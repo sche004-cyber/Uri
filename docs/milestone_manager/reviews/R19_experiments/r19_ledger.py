@@ -1,0 +1,21 @@
+from common import *
+import re
+m = new(); init_anchors = m.store.anchors_path.read_bytes()
+m.create_milestone("MM-A","A"); m.update_milestone("MM-A", candidate_commit=C1)
+m.store.anchors_path.write_bytes(init_anchors)   # (by-hand edit as a stand-in for a lost anchor refresh)
+try: m.create_milestone("MM-B","B")
+except ValidationError as e: msg=str(e); print(msg[:300])
+ids = re.findall(r"--id (\S+)", msg)
+rows = views.conflict_rows(m.projection()); print("conflicts ids", [(r["id"],r["type"]) for r in rows], "msg ids", ids)
+sl = "\n".join(views.status_lines(m.projection(), False, None, None)); print("status mentions", re.findall(r"--id (\S+)`", sl))
+# a second loss while first still open
+m.create_milestone("MM-B","B")
+m.store.anchors_path.write_bytes(init_anchors)
+try: m.create_milestone("MM-C","C")
+except ValidationError as e: msg2=str(e); print("second:", msg2[:200])
+ids2 = re.findall(r"--id (\S+)", msg2)
+print("open", [(r["id"]) for r in views.conflict_rows(m.projection())])
+try: m.resolve_conflict("LEDGER","old id only", ids); print("resolved first only")
+except ValidationError as e: print("first-id resolve:", e)
+print("open", [(r["id"]) for r in views.conflict_rows(m.projection())])
+m.resolve_conflict("LEDGER","second", ids2); print("open after", views.conflict_rows(m.projection()), "verify", m.store.verify()["ok"])

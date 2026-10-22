@@ -307,9 +307,12 @@ def test_historical_chain_reaches_the_verifier_when_run_isolated(tmp_path):
 
 
 def test_runtime_amendment_is_exactly_the_owner_authorized_fcv05_blob():
-    """FCV-05: the runtime carries the authorized uri_client.ps1 and nothing else beyond the security transitions."""
+    """FCV-05: the runtime carries the authorized uri_client.ps1 and nothing else beyond the security transitions
+    (plus the OPEN-14 paired_reasoning.py amendment, checked separately below)."""
     assert V.RUNTIME_AMENDMENTS == {"scripts/uri_client.ps1":
-                                    "c8401bc06caa2fdd82838d69e9a93698bd19d741296f596b38ac6929e0409404"}
+                                    "c8401bc06caa2fdd82838d69e9a93698bd19d741296f596b38ac6929e0409404",
+                                    "uri_core/core/paired_reasoning.py":
+                                    "af96445db074792ae0489a3707ffd00819730f1cc4820d673f31424e0bebb871"}
     frozen = subprocess.check_output(["git", "-C", str(ROOT), "show",
                                       "925ad45cec887ca33f5d6b12b2247508a18ac0b7:scripts/uri_client.ps1"])
     assert V.digest(frozen) == V.RUNTIME_AMENDMENTS["scripts/uri_client.ps1"]
@@ -344,3 +347,15 @@ def test_historical_gate_proves_files_after_suite_residue_but_materialization_do
     (runtime / "worker.py").write_text("changed source\n")
     with pytest.raises(V.VerificationError, match="MATERIALIZED_GATE_REFUSED"):
         V.verified_transitions(runtime)
+
+
+def test_runtime_amendment_of_paired_reasoning_is_exactly_the_open14_blob():
+    """OPEN-14 (GRF-P0-1): the runtime's paired_reasoning.py goes from the overlay's frozen blob to exactly the
+    authorized repair, with its pinned provenance record."""
+    path = "uri_core/core/paired_reasoning.py"
+    overlay = subprocess.check_output(["git", "-C", str(ROOT), "show",
+                                       "759d0d4e4069ddb490e6ce52ac58bf86ef0248f0:" + path])
+    assert V.digest(overlay) == V.RUNTIME_AMENDMENTS[path]
+    assert V.digest((ROOT / path).read_bytes()) == V.F.APPROVED[path]["sha256"]
+    assert V.F.APPROVED[path]["provenance"] == ["docs/graphify/GRF_P0_1_PLAN_AND_ACCEPTANCE.md"]
+    assert "docs/graphify/GRF_P0_1_PLAN_AND_ACCEPTANCE.md" in M.OI_PATHS

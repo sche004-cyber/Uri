@@ -1,0 +1,7 @@
+first write: LEDGER_LOSS_RECORDED LEDGER_LOSS_RECORDED: recorded ANCHORS_ADOPTED [conflict 2b1f592fd9d8.8608cb: ANCHOR_LOSS, h1: own segment (2 events) not anchored yet; the next successful write anchors it and records ANCHORS_ADOPTED (an ANCHOR_LOSS con
+events before/after: 2 3 last kind: ANCHORS_ADOPTED
+id in refusal: 2b1f592fd9d8.8608cb
+id in status --json: False | in status text: False | in conflicts: True
+schema uri-mm-status/1 milestone keys ['assignment', 'branch', 'candidate_commit', 'depends_on', 'id', 'indicator', 'integration', 'lifecycle', 'open_approvals', 'open_blockers', 'phase', 'priority', 'ready', 'status', 'tasks', 'title', 'worktree']
+next write accepted
+resolve rc 0 8e15e950d00e515cc8012f69e735e12c775dee4c90045f0cf9",    "id": null,    "kind": "CONFLICT_RESOLVED",    "seq": 5   }  ] }

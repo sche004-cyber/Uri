@@ -1,0 +1,15 @@
+'password_reset=NewPass2024!' -> None
+'admin_password_rotated: Spring2026!' -> None
+'DB_PASSWORD_FILE=hunter2' -> None
+'client_secret_expiry=Zx9!kq2' -> None
+'--client-secret=Zx9kq2abc' -> None
+'password: `hunter2`' -> credential assignment
+'pwd=hunter2' -> credential assignment
+'--pwd hunter2' -> None
+' password=hunter2' -> credential assignment
+'x--password=hunter2' -> credential assignment
+'password= TOKEN_ABC_ZZZ91' -> None
+'api_key=OPENAI_API_KEY' -> None
+'api_key=OPENAI_API_KEY_sk9x' -> credential assignment
+'Bearer abc' -> None
+'token=$OPENAI_API_KEY_BACKUP_7f3k' -> credential assignment

@@ -1,0 +1,90 @@
+import sys
+from scripts.dev_workflow.milestones import model as M
+cases = {
+ # expected-refused (True)
+ "dict db_password": ({"db_password": "hunter2"}, True),
+ "dict DB_PASSWORD": ({"DB_PASSWORD": "hunter2"}, True),
+ "dict password_value": ({"password_value": "hunter2"}, True),
+ "dict 'password '": ({"password ": "hunter2"}, True),
+ "dict github_token": ({"github_token": "abc123def"}, True),
+ "dict apiKey": ({"apiKey": "abc123def"}, True),
+ "dict 'api key'": ({"api key": "abc123def"}, True),
+ "dict credentials": ({"credentials": "hunter2"}, True),
+ "dict password nested list": ({"password": ["hunter2"]}, True),
+ "dict password nested dict": ({"password": {"v": "hunter2"}}, True),
+ "dict password int": ({"password": 123456}, True),
+ "text pw=": ("password=hunter2", True),
+ "text db_password=": ("db_password=hunter2", True),
+ "text DB_PASSWORD=": ("DB_PASSWORD=hunter2", True),
+ "text mysql-password=": ("mysql-password=hunter2", True),
+ "text myPassword=": ("myPassword=hunter2", True),
+ "text passwordX=": ("passwordX=hunter2", True),
+ "text json dq": ('{"password": "hunter2"}', True),
+ "text json sq": ("{'password': 'hunter2'}", True),
+ "text json token": ('config {"api_key":"abc123def"}', True),
+ "text yaml-ish dash": ("password - hunter2", True),
+ "text 'password is'": ("password is hunter2", True),
+ "text arrow": ("password => hunter2", True),
+ "text fullwidth eq": ("password\uff1dhunter2", True),
+ "text zwsp": ("password\u200b=hunter2", True),
+ "text nbsp before =": ("password\u00a0= hunter2", True),
+ "text upper env-like value": ("password=HUNTER_TWO", True),
+ "text ref then value": ("password=${X} hunter2", True),
+ "text two assigns pipe": ("password=${X}|token=abc", True),
+ "text two assigns semicolon": ("password=${X}; token=abc", True),
+ "text token 7digit": ("secret=1234567", True),
+ "text pin": ("pwd: 0042", True),
+ "text placeholder-like <...>": ("password=<hunter two>", True),
+ "text backtick": ("password=`hunter2`", True),
+ "text quoted key": ('"password"="hunter2"', True),
+ "text colon-space-quote": ("password: \"hunter 2 words\"", True),
+ "text cyrillic a": ("p\u0430ssword=hunter2", True),
+ "text tab sep": ("password\t=\thunter2", True),
+ "text newline in value": ("password=\nhunter2", True),
+ "text pass=": ("pass=hunter2", True),
+ "text pw=": ("pw=hunter2", True),
+ "text auth=": ("auth=hunter2", True),
+ "text Authorization header": ("Authorization: Basic aHVudGVyMjpodW50ZXIy", True),
+ "text bearer short": ("Authorization: Bearer abc123", True),
+ "text url creds": ("https://user:hunter2@host/x", True),
+ "bytes value": ({"password": b"hunter2"}, True),
+ "tuple key": ({("password",): "hunter2"}, True),
+ # expected-pass (False)
+ "ok ref ${}": ("password=${DB_PASS}", False),
+ "ok %%": ("password=%DB_PASS%", False),
+ "ok env:": ("token=env:GH_TOKEN", False),
+ "ok $UPPER": ("api_key=$OPENAI_API_KEY", False),
+ "ok mask": ("password=****", False),
+ "ok placeholder": ("password: <redacted>", False),
+ "ok state": ("token: expired", False),
+ "ok context": ("token: 65536 context", False),
+ "ok path field": ({"worktree": "D:/uri-dev/secret_store/x"}, False),
+ "ok text mentions": ("rotate the password tomorrow", False),
+ "ok env var name": ("set OPENAI_API_KEY in env", False),
+ "ok token budget words": ("token budget 32k", False),
+ "ok max_tokens=4096": ("max_tokens=4096", False),
+ "ok n_ctx token=": ("context token=65536", False),
+ "ok tokens: 128k": ("token: 128k", False),
+ "ok password_policy": ("password_policy=strict", False),
+ "ok token_count=": ("token_count=1200", False),
+ "ok secret: none": ("secret: none", False),
+ "ok key 'token' dict with words": ({"token": "rotated"}, False),
+ "ok secret-scanning": ("secret-scanning: enabled", False),
+ "ok 'token: 32768 tokens'": ("token: 32768 tokens", False),
+ "ok 'tokens/s' prose": ("throughput 25 token/s", False),
+ "ok 'token= see docs'": ("token = see docs/x.md", False),
+ "ok markdown table": ("| token | 4096 |", False),
+ "ok password reset url": ("see https://example.com/password=reset", False),
+ "ok max_token=": ("max_token=4096", False),
+}
+fails = []
+for name, (val, exp) in cases.items():
+    try:
+        got = M.find_secret(val)
+    except Exception as e:
+        got = f"EXC {e!r}"
+    refused = bool(got)
+    flag = "OK " if refused == exp else "MISMATCH"
+    if refused != exp: fails.append(name)
+    print(f"{flag} exp_refuse={exp!s:5} got={got!r:30} {name}")
+print("MISMATCHES:", len(fails)); print(fails)

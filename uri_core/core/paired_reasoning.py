@@ -77,7 +77,7 @@ Availability/advertisement is never an execution grant.
     from uri_core.core.capability_directory import CapabilityDirectory
     from uri_core.core.graphify_index import build_index
     from uri_core.core.turn_state import assemble_turn_state
-    from uri_core.core.decision_engine import build_decision_request, preselect_candidate_ids
+    from uri_core.core.decision_engine import build_decision_request, graphify_hint_enabled, preselect_candidate_ids
 
     known = {}
     qualified = set(qualified_capabilities)
@@ -96,10 +96,20 @@ Availability/advertisement is never an execution grant.
     directory = CapabilityDirectory(capability_feasibility=SimpleNamespace(snapshot=lambda: deepcopy(known)),
                                     include_procedures=False)
     index = build_index(capability_directory=directory)
+    # GRF-P0-1: same hint rule as the canonical path (decision_engine): GRAPHIFY_HINT_ENABLED killswitch, only
+    # skill/memory_pointer orientation records (capabilities already reach the Brain through the directory), and a
+    # failing index gives no hint rather than an error.
+    hint = None
+    if graphify_hint_enabled():
+        try:
+            hint = [r for r in index.relevant_subset(request.text, limit=5)
+                    if r.get("kind") in ("skill", "memory_pointer")] or None
+        except Exception:
+            hint = None
     selection = request.reasoning
     result = assemble_turn_state(user_text=request.text, session_id=request.session_id,
         principal=principal, session=session, conversation_history_store=_SnapshotHistory(history),
-        capability_directory=directory, capability_index_hint=index.relevant_subset(request.text, limit=5),
+        capability_directory=directory, capability_index_hint=hint,
         active_provider_id=selection.provider, active_model=selection.model)
     ids = preselect_candidate_ids(result.data, directory)
     envelope = build_decision_request(result.data, preselected_ids=ids, capability_directory=directory)

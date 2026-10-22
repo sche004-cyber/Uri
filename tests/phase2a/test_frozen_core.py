@@ -149,6 +149,8 @@ ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "d
                "docs/ssrf/SSRF_1_PLAN_AND_ACCEPTANCE.md", "docs/web/IDN_1B_PLAN_AND_ACCEPTANCE.md",
                # Owner 2026-10-15 (FCV-05): provenance of the runtime's authorized uri_client.ps1 (pinned by F.PROVENANCE).
                "docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md",
+               # Owner 2026-10-22 (OPEN-14, GRF-P0-1): provenance of the runtime's authorized paired_reasoning.py.
+               "docs/graphify/GRF_P0_1_PLAN_AND_ACCEPTANCE.md",
                "scripts/run_uri_integrated_server.py",
                "scripts/run_uri_integrated_worker.py",
                "scripts/ti_live_matrix.py",

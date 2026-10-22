@@ -1,0 +1,69 @@
+MISS tbl spaced value | '| password | correct horse battery staple |' | exp refuse got allow
+MISS tbl spaced key | '| API key | 9f8e7d6c5b4a3f2e1d0c |' | exp refuse got allow
+MISS tbl spaced key2 | '| DB password | hunter2 |' | exp refuse got allow
+MISS tbl quoted key | '| "password" | hunter2 |' | exp refuse got allow
+OK   tbl 2col header+row | '| Key | Value |\n|---|---|\n| password | hunter2 |' | exp refuse got refuse
+OK   tbl backtick val | '| `password` | `hunter2` |' | exp refuse got refuse
+MISS API key: v | 'API key: 9f8e7d6c5b4a3f2e1d0c' | exp refuse got allow
+MISS Secret key: v | 'Secret key: 9f8e7d6c5b4a3f2e' | exp refuse got allow
+MISS Private key: v | 'Private key: abcdef0123456789' | exp refuse got allow
+MISS Access key = v | 'Access key = abcdef0123456789' | exp refuse got allow
+MISS Session key: v | 'Session key: abcdef0123456789' | exp refuse got allow
+MISS md API key | '- **API key:** 9f8e7d6c5b4a3f2e1d0c' | exp refuse got allow
+OK   API_KEY ok | 'API_KEY: 9f8e7d6c5b4a' | exp refuse got refuse
+MISS PGPASSWORD | 'PGPASSWORD=hunter2' | exp refuse got allow
+OK   MYSQL_PWD | 'MYSQL_PWD=hunter2' | exp refuse got refuse
+MISS accesstoken | 'accesstoken=abcdef123456' | exp refuse got allow
+MISS ACCESSTOKEN | 'ACCESSTOKEN=abcdef123456' | exp refuse got allow
+MISS authtoken | 'authtoken: abcdef123456' | exp refuse got allow
+MISS adminpassword | 'adminpassword=hunter2' | exp refuse got allow
+MISS dict PGPASSWORD | {'PGPASSWORD': 'hunter2'} | exp refuse got allow
+MISS md __key__ | '__password__: hunter2' | exp refuse got allow
+MISS md _key_ | '_password_: hunter2' | exp refuse got allow
+MISS md ~~ | '~~password~~: hunter2' | exp refuse got allow
+MISS yaml | none+secret | 'password: |\n  none\n  hunter2' | exp refuse got allow
+MISS yaml > ref+secret | 'password: >-\n  ${PASS}\n  hunter2' | exp refuse got allow
+OK   yaml list | 'password:\n  - hunter2' | exp refuse got refuse
+OK   yaml nested | 'db:\n  password: hunter2' | exp refuse got refuse
+OK   yaml inline map | '{password: hunter2, user: bob}' | exp refuse got refuse
+OK   yaml dash item | '- password: hunter2' | exp refuse got refuse
+OK   yaml quoted val spaces | 'password: "correct horse battery"' | exp refuse got refuse
+MISS flag dash value | 'app --password -Xy9z!' | exp refuse got allow
+OK   flag tab | 'app --password\thunter2' | exp refuse got refuse
+OK   flag quoted | "app --password 'hunter two'" | exp refuse got refuse
+OK   flag ps | 'Connect -Password hunter2' | exp refuse got refuse
+OK   flag win | 'tool /password:hunter2' | exp refuse got refuse
+OK   flag nbsp | 'app --password\xa0hunter2' | exp refuse got refuse
+OK   flag after ref | 'app --password ${PASS} --token abc123def456' | exp refuse got refuse
+OK   flag with equals space | 'app --password = hunter2' | exp refuse got refuse
+MISS dict exempt-inner | {'password': {'hunter2': {'none': None}}} | exp refuse got allow
+OK   dict list in | {'password': ['none', 'hunter2']} | exp refuse got refuse
+OK   dict int | {'pin_token': 48291} | exp refuse got refuse
+OK   dict nested key-in-str | {'cfg': "{'password': 'hunter2'}"} | exp refuse got refuse
+MISS json key apostrophe | '{"user\'s password": "hunter2"}' | exp refuse got allow
+MISS json key >60 | '{"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_password":  | exp refuse got allow
+OK   json escaped key | '{"password": "hunter2"}' | exp refuse got refuse
+OK   json spaced colon | '{"password" : "hunter2"}' | exp refuse got refuse
+OK   python kwargs | "connect(user='bob', password='hunter2')" | exp refuse got refuse
+MISS subscript | "os.environ['DB_PASSWORD'] = 'hunter2'" | exp refuse got allow
+OK   ini | '[db]\npassword = hunter2' | exp refuse got refuse
+OK   dotenv quoted | 'PASSWORD="hunter two"' | exp refuse got refuse
+OK   ruby | "password => 'hunter2'" | exp refuse got refuse
+MISS cut via fake key | 'password: none, hunter2: x' | exp refuse got allow
+MISS token k suffix | 'token: 482913k' | exp refuse got allow
+MISS env-shaped value | 'password=HUNTER_TOKEN' | exp refuse got allow
+MISS angle placeholder val | 'password=<hunter_two>' | exp refuse got allow
+OK   status word val | 'password: enabled hidden' | exp allow got allow
+OK   pw_file path | 'password_file: /run/secrets/db' | exp allow got allow
+OK   token_type | 'token_type: Bearer' | exp allow got allow
+OK   secret_mode letters | 'secret_mode: HunterTwoPass' | exp allow got allow
+OK   password_length | 'password_length: 16' | exp allow got allow
+OK   token_limit | 'token_limit=8192' | exp allow got allow
+OK   fp token budget prose | 'token budget: 32k per turn' | exp allow got allow
+OK   fp max_tokens | 'max_tokens: 4096' | exp allow got allow
+OK   fp secret refusal prose | 'Secret refusal: F16 contract' | exp allow got allow
+OK   fp tokens table | '| tokens | 65536 |' | exp allow got allow
+OK   fp password table header | '| Field | Password policy |' | exp allow got allow
+OK   fp api_key ref | 'api_key: ${OPENAI_API_KEY}' | exp allow got allow
+OK   fp env name | 'TAVILY_API_KEY: set' | exp allow got allow
+MISMATCH 30 of 68

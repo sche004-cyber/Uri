@@ -1,0 +1,18 @@
+RESUME MILESTONE-MANAGER - Milestone Manager
+OWNER ACTION | priority P0 | phase TESTING | status IN_PROGRESS | worktree D:/uri-dev/uri-milestone-manager | branch milestone/milestone-manager-20261021
+candidate commit: 7ab9263ce3de5fbc840e44ed30e63ec58d735d12 | base: ec2fab5493578a4f5a805642153d56b4d5ea59fa
+
+1. REQUESTED: This milestone. Worktree D:/uri-dev/uri-milestone-manager, branch milestone/milestone-manager-20261021.
+   acceptance criteria: docs/milestone_manager/ACCEPTANCE_CRITERIA.md
+2. COMPLETED:
+   - status IN_PROGRESS at 2026-10-21T21:45:59.221542Z by claude:milestone-manager-session-20261021: created
+   last handoff HO-1: Migration rehearsal ledger built from P0 registers @8e1d6324 | done: imports + roadmap seed
+3. EVIDENCE (0):
+   reviews: none
+4. REJECTED / SUPERSEDED:
+   - LDEC-003 ACTIVE: Task state belongs to Lifecycle V3.1; Milestone Manager reads it through a contract | rejected: Milestone Manager keeps its own task list with leases and checkpoints (two sources of truth for tasks).
+5. UNFINISHED:
+   - task ledger: Lifecycle V3.1 task ledger is not installed in this checkout
+6. SAFE NEXT: owner decides AP-14
+7. OWNER APPROVAL NEEDED:
+   - AP-14 POLICY: Promote a Milestone Manager ledger as authoritative (replacing developmental.md / decisions.md as the place of record), and where should it live (recommended: a dedicated git worktree on an orphan branch ledger/milestones, autocommit on, push only with approval)?

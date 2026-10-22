@@ -1,0 +1,20 @@
+REFUSED ACCEPTED without candidate NO_CANDIDATE
+REFUSED ACCEPTED without review NO_INDEPENDENT_ACCEPT
+REFUSED ACCEPTED with implementer self-review NO_INDEPENDENT_ACCEPT
+REFUSED ACCEPTED with review on other commit NO_INDEPENDENT_ACCEPT
+REFUSED ACCEPTED with PENDING review NO_INDEPENDENT_ACCEPT
+OK      ACCEPTED with independent completed review
+REFUSED candidate change while ACCEPTED (expect CANDIDATE_LOCKED) CANDIDATE_LOCKED
+REFUSED INTEGRATED without owner approval NO_OWNER_INTEGRATION_APPROVAL
+REFUSED INTEGRATED with approval but no integration record NO_INTEGRATION_RECORD
+OK      decision-correct
+original decision text still present: True | correction present: True
+REFUSED secret refused SECRET
+segment unchanged after refusal: True
+verify after tamper rc= 3 {  "conflicts_open": 0,  "errors": [   "h1: has 10 events but 11 were anchored (newest events deleted)",   "h1: line 2 is not valid JSON (JSONDecodeError)",   "h1: event 3 prev does not match the prev
+ERR     write after tamper StoreError CHAIN_BROKEN: ledger fails verification; run `verify` (h1: line 2 is not valid JSON (JSONDecodeError); h1: event 3 prev 
+ERR     write with torn tail StoreError TORN_TAIL: h1.jsonl ends with 11 incomplete bytes; run `recover` first
+recover rc= 0 {  "abandoned_batches": [],  "anchor_problems": [],  "bytes": 11,  "quarantine": "quarantine/h1.2026-10-22T061647641228Z.torn",  "recovered": true,  "segment": 
+OK      write after recover
+status --json keys: ['approvals_open', 'decisions', 'generated_at', 'ledger', 'milestones', 'schema'] schema: uri-mm-status/1
+cache files: []

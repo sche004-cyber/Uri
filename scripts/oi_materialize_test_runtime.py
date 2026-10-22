@@ -49,6 +49,8 @@ OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration",
             "scripts/oi_materialize_test_runtime.py", "scripts/ws_materialized_verify.py",
             # Owner 2026-10-15 (FCV-05): the authorization record for the runtime amendment of scripts/uri_client.ps1.
             "docs/governance/fcv_recovery/FCV05_PS_LAUNCHER_AMENDMENT_AUTHORIZATION.md",
+            # Owner 2026-10-22 (OPEN-14): the authorization record for the runtime amendment of paired_reasoning.py.
+            "docs/graphify/GRF_P0_1_PLAN_AND_ACCEPTANCE.md",
             # URI Office (docs/office/unified/01_O2_PLAN_AND_ACCEPTANCE_CRITERIA.md) and its device provider: new
             # paths only. Without them the app's Office start (manifest source_root) finds no service (finding B4).
             "uri_office", "uri_devices", "scripts/run_uri_office_service.py",

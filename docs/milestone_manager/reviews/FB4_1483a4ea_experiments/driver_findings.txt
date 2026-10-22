@@ -1,0 +1,44 @@
+## MILESTONE-MANAGER-d1\state\rounds\R1\reviewer_result.txt a28016d3 REJECT
+   D1-01 MEDIUM True A positive status can outlive its review independence
+      After a milestone reaches ACCEPTED or INTEGRATED using its sole qualifying reviewer, record_implementer can add that reviewer's identity. The fold adds the implementer but checks review independence only while applying MILESTONE_STATUS_SET. The indicator does not check it, so the existing positive status remains visible without an independent qualifying review. Assignment and handoff events can also add implementers.
+   D1-02 HIGH True Direct store append accepts secret text
+      EventStore.append and append_many serialize caller-supplied actor, session and data into the segment without calling find_secret or check_free_text. The secret check in Manager._write covers Manager commands, but a caller holding the documented store lock can append an event containing a password assignment or token through the store API.
+## MILESTONE-MANAGER-d1\state\rounds\R2\reviewer_result.txt 07921779 REJECT
+   R2-01 HIGH True Direct store append still accepts secret text in event metadata
+      A memory-only EventStore probe called append with base={'password=12345678': 0}. The synthetic secret appeared in the serialized event. The same secret in data raised SECRET. append_many checks actor, session and data, but does not check base before writing it.
+   R2-02 MEDIUM True Ready list accepts a prerequisite invalidated by a negative review
+      A memory-only projection with an ACCEPTED prerequisite, an independent ACCEPT review, and a later completed REJECT review on the same candidate gave the prerequisite a RED indicator while ready() returned its dependent milestone. unmet_dependencies checks for a qualifying positive review but does not check the negative review that makes the accepted claim invalid.
+## MILESTONE-MANAGER-d1\state\rounds\R3\reviewer_result.txt 1adce295 REJECT
+   R3-01 HIGH True Nested credential values pass the direct store secret check
+      Live read-only probe: find_secret({'access_token':'abc123def456ghi789jkl012mno345'}) returned None, and store.check_free_text accepted that data. The equivalent text 'access_token: abc123def456ghi789jkl012mno345' was detected. The dict walker checks keys and values separately, losing the credential name and value pairing; append_many therefore permits this data into an event.
+   R3-02 MEDIUM True Ready list can accept a prerequisite whose positive status is bound to another commit
+      Live in-memory probe returned unmet_dependencies=[] for prerequisite A with status ACCEPTED, bound_commit C1, candidate_commit C2 and a qualifying review on C2. Such a mismatch is flagged CANDIDATE_CHANGED and shown RED by the indicator, but unmet_dependencies checks neither bound_commit nor the prerequisite's open conflict. A dependent milestone can consequently be listed ready while A's ACCEPTED status rests on C1.
+## MILESTONE-MANAGER-d1\state\rounds\R4\reviewer_result.txt d63544d8 REJECT
+   R4-01 HIGH True Nested credential objects bypass direct-store secret refusal
+      A live probe showed find_secret({'api_key': {'value': 'abcd1234xyz9876'}}) returns None and check_free_text(data=...) accepts it. The new key-value check applies only when the value is scalar; recursion loses the credential key's context. Direct append_many then writes the accepted data to a segment.
+## MILESTONE-MANAGER-d1\state\rounds\R5\reviewer_result.txt 91aeafbb REJECT
+   R5-01 HIGH True Nested passwords containing a slash bypass direct-store secret refusal
+      Live probe: find_secret({'credentials': {'password': {'value': 's3cret/abc123'}}) returned None, and check_free_text(data=...) returned normally. The assignment check exempts every value containing '/' as a path, even under an explicit password key. append_many uses that check before serialising data into a segment. This violates F16.
+## MILESTONE-MANAGER-d1\state\rounds\R6\reviewer_result.txt 51fff04d REJECT
+   R6-01 HIGH True Slash-prefixed nested passwords bypass secret refusal
+      A live read-only probe returned find_secret({'password': {'value': '/s3cret99'}}) == None, and check_free_text(data=...) accepted it. The path exemption treats the password value as a filesystem path. Both service writes and direct store appends use this validator, so criterion F16 is unmet. A nested password with an internal slash was correctly detected in the same probe.
+## MILESTONE-MANAGER-d1\state\rounds\R7\reviewer_result.txt 034f6b3d REJECT
+   R7-01 HIGH True Comma-containing nested passwords bypass secret refusal
+      The credential matcher stops at a comma, so it sees only the three-character prefix of password abc,defghi9 and ignores it. I observed find_secret({'metadata': {'password': 'abc,defghi9'}}) return None and the direct-store preflight check_free_text(data=...) return normally. append_many uses that preflight before writing, so it would accept this event data. The same probe refused /hunter2.
+## MILESTONE-MANAGER-d1\state\rounds\R8\reviewer_result.txt cccc835e REJECT
+   R8-01 HIGH True Dollar-prefixed passwords bypass secret refusal
+      _credential_value_secret treats every value beginning with $ as a variable reference. An in-memory probe confirmed find_secret({'password': {'value': '$uperS3cret!'}}) returns None and check_free_text(data=...) accepts it. Both service and direct-store append use this detector, so the password can reach an append-only segment.
+## MILESTONE-MANAGER-d2\state\rounds\R1\reviewer_result.txt 36245a43 REJECT
+   D2-01 HIGH True Short passwords pass the secret gate
+      _credential_value_secret exempts every value shorter than four characters, including values under password keys. An in-memory probe found no secret in {'password': {'value': 'abc'}}, and the direct-store check accepted it. An append can therefore put that password in an immutable segment, contrary to F16 and the stated default-deny policy.
+   R23-01 LOW False Autocommit can fail with quoted or relative Git paths
+      autocommit passes lines from git diff --cached --name-only directly as literal paths to git commit --only. Git can quote non-ASCII names or produce relative names under user configuration. The R23 review reports both failure cases; I confirmed the path handling in code but did not rerun a Git-backed reproduction.
+   R23-02 LOW False Candidate-change conflict fingerprint omits its details
+      CANDIDATE_CHANGED records bound, candidate and problems, but none is in CONFLICT_DETAIL_KEYS. A change to those details cannot change the fingerprint used to bind a resolution. The indicator has a separate bound-commit check.
+   R23-03 LOW False Resume truncation can exceed its character limit
+      resume_brief reserves 60 characters for its truncation notice, but that notice includes the milestone id, which may be 64 characters. The returned text can exceed max(max_chars, 200).
+## MILESTONE-MANAGER-d2\state\rounds\R2\reviewer_result.txt fe2d7c97 REJECT
+   D2-02 HIGH True Password after a variable reference passes secret refusal
+      For `password: ${PASSWORD} hunter2`, ASSIGNMENT_RX captures only `${PASSWORD}`. The exact-reference exemption accepts that capture, and the following password is never checked. An in-memory probe returned None from find_secret and check_free_text for this value. Service writes and direct store appends use the same detector.
+## MILESTONE-MANAGER-d2\state\rounds\R3\reviewer_result.txt NO JSON
+## MILESTONE-MANAGER-d2\state\rounds\R4\reviewer_result.txt NO JSON
