@@ -3016,3 +3016,49 @@ def test_fb2_cli_refuses_without_writing(tmp_path, argv):
     out = io.StringIO()
     assert cli.run(["--home", str(m.home), "--actor", "impl:a", *argv], out=out) != 0
     assert seg_bytes(m) == before and "SECRET" in out.getvalue()
+
+
+# ------------------------------------------------------------------ fallback review of 4aa3d40b (FB3-01..FB3-06)
+
+FB3_SECRETS = [
+    "API key: 9f8e7d6c5b4a3f2e1d0c", "Secret key: 9f8e7d6c5b4a3f2e", "Private key: abcdef123456",
+    "Access key = abc123def456", "Session key: abc123def", "- **API key:** 9f8e7d6c5b4a", "| DB password | hunter2 |",
+    "| API key | 9f8e7d6c |", '| "password" | hunter2 |', "| password | correct horse battery staple |",
+    "__password__: hunter2", "_password_: hunter2", "~~password~~: hunter2", "password: |\n  none\n  hunter2",
+    "password: >-\n  ${PASS}\n  hunter2", "PGPASSWORD=hunter2", "accesstoken=abc123", "authtoken: abc123",
+    "adminpassword=hunter2", {"PGPASSWORD": "hunter2"},
+]
+FB3_CLEAN = ["api_key: env:VAR_NAME1", "| Gmail credential scoping | owner |", "the API key is set", "tokens: 4096",
+             "tokenizer: bpe", "key: decision", "password: |\n  ${PASS}\nnext: x"]
+
+
+@pytest.mark.parametrize("value", FB3_SECRETS)
+def test_fb3_multiword_markdown_table_and_block_keys_are_refused(value):
+    assert model.find_secret(value), value
+
+
+@pytest.mark.parametrize("value", FB3_CLEAN)
+def test_fb3_prose_tables_and_references_pass(value):
+    assert model.find_secret(value) is None, value
+
+
+@pytest.mark.parametrize("argv", [["handoff", "MM-A", "--summary", "API key: 9f8e7d6c5b4a3f2e1d0c"],
+                                  ["milestone-update", "MM-A", "--next-action", "| DB password | hunter2 |"],
+                                  ["milestone-update", "MM-A", "--next-action", "__password__: hunter2"],
+                                  ["handoff", "MM-A", "--summary", "password: |\n  none\n  hunter2"]])
+def test_fb3_cli_refuses_without_writing(tmp_path, argv):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "impl:a", *argv], out=out) != 0
+    assert seg_bytes(m) == before and "SECRET" in out.getvalue()
+
+
+@pytest.mark.parametrize("ident", ["PASSWORD-RESET", "TOKEN-REFRESH", "SECRET-STORE", "OAUTH-TOKEN", "API-KEY-ROTATION"])
+def test_fb3_05_credential_words_in_milestone_ids_stay_writable(tmp_path, ident):
+    m = new(tmp_path)
+    m.create_milestone(ident, "t")
+    m.update_milestone(ident, next_action="continue")
+    m.set_status(ident, "IN_PROGRESS", "start")
+    assert m.projection()["milestones"][ident]["status"] == "IN_PROGRESS"

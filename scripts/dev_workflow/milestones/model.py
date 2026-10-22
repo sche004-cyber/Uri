@@ -76,6 +76,7 @@ PATH_WORDS = {"file", "path", "dir"}
 ENUM_WORDS = {"type", "policy", "policies", "rotation", "usage", "kind", "mode", "format", "weight", "weights",
               "embd"}
 DESCRIPTIVE_WORDS = NUMERIC_WORDS | PATH_WORDS | ENUM_WORDS
+COMPOUND_SUFFIXES = ("password", "passwd", "token", "secret", "apikey")
 KEY_SEP_RX = re.compile(r"(?:([\"'])([^\"'\n]{1,60})\1|(?<![A-Za-z0-9_.])([A-Za-z][A-Za-z0-9_.-]*))\s*[:=]")
 FLAG_SPACE_RX = re.compile(r"(?<![A-Za-z0-9_.-])-{1,2}([A-Za-z][A-Za-z0-9_.-]*)[ \t]+(?!-)(\S+)")
 STATUS_WORDS = {"expired", "rotated", "revoked", "invalid", "valid", "budget", "limit", "count", "present",
@@ -112,6 +113,8 @@ def key_class(key) -> str | None:
         return None
     words = _key_words(key)
     for i, w in enumerate(words):
+        if w not in CREDENTIAL_WORDS and any(w.endswith(c) for c in COMPOUND_SUFFIXES):
+            w = next(c for c in COMPOUND_SUFFIXES if w.endswith(c))  # PGPASSWORD, accesstoken (FB3-06)
         pair = i + 1 < len(words) and (w, words[i + 1]) in CREDENTIAL_PAIRS
         if w in CREDENTIAL_WORDS or pair:
             rest = words[i + 2:] if pair else words[i + 1:]
@@ -167,11 +170,64 @@ def _credential_value_secret(key: str, val: str) -> bool:
 STRUCT_SEP_RX = re.compile(r"[,;{\[\n]\s*\Z")
 
 
+EMPHASIS_RX = re.compile(r"(?<![A-Za-z0-9])[_~]{1,2}([A-Za-z][A-Za-z0-9._-]*?)[_~]{1,2}(?=\s*[:=])")
+
+
+def _bare_key(text: str, m) -> str:
+    """A bare key with the one or two words before it on its line: "API key: x", "- Secret key = x" (FB3-01)."""
+    if m.group(3) is None:
+        return m.group(2)
+    line = text[text.rfind("\n", 0, m.start(3)) + 1:m.start(3)]
+    # only words directly before the key, separated by blanks ("API key:"), never across "key: v" ("api_key: env:x")
+    lead = re.search(r"(?:([A-Za-z][\w.-]*)[ \t]+)?([A-Za-z][\w.-]*)[ \t]+\Z", line)
+    if credential_key(m.group(3)) or not lead:
+        return m.group(3)
+    for cand in (f"{lead.group(2)} {m.group(3)}", f"{lead.group(1)} {lead.group(2)} {m.group(3)}" if lead.group(1)
+                 else None):
+        if cand and _ends_in_credential(cand):
+            return cand
+    return m.group(3)
+
+
+def _ends_in_credential(key: str) -> bool:
+    """A multi-word key that names a credential with its last word(s): "DB password", "API key", not "Gmail
+    credential scoping" (P0 registers)."""
+    words = _key_words(key)
+    last = words[-1] if words else ""
+    return (last in CREDENTIAL_WORDS or any(last.endswith(c) for c in COMPOUND_SUFFIXES)
+            or (len(words) > 1 and (words[-2], last) in CREDENTIAL_PAIRS))
+
+
+def _block_value(text: str, m, lines: list[str]) -> str:
+    """All lines of a YAML block value, i.e. those indented deeper than the key's line (FB3-04)."""
+    start = text.rfind("\n", 0, m.start()) + 1
+    indent = len(text[start:]) - len(text[start:].lstrip(" \t"))
+    out = []
+    for ln in lines[1:]:
+        if ln.strip() and len(ln) - len(ln.lstrip(" \t")) <= indent:
+            break
+        out.append(ln)
+    return " ".join(out)
+
+
+def _table_pair(a: str, b: str) -> bool:
+    """| password | x |, | DB password | x |, | password | several words | (FB2-02, FB3-02); a multi-word key over a
+    multi-word value is a prose table, not an assignment (P0 registers), and "| Token | Value |" is a header."""
+    one_key = re.fullmatch(r"[A-Za-z][\w.-]*", a)
+    short_key = re.fullmatch(r"[A-Za-z][\w.-]*(?: [A-Za-z][\w.-]*){1,2}", a)
+    one_value = re.fullmatch(r"\S+", b)
+    if not (one_key or (short_key and one_value and _ends_in_credential(a))) or not b or b.lower() in ("value",
+                                                                                                         "values"):
+        return False
+    return credential_key(a) and _credential_value_secret(a, b)
+
+
 def _assignment_secret(text: str) -> bool:
-    text = re.sub(r"[*`]+", "", normalise(text))  # markdown keys: **password**: x, `password`: x (FB2-02)
+    # markdown keys: **password**: x, `password`: x (FB2-02), __password__: x, ~~password~~: x (FB3-03)
+    text = EMPHASIS_RX.sub(r"\1", re.sub(r"[*`]+", "", normalise(text)))
     marks = list(KEY_SEP_RX.finditer(text))
     for i, m in enumerate(marks):
-        key = m.group(2) or m.group(3)
+        key = _bare_key(text, m)
         if not credential_key(key):
             continue
         # the value runs to the next assignment that follows a structural separator ("a: x, b: y", '{"a": 1, "b"'),
@@ -179,8 +235,8 @@ def _assignment_secret(text: str) -> bool:
         nxt = [n for n in marks[i + 1:] if STRUCT_SEP_RX.search(text, 0, n.start())]
         lines = text[m.end():nxt[0].start() if nxt else len(text)].split("\n")
         val = lines[0]
-        if val.strip() in BLOCK_INDICATORS:  # YAML: "password:\n  x", "password: |\n  x" (FB2-02)
-            val = next((ln for ln in lines[1:] if ln.strip()), "")
+        if val.strip() in BLOCK_INDICATORS:  # YAML: "password:\n  x", "password: |\n  x\n  y" (FB2-02, FB3-04)
+            val = _block_value(text, m, lines)
         if _credential_value_secret(key, val):
             return True
     for m in FLAG_SPACE_RX.finditer(text):  # --password hunter2, -pwd x (FB2-01; --password=x is an assignment)
@@ -188,11 +244,8 @@ def _assignment_secret(text: str) -> bool:
             return True
     for line in text.splitlines():  # | password | hunter2 | (FB2-02)
         if line.count("|") >= 2:
-            cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            # only a key/value row (one identifier, one token); prose tables are not assignments (P0 registers)
-            if any(re.fullmatch(r"[A-Za-z][\w.-]*", a) and re.fullmatch(r"\S+", b) and credential_key(a)
-                   and b.lower() not in ("value", "values")  # header row "| Token | Value |"
-                   and _credential_value_secret(a, b) for a, b in zip(cells, cells[1:])):
+            cells = [c.strip().strip("'\"") for c in line.strip().strip("|").split("|")]
+            if any(_table_pair(a, b) for a, b in zip(cells, cells[1:])):
                 return True
     return False
 

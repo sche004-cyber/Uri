@@ -511,7 +511,9 @@ class EventStore:
             return []
         check_free_text(actor=actor, session=session, ts=ts, floor=floor)
         for kind, data, base in items:
-            check_free_text(kind=kind, data=data, base=base)
+            # base maps entity ids to versions: its keys are checked as free text, never as credential keys,
+            # so ids such as PASSWORD-RESET or OAUTH-TOKEN stay writable (review FB3-05)
+            check_free_text(kind=kind, data=data, base=[*base, *base.values()] if isinstance(base, dict) else base)
         if self._tail is None:
             seg = read_segment(self.segment_path)
             if seg.torn:
