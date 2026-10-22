@@ -1,0 +1,25 @@
+REFUSED text: 'Authorization: Basic dXNlcjpodW50ZXIy'
+REFUSED text =: 'authorization=Basic dXNlcjpodW50ZXIy'
+PASSED  json text: '{"Authorization": "Basic dXNlcjpodW50ZXIy"}'
+PASSED  py text: "{'Authorization': 'Basic dXNlcjpodW50ZXIy'}"
+PASSED  dict: {'Authorization': 'Basic dXNlcjpodW50ZXIy'}
+PASSED  nested dict: {'headers': {'Authorization': 'Basic dXNlcjpodW50ZXIy'}}
+REFUSED yaml block: 'Authorization:\n  Basic dXNlcjpodW50ZXIy\n'
+PASSED  table: '| Authorization | Basic dXNlcjpodW50ZXIy |'
+REFUSED curl flag: 'curl -H "Authorization: Basic dXNlcjpodW50ZXIy" https://x'
+PASSED  md bold: '**Authorization**: Basic dXNlcjpodW50ZXIy'
+REFUSED dict bearer: {'Authorization': 'Bearer aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}
+PASSED  header list: ['Authorization', 'Basic dXNlcjpodW50ZXIy']
+REFUSED proxy-authorization: 'Proxy-Authorization: Basic dXNlcjpodW50ZXIy'
+PASSED  dict tuple pairs: {'env': [['password', 'Zq81mPx0aa']]}
+REFUSED dict key int value: {'password': 12345678}
+REFUSED dict float: {'token': 1234.5678}
+REFUSED dict key with spaces: {'DB password': 'Zq81mPx0aa'}
+REFUSED dict key md: {'**password**': 'Zq81mPx0aa'}
+REFUSED dict value md: {'password': '**Zq81mPx0aa**'}
+REFUSED dict key ___: {'___password___': 'Zq81mPx0aa'}
+REFUSED dict str under list under key: {'password': ['required', 'Zq81mPx0aa']}
+REFUSED dict deep: {'a': {'b': {'c': {'api_key': 'Zq81mPx0aa'}}}}
+REFUSED leaf key secret placeholder value: {'password': {'Zq81mPx0aa': 'set'}}
+REFUSED leaf key secret str exempt value: {'password': {'Zq81mPx0aa': 'required'}}
+REFUSED leaf key nested dict: {'password': {'Zq81mPx0aa': {'x': 1}}}

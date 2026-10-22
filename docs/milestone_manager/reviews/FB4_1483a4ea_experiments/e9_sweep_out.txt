@@ -1,0 +1,25 @@
+== ghp_dddddddddddddddddddddddddddddddddddd
+CHECK ['release', 'MM-A'] 1 NO_CHANGE True {  "message": "NO_CHANGE: MM-A is not assigned",  "refused": "NO_CHANGE" } 
+CHECK ['decision-supersede', 'LDEC-001'] 1 BAD_VALUE True {  "message": "BAD_VALUE: a decision cannot supersede itself",  "refused": "BAD_VALUE" } 
+CHECK ['resolve-conflict', 'MM-A'] 1 NOT_FOUND True {  "message": "NOT_FOUND: no open conflict on MM-A",  "refused": "NOT_FOUND" } 
+commands 48 not-refused 1
+== password: Zq81mPx0aa
+CHECK ['release', 'MM-A'] 1 NO_CHANGE True {  "message": "NO_CHANGE: MM-A is not assigned",  "refused": "NO_CHANGE" } 
+CHECK ['decision-supersede', 'LDEC-001'] 1 BAD_VALUE True {  "message": "BAD_VALUE: a decision cannot supersede itself",  "refused": "BAD_VALUE" } 
+CHECK ['resolve-conflict', 'MM-A'] 1 NOT_FOUND True {  "message": "NOT_FOUND: no open conflict on MM-A",  "refused": "NOT_FOUND" } 
+commands 48 not-refused 1
+== API key = Zq81mPx0aa
+CHECK ['release', 'MM-A'] 1 NO_CHANGE True {  "message": "NO_CHANGE: MM-A is not assigned",  "refused": "NO_CHANGE" } 
+CHECK ['decision-supersede', 'LDEC-001'] 1 BAD_VALUE True {  "message": "BAD_VALUE: a decision cannot supersede itself",  "refused": "BAD_VALUE" } 
+CHECK ['resolve-conflict', 'MM-A'] 1 NOT_FOUND True {  "message": "NOT_FOUND: no open conflict on MM-A",  "refused": "NOT_FOUND" } 
+commands 48 not-refused 1
+== --db-password Zq81mPx0aa
+CHECK ['release', 'MM-A'] 1 NO_CHANGE True {  "message": "NO_CHANGE: MM-A is not assigned",  "refused": "NO_CHANGE" } 
+CHECK ['decision-supersede', 'LDEC-001'] 1 BAD_VALUE True {  "message": "BAD_VALUE: a decision cannot supersede itself",  "refused": "BAD_VALUE" } 
+CHECK ['resolve-conflict', 'MM-A'] 1 NOT_FOUND True {  "message": "NOT_FOUND: no open conflict on MM-A",  "refused": "NOT_FOUND" } 
+commands 48 not-refused 1
+== | DB password | Zq81mPx0aa |
+CHECK ['release', 'MM-A'] 1 NO_CHANGE True {  "message": "NO_CHANGE: MM-A is not assigned",  "refused": "NO_CHANGE" } 
+CHECK ['decision-supersede', 'LDEC-001'] 1 BAD_VALUE True {  "message": "BAD_VALUE: a decision cannot supersede itself",  "refused": "BAD_VALUE" } 
+CHECK ['resolve-conflict', 'MM-A'] 1 NOT_FOUND True {  "message": "NOT_FOUND: no open conflict on MM-A",  "refused": "NOT_FOUND" } 
+commands 48 not-refused 1

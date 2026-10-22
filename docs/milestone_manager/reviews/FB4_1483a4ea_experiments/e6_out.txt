@@ -1,0 +1,20 @@
+REFUSED handoff for PASSWORD-RESET: password rotation design done
+REFUSED PASSWORD-RESET: done
+REFUSED PASSWORD-RESET: tests pass, ready for review
+REFUSED Blocked: TOKEN-REFRESH: waiting on owner
+REFUSED OAUTH-TOKEN: implemented refresh flow
+REFUSED Next: SECRET-STORE: add keyring backend
+REFUSED MM-PASSWORD-RESET: 12 tests added
+ok      PASSWORD-RESET depends on TOKEN-REFRESH
+REFUSED status of PASSWORD-RESET = IN_PROGRESS
+ok      Milestone PASSWORD-RESET (in progress)
+REFUSED - PASSWORD-RESET: ACCEPTED
+REFUSED | PASSWORD-RESET | ACCEPTED |
+REFUSED | PASSWORD-RESET | in review |
+ok      API-KEY-ROTATION: done
+REFUSED Token: see DEC-012
+ok      Secret refusal: implemented for every write path
+ok      Password reset: email flow designed
+ok      token budget: 65536
+REFUSED Session token: rotated hourly
+REFUSED Secrets: kept in keyring

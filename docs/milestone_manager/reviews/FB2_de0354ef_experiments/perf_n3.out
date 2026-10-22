@@ -1,0 +1,16 @@
+  "max_s": 0.191
+ },
+ "status_json": {
+  "median_s": 0.173,
+  "max_s": 0.186
+ },
+ "cli status --no-tasks": {
+  "median_s": 0.441,
+  "max_s": 0.443
+ },
+ "cli status --json --no-tasks": {
+  "median_s": 0.446,
+  "max_s": 0.447
+ }
+}
+rebuild median 0.153 max 0.169 evidence 10000

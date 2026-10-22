@@ -1,0 +1,19 @@
+D1-01 before: BLUE
+D1-01 after reviewer becomes implementer: RED | 1 open conflict(s): BASIS_INVALID on MA; review them with `conflicts --entity MA` (also lists conflicts whose subject is
+D1-02 data refused SECRET segment unchanged: True
+D1-02 actor refused SECRET segment unchanged: True
+D1-02 session refused SECRET segment unchanged: True
+R2-01 base refused SECRET segment unchanged: True
+R3-01 refused SECRET segment unchanged: True
+R4-01 refused SECRET segment unchanged: True
+R5-01 refused SECRET segment unchanged: True
+R6-01 refused SECRET segment unchanged: True
+R7-01 refused SECRET segment unchanged: True
+R8-01 refused SECRET segment unchanged: True
+D2-01 refused SECRET segment unchanged: True
+D2-02 refused SECRET segment unchanged: True
+R2-02 ready before neg: ['MB']
+R2-02 ready after later REJECT on same candidate: []
+R3-02 candidate change refused CANDIDATE_LOCKED
+R3-02 unmet deps for B with A bound C1/candidate C2: ['MA']
+R23-03 resume len with max_chars=200 and 64-char id: 177

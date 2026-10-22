@@ -1,0 +1,20 @@
+exit 0 stderr 
+tasks 1
+required fields missing: []
+indicator {'color': 'BLUE', 'emoji': '🔵', 'word': 'IN PROGRESS', 'tone': 'accent', 'phase': 'RESEARCH', 'status': 'IN_PROGRESS', 'issue': None, 'next_action': None, 'more_issues': 0}
+RESUME LIFECYCLE-V3-1 - Lifecycle V3.1
+IN PROGRESS | priority - | phase RESEARCH | status IN_PROGRESS | worktree - | branch -
+candidate commit: - | base: -
+
+1. REQUESTED: (no objective recorded)
+2. COMPLETED:
+   - status IN_PROGRESS at 2026-10-21T16:50:17.521380Z by contract-check: created
+3. EVIDENCE (0):
+   reviews: none
+4. REJECTED / SUPERSEDED:
+5. UNFINISHED:
+   - task TASK-20261021-fe7d0056 IN_PROGRESS Lifecycle V3.1 - persistent task intelligence + context continuity | next: Wait for driver run D:/uri-dev/lifecycle/LIFECYCLE-V3-1-r1 (run1.log, state/); read verdict; repair findings in worktree D:/uri-dev/uri-lifecycle-v31
+6. SAFE NEXT: (none recorded)
+7. OWNER APPROVAL NEEDED:
+   - none open
+status tasks {'available': True, 'count': 1}

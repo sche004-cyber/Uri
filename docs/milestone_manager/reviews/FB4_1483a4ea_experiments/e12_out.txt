@@ -1,0 +1,54 @@
+ok   R2-01 base key text
+ok   R3-01 {'access_token': 'abc123def456ghi789jkl012mno345'}
+ok   R4-01 {'api_key': {'value': 'abcd1234xyz9876'}}
+ok   R5-01 {'credentials': {'password': {'value': 's3cret/abc123'}}}
+ok   R6-01 {'password': {'value': '/s3cret99'}}
+ok   R7-01 {'metadata': {'password': 'abc,defghi9'}}
+ok   R8-01 {'password': {'value': '$uperS3cret!'}}
+ok   D2-01 {'password': {'value': 'abc'}}
+ok   D2-02 'password: ${PASSWORD} hunter2'
+ok   FB-01a 'db_password=hunter2x'
+ok   FB-01b 'DB_PASSWORD=hunter2x'
+ok   FB-01c 'github_token: abcdef123456'
+ok   FB-01d 'myPassword=hunter2x'
+ok   FB-02 '{"password": "x"}'
+ok   FB-03 {'password': {'hunter2': None}}
+ok   FB-03b {'password': {'hunter2': True}}
+ok   FB-03c {'password': {'hunter2': {}}}
+ok   FB-04a 'password: HUNTER_TWO'
+ok   FB-04b 'secret=1234567'
+ok   FB-04c 'password＝hunter2'
+ok   FB-04d 'pass\u200bword=hunter2'
+ok   FB2-01a '--password=hunter2'
+ok   FB2-01b '--password hunter2'
+ok   FB2-02a '**password**: hunter2'
+ok   FB2-02b 'password:\n  hunter2'
+ok   FB2-02c '| password | hunter2 |'
+ok   FB2-02d '{"db password": "hunter2"}'
+ok   FB2-03a 'password: SUPER_SECRET_99'
+ok   FB2-03b 'api_key: PROD_API_KEY_7Q2W9E4R'
+ok   FB2-03c 'token: TOKEN_8F3A9B'
+ok   FB2-04a 'password_reset: hunter2'
+ok   FB2-04b 'password_hint: hunter2'
+ok   FB2-04c 'password_file: hunter2'
+ok   FB2-05a 'Authorization: Basic dXNlcjpwYXNz'
+ok   FB2-05b 'passcode: 4711x'
+ok   FB2-05c 'session_key=abc123'
+ok   FB2-06a 'token: 1234567'
+ok   FB2-06b 'password: abc;def'
+ok   FB2-06c 'password: abc|def'
+ok   FB2-06d 'password: xXx.X'
+ok   FB2-06e {'password': {'hunter2': 'required'}}
+ok   FB3-01 'API key: hunter2x'
+ok   FB3-02a '| DB password | hunter2 |'
+ok   FB3-02b "| 'password' | hunter2 |"
+ok   FB3-02c '| password | hunter two |'
+ok   FB3-03a '__password__: hunter2'
+ok   FB3-03b '~~password~~: hunter2'
+ok   FB3-04 'password: |\n  ok\n  hunter2\n'
+ok   FB3-06a 'PGPASSWORD=hunter2'
+ok   FB3-06b 'accesstoken: hunter2'
+ok   FB-05a 'token: 128k context'
+ok   FB-05b 'token: 32768 tokens'
+ok   FB3-05 'PASSWORD-RESET'
+FB3-05 base ok

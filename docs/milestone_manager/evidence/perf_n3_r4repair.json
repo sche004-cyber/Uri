@@ -1,0 +1,23 @@
+{
+ "bytes": 4428299,
+ "rebuild": {
+  "median_s": 0.257,
+  "max_s": 0.266
+ },
+ "status_lines": {
+  "median_s": 0.223,
+  "max_s": 0.246
+ },
+ "status_json": {
+  "median_s": 0.246,
+  "max_s": 0.261
+ },
+ "cli status --no-tasks": {
+  "median_s": 0.409,
+  "max_s": 0.412
+ },
+ "cli status --json --no-tasks": {
+  "median_s": 0.411,
+  "max_s": 0.428
+ }
+}

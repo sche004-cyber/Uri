@@ -1,0 +1,103 @@
+OK   FB-01 db_password | 'db_password=hunter2' | exp refuse got refuse credential assignment
+OK   FB-01 DB_PASSWORD | 'DB_PASSWORD: hunter2' | exp refuse got refuse credential assignment
+OK   FB-01 github_token | 'github_token=abc123def' | exp refuse got refuse credential assignment
+OK   FB-01 myPassword | 'myPassword=hunter2' | exp refuse got refuse credential assignment
+OK   FB-01 dict | {'db_password': 'hunter2'} | exp refuse got refuse credential assignment
+OK   FB-01 dict camel | {'myPassword': 'hunter2'} | exp refuse got refuse credential assignment
+OK   FB-02 json | '{"password": "x1y2"}' | exp refuse got refuse credential assignment
+OK   FB-02 quoted eq | '"password"="x1y2"' | exp refuse got refuse credential assignment
+OK   FB-02 single | "'password': 'x1y2'" | exp refuse got refuse credential assignment
+OK   FB-03 none | {'password': {'hunter2': None}} | exp refuse got refuse credential assignment
+OK   FB-03 bool | {'password': {'hunter2': True}} | exp refuse got refuse credential assignment
+OK   FB-03 empty | {'password': {'hunter2': {}}} | exp refuse got refuse credential assignment
+OK   FB-04 caps | 'password=HUNTER_TWO' | exp refuse got refuse credential assignment
+OK   FB-04 digits | 'secret=1234567' | exp refuse got refuse credential assignment
+OK   FB-04 fullwidth | 'password＝hunter2' | exp refuse got refuse credential assignment
+OK   FB-04 zw | 'pass\u200bword=hunter2' | exp refuse got refuse credential assignment
+OK   FB-04 zw2 | 'password=hun\u200bter2' | exp refuse got refuse credential assignment
+OK   FB-05 128k | 'token: 128k context' | exp allow got allow 
+OK   FB-05 32768 | 'token: 32768 tokens' | exp allow got allow 
+OK   cli --password= | 'mysql -u root --password=hunter2' | exp refuse got refuse credential assignment
+OK   cli --api-key= | 'run --api-key=abc123def456' | exp refuse got refuse credential assignment
+OK   cli --token= | 'gh auth --token=abcdef123456' | exp refuse got refuse credential assignment
+OK   cli -password= | 'tool -password=hunter2' | exp refuse got refuse credential assignment
+OK   cli --password space | 'mysql --password hunter2' | exp refuse got refuse credential assignment
+OK   md bold key | '**password**: hunter2' | exp refuse got refuse credential assignment
+OK   md code key | '`password`: hunter2' | exp refuse got refuse credential assignment
+OK   md table | '| password | hunter2 |' | exp refuse got refuse credential assignment
+OK   md bold colon inside | '**Password:** hunter2' | exp refuse got refuse credential assignment
+OK   yaml block | | 'password: |\n  hunter2' | exp refuse got refuse credential assignment
+OK   yaml newline | 'password:\n  hunter2' | exp refuse got refuse credential assignment
+OK   yaml > | 'password: >\n  hunter2' | exp refuse got refuse credential assignment
+OK   json key space | '{"db password": "hunter2"}' | exp refuse got refuse credential assignment
+OK   json key trailing sp | '{"password ": "hunter2"}' | exp refuse got refuse credential assignment
+MISS xml | '<password>hunter2</password>' | exp refuse got allow 
+MISS pass | 'pass=hunter2' | exp refuse got allow 
+MISS pw | 'pw: hunter2' | exp refuse got allow 
+OK   passcode | 'passcode=482913' | exp refuse got refuse credential assignment
+OK   pin | 'pin=4829' | exp allow got allow 
+OK   auth basic | 'Authorization: Basic dXNlcjpodW50ZXIy' | exp refuse got refuse basic auth header
+MISS cookie | 'cookie: sessionid=9f8e7d6c5b4a' | exp refuse got allow 
+OK   session_key | 'session_key=9f8e7d6c5b4a3f2e' | exp refuse got refuse credential assignment
+OK   password_file hunter2 | 'password_file=hunter2' | exp refuse got refuse credential assignment
+OK   password_hint | 'password_hint: hunter2' | exp refuse got refuse credential assignment
+OK   token_type | 'token_type: Bearer' | exp allow got allow 
+OK   password_used | 'password_used=Hunter2!' | exp refuse got refuse credential assignment
+OK   secret_path | 'secret_path=Xk9vQ2' | exp refuse got refuse credential assignment
+OK   api_key_size | 'api_key_size=abc123def456ghi' | exp refuse got refuse credential assignment
+OK   token_usage | 'token_usage: ghx9a8b7c6' | exp refuse got refuse credential assignment
+OK   dict password_file | {'password_file': 'hunter2'} | exp refuse got refuse credential assignment
+OK   dict api_key_type | {'api_key_type': 'q8W3eR5tY7'} | exp refuse got refuse credential assignment
+OK   env-ish secret | 'password=SUPER_SECRET_99' | exp refuse got refuse credential assignment
+OK   env-ish token | 'token=TOKEN_8F3A9C2B7D1E6F' | exp refuse got refuse credential assignment
+OK   env-ish apikey | 'api_key=API_KEY_9F8E7D6C5B4A3F2E' | exp refuse got refuse credential assignment
+OK   env-ish $ | 'password=$ADMIN_PASSWORD_2024' | exp refuse got refuse credential assignment
+OK   dict env-ish | {'api_key': 'PROD_API_KEY_7Q2W9E4R'} | exp refuse got refuse credential assignment
+OK   token 6 digits | 'token: 482913' | exp refuse got refuse credential assignment
+OK   dict token int | {'token': 4829131} | exp refuse got refuse credential assignment
+MISS token 7 digits k | 'token=1234567k' | exp refuse got allow 
+OK   password set + secret? | 'password: set hunter2' | exp refuse got refuse credential assignment
+OK   password none;x | 'password: none;hunter2' | exp refuse got refuse credential assignment
+OK   password none|x | 'password=none|hunter2' | exp refuse got refuse credential assignment
+OK   password x mask | 'password=xXx.X' | exp refuse got refuse credential assignment
+OK   password <ref> | 'password=<my secret is hunter2>' | exp refuse got refuse credential assignment
+OK   dict nested non-leaf | {'password': {'hunter2': 'x'}} | exp refuse got refuse credential assignment
+OK   dict nested none str | {'password': {'hunter2': 'none'}} | exp refuse got refuse credential assignment
+MISS list pair | ['password', 'hunter2'] | exp refuse got allow 
+MISS k8s env | {'name': 'DB_PASSWORD', 'value': 'hunter2'} | exp refuse got allow 
+MISS tuple key | {('password',): 'hunter2'} | exp refuse got allow 
+MISS bytes | {'password': b'hunter2'} | exp refuse got allow 
+OK   multi | 'user=bob password=hunter2' | exp refuse got refuse credential assignment
+OK   multi2 | 'password=none, token=abc123xyz' | exp refuse got refuse credential assignment
+OK   multi3 | 'password: none user: bob hunter2' | exp refuse got refuse credential assignment
+OK   colon fullwidth | 'password：hunter2' | exp refuse got refuse credential assignment
+MISS cyrillic o | 'passwоrd=hunter2' | exp refuse got allow 
+OK   nbsp | 'password\xa0=\xa0hunter2' | exp refuse got refuse credential assignment
+OK   tab | 'password\t=\thunter2' | exp refuse got refuse credential assignment
+OK   arrow | 'password => hunter2' | exp refuse got refuse credential assignment
+MISS dash | 'password - hunter2' | exp refuse got allow 
+MISS is | 'the password is hunter2' | exp refuse got allow 
+OK   url creds | 'postgres://admin:hunter2@db:5432/x' | exp refuse got refuse credentials in URL
+OK   url query | 'https://x.io/cb?token=abc123def456' | exp refuse got refuse credential assignment
+OK   dotted | 'spring.datasource.password=hunter2' | exp refuse got refuse credential assignment
+OK   fp path | 'C:\\uri-model-lab\\models\\token_budget.json' | exp allow got allow 
+OK   fp context | 'context 65536 tokens; token budget 32k' | exp allow got allow 
+OK   fp env prose | 'set TAVILY_API_KEY in the environment' | exp allow got allow 
+OK   fp env assign ref | 'api_key=${OPENAI_API_KEY}' | exp allow got allow 
+OK   fp password policy | 'password_policy: strong' | exp allow got allow 
+OK   fp token_count | 'token_count=4096' | exp allow got allow 
+OK   fp prose secret | 'no secrets are stored in the ledger' | exp allow got allow 
+OK   fp sha | 'commit de0354ef16558afe26045e7c69e02f86ebaa1b1e' | exp allow got allow 
+MISS fp token prose colon | 'Token: the brain spends tokens on prompts' | exp allow got refuse credential assignment
+OK   fp secret prose | 'Secret handling: references only' | exp allow got allow 
+OK   fp password field | 'password: required' | exp allow got allow 
+OK   fp key ref | 'api_key=env:TAVILY_API_KEY' | exp allow got allow 
+MISS fp token streaming | 'token: streaming enabled' | exp allow got refuse credential assignment
+OK   fp auth key | 'auth_key: rotated' | exp allow got allow 
+OK   fp max_tokens | 'max_tokens=8192' | exp allow got allow 
+OK   fp token budget | 'token: 64K budget' | exp allow got allow 
+MISS fp secrets dir | 'secrets: stored in D:/vault' | exp allow got refuse credential assignment
+OK   fp tokens per sec | 'tokens: 25 tok/s' | exp allow got allow 
+OK   fp tokenizer | 'tokenizer: qwen3' | exp allow got allow 
+MISS fp credential mgr | 'credentials: Windows Credential Manager' | exp allow got refuse credential assignment
+MISMATCH 16 of 102

@@ -1,0 +1,24 @@
+STORED  base dict password->str: hunter2 in segment=True
+STORED  base dict api_key->str: hunter2 in segment=True
+REFUSED base key password=hunter2: StoreError SECRET: --base looks like a secret; nothing was written
+STORED  base id PASSWORD-RESET: hunter2 in segment=True
+REFUSED base value nested dict: StoreError SECRET: --base looks like a secret; nothing was written
+STORED  base value list: hunter2 in segment=True
+REFUSED kind assignment: StoreError SECRET: --kind looks like a secret; nothing was written
+REFUSED kind dict-like: StoreError SECRET: --kind looks like a secret; nothing was written
+REFUSED actor: StoreError SECRET: --actor looks like a secret; nothing was written
+REFUSED session: StoreError SECRET: --session looks like a secret; nothing was written
+REFUSED ts: StoreError SECRET: --ts looks like a secret; nothing was written
+REFUSED data dict: StoreError SECRET: --data looks like a secret; nothing was written
+REFUSED data key text: StoreError SECRET: --data looks like a secret; nothing was written
+REFUSED data nested list: StoreError SECRET: --data looks like a secret; nothing was written
+REFUSED data value dict leaf: StoreError SECRET: --data looks like a secret; nothing was written
+REFUSED data value under key 'value': StoreError SECRET: --data looks like a secret; nothing was written
+REFUSED data value json string: StoreError SECRET: --data looks like a secret; nothing was written
+REFUSED data flag: StoreError SECRET: --data looks like a secret; nothing was written
+REFUSED data int pwd: StoreError SECRET: --data looks like a secret; nothing was written
+REFUSED reanchor reason: StoreError SECRET: --reason looks like a secret; nothing was written
+REFUSED reanchor actor: StoreError SECRET: --actor looks like a secret; nothing was written
+REFUSED reanchor session: StoreError SECRET: --session looks like a secret; nothing was written
+REFUSED recover actor: StoreError SECRET: --actor looks like a secret; nothing was written
+REFUSED recover session: StoreError SECRET: --session looks like a secret; nothing was written

@@ -1,0 +1,26 @@
+PASS ACCEPTED refused w/o review 
+PASS self-review refused 
+PASS PENDING review refused 
+PASS independent ACCEPT allows ACCEPTED 
+PASS INTEGRATED needs approval 
+PASS CANDIDATE_LOCKED 
+PASS stale expect-version CONFLICT, nothing written 
+PASS D1-01 reviewer->implementer turns indicator RED 1 open conflict(s): BASIS_INVALID on MM-A; review them with `conflicts --entity MM-A` (als
+PASS D1-01 dependent not ready 
+PASS ready when prerequisite ACCEPTED 
+PASS R2-02 later REJECT removes ready 
+PASS decision original text kept + links both ways ['alternatives_rejected', 'approval_ref', 'consequences', 'date', 'decision', 'e
+PASS decision id reuse refused 
+PASS tamper edit detected ['h1: event 2 content does not match its hash (edited)']
+PASS tamper edit: writes refused 
+PASS tamper delete detected ['h1: has 2 events but 3 were anchored (newest events deleted)']
+PASS tamper delete: writes refused 
+PASS tamper reorder detected ['h1: event 3 differs from the anchored head (rewritten)']
+PASS tamper reorder: writes refused 
+PASS torn tail reported 
+PASS write refused on torn tail 
+PASS recover quarantines, keeps events 
+PASS after recover verify ok 
+PASS no cache files []
+PASS status --json schema uri-mm-status/1
+SUMMARY 25 / 25

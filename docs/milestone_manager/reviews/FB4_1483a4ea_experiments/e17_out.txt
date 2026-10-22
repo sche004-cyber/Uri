@@ -1,0 +1,30 @@
+PASSED  "_password = 'Zq81mPx0aa'"
+REFUSED "self._password = 'Zq81mPx0aa'"
+PASSED  "__password = 'Zq81mPx0aa'"
+PASSED  '_api_key: Zq81mPx0aa'
+PASSED  '_DB_PASSWORD=Zq81mPx0aa'
+REFUSED "$password = 'Zq81mPx0aa'"
+REFUSED '@password = Zq81mPx0aa'
+PASSED  '1password: Zq81mPx0aa'
+PASSED  '1.password: Zq81mPx0aa'
+REFUSED '#password=Zq81mPx0aa'
+REFUSED '&password=Zq81mPx0aa'
+REFUSED '?token=Zq81mPx0aa'
+REFUSED 'https://x/cb?access_token=Zq81mPx0aa'
+REFUSED 'https://x/cb?a=1&api_key=Zq81mPx0aa'
+REFUSED 'x.password=Zq81mPx0aa'
+PASSED  "cfg['password'] = 'Zq81mPx0aa'"
+PASSED  'cfg["api_key"]="Zq81mPx0aa"'
+PASSED  "os.environ['DB_PASSWORD'] = 'Zq81mPx0aa'"
+PASSED  'export _TOKEN=Zq81mPx0aa'
+REFUSED 'set -x; PASSWORD=Zq81mPx0aa ./run'
+PASSED  '{\n  "password":\n  "Zq81mPx0aa"\n}'
+REFUSED 'password\n= Zq81mPx0aa'
+REFUSED 'password :\n  Zq81mPx0aa'
+PASSED  '<password>Zq81mPx0aa</password>'
+PASSED  'password\tZq81mPx0aa'
+REFUSED 'PASSWORD:Zq81mPx0aa'
+PASSED  'pass_word=Zq81mPx0aa'
+PASSED  'Password(s): Zq81mPx0aa'
+PASSED  'passwords: Zq81mPx0aa'
+PASSED  'tokens: Zq81mPx0aa'

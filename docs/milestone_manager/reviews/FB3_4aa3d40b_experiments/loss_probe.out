@@ -1,0 +1,23 @@
+after-truncate write refused CHAIN_BROKEN CHAIN_BROKEN: ledger fails verification; run `verify` (h1: has 2 events but 3 were anchored (newest events deleted))
+reanchor (0, '{  "anchor_problems": [   "h1: has 2 events but 3 were anchored (newest events deleted)"  ],  "counts": {   "h1": 2  },  "lost": {   "h1": {    "anchored": 3,    "now": 2   }  },  "previous": {   "h1": {    "count": 3,    "head": "6d0890ecd282ab0c0e1cdbdfed72432271bbbb29f7e064099e9be27929913931"   }  },  "reason": "lost newest event in probe",  "unknown_previous": false }')
+after-reanchor write ACCEPTED
+conflicts (0, '[  {   "at": "2026-10-22T06:16:48.692534Z",   "detail": {    "anchor_problems": [     "h1: has 2 events but 3 were anchored (newest events deleted)"    ],    "lost": {     "h1": {      "anchored": 3,      "now": 2     }    },    "unknown_previous": false   },   "entity": "LEDGER",   "event": "h1#3",   "id": "2e646be4c8f4.8e878a",   "recorded_by": "ANCHORS_RESET",   "subject": null,   "subjects": n')
+second-after-reanchor write ACCEPTED
+conflicts: [
+ {
+  "at": "2026-10-22T06:16:48.692534Z",
+  "detail": {
+   "anchor_problems": [
+    "h1: has 2 events but 3 were anchored (newest events deleted)"
+   ],
+   "lost": {
+    "h1": {
+     "anchored": 3,
+     "now": 2
+    }
+   },
+   "unknown_previous": false
+  },
+  "entity": "LEDGER",
+  "event": "h1#3",
+status mentions conflict id: True

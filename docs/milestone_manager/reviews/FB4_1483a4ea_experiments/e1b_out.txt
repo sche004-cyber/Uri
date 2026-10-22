@@ -1,0 +1,6 @@
+STORED  {'password': 'hunter2xyz'} | verify ok: True | fold ok, integrity_errors=[] | line has base: "base":{"password":"hunter2xyz"},"data":{"x":1},"hash":"a
+STORED  {'api_key': 'Zq81mPx0aa'} | verify ok: True | fold ok, integrity_errors=[] | line has base: "base":{"api_key":"Zq81mPx0aa"},"data":{"x":1},"hash":"04
+STORED  {'db_password': 'Tr0ub4dor&3'} | verify ok: True | fold ok, integrity_errors=[] | line has base: "base":{"db_password":"Tr0ub4dor&3"},"data":{"x":1},"hash
+STORED  {'PASSWORD-RESET': 3} | verify ok: True | fold ok, integrity_errors=[] | line has base: "base":{"PASSWORD-RESET":3},"data":{"x":1},"hash":"9b35a2
+REFUSED {'M1': 'password=hunter2'} StoreError SECRET: --base looks like a secret; nothing was written
+REFUSED {'M1': {'secret': 'abc'}} StoreError SECRET: --base looks like a secret; nothing was written

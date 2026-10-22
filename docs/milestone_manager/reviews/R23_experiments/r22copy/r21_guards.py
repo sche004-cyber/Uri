@@ -1,0 +1,45 @@
+from common import *
+def tryit(label, f):
+    try: f(); print(label, "ALLOWED")
+    except ValidationError as e: print(label, "refused", e.code)
+m = new(); m.create_milestone("MM-1","x"); m.update_milestone("MM-1", candidate_commit=C1)
+m.record_review("MM-1", C1, "subagent", "impl:a", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "self")
+tryit("self-review accept", lambda: m.set_status("MM-1","ACCEPTED","x"))
+m.record_review("MM-1", C1, "subagent", "rev:y", "SUBAGENT", "REJECT", 1, 1, "COMPLETED_WITH_RESULT", "neg")
+m.record_review("MM-1", C1, "subagent", "rev:z", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "pos")
+tryit("accept with negative review on candidate", lambda: m.set_status("MM-1","ACCEPTED","x"))
+m2 = new(); m2.create_milestone("MM-1","x"); m2.update_milestone("MM-1", candidate_commit=C1)
+m2.record_review("MM-1", C1, "subagent", "rev:z", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "pos")
+tryit("pending review accept", lambda: m2.record_review("MM-1", C1, "subagent", "rev:q", "SUBAGENT", "ACCEPT", 0, 0, "PENDING", "p"))
+m2.set_status("MM-1","ACCEPTED","x"); print("accepted")
+tryit("candidate change after accept", lambda: m2.update_milestone("MM-1", candidate_commit=C2))
+m2.request_approval("MM-1","INTEGRATION","ok?"); m2.resolve_approval("AP-1","APPROVED","yes","chat")
+m2.record_integration("MM-1","master",C1)
+tryit("integrated", lambda: m2.set_status("MM-1","INTEGRATED","x"))
+m3 = new(); m3.create_milestone("MM-1","x"); m3.update_milestone("MM-1", candidate_commit=C1)
+m3.record_review("MM-1", C1, "subagent", "rev:z", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "pos")
+m3.request_approval("MM-1","INTEGRATION","ok?"); m3.resolve_approval("AP-1","APPROVED","yes","chat")
+m3.set_status("MM-1","ACCEPTED","x")
+p=m3.projection(); print("decision overwrite test:")
+d=m3.record_decision("T","D","2026-10-22","OWNER-PROMPT","chat", ident="LDEC-900")
+tryit("same decision id again", lambda: m3.record_decision("T2","D2","2026-10-22","OWNER-PROMPT","chat", ident="LDEC-900"))
+print("dec", m3.projection()["decisions"]["LDEC-900"]["decision"])
+
+dd=m3.projection()["decisions"]["LDEC-900"] if "LDEC-900" in m3.projection()["decisions"] else None
+print("LDEC-900 present", dd is not None)
+
+m3.record_decision("T3","D3 new","2026-10-22","OWNER-PROMPT","chat", ident="LDEC-901", supersedes="LDEC-900")
+m3.correct_decision("LDEC-900","typo fix","OWNER-PROMPT","chat")
+d=m3.projection()["decisions"]
+print("old", d["LDEC-900"]["decision"], d["LDEC-900"]["status"], d["LDEC-900"]["superseded_by"], len(d["LDEC-900"]["corrections"]), "new supersedes", d["LDEC-901"]["supersedes"])
+# integration approval bound to commit: move to new candidate
+m4 = new(); m4.create_milestone("MM-1","x"); m4.update_milestone("MM-1", candidate_commit=C1)
+m4.record_review("MM-1", C1, "subagent", "rev:z", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "pos")
+m4.request_approval("MM-1","INTEGRATION","ok?"); m4.resolve_approval("AP-1","APPROVED","yes","chat")
+m4.set_status("MM-1","IN_PROGRESS","x"); m4.update_milestone("MM-1", candidate_commit=C2)
+m4.record_review("MM-1", C2, "subagent", "rev:z", "SUBAGENT", "ACCEPT", 0, 0, "COMPLETED_WITH_RESULT", "pos2")
+m4.set_status("MM-1","ACCEPTED","x"); m4.record_integration("MM-1","master",C2)
+tryit("INTEGRATED with approval for old commit", lambda: m4.set_status("MM-1","INTEGRATED","x"))
+tryit("RUNNING review accept", lambda: (lambda mm: (mm.create_milestone("MM-1","x"), mm.update_milestone("MM-1", candidate_commit=C1), mm.record_review("MM-1", C1, "subagent", "rev:q", "SUBAGENT", "ACCEPT", 0, 0, "RUNNING", "r"), mm.set_status("MM-1","ACCEPTED","x")))(new()))
+import os
+print("home files", sorted(str(p.relative_to(m4.home)) for p in m4.home.rglob("*") if p.is_file()))
