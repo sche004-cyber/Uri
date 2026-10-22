@@ -96,27 +96,33 @@ class ValidationError(Exception):
 
 def find_secret(value) -> str | None:
     """Return the name of the first secret pattern found anywhere in ``value`` (str/list/dict), else None."""
-    if isinstance(value, str):
-        for name, rx in SECRET_PATTERNS:
-            if rx.search(value):
-                return name
-        return "credential assignment" if _assignment_secret(value) else None
-    if isinstance(value, dict):
-        for key, item in value.items():
-            if isinstance(key, str) and isinstance(item, (str, int, float)) \
-                    and _assignment_secret(f"{key}: {item}"):
-                return "credential assignment"
-            for part in (key, item):
-                hit = find_secret(part)
+    def walk(part, keys: tuple[str, ...]) -> str | None:
+        if isinstance(part, (str, int, float)):
+            for key in keys:
+                if _assignment_secret(f"{key}: {part}"):
+                    return "credential assignment"
+            if isinstance(part, str):
+                for name, rx in SECRET_PATTERNS:
+                    if rx.search(part):
+                        return name
+                return "credential assignment" if _assignment_secret(part) else None
+            return None
+        if isinstance(part, dict):
+            for key, item in part.items():
+                hit = walk(key, ())
+                if hit:
+                    return hit
+                hit = walk(item, keys + (key,) if isinstance(key, str) else keys)
+                if hit:
+                    return hit
+        elif isinstance(part, (list, tuple)):
+            for item in part:
+                hit = walk(item, keys)
                 if hit:
                     return hit
         return None
-    if isinstance(value, (list, tuple)):
-        for v in value:
-            hit = find_secret(v)
-            if hit:
-                return hit
-    return None
+
+    return walk(value, ())
 
 
 def check_text(name: str, value, required: bool = False, limit: int = MAX_TEXT) -> str | None:

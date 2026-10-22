@@ -2674,6 +2674,42 @@ def test_r3_01_direct_store_append_refuses_nested_credential_value(tmp_path, dat
     assert e.value.code == "SECRET" and seg_bytes(m) == before
 
 
+@pytest.mark.parametrize("credential", [
+    {"api_key": {"value": "abcd1234xyz9876"}},
+    {"access_token": [{"details": {"value": "abc123def456ghi789"}}]},
+])
+def test_r4_01_direct_store_append_refuses_credential_container_without_writing(tmp_path, credential):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    data = {"id": "MM-A", "fields": {"details": credential}}
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append("MILESTONE_UPDATED", data, actor="impl:a")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+@pytest.mark.parametrize("credential", [
+    {"api_key": {"value": "abcd1234xyz9876"}},
+    {"access_token": ["abc123def456ghi789"]},
+])
+def test_r4_01_direct_store_batch_refuses_later_credential_container_atomically(tmp_path, credential):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    items = [("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"objective": "safe"}}, {}),
+             ("MILESTONE_UPDATED", {"id": "MM-A", "fields": {"details": credential}}, {})]
+    with m.store.locked(), pytest.raises(StoreError) as e:
+        m.store.append_many(items, actor="impl:a")
+    assert e.value.code == "SECRET" and seg_bytes(m) == before
+
+
+def test_r4_01_find_secret_keeps_credential_context_through_containers():
+    assert model.find_secret({"api_key": {"value": "abcd1234xyz9876"}}) == "credential assignment"
+    assert model.find_secret({"access_token": [{"details": ["abc123def456ghi789"]}]}) == "credential assignment"
+    for value in ("expired", "<redacted>", "$OPENAI_API_KEY", "D:/uri-dev/worktree1"):
+        assert model.find_secret({"api_key": {"value": [value]}}) is None
+
+
 def test_r3_02_ready_requires_dependency_status_bound_to_candidate(tmp_path):
     m = _accept_ready(tmp_path)
     m.create_milestone("MM-B", "dependent")
