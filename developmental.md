@@ -446,3 +446,13 @@ Appended; rows above are kept. Full record: `docs/audit/p0_20261021/P0_CLOSURE_2
 | Final gates on `0acf58d7` | pytest 807/23; Flutter 882/5; analyze 5 info (baseline); release build rc 0; frozen check clean |
 | **Canonical move** | **`9488c0fd` -> `0acf58d7`** fast-forward, 2026-10-22 02:15Z, `git ls-remote` verified (DEC-092 authorisation, DEC-094 order) |
 | Status | CAP-UI3 / CAP-RT6: GREEN (integrated, tested, reviewed, live). Combined Ember + Controls live check on `0acf58d7`: see O.7 |
+
+### O.7 2026-10-22: Ember + URI Controls verified together on canonical
+
+| Item | Value |
+|---|---|
+| Combined live run `ce-ember` on `0acf58d7` (clean) | 19/20: Ember window borderless, per-pixel transparent at 1.0 and 1.25x, click-through, Ember click, drag; Brain P3 -> Long -> P3 with the companion Initializing and never idle during each switch; recall after both; transparent on Long. `R-initializing-seen` FAIL is not applicable in this harness (Brain ready before the app's first sample), as in `p3-ember-switch` |
+| Records commit | `2aa0141e` (docs only: integration status, R6 review copy, combined evidence) pushed as a fast-forward on `0acf58d7`, 2026-10-22, `git ls-remote` verified |
+| **Canonical now** | **`2aa0141e`** (code = `0acf58d7`) |
+| Dependencies of UI-SEL-1 (O.4) | D1 met (O.6), D2 met, D3 met, D4 met (this table). D5 (GPU headroom) holds only while the owner keeps Chrome/ChatGPT closed; dwm.exe still holds about 1.7 GB |
+| Next | UI-SEL-1 may start in its own branch/worktree from `2aa0141e` (DEC-094) |
