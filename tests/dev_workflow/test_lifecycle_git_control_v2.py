@@ -80,3 +80,35 @@ def test_a_legacy_bound_run_with_drift_is_not_upgraded(tmp_path):
     L.run(cfg)
     assert "git_control_v2" not in L.control_anchor(L.State(cfg))   # never re-bound over a drift
     assert L.State(cfg).stage == S.BLOCKED
+
+
+# ---------------------------------------------------------------- G1-02 (fallback review FB1, LOW): one read
+
+def test_both_digests_come_from_one_read_and_match_the_single_digests(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    (info_dir(repo) / "refs").write_text("abc\trefs/heads/x\n")
+    d = L.git_control_digests(repo)
+    assert d == {"legacy": L.git_control_digest(repo, legacy=True), "v2": L.git_control_digest(repo)}
+    assert d["legacy"] != d["v2"]
+
+
+def test_g1_02_upgrade_binds_the_state_it_compared_not_a_later_read(tmp_path, monkeypatch):
+    cfg, repo, wt = waiting(tmp_path)
+    st = L.State(cfg)
+    legacy = {k: v for k, v in L.control_anchor(st).items() if k != "git_control_v2"}
+    legacy["git_control"] = L.git_control_digest(cfg["repo"], legacy=True)
+    st.event("CONTROL_ANCHORED", control=legacy)                    # a run planned before v2, clean now
+    real = L.git_control_digests
+    clean = real(cfg["repo"])
+    reads = []
+
+    def racing(repo_):
+        # first read sees the clean state; every later read sees a control change that lands right after it
+        reads.append(1)
+        return dict(clean) if len(reads) == 1 else {"legacy": "changed-legacy", "v2": "changed-v2"}
+
+    monkeypatch.setattr(L, "git_control_digests", racing)
+    L.run(cfg)
+    bound = L.control_anchor(L.State(cfg))
+    assert bound.get("git_control_v2") == clean["v2"]               # never the value of the later read
+    assert L.State(cfg).stage == S.BLOCKED                         # and the later change is still caught
