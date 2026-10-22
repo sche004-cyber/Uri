@@ -427,3 +427,18 @@ recover, reanchor, write successes and all refusals): ids appear only in `confli
 | `autocommit` commits only the ledger's changed paths | R22-03 |
 | `resume` output never exceeds `max(max_chars, 200)` | R22-04 |
 | `resolve-conflict --id` help names `conflicts` only | R22-05 |
+
+## 35. Secret refusal after the driver and fallback reviews (2026-10-22)
+
+The Lifecycle V3 driver review (runs d1, d2, d3 under `D:/uri-dev/lifecycle/MILESTONE-MANAGER-d*`) and two fallback
+subagent reviews (records in `reviews/`) found secret-refusal bypasses round after round. The owner bounded F16 to an
+explicit contract (ACCEPTANCE_CRITERIA.md). The detector (`model.find_secret`) now:
+
+| Rule | Reason |
+|---|---|
+| every write path checks: service `_write`, direct `EventStore.append_many` (data, base, kind, actor, session, ts), `reanchor`, `recover`, CLI | D1-02, R2-01, R22-01 |
+| credential keys recognised by their words (prefix, suffix, camelCase, quotes, spaces in quoted keys, markdown) | FB-01, FB-02, FB2-02 |
+| values default-deny, word by word; only exact references (`${N}`, `%N%`, `env:N`, credential-named env vars without digits), placeholders, state words, masks, context sizes under token keys | R4-R8, D2-01/02, FB2-03, FB2-06 |
+| descriptive keys (`token_count`, `password_file`, `api_key_type`) are checked by the shape their last word implies | FB2-04 |
+| YAML block values, key/value table rows, command-line flags, `Authorization: Basic` | FB2-01, FB2-02, FB2-05 |
+| NFKC normalisation without zero-width characters | FB-04 |

@@ -54,29 +54,45 @@ SECRET_PATTERNS = [
     ("hugging face token", re.compile(r"\bhf_[A-Za-z0-9]{30,}")),
     ("json web token", re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}")),
     ("credentials in URL", re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^/\s:@]+:[^/\s@]+@")),
+    ("basic auth header", re.compile(r"(?i)\bauthorization\s*[:=]\s*basic\s+[A-Za-z0-9+/]{8,}=*")),
 ]
+# F16 contract (owner decision 2026-10-22, ACCEPTANCE_CRITERIA.md): refused are the known token formats above and
+# credential key/value pairs in standard notations - key=v, key: v, JSON/Python dicts (quoted keys, also with
+# spaces), YAML (inline and block values), markdown keys (**key**, `key`), table rows (| key | value |) and command
+# line flags (--key=v, --key v, -key v), plus Authorization: Basic. Free prose ("the password is ..."), homoglyphs
+# outside NFKC, XML tags and other notations are outside the contract (a documented limitation of a best-effort guard).
+#
 # Credential keys are recognised by their words, so prefixes, suffixes, camelCase and quotes do not hide them
 # (fallback review FB-01/FB-02): db_password, DB_PASSWORD, myPassword, "api_key", github-token, clientSecret.
-CREDENTIAL_WORDS = {"password", "passwd", "pwd", "passphrase", "secret", "secrets", "token", "credential",
-                    "credentials", "apikey", "privatekey", "accesskey"}
-CREDENTIAL_PAIRS = {("api", "key"), ("access", "key"), ("private", "key"), ("secret", "key"), ("auth", "key")}
-# a word after the credential word that makes the key describe the credential rather than hold it
-DESCRIPTIVE_WORDS = {"count", "counts", "limit", "limits", "budget", "policy", "policies", "length", "size", "usage",
-                     "used", "expiry", "expires", "ttl", "type", "rotation", "rotated", "reset", "hint", "file", "path"}
-KEY_SEP_RX = re.compile(r"(?<![A-Za-z0-9_.-])([\"']?)([A-Za-z][A-Za-z0-9_.-]*)\1\s*[:=]")
+CREDENTIAL_WORDS = {"password", "passwd", "pwd", "passphrase", "passcode", "secret", "secrets", "token",
+                    "credential", "credentials", "apikey", "privatekey", "accesskey", "sessionkey"}
+CREDENTIAL_PAIRS = {("api", "key"), ("access", "key"), ("private", "key"), ("secret", "key"), ("auth", "key"),
+                    ("session", "key")}
+# A last word that makes the key describe the credential instead of holding it. Such keys are still checked, but by
+# the shape their word implies (fallback review FB2-04): a number, a path, or an enum word - never a free value.
+NUMERIC_WORDS = {"count", "counts", "limit", "limits", "budget", "length", "size", "ttl", "expiry", "expires",
+                 "ceiling", "max", "min"}
+PATH_WORDS = {"file", "path", "dir"}
+ENUM_WORDS = {"type", "policy", "policies", "rotation", "usage", "kind", "mode", "format", "weight", "weights",
+              "embd"}
+DESCRIPTIVE_WORDS = NUMERIC_WORDS | PATH_WORDS | ENUM_WORDS
+KEY_SEP_RX = re.compile(r"(?:([\"'])([^\"'\n]{1,60})\1|(?<![A-Za-z0-9_.])([A-Za-z][A-Za-z0-9_.-]*))\s*[:=]")
+FLAG_SPACE_RX = re.compile(r"(?<![A-Za-z0-9_.-])-{1,2}([A-Za-z][A-Za-z0-9_.-]*)[ \t]+(?!-)(\S+)")
 STATUS_WORDS = {"expired", "rotated", "revoked", "invalid", "valid", "budget", "limit", "count", "present",
                 "absent", "stored", "encrypted", "configured", "unavailable", "disabled", "enabled", "hidden"}
 PLACEHOLDER_VALUES = {"required", "optional", "none", "null", "redacted", "unset", "set", "missing", "empty",
                       "true", "false", "yes", "no", "n/a", "***", "<redacted>", "xxx", "changeme?"}
 CONTEXT_WORDS = {"context", "tokens", "budget", "window"}
-ZERO_WIDTH = dict.fromkeys(map(ord, "\u200b\u200c\u200d\u2060\ufeff\u00ad"))
+BLOCK_INDICATORS = {"", "|", ">", "|-", ">-", "|+", ">+"}
+MASK_RX = re.compile(r"\*{3,}|x{3,}|X{3,}|\.{3,}")
+ZERO_WIDTH = dict.fromkeys(map(ord, "​‌‍⁠﻿­"))
 
 # The only values under a credential key that are not refused: exact references to a variable (${NAME}, %NAME%,
-# env:NAME, or an upper-case environment-variable name that itself names a credential, optionally after $), never a
+# env:NAME, or an upper-case environment-variable name that ends in a credential word, optionally after $), never a
 # value that merely starts like one (driver review rounds 4-8 found a bypass in every looser exemption).
 REFERENCE_RX = re.compile(r"\$\{[A-Za-z_][A-Za-z0-9_]*\}|%[A-Za-z_][A-Za-z0-9_]*%|env:[A-Za-z_][A-Za-z0-9_]*"
                           r"|<[a-z][a-z _-]{0,40}>")
-ENV_NAME_RX = re.compile(r"\$?([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)")
+ENV_NAME_RX = re.compile(r"\$?([A-Z][A-Z]*(?:_[A-Z]+)+)")
 
 
 def normalise(text: str) -> str:
@@ -86,60 +102,98 @@ def normalise(text: str) -> str:
 
 
 def _key_words(key: str) -> list[str]:
-    key = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", normalise(key).strip().strip("'\""))
+    key = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", normalise(key).strip().strip("'\"*`"))
     return [w for w in re.split(r"[^A-Za-z0-9]+", key.lower()) if w]
 
 
-def credential_key(key) -> bool:
+def key_class(key) -> str | None:
+    """None (not a credential key), "credential", or the descriptive word that sets the expected value shape."""
     if not isinstance(key, str):
-        return False
+        return None
     words = _key_words(key)
     for i, w in enumerate(words):
-        hit = w in CREDENTIAL_WORDS or (i + 1 < len(words) and (w, words[i + 1]) in CREDENTIAL_PAIRS)
-        if hit:
-            rest = words[i + 2:] if (i + 1 < len(words) and (w, words[i + 1]) in CREDENTIAL_PAIRS) else words[i + 1:]
-            if not (rest and rest[-1] in DESCRIPTIVE_WORDS):
-                return True
-    return False
+        pair = i + 1 < len(words) and (w, words[i + 1]) in CREDENTIAL_PAIRS
+        if w in CREDENTIAL_WORDS or pair:
+            rest = words[i + 2:] if pair else words[i + 1:]
+            return rest[-1] if rest and rest[-1] in DESCRIPTIVE_WORDS else "credential"
+    return None
 
 
-def _exempt_word(key: str, word: str) -> bool:
+def credential_key(key) -> bool:
+    return key_class(key) is not None
+
+
+def _env_name(word: str) -> bool:
+    """$OPENAI_API_KEY, TAVILY_API_KEY, DB_PASSWORD: a variable name ending in a credential word, without digits
+    (FB2-03: SUPER_SECRET_99, PROD_API_KEY_7Q2W9E4R and TOKEN_8F3A... are values, not names)."""
+    m = ENV_NAME_RX.fullmatch(word)
+    if not m:
+        return False
+    words = m.group(1).lower().split("_")
+    return words[-1] in CREDENTIAL_WORDS or (len(words) > 1 and (words[-2], words[-1]) in CREDENTIAL_PAIRS)
+
+
+def _exempt_word(cls: str, key: str, word: str, context: bool) -> bool:
     low = word.lower()
-    if not word or low in PLACEHOLDER_VALUES or low in STATUS_WORDS or set(word) <= {"*", "x", "X", "."}:
+    if not word or low in PLACEHOLDER_VALUES or low in STATUS_WORDS or MASK_RX.fullmatch(word):
         return True
-    if REFERENCE_RX.fullmatch(word):
+    if REFERENCE_RX.fullmatch(word) or _env_name(word):
         return True
-    env = ENV_NAME_RX.fullmatch(word)
-    if env and credential_key(env.group(1)):
-        return True  # $OPENAI_API_KEY, TAVILY_API_KEY, DB_PASSWORD: a variable name, not a value (R1-09)
-    if "token" in _key_words(key) and (re.fullmatch(r"\d{1,7}[kKmM]?", word) or low in CONTEXT_WORDS):
-        return True  # a context size ("token: 65536", "token: 128k context"), not a credential (R3-07, FB-05)
+    if cls in NUMERIC_WORDS:
+        return bool(re.fullmatch(r"\d[\d.,_:]*[A-Za-z%]{0,6}|\d{4}-\d{2}-\d{2}(?:T[\d:.]+Z?)?", word))
+    if cls in PATH_WORDS:
+        return bool(re.search(r"[/\\]", word) or re.fullmatch(r"[\w.-]+\.[A-Za-z0-9]{1,5}", word))
+    if cls in ENUM_WORDS:
+        return bool(re.fullmatch(r"[A-Za-z][A-Za-z_-]*", word))
+    if "token" in _key_words(key):
+        if low in CONTEXT_WORDS:
+            return True
+        n = re.fullmatch(r"(\d{1,7})([kKmM]?)", word)
+        if n and (n.group(2) or context or (int(n.group(1)) >= 256 and int(n.group(1)) & (int(n.group(1)) - 1) == 0)):
+            return True  # a context size ("token: 65536", "token: 128k", "32768 tokens"), not a code (R3-07, FB2-06)
     return False
 
 
 def _credential_value_secret(key: str, val: str) -> bool:
     """Default deny: every word of a value under a credential key must be a placeholder, a state word, a mask, an
-    exact variable reference or (for token keys) a context size; anything else is a secret."""
-    words = [w for w in re.split(r"[\s,]+", normalise(str(val)).strip()) if w.strip("'\"{}()[]")]
-    return bool(words) and not all(_exempt_word(key, w) or _exempt_word(key, w.strip("'\"{}()[]")) for w in words)
+    exact variable reference, a context size (token keys) or match the shape of a descriptive key."""
+    cls = key_class(key) or "credential"
+    words = [w for w in re.split(r"[\s,;|]+", normalise(str(val)).strip()) if w.strip("'\"{}()[]")]
+    context = any(w.lower().strip("'\"{}()[]") in CONTEXT_WORDS for w in words)
+    return bool(words) and not all(_exempt_word(cls, key, w, context)
+                                   or _exempt_word(cls, key, w.strip("'\"{}()[]"), context) for w in words)
 
 
 STRUCT_SEP_RX = re.compile(r"[,;{\[\n]\s*\Z")
 
 
 def _assignment_secret(text: str) -> bool:
-    text = normalise(text)
+    text = re.sub(r"[*`]+", "", normalise(text))  # markdown keys: **password**: x, `password`: x (FB2-02)
     marks = list(KEY_SEP_RX.finditer(text))
     for i, m in enumerate(marks):
-        if not credential_key(m.group(2)):
+        key = m.group(2) or m.group(3)
+        if not credential_key(key):
             continue
         # the value runs to the next assignment that follows a structural separator ("a: x, b: y", '{"a": 1, "b"'),
         # so "password: env:DB_PASSWORD hunter2" is read whole (driver D2-02)
         nxt = [n for n in marks[i + 1:] if STRUCT_SEP_RX.search(text, 0, n.start())]
-        stop = nxt[0].start() if nxt else len(text)
-        val = re.split(r"[;\r\n|]", text[m.end():stop], maxsplit=1)[0]
-        if _credential_value_secret(m.group(2), val):
+        lines = text[m.end():nxt[0].start() if nxt else len(text)].split("\n")
+        val = lines[0]
+        if val.strip() in BLOCK_INDICATORS:  # YAML: "password:\n  x", "password: |\n  x" (FB2-02)
+            val = next((ln for ln in lines[1:] if ln.strip()), "")
+        if _credential_value_secret(key, val):
             return True
+    for m in FLAG_SPACE_RX.finditer(text):  # --password hunter2, -pwd x (FB2-01; --password=x is an assignment)
+        if credential_key(m.group(1)) and _credential_value_secret(m.group(1), m.group(2)):
+            return True
+    for line in text.splitlines():  # | password | hunter2 | (FB2-02)
+        if line.count("|") >= 2:
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            # only a key/value row (one identifier, one token); prose tables are not assignments (P0 registers)
+            if any(re.fullmatch(r"[A-Za-z][\w.-]*", a) and re.fullmatch(r"\S+", b) and credential_key(a)
+                   and b.lower() not in ("value", "values")  # header row "| Token | Value |"
+                   and _credential_value_secret(a, b) for a, b in zip(cells, cells[1:])):
+                return True
     return False
 
 
@@ -167,7 +221,8 @@ def find_secret(value) -> str | None:
             for key, item in part.items():
                 # under a credential key, a dict key that carries no value of its own is the value
                 # (FB-03: {"password": {"hunter2": None}}); a key over content is structure ({"value": [...]})
-                leaf = item is None or isinstance(item, bool) or item in ({}, [], (), "")
+                leaf = item is None or isinstance(item, bool) or item in ({}, [], (), "") or (
+                    isinstance(item, str) and not _credential_value_secret("password", item))  # FB2-06
                 hit = walk(key, keys if leaf and any(credential_key(k) for k in keys) else ())
                 if hit:
                     return hit

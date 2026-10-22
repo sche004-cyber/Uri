@@ -2970,3 +2970,49 @@ def test_fb_direct_store_refuses_leaf_key_and_prefixed_key(tmp_path):
             m.store.append_many([("HANDOFF_RECORDED", data, {})], actor="impl:a")
         assert e.value.code == "SECRET"
     assert seg_bytes(m) == before
+
+
+# ------------------------------------------------------------------ fallback review of de0354ef (FB2-01..FB2-06)
+# within the bounded F16 contract (owner decision 2026-10-22, ACCEPTANCE_CRITERIA.md amendment log).
+
+FB2_SECRETS = [
+    "mysql -u root --password=hunter2", "run --api-key=abc123def456", "gh auth --token=abcdef123456",
+    "tool -password=hunter2", "--client-secret=Zx9kq2abc", "mysql --password hunter2", "--pwd hunter2",
+    "**password**: hunter2", "`password`: hunter2", "password:\n  hunter2", "password: |\n  hunter2",
+    "| password | hunter2 |", '{"db password": "hunter2"}', '{"password ": "hunter2"}',
+    "token=TOKEN_8F3A9C2B7D1E6F", "api_key=API_KEY_9F8E7D6C5B4A3F2E", "password=SUPER_SECRET_99",
+    "password=$ADMIN_PASSWORD_2024", {"api_key": "PROD_API_KEY_7Q2W9E4R"}, "password= TOKEN_ABC_ZZZ91",
+    "password_reset=NewPass2024!", "admin_password_rotated: Spring2026!", "password_used=Hunter2!",
+    "password_hint: hunter2", "password_file=hunter2", "DB_PASSWORD_FILE=hunter2", "secret_path=Xk9vQ2",
+    "client_secret_expiry=Zx9!kq2", "api_key_size=abc123def456ghi", {"api_key_type": "q8W3eR5tY7"},
+    "Authorization: Basic dXNlcjpodW50ZXIy", "passcode=482913", "session_key=abc123def", "token: 482913",
+    {"token": 4829131}, "password: none;hunter2", "password=none|hunter2", "password=xXx.X",
+    {"password": {"hunter2": "x"}}, {"password": {"hunter2": "none"}},
+]
+FB2_CLEAN = [
+    "token: 65536", "-ot token_embd.weight=CPU", "password_file=D:/vault/pw.txt", "token_limit: 4096",
+    "api_key_type: bearer", "token_expiry=2026-10-22", "| Field | Value |", "| Token | Value | Why |",
+    "password: ****", '"monthly_token_ceiling": 100000',
+]
+
+
+@pytest.mark.parametrize("value", FB2_SECRETS)
+def test_fb2_contract_notations_are_refused(value):
+    assert model.find_secret(value), value
+
+
+@pytest.mark.parametrize("value", FB2_CLEAN)
+def test_fb2_descriptive_shapes_and_context_sizes_pass(value):
+    assert model.find_secret(value) is None, value
+
+
+@pytest.mark.parametrize("argv", [["handoff", "MM-A", "--summary", "mysql --password=hunter2"],
+                                  ["milestone-update", "MM-A", "--next-action", "**password**: hunter2"],
+                                  ["milestone-update", "MM-A", "--next-action", "password_reset=NewPass2024!"]])
+def test_fb2_cli_refuses_without_writing(tmp_path, argv):
+    m = new(tmp_path)
+    m.create_milestone("MM-A", "A")
+    before = seg_bytes(m)
+    out = io.StringIO()
+    assert cli.run(["--home", str(m.home), "--actor", "impl:a", *argv], out=out) != 0
+    assert seg_bytes(m) == before and "SECRET" in out.getvalue()

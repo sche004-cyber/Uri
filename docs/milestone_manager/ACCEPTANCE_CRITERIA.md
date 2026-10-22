@@ -34,7 +34,7 @@ Every criterion names how it is checked. "Test" means an automated pytest in `te
 | F13 | `resume` (including Lifecycle V3.1 task summaries when available, read-only) answers the seven continuity questions for a milestone in bounded output (size limit) | test |
 | F14 | Importers for `developmental.md` roadmap/capabilities and `decisions.md` keep source path, commit (when given), line and file SHA-256; re-import is idempotent; a changed source row is recorded as a new revision, never an overwrite | test |
 | F15 | Lifecycle link/sync reads a Lifecycle V3 state dir read-only, verifies its event chain, and records stage, blocker, candidate and verdict with hashes | test (fixture state dir built by the real driver helpers or a byte-identical sample) |
-| F16 | Secret-like strings (API keys, tokens, private keys, passwords) are refused in any free-text field | test |
+| F16 | Secret-like strings are refused in every free-text field and every stored event field, within the F16 contract: known token formats (OpenAI/Anthropic, GitHub, AWS, Google, Slack, Stripe, Hugging Face, JWT, bearer, `Authorization: Basic`, private key blocks, credentials in URLs) and credential key/value pairs in standard notations (`key=v`, `key: v`, JSON/Python dicts with quoted keys, YAML inline and block values, markdown keys, key/value table rows, command-line flags `--key=v`, `--key v`); credential keys are recognised by their words; values are default-deny (only exact variable references, placeholders, state words, masks, context sizes, and shape-checked values of descriptive keys pass). Out of contract (documented limitation of a best-effort guard): free prose ("the password is ..."), homoglyphs outside NFKC, XML tags, name/value pairs split across fields, other notations | test |
 | F17 | State is always derived from the verified log; no cache is trusted (amended 2026-10-21 after review R1-02/06/08: was "projection cache is disposable; incremental rebuild") | test |
 | F18 | `status --json` has a versioned, documented schema for Mission Control and other consumers | test |
 
@@ -64,3 +64,8 @@ Every criterion names how it is checked. "Test" means an automated pytest in `te
 | 2026-10-21 | F6, F11, F13 rescoped from tasks to milestones; tasks read via `uri-dev/task-ledger-contract/1` | ownership split agreed with the parallel Lifecycle V3.1 session (`v1-2e`); avoids two sources of truth for tasks |
 | 2026-10-21 | F17 amended: no projection cache | review R1 showed a cache that guards read can be forged or stale; full verified fold measured at 0.3 s for 10k events (N3) |
 | 2026-10-22 | F5 clarified: a refused command writes nothing of its own; when the write first finds an unrecorded ledger loss, that loss is recorded on its own (LEDGER_LOSS_RECORDED) and the command is not executed | review R13-03; architecture §25 |
+
+- 2026-10-22 (owner decision, chat): F16 bounded to an explicit contract after five consecutive review rounds (driver
+  d1 R4-R8, d2, fallback FB on f76c2e17, fallback FB2 on de0354ef) each found another notation. Pattern matching can
+  never be complete; the contract names what is refused and what is a documented limitation. Refusal-direction false
+  positives (prose after a credential word, e.g. "Fencing token = attempt_id") are a known LOW usability limit.
