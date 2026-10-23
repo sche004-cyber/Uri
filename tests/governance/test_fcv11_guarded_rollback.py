@@ -74,7 +74,7 @@ def test_secure_recovery_restores_every_file_with_the_authorized_security_versio
         assert out["security_transitions"][path]["after_sha256"] == spec["secure"]
     with zipfile.ZipFile(FROZEN) as z:
         for n in z.namelist():
-            if n not in R.CHECKPOINT_METADATA and n not in G.SECURITY_FILES:
+            if n not in R.CHECKPOINT_METADATA and n not in G.SECURITY_FILES and n not in G.SUPPORT_FILES:
                 assert (dest / n).read_bytes() == z.read(n), n
     assert (dest / "secure-recovery-evidence.json").is_file() and not out["inspection"]["safe"]
 
@@ -122,3 +122,83 @@ def test_a_checkpoint_that_already_holds_the_secure_versions_restores_by_default
     out = G.rollback(z, sha, dest)
     assert out["inspection"]["safe"] and out["security_transitions"] == {}
     assert (dest / FETCH).read_bytes() == secure[FETCH]
+
+
+# ------------------------------------------------------------------ D08 (OPEN-06): the secured tree imports its fetch tool
+
+def test_d08_secure_recovery_tree_imports_the_secure_fetch_tool():
+    import subprocess, sys
+    dest = fresh()
+    out = G.rollback(FROZEN, FROZEN_SHA, dest, secure_recovery=True)
+    assert out["support_files"] == sorted(G.SUPPORT_FILES)
+    for path, digest in G.SUPPORT_FILES.items():
+        assert hashlib.sha256((dest / path).read_bytes()).hexdigest() == digest
+    with zipfile.ZipFile(FROZEN) as z:
+        assert not any(n.startswith("uri_web/") for n in z.namelist())     # the checkpoint itself has no uri_web
+    code = "import sys; sys.path.insert(0, '.'); import uri_core.tools.fetch_url as F; print(F.__file__)"
+    r = subprocess.run([sys.executable, "-I", "-c", code], cwd=dest, capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[-400:]
+    assert str(dest.resolve()) in r.stdout.strip() or r.stdout.strip().startswith(".")
+    import json
+    ev = json.loads((dest / "secure-recovery-evidence.json").read_text(encoding="utf-8"))
+    assert ev["support_files"]["files"] == G.SUPPORT_FILES
+
+
+def test_d08_a_changed_support_pin_refuses_before_writing(monkeypatch):
+    monkeypatch.setattr(G, "SUPPORT_FILES", {**G.SUPPORT_FILES, "uri_web/netpolicy.py": "0" * 64})
+    dest = fresh()
+    with pytest.raises(G.RollbackRefused, match="SUPPORT_FILES_UNAVAILABLE"):
+        G.rollback(FROZEN, FROZEN_SHA, dest, secure_recovery=True)
+    assert not dest.exists()
+
+
+def test_d08_default_and_safe_rollbacks_are_unchanged():
+    dest = fresh()
+    with pytest.raises(G.RollbackRefused, match="UNSAFE_ROLLBACK_REFUSED"):
+        G.rollback(FROZEN, FROZEN_SHA, dest)
+    assert not dest.exists()
+
+
+# ------------------------------------------------------------------ D08 review FB1: failure paths (D08-01, D08-02)
+
+def _assert_nothing_left(dest, support):
+    for path in [*G.SECURITY_FILES, *support]:
+        assert not (dest / path).exists(), path
+    assert not (dest / "uri_web").exists()                       # D08-01: no empty closure folder either
+    assert not (dest / "secure-recovery-evidence.json").exists()
+
+
+def test_d08_02_a_support_path_the_checkpoint_restored_is_refused_and_nothing_of_the_closure_stays(monkeypatch):
+    import subprocess
+    restored = "uri_core/services/file_extraction.py"            # a file the rollback itself restores
+    blob = subprocess.run(["git", "-C", str(ROOT), "show", f"{G.SUPPORT_SOURCE_COMMIT}:{restored}"],
+                          capture_output=True).stdout
+    before = subprocess.run(["git", "-C", str(ROOT), "show", f"{R.BASELINE}:{restored}"], capture_output=True).stdout
+    assert before                                                 # restored from the e8e3b65 base under the checkpoint
+    closure = dict(G.SUPPORT_FILES)
+    monkeypatch.setattr(G, "SUPPORT_FILES", {**closure, restored: hashlib.sha256(blob).hexdigest()})
+    dest = fresh()
+    with pytest.raises(G.RollbackRefused, match="SUPPORT_FILE_CONFLICT"):
+        G.rollback(FROZEN, FROZEN_SHA, dest, secure_recovery=True)
+    assert (dest / restored).read_bytes() == before                # the restored file was not overwritten
+    _assert_nothing_left(dest, closure)
+
+
+def test_d08_02_a_write_failure_inside_the_closure_removes_everything_written(monkeypatch):
+    from pathlib import Path as P
+    real = P.write_bytes
+    calls = {"n": 0}
+
+    def flaky(self, data):
+        if "uri_web" in self.parts:
+            calls["n"] += 1
+            if calls["n"] == 2:                                 # the second closure file fails
+                raise OSError("disk full (simulated)")
+        return real(self, data)
+
+    monkeypatch.setattr(P, "write_bytes", flaky)
+    dest = fresh()
+    with pytest.raises(OSError, match="simulated"):
+        G.rollback(FROZEN, FROZEN_SHA, dest, secure_recovery=True)
+    monkeypatch.setattr(P, "write_bytes", real)
+    _assert_nothing_left(dest, G.SUPPORT_FILES)

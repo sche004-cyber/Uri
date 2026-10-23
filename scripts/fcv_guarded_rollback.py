@@ -46,6 +46,15 @@ SECURITY_FILES = {
         "fix": "SSRF-1 and IDN-1b",
     },
 }
+# D08 (OPEN-06): the secure fetch_url.py imports uri_web (netpolicy, records, safe_fetch), which the Phase 1 checkpoint
+# predates (uri_web was added in 885483b1, 2026-10-10). Secure recovery therefore also installs this import closure,
+# byte-exact from a pinned canonical commit, so the secured tree can import its own fetch tool. These are not
+# security transitions: the owner-authorized blobs above are unchanged. safe_fetch needs httpx in the environment.
+SUPPORT_SOURCE_COMMIT = "c036a901b4544f1df17aa8c118877ef364c48d71"
+SUPPORT_FILES = {"uri_web/__init__.py": "2d9d4795d94020ea044ebda8c6c66d1ee3e511bbdc19e950aab28ed613e8107c",
+                 "uri_web/netpolicy.py": "c8b93927b6f3bf6da4b7a47275a7081be367b73b21680b09ca4d7b714eecd151",
+                 "uri_web/records.py": "b4be69088578e00a5c03b2dcd21dd4c87104d3b4f3d9a0630ff5afa899580cea",
+                 "uri_web/safe_fetch.py": "7e7778efac61e00b251a55eda02faf88cce7d830cd6f6faa04ab50ee19113315"}
 # The transition is the exact patch the owner authorized: it applies only to these before-versions.
 PATCH_BEFORE = {"uri_core/app/server.py": "7b455f05ae97f7f6cbc944ba5c93998ea64063402568ea9750b70356db4f366b",
                 "uri_core/tools/fetch_url.py": "f097006211c2b2c4abc9a4aaf7aa64063ee00a55030559caf857724ce2af9bff"}
@@ -123,6 +132,17 @@ def _secure_bytes(current):
     return result
 
 
+def _support_bytes():
+    """The import closure of the secure fetch_url.py, read from the pinned commit and checked by hash (D08)."""
+    out = {}
+    for path, digest in SUPPORT_FILES.items():
+        got = subprocess.run(["git", "-C", str(ROOT), "show", f"{SUPPORT_SOURCE_COMMIT}:{path}"], capture_output=True)
+        if got.returncode or sha256(got.stdout) != digest:
+            raise RollbackRefused("SUPPORT_FILES_UNAVAILABLE")
+        out[path] = got.stdout
+    return out
+
+
 def warning(report):
     lines = ["URI ROLLBACK REFUSED: this checkpoint would restore security files without their fixes."]
     for path in report["unsafe"]:
@@ -145,25 +165,45 @@ def rollback(archive, expected_sha256, destination=None, *, secure_recovery=Fals
         raise RollbackRefused("SECURE_RECOVERY_NOT_AUTHORIZED")
     current = _restored_security_files(Path(archive).resolve())
     secured = _secure_bytes(current)          # every check passes before the frozen tool writes anything
+    support = _support_bytes()                # D08: the secured fetch_url.py must be importable
     dest = Path(destination) if destination else ROOT / "work/c1" / ("rollback_" + uuid.uuid4().hex)
     evidence = R.rehearse(archive, expected_sha256, dest)
+    written, created = [], []
     try:
         for path, data in secured.items():
             (dest / path).write_bytes(data)
             if sha256((dest / path).read_bytes()) != SECURITY_FILES[path]["secure"]:
                 raise RollbackRefused("SECURITY_TRANSITION_FAILED")
+        for path, data in support.items():
+            if (dest / path).exists():        # never overwrite what the checkpoint restored
+                raise RollbackRefused("SUPPORT_FILE_CONFLICT")
+            for d in reversed((dest / path).relative_to(dest).parents):
+                if str(d) != "." and not (dest / d).exists():
+                    created.append(dest / d)          # D08-01: folders this step creates, removed on failure
+            (dest / path).parent.mkdir(parents=True, exist_ok=True)
+            written.append(path)
+            (dest / path).write_bytes(data)
+            if sha256((dest / path).read_bytes()) != SUPPORT_FILES[path]:
+                raise RollbackRefused("SUPPORT_FILES_UNAVAILABLE")
     except Exception:
-        for path in secured:                   # never leave the vulnerable versions behind
+        for path in [*secured, *written]:      # never leave the vulnerable versions (or a partial closure) behind
             (dest / path).unlink(missing_ok=True)
+        for d in reversed(created):            # and no empty folder of the closure (review FB1 D08-01)
+            try:
+                d.rmdir()
+            except OSError:
+                pass
         raise
     transitions = {p: {"before_sha256": sha256(current[p]), "after_sha256": sha256(d)} for p, d in secured.items()}
     record = {"schema_version": 1, "status": "SECURE_RECOVERY_APPLIED", "decision": AUTHORITY_DECISION,
               "security_patch_sha256": SECURITY_PATCH_SHA256, "archive_sha256": report["archive_sha256"],
               "archive_modified": False, "security_transitions": transitions,
+              "support_files": {"source_commit": SUPPORT_SOURCE_COMMIT, "files": dict(SUPPORT_FILES),
+                                "reason": "D08: import closure of the secure uri_core/tools/fetch_url.py; needs httpx"},
               "rollback_evidence": "rollback-evidence.json (frozen tool, describes the tree before this step)"}
     (dest / "secure-recovery-evidence.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
     return {"rollback": evidence, "inspection": report, "security_transitions": transitions,
-            "destination": str(dest)}
+            "support_files": sorted(support), "destination": str(dest)}
 
 
 def main(argv=None):
