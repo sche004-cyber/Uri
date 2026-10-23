@@ -77,6 +77,35 @@ def test_spell_unavailable_reports_why_and_rules_still_run():
     assert ("i", "I") in fixes(r)
 
 
+@pytest.mark.parametrize("prewarm", [False, True])
+@pytest.mark.parametrize("failure_stage", ["make", "request"])
+def test_spell_worker_startup_os_error_keeps_rules_available(monkeypatch, prewarm, failure_stage):
+    worker = W.SpellWorker()
+    worker.unavailable = None
+
+    class MissingWorker:
+        def request(self, *args, **kwargs):
+            raise FileNotFoundError("spell worker executable missing")
+
+    def make_worker():
+        if failure_stage == "make":
+            raise FileNotFoundError("spell worker executable missing")
+        return MissingWorker()
+
+    monkeypatch.setattr(worker, "_make", make_worker)
+    if prewarm:
+        worker.prewarm()
+        for _ in range(100):
+            if not worker._warming:
+                break
+            time.sleep(0.01)
+        assert not worker._warming
+    result = W.check("i went", spell=worker)
+    assert result["status"]["spelling"] == "SPELL_UNAVAILABLE"
+    assert ("i", "I") in fixes(result)
+    assert worker.unavailable == "SPELL_UNAVAILABLE"
+
+
 def test_spell_results_map_utf16_offsets_and_skip_proper_nouns():
     text = "Emoji \U0001F600 thier note to Iyer about tuesday"
     # UTF-16 offsets as Windows reports them: the emoji is two code units
@@ -216,6 +245,33 @@ def test_proofread_accept_all_preserves_reference_labels_and_single_letter_ids(
     applied = W.apply(original, _acc({"suggestions": accepted}, original))["text"]
     assert all(value in applied for value in protected)
     assert applied == original.replace("They was informed.", "They were informed.")
+
+
+@pytest.mark.parametrize(("original_reference", "edited_reference"), [
+    ("Ref. AB/12", "Ref. AB//12"),
+    ("AB/12", "AB//12"),
+    ("Ref. AB-12", "Ref. AB--12"),
+    ("Ref. 12.3", "Ref. 12..3"),
+    ("12.3", "12..3"),
+    ("Ref. AB/12", "Ref. AB /12"),
+    ("Ref. AB/12", "Ref. AB-12"),
+    ("Ref. AB//12", "Ref. AB/12"),
+    ("Ref. AB /12", "Ref. AB/12"),
+    ("Clause (a)", "Clause a"),
+    ("Section 5(a)", "Section 5 (a)"),
+    ("Annexure A", "Annexure An"),
+    ("Ref. AB/12", "Ref: AB/12"),
+])
+def test_proofread_accept_all_preserves_entire_reference_span(original_reference, edited_reference):
+    original = f"{original_reference} applies. They was informed."
+    edited = f"{edited_reference} applies. They were informed."
+    result = W.proofread(original, client=FakeBrain({"status": "ok", "message": "", "text": edited}))
+    reference_changes = [s for s in result["suggestions"] if s["start"] < len(original_reference)]
+    assert reference_changes and all(s["class"] == "rewrite" for s in reference_changes), result["suggestions"]
+    corrections = [s for s in result["suggestions"] if s["class"] == "correction"]
+    assert [(s["original"], s["replacements"][0]) for s in corrections] == [("was", "were")]
+    assert W.apply(original, _acc({"suggestions": corrections}, original))["text"] == (
+        f"{original_reference} applies. They were informed.")
 
 
 def test_proofread_ordinary_article_swap_remains_accept_all_correction():
