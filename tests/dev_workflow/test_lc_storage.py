@@ -2089,3 +2089,42 @@ def test_p1_record_scan_skips_driver_work_trees_and_nested_checkouts(tmp_path):
     assert hk.norm("C:/real/cited/dir") in found
     assert hk.norm("C:/work/tree/path") not in found and hk.norm("C:/nested/clone/path") not in found
     hk._RECORD_CACHE.clear()
+
+
+# =========================================================================== FB-6 / Codex r10 LOW (R1-04/05, R2-02/03)
+
+def test_fb6_01_staged_patch_ignores_git_diff_opts(sandbox, monkeypatch):
+    sb = sandbox
+    wt = sb["paths"]["dirty"]
+    (wt / "a.txt").write_bytes(b"".join(b"same\n" for _ in range(20)))
+    _git(wt, "add", "a.txt")
+    _git(wt, "commit", "-q", "-m", "twenty")
+    lines = [b"same\n"] * 20
+    lines[10] = b"STAGED\n"
+    (wt / "a.txt").write_bytes(b"".join(lines))
+    _git(wt, "add", "a.txt")
+    monkeypatch.setenv("GIT_DIFF_OPTS", "--unified=0")
+    patch = hk.staged_patch(wt)
+    assert b"@@ -8,7 +8,7 @@" in patch                                    # three lines of context
+
+
+def test_fb6_02_recover_refuses_relative_or_mismatched_repo(sandbox, tmp_path):
+    sb = sandbox
+    jd = sb["tmp"] / "j"
+    other = _init(tmp_path / "other")
+    hk.Chain(jd / "journal.jsonl").append("INTENT", {"plan_id": "p", "item": "wt:rel", "action": "worktree-prune",
+                                                     "path": str(sb["paths"]["gone"]), "fingerprint": "f",
+                                                     "repo": "."})
+    hk.Chain(jd / "journal.jsonl").append("INTENT", {"plan_id": "p", "item": "wt:abs", "action": "worktree-prune",
+                                                     "path": str(sb["paths"]["gone"]), "fingerprint": "f",
+                                                     "repo": str(sb["repo"].resolve())})
+    res = {x["item"]: x["result"] for x in hk.recover(jd, other)["recovered"]}
+    assert res == {"wt:rel": "UNRESOLVED", "wt:abs": "UNRESOLVED"}
+    res = {x["item"]: x["result"] for x in hk.recover(jd, sb["repo"])["recovered"]}
+    assert res["wt:abs"] == "RECOVERED_NOT_DONE" and res["wt:rel"] == "UNRESOLVED"
+
+
+def test_fb6_02_plan_records_absolute_repo(sandbox, monkeypatch):
+    monkeypatch.chdir(sandbox["repo"])
+    plan = hk.inventory(".", canonical_ref=CANON, min_age_hours=0, sizes=False)
+    assert Path(plan["repo"]).is_absolute()

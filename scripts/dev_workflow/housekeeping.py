@@ -334,7 +334,7 @@ def _ledger_refs(ledger: str | None) -> tuple[set[str], set[str]]:
 class Ctx:
     def __init__(self, repo: Path, canonical_ref: str, records: list[str], ledger: str | None,
                  min_age_hours: float, sizes: bool, *, refresh_records: bool = False):
-        self.repo = Path(repo)
+        self.repo = Path(repo).resolve()          # FB-6 FB6-02: plans and INTENTs record an absolute repo
         self.records, self.ledger = list(records), ledger
         rc, sha, _ = git(repo, "rev-parse", "--verify", "-q", f"{canonical_ref}^{{commit}}")
         if rc or not sha:
@@ -886,10 +886,11 @@ def staged_patch(worktree: Path) -> bytes:
     try:
         # FB-5 FB5-03: plumbing diff-index plus explicit options, so user/system diff config (external diff,
         # color, noprefix, textconv) cannot change or empty the patch
-        p = subprocess.run([*GIT, "-C", str(worktree), "diff-index", "--cached", "-p", "--binary", "--full-index",
-                            "--no-ext-diff", "--no-textconv", "--no-color", "--src-prefix=a/", "--dst-prefix=b/",
-                            "HEAD", "--"], capture_output=True,
-                           timeout=300)
+        # FB-6 FB6-01: explicit -U3 and no GIT_DIFF_OPTS / GIT_EXTERNAL_DIFF from the environment
+        env = {k: v for k, v in os.environ.items() if k not in ("GIT_DIFF_OPTS", "GIT_EXTERNAL_DIFF")}
+        p = subprocess.run([*GIT, "-C", str(worktree), "diff-index", "--cached", "-p", "-U3", "--binary",
+                            "--full-index", "--no-ext-diff", "--no-textconv", "--no-color", "--src-prefix=a/",
+                            "--dst-prefix=b/", "HEAD", "--"], capture_output=True, timeout=300, env=env)
     except (OSError, subprocess.SubprocessError) as e:
         raise HKError("STAGED_PATCH_FAILED", f"{worktree}: {e}")
     if p.returncode != 0:
@@ -1346,9 +1347,17 @@ def recover(journal_dir, repo=None) -> dict:
         return wt_cache[rp]
     for (plan_id, item), d in open_.items():
         path = d.get("path", "")
-        rp = repo or d.get("repo")
+        recorded = d.get("repo")
         is_wt = d["action"] in ("worktree-remove", "worktree-prune") or (
             d["action"] == "archive-then-remove" and str(item).startswith("wt:"))
+        if (is_wt or d["action"] == "delete-ref") and recorded and (
+                not Path(recorded).is_absolute()
+                or (repo is not None and norm(Path(repo).resolve()) != norm(recorded))):
+            # FB-6 FB6-02: a relative recorded repo, or --repo naming another repository, cannot observe the outcome
+            out.append({"item": item, "plan_id": plan_id, "result": "UNRESOLVED",
+                        "why": f"INTENT recorded repository {recorded!r}; --repo {repo!r} does not identify it"})
+            continue
+        rp = recorded or (str(Path(repo).resolve()) if repo else None)
         if (is_wt or d["action"] == "delete-ref") and not rp:
             # FB-5 FB5-04: without the repository the outcome cannot be observed; never guess DONE
             out.append({"item": item, "plan_id": plan_id, "result": "UNRESOLVED",

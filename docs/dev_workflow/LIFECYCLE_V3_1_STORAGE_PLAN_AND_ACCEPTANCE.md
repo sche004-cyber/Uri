@@ -362,6 +362,34 @@ Cited paths fell from 8,228 to 8,038. The 190 removed came only from `.work` cop
 Tests `test_p1_*`. A performance change after acceptance needs its own independent review before it replaces
 `7cdf97d0`.
 
+### 5.9 Driver run r10 (Codex rounds R1, R2) and the remaining LOW repairs
+
+Canonical moved to `277e81f9` (PH1-GATE-2, FCV-D08; no shared files) and was merged as `adecf414`. Driver run r10
+completed two driver-counted Codex rounds before Codex quota ran out (BLOCKED NO_INDEPENDENT_REVIEWER on `eff77f4f`).
+
+- **R1 REJECT on `adecf414`.** R1-01 HIGH: a same-size, timestamp-preserving rewrite could be removed without being in
+  the verified archive. This is a correct objection to §5.8's metadata-only snapshot. Also R1-02 (the record cache
+  could miss a new citation during apply) and R1-03 (a junction as a plan-root ancestor). The driver repaired them in
+  `85e989a9`:
+  - archived removals compare source bytes with the verified archive immediately before deletion;
+  - apply rechecks reread records;
+  - an index fingerprint is part of the binding;
+  - links in any component of a deletion path are refused.
+- **R2 REJECT on `85e989a9`.** R2-01 HIGH: staged content changed after archiving could be lost. Repaired by the
+  driver in `eff77f4f`.
+
+Coordinator observation: inventory now aborts entirely if a worktree path has a link ancestor. That fails closed;
+on the real machine 0 of 278 worktree paths and 0 `D:/uri-dev` children are affected.
+
+The two LOW findings Codex reported as NOT_FIXED in both rounds (FB6-01, FB6-02, also R1-04/05 and R2-02/03) are
+repaired here:
+
+- `staged_patch` passes `-U3` and drops `GIT_DIFF_OPTS`/`GIT_EXTERNAL_DIFF` from the child environment.
+- Plans and INTENTs record an absolute repository. `recover` reports UNRESOLVED when the recorded repo is relative or
+  `--repo` names a different repository.
+
+Tests `test_fb6_*`.
+
 ## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.
