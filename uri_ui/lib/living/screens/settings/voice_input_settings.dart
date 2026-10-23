@@ -193,6 +193,32 @@ class _VoiceInputSettingsState extends State<VoiceInputSettings> {
               key: const ValueKey('voice-mode-note'),
               style: note,
             ),
+            if (ctl.dictationAvailable && vp.inputMode == VoiceInputMode.drafting) ...[
+              const SizedBox(height: 8),
+              Text('Dictated words', style: note),
+              const SizedBox(height: 6),
+              SegmentedButton<String>(
+                key: const ValueKey('voice-dictation-scope'),
+                segments: const [
+                  ButtonSegment(value: 'verbatim', label: Text('As spoken')),
+                  ButtonSegment(value: 'grammar', label: Text('Corrected')),
+                  ButtonSegment(value: 'rewrite', label: Text('Polished')),
+                ],
+                selected: {vp.dictationScope},
+                onSelectionChanged: (s) => prefs.setVoice(vp.copyWith(dictationScope: s.first)),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                switch (vp.dictationScope) {
+                  'verbatim' => 'Your words go into the draft as spoken; ask URI to correct them later if you want.',
+                  'rewrite' => 'URI polishes your words into professional office wording and keeps every fact; '
+                      'the draft shows what changed and your original stays one tap away.',
+                  _ => 'URI fixes grammar, spelling and punctuation only; your wording stays.',
+                },
+                key: const ValueKey('voice-dictation-scope-note'),
+                style: note,
+              ),
+            ],
             const SizedBox(height: 8),
             TextField(
               key: const ValueKey('voice-vocabulary'),

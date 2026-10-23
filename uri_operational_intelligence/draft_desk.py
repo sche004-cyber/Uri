@@ -507,6 +507,15 @@ class DraftDesk:
                 raise DeskError("TEXT_MISSING", "There was no text to work on.")
             draft.push(blocks=blocks, facts=(), exclusions=(), missing=(), op="original", instruction=text,
                        summary="Your text as given.", changed=[b.id for b in blocks], removed=(), flags=())
+            if inp.scope == "verbatim" and intent.reasons[:1] == ["dictation_mode"]:
+                # Plan 16 WI-8: verbatim dictation keeps the words exactly as given; the Brain is not called. The
+                # owner can still say "correct it" or "make it formal" afterwards.
+                self._set(session_id, draft)
+                snap = draft.to_dict()
+                emit("draft.updated", op="original", draft=snap)
+                self._say(emit, "Your dictation is in the draft word for word. Say \"correct it\" or \"make it "
+                          "formal\" if you want it polished.")
+                return {"status": "ok", "draft": snap}
             mode = "correct" if k == TX.CORRECT else "rewrite"
             out = self._edit(turn_id, intent.instruction or text, interpreted, draft, intent, inp, cues, emit,
                              mode=mode, fallback=None)

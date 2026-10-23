@@ -1000,6 +1000,13 @@ void main() {
         VoiceInputMode.conversation,
       );
       expect(VoicePreferences.fromJson({}).speakReplies, isTrue);
+      // plan 16 WI-8: dictation scope kept; unknown values fall back to "grammar" (the accepted behaviour)
+      const v = VoicePreferences(dictationScope: 'verbatim');
+      expect(VoicePreferences.fromJson(v.toJson()).dictationScope, 'verbatim');
+      expect(VoicePreferences.fromJson({'dictationScope': 'loud'}).dictationScope, 'grammar');
+      expect(VoicePreferences.fromJson({}).dictationScope, 'grammar');
+      expect(v.copyWith(dictationScope: 'rewrite').dictationScope, 'rewrite');
+      expect(v.copyWith(dictationScope: 'bogus').dictationScope, 'verbatim');
     },
   );
 

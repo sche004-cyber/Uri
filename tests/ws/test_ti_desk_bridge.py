@@ -333,6 +333,21 @@ def test_l2_dictation_transcript_with_rewrite_scope(fake, tmp_path):
     assert "MODE: rewrite" in fake.requests[-1]["messages"][0]["content"]
 
 
+def test_wi8_verbatim_dictation_keeps_the_words_without_a_brain_call(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    before = len(fake.requests)
+    raw = "um send the form to Shri Rao by friday the the 12th"
+    turn(b, raw, input={"schema": TI.SCHEMA, "source": "transcript", "mode": "dictation", "scope": "verbatim",
+                        "transcript": {"raw": raw, "engine": "simulated", "simulated": True}})
+    assert len(fake.requests) == before and core.calls == []
+    d = last_draft(frames)
+    assert d["source"]["scope"] == "verbatim" and d["source"]["raw"] == raw
+    assert body_texts(d) == ["send the form to Shri Rao by friday the 12th"]     # fillers and repeats only
+    assert d["current"]["op"] == "original"
+    assert "word for word" in "".join(x["text"] for x in frames.data("answer.delta"))
+
+
 def test_l2_command_mode_goes_to_the_ordinary_path_never_a_draft(fake, tmp_path):
     core = FakeCore(REFUSE)
     b, frames, _ = make(fake, tmp_path, core)

@@ -561,6 +561,7 @@ class OiConversation extends ChangeNotifier {
     List<String> uncertain = const [],
     bool dictation = false,
     bool draftInView = true,
+    String? dictationScope,
   }) {
     // The raw transcript is kept byte for byte (contract: turn text == transcript.raw); only emptiness is
     // judged on a trimmed copy.
@@ -577,6 +578,8 @@ class OiConversation extends ChangeNotifier {
         if (uncertain.isNotEmpty) 'uncertain': uncertain,
       },
       if (dictation) 'mode': 'dictation',
+      // plan 16 WI-8: verbatim / grammar / rewrite; absent means the worker's default (grammar)
+      if (dictation && dictationScope != null) 'scope': dictationScope,
       'mode': ?mode,
     };
     final label = simulated ? 'Simulated transcript' : 'Transcript · $engine';

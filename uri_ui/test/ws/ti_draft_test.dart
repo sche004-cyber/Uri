@@ -151,6 +151,20 @@ void main() {
     expect(conv.messages.lastWhere((m) => m.role == OiRole.user).inputLabel, 'Transcript · faster-whisper-large-v3-turbo');
   });
 
+  test('plan 16 WI-8: dictation carries the chosen scope; no scope means the worker default', () async {
+    // A fresh conversation per case: a conversation sends nothing while a turn is in flight.
+    Future<Map> sent(String text, {bool dictation = false, String? scope}) async {
+      final rt = FakeRuntime();
+      await OiConversation(rt).sendTranscript(text, engine: 'faster-whisper', simulated: false, dictation: dictation,
+          dictationScope: scope);
+      return rt.commands.last['input'] as Map;
+    }
+    final v = await sent('send it friday', dictation: true, scope: 'verbatim');
+    expect((v['mode'], v['scope']), ('dictation', 'verbatim'));
+    expect((await sent('send it monday', dictation: true)).containsKey('scope'), isFalse);
+    expect((await sent('hello', scope: 'rewrite')).containsKey('scope'), isFalse);   // only dictation has a scope
+  });
+
   test('word diff marks only what changed', () {
     final d = wordDiff('Seven students left without permission.', 'Seven students left without recording it.');
     expect(d.where((s) => s.kind == DiffKind.removed).map((s) => s.text.trim()), ['permission.']);

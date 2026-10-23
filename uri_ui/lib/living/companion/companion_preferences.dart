@@ -284,6 +284,7 @@ class VoicePreferences {
     this.speakReplies = true,
     this.inputMode = VoiceInputMode.conversation,
     this.vocabulary = '',
+    this.dictationScope = 'grammar',
   });
 
   /// `<engine>:<voice name>`, or null for the engine default.
@@ -314,6 +315,11 @@ class VoicePreferences {
 
   final VoiceInputMode inputMode;
 
+  /// Drafting mode (plan 16 WI-8): what URI does with dictated words. 'verbatim' keeps them as spoken (no Brain),
+  /// 'grammar' corrects grammar and punctuation only, 'rewrite' polishes them into professional wording.
+  final String dictationScope;
+  static const dictationScopes = ['verbatim', 'grammar', 'rewrite'];
+
   /// Names and words the recogniser should expect (people, places, terms),
   /// space separated. Empty: only URI's own name is expected.
   final String vocabulary;
@@ -329,6 +335,7 @@ class VoicePreferences {
     bool? speakReplies,
     VoiceInputMode? inputMode,
     String? vocabulary,
+    String? dictationScope,
   }) => VoicePreferences(
     voiceId: identical(voiceId, _keep) ? this.voiceId : voiceId as String?,
     volume: (volume ?? this.volume).clamp(0, 100),
@@ -342,6 +349,7 @@ class VoicePreferences {
     speakReplies: speakReplies ?? this.speakReplies,
     inputMode: inputMode ?? this.inputMode,
     vocabulary: vocabulary ?? this.vocabulary,
+    dictationScope: dictationScopes.contains(dictationScope) ? dictationScope! : this.dictationScope,
   );
 
   static const Object _keep = Object();
@@ -357,6 +365,7 @@ class VoicePreferences {
     'speakReplies': speakReplies,
     'inputMode': inputMode.name,
     'vocabulary': vocabulary,
+    'dictationScope': dictationScope,
   };
 
   static VoicePreferences fromJson(Object? json) {
@@ -373,6 +382,7 @@ class VoicePreferences {
     final sr = json['speakReplies'];
     final mode = json['inputMode'];
     final vocab = json['vocabulary'];
+    final scope = json['dictationScope'];
     return VoicePreferences(
       voiceId: id is String && id.contains(':') ? id : null,
       volume: i('volume', 100, 0, 100),
@@ -387,6 +397,7 @@ class VoicePreferences {
         orElse: () => VoiceInputMode.conversation,
       ),
       vocabulary: vocab is String ? vocab : '',
+      dictationScope: scope is String && dictationScopes.contains(scope) ? scope : 'grammar',
     );
   }
 
@@ -402,7 +413,8 @@ class VoicePreferences {
       other.microphone == microphone &&
       other.speakReplies == speakReplies &&
       other.inputMode == inputMode &&
-      other.vocabulary == vocabulary;
+      other.vocabulary == vocabulary &&
+      other.dictationScope == dictationScope;
 
   @override
   int get hashCode => Object.hash(
@@ -416,6 +428,7 @@ class VoicePreferences {
     speakReplies,
     inputMode,
     vocabulary,
+    dictationScope,
   );
 }
 

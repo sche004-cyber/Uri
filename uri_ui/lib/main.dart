@@ -98,7 +98,8 @@ void main() async {
               dictation: (raw, {required engine, uncertain = const <String>[]}) async {
                 final oi = services.oi;
                 if (oi == null) return;
-                await oi.sendTranscript(raw, engine: engine, simulated: false, uncertain: uncertain, dictation: true);
+                await oi.sendTranscript(raw, engine: engine, simulated: false, uncertain: uncertain, dictation: true,
+                    dictationScope: services.companionPrefs.voice.dictationScope);
               },
             );
             unawaited(

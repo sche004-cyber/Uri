@@ -11,12 +11,13 @@ The same text intelligence serves typed text and transcribed speech. A turn may 
          "language": str | None,          # BCP-47 hint, e.g. "en-IN", "hi-IN"; None when unknown
          "uncertain": [str] },            # spans the recogniser marked low-confidence (possible mishearing)
      "mode": "auto" | "dictation" | "command" | "conversation" | "draft",   # optional, default "auto"
-     "scope": "grammar" | "rewrite"}             # optional, only with mode "dictation"; default "grammar"
+     "scope": "grammar" | "rewrite" | "verbatim"}   # optional, only with mode "dictation"; default "grammar"
 
 Modes (L-2, dictation versus commands):
   * auto: routing as before (text intent -> draft desk, otherwise the ordinary path, where Core decides actions).
-  * dictation: the words are CONTENT. They become a draft (grammar/punctuation only, or a professional rewrite when
-    scope is "rewrite"); nothing in them is ever carried out, even sentences that start with "send" or "delete".
+  * dictation: the words are CONTENT. They become a draft (grammar/punctuation only, a professional rewrite when
+    scope is "rewrite", or exactly the words as given when scope is "verbatim": no Brain call, plan 16 WI-8);
+    nothing in them is ever carried out, even sentences that start with "send" or "delete".
   * command: the words are an instruction for URI's ordinary path (intent discovery, Core, approvals), never a draft.
   * conversation (UIV2-F1): the Workspace composer is set to the conversation while a draft is open. Routing as
     if no draft were open: nothing in the turn can change the open draft (a new document request still starts
@@ -41,7 +42,7 @@ from dataclasses import dataclass, field
 SCHEMA = "uri.text_input.v1"
 SOURCES = ("typed", "transcript")
 MODES = ("auto", "dictation", "command", "conversation", "draft")
-SCOPES = ("grammar", "rewrite")
+SCOPES = ("grammar", "rewrite", "verbatim")
 MAX_RAW = 20000
 MAX_UNCERTAIN = 32
 

@@ -170,7 +170,10 @@ def test_l2_input_modes_and_scope_fail_closed():
                    "transcript": {"raw": "um hi", "engine": "simulated", "simulated": True}}, "um hi")
     assert tr.is_transcript and tr.scope == "rewrite" and tr.to_dict()["mode"] == "dictation"
     for env, code in [({"mode": "execute"}, "INPUT_MODE"), ({"mode": "command", "scope": "grammar"}, "INPUT_SCOPE"),
-                      ({"mode": "dictation", "scope": "verbatim"}, "INPUT_SCOPE"), ({"scope": "grammar"}, "INPUT_SCOPE"),
+                      # plan 16 WI-8: "verbatim" became a dictation scope (owner directive 2026-10-23); an unknown
+                      # scope is still refused
+                      ({"mode": "dictation", "scope": "poetic"}, "INPUT_SCOPE"), ({"scope": "grammar"}, "INPUT_SCOPE"),
+                      ({"mode": "draft", "scope": "verbatim"}, "INPUT_SCOPE"),
                       ({"mode": "dictation", "extra": 1}, "INPUT_KEYS")]:
         with pytest.raises(TI.InputRejected) as e:
             TI.parse({"schema": TI.SCHEMA, "source": "typed", **env}, "x")
