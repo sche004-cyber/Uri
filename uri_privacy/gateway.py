@@ -24,7 +24,7 @@ from .vault import MemoryVaultStore, PersistentVaultStore, VaultError
 
 log = logging.getLogger("uri_privacy")
 REDACTED = "[redacted]"
-_PLACEHOLDER = re.compile(r"\[redacted\]|\[\[[A-Z_]{3,16}_[a-p]{2,192}_[a-z]{16}\]\]")
+_PLACEHOLDER = re.compile(r"\[redacted\]|\[\[[A-Z_]{3,16}_(?:[a-p]{32}_)?[a-z]{16}\]\]")
 DEFAULT_SCOPE_TTL_S = 3600
 
 
@@ -105,6 +105,7 @@ class PrivacyGateway:
         # joined by unusual separators, or a sensitive value visible only once decoded - is refused, not read through.
         # A log line in doubt is written fully redacted.
         if dest not in P.LOCAL:
+            original = text
             text, signals = C.egress_form(text)
             cls = C.classify(text, protected_terms)
             if cls.decoded_only:
@@ -113,6 +114,16 @@ class PrivacyGateway:
                 signals.add("ENCODING_UNRESOLVED")                  # deeper than the folding decodes (FB1 R1-04)
             if signals:
                 return self._doubt(meta, dest, cls, signals)
+            # Text with nothing to rewrite leaves as written (review r6 R5-02: NFKC changed half-width katakana, Arabic
+            # presentation forms and URL paths). Only when the original is already composed (NFC: a decomposed accent
+            # goes out composed) and, classified itself, is clean too; anything else is rewritten and re-checked in the
+            # egress form.
+            import unicodedata
+            if (text != original and not cls.categories() and not cls.credential_kinds
+                    and unicodedata.is_normalized("NFC", original)):
+                raw = C.classify(original, protected_terms)
+                if not (raw.categories() or raw.credential_kinds or raw.residual_encoding or raw.decoded_only):
+                    text, cls = original, raw
         else:
             cls = C.classify(text, protected_terms)
         counts = cls.categories()

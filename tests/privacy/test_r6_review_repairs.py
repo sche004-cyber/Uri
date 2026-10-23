@@ -13,8 +13,19 @@ from uri_web.search import REFUSED, TavilyProvider
 from .helpers import TGateway
 
 
-LETTER_ONLY_CREDENTIALS = ["API key abcdefghijklmnop", "password huntertwo", "password abcd",
-                           "secret key wordvalue", "access token alphabetic", "passcode wordvalue"]
+# Owner decision LDEC-007 (2026-10-23): letter-only values are credentials when a separator joins label and value, or
+# for a key label followed by one 16+ letter token. A bare label directly followed by one letter-only word is a stated
+# residual (threat model 6.5): it cannot be told apart from ordinary searches, and refusing it blocked 12 of 13.
+LETTER_ONLY_CREDENTIALS = ["API key abcdefghijklmnop", "password: huntertwo", "password is huntertwo",
+                           "passcode = wordvalue", "secret key: wordvalue", "access token is alphabetic"]
+LETTER_ONLY_RESIDUAL = ["password huntertwo", "password abcd", "secret key wordvalue", "access token alphabetic",
+                        "passcode wordvalue"]
+ORDINARY_LOGIN_SEARCHES = ["password reset not working", "forgot password help", "how to change password using cmd",
+                           "password requirements for gmail", "password protected zip file",
+                           "API key rotation best practice", "access token expired error",
+                           "secret key generation python", "password manager comparison", "This is my password manager",
+                           "Google is my password manager", "wifi password sharing android", "passcode lock settings",
+                           "huntertwo is my password manager"]
 VALUE_BEFORE_LABEL_WORDS = ("huntertwo", "sunshine", "bluebird", "orchard", "pineapple")
 VALUE_BEFORE_LABEL_FORMS = ("{value} is my password", "use {value} as the password",
                             '"{value}" is the wifi password', "{value} was our passcode")
@@ -46,6 +57,18 @@ def test_r3_01_letter_only_labelled_credentials_never_reach_search_transport(tex
     assert result.status == REFUSED
     assert requests == []
     assert text not in result.query
+
+
+@pytest.mark.parametrize("text", LETTER_ONLY_RESIDUAL)
+def test_ldec007_bare_label_with_one_letter_only_word_is_the_stated_residual(text):
+    # Pinned so the residual is visible: if a later rule catches these, update threat model 6.5 with it.
+    assert CREDENTIAL not in classify(text).categories()
+
+
+@pytest.mark.parametrize("text", ORDINARY_LOGIN_SEARCHES)
+def test_ldec007_ordinary_login_searches_are_not_refused(text):
+    for destination in ("WEB_SEARCH", "EXTERNAL_AGENT", "EXTERNAL_MODEL"):
+        assert TGateway().prepare(text, requester="t", destination=destination, purpose="p").text == text
 
 
 @pytest.mark.parametrize("value", VALUE_BEFORE_LABEL_WORDS)

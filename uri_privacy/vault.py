@@ -1,8 +1,10 @@
 """Per-scope opaque references for pseudonymized values (plan 2.3).
 
-A token is `[[<CATEGORY>_<scope tag>_<16 random letters>]]`. Its scope tag is an exact letter-only encoding of the
-scope id; its random suffix is not derived from the value, so it reveals nothing about the value and cannot be
-resolved without the vault mapping. One scope = one request, task or session; scopes never share tokens. Restoration only
+A token is `[[<CATEGORY>_<scope tag>_<16 random letters>]]`. The scope tag is a keyed HMAC of the scope id (32 letters,
+128 bits): the same for every token of a scope, different between scopes unless HMAC-SHA256 collides, and it does not
+reveal the scope id (an exact encoding of the id, used by r6 repair d87da2fa, sent internal ids to external parties).
+The random suffix is not derived from the value, so a token reveals nothing about it and cannot be resolved without
+the vault mapping. One scope = one request, task or session; scopes never share tokens. Restoration only
 resolves tokens of its own scope; any other token-shaped text is reported as foreign and left untouched.
 
 Storage is memory by default. `PersistentVaultStore` keeps scopes that must survive a restart in Fernet-encrypted files
@@ -19,16 +21,22 @@ import threading
 import time
 from pathlib import Path
 
-# Exact base-16 letter encoding of each scope id binds token identity to that scope even when the random suffix
-# collides. The legacy unscoped shape remains recognizable as foreign but is never restored: its origin is ambiguous.
-# Letters only keep the token from looking like a number or a card during the outgoing classification pass.
-TOKEN = re.compile(r"\[\[([A-Z_]{3,16})_(?:([a-p]{2,192})_)?([a-z]{16})\]\]")
+# The scope tag binds token identity to its scope even when the random suffix collides (review r6 R3-02). The legacy
+# unscoped shape remains recognizable as foreign but is never restored: its origin is ambiguous. Letters only keep the
+# token from looking like a number or a card during the outgoing classification pass.
+TOKEN = re.compile(r"\[\[([A-Z_]{3,16})_(?:([a-p]{32})_)?([a-z]{16})\]\]")
 _TOKEN_ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 _SCOPE_ID = re.compile(r"[A-Za-z0-9_.:-]{1,96}")
 
 
-def _scope_tag(scope_id: str) -> str:
-    return "".join(chr(97 + (b >> 4)) + chr(97 + (b & 15)) for b in scope_id.encode("ascii"))
+_PROCESS_TAG_KEY = secrets.token_bytes(32)          # memory stores: tags only need to hold within this process
+
+
+def scope_tag(scope_id: str, key: bytes = None) -> str:
+    import hashlib
+    import hmac
+    mac = hmac.new(key or _PROCESS_TAG_KEY, b"m95.scope-tag.v1\0" + scope_id.encode("ascii"), hashlib.sha256).digest()
+    return "".join(chr(97 + (b >> 4)) + chr(97 + (b & 15)) for b in mac[:16])
 
 
 def _check_scope_id(scope_id):
@@ -44,8 +52,9 @@ class VaultError(RuntimeError):
 
 
 class Scope:
-    def __init__(self, scope_id: str, expires_at: float, refs=None, requester=None):
+    def __init__(self, scope_id: str, expires_at: float, refs=None, requester=None, tag=None):
         self.scope_id = scope_id
+        self.tag = tag or scope_tag(scope_id)
         self.expires_at = expires_at
         self.requester = requester
         self._by_token = dict(refs or {})                     # token -> (category, value)
@@ -57,7 +66,7 @@ class Scope:
 
     def token_for(self, category: str, value: str) -> str:
         with self._lock:
-            tag = _scope_tag(self.scope_id)
+            tag = self.tag
             tok = self._by_value.get((category, value))
             # Do not reuse a legacy unscoped token loaded from an encrypted store.
             if tok is None or not (m := TOKEN.fullmatch(tok)) or m.group(2) != tag:
@@ -72,7 +81,7 @@ class Scope:
     def restore(self, text: str):
         """Return (text, restored_count, foreign_count)."""
         restored = foreign = 0
-        tag = _scope_tag(self.scope_id)
+        tag = self.tag
 
         def sub(m):
             nonlocal restored, foreign
@@ -98,6 +107,7 @@ class Scope:
 class MemoryVaultStore:
     def __init__(self, *, clock=time.time):
         self.clock = clock
+        self._tag_key = _PROCESS_TAG_KEY
         self._scopes = {}
         self._lock = threading.Lock()
 
@@ -109,7 +119,8 @@ class MemoryVaultStore:
                 self._drop(scope_id)
                 s = None
             if s is None:
-                s = self._load(scope_id) or Scope(scope_id, self.clock() + ttl_s, requester=requester)
+                s = self._load(scope_id) or Scope(scope_id, self.clock() + ttl_s, requester=requester,
+                                                  tag=scope_tag(scope_id, self._tag_key))
                 self._scopes[scope_id] = s
             if s.requester != requester:
                 raise VaultError("SCOPE_OWNER_MISMATCH")
@@ -164,6 +175,10 @@ class PersistentVaultStore(MemoryVaultStore):
             from .keys import persistent_key
             key = persistent_key(self.home / "vault-key.dpapi")
         self._fernet = Fernet(base64.urlsafe_b64encode(key))
+        import hashlib
+        import hmac
+        # Persisted scopes keep their tags across restarts: the tag key is derived from the DPAPI-protected vault key.
+        self._tag_key = hmac.new(key, b"m95.scope-tag-key.v1", hashlib.sha256).digest()
 
     def _path(self, scope_id):
         # Hex of the id's bytes: one file per id, no two ids share a file on a case-insensitive filesystem, and the
@@ -189,7 +204,8 @@ class PersistentVaultStore(MemoryVaultStore):
             d = json.loads(self._fernet.decrypt(path.read_bytes()).decode("utf-8"))
             if d.get("scope_id") != scope_id:
                 raise ValueError("scope mismatch")
-            return Scope(scope_id, float(d["expires_at"]), {t: (c, v) for t, c, v in d["refs"]}, d.get("requester"))
+            return Scope(scope_id, float(d["expires_at"]), {t: (c, v) for t, c, v in d["refs"]}, d.get("requester"),
+                         tag=scope_tag(scope_id, self._tag_key))
         except Exception:                                       # noqa: BLE001 - any doubt: quarantine and refuse
             q = self.home / "quarantine"
             q.mkdir(exist_ok=True)

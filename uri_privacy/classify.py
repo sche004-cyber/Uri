@@ -94,9 +94,11 @@ def iban_ok(raw: str) -> bool:
 
 # --- detectors -------------------------------------------------------------------------------------------------------
 # Labelled credential values written in prose. Digit codes (PIN/OTP/CVV) need 3-8 digits; word secrets need an explicit
-# separator ("password: x", "password is x"). A bare label followed by a letter-only word is also treated as a
-# credential unless it is a known prose/UI phrase ("password policy", "password field"). "PIN code"/"pincode" is
-# postal and excluded.
+# separator ("password: x", "password is x"). Owner decision LDEC-007 (2026-10-23): a bare label directly followed by
+# a letter-only word ("password huntertwo") is a stated residual, because it cannot be told apart from ordinary
+# searches ("password reset not working"); the r6 repair that refused it blocked 12 of 13 such searches. A bare
+# API-key/token label followed by one 16+ letter token is still a credential. "PIN code"/"pincode" is postal and
+# excluded.
 # The password label also matches "pass-word", "pass_word" and digit/symbol spellings ("P@ssword", "passw0rd", review
 # FB4 R1-06).
 _LABELLED = re.compile(
@@ -104,12 +106,8 @@ _LABELLED = re.compile(
     r"cvv|cvc|m?pin(?! ?code)|upi pin|atm pin)\b(?:\s*(?:is|was|=|:|-|#)\s*|\s+)(\d{3,8})\b|"
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token)"
     r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,})|"
-    # Bare English labels can have entirely alphabetic values. Refuse on doubt, while preserving the documented
-    # ordinary prose/UI examples. This also covers "API key abc..." without punctuation after the label.
-    r"\b(?:(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)\s+"
-    r"(?!(?:policy|field|manager|strong|please)\b)|"
-    r"(?:api[ _-]?key|secret key|access token|auth token)\s+)"
-    r"([A-Za-z]{4,})\b|"
+    # "API key abcdefghijklmnop": a key label followed by one long letter-only token (review r6 R3-01).
+    r"\b(?:api[ _-]?key|secret key|access token|auth token)\s+([A-Za-z]{16,})\b|"
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
     r"\b(?:pass|pw)\s*[:=]\s*[\"']?([^\s\"',;]{4,})|"
@@ -118,10 +116,18 @@ _LABELLED = re.compile(
     # so ordinary prose ("the password policy is strict", "password field is required.") stays readable.
     r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)(?:'s)?(?: ?(?:->|=>|-|–|→) ?| )"
     r"[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
-    # The value before the label ("X is my password", "use X as the password", review FB4 R1-04 / R4-01).
-    # Alphabetic values count too. Exclude unquoted question words so "what is my password" stays readable.
-    r"(?<![^\s\"'(])(?!(?<![\"'])(?:what|where|which|when|why|whose|how)\b)[\"']?([^\s\"',;]{4,})[\"']? (?:is|was|as|=) "
+    # The value before the label ("X is my password", "use X as the password", review FB4 R1-04). A value with a digit
+    # or symbol counts wherever the label stands; a letter-only value only when the label ends the sentence and the
+    # value is not a question word or pronoun (r6 R4-01, LDEC-007): "huntertwo is my password." is refused, "this is
+    # my password manager" and "what is my password" stay readable.
+    r"(?<![^\s\"'(])[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})[\"']? (?:is|was|as|=) "
     r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|pin)\b|"
+    # (Every alternative starts at a word boundary, the group above opens with \b: a quoted value is matched from its
+    # first letter, after the quote. A quoted value is never a question word: '"what" is my password' is refused.)
+    r"(?:(?<=[\"'])|(?<![^\s(])(?!(?:what|where|which|when|why|whose|how|this|that|these|those|here|there|mine|yours|"
+    r"ours|theirs|same|also|still)\b))([A-Za-z]{4,})[\"']? (?:is|was|as|=) "
+    r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|pin)"
+    r"(?=\s*(?:[.,;:!?)\]\"']|$))|"
     # "pw X" and, after a user/login word, "pass X" (review FB4 R1-04). The value holds a letter and a digit or
     # symbol, so "pass 2026 exams" and "pass COVID tests" stay readable.
     r"(?:\bpw|(?:user(?:name)?|login|id|wifi|account)\b[^\n]{0,30}?\bpass) "
@@ -141,9 +147,12 @@ _PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z] ?\d{4} ?[a-z]\b|"           
                   # upper case with a single space anywhere: "ABCP E123 4F" (review FB4 R1-05)
                   r"\b[A-Z] ?[A-Z] ?[A-Z] ?[PCHFATBLJG] ?[A-Z] ?\d ?\d ?\d ?\d ?[A-Z]\b")
 # Known API key prefixes followed by groups split by single spaces or dashes: "AKIA TWII 6XUU IX2C IXU3" (review FB4
-# R1-05). The groups together hold at least 16 characters and two digits. A mixed letter/digit group or an
-# uppercase-and-digit-only body is key-like; lower-case prose such as "sk-learn tutorial for 2026" stays readable.
-_KEY_SPLIT = re.compile(r"(?<![A-Za-z0-9])(?:AKIA|ASIA|AIza|ghp_|gho_|ghs_|ghu_|github_pat_|glpat-|xox[abpr]-|"
+# R1-05). A prefix with a fixed body length (AWS, Google, GitHub, GitLab) is a key when the groups add up to exactly
+# that length, digits or not (r6 R5-01). Otherwise the groups hold at least 16 characters and either two digits with a
+# mixed letter/digit group, an upper-case-and-digit-only body, or a letter-case change inside a group (random mixed
+# case); lower-case prose such as "sk-learn tutorial for 2026" stays readable.
+_KEY_BODY = {"AKIA": 16, "ASIA": 16, "AIza": 35, "ghp_": 36, "gho_": 36, "ghs_": 36, "ghu_": 36, "glpat-": 20}
+_KEY_SPLIT = re.compile(r"(?<![A-Za-z0-9])(AKIA|ASIA|AIza|ghp_|gho_|ghs_|ghu_|github_pat_|glpat-|xox[abpr]-|"
                         r"sk-(?:proj-|ant-)?|sk_live_|sk_test_|rk_live_|tvly-)"
                         r"([A-Za-z0-9_]{0,40}(?:[ -][A-Za-z0-9_]{1,12}){1,15})(?![A-Za-z0-9_])")
 _SSN_SEP = r" ?[-./,:()] ?|[^\w\n]|_"          # one standard (optionally spaced) or any single punctuation separator
@@ -261,6 +270,24 @@ def _before(text: str, i: int) -> str:
     return text[max(0, i - 48):i]
 
 
+# Necessary conditions (owner decision LDEC-008, speed without removing a check): a detector whose every alternative
+# contains one of these words cannot match a text without them, so its scan is skipped. Each hint is checked against
+# the alternatives of its pattern above; `test_pc13.py::test_hints_are_necessary` checks it on every positive sample.
+_HINTS = {
+    "labelled": re.compile(r"(?i)p[a@4][s5$]{2}|pw|otp|one[- ]time|code|cv[vc]|pin|api|secret|token"),
+    "passport": re.compile(r"(?i)passport"),
+    "spaced_code": re.compile(r"(?i)otp|cv[vc]|pin|passcode"),
+    "key_split": re.compile(r"AKIA|ASIA|AIza|gh[opsu]_|github_pat_|glpat-|xox[abpr]-|sk-|sk_|rk_live_|tvly-"),
+    "account": re.compile(r"(?i)a/c|acct|account"),
+    "street": re.compile(r"(?i)flat|house|h\.? ?no|plot|door|apt|apartment"),
+    "confidential": re.compile(r"(?i)confidential|do not"),
+}
+
+
+def _scan(rx, text, hint):
+    return rx.finditer(text) if (hint == "@" and "@" in text) or (hint != "@" and _HINTS[hint].search(text)) else ()
+
+
 def _spans(text: str, protected_terms) -> list:
     out = []
 
@@ -270,7 +297,7 @@ def _spans(text: str, protected_terms) -> list:
         g = group if group is not None else next((i for i in range(1, (m.re.groups or 0) + 1) if m.group(i)), 0)
         out.append(Finding(cat, m.start(g), m.end(g), rule))
 
-    for m in _LABELLED.finditer(text):
+    for m in _scan(_LABELLED, text, "labelled"):
         add(CREDENTIAL, m, "labelled_value")
     for m in _AADHAAR.finditer(text):
         a, s1, b, s2, c = m.groups()
@@ -285,7 +312,7 @@ def _spans(text: str, protected_terms) -> list:
     for m in _SSN_BARE.finditer(text):
         if _SSN_CTX_AFTER.search(text[m.end():m.end() + 30]):
             add(GOV_ID, m, "ssn_label_after", 0)
-    for m in _PASSPORT.finditer(text):
+    for m in _scan(_PASSPORT, text, "passport"):
         add(GOV_ID, m, "passport", 1)
     for m in _assist._CARD.finditer(text):
         if _NOT_CARD_CTX.search(_before(text, m.start())) or re.fullmatch(r"\d+\.\d+", m.group(0)):
@@ -320,12 +347,12 @@ def _spans(text: str, protected_terms) -> list:
     for m in _IBAN.finditer(text):
         if iban_ok(m.group(0)):
             add(FINANCIAL, m, "iban", 0)
-    for m in _ACCOUNT.finditer(text):
+    for m in _scan(_ACCOUNT, text, "account"):
         add(FINANCIAL, m, "account", 1)
     for m in _LONG_SECRET.finditer(text):
         if not _NOT_SECRET_CTX.search(_before(text, m.start())):
             add(SECRET_LIKE, m, "long_secret", 0)
-    for m in _EMAIL.finditer(text):
+    for m in _scan(_EMAIL, text, "@"):
         add(CONTACT, m, "email", 0)
     for m in _PHONE.finditer(text):
         add(CONTACT, m, "phone", 0)
@@ -334,26 +361,40 @@ def _spans(text: str, protected_terms) -> list:
             add(CONTACT, m, "mobile", 0)
     for m in _PHONE_SPACED.finditer(text):
         add(CONTACT, m, "phone_spaced", 0)
-    for m in _SPACED_CODE.finditer(text):
+    for m in _scan(_SPACED_CODE, text, "spaced_code"):
         add(CREDENTIAL, m, "spaced_code", 1)
-    for m in _KEY_SPLIT.finditer(text):
+    for m in _scan(_KEY_SPLIT, text, "key_split"):
         # Trailing space-separated lower-case words are prose after the key ("... IXU3 leaked"), not key groups.
-        g = re.sub(r"(?: [a-z]{4,})+$", "", m.group(1))
+        # A fixed-length prefix is checked on the groups as written (a lower-case key body is still a key).
+        fixed = _KEY_BODY.get(m.group(1))
+        g = m.group(2) if fixed else re.sub(r"(?: [a-z]{4,})+$", "", m.group(2))
         alnum = re.sub(r"[ -]", "", g)
-        if (len(alnum) >= 16 and sum(c.isdigit() for c in alnum) >= 2
-                and (any(re.search(r"[A-Za-z]", p) and re.search(r"\d", p) for p in re.split(r"[ -]", g))
-                     or (re.search(r"[A-Z]", g) and re.fullmatch(r"[A-Z0-9 -]+", g)))):
-            out.append(Finding(CREDENTIAL, m.start(), m.start(1) + len(g), "split_key"))
+        parts = re.split(r"[ -]", g)
+        if fixed:                                  # the groups up to some boundary add up to exactly the body length
+            n, cut = 0, None
+            for gm in re.finditer(r"[A-Za-z0-9_]+", g):
+                n += len(gm.group(0))
+                if n == fixed:
+                    cut = gm.end()
+                    break
+            g = g[:cut] if cut else g
+            alnum = re.sub(r"[ -]", "", g)
+        if (len(alnum) == fixed if fixed else len(alnum) >= 16 and (
+                (sum(c.isdigit() for c in alnum) >= 2 and any(re.search(r"[A-Za-z]", p) and re.search(r"\d", p)
+                                                               for p in parts))
+                or (re.search(r"[A-Z]", g) and re.fullmatch(r"[A-Z0-9 -]+", g))
+                or any(re.search(r"[a-z][A-Z]", p) for p in parts))):
+            out.append(Finding(CREDENTIAL, m.start(), m.start(2) + len(g), "split_key"))
     for m in _PINCODE.finditer(text):
         add(ADDRESS, m, "pincode")
-    for m in _STREET.finditer(text):
+    for m in _scan(_STREET, text, "street"):
         add(ADDRESS, m, "street", 0)
     for term in protected_terms or ():
         if isinstance(term, str) and term.strip():
             rx = re.compile(r"(?i)(?<!\w)" + re.escape(term.strip()) + r"(?!\w)")
             for m in rx.finditer(text):
                 add(PERSON, m, "protected_term", 0)
-    for m in _CONFIDENTIAL.finditer(text):
+    for m in _scan(_CONFIDENTIAL, text, "confidential"):
         add(CONFIDENTIAL, m, "marker", 0)
     for m in _CARD_RUN.finditer(text):
         if _assist._luhn(m.group(0)) and not _NOT_CARD_CTX.search(_before(text, m.start())):

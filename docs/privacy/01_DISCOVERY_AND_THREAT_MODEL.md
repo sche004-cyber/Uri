@@ -170,3 +170,22 @@ or without port; ids of 8 digits or fewer; prices; years and counts; version num
 **A party that controls the outgoing text includes the local Brain when injected web or document content steers the
 queries it composes.** Limiting what sensitive context such a party can see is **not implemented**; it is owner
 decision **OD-7** (follow-up). Section 6.3 called it OD-6, which the plan already used for integration authorization.
+
+### 6.5 Changes after driver run r6 and owner decisions LDEC-007 / LDEC-008 (2026-10-23; amends 6.4)
+
+| Change to 6.4 | Proof (tests/privacy) |
+|---|---|
+| Digit runs bridge punctuation and whitespace gaps of any length (r6 R2-01); gaps holding letters still break a run after 3 characters | `test_ldec006.py::test_ldec006_long_punctuation_gaps*` |
+| Labelled credentials: letter-only values are refused when a separator joins label and value ("password: x", "password is x"), after a key label as one 16+ letter token, and before a possessive label that ends the sentence ("x is my password."; a quoted value always) | `test_r6_review_repairs.py::test_r3_01*`, `test_r4_01*` |
+| Split keys after a fixed-length prefix (AKIA/ASIA 16, AIza 35, ghp_/gho_/ghs_/ghu_ 36, glpat- 20) are refused when the groups add up to the body length, with or without digits | `test_pc13.py::test_r5_01*` |
+| Text with nothing to rewrite is sent byte-identical (no NFKC change to half-width katakana, Arabic presentation forms, ligatures, NBSP, URL paths); text that needs a rewrite is sent in the egress form and re-checked | `test_pc13.py::test_r5_02*`, `test_c3_repairs.py::test_canonical_is_what_is_sent` |
+| Pseudonym tokens carry a keyed, non-reversible scope tag; a token never restores in another scope | `test_pc13.py::test_scope_tag*`, `test_r6_review_repairs.py::test_r3_02*` |
+
+**Residuals added (owner decision LDEC-007):** a bare credential label directly followed by one letter-only word
+without a digit or symbol ("password huntertwo", "access token alphabetic") is not detected, because it cannot be told
+apart from ordinary searches ("password reset not working"); pinned by
+`test_r6_review_repairs.py::test_ldec007_bare_label_with_one_letter_only_word_is_the_stated_residual`. A letter-only
+value before a label that does not end the sentence ("x is my password manager") is not detected for the same
+reason. **Removed from the residual list:** digits separated by 4 or more punctuation or whitespace characters (now
+redacted); split keys with a fixed-length prefix whose groups are lower-case words or hold fewer than two digits.
+Every other residual in 6.4 stands, including OD-7.

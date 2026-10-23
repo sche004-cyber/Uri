@@ -1,0 +1,29 @@
+FAILED tests/privacy/test_pc13.py::test_r5_01_fixed_length_split_keys_with_zero_or_one_digit_are_refused
+FAILED tests/privacy/test_pc13.py::test_r5_01_reviewer_reproductions_never_reach_the_wire
+FAILED tests/privacy/test_pc13.py::test_r5_02_clean_text_is_byte_identical_at_every_external_destination[\uff76\uff80\uff76\uff85 \u691c\u7d22]
+FAILED tests/privacy/test_pc13.py::test_r5_02_clean_text_is_byte_identical_at_every_external_destination[\ufefb \u0645\u0631\u062d\u0628\u0627]
+FAILED tests/privacy/test_pc13.py::test_r5_02_clean_text_is_byte_identical_at_every_external_destination[https://example.jp/\uff76\uff80\uff76\uff85/page]
+FAILED tests/privacy/test_pc13.py::test_r5_02_clean_text_is_byte_identical_at_every_external_destination[\ufb01le \u216b chapter]
+FAILED tests/privacy/test_pc13.py::test_r5_02_clean_text_is_byte_identical_at_every_external_destination[a\xa0b]
+FAILED tests/privacy/test_pc13.py::test_r5_02_clean_text_is_byte_identical_at_every_external_destination[\uff28\uff34\uff34\uff30 code 404]
+FAILED tests/privacy/test_pc13.py::test_scope_tag_is_keyed_and_does_not_encode_the_scope_id
+FAILED tests/privacy/test_pc13.py::test_hints_are_necessary
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_bare_label_with_one_letter_only_word_is_the_stated_residual[password huntertwo]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_bare_label_with_one_letter_only_word_is_the_stated_residual[password abcd]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_bare_label_with_one_letter_only_word_is_the_stated_residual[secret key wordvalue]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_bare_label_with_one_letter_only_word_is_the_stated_residual[access token alphabetic]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_bare_label_with_one_letter_only_word_is_the_stated_residual[passcode wordvalue]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[password reset not working]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[forgot password help]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[how to change password using cmd]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[password requirements for gmail]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[password protected zip file]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[API key rotation best practice]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[access token expired error]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[secret key generation python]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[This is my password manager]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[Google is my password manager]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[wifi password sharing android]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[passcode lock settings]
+FAILED tests/privacy/test_r6_review_repairs_new.py::test_ldec007_ordinary_login_searches_are_not_refused[huntertwo is my password manager]
+28 failed, 71 passed in 2.12s
