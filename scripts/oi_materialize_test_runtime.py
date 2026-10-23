@@ -54,9 +54,11 @@ OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration",
             # URI Office (docs/office/unified/01_O2_PLAN_AND_ACCEPTANCE_CRITERIA.md) and its device provider: new
             # paths only. Without them the app's Office start (manifest source_root) finds no service (finding B4).
             "uri_office", "uri_devices", "scripts/run_uri_office_service.py",
-            "tests/office", "tests/office_u2", "tests/devices"]
+            "tests/office", "tests/office_u2", "tests/devices",
+            # M95 privacy gateway (docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md): new paths only.
+            "uri_privacy", "tests/privacy"]
 TEST_PATHS = ("tests/oi", "tests/ws", "tests/scheduler", "tests/a2ui", "tests/web", "tests/assist", "tests/office",
-              "tests/office_u2", "tests/devices")
+              "tests/office_u2", "tests/devices", "tests/privacy")
 # Third-party modules the copied paths need at run time. requirements.txt has declared all of them since the first
 # commit, but venvs on the PC drifted (pypdf was missing from every runtime venv: finding O2-RT-1). A runtime missing
 # one is refused instead of starting an Office service that loses PDF text and search.

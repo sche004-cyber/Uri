@@ -102,6 +102,30 @@ class Scheduler:
         self.store = Store(self.state_dir / "scheduler.db", now_fn=now_fn)
         self.instance_id = uuid.uuid4().hex
         self.startup = {}
+        self._privacy = None
+
+    @property
+    def privacy(self):
+        """M95 privacy gateway for what this scheduler sends to the external harness (audit under the state dir)."""
+        if self._privacy is None:
+            from uri_privacy.audit import PrivacyAudit
+            from uri_privacy.gateway import PrivacyGateway
+            self._privacy = PrivacyGateway(audit=PrivacyAudit(self.state_dir / "privacy" / "audit.jsonl"))
+        return self._privacy
+
+    def _sanitize_for_harness(self, value, *, requester, task_id):
+        """Every free-text string the owner supplied, through the gateway. Not reversible: the harness output is
+        rendered as-is, so nothing could be put back. Raises uri_privacy.PrivacyRefused."""
+        if isinstance(value, str):
+            if not value.strip():
+                return value
+            return self.privacy.prepare(value, requester=requester, destination="EXTERNAL_AGENT",
+                                        purpose="scheduled_creative", task_id=task_id, reversible=False).text
+        if isinstance(value, dict):
+            return {k: self._sanitize_for_harness(v, requester=requester, task_id=task_id) for k, v in value.items()}
+        if isinstance(value, list):
+            return [self._sanitize_for_harness(v, requester=requester, task_id=task_id) for v in value]
+        return value
 
     # ---- process lifecycle ----------------------------------------------------------------------------------------
     def _acquire_lock(self):
@@ -818,6 +842,24 @@ class Scheduler:
         if workspace.exists():                     # a crashed earlier process with the same attempt number: keep evidence
             workspace = workspace.with_name(workspace.name + "_" + uuid.uuid4().hex[:6])
         kind = (occ["request"] or {}).get("kind", "generate")
+        # M95 privacy gateway, before any attempt exists: what the owner typed goes to the external harness only after
+        # credentials are refused and identifiers / contact details are removed (EXTERNAL_AGENT, not reversible).
+        from uri_privacy import PrivacyRefused
+        try:
+            who = "uri_scheduler." + job["template_id"]
+            params = self._sanitize_for_harness(job["params"], requester=who, task_id=attempt_key)
+            request = self._sanitize_for_harness(occ["request"], requester=who, task_id=attempt_key)
+        except PrivacyRefused as exc:
+            reason = "PRIVACY_REFUSED:" + exc.code
+            with self.store.tx() as db:
+                self._set_occ(db, occ_id, "NEEDS_ATTENTION", reason, attempts=occ["attempts"] - 1, lease_owner=None)
+                self.store.emit(db, "occurrence.privacy_refused", job_id=job["job_id"], occ_id=occ_id,
+                                payload={"code": exc.code, "needs": [list(n) for n in exc.needs],
+                                         "recovery": ["remove the password, code, key or marked-confidential text "
+                                                      "from the task, then Retry",
+                                                      "Cancel this occurrence"]})
+            self.notify("needs_attention", {"occ_id": occ_id, "code": reason})
+            return {"occ_id": occ_id, "result": "NEEDS_ATTENTION", "reason": reason}
         with self.store.tx() as db:
             # Cancellation recorded while the gate ran (review round 6, F1): settle it here, before any attempt exists or
             # any harness work is submitted. After this transaction, cancel_occurrence finds the attempt and withdraws its
@@ -835,7 +877,7 @@ class Scheduler:
                                      "qualification": gate.qualification, "kind": kind, "workspace": str(workspace)})
         template = TEMPLATES[job["template_id"]]
         previous = self._previous_for(occ)
-        instructions = template.build_package(workspace, occurrence=occ, params=job["params"], request=occ["request"],
+        instructions = template.build_package(workspace, occurrence=occ, params=params, request=request,
                                               previous=previous)
         valid_until = occ["deadline_us"] if not occ["request"] else None
         outcome = self.harness.run(attempt_key=attempt_key, principal=job["owner"], workspace=workspace,

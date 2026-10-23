@@ -54,12 +54,36 @@ class SourceFinder:
 
 sys.meta_path.insert(1, SourceFinder(_C1_BOOT.parents[1]))
 
-from uri_core.core.runtime_identity import RuntimeManifest, RuntimeIdentity, RuntimeIdentityError, FixtureGuard, absolute, child_environment, install_source_pin  # noqa: E402
+from uri_core.core.runtime_identity import RuntimeManifest, RuntimeIdentity, RuntimeIdentityError, FixtureGuard, absolute, child_environment, dpapi, install_source_pin  # noqa: E402
 from scripts.uri_server_launcher import NamedMutex  # noqa: E402
 from uri_supervisor_bridge.composition import PolicyError, policy_path  # noqa: E402
 from uri_supervisor_bridge.refusal_log import RefusalLog  # noqa: E402
 from uri_operational_intelligence import brain_client as BC, runtime_v1 as R  # noqa: E402
 from uri_operational_intelligence.integrated_composition import integrated_server_composition  # noqa: E402
+
+
+def persistent_secret(path: Path) -> str:
+    """The key-store secret for this state root, DPAPI-protected for the current user (M95, P0 defect D10).
+
+    A new random secret on every start made every saved provider key and credential unreadable after a restart. It is
+    now created once and read back afterwards. A file that exists but cannot be unprotected stops startup
+    (PROTECTED_KEY_UNAVAILABLE) instead of being replaced, because a replaced secret silently orphans the stored keys.
+    Same logic as `uri_privacy.keys.persistent_key`, inline because this hardened entrypoint imports only its
+    pinned packages."""
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_name(path.name + f".{os.getpid()}.tmp")
+        tmp.write_bytes(dpapi(secrets.token_bytes(32)))
+        try:
+            os.link(tmp, path)             # exclusive create: two first starts cannot keep different secrets
+        except FileExistsError:
+            pass
+        finally:
+            tmp.unlink(missing_ok=True)
+    raw = dpapi(path.read_bytes(), True)
+    if len(raw) != 32:
+        raise RuntimeIdentityError("PROTECTED_KEY_UNAVAILABLE")
+    return raw.hex()
 
 
 def main():
@@ -80,8 +104,8 @@ def main():
         safe = child_environment(state, absolute(m["interpreter"]))
         os.environ.clear()
         os.environ.update(safe)
-        os.environ["URI_PROVIDER_KEY_SECRET"] = secrets.token_hex(32)
-        os.environ["URI_EXTERNAL_CREDENTIAL_SECRET"] = secrets.token_hex(32)
+        os.environ["URI_PROVIDER_KEY_SECRET"] = persistent_secret(state / "secure" / "provider-key-secret.dpapi")
+        os.environ["URI_EXTERNAL_CREDENTIAL_SECRET"] = persistent_secret(state / "secure" / "external-credential-secret.dpapi")
         if m["composition_id"] != "c2-paired-core":
             raise RuntimeIdentityError("PHASE2_PAIRED_COMPOSITION_REQUIRED")
         try:

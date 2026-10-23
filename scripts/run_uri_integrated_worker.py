@@ -42,7 +42,10 @@ PHASE2_PACKAGES = ("uri_supervisor", "uri_supervisor_bridge")
 WS_PACKAGES = ("uri_operational_intelligence",
                # Web Intelligence (W1) and URI Assist (A0), docs/assist/00_PLAN_AND_ACCEPTANCE_CRITERIA.md. uri_a2ui is
                # read by uri_web.surface (research results render through the existing catalog).
-               "uri_web", "uri_assist", "uri_a2ui")
+               "uri_web", "uri_assist", "uri_a2ui",
+               # M95 privacy gateway (docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md): uri_web sends every search
+               # query through it.
+               "uri_privacy")
 WORKER_PROFILE = "ws-integrated"
 
 
@@ -128,6 +131,8 @@ def main():
         os.environ.update(safe)
         from uri_supervisor_bridge.qualification import client_cli_homes, RecordTrust
         os.environ.update(client_cli_homes(root))
+        # M95: the privacy gateway's value-free audit and disclosure grants live with this client's state.
+        os.environ["URI_PRIVACY_HOME"] = str(root / "control" / "privacy")
         composition, bridge = compose_and_build(root, trust=RecordTrust.from_manifest(m), allow_fixture=args.allow_fixture_qualification,
                                                 codex_home=client_cli_homes(root, create=False)["CODEX_HOME"])
         from types import SimpleNamespace

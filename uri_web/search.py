@@ -8,6 +8,9 @@ Rules:
   * An unconfigured provider answers UNAVAILABLE; a failing one FAILED / RATE_LIMITED. Never an empty success.
   * API keys never appear in results, errors or records: errors carry a code and an HTTP status only.
   * Hits are leads, not evidence: a hit's snippet is `snippet_only` until the page itself is retrieved.
+  * M95: every query passes the privacy gateway (`uri_privacy`, destination WEB_SEARCH) before it is sent. Credentials
+    refuse the search; identifiers, card/account numbers and contact details are removed unless the user granted that
+    disclosure. Only the sanitized query is sent or recorded.
 """
 from __future__ import annotations
 
@@ -17,6 +20,8 @@ from typing import Optional, Protocol
 from urllib.parse import urlsplit
 
 import httpx
+
+from uri_privacy import PrivacyRefused, default_gateway
 
 from . import netpolicy as NP
 
@@ -84,8 +89,9 @@ class _HttpProvider:
     name = "base"
     timeout = httpx.Timeout(10.0, connect=5.0)
 
-    def __init__(self, *, transport: Optional[httpx.BaseTransport] = None, proxy: Optional[str] = None):
+    def __init__(self, *, transport: Optional[httpx.BaseTransport] = None, proxy: Optional[str] = None, privacy=None):
         self._transport, self._proxy = transport, proxy
+        self._privacy = privacy
 
     def _client(self):
         if self._transport is not None:
@@ -98,6 +104,13 @@ class _HttpProvider:
             return SearchResult(self.name, "", REFUSED, error_code="QUERY_EMPTY")
         if not self.available():
             return SearchResult(self.name, q, UNAVAILABLE, error_code="NOT_CONFIGURED")
+        try:
+            q = (self._privacy or default_gateway()).prepare(q, requester="uri_web.search." + self.name,
+                                                             destination="WEB_SEARCH", purpose="web_research").text
+        except PrivacyRefused as exc:
+            return SearchResult(self.name, "", REFUSED, error_code=exc.code)
+        if not q:
+            return SearchResult(self.name, "", REFUSED, error_code="PRIVACY_QUERY_EMPTY")
         try:
             with self._client() as c:
                 resp = fn(c, q)

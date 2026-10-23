@@ -1182,7 +1182,11 @@ def main(argv=None):
     if a.brain_url:
         from uri_operational_intelligence import brain_client as BC
         from .brain import OfficeBrain
-        brain = OfficeBrain(BC.BrainClient(a.brain_url))
+        try:
+            brain = OfficeBrain(BC.BrainClient(a.brain_url))
+        except BC.NotLoopback:
+            # M95: sheet data and correction history go to the local Brain only (threat T5).
+            ap.error("--brain-url must be a loopback address (BRAIN_ENDPOINT_NOT_LOOPBACK)")
     office = Office(state, owner=a.owner, google=G.GoogleSheets(state, a.google_token), brain=brain,
                     allowed_roots=a.allow_root, printing=a.enable_printing)
     office._engine_checks = True                          # O2: engine integrity check starts with the service

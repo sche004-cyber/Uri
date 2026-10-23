@@ -561,7 +561,8 @@ def test_command_namespaces_are_disjoint_and_hooked_before_the_worker_schema_che
     src = (ROOT / "scripts/run_uri_integrated_worker.py").read_text(encoding="utf-8")
     hook = src.index("if kind in WEB_COMMANDS or kind in ASSIST_COMMANDS:")
     assert src.index("if kind in WB.COMMANDS:") < hook < src.index('required = {"identity"')
-    assert '"uri_web", "uri_assist", "uri_a2ui")' in src and src.index("web.close()") < src.index("shutdown(oi, turns)       # stdin EOF")
+    # M95 appended "uri_privacy" (uri_web sends every query through it); the W1/A0 packages stay in place.
+    assert '"uri_web", "uri_assist", "uri_a2ui",' in src and src.index("web.close()") < src.index("shutdown(oi, turns)       # stdin EOF")
     # F1: deferred jobs are released only after the reply; F4: a user turn cancels Assist Brain work first;
     # F7: the loopback-only client; LOW: guarded import.
     assert src.index('write({"result": "OK", "value": result})\n                        handler.release()') > hook

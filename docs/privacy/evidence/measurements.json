@@ -1,0 +1,144 @@
+{
+ "schema": "m95-measurements/1",
+ "python": "3.13.15",
+ "platform": "Windows-11-10.0.26200-SP0",
+ "processor": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+ "gpu_used": false,
+ "accuracy": {
+  "core": {
+   "recall": {
+    "ADDRESS": 1.0,
+    "CONTACT": 1.0,
+    "CREDENTIAL": 1.0,
+    "FINANCIAL": 1.0,
+    "GOV_ID": 1.0
+   },
+   "positives": 560,
+   "false_negatives": 0,
+   "benign": 40,
+   "false_positives": 0,
+   "false_positive_rate": 0.0
+  },
+  "hard_after_fixes": {
+   "recall": {
+    "ADDRESS": 1.0,
+    "CONTACT": 0.8333,
+    "CREDENTIAL": 1.0,
+    "FINANCIAL": 1.0,
+    "GOV_ID": 1.0
+   },
+   "positives": 18,
+   "false_negatives": 1,
+   "benign": 10,
+   "false_positives": 1,
+   "false_positive_rate": 0.1
+  },
+  "held_out_measured_once": {
+   "recall": {
+    "ADDRESS": 1.0,
+    "CONTACT": 1.0,
+    "CREDENTIAL": 1.0,
+    "FINANCIAL": 1.0,
+    "GOV_ID": 1.0
+   },
+   "positives": 17,
+   "false_negatives": 0,
+   "benign": 15,
+   "false_positives": 0,
+   "false_positive_rate": 0.0
+  }
+ },
+ "latency": [
+  {
+   "kb": 0.4,
+   "destination": "WEB_SEARCH",
+   "n": 500,
+   "p50_ms": 0.663,
+   "p95_ms": 0.676,
+   "max_ms": 0.709
+  },
+  {
+   "kb": 2,
+   "destination": "WEB_SEARCH",
+   "n": 300,
+   "p50_ms": 3.105,
+   "p95_ms": 3.146,
+   "max_ms": 3.4
+  },
+  {
+   "kb": 2,
+   "destination": "EXTERNAL_MODEL",
+   "n": 300,
+   "p50_ms": 3.137,
+   "p95_ms": 3.166,
+   "max_ms": 3.236
+  },
+  {
+   "kb": 64,
+   "destination": "EXTERNAL_MODEL",
+   "n": 60,
+   "p50_ms": 125.601,
+   "p95_ms": 178.968,
+   "max_ms": 182.869
+  },
+  {
+   "kb": 64,
+   "destination": "LOG",
+   "n": 60,
+   "p50_ms": 104.783,
+   "p95_ms": 141.8,
+   "max_ms": 179.206
+  }
+ ],
+ "memory": {
+  "rss_before_mb": 28.9,
+  "rss_after_10k_calls_mb": 35.6,
+  "delta_mb": 6.7,
+  "audit_records_in_memory": 10000,
+  "note": "memory-mode audit keeps records in RAM; production uses URI_PRIVACY_HOME (file audit)"
+ },
+ "token_effect": [
+  {
+   "destination": "WEB_SEARCH",
+   "tokens_in": 534,
+   "tokens_out": 422,
+   "delta_pct": -20.97
+  },
+  {
+   "destination": "EXTERNAL_MODEL",
+   "tokens_in": 534,
+   "tokens_out": 562,
+   "delta_pct": 5.24
+  }
+ ],
+ "friction": {
+  "WEB_SEARCH": {
+   "all_texts": {
+    "sanitized": 110,
+    "PRIVACY_REFUSED": 30,
+    "unchanged": 55
+   },
+   "benign_texts_interrupted": 0,
+   "benign_texts": 55
+  },
+  "EXTERNAL_MODEL": {
+   "all_texts": {
+    "sanitized": 110,
+    "PRIVACY_REFUSED": 30,
+    "unchanged": 55
+   },
+   "benign_texts_interrupted": 0,
+   "benign_texts": 55
+  },
+  "EXTERNAL_AGENT": {
+   "all_texts": {
+    "sanitized": 110,
+    "PRIVACY_REFUSED": 30,
+    "unchanged": 55
+   },
+   "benign_texts_interrupted": 0,
+   "benign_texts": 55
+  }
+ },
+ "elapsed_s": 54.69
+}
