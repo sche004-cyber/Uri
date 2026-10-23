@@ -546,3 +546,5 @@ PH1-GATE-1 integrated (receipt `INTEGRATION_RECEIPT_20261023_PH1_GATE_1.md`). Op
 Details: `P0_CLOSURE_20261022.md` Addendum N; `decisions.md` DEC-100.
 
 OPEN-23 DONE 2026-10-23: authoritative Milestone Manager ledger `D:/uri-dev/state/milestone-manager` (verified). From now on the ledger is the system of record for milestones and decisions; this file and `decisions.md` stay as the imported P0 history.
+
+Correction 2026-10-23 (P0 Addendum O update 2): D10 (random key-store secrets per start) loses no data in the working system - the paired/integrated server never constructs the key stores; the data-loss impact applies to the legacy server path only. Severity LOW for the working system.
