@@ -17,14 +17,15 @@ FROZEN_SHA = "31a34dcbb37ee48e1b06a1bcd60418a2e52ff9a0c65fd8cc7f3c59defeb98cf7"
 SERVER, FETCH = "uri_core/app/server.py", "uri_core/tools/fetch_url.py"
 
 
+# HYG-1: the "hyg1_" tag marks what a test creates; tests/governance/conftest.py removes only tagged entries
 def fresh():
-    return ROOT / "work/c1" / ("rollback_" + uuid.uuid4().hex)
+    return ROOT / "work/c1" / ("rollback_hyg1_" + uuid.uuid4().hex)
 
 
 def derived(mutate):
     with zipfile.ZipFile(FROZEN) as z:
         members = [[i.filename, z.read(i)] for i in z.infolist()]
-    out = ROOT / "work/c1/checkpoints" / ("negative_" + uuid.uuid4().hex + ".zip")
+    out = ROOT / "work/c1/checkpoints" / ("negative_hyg1_" + uuid.uuid4().hex + ".zip")
     with zipfile.ZipFile(out, "w") as a:
         for n, d in mutate(members):
             a.writestr(n, d)
