@@ -74,6 +74,7 @@ void main() async {
         // frames while the window is minimised (the binding is removed when
         // the services are disposed).
         configureServices: (services) {
+          services.oi?.dictationScope = () => services.companionPrefs.voice.dictationScope;
           if (companionWindow != null) {
             services.updateCompanionWindow = (layout) async {
               await companionWindow.update(layout);

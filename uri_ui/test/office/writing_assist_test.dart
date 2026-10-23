@@ -152,6 +152,23 @@ void main() {
     await tester.pump(const Duration(milliseconds: 60));
   });
 
+  testWidgets('R6-01: Accept all preserves a Windows-proposed name replacement', (tester) async {
+    const text = 'i forwarded the file to mehta. i saw it.';
+    final name = text.indexOf('mehta');
+    final secondI = text.lastIndexOf('i saw');
+    final w = FakeWriting()..onCheck = (_) => {'suggestions': [
+      sugg('capital1', 0, 1, 'i', 'I'),
+      {...sugg('name', name, name + 5, 'mehta', 'mehra', cls: 'rewrite'),
+       'source': 'windows_spell', 'confidence': 'guess'},
+      sugg('capital2', secondI, secondI + 1, 'i', 'I'),
+    ], 'status': {'spelling': 'ok'}};
+    final c = await pump(tester, w, text);
+    expect(find.text('Accept all corrections (2)'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('writing-accept-all')));
+    await tester.pump();
+    expect(c.text, 'I forwarded the file to mehta. I saw it.');
+  });
+
   testWidgets('Accept all preserves reference separators and clause parentheses', (tester) async {
     const text = 'i recieve Ref. 12/3/2026 and Clause (a).';
     final firstSlash = text.indexOf('/');

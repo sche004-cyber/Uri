@@ -21,6 +21,7 @@ Brain (`SENSITIVE_FIELD` / `SENSITIVE_TEXT`); the deterministic layer still runs
 """
 from __future__ import annotations
 
+import bisect
 import difflib
 import hashlib
 import json
@@ -158,7 +159,9 @@ def _rules(text: str) -> list:
                 (w[0] in "ue" and w.startswith(_A_AN_YOU + ("unan",))):
             out.append(_sugg(m.start(1), m.end(1), m.group(1), [m.group(1)[0]], "grammar", "correction", "rules",
                              f"Use \"a\" before \"{w}\"."))
-    return out
+    protected = _rule_protected_spans(text)
+    starts = [start for start, _ in protected]
+    return [s for s in out if not _rule_edits_protected(protected, starts, s["start"], s["end"])]
 
 
 # ---------------------------------------------------------------------------------------------- spelling worker
@@ -289,12 +292,12 @@ def _spell_suggestions(text: str, res: dict) -> list:
                 continue
         if action == 1 and not reps:
             continue
-        msg = "Spelling." if action == 2 else "Possible spelling mistake."
         kind = "capital" if reps and reps[0].lower() == word.lower() else "spelling"
-        x = _sugg(s, n, word, reps, kind, "correction", "windows_spell", msg)
-        # Review FB1 R2-03: Windows only guesses for a word it does not know (mukhyamantri -> mahamari); a guess is
-        # accepted one by one, never by "Accept all corrections". A letter-case fix is sure.
-        x["confidence"] = "sure" if action == 2 or kind == "capital" else "guess"
+        msg = "Capitalisation." if kind == "capital" else "Possible spelling or name change: check it."
+        # Windows cannot establish whether a word is a person's name, even for autocorrect or a mechanical typo.
+        # Only a case-only change preserves the word's identity without a separate review.
+        x = _sugg(s, n, word, reps, kind, "correction" if kind == "capital" else "rewrite", "windows_spell", msg)
+        x["confidence"] = "sure" if kind == "capital" else "guess"
         out.append(x)
     return out
 
@@ -446,8 +449,8 @@ def _call_brain(client, mode: str, text: str, cancel=None) -> dict:
 
 # Review FB1 R2-01: a Brain change is a `correction` only when it is demonstrably safe; everything else is `rewrite`
 # (accepted one by one, never by "Accept all corrections"). Safe: letter case, spacing and punctuation, changes among
-# grammar function words, and a close spelling fix of one word. Never safe: any change to numbers (digits or number
-# words), month or day names, negation, a negating prefix (unable/able), or a different word.
+# grammar function words. Windows word substitutions require individual acceptance because edit shape and dictionary
+# agreement do not establish name identity. Never safe: numbers, month or day names, negation, or a different word.
 _TOKEN = re.compile(r"\s+|\w+(?:['’]\w+)*|[^\w\s]")       # contractions ("can't") are one token
 _NEG_WORDS = {"not", "no", "never", "none", "nor", "neither", "nothing", "nobody", "nowhere", "without", "cannot",
               "hardly", "barely", "unless", "against", "lack", "lacks", "lacking"}
@@ -468,7 +471,7 @@ def _dates(s: str) -> set:
 
 # Review FB2 R3-01: a Brain change is a `correction` only when it is one of these, checked position by position:
 # letter case, spacing or punctuation; an agreement-only swap; an article added or dropped; a repeated word removed;
-# or the spelling fix Windows itself proposes for a word it flags. Anything else, and anything touching a number, a
+# only. Anything else, and anything touching a number, a
 # date, a negation, an honorific, a roman numeral or a single letter used as a reference, is a `rewrite`.
 _SWAPS = [frozenset(x) for x in ({"is", "are"}, {"was", "were"}, {"has", "have"}, {"do", "does"}, {"a", "an"},
                                  {"its", "it's", "it’s"}, {"their", "there", "they're", "they’re"},
@@ -480,6 +483,38 @@ _REFERENCE_SPAN = re.compile(
     rf"\b(?:ref|reference|no|nos|sec|cl|art|fig|vol|sl|{_REF_WORDS})[.:]?\s+"
     r"\(?[A-Za-z0-9]+(?:\s*[./:-]+\s*[A-Za-z0-9]+)*\)?(?:\([A-Za-z0-9]+\))*", re.I)
 _BARE_REFERENCE_SPAN = re.compile(r"\b[A-Za-z0-9]+(?:[./:-]+[A-Za-z0-9]+)+(?:\([A-Za-z0-9]+\))*")
+_URL_SPAN = re.compile(r"\b(?:https?://|www\.)[^\s<>\"']+", re.I)
+
+
+def _rule_protected_spans(text: str) -> list[tuple[int, int]]:
+    """Collect URL and reference spans once, including unspaced reference suffixes."""
+    spans = []
+    for pattern in (_URL_SPAN, _REFERENCE_SPAN, _BARE_REFERENCE_SPAN):
+        for match in pattern.finditer(text):
+            if pattern is _BARE_REFERENCE_SPAN and not re.search(r"[0-9/:-]", match.group()):
+                continue
+            end = match.end()
+            if pattern is not _URL_SPAN:
+                while end < len(text) and not text[end].isspace():
+                    end += 1
+            spans.append((match.start(), end))
+    spans.sort()
+    merged = []
+    for start, end in spans:
+        if merged and start <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(end, merged[-1][1]))
+        else:
+            merged.append((start, end))
+    return merged
+
+
+def _rule_edits_protected(spans: list[tuple[int, int]], starts: list[int], start: int, end: int) -> bool:
+    if not spans:
+        return False
+    i = bisect.bisect_right(starts, start) - 1
+    if i >= 0 and (start <= spans[i][1] if start == end else start < spans[i][1]):
+        return True
+    return start != end and i + 1 < len(spans) and end > spans[i + 1][0]
 
 
 def _swap(a: str, b: str) -> bool:
@@ -500,24 +535,8 @@ def _edits_reference(original: str, start: int, end: int) -> bool:
     return False
 
 
-def _mechanical_typo(a: str, b: str) -> bool:
-    """Only a missing/extra letter or adjacent transposition can support a Brain spelling correction.
-
-    A Windows substitution alone can be a different word or a lower-case name (mehta -> mehra).
-    Windows proposals remain available individually through the spelling check.
-    """
-    if min(len(a), len(b)) < 6:
-        return False
-    if abs(len(a) - len(b)) == 1:
-        short, long = (a, b) if len(a) < len(b) else (b, a)
-        return any(long[:i] + long[i + 1:] == short for i in range(len(long)))
-    return len(a) == len(b) and any(a[:i] + a[i + 1] + a[i] + a[i + 2:] == b
-                                     for i in range(len(a) - 1))
-
-
-def _touches_meaning(orig: str, rep: str, *, spelling: dict | None = None, context: str = "") -> bool:
-    """`spelling`: {lower-case word Windows flags: set of its lower-case suggestions} for the original text;
-    `context`: the characters around the change in the original (a change inside parentheses is a reference)."""
+def _touches_meaning(orig: str, rep: str, *, context: str = "") -> bool:
+    """Classify word substitutions conservatively; spelling shape cannot establish name identity."""
     from uri_operational_intelligence.text_verify import canonical_numbers
     o, r = orig.strip(), rep.strip()
     if o.lower() == r.lower():
@@ -542,9 +561,7 @@ def _touches_meaning(orig: str, rep: str, *, spelling: dict | None = None, conte
         if w in _HONORIFICS or (len(w) <= 4 and _ROMAN.match(w) and w not in ("i",)) or (len(w) == 1 and w not in ("a", "i")):
             return True
     def safe(a, b):
-        # Windows agreement is supporting evidence only for a narrow mechanical typo, not a changed name.
-        return _swap(a, b) or (spelling is not None and b in (spelling.get(a) or ()) and
-                               _mechanical_typo(a, b))
+        return _swap(a, b)
     if len(ow) == len(rw):
         return not all(safe(a, b) for a, b in zip(ow, rw))
     longer, shorter = (ow, rw) if len(ow) > len(rw) else (rw, ow)
@@ -562,7 +579,7 @@ def _touches_meaning(orig: str, rep: str, *, spelling: dict | None = None, conte
     return True
 
 
-def _diff(original: str, edited: str, source: str = "brain", spelling: dict | None = None) -> list:
+def _diff(original: str, edited: str, source: str = "brain") -> list:
     """Word-level diff of `edited` against `original`, as suggestions on `original`'s offsets."""
     toks = [(m.start(), m.end()) for m in _TOKEN.finditer(original)]
     a = [original[s:e] for s, e in toks]
@@ -578,23 +595,10 @@ def _diff(original: str, edited: str, source: str = "brain", spelling: dict | No
             continue
         context = original[max(0, s - 1):s] + original[e:e + 1]
         cls = "rewrite" if _edits_reference(original, s, e) or \
-            _touches_meaning(orig, rep, spelling=spelling, context=context) else "correction"
+            _touches_meaning(orig, rep, context=context) else "correction"
         msg = ("This change may alter a name, number, date, reference or meaning: check it." if cls == "rewrite"
                else "Grammar or wording.")
         out.append(_sugg(s, e, orig, [rep], "grammar", cls, source, msg))
-    return out
-
-
-def _spelling_map(text: str) -> dict | None:
-    """Words Windows flags in `text` with their suggestions (lower case), or None when spelling is not available
-    (then no Brain word change counts as a spelling correction)."""
-    try:
-        res = default_spell().check(text, DEFAULT_LANG)
-    except WritingError:
-        return None
-    out = {}
-    for x in _spell_suggestions(text, res):
-        out.setdefault(x["original"].lower(), set()).update(r.lower() for r in x["replacements"])
     return out
 
 
@@ -610,7 +614,7 @@ def proofread(text: str, *, client, field: dict | None = None, cancel=None) -> d
         return {"suggestions": [], "message": d.get("message") or "", "flags": [], "ms": r["ms"]}
     from uri_operational_intelligence.text_verify import check_meaning_preserved
     flags = check_meaning_preserved(text, d["text"])
-    items = _diff(text, d["text"], spelling=_spelling_map(text))[:MAX_SUGGESTIONS]
+    items = _diff(text, d["text"])[:MAX_SUGGESTIONS]
     # Review FB2 R3-01: an agreement swap ("was" -> "were") that sits in a sentence with a meaning change ("officer"
     # -> "officers") follows that change, so it is not offered as a separate plain correction.
     ends = [m.end() for m in re.finditer(r"[.!?\n]", text)]

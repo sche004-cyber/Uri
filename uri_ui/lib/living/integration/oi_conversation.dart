@@ -238,6 +238,9 @@ class OiConversation extends ChangeNotifier {
   /// Sent as `mode: dictation`; the worker never routes them to Core.
   bool dictationMode = false;
 
+  /// Reads the current Settings choice at send time, including changes made during this conversation.
+  String Function()? dictationScope;
+
   Map<String, dynamic> brainStatus = const {};
   Map<String, dynamic> catalog = const {};
   List<String> memory = const [];
@@ -533,12 +536,16 @@ class OiConversation extends ChangeNotifier {
   Future<void> send(String text, {bool draftInView = true, bool newWork = false}) async {
     if (transcriptMode) {
       return sendTranscript(text,
-          engine: 'simulated', simulated: true, dictation: dictationMode, draftInView: draftInView);
+          engine: 'simulated', simulated: true, dictation: dictationMode, draftInView: draftInView,
+          dictationScope: dictationMode ? dictationScope?.call() : null);
     }
     if (dictationMode) {
       // Dictation is explicit content the user chose to write; it starts its own draft (the replaced one is kept
       // and Undo brings it back).
-      return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': 'dictation'}, 'Dictation');
+      return _turn(text.trim(), {
+        'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': 'dictation',
+        if (dictationScope?.call() case final scope?) 'scope': scope,
+      }, 'Dictation');
     }
     final mode = newWork && draft != null ? 'conversation' : _draftMode(draftInView);
     if (mode != null) {

@@ -71,6 +71,19 @@ def test_rules_leave_abbreviations_initials_references_and_links_alone():
         assert rules(t)["suggestions"] == [], t
 
 
+@pytest.mark.parametrize("protected", ["https://example.gov.in/a,b", "Ref. 12/3/2026-A,B"])
+def test_r6_02_accept_all_spacing_preserves_urls_and_references(protected):
+    text = f"i see {protected} for details."
+    result = rules(text)
+    corrections = [s for s in result["suggestions"] if s["class"] == "correction" and s["confidence"] != "guess"]
+    applied = W.apply(text, _acc({"suggestions": corrections}, text))["text"]
+    assert applied == f"I see {protected} for details."
+
+
+def test_r6_02_ordinary_comma_spacing_remains_available():
+    assert ("", " ") in fixes(rules("Read this,and reply."))
+
+
 def test_spell_unavailable_reports_why_and_rules_still_run():
     r = W.check("i went", spell=NoSpell())
     assert r["status"]["spelling"] == "SPELL_UNAVAILABLE"
@@ -498,12 +511,12 @@ def test_r2_01_meaning_changes_are_never_plain_corrections():
                       ("three", "two"), ("january", "june"), ("tuesday", "monday"), ("approve", "reject"),
                       ("disagree", "agree"), ("never", "always"), ("5", "6")]:
         assert W._touches_meaning(orig, rep), (orig, rep)
-    # review FB2 R3-01: a spelling fix is a correction only with Windows' agreement (the spelling map)
-    spelling = {"recieve": {"receive"}, "committe": {"committee"}}
-    for orig, rep in [("recieve", "receive"), ("committe", "committee"), ("was", "were"), ("a", "an"),
-                      ("tuesday", "Tuesday"), (" ,", ","), ("the the", "the")]:
-        assert not W._touches_meaning(orig, rep, spelling=spelling), (orig, rep)
-    assert W._touches_meaning("recieve", "receive", spelling=None)
+    # A spelling-shaped substitution can be a name change, so it needs individual acceptance.
+    for orig, rep in [("recieve", "receive"), ("committe", "committee")]:
+        assert W._touches_meaning(orig, rep), (orig, rep)
+    for orig, rep in [("was", "were"), ("a", "an"), ("tuesday", "Tuesday"),
+                      (" ,", ","), ("the the", "the")]:
+        assert not W._touches_meaning(orig, rep), (orig, rep)
     # a contraction is one token: removing "n't" is not a lone "'t" edit
     d = W._diff("I can't go.", "I can go.")
     assert [(s["original"], s["class"]) for s in d] == [("can't", "rewrite")]
@@ -523,13 +536,13 @@ def test_r2_02_enumerations_and_dotted_abbreviations_are_not_sentence_ends():
         assert not any(o in ("i", "d", "l", "s", "g") for o, _ in got), (t, got)
 
 
-def test_r2_03_spelling_guesses_are_marked_and_sure_fixes_are_not():
+def test_r2_03_spelling_guesses_and_case_only_fixes_are_marked():
     errs = [{"start": 0, "length": 12, "word": "mukhyamantri", "action": 1, "replacement": "", "suggestions": ["mahamari"]},
             {"start": 13, "length": 7, "word": "recieve", "action": 2, "replacement": "receive", "suggestions": []},
             {"start": 21, "length": 7, "word": "tuesday", "action": 1, "replacement": "", "suggestions": ["Tuesday"]}]
     r = W.check("mukhyamantri recieve tuesday", spell=FakeSpell(errs))
     conf = {s["original"]: s["confidence"] for s in r["suggestions"]}
-    assert conf == {"mukhyamantri": "guess", "recieve": "sure", "tuesday": "sure"}
+    assert conf == {"mukhyamantri": "guess", "recieve": "guess", "tuesday": "sure"}
 
 
 def test_r2_04_check_on_a_command_loop_never_waits_for_a_worker_start_and_is_linear():
@@ -597,13 +610,45 @@ def test_r3_01_reference_name_direction_tense_and_number_changes_are_rewrites(or
     assert all(s["class"] == "rewrite" for s in r["suggestions"]), r["suggestions"]
 
 
-def test_r3_01_safe_changes_stay_corrections_with_windows_agreement(monkeypatch):
+def test_r3_01_windows_spelling_change_and_linked_agreement_need_review(monkeypatch):
     spell = FakeSpell([{"start": 2, "length": 7, "word": "recieve", "action": 2, "replacement": "receive",
                         "suggestions": []}])
     monkeypatch.setattr(W, "default_spell", lambda: spell)
     r = W.proofread("I recieve the the files which was sent.", client=FakeBrain(
         {"status": "ok", "message": "", "text": "I receive the files which were sent."}))
-    assert r["suggestions"] and all(s["class"] == "correction" for s in r["suggestions"]), r["suggestions"]
+    assert any("recieve" in s["original"] and s["class"] == "rewrite" for s in r["suggestions"])
+    assert all(s["class"] == "rewrite" for s in r["suggestions"]), r["suggestions"]
+
+
+@pytest.mark.parametrize("action,original,replacement", [
+    (2, "mehta", "mehra"), (1, "mehta", "mehra"),
+    (2, "sharma", "sharman"), (1, "sharma", "sharman"),
+])
+def test_r6_01_windows_word_substitution_requires_individual_accept(action, original, replacement):
+    text = f"i forwarded the file to {original}."
+    start = text.index(original)
+    error = {"start": start, "length": len(original), "action": action,
+             "replacement": replacement if action == 2 else "",
+             "suggestions": [] if action == 2 else [replacement]}
+    spell = FakeSpell([error])
+    result = W.check(text, spell=spell)
+    name = next(s for s in result["suggestions"] if s["original"] == original)
+    assert name["class"] == "rewrite"
+    assert name["confidence"] == "guess"
+    corrections = [s for s in result["suggestions"] if s["class"] == "correction" and s["confidence"] != "guess"]
+    assert W.apply(text, _acc({"suggestions": corrections}, text))["text"] == f"I forwarded the file to {original}."
+
+
+@pytest.mark.parametrize("original,replacement", [("mehta", "mehra"), ("sharma", "sharman")])
+def test_r6_01_brain_windows_agreement_does_not_prove_name_identity(monkeypatch, original, replacement):
+    text = f"Forward to {original} for review."
+    spell = FakeSpell([{"start": text.index(original), "length": len(original), "action": 2,
+                       "replacement": replacement, "suggestions": []}])
+    monkeypatch.setattr(W, "default_spell", lambda: spell)
+    result = W.proofread(text, client=FakeBrain(
+        {"status": "ok", "message": "", "text": text.replace(original, replacement)}))
+    assert [(s["original"], s["replacements"][0], s["class"]) for s in result["suggestions"]] == [
+        (original, replacement, "rewrite")]
 
 
 def test_r5_01_windows_name_substitution_requires_individual_review(monkeypatch):
