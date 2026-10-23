@@ -501,8 +501,9 @@ def test_worker_wires_assist_state_after_assist_is_created():
     i_assist = src.index("assist = ASSIST.AssistCommands(")
     i_wire = src.index("oi.assist_state = lambda: WB.assist_state_of(assist)")
     assert i_assist < i_wire
-    # QCC-R1-04: Assist asks and grants wait for a pending profile switch.
-    i_guard = src.index('if kind in ("assist_ask", "assist_grant") and oi.switch_pending():')
+    # QCC-R1-04: Assist asks and grants wait for a pending profile switch (plan 16 WI-A review FB1 R2-07: the Assist
+    # writing Brain job assist_write_brain waits too).
+    i_guard = src.index('if kind in ("assist_ask", "assist_grant", "assist_write_brain") and oi.switch_pending():')
     assert src.index('raise TurnError("BRAIN_RESTARTING")', i_guard) - i_guard < 400
 
 
