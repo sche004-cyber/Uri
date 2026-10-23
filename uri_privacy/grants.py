@@ -77,10 +77,9 @@ class GrantStore:
             with open(lock_path, "a+b") as lock:
                 if os.name == "nt":
                     import msvcrt
-                    lock.seek(0)
-                    if not lock.read(1):
-                        lock.write(b"\0")
-                        lock.flush()
+                    # Byte 0 is locked without ever being read or written: Windows byte-range locks are mandatory, so
+                    # reading a byte another process has locked raises PermissionError (C1-01: the second process
+                    # crashed instead of waiting). Locking a range past the end of the file is allowed.
                     lock.seek(0)
                     while True:
                         try:
@@ -112,7 +111,14 @@ class GrantStore:
             json.dump({"schema": "uri-privacy-grants/1", "grants": [asdict(g) for g in self._grants.values()]}, f)
             f.flush()
             os.fsync(f.fileno())
-        os.replace(tmp, self.path)
+        for attempt in range(20):
+            try:
+                os.replace(tmp, self.path)
+                break
+            except PermissionError:      # Windows: a reader or scanner holds the file for a moment (C1-01)
+                if attempt == 19:
+                    raise
+                time.sleep(0.02)
 
     def grant(self, *, requester, categories, purpose, destination, authorized_by, principal=None, ttl_s=900, uses=1) -> Grant:
         verified = None

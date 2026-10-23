@@ -99,6 +99,8 @@ class PrivacyGateway:
             raise PrivacyRefused("PRIVACY_DESTINATION_UNKNOWN") from None
         # Unicode, encodings and look-alikes are handled inside classify() (folding with an exact span map).
         cls = C.classify(text, protected_terms)
+        if cls.residual_encoding and dest not in P.LOCAL:
+            raise PrivacyRefused("PRIVACY_ENCODING_UNRESOLVED")     # deeper than the folding decodes (FB1 R1-04)
         counts = cls.categories()
 
         # One action per category present; a grant can lower a grantable action to ALLOW.

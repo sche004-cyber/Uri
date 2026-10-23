@@ -862,8 +862,11 @@ class Scheduler:
             # Prepare them before the attempt/workspace is created as well.
             package_occ = dict(occ, meta=self._sanitize_for_harness(occ["meta"], requester=who,
                                                            task_id=attempt_key))
+            # The previous candidate is the harness's own earlier output (scene, concept) returned to the same harness:
+            # running each of its numbers through the gateway protected nothing and cost one audit record per value
+            # (review FB1 R1-06). What the owner typed (params, request, calendar meta) is still gated above.
             previous = self._previous_for(occ)
-            package_previous = self._sanitize_for_harness(previous, requester=who, task_id=attempt_key)
+            package_previous = previous
         except PrivacyRefused as exc:
             reason = "PRIVACY_REFUSED:" + exc.code
             with self.store.tx() as db:

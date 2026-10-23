@@ -78,5 +78,6 @@ KNOWN_REQUESTERS = frozenset({
     "uri_web.research",
     "uri_web.search.tavily", "uri_web.search.brave", "uri_web.search.searxng",
     "uri_scheduler.festival_gif.v1",
+    "uri_worker.external_harness",
 })
-KNOWN_PURPOSES = frozenset({"web_research", "scheduled_creative", "restore"})
+KNOWN_PURPOSES = frozenset({"web_research", "scheduled_creative", "external_harness_turn", "restore"})

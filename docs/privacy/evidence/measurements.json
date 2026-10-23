@@ -53,47 +53,47 @@
    "kb": 0.4,
    "destination": "WEB_SEARCH",
    "n": 500,
-   "p50_ms": 1.382,
-   "p95_ms": 1.575,
-   "max_ms": 2.06
+   "p50_ms": 1.39,
+   "p95_ms": 1.512,
+   "max_ms": 1.653
   },
   {
    "kb": 2,
    "destination": "WEB_SEARCH",
    "n": 300,
-   "p50_ms": 6.561,
-   "p95_ms": 6.785,
-   "max_ms": 8.506
+   "p50_ms": 6.59,
+   "p95_ms": 6.754,
+   "max_ms": 8.281
   },
   {
    "kb": 2,
    "destination": "EXTERNAL_MODEL",
    "n": 300,
-   "p50_ms": 8.24,
-   "p95_ms": 11.107,
-   "max_ms": 11.923
+   "p50_ms": 8.027,
+   "p95_ms": 11.368,
+   "max_ms": 11.881
   },
   {
    "kb": 64,
    "destination": "EXTERNAL_MODEL",
    "n": 60,
-   "p50_ms": 237.305,
-   "p95_ms": 320.269,
-   "max_ms": 342.395
+   "p50_ms": 235.801,
+   "p95_ms": 299.362,
+   "max_ms": 347.79
   },
   {
    "kb": 64,
    "destination": "LOG",
    "n": 60,
-   "p50_ms": 227.792,
-   "p95_ms": 319.887,
-   "max_ms": 324.502
+   "p50_ms": 222.011,
+   "p95_ms": 276.685,
+   "max_ms": 334.763
   }
  ],
  "memory": {
-  "rss_before_mb": 31.7,
-  "rss_after_10k_calls_mb": 36.7,
-  "delta_mb": 5.0,
+  "rss_before_mb": 33.3,
+  "rss_after_10k_calls_mb": 37.0,
+  "delta_mb": 3.7,
   "audit_records_in_memory": 10000,
   "note": "memory-mode audit keeps records in RAM; production uses URI_PRIVACY_HOME (file audit)"
  },
@@ -140,5 +140,5 @@
    "benign_texts": 55
   }
  },
- "elapsed_s": 114.06
+ "elapsed_s": 111.3
 }

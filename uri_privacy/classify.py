@@ -52,6 +52,7 @@ class Finding:
 class Classification:
     findings: list            # non-overlapping, sorted by start
     credential_kinds: Counter  # Assist kinds that are credentials (no spans: these are refused, never rewritten)
+    residual_encoding: bool = False  # still percent/entity-encoded after _FOLD_PASSES decodes: refused externally
 
     def categories(self) -> Counter:
         c = Counter(cat for f in self.findings for cat in f.all_categories)
@@ -100,6 +101,13 @@ _LABELLED = re.compile(
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
     r"\bpass\s*[:=]\s*[\"']?([^\s\"',;]{4,})|"
+    # Word secrets written without "is"/":" ("password - X", "password -> X", "password X" after a line break) or a few
+    # words before it ("the password for wifi is X", review FB1 R1-04). The value must then hold a digit or a symbol,
+    # so ordinary prose ("the password policy is strict", "password field is required.") stays readable.
+    r"\b(?:password|passwd|pwd|passcode|passphrase)(?: ?(?:->|=>|-|–|→) ?| )"
+    r"[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
+    r"\b(?:password|passwd|pwd|passcode|passphrase)\b[^.\n]{1,30}?\b(?:is|:) ?[\"']?"
+    r"(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     r"\b(?:otp|m?pin(?! ?code)|passcode|cvv)\b[^.\n\d]{1,30}?\b(?:is|:)\s*(\d{3,8})\b|"
     r"(?<!zip )(?<!postal )(?<!error )(?<!status )(?<!area )(?<!country )\bcode\b\s*(?:is|was|:)?\s*(\d{6})(?!\d))")
 # Aadhaar: written 4-4-4 it is flagged on its Verhoeff check; twelve run-together digits also need an Aadhaar/UID word
@@ -113,15 +121,16 @@ _PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z]\d{4}[a-z]\b")
 _SSN = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?![\d-])|"
                   # labelled: "ssn 123456789", "ssn 123 45 6789", "ssn 123.45.6789" (review S1-05)
                   r"(?i:\b(?:ssn|social security(?: number| no\.?)?)\b" + _LBL + r"(?:is )?)"
-                  r"((?!000|666|9\d\d)\d{3}[ .\u2013\u2014-]?(?!00)\d{2}[ .\u2013\u2014-]?(?!0000)\d{4})(?!\d)")
+                  r"((?!000|666|9\d\d)\d{3}[ ./\u2013\u2014-]?(?!00)\d{2}[ ./\u2013\u2014-]?(?!0000)\d{4})(?!\d)")
 _PASSPORT = re.compile(r"(?i)\bpassport" + _LBL + r"([A-Z][0-9]{7}|[A-Z0-9]{6,9}\d)\b")
 _IBAN = re.compile(r"(?i)\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
 _ACCOUNT = re.compile(r"(?i)\b(?:a/c|acct|account|bank account)" + _LBL + r"(\d(?:[ -]?\d){7,20})\b")
-# Cards written with '/' or '_' between groups (the Assist rule covers spaces, dots and dashes; review S1-05).
-_CARD_ALT = re.compile(r"\b\d{4}(?:[/_]\d{3,6}){2,4}\b")
+# Cards written with other separators between groups (the Assist rule covers spaces, dots and dashes; reviews S1-05,
+# FB1 R1-03). The first group must have four digits, so thousands groupings ("1,234,567,890") stay readable.
+_CARD_ALT = re.compile(r"\b\d{4}(?:[/_,:|+~·–—•]\d{3,6}){2,4}\b")
 _EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b")
 _PHONE = re.compile(r"(?<![\w+])\+\d{1,3}[ -]?\(?\d{1,5}\)?(?:[ -]?\d){5,11}(?![\w])|"
-                    r"(?<![\w+-])0?[6-9]\d{4}[ -]\d{5}(?![\w-])|"                         # mobile, 5-5 grouped
+                    r"(?<![\w+-])0?[6-9]\d{4}[ .-]\d{5}(?![\w-])|"                        # mobile, 5-5 grouped
                     r"(?<![\w-])\(0\d{2,4}\)\s?\d{3,4}[ -]?\d{4}(?![\w-])|"              # landline (080) 2345 6789
                     r"(?<![\w-])0\d{2,4}-\d{6,8}(?![\w-])|"                             # landline 080-23456789
                     r"(?<![\w-])1-\d{3}-\d{3}-\d{4}(?![\w-])|"                          # 1-800-555-0199
@@ -135,7 +144,8 @@ _NOT_CARD_CTX = re.compile(r"(?i)\b(?:imei|imsi|meid|serial)\b[^\n]{0,12}$")
 _NOT_SECRET_CTX = re.compile(r"(?i)\b(?:commit|sha-?\d*|md5|digest|hash|checksum|revision|rev|build)\b[^\n]{0,12}$")
 _PINCODE = re.compile(r"(?i)\b(?:pin ?code|pincode|postal code|post ?code|zip(?: code)?)(?: ?[:\-])? ?(\d{6}|\d{5})\b|"
                       r", ?[A-Z][a-z]+(?: [A-Z][a-z]+)? ?[-–]? ?([1-9]\d{5})\b")
-_STREET = re.compile(r"(?i)\b(?:flat|house|h\.? ?no\.?|plot|door|apt|apartment)\s*(?:no\.?|#)?\s*[\w/-]*\d[\w/-]*,?"
+# Bounded unit token (review FB1 R1-05: an unbounded [\w/-]* before the lazy tail was super-linear).
+_STREET = re.compile(r"(?i)\b(?:flat|house|h\.? ?no\.?|plot|door|apt|apartment) ?(?:no\.?|#)? ?[\w/-]{0,12}\d[\w/-]{0,12},?"
                      r"[^\n]{0,60}?\b(?:road|rd|street|st|nagar|lane|layout|cross|main|colony|sector|block|avenue|ave)\b\.?")
 _CONFIDENTIAL = re.compile(r"(?i)\b(?:strictly\s+)?(?:private\s+(?:and|&)\s+)?confidential\b|"
                            r"\bdo not (?:share|forward|distribute|disclose)\b")
@@ -253,7 +263,21 @@ def _resolve(findings: list) -> list:
 # (review S1-01 / S1-05) and no detector sees a long run of spaces (S1-04).
 _SPECIAL = re.compile(r"(?:%[0-9A-Fa-f]{2})+|&(?:#[0-9]{1,7}|#[xX][0-9A-Fa-f]{1,6}|[A-Za-z][A-Za-z0-9]{1,31});"
                       r"|[^\x00-\x7f]|\s{2,}|[\t\n\r\f\v]")
-_FOLD_PASSES = 2
+_FOLD_PASSES = 4          # deeper encoding is reported (Classification.residual_encoding) and refused externally
+_ENCODED = re.compile(r"%[0-9A-Fa-f]{2}|&(?:#[0-9]{1,7}|#[xX][0-9A-Fa-f]{1,6}|[A-Za-z][A-Za-z0-9]{1,31});")
+_NEEDS_READINGS = re.compile(r"[^\x00-\x7f]|%[0-9A-Fa-f]{2}|&[#A-Za-z]")
+# Default-ignorable code points outside category Cf (Unicode DerivedCoreProperties): combining grapheme joiner, Hangul
+# fillers, Khmer inherent vowels, Mongolian and other variation selectors (review FB1 R1-01).
+_DI_RANGES = ((0x034F, 0x034F), (0x115F, 0x1160), (0x17B4, 0x17B5), (0x180B, 0x180F), (0x3164, 0x3164),
+              (0xFE00, 0xFE0F), (0xFFA0, 0xFFA0), (0x1BCA0, 0x1BCA3), (0xE0100, 0xE01EF))
+
+
+def _invisible(ch: str) -> bool:
+    import unicodedata
+    if unicodedata.category(ch) == "Cf":
+        return True
+    o = ord(ch)
+    return any(a <= o <= b for a, b in _DI_RANGES)
 
 
 def _confusables():
@@ -267,76 +291,105 @@ def _confusables():
 _CONF = _confusables()
 
 
-def _fold_char(ch: str, cf: str = "") -> str:
+def _fold_char(ch: str, cf: str = "", on_ascii: bool = False) -> str:
+    """One character, folded. `cf` replaces invisible characters; a combining mark on a plain ASCII letter or digit only
+    disguises it ("p\\u0336assword", "41\\u03011 ...") and is treated the same way; marks on other scripts stay
+    (Devanagari vowel signs and viramas are combining marks too)."""
     import unicodedata
-    if unicodedata.category(ch) == "Cf":
+    if _invisible(ch):
+        return cf
+    if on_ascii and unicodedata.category(ch) in ("Mn", "Me"):
         return cf
     out = []
     for c in unicodedata.normalize("NFKC", ch):
         d = unicodedata.decimal(c, None)
         if d is not None:
             out.append(str(d))
-        elif unicodedata.category(c) == "Cf":
-            continue
+        elif _invisible(c):
+            out.append(cf)
         else:
             out.append(c if c.isascii() else _CONF.get(c, c))
     return "".join(out)
 
 
-def _fold_once(text: str, starts: list, ends: list, cf: str = ""):
+def _fold_once(text: str, starts: list, ends: list, cf: str = "", encoded: str = "decode"):
+    """`encoded`: "decode" decodes percent and HTML-entity sequences; "space" reads each one as a separator."""
     import html
     chars, S, E, pos = [], [], [], 0
+    on_ascii = False                  # the last visible character emitted is an ASCII letter or digit
+
+    def emit(piece, s, e):
+        nonlocal on_ascii
+        if piece:
+            chars.append(piece)
+            S.extend([s] * len(piece) if isinstance(s, int) else s)
+            E.extend([e] * len(piece) if isinstance(e, int) else e)
+            last = piece.rstrip()[-1:] if cf == " " else piece[-1:]
+            if last:
+                on_ascii = last.isascii() and last.isalnum()
+
     for m in _SPECIAL.finditer(text):
         if m.start() > pos:
-            chars.append(text[pos:m.start()])
-            S.extend(starts[pos:m.start()])
-            E.extend(ends[pos:m.start()])
+            emit(text[pos:m.start()], starts[pos:m.start()], ends[pos:m.start()])
         tok = m.group(0)
-        if tok.isspace():
-            dec = " "
-        elif tok[0] == "%":
-            dec = bytes.fromhex(tok.replace("%", "")).decode("utf-8", "replace")
-        elif tok[0] == "&":
-            dec = html.unescape(tok)
-        else:
-            dec = _fold_char(tok, cf)
-        if tok[0] in "%&" and dec != tok:
-            dec = "".join(_fold_char(c, cf) if not c.isascii() else c for c in dec)
         s, e = starts[m.start()], ends[m.end() - 1]
-        chars.append(dec)
-        S.extend([s] * len(dec))
-        E.extend([e] * len(dec))
+        if tok.isspace():
+            emit(" ", s, e)
+        elif tok[0] in "%&":
+            if encoded == "space":
+                emit(" ", s, e)
+            else:
+                dec = (bytes.fromhex(tok.replace("%", "")).decode("utf-8", "replace") if tok[0] == "%"
+                       else html.unescape(tok))
+                if dec != tok:
+                    dec = "".join(c if c.isascii() else _fold_char(c, cf, on_ascii) for c in dec)
+                emit(dec, s, e)
+        else:
+            dec = _fold_char(tok, cf, on_ascii)
+            if dec:
+                emit(dec, s, e)
         pos = m.end()
     if pos < len(text):
-        chars.append(text[pos:])
-        S.extend(starts[pos:])
-        E.extend(ends[pos:])
+        emit(text[pos:], starts[pos:], ends[pos:])
     return "".join(chars), S, E
 
 
-def fold(text: str, cf: str = ""):
-    """(folded text, start map, end map): folded[i] came from text[start[i]:end[i]]. `cf` replaces format controls."""
+def fold(text: str, cf: str = "", encoded: str = "decode"):
+    """(folded text, start map, end map): folded[i] came from text[start[i]:end[i]]. `cf` replaces invisible
+    characters (and marks on ASCII); `encoded` says how percent / HTML-entity sequences are read."""
     starts, ends = list(range(len(text))), list(range(1, len(text) + 1))
     for _ in range(_FOLD_PASSES):
         if not _SPECIAL.search(text):
             break
-        text, starts, ends = _fold_once(text, starts, ends, cf)
+        text, starts, ends = _fold_once(text, starts, ends, cf, encoded)
     return text, starts, ends
+
+
+def _still_encoded(text: str) -> bool:
+    import html
+    for m in _ENCODED.finditer(text):
+        tok = m.group(0)
+        if tok[0] == "%" or html.unescape(tok) != tok:
+            return True
+    return False
 
 
 def classify(text: str, protected_terms=()) -> Classification:
     if not isinstance(text, str):
         raise TypeError("text must be str")
     terms = [fold(t)[0] for t in protected_terms or () if isinstance(t, str)]
-    # A format control (zero-width space, joiner, bidi mark) can join two pieces ("4111<ZWSP>1111") or separate two
-    # values ("...1111<ZWSP>9"). Both readings are classified and their findings combined (review R2-01).
-    import unicodedata
-    readings = [""]
-    if not text.isascii() and any(unicodedata.category(ch) == "Cf" for ch in text):
-        readings.append(" ")
-    found, cred = [], Counter()
-    for cf in readings:
-        folded, S, E = fold(text, cf)
+    # An invisible character or an encoded sequence can join two pieces ("4111<ZWSP>1111") or separate two values
+    # ("...1111<ZWSP>9", "...1111%E2%80%8B9"). Every text that holds non-ASCII characters or encoded sequences is read
+    # three ways - joined, separated, and with each encoded sequence as a separator - and the findings of all readings
+    # are combined (reviews R2-01, FB1 R1-01/R1-02). Deciding this on the raw text missed encoded controls.
+    readings = [("", "decode")]
+    if _NEEDS_READINGS.search(text):
+        readings += [(" ", "decode"), (" ", "space")]
+    found, cred, residual = [], Counter(), False
+    for cf, enc in readings:
+        folded, S, E = fold(text, cf, enc)
+        if enc == "decode" and _still_encoded(folded):
+            residual = True
         counts = Counter()
         _assist.redact_text(folded, counts)
         for k, v in counts.items():
@@ -346,4 +399,4 @@ def classify(text: str, protected_terms=()) -> Classification:
         if folded is not text:
             spans = [Finding(f.category, S[f.start], E[f.end - 1], f.rule, f.members) for f in spans]
         found.extend(spans)
-    return Classification(_resolve(found), cred)
+    return Classification(_resolve(found), cred, residual)
