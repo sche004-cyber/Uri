@@ -13,13 +13,13 @@ contract. Where it disagrees with the plan, the plan wins, and this file is corr
 
 | # | Criterion | Test |
 |---|---|---|
-| C1 | Every route has a request shape, a response shape and named error codes. | `tests/office_u2/test_contract.py` checks the route table against the handler. |
-| C2 | Every error code has a fixed owner-facing message and a recovery action (refinement 7). | `test_contract.py`: every code in `contracts.ERRORS` has both. |
+| C1 | Every route has a request shape, a response shape and named error codes. | `tests/office_u2/test_office_contract.py` checks the route table against the handler. |
+| C2 | Every error code has a fixed owner-facing message and a recovery action (refinement 7). | `test_office_contract.py`: every code in `contracts.ERRORS` has both. |
 | C3 | Responses carry no document text, cell values or file content, except what the owner opened and sees: `/document/<id>/search` (page numbers and a short match context), page PNG bytes, and outline titles in DocView. None of these is logged, stored in `workflow.json` or `recent.json`, or sent to the Brain. | `test_service_o2.py` (AC-O2-14 sentinel scan) |
 | C4 | One approval path: plan, outputs and print jobs are rows of the existing `surface` table, acted on through the existing `/a2ui/action`. No new authorization system. | `test_plan_card.py`, `test_output_approval.py` |
 | C5 | Capabilities, devices and printing are exposed as transport-free descriptors, so a later Brain registration can wrap them without a redesign (OD-U12). No Core file is written. | `test_capabilities.py`, `tests/devices/test_capability.py` |
 | C6 | All existing M1/M2 routes keep their shapes. | existing `tests/office` |
-| C7 | The contract version is served at `GET /contract` and checked by the Flutter client. | `test_contract.py` |
+| C7 | The contract version is served at `GET /contract` and checked by the Flutter client. | `test_office_contract.py` |
 
 ## 2. Transport (unchanged from M1)
 
