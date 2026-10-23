@@ -72,6 +72,7 @@ class _WritingStripState extends State<WritingStrip> {
   List<String> _flags = [];                 // meaning checks on a Brain answer, in words (review FB1 R2-01)
   int _gen = 0;
   bool _ownEdit = false;                    // the strip itself is changing the text (accept / undo)
+  final Set<String> _expanded = {};         // ids of long suggestions shown in full (review R8-02)
 
   @override
   void initState() {
@@ -108,6 +109,7 @@ class _WritingStripState extends State<WritingStrip> {
       setState(() {
         _items = [];                                         // never show suggestions for older text
         _flags = [];
+        _expanded.clear();
         if (clearUndo) _undo.clear();
       });
     }
@@ -281,6 +283,19 @@ class _WritingStripState extends State<WritingStrip> {
     ]);
   }
 
+  /// Review R8-02: up to [words] words before and after `start:end` in the checked text (offsets count characters
+  /// as the engine does, so runes), on one line, with "…" where the text goes on.
+  (String, String) _around(int start, int end, {int words = 4}) {
+    final runes = (_checkedText ?? '').runes.toList();
+    if (start < 0 || end < start || end > runes.length) return ('', '');
+    String flat(String t) => t.replaceAll(RegExp(r'\s+'), ' ');
+    final before = flat(String.fromCharCodes(runes.sublist(start < 80 ? 0 : start - 80, start)));
+    final after = flat(String.fromCharCodes(runes.sublist(end, end + 80 > runes.length ? runes.length : end + 80)));
+    final b = RegExp('(?:\\S+ ?){0,$words}\$').firstMatch(before)?.group(0) ?? '';
+    final a = RegExp('^(?: ?\\S+){0,$words}').firstMatch(after)?.group(0) ?? '';
+    return ('${b.length < before.length || start > 80 ? '…' : ''}$b', '$a${a.length < after.length ? '…' : ''}');
+  }
+
   Widget _row(BuildContext context, int i, Map<String, dynamic> s) {
     final colors = UriColors.of(context);
     final reps = [for (final r in (s['replacements'] as List? ?? const [])) '$r'];
@@ -288,6 +303,12 @@ class _WritingStripState extends State<WritingStrip> {
     final original = '${s['original']}';
     final shown = original.trim().isEmpty ? '(add)' : original.length > 60 ? '${original.substring(0, 60)}…' : original;
     String rep(String r) => r.trim().isEmpty ? '(remove)' : r.length > 120 ? '${r.substring(0, 120)}…' : r;
+    // Review R8-02: a short item shows a few words around it; a long one (a whole-text tone rewrite) has "Show all",
+    // so the full text and the full replacement can be read before Accept.
+    final long = original.length > 60 || reps.any((r) => r.length > 120);
+    final open = _expanded.contains('${s['id']}');
+    final soft = TextStyle(fontSize: UriType.label, color: colors.inkSoft);
+    final (before, after) = long ? ('', '') : _around(s['start'] as int? ?? -1, s['end'] as int? ?? -1);
     return Container(
       key: ValueKey(k('item-$i')),
       margin: const EdgeInsets.only(top: UriSpace.xs),
@@ -300,7 +321,29 @@ class _WritingStripState extends State<WritingStrip> {
         Text(rewrite ? 'May change meaning: ${s['message'] ?? ''}' : '${s['message'] ?? ''}',
             style: TextStyle(fontSize: UriType.label, color: colors.inkSoft)),
         Text('$shown  →  ${reps.isEmpty ? '' : rep(reps.first)}', style: const TextStyle(fontSize: UriType.label)),
+        if (before.trim().isNotEmpty || after.trim().isNotEmpty)
+          Text.rich(
+            TextSpan(style: soft, children: [
+              TextSpan(text: before),
+              TextSpan(text: original.isEmpty ? '‸' : original,
+                  style: TextStyle(color: colors.ink, fontWeight: FontWeight.w600, backgroundColor: colors.warningSoft)),
+              TextSpan(text: after),
+            ]),
+            key: ValueKey(k('item-$i-context')), maxLines: 1, overflow: TextOverflow.ellipsis,
+          ),
+        if (long && open) ...[
+          SelectableText('Now: $original', key: ValueKey(k('item-$i-full-original')), style: soft),
+          for (final (j, r) in reps.take(3).indexed)
+            SelectableText('Suggested: $r', key: ValueKey(k('item-$i-full-replacement-$j')),
+                style: const TextStyle(fontSize: UriType.label)),
+        ],
         Wrap(spacing: UriSpace.xs, children: [
+          if (long)
+            TextButton(
+              key: ValueKey(k('item-$i-full')),
+              onPressed: () => setState(() => open ? _expanded.remove('${s['id']}') : _expanded.add('${s['id']}')),
+              child: Text(open ? 'Show less' : 'Show all'),
+            ),
           for (final (j, r) in reps.take(3).indexed)
             TextButton(
               key: ValueKey(k('item-$i-accept-$j')),

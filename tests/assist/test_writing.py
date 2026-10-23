@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from pathlib import Path
 
@@ -72,7 +73,7 @@ def test_rules_leave_abbreviations_initials_references_and_links_alone():
 
 
 @pytest.mark.parametrize("protected", ["https://example.gov.in/a,b", "Ref. 12/3/2026-A,B"])
-def test_r6_02_accept_all_spacing_preserves_urls_and_references(protected):
+def test_r6_02_applying_every_sure_correction_preserves_urls_and_references(protected):
     text = f"i see {protected} for details."
     result = rules(text)
     corrections = [s for s in result["suggestions"] if s["class"] == "correction" and s["confidence"] != "guess"]
@@ -263,7 +264,7 @@ def test_proofread_reference_punctuation_requires_individual_accept(original, ed
     ("12.3", "12:3"),
     ("12:3", "12.3"),
 ])
-def test_proofread_accept_all_corrections_preserves_reference_separator(reference, changed):
+def test_proofread_reference_separator_change_is_a_rewrite_and_corrections_keep_it(reference, changed):
     original = f"Ref. {reference} applies. They was informed."
     edited = f"Ref. {changed} applies. They were informed."
     result = W.proofread(original, client=FakeBrain({"status": "ok", "message": "", "text": edited}))
@@ -288,7 +289,7 @@ def test_proofread_accept_all_corrections_preserves_reference_separator(referenc
      "Annexure A is attached. They were informed.",
      ("Annexure a",), {("a", "A")}),
 ])
-def test_proofread_accept_all_preserves_reference_labels_and_single_letter_ids(
+def test_proofread_reference_label_edits_are_rewrites_and_corrections_keep_them(
         original, edited, protected, reference_edits):
     result = W.proofread(original, client=FakeBrain({"status": "ok", "message": "", "text": edited}))
     changes = result["suggestions"]
@@ -315,7 +316,7 @@ def test_proofread_accept_all_preserves_reference_labels_and_single_letter_ids(
     ("Annexure A", "Annexure An"),
     ("Ref. AB/12", "Ref: AB/12"),
 ])
-def test_proofread_accept_all_preserves_entire_reference_span(original_reference, edited_reference):
+def test_proofread_edits_inside_a_reference_span_are_rewrites(original_reference, edited_reference):
     original = f"{original_reference} applies. They was informed."
     edited = f"{edited_reference} applies. They were informed."
     result = W.proofread(original, client=FakeBrain({"status": "ok", "message": "", "text": edited}))
@@ -327,7 +328,7 @@ def test_proofread_accept_all_preserves_entire_reference_span(original_reference
         f"{original_reference} applies. They were informed.")
 
 
-def test_proofread_ordinary_article_swap_remains_accept_all_correction():
+def test_proofread_ordinary_article_swap_remains_a_correction():
     original = "A apple arrived."
     result = W.proofread(original, client=FakeBrain({"status": "ok", "message": "", "text": "An apple arrived."}))
     assert [(s["original"], s["replacements"][0], s["class"]) for s in result["suggestions"]] == [
@@ -669,3 +670,118 @@ def test_r5_01_windows_name_substitution_requires_individual_review(monkeypatch)
 def test_r3_02_more_administrative_references_are_left_alone(t):
     got = [(s["original"], s["replacements"][0]) for s in rules(t)["suggestions"]]
     assert not any(o in ("d", "i", "a") for o, _ in got), (t, got)
+
+
+# ------------------------------------------------------------------------------------------- review R8 regressions
+def _windows_repeat(text, first_at):
+    """A Windows "repeated word" error (action 3) on the second word, as the spell worker reports it."""
+    second = text.index(" ", first_at) + 1
+    word = text[second:].split(" ")[0].rstrip(".")
+    return {"start": second, "length": len(word), "word": word, "action": 3, "replacement": "", "suggestions": []}
+
+
+def _one(res, original):
+    return next(s for s in res["suggestions"] if s["original"].strip() == original)
+
+
+@pytest.mark.parametrize("text,first", [
+    ("Please log in in the morning.", "in"), ("Send it to to me.", "to"), ("Meet at at noon.", "at"),
+    ("Put it on on the desk.", "on"), ("Stand by by the door.", "by"), ("Go with with them.", "with"),
+    ("It is for for you.", "for"), ("A note from from Rao.", "from"),
+    ("See Annexure A a copy is attached.", "A"), ("She got an A a year ago.", "A"),
+])
+def test_r8_01_repeated_particles_and_a_letter_label_are_rewrites(text, first):
+    at = text.index(f"{first} ")
+    for res in (rules(text), W.check(text, spell=FakeSpell([_windows_repeat(text, at)]))):
+        rep = next(s for s in res["suggestions"] if s["kind"] == "repeat")
+        assert rep["class"] == "rewrite", (text, rep)
+
+
+@pytest.mark.parametrize("text", ["I saw the the file.", "This is a a test.", "The the file is here.",
+                                  "A a file was sent.", "One of of them."])
+def test_r8_01_ordinary_repeats_stay_corrections(text):
+    at = text.lower().index(next(w for w in ("the the", "a a", "of of") if w in text.lower()))
+    for res in (rules(text), W.check(text, spell=FakeSpell([_windows_repeat(text, at)]))):
+        rep = next(s for s in res["suggestions"] if s["kind"] == "repeat")
+        assert (rep["class"], rep["confidence"]) == ("correction", "sure"), (text, rep)
+
+
+@pytest.mark.parametrize("word,reps", [("ms", ["Ms", "mms"]), ("nic", ["Nic", "nick"]), ("ip", ["Ip", "imp"]),
+                                       ("rao", ["Rao", "road"]), ("china", ["China", "chine"]),
+                                       ("panama", ["Panama"])])
+def test_r8_01_case_only_fix_on_a_short_or_common_word_is_a_guess(word, reps):
+    text = f"Send the {word} note today."
+    res = W.check(text, spell=FakeSpell([{"start": text.index(word), "length": len(word), "word": word,
+                                          "action": 1, "replacement": "", "suggestions": reps}]))
+    s = _one(res, word)
+    assert (s["class"], s["confidence"]) == ("rewrite", "guess"), s
+
+
+@pytest.mark.parametrize("word,rep", [("tuesday", "Tuesday"), ("india", "India"), ("october", "October")])
+def test_r8_01_case_only_fix_on_weekdays_months_and_places_stays_a_correction(word, rep):
+    text = f"Send the note to {word} office."
+    res = W.check(text, spell=FakeSpell([{"start": text.index(word), "length": len(word), "word": word,
+                                          "action": 1, "replacement": "", "suggestions": [rep]}]))
+    s = _one(res, word)
+    assert (s["class"], s["confidence"], s["replacements"][0]) == ("correction", "sure", rep), s
+
+
+@pytest.mark.parametrize("text,sure", [
+    ("i will come tomorrow.", True), ("Yes, i agree.", True), ("Today i'm late.", True),
+    ("Copy i to j.", False), ("Swap x and i now.", False), ("for i in range(3)", False), ("Set i = 0 first.", False),
+])
+def test_r8_01_lone_i_is_a_correction_in_prose_and_a_guess_next_to_letters(text, sure):
+    at = text.index("i")
+    word = "i'm" if "i'm" in text else "i"
+    # Windows reports the pronoun as an autocorrect ("i" -> "I") or a case-only fix ("i'm" -> "I'm"); the rules own it
+    err = {"start": at, "length": len(word), "word": word, "action": 2 if word == "i" else 1,
+           "replacement": "I" if word == "i" else "", "suggestions": [] if word == "i" else ["I'm"]}
+    for res in (rules(text), W.check(text, spell=FakeSpell([err]))):
+        s = next(x for x in res["suggestions"] if x["start"] == at)
+        assert (s["original"], s["replacements"][0]) == ("i", "I"), (text, s)
+        assert (s["class"], s["confidence"]) == (("correction", "sure") if sure else ("rewrite", "guess")), (text, s)
+
+
+@pytest.mark.parametrize("text", ["git pull origin main", "x is 5", "npm install", "Done. cd ..", "y = 2"])
+def test_r8_01_no_sentence_capital_for_single_letters_and_command_words(text):
+    assert not [s for s in rules(text)["suggestions"] if s["kind"] == "capital"], text
+
+
+@pytest.mark.parametrize("text,fix", [("the minutes are approved.", ("t", "T")), ("a file was sent.", ("a", "A")),
+                                      ("Done. find the file.", ("f", "F")), ("go home.", ("g", "G"))])
+def test_r8_01_ordinary_sentence_capitals_remain(text, fix):
+    assert fix in fixes(rules(text)), text
+
+
+@pytest.mark.skipif(not WINDOWS, reason="Windows Spell Checking API")
+def test_r8_01_live_windows_probes_from_the_review():
+    """The reviewer's live probes (Windows spell, en-IN) are no longer offered as plain corrections."""
+    probes = {"Please log in in the morning.": " in", "Send it to to me.": " to", "Meet at at noon.": " at",
+              "Put it on on the desk.": " on", "See Annexure A a copy is attached.": " a",
+              "She got an A a year ago.": " a", "Send it to ms Rao.": "ms", "Goods from china arrived.": "china",
+              "Mail nic about it.": "nic", "Check the ip address.": "ip", "Copy i to j.": "i"}
+    for text, original in probes.items():
+        res = W.check(text)
+        assert res["status"]["spelling"] == "ok", res["status"]
+        plain = [s for s in res["suggestions"] if s["class"] == "correction" and s["confidence"] == "sure"]
+        assert not [s for s in plain if s["original"] == original], (text, plain)
+    for text in ("git pull origin main", "x is 5"):
+        assert not [s for s in W.check(text)["suggestions"] if s["kind"] == "capital"], text
+    # the high-value corrections stay corrections
+    for text, original in {"I saw the the file.": " the", "This is a a test.": " a", "i will come.": "i",
+                           "We met on tuesday.": "tuesday"}.items():
+        s = next(x for x in W.check(text)["suggestions"] if x["original"] == original)
+        assert (s["class"], s["confidence"]) == ("correction", "sure"), (text, s)
+
+
+def test_r8_03_no_stale_bulk_accept_wording():
+    """Review R8-03: the engine, the strip and their tests no longer describe a bulk accept as current behaviour."""
+    root = Path(__file__).resolve().parents[2]
+    stale = "Accept all" + " corrections"
+    engine = (root / "uri_assist" / "writing.py").read_text(encoding="utf-8")
+    assert stale not in engine
+    names = re.findall(r"^def (test_\w+)", (root / "tests" / "assist" / "test_writing.py").read_text(encoding="utf-8"),
+                       re.M)
+    assert names and not [n for n in names if "accept" + "_all" in n]
+    header = (root / "uri_ui" / "test" / "office" / "writing_assist_test.dart").read_text(encoding="utf-8")[:300]
+    assert "Accept all" not in header

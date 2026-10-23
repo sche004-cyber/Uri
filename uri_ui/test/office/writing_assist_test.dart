@@ -1,5 +1,6 @@
-// Writing Intelligence strip (plan 16, WI-7): suggestions after a pause, Accept / Dismiss / Accept all / Undo,
-// Brain buttons only on request, rewrite-class items marked, refusals in words, the document untouched.
+// Writing Intelligence strip (plan 16, WI-7): suggestions after a pause, Accept / Dismiss per item and Undo (no bulk
+// accept, OD-WI-3), Brain buttons only on request, rewrite-class items marked, refusals in words, the document
+// untouched.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -353,5 +354,48 @@ void main() {
     // review FB3 R2-05: the compact (cell) strip did not check on open; only the body field did
     expect(w.checks, ['y']);
     await tester.pump(const Duration(milliseconds: 800));
+  });
+
+  // ---- review R8 regressions ----
+  String plain(WidgetTester tester, String key) {
+    final t = tester.widget(find.byKey(ValueKey(key)));
+    return t is Text ? (t.textSpan?.toPlainText() ?? t.data ?? '') : (t as SelectableText).data ?? '';
+  }
+
+  testWidgets('R8-02: a short item shows a few words around it', (tester) async {
+    const text = 'Please log in in the morning before the review meeting.';
+    final at = text.indexOf(' in the');
+    final w = FakeWriting()..onCheck = (_) => {'suggestions': [
+      {...sugg('rep', at, at + 3, ' in', '', cls: 'rewrite'), 'kind': 'repeat'},
+    ], 'status': {'spelling': 'ok'}};
+    await pump(tester, w, text);
+    expect(find.text(' in  →  (remove)'), findsOneWidget);                  // the existing line is unchanged
+    expect(plain(tester, 'writing-item-0-context'), 'Please log in in the morning before the…');
+    expect(find.byKey(const ValueKey('writing-item-0-full')), findsNothing);   // short: no expand toggle
+    await tester.pump(const Duration(milliseconds: 60));
+  });
+
+  testWidgets('R8-02: a long rewrite can be read in full before Accept', (tester) async {
+    final text = 'please send the file to the section ' * 6;            // 216 characters
+    final better = 'Kindly send the file to the section concerned at the earliest. ' * 3;
+    final w = FakeWriting()
+      ..brainAnswer = {'suggestions': [sugg('tone', 0, text.length, text, better, cls: 'rewrite',
+          message: 'Formal version.')], 'message': ''};
+    final c = await pump(tester, w, text);
+    await tester.tap(find.byKey(const ValueKey('writing-formal')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const ValueKey('writing-item-0-context')), findsNothing);
+    expect(find.byKey(const ValueKey('writing-item-0-full-original')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-full')));
+    await tester.pump();
+    expect(plain(tester, 'writing-item-0-full-original'), 'Now: $text');
+    expect(plain(tester, 'writing-item-0-full-replacement-0'), 'Suggested: $better');
+    expect(find.text('Show less'), findsOneWidget);
+    expect(c.text, text);                                                    // reading it changes nothing
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-accept-0')));
+    await tester.pump();
+    expect(c.text, better);
+    await tester.pump(const Duration(milliseconds: 60));
   });
 }

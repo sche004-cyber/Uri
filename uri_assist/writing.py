@@ -12,9 +12,11 @@ Two layers:
 
 Every suggestion has a `class`:
 * `correction`: spelling, spacing, punctuation, capitals and grammar changes that keep every number, date, name,
-  reference and negation. "Accept all corrections" accepts only these.
+  reference and negation. These are the low-risk items; the strip shows them without a warning.
 * `rewrite`: anything that may change meaning (a tone rewrite, or a Brain change that touches a number, date, name,
-  reference or negation; checked with `text_verify`). It is offered one by one and needs an explicit accept.
+  reference or negation; checked with `text_verify`). The strip marks it "May change meaning".
+There is no bulk accept (owner decision OD-WI-3, plan 16): every suggestion of either class is applied by its own
+Accept, after the owner has seen it.
 
 Privacy: text from a sensitive field, or text in which `redact.redact_text` finds a secret, is never sent to the
 Brain (`SENSITIVE_FIELD` / `SENSITIVE_TEXT`); the deterministic layer still runs locally. Nothing is stored or logged.
@@ -81,6 +83,34 @@ def _prev_word(text, i):
     return m.group(1).lower().rstrip(".") if m else None
 
 
+# Review R8-01: lower-case command words that start a command line, not a sentence ("git pull", "npm install").
+# Only words that are not also ordinary English sentence openers ("find", "make", "go" and "set" still get a capital).
+_COMMAND_WORDS = {"git", "npm", "npx", "pnpm", "yarn", "pip", "pipx", "uv", "conda", "python", "py", "pytest", "node",
+                  "cd", "ls", "dir", "mkdir", "rmdir", "rm", "cp", "mv", "sudo", "apt", "brew", "choco", "winget",
+                  "curl", "wget", "ssh", "scp", "grep", "sed", "awk", "chmod", "chown", "tar", "unzip", "docker",
+                  "kubectl", "flutter", "cmake", "gcc", "javac", "mvn", "gradle", "cargo", "pwsh", "powershell",
+                  "cmd", "ipconfig", "nslookup", "tracert", "netstat", "taskkill", "robocopy", "xcopy", "wsl",
+                  "systemctl", "journalctl", "vim", "nano", "ps"}
+# Words just before a lone "i" that make it a loop variable or a letter rather than the pronoun ("for i in range").
+_I_VARIABLE_BEFORE = {"for", "let", "var", "int", "each", "index", "variable", "copy", "move", "swap"}
+
+
+def _i_is_ambiguous(text, start, end):
+    """Review R8-01: a lone "i" is the pronoun in ordinary prose ("i will come", "Yes, i agree") and stays a plain
+    correction there. It is only a guess when a single-letter word other than "a" sits within two words of it
+    ("Copy i to j", "x and i"), when a word that usually takes a variable comes just before it ("for i in"), or when
+    an operator follows it ("i = 0", "i++")."""
+    head = text[max(0, start - 30):start]
+    before = re.findall(r"[A-Za-z]+", head)[-2:]
+    rest = re.sub(r"^['’](?:m|ve|ll|d)\b", "", text[end:end + 34])     # "i'm late": the words after it
+    after = re.findall(r"[A-Za-z]+", rest)[:2]
+    if any(len(w) == 1 and w.lower() != "a" for w in before + after):
+        return True
+    if before and before[-1].lower() in _I_VARIABLE_BEFORE and re.search(r"[A-Za-z]\s+$", head):
+        return True
+    return bool(re.match(r"\s*(?:[=<>+*/%\[]|--)", rest[:3]))
+
+
 def _rules(text: str) -> list:
     out = []
     # double spaces between words (not indentation at the start of a line)
@@ -135,6 +165,13 @@ def _rules(text: str) -> list:
         if _REF_BEFORE.search(text[max(0, m.start() - 30):m.start()]) or \
                 re.match(r"\s*(?:,|and|or|to)\s*(?:ii|iii|iv|v|vi)\b", text[m.end():m.end() + 12], re.I):
             continue
+        if _i_is_ambiguous(text, m.start(), m.end()):
+            # review R8-01: "Copy i to j", "for i in range", "i = 0": the letter may be a variable, not the pronoun
+            x = _sugg(m.start(), m.end(), "i", ["I"], "capital", "rewrite", "rules",
+                      "\"I\" is a capital, unless i is a letter or a variable here.")
+            x["confidence"] = "guess"
+            out.append(x)
+            continue
         out.append(_sugg(m.start(), m.end(), "i", ["I"], "capital", "correction", "rules", "\"I\" is a capital."))
     # sentence starts with a lower-case letter: at the start of the text or after . ! ? and a space
     for m in re.finditer(r"(?:^|(?<=[.!?])\s+)([a-z])([a-z'’]*)", text):
@@ -145,6 +182,9 @@ def _rules(text: str) -> list:
             continue                                       # report.pdf, example.com (review FB5 R7-04)
         if re.match(r"[\w.'’]*[@/\\:]|www\.|[a-z]{1,4}\.[a-z]", text[start:start + 30]):
             continue                                       # e-mail, path, link, dotted abbreviations (e.g., w.e.f.)
+        word = m.group(1) + m.group(2)
+        if (len(word) == 1 and word != "a") or word in _COMMAND_WORDS:
+            continue                                       # "x is 5", "git pull" (review R8-01); "i" has its own rule
         # review FB1 R2-04: look back over a short window only, so the rule stays linear on long text
         window = text[max(0, start - 80):start]
         before = window.rstrip()
@@ -163,7 +203,7 @@ def _rules(text: str) -> list:
         if m.group(1).lower() in _REPEAT_OK or m.group(1).isdigit():
             continue
         out.append(_repeat_sugg(m.start(2), m.end(3), m.group(2) + m.group(3), m.group(1), m.group(3), m.group(2),
-                                "rules"))
+                                "rules", sentence_start=_sentence_initial(text, m.start(1))))
     # a / an before an ordinary lower-case word (acronyms and "u"/"one" sounds are left alone)
     for m in re.finditer(r"\b([Aa])\s+([a-z][a-z]+)", text):
         w = m.group(2)
@@ -277,25 +317,29 @@ class SpellWorker:
                 self._worker.stop()
 
 
-_REPEAT_SAFE = frozenset({"the", "a", "an", "to", "of", "in", "for", "and", "on", "at", "by", "with", "from", "or"})
+# Review R8-01: prepositions and particles left the allowlist: "log in in the morning", "next to to-do items" and
+# "stand by by the door" are written on purpose, so a repeat of them is a rewrite, accepted after a look.
+_REPEAT_SAFE = frozenset({"the", "a", "an", "of", "and", "or"})
 _NUMBER_WORDS = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven",
                  "twelve", "twenty", "thirty", "forty", "fifty", "hundred", "thousand", "lakh", "lakhs", "crore",
                  "crores", "million", "billion"}
 
 
-def _repeat_sugg(start, end, original, first, second, gap, source):
+def _repeat_sugg(start, end, original, first, second, gap, source, *, sentence_start=False):
     """Review FB3 R2-01: removing a repeated word is safe by construction only for the same lower-case word twice on
     one line ("the the"); across a line break, with a capital (New Delhi / Delhi Police, Bora Bora), a number word
     (nine nine) or a negation (not not) it may change meaning, so it is a rewrite accepted one by one."""
     # Review FB4 R6-01/R6-02: an ALLOWLIST, not a denylist (number words, "so so", "is is", "ghar ghar" all leaked
     # through denylists): only a closed set of function words, same word on one line; the first may carry a sentence
-    # capital ("The the").
+    # capital ("The the"), but only at a sentence start (review R8-01): mid-sentence a capital first word is a label
+    # or a grade ("Annexure A a copy", "got an A a year ago").
     safe = (first.lower() == second and second in _REPEAT_SAFE and re.fullmatch(r"[ \t]+", gap or "") is not None
-            and (first == second or first == second.capitalize()))
+            and (first == second or (first == second.capitalize() and sentence_start)))
     if safe:
         return _sugg(start, end, original, [""], "repeat", "correction", source, "The word is repeated.")
     return _sugg(start, end, original, [""], "repeat", "rewrite", source,
-                 "The word appears twice: check it is not a name, a number or a line break before removing it.")
+                 "The word appears twice: check it is not a name, a number, a label, a phrase such as \"log in in\" "
+                 "or a line break before removing it.")
 
 
 def _utf16_to_index(text: str):
@@ -313,6 +357,14 @@ def _sentence_initial(text, start):
     return not before or before[-1] in ".!?\n:"
 
 
+# Review R8-01: a case-only fix from Windows is a plain correction only for a word of four letters or more that is
+# not also an ordinary lower-case word. Short words are often units, codes or logins ("ms" for milliseconds, "nic",
+# "ip", "rao" in a user id), and "china" or "panama" may mean the plates or the hat; those become rewrites (guess).
+# Weekdays, months and most place names ("tuesday", "india", "mumbai") stay corrections.
+_CASE_COMMON = {"china", "japan", "chile", "afghan", "panama", "french", "swiss", "turkey"}
+_I_PRONOUN = re.compile(r"i(?:['’](?:m|ve|ll|d))?")
+
+
 def _spell_suggestions(text: str, res: dict) -> list:
     idx = _utf16_to_index(text)
     out = []
@@ -327,7 +379,9 @@ def _spell_suggestions(text: str, res: dict) -> list:
             while j > 0 and text[j - 1] in " \t\r\n":
                 j -= 1
             prev = re.search(r"(\w+)$", text[max(0, j - 60):j])
-            out.append(_repeat_sugg(j, n, text[j:n], prev.group(1) if prev else "", word, text[j:s], "windows_spell"))
+            first = prev.group(1) if prev else ""
+            out.append(_repeat_sugg(j, n, text[j:n], first, word, text[j:s], "windows_spell",
+                                    sentence_start=_sentence_initial(text, j - len(first))))
             continue
         reps = [e.get("replacement")] if action == 2 and e.get("replacement") else list(e.get("suggestions") or ())
         reps = [r for r in reps if isinstance(r, str) and r]
@@ -340,11 +394,17 @@ def _spell_suggestions(text: str, res: dict) -> list:
         if action == 1 and not reps:
             continue
         kind = "capital" if reps and reps[0].lower() == word.lower() else "spelling"
+        if kind == "capital" and _I_PRONOUN.fullmatch(word):
+            continue                                       # the rules own "i" and "i'm" (references, variables: R8-01)
         msg = "Capitalisation." if kind == "capital" else "Possible spelling or name change: check it."
         # Windows cannot establish whether a word is a person's name, even for autocorrect or a mechanical typo.
-        # Only a case-only change preserves the word's identity without a separate review.
-        x = _sugg(s, n, word, reps, kind, "correction" if kind == "capital" else "rewrite", "windows_spell", msg)
-        x["confidence"] = "sure" if kind == "capital" else "guess"
+        # Only a case-only change preserves the word's identity without a separate review, and only for a word that
+        # is not short or an ordinary noun (review R8-01, see _CASE_COMMON).
+        sure = kind == "capital" and len(word) > 3 and word.lower() not in _CASE_COMMON
+        if kind == "capital" and not sure:
+            msg = "Capital letter? A short word may be a unit, code or login, and some names are also ordinary words."
+        x = _sugg(s, n, word, reps, kind, "correction" if sure else "rewrite", "windows_spell", msg)
+        x["confidence"] = "sure" if sure else "guess"
         out.append(x)
     return out
 
@@ -498,7 +558,7 @@ def _call_brain(client, mode: str, text: str, cancel=None) -> dict:
 
 
 # Review FB1 R2-01: a Brain change is a `correction` only when it is demonstrably safe; everything else is `rewrite`
-# (accepted one by one, never by "Accept all corrections"). Safe: letter case, spacing and punctuation, changes among
+# (marked "May change meaning"; like every suggestion it is applied by its own Accept). Safe: letter case, spacing and punctuation, changes among
 # grammar function words. Windows word substitutions require individual acceptance because edit shape and dictionary
 # agreement do not establish name identity. Never safe: numbers, month or day names, negation, or a different word.
 _TOKEN = re.compile(r"\s+|\w+(?:['’]\w+)*|[^\w\s]")       # contractions ("can't") are one token

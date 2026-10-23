@@ -88,6 +88,16 @@ The engine extends URI Assist (owner: "extend the existing URI Assist") and is r
   the A0 `INSERT` policy; recorded as owner decision OD-WI-1 (see section 6). Assist's existing `assist_check`
   gains writing findings for shareable contenteditable text only when such observation exists.
 
+WI implementation status, follow-up 2026-10-24 (branch milestone/writing-intelligence-low-20261024 on 6e1d7423):
+the three LOW findings of fallback review FB6 (R8) are fixed. R8-01: a repeat of in/on/to/at/by/with/for/from, a
+capital repeat in mid-sentence ("Annexure A a copy"), a Windows case-only fix on a word of three letters or fewer or
+on a common noun ("ms", "nic", "ip", "china") and a lone "i" next to a single letter or a variable word ("Copy i to
+j") are now `rewrite` / `guess`; the sentence capital skips single letters ("x is 5") and command words ("git pull");
+"the the", "a a", "i will come" and "tuesday" stay plain corrections. R8-02: each short suggestion shows a few words
+around it, and a long one (a whole-text tone rewrite) has "Show all" to read the full text and replacement before
+Accept. R8-03: stale "Accept all" wording removed from `writing.py` and the test names. No bulk accept was added
+(OD-WI-3 unchanged).
+
 ### OD-A Office daily use (branch office-daily-use)
 
 - Layouts Notesheet and Circular (`docx_templates.py`), same rules (no pre-filled names, numbers or dates).
