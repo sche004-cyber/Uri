@@ -64,10 +64,13 @@ ACTOR_KINDS = DEVELOPERS | REVIEWERS | {"owner", "antigravity", "system"}
 EVIDENCE_WRITERS = DEVELOPERS | {"owner", "antigravity"}   # may preserve notes/evidence, also while paused
 
 CONTEXT_KINDS = ("objective", "requirement", "constraint", "decision", "progress", "evidence", "commit", "test",
-                 "issue", "next_action", "todo", "done", "permission", "note")
+                 "issue", "next_action", "todo", "done", "permission", "note",
+                 # reusable development knowledge (LIFECYCLE-V3.1-STORAGE; indexed by scripts.dev_workflow.devmemory)
+                 "lesson", "failed_approach", "environment", "procedure")
 # Retrieval order; evidence/note are ranked by the query and fill what budget is left.
-PACKET_ORDER = ("objective", "requirement", "constraint", "decision", "permission", "issue", "next_action", "todo",
-                "commit", "test", "progress", "done", "evidence", "note")
+PACKET_ORDER = ("objective", "requirement", "constraint", "environment", "decision", "permission", "issue",
+                "failed_approach", "lesson", "procedure", "next_action", "todo", "commit", "test", "progress", "done",
+                "evidence", "note")
 PACKET_LATEST = {"test": 3, "progress": 5, "commit": 5, "done": 10}
 
 VERDICTS = ("ACCEPT", "ACCEPT WITH FINDINGS", "REJECT")
