@@ -156,8 +156,11 @@ class OfficeClient implements WritingService {
       _post('/writing/rewrite', {'text': text, 'tone': tone});
   @override
   Future<Map<String, dynamic>> writingComplete(String text) => _post('/writing/complete', {'text': text});
+  bool _writingWarm = false;
   @override
   Future<void> writingPrewarm() async {
+    if (_writingWarm) return;                // WI-UX-1: once per client, not once per editor field
+    _writingWarm = true;
     await _post('/writing/prewarm', {'text': ''});
   }
   // OD-R1: folders URI may use (the user folder plus folders the owner added).

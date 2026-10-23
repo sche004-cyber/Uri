@@ -361,4 +361,19 @@ void main() {
     expect(find.byKey(const ValueKey('writing-accept-all')), findsNothing);
     await tester.pump(const Duration(milliseconds: 60));
   });
+
+  testWidgets('WI-UX-1: table cells and other dense fields get the compact strip; body text keeps Proofread',
+      (tester) async {
+    final w = FakeWriting();
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: SingleChildScrollView(child: Column(children: [
+      AuthoringTextField(fieldKey: const ValueKey('cell'), label: '', initial: 'x', dense: true,
+          onApply: (_) async => true, writing: w),
+      AuthoringTextField(fieldKey: const ValueKey('body'), label: 'Text', initial: 'y', multiline: true,
+          onApply: (_) async => true, writing: w),
+    ])))));
+    await tester.pump(const Duration(milliseconds: 800));
+    expect(find.byKey(const ValueKey('cell-writing-proofread')), findsNothing);
+    expect(find.byKey(const ValueKey('body-writing-proofread')), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 800));
+  });
 }

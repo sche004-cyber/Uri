@@ -757,6 +757,10 @@ class _AuthoringTextFieldState extends State<AuthoringTextField> {
             service: w,
             enabled: widget.enabled,
             keyPrefix: '${(widget.fieldKey as ValueKey).value}-writing',
+            // WI-UX-1: table cells, titles, headers and footers get the compact strip (spelling and grammar items
+            // only, nothing shown until there is one); body text and notes keep Proofread / Formal / Concise.
+            brainButtons: widget.multiline && !widget.dense,
+            hideWhenEmpty: !widget.multiline || widget.dense,
           ),
         if (_changed)
           TextButton(
