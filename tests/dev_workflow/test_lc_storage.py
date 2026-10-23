@@ -1243,3 +1243,123 @@ def test_hk8_restore_commands_work(sandbox):
         subprocess.run(cmd, check=True, capture_output=True)
     assert (sb["paths"]["disposable"] / "a.txt").read_bytes() == b"one\n"
     assert _git(sb["repo"], "rev-parse", "merged/old") == sb["base"]
+
+
+# =========================================================================== FB-1 (fallback review of 2bc93d8d)
+
+def test_fb1_n01_ignored_content_is_never_automatic(sandbox):
+    sb = sandbox
+    wt = sb["paths"]["disposable"]
+    (sb["repo"] / ".gitignore").write_text(".env\nuri_workspace/evidence/\nwork/\n__pycache__/\n")
+    _git(sb["repo"], "add", ".gitignore")
+    _git(sb["repo"], "commit", "-q", "-m", "ignore")
+    head = _git(sb["repo"], "rev-parse", "HEAD")
+    _git(sb["repo"], "update-ref", CANON, head)
+    _git(wt, "checkout", "-q", "--detach", head)
+    (wt / ".env").write_text("TOKEN=x")
+    (wt / "uri_workspace" / "evidence").mkdir(parents=True)
+    (wt / "uri_workspace" / "evidence" / "live_run_1.json").write_text("{}")
+    (wt / "__pycache__").mkdir()
+    (wt / "__pycache__" / "m.pyc").write_bytes(b"x")
+    plan = _plan(sb)
+    it = _by_path(plan)["disposable"]
+    assert it["cls"] == "DIRTY" and ".env" in it["ignored"] and "uri_workspace/evidence/" in it["ignored"]
+    assert not any("__pycache__" in e for e in it["ignored"])
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    hk.apply(pf, journal_dir=sb["tmp"] / "j")                            # no approval: untouched
+    assert (wt / ".env").exists()
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j2", approve=[it["id"]])  # approved without archive root: refused
+    row = next(x for x in r["results"] if x.get("item") == it["id"])
+    assert row["outcome"] == "REFUSED" and (wt / ".env").exists()
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j3", approve=[it["id"]], archive_root=sb["tmp"] / "ar")
+    row = next(x for x in r["results"] if x.get("item") == it["id"])
+    assert row["outcome"] == "DONE" and row["archive"]
+    back = sb["tmp"] / "back"
+    hk.restore(row["archive"], sb["tmp"] / "ar", back)
+    assert (back / ".env").read_text() == "TOKEN=x"
+    assert (back / "uri_workspace" / "evidence" / "live_run_1.json").exists()
+
+
+def test_fb1_n01_only_pure_caches_count_as_regenerable():
+    assert hk._regenerable("__pycache__/") and hk._regenerable("pkg/__pycache__/") and hk._regenerable("a/b.pyc")
+    assert hk._regenerable(".pytest_cache/")
+    for e in (".env", "credentials.json", "uri_workspace/evidence/", "work/c1/", "uri_ui/build/", "temp_evidence/"):
+        assert not hk._regenerable(e), e
+
+
+def test_fb1_n02_missing_worktree_with_only_reference_to_commit_is_protected(sandbox):
+    sb = sandbox
+    wt = sb["wt"] / "orphan"
+    _git(sb["repo"], "worktree", "add", "-q", "--detach", str(wt), sb["base"])
+    precious = _commit(wt, "p.txt", b"precious\n")
+    import shutil
+    shutil.rmtree(wt)
+    items = {it["path"]: it for it in _plan(sb)["items"] if it["kind"] == "worktree"}
+    it = items[str(wt)]
+    assert it["cls"] == "PROTECTED" and it["reach"] == "NONE" and precious in it["restore"]
+    assert _by_path(_plan(sb))["gone"]["cls"] == "PRUNABLE"           # a missing tree on canonical is still prunable
+
+
+def test_fb1_n03_secret_flags_redacted():
+    argv = ["tool", "--db-password", "hunter2", "--aws-secret-access-key", "AKIAabc", "--key", "k1", "--github-token",
+            "tok123", "--secret-key", "sk2", "-u", "user:hunter3", "--header", "Authorization: Bearer abcdef123",
+            "--pat", "p4t", "--bot-token", "botsecret", "--api-key=inline9", "--path", "keep/me", "-k", "test_x"]
+    safe = tr._safe_argv(argv)
+    joined = " ".join(safe)
+    for secret in ("hunter2", "AKIAabc", "k1", "tok123", "sk2", "hunter3", "abcdef123", "p4t", "botsecret", "inline9"):
+        assert secret not in joined, secret
+    assert "keep/me" in safe and "test_x" in safe and "user:" in joined   # non-secret arguments stay readable
+    assert argv[2] == "hunter2"                                          # identity (raw argv) is not modified
+
+
+def test_fb1_n04_branch_checked_out_after_inventory_is_kept(sandbox):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    _git(sb["repo"], "worktree", "add", "-q", str(sb["wt"] / "wt3"), "merged/old")
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j", classes=["OBSOLETE_BRANCH"])
+    row = next(x for x in r["results"] if x.get("path") == "refs/heads/merged/old")
+    assert row["outcome"] == "SKIPPED_CHANGED"
+    assert _git(sb["wt"] / "wt3", "rev-parse", "HEAD") == sb["base"]
+
+
+def test_fb1_n05_rebuild_refuses_a_non_index_file(tmp_path):
+    lp = tmp_path / "ledger.sqlite3"
+    lg = tl.Ledger(lp)
+    tid = lg.create("t", "o", DEV)
+    lg.close()
+    r = cli("devmemory", "--index", str(lp), "rebuild", "--ledger", str(lp))
+    assert r.returncode != 0 and "not a derived devmemory index" in r.stderr
+    lg = tl.Ledger(lp)
+    try:
+        assert lg.get(tid)["task_id"] == tid
+    finally:
+        lg.close()
+
+
+def test_fb1_n06_recover_resolves_grouped_cache_removal(sandbox):
+    sb = sandbox
+    plan = _plan(sb)
+    group = next(it for it in plan["items"] if it["kind"] == "caches")
+    jd = sb["tmp"] / "j"
+    hk.Chain(jd / "journal.jsonl").append("INTENT", {"plan_id": plan["plan_id"], "item": group["id"],
+                                                     "action": "rmtree-caches", "path": group["path"],
+                                                     "paths": group["paths"]})
+    import shutil
+    for q in group["paths"]:
+        shutil.rmtree(q)                                                  # removed, then the process "crashed"
+    res = {x["item"]: x["result"] for x in hk.recover(jd, sb["repo"])["recovered"]}
+    assert res[group["id"]] == "RECOVERED_DONE"
+
+
+def test_fb1_n07_cache_walk_stops_at_nested_repositories(sandbox):
+    sb = sandbox
+    nested = sb["roots"] / "tmpstuff" / "clone"
+    _init(nested)
+    (nested / "__pycache__").mkdir()
+    (nested / "__pycache__" / "x.pyc").write_bytes(b"x")
+    plan = _plan(sb)
+    group = next(it for it in plan["items"] if it["kind"] == "caches")
+    assert str(nested / "__pycache__") not in group["paths"]

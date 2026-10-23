@@ -416,6 +416,21 @@ def lifecycle_run_of(path: Path) -> tuple[Path, str] | None:
     return None
 
 
+def _regenerable(entry: str) -> bool:
+    """Ignored entries that are pure caches (rebuilt automatically). Everything else ignored - .env, credentials,
+    uri_workspace/evidence, work/c1 checkpoints, build outputs - is content outside git (FB-1 N-01)."""
+    parts = [x for x in entry.replace("\\", "/").split("/") if x]
+    return bool(parts) and (any(x in CACHE_DIRS for x in parts) or parts[-1].endswith((".pyc", ".pyo")))
+
+
+def _ignored_content(path: Path) -> list[str] | None:
+    """Ignored, untracked entries of a worktree that are not regenerable caches (None: git failed)."""
+    rc, out, _ = git(path, "ls-files", "-z", "--others", "--ignored", "--exclude-standard", "--directory")
+    if rc != 0:
+        return None
+    return sorted(e for e in out.split("\0") if e and not _regenerable(e))
+
+
 def classify_worktree(ctx: Ctx, w: dict) -> dict:
     path = Path(w["path"])
     item = {"id": "wt:" + sha_text(norm(path))[:12], "kind": "worktree", "path": str(path), "head": w["head"],
@@ -428,19 +443,28 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
     run = lifecycle_run_of(path)
     active_run = run is not None and run[1] != "COMPLETE"
     if not path.is_dir():
-        keep = w["locked"] or active_run
-        item.update(cls="PROTECTED" if keep else "PRUNABLE", action="none" if keep else "worktree-prune")
+        # FB-1 N-02: the registration may be the only thing keeping a detached commit reachable
+        reach = ctx.reach(w["head"]) if w["head"] else "NONE"
+        orphan = reach == "NONE"
+        keep = w["locked"] or active_run or orphan
+        item.update(cls="PROTECTED" if keep else "PRUNABLE", action="none" if keep else "worktree-prune", reach=reach)
         item["reasons"].append("directory missing" + (" but locked" if w["locked"] else "")
-                               + (f" inside lifecycle run {run[0].as_posix()} (stage {run[1]})" if active_run else ""))
-        item["fingerprint"] = sha_text(canon_json([w["head"], w["branch"], "missing", w["locked"], active_run]))
+                               + (f" inside lifecycle run {run[0].as_posix()} (stage {run[1]})" if active_run else "")
+                               + (" and its HEAD is on no branch, tag, remote or canonical (commits would be lost)"
+                                  if orphan else ""))
+        if w["head"]:
+            item["restore"] = f"git -C {ctx.repo.as_posix()} worktree add --detach {path.as_posix()} {w['head']}"
+        item["fingerprint"] = sha_text(canon_json([w["head"], w["branch"], "missing", w["locked"], active_run, reach]))
         return item
     rc, status, _ = git(path, "status", "--porcelain", "--untracked-files=normal", "--ignore-submodules")
     dirty = len(status.splitlines()) if rc == 0 else -1
     um = _untracked_markers(path, _markers(path))
+    ignored = _ignored_content(path)
     reach = ctx.reach(w["head"]) if w["head"] else "NONE"
     cited = ctx.cited_under(str(path))
     idle = _idle_s(path)
     item.update(dirty=dirty, evidence=um[:20], evidence_count=len(um), reach=reach, cited=cited,
+                ignored=(ignored or [])[:20], ignored_count=len(ignored) if ignored is not None else -1,
                 cited_by=ctx.cited_by(str(path)) if cited else [],
                 idle_hours=round(idle / 3600, 1))
     branch_short = w["branch"][len("refs/heads/"):] if w["branch"] else None
@@ -459,6 +483,8 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
         protect.append(f"branch {branch_short} has commits on neither canonical nor any remote")
     if rc != 0:
         protect.append("git status failed")
+    if ignored is None:
+        protect.append("git ls-files (ignored entries) failed")
     if protect:
         item.update(cls="PROTECTED", action="none")
         item["reasons"] += protect
@@ -466,17 +492,19 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
         item.update(cls="EVIDENCE", action="archive-then-remove (needs --approve)")
         item["reasons"].append(f"{len(um)} untracked evidence files" + (f", {dirty} uncommitted/untracked entries"
                                                                         if dirty > 0 else ""))
-    elif dirty > 0:
+    elif dirty > 0 or ignored:
         item.update(cls="DIRTY", action="archive-then-remove (needs --approve)")
-        item["reasons"].append(f"{dirty} uncommitted/untracked entries")
+        item["reasons"].append(", ".join(x for x in (f"{dirty} uncommitted/untracked entries" if dirty > 0 else "",
+                                                     f"{len(ignored)} ignored entries outside git" if ignored else "")
+                                         if x))
     elif cited:
-        item.update(cls="REFERENCED", action="archive-then-remove (needs --approve)")
+        item.update(cls="REFERENCED", action="remove (needs --approve; clean, nothing outside git)")
         item["reasons"].append("cited by an authoritative record")
     elif reach == "LOCAL":
-        item.update(cls="LOCAL_ONLY", action="remove (needs --approve)")
+        item.update(cls="LOCAL_ONLY", action="remove (needs --approve; clean, nothing outside git)")
         item["reasons"].append("HEAD kept only by a local branch or tag")
     elif idle < ctx.min_age_s:
-        item.update(cls="AMBIGUOUS", action="none")
+        item.update(cls="AMBIGUOUS", action="remove (needs --approve; clean, nothing outside git)")
         item["reasons"].append(f"used {idle / 3600:.1f} h ago (< {ctx.min_age_s / 3600:.0f} h)")
     else:
         item.update(cls="DISPOSABLE", action="worktree-remove")
@@ -487,7 +515,7 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
     snapshot, links = content_snapshot(path) if item["cls"] != "PROTECTED" else (None, [])
     item["links"] = links
     item["fingerprint"] = sha_text(canon_json([w["head"], w["branch"], w["locked"], dirty, um, reach,
-                                                status, snapshot]))
+                                                status, snapshot, ignored]))
     return item
 
 
@@ -521,6 +549,9 @@ def _caches(root: Path) -> list[Path]:
     out = []
     for d, dirs, _files in walk(root, skip=SKIP_WALK - CACHE_DIRS):
         for x in list(dirs):
+            if (d / x / ".git").exists():       # FB-1 N-07: another repository or worktree; never descend
+                dirs.remove(x)
+                continue
             if x in CACHE_DIRS:
                 out.append(d / x)
                 dirs.remove(x)
@@ -805,7 +836,10 @@ def _current(ctx: Ctx, it: dict) -> dict | None:
         if rc or not sha:
             return None
         cur = {**it, "head": sha, "fingerprint": sha_text(canon_json([it["path"], sha]))}
-        if ctx.reach(sha) != "CANONICAL":
+        name = it["path"][len("refs/heads/"):]
+        checked_out = {w["branch"] for w in wts.values() if w.get("branch")}
+        if (ctx.reach(sha) != "CANONICAL" or it["path"] in checked_out or name in ctx.task_branches
+                or name.startswith(PRESERVED_BRANCH_PREFIXES)):          # FB-1 N-04
             cur["cls"] = "PROTECTED"
         return cur
     return None
@@ -865,6 +899,7 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
             # I-2: an approved worktree with nothing outside git (clean, no evidence, HEAD kept by a ref) is removed
             # without an archive; its restore command recreates it byte for byte. Anything else is archived first.
             clean_kept = (it["kind"] == "worktree" and cur.get("dirty") == 0 and not cur.get("evidence_count")
+                          and cur.get("ignored_count") == 0
                           and cur.get("reach") in ("CANONICAL", "REMOTE", "LOCAL"))
             needs_archive = approved_only and it["kind"] in ("worktree", "dir") and not clean_kept
             if needs_archive and not archive_root:
@@ -878,7 +913,7 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
             elif it["kind"] == "worktree" and needs_archive:
                 action = "archive-then-remove"
             journal.append("INTENT", {"plan_id": plan["plan_id"], "item": it["id"], "action": action,
-                                      "path": it["path"], "fingerprint": it["fingerprint"],
+                                      "path": it["path"], "paths": it.get("paths"), "fingerprint": it["fingerprint"],
                                       "restore": it.get("restore")})
             try:
                 detail = {}
@@ -972,6 +1007,8 @@ def recover(journal_dir, repo=None) -> dict:
         path = d.get("path", "")
         if d["action"] == "delete-ref":
             gone = repo is not None and git(repo, "rev-parse", "--verify", "-q", path)[0] != 0
+        elif d["action"] == "rmtree-caches" and d.get("paths"):
+            gone = all(not Path(q).exists() for q in d["paths"])        # FB-1 N-06: the members, not the parent
         elif d["action"] in ("worktree-remove", "worktree-prune", "archive-then-remove") and \
                 d.get("path") and wt_paths is not None and not str(item).startswith("dir:"):
             gone = not Path(path).exists() and norm(path) not in wt_paths

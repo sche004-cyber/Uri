@@ -82,15 +82,39 @@ def _sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+SECRET_FLAG_WORDS = {"password", "passwd", "pass", "pwd", "secret", "token", "key", "apikey", "pat", "credential",
+                     "credentials", "auth", "authorization", "bearer", "cookie", "sig", "signature"}
+_HEADER_SECRET = re.compile(r"(?i)^(\s*(?:proxy-)?(?:authorization|cookie|x-api-key|x-auth-token)\s*:\s*).+")
+_BEARER = re.compile(r"(?i)\b(bearer|basic|token)\s+\S+")
+
+
+def _secret_flag(arg: str) -> bool:
+    """A flag whose name has a secret word as one of its parts (--db-password, --aws-secret-access-key,
+    --github-token, --key, --pat ...; FB-1 N-03)."""
+    if not arg.startswith("-") or arg == "-":
+        return False
+    if arg == "-p":
+        return True
+    name = arg.lstrip("-").split("=", 1)[0].lower()
+    return any(part in SECRET_FLAG_WORDS for part in re.split(r"[-_.]", name) if part)
+
+
 def _safe_argv(argv: list[str]) -> list[str]:
     """Keep command identity raw while making persisted and returned argv display-safe."""
     safe = [redact(arg)[0] for arg in argv]
-    for i, arg in enumerate(argv[:-1]):
-        flag = arg.lstrip("-").lower().replace("_", "-")
-        if arg.startswith("-") and (arg == "-p" or re.fullmatch(
-                r"(?:password|passwd|pass|pwd|token|secret|"
-                r"(?:api|access|auth|refresh|client|private)-(?:key|token|secret))", flag)):
-            safe[i + 1] = "[REDACTED:cli_password]"
+    mark = "[REDACTED:cli_secret]"
+    for i, arg in enumerate(argv):
+        if _secret_flag(arg):
+            if "=" in arg:
+                safe[i] = arg.split("=", 1)[0] + "=" + mark
+            elif i + 1 < len(argv):
+                safe[i + 1] = mark
+        if arg in ("-u", "--user") and i + 1 < len(argv) and ":" in argv[i + 1]:
+            safe[i + 1] = argv[i + 1].split(":", 1)[0] + ":" + mark
+        if _HEADER_SECRET.match(safe[i]):
+            safe[i] = _HEADER_SECRET.sub(lambda m: m.group(1) + mark, safe[i])
+        elif _BEARER.search(safe[i]):
+            safe[i] = _BEARER.sub(lambda m: m.group(1) + " " + mark, safe[i])
     return safe
 
 

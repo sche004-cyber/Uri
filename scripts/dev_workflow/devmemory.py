@@ -662,6 +662,19 @@ def main(argv=None) -> int:
             return 0
         if a.cmd == "rebuild":
             p = Path(a.index) if a.index else default_path()
+            if p.exists():
+                # FB-1 N-05: never delete a file that is not a derived index (e.g. a ledger given by mistake)
+                probe = sqlite3.connect(p.resolve().as_uri() + "?mode=ro", uri=True)
+                try:
+                    tables = {r[0] for r in probe.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+                    derived = ("meta" in tables and probe.execute(
+                        "SELECT v FROM meta WHERE k='derived'").fetchone() in (("true",),))
+                except sqlite3.Error:
+                    tables, derived = set(), False
+                finally:
+                    probe.close()
+                if not derived or tables & {"tasks", "events", "context"}:
+                    raise MemoryError_(f"{p} is not a derived devmemory index; refusing to delete it")
             old = Index(p)
             cfg_old = old.meta("config", {}) or {}
             old.close()
