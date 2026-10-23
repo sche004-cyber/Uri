@@ -131,6 +131,17 @@ def test_r2_03_lowercase_name_in_person_context_warns():
         ("FACT_MISSING", "name", "ramesh kumar")]
 
 
+def test_r6_01_lowercase_letter_recipient_warns_outside_corpus():
+    instruction = "Draft a letter to ramesh kumar about his transfer."
+    assert DR.extract_facts(instruction) == [{"kind": "name", "text": "ramesh kumar"}]
+    assert DR.missing_facts(instruction, instruction) == []
+    assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
+        instruction, "Dear suresh kumar, your transfer is approved."
+    )] == [("FACT_MISSING", "name", "ramesh kumar")]
+    assert DR.missing_facts(instruction, "Dear ramesh kumar, your transfer is approved.") == []
+    assert DR.extract_facts("Draft a letter to request transfer.") == []
+
+
 # ---- OFFICE-DAILY-USE-r6 R3 review repair ---------------------------------------------------------------------------
 @pytest.mark.parametrize("instruction,draft,name", [
     ("Draft a notice to staff member ramesh kumar about training.",

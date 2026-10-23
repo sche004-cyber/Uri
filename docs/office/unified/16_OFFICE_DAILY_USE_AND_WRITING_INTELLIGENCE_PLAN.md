@@ -306,11 +306,16 @@ OFFICE-DAILY-USE-r6 R4 repair:
   (for example, "ramesh kumar on leave" and "asha devi under review"). Rephrasing that topic while keeping the
   person does not produce a false name warning.
 
+OFFICE-DAILY-USE-r6 R6 repair:
+- A lowercase full name after a letter-recipient phrase such as "letter to ramesh kumar about his transfer" is a name
+  fact. Changing that recipient in the draft produces FACT_MISSING; a purpose phrase such as "letter to request
+  transfer" is not treated as a name.
+
 Fact-check limitations that remain:
 - a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
   is not reported;
 - the same person named twice in the instruction needs to appear only once in the draft;
-- lowercase names without an explicit person label and a single name without a cue word;
+- lowercase names outside an explicit person label or letter-recipient phrase, and a single name without a cue word;
 - a single all-capitals word such as a cadre ("LDC" against "UDC") is not a fact;
 - several people without honorifics joined by "and" form one name fact ("Ram Kumar and Sita Devi"): a change to
   either still warns, but the warning names the pair;

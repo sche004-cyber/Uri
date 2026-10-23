@@ -20,7 +20,8 @@ never use a claimed span:
   5. names: runs of capitalised words, broken by punctuation, claimed spans and sentence ends, then split at every
      honorific so "Shri Ram Kumar and Smt. Sita Devi" is two names, each keeping its honorific;
   6. one capitalised word after a cue ("to Ramesh", "Smt. Sharma") outside every claimed span;
-  7. a full name after an explicit person label, including lowercase names ("staff member ramesh kumar").
+  7. a full name after an explicit person label or a letter recipient cue, including lowercase names
+     ("staff member ramesh kumar", "letter to ramesh kumar").
 Names are deduplicated only on exact repeats; a name's occurrence inside a longer name of the same instruction does
 not count in the draft (FB5 R6-02).
 A fact counts as present in a draft only as a whole token run (FB1 R2-01). The check is literal on purpose; plan 16
@@ -99,6 +100,9 @@ _PERSON_NAME = re.compile(r"\b(?:staff\s+member|employee\s+named|officer\s+named
                           + _PERSON_NAME_WORD + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
                           + r"(?=\s*(?:[.,;:]|$|\b" + _PERSON_CLAUSE_START + r"\b))",
                           re.I)
+_LETTER_RECIPIENT = re.compile(r"\bletters?\s+to\s+(" + _PERSON_NAME_WORD
+                               + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
+                               + r"(?=\s*(?:[.,;:]|$|\b" + _PERSON_CLAUSE_START + r"\b))", re.I)
 _CONNECTORS = {"of", "and", "for", "the"}
 # Words that start or end a capitalised run without being part of a name (verbs, document words, designators).
 _NOT_NAME = {"write", "draft", "prepare", "compose", "please", "kindly", "issue", "make", "create", "send", "the", "a",
@@ -287,6 +291,10 @@ def extract_facts(instruction: str) -> list:
         add("name", w, m.start(1), m.end(1))
     for m in _PERSON_NAME.finditer(text):
         if not taken(m.start(1), m.end(1)):
+            add("name", m.group(1), m.start(1), m.end(1))
+    for m in _LETTER_RECIPIENT.finditer(text):
+        # "letter to request transfer" is a purpose, not a recipient.
+        if not taken(m.start(1), m.end(1)) and m.group(1).split()[0].lower() not in _NOT_NAME:
             add("name", m.group(1), m.start(1), m.end(1))
     out.sort(key=lambda f: f["_at"])
     return [{"kind": f["kind"], "text": f["text"]} for f in out]
