@@ -297,6 +297,23 @@ void main() {
     await tester.pump(const Duration(milliseconds: 60));
   });
 
+  testWidgets('R5-02: retained offsets use original spans across multiple accepted edits', (tester) async {
+    const text = 'abcdefghijklmnopqrstu';
+    final w = FakeWriting()..onCheck = (_) => {'suggestions': [
+      sugg('insert', 0, 0, '', '01234567890123456789'),
+      sugg('retained', 10, 11, 'k', 'K', cls: 'rewrite'),
+      sugg('later', 20, 21, 'u', 'UU'),
+    ], 'status': {'spelling': 'ok'}};
+    final c = await pump(tester, w, text);
+    await tester.tap(find.byKey(const ValueKey('writing-accept-all')));
+    await tester.pump();
+    expect(c.text, '01234567890123456789abcdefghijklmnopqrstUU');
+    expect(find.text('k  →  K'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-accept-0')));
+    await tester.pump();
+    expect(c.text, '01234567890123456789abcdefghijKlmnopqrstUU');
+  });
+
   testWidgets('R3-03: dismissing a capital or a/an item does not hide every other one', (tester) async {
     final w = FakeWriting()
       ..onCheck = ((t) => {'suggestions': [

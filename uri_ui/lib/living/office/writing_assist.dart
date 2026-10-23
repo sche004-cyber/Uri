@@ -188,22 +188,22 @@ class _WritingStripState extends State<WritingStrip> {
       final kept = <Map<String, dynamic>>[];
       for (final s in _items) {
         if (ids.contains('${s['start']}:${s['end']}:${s['original']}')) continue;
-        var start = s['start'] as int, end = s['end'] as int;
+        final originalStart = s['start'] as int, originalEnd = s['end'] as int;
+        var shift = 0;
         var clash = false;
         for (final a in items) {
           final aStart = a['start'] as int, aEnd = a['end'] as int;
-          if (start < aEnd && end > aStart || (start == end && start == aStart) ||
-              (aStart == aEnd && aStart > start && aStart < end)) {
+          if (originalStart < aEnd && originalEnd > aStart ||
+              (originalStart == originalEnd && originalStart == aStart) ||
+              (aStart == aEnd && aStart > originalStart && aStart < originalEnd)) {
             clash = true;
             break;
           }
-          if (start >= aEnd) {
-            final d = '${a['replacement']}'.runes.length - (aEnd - aStart);
-            start += d;
-            end += d;
+          if (originalStart >= aEnd) {
+            shift += '${a['replacement']}'.runes.length - (aEnd - aStart);
           }
         }
-        if (!clash) kept.add({...s, 'start': start, 'end': end});
+        if (!clash) kept.add({...s, 'start': originalStart + shift, 'end': originalEnd + shift});
       }
       setState(() {
         _undo.add(text);

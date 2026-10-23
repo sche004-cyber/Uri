@@ -106,6 +106,46 @@ def test_spell_worker_startup_os_error_keeps_rules_available(monkeypatch, prewar
     assert worker.unavailable == "SPELL_UNAVAILABLE"
 
 
+@pytest.mark.parametrize("prewarm", [False, True])
+@pytest.mark.parametrize("failure_stage", ["make", "request"])
+def test_r5_03_runtime_error_at_spell_boundary_keeps_rules_available(monkeypatch, prewarm, failure_stage):
+    worker = W.SpellWorker()
+    worker.unavailable = None
+
+    class BrokenWorker:
+        def __init__(self):
+            self.stopped = False
+
+        def request(self, *args, **kwargs):
+            raise RuntimeError("job startup failed")
+
+        def stop(self):
+            self.stopped = True
+
+    broken = BrokenWorker()
+
+    def make_worker():
+        if failure_stage == "make":
+            raise RuntimeError("job startup failed")
+        return broken
+
+    monkeypatch.setattr(worker, "_make", make_worker)
+    if prewarm:
+        worker.prewarm()
+        for _ in range(100):
+            if not worker._warming:
+                break
+            time.sleep(0.01)
+        assert not worker._warming
+    result = W.check("i  agree", spell=worker)
+    assert result["status"]["spelling"] == "SPELL_UNAVAILABLE"
+    assert ("i", "I") in fixes(result)
+    assert ("  ", " ") in fixes(result)
+    assert worker.unavailable == "SPELL_UNAVAILABLE"
+    if failure_stage == "request":
+        assert broken.stopped
+
+
 def test_spell_results_map_utf16_offsets_and_skip_proper_nouns():
     text = "Emoji \U0001F600 thier note to Iyer about tuesday"
     # UTF-16 offsets as Windows reports them: the emoji is two code units
@@ -564,6 +604,18 @@ def test_r3_01_safe_changes_stay_corrections_with_windows_agreement(monkeypatch)
     r = W.proofread("I recieve the the files which was sent.", client=FakeBrain(
         {"status": "ok", "message": "", "text": "I receive the files which were sent."}))
     assert r["suggestions"] and all(s["class"] == "correction" for s in r["suggestions"]), r["suggestions"]
+
+
+def test_r5_01_windows_name_substitution_requires_individual_review(monkeypatch):
+    text = "Forward to mehta for review."
+    start = text.index("mehta")
+    spell = FakeSpell([{"start": start, "length": 5, "word": "mehta", "action": 2,
+                        "replacement": "mehra", "suggestions": []}])
+    monkeypatch.setattr(W, "default_spell", lambda: spell)
+    result = W.proofread(text, client=FakeBrain(
+        {"status": "ok", "message": "", "text": "Forward to mehra for review."}))
+    assert [(s["original"], s["replacements"][0], s["class"]) for s in result["suggestions"]] == [
+        ("mehta", "mehra", "rewrite")]
 
 
 @pytest.mark.parametrize("t", ["No. 12/3/2024-Estt. dated 5.6.2024.", "sub-clause i, ii and iii apply.",

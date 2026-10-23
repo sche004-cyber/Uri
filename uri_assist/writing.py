@@ -203,8 +203,16 @@ class SpellWorker:
                 if e.code in ("SPELL_UNAVAILABLE", "WORKER_START_FAILED"):
                     self.unavailable = "SPELL_UNAVAILABLE"
                 raise WritingError("SPELL_UNAVAILABLE" if e.code != "TIMEOUT" else "SPELL_TIMEOUT") from None
-            except OSError:
+            except Exception:
+                # Worker construction and startup can also raise ordinary non-OS errors. Keep partial state out of
+                # the next request, and let the caller return its rules with a spelling status.
                 self.unavailable = "SPELL_UNAVAILABLE"
+                worker, self._worker = self._worker, None
+                if worker is not None and hasattr(worker, "stop"):
+                    try:
+                        worker.stop()
+                    except Exception:
+                        pass
                 raise WritingError("SPELL_UNAVAILABLE") from None
             self._arm()
         if not res.get("ok"):
@@ -492,6 +500,21 @@ def _edits_reference(original: str, start: int, end: int) -> bool:
     return False
 
 
+def _mechanical_typo(a: str, b: str) -> bool:
+    """Only a missing/extra letter or adjacent transposition can support a Brain spelling correction.
+
+    A Windows substitution alone can be a different word or a lower-case name (mehta -> mehra).
+    Windows proposals remain available individually through the spelling check.
+    """
+    if min(len(a), len(b)) < 6:
+        return False
+    if abs(len(a) - len(b)) == 1:
+        short, long = (a, b) if len(a) < len(b) else (b, a)
+        return any(long[:i] + long[i + 1:] == short for i in range(len(long)))
+    return len(a) == len(b) and any(a[:i] + a[i + 1] + a[i] + a[i + 2:] == b
+                                     for i in range(len(a) - 1))
+
+
 def _touches_meaning(orig: str, rep: str, *, spelling: dict | None = None, context: str = "") -> bool:
     """`spelling`: {lower-case word Windows flags: set of its lower-case suggestions} for the original text;
     `context`: the characters around the change in the original (a change inside parentheses is a reference)."""
@@ -519,8 +542,9 @@ def _touches_meaning(orig: str, rep: str, *, spelling: dict | None = None, conte
         if w in _HONORIFICS or (len(w) <= 4 and _ROMAN.match(w) and w not in ("i",)) or (len(w) == 1 and w not in ("a", "i")):
             return True
     def safe(a, b):
-        # an agreement swap, or the spelling fix Windows itself proposes for a word it flags
-        return _swap(a, b) or (spelling is not None and b in (spelling.get(a) or ()))
+        # Windows agreement is supporting evidence only for a narrow mechanical typo, not a changed name.
+        return _swap(a, b) or (spelling is not None and b in (spelling.get(a) or ()) and
+                               _mechanical_typo(a, b))
     if len(ow) == len(rw):
         return not all(safe(a, b) for a, b in zip(ow, rw))
     longer, shorter = (ow, rw) if len(ow) > len(rw) else (rw, ow)
