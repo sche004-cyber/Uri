@@ -703,8 +703,22 @@ def _plan(sb, **kw):
                         min_age_hours=kw.pop("min_age_hours", 0), **kw)
 
 
+def _key(it):
+    return ("caches:" + Path(it["path"]).name) if it["kind"] == "caches" else Path(it["path"]).name if it["kind"] != "branch" else it["path"]
+
+
+def _cache_group(plan, cache):
+    """The grouped CACHE item (I-3) that holds ``cache``."""
+    return next(it for it in plan["items"] if it["kind"] == "caches" and str(cache) in it["paths"])
+
+
+def _cache_row(plan, result, cache):
+    gid = _cache_group(plan, cache)["id"]
+    return next(x for x in result["results"] if x.get("item") == gid)
+
+
 def _by_path(plan):
-    return {Path(it["path"]).name if it["kind"] != "branch" else it["path"]: it for it in plan["items"]}
+    return {_key(it): it for it in plan["items"]}
 
 
 def _digest(repo: Path, extra: list[Path]) -> str:
@@ -756,7 +770,8 @@ def test_hk2_classification(sandbox):
     assert items["gone"]["cls"] == "PRUNABLE"
     assert items["lifecycle-RUN"]["cls"] == "ESSENTIAL_EVIDENCE"
     assert items["tmpstuff"]["cls"] == "AMBIGUOUS"
-    assert items["__pycache__"]["cls"] == "CACHE"
+    assert items["caches:tmpstuff"]["cls"] == "CACHE" and items["caches:tmpstuff"]["paths"] == [
+        str(sandbox["roots"] / "tmpstuff" / "__pycache__")]
     assert items["wt"]["cls"] == "PROTECTED" if "wt" in items else True
     assert items["refs/heads/merged/old"]["cls"] == "OBSOLETE_BRANCH"
     assert "refs/heads/preserve/keep" not in items and "refs/heads/local/only" not in items
@@ -785,6 +800,7 @@ def test_r2_01_inventory_excludes_cache_beneath_registered_worktree(sandbox):
     plan = _plan(sb)
     assert _by_path(plan)["live-run"]["cls"] == "PROTECTED"
     assert not any(it["kind"] == "cache" and it["path"] == str(cache) for it in plan["items"])
+    assert not any(str(cache) in it.get("paths", []) for it in plan["items"])
 
 
 def test_r3_01_cache_evidence_is_never_automatic(sandbox):
@@ -823,7 +839,7 @@ def test_r3_01_cache_recheck_rejects_new_parent_evidence(sandbox):
     receipt = parent / "receipt.json"
     receipt.write_text("keep", encoding="utf-8")
     result = hk.apply(pf, journal_dir=sb["tmp"] / "j")
-    row = next(x for x in result["results"] if x.get("path") == str(cache))
+    row = _cache_row(plan, result, cache)
     assert row["outcome"] == "SKIPPED_CHANGED"
     assert cache.is_dir() and receipt.read_text(encoding="utf-8") == "keep"
 
@@ -845,7 +861,7 @@ def test_r2_01_apply_refuses_cache_when_parent_becomes_protected(sandbox, protec
         lg.create("active", "work", DEV, worktree=str(parent / "runtime"))
         lg.close()
     result = hk.apply(pf, journal_dir=sb["tmp"] / "j", ledger=str(ledger) if ledger else None)
-    row = next(x for x in result["results"] if x.get("path") == str(cache))
+    row = _cache_row(plan, result, cache)
     assert row["outcome"] == "SKIPPED_CHANGED" and cache.is_dir()
 
 
@@ -856,7 +872,7 @@ def test_r2_01_cache_parent_protection_after_first_recheck_blocks_removal(sandbo
     pf.write_text(json.dumps(plan), encoding="utf-8")
     parent = sb["roots"] / "tmpstuff"
     cache = parent / "__pycache__"
-    cache_id = next(it["id"] for it in plan["items"] if it["path"] == str(cache))
+    cache_id = _cache_group(plan, cache)["id"]
     original = hk.Chain.append
     changed = False
 
@@ -870,7 +886,7 @@ def test_r2_01_cache_parent_protection_after_first_recheck_blocks_removal(sandbo
 
     monkeypatch.setattr(hk.Chain, "append", protect_after_intent)
     result = hk.apply(pf, journal_dir=sb["tmp"] / "j")
-    row = next(x for x in result["results"] if x.get("path") == str(cache))
+    row = _cache_row(plan, result, cache)
     assert changed and row["outcome"] == "FAILED" and "SOURCE_CHANGED" in row["error"]
     assert cache.is_dir()
 
@@ -924,6 +940,54 @@ def test_hk3_prune_is_per_item_never_global(sandbox):
     assert sb["paths"]["gone"].as_posix() not in listed.replace("\\", "/")
 
 
+def test_i1_citation_names_its_record(sandbox):
+    items = _by_path(_plan(sandbox))
+    assert items["cited"]["cls"] == "REFERENCED"
+    assert items["cited"]["cited_by"] == [(sandbox["records"] / "decisions.md").as_posix()]
+    assert items["disposable"].get("cited_by", []) == []
+
+
+def test_i2_approved_clean_referenced_tree_removed_without_archive(sandbox):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    cited = _by_path(plan)["cited"]
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j", approve=[cited["id"]])      # no --archive-root given
+    row = next(x for x in r["results"] if x.get("item") == cited["id"])
+    assert row["outcome"] == "DONE" and row["action"] == "worktree-remove" and "archive" not in row
+    assert not sb["paths"]["cited"].exists()
+    subprocess.run(row["restore"].split(), check=True, capture_output=True)
+    assert (sb["paths"]["cited"] / "a.txt").read_bytes() == b"one\n"
+    # a dirty approved tree still needs the archive root
+    plan2 = _plan(sb)
+    pf2 = sb["tmp"] / "plan2.json"
+    pf2.write_text(json.dumps(plan2), encoding="utf-8")
+    dirty = _by_path(plan2)["dirty"]
+    r2 = hk.apply(pf2, journal_dir=sb["tmp"] / "j2", approve=[dirty["id"]])
+    row2 = next(x for x in r2["results"] if x.get("item") == dirty["id"])
+    assert row2["outcome"] == "REFUSED" and sb["paths"]["dirty"].exists()
+
+
+def test_i3_caches_grouped_and_rechecked_as_a_group(sandbox):
+    sb = sandbox
+    for n in ("a", "b", "c"):
+        d = sb["roots"] / "tmpstuff" / n / "__pycache__"
+        d.mkdir(parents=True)
+        (d / "m.pyc").write_bytes(b"x")
+    plan = _plan(sb)
+    groups = [it for it in plan["items"] if it["kind"] == "caches"]
+    assert len(groups) == 1 and len(groups[0]["paths"]) == 4
+    assert not any(it["kind"] == "cache" for it in plan["items"])
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    (sb["roots"] / "tmpstuff" / "b" / "__pycache__" / "receipt.json").write_text("{}")   # evidence appears later
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    row = next(x for x in r["results"] if x.get("item") == groups[0]["id"])
+    assert row["outcome"] == "SKIPPED_CHANGED"
+    assert all(Path(q).exists() for q in groups[0]["paths"])
+
+
 def test_hk3_apply_scope_refusals_and_archive_restore(sandbox):
     sb = sandbox
     plan = _plan(sb)
@@ -933,10 +997,11 @@ def test_hk3_apply_scope_refusals_and_archive_restore(sandbox):
     jd, ar = sb["tmp"] / "journal", sb["tmp"] / "archive"
     r = hk.apply(pf, journal_dir=jd, archive_root=ar,
                  approve=[items["dirty"]["id"], items["locked"]["id"], items["lifecycle-RUN"]["id"]])
-    out = {Path(x["path"]).name if x["kind"] != "branch" else x["path"]: x for x in r["results"] if "item" in x}
+    out = {_key(x): x for x in r["results"] if "item" in x}
     assert out["disposable"]["outcome"] == "DONE" and not sb["paths"]["disposable"].exists()
     assert out["gone"]["outcome"] == "DONE"
-    assert out["__pycache__"]["outcome"] == "DONE" and (sb["roots"] / "tmpstuff" / "notes.txt").exists()
+    assert out["caches:tmpstuff"]["outcome"] == "DONE" and (sb["roots"] / "tmpstuff" / "notes.txt").exists()
+    assert not (sb["roots"] / "tmpstuff" / "__pycache__").exists()
     assert out["locked"]["outcome"] == "REFUSED" and sb["paths"]["locked"].exists()
     assert out["lifecycle-RUN"]["outcome"] == "REFUSED" and (sb["roots"] / "lifecycle-RUN").exists()
     assert out["evidence"]["outcome"] == "NOT_SELECTED" and sb["paths"]["evidence"].exists()
@@ -973,9 +1038,9 @@ def test_r1_02_cache_and_dirty_bytes_bind_the_plan(sandbox):
     next(cache.iterdir()).write_bytes(b"new cache bytes")
     r = hk.apply(pf, journal_dir=sb["tmp"] / "j", archive_root=sb["tmp"] / "ar",
                  approve=[_by_path(plan)["dirty"]["id"]])
-    rows = {x["path"]: x for x in r["results"] if "item" in x}
+    rows = {x["path"]: x for x in r["results"] if "item" in x and x["kind"] != "caches"}
     assert rows[str(dirty)]["outcome"] == "SKIPPED_CHANGED" and dirty.exists()
-    assert rows[str(cache)]["outcome"] == "SKIPPED_CHANGED" and cache.exists()
+    assert _cache_row(plan, r, cache)["outcome"] == "SKIPPED_CHANGED" and cache.exists()
 
 
 def test_r1_02_change_after_archive_refuses_removal(sandbox, monkeypatch):

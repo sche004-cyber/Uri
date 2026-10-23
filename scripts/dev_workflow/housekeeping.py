@@ -246,9 +246,10 @@ def _worktrees(repo: Path) -> list[dict]:
     return wts
 
 
-def _record_paths(records: list[str]) -> set[str]:
-    """Absolute paths cited by authoritative records (decisions.md, developmental.md, audit/MM docs, receipts)."""
-    found: set[str] = set()
+def _record_paths(records: list[str]) -> dict[str, set[str]]:
+    """Absolute paths cited by authoritative records (decisions.md, developmental.md, audit/MM docs, receipts), each
+    with the record files that cite it (I-1: the owner judges a citation by its source)."""
+    found: dict[str, set[str]] = {}
     files: list[Path] = []
     for r in records:
         p = Path(r)
@@ -265,7 +266,7 @@ def _record_paths(records: list[str]) -> set[str]:
         except OSError:
             continue
         for m in PATH_RE.finditer(text):
-            found.add(norm(m.group(1).rstrip(".:")))
+            found.setdefault(norm(m.group(1).rstrip(".:")), set()).add(f.as_posix())
     return found
 
 
@@ -317,6 +318,7 @@ class Ctx:
         self.cwd = norm(os.getcwd())
         self.wt_paths: set[str] = set()
         self._reach: dict[str, str] = {}
+        self._dir_cls: dict[str, str] = {}
 
     def fresh(self) -> tuple["Ctx", dict[str, dict]]:
         """Rebuild authority and git registration at each source recheck."""
@@ -329,6 +331,21 @@ class Ctx:
     def cited_under(self, path: str) -> list[str]:
         p = norm(path)
         return sorted(c for c in self.cited if c == p or c.startswith(p + "/"))[:5]
+
+    def cited_by(self, path: str) -> list[str]:
+        p = norm(path)
+        files = set()
+        for c, srcs in self.cited.items():
+            if c == p or c.startswith(p + "/"):
+                files |= srcs
+        return sorted(files)[:10]
+
+    def dir_class(self, path: Path) -> str:
+        """Memoised directory class for cache-ancestor checks (one classification per directory per context)."""
+        key = norm(path)
+        if key not in self._dir_cls:
+            self._dir_cls[key] = classify_dir(self, path)["cls"]
+        return self._dir_cls[key]
 
     def task_ref(self, path: str) -> bool:
         p = norm(path)
@@ -424,6 +441,7 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
     cited = ctx.cited_under(str(path))
     idle = _idle_s(path)
     item.update(dirty=dirty, evidence=um[:20], evidence_count=len(um), reach=reach, cited=cited,
+                cited_by=ctx.cited_by(str(path)) if cited else [],
                 idle_hours=round(idle / 3600, 1))
     branch_short = w["branch"][len("refs/heads/"):] if w["branch"] else None
     protect = []
@@ -477,7 +495,8 @@ def classify_dir(ctx: Ctx, path: Path) -> dict:
     um = _markers(path)
     cited = ctx.cited_under(str(path))
     item = {"id": "dir:" + sha_text(norm(path))[:12], "kind": "dir", "path": str(path), "evidence": um[:20],
-            "evidence_count": len(um), "cited": cited, "reasons": []}
+            "evidence_count": len(um), "cited": cited, "cited_by": ctx.cited_by(str(path)) if cited else [],
+            "reasons": []}
     nested = sorted(w for w in ctx.wt_paths if w.startswith(norm(path) + "/"))
     if nested:
         item.update(cls="PROTECTED", action="none (handle its worktrees individually)", nested_worktrees=len(nested))
@@ -513,7 +532,7 @@ def classify_cache(ctx: Ctx, path: Path, parent: Path) -> dict:
     cited = ctx.cited_under(str(path))
     ancestors = [parent]
     ancestors.extend(a for a in path.parents if a != parent and norm(a).startswith(norm(parent) + "/"))
-    protected = [str(a) for a in ancestors if classify_dir(ctx, a)["cls"] in NEVER]
+    protected = [str(a) for a in ancestors if ctx.dir_class(a) in NEVER]
     cls = "PROTECTED" if protected else "ESSENTIAL_EVIDENCE" if markers or cited else "CACHE"
     snapshot, links = content_snapshot(path)
     return {"id": "cache:" + sha_text(norm(path))[:12], "kind": "cache", "path": str(path),
@@ -522,6 +541,17 @@ def classify_cache(ctx: Ctx, path: Path, parent: Path) -> dict:
                         ["evidence markers or authoritative references"] if cls == "ESSENTIAL_EVIDENCE" else
                         ["regenerable cache"]), "evidence": markers[:20], "evidence_count": len(markers),
             "cited": cited, "parent_path": str(parent), "fingerprint": snapshot, "links": links}
+
+
+def cache_group(parent: Path, parent_id: str, members: list[dict]) -> dict:
+    """One plan item for all regenerable caches under one top-level directory (I-3: the live plan had 14,769
+    single-cache items)."""
+    paths = sorted(m["path"] for m in members)
+    return {"id": "caches:" + sha_text(norm(parent))[:12], "kind": "caches", "path": str(parent), "paths": paths,
+            "cls": "CACHE", "action": f"delete {len(paths)} regenerable cache dir(s)", "parent": parent_id,
+            "reasons": [f"{len(paths)} regenerable cache dir(s) (__pycache__, .pytest_cache)"],
+            "links": any(m.get("links") for m in members),
+            "fingerprint": sha_text(canon_json(sorted((m["path"], m["fingerprint"]) for m in members)))}
 
 
 def classify_branches(ctx: Ctx, checked_out: set[str]) -> list[dict]:
@@ -561,14 +591,23 @@ def inventory(repo, *, canonical_ref=CANONICAL_REF, roots=(), records=(), ledger
             items.append(it)
             if it["cls"] == "PROTECTED":
                 continue
+            group = []
             for c in _caches(child):
                 cache_item = classify_cache(ctx, c, child)
                 cache_item["parent"] = it["id"]
-                items.append(cache_item)
+                if cache_item["cls"] == "CACHE":
+                    group.append(cache_item)
+                else:
+                    items.append(cache_item)       # protected or evidence-bearing caches stay visible one by one
+            if group:
+                items.append(cache_group(child, it["id"], group))
     items += classify_branches(ctx, {w["branch"] for w in wts if w["branch"]})
     if sizes:
         for it in items:
-            if it["kind"] in ("worktree", "dir", "cache") and Path(it["path"]).is_dir():
+            if it["kind"] == "caches":
+                sizes_ = [tree_size(Path(q)) for q in it["paths"] if Path(q).is_dir()]
+                it["bytes"], it["bytes_complete"] = sum(b for b, _ in sizes_), all(c for _, c in sizes_)
+            elif it["kind"] in ("worktree", "dir", "cache") and Path(it["path"]).is_dir():
                 it["bytes"], it["bytes_complete"] = tree_size(Path(it["path"]))
     summary: dict[str, dict] = {}
     for it in items:
@@ -729,6 +768,20 @@ def _journal_done(journal: Chain, plan_id: str) -> dict[str, dict]:
     return done
 
 
+def _recheck_cache(ctx: Ctx, it: dict) -> dict | None:
+    path = Path(it["path"])
+    if not path.is_dir():
+        return None
+    parent = Path(it["parent_path"]) if it.get("parent_path") else None
+    location = norm(path)
+    if (parent is None or not parent.is_dir() or (parent / ".git").exists() or
+            not location.startswith(norm(parent) + "/") or
+            any(location == w or location.startswith(w + "/") for w in ctx.wt_paths) or
+            any(location == t or location.startswith(t + "/") for t in ctx.task_paths)):
+        return {**it, "cls": "PROTECTED", "reasons": ["cache location is now protected"]}
+    return classify_cache(ctx, path, parent)
+
+
 def _current(ctx: Ctx, it: dict) -> dict | None:
     """Re-inventory one plan item now (None = it no longer exists)."""
     ctx, wts = ctx.fresh()
@@ -738,17 +791,15 @@ def _current(ctx: Ctx, it: dict) -> dict | None:
     if it["kind"] == "dir":
         return classify_dir(ctx, Path(it["path"])) if Path(it["path"]).is_dir() else None
     if it["kind"] == "cache":
-        path = Path(it["path"])
-        if not path.is_dir():
-            return None
-        parent = Path(it["parent_path"]) if it.get("parent_path") else None
-        location = norm(path)
-        if (parent is None or not parent.is_dir() or (parent / ".git").exists() or
-                not location.startswith(norm(parent) + "/") or
-                any(location == w or location.startswith(w + "/") for w in ctx.wt_paths) or
-                any(location == t or location.startswith(t + "/") for t in ctx.task_paths)):
-            return {**it, "cls": "PROTECTED", "reasons": ["cache location is now protected"]}
-        return classify_cache(ctx, path, parent)
+        return _recheck_cache(ctx, it)
+    if it["kind"] == "caches":
+        subs = [_recheck_cache(ctx, {"path": q, "parent_path": it["path"]}) for q in it["paths"]]
+        if any(x is None for x in subs):
+            return {**it, "fingerprint": "", "reasons": ["a cache dir disappeared since the plan"]}
+        if any(x["cls"] != "CACHE" for x in subs):
+            return {**it, "cls": "PROTECTED", "reasons": ["a cache dir is now protected or holds evidence"]}
+        return {**it, "links": any(x.get("links") for x in subs),
+                "fingerprint": sha_text(canon_json(sorted((x["path"], x["fingerprint"]) for x in subs)))}
     if it["kind"] == "branch":
         rc, sha, _ = git(ctx.repo, "rev-parse", "--verify", "-q", it["path"])
         if rc or not sha:
@@ -811,16 +862,20 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 r["now"] = {"class": cur["cls"], "reasons": cur.get("reasons")}
                 continue
             approved_only = it["cls"] in APPROVABLE
-            if approved_only and not archive_root and it["kind"] in ("worktree", "dir") and \
-                    it["cls"] != "LOCAL_ONLY":
+            # I-2: an approved worktree with nothing outside git (clean, no evidence, HEAD kept by a ref) is removed
+            # without an archive; its restore command recreates it byte for byte. Anything else is archived first.
+            clean_kept = (it["kind"] == "worktree" and cur.get("dirty") == 0 and not cur.get("evidence_count")
+                          and cur.get("reach") in ("CANONICAL", "REMOTE", "LOCAL"))
+            needs_archive = approved_only and it["kind"] in ("worktree", "dir") and not clean_kept
+            if needs_archive and not archive_root:
                 r["outcome"] = "REFUSED"
                 r["why"] = "archive-then-remove needs --archive-root"
                 continue
             action = {"worktree": "worktree-remove", "dir": "archive-then-remove", "cache": "rmtree",
-                      "branch": "delete-ref"}[it["kind"]]
+                      "caches": "rmtree-caches", "branch": "delete-ref"}[it["kind"]]
             if it["cls"] == "PRUNABLE":
                 action = "worktree-prune"
-            elif it["kind"] == "worktree" and approved_only and it["cls"] != "LOCAL_ONLY":
+            elif it["kind"] == "worktree" and needs_archive:
                 action = "archive-then-remove"
             journal.append("INTENT", {"plan_id": plan["plan_id"], "item": it["id"], "action": action,
                                       "path": it["path"], "fingerprint": it["fingerprint"],
@@ -841,7 +896,8 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 latest = _current(ctx, it)
                 if latest is None or latest["cls"] != it["cls"] or latest["fingerprint"] != it["fingerprint"]:
                     raise HKError("SOURCE_CHANGED", f"{it['path']} changed before removal")
-                if latest.get("links") and action in ("archive-then-remove", "worktree-remove", "rmtree"):
+                if latest.get("links") and action in ("archive-then-remove", "worktree-remove", "rmtree",
+                                                      "rmtree-caches"):
                     raise HKError("LINKS_PRESENT", f"{it['path']} contains links omitted by archive")
                 if action == "archive-then-remove":
                     if it["kind"] == "worktree":
@@ -856,6 +912,9 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                     git(ctx.repo, "worktree", "remove", it["path"], check=True)
                 elif action == "rmtree":
                     _rmtree(Path(it["path"]))
+                elif action == "rmtree-caches":
+                    for q in it["paths"]:
+                        _rmtree(Path(q))
                 elif action == "delete-ref":
                     git(ctx.repo, "update-ref", "-d", it["path"], it["head"], check=True)
                 r.update(outcome="DONE", action=action, bytes=it.get("bytes", 0), restore=it.get("restore"), **detail)

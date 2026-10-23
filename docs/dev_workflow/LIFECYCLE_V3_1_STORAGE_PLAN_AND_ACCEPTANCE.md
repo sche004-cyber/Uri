@@ -188,6 +188,9 @@ Each criterion has a test ID. "Test" means an automated test in `tests/dev_workf
 | C-6 | — | The CLI output garbled `§` on a Windows pipe. | stdout and stderr are forced to UTF-8. Test `test_dm_cli_output_is_utf8`. |
 | C-7 | Baseline `8ff6186b` | Canonical moved to `b1944200` (G1-02 follow-up, P0 thread) on 2026-10-22/23. No shared files. | Canonical merged into the candidate (`823fddff`). Driver baseline is `b1944200`. |
 | C-8 | §2.3 EVIDENCE vs DIRTY order | An untracked receipt also makes a tree dirty, so the tree was labelled DIRTY. | Evidence takes precedence in the label. Both classes need approval and an archive first. |
+| C-9 (I-1) | §2.3 REFERENCED items carried only the cited path | Live plan: 98 clean REFERENCED worktrees (72.2 GiB), cited mostly by inventory-style records that list every worktree. | Every cited item carries `cited_by` (the record files), so the owner can judge each citation. Test `test_i1_citation_names_its_record`. |
+| C-10 (I-2) | §2.3 an approved REFERENCED/DIRTY/EVIDENCE worktree is archived first | Archiving a clean worktree whose HEAD a ref keeps duplicates gigabytes of committed content. | An approved worktree that is clean, has no untracked evidence and whose HEAD is kept by canonical, a remote or a local ref is removed without an archive (no `--force`; restore command recreates it). Everything else is still archived and verified first. Test `test_i2_approved_clean_referenced_tree_removed_without_archive`. |
+| C-11 (I-3) | §2.3 one CACHE item per cache directory | Live plan: 14,769 cache items (1.7 GiB). Per-item rechecks re-read every record; inventory took 3,279 s. | One `caches` item per top-level directory, rechecked as a group (any member changed or protected: the group is skipped). Directory classes are memoised per context. Tests `test_i3_caches_grouped_and_rechecked_as_a_group` plus the driver's R1-02/R2-01/R3-01 regressions adapted to the group. |
 
 ## 6. Lifecycle
 
