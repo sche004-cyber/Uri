@@ -191,7 +191,7 @@ _CONFIDENTIAL = re.compile(r"(?i)\b(?:strictly\s+)?(?:private\s+(?:and|&)\s+)?co
 _LONG_SECRET = dict(_assist._TEXT_RULES)["long_secret"]
 # LONG_NUMBER: the digit budget, owner decision LDEC-006 (2026-10-23). Text bound for a non-local destination may not
 # carry 9 or more digits in one run, whatever the grouping, separators or line breaks. A run is digit groups joined by
-# gaps of 1-3 characters holding at most 2 letters (spaces, newlines, punctuation, underscores, "x", "ab"). Digits that
+# punctuation/whitespace gaps of any length, or gaps of 1-3 characters holding at most 2 letters. Digits that
 # are part of a date, a clock time, an ISO-8601 timestamp or an IPv4 address (with port) do not count; they are written
 # as such tokens, bounded so that a chain of colon or dot groups is exempt only when the whole chain is one token.
 # Replaces LDEC-005's identifier shapes, which five reviews showed could be regrouped around (FB4 R1-01, R1-02).
@@ -231,7 +231,8 @@ def _long_number_spans(text: str, exempt=None):
             out.append((counted[0][0], counted[-1][1]))
     for m in _DIGITS.finditer(text):
         gap = text[prev_end:m.start()] if run else ""
-        if run and not (len(gap) <= 3 and sum(c.isalpha() for c in gap) <= 2):
+        if run and not (all(not c.isalnum() for c in gap) or
+                        (len(gap) <= 3 and sum(c.isalpha() for c in gap) <= 2)):
             close()
             run = []
         run.append((m.start(), m.end()))

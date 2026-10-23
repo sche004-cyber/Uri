@@ -17,7 +17,7 @@ from uri_privacy.classify import classify, fold
 from uri_web import search as S
 
 from .helpers import TGateway
-from .synth import NUMBER_BENIGN
+from .synth import NUMBER_BENIGN, luhn_card
 
 EXTERNAL = ("WEB_SEARCH", "EXTERNAL_AGENT", "EXTERNAL_MODEL")
 CARD, AMEX, AADHAAR = "4539148803436467", "378282246310005", "234567890124"
@@ -233,6 +233,33 @@ def test_ldec006_digit_budget_boundary():
     assert C._long_number_spans("ref 123456789 ok")
     assert not C._long_number_spans("ref 1234 and 56789 ok")              # " and " is not a bridging gap
     assert C._long_number_spans("ref 1234 x 56789 ok")
+
+
+@pytest.mark.parametrize("dest", EXTERNAL + ("LOG",))
+def test_ldec006_long_punctuation_gaps_do_not_expose_card(dest):
+    q = "card 41.......11.......1111.......1111.......1111"
+    refused, out = send(q, dest)
+    assert refused or "4111111111111111" not in digits(out), (dest, out)
+
+
+def test_ldec006_generated_cards_with_long_punctuation_gaps_do_not_leak():
+    rng = random.Random(95)
+    for _ in range(500):
+        card = luhn_card(rng).replace(" ", "")
+        q = "card " + ".......".join((card[:2], card[2:4], card[4:8], card[8:12], card[12:]))
+        assert not leaks(q, card, "WEB_SEARCH"), q
+
+
+def test_ldec006_long_punctuation_gaps_do_not_reach_tavily_wire():
+    sent = []
+
+    def handler(request):
+        sent.append(request.content.decode("utf-8", "replace"))
+        return httpx.Response(200, json={"results": []})
+
+    q = "card 41.......11.......1111.......1111.......1111"
+    S.TavilyProvider(api_key="k", transport=httpx.MockTransport(handler), privacy=TGateway()).search(q)
+    assert all("4111111111111111" not in digits(body) for body in sent), sent
 
 
 def test_ldec006_linear_on_long_inputs():

@@ -138,7 +138,7 @@ are unchanged.
 
 | Input | Outcome | Measured / proof (tests/privacy) |
 |---|---|---|
-| Any run of 9+ digits joined by gaps of 1-3 characters with at most 2 letters (spaces, line breaks, punctuation, underscores, mixed), other than dates, clock times, ISO-8601 timestamps and IPv4 addresses | redacted (LONG_NUMBER), or the specific category when a specific rule matches | every 2-4-group split of a card and an Aadhaar x 10 separators (8,060 texts, measured) and of an Amex (test), 3,000 mixed-gap texts x 4 destinations: 0 leaks (`test_ldec006.py::test_fb4_r1_01*`, `*_r1_02*`) |
+| Any run of 9+ digits joined by punctuation/whitespace gaps of any length, or by gaps of 1-3 characters with at most 2 letters, other than dates, clock times, ISO-8601 timestamps and IPv4 addresses | redacted (LONG_NUMBER), or the specific category when a specific rule matches | every 2-4-group split of a card and an Aadhaar x 10 separators (8,060 texts, measured) and of an Amex (test), 3,000 mixed-gap texts x 4 destinations: 0 leaks (`test_ldec006.py::test_fb4_r1_01*`, `*_r1_02*`); long punctuation gaps (`test_ldec006.py::test_ldec006_long_punctuation_gaps*`) |
 | Digits hidden between exempt tokens ("4539 1488 2026-10-23 0343 6467") | counted; redacted | `test_ldec006_a_card_hidden_among_exempt_tokens_is_still_counted` |
 | A value split around another redacted value | refused | `test_fb4_r1_06_value_split_around_another_value_is_refused` |
 | Standard and spaced forms of cards, Aadhaar, PAN (also upper case with single spaces), SSN (also label after), IBAN, accounts, phones, e-mail (also internationalised, Indic marks in the local part) | redacted / pseudonymized | `test_classify.py`, `test_ldec005.py`, `test_ldec006.py` |
@@ -155,7 +155,7 @@ or without port; ids of 8 digits or fewer; prices; years and counts; version num
 
 **Stated residuals (not protected):**
 - a value written in words, a private cipher, or any other deliberate encoding;
-- digits separated by 4 or more characters or by 3 or more letters, including words between the groups
+- digits separated by 4 or more characters when the gap contains letters, or by 3 or more letters, including words between the groups
   ("4111 one 1111 two 1111 three 1111");
 - digits written as letter look-alikes (`l` for 1, `O` for 0), where the look-alikes break a run;
 - a value written as a sequence of valid dates, clock times or IPv4 addresses (the exempt classes);
