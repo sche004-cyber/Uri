@@ -132,10 +132,18 @@ def _safe_argv(argv: list[str]) -> list[str]:
     return safe
 
 
+def _git_env() -> dict:
+    """No inherited GIT_* variable may redirect the tree identity check to another repository (FB-7 FB7-01 class).
+    The supervised command itself still runs with the caller's environment."""
+    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("GIT_")}
+    env["GIT_NO_REPLACE_OBJECTS"] = "1"
+    return env
+
+
 def _git(cwd, *args) -> tuple[int, str]:
     try:
         p = subprocess.run([*GIT, "-C", str(cwd), *args], capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", timeout=120)
+                           errors="replace", timeout=120, env=_git_env())
     except (OSError, subprocess.SubprocessError) as e:
         return 1, str(e)
     return p.returncode, p.stdout.strip()

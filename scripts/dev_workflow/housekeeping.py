@@ -83,10 +83,21 @@ def norm(p) -> str:
     return os.path.normcase(os.path.abspath(str(p))).replace("\\", "/").rstrip("/")
 
 
+def git_env() -> dict:
+    """The environment for every git subprocess this tool starts: the caller's environment without any GIT_*
+    variable. GIT_DIR, GIT_WORK_TREE, GIT_INDEX_FILE, GIT_COMMON_DIR, GIT_OBJECT_DIRECTORY, GIT_CONFIG_* and the like
+    override which repository `git -C <path>` inspects, so an exported one made the safety checks judge a different
+    repository than the one being cleaned (FB-7 FB7-01: a worktree whose HEAD reflog alone held a commit was removed).
+    Repository selection comes only from `-C <path>`; identity is verified separately."""
+    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("GIT_")}
+    env["GIT_NO_REPLACE_OBJECTS"] = "1"
+    return env
+
+
 def git(repo, *args, check=False, timeout=300, inp: str | None = None) -> tuple[int, str, str]:
     try:
         p = subprocess.run([*GIT, "-C", str(repo), *args], capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", timeout=timeout, input=inp)
+                           errors="replace", timeout=timeout, input=inp, env=git_env())
     except subprocess.TimeoutExpired:
         if check:
             raise HKError("GIT_TIMEOUT", f"git {' '.join(args)}")
@@ -476,6 +487,23 @@ def _hidden_edits(path: Path) -> list[str] | None:
     return sorted(hidden)
 
 
+def _identity_mismatch(ctx: "Ctx", path: Path) -> str | None:
+    """None when `git -C <path>` really is this registered worktree of this repository: its toplevel is the path,
+    its absolute git dir is the admin directory registered for the path, and its common dir is the repository's.
+    Anything else (a swapped `.git` file, a nested repository, an unverifiable layout) is a reason to protect."""
+    rc, top, _ = git(path, "rev-parse", "--show-toplevel")
+    if rc != 0 or norm(top) != norm(path):
+        return f"toplevel {top or '?'} is not {path}"
+    rc, gd, _ = git(path, "rev-parse", "--absolute-git-dir")
+    rc2, common, _ = git(path, "rev-parse", "--path-format=absolute", "--git-common-dir")
+    if rc != 0 or rc2 != 0 or ctx.common_dir is None or norm(common) != norm(ctx.common_dir):
+        return f"common dir {common or '?'} is not {ctx.common_dir}"
+    adm = _worktree_admin(ctx, path)
+    if adm is None or norm(gd) != norm(adm):
+        return f"git dir {gd or '?'} is not the admin directory registered for this path"
+    return None
+
+
 def _worktree_admin(ctx: "Ctx", path: Path) -> Path | None:
     """The `<common dir>/worktrees/<id>` admin directory registered for ``path`` (also when the directory itself is
     missing). None when it cannot be identified."""
@@ -576,7 +604,7 @@ def _index_fingerprint(worktree: Path) -> str | None:
     """Hash raw index entries, including staged blob IDs and merge stages; None means git failed."""
     try:
         p = subprocess.run([*GIT, "-C", str(worktree), "ls-files", "--stage", "-z"],
-                           capture_output=True, timeout=300)
+                           capture_output=True, timeout=300, env=git_env())
     except (OSError, subprocess.SubprocessError):
         return None
     return hashlib.sha256(p.stdout).hexdigest() if p.returncode == 0 else None
@@ -656,6 +684,9 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
         protect.append(f"branch {branch_short} has commits on neither canonical nor any remote")
     if rc != 0:
         protect.append("git status failed")
+    why = _identity_mismatch(ctx, path)                 # FB-7 FB7-01: the checks must have inspected this worktree
+    if why:
+        protect.append(f"repository identity not verified: {why}")
     if ignored is None:
         protect.append("git ls-files (ignored entries) failed")
     if hidden is None:
@@ -887,7 +918,7 @@ def staged_patch(worktree: Path) -> bytes:
         # FB-5 FB5-03: plumbing diff-index plus explicit options, so user/system diff config (external diff,
         # color, noprefix, textconv) cannot change or empty the patch
         # FB-6 FB6-01: explicit -U3 and no GIT_DIFF_OPTS / GIT_EXTERNAL_DIFF from the environment
-        env = {k: v for k, v in os.environ.items() if k not in ("GIT_DIFF_OPTS", "GIT_EXTERNAL_DIFF")}
+        env = git_env()                           # FB7-01 scrub covers GIT_DIFF_OPTS / GIT_EXTERNAL_DIFF too
         p = subprocess.run([*GIT, "-C", str(worktree), "diff-index", "--cached", "-p", "-U3", "--binary",
                             "--full-index", "--no-ext-diff", "--no-textconv", "--no-color", "--src-prefix=a/",
                             "--dst-prefix=b/", "HEAD", "--"], capture_output=True, timeout=300, env=env)
@@ -1141,7 +1172,7 @@ def _cache_item_problem(it: dict, plan: dict) -> str | None:
     if it["kind"] == "branch":                          # FB-4 FB4-03: never tags, remotes or other refs
         ref = str(it.get("path") or "")
         ok = ref.startswith("refs/heads/") and subprocess.run(
-            ["git", "check-ref-format", ref], capture_output=True).returncode == 0
+            ["git", "check-ref-format", ref], capture_output=True, env=git_env()).returncode == 0
         return None if ok else f"{ref} is not a local branch ref"
     if it["kind"] not in ("cache", "caches"):
         return None

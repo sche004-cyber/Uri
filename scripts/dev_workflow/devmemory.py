@@ -99,9 +99,12 @@ def tokens(text: str) -> int:
 
 
 def git(repo, *args, inp: str | None = None) -> tuple[int, str]:
+    # FB-7 FB7-01 class: no inherited GIT_* variable may redirect invalidation checks to another repository
+    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("GIT_")}
+    env["GIT_NO_REPLACE_OBJECTS"] = "1"
     try:
         p = subprocess.run([*GIT, "-C", str(repo), *args], capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", input=inp, timeout=120)
+                           errors="replace", input=inp, timeout=120, env=env)
     except (OSError, subprocess.SubprocessError) as e:
         return 1, str(e)
     return p.returncode, p.stdout.strip()

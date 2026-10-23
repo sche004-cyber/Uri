@@ -390,6 +390,34 @@ repaired here:
 
 Tests `test_fb6_*`.
 
+### 5.10 FB7-01 security repair (owner decision 2026-10-23: repair, qualify, integrate, then cleanup)
+
+`1e5979e3` was accepted (FB-7, ledger seq 236) with FB7-01 LOW open. The owner made its repair and independent
+security acceptance a condition for integration and for any real-disk cleanup.
+
+- **Reproduced on `1e5979e3`** (`D:/uri-dev/lc-storage-evidence/fb701/repro_before_1e5979e3.txt`). Without the
+  variable, the worktree whose HEAD reflog alone holds a commit is PROTECTED. With `GIT_DIR` exported it is
+  DISPOSABLE, apply removes it, and the commit ends up in no ref and no reflog.
+- **Root cause.** Every git subprocess inherited the caller's environment. `GIT_DIR`, `GIT_WORK_TREE`,
+  `GIT_INDEX_FILE`, `GIT_COMMON_DIR`, `GIT_OBJECT_DIRECTORY` and `GIT_CONFIG_*` override which repository
+  `git -C <path>` inspects, so the safety checks judged a different repository than the one being cleaned.
+- **Repair, two fail-closed layers:**
+  1. `git_env()`: every git subprocess of housekeeping, testrun (tree identity) and devmemory runs without any
+     `GIT_*` variable. The commands that `testrun` supervises keep the caller's environment.
+  2. Identity verification: a worktree's toplevel must be its path, its absolute git dir must be the admin directory
+     registered for that path, and its common dir must be the repository's. Otherwise it is PROTECTED. This also
+     catches a swapped `.git` file.
+- **Tests (`test_fb7_01_*`, 11):**
+  - seven hostile variables (`GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE`, `GIT_COMMON_DIR`,
+    `GIT_OBJECT_DIRECTORY`, `GIT_CONFIG_PARAMETERS`, `GIT_CONFIG_COUNT`/`KEY`/`VALUE`): the commit stays protected,
+    apply removes nothing, and the commit still exists;
+  - a swapped `.git` file;
+  - testrun and devmemory identity under `GIT_DIR`;
+  - the scrub itself.
+- **Not changed:** `task_ledger.py`'s own git helper (`GIT_ENV`) inherits the environment in the same way. It is
+  Lifecycle V3.1 code outside this repair's scope, so it is recorded as an open observation (LEDGER-ENV-1) rather
+  than changed here.
+
 ## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.

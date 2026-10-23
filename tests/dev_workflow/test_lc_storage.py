@@ -2128,3 +2128,84 @@ def test_fb6_02_plan_records_absolute_repo(sandbox, monkeypatch):
     monkeypatch.chdir(sandbox["repo"])
     plan = hk.inventory(".", canonical_ref=CANON, min_age_hours=0, sizes=False)
     assert Path(plan["repo"]).is_absolute()
+
+
+# =========================================================================== FB7-01 (inherited GIT_* environment)
+
+HOSTILE_GIT_ENV = ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY",
+                   "GIT_CONFIG_PARAMETERS", "GIT_CONFIG_COUNT"]
+
+
+def _reflog_only_worktree(sb):
+    wt = sb["paths"]["disposable"]
+    lost = _commit(wt, "orphan.txt", b"orphan\n")
+    _git(wt, "checkout", "-q", "--detach", sb["base"])
+    return wt, lost
+
+
+@pytest.mark.parametrize("var", HOSTILE_GIT_ENV)
+def test_fb7_01_hostile_git_environment_cannot_hide_a_reflog_only_commit(sandbox, monkeypatch, var):
+    sb = sandbox
+    wt, lost = _reflog_only_worktree(sb)
+    other = _init(sb["tmp"] / "other")
+    values = {"GIT_DIR": str(sb["repo"] / ".git"), "GIT_WORK_TREE": str(sb["repo"]),
+              "GIT_INDEX_FILE": str(sb["tmp"] / "fake.index"), "GIT_COMMON_DIR": str(other / ".git"),
+              "GIT_OBJECT_DIRECTORY": str(other / ".git" / "objects"),
+              "GIT_CONFIG_PARAMETERS": "'core.worktree'='" + str(sb["repo"]).replace("\\", "/") + "'",
+              "GIT_CONFIG_COUNT": "1"}
+    monkeypatch.setenv(var, values[var])
+    if var == "GIT_CONFIG_COUNT":
+        monkeypatch.setenv("GIT_CONFIG_KEY_0", "core.worktree")
+        monkeypatch.setenv("GIT_CONFIG_VALUE_0", str(sb["repo"]))
+    plan = _plan(sb)
+    it = _by_path(plan)["disposable"]
+    assert it["cls"] == "PROTECTED" and lost in it.get("reflog_only", []), (var, it["cls"], it["reasons"])
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    assert wt.exists()
+    monkeypatch.delenv(var)
+    assert subprocess.run(["git", "-C", str(sb["repo"]), "cat-file", "-e", lost], capture_output=True).returncode == 0
+
+
+def test_fb7_01_swapped_dot_git_file_fails_identity_and_is_protected(sandbox):
+    sb = sandbox
+    a, b = sb["paths"]["disposable"], sb["paths"]["cited"]
+    a_git, b_git = (a / ".git").read_bytes(), (b / ".git").read_bytes()
+    def overwrite(path, data):                     # the .git file is hidden on Windows: rewrite in place, no create
+        with open(path, "r+b") as f:
+            f.write(data)
+            f.truncate()
+    overwrite(a / ".git", b_git)                   # a now presents b's admin directory
+    items = _by_path(_plan(sb))
+    assert items["disposable"]["cls"] == "PROTECTED"
+    assert any("identity" in r for r in items["disposable"]["reasons"])
+    overwrite(a / ".git", a_git)
+    assert _by_path(_plan(sb))["disposable"]["cls"] == "DISPOSABLE"
+
+
+def test_fb7_01_testrun_tree_identity_ignores_git_dir(runs, repo, tmp_path, monkeypatch):
+    other = _init(tmp_path / "other")
+    _commit(other, "o.txt", b"o\n")
+    monkeypatch.setenv("GIT_DIR", str(other / ".git"))
+    ts = tr.tree_state(repo)
+    monkeypatch.delenv("GIT_DIR")
+    assert ts["head"] == _git(repo, "rev-parse", "HEAD") and hk.norm(ts["repo"]) == hk.norm(repo)
+
+
+def test_fb7_01_devmemory_git_ignores_git_dir(tmp_path, monkeypatch):
+    repo = _init(tmp_path / "r")
+    other = _init(tmp_path / "o")
+    _commit(other, "o.txt", b"o\n")
+    monkeypatch.setenv("GIT_DIR", str(other / ".git"))
+    rc, head = dm.git(repo, "rev-parse", "HEAD")
+    monkeypatch.delenv("GIT_DIR")
+    assert rc == 0 and head == _git(repo, "rev-parse", "HEAD")
+
+
+def test_fb7_01_git_env_scrubs_every_git_variable(monkeypatch):
+    for v in ("GIT_DIR", "GIT_WORK_TREE", "GIT_DIFF_OPTS", "GIT_EXTERNAL_DIFF", "GIT_CONFIG_KEY_0", "git_dir"):
+        monkeypatch.setenv(v, "x")
+    env = hk.git_env()
+    assert not [k for k in env if k.upper().startswith("GIT_") and k != "GIT_NO_REPLACE_OBJECTS"]
+    assert "PATH" in env or "Path" in env
