@@ -33,6 +33,25 @@ def test_r6_01_month_year_and_day_of_month_dates_warn(instruction, old, new):
     assert DR.missing_facts(instruction, instruction) == []
 
 
+def test_r1_01_uncued_may_to_july_period_warns_outside_corpus():
+    instruction = "Prepare a circular for May to July leave applications."
+    assert {f["text"] for f in DR.extract_facts(instruction) if f["kind"] == "date"} == {"May to July"}
+    assert [(w["code"], w["kind"], w["text"]) for w in warns(instruction, "May", "June")] == [
+        ("FACT_MISSING", "date", "May to July")]
+    assert DR.missing_facts(instruction, instruction) == []
+
+
+@pytest.mark.parametrize("instruction,month,replacement", [
+    ("Draft a notice about attendance in April.", "April", "March"),
+    ("Draft a notice about attendance in May.", "May", "June"),
+])
+def test_r1_02_standalone_month_time_reference_warns(instruction, month, replacement):
+    assert {f["text"] for f in DR.extract_facts(instruction) if f["kind"] == "date"} == {month}
+    assert [(w["code"], w["kind"], w["text"]) for w in warns(instruction, month, replacement)] == [
+        ("FACT_MISSING", "date", month)]
+    assert DR.missing_facts(instruction, instruction) == []
+
+
 # ---- R6-02: a name that is a prefix of another person's name ---------------------------------------------------------
 @pytest.mark.parametrize("instruction,old,new", [
     ("Office order: Shri Anil Kumar Singh, UDC and Shri Anil Kumar, LDC are transferred to Cash Section.",

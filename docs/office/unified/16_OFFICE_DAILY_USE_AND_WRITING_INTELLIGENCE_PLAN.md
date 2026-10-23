@@ -274,6 +274,9 @@ The FB4 status above was therefore incomplete: those forms were never checked.
   - a possessive "'s" is not part of the name;
   - weekday names are not names;
   - "5-day" is a number.
+- R1-01/R1-02 follow-up: an uncued, yearless period with capitalised "May" ("May to July") is one date fact;
+  lowercase verbal "may" remains excluded. A standalone month after an explicit time preposition ("in April",
+  "in May") is also a date fact, so changing it in the draft produces FACT_MISSING.
 - Corpus: 281 instructions. It now has templates for month-year, "Nth (day) of", periods, shared and prefix names in
   both orders, small number words with units, Mohd./Md. and bracketed honorifics. It also has 10 of the reviewer's
   out-of-corpus instructions (expected facts written by hand) and 20 new hand-written instructions in other forms.
@@ -286,7 +289,7 @@ The FB4 status above was therefore incomplete: those forms were never checked.
   All of these are repaired above, and all 281 cases pass (a), (b) and (c).
 
 Fact-check limitations that remain:
-- a month on its own, with no day and no year ("in April"), is not a date;
+- a standalone month without a time preposition may not be read as a date;
 - a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
   is not reported;
 - the same person named twice in the instruction needs to appear only once in the draft;

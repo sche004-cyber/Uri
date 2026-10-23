@@ -10,9 +10,9 @@ never use a claimed span:
   1. references: the designator and the code together ("F.No. A-12/2026-Estt.", "O.M. No. ...", "D.O. No. ...",
      "No. ..."); the fact is the code;
   2. dates: day ranges in one month, "Nth (day) of Month", day and month, or month and day (with or without a
-     year), month-to-month periods and "Month YYYY" (FB5 R6-01). "may" counts as the month only with an ordinal
-     day, a following year, a preposition before it (on/by/from/till/until/dated/before/after/of), or "May"/"MAY"
-     after a day;
+     year), month-to-month periods and "Month YYYY" (FB5 R6-01), or a standalone month after a time preposition.
+     "may" counts as the month only with an ordinal day, a following year, a time preposition before it, or
+     "May"/"MAY" after a day or in a month-to-month period;
   3. numbers in digits, with a following unit (days, km, posts, lakh, AM/PM, ... see UNITS) as part of the fact; an
      amount after Rs/INR/the rupee sign; "/-" is dropped;
   4. numbers in words ("twenty five thousand");
@@ -71,6 +71,8 @@ _MONTH_YEAR = re.compile(r"\b(" + _MONTHS + r")\b\.?,?\s+(\d{4})\b", re.I)
 _PERIOD = re.compile(r"\b(" + _MONTHS + r")\b\.?\s+(?:to|till|until|-|–)\s+(" + _MONTHS + r")\b\.?(" + _YEAR + r")?",
                      re.I)
 _MAY_CUE = re.compile(r"\b(?:on|by|from|till|until|dated|before|after|of)\s+$", re.I)
+_STANDALONE_MONTH = re.compile(r"\b(?:in|during|by|before|after|throughout|for|of|from|until|till|on)\s+"
+                               r"(?:the\s+month\s+of\s+)?(" + _MONTHS + r")\b", re.I)
 _DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
 # FB4 R5-04: the designator is part of the claimed span, so it never becomes a name word.
 _REF = re.compile(r"\b(?:F\.\s?No\.?|O\.\s?M\.\s?No\.?|D\.\s?O\.\s?No\.?|No\.)\s*([A-Za-z0-9][\w./()-]*\d[\w./()-]*)",
@@ -179,12 +181,17 @@ def extract_facts(instruction: str) -> list:
     for m in _PERIOD.finditer(text):
         if taken(m.start(), m.end()):
             continue
-        if "may" in (m.group(1).lower(), m.group(2).lower()) and not (m.group(3) or _MAY_CUE.search(text[:m.start()])):
+        if "may" in (m.group(1).lower(), m.group(2).lower()) and not (m.group(3) or _MAY_CUE.search(text[:m.start()])
+                or "May" in (m.group(1), m.group(2)) or "MAY" in (m.group(1), m.group(2))):
             continue                              # "you may to June" is not a period; "from May to June" is
         add("date", m.group(0).rstrip(".,;:"), m.start(), m.end())
     for m in _MONTH_YEAR.finditer(text):           # a following year satisfies the "may" rule
         if not taken(m.start(), m.end()):
             add("date", m.group(0).rstrip(".,;:"), m.start(), m.end())
+    for m in _STANDALONE_MONTH.finditer(text):
+        mon = m.group(1)
+        if not taken(m.start(1), m.end(1)) and (mon.lower() != "may" or mon in ("May", "MAY")):
+            add("date", mon, m.start(1), m.end(1))
     # 3. numbers in digits (amounts, numbers with units, numeric dates, codes without a designator)
     for m in re.finditer(r"\S+", text):
         if taken(m.start(), m.end()) or not re.search(r"\d", m.group(0)):
