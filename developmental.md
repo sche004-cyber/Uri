@@ -540,3 +540,7 @@ Addendum M.
 ### P.12 Canonical `c036a901` (2026-10-23)
 
 PH1-GATE-1 integrated (receipt `INTEGRATION_RECEIPT_20261023_PH1_GATE_1.md`). Open: OPEN-02 (owner, elevated), OPEN-23 (ledger promotion), OPEN-24 (PH1-GATE-2).
+
+### P.13 2026-10-23: OPEN-02 approved (awaiting administrator run), OPEN-23 decided and handed off
+
+Details: `P0_CLOSURE_20261022.md` Addendum N; `decisions.md` DEC-100.
