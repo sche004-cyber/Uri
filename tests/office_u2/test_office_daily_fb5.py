@@ -92,3 +92,28 @@ def test_r6_04_name_abbreviations_and_bracketed_honorifics():
 def test_r6_plan_records_fb5():
     text = " ".join(PLAN.read_text(encoding="utf-8").split())
     assert "Repairs after fallback review FB5" in text
+
+
+# ---- OFFICE-DAILY-USE-r6 independent review -------------------------------------------------------------------------
+def test_r2_01_may_through_july_period_warns_outside_corpus():
+    instruction = "Prepare a circular covering May through July."
+    assert DR.extract_facts(instruction) == [{"kind": "date", "text": "May through July"}]
+    assert DR.missing_facts(instruction, instruction) == []
+    assert [(w["code"], w["kind"], w["text"]) for w in warns(instruction, "May through July", "June through August")] == [
+        ("FACT_MISSING", "date", "May through July")]
+
+
+def test_r2_02_next_month_warns_when_changed():
+    instruction = "Draft a notice for next April about attendance."
+    assert DR.extract_facts(instruction) == [{"kind": "date", "text": "next April"}]
+    assert DR.missing_facts(instruction, instruction) == []
+    assert [(w["code"], w["kind"], w["text"]) for w in warns(instruction, "next April", "next March")] == [
+        ("FACT_MISSING", "date", "next April")]
+
+
+def test_r2_03_lowercase_name_in_person_context_warns():
+    instruction = "Draft a notice for staff member ramesh kumar."
+    assert DR.extract_facts(instruction) == [{"kind": "name", "text": "ramesh kumar"}]
+    assert DR.missing_facts(instruction, instruction) == []
+    assert [(w["code"], w["kind"], w["text"]) for w in warns(instruction, "ramesh kumar", "suresh kumar")] == [
+        ("FACT_MISSING", "name", "ramesh kumar")]

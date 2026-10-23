@@ -277,6 +277,9 @@ The FB4 status above was therefore incomplete: those forms were never checked.
 - R1-01/R1-02 follow-up: an uncued, yearless period with capitalised "May" ("May to July") is one date fact;
   lowercase verbal "may" remains excluded. A standalone month after an explicit time preposition ("in April",
   "in May") is also a date fact, so changing it in the draft produces FACT_MISSING.
+- OFFICE-DAILY-USE-r6 review repair: month periods joined by "through" ("May through July") and relative months
+  ("next April") are date facts. A full name after an explicit person label ("staff member ramesh kumar") is a name
+  fact even when lowercase. Changing any of these in the draft produces FACT_MISSING.
 - Corpus: 281 instructions. It now has templates for month-year, "Nth (day) of", periods, shared and prefix names in
   both orders, small number words with units, Mohd./Md. and bracketed honorifics. It also has 10 of the reviewer's
   out-of-corpus instructions (expected facts written by hand) and 20 new hand-written instructions in other forms.
@@ -289,11 +292,11 @@ The FB4 status above was therefore incomplete: those forms were never checked.
   All of these are repaired above, and all 281 cases pass (a), (b) and (c).
 
 Fact-check limitations that remain:
-- a standalone month without a time preposition may not be read as a date;
+- a standalone month without a time preposition or relative cue may not be read as a date;
 - a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
   is not reported;
 - the same person named twice in the instruction needs to appear only once in the draft;
-- lowercase names ("ramesh kumar") and a single name without a cue word;
+- lowercase names without an explicit person label and a single name without a cue word;
 - a single all-capitals word such as a cadre ("LDC" against "UDC") is not a fact;
 - several people without honorifics joined by "and" form one name fact ("Ram Kumar and Sita Devi"): a change to
   either still warns, but the warning names the pair;

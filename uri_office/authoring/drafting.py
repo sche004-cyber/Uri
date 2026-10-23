@@ -10,7 +10,8 @@ never use a claimed span:
   1. references: the designator and the code together ("F.No. A-12/2026-Estt.", "O.M. No. ...", "D.O. No. ...",
      "No. ..."); the fact is the code;
   2. dates: day ranges in one month, "Nth (day) of Month", day and month, or month and day (with or without a
-     year), month-to-month periods and "Month YYYY" (FB5 R6-01), or a standalone month after a time preposition.
+     year), month-to-month periods and "Month YYYY" (FB5 R6-01), a standalone month after a time preposition,
+     or a relative month such as "next April".
      "may" counts as the month only with an ordinal day, a following year, a time preposition before it, or
      "May"/"MAY" after a day or in a month-to-month period;
   3. numbers in digits, with a following unit (days, km, posts, lakh, AM/PM, ... see UNITS) as part of the fact; an
@@ -18,7 +19,8 @@ never use a claimed span:
   4. numbers in words ("twenty five thousand");
   5. names: runs of capitalised words, broken by punctuation, claimed spans and sentence ends, then split at every
      honorific so "Shri Ram Kumar and Smt. Sita Devi" is two names, each keeping its honorific;
-  6. one capitalised word after a cue ("to Ramesh", "Smt. Sharma") outside every claimed span.
+  6. one capitalised word after a cue ("to Ramesh", "Smt. Sharma") outside every claimed span;
+  7. a full name after an explicit person label, including lowercase names ("staff member ramesh kumar").
 Names are deduplicated only on exact repeats; a name's occurrence inside a longer name of the same instruction does
 not count in the draft (FB5 R6-02).
 A fact counts as present in a draft only as a whole token run (FB1 R2-01). The check is literal on purpose; plan 16
@@ -68,11 +70,12 @@ _DAY_OF_MONTH = re.compile(r"\b(\d{1,2})(" + _ORD + r")?\s+(?:day\s+)?of\s+(" + 
 _DAY_RANGE = re.compile(r"\b(\d{1,2})(" + _ORD + r")?\s*(?:-|–|to|and|&)\s*(\d{1,2})(" + _ORD + r")?\s+(" + _MONTHS
                         + r")\b\.?(" + _YEAR + r")?", re.I)
 _MONTH_YEAR = re.compile(r"\b(" + _MONTHS + r")\b\.?,?\s+(\d{4})\b", re.I)
-_PERIOD = re.compile(r"\b(" + _MONTHS + r")\b\.?\s+(?:to|till|until|-|–)\s+(" + _MONTHS + r")\b\.?(" + _YEAR + r")?",
+_PERIOD = re.compile(r"\b(" + _MONTHS + r")\b\.?\s+(?:to|till|until|through|-|–)\s+(" + _MONTHS + r")\b\.?(" + _YEAR + r")?",
                      re.I)
 _MAY_CUE = re.compile(r"\b(?:on|by|from|till|until|dated|before|after|of)\s+$", re.I)
 _STANDALONE_MONTH = re.compile(r"\b(?:in|during|by|before|after|throughout|for|of|from|until|till|on)\s+"
                                r"(?:the\s+month\s+of\s+)?(" + _MONTHS + r")\b", re.I)
+_RELATIVE_MONTH = re.compile(r"\b(?:next|this|last)\s+(" + _MONTHS + r")\b", re.I)
 _DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
 # FB4 R5-04: the designator is part of the claimed span, so it never becomes a name word.
 _REF = re.compile(r"\b(?:F\.\s?No\.?|O\.\s?M\.\s?No\.?|D\.\s?O\.\s?No\.?|No\.)\s*([A-Za-z0-9][\w./()-]*\d[\w./()-]*)",
@@ -83,6 +86,12 @@ HONORIFICS = ("Shri", "Smt", "Sh", "Km", "Kum", "Kumari", "Sushri", "Dr", "Mr", 
 _HONORIFIC = r"(?:" + "|".join(HONORIFICS) + r")\.?"
 _HON_RX = re.compile(_HONORIFIC + r"$")
 _CUE_NAME = re.compile(r"\b(?:to|from|" + "|".join(HONORIFICS) + r")\.?\s+([A-Z][A-Za-z'-]+)")
+# An explicit person label lets a lowercase full name be checked without treating arbitrary lowercase prose as names.
+_PERSON_NAME_WORD = r"(?!(?:is|was|will|shall|has|had|who|to|for|from|and|the|a|an|be|can|may|must|should|would|could)\b)[A-Za-z][A-Za-z'-]+"
+_PERSON_NAME = re.compile(r"\b(?:staff\s+member|employee\s+named|officer\s+named|person\s+named)\s+("
+                          + _PERSON_NAME_WORD + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
+                          + r"(?=\s*(?:[.,;:]|$|\b(?:is|was|will|shall|has|had|who|to|for|from|and|about)\b))",
+                          re.I)
 _CONNECTORS = {"of", "and", "for", "the"}
 # Words that start or end a capitalised run without being part of a name (verbs, document words, designators).
 _NOT_NAME = {"write", "draft", "prepare", "compose", "please", "kindly", "issue", "make", "create", "send", "the", "a",
@@ -188,6 +197,10 @@ def extract_facts(instruction: str) -> list:
     for m in _MONTH_YEAR.finditer(text):           # a following year satisfies the "may" rule
         if not taken(m.start(), m.end()):
             add("date", m.group(0).rstrip(".,;:"), m.start(), m.end())
+    for m in _RELATIVE_MONTH.finditer(text):
+        mon = m.group(1)
+        if not taken(m.start(), m.end()) and (mon.lower() != "may" or mon in ("May", "MAY")):
+            add("date", m.group(0), m.start(), m.end())
     for m in _STANDALONE_MONTH.finditer(text):
         mon = m.group(1)
         if not taken(m.start(1), m.end(1)) and (mon.lower() != "may" or mon in ("May", "MAY")):
@@ -251,6 +264,9 @@ def extract_facts(instruction: str) -> list:
         if taken(m.start(1), m.end(1)) or w.lower() in _NOT_NAME or w.lower() in _MONTH_SET or len(w) < 2:
             continue
         add("name", w, m.start(1), m.end(1))
+    for m in _PERSON_NAME.finditer(text):
+        if not taken(m.start(1), m.end(1)):
+            add("name", m.group(1), m.start(1), m.end(1))
     out.sort(key=lambda f: f["_at"])
     return [{"kind": f["kind"], "text": f["text"]} for f in out]
 
