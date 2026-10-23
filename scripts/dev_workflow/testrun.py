@@ -44,7 +44,7 @@ LOCK_WAIT_S = 0.5
 # Exit codes. COMPLETED/FAILED return the command's own exit code (FAILED with no exit code: 127).
 EXIT = {"TIMED_OUT": 124, "STALLED_KILLED": 125, "INTERRUPTED": 130, "DUPLICATE_RUN": 75, "NOT_FOUND": 3,
         "MISSING_MARKER": 4, "WAIT_TIMEOUT": 6, "USAGE": 2}
-GIT = ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]
+GIT = ["git", "--no-optional-locks", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]
 
 # Environmental failure signatures, matched on the tail of a failed run's log. They label a failure; they never
 # change its exit code or turn it into a pass.

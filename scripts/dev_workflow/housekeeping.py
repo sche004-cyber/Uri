@@ -43,7 +43,7 @@ from scripts.dev_workflow.milestones.store import atomic_write_bytes, file_sha25
 
 SCHEMA = "uri-housekeeping/1"
 GENESIS = "0" * 64
-GIT = ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]
+GIT = ["git", "--no-optional-locks", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]
 CANONICAL_REF = "uri-repo/integration/git-sync-20261008"
 EVIDENCE_MARKERS = {"receipt.json", "RECEIPT.md", "events.jsonl", "state.json", "report_data.json",
                     "chain_summary.json"}

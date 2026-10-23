@@ -48,7 +48,7 @@ SCHEMA = 1
 KNOWLEDGE_KINDS = ("lesson", "failed_approach", "environment", "procedure")
 HOT_CONTEXT_KINDS = {"next_action", "constraint", "issue", "permission", *KNOWLEDGE_KINDS}
 CANONICAL_REF = "uri-repo/integration/git-sync-20261008"
-GIT = ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]
+GIT = ["git", "--no-optional-locks", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]
 REPORTED_CLASSES = ("MEMORY-ONLY", "ANTIGRAVITY")
 CLOSED_OPEN_MARKERS = re.compile(r"\*\*(DONE|DECIDED|CLASSIFIED)\b")
 MAX_TEXT = 4000
