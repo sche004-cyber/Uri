@@ -537,3 +537,6 @@ New LOW finding PH1-GATE-2 (test basename collisions). `\URIServer`: OWNER_ACTIO
 `TASK-20261022-d2ba3338`. No promoted Milestone Manager ledger (AP-12/AP-14). Details: `P0_CLOSURE_20261022.md`
 Addendum M.
 
+### P.12 Canonical `c036a901` (2026-10-23)
+
+PH1-GATE-1 integrated (receipt `INTEGRATION_RECEIPT_20261023_PH1_GATE_1.md`). Open: OPEN-02 (owner, elevated), OPEN-23 (ledger promotion), OPEN-24 (PH1-GATE-2).
