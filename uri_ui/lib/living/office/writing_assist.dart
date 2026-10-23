@@ -148,6 +148,7 @@ class _WritingStripState extends State<WritingStrip> {
 
   Future<void> _brain(String label, Future<Map<String, dynamic>> Function(String) call) async {
     final text = widget.controller.text;
+    _timer?.cancel();          // Codex r4 R7-02: a pending typing check must not make the requested answer stale
     final gen = ++_gen;
     setState(() => _busy = label);
     try {
@@ -248,7 +249,13 @@ class _WritingStripState extends State<WritingStrip> {
     final colors = UriColors.of(context);
     final on = widget.enabled && _busy == null;
     // Review FB1 R2-03: a spelling guess for an unknown word is accepted one by one, never in "Accept all".
-    final corrections = [for (final s in _items) if (s['class'] == 'correction' && s['confidence'] != 'guess') s];
+    // Bulk accept takes only edits that are safe by construction: deterministic rule fixes (spacing, doubled words
+    // and marks, letter case) and Windows letter-case fixes. Brain changes and spelling replacements, which can
+    // change a name, are accepted one by one (driver r4 BLOCKED: edit shape cannot prove a word is not a name).
+    final corrections = [
+      for (final s in _items)
+        if (s['class'] == 'correction' && s['confidence'] != 'guess' && s['source'] != 'brain') s
+    ];
     final small = TextStyle(fontSize: UriType.label, color: colors.inkSoft);
     if (widget.hideWhenEmpty && _items.isEmpty && _undo.isEmpty) return const SizedBox.shrink();
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [

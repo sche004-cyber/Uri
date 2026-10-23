@@ -345,4 +345,20 @@ void main() {
     expect(w.lastIgnore, isNot(contains('t')));
     expect(w.lastIgnore, contains('c1'));
   });
+
+  testWidgets('driver r4 redesign: Brain items are never in Accept all, even when labelled correction',
+      (tester) async {
+    final w = FakeWriting()
+      ..brainAnswer = {'suggestions': [
+            {...sugg('b1', 0, 3, 'was', 'were'), 'source': 'brain'},
+            {...sugg('b2', 4, 7, 'the', 'a'), 'source': 'brain'},
+          ], 'message': ''};
+    await pump(tester, w, 'was the ok');
+    await tester.tap(find.byKey(const ValueKey('writing-proofread')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('was  →  were'), findsOneWidget);
+    expect(find.byKey(const ValueKey('writing-accept-all')), findsNothing);
+    await tester.pump(const Duration(milliseconds: 60));
+  });
 }

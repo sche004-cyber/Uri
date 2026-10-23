@@ -541,15 +541,13 @@ def _touches_meaning(orig: str, rep: str, *, context: str = "") -> bool:
     o, r = orig.strip(), rep.strip()
     if o.lower() == r.lower():
         return False                                     # letter case / spacing only
-    # Any punctuation edit between identifier characters can change what is cited (12.3 -> 12:3).
-    # Keep these out of Accept all even when the diff contains no word characters (and text_verify has no flag).
-    changed = orig + rep
-    if re.search(r"[^\w\s]", changed) and re.fullmatch(r"\w\w", context):
-        return True
-    if any(c in changed for c in "()") and re.search(r"\w", context):
+    # Driver r4 BLOCKED (RETRY_LIMIT, 7 rounds of punctuation variants: 12.3 -> 12:3, Ref. -> Ref:, 12, -> 12:):
+    # a punctuation change proposed by the Brain is never a plain correction, wherever it is. Punctuation that is
+    # safe by construction (spacing, doubled marks) comes from the deterministic rules instead.
+    if re.search(r"[^\w\s]", orig + rep):
         return True
     if not re.search(r"\w", o + r):
-        return False                                     # punctuation and spacing only
+        return False                                     # whitespace only
     if canonical_numbers(o) != canonical_numbers(r) or re.findall(r"\d+", o) != re.findall(r"\d+", r):
         return True
     if _negations(o) != _negations(r) or _dates(o) != _dates(r):
