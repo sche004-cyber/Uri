@@ -1943,6 +1943,64 @@ def test_fb2_03_staged_content_survives_archive_and_restore(sandbox):
     assert any("extra/staged.patch" in e for e in hk._verify_zip(sb["tmp"] / "bad.zip"))
 
 
+@pytest.mark.parametrize("when", ["before_apply", "after_archive", "after_final_recheck"])
+def test_r2_01_index_only_change_never_discards_new_staged_blob(sandbox, monkeypatch, when):
+    sb = sandbox
+    wt = sb["paths"]["dirty"]
+    source = wt / "a.txt"
+    source.write_bytes(b"STAGED A\n")
+    _git(wt, "add", "a.txt")
+    source.write_bytes(b"WORKTREE\n")
+    plan = _plan(sb)
+    it = _by_path(plan)["dirty"]
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    blob = subprocess.run(["git", "-C", str(wt), "hash-object", "-w", "--stdin"], input=b"STAGED B\n",
+                          capture_output=True, check=True).stdout.decode("ascii").strip()
+
+    def change_index():
+        _git(wt, "update-index", "--cacheinfo", f"100644,{blob},a.txt")
+        assert source.read_bytes() == b"WORKTREE\n"
+
+    if when == "before_apply":
+        change_index()
+    elif when == "after_archive":
+        original = hk.archive
+
+        def changed_after_archive(*args, **kwargs):
+            result = original(*args, **kwargs)
+            if Path(args[0]) == wt:
+                change_index()
+            return result
+
+        monkeypatch.setattr(hk, "archive", changed_after_archive)
+    else:
+        original = hk._current
+        calls = 0
+
+        def changed_after_final_recheck(*args, **kwargs):
+            nonlocal calls
+            result = original(*args, **kwargs)
+            if args[1]["id"] == it["id"]:
+                calls += 1
+                if calls == 2:
+                    change_index()
+            return result
+
+        monkeypatch.setattr(hk, "_current", changed_after_final_recheck)
+
+    ar = sb["tmp"] / "ar"
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j", approve=[it["id"]], archive_root=ar)
+    row = next(x for x in r["results"] if x.get("item") == it["id"])
+    assert row["outcome"] == ("SKIPPED_CHANGED" if when == "before_apply" else "FAILED")
+    if when != "before_apply":
+        assert "SOURCE_CHANGED" in row["error"]
+        with zipfile.ZipFile(next(ar.glob("*.zip"))) as z:
+            assert b"+STAGED A" in z.read("extra/staged.patch")
+    assert wt.exists() and source.read_bytes() == b"WORKTREE\n"
+    assert b"+STAGED B" in hk.staged_patch(wt)
+
+
 # =========================================================================== FB-5 (fallback review of 3b91df77)
 
 def test_fb5_01_missing_registration_whose_reflog_holds_a_commit_is_protected(sandbox):

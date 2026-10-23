@@ -572,6 +572,16 @@ def _ignored_content(path: Path) -> list[str] | None:
     return sorted(visible)
 
 
+def _index_fingerprint(worktree: Path) -> str | None:
+    """Hash raw index entries, including staged blob IDs and merge stages; None means git failed."""
+    try:
+        p = subprocess.run([*GIT, "-C", str(worktree), "ls-files", "--stage", "-z"],
+                           capture_output=True, timeout=300)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return hashlib.sha256(p.stdout).hexdigest() if p.returncode == 0 else None
+
+
 def classify_worktree(ctx: Ctx, w: dict) -> dict:
     path = Path(w["path"])
     item = {"id": "wt:" + sha_text(norm(path))[:12], "kind": "worktree", "path": str(path), "head": w["head"],
@@ -617,6 +627,7 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
     um = _untracked_markers(path, _markers(path))
     ignored = _ignored_content(path)
     hidden = _hidden_edits(path)
+    index_fingerprint = _index_fingerprint(path)
     reflog_only = _reflog_only_commits(ctx, path)
     wt_refs = _per_worktree_unreferenced(ctx, path)
     if reflog_only is not None:
@@ -649,6 +660,8 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
         protect.append("git ls-files (ignored entries) failed")
     if hidden is None:
         protect.append("git ls-files -v (index flags) failed")
+    if index_fingerprint is None:
+        protect.append("git ls-files --stage (index entries) failed")
     if reflog_only is None:
         protect.append("worktree reflog could not be checked")
     elif reflog_only:
@@ -685,7 +698,7 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
     snapshot, links = content_snapshot(path) if item["cls"] != "PROTECTED" else (None, [])
     item["links"] = links
     item["fingerprint"] = sha_text(canon_json([w["head"], w["branch"], w["locked"], dirty, um, reach,
-                                                status, snapshot, ignored, hidden, reflog_only]))
+                                                status, snapshot, ignored, hidden, reflog_only, index_fingerprint]))
     return item
 
 
@@ -991,10 +1004,13 @@ def verify_archive(ident: str, archive_root) -> dict:
     return {"ok": not errs, "zip": str(zpath), "errors": errs}
 
 
-def _check_source_against_archive(src: Path, zpath: Path) -> None:
+def _check_source_against_archive(src: Path, zpath: Path, *, worktree: bool = False) -> None:
     """Bind the bytes about to be removed to the already verified archive."""
     with zipfile.ZipFile(zpath) as z:
-        files = json.loads(z.read("manifest.json"))["files"]
+        manifest = json.loads(z.read("manifest.json"))
+        files = manifest["files"]
+        archived_patch = (z.read("extra/staged.patch") if worktree and
+                          any(e["name"] == "staged.patch" for e in manifest.get("extras", [])) else b"")
     archived = {e["path"]: e["sha256"] for e in files}
     current = set()
     for d, _dirs, names in walk(src):
@@ -1010,6 +1026,8 @@ def _check_source_against_archive(src: Path, zpath: Path) -> None:
                 raise HKError("SOURCE_CHANGED", f"{p} differs from the verified archive")
     if current != archived.keys():
         raise HKError("SOURCE_CHANGED", f"{src} file list differs from the verified archive")
+    if worktree and staged_patch(src) != archived_patch:
+        raise HKError("SOURCE_CHANGED", f"{src} staged patch differs from the verified archive")
 
 
 def restore(ident: str, archive_root, to) -> dict:
@@ -1250,7 +1268,8 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                     for path in it.get("paths") or [it["path"]]:
                         _reject_link_ancestors(path)
                 if action == "archive-then-remove":
-                    _check_source_against_archive(Path(it["path"]), Path(a["zip"]))
+                    _check_source_against_archive(Path(it["path"]), Path(a["zip"]),
+                                                  worktree=it["kind"] == "worktree")
                 if action == "archive-then-remove":
                     if it["kind"] == "worktree":
                         git(ctx.repo, "worktree", "remove", "--force", it["path"], check=True)
