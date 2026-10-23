@@ -900,6 +900,55 @@ def test_hk2_active_ledger_task_protects_worktree(sandbox):
     assert items["disposable"]["cls"] == "PROTECTED"
 
 
+@pytest.mark.parametrize("reference", ["path", "branch"])
+def test_r1_01_missing_active_task_worktree_is_protected(sandbox, reference):
+    sb = sandbox
+    path = sb["paths"]["gone"]
+    if reference == "branch":
+        path = sb["wt"] / "gone_branch"
+        _git(sb["repo"], "worktree", "add", "-q", str(path), "merged/old")
+        import shutil
+        shutil.rmtree(path)
+    lp = sb["tmp"] / "ledger.sqlite3"
+    lg = tl.Ledger(lp)
+    lg.create("active", "keep registration", DEV,
+              worktree=str(path) if reference == "path" else None,
+              branch="merged/old" if reference == "branch" else None)
+    lg.close()
+
+    item = next(it for it in _plan(sb, ledger=str(lp))["items"] if it["path"] == str(path))
+    assert item["cls"] == "PROTECTED" and item["action"] == "none"
+    assert any("ledger task" in reason for reason in item["reasons"])
+
+
+@pytest.mark.parametrize("reference", ["path", "branch"])
+def test_r1_01_apply_rechecks_new_active_task_before_pruning(sandbox, reference):
+    sb = sandbox
+    path = sb["paths"]["gone"]
+    if reference == "branch":
+        path = sb["wt"] / "gone_branch"
+        _git(sb["repo"], "worktree", "add", "-q", str(path), "merged/old")
+        import shutil
+        shutil.rmtree(path)
+    lp = sb["tmp"] / "ledger.sqlite3"
+    plan = _plan(sb, ledger=str(lp))
+    item = next(it for it in plan["items"] if it["path"] == str(path))
+    assert item["cls"] == "PRUNABLE"
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+
+    lg = tl.Ledger(lp)
+    lg.create("active", "keep registration", DEV,
+              worktree=str(path) if reference == "path" else None,
+              branch="merged/old" if reference == "branch" else None)
+    lg.close()
+    result = hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    row = next(r for r in result["results"] if r.get("item") == item["id"])
+    assert row["outcome"] == "SKIPPED_CHANGED"
+    assert row["now"]["class"] == "PROTECTED"
+    assert any(it["path"] == str(path) for it in hk._worktrees(sb["repo"]))
+
+
 def _driver_state(state: Path, stage: str):
     state.mkdir(parents=True, exist_ok=True)
     (state / "state.json").write_text(json.dumps({"stage": stage}), encoding="utf-8")

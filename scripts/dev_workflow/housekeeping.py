@@ -508,14 +508,17 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
         return item
     run = lifecycle_run_of(path)
     active_run = run is not None and run[1] != "COMPLETE"
+    branch_short = w["branch"][len("refs/heads/"):] if w["branch"] else None
+    active_task = ctx.task_ref(str(path)) or bool(branch_short and branch_short in ctx.task_branches)
     if not path.is_dir():
         # FB-1 N-02: the registration may be the only thing keeping a detached commit reachable
         reach = ctx.reach(w["head"]) if w["head"] else "NONE"
         orphan = reach == "NONE"
-        keep = w["locked"] or active_run or orphan
+        keep = w["locked"] or active_run or active_task or orphan
         item.update(cls="PROTECTED" if keep else "PRUNABLE", action="none" if keep else "worktree-prune", reach=reach)
         item["reasons"].append("directory missing" + (" but locked" if w["locked"] else "")
                                + (f" inside lifecycle run {run[0].as_posix()} (stage {run[1]})" if active_run else "")
+                               + ("; worktree of a non-terminal ledger task" if active_task else "")
                                + (" and its HEAD is on no branch, tag, remote or canonical (commits would be lost)"
                                   if orphan else ""))
         if w["head"]:
@@ -537,7 +540,6 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
                 reflog_only=(reflog_only or [])[:20],
                 cited_by=ctx.cited_by(str(path)) if cited else [],
                 idle_hours=round(idle / 3600, 1))
-    branch_short = w["branch"][len("refs/heads/"):] if w["branch"] else None
     protect = []
     if w["locked"]:
         protect.append("locked")
@@ -545,7 +547,7 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
         protect.append(f"driver work tree of lifecycle run {run[0].as_posix()} (stage {run[1]})")
     if norm(path) == ctx.cwd or ctx.cwd.startswith(norm(path) + "/"):
         protect.append("current working directory")
-    if ctx.task_ref(str(path)) or (branch_short and branch_short in ctx.task_branches):
+    if active_task:
         protect.append("worktree of a non-terminal ledger task")
     if reach == "NONE":
         protect.append("HEAD is on no branch, tag, remote or canonical (commits would be lost)")
