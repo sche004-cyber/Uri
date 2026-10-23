@@ -443,18 +443,21 @@ DRAFT_MAX_BLOCKS = 60
 DRAFT_MAX_BLOCK_CHARS = 1500
 DRAFT_MAX_TOTAL_CHARS = 20000
 DRAFT_MAX_MISSING = 10
+DRAFT_MAX_MESSAGE = 600
+DRAFT_MAX_MISSING_CHARS = 120
 DRAFT_ROLES = ("title", "heading", "paragraph", "bullet", "numbered")
 DRAFT_STATUSES = ("propose", "clarify", "cannot")
 DRAFT_SCHEMA = {
     "type": "object", "additionalProperties": False, "required": ["status", "message", "blocks", "missing"],
     "properties": {
         "status": {"type": "string", "enum": list(DRAFT_STATUSES)},
-        "message": {"type": "string", "maxLength": 600},
+        "message": {"type": "string", "maxLength": DRAFT_MAX_MESSAGE},
         "blocks": {"type": "array", "maxItems": DRAFT_MAX_BLOCKS, "items": {
             "type": "object", "additionalProperties": False, "required": ["role", "text"],
             "properties": {"role": {"type": "string", "enum": list(DRAFT_ROLES)},
                            "text": {"type": "string", "maxLength": DRAFT_MAX_BLOCK_CHARS}}}},
-        "missing": {"type": "array", "maxItems": DRAFT_MAX_MISSING, "items": {"type": "string", "maxLength": 120}},
+        "missing": {"type": "array", "maxItems": DRAFT_MAX_MISSING,
+                    "items": {"type": "string", "maxLength": DRAFT_MAX_MISSING_CHARS}},
     }}
 DRAFT_SYSTEM = (
     "You are URI's writing assistant for Indian government and office documents. You draft ONE document of the kind "
@@ -501,7 +504,11 @@ def check_draft(data) -> dict:
     if sum(len(b["text"]) for b in out) > DRAFT_MAX_TOTAL_CHARS:
         raise _draft_invalid()
     status = data["status"]
-    msg = data.get("message") if isinstance(data.get("message"), str) else ""
+    msg = data.get("message")
+    # FB1 R2-04: an over-long message or missing item is refused like an over-long block, never cut.
+    if not isinstance(msg, str) or len(msg) > DRAFT_MAX_MESSAGE \
+            or any(not isinstance(m, str) or len(m) > DRAFT_MAX_MISSING_CHARS for m in missing):
+        raise _draft_invalid()
     if status == "propose" and not out:
         raise _draft_invalid()
     if status != "propose":
@@ -509,5 +516,5 @@ def check_draft(data) -> dict:
         if not msg.strip():
             msg = ("Please say more about what the document should say; nothing was drafted." if status == "clarify"
                    else "That cannot be drafted here; nothing was drafted.")
-    return {"status": status, "message": msg.strip()[:600], "blocks": out,
-            "missing": [m.strip()[:120] for m in missing if isinstance(m, str) and m.strip()]}
+    return {"status": status, "message": msg.strip(), "blocks": out,
+            "missing": [m.strip() for m in missing if m.strip()]}

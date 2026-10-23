@@ -48,6 +48,12 @@ class FakeDailyOffice {
     'text': '--- Page 1 ---\nNotice of meeting\n\n--- Page 2 ---\n', 'truncated': false, 'pages_without_text': [2],
   };
 
+  Map<String, dynamic> ocrReply = {
+    'pages': [{'page': 1, 'text': 'Notice of meeting', 'source': 'text'}, {'page': 2, 'text': '', 'source': 'none'}],
+    'text': '--- Page 1 ---\nNotice of meeting\n\n--- Page 2 ---\n', 'truncated': false, 'pages_without_text': [2],
+    'ocr_skipped': [2], 'ocr_skipped_reasons': {'page_limit': [], 'size_limit': [], 'time_limit': [2]},
+  };
+
   Map<String, dynamic> get doc => {
         'document_id': '0123456789abcdef', 'kind': docKind, 'name': 'notice.$docKind', 'pages': 2, 'outline': [],
         'preview': {'state': 'ready', 'reason': null}, 'findings': [], 'renderer': 'Windows',
@@ -81,7 +87,7 @@ class FakeDailyOffice {
           'POST /request' => requestReply,
           'POST /open/document' => doc,
           'GET /document/0123456789abcdef' => doc,
-          'POST /document/0123456789abcdef/text' => textReply,
+          'POST /document/0123456789abcdef/text' => body['ocr'] == true ? ocrReply : textReply,
           'POST /document/0123456789abcdef/to_word' => {..._view('notice (text).docx'), 'pages_without_text': [2],
                                                         'truncated': false},
           'POST /authoring/$_aid/close' => {'closed': true, 'unsaved_changes': 0},
@@ -240,6 +246,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('office-chip-pdf:ocr_copy')));
     await _settle(tester);
     expect(fake.bodies['/document/0123456789abcdef/text']!.last, {'ocr': true});
+    // FB1 R2-05: a page left out at the time limit is named so, not as unreadable
+    expect(find.textContaining('1 page not read: the time limit was reached.'), findsOneWidget);
+    expect(find.textContaining('could not be read'), findsNothing);
     expect(tester.takeException(), isNull);
     await _unmount(tester);
   });

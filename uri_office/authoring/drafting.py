@@ -3,10 +3,12 @@
 * `choose_layout`: the document kind from keywords in the instruction (no Brain). The earliest keyword in the text
   wins, so "write an office order asking staff to report" is an office order, not a report. No keyword -> None (the
   service asks which kind).
-* `extract_facts` / `missing_facts`: numbers, dates, reference numbers, amounts and capitalised name sequences in the
-  instruction. Every one must appear verbatim in the draft; one that does not is reported by name (FACT_MISSING),
-  never dropped silently. The check is deliberately literal: "23rd October" in the instruction and "23 October" in
-  the draft is reported, so the owner looks.
+* `extract_facts` / `missing_facts`: numbers (digits, and number words such as "twenty five thousand"), dates,
+  reference numbers, amounts, capitalised name sequences and one capitalised word after to/from/Shri/Smt/Mr/Mrs/Ms/Dr
+  in the instruction. Every one must appear in the draft as a whole token run (FB1 R2-01: "7" is not found inside
+  "17"); one that does not is reported by name (FACT_MISSING), never dropped silently. The check is deliberately
+  literal: "23rd October" in the instruction and "23 October" in the draft is reported, so the owner looks.
+  Not extracted (stated in plan 16): lowercase names, a single name without a cue word, ordinal and fraction words.
 """
 from __future__ import annotations
 
@@ -53,8 +55,15 @@ _NOT_NAME = {"write", "draft", "prepare", "compose", "please", "kindly", "issue"
              "notice", "circular", "memo", "memorandum", "minutes", "report", "letter", "note", "sheet", "notesheet",
              "i", "we", "it", "this", "that", "with", "from", "for", "and", "of", "on", "in", "by", "all", "also",
              "copy", "regarding", "about", "inform", "informing", "asking", "request", "requesting", "pay", "rs",
-             "inr", "dt", "w.e.f", "wef"}
+             "inr", "dt", "w.e.f", "wef", "transfer", "sanction", "ask", "hold", "grant", "appoint", "direct",
+             "depute", "relieve", "post", "approve", "forward", "submit", "reply"}
 _MONTH_SET = set(_MONTHS.split("|"))
+_CUE_NAME = re.compile(r"\b(?:to|from|Shri|Smt|Mr|Mrs|Ms|Dr)\.?\s+([A-Z][A-Za-z'-]+)")
+_NUM_WORD = (r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|"
+             r"seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|"
+             r"lakhs?|crores?)")
+_NUM_WORDS = re.compile(r"\b" + _NUM_WORD + r"(?:[\s-]+(?:and\s+)?" + _NUM_WORD + r")*\b", re.I)
+_SMALL_NUMS = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
 _TRAIL = ".,;:)]}'\""
 _LEAD = "([{'\""
 
@@ -102,6 +111,9 @@ def extract_facts(instruction: str) -> list:
         add(kind, tok, m.start(), m.end())
     for m in _NAMES.finditer(text):
         words = m.group(0).split()
+        hon = [i for i, w in enumerate(words) if i > 0 and re.fullmatch(_HONORIFIC, w)]
+        if hon:                                   # "Relieve Shri Ram Kumar": the name starts at the honorific
+            words = words[hon[0]:]
         while words and (words[0].lower().rstrip(".") in _NOT_NAME or words[0].lower().rstrip(".") in _MONTH_SET):
             words.pop(0)
         while words and (words[-1].lower().rstrip(".") in _NOT_NAME or words[-1].lower().rstrip(".") in _MONTH_SET):
@@ -112,6 +124,18 @@ def extract_facts(instruction: str) -> list:
             if not any(name.lower() in f["text"].lower() or f["text"].lower() in name.lower()
                        for f in out if f["kind"] == "name"):
                 add("name", name, m.start())
+    # FB1 R2-03: one capitalised word after a cue ("a memo to Ramesh", "from Sharma") is a name too.
+    for m in _CUE_NAME.finditer(text):
+        w = m.group(1).rstrip(_TRAIL)
+        if w.lower().rstrip(".") in _NOT_NAME or w.lower().rstrip(".") in _MONTH_SET or len(w) < 2:
+            continue
+        if not any(w.lower() in f["text"].lower() for f in out if f["kind"] == "name"):
+            add("name", w, m.start(1))
+    # FB1 R2-03: numbers written in words ("twenty five thousand"); a lone "one".."ten" is too common to check.
+    for m in _NUM_WORDS.finditer(text):
+        words = m.group(0).lower().split()
+        if len(words) >= 2 or words[0] not in _SMALL_NUMS:
+            add("number", m.group(0), m.start(), m.end())
     out.sort(key=lambda f: f["_at"])
     return [{"kind": f["kind"], "text": f["text"]} for f in out]
 
@@ -120,15 +144,25 @@ def _norm(s: str) -> str:
     return " ".join((s or "").split())
 
 
+def fact_present(fact: str, draft_text: str) -> bool:
+    """FB1 R2-01: a fact counts as present only as a whole token run: no letter or digit or '/' directly before or
+    after it, and no digit group continuing it ("25,000" is not inside "1,25,000"; "7" is not inside "17"; "Kumar" is
+    not inside "Kumari"). Spacing is normalised on both sides; case is ignored (names, month names and number words;
+    digits have no case)."""
+    t = _norm(fact)
+    if not t:
+        return True
+    rx = re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + re.escape(t) + r"(?![^\W_])(?![/])(?![,.]\d)",
+                    re.I)
+    return rx.search(_norm(draft_text)) is not None
+
+
 def missing_facts(instruction: str, draft_text: str) -> list:
-    """Facts from the instruction that the draft does not contain verbatim (names ignore case and spacing; every other
-    kind ignores spacing only). Returns warnings {code: FACT_MISSING, kind, text, message}."""
-    hay = _norm(draft_text)
-    low = hay.lower()
+    """Facts from the instruction that the draft does not contain as whole tokens (case and spacing ignored).
+    Returns warnings {code: FACT_MISSING, kind, text, message}."""
     out = []
     for f in extract_facts(instruction):
-        t = _norm(f["text"])
-        present = t.lower() in low if f["kind"] == "name" else t in hay
+        present = fact_present(f["text"], draft_text)
         if not present:
             out.append({"code": "FACT_MISSING", "kind": f["kind"], "text": f["text"],
                         "message": f"The draft does not contain the {f['kind']} '{f['text']}' from your instruction. "

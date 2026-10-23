@@ -433,7 +433,7 @@ def test_ocr_runs_only_on_request_and_is_refused_by_name_without_tesseract(tmp_p
     d, hub = docs_with(tmp_path, ["text", ""], png=tmp_path / "p.png")
     calls = []
     monkeypatch.setattr(OCR, "tesseract_exe", lambda: Path("tess.exe"))
-    monkeypatch.setattr(OCR, "ocr_png", lambda png, exe: calls.append(png) or "Scanned words")
+    monkeypatch.setattr(OCR, "ocr_png", lambda png, exe, **kw: calls.append(png) or "Scanned words")
     assert d.text(DID)["pages_without_text"] == [2] and calls == [] and hub.rendered == []
     r = d.text(DID, ocr=True)
     assert r["pages"][1] == {"page": 2, "text": "Scanned words", "source": "ocr", "failed": False}
@@ -451,7 +451,7 @@ def test_ocr_page_cap_lists_skipped_pages(tmp_path, monkeypatch):
     from uri_office import docs as DOCS
     d, _ = docs_with(tmp_path, [""] * (DOCS.MAX_OCR_PAGES + 3), png=tmp_path / "p.png")
     monkeypatch.setattr(OCR, "tesseract_exe", lambda: Path("tess.exe"))
-    monkeypatch.setattr(OCR, "ocr_png", lambda png, exe: "w")
+    monkeypatch.setattr(OCR, "ocr_png", lambda png, exe, **kw: "w")
     r = d.text(DID, ocr=True)
     assert r["ocr_skipped"] == [DOCS.MAX_OCR_PAGES + 1, DOCS.MAX_OCR_PAGES + 2, DOCS.MAX_OCR_PAGES + 3]
 

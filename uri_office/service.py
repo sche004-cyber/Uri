@@ -276,7 +276,8 @@ class Office:
             paras.append(("Normal", "[The PDF has more text than URI copies at once; the rest is not included.]"))
         view = self.authoring.new_document_from_bytes(f"{stem} (text).docx", T.from_paragraphs(paras))
         return {**view, "source_document_id": did, "truncated": t["truncated"],
-                "pages_without_text": t["pages_without_text"], "ocr_skipped": t["ocr_skipped"]}
+                "pages_without_text": t["pages_without_text"], "ocr_skipped": t["ocr_skipped"],
+                "ocr_skipped_reasons": t["ocr_skipped_reasons"]}
 
     def request(self, body) -> dict:
         target = body.get("target") or {}

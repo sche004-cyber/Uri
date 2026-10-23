@@ -146,6 +146,26 @@ page rendered by the WinRT raster worker end to end (only the Tesseract step and
 is not hash-pinned like LibreOffice (no pin recorded); only the `eng` language pack is installed (Hindi text is not
 read); a "Read scanned pages" option for To Word exists in the API (`ocr: true`) but has no button.
 
+Repairs after fallback review FB1 of 03c2fba9 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r1/fallback/FB1_subagent_03c2fba9.audit.txt`). The earlier claim that the
+fact check catches changed facts was wrong for changed digits and names: it was a substring test, so "7" was found
+inside "17" and "Kumar" inside "Kumari". Corrected as follows:
+- R2-01: a fact counts as present only as a whole token run (no letter, digit or '/' on either side, no digit group
+  continuing it), with spacing normalised and case ignored.
+- R2-02: OCR text cut by the size cap sets `truncated` and a per-page `cut` flag. Pages left out are listed in
+  `ocr_skipped_reasons` (`page_limit`, `size_limit`, `time_limit`), and the app names the limit instead of saying the
+  page could not be read.
+- R2-03: a single capitalised word after to/from/Shri/Smt/Mr/Mrs/Ms/Dr, and numbers written in words ("twenty five
+  thousand", not a lone "one".."ten"), are extracted and checked.
+- R2-04: a draft message over 600 characters or a missing item over 120 is refused (BRAIN_OUTPUT_INVALID), not cut.
+- R2-05: one OCR request has a 180 s deadline, below the app's 240 s request timeout. Pages left when it runs out are
+  listed under `time_limit`.
+
+Fact-check limitations that remain: lowercase names ("ramesh kumar"), a single name without a cue word, ordinal and
+fraction words ("first", "half"), dates written differently in the draft (reported, not matched), words in Indian
+languages, and the fact that a fact can be present but used in the wrong place. A FACT_MISSING list is an aid to the
+owner's own reading, not a guarantee.
+
 ## 5. Coordination
 
 M95 owns `uri_privacy/` and touches `uri_office/service.py` `main()` only: this work does not edit `main()`. Vision F-1

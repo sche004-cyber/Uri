@@ -17,7 +17,9 @@ from .errors import OfficeError
 
 DEFAULT_EXE = Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe")
 OCR_MEMORY = 1024 * 2**20
-OCR_TIMEOUT_S = 90.0
+OCR_TIMEOUT_S = 90.0                # one page
+OCR_DEADLINE_S = 180.0              # FB1 R2-05: one request, below the app's 240 s request timeout
+OCR_MIN_PAGE_S = 5.0                # less time than this left: the remaining pages are listed as skipped
 OCR_LANG = "eng"
 OCR_WIDTH = 1240                    # the largest page width the raster path renders (contracts.PAGE_WIDTHS)
 
@@ -30,7 +32,7 @@ def tesseract_exe() -> Path | None:
     return None
 
 
-def ocr_png(png: Path, exe: Path | None = None) -> str:
+def ocr_png(png: Path, exe: Path | None = None, timeout: float = OCR_TIMEOUT_S) -> str:
     """The text Tesseract reads from one page image. Raises OCR_UNAVAILABLE / OCR_TIMEOUT / OCR_FAILED."""
     exe = exe or tesseract_exe()
     if exe is None:
@@ -40,7 +42,7 @@ def ocr_png(png: Path, exe: Path | None = None) -> str:
         p = J.spawn([str(exe), str(png), "stdout", "-l", OCR_LANG], job, stdin=subprocess.DEVNULL,
                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, cwd=str(Path(png).parent))
         try:
-            out, _ = p.communicate(timeout=OCR_TIMEOUT_S)
+            out, _ = p.communicate(timeout=max(1.0, min(float(timeout), OCR_TIMEOUT_S)))
         except subprocess.TimeoutExpired:
             job.close()                                   # kills Tesseract and anything it started
             p.communicate()
