@@ -1,5 +1,6 @@
 """AC-4, AC-7, AC-8: grants, value-free records, persistence, crash recovery."""
 import json
+import inspect
 import os
 import threading
 
@@ -12,6 +13,11 @@ from uri_privacy.vault import PersistentVaultStore, VaultError
 
 AADHAAR, EMAIL = "2345 6789 0124", "asha.rao7@example.in"
 windows = pytest.mark.skipif(os.name != "nt", reason="DPAPI is Windows-only")
+_AUTHENTICATED_OWNER = object()
+
+
+def _verify_principal(principal):
+    return "owner" if principal is _AUTHENTICATED_OWNER else None
 
 
 class Clock:
@@ -23,12 +29,17 @@ class Clock:
 
 
 def store(tmp_path=None, clock=None):
-    return GrantStore(tmp_path / "grants.json" if tmp_path else None, clock=clock or Clock())
+    kwargs = {"clock": clock or Clock()}
+    if "principal_verifier" in inspect.signature(GrantStore).parameters:
+        kwargs["principal_verifier"] = _verify_principal
+    return GrantStore(tmp_path / "grants.json" if tmp_path else None, **kwargs)
 
 
 def grant(s, **kw):
     args = dict(requester="uri_web.search.tavily", categories=["GOV_ID"], purpose="web_research",
                 destination="WEB_SEARCH", authorized_by="user:owner")
+    if "principal" in inspect.signature(s.grant).parameters:
+        args["principal"] = _AUTHENTICATED_OWNER
     args.update(kw)
     return s.grant(**args)
 
@@ -175,6 +186,9 @@ def test_persistent_vault_is_ciphertext_with_dpapi_key_and_survives_restart(tmp_
             assert EMAIL.encode() not in f.read_bytes() and b"asha" not in f.read_bytes()
     assert (tmp_path / "vault-key.dpapi").exists()
     g2 = PrivacyGateway(vault=PersistentVaultStore(tmp_path))
+    with pytest.raises(PrivacyRefused) as wrong_owner:
+        g2.restore(e.text, "task-1", requester="outsider")
+    assert wrong_owner.value.code == "PRIVACY_SCOPE_OWNER_MISMATCH"
     assert g2.restore(e.text, "task-1", requester="r") == f"mail {EMAIL}"
 
 

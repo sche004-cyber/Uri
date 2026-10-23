@@ -1,5 +1,6 @@
 """AC-10..AC-13: the gateway in its live consumers (web search, scheduler), loopback Brain clients and D10."""
 import ast
+import inspect
 import json
 import os
 import secrets
@@ -9,6 +10,7 @@ import httpx
 import pytest
 
 from uri_privacy import PrivacyGateway
+from uri_privacy.grants import GrantStore
 from uri_web import search as S
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,6 +41,13 @@ def test_secret_in_query_is_never_sent(cls, kw):
     assert r.status == S.REFUSED and r.error_code == "PRIVACY_REFUSED" and r.query == "" and sent == []
 
 
+@pytest.mark.parametrize("query", ["password\uff1a Mango#2026!", "card 4111\u200b1111\u200b1111\u200b1111"])
+def test_unicode_obfuscated_sensitive_query_never_reaches_transport(query):
+    sent, transport = capture()
+    result = S.TavilyProvider(api_key="k", transport=transport, privacy=PrivacyGateway()).search(query)
+    assert result.status == S.REFUSED and result.query == "" and sent == []
+
+
 def test_identifiers_are_removed_from_the_sent_query():
     sent, t = capture()
     g = PrivacyGateway()
@@ -65,9 +74,14 @@ def test_query_that_is_only_an_identifier_is_refused_not_sent_empty():
 
 def test_user_grant_allows_the_identifier_once():
     sent, t = capture()
-    g = PrivacyGateway()
+    owner = object()
+    if "principal_verifier" in inspect.signature(GrantStore).parameters:
+        g = PrivacyGateway(grants=GrantStore(principal_verifier=lambda p: "owner" if p is owner else None))
+        proof = {"principal": owner}
+    else:
+        g, proof = PrivacyGateway(), {}
     g.grants.grant(requester="uri_web.search.tavily", categories=["CONTACT"], purpose="web_research",
-                   destination="WEB_SEARCH", authorized_by="user:owner")
+                   destination="WEB_SEARCH", authorized_by="user:owner", **proof)
     p = S.TavilyProvider(api_key="k", transport=t, privacy=g)
     p.search(f"who is {EMAIL}")
     p.search(f"who is {EMAIL}")
@@ -116,6 +130,29 @@ def test_scheduler_refuses_credentials_before_any_attempt(sched):
     assert s.store.q1("SELECT COUNT(*) FROM attempt")[0] == 0
     ev = [e for e in s.store.events() if e["kind"] == "occurrence.privacy_refused"]
     assert ev and "Tr0ub4dor" not in json.dumps(ev)
+
+
+@pytest.mark.parametrize("festival,refused", [(f"Diwali {EMAIL}", False),
+                                            ("Diwali password: Mango#2026!", True)])
+def test_scheduler_prepares_calendar_metadata_before_attempt(sched, festival, refused):
+    s, h, tmp = sched
+    proposal = s.propose(owner="owner", title="t", template_id="festival_gif.v1",
+                         params={"festival": {"key": "diwali", "name": "Diwali"}},
+                         schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(proposal["job_id"], "owner", proposal["proposal_sha256"])
+    with s.store.tx() as db:
+        row = db.execute("SELECT occ_id,meta_json FROM occurrence WHERE job_id=?", (proposal["job_id"],)).fetchone()
+        meta = json.loads(row["meta_json"] or "{}")
+        meta.update(festival=festival, calendar_record={"name": festival})
+        db.execute("UPDATE occurrence SET meta_json=? WHERE occ_id=?", (json.dumps(meta), row["occ_id"]))
+    outcome = s.tick()
+    if refused:
+        assert outcome[0]["result"] == "NEEDS_ATTENTION"
+        assert h.calls == [] and s.store.q1("SELECT COUNT(*) FROM attempt")[0] == 0
+        assert not (tmp / "state" / "work").exists()
+    else:
+        task = next((tmp / "state" / "work").rglob("task.json")).read_text(encoding="utf-8")
+        assert EMAIL not in task and len(h.calls) == 1
 
 
 def test_scheduler_revision_instruction_is_sanitized(sched):

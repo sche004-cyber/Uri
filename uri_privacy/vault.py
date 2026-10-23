@@ -29,9 +29,10 @@ class VaultError(RuntimeError):
 
 
 class Scope:
-    def __init__(self, scope_id: str, expires_at: float, refs=None):
+    def __init__(self, scope_id: str, expires_at: float, refs=None, requester=None):
         self.scope_id = scope_id
         self.expires_at = expires_at
+        self.requester = requester
         self._by_token = dict(refs or {})                     # token -> (category, value)
         self._by_value = {(c, v): t for t, (c, v) in self._by_token.items()}
         self._lock = threading.Lock()
@@ -72,7 +73,7 @@ class Scope:
 
     def _dump(self) -> dict:
         with self._lock:
-            return {"scope_id": self.scope_id, "expires_at": self.expires_at,
+            return {"scope_id": self.scope_id, "expires_at": self.expires_at, "requester": self.requester,
                     "refs": [[t, c, v] for t, (c, v) in self._by_token.items()]}
 
 
@@ -82,7 +83,7 @@ class MemoryVaultStore:
         self._scopes = {}
         self._lock = threading.Lock()
 
-    def open(self, scope_id: str, ttl_s: float) -> Scope:
+    def open(self, scope_id: str, ttl_s: float, *, requester=None) -> Scope:
         if not isinstance(scope_id, str) or not _SCOPE_ID.match(scope_id):
             raise VaultError("SCOPE_ID_INVALID")
         with self._lock:
@@ -91,8 +92,10 @@ class MemoryVaultStore:
                 self._drop(scope_id)
                 s = None
             if s is None:
-                s = self._load(scope_id) or Scope(scope_id, self.clock() + ttl_s)
+                s = self._load(scope_id) or Scope(scope_id, self.clock() + ttl_s, requester=requester)
                 self._scopes[scope_id] = s
+            if s.requester != requester:
+                raise VaultError("SCOPE_OWNER_MISMATCH")
             return s
 
     def get(self, scope_id: str):
@@ -164,7 +167,7 @@ class PersistentVaultStore(MemoryVaultStore):
             d = json.loads(self._fernet.decrypt(path.read_bytes()).decode("utf-8"))
             if d.get("scope_id") != scope_id:
                 raise ValueError("scope mismatch")
-            return Scope(scope_id, float(d["expires_at"]), {t: (c, v) for t, c, v in d["refs"]})
+            return Scope(scope_id, float(d["expires_at"]), {t: (c, v) for t, c, v in d["refs"]}, d.get("requester"))
         except Exception:                                       # noqa: BLE001 - any doubt: quarantine and refuse
             q = self.home / "quarantine"
             q.mkdir(exist_ok=True)

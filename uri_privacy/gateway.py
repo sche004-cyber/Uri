@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 import os
 import threading
+import unicodedata
 import uuid
 from collections import Counter
 from dataclasses import dataclass, field
@@ -88,6 +89,17 @@ class PrivacyGateway:
             dest = P.Destination(meta["destination"])
         except ValueError:
             raise PrivacyRefused("PRIVACY_DESTINATION_UNKNOWN") from None
+        # Compatibility characters and format controls can hide separators from the
+        # ASCII credential/card detectors. Refuse ambiguous external text rather
+        # than trying to rewrite spans measured against a different string.
+        if dest not in P.LOCAL and not text.isascii():
+            folded = "".join(ch for ch in unicodedata.normalize("NFKC", text)
+                             if unicodedata.category(ch) != "Cf")
+            if folded != text:
+                folded_counts = C.classify(folded, protected_terms).categories()
+                raw_counts = C.classify(text, protected_terms).categories()
+                if any(folded_counts[c] > raw_counts[c] for c in C.CATEGORIES):
+                    raise PrivacyRefused("PRIVACY_REFUSED")
         cls = C.classify(text, protected_terms)
         counts = cls.categories()
 
@@ -119,7 +131,7 @@ class PrivacyGateway:
         if grant_ids and not self.grants.consume(grant_ids):
             raise PrivacyRefused("PRIVACY_GRANT_RACE")              # used up or revoked between match and use
 
-        out, scope_id = self._rewrite(text, cls, actions, dest, scope, ttl_s)
+        out, scope_id = self._rewrite(text, cls, actions, dest, scope, ttl_s, meta["requester"])
         if dest == P.Destination.LOG and cls.credential_kinds:
             from uri_assist.redact import redact_text
             out = redact_text(out, Counter())
@@ -129,13 +141,13 @@ class PrivacyGateway:
                          outcome="SANITIZED" if any(a != P.ALLOW for a in actions.values()) else "ALLOWED", code=None)
         return Egress(out, dest.value, cats, actions, scope_id, grant_ids)
 
-    def _rewrite(self, text, cls, actions, dest, scope, ttl_s):
+    def _rewrite(self, text, cls, actions, dest, scope, ttl_s, requester):
         rewrite = [f for f in cls.findings if actions.get(f.category) in (P.PSEUDONYMIZE, P.REDACT)]
         if not rewrite:
             return text, None
         sc = None
         if any(actions[f.category] == P.PSEUDONYMIZE for f in rewrite):
-            sc = self.vault.open(scope or ("s-" + uuid.uuid4().hex), ttl_s)
+            sc = self.vault.open(scope or ("s-" + uuid.uuid4().hex), ttl_s, requester=requester)
         parts, pos = [], 0
         for f in rewrite:
             parts.append(text[pos:f.start])
@@ -162,6 +174,8 @@ class PrivacyGateway:
             sc = self.vault.get(scope) if isinstance(scope, str) else None
             if sc is None:
                 raise PrivacyRefused("PRIVACY_SCOPE_UNKNOWN")
+            if sc.requester != meta["requester"]:
+                raise PrivacyRefused("PRIVACY_SCOPE_OWNER_MISMATCH")
             out, restored, foreign = sc.restore(text)
         except PrivacyRefused as exc:
             self._audit_refusal(meta, exc)

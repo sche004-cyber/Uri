@@ -122,7 +122,8 @@ class Scheduler:
             return self.privacy.prepare(value, requester=requester, destination="EXTERNAL_AGENT",
                                         purpose="scheduled_creative", task_id=task_id, reversible=False).text
         if isinstance(value, dict):
-            return {k: self._sanitize_for_harness(v, requester=requester, task_id=task_id) for k, v in value.items()}
+            return {self._sanitize_for_harness(k, requester=requester, task_id=task_id):
+                    self._sanitize_for_harness(v, requester=requester, task_id=task_id) for k, v in value.items()}
         if isinstance(value, list):
             return [self._sanitize_for_harness(v, requester=requester, task_id=task_id) for v in value]
         return value
@@ -849,6 +850,12 @@ class Scheduler:
             who = "uri_scheduler." + job["template_id"]
             params = self._sanitize_for_harness(job["params"], requester=who, task_id=attempt_key)
             request = self._sanitize_for_harness(occ["request"], requester=who, task_id=attempt_key)
+            # Calendar names and records are copied into task.json by the template.
+            # Prepare them before the attempt/workspace is created as well.
+            package_occ = dict(occ, meta=self._sanitize_for_harness(occ["meta"], requester=who,
+                                                           task_id=attempt_key))
+            previous = self._previous_for(occ)
+            package_previous = self._sanitize_for_harness(previous, requester=who, task_id=attempt_key)
         except PrivacyRefused as exc:
             reason = "PRIVACY_REFUSED:" + exc.code
             with self.store.tx() as db:
@@ -876,9 +883,8 @@ class Scheduler:
                             payload={"attempt_id": attempt_id, "mode": gate.mode, "executor": gate.executor_id,
                                      "qualification": gate.qualification, "kind": kind, "workspace": str(workspace)})
         template = TEMPLATES[job["template_id"]]
-        previous = self._previous_for(occ)
-        instructions = template.build_package(workspace, occurrence=occ, params=params, request=request,
-                                              previous=previous)
+        instructions = template.build_package(workspace, occurrence=package_occ, params=params, request=request,
+                                              previous=package_previous)
         valid_until = occ["deadline_us"] if not occ["request"] else None
         outcome = self.harness.run(attempt_key=attempt_key, principal=job["owner"], workspace=workspace,
                                    instructions=instructions, gate=gate, valid_until_us=valid_until)

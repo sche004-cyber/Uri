@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import threading
 import time
 from pathlib import Path
@@ -16,6 +17,17 @@ from pathlib import Path
 GENESIS = "0" * 64
 FIELDS = ("requester", "task_id", "destination", "purpose", "policy", "decision", "categories", "grant_ids", "outcome",
           "code")
+_IDENTIFIER = re.compile(r"[A-Za-z][A-Za-z0-9_.:-]{0,95}\Z")
+
+
+def _safe_identifier(value):
+    """Audit labels are identifiers, never caller-supplied content."""
+    if value is None:
+        return None
+    if not isinstance(value, str) or not _IDENTIFIER.fullmatch(value):
+        return "UNTRUSTED_IDENTIFIER"
+    from .classify import classify
+    return value if not classify(value).categories() else "UNTRUSTED_IDENTIFIER"
 
 
 def _h(rec: dict) -> str:
@@ -39,6 +51,18 @@ class PrivacyAudit:
         unknown = set(fields) - set(FIELDS)
         if unknown:
             raise ValueError("AUDIT_FIELD_UNKNOWN")
+        fields = dict(fields)
+        for key in ("requester", "task_id", "purpose", "destination", "policy", "decision", "outcome", "code"):
+            fields[key] = _safe_identifier(fields.get(key))
+        if isinstance(fields.get("grant_ids"), list):
+            fields["grant_ids"] = [_safe_identifier(g) for g in fields["grant_ids"]]
+        elif fields.get("grant_ids") is not None:
+            fields["grant_ids"] = []
+        if isinstance(fields.get("categories"), dict):
+            fields["categories"] = {_safe_identifier(k): v if isinstance(v, int) and v >= 0 else None
+                                    for k, v in fields["categories"].items()}
+        elif fields.get("categories") is not None:
+            fields["categories"] = None
         with self._lock:
             rec = {"v": 1, "seq": self._seq + 1, "ts": round(self.clock(), 3), "prev": self._prev,
                    **{k: fields.get(k) for k in FIELDS}}

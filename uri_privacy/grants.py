@@ -8,11 +8,13 @@ credential (`policy.grantable`).
 from __future__ import annotations
 
 import json
+import errno
 import os
 import re
 import secrets
 import threading
 import time
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -47,14 +49,59 @@ class Grant:
 
 
 class GrantStore:
-    def __init__(self, path=None, *, clock=time.time):
+    def __init__(self, path=None, *, clock=time.time, principal_verifier=None):
         self.path = Path(path) if path else None
         self.clock = clock
+        # A production store has no grant-creation authority until an authenticated
+        # boundary supplies a verifier. A formatted user: string proves nothing.
+        self.principal_verifier = principal_verifier
         self._lock = threading.Lock()
         self._grants = {}
+        self._reload()
+
+    def _reload(self):
         if self.path and self.path.exists():
-            data = json.loads(self.path.read_text(encoding="utf-8"))   # a malformed file raises: fail closed
+            data = json.loads(self.path.read_text(encoding="utf-8"))   # malformed state fails closed
             self._grants = {g["grant_id"]: Grant(**g) for g in data["grants"]}
+        elif self.path:
+            self._grants = {}
+
+    @contextmanager
+    def _transaction(self):
+        with self._lock:
+            if self.path is None:
+                yield
+                return
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            lock_path = self.path.with_name(self.path.name + ".lock")
+            with open(lock_path, "a+b") as lock:
+                if os.name == "nt":
+                    import msvcrt
+                    lock.seek(0)
+                    if not lock.read(1):
+                        lock.write(b"\0")
+                        lock.flush()
+                    lock.seek(0)
+                    while True:
+                        try:
+                            msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
+                            break
+                        except OSError as exc:
+                            if exc.errno not in (errno.EACCES, errno.EDEADLK):
+                                raise
+                            time.sleep(0.01)
+                else:
+                    import fcntl
+                    fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+                try:
+                    self._reload()
+                    yield
+                finally:
+                    if os.name == "nt":
+                        lock.seek(0)
+                        msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
+                    else:
+                        fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
     def _save(self):
         if not self.path:
@@ -67,8 +114,15 @@ class GrantStore:
             os.fsync(f.fileno())
         os.replace(tmp, self.path)
 
-    def grant(self, *, requester, categories, purpose, destination, authorized_by, ttl_s=900, uses=1) -> Grant:
-        if not isinstance(authorized_by, str) or not _USER.match(authorized_by):
+    def grant(self, *, requester, categories, purpose, destination, authorized_by, principal=None, ttl_s=900, uses=1) -> Grant:
+        verified = None
+        if self.principal_verifier is not None and principal is not None:
+            try:
+                verified = self.principal_verifier(principal)
+            except Exception:  # an auth failure cannot create a grant
+                pass
+        if (not isinstance(authorized_by, str) or not _USER.match(authorized_by)
+                or verified != authorized_by.removeprefix("user:")):
             raise GrantError("USER_AUTHORIZATION_REQUIRED")          # a component cannot grant itself
         if not requester or not purpose or not categories:
             raise GrantError("GRANT_SCOPE_INCOMPLETE")
@@ -81,14 +135,14 @@ class GrantStore:
         now = self.clock()
         g = Grant("GR-" + secrets.token_hex(6), requester, sorted(set(categories)), purpose, dest, now + ttl_s, uses,
                   authorized_by, now)
-        with self._lock:
+        with self._transaction():
             self._grants[g.grant_id] = g
             self._save()
         return g
 
     def match(self, *, requester, category, purpose, destination):
         now = self.clock()
-        with self._lock:
+        with self._transaction():
             for g in self._grants.values():
                 if (g.live(now) and g.requester == requester and category in g.categories and g.purpose == purpose
                         and g.destination == P.Destination(destination).value):
@@ -98,7 +152,8 @@ class GrantStore:
     def consume(self, grant_ids) -> bool:
         """Use each grant once, atomically: all or none (concurrent callers cannot exceed uses_left)."""
         now = self.clock()
-        with self._lock:
+        grant_ids = tuple(dict.fromkeys(grant_ids))
+        with self._transaction():
             gs = [self._grants.get(i) for i in grant_ids]
             if any(g is None or not g.live(now) for g in gs):
                 return False
@@ -109,7 +164,7 @@ class GrantStore:
             return True
 
     def revoke(self, grant_id) -> bool:
-        with self._lock:
+        with self._transaction():
             g = self._grants.get(grant_id)
             if g is None or g.revoked_at is not None:
                 return False
@@ -120,7 +175,7 @@ class GrantStore:
     def revoke_requester(self, requester) -> int:
         """Revoke every live grant of this requester; returns how many were stopped."""
         now = self.clock()
-        with self._lock:
+        with self._transaction():
             n = 0
             for g in self._grants.values():
                 if g.requester == requester and g.live(now):
@@ -131,5 +186,5 @@ class GrantStore:
 
     def list(self, *, live_only=True) -> list:
         now = self.clock()
-        with self._lock:
+        with self._transaction():
             return [asdict(g) for g in self._grants.values() if g.live(now) or not live_only]
