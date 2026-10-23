@@ -29,6 +29,14 @@ PROBES = [
     "Ref. 12/3 is pending. Annexure A is attached. Annexure a is not.", "i see https://example.gov.in/a,b for details.",
     "Mail admin.section@example.gov.in now.", "No. 12/3/2024-Estt. dated 5.6.2024.", "i forwarded the file to mehta.",
     "i  recieve the the letter , on tuesday!!  thier work.", "sub-clause i, ii and iii apply. see item i above.",
+    # review FB3 probes
+    "Venue: New Delhi\nDelhi Police will attend the meeting. i will confirm.",
+    "Members: Shri Gupta\nGupta committee report is due. the file is here.",
+    "Phone nine nine eight seven. the line is open.", "It is not not required.", "Will will sign the order.",
+    "Bill bill the client. Rose rose early. Visit Bora Bora and Walla Walla and Pago Pago.",
+    "Send the file to ramesh.Kumar@nic.in today.", "Mail rajesh.Sharma@gov.in and anita.Rao@gov.in now.",
+    "Set config.Value before the run.", "The reading was taken. pH is 7.2 in the tank.", "Take vitamin a every day.",
+    "Total\nTotal amount is due.",
 ]
 # Brain answers that change meaning in the ways reviewers found; the bulk set must never carry them.
 BRAIN = {
@@ -69,14 +77,27 @@ def bulk(items):
     return out
 
 
+_NUM = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "hundred", "thousand",
+        "lakh", "crore"}
+_NEG = {"not", "no", "never", "none", "nor", "neither", "nothing", "nobody", "without", "cannot"}
+
+
 def norm(t: str) -> str:
-    t = t.lower()
-    t = re.sub(r"\b(an?)\b", "a", t)                       # a / an
+    """What the bulk set may change (review FB3: strict; line breaks are kept; a repeated word only when it is the same
+    lower-case word twice on one line and not a number or a negation; a/an is NOT equivalent any more)."""
+    def same_line_repeat(m):
+        w = m.group(1)
+        if w != m.group(3) or not w[:1].islower() or w in _NUM or w in _NEG:
+            return m.group(0)
+        return w
+    prev = None
+    while prev != t:                                        # "the the the" -> "the"
+        prev, t = t, re.sub(r"\b(\w+)([ \t]+)(\1)\b", same_line_repeat, t)
     t = re.sub(r"([,;:!?])\1+", r"\1", t)                  # doubled punctuation
     t = re.sub(r"(?<![.\w])(\w+)\.\.(?!\.)", r"\1.", t)
-    t = re.sub(r"\s+([,;:!?.])(?=\s|$)", r"\1", t)          # space before punctuation
-    t = re.sub(r"\b(\w+)(\s+\1\b)+", r"\1", t)              # repeated word
-    return re.sub(r"\s+", " ", t).strip()
+    t = re.sub(r"[ \t]+([,;:!?.])(?=\s|$)", r"\1", t)       # space before punctuation
+    t = re.sub(r"[ \t]+", " ", t)
+    return t.lower().strip()                               # letter case may change (not inside a word: see rules)
 
 
 @pytest.mark.parametrize("text", CORPUS + PROBES)
@@ -107,3 +128,8 @@ def test_windows_word_replacements_are_never_bulk():
     words = [s for s in res["suggestions"] if s["source"] == "windows_spell" and s["kind"] == "spelling"]
     assert words and not any(s in bulk(res["suggestions"]) for s in words)
     assert all(s["class"] == "rewrite" or s.get("confidence") == "guess" for s in words)
+
+
+def test_words_with_an_inner_capital_keep_their_case():
+    for t in ("The reading was taken. pH is 7.2 in the tank.", "Done. eKYC is required.", "Noted. mRNA data attached."):
+        assert not [s for s in W.check(t)["suggestions"] if s["kind"] == "capital"], t

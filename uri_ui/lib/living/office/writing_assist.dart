@@ -78,7 +78,9 @@ class _WritingStripState extends State<WritingStrip> {
     super.initState();
     widget.controller.addListener(_changed);
     unawaited(widget.service.writingPrewarm().catchError((_) {}));
-    _schedule();
+    // Review FB3 R2-05: compact strips (table cells, titles) check only once the field is edited, so opening
+    // a large table does not send one check per cell.
+    if (!widget.hideWhenEmpty) _schedule();
   }
 
   @override

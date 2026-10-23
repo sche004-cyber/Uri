@@ -100,10 +100,13 @@ def _rules(text: str) -> list:
         out.append(_sugg(p, p, "", [" "], "spacing", "correction", "rules", "Add a space after the punctuation."))
     # missing space after a full stop between two ordinary words: "end.The" (not e.g., file.docx, U.S.)
     for m in re.finditer(r"\b([a-z]{3,})\.([A-Z][a-z]{2,})\b", text):
-        if m.group(1) in _ABBREV:
-            continue
+        if m.group(1) in _ABBREV or re.match(r"[\w.+-]*[@.]", text[m.end():m.end() + 40]) or \
+                text[max(0, m.start() - 1):m.start()] in (".", "@", "_"):
+            continue                                       # ramesh.Kumar@nic.in, a.b.Config (review FB3 R2-02)
         p = m.start(2)
-        out.append(_sugg(p, p, "", [" "], "spacing", "correction", "rules", "Add a space after the full stop."))
+        x = _sugg(p, p, "", [" "], "spacing", "correction", "rules", "Add a space after the full stop?")
+        x["confidence"] = "guess"                          # config.Value looks the same: accepted one by one
+        out.append(x)
     # duplicated punctuation (an ellipsis is kept)
     for m in re.finditer(r"([,;:!?])\1+", text):
         out.append(_sugg(m.start(), m.end(), m.group(0), [m.group(1)], "punctuation", "correction", "rules",
@@ -122,6 +125,8 @@ def _rules(text: str) -> list:
     # sentence starts with a lower-case letter: at the start of the text or after . ! ? and a space
     for m in re.finditer(r"(?:^|(?<=[.!?])\s+)([a-z])([a-z'’]*)", text):
         start = m.start(1)
+        if text[m.end(2):m.end(2) + 1].isupper():
+            continue                                       # pH, eKYC, mRNA (review FB3 R2-03)
         if re.match(r"[\w.'’]*[@/\\:]|www\.|[a-z]{1,4}\.[a-z]", text[start:start + 30]):
             continue                                       # e-mail, path, link, dotted abbreviations (e.g., w.e.f.)
         # review FB1 R2-04: look back over a short window only, so the rule stays linear on long text
@@ -141,8 +146,8 @@ def _rules(text: str) -> list:
     for m in re.finditer(r"\b(\w+)(\s+)(\1)\b", text, re.I):
         if m.group(1).lower() in _REPEAT_OK or m.group(1).isdigit():
             continue
-        out.append(_sugg(m.start(2), m.end(3), m.group(2) + m.group(3), [""], "repeat", "correction", "rules",
-                         "The word is repeated."))
+        out.append(_repeat_sugg(m.start(2), m.end(3), m.group(2) + m.group(3), m.group(1), m.group(3), m.group(2),
+                                "rules"))
     # a / an before an ordinary lower-case word (acronyms and "u"/"one" sounds are left alone)
     for m in re.finditer(r"\b([Aa])\s+([a-z][a-z]+)", text):
         w = m.group(2)
@@ -151,14 +156,18 @@ def _rules(text: str) -> list:
             continue                                       # "item (a) is", "Annexure A is", "Annexure a is"
         if (w[0] in "aeio" and not w.startswith(_A_AN_YOU)) or w.startswith(_A_AN_SILENT_H) or \
                 (w.startswith(_U_VOWEL) and not w.startswith(_A_AN_YOU + ("unan",))):
-            out.append(_sugg(m.start(1), m.end(1), m.group(1), [m.group(1) + "n"], "grammar", "correction", "rules",
-                             f"Use \"an\" before \"{w}\"."))
+            x = _sugg(m.start(1), m.end(1), m.group(1), [m.group(1) + "n"], "grammar", "correction", "rules",
+                      f"Use \"an\" before \"{w}\"?")
+            x["confidence"] = "guess"                      # "vitamin a every day": accepted one by one (FB3 R2-03)
+            out.append(x)
     for m in re.finditer(r"\b([Aa]n)\s+([a-z][a-z]+)", text):
         w = m.group(2)
         if w[0] not in "aeiouh" or (w[0] == "h" and not w.startswith(_A_AN_SILENT_H)) or \
                 (w[0] in "ue" and w.startswith(_A_AN_YOU + ("unan",))):
-            out.append(_sugg(m.start(1), m.end(1), m.group(1), [m.group(1)[0]], "grammar", "correction", "rules",
-                             f"Use \"a\" before \"{w}\"."))
+            x = _sugg(m.start(1), m.end(1), m.group(1), [m.group(1)[0]], "grammar", "correction", "rules",
+                      f"Use \"a\" before \"{w}\"?")
+            x["confidence"] = "guess"
+            out.append(x)
     protected = _rule_protected_spans(text)
     starts = [start for start, _ in protected]
     return [s for s in out if not _rule_edits_protected(protected, starts, s["start"], s["end"])]
@@ -252,6 +261,23 @@ class SpellWorker:
                 self._worker.stop()
 
 
+_NUMBER_WORDS = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven",
+                 "twelve", "twenty", "thirty", "forty", "fifty", "hundred", "thousand", "lakh", "lakhs", "crore",
+                 "crores", "million", "billion"}
+
+
+def _repeat_sugg(start, end, original, first, second, gap, source):
+    """Review FB3 R2-01: removing a repeated word is safe by construction only for the same lower-case word twice on
+    one line ("the the"); across a line break, with a capital (New Delhi / Delhi Police, Bora Bora), a number word
+    (nine nine) or a negation (not not) it may change meaning, so it is a rewrite accepted one by one."""
+    safe = (first == second and first[:1].islower() and re.fullmatch(r"[ \t]+", gap or "") is not None
+            and first.lower() not in _NUMBER_WORDS and first.lower() not in _NEG_WORDS)
+    if safe:
+        return _sugg(start, end, original, [""], "repeat", "correction", source, "The word is repeated.")
+    return _sugg(start, end, original, [""], "repeat", "rewrite", source,
+                 "The word appears twice: check it is not a name, a number or a line break before removing it.")
+
+
 def _utf16_to_index(text: str):
     """Map UTF-16 code-unit offsets (Windows) to Python string indexes."""
     table, u = {}, 0
@@ -278,9 +304,10 @@ def _spell_suggestions(text: str, res: dict) -> list:
         word, action = text[s:n], int(e.get("action") or 0)
         if action == 3:                                   # repeated word: remove it with the space before it
             j = s
-            while j > 0 and text[j - 1] in " \t":
+            while j > 0 and text[j - 1] in " \t\r\n":
                 j -= 1
-            out.append(_sugg(j, n, text[j:n], [""], "repeat", "correction", "windows_spell", "The word is repeated."))
+            prev = re.search(r"(\w+)$", text[max(0, j - 60):j])
+            out.append(_repeat_sugg(j, n, text[j:n], prev.group(1) if prev else "", word, text[j:s], "windows_spell"))
             continue
         reps = [e.get("replacement")] if action == 2 and e.get("replacement") else list(e.get("suggestions") or ())
         reps = [r for r in reps if isinstance(r, str) and r]
@@ -483,7 +510,7 @@ _REFERENCE_SPAN = re.compile(
     rf"\b(?:ref|reference|no|nos|sec|cl|art|fig|vol|sl|{_REF_WORDS})[.:]?\s+"
     r"\(?[A-Za-z0-9]+(?:\s*[./:-]+\s*[A-Za-z0-9]+)*\)?(?:\([A-Za-z0-9]+\))*", re.I)
 _BARE_REFERENCE_SPAN = re.compile(r"\b[A-Za-z0-9]+(?:[./:-]+[A-Za-z0-9]+)+(?:\([A-Za-z0-9]+\))*")
-_URL_SPAN = re.compile(r"\b(?:https?://|www\.)[^\s<>\"']+", re.I)
+_URL_SPAN = re.compile(r"\b(?:https?://|www\.)[^\s<>\"']+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+", re.I)
 
 
 def _rule_protected_spans(text: str) -> list[tuple[int, int]]:

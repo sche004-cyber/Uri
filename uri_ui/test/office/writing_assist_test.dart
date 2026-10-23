@@ -374,6 +374,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
     expect(find.byKey(const ValueKey('cell-writing-proofread')), findsNothing);
     expect(find.byKey(const ValueKey('body-writing-proofread')), findsOneWidget);
+    // review FB3 R2-05: the compact (cell) strip did not check on open; only the body field did
+    expect(w.checks, ['y']);
     await tester.pump(const Duration(milliseconds: 800));
   });
 }
