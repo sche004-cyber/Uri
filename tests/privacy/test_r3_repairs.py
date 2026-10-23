@@ -95,6 +95,27 @@ def test_r6_01_spaced_hyphen_or_dot_card_is_removed_before_search_transport(sepa
     assert "FINANCIAL" in classify(f"card {card}").categories()
 
 
+@pytest.mark.parametrize("card", [
+    "4111--1111--1111--1111",
+    "4111 - . 1111 - . 1111 - . 1111",
+    "4111;-/1111;-/1111;-/1111",
+])
+def test_r7_01_repeated_or_mixed_card_separators_never_reach_search_transport(card):
+    sent = []
+
+    def capture(request):
+        sent.append(json.loads(request.content)["query"])
+        return httpx.Response(200, json={"results": []})
+
+    query = f"card {card} limit"
+    result = TavilyProvider(api_key="test", transport=httpx.MockTransport(capture),
+                            privacy=TGateway()).search(query)
+    assert result.status == "NO_RESULTS"
+    assert sent == ["card [redacted] limit"]
+    assert result.query == sent[0]
+    assert "FINANCIAL" in classify(query).categories()
+
+
 def test_r3_02_verified_email_principal_is_opaque_in_grant_record():
     principal = object()
     email = "asha@example.in"
