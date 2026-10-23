@@ -195,6 +195,37 @@ def test_proofread_accept_all_corrections_preserves_reference_separator(referenc
     assert applied == f"Ref. {reference} applies. They were informed."
 
 
+@pytest.mark.parametrize(("original", "edited", "protected", "reference_edits"), [
+    ("Ref. 12/3 is pending. Annexure A is attached. They was informed.",
+     "Ref: 12/3 is pending. Annexure An is attached. They were informed.",
+     ("Ref.", "Annexure A"), {(".", ":"), ("A", "An")}),
+    ("No. 12/3 is pending. Clause B is attached. They was informed.",
+     "No: 12/3 is pending. Clause An is attached. They were informed.",
+     ("No.", "Clause B"), {(".", ":"), ("B", "An")}),
+    ("Annexure a is attached. They was informed.",
+     "Annexure A is attached. They were informed.",
+     ("Annexure a",), {("a", "A")}),
+])
+def test_proofread_accept_all_preserves_reference_labels_and_single_letter_ids(
+        original, edited, protected, reference_edits):
+    result = W.proofread(original, client=FakeBrain({"status": "ok", "message": "", "text": edited}))
+    changes = result["suggestions"]
+    assert {(s["original"], s["replacements"][0]) for s in changes if s["class"] == "rewrite"} == reference_edits
+    accepted = [s for s in changes if s["class"] == "correction"]
+    assert [(s["original"], s["replacements"][0]) for s in accepted] == [("was", "were")]
+    applied = W.apply(original, _acc({"suggestions": accepted}, original))["text"]
+    assert all(value in applied for value in protected)
+    assert applied == original.replace("They was informed.", "They were informed.")
+
+
+def test_proofread_ordinary_article_swap_remains_accept_all_correction():
+    original = "A apple arrived."
+    result = W.proofread(original, client=FakeBrain({"status": "ok", "message": "", "text": "An apple arrived."}))
+    assert [(s["original"], s["replacements"][0], s["class"]) for s in result["suggestions"]] == [
+        ("A", "An", "correction")]
+    assert W.apply(original, _acc(result, original))["text"] == "An apple arrived."
+
+
 def test_negation_change_is_never_a_correction():
     t = "The proposal is approved."
     r = W.proofread(t, client=FakeBrain({"status": "ok", "message": "", "text": "The proposal is not approved."}))

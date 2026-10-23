@@ -465,6 +465,10 @@ _SWAPS = [frozenset(x) for x in ({"is", "are"}, {"was", "were"}, {"has", "have"}
 _ARTICLES = {"a", "an", "the"}
 _HONORIFICS = {"mr", "mrs", "ms", "miss", "shri", "smt", "sri", "kumari", "km", "dr", "prof", "sir", "madam"}
 _ROMAN = re.compile(r"^(?=[ivxlc]+$)c{0,3}(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})$")
+_REFERENCE_LABEL_SPAN = re.compile(
+    r"\b(?:ref|reference|no|nos|sec|section|cl|clause|para|paragraph|art|article|fig|figure|vol|volume|sl)"
+    r"(?P<separator>[.:]?)\s+(?=\S)", re.I)
+_REFERENCE_LABEL_BEFORE = re.compile(r"(?:ref|reference|no|nos)\.?\s+$", re.I)
 
 
 def _swap(a: str, b: str) -> bool:
@@ -473,6 +477,21 @@ def _swap(a: str, b: str) -> bool:
 
 def _words(s: str) -> list:
     return re.findall(r"\w+(?:['’]\w+)*", s.lower())
+
+
+def _edits_reference(original: str, start: int, end: int, replacement: str) -> bool:
+    """Check the enclosing reference, not only the two characters beside a diff fragment."""
+    fragment = original[start:end]
+    before = original[max(0, start - 40):start]
+    if re.fullmatch(r"[A-Za-z]", fragment) and (
+            _REF_BEFORE.search(before) or _REFERENCE_LABEL_BEFORE.search(before)):
+        return True
+    if re.fullmatch(r"[^\w\s]+", fragment + replacement):
+        for label in _REFERENCE_LABEL_SPAN.finditer(original):
+            separator = label.start("separator")
+            if start <= separator and label.end("separator") <= end:
+                return True
+    return False
 
 
 def _touches_meaning(orig: str, rep: str, *, spelling: dict | None = None, context: str = "") -> bool:
@@ -536,7 +555,8 @@ def _diff(original: str, edited: str, source: str = "brain", spelling: dict | No
         if orig == rep:
             continue
         context = original[max(0, s - 1):s] + original[e:e + 1]
-        cls = "rewrite" if _touches_meaning(orig, rep, spelling=spelling, context=context) else "correction"
+        cls = "rewrite" if _edits_reference(original, s, e, rep) or \
+            _touches_meaning(orig, rep, spelling=spelling, context=context) else "correction"
         msg = ("This change may alter a name, number, date, reference or meaning: check it." if cls == "rewrite"
                else "Grammar or wording.")
         out.append(_sugg(s, e, orig, [rep], "grammar", cls, source, msg))
