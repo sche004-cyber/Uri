@@ -89,13 +89,21 @@ def _rules(text: str) -> list:
                          "Two spaces between words."))
     # space before , ; : ! ? and a full stop at a word's end
     for m in re.finditer(r"(?<=[A-Za-z0-9)\]])( +)([,;:!?])(?=\s|$)", text):
+        if m.group(2) == ":" and re.match(r"\s*\d", text[m.end():m.end() + 3]):
+            continue                                       # ratio / time notation 60 : 40, 10 : 30 (FB4 R6-04)
         out.append(_sugg(m.start(1), m.end(1), m.group(1), [""], "spacing", "correction", "rules",
                          "No space before punctuation."))
     for m in re.finditer(r"(?<=[A-Za-z)\]])( +)(\.)(?=\s|$)(?!\.)", text):
+        if not re.search(r"(?:^|\s)[A-Za-z]+$", text[max(0, m.start() - 40):m.start()]):
+            continue                                       # "cp a.txt ." : only after a plain word (FB4 R6-04)
         out.append(_sugg(m.start(1), m.end(1), m.group(1), [""], "spacing", "correction", "rules",
                          "No space before a full stop."))
     # missing space after , ; before a letter (numbers like 4,50,000 are left alone)
     for m in re.finditer(r"([A-Za-z)][,;])([A-Za-z])", text):
+        left = re.search(r"(\S*)$", text[max(0, m.start() - 60):m.start() + 1]).group(1)
+        right = re.match(r"\S*", text[m.end() - 1:m.end() + 60]).group(0)
+        if not re.fullmatch(r"\(?[A-Za-z]+\)?", left) or not re.fullmatch(r"[A-Za-z]+[.,;:!?)]?", right):
+            continue                                       # C:\bin;D:\tools, Server=a;Database=b (FB4 R6-03)
         p = m.start(1) + 2
         out.append(_sugg(p, p, "", [" "], "spacing", "correction", "rules", "Add a space after the punctuation."))
     # missing space after a full stop between two ordinary words: "end.The" (not e.g., file.docx, U.S.)
@@ -261,6 +269,7 @@ class SpellWorker:
                 self._worker.stop()
 
 
+_REPEAT_SAFE = frozenset({"the", "a", "an", "to", "of", "in", "for", "and", "on", "at", "by", "with", "from", "or"})
 _NUMBER_WORDS = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven",
                  "twelve", "twenty", "thirty", "forty", "fifty", "hundred", "thousand", "lakh", "lakhs", "crore",
                  "crores", "million", "billion"}
@@ -270,8 +279,11 @@ def _repeat_sugg(start, end, original, first, second, gap, source):
     """Review FB3 R2-01: removing a repeated word is safe by construction only for the same lower-case word twice on
     one line ("the the"); across a line break, with a capital (New Delhi / Delhi Police, Bora Bora), a number word
     (nine nine) or a negation (not not) it may change meaning, so it is a rewrite accepted one by one."""
-    safe = (first == second and first[:1].islower() and re.fullmatch(r"[ \t]+", gap or "") is not None
-            and first.lower() not in _NUMBER_WORDS and first.lower() not in _NEG_WORDS)
+    # Review FB4 R6-01/R6-02: an ALLOWLIST, not a denylist (number words, "so so", "is is", "ghar ghar" all leaked
+    # through denylists): only a closed set of function words, same word on one line; the first may carry a sentence
+    # capital ("The the").
+    safe = (first.lower() == second and second in _REPEAT_SAFE and re.fullmatch(r"[ \t]+", gap or "") is not None
+            and (first == second or first == second.capitalize()))
     if safe:
         return _sugg(start, end, original, [""], "repeat", "correction", source, "The word is repeated.")
     return _sugg(start, end, original, [""], "repeat", "rewrite", source,
@@ -376,7 +388,10 @@ def check(text: str, *, lang: str = DEFAULT_LANG, spell: SpellWorker | None = No
         except WritingError as e:
             status["spelling"] = e.code               # rules still apply; the UI says spelling is off and why
     ig = {str(x).lower() for x in ignore or ()}
-    items = [x for x in _merge(items) if x["id"] not in ig and x["original"].lower() not in ig]
+    protected = _rule_protected_spans(text)
+    starts = [s for s, _ in protected]
+    items = [x for x in _merge(items) if x["id"] not in ig and x["original"].lower() not in ig
+             and not _rule_edits_protected(protected, starts, x["start"], x["end"])]   # every source (FB4 R6-03)
     for x in items:
         x.setdefault("confidence", "sure")
     return {"suggestions": items, "status": status, "ms": round((time.perf_counter() - t0) * 1000, 1)}
@@ -510,7 +525,8 @@ _REFERENCE_SPAN = re.compile(
     rf"\b(?:ref|reference|no|nos|sec|cl|art|fig|vol|sl|{_REF_WORDS})[.:]?\s+"
     r"\(?[A-Za-z0-9]+(?:\s*[./:-]+\s*[A-Za-z0-9]+)*\)?(?:\([A-Za-z0-9]+\))*", re.I)
 _BARE_REFERENCE_SPAN = re.compile(r"\b[A-Za-z0-9]+(?:[./:-]+[A-Za-z0-9]+)+(?:\([A-Za-z0-9]+\))*")
-_URL_SPAN = re.compile(r"\b(?:https?://|www\.)[^\s<>\"']+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+", re.I)
+_URL_SPAN = re.compile(r"\b(?:https?://|www\.)[^\s<>\"']+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+"
+                       r"|\S*[=\\]\S*", re.I)                # + key=value and Windows path tokens (FB4 R6-03)
 
 
 def _rule_protected_spans(text: str) -> list[tuple[int, int]]:

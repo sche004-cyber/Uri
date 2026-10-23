@@ -37,6 +37,14 @@ PROBES = [
     "Send the file to ramesh.Kumar@nic.in today.", "Mail rajesh.Sharma@gov.in and anita.Rao@gov.in now.",
     "Set config.Value before the run.", "The reading was taken. pH is 7.2 in the tank.", "Take vitamin a every day.",
     "Total\nTotal amount is due.",
+    # review FB4 probes
+    "The Act of nineteen nineteen applies.", "The meeting is at fifteen fifteen hours.",
+    "Payment of seventy seventy lakh is due.", "Pay ninety ninety rupees.", "Dial nine eight oh oh one two.",
+    "The order dated second second March holds.", "The result was so so.", "What it is is a problem.",
+    "They are bye bye now.", "A ghar ghar survey was done.", "Send them to alag alag offices.",
+    "Do it jaldi jaldi please.", "Set PATH=C:\\bin;D:\\tools now.", "Server=dbhost;Database=uri is the setting.",
+    "In the ratio 60 : 40 the cost is shared.", "Time 10 : 30 hrs is fixed.", "Copy it with cp a.txt .",
+    "The the letter is here.",
 ]
 # Brain answers that change meaning in the ways reviewers found; the bulk set must never carry them.
 BRAIN = {
@@ -80,19 +88,22 @@ def bulk(items):
 _NUM = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "hundred", "thousand",
         "lakh", "crore"}
 _NEG = {"not", "no", "never", "none", "nor", "neither", "nothing", "nobody", "without", "cannot"}
+# the closed allowlist the bulk set may collapse, written here independently of the engine
+_REPEAT_SAFE = {"the", "a", "an", "to", "of", "in", "for", "and", "on", "at", "by", "with", "from", "or"}
 
 
 def norm(t: str) -> str:
     """What the bulk set may change (review FB3: strict; line breaks are kept; a repeated word only when it is the same
     lower-case word twice on one line and not a number or a negation; a/an is NOT equivalent any more)."""
     def same_line_repeat(m):
-        w = m.group(1)
-        if w != m.group(3) or not w[:1].islower() or w in _NUM or w in _NEG:
+        # review FB4: the same closed allowlist as the engine (function words; the first may carry a capital)
+        first, second = m.group(1), m.group(3)
+        if second not in _REPEAT_SAFE or first not in (second, second.capitalize()):
             return m.group(0)
-        return w
+        return first
     prev = None
     while prev != t:                                        # "the the the" -> "the"
-        prev, t = t, re.sub(r"\b(\w+)([ \t]+)(\1)\b", same_line_repeat, t)
+        prev, t = t, re.sub(r"\b(\w+)([ \t]+)(\1)\b", same_line_repeat, t, flags=re.I)
     t = re.sub(r"([,;:!?])\1+", r"\1", t)                  # doubled punctuation
     t = re.sub(r"(?<![.\w])(\w+)\.\.(?!\.)", r"\1.", t)
     t = re.sub(r"[ \t]+([,;:!?.])(?=\s|$)", r"\1", t)       # space before punctuation
@@ -133,3 +144,9 @@ def test_windows_word_replacements_are_never_bulk():
 def test_words_with_an_inner_capital_keep_their_case():
     for t in ("The reading was taken. pH is 7.2 in the tank.", "Done. eKYC is required.", "Noted. mRNA data attached."):
         assert not [s for s in W.check(t)["suggestions"] if s["kind"] == "capital"], t
+
+
+def test_ratio_time_and_command_notation_keep_their_spaces():
+    for t in ("In the ratio 60 : 40 the cost is shared.", "Time 10 : 30 hrs is fixed.", "Copy it with cp a.txt ."):
+        res = W.check(t)
+        assert W.apply(t, bulk(res["suggestions"]))["text"] == t, (t, res["suggestions"])
