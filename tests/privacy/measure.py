@@ -76,6 +76,63 @@ def accuracy():
     return out
 
 
+def _web(g, t):
+    """'refused', 'altered' or 'unchanged' at WEB_SEARCH."""
+    try:
+        out = g.prepare(t, requester="m", destination="WEB_SEARCH", purpose="m", reversible=False).text
+    except PrivacyRefused:
+        return "refused"
+    return "unchanged" if out == " ".join(t.split()) else "altered"
+
+
+def generated(n=500, seed=23):
+    """Owner decision LDEC-006 (digit budget), measured on generated text rather than examples (review FB4 R1-07).
+    benign: per class, how often WEB_SEARCH alters or refuses it. Classes over the budget are altered by decision;
+    the exempt classes (dates, times, ISO timestamps, IPv4) must stay unchanged. leaks: generated sensitive values
+    that reach WEB_SEARCH with their digits intact."""
+    import random
+    from .test_ldec006 import AADHAAR, CARD, STD_SEPS, compositions, grouped, leaks, _gen_exempt
+    rng, g = random.Random(seed), TGateway()
+    d = lambda k: "".join(rng.choice("0123456789") for _ in range(k))         # noqa: E731
+    classes = {
+        "over_budget_by_decision": {
+            "amazon_order_ids": lambda: f"amazon order {d(3)}-{d(7)}-{d(7)} status",
+            "number_lists": lambda: "numbers " + ", ".join(str(rng.randint(1, 99)) for _ in range(rng.randint(6, 10))),
+            "ms_timestamps": lambda: f"event at {rng.randint(1500000000000, 1800000000000)} ms",
+            "csv_rows": lambda: ",".join(str(rng.randint(0, 9999)) for _ in range(rng.randint(4, 6))),
+            "thousands_groupings": lambda: f"total {rng.randint(10**9, 10**13):,} units",
+            "isbn13": lambda: f"ISBN 978-{d(1)}-{d(3)}-{d(5)}-{d(1)}",
+        },
+        "under_budget_or_exempt": {
+            "dates_times_iso_ipv4": lambda: _gen_exempt(rng),
+            "ip_port": lambda: f"server {'.'.join(str(rng.randint(0, 255)) for _ in range(4))}:{rng.randint(1, 65535)}",
+            "short_ids": lambda: f"order {d(rng.randint(4, 8))} shipped",
+            "prices": lambda: f"price {rng.randint(1, 99999)}.{rng.randint(0, 99):02d} rupees for {rng.randint(1, 9)} items",
+            "years_and_counts": lambda: f"top {rng.randint(2, 50)} films of {rng.randint(1950, 2030)} rated {rng.randint(1, 10)}",
+            "versions": lambda: f"python {rng.randint(2, 3)}.{rng.randint(0, 13)}.{rng.randint(0, 20)} release notes",
+        },
+    }
+    benign = {}
+    for group, cls in classes.items():
+        for name, make in cls.items():
+            c = Counter(_web(g, make()) for _ in range(n))
+            benign[f"{group}.{name}"] = {"n": n, "altered_pct": round(100 * c["altered"] / n, 1),
+                                         "refused_pct": round(100 * c["refused"] / n, 1)}
+    sweeps = {}
+    for label, value, prefix in (("card_all_groupings", CARD, "card"), ("aadhaar_all_groupings", AADHAAR, "my aadhaar is")):
+        texts = [f"{prefix} {grouped(value, z, [sep])} ok" for z in compositions(len(value)) for sep in STD_SEPS]
+        sweeps[label] = {"n": len(texts), "leaked": sum(leaks(t, value, "WEB_SEARCH") for t in texts)}
+    gaps = ["x", "ab", " ", "\n", "*", "..", "x ", " x ", "-\n", "_", "#", "|", ";", "~", "\t"]
+    comps = list(compositions(16, 6))
+    texts = ["card " + grouped(CARD, z, [rng.choice(gaps) for _ in z]) for z in (rng.choice(comps) for _ in range(n * 4))]
+    sweeps["card_mixed_gaps"] = {"n": len(texts), "leaked": sum(leaks(t, CARD, "WEB_SEARCH") for t in texts)}
+    marks = ["password"[:i] + chr(cp) + "password"[i:] + ": Mango#2026!" for cp in range(0x300, 0x370) for i in range(1, 9)]
+    sweeps["password_combining_marks"] = {"n": len(marks), "leaked": sum(
+        _web(g, t) != "refused" and "Mango#2026" in g.prepare(t, requester="m", destination="WEB_SEARCH",
+                                                               purpose="m", reversible=False).text for t in marks)}
+    return {"seed": seed, "benign": benign, "leak_sweeps": sweeps}
+
+
 def doc(kb):
     base = ("Minutes of the planning meeting on 2026-10-22. Asha Rao summarised the Q3 numbers: revenue 4,512,330, "
             "margin 14.2%. Action: send the draft to asha.rao7@example.in and call +91 98450 12345. Vendor PAN "
@@ -152,7 +209,7 @@ def main(path=None):
     import uri_privacy  # noqa: F401  (already imported; kept for the record)
     res = {"schema": "m95-measurements/1", "python": sys.version.split()[0], "platform": platform.platform(),
            "processor": platform.processor(), "gpu_used": False,
-           "accuracy": accuracy(),
+           "accuracy": accuracy(), "generated_ldec006": generated(),
            "latency": [latency(0.4, "WEB_SEARCH", 500), latency(2, "WEB_SEARCH", 300), latency(2, "EXTERNAL_MODEL", 300),
                        latency(64, "EXTERNAL_MODEL", 60), latency(64, "LOG", 60)],
            "memory": memory(), "token_effect": token_effect(), "friction": friction()}

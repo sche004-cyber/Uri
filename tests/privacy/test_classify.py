@@ -32,7 +32,9 @@ def test_recall_hard_and_held_out_sets():
 
 def test_false_positive_rate_on_benign_text():
     benign = synth.BENIGN + synth.HARD_BENIGN + synth.HELD_OUT_BENIGN
-    fps = [t for t in benign if classify(t).categories()]
+    # LONG_NUMBER hits are the digit budget working as decided (LDEC-006); they are measured, not counted as false
+    # positives of the specific rules (docs/privacy/evidence/measurements.json, digit_budget_benign).
+    fps = [t for t in benign if set(classify(t).categories()) - {"LONG_NUMBER"}]
     assert len(fps) / len(benign) <= 0.02, fps
     # Documented LOW-tier false friend: the word "confidential" in an unrelated sense.
     assert fps == ["The confidential interval is 95% (statistics)."]
@@ -40,9 +42,7 @@ def test_false_positive_rate_on_benign_text():
 
 @pytest.mark.parametrize("text", [
     "Asha Rao and Ravi Iyer reviewed the draft.",          # ordinary names are not sensitive by default
-    "IMEI 490154203237518 is on the box",                  # Luhn-valid device id
-    "commit 9f3a1c2b7d4e5f60718293a4b5c6d7e8f9012345",    # hash named as such
-    "Order 234567890123 shipped",                          # 12 digits without Aadhaar context
+    # IMEI, a commit hash and a 12-digit order id were here: superseded by owner decision LDEC-006 (digit budget): 9+ digits in one run are redacted
     "error code: 404", "the zip code field is required",
 ])
 def test_ordinary_text_is_not_flagged(text):

@@ -148,7 +148,8 @@ NUMBER_BENIGN = [
 DOCUMENTED_EXCEPTIONS = {"(080) 2345 6789 is closed today?"}       # a phone number: CONTACT, redacted by design
 
 
-@pytest.mark.parametrize("q", NUMBER_BENIGN)
+# Queries with 9+ digits in one run are superseded by owner decision LDEC-006 (digit budget): 9+ digits in one run are redacted (test_ldec006.py).
+@pytest.mark.parametrize("q", [q for q in NUMBER_BENIGN if not C._long_number_spans(fold(q)[0])])
 def test_fb3_r1_05_number_shaped_benign_queries_are_unchanged(q):
     refused, out = send(q, "WEB_SEARCH")
     if q in DOCUMENTED_EXCEPTIONS:

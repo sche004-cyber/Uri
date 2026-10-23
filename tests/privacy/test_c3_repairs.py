@@ -96,10 +96,10 @@ def test_r3_r8_any_separator_or_tail_keeps_the_card_off_the_wire(q):
     assert all(CARD not in digits(s) for s in sent)
 
 
+# The other examples this test held (big totals, coordinates, ISBN, order ids, IMEI) are superseded by owner decision LDEC-006 (digit budget): 9+ digits in one run are redacted
+# (test_ldec006.py); dates, times and IP addresses are the exempt classes.
 @pytest.mark.parametrize("benign", ["meeting 2026-10-22 14:30:00 in room 4", "server 192.168.100.200 is down",
-                                    "total 1,234,567,890,123 units", "1,23,45,67,890 rupees", "near 12.9716, 77.5946",
-                                    "ISBN 978-0-306-40615-7 second edition", "order 234567890123 shipped",
-                                    "IMEI 490154203237518 on the box", "train 12627 at 19:20 on 2026-10-22"])
+                                    "train 12627 at 19:20 on 2026-10-22"])
 def test_long_number_rule_keeps_ordinary_numbers_readable(benign):
     assert not classify(benign).categories(), benign
 

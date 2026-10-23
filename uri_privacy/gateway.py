@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import threading
 import uuid
 from collections import Counter
@@ -23,6 +24,7 @@ from .vault import MemoryVaultStore, PersistentVaultStore, VaultError
 
 log = logging.getLogger("uri_privacy")
 REDACTED = "[redacted]"
+_PLACEHOLDER = re.compile(r"\[redacted\]|\[\[[A-Z_]{3,16}_[a-z]{16}\]\]")
 DEFAULT_SCOPE_TTL_S = 3600
 
 
@@ -155,7 +157,14 @@ class PrivacyGateway:
         if dest not in P.LOCAL and (out != text or dest == P.Destination.LOG):
             residual = C.classify(out, protected_terms)
             left = residual.categories()
-            if residual.residual_encoding or any(actions.get(c, P.action(c, dest)) != P.ALLOW for c in left):
+            # The final text is checked as input would be: its disguise signals (whitespace collapse can join digit
+            # groups across a line break, review FB4 R1-02), and its digits read with every placeholder taken out,
+            # so "4111 1111 [redacted] 1111 1111" is not sent with the whole card around a redacted value (FB4 R1-06).
+            joined = _PLACEHOLDER.sub("", out)
+            doubt = bool(C.egress_form(out)[1]) or (joined != out and any(
+                actions.get(c, P.action(c, dest)) != P.ALLOW
+                for c in set(C.classify(joined, protected_terms).categories()) - set(left)))
+            if doubt or residual.residual_encoding or any(actions.get(c, P.action(c, dest)) != P.ALLOW for c in left):
                 if dest == P.Destination.LOG:
                     out = REDACTED
                 else:

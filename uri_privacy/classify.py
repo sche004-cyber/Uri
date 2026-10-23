@@ -96,10 +96,12 @@ def iban_ok(raw: str) -> bool:
 # Labelled credential values written in prose. Digit codes (PIN/OTP/CVV) need 3-8 digits; word secrets need an explicit
 # separator ("password: x", "password is x") so that "the password policy" stays readable. "PIN code"/"pincode" is
 # postal and excluded.
+# The password label also matches "pass-word", "pass_word" and digit/symbol spellings ("P@ssword", "passw0rd", review
+# FB4 R1-06).
 _LABELLED = re.compile(
     r"(?i)\b(?:(?:otp|one[- ]time (?:password|code|pin)|verification code|security code|auth(?:entication)? code|"
     r"cvv|cvc|m?pin(?! ?code)|upi pin|atm pin)\b(?:\s*(?:is|was|=|:|-|#)\s*|\s+)(\d{3,8})\b|"
-    r"(?:pass ?word|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token)"
+    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token)"
     r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,})|"
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
@@ -107,9 +109,17 @@ _LABELLED = re.compile(
     # Word secrets written without "is"/":" ("password - X", "password -> X", "password X" after a line break) or a few
     # words before it ("the password for wifi is X", review FB1 R1-04). The value must then hold a digit or a symbol,
     # so ordinary prose ("the password policy is strict", "password field is required.") stays readable.
-    r"\b(?:pass ?word|passwd|pwd|passcode|passphrase)(?: ?(?:->|=>|-|–|→) ?| )"
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)(?:'s)?(?: ?(?:->|=>|-|–|→) ?| )"
     r"[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
-    r"\b(?:pass ?word|passwd|pwd|passcode|passphrase)\b[^.\n]{1,30}?\b(?:is|:) ?[\"']?"
+    # The value before the label ("X is my password", "use X as the password", review FB4 R1-04). Only at the start
+    # of a word, so the scan stays linear; the value needs a digit or symbol, as above.
+    r"(?<![^\s\"'(])[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})[\"']? (?:is|was|as|=) "
+    r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|pin)\b|"
+    # "pw X" and, after a user/login word, "pass X" (review FB4 R1-04). The value holds a letter and a digit or
+    # symbol, so "pass 2026 exams" and "pass COVID tests" stay readable.
+    r"(?:\bpw|(?:user(?:name)?|login|id|wifi|account)\b[^\n]{0,30}?\bpass) "
+    r"[\"']?(?=[^\s\"',;]*[A-Za-z])(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)\b[^.\n]{1,30}?\b(?:is|:) ?[\"']?"
     r"(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     r"\b(?:otp|m?pin(?! ?code)|passcode|cvv)\b[^.\n\d]{1,30}?\b(?:is|:)\s*(\d{3,8})\b|"
     r"(?<!zip )(?<!postal )(?<!error )(?<!status )(?<!area )(?<!country )\bcode\b\s*(?:is|was|:)?\s*(\d{6})(?!\d))")
@@ -120,12 +130,23 @@ _AADHAAR_CTX = re.compile(r"(?i)\b(?:aadhaa?r|uid|uidai|e-?kyc)\b[^\n]{0,25}$")
 # Label idiom used below: "<label>[ no|number|#][ :|-] value" with single optional spaces. Folding collapses whitespace
 # runs to one space, and no two optional space runs are adjacent, so these patterns cannot backtrack (review S1-04).
 _LBL = r"(?: ?(?:no\.?|number|num|card|#))?(?: ?[:\-])? ?"
-_PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z] ?\d{4} ?[a-z]\b")            # also "ABCPE 1234 F"
+_PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z] ?\d{4} ?[a-z]\b|"           # also "ABCPE 1234 F"
+                  # upper case with a single space anywhere: "ABCP E123 4F" (review FB4 R1-05)
+                  r"\b[A-Z] ?[A-Z] ?[A-Z] ?[PCHFATBLJG] ?[A-Z] ?\d ?\d ?\d ?\d ?[A-Z]\b")
+# Known API key prefixes followed by groups split by single spaces or dashes: "AKIA TWII 6XUU IX2C IXU3" (review FB4
+# R1-05). The groups together hold at least 16 characters, two digits and one group mixing letters and digits, so
+# "sk-learn tutorial for beginners" stays readable.
+_KEY_SPLIT = re.compile(r"(?<![A-Za-z0-9])(?:AKIA|ASIA|AIza|ghp_|gho_|ghs_|ghu_|github_pat_|glpat-|xox[abpr]-|"
+                        r"sk-(?:proj-|ant-)?|sk_live_|sk_test_|rk_live_|tvly-)"
+                        r"([A-Za-z0-9_]{0,40}(?:[ -][A-Za-z0-9_]{1,12}){1,15})(?![A-Za-z0-9_])")
 _SSN_SEP = r" ?[-./,:()] ?|[^\w\n]|_"          # one standard (optionally spaced) or any single punctuation separator
 _SSN = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?![\d-])|"
                   # labelled: "ssn 123456789", "ssn 123 45 6789", "ssn 123.45.6789" (review S1-05)
                   r"(?i:\b(?:ssn|social security(?: number| no\.?)?)\b" + _LBL + r"(?:is )?)"
                   r"((?!000|666|9\d\d)\d{3}(?:" + _SSN_SEP + r")?(?!00)\d{2}(?:" + _SSN_SEP + r")?(?!0000)\d{4})(?!\d)")
+_SSN_BARE = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}(?:" + _SSN_SEP + r")?(?!00)\d{2}(?:" + _SSN_SEP
+                       + r")?(?!0000)\d{4}(?!\d)")
+_SSN_CTX_AFTER = re.compile(r"(?i)^[^\n]{0,20}\b(?:ssn|social security)\b")
 _PASSPORT = re.compile(r"(?i)\bpassport" + _LBL + r"(?:(?:no|number) )?(?:is )?([A-Z][0-9]{7}|[A-Z0-9]{6,9}\d)\b")
 _IBAN = re.compile(r"(?i)\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
 _ACCOUNT = re.compile(r"(?i)\b(?:a/c|acct|account|bank account)" + _LBL + r"(\d(?:[ -]?\d){7,20})\b")
@@ -134,9 +155,13 @@ _ACCOUNT = re.compile(r"(?i)\b(?:a/c|acct|account|bank account)" + _LBL + r"(\d(
 # thousands groupings ("1,234,567,890") stay readable.
 _CARD_SEP = r"[/_,:;|+~·–—•.-]"
 _CARD_ALT = re.compile(r"\b\d{4}(?: ?" + _CARD_SEP + r"(?: ?" + _CARD_SEP + r")* ?\d{3,6}){2,4}\b")
+_MARKS = "̀-ͯऀ-෿"           # Latin combining accents; Indic blocks (Devanagari .. Sinhala)
 _EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b|"
                     # internationalised addresses: Unicode local part and domain (review FB3 R1-04)
-                    r"(?<![\w.+-])[^\W_](?:[\w.%+-]*[^\W_])?@[^\W_][\w-]*(?:\.[\w-]+)*\.[^\W\d_]{2,}")
+                    # combining marks inside the local part (Indic vowel signs and viramas, Latin accents) are part of it
+                    # (review FB4 R1-06: an address whose local part has a Devanagari vowel sign was cut at the sign)
+                    r"(?<![\w.+\-" + _MARKS + r"])[^\W_](?:[\w.%+\-" + _MARKS + r"]*[^\W_])?"
+                    r"@[^\W_][\w-]*(?:\.[\w-]+)*\.[^\W\d_]{2,}")
 _PHONE = re.compile(r"(?<![\w+])\+\d{1,3}[ -]?\(?\d{1,5}\)?(?:[ -]?\d){5,11}(?![\w])|"
                     r"(?<![\w+-])0?[6-9]\d{4}[ .-]\d{5}(?![\w-])|"                        # mobile, 5-5 grouped
                     r"(?<![\w-])\(0\d{2,4}\)\s?\d{3,4}[ -]?\d{4}(?![\w-])|"              # landline (080) 2345 6789
@@ -164,11 +189,56 @@ _STREET = re.compile(r"(?i)\b(?:flat|house|h\.? ?no\.?|plot|door|apt|apartment) 
 _CONFIDENTIAL = re.compile(r"(?i)\b(?:strictly\s+)?(?:private\s+(?:and|&)\s+)?confidential\b|"
                            r"\bdo not (?:share|forward|distribute|disclose)\b")
 _LONG_SECRET = dict(_assist._TEXT_RULES)["long_secret"]
-# LONG_NUMBER, narrowed by owner decision LDEC-005: only identifier-shaped runs with one standard separator are
-# redacted - 4-4-4[-1..7] (card or account layout, also with a digit appended), 4-6-4 / 4-6-5 (Amex, Diners). Order ids,
-# timestamps, ranges, lists and UUIDs are not identifier shapes (review FB3 R1-05). Runs with unusual separators are
-# not read through: they are refused as a disguise signal (egress_form).
-_ID_SHAPE = re.compile(r"(?<![\d.])(?<![A-Za-z]-)(?:\d{4}([ .\-/])\d{4}\1\d{4}(?:\1\d{1,7})?|\d{4}([ .\-/])\d{6}\2\d{4,5})(?![\d])")
+# LONG_NUMBER: the digit budget, owner decision LDEC-006 (2026-10-23). Text bound for a non-local destination may not
+# carry 9 or more digits in one run, whatever the grouping, separators or line breaks. A run is digit groups joined by
+# gaps of 1-3 characters holding at most 2 letters (spaces, newlines, punctuation, underscores, "x", "ab"). Digits that
+# are part of a date, a clock time, an ISO-8601 timestamp or an IPv4 address (with port) do not count; they are written
+# as such tokens, bounded so that a chain of colon or dot groups is exempt only when the whole chain is one token.
+# Replaces LDEC-005's identifier shapes, which five reviews showed could be regrouped around (FB4 R1-01, R1-02).
+DIGIT_BUDGET = 9
+_DATE = (r"(?<![\d\-/.])(?:(?:19|20)\d{2}([-/.])(?:0?[1-9]|1[0-2])\1(?:0?[1-9]|[12]\d|3[01])|"
+         r"(?:0?[1-9]|[12]\d|3[01])([-/.])(?:0?[1-9]|1[0-2])\2(?:19|20)\d{2}|(?:19|20)\d{6}(?=T))(?!\d|[-/.]\d)")
+_TZ = r"(?:Z|[+-](?:0\d|1[0-4]):?[0-5]\d)?"
+_CLOCK = r"(?<![\d:.])(?:[01]?\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:[.,]\d{1,9})?)?" + _TZ + r"(?!\d|[:.]\d)"
+_CLOCK_COMPACT = r"(?<=\dT)(?:[01]\d|2[0-3])[0-5]\d(?:[0-5]\d)?" + _TZ + r"(?!\d)"
+_OCTET = r"(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)"
+_IPV4 = r"(?<![\d.])" + _OCTET + r"(?:\." + _OCTET + r"){3}(?::\d{1,5})?(?!\d|[:.]\d)"
+_ISO_DAY = r"(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])"
+_DATE_RANGE = r"(?<![\d\-/.])" + _ISO_DAY + r"(?:/|--)" + _ISO_DAY + r"(?!\d|[-/.]\d)"    # ISO 8601 interval
+_EXEMPT = re.compile("|".join((_DATE_RANGE, _DATE, _CLOCK, _CLOCK_COMPACT, _IPV4)))
+_DIGITS = re.compile(r"\d+")
+
+
+def _exempt_mask(text: str) -> bytearray:
+    exempt = bytearray(len(text))
+    for m in _EXEMPT.finditer(text):
+        exempt[m.start():m.end()] = b"\x01" * (m.end() - m.start())
+    return exempt
+
+
+def _only_exempt_digits(text: str, exempt, s: int, e: int) -> bool:
+    return all(exempt[i] for i in range(s, e) if text[i].isdigit())
+
+
+def _long_number_spans(text: str, exempt=None):
+    """(start, end) of every run over the digit budget, from its first to its last counted digit group. Linear."""
+    exempt = _exempt_mask(text) if exempt is None else exempt
+    out, run, prev_end = [], [], -1
+
+    def close():
+        counted = [(s, e) for s, e in run if not exempt[s]]
+        if sum(e - s for s, e in counted) >= DIGIT_BUDGET:
+            out.append((counted[0][0], counted[-1][1]))
+    for m in _DIGITS.finditer(text):
+        gap = text[prev_end:m.start()] if run else ""
+        if run and not (len(gap) <= 3 and sum(c.isalpha() for c in gap) <= 2):
+            close()
+            run = []
+        run.append((m.start(), m.end()))
+        prev_end = m.end()
+    if run:
+        close()
+    return out
 # A card written as one run of digits with letters right after it ("4111111111111111exp", review R8-01).
 _CARD_RUN = re.compile(r"(?<![\d.,])\d{13,19}(?!\d)")         # not a decimal fraction ("2.718281828459045")
 # Digit groups joined by single standard separators, as a whole run ("234.567.890.124", "4,111,111,111,111,111").
@@ -204,6 +274,9 @@ def _spans(text: str, protected_terms) -> list:
         add(GOV_ID, m, "pan", 0)
     for m in _SSN.finditer(text):
         add(GOV_ID, m, "ssn", 1 if m.group(1) else 0)
+    for m in _SSN_BARE.finditer(text):
+        if _SSN_CTX_AFTER.search(text[m.end():m.end() + 30]):
+            add(GOV_ID, m, "ssn_label_after", 0)
     for m in _PASSPORT.finditer(text):
         add(GOV_ID, m, "passport", 1)
     for m in _assist._CARD.finditer(text):
@@ -255,6 +328,13 @@ def _spans(text: str, protected_terms) -> list:
         add(CONTACT, m, "phone_spaced", 0)
     for m in _SPACED_CODE.finditer(text):
         add(CREDENTIAL, m, "spaced_code", 1)
+    for m in _KEY_SPLIT.finditer(text):
+        # Trailing space-separated lower-case words are prose after the key ("... IXU3 leaked"), not key groups.
+        g = re.sub(r"(?: [a-z]{4,})+$", "", m.group(1))
+        alnum = re.sub(r"[ -]", "", g)
+        if (len(alnum) >= 16 and sum(c.isdigit() for c in alnum) >= 2
+                and any(re.search(r"[A-Za-z]", p) and re.search(r"\d", p) for p in re.split(r"[ -]", g))):
+            out.append(Finding(CREDENTIAL, m.start(), m.start(1) + len(g), "split_key"))
     for m in _PINCODE.finditer(text):
         add(ADDRESS, m, "pincode")
     for m in _STREET.finditer(text):
@@ -280,6 +360,9 @@ def _spans(text: str, protected_terms) -> list:
             add(FINANCIAL, m, "card_regrouped", 0)
     # LONG_NUMBER is the catch-all after every specific rule: it is added only where no specific finding already covers
     # the whole run, so a grant for the specific category (an Aadhaar under GOV_ID) still applies to it.
+    exempt = _exempt_mask(text)
+    out = [f for f in out if not (f.rule in ("card", "card_regrouped", "aadhaar_regrouped", "card_run")
+                                  and _only_exempt_digits(text, exempt, f.start, f.end))]
     import bisect
     spec = sorted((f.start, f.end) for f in out)
     starts, reach, best = [s for s, _ in spec], [], -1
@@ -290,9 +373,9 @@ def _spans(text: str, protected_terms) -> list:
     def covered(a, b):
         i = bisect.bisect_right(starts, a) - 1
         return i >= 0 and reach[i] >= b
-    for m in _ID_SHAPE.finditer(text):
-        if not covered(m.start(), m.end()) and not _NOT_CARD_CTX.search(_before(text, m.start())):
-            add(LONG_NUMBER, m, "id_shape", 0)
+    for s, e in _long_number_spans(text, exempt):
+        if not covered(s, e):
+            out.append(Finding(LONG_NUMBER, s, e, "digit_budget"))
     return out
 
 
@@ -420,7 +503,11 @@ def egress_form(text: str):
         return text, signals
     src = unicodedata.normalize("NFKC", text)
     out = []
+    skip = 0
     for i, ch in enumerate(src):
+        if skip:
+            skip -= 1
+            continue
         cat = unicodedata.category(ch)
         prev = src[i - 1] if i else ""
         nxt = src[i + 1] if i + 1 < len(src) else ""
@@ -429,6 +516,11 @@ def egress_form(text: str):
             return bool(c) and ((c.isascii() and c.isalnum()) or unicodedata.category(c) == "Nd")
         if cat in ("Zl", "Zp"):
             out.append("\n")
+            continue
+        if ch in "0123456789#*" and src[i + 1:i + 3] in ("\ufe0f\u20e3", "\u20e3"):
+            keycap = 3 if src[i + 1:i + 3] == "\ufe0f\u20e3" else 2       # RGI keycap 1\ufe0f\u20e3 (FB4 R1-08)
+            out.append(src[i:i + keycap])
+            skip = keycap - 1
             continue
         mark_off_letter = cat in ("Mn", "Me") and not (prev and unicodedata.category(prev)[0] in "LM")
         if _invisible(ch) or (cat in ("Mn", "Me") and ascii_or_digit(prev)) or mark_off_letter:
@@ -479,8 +571,16 @@ def _fold_char(ch: str, cf: str = "", on_ascii: bool = False) -> str:
             out.append(str(d))
         elif _invisible(c):
             out.append(cf)
+        elif c.isascii():
+            out.append(c)
         else:
-            out.append(c if c.isascii() else _CONF.get(c, c))
+            # A precomposed Latin letter whose decomposition is an ASCII letter plus marks is read as that letter, so
+            # "pássword:" is a label (review FB4 R1-03: NFKC composes "a" + U+0301 before any mark check sees it).
+            base = unicodedata.normalize("NFD", c)
+            if base[0].isascii() and base[0].isalpha() and all(unicodedata.category(x) == "Mn" for x in base[1:]):
+                out.append(base[0])
+            else:
+                out.append(_CONF.get(c, c))
     return "".join(out)
 
 
