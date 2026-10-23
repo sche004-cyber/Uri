@@ -273,6 +273,19 @@ recorded as FAIL on the commit: `test_ts4_missing_marker_when_supervisor_dies`.
 
 Regression tests `test_fb4_*` and `test_m02_*`: 7 fail on `ab983066`, and all pass after the repair (94 in total).
 
+### 5.5 Driver run r6 (Codex available again)
+
+r6 round 1 was a driver-counted Codex review (`codex_cli`, 4 tests run, 7 files inspected). It returned REJECT,
+confirmed the 26 earlier findings it checked as FIXED, and raised R1-01 MEDIUM: a missing worktree registration that
+belongs to an active ledger task was PRUNABLE. The driver's implementer committed `7e659bc7`. The coordinator had
+wrapped the driver in a 900 s shell timeout, which killed it after that commit and before the repair was recorded.
+`lifecycle verify` reported the chain intact. The resumed run then stopped BLOCKED REPAIR_FAILED ("no change made").
+Coordinator follow-up:
+the repair is correct. The implementer's regression test compared git's `/` worktree path with a Windows `\` path
+and failed for that reason only, so it was fixed to compare normalised paths. That gives 98 tests passing. A clean
+revision r7 re-audits from round 1. Lesson: run the driver under `testrun` with a bound matched to its budget, never
+a short shell timeout.
+
 ## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.

@@ -946,7 +946,7 @@ def test_r1_01_apply_rechecks_new_active_task_before_pruning(sandbox, reference)
     row = next(r for r in result["results"] if r.get("item") == item["id"])
     assert row["outcome"] == "SKIPPED_CHANGED"
     assert row["now"]["class"] == "PROTECTED"
-    assert any(it["path"] == str(path) for it in hk._worktrees(sb["repo"]))
+    assert any(hk.norm(it["path"]) == hk.norm(path) for it in hk._worktrees(sb["repo"]))   # git prints "/" paths
 
 
 def _driver_state(state: Path, stage: str):
