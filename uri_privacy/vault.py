@@ -1,7 +1,8 @@
 """Per-scope opaque references for pseudonymized values (plan 2.3).
 
-A token is `[[<CATEGORY>_<8 random hex>]]`. It is random, not derived from the value, so it reveals nothing and cannot be
-resolved outside this process. One scope = one request, task or session; scopes never share tokens. Restoration only
+A token is `[[<CATEGORY>_<scope tag>_<16 random letters>]]`. Its scope tag is an exact letter-only encoding of the
+scope id; its random suffix is not derived from the value, so it reveals nothing about the value and cannot be
+resolved without the vault mapping. One scope = one request, task or session; scopes never share tokens. Restoration only
 resolves tokens of its own scope; any other token-shaped text is reported as foreign and left untouched.
 
 Storage is memory by default. `PersistentVaultStore` keeps scopes that must survive a restart in Fernet-encrypted files
@@ -18,12 +19,16 @@ import threading
 import time
 from pathlib import Path
 
-# 16 random lower-case letters per token (about 75 bits): a collision across scopes is negligible (review R8-03), and
-# letters only, so a token can never look like a number, a card or a secret to the classifier that re-checks the
-# outgoing text. Restoration still only resolves tokens present in the scope being restored.
-TOKEN = re.compile(r"\[\[([A-Z_]{3,16})_([a-z]{16})\]\]")
+# Exact base-16 letter encoding of each scope id binds token identity to that scope even when the random suffix
+# collides. The legacy unscoped shape remains recognizable as foreign but is never restored: its origin is ambiguous.
+# Letters only keep the token from looking like a number or a card during the outgoing classification pass.
+TOKEN = re.compile(r"\[\[([A-Z_]{3,16})_(?:([a-p]{2,192})_)?([a-z]{16})\]\]")
 _TOKEN_ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 _SCOPE_ID = re.compile(r"[A-Za-z0-9_.:-]{1,96}")
+
+
+def _scope_tag(scope_id: str) -> str:
+    return "".join(chr(97 + (b >> 4)) + chr(97 + (b & 15)) for b in scope_id.encode("ascii"))
 
 
 def _check_scope_id(scope_id):
@@ -52,10 +57,12 @@ class Scope:
 
     def token_for(self, category: str, value: str) -> str:
         with self._lock:
+            tag = _scope_tag(self.scope_id)
             tok = self._by_value.get((category, value))
-            if tok is None:
+            # Do not reuse a legacy unscoped token loaded from an encrypted store.
+            if tok is None or not (m := TOKEN.fullmatch(tok)) or m.group(2) != tag:
                 while True:
-                    tok = f"[[{category}_{''.join(secrets.choice(_TOKEN_ALPHABET) for _ in range(16))}]]"
+                    tok = f"[[{category}_{tag}_{''.join(secrets.choice(_TOKEN_ALPHABET) for _ in range(16))}]]"
                     if tok not in self._by_token:
                         break
                 self._by_token[tok] = (category, value)
@@ -65,11 +72,12 @@ class Scope:
     def restore(self, text: str):
         """Return (text, restored_count, foreign_count)."""
         restored = foreign = 0
+        tag = _scope_tag(self.scope_id)
 
         def sub(m):
             nonlocal restored, foreign
             hit = self._by_token.get(m.group(0))
-            if hit is None:
+            if hit is None or m.group(2) != tag:
                 foreign += 1
                 return m.group(0)
             restored += 1

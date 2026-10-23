@@ -142,7 +142,7 @@ are unchanged.
 | Digits hidden between exempt tokens ("4539 1488 2026-10-23 0343 6467") | counted; redacted | `test_ldec006_a_card_hidden_among_exempt_tokens_is_still_counted` |
 | A value split around another redacted value | refused | `test_fb4_r1_06_value_split_around_another_value_is_refused` |
 | Standard and spaced forms of cards, Aadhaar, PAN (also upper case with single spaces), SSN (also label after), IBAN, accounts, phones, e-mail (also internationalised, Indic marks in the local part) | redacted / pseudonymized | `test_classify.py`, `test_ldec005.py`, `test_ldec006.py` |
-| Labelled credentials: label before or after the value, `password's X`, `pw X`, `pass X` after a user/login word, labels `pass-word`, `pass_word`, `P@ssword`, `passw0rd`; split keys with a known prefix, including separate uppercase-letter and digit groups | refused (LOG: redacted) | `test_fb4_r1_04*`, `test_fb4_r1_05*` (960 keys), `test_fb4_r1_06*`, `test_r6_split_keys.py` (200 generated keys at each of four destinations; Tavily transport capture) |
+| Labelled credentials: label before or after the value, bare English password/passcode, API key, secret key, and token labels with alphabetic values (apart from the prose phrases listed below), `password's X`, `pw X`, `pass X` after a user/login word, labels `pass-word`, `pass_word`, `P@ssword`, `passw0rd`; split keys with a known prefix, including separate uppercase-letter and digit groups | refused (LOG: redacted) | `test_fb4_r1_04*`, `test_fb4_r1_05*` (960 keys), `test_fb4_r1_06*`, `test_r6_split_keys.py` (200 generated keys at each of four destinations; Tavily transport capture), `test_r6_review_repairs.py` |
 | Invisible/control/private-use/unassigned characters or combining marks among ASCII letters or digits; accents NFKC composes onto a label | refused, or the label is read through its ASCII base | every mark U+0300-036F x every letter of "password" x 2 destinations: 0 leaks (`test_fb4_r1_03*`) |
 | Digits joined by non-standard separators (LDEC-005 signal) | refused | `test_ldec005.py` separator sweep |
 | Encoded values; encoding deeper than four levels | refused | `test_ldec005.py`, `test_fb1_repairs.py` |
@@ -161,6 +161,7 @@ or without port; ids of 8 digits or fewer; prices; years and counts; version num
 - a value written as a sequence of valid dates, clock times or IPv4 addresses (the exempt classes);
 - sensitive numbers of 8 digits or fewer with no label or context (short account numbers, PINs without a code word);
 - credential labels in languages other than English, and leetspeak beyond the listed spellings;
+- common prose/UI words after a bare password label (`policy`, `field`, `manager`, `strong`, `please`) remain readable; a literal password equal to one of those words is ambiguous and is not detected in that bare form;
 - API keys whose prefix is not in the list when split by separators; keys whose groups are lower-case words;
 - combining marks outside the Latin and Indic ranges inside an internationalised e-mail local part;
 - non-standard national formats not listed above.

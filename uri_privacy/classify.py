@@ -94,7 +94,8 @@ def iban_ok(raw: str) -> bool:
 
 # --- detectors -------------------------------------------------------------------------------------------------------
 # Labelled credential values written in prose. Digit codes (PIN/OTP/CVV) need 3-8 digits; word secrets need an explicit
-# separator ("password: x", "password is x") so that "the password policy" stays readable. "PIN code"/"pincode" is
+# separator ("password: x", "password is x"). A bare label followed by a letter-only word is also treated as a
+# credential unless it is a known prose/UI phrase ("password policy", "password field"). "PIN code"/"pincode" is
 # postal and excluded.
 # The password label also matches "pass-word", "pass_word" and digit/symbol spellings ("P@ssword", "passw0rd", review
 # FB4 R1-06).
@@ -103,6 +104,12 @@ _LABELLED = re.compile(
     r"cvv|cvc|m?pin(?! ?code)|upi pin|atm pin)\b(?:\s*(?:is|was|=|:|-|#)\s*|\s+)(\d{3,8})\b|"
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token)"
     r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,})|"
+    # Bare English labels can have entirely alphabetic values. Refuse on doubt, while preserving the documented
+    # ordinary prose/UI examples. This also covers "API key abc..." without punctuation after the label.
+    r"\b(?:(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)\s+"
+    r"(?!(?:policy|field|manager|strong|please)\b)|"
+    r"(?:api[ _-]?key|secret key|access token|auth token)\s+)"
+    r"([A-Za-z]{4,})\b|"
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
     r"\b(?:pass|pw)\s*[:=]\s*[\"']?([^\s\"',;]{4,})|"

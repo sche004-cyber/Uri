@@ -128,12 +128,12 @@ def test_r8_03_tokens_are_letters_only_and_do_not_resolve_across_scopes(monkeypa
     import secrets as SEC
     from uri_privacy import vault as V
     g = TGateway()
-    monkeypatch.setattr(V.secrets, "choice", lambda alphabet: "q")          # force identical tokens in both scopes
+    monkeypatch.setattr(V.secrets, "choice", lambda alphabet: "q")          # force identical random suffixes
     a = g.prepare("mail alice@example.in", requester="t", destination="EXTERNAL_MODEL", purpose="p", scope="A")
     b = g.prepare("mail bob@example.in", requester="t", destination="EXTERNAL_MODEL", purpose="p", scope="B")
-    assert a.text == b.text                                                  # same token string in both scopes
+    assert a.text != b.text                                                  # scope identity survives forced RNG collision
     assert g.restore(a.text, "A", requester="t") == "mail alice@example.in"
-    assert g.restore(a.text, "B", requester="t") == "mail bob@example.in"    # B resolves only B's own mapping
+    assert g.restore(a.text, "B", requester="t") == a.text                    # foreign token stays opaque
     monkeypatch.undo()
     tok = g.prepare("mail c@example.in", requester="t", destination="EXTERNAL_MODEL", purpose="p").text
     assert not any(ch.isdigit() for ch in tok.split("_")[-1])

@@ -24,7 +24,7 @@ from .vault import MemoryVaultStore, PersistentVaultStore, VaultError
 
 log = logging.getLogger("uri_privacy")
 REDACTED = "[redacted]"
-_PLACEHOLDER = re.compile(r"\[redacted\]|\[\[[A-Z_]{3,16}_[a-z]{16}\]\]")
+_PLACEHOLDER = re.compile(r"\[redacted\]|\[\[[A-Z_]{3,16}_[a-p]{2,192}_[a-z]{16}\]\]")
 DEFAULT_SCOPE_TTL_S = 3600
 
 
