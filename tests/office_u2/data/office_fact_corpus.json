@@ -1,0 +1,3071 @@
+{
+ "_about": "OD-2 fact-check corpus (plan 16, FB4). Each case lists the facts expected from its instruction, in order. Built from slot values, not from the extractor.",
+ "cases": [
+  {
+   "id": "A1-0-1",
+   "instruction": "Write an office order: on 3rd November Dr Anil Sharma will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3rd November"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ]
+   ]
+  },
+  {
+   "id": "A1-0-2",
+   "instruction": "Write an office order: on 3rd November Ms Anjali Verma and Shri Suresh Chandra Mishra will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3rd November"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "A1-0-3",
+   "instruction": "Write an office order: on 3rd November Dr. Meena Iyer, Shri Mohan Das and Dr Anil Sharma will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3rd November"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ]
+   ]
+  },
+  {
+   "id": "A1-1-1",
+   "instruction": "Write an office order: on 3 November 2026 Ms Anjali Verma will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 November 2026"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ]
+   ]
+  },
+  {
+   "id": "A1-1-2",
+   "instruction": "Write an office order: on 3 November 2026 Dr. Meena Iyer and Shri Mohan Das will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 November 2026"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ]
+   ]
+  },
+  {
+   "id": "A1-1-3",
+   "instruction": "Write an office order: on 3 November 2026 Kumari Neha Joshi, Smt. Sita Devi and Ms Anjali Verma will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 November 2026"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ]
+   ]
+  },
+  {
+   "id": "A1-2-1",
+   "instruction": "Write an office order: on 15th August Dr. Meena Iyer will attend the training.",
+   "facts": [
+    [
+     "date",
+     "15th August"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ]
+   ]
+  },
+  {
+   "id": "A1-2-2",
+   "instruction": "Write an office order: on 15th August Kumari Neha Joshi and Smt. Sita Devi will attend the training.",
+   "facts": [
+    [
+     "date",
+     "15th August"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "A1-2-3",
+   "instruction": "Write an office order: on 15th August Prof. Arun Bose, Sushri Kavita Rao and Dr. Meena Iyer will attend the training.",
+   "facts": [
+    [
+     "date",
+     "15th August"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ]
+   ]
+  },
+  {
+   "id": "A1-3-1",
+   "instruction": "Write an office order: on 1st April, 2027 Kumari Neha Joshi will attend the training.",
+   "facts": [
+    [
+     "date",
+     "1st April, 2027"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ]
+   ]
+  },
+  {
+   "id": "A1-3-2",
+   "instruction": "Write an office order: on 1st April, 2027 Prof. Arun Bose and Sushri Kavita Rao will attend the training.",
+   "facts": [
+    [
+     "date",
+     "1st April, 2027"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ]
+   ]
+  },
+  {
+   "id": "A1-3-3",
+   "instruction": "Write an office order: on 1st April, 2027 Kum. Priya Nair, Sh. Mohan Lal Gupta and Kumari Neha Joshi will attend the training.",
+   "facts": [
+    [
+     "date",
+     "1st April, 2027"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ]
+   ]
+  },
+  {
+   "id": "A1-4-1",
+   "instruction": "Write an office order: on 3 Nov Prof. Arun Bose will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 Nov"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "A1-4-2",
+   "instruction": "Write an office order: on 3 Nov Kum. Priya Nair and Sh. Mohan Lal Gupta will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 Nov"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ]
+   ]
+  },
+  {
+   "id": "A1-4-3",
+   "instruction": "Write an office order: on 3 Nov Mr Rahul Mehta, Smt Sunita Yadav and Prof. Arun Bose will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 Nov"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "A1-5-1",
+   "instruction": "Write an office order: on 5th June Kum. Priya Nair will attend the training.",
+   "facts": [
+    [
+     "date",
+     "5th June"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ]
+   ]
+  },
+  {
+   "id": "A1-5-2",
+   "instruction": "Write an office order: on 5th June Mr Rahul Mehta and Smt Sunita Yadav will attend the training.",
+   "facts": [
+    [
+     "date",
+     "5th June"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ]
+   ]
+  },
+  {
+   "id": "A1-5-3",
+   "instruction": "Write an office order: on 5th June Km. Pooja Rani, Mrs. Lata Menon and Kum. Priya Nair will attend the training.",
+   "facts": [
+    [
+     "date",
+     "5th June"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ]
+   ]
+  },
+  {
+   "id": "A1-6-1",
+   "instruction": "Write an office order: on 3 May Mr Rahul Mehta will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 May"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ]
+   ]
+  },
+  {
+   "id": "A1-6-2",
+   "instruction": "Write an office order: on 3 May Km. Pooja Rani and Mrs. Lata Menon will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 May"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ]
+   ]
+  },
+  {
+   "id": "A1-6-3",
+   "instruction": "Write an office order: on 3 May Shri Suresh Chandra Mishra, Shri Ram Kumar and Mr Rahul Mehta will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 May"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ]
+   ]
+  },
+  {
+   "id": "A1-7-1",
+   "instruction": "Write an office order: on 3rd may 2026 Km. Pooja Rani will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3rd may 2026"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ]
+   ]
+  },
+  {
+   "id": "A1-7-2",
+   "instruction": "Write an office order: on 3rd may 2026 Shri Suresh Chandra Mishra and Shri Ram Kumar will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3rd may 2026"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ]
+   ]
+  },
+  {
+   "id": "A1-7-3",
+   "instruction": "Write an office order: on 3rd may 2026 Shri Mohan Das, Dr Anil Sharma and Km. Pooja Rani will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3rd may 2026"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ]
+   ]
+  },
+  {
+   "id": "A1-8-1",
+   "instruction": "Write an office order: on 3 MAY 2026 Shri Suresh Chandra Mishra will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 MAY 2026"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "A1-8-2",
+   "instruction": "Write an office order: on 3 MAY 2026 Shri Mohan Das and Dr Anil Sharma will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 MAY 2026"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ]
+   ]
+  },
+  {
+   "id": "A1-8-3",
+   "instruction": "Write an office order: on 3 MAY 2026 Smt. Sita Devi, Ms Anjali Verma and Shri Suresh Chandra Mishra will attend the training.",
+   "facts": [
+    [
+     "date",
+     "3 MAY 2026"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "A1-9-1",
+   "instruction": "Write an office order: on 12 December 2026 Shri Mohan Das will attend the training.",
+   "facts": [
+    [
+     "date",
+     "12 December 2026"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ]
+   ]
+  },
+  {
+   "id": "A1-9-2",
+   "instruction": "Write an office order: on 12 December 2026 Smt. Sita Devi and Ms Anjali Verma will attend the training.",
+   "facts": [
+    [
+     "date",
+     "12 December 2026"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ]
+   ]
+  },
+  {
+   "id": "A1-9-3",
+   "instruction": "Write an office order: on 12 December 2026 Sushri Kavita Rao, Dr. Meena Iyer and Shri Mohan Das will attend the training.",
+   "facts": [
+    [
+     "date",
+     "12 December 2026"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ]
+   ]
+  },
+  {
+   "id": "A1-10-1",
+   "instruction": "Write an office order: on 21st January Smt. Sita Devi will attend the training.",
+   "facts": [
+    [
+     "date",
+     "21st January"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "A1-10-2",
+   "instruction": "Write an office order: on 21st January Sushri Kavita Rao and Dr. Meena Iyer will attend the training.",
+   "facts": [
+    [
+     "date",
+     "21st January"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ]
+   ]
+  },
+  {
+   "id": "A1-10-3",
+   "instruction": "Write an office order: on 21st January Sh. Mohan Lal Gupta, Kumari Neha Joshi and Smt. Sita Devi will attend the training.",
+   "facts": [
+    [
+     "date",
+     "21st January"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "A1-11-1",
+   "instruction": "Write an office order: on May 3 Sushri Kavita Rao will attend the training.",
+   "facts": [
+    [
+     "date",
+     "May 3"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ]
+   ]
+  },
+  {
+   "id": "A1-11-2",
+   "instruction": "Write an office order: on May 3 Sh. Mohan Lal Gupta and Kumari Neha Joshi will attend the training.",
+   "facts": [
+    [
+     "date",
+     "May 3"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ]
+   ]
+  },
+  {
+   "id": "A1-11-3",
+   "instruction": "Write an office order: on May 3 Smt Sunita Yadav, Prof. Arun Bose and Sushri Kavita Rao will attend the training.",
+   "facts": [
+    [
+     "date",
+     "May 3"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ]
+   ]
+  },
+  {
+   "id": "A1-12-1",
+   "instruction": "Write an office order: on May 3, 2026 Sh. Mohan Lal Gupta will attend the training.",
+   "facts": [
+    [
+     "date",
+     "May 3, 2026"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ]
+   ]
+  },
+  {
+   "id": "A1-12-2",
+   "instruction": "Write an office order: on May 3, 2026 Smt Sunita Yadav and Prof. Arun Bose will attend the training.",
+   "facts": [
+    [
+     "date",
+     "May 3, 2026"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "A1-12-3",
+   "instruction": "Write an office order: on May 3, 2026 Mrs. Lata Menon, Kum. Priya Nair and Sh. Mohan Lal Gupta will attend the training.",
+   "facts": [
+    [
+     "date",
+     "May 3, 2026"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ]
+   ]
+  },
+  {
+   "id": "A1-13-1",
+   "instruction": "Write an office order: on Nov 3 Smt Sunita Yadav will attend the training.",
+   "facts": [
+    [
+     "date",
+     "Nov 3"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ]
+   ]
+  },
+  {
+   "id": "A1-13-2",
+   "instruction": "Write an office order: on Nov 3 Mrs. Lata Menon and Kum. Priya Nair will attend the training.",
+   "facts": [
+    [
+     "date",
+     "Nov 3"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ]
+   ]
+  },
+  {
+   "id": "A1-13-3",
+   "instruction": "Write an office order: on Nov 3 Shri Ram Kumar, Mr Rahul Mehta and Smt Sunita Yadav will attend the training.",
+   "facts": [
+    [
+     "date",
+     "Nov 3"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ]
+   ]
+  },
+  {
+   "id": "A1-14-1",
+   "instruction": "Write an office order: on December 12th Mrs. Lata Menon will attend the training.",
+   "facts": [
+    [
+     "date",
+     "December 12th"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ]
+   ]
+  },
+  {
+   "id": "A1-14-2",
+   "instruction": "Write an office order: on December 12th Shri Ram Kumar and Mr Rahul Mehta will attend the training.",
+   "facts": [
+    [
+     "date",
+     "December 12th"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ]
+   ]
+  },
+  {
+   "id": "A1-14-3",
+   "instruction": "Write an office order: on December 12th Dr Anil Sharma, Km. Pooja Rani and Mrs. Lata Menon will attend the training.",
+   "facts": [
+    [
+     "date",
+     "December 12th"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ]
+   ]
+  },
+  {
+   "id": "A2-0-1",
+   "instruction": "Put up a notesheet: from 3rd November Km. Pooja Rani take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3rd November"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ]
+   ]
+  },
+  {
+   "id": "A2-0-2",
+   "instruction": "Put up a notesheet: from 3rd November Shri Suresh Chandra Mishra and Shri Ram Kumar take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3rd November"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ]
+   ]
+  },
+  {
+   "id": "A2-1-1",
+   "instruction": "Put up a notesheet: from 3 November 2026 Shri Suresh Chandra Mishra take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3 November 2026"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "A2-1-2",
+   "instruction": "Put up a notesheet: from 3 November 2026 Shri Mohan Das and Dr Anil Sharma take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3 November 2026"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ]
+   ]
+  },
+  {
+   "id": "A2-2-1",
+   "instruction": "Put up a notesheet: from 15th August Shri Mohan Das take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "15th August"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ]
+   ]
+  },
+  {
+   "id": "A2-2-2",
+   "instruction": "Put up a notesheet: from 15th August Smt. Sita Devi and Ms Anjali Verma take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "15th August"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ]
+   ]
+  },
+  {
+   "id": "A2-3-1",
+   "instruction": "Put up a notesheet: from 1st April, 2027 Smt. Sita Devi take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "1st April, 2027"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "A2-3-2",
+   "instruction": "Put up a notesheet: from 1st April, 2027 Sushri Kavita Rao and Dr. Meena Iyer take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "1st April, 2027"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ]
+   ]
+  },
+  {
+   "id": "A2-4-1",
+   "instruction": "Put up a notesheet: from 3 Nov Sushri Kavita Rao take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3 Nov"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ]
+   ]
+  },
+  {
+   "id": "A2-4-2",
+   "instruction": "Put up a notesheet: from 3 Nov Sh. Mohan Lal Gupta and Kumari Neha Joshi take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3 Nov"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ]
+   ]
+  },
+  {
+   "id": "A2-5-1",
+   "instruction": "Put up a notesheet: from 5th June Sh. Mohan Lal Gupta take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "5th June"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ]
+   ]
+  },
+  {
+   "id": "A2-5-2",
+   "instruction": "Put up a notesheet: from 5th June Smt Sunita Yadav and Prof. Arun Bose take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "5th June"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "A2-6-1",
+   "instruction": "Put up a notesheet: from 3 May Smt Sunita Yadav take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3 May"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ]
+   ]
+  },
+  {
+   "id": "A2-6-2",
+   "instruction": "Put up a notesheet: from 3 May Mrs. Lata Menon and Kum. Priya Nair take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3 May"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ]
+   ]
+  },
+  {
+   "id": "A2-7-1",
+   "instruction": "Put up a notesheet: from 3rd may 2026 Mrs. Lata Menon take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3rd may 2026"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ]
+   ]
+  },
+  {
+   "id": "A2-7-2",
+   "instruction": "Put up a notesheet: from 3rd may 2026 Shri Ram Kumar and Mr Rahul Mehta take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3rd may 2026"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ]
+   ]
+  },
+  {
+   "id": "A2-8-1",
+   "instruction": "Put up a notesheet: from 3 MAY 2026 Shri Ram Kumar take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3 MAY 2026"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ]
+   ]
+  },
+  {
+   "id": "A2-8-2",
+   "instruction": "Put up a notesheet: from 3 MAY 2026 Dr Anil Sharma and Km. Pooja Rani take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "3 MAY 2026"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ]
+   ]
+  },
+  {
+   "id": "A2-9-1",
+   "instruction": "Put up a notesheet: from 12 December 2026 Dr Anil Sharma take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "12 December 2026"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ]
+   ]
+  },
+  {
+   "id": "A2-9-2",
+   "instruction": "Put up a notesheet: from 12 December 2026 Ms Anjali Verma and Shri Suresh Chandra Mishra take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "12 December 2026"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "A2-10-1",
+   "instruction": "Put up a notesheet: from 21st January Ms Anjali Verma take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "21st January"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ]
+   ]
+  },
+  {
+   "id": "A2-10-2",
+   "instruction": "Put up a notesheet: from 21st January Dr. Meena Iyer and Shri Mohan Das take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "21st January"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ]
+   ]
+  },
+  {
+   "id": "A2-11-1",
+   "instruction": "Put up a notesheet: from May 3 Dr. Meena Iyer take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "May 3"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ]
+   ]
+  },
+  {
+   "id": "A2-11-2",
+   "instruction": "Put up a notesheet: from May 3 Kumari Neha Joshi and Smt. Sita Devi take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "May 3"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "A2-12-1",
+   "instruction": "Put up a notesheet: from May 3, 2026 Kumari Neha Joshi take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "May 3, 2026"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ]
+   ]
+  },
+  {
+   "id": "A2-12-2",
+   "instruction": "Put up a notesheet: from May 3, 2026 Prof. Arun Bose and Sushri Kavita Rao take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "May 3, 2026"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ]
+   ]
+  },
+  {
+   "id": "A2-13-1",
+   "instruction": "Put up a notesheet: from Nov 3 Prof. Arun Bose take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "Nov 3"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "A2-13-2",
+   "instruction": "Put up a notesheet: from Nov 3 Kum. Priya Nair and Sh. Mohan Lal Gupta take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "Nov 3"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ]
+   ]
+  },
+  {
+   "id": "A2-14-1",
+   "instruction": "Put up a notesheet: from December 12th Kum. Priya Nair take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "December 12th"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ]
+   ]
+  },
+  {
+   "id": "A2-14-2",
+   "instruction": "Put up a notesheet: from December 12th Mr Rahul Mehta and Smt Sunita Yadav take charge of the section.",
+   "facts": [
+    [
+     "date",
+     "December 12th"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ]
+   ]
+  },
+  {
+   "id": "A3-0",
+   "instruction": "Circular: w.e.f. 3rd November Smt. Sita Devi and Ms Anjali Verma are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "3rd November"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ]
+   ]
+  },
+  {
+   "id": "A3-1",
+   "instruction": "Circular: w.e.f. 3 November 2026 Sushri Kavita Rao and Dr. Meena Iyer are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "3 November 2026"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ]
+   ]
+  },
+  {
+   "id": "A3-2",
+   "instruction": "Circular: w.e.f. 15th August Sh. Mohan Lal Gupta and Kumari Neha Joshi are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "15th August"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ]
+   ]
+  },
+  {
+   "id": "A3-3",
+   "instruction": "Circular: w.e.f. 1st April, 2027 Smt Sunita Yadav and Prof. Arun Bose are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "1st April, 2027"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "A3-4",
+   "instruction": "Circular: w.e.f. 3 Nov Mrs. Lata Menon and Kum. Priya Nair are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "3 Nov"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ]
+   ]
+  },
+  {
+   "id": "A3-5",
+   "instruction": "Circular: w.e.f. 5th June Shri Ram Kumar and Mr Rahul Mehta are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "5th June"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ]
+   ]
+  },
+  {
+   "id": "A3-6",
+   "instruction": "Circular: w.e.f. 3 May Dr Anil Sharma and Km. Pooja Rani are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "3 May"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ]
+   ]
+  },
+  {
+   "id": "A3-7",
+   "instruction": "Circular: w.e.f. 3rd may 2026 Ms Anjali Verma and Shri Suresh Chandra Mishra are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "3rd may 2026"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "A3-8",
+   "instruction": "Circular: w.e.f. 3 MAY 2026 Dr. Meena Iyer and Shri Mohan Das are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "3 MAY 2026"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ]
+   ]
+  },
+  {
+   "id": "A3-9",
+   "instruction": "Circular: w.e.f. 12 December 2026 Kumari Neha Joshi and Smt. Sita Devi are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "12 December 2026"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "A3-10",
+   "instruction": "Circular: w.e.f. 21st January Prof. Arun Bose and Sushri Kavita Rao are relieved from duty.",
+   "facts": [
+    [
+     "date",
+     "21st January"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ]
+   ]
+  },
+  {
+   "id": "A4-0",
+   "instruction": "Office order: from 3rd November, Ms Anjali Verma is transferred to the cash section.",
+   "facts": [
+    [
+     "date",
+     "3rd November"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ]
+   ]
+  },
+  {
+   "id": "A4-1",
+   "instruction": "Office order: from 3 November 2026, Dr. Meena Iyer is transferred to the cash section.",
+   "facts": [
+    [
+     "date",
+     "3 November 2026"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ]
+   ]
+  },
+  {
+   "id": "A4-2",
+   "instruction": "Office order: from 15th August, Kumari Neha Joshi is transferred to the cash section.",
+   "facts": [
+    [
+     "date",
+     "15th August"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ]
+   ]
+  },
+  {
+   "id": "A4-3",
+   "instruction": "Office order: from 1st April, 2027, Prof. Arun Bose is transferred to the cash section.",
+   "facts": [
+    [
+     "date",
+     "1st April, 2027"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "A4-4",
+   "instruction": "Office order: from 3 Nov, Kum. Priya Nair is transferred to the cash section.",
+   "facts": [
+    [
+     "date",
+     "3 Nov"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ]
+   ]
+  },
+  {
+   "id": "A4-5",
+   "instruction": "Office order: from 5th June, Mr Rahul Mehta is transferred to the cash section.",
+   "facts": [
+    [
+     "date",
+     "5th June"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ]
+   ]
+  },
+  {
+   "id": "B1-0-1",
+   "instruction": "Notesheet on F.No. A-12/2026-Estt. Prof. Arun Bose applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "A-12/2026-Estt"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "B1-0-2",
+   "instruction": "Notesheet on F.No. A-12/2026-Estt. Kum. Priya Nair and Sh. Mohan Lal Gupta applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "A-12/2026-Estt"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ]
+   ]
+  },
+  {
+   "id": "B1-0-3",
+   "instruction": "Notesheet on F.No. A-12/2026-Estt. Mr Rahul Mehta, Smt Sunita Yadav and Prof. Arun Bose applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "A-12/2026-Estt"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "B2-0",
+   "instruction": "Write a letter to Shri Suresh Chandra Mishra under F.No. A-12/2026-Estt. about pay fixation.",
+   "facts": [
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ],
+    [
+     "reference",
+     "A-12/2026-Estt"
+    ]
+   ]
+  },
+  {
+   "id": "B3-0",
+   "instruction": "Refer F.No. A-12/2026-Estt. dated 3rd May 2026 and reply to the section.",
+   "facts": [
+    [
+     "reference",
+     "A-12/2026-Estt"
+    ],
+    [
+     "date",
+     "3rd May 2026"
+    ]
+   ]
+  },
+  {
+   "id": "B1-1-1",
+   "instruction": "Notesheet on O.M. No. A-11019/5/2026-Admin.I Kum. Priya Nair applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "A-11019/5/2026-Admin.I"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ]
+   ]
+  },
+  {
+   "id": "B1-1-2",
+   "instruction": "Notesheet on O.M. No. A-11019/5/2026-Admin.I Mr Rahul Mehta and Smt Sunita Yadav applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "A-11019/5/2026-Admin.I"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ]
+   ]
+  },
+  {
+   "id": "B1-1-3",
+   "instruction": "Notesheet on O.M. No. A-11019/5/2026-Admin.I Km. Pooja Rani, Mrs. Lata Menon and Kum. Priya Nair applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "A-11019/5/2026-Admin.I"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ]
+   ]
+  },
+  {
+   "id": "B2-1",
+   "instruction": "Write a letter to Shri Mohan Das under O.M. No. A-11019/5/2026-Admin.I about pay fixation.",
+   "facts": [
+    [
+     "name",
+     "Shri Mohan Das"
+    ],
+    [
+     "reference",
+     "A-11019/5/2026-Admin.I"
+    ]
+   ]
+  },
+  {
+   "id": "B3-1",
+   "instruction": "Refer O.M. No. A-11019/5/2026-Admin.I dated 3rd May 2026 and reply to the section.",
+   "facts": [
+    [
+     "reference",
+     "A-11019/5/2026-Admin.I"
+    ],
+    [
+     "date",
+     "3rd May 2026"
+    ]
+   ]
+  },
+  {
+   "id": "B1-2-1",
+   "instruction": "Notesheet on No. 11013/2/2026-Estt.(A) Mr Rahul Mehta applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "11013/2/2026-Estt.(A)"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ]
+   ]
+  },
+  {
+   "id": "B1-2-2",
+   "instruction": "Notesheet on No. 11013/2/2026-Estt.(A) Km. Pooja Rani and Mrs. Lata Menon applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "11013/2/2026-Estt.(A)"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ]
+   ]
+  },
+  {
+   "id": "B1-2-3",
+   "instruction": "Notesheet on No. 11013/2/2026-Estt.(A) Shri Suresh Chandra Mishra, Shri Ram Kumar and Mr Rahul Mehta applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "11013/2/2026-Estt.(A)"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ]
+   ]
+  },
+  {
+   "id": "B2-2",
+   "instruction": "Write a letter to Smt. Sita Devi under No. 11013/2/2026-Estt.(A) about pay fixation.",
+   "facts": [
+    [
+     "name",
+     "Smt. Sita Devi"
+    ],
+    [
+     "reference",
+     "11013/2/2026-Estt.(A)"
+    ]
+   ]
+  },
+  {
+   "id": "B3-2",
+   "instruction": "Refer No. 11013/2/2026-Estt.(A) dated 3rd May 2026 and reply to the section.",
+   "facts": [
+    [
+     "reference",
+     "11013/2/2026-Estt.(A)"
+    ],
+    [
+     "date",
+     "3rd May 2026"
+    ]
+   ]
+  },
+  {
+   "id": "B1-3-1",
+   "instruction": "Notesheet on D.O. No. 12/3/2026-Pers Km. Pooja Rani applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "12/3/2026-Pers"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ]
+   ]
+  },
+  {
+   "id": "B1-3-2",
+   "instruction": "Notesheet on D.O. No. 12/3/2026-Pers Shri Suresh Chandra Mishra and Shri Ram Kumar applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "12/3/2026-Pers"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ]
+   ]
+  },
+  {
+   "id": "B1-3-3",
+   "instruction": "Notesheet on D.O. No. 12/3/2026-Pers Shri Mohan Das, Dr Anil Sharma and Km. Pooja Rani applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "12/3/2026-Pers"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ]
+   ]
+  },
+  {
+   "id": "B2-3",
+   "instruction": "Write a letter to Sushri Kavita Rao under D.O. No. 12/3/2026-Pers about pay fixation.",
+   "facts": [
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ],
+    [
+     "reference",
+     "12/3/2026-Pers"
+    ]
+   ]
+  },
+  {
+   "id": "B3-3",
+   "instruction": "Refer D.O. No. 12/3/2026-Pers dated 3rd May 2026 and reply to the section.",
+   "facts": [
+    [
+     "reference",
+     "12/3/2026-Pers"
+    ],
+    [
+     "date",
+     "3rd May 2026"
+    ]
+   ]
+  },
+  {
+   "id": "B1-4-1",
+   "instruction": "Notesheet on F.No. HR-II/Pay/12/2026 Shri Suresh Chandra Mishra applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "HR-II/Pay/12/2026"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "B1-4-2",
+   "instruction": "Notesheet on F.No. HR-II/Pay/12/2026 Shri Mohan Das and Dr Anil Sharma applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "HR-II/Pay/12/2026"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ]
+   ]
+  },
+  {
+   "id": "B1-4-3",
+   "instruction": "Notesheet on F.No. HR-II/Pay/12/2026 Smt. Sita Devi, Ms Anjali Verma and Shri Suresh Chandra Mishra applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "HR-II/Pay/12/2026"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "B2-4",
+   "instruction": "Write a letter to Sh. Mohan Lal Gupta under F.No. HR-II/Pay/12/2026 about pay fixation.",
+   "facts": [
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ],
+    [
+     "reference",
+     "HR-II/Pay/12/2026"
+    ]
+   ]
+  },
+  {
+   "id": "B3-4",
+   "instruction": "Refer F.No. HR-II/Pay/12/2026 dated 3rd May 2026 and reply to the section.",
+   "facts": [
+    [
+     "reference",
+     "HR-II/Pay/12/2026"
+    ],
+    [
+     "date",
+     "3rd May 2026"
+    ]
+   ]
+  },
+  {
+   "id": "B1-5-1",
+   "instruction": "Notesheet on F.No. 12/2026-Admin Shri Mohan Das applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "12/2026-Admin"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ]
+   ]
+  },
+  {
+   "id": "B1-5-2",
+   "instruction": "Notesheet on F.No. 12/2026-Admin Smt. Sita Devi and Ms Anjali Verma applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "12/2026-Admin"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ]
+   ]
+  },
+  {
+   "id": "B1-5-3",
+   "instruction": "Notesheet on F.No. 12/2026-Admin Sushri Kavita Rao, Dr. Meena Iyer and Shri Mohan Das applied for leave.",
+   "facts": [
+    [
+     "reference",
+     "12/2026-Admin"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ]
+   ]
+  },
+  {
+   "id": "B2-5",
+   "instruction": "Write a letter to Smt Sunita Yadav under F.No. 12/2026-Admin about pay fixation.",
+   "facts": [
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ],
+    [
+     "reference",
+     "12/2026-Admin"
+    ]
+   ]
+  },
+  {
+   "id": "B3-5",
+   "instruction": "Refer F.No. 12/2026-Admin dated 3rd May 2026 and reply to the section.",
+   "facts": [
+    [
+     "reference",
+     "12/2026-Admin"
+    ],
+    [
+     "date",
+     "3rd May 2026"
+    ]
+   ]
+  },
+  {
+   "id": "C1-0-1",
+   "instruction": "Office order sanctioning Rs. 25,000 to Dr Anil Sharma for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "25,000"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ]
+   ]
+  },
+  {
+   "id": "C1-0-2",
+   "instruction": "Office order sanctioning Rs. 25,000 to Ms Anjali Verma and Shri Suresh Chandra Mishra for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "25,000"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "C2-0",
+   "instruction": "Put up a notesheet for an advance of Rs. 25,000 on 5th June.",
+   "facts": [
+    [
+     "amount",
+     "25,000"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "C1-1-1",
+   "instruction": "Office order sanctioning Rs 2,50,000/- to Ms Anjali Verma for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "2,50,000"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ]
+   ]
+  },
+  {
+   "id": "C1-1-2",
+   "instruction": "Office order sanctioning Rs 2,50,000/- to Dr. Meena Iyer and Shri Mohan Das for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "2,50,000"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ]
+   ]
+  },
+  {
+   "id": "C2-1",
+   "instruction": "Put up a notesheet for an advance of Rs 2,50,000/- on 5th June.",
+   "facts": [
+    [
+     "amount",
+     "2,50,000"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "C1-2-1",
+   "instruction": "Office order sanctioning Rs.5,000/- to Dr. Meena Iyer for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "5,000"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ]
+   ]
+  },
+  {
+   "id": "C1-2-2",
+   "instruction": "Office order sanctioning Rs.5,000/- to Kumari Neha Joshi and Smt. Sita Devi for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "5,000"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "C2-2",
+   "instruction": "Put up a notesheet for an advance of Rs.5,000/- on 5th June.",
+   "facts": [
+    [
+     "amount",
+     "5,000"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "C1-3-1",
+   "instruction": "Office order sanctioning Rs. 3.5 crore to Kumari Neha Joshi for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "3.5 crore"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ]
+   ]
+  },
+  {
+   "id": "C1-3-2",
+   "instruction": "Office order sanctioning Rs. 3.5 crore to Prof. Arun Bose and Sushri Kavita Rao for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "3.5 crore"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ],
+    [
+     "name",
+     "Sushri Kavita Rao"
+    ]
+   ]
+  },
+  {
+   "id": "C2-3",
+   "instruction": "Put up a notesheet for an advance of Rs. 3.5 crore on 5th June.",
+   "facts": [
+    [
+     "amount",
+     "3.5 crore"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "C1-4-1",
+   "instruction": "Office order sanctioning Rs. 40 lakh to Prof. Arun Bose for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "40 lakh"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "C1-4-2",
+   "instruction": "Office order sanctioning Rs. 40 lakh to Kum. Priya Nair and Sh. Mohan Lal Gupta for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "40 lakh"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ]
+   ]
+  },
+  {
+   "id": "C2-4",
+   "instruction": "Put up a notesheet for an advance of Rs. 40 lakh on 5th June.",
+   "facts": [
+    [
+     "amount",
+     "40 lakh"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "C1-5-1",
+   "instruction": "Office order sanctioning Rs 500/- to Kum. Priya Nair for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "500"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ]
+   ]
+  },
+  {
+   "id": "C1-5-2",
+   "instruction": "Office order sanctioning Rs 500/- to Mr Rahul Mehta and Smt Sunita Yadav for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "500"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ],
+    [
+     "name",
+     "Smt Sunita Yadav"
+    ]
+   ]
+  },
+  {
+   "id": "C2-5",
+   "instruction": "Put up a notesheet for an advance of Rs 500/- on 5th June.",
+   "facts": [
+    [
+     "amount",
+     "500"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "C1-6-1",
+   "instruction": "Office order sanctioning Rs. 1,25,000/- (Rupees One Lakh Twenty Five Thousand only) to Mr Rahul Mehta for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "1,25,000"
+    ],
+    [
+     "number",
+     "One Lakh Twenty Five Thousand"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ]
+   ]
+  },
+  {
+   "id": "C1-6-2",
+   "instruction": "Office order sanctioning Rs. 1,25,000/- (Rupees One Lakh Twenty Five Thousand only) to Km. Pooja Rani and Mrs. Lata Menon for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "1,25,000"
+    ],
+    [
+     "number",
+     "One Lakh Twenty Five Thousand"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ]
+   ]
+  },
+  {
+   "id": "C2-6",
+   "instruction": "Put up a notesheet for an advance of Rs. 1,25,000/- (Rupees One Lakh Twenty Five Thousand only) on 5th June.",
+   "facts": [
+    [
+     "amount",
+     "1,25,000"
+    ],
+    [
+     "number",
+     "One Lakh Twenty Five Thousand"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "C1-7-1",
+   "instruction": "Office order sanctioning twenty five thousand rupees to Km. Pooja Rani for medical treatment.",
+   "facts": [
+    [
+     "number",
+     "twenty five thousand"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ]
+   ]
+  },
+  {
+   "id": "C1-7-2",
+   "instruction": "Office order sanctioning twenty five thousand rupees to Shri Suresh Chandra Mishra and Shri Ram Kumar for medical treatment.",
+   "facts": [
+    [
+     "number",
+     "twenty five thousand"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ]
+   ]
+  },
+  {
+   "id": "C2-7",
+   "instruction": "Put up a notesheet for an advance of twenty five thousand rupees on 5th June.",
+   "facts": [
+    [
+     "number",
+     "twenty five thousand"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "C1-8-1",
+   "instruction": "Office order sanctioning Rs. 75,000 and one laptop to Shri Suresh Chandra Mishra for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "75,000"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "C1-8-2",
+   "instruction": "Office order sanctioning Rs. 75,000 and one laptop to Shri Mohan Das and Dr Anil Sharma for medical treatment.",
+   "facts": [
+    [
+     "amount",
+     "75,000"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ]
+   ]
+  },
+  {
+   "id": "C2-8",
+   "instruction": "Put up a notesheet for an advance of Rs. 75,000 and one laptop on 5th June.",
+   "facts": [
+    [
+     "amount",
+     "75,000"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "D1-0-3rd November",
+   "instruction": "Notice: meeting at 10:30 AM on 3rd November in the conference hall.",
+   "facts": [
+    [
+     "number",
+     "10:30 AM"
+    ],
+    [
+     "date",
+     "3rd November"
+    ]
+   ]
+  },
+  {
+   "id": "D1-0-3 November 2026",
+   "instruction": "Notice: meeting at 10:30 AM on 3 November 2026 in the conference hall.",
+   "facts": [
+    [
+     "number",
+     "10:30 AM"
+    ],
+    [
+     "date",
+     "3 November 2026"
+    ]
+   ]
+  },
+  {
+   "id": "D1-1-1st April, 2027",
+   "instruction": "Notice: meeting at 10.30 a.m. on 1st April, 2027 in the conference hall.",
+   "facts": [
+    [
+     "number",
+     "10.30 a.m."
+    ],
+    [
+     "date",
+     "1st April, 2027"
+    ]
+   ]
+  },
+  {
+   "id": "D1-1-3 Nov",
+   "instruction": "Notice: meeting at 10.30 a.m. on 3 Nov in the conference hall.",
+   "facts": [
+    [
+     "number",
+     "10.30 a.m."
+    ],
+    [
+     "date",
+     "3 Nov"
+    ]
+   ]
+  },
+  {
+   "id": "D1-2-3 May",
+   "instruction": "Notice: meeting at 1100 hrs on 3 May in the conference hall.",
+   "facts": [
+    [
+     "number",
+     "1100 hrs"
+    ],
+    [
+     "date",
+     "3 May"
+    ]
+   ]
+  },
+  {
+   "id": "D1-2-3rd may 2026",
+   "instruction": "Notice: meeting at 1100 hrs on 3rd may 2026 in the conference hall.",
+   "facts": [
+    [
+     "number",
+     "1100 hrs"
+    ],
+    [
+     "date",
+     "3rd may 2026"
+    ]
+   ]
+  },
+  {
+   "id": "D1-3-12 December 2026",
+   "instruction": "Notice: meeting at 3:00 PM on 12 December 2026 in the conference hall.",
+   "facts": [
+    [
+     "number",
+     "3:00 PM"
+    ],
+    [
+     "date",
+     "12 December 2026"
+    ]
+   ]
+  },
+  {
+   "id": "D1-3-21st January",
+   "instruction": "Notice: meeting at 3:00 PM on 21st January in the conference hall.",
+   "facts": [
+    [
+     "number",
+     "3:00 PM"
+    ],
+    [
+     "date",
+     "21st January"
+    ]
+   ]
+  },
+  {
+   "id": "D2-0-3rd November",
+   "instruction": "Circular: 3 posts of LDC are to be filled by 3rd November.",
+   "facts": [
+    [
+     "number",
+     "3 posts"
+    ],
+    [
+     "date",
+     "3rd November"
+    ]
+   ]
+  },
+  {
+   "id": "D2-0-5th June",
+   "instruction": "Circular: 3 posts of LDC are to be filled by 5th June.",
+   "facts": [
+    [
+     "number",
+     "3 posts"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "D2-1-3 November 2026",
+   "instruction": "Circular: 5 vacancies of UDC are to be filled by 3 November 2026.",
+   "facts": [
+    [
+     "number",
+     "5 vacancies"
+    ],
+    [
+     "date",
+     "3 November 2026"
+    ]
+   ]
+  },
+  {
+   "id": "D2-1-3 May",
+   "instruction": "Circular: 5 vacancies of UDC are to be filled by 3 May.",
+   "facts": [
+    [
+     "number",
+     "5 vacancies"
+    ],
+    [
+     "date",
+     "3 May"
+    ]
+   ]
+  },
+  {
+   "id": "D2-2-15th August",
+   "instruction": "Circular: 2 posts of MTS are to be filled by 15th August.",
+   "facts": [
+    [
+     "number",
+     "2 posts"
+    ],
+    [
+     "date",
+     "15th August"
+    ]
+   ]
+  },
+  {
+   "id": "D2-2-3rd may 2026",
+   "instruction": "Circular: 2 posts of MTS are to be filled by 3rd may 2026.",
+   "facts": [
+    [
+     "number",
+     "2 posts"
+    ],
+    [
+     "date",
+     "3rd may 2026"
+    ]
+   ]
+  },
+  {
+   "id": "D2-3-1st April, 2027",
+   "instruction": "Circular: 4 vacancies of PA are to be filled by 1st April, 2027.",
+   "facts": [
+    [
+     "number",
+     "4 vacancies"
+    ],
+    [
+     "date",
+     "1st April, 2027"
+    ]
+   ]
+  },
+  {
+   "id": "D2-3-3 MAY 2026",
+   "instruction": "Circular: 4 vacancies of PA are to be filled by 3 MAY 2026.",
+   "facts": [
+    [
+     "number",
+     "4 vacancies"
+    ],
+    [
+     "date",
+     "3 MAY 2026"
+    ]
+   ]
+  },
+  {
+   "id": "D3-0-1",
+   "instruction": "Write an office order granting 7 days earned leave to Dr Anil Sharma.",
+   "facts": [
+    [
+     "number",
+     "7 days"
+    ],
+    [
+     "name",
+     "Dr Anil Sharma"
+    ]
+   ]
+  },
+  {
+   "id": "D3-0-2",
+   "instruction": "Write an office order granting 7 days earned leave to Ms Anjali Verma and Shri Suresh Chandra Mishra.",
+   "facts": [
+    [
+     "number",
+     "7 days"
+    ],
+    [
+     "name",
+     "Ms Anjali Verma"
+    ],
+    [
+     "name",
+     "Shri Suresh Chandra Mishra"
+    ]
+   ]
+  },
+  {
+   "id": "D3-1-1",
+   "instruction": "Write an office order granting 2 weeks earned leave to Dr. Meena Iyer.",
+   "facts": [
+    [
+     "number",
+     "2 weeks"
+    ],
+    [
+     "name",
+     "Dr. Meena Iyer"
+    ]
+   ]
+  },
+  {
+   "id": "D3-1-2",
+   "instruction": "Write an office order granting 2 weeks earned leave to Kumari Neha Joshi and Smt. Sita Devi.",
+   "facts": [
+    [
+     "number",
+     "2 weeks"
+    ],
+    [
+     "name",
+     "Kumari Neha Joshi"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "D3-2-1",
+   "instruction": "Write an office order granting 10 days earned leave to Prof. Arun Bose.",
+   "facts": [
+    [
+     "number",
+     "10 days"
+    ],
+    [
+     "name",
+     "Prof. Arun Bose"
+    ]
+   ]
+  },
+  {
+   "id": "D3-2-2",
+   "instruction": "Write an office order granting 10 days earned leave to Kum. Priya Nair and Sh. Mohan Lal Gupta.",
+   "facts": [
+    [
+     "number",
+     "10 days"
+    ],
+    [
+     "name",
+     "Kum. Priya Nair"
+    ],
+    [
+     "name",
+     "Sh. Mohan Lal Gupta"
+    ]
+   ]
+  },
+  {
+   "id": "D3-3-1",
+   "instruction": "Write an office order granting 3 months earned leave to Mr Rahul Mehta.",
+   "facts": [
+    [
+     "number",
+     "3 months"
+    ],
+    [
+     "name",
+     "Mr Rahul Mehta"
+    ]
+   ]
+  },
+  {
+   "id": "D3-3-2",
+   "instruction": "Write an office order granting 3 months earned leave to Km. Pooja Rani and Mrs. Lata Menon.",
+   "facts": [
+    [
+     "number",
+     "3 months"
+    ],
+    [
+     "name",
+     "Km. Pooja Rani"
+    ],
+    [
+     "name",
+     "Mrs. Lata Menon"
+    ]
+   ]
+  },
+  {
+   "id": "D4-0",
+   "instruction": "Purchase 50 nos. chairs and 10 sets of uniform for the canteen.",
+   "facts": [
+    [
+     "number",
+     "50 nos."
+    ],
+    [
+     "number",
+     "10 sets"
+    ]
+   ]
+  },
+  {
+   "id": "D4-1",
+   "instruction": "Send 2 copies of the report to the director by 3rd November.",
+   "facts": [
+    [
+     "number",
+     "2 copies"
+    ],
+    [
+     "date",
+     "3rd November"
+    ]
+   ]
+  },
+  {
+   "id": "D4-2",
+   "instruction": "TA for a 25 km journey on 15th August by Shri Ram Kumar.",
+   "facts": [
+    [
+     "number",
+     "25 km"
+    ],
+    [
+     "date",
+     "15th August"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ]
+   ]
+  },
+  {
+   "id": "D4-3",
+   "instruction": "Meeting in Room No. 12 on 3rd November with Smt. Sita Devi.",
+   "facts": [
+    [
+     "reference",
+     "12"
+    ],
+    [
+     "date",
+     "3rd November"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "D4-4",
+   "instruction": "Fill 3 (three) posts of LDC by 5th June.",
+   "facts": [
+    [
+     "number",
+     "3 posts"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "E-0",
+   "instruction": "Write a circular: officers aged 55 may apply by 5th June.",
+   "facts": [
+    [
+     "number",
+     "55"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "E-1",
+   "instruction": "May 3 officers be deputed for training? Write a notesheet to Shri Ram Kumar.",
+   "facts": [
+    [
+     "number",
+     "3 officers"
+    ],
+    [
+     "name",
+     "Shri Ram Kumar"
+    ]
+   ]
+  },
+  {
+   "id": "E-2",
+   "instruction": "Circular: you may send 2 copies by 5th June.",
+   "facts": [
+    [
+     "number",
+     "2 copies"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "E-3",
+   "instruction": "Relieve Kum. Priya Nair and Smt. Sita Devi from duty.",
+   "facts": [
+    [
+     "name",
+     "Kum. Priya Nair"
+    ],
+    [
+     "name",
+     "Smt. Sita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "E-4",
+   "instruction": "Write a memo to Ramesh about leave.",
+   "facts": [
+    [
+     "name",
+     "Ramesh"
+    ]
+   ]
+  },
+  {
+   "id": "E-5",
+   "instruction": "Letter to the Ministry of Home Affairs about F.No. 12/3/2026-Pers.",
+   "facts": [
+    [
+     "name",
+     "Ministry of Home Affairs"
+    ],
+    [
+     "reference",
+     "12/3/2026-Pers"
+    ]
+   ]
+  },
+  {
+   "id": "F-0",
+   "instruction": "Office order: sanction Rs. 5,000 one time grant to Smt. Sunita Devi.",
+   "facts": [
+    [
+     "amount",
+     "5,000"
+    ],
+    [
+     "name",
+     "Smt. Sunita Devi"
+    ]
+   ]
+  },
+  {
+   "id": "F-1",
+   "instruction": "Circular: depute 2 officers one from each division by 5th June.",
+   "facts": [
+    [
+     "number",
+     "2 officers"
+    ],
+    [
+     "date",
+     "5th June"
+    ]
+   ]
+  },
+  {
+   "id": "F-2",
+   "instruction": "Notesheet: create 4 posts two each in the cash and pay sections.",
+   "facts": [
+    [
+     "number",
+     "4 posts"
+    ]
+   ]
+  },
+  {
+   "id": "F-3",
+   "instruction": "Training for 5 days ten officers from 3rd November.",
+   "facts": [
+    [
+     "number",
+     "5 days"
+    ],
+    [
+     "date",
+     "3rd November"
+    ]
+   ]
+  },
+  {
+   "id": "F-4",
+   "instruction": "Sanction two lakh rupees to Shri Mohan Das.",
+   "facts": [
+    [
+     "number",
+     "two lakh"
+    ],
+    [
+     "name",
+     "Shri Mohan Das"
+    ]
+   ]
+  }
+ ]
+}

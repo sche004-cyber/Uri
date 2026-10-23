@@ -212,13 +212,58 @@ Repairs after fallback review FB3 of da62f66d (REJECT; record
 
   Any other word after a number is not part of the fact ("5 miles" is checked only as "5").
 
+Repairs after fallback review FB4 of ef9ce641 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r4/fallback/FB4_subagent_ef9ce641.audit.txt`; R4-01 was NOT FIXED there).
+Four rounds each found a new variant, and each patch caused the next regression:
+- R3-04's name skip lost names after references;
+- R4-01's segmenting lost the first of two people;
+- R4-02's "May" rule lost "May 3".
+
+So the extractor was rewritten as one pipeline. The stages claim spans in a fixed order: references with their
+designator, then dates, then digit numbers with units, then number words, then names split at every honorific, then
+cue names. A corpus-driven property test now guards it: `tests/office_u2/test_office_daily_fact_corpus.py` with
+`tests/office_u2/data/office_fact_corpus.json` (189 instructions). For every case it checks three things:
+- the facts match the expected list;
+- an identical draft never warns;
+- every one-fact change warns about that fact. The changes are made in code: surname, first name, day, month,
+  digits, unit, number word, a digit put in front.
+
+The individual repairs:
+- R5-01 corrects R4-01: a run of capitalised words is split at every honorific, each name keeping its own
+  honorific ("Shri Ram Kumar and Smt. Sita Devi" gives two names). Kum, Km, Kumari and Sushri are honorifics and cue
+  words.
+- R5-02 corrects R4-02. "may" is the month, in any case, when:
+  - the day has an ordinal;
+  - a year follows;
+  - on, by, from, till, until, dated, before, after or of comes before it;
+  - or, after a day, it is written "May" or "MAY".
+
+  "aged 55 may apply", "you may 3 times" and a sentence starting "May 3 officers" are not dates.
+- R5-03: an identical draft never warns. The number-word continuation applies only to facts that end in a number
+  word, and not when the instruction has the same following word. A number repeated in words in brackets ("3 (three)
+  posts") is read as the number alone in the instruction and in the draft.
+- R5-04: the designator (F.No., O.M. No., D.O. No., No.) is inside the claimed reference span. "Refer", "under" and
+  the designators are never name words.
+- R5-05: only the raster worker's TIMEOUT, or BUSY waiting for it, counts as a time limit late in a request. Any
+  other render failure is raised as before.
+- R5-06 (choice: bound it, not document it): the text op and the OCR page renders call the worker with
+  `total_timeout`. The worker lock is then acquired with a timeout taken from the remaining budget, and the worker's
+  start is bounded by what is left. A worker held by another request beyond that budget gives BUSY. The bound on
+  waiting is 185 s plus the time a stopped process takes to exit. Building the To Word document (at most 500,000
+  characters) is the remaining part that is not itself time-limited.
+
 Fact-check limitations that remain:
 - lowercase names ("ramesh kumar") and a single name without a cue word;
 - a single all-capitals word such as a cadre ("LDC" against "UDC") is not a fact;
+- several people without honorifics joined by "and" form one name fact ("Ram Kumar and Sita Devi"): a change to
+  either still warns, but the warning names the pair;
 - ordinal and fraction words ("first", "half");
 - "and <number word>" followed by a noun ("Rs. 25,000 and fifty rupees more") is not read as part of the number;
+- a digit fact followed in the draft by a number word ("Rs. 12" in the instruction, "Rs. 12 thousand" in the draft)
+  is NOT reported. Only number-word facts ("two lakh") are checked for a following number word, so that an
+  identical draft never warns;
+- "May 3" without a preposition, ordinal or year before it (for example at the start of a sentence) is not a date;
 - a fact written differently in the draft: "11 AM" against "11 a.m." or "23rd" against "23" is reported, not matched;
-- a digit followed by a number word in the draft ("12 thousand" against "12") is reported;
 - swapped numbers and a fact present but used in the wrong place;
 - words in Indian languages.
 

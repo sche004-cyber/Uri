@@ -3,12 +3,22 @@
 * `choose_layout`: the document kind from keywords in the instruction (no Brain). The earliest keyword in the text
   wins, so "write an office order asking staff to report" is an office order, not a report. No keyword -> None (the
   service asks which kind).
-* `extract_facts` / `missing_facts`: numbers (digits, and number words such as "twenty five thousand"), dates,
-  reference numbers, amounts, capitalised name sequences and one capitalised word after to/from/Shri/Smt/Mr/Mrs/Ms/Dr
-  in the instruction. Every one must appear in the draft as a whole token run (FB1 R2-01: "7" is not found inside
-  "17"); one that does not is reported by name (FACT_MISSING), never dropped silently. The check is deliberately
-  literal: "23rd October" in the instruction and "23 October" in the draft is reported, so the owner looks.
-  Not extracted (stated in plan 16): lowercase names, a single name without a cue word, ordinal and fraction words.
+* `extract_facts` / `missing_facts`: the facts of an instruction and the ones a draft does not contain.
+
+FB4 (plan 16): the extractor is one pipeline. Each stage claims character spans in the instruction, and later stages
+never use a claimed span:
+  1. references: the designator and the code together ("F.No. A-12/2026-Estt.", "O.M. No. ...", "D.O. No. ...",
+     "No. ..."); the fact is the code;
+  2. dates: day and month, or month and day, with or without a year. "may" counts as the month only with an
+     ordinal day, a following year, or a preposition before it (on/by/from/till/until/dated/before/after/of);
+  3. numbers in digits, with a following unit (days, km, posts, lakh, AM/PM, ... see UNITS) as part of the fact; an
+     amount after Rs/INR/the rupee sign; "/-" is dropped;
+  4. numbers in words ("twenty five thousand");
+  5. names: runs of capitalised words, broken by punctuation, claimed spans and sentence ends, then split at every
+     honorific so "Shri Ram Kumar and Smt. Sita Devi" is two names, each keeping its honorific;
+  6. one capitalised word after a cue ("to Ramesh", "Smt. Sharma") when no longer name contains it.
+A fact counts as present in a draft only as a whole token run (FB1 R2-01). The check is literal on purpose; plan 16
+lists what it does not catch.
 """
 from __future__ import annotations
 
@@ -38,190 +48,265 @@ def choose_layout(instruction: str) -> str | None:
     return best[1] if best else None
 
 
+# ---- vocabulary ------------------------------------------------------------------------------------------------------
 _MONTHS = ("january|february|march|april|may|june|july|august|september|october|november|december|"
            "jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec")
-_MONTHS_NOT_MAY = _MONTHS.replace("may|", "")
-# FB2 R3-01: "3rd November", "November 3", "3 Nov", "15th August" are dates with or without a year.
-# FB3 R4-02: "may" is a month only when written "May": after a day ("3 May", "3rd May 2026"), or before a day with
-# an ordinal or a year ("May 3rd", "May 3, 2026"); "aged 55 may apply" and a sentence starting "May 3 officers"
-# are not dates. A day must be 1 to 31.
-_DATE_WORDS = re.compile(
-    r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?i:" + _MONTHS_NOT_MAY + r")\b\.?(?:,?\s+\d{4}\b)?"
-    r"|\b(?i:" + _MONTHS_NOT_MAY + r")\b\.?\s+\d{1,2}(?:st|nd|rd|th)?\b(?:,?\s+\d{4}\b)?"
-    r"|\b\d{1,2}(?:st|nd|rd|th)?\s+May\b(?:,?\s+\d{4}\b)?"
-    r"|\bMay\s+\d{1,2}(?:st|nd|rd|th)\b(?:,?\s+\d{4}\b)?|\bMay\s+\d{1,2},?\s+\d{4}\b")
-_DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
-_REF = re.compile(r"\b(?:F\.\s?)?No\.\s*([A-Za-z0-9][\w./()-]*\d[\w./()-]*)", re.I)
-_AMOUNT_PREFIX = re.compile(r"(?:rs\.?|inr|₹)\s*$", re.I)
-_HONORIFIC = r"(?:Shri|Smt|Sh|Km|Kumari|Dr|Mr|Mrs|Ms|Prof)\.?"
-_CAP = r"[A-Z][A-Za-z'.-]*"
-_NAMES = re.compile(r"\b" + _HONORIFIC + r"\s+" + _CAP + r"(?:\s+" + _CAP + r")*"
-                    r"|\b" + _CAP + r"(?:\s+(?:of|and|for|the)\s+" + _CAP + r"|\s+" + _CAP + r")+")
-# Words that start a capitalised run without being part of a name (sentence-initial verbs, document words).
-_NOT_NAME = {"write", "draft", "prepare", "compose", "please", "kindly", "issue", "make", "create", "send", "the", "a",
-             "an", "to", "dear", "subject", "sub", "ref", "no", "no.", "dated", "date", "file", "office", "order",
-             "notice", "circular", "memo", "memorandum", "minutes", "report", "letter", "note", "sheet", "notesheet",
-             "i", "we", "it", "this", "that", "with", "from", "for", "and", "of", "on", "in", "by", "all", "also",
-             "copy", "regarding", "about", "inform", "informing", "asking", "request", "requesting", "pay", "rs",
-             "inr", "dt", "w.e.f", "wef", "transfer", "sanction", "ask", "hold", "grant", "appoint", "direct",
-             "depute", "relieve", "post", "approve", "forward", "submit", "reply"}
 _MONTH_SET = set(_MONTHS.split("|"))
-_CUE_NAME = re.compile(r"\b(?:to|from|Shri|Smt|Mr|Mrs|Ms|Dr)\.?\s+([A-Z][A-Za-z'-]+)")
+_ORD = r"(?:st|nd|rd|th)"
+_YEAR = r"(?:,?\s+\d{4}\b)"
+_DAY_MONTH = re.compile(r"\b(\d{1,2})(" + _ORD + r")?\s+(" + _MONTHS + r")\b\.?(" + _YEAR + r")?", re.I)
+_MONTH_DAY = re.compile(r"\b(" + _MONTHS + r")\b\.?\s+(\d{1,2})(" + _ORD + r")?\b(" + _YEAR + r")?", re.I)
+_MAY_CUE = re.compile(r"\b(?:on|by|from|till|until|dated|before|after|of)\s+$", re.I)
+_DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
+# FB4 R5-04: the designator is part of the claimed span, so it never becomes a name word.
+_REF = re.compile(r"\b(?:F\.\s?No\.?|O\.\s?M\.\s?No\.?|D\.\s?O\.\s?No\.?|No\.)\s*([A-Za-z0-9][\w./()-]*\d[\w./()-]*)",
+                  re.I)
+_AMOUNT_PREFIX = re.compile(r"(?:rs\.?|inr|₹)\s*$", re.I)
+# FB4 R5-01: Kum, Km, Kumari and Sushri are honorifics too.
+HONORIFICS = ("Shri", "Smt", "Sh", "Km", "Kum", "Kumari", "Sushri", "Dr", "Mr", "Mrs", "Ms", "Prof")
+_HONORIFIC = r"(?:" + "|".join(HONORIFICS) + r")\.?"
+_HON_RX = re.compile(_HONORIFIC + r"$")
+_CUE_NAME = re.compile(r"\b(?:to|from|" + "|".join(HONORIFICS) + r")\.?\s+([A-Z][A-Za-z'-]+)")
+_CONNECTORS = {"of", "and", "for", "the"}
+# Words that start or end a capitalised run without being part of a name (verbs, document words, designators).
+_NOT_NAME = {"write", "draft", "prepare", "compose", "please", "kindly", "issue", "make", "create", "send", "the", "a",
+             "an", "to", "dear", "subject", "sub", "ref", "refer", "reference", "no", "dated", "date", "file",
+             "office", "order", "notice", "circular", "memo", "memorandum", "minutes", "report", "letter", "note",
+             "sheet", "notesheet", "i", "we", "it", "this", "that", "with", "from", "for", "and", "of", "on", "in",
+             "by", "all", "also", "copy", "regarding", "about", "inform", "informing", "asking", "request",
+             "requesting", "pay", "rs", "inr", "dt", "w.e.f", "wef", "transfer", "sanction", "ask", "hold", "grant",
+             "appoint", "direct", "depute", "relieve", "post", "approve", "forward", "submit", "reply", "under",
+             "f.no", "o.m", "d.o", "put", "up", "meeting", "rupees", "only", "training", "purchase", "notify",
+             "fill", "allot", "budget", "fine", "sanctioning", "granting", "relieving", "transferring", "on"}
 _NUM_WORD = (r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|"
              r"seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|"
              r"lakhs?|crores?)")
+_NUM_WORD_RX = re.compile(_NUM_WORD + r"$", re.I)
 _NUM_WORDS = re.compile(r"\b" + _NUM_WORD + r"(?:[\s-]+(?:and\s+)?" + _NUM_WORD + r")*\b", re.I)
-# FB2 R3-02: the unit after a number is part of the fact ("7 days" is not "7 weeks", "10:30 AM" not "10:30 PM").
-# FB3 R4-04: plus common office units (plan 16 lists exactly these).
-UNITS = ("lakh", "crore", "thousand", "hundred", "day", "week", "month", "year", "hour", "minute", "per cent",
+_SMALL_NUMS = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
+# "3 (three) posts": a number repeated in words in brackets is read as the number alone (instruction and draft).
+_BRACKET_WORDS = re.compile(r"\s*\((?:" + _NUM_WORD + r")(?:[\s-]+(?:and\s+)?" + _NUM_WORD + r")*\)", re.I)
+# FB2 R3-02 / FB3 R4-04: the unit after a number is part of the fact. Plan 16 lists exactly these.
+UNITS = ("lakh", "crore", "thousand", "hundred", "day", "week", "month", "year", "hour", "hrs", "minute", "per cent",
          "percent", "am", "pm", "a.m.", "p.m.", "km", "kg", "metre", "meter", "kilometre", "kilometer", "kilogram",
          "litre", "liter", "post", "vacancy", "copy", "page", "person", "member", "officer", "employee", "set",
          "unit", "seat", "file", "room", "nos")
-_UNIT = re.compile(r"^\s+(lakhs?|crores?|thousand|hundred|days?|weeks?|months?|years?|hours?|minutes?|"
-                   r"per\s?cent|percent|a\.m\.|p\.m\.|am|pm|kms?|kgs?|kilo(?:metre|meter|gram)s?|metres?|meters?|"
+_UNIT = re.compile(r"^\s+(a\.m\.|p\.m\.|lakhs?|crores?|thousand|hundred|days?|weeks?|months?|years?|hours?|hrs?|"
+                   r"minutes?|per\s?cent|percent|am|pm|kms?|kgs?|kilo(?:metre|meter|gram)s?|metres?|meters?|"
                    r"litres?|liters?|posts?|vacanc(?:y|ies)|cop(?:y|ies)|pages?|persons?|members?|officers?|"
-                   r"employees?|sets?|units?|seats?|files?|rooms?|nos\.?)(?!\w)", re.I)
-_UNIT_DOTTED = re.compile(r"^\s+(a\.m\.|p\.m\.)", re.I)
-_NUM_WORD_RX = re.compile(_NUM_WORD, re.I)
-_SMALL_NUMS = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
+                   r"employees?|sets?|units?|seats?|files?|rooms?|nos\.?)(?![\w])", re.I)
 _TRAIL = ".,;:)]}'\""
 _LEAD = "([{'\""
 
 
 def _strip(tok: str) -> str:
-    return tok.strip(_TRAIL).lstrip(_LEAD).rstrip(_TRAIL)
+    return tok.lstrip(_LEAD).rstrip(_TRAIL)
 
 
+def _code(tok: str) -> str:
+    """A reference code without trailing punctuation, keeping a closing bracket that closes one in the code."""
+    t = tok.rstrip(".,;:'\"")
+    while t.endswith(")") and t.count(")") > t.count("("):
+        t = t[:-1].rstrip(".,;:")
+    return t
+
+
+def _clean(text: str) -> str:
+    return _BRACKET_WORDS.sub("", text or "")
+
+
+# ---- extraction ------------------------------------------------------------------------------------------------------
 def extract_facts(instruction: str) -> list:
     """[{kind: date|reference|amount|number|name, text}] in order of appearance, without duplicates."""
-    text = instruction or ""
+    text = _clean(instruction)
     out, seen, spans = [], set(), []
 
-    def add(kind, value, start=None, end=None):
+    def add(kind, value, start, end=None):
         value = value.strip()
         if value and value.lower() not in seen:
             seen.add(value.lower())
-            out.append({"kind": kind, "text": value, "_at": start if start is not None else len(text)})
-        if start is not None and end is not None:
+            out.append({"kind": kind, "text": value, "_at": start})
+        if end is not None:
             spans.append((start, end))
 
     def taken(a, b):
         return any(a < y and x < b for x, y in spans)
 
-    for m in _DATE_WORDS.finditer(text):
-        day = re.search(r"\b\d{1,2}(?=(?:st|nd|rd|th)?\b)", m.group(0))
-        if day and not 1 <= int(day.group(0)) <= 31:           # FB3 R4-02: "55 May" is not a date
-            continue
-        add("date", m.group(0).rstrip(_TRAIL), m.start(), m.end())
+    # 1. references, designator included in the claimed span
     for m in _REF.finditer(text):
-        if not taken(m.start(1), m.end(1)):
-            add("reference", _strip(m.group(1)), m.start(1), m.end(1))
+        code = _code(m.group(1))
+        add("reference", code, m.start(), m.start(1) + len(code))
+        spans.append((m.start(), m.start(1) + len(code)))
+    # 2. dates
+    for rx, day_i, ord_i, mon_i, year_i in ((_DAY_MONTH, 1, 2, 3, 4), (_MONTH_DAY, 2, 3, 1, 4)):
+        for m in rx.finditer(text):
+            if taken(m.start(), m.end()) or not 1 <= int(m.group(day_i)) <= 31:
+                continue
+            # "may": a month with an ordinal day, a year or a preposition before it; after a day also when written
+            # "May"/"MAY". Not "aged 55 may apply", "you may 3 times" or "May 3 officers be deputed?".
+            mon = m.group(mon_i)
+            if mon.lower() == "may" and not (m.group(ord_i) or m.group(year_i)) \
+                    and not _MAY_CUE.search(text[:m.start()]) and not (rx is _DAY_MONTH and mon in ("May", "MAY")):
+                continue
+            add("date", m.group(0).rstrip(".,;:"), m.start(), m.end())
+    # 3. numbers in digits (amounts, numbers with units, numeric dates, codes without a designator)
     for m in re.finditer(r"\S+", text):
         if taken(m.start(), m.end()) or not re.search(r"\d", m.group(0)):
             continue
         tok = _strip(m.group(0))
         tok = re.sub(r"^(?:rs\.?|inr|₹)", "", tok, flags=re.I)
-        if tok.endswith("/-"):                    # FB3 R4-02: "Rs 2,50,000/-" is an amount, not a reference
+        if tok.endswith("/-"):
             tok = tok[:-2]
         if not re.search(r"\d", tok):
             continue
         if _DATE_NUM.match(tok):
             kind = "date"
-        elif "/" in tok or re.search(r"[A-Za-z]", tok) and re.search(r"\d", tok) and "-" in tok:
+        elif "/" in tok or (re.search(r"[A-Za-z]", tok) and "-" in tok):
             kind = "reference"
-        elif _AMOUNT_PREFIX.search(text[:m.start()]) or "," in tok:
+        elif _AMOUNT_PREFIX.search(text[:m.start()]) or re.match(r"(?i)(?:rs\.?|inr|₹)\d", m.group(0)) \
+                or "," in tok:
             kind = "amount"
         else:
             kind = "number"
         end = m.end()
-        if kind in ("number", "amount") and m.group(0).rstrip(_TRAIL) == m.group(0).lstrip(_LEAD):
-            u = _UNIT_DOTTED.match(text[end:]) or _UNIT.match(text[end:])
+        if kind in ("number", "amount") and not m.group(0).rstrip("/-").endswith(tuple(",;:)")):
+            u = _UNIT.match(text[end:])
             if u:
                 tok, end = f"{tok} {u.group(1)}", end + u.end()
         add(kind, tok, m.start(), end)
-
-    def _name_candidate(words, start):
-        words = [w.lstrip(_LEAD) for w in words]
-        hon = [i for i, w in enumerate(words) if i > 0 and re.fullmatch(_HONORIFIC, w)]
-        if hon:                                   # "Relieve Shri Ram Kumar": the name starts at the honorific
-            words = words[hon[0]:]
-        while words and (words[0].lower().rstrip(".") in _NOT_NAME or words[0].lower().rstrip(".") in _MONTH_SET):
-            words.pop(0)
-        while words and (words[-1].lower().rstrip(".") in _NOT_NAME or words[-1].lower().rstrip(".") in _MONTH_SET):
-            words.pop()
-        if len(words) >= 2:
-            name = " ".join(words).rstrip(_TRAIL)
-            if not any(name.lower() in f["text"].lower() or f["text"].lower() in name.lower()
-                       for f in out if f["kind"] == "name"):
-                add("name", name, start)
-
-    for m in _NAMES.finditer(text):
-        # FB2 R3-04 / FB3 R4-01: words inside a date or reference ("F.No. A-12/2026-Estt.", "3rd November") are not
-        # part of a name, but the rest of the run still is ("... Estt. Shri Ram Kumar" keeps "Shri Ram Kumar").
-        segments, seg = [], []
-        for w in re.finditer(r"\S+", m.group(0)):
-            a, b = m.start() + w.start(), m.start() + w.end()
-            if taken(a, b):
-                if seg:
-                    segments.append(seg)
-                seg = []
-            else:
-                seg.append((a, w.group(0)))
-        if seg:
-            segments.append(seg)
-        for seg in segments:
-            _name_candidate([w for _, w in seg], seg[0][0])
-
-    # FB1 R2-03: one capitalised word after a cue ("a memo to Ramesh", "from Sharma") is a name too.
-    for m in _CUE_NAME.finditer(text):
-        w = m.group(1).rstrip(_TRAIL)
-        if w.lower().rstrip(".") in _NOT_NAME or w.lower().rstrip(".") in _MONTH_SET or len(w) < 2:
-            continue
-        if not any(w.lower() in f["text"].lower() for f in out if f["kind"] == "name"):
-            add("name", w, m.start(1))
-    # FB1 R2-03: numbers written in words ("twenty five thousand"); a lone "one".."ten" is too common to check.
+    # 4. numbers in words; a lone "one".."ten" is too common to check
     for m in _NUM_WORDS.finditer(text):
-        words = m.group(0).lower().split()
         if taken(m.start(), m.end()):
             continue
+        words = m.group(0).lower().split()
         if len(words) >= 2 or words[0] not in _SMALL_NUMS:
             value, end = m.group(0), m.end()
             u = _UNIT.match(text[end:])
-            if u and not _NUM_WORD_RX.fullmatch(u.group(1)):
+            if u and not _NUM_WORD_RX.match(u.group(1)):
                 value, end = f"{value} {u.group(1)}", end + u.end()
             add("number", value, m.start(), end)
+        else:
+            spans.append((m.start(), m.end()))
+    # 5. names
+    for start, words in _cap_runs(text, taken):
+        for part_start, part in _split_at_honorifics(start, words):
+            name = _trim(part)
+            if len(name) >= 2:
+                value = " ".join(w for _, w in name).rstrip(".,;:")
+                if not any(value.lower() in f["text"].lower() for f in out if f["kind"] == "name"):
+                    add("name", value, name[0][0])
+    # 6. one capitalised word after a cue
+    for m in _CUE_NAME.finditer(text):
+        w = m.group(1).rstrip(_TRAIL)
+        if taken(m.start(1), m.end(1)) or w.lower() in _NOT_NAME or w.lower() in _MONTH_SET or len(w) < 2:
+            continue
+        if not any(re.search(r"(?<!\w)" + re.escape(w.lower()) + r"(?!\w)", f["text"].lower())
+                   for f in out if f["kind"] == "name"):
+            add("name", w, m.start(1))
     out.sort(key=lambda f: f["_at"])
     return [{"kind": f["kind"], "text": f["text"]} for f in out]
 
 
+_WORD = re.compile(r"[^\s,;:()\[\]\"]+")
+
+
+def _is_cap(w: str) -> bool:
+    return bool(re.match(r"[A-Z][A-Za-z'.-]*$", w))
+
+
+def _cap_runs(text: str, taken):
+    """Runs of capitalised words (with of/and/for/the between them). A run ends at punctuation other than a dot
+    inside a word, at a claimed span, at a lowercase word and after a word that ends a sentence."""
+    runs, run, prev_end = [], [], None
+    for m in _WORD.finditer(text):
+        w, a, b = m.group(0), m.start(), m.end()
+        gap = text[prev_end:a] if prev_end is not None else ""
+        breaks = bool(re.search(r"[,;:()\[\]\"]", gap)) or taken(a, b)
+        if run and not breaks and prev_end is not None:
+            last = run[-1][1]
+            # a word ending in "." ends the sentence unless it is an honorific or an initial ("A.", "O.M.")
+            if last.endswith(".") and not _HON_RX.match(last) and len(last.rstrip(".").replace(".", "")) > 2:
+                breaks = True
+        if breaks or not (_is_cap(w) or w.lower() in _CONNECTORS):
+            if run:
+                runs.append(run)
+            run = []
+            if not taken(a, b) and _is_cap(w):
+                run = [(a, w)]
+        else:
+            run.append((a, w))
+        prev_end = b
+    if run:
+        runs.append(run)
+    return [(r[0][0], r) for r in runs]
+
+
+def _split_at_honorifics(start, words):
+    """FB4 R5-01: every honorific starts a new name ("Shri Ram Kumar and Smt. Sita Devi" is two names)."""
+    parts, cur = [], []
+    for a, w in words:
+        if _HON_RX.match(w) and cur:
+            parts.append(cur)
+            cur = []
+        cur.append((a, w))
+    if cur:
+        parts.append(cur)
+    return [(p[0][0], p) for p in parts]
+
+
+def _trim(words):
+    def bad(w):
+        k = w.lower().rstrip(".")
+        return k in _NOT_NAME or k in _MONTH_SET or k in _CONNECTORS
+    words = list(words)
+    while words and bad(words[0][1]) and not _HON_RX.match(words[0][1]):
+        words.pop(0)
+    while words and bad(words[-1][1]):
+        words.pop()
+    return words
+
+
+# ---- presence ----------------------------------------------------------------------------------------------------------
 def _norm(s: str) -> str:
-    return " ".join((s or "").split())
+    return " ".join(_clean(s or "").split())
 
 
-def fact_present(fact: str, draft_text: str) -> bool:
-    """FB1 R2-01: a fact counts as present only as a whole token run: no letter or digit or '/' directly before or
-    after it, and no digit group continuing it ("25,000" is not inside "1,25,000"; "7" is not inside "17"; "Kumar" is
-    not inside "Kumari"). Spacing is normalised on both sides; case is ignored (names, month names and number words;
-    digits have no case)."""
+def _after_word(hay: str, end: int) -> str:
+    m = re.match(r"[\s-]+(?:and\s+)?(\w+)", hay[end:])
+    return m.group(0).lower() if m else ""
+
+
+def fact_present(fact: str, draft_text: str, instruction: str | None = None) -> bool:
+    """A fact counts as present only as a whole token run: no letter or digit or '/' directly before or after it, and
+    no digit group continuing it ("25,000" is not inside "1,25,000"; "Kumar" is not inside "Kumari"). Spacing and
+    case are ignored; "lakh" also matches "lakhs"; an amount may end in "/-".
+    FB4 R5-03: a number-word fact ("two lakh") followed in the draft by another number word ("two lakh fifty
+    thousand") is a changed number, unless the instruction has the same following word (an identical draft never
+    warns)."""
     t = _norm(fact)
     if not t:
         return True
     body = re.escape(t)
-    body = re.sub(r"(?i)\b(lakh|crore)s?\b", r"\1s?", body)        # FB2 R3-04: "5 lakh" is also "5 lakhs"
-    # FB2 R3-04: an amount may end in the usual "/-"; any other "/" continues the token.
+    body = re.sub(r"(?i)\b(lakh|crore)s?\b", r"\1s?", body)
     rx = re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + body + r"(?![^\W_])(?!/(?!-))(?![,.]\d)", re.I)
     hay = _norm(draft_text)
+    words = t.split()
+    ends_num_word = bool(_NUM_WORD_RX.match(words[-1]))
+    starts_num_word = bool(_NUM_WORD_RX.match(words[0]))
+    same_after = set()
+    if instruction is not None and ends_num_word:
+        src = _norm(instruction)
+        for m in rx.finditer(src):
+            same_after.add(_after_word(src, m.end()))
     for m in rx.finditer(hay):
-        # FB2 R3-02: a number word right before or after extends the number ("twenty five thousand five hundred")
-        if _NUM_WORD_RX.match(t.split()[-1]) or _NUM_WORD_RX.fullmatch(t.split()[0]) or t.split()[0][:1].isdigit():
-            # FB3 R4-02: "and <number word>" continues the number only when another number word follows it
-            # ("two lakh and fifty thousand"), not in "Rs. 25,000 and one laptop" or "10 days and one half day".
-            if re.match(r"[\s-]+" + _NUM_WORD + r"\b", hay[m.end():], re.I) or \
-                    re.match(r"\s+and\s+" + _NUM_WORD + r"[\s-]+" + _NUM_WORD + r"\b", hay[m.end():], re.I):
+        if ends_num_word:
+            after = hay[m.end():]
+            cont = re.match(r"[\s-]+" + _NUM_WORD + r"\b", after, re.I) or \
+                re.match(r"\s+and\s+" + _NUM_WORD + r"[\s-]+" + _NUM_WORD + r"\b", after, re.I)
+            if cont and _after_word(hay, m.end()) not in same_after:
                 continue
-            if re.search(r"\b" + _NUM_WORD + r"[\s-]+(?:and\s+)?$", hay[:m.start()], re.I) and \
-                    not t.split()[0][:1].isdigit():
-                continue
+        if starts_num_word and re.search(r"\b" + _NUM_WORD + r"[\s-]+$", hay[:m.start()], re.I):
+            continue
         return True
     return False
 
@@ -231,8 +316,7 @@ def missing_facts(instruction: str, draft_text: str) -> list:
     Returns warnings {code: FACT_MISSING, kind, text, message}."""
     out = []
     for f in extract_facts(instruction):
-        present = fact_present(f["text"], draft_text)
-        if not present:
+        if not fact_present(f["text"], draft_text, instruction):
             out.append({"code": "FACT_MISSING", "kind": f["kind"], "text": f["text"],
                         "message": f"The draft does not contain the {f['kind']} '{f['text']}' from your instruction. "
                                    "Check it before saving."})

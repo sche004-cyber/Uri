@@ -244,7 +244,8 @@ class Documents:
         if s.state != "ready":
             raise OfficeError("PAGE_NOT_READY", "", 202)
         r = self.hub.text_request("text", pdf=str(s.preview_pdf), max_chars=min(int(max_chars), MAX_TEXT_CHARS),
-                                  timeout=max(1.0, min(TEXT_OP_TIMEOUT_S, work_end - _clock())))
+                                  timeout=max(1.0, min(TEXT_OP_TIMEOUT_S, work_end - _clock())),
+                                  total_timeout=True)
         if not r.get("ok"):
             raise OfficeError("PREVIEW_UNAVAILABLE", r.get("error", ""), 422)
         pages = [{"page": p["page"], "text": p["text"], "source": "text" if p["text"].strip() else "none",
@@ -275,8 +276,11 @@ class Documents:
                 render = min(RASTER_TIMEOUT_S, left)
                 try:
                     png = self.hub.page_png(s.preview_pdf, s.cache, n, OCR.OCR_WIDTH, timeout=render)
-                except OfficeError:
-                    if render < RASTER_TIMEOUT_S:            # stopped by the request's deadline
+                except OfficeError as e:
+                    # FB4 R5-05: only the deadline (the worker's TIMEOUT, or BUSY waiting for it) is a time limit;
+                    # any other render failure is raised as before.
+                    if render < RASTER_TIMEOUT_S and e.code == "PREVIEW_UNAVAILABLE" and \
+                            e.detail in ("raster worker TIMEOUT", "raster worker BUSY"):
                         reasons["time_limit"] += todo[i:]
                         break
                     raise
