@@ -121,13 +121,23 @@ def test_r3_02_verified_email_principal_is_opaque_in_grant_record():
     email = "asha@example.in"
     with grant_path() as path:
         store = GrantStore(path, principal_verifier=lambda proof: email if proof is principal else None)
+        # Contract since the coordinator repair C2-01: the authorizing user is an opaque principal id and is kept, so
+        # the grant still records who authorized it. An e-mail as the principal id is refused, never stored.
+        with pytest.raises(GrantError) as exc:
+            store.grant(requester="uri_web.search.tavily", categories=["CONTACT"], purpose="web_research",
+                        destination="WEB_SEARCH", authorized_by=f"user:{email}", principal=principal)
+        assert exc.value.code == "USER_AUTHORIZATION_REQUIRED"
+        assert not path.exists() or email not in path.read_text(encoding="utf-8")
+
+
+def test_c2_01_grant_keeps_the_opaque_principal_that_authorized_it():
+    principal = object()
+    with grant_path() as path:
+        store = GrantStore(path, principal_verifier=lambda proof: "u-7f3a9c" if proof is principal else None)
         grant = store.grant(requester="uri_web.search.tavily", categories=["CONTACT"], purpose="web_research",
-                            destination="WEB_SEARCH", authorized_by=f"user:{email}", principal=principal)
-        assert grant.authorized_by.startswith("user:") and email not in grant.authorized_by
-        assert email not in path.read_text(encoding="utf-8")
-        assert email not in str(GrantStore(path).list())
-        assert GrantStore(path).match(requester="uri_web.search.tavily", category="CONTACT",
-                                      purpose="web_research", destination="WEB_SEARCH") == grant.grant_id
+                            destination="WEB_SEARCH", authorized_by="user:u-7f3a9c", principal=principal)
+        assert grant.authorized_by == "user:u-7f3a9c"
+        assert GrantStore(path).list()[0]["authorized_by"] == "user:u-7f3a9c"
 
 
 @pytest.mark.parametrize("field,value", [("requester", "asha@example.in"),

@@ -23,8 +23,10 @@ from uri_assist import redact as _assist
 
 CREDENTIAL, SECRET_LIKE, GOV_ID, FINANCIAL = "CREDENTIAL", "SECRET_LIKE", "GOV_ID", "FINANCIAL"
 CONTACT, ADDRESS, PERSON, CONFIDENTIAL = "CONTACT", "ADDRESS", "PERSON", "CONFIDENTIAL"
-CATEGORIES = (CREDENTIAL, SECRET_LIKE, GOV_ID, FINANCIAL, CONTACT, ADDRESS, PERSON, CONFIDENTIAL)
-TIER = {CREDENTIAL: 4, SECRET_LIKE: 3, GOV_ID: 3, FINANCIAL: 3, CONTACT: 2, ADDRESS: 2, PERSON: 2, CONFIDENTIAL: 1}
+LONG_NUMBER = "LONG_NUMBER"
+CATEGORIES = (CREDENTIAL, SECRET_LIKE, GOV_ID, FINANCIAL, LONG_NUMBER, CONTACT, ADDRESS, PERSON, CONFIDENTIAL)
+TIER = {CREDENTIAL: 4, SECRET_LIKE: 3, GOV_ID: 3, FINANCIAL: 3, LONG_NUMBER: 3, CONTACT: 2, ADDRESS: 2, PERSON: 2,
+        CONFIDENTIAL: 1}
 
 # Assist count kinds that are not credentials: cards and Aadhaar are re-detected here with checksums, long_secret is
 # SECRET_LIKE (a 40-hex git hash is not a password).
@@ -96,7 +98,7 @@ def iban_ok(raw: str) -> bool:
 _LABELLED = re.compile(
     r"(?i)\b(?:(?:otp|one[- ]time (?:password|code|pin)|verification code|security code|auth(?:entication)? code|"
     r"cvv|cvc|m?pin(?! ?code)|upi pin|atm pin)\b(?:\s*(?:is|was|=|:|-|#)\s*|\s+)(\d{3,8})\b|"
-    r"(?:password|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token)"
+    r"(?:pass ?word|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token)"
     r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,})|"
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
@@ -104,9 +106,9 @@ _LABELLED = re.compile(
     # Word secrets written without "is"/":" ("password - X", "password -> X", "password X" after a line break) or a few
     # words before it ("the password for wifi is X", review FB1 R1-04). The value must then hold a digit or a symbol,
     # so ordinary prose ("the password policy is strict", "password field is required.") stays readable.
-    r"\b(?:password|passwd|pwd|passcode|passphrase)(?: ?(?:->|=>|-|–|→) ?| )"
+    r"\b(?:pass ?word|passwd|pwd|passcode|passphrase)(?: ?(?:->|=>|-|–|→) ?| )"
     r"[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
-    r"\b(?:password|passwd|pwd|passcode|passphrase)\b[^.\n]{1,30}?\b(?:is|:) ?[\"']?"
+    r"\b(?:pass ?word|passwd|pwd|passcode|passphrase)\b[^.\n]{1,30}?\b(?:is|:) ?[\"']?"
     r"(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     r"\b(?:otp|m?pin(?! ?code)|passcode|cvv)\b[^.\n\d]{1,30}?\b(?:is|:)\s*(\d{3,8})\b|"
     r"(?<!zip )(?<!postal )(?<!error )(?<!status )(?<!area )(?<!country )\bcode\b\s*(?:is|was|:)?\s*(\d{6})(?!\d))")
@@ -152,6 +154,19 @@ _STREET = re.compile(r"(?i)\b(?:flat|house|h\.? ?no\.?|plot|door|apt|apartment) 
 _CONFIDENTIAL = re.compile(r"(?i)\b(?:strictly\s+)?(?:private\s+(?:and|&)\s+)?confidential\b|"
                            r"\bdo not (?:share|forward|distribute|disclose)\b")
 _LONG_SECRET = dict(_assist._TEXT_RULES)["long_secret"]
+# LONG_NUMBER (driver rounds R3..R8 each found one more card separator spelling; FB2 R1-05 mixed separators): a run of
+# digit groups joined only by short non-word separators ("4111;1111 - 1111--1111", "...1111exp") that holds 12 or more
+# digits is sensitive whatever the separators and whatever follows it. Separators cannot contain digits or letters, so
+# the pattern is linear. Dates/times and dotted IPv4 addresses are ordinary and excluded.
+_NUM_RUN = re.compile(r"(?<!\d)\d+(?:[^\w\n]{1,3}\d+)+")   # at least one separator: one contiguous run is not one
+_DATETIME = re.compile(r"\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}(?:[ T,]{1,2}\d{1,2}[:.]\d{2}(?:[:.]\d{2})?)?")
+_IPV4 = re.compile(r"\d{1,3}(?:\.\d{1,3}){3}")
+_THOUSANDS = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d{1,3}(?:,\d{2})*,\d{3}(?:\.\d+)?")     # 1,234,567 / 1,23,45,678
+_DECIMALS = re.compile(r"-?\d+\.\d+(?:, ?-?\d+\.\d+)+")                                       # 12.9716, 77.5946
+_NOT_NUMBER_CTX = re.compile(r"(?i)\b(?:isbn(?:-1[03])?|issn|doi)\b[^\n]{0,12}$")
+# A card written as one run of digits with letters right after it ("4111111111111111exp", review R8-01).
+_CARD_RUN = re.compile(r"(?<!\d)\d{13,19}(?!\d)")
+LONG_NUMBER_DIGITS = 12
 
 
 def _before(text: str, i: int) -> str:
@@ -236,6 +251,31 @@ def _spans(text: str, protected_terms) -> list:
                 add(PERSON, m, "protected_term", 0)
     for m in _CONFIDENTIAL.finditer(text):
         add(CONFIDENTIAL, m, "marker", 0)
+    for m in _CARD_RUN.finditer(text):
+        if _assist._luhn(m.group(0)) and not _NOT_CARD_CTX.search(_before(text, m.start())):
+            add(FINANCIAL, m, "card_run", 0)
+    # LONG_NUMBER is the catch-all after every specific rule: it is added only where no specific finding already covers
+    # the whole run, so a grant for the specific category (an Aadhaar under GOV_ID) still applies to it.
+    import bisect
+    spec = sorted((f.start, f.end) for f in out)
+    starts, reach, best = [s for s, _ in spec], [], -1
+    for _, e in spec:                         # reach[i] = furthest end of any finding starting at or before starts[i]
+        best = max(best, e)
+        reach.append(best)
+
+    def covered(a, b):
+        i = bisect.bisect_right(starts, a) - 1
+        return i >= 0 and reach[i] >= b
+    for m in _NUM_RUN.finditer(text):
+        run = m.group(0)
+        if sum(ch.isdigit() for ch in run) < LONG_NUMBER_DIGITS:
+            continue
+        if (_DATETIME.fullmatch(run) or _IPV4.fullmatch(run) or _THOUSANDS.fullmatch(run) or _DECIMALS.fullmatch(run)
+                or _NOT_NUMBER_CTX.search(_before(text, m.start()))):
+            continue
+        if covered(m.start(), m.end()):
+            continue
+        add(LONG_NUMBER, m, "long_number", 0)
     return out
 
 
@@ -264,22 +304,56 @@ def _resolve(findings: list) -> list:
 # Whitespace runs and tabs/newlines fold to one space as well, so a value spread over several spaces or lines is found
 # (review S1-01 / S1-05) and no detector sees a long run of spaces (S1-04).
 _SPECIAL = re.compile(r"(?:%[0-9A-Fa-f]{2})+|&(?:#[0-9]{1,7}|#[xX][0-9A-Fa-f]{1,6}|[A-Za-z][A-Za-z0-9]{1,31});"
-                      r"|[^\x00-\x7f]|\s{2,}|[\t\n\r\f\v]")
+                      r"|[^\x00-\x7f]|\s{2,}|[\t\n\r\f\v]|[\x00-\x08\x0e-\x1f\x7f]")
 _FOLD_PASSES = 4          # deeper encoding is reported (Classification.residual_encoding) and refused externally
 _ENCODED = re.compile(r"%[0-9A-Fa-f]{2}|&(?:#[0-9]{1,7}|#[xX][0-9A-Fa-f]{1,6}|[A-Za-z][A-Za-z0-9]{1,31});")
-_NEEDS_READINGS = re.compile(r"[^\x00-\x7f]|%[0-9A-Fa-f]{2}|&[#A-Za-z]")
+_NEEDS_READINGS = re.compile(r"[^\x00-\x7f]|%[0-9A-Fa-f]{2}|&[#A-Za-z]|[\x00-\x08\x0e-\x1f\x7f]")
 # Default-ignorable code points outside category Cf (Unicode DerivedCoreProperties): combining grapheme joiner, Hangul
 # fillers, Khmer inherent vowels, Mongolian and other variation selectors (review FB1 R1-01).
 _DI_RANGES = ((0x034F, 0x034F), (0x115F, 0x1160), (0x17B4, 0x17B5), (0x180B, 0x180F), (0x3164, 0x3164),
               (0xFE00, 0xFE0F), (0xFFA0, 0xFFA0), (0x1BCA0, 0x1BCA3), (0xE0100, 0xE01EF))
 
 
+_ASCII_CONTROL = re.compile(r"[\x00-\x08\x0e-\x1f\x7f]")
+# Characters that render as blank but are not whitespace (review FB2 R1-01: U+2800 Braille blank).
+_BLANKS = frozenset({0x2800, 0x3164, 0x115F, 0x1160, 0xFFA0, 0x2063})
+
+
 def _invisible(ch: str) -> bool:
+    """True for anything a reader cannot see that is not ordinary whitespace: format controls (Cf), control characters
+    (Cc other than tab/newline/CR/FF/VT), private-use (Co) and unassigned (Cn) code points, default-ignorables and
+    blank-rendering characters. Reviews R1-01, FB1 R1-01 and FB2 R1-01 each found one more of these categories, so the
+    rule is stated by category, not as a list of examples."""
     import unicodedata
-    if unicodedata.category(ch) == "Cf":
+    if ch.isspace():
+        return False
+    if unicodedata.category(ch) in ("Cf", "Cc", "Co", "Cn"):
         return True
     o = ord(ch)
-    return any(a <= o <= b for a, b in _DI_RANGES)
+    return o in _BLANKS or any(a <= o <= b for a, b in _DI_RANGES)
+
+
+def canonical(text: str) -> str:
+    """The form in which text leaves URI for a non-local destination: NFKC, invisible characters removed, marks on
+    ASCII letters or digits removed, line/paragraph separators as newlines. The gateway classifies and rewrites exactly
+    this string, so what is checked is what is sent: no invisible character can split a value on the wire."""
+    import unicodedata
+    if text.isascii() and not _ASCII_CONTROL.search(text):
+        return text                                # NFKC of ASCII is ASCII; nothing invisible to remove
+    out, on_ascii = [], False
+    for ch in unicodedata.normalize("NFKC", text):
+        cat = unicodedata.category(ch)
+        if cat in ("Zl", "Zp"):
+            out.append("\n")
+            on_ascii = False
+            continue
+        if _invisible(ch):
+            continue                               # dropped; the ASCII base before it stays the base
+        if cat in ("Mn", "Me") and on_ascii:
+            continue
+        out.append(ch)
+        on_ascii = ch.isascii() and ch.isalnum()
+    return "".join(out)
 
 
 def _confusables():

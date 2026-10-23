@@ -97,7 +97,11 @@ class PrivacyGateway:
             dest = P.Destination(meta["destination"])
         except ValueError:
             raise PrivacyRefused("PRIVACY_DESTINATION_UNKNOWN") from None
-        # Unicode, encodings and look-alikes are handled inside classify() (folding with an exact span map).
+        # What leaves URI is the canonical form (NFKC, nothing invisible): it is classified, rewritten and re-checked
+        # as is, so no invisible character can split a value on the wire. Encodings and look-alikes are handled inside
+        # classify() (folding with an exact span map).
+        if dest not in P.LOCAL:
+            text = C.canonical(text)
         cls = C.classify(text, protected_terms)
         if cls.residual_encoding and dest not in P.LOCAL:
             raise PrivacyRefused("PRIVACY_ENCODING_UNRESOLVED")     # deeper than the folding decodes (FB1 R1-04)
@@ -138,17 +142,24 @@ class PrivacyGateway:
         # value the policy does not allow at this destination. Anything left over is a refusal, not a second rewrite.
         # Unchanged output is the input already classified above (deterministic), every category of which was allowed,
         # so the second pass only runs when something was rewritten or collapsed.
-        if dest not in P.LOCAL and out != text:
-            residual = C.classify(out, protected_terms).categories()
-            if any(actions.get(c, P.action(c, dest)) != P.ALLOW for c in residual):
-                e = PrivacyRefused("PRIVACY_REFUSED")
-                e.categories = cats
-                raise e
-        # Grants are used only once the rewrite succeeded (review S1-06), right before the decision is recorded.
-        if grant_ids and not self.grants.consume(grant_ids):
-            raise PrivacyRefused("PRIVACY_GRANT_RACE")              # used up or revoked between match and use
+        # LOG is always re-checked: a credential found only in a decoded reading has no span to rewrite, so unchanged
+        # output there can still hold it (review R8-02); a log line that cannot be cleaned is written fully redacted.
+        if dest not in P.LOCAL and (out != text or dest == P.Destination.LOG):
+            residual = C.classify(out, protected_terms)
+            left = residual.categories()
+            if residual.residual_encoding or any(actions.get(c, P.action(c, dest)) != P.ALLOW for c in left):
+                if dest == P.Destination.LOG:
+                    out = REDACTED
+                else:
+                    e = PrivacyRefused("PRIVACY_REFUSED")
+                    e.categories = cats
+                    raise e
+        # The decision is recorded first and the grants are used after it (reviews S1-06, R3-04, R8-04): a failed audit
+        # write refuses with every grant intact. A grant used up or revoked in between refuses, recorded as such.
         self.audit.write(**meta, decision=_summary(actions), categories=cats, grant_ids=grant_ids,
                          outcome="SANITIZED" if any(a != P.ALLOW for a in actions.values()) else "ALLOWED", code=None)
+        if grant_ids and not self.grants.consume(grant_ids):
+            raise PrivacyRefused("PRIVACY_GRANT_RACE")
         return Egress(out, dest.value, cats, actions, scope_id, grant_ids)
 
     @staticmethod

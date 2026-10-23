@@ -26,7 +26,7 @@ STRICTNESS = {ALLOW: 0, PSEUDONYMIZE: 1, REDACT: 2, REQUIRE_GRANT: 3, REFUSE: 4}
 # A grant can turn these (category, destination) actions into ALLOW. Anything not listed cannot be granted.
 _D = Destination
 _EXT = (_D.EXTERNAL_MODEL, _D.EXTERNAL_AGENT)
-_IDENT = (C.GOV_ID, C.FINANCIAL, C.SECRET_LIKE)
+_IDENT = (C.GOV_ID, C.FINANCIAL, C.SECRET_LIKE, C.LONG_NUMBER)
 _PERSONAL = (C.CONTACT, C.ADDRESS, C.PERSON)
 
 TABLE: dict = {}

@@ -122,8 +122,8 @@ def test_foreign_and_forged_tokens_are_not_resolved():
     a = prep(g, EMAIL, "EXTERNAL_MODEL", scope="session-a")
     prep(g, PHONE, "EXTERNAL_MODEL", scope="session-b")
     assert g.restore(a.text, "session-b", requester="test.component") == a.text          # A's token stays opaque in B
-    forged = "[[CONTACT_deadbeef]] " + a.text
-    assert g.restore(forged, "session-a", requester="test.component") == "[[CONTACT_deadbeef]] " + EMAIL
+    forged = "[[CONTACT_deadbeefdeadbeef]] " + a.text
+    assert g.restore(forged, "session-a", requester="test.component") == "[[CONTACT_deadbeefdeadbeef]] " + EMAIL
     rec = g.audit.records[-1]
     assert rec["categories"] == {"restored": 1, "foreign": 1} and rec["code"] == "FOREIGN_TOKENS"
 

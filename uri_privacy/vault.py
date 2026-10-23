@@ -18,7 +18,11 @@ import threading
 import time
 from pathlib import Path
 
-TOKEN = re.compile(r"\[\[([A-Z_]{3,16})_([0-9a-f]{8})\]\]")
+# 16 random lower-case letters per token (about 75 bits): a collision across scopes is negligible (review R8-03), and
+# letters only, so a token can never look like a number, a card or a secret to the classifier that re-checks the
+# outgoing text. Restoration still only resolves tokens present in the scope being restored.
+TOKEN = re.compile(r"\[\[([A-Z_]{3,16})_([a-z]{16})\]\]")
+_TOKEN_ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 _SCOPE_ID = re.compile(r"[A-Za-z0-9_.:-]{1,96}")
 
 
@@ -51,7 +55,7 @@ class Scope:
             tok = self._by_value.get((category, value))
             if tok is None:
                 while True:
-                    tok = f"[[{category}_{secrets.token_hex(4)}]]"
+                    tok = f"[[{category}_{''.join(secrets.choice(_TOKEN_ALPHABET) for _ in range(16))}]]"
                     if tok not in self._by_token:
                         break
                 self._by_token[tok] = (category, value)

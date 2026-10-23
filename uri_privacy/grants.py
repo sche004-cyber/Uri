@@ -22,8 +22,10 @@ from . import policy as P
 from .classify import classify
 
 MAX_TTL_S = 24 * 3600
-_USER = re.compile(r"^user:[A-Za-z0-9_.@-]{1,64}$")
-_OPAQUE_USER = re.compile(r"user:[0-9a-f]{32}")
+# The authorizing user is recorded by an opaque principal id (no e-mail, no dots): the grant keeps who authorized it
+# without storing a contact value (reviews R3-02, C2-01).
+_USER = re.compile(r"^user:[A-Za-z0-9_-]{1,64}$")
+_OPAQUE_USER = re.compile(r"user:[A-Za-z0-9_-]{1,64}")
 _SCOPE_LABEL = re.compile(r"[A-Za-z][A-Za-z0-9_.-]{0,63}")
 _GRANT_ID = re.compile(r"GR-[0-9a-f]{12}")
 
@@ -171,7 +173,7 @@ class GrantStore:
             raise GrantError("GRANT_LIMITS_INVALID")
         now = self.clock()
         g = Grant("GR-" + secrets.token_hex(6), requester, sorted(set(categories)), purpose, dest, now + ttl_s, uses,
-                  "user:" + secrets.token_hex(16), now)
+                  authorized_by, now)
         with self._transaction():
             self._grants[g.grant_id] = g
             self._save()

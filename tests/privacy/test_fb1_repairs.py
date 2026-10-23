@@ -64,7 +64,9 @@ def test_fb1_r1_01_marks_on_other_scripts_stay_readable():
     for text in ("नमस्ते दुनिया",   # Devanagari with virama
                  "café crème brûlée"):
         assert not classify(text).categories()
-        assert TGateway().prepare(text, requester="t", destination="WEB_SEARCH", purpose="p").text == " ".join(text.split())
+        import unicodedata                                   # what leaves URI is the NFKC (canonical) form
+        assert (TGateway().prepare(text, requester="t", destination="WEB_SEARCH", purpose="p").text
+                == " ".join(unicodedata.normalize("NFKC", text).split()))
 
 
 # --- FB1 R1-02: encoded separators / digits after a card ---------------------------------------------------------------

@@ -95,3 +95,16 @@ Severity = impact if it happens; exploitability = what an attacker or accident n
 | E5 / T7 | **Wrong: "frozen only".** In the working system, external-harness turns arrive as worker commands `turn_start` / `turn_intent` whose `reasoning.kind` is `client_external_harness`, and pass through the non-frozen `scripts/run_uri_integrated_worker.py` before the frozen supervised path (`turns.handle`). M95 now gates them there (`harness_private`, OD-1a): credentials refuse the turn, identifiers and contact details are removed, and the sanitized text is what the proposal, the approval card and the vendor CLI carry. `turn_runner.py:229` is the frozen unsupervised worker path, not used by the working system. `orchestrator.begin_harness` has no live caller. | R `run_uri_integrated_worker.py` (dispatch to `turns.handle`), `uri_supervisor_bridge/worker_service.py:40-41,105`, `authority.py:120`; investigation report 2026-10-23 |
 | S1 / T6 | **Overstated: D10 does not lose data in the working system.** The paired/integrated server never builds `ProviderKeyStore` or `ExternalCredentialStore`: only the legacy `uri_core/app/server.py` does, and the client runtime uses its own DPAPI key (`client_runtime/persistence.py:92-100`). The per-start random secrets are placeholders there. M95's persistent DPAPI secret in `run_uri_integrated_server.py` is hardening for any future use, not a fix of an observed loss. The P0 D10 impact holds for the legacy server only (P0 corrected its record the same day). OD-2 (frozen launchers) is proposed for closing as not needed. | R grep of key-store constructors at `c036a901`; P0 Addendum O update 2 |
 | E6, E7, S2, S3 | Reached only by the legacy server, which the `\URIServer` scheduled task still starts at logon (enabled, last run 2026-10-23 08:06 IST; owner decision AP-2, BLOCKED - OWNER PC REQUIRED). Disabling it would make OD-1b, OD-1c, OD-3 and OD-4 moot. | Scheduled task query 2026-10-23 |
+
+### 6.1 Second correction (2026-10-23, after fallback review FB2)
+
+The E5 / T7 correction above was itself wrong in one point: the UI's external-harness turns go to the protected
+`scripts/run_uri_supervised_worker.py` (`supervised_runtime.dart`), not to the integrated worker. E5 remains
+**unprotected in the working system** until the owner grants a frozen exception for that worker (OD-1a); the
+integrated-worker gate is defence in depth only. See plan PC-10.
+
+### 6.2 Scope of deterministic protection (2026-10-23)
+
+| In scope | Out of scope (stated limit) |
+|---|---|
+| Accidental disclosure of standard formats and their common variants; obfuscation by invisible or control characters, encodings (four levels), Unicode look-alikes and arbitrary separators (canonical egress plus LONG_NUMBER) | A party that controls the outgoing text and encodes a value on purpose (digits as words, a private cipher, steganography). The control for that is limiting what such a party can see, not more patterns |

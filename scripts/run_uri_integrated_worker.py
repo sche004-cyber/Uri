@@ -128,6 +128,41 @@ def harness_private(kind, command, turn_error):
     return {**command, "text": out}
 
 
+def harness_approval_private(kind, result, turns, turn_error):
+    """M95 (review FB2 R1-02): the instruction an external harness would run is compiled from intent slots that may
+    have been filled in EARLIER turns on another row, so checking only the current turn's text is not enough. When a
+    harness turn reaches approval, the compiled instruction itself goes through the gateway. It is bound to the approval
+    digest and cannot be rewritten here: if the gateway refuses it or would change it, the pending turn is cancelled
+    and the turn is refused."""
+    if kind not in HARNESS_TURNS or not isinstance(result, dict) or result.get("state") != "approval_required" \
+            or result.get("executor_kind") != "client_external_harness":
+        return result
+    request = result.get("approval_request")
+    inputs = ((request or {}).get("arguments") or {}).get("inputs") if isinstance(request, dict) else None
+    instruction = inputs.get("instruction") if isinstance(inputs, dict) else None
+    code = None
+    if not isinstance(instruction, str):
+        code = "PRIVACY_INSTRUCTION_UNVERIFIED"
+    else:
+        try:
+            from uri_privacy import default_gateway
+            out = default_gateway().prepare(instruction, requester="uri_worker.external_harness",
+                                            destination="EXTERNAL_AGENT", purpose="external_harness_turn",
+                                            reversible=False).text
+            if out != instruction:
+                code = "PRIVACY_INSTRUCTION_CHANGED"
+        except Exception as exc:                                    # noqa: BLE001 - fail closed
+            c = getattr(exc, "code", None)
+            code = c if isinstance(c, str) and c.startswith("PRIVACY_") else "PRIVACY_INTERNAL_ERROR"
+    if code is None:
+        return result
+    try:
+        turns.handle("turn_cancel", {"command": "turn_cancel", "turn_id": result.get("turn_id")})
+    except Exception:                                               # noqa: BLE001 - the refusal stands either way
+        pass
+    raise turn_error(code)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", required=True)
@@ -371,7 +406,8 @@ def main():
                                   "qualification": composition.report, "qualification_live": live,
                                   "supervisor": "uri_supervisor_bridge"}
                     elif kind in {"turn_start", "turn_intent", "turn_decide", "turn_cancel"} or kind in EXECUTION:
-                        result = turns.handle(kind, harness_private(kind, command, TurnError))
+                        result = harness_approval_private(
+                            kind, turns.handle(kind, harness_private(kind, command, TurnError)), turns, TurnError)
                     elif kind in {"session", "server_request"}:
                         from uri_core.client_runtime.transport import ClientTransport
                         transport = ClientTransport(manifest)
