@@ -1830,3 +1830,32 @@ def test_m02_status_never_reports_missing_marker_for_a_live_writer(tmp_path):
     finally:
         w.kill()
         w.wait()
+
+
+def test_fb2_03_staged_content_survives_archive_and_restore(sandbox):
+    """FB2-03 (raised again as NOT_FIXED by Codex r7): an approved archive-then-remove keeps staged content that
+    differs from the working file, as a verified staged.patch extra."""
+    sb = sandbox
+    wt = sb["paths"]["dirty"]
+    (wt / "a.txt").write_bytes(b"STAGED version\n")
+    _git(wt, "add", "a.txt")
+    (wt / "a.txt").write_bytes(b"WORKTREE version\n")
+    plan = _plan(sb)
+    it = _by_path(plan)["dirty"]
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j", approve=[it["id"]], archive_root=sb["tmp"] / "ar")
+    row = next(x for x in r["results"] if x.get("item") == it["id"])
+    assert row["outcome"] == "DONE"
+    back = sb["tmp"] / "back"
+    res = hk.restore(row["archive"], sb["tmp"] / "ar", back)
+    assert (back / "a.txt").read_bytes() == b"WORKTREE version\n"
+    patch = (back / ".housekeeping-extra" / "staged.patch").read_bytes()
+    assert b"+STAGED version" in patch and res["extras"]
+    # a tampered extra fails verification
+    import zipfile
+    with zipfile.ZipFile(next((sb["tmp"] / "ar").glob("*.zip"))) as zin, \
+            zipfile.ZipFile(sb["tmp"] / "bad.zip", "w") as zout:
+        for n in zin.namelist():
+            zout.writestr(n, b"tampered" if n == "extra/staged.patch" else zin.read(n))
+    assert any("extra/staged.patch" in e for e in hk._verify_zip(sb["tmp"] / "bad.zip"))

@@ -286,6 +286,24 @@ and failed for that reason only, so it was fixed to compare normalised paths. Th
 revision r7 re-audits from round 1. Lesson: run the driver under `testrun` with a bound matched to its budget, never
 a short shell timeout.
 
+### 5.6 Driver run r7 and the FB2-03 correction
+
+r7 round 1 was a driver-counted Codex review (4 tests run, 7 files inspected). It returned REJECT on `ac2a17b3` with
+three findings, all repaired by the driver in `0899af6e`:
+
+- R1-01 HIGH: ignored non-cache files inside cache directories were deleted without an archive.
+- R1-02 HIGH: common curl credential arguments stayed visible.
+- R1-03 MEDIUM: deleting the development-memory index lost its rebuild inputs.
+
+Codex then ran out of quota again, and the run stopped BLOCKED NO_INDEPENDENT_REVIEWER on `0899af6e`. Codex
+reported N-01 (which became R1-01) and FB2-03 as NOT_FIXED.
+
+**Correction (FB2-03 is no longer a documented limit).** §5.2 recorded FB2-03 as a documented limit. That record is
+superseded here, and the earlier text is kept. An approved archive-then-remove of a worktree now stores
+`git diff --cached --binary` as a verified `staged.patch` extra. Its sha256 is in the manifest and checked by
+`verify-archive`. Restore writes it to `.housekeeping-extra/`. If git fails, the removal fails closed. Test
+`test_fb2_03_staged_content_survives_archive_and_restore`.
+
 ## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.

@@ -789,7 +789,23 @@ def _safe_member(name: str) -> bool:
     return bool(p) and not p.startswith("/") and ":" not in p and ".." not in p.split("/")
 
 
-def archive(src, archive_root, label: str | None = None) -> dict:
+def staged_patch(worktree: Path) -> bytes:
+    """The worktree's staged (index) changes as a binary patch, raw bytes (a text decode would corrupt a binary
+    patch). An archive of working files alone loses content that is staged and then modified again (FB2-03).
+    Raises HKError when git fails, so an approved removal fails closed."""
+    try:
+        p = subprocess.run([*GIT, "-C", str(worktree), "diff", "--cached", "--binary"], capture_output=True,
+                           timeout=300)
+    except (OSError, subprocess.SubprocessError) as e:
+        raise HKError("STAGED_PATCH_FAILED", f"{worktree}: {e}")
+    if p.returncode != 0:
+        raise HKError("STAGED_PATCH_FAILED", f"{worktree}: {p.stderr.decode('utf-8', 'replace').strip()}")
+    return p.stdout
+
+
+def archive(src, archive_root, label: str | None = None, extras: dict[str, bytes] | None = None) -> dict:
+    """Verified zip of ``src``. ``extras`` (name -> bytes) are stored under ``extra/`` and listed in the manifest
+    with their sha256 (e.g. a worktree's staged patch); restore writes them to ``.housekeeping-extra/``."""
     src = Path(src)
     if not src.is_dir() or is_link(src):
         raise HKError("NOT_A_DIR", f"{src} is not a real directory")
@@ -816,8 +832,15 @@ def archive(src, archive_root, label: str | None = None) -> dict:
                 size = fp.stat().st_size
                 manifest.append({"path": rel, "sha256": h, "size": size})
                 total += size
+        extra_manifest = []
+        for name, data in sorted((extras or {}).items()):
+            if not _safe_member(name) or "/" in name:
+                raise HKError("UNSAFE_MEMBER", name)
+            z.writestr("extra/" + name, data)
+            extra_manifest.append({"name": name, "sha256": hashlib.sha256(data).hexdigest(), "size": len(data)})
         z.writestr("manifest.json", json.dumps({"schema": SCHEMA, "source": str(src), "files": manifest,
-                                                "links_not_followed": links}, indent=1, sort_keys=True))
+                                                "extras": extra_manifest, "links_not_followed": links},
+                                               indent=1, sort_keys=True))
     errs = _verify_zip(tmp)
     if errs:
         tmp.unlink(missing_ok=True)
@@ -847,7 +870,14 @@ def _verify_zip(zpath: Path) -> list[str]:
                         h.update(chunk)
                 if h.hexdigest() != e["sha256"]:
                     errs.append(f"{e['path']}: sha256 mismatch")
-            extra = names - {"manifest.json"} - {"data/" + e["path"] for e in man["files"]}
+            for e in man.get("extras", []):
+                n = "extra/" + e["name"]
+                if not _safe_member(e["name"]) or "/" in e["name"] or n not in names:
+                    errs.append(f"{n}: missing or unsafe")
+                elif hashlib.sha256(z.read(n)).hexdigest() != e["sha256"]:
+                    errs.append(f"{n}: sha256 mismatch")
+            extra = (names - {"manifest.json"} - {"data/" + e["path"] for e in man["files"]}
+                     - {"extra/" + e["name"] for e in man.get("extras", [])})
             errs += [f"{n}: not in manifest" for n in sorted(extra)]
     except (OSError, KeyError, ValueError, zipfile.BadZipFile) as e:
         errs.append(f"unreadable archive: {e}")
@@ -902,7 +932,17 @@ def restore(ident: str, archive_root, to) -> dict:
                 raise HKError("HASH_MISMATCH", e["path"])
             out.write_bytes(data)
             n += 1
-    return {"restored_files": n, "to": str(dest), "links_not_restored": man.get("links_not_followed", [])}
+        extras = []
+        for e in man.get("extras", []):
+            data = z.read("extra/" + e["name"])
+            if hashlib.sha256(data).hexdigest() != e["sha256"]:
+                raise HKError("HASH_MISMATCH", "extra/" + e["name"])
+            out = dest / ".housekeeping-extra" / e["name"]
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_bytes(data)
+            extras.append(str(out))
+    return {"restored_files": n, "to": str(dest), "extras": extras,
+            "links_not_restored": man.get("links_not_followed", [])}
 
 
 # --------------------------------------------------------------------------- apply / recover
@@ -1081,7 +1121,12 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 if action in ("archive-then-remove",):
                     if cur.get("links"):
                         raise HKError("LINKS_PRESENT", f"{it['path']} contains links omitted by archive")
-                    a = archive(it["path"], archive_root, label=it["id"].replace(":", "-"))
+                    extras = {}
+                    if it["kind"] == "worktree":
+                        patch = staged_patch(Path(it["path"]))
+                        if patch:
+                            extras["staged.patch"] = patch      # FB2-03: staged content survives the archive
+                    a = archive(it["path"], archive_root, label=it["id"].replace(":", "-"), extras=extras)
                     if a["links_not_followed"] or not verify_archive(a["archive_id"], archive_root)["ok"]:
                         raise HKError("ARCHIVE_INCOMPLETE", f"{it['path']} archive omits links or failed verification")
                     detail["archive"] = a["archive_id"]
