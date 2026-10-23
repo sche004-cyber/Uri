@@ -16,6 +16,22 @@ def warns(instruction, old, new):
     return DR.missing_facts(instruction, instruction.replace(old, new, 1))
 
 
+@pytest.mark.parametrize("instruction,name,replacement,rephrased", [
+    ("Draft a circular appointing officer named asha devi as nodal officer.",
+     "asha devi", "priya devi",
+     "Draft a circular appointing officer named asha devi to serve as nodal officer."),
+    ("Issue an office order appointing staff member ramesh kumar as liaison.",
+     "ramesh kumar", "suresh kumar",
+     "Issue an office order appointing staff member ramesh kumar to liaise with the team."),
+])
+def test_r7_01_labelled_name_ends_before_as_role(instruction, name, replacement, rephrased):
+    assert [f for f in DR.extract_facts(instruction) if f["kind"] == "name"] == [
+        {"kind": "name", "text": name}]
+    assert [(w["code"], w["kind"], w["text"]) for w in warns(instruction, name, replacement)] == [
+        ("FACT_MISSING", "name", name)]
+    assert DR.missing_facts(instruction, rephrased) == []
+
+
 # ---- R6-01: month and year, "Nth (day) of Month", periods -----------------------------------------------------------
 @pytest.mark.parametrize("instruction,old,new", [
     ("Prepare a notesheet on the salary bill for the month of April 2026.", "April 2026", "March 2026"),

@@ -93,7 +93,7 @@ _CUE_NAME = re.compile(r"\b(?:to|from|" + "|".join(HONORIFICS) + r")\.?\s+([A-Z]
 # An explicit person label lets a lowercase full name be checked without treating arbitrary lowercase prose as names.
 # Stop at a clause or prepositional phrase, rather than treating its words as a third/fourth name part.
 _PERSON_CLAUSE_START = (r"(?:is|was|will|shall|has|had|who|and|the|a|an|be|can|may|must|should|would|could|"
-                        r"about|after|against|at|before|by|concerning|during|for|from|in|into|of|on|over|"
+                        r"about|after|against|as|at|before|by|concerning|during|for|from|in|into|of|on|over|"
                         r"regarding|through|to|under|with|without)")
 _PERSON_NAME_WORD = r"(?!(?:" + _PERSON_CLAUSE_START + r")\b)[A-Za-z][A-Za-z'-]+"
 _PERSON_NAME = re.compile(r"\b(?:staff\s+member|employee\s+named|officer\s+named|person\s+named)\s+("
