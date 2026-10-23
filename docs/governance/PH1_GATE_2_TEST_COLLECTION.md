@@ -9,6 +9,10 @@ narrow scope; independent review.
 | `tests/office_u2/test_workflow_resume.py` and the root Phase 1 `test_workflow_resume.py` share a basename | renamed to `tests/office_u2/test_office_workflow_resume.py` (the root Phase 1 file is untouched; its node id is referenced by the Phase 1 outcome baseline) |
 | Whole-repository collection also entered `docs/`: `docs/evidence/` keeps deliberately colliding `test_same.py` fixtures, and `docs/ui_v2/tools/test_*.py` are one-off patch scripts that **rewrite `uri_ui` source files when imported** (whole-repository collection on canonical silently edited `main_v2_preview.dart`, `voice_stage.dart` and `ui_v2_test.dart`) | root `conftest.py`: `collect_ignore_glob = ["docs/*"]` (`docs/` holds records, not tests) |
 
+`docs/ui_v2/tools/test_detached_geometry.py` and `test_motion_pause.py` are renamed to `patch_detached_geometry.py` and
+`patch_motion_pause.py` (content unchanged; P0 finding DOCS-TOOLS-1), so no collector can import them even without the
+root `conftest.py`.
+
 `tests/phase2a/test_frozen_core.py` lists the materialised runtime files; only the two renamed entries change.
 
 Evidence (`D:/uri-dev/ph1g2` vs canonical checkout):
