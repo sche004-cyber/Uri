@@ -157,3 +157,48 @@ def test_d08_default_and_safe_rollbacks_are_unchanged():
     with pytest.raises(G.RollbackRefused, match="UNSAFE_ROLLBACK_REFUSED"):
         G.rollback(FROZEN, FROZEN_SHA, dest)
     assert not dest.exists()
+
+
+# ------------------------------------------------------------------ D08 review FB1: failure paths (D08-01, D08-02)
+
+def _assert_nothing_left(dest, support):
+    for path in [*G.SECURITY_FILES, *support]:
+        assert not (dest / path).exists(), path
+    assert not (dest / "uri_web").exists()                       # D08-01: no empty closure folder either
+    assert not (dest / "secure-recovery-evidence.json").exists()
+
+
+def test_d08_02_a_support_path_the_checkpoint_restored_is_refused_and_nothing_of_the_closure_stays(monkeypatch):
+    import subprocess
+    restored = "uri_core/services/file_extraction.py"            # a file the rollback itself restores
+    blob = subprocess.run(["git", "-C", str(ROOT), "show", f"{G.SUPPORT_SOURCE_COMMIT}:{restored}"],
+                          capture_output=True).stdout
+    before = subprocess.run(["git", "-C", str(ROOT), "show", f"{R.BASELINE}:{restored}"], capture_output=True).stdout
+    assert before                                                 # restored from the e8e3b65 base under the checkpoint
+    closure = dict(G.SUPPORT_FILES)
+    monkeypatch.setattr(G, "SUPPORT_FILES", {**closure, restored: hashlib.sha256(blob).hexdigest()})
+    dest = fresh()
+    with pytest.raises(G.RollbackRefused, match="SUPPORT_FILE_CONFLICT"):
+        G.rollback(FROZEN, FROZEN_SHA, dest, secure_recovery=True)
+    assert (dest / restored).read_bytes() == before                # the restored file was not overwritten
+    _assert_nothing_left(dest, closure)
+
+
+def test_d08_02_a_write_failure_inside_the_closure_removes_everything_written(monkeypatch):
+    from pathlib import Path as P
+    real = P.write_bytes
+    calls = {"n": 0}
+
+    def flaky(self, data):
+        if "uri_web" in self.parts:
+            calls["n"] += 1
+            if calls["n"] == 2:                                 # the second closure file fails
+                raise OSError("disk full (simulated)")
+        return real(self, data)
+
+    monkeypatch.setattr(P, "write_bytes", flaky)
+    dest = fresh()
+    with pytest.raises(OSError, match="simulated"):
+        G.rollback(FROZEN, FROZEN_SHA, dest, secure_recovery=True)
+    monkeypatch.setattr(P, "write_bytes", real)
+    _assert_nothing_left(dest, G.SUPPORT_FILES)

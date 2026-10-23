@@ -26,7 +26,38 @@ Unchanged: the frozen rollback tool (`scripts/phase1_offline_rollback.py`, FCV-0
 record and its two approved security blobs, the security patch, the default refusal and `--inspect`. No protected path
 changes (`ws_frozen_check` exit 0).
 
-## Owner decision needed before canonical integration
+## Verification of the four files (owner restriction, D08-03, 2026-10-23)
+
+Owner decision: "APPROVED WITH RESTRICTIONS. The four additional secure-recovery files may be installed only after
+their necessity, identities, destinations, hashes, and rollback behavior are verified" (P0 DEC-104).
+
+| Path (identity) | Source blob at `c036a901` | SHA-256 (pinned in `SUPPORT_FILES`) | Bytes | Destination | Why it is needed |
+|---|---|---|---|---|---|
+| `uri_web/__init__.py` | `a3f00bfa519e1fc0c3e80c2e7051eb69676d0a58` | `2d9d4795d94020ea044ebda8c6c66d1ee3e511bbdc19e950aab28ed613e8107c` | 670 | `<restored tree>/uri_web/__init__.py` | package marker for the three modules below |
+| `uri_web/netpolicy.py` | `bd1e1c26528e9632e7f627d5ec9169597c27bda1` | `c8b93927b6f3bf6da4b7a47275a7081be367b73b21680b09ca4d7b714eecd151` | 9065 | `<restored tree>/uri_web/netpolicy.py` | `fetch_url.py:48` `from uri_web import netpolicy` (public-address policy, SSRF-1) |
+| `uri_web/records.py` | `55f523fe8e1a7b4ab7a95c3f661684cc97e929b8` | `b4be69088578e00a5c03b2dcd21dd4c87104d3b4f3d9a0630ff5afa899580cea` | 3160 | `<restored tree>/uri_web/records.py` | `fetch_url.py:49` `from uri_web import records` |
+| `uri_web/safe_fetch.py` | `a905e719f17086f5690e33373b5880af089919c2` | `7e7778efac61e00b251a55eda02faf88cce7d830cd6f6faa04ab50ee19113315` | 22684 | `<restored tree>/uri_web/safe_fetch.py` | `fetch_url.py:50` `from uri_web.safe_fetch import SafeFetcher` (every hop checked) |
+
+- **Necessity:** the closure is computed with `ast` from the secure `fetch_url.py` (`404e6092…`): exactly these four
+  files, no other URI module. The recovered tree imports `uri_core.tools.fetch_url`, and the fetch tool refuses
+  loopback and private addresses (review FB1 probes: `127.0.0.1`, `10.0.0.1`, `0x7f000001`, port 9).
+- **Identities and hashes:** read with `git show c036a901:<path>` and checked against the pins before anything is
+  written; a changed pin or an unavailable commit refuses with nothing written (`test_d08_a_changed_support_pin_…`).
+- **Destinations:** only `uri_web/` inside the recovered tree, only where no restored file exists
+  (`SUPPORT_FILE_CONFLICT`, `test_d08_02_a_support_path_the_checkpoint_restored_…`).
+- **Rollback behaviour:** on any failure after the frozen tool has restored the tree, the security files, every closure
+  file written and every folder the closure created are removed (D08-01 repaired; `test_d08_02_a_write_failure_…`);
+  no evidence file is written. The default refusal and `--inspect` are unchanged. The recovered tree is an offline
+  source rehearsal; nothing is started.
+- **No new dependency or privilege:** `safe_fetch.py` imports `httpx`/`httpcore`, which canonical `uri_web` already
+  uses (environment: httpx 0.28.1, httpcore 1.0.9; pinned in `uri_ui/tool/voice/requirements-voice.txt`). The repair adds
+  no package, no permission and no elevation; the frozen tool, the owner authority record and the security patch are
+  unchanged.
+
+## Owner decision (recorded)
+
+D08-03 approved with the restrictions above (owner, 2026-10-23). Earlier text, kept:
+
 
 Secure recovery would now install four non-security files in addition to the two owner-approved blobs. P0 notes (DEC-103
 AP-6 gate) that changing the set of files the secure recovery installs needs an owner exception. Alternatives: approve

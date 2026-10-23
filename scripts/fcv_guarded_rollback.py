@@ -168,7 +168,7 @@ def rollback(archive, expected_sha256, destination=None, *, secure_recovery=Fals
     support = _support_bytes()                # D08: the secured fetch_url.py must be importable
     dest = Path(destination) if destination else ROOT / "work/c1" / ("rollback_" + uuid.uuid4().hex)
     evidence = R.rehearse(archive, expected_sha256, dest)
-    written = []
+    written, created = [], []
     try:
         for path, data in secured.items():
             (dest / path).write_bytes(data)
@@ -177,6 +177,9 @@ def rollback(archive, expected_sha256, destination=None, *, secure_recovery=Fals
         for path, data in support.items():
             if (dest / path).exists():        # never overwrite what the checkpoint restored
                 raise RollbackRefused("SUPPORT_FILE_CONFLICT")
+            for d in reversed((dest / path).relative_to(dest).parents):
+                if str(d) != "." and not (dest / d).exists():
+                    created.append(dest / d)          # D08-01: folders this step creates, removed on failure
             (dest / path).parent.mkdir(parents=True, exist_ok=True)
             written.append(path)
             (dest / path).write_bytes(data)
@@ -185,6 +188,11 @@ def rollback(archive, expected_sha256, destination=None, *, secure_recovery=Fals
     except Exception:
         for path in [*secured, *written]:      # never leave the vulnerable versions (or a partial closure) behind
             (dest / path).unlink(missing_ok=True)
+        for d in reversed(created):            # and no empty folder of the closure (review FB1 D08-01)
+            try:
+                d.rmdir()
+            except OSError:
+                pass
         raise
     transitions = {p: {"before_sha256": sha256(current[p]), "after_sha256": sha256(d)} for p, d in secured.items()}
     record = {"schema_version": 1, "status": "SECURE_RECOVERY_APPLIED", "decision": AUTHORITY_DECISION,
