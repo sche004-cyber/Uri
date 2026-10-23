@@ -100,6 +100,8 @@ any other value is `404 UNKNOWN_*`.
 | `/document/<id>/search` | POST | `{"text"}` (≤ 200 chars) | `{"matches": [{"page", "context"}], "truncated"}` | `NO_TEXT_LAYER` |
 | `/document/<id>/close` | POST | – | `{"closed": true}` | – |
 | `/document/<id>/retry` | POST | – | DocView (preview prepared again when it was unavailable; otherwise unchanged) | `UNKNOWN_DOCUMENT` |
+| `/document/<id>/text` | POST | `{"ocr": true?}` | `{"document_id", "name", "pages": [{"page", "text", "source": "text"\|"ocr"\|"none", "failed"}], "text" (page-labelled), "chars", "truncated", "pages_without_text", "ocr_used", "ocr_skipped", "total_pages"}` (plan 16 OD-3; 2,000,000 characters at most; OCR only when asked) | `NOT_A_PDF`, `PAGE_NOT_READY` (202), `OCR_UNAVAILABLE`, `OCR_TIMEOUT`, `OCR_FAILED` |
+| `/document/<id>/to_word` | POST | `{"ocr": true?}` | authoring view of a NEW Word working copy (one heading per page) plus `source_document_id`, `truncated`, `pages_without_text`, `ocr_skipped`; saved only through the Save as card | as `/text` |
 | `/request` | POST | `{"text", "target": {"kind", "id"}?, "scope": {"pages": [..]}?, "chip": <intent id>?}` | IntentResult | `BRAIN_UNAVAILABLE` never surfaces as an error: the result is `clarify` |
 | `/workflow` | POST | `{"capability", "inputs": [{"document_id" or "workbook_id"}], "options": {}}` | `{"workflow_id", "messages": [plan card]}` | `CAPABILITY_PLANNED`, `ENGINE_UNAVAILABLE`, `UNSAVED_CHANGES` |
 | `/workflow/<id>` | GET | – | workflow record view | `UNKNOWN_WORKFLOW` |

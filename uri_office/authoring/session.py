@@ -220,6 +220,11 @@ class Authoring:
             name = ("New document" if lid == "blank" else T.LAYOUTS[lid][0]) + ".docx"
         return self.view(self._new("docx", name, data).aid)
 
+    def new_document_from_bytes(self, name: str, data: bytes) -> dict:
+        """OD-2 / OD-3: a new Word document whose bytes URI made (a Brain draft, a PDF's text). It is a new file like
+        one from a layout: nothing is on disk until the owner approves a Save as card."""
+        return self.view(self._new("docx", name, data).aid)
+
     # ---- editing -----------------------------------------------------------------------------------------------
     def get(self, aid) -> AuthSession:
         s = self.sessions.get(aid) if isinstance(aid, str) else None

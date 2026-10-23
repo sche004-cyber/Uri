@@ -54,9 +54,12 @@ _CAPS = (
                                _step("submit", "E", "print_worker")],
      "engines": ["libreoffice", "winrt_pdf", "print_worker"], "status": "planned:O2P", "approval": "print_job",
      "effects": ["reads_files", "sends_to_printer"]},
+    # OD-2 (plan 16): available through POST /authoring/draft only (no workflow); the draft opens in the Word editor
+    # and is written only through the Save as card.
     {"id": "write_document", "goal": "write", "title": "Write a letter or notice", "inputs": [], "output": "docx",
-     "steps": [], "engines": [], "status": "planned:O3", "approval": "plan_and_outputs",
-     "effects": ["writes_new_file", "uses_brain"]},
+     "steps": [_step("layout", "D"), _step("draft", "B"), _step("facts", "D")], "engines": [],
+     "status": "available", "approval": "plan_and_outputs", "effects": ["writes_new_file", "uses_brain"],
+     "route": "/authoring/draft"},
     {"id": "edit_document", "goal": "write", "title": "Change a Word document", "inputs": ["docx"], "output": "docx",
      "steps": [], "engines": [], "status": "planned:O3", "approval": "plan_and_outputs",
      "effects": ["reads_files", "writes_new_file", "uses_brain"]},

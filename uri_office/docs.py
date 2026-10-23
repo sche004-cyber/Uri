@@ -25,6 +25,8 @@ from .render import PREVIEW
 
 MAX_DOCS = 8
 MAX_PDF_PAGES = 2000
+MAX_TEXT_CHARS = 2_000_000          # OD-3: the PDF text one request returns (the worker enforces the same cap)
+MAX_OCR_PAGES = 20                  # OD-3: scanned pages read per request; the rest are listed as skipped
 SUFFIX_KIND = {".docx": "docx", ".pptx": "pptx", ".pdf": "pdf"}
 
 
@@ -220,6 +222,48 @@ class Documents:
         if r.get("text_pages", 0) == 0:
             raise OfficeError("NO_TEXT_LAYER", "", 422)
         return {"matches": r["matches"], "truncated": r["truncated"]}
+
+    def text(self, did, *, ocr: bool = False, max_chars: int = MAX_TEXT_CHARS) -> dict:
+        """OD-3: a PDF's text for the owner ("Copy text", "To Word"), page by page, capped in total. Pages with no
+        text layer are listed; with `ocr` (an explicit owner request only) up to MAX_OCR_PAGES of them are read with
+        Tesseract from the page images the raster path makes. Nothing is written except the page-image cache."""
+        s = self.get(did)
+        if s.kind != "pdf":
+            raise OfficeError("NOT_A_PDF", "text is taken from PDF files", 409)
+        if s.state != "ready":
+            raise OfficeError("PAGE_NOT_READY", "", 202)
+        r = self.hub.text_request("text", pdf=str(s.preview_pdf), max_chars=min(int(max_chars), MAX_TEXT_CHARS),
+                                  timeout=300)
+        if not r.get("ok"):
+            raise OfficeError("PREVIEW_UNAVAILABLE", r.get("error", ""), 422)
+        pages = [{"page": p["page"], "text": p["text"], "source": "text" if p["text"].strip() else "none",
+                  "failed": bool(p.get("failed"))} for p in r["pages"]]
+        empty = [p["page"] for p in pages if p["source"] == "none"]
+        skipped = []
+        if ocr and empty:
+            from . import ocr as OCR
+            exe = OCR.tesseract_exe()
+            if exe is None:
+                raise OfficeError("OCR_UNAVAILABLE", "Tesseract is not installed on this PC", 503)
+            todo, skipped = empty[:MAX_OCR_PAGES], empty[MAX_OCR_PAGES:]
+            by_page = {p["page"]: p for p in pages}
+            total = sum(len(p["text"]) for p in pages)
+            for n in todo:
+                if total >= max_chars:
+                    skipped.append(n)
+                    continue
+                png = self.hub.page_png(s.preview_pdf, s.cache, n, OCR.OCR_WIDTH)
+                t = OCR.ocr_png(png, exe)[: max(0, max_chars - total)]
+                total += len(t)
+                by_page[n].update(text=t, source="ocr" if t.strip() else "none")
+            skipped.sort()
+        joined = "\n\n".join(f"--- Page {p['page']} ---\n{p['text'].strip()}" for p in pages)
+        no_text = [p["page"] for p in pages if p["source"] == "none"]
+        self.audit("office.document_text", {"document_id": did, "pages": len(pages), "ocr_pages":
+                                            sum(p["source"] == "ocr" for p in pages)})
+        return {"document_id": did, "name": s.name, "pages": pages, "text": joined, "chars": len(joined),
+                "truncated": bool(r.get("truncated")), "pages_without_text": no_text, "ocr_used": bool(ocr),
+                "ocr_skipped": skipped, "total_pages": s.pages}
 
     def retry(self, did) -> dict:
         """Prepare the preview again after it was unavailable (for example the engine check had not finished). The

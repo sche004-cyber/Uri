@@ -366,6 +366,29 @@ class OfficeBrain:
             raise OfficeError("BRAIN_OUTPUT_INVALID", "")
         return {"intent": data["intent"], "missing": [m for m in data.get("missing") or [] if m in CLASSIFY_MISSING]}
 
+    def draft_document(self, instruction: str, *, layout_title: str, layout_paras: list, cancel=None) -> dict:
+        """OD-2: one FAST-tier Brain call that drafts a document. Returns {status, message, blocks, missing, metrics}."""
+        if not isinstance(instruction, str) or not instruction.strip():
+            raise OfficeError("EMPTY_INSTRUCTION")
+        if len(instruction) > MAX_INSTRUCTION:
+            raise OfficeError("INSTRUCTION_TOO_LONG")
+        body = draft_body(instruction.strip(), layout_title, layout_paras)
+        res = self.client.stream_chat(body, cancel=cancel or BC.CancelToken(), deadlines=TIMEOUT)
+        if res.status == BC.CANCELLED:
+            raise OfficeError("CANCELLED", "Stopped. Nothing was drafted.")
+        if res.status == BC.UNREACHABLE:
+            raise OfficeError("BRAIN_UNAVAILABLE", "The local Brain is not running; nothing was drafted.", 503)
+        if res.status != BC.COMPLETE:
+            raise OfficeError("BRAIN_" + res.status, "The local Brain did not finish; nothing was drafted.", 503)
+        try:
+            data = json.loads(res.text)
+        except ValueError:
+            raise _draft_invalid() from None
+        out = check_draft(data)
+        out["metrics"] = {"ttft_s": res.ttft_s, "total_s": res.total_s,
+                          "predicted_per_second": (res.timings or {}).get("predicted_per_second")}
+        return out
+
 
 # ---- O2: Office intent classification (plan §5 brain.py, §6.2, §9.5; AC-O2-10) --------------------------------------
 CLASSIFY_SYSTEM = (
@@ -412,3 +435,79 @@ def classify_body(text: str, target_kind, history: list, intents) -> dict:
             "response_format": {"type": "json_schema",
                                 "json_schema": {"name": "office_intent", "schema": schema, "strict": True}},
             **tier_params(FAST, use="answer", max_tokens=200)}
+
+
+# ---- OD-2: drafting a Word document from an instruction (plan 16 section 3) ------------------------------------------
+DRAFT_MAX_TOKENS = 3000
+DRAFT_MAX_BLOCKS = 60
+DRAFT_MAX_BLOCK_CHARS = 1500
+DRAFT_MAX_TOTAL_CHARS = 20000
+DRAFT_MAX_MISSING = 10
+DRAFT_ROLES = ("title", "heading", "paragraph", "bullet", "numbered")
+DRAFT_STATUSES = ("propose", "clarify", "cannot")
+DRAFT_SCHEMA = {
+    "type": "object", "additionalProperties": False, "required": ["status", "message", "blocks", "missing"],
+    "properties": {
+        "status": {"type": "string", "enum": list(DRAFT_STATUSES)},
+        "message": {"type": "string", "maxLength": 600},
+        "blocks": {"type": "array", "maxItems": DRAFT_MAX_BLOCKS, "items": {
+            "type": "object", "additionalProperties": False, "required": ["role", "text"],
+            "properties": {"role": {"type": "string", "enum": list(DRAFT_ROLES)},
+                           "text": {"type": "string", "maxLength": DRAFT_MAX_BLOCK_CHARS}}}},
+        "missing": {"type": "array", "maxItems": DRAFT_MAX_MISSING, "items": {"type": "string", "maxLength": 120}},
+    }}
+DRAFT_SYSTEM = (
+    "You are URI's writing assistant for Indian government and office documents. You draft ONE document of the kind "
+    "named below from the owner's instruction, in plain formal English, as blocks in the required JSON schema. Each "
+    "block is one paragraph with a role: title, heading, paragraph, bullet or numbered. Follow the layout's structure. "
+    "Use every name, number, date, amount and reference number from the instruction exactly as written. Never invent "
+    "a name, number, date, amount or reference number: where one is needed and not given, write a placeholder in "
+    "square brackets such as [date] or [file number] and list what is missing in missing. Set status to 'propose' "
+    "with the blocks when you can draft it. Set it to 'clarify' with no blocks and one short question in message when "
+    "the instruction does not say what the document is about. Set it to 'cannot' with no blocks and the reason in "
+    "message when it is not a document you can draft. Keep message short. " + SYSTEM_RULE)
+
+
+def draft_body(instruction: str, layout_title: str, layout_paras: list) -> dict:
+    structure = [{"style": s, "text": t} for s, t in layout_paras if t]
+    user = (f"Owner instruction:\n{instruction}\n\nDocument kind: {layout_title}\n\n"
+            + data_block("the layout's structure (placeholders in square brackets)", structure))
+    return {"model": "local", "messages": [{"role": "system", "content": DRAFT_SYSTEM},
+                                           {"role": "user", "content": user}],
+            "response_format": {"type": "json_schema",
+                                "json_schema": {"name": "office_draft", "schema": DRAFT_SCHEMA, "strict": True}},
+            **tier_params(FAST, use="answer", max_tokens=DRAFT_MAX_TOKENS)}
+
+
+def _draft_invalid():
+    return OfficeError("BRAIN_OUTPUT_INVALID", "The Brain's answer was not usable; nothing was drafted.")
+
+
+def check_draft(data) -> dict:
+    """Validates a draft answer against the schema and the caps. Over-cap output is refused, never truncated."""
+    if not isinstance(data, dict) or data.get("status") not in DRAFT_STATUSES:
+        raise _draft_invalid()
+    blocks, missing = data.get("blocks"), data.get("missing")
+    if not isinstance(blocks, list) or not isinstance(missing, list) or len(blocks) > DRAFT_MAX_BLOCKS \
+            or len(missing) > DRAFT_MAX_MISSING:
+        raise _draft_invalid()
+    out = []
+    for b in blocks:
+        if not isinstance(b, dict) or b.get("role") not in DRAFT_ROLES or not isinstance(b.get("text"), str) \
+                or len(b["text"]) > DRAFT_MAX_BLOCK_CHARS:
+            raise _draft_invalid()
+        if b["text"].strip():
+            out.append({"role": b["role"], "text": b["text"].strip()})
+    if sum(len(b["text"]) for b in out) > DRAFT_MAX_TOTAL_CHARS:
+        raise _draft_invalid()
+    status = data["status"]
+    msg = data.get("message") if isinstance(data.get("message"), str) else ""
+    if status == "propose" and not out:
+        raise _draft_invalid()
+    if status != "propose":
+        out = []                                # a question or a refusal never carries a draft
+        if not msg.strip():
+            msg = ("Please say more about what the document should say; nothing was drafted." if status == "clarify"
+                   else "That cannot be drafted here; nothing was drafted.")
+    return {"status": status, "message": msg.strip()[:600], "blocks": out,
+            "missing": [m.strip()[:120] for m in missing if isinstance(m, str) and m.strip()]}

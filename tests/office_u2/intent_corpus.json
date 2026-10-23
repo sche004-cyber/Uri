@@ -100,16 +100,18 @@
   {
    "text": "write a letter to the district collector",
    "target": null,
-   "result": "planned",
+   "result": "matched",
    "intent": "write_document",
-   "phase": "O3"
+   "inputs_needed": [],
+   "_note": "OD-2 (plan 16, 2026-10-23): write_document became available through POST /authoring/draft; the expectation was planned/O3 before."
   },
   {
    "text": "draft an office order",
    "target": null,
-   "result": "planned",
+   "result": "matched",
    "intent": "write_document",
-   "phase": "O3"
+   "inputs_needed": [],
+   "_note": "OD-2 (plan 16, 2026-10-23): write_document became available through POST /authoring/draft; the expectation was planned/O3 before."
   },
   {
    "text": "make a presentation from this report",

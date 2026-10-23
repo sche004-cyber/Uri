@@ -10,9 +10,14 @@ Protocol: one JSON object per line on stdin, one per line on stdout.
   {"id", "op": "risk", "pdf"}            -> {id, ok, javascript, launch, remote_goto, unsafe_uri, embedded_files,
                                              web_uri}  (counts only)
   {"id", "op": "placeholders", "pdf"}    -> {id, ok, pages: [{page, count}]}  (counts of «…», {{…}}, [NAME] tokens)
+  {"id", "op": "text", "pdf", "max_chars"} -> {id, ok, pages: [{page, text, failed}], chars, truncated}
   {"id", "op": "quit"}
 `spans` carries positions, sizes and character counts only, never text (validation needs no content). `search`
 returns at most 50 matches with 60 characters of context each; the owner asked for them.
+`text` (plan 16 OD-3, 2026-10-23) returns the page text itself: the owner now asks for it ("Copy text", "To Word").
+It is returned only for that request, capped at `max_chars` in total (at most 2,000,000; `truncated` says when the cap
+cut it); a page whose text cannot be extracted is marked `failed` and returned empty. Earlier versions of this worker
+returned no text by design; that changed with the owner's request, not silently.
 """
 import json
 import os
@@ -139,6 +144,27 @@ def search(r, text):
     return matches, False, text_pages
 
 
+MAX_TEXT_CHARS = 2_000_000
+
+
+def text_pages(r, max_chars):
+    cap = max(0, min(int(max_chars), MAX_TEXT_CHARS))
+    pages, total, truncated = [], 0, False
+    for i, page in enumerate(r.pages[:2000]):
+        failed = False
+        try:
+            t = (page.extract_text() or "").replace("\x00", "")
+        except Exception:  # noqa: BLE001 - one bad page is named, the others still come
+            t, failed = "", True
+        if total + len(t) > cap:
+            t, truncated = t[:cap - total], True
+        pages.append({"page": i + 1, "text": t, "failed": failed})
+        total += len(t)
+        if truncated:
+            break
+    return pages, total, truncated
+
+
 PLACEHOLDER = re.compile(r"«[^»]{1,40}»|\{\{[^}]{1,40}\}\}|\[[A-Z][A-Z _]{1,30}\]")
 
 
@@ -248,6 +274,9 @@ def main():
                 reply({"id": rid, "ok": True, **risk(r)})
             elif op == "placeholders":
                 reply({"id": rid, "ok": True, "pages": placeholders(r)})
+            elif op == "text":
+                pages, total, trunc = text_pages(r, req.get("max_chars", MAX_TEXT_CHARS))
+                reply({"id": rid, "ok": True, "pages": pages, "chars": total, "truncated": trunc})
             else:
                 reply({"id": rid, "ok": False, "error": "BAD_REQUEST"})
         except Exception as e:  # noqa: BLE001 - a code, never content

@@ -38,6 +38,7 @@ ROUTES = (
     ("POST", "/workflow/<id>/cancel"), ("POST", "/workflow/<id>/resume"), ("POST", "/workflow/<id>/accept_warnings"),
     ("POST", "/workflow/<id>/propose_save"), ("GET", "/workflow/<id>/output/page/<n>"), ("GET", "/workflows"),
     ("GET", "/recent"), ("POST", "/recent/remove"), ("POST", "/recent/clear"),
+    ("POST", "/document/<id>/text"), ("POST", "/document/<id>/to_word"),          # OD-3 (plan 16)
 )
 
 
@@ -103,6 +104,17 @@ ERRORS: dict[str, ErrorInfo] = {
     "PRINT_FAILED": ErrorInfo("Printing failed. Nothing more will be sent.", ("retry", "check_printers")),
     "PAPER_NOT_SUPPORTED": ErrorInfo("The printer does not have that paper size.", ("choose_printer",)),
     "PRINTER_NOT_FOUND": ErrorInfo("Windows could not find that printer.", ("check_printers",)),
+    # OD-2 / OD-3 (plan 16)
+    "BRAIN_UNAVAILABLE": ErrorInfo("The local Brain is not running, so URI cannot draft or decide this now.",
+                                   ("retry",)),
+    "BRAIN_OUTPUT_INVALID": ErrorInfo("The Brain's answer was not usable. Nothing was changed.", ("retry",)),
+    "EMPTY_INSTRUCTION": ErrorInfo("Say what the document should say.", ()),
+    "INSTRUCTION_TOO_LONG": ErrorInfo("The instruction is too long. Shorten it.", ()),
+    "UNKNOWN_LAYOUT": ErrorInfo("That kind of document is not one URI knows.", ()),
+    "NOT_A_PDF": ErrorInfo("Text is taken from PDF files only.", ()),
+    "OCR_UNAVAILABLE": ErrorInfo("Scanned pages cannot be read: Tesseract OCR is not installed on this PC.", ()),
+    "OCR_TIMEOUT": ErrorInfo("Reading a scanned page took too long and was stopped.", ("retry",)),
+    "OCR_FAILED": ErrorInfo("A scanned page could not be read.", ("retry",)),
 }
 
 RECOVERY_ACTIONS = ("help_engine", "verify_engine", "retry", "open_other", "close_one", "choose_location", "open_again",

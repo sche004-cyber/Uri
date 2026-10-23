@@ -4,6 +4,7 @@ pre-filled with names, numbers or dates."""
 from __future__ import annotations
 
 import io
+import re
 import zipfile
 
 from docx import Document
@@ -42,7 +43,25 @@ LAYOUTS = {
         ("Heading 1", "Findings"), ("Normal", "[Findings.]"), ("Heading 1", "Recommendations"),
         ("List Number", "[Recommendation]"),
     ]),
+    # OD-1 (plan 16): Government of India style noting sheet and circular. Placeholders only.
+    "notesheet": ("Note sheet", [
+        ("Title", "Note Sheet"), ("Normal", "File No. [file number]"), ("Heading 1", "Subject: [subject]"),
+        ("List Number", "[First paragraph of the note.]"), ("List Number", "[Next paragraph of the note.]"),
+        ("Normal", ""), ("Normal", "[Signature]"), ("Normal", "[Name]"), ("Normal", "[Designation]"),
+        ("Normal", "Date: [date]"),
+    ]),
+    "circular": ("Circular", [
+        ("Title", "Circular"), ("Normal", "No. [number]                                        Date: [date]"),
+        ("Heading 1", "Subject: [subject]"), ("Normal", "[Text of the circular.]"), ("Normal", ""),
+        ("Normal", "[Name]"), ("Normal", "[Designation of the issuing authority]"), ("Heading 2", "Distribution"),
+        ("List Bullet", "[Recipient]"),
+    ]),
 }
+
+# OD-2: the paragraph style each drafted block role is written in (every style exists in python-docx's default
+# template, so a drafted document never names a style it does not have).
+ROLE_STYLES = {"title": "Title", "heading": "Heading 1", "paragraph": "Normal", "bullet": "List Bullet",
+               "numbered": "List Number"}
 
 
 def layout_list() -> list:
@@ -53,16 +72,50 @@ def from_layout(layout_id: str) -> bytes:
     from ..errors import OfficeError
     if layout_id not in LAYOUTS:
         raise OfficeError("UNKNOWN_LAYOUT", str(layout_id)[:40])
+    return _build(LAYOUTS[layout_id][1])
+
+
+def from_blocks(layout_id: str, blocks: list) -> bytes:
+    """OD-2: a new document in a layout's page setup whose body is the drafted blocks ({role, text}) instead of the
+    layout's placeholder paragraphs. Pure: returns the bytes; nothing is written to disk."""
+    from ..errors import OfficeError
+    if layout_id not in LAYOUTS:
+        raise OfficeError("UNKNOWN_LAYOUT", str(layout_id)[:40])
+    paras = []
+    for b in blocks:
+        style = ROLE_STYLES.get(b.get("role")) if isinstance(b, dict) else None
+        if style is None or not isinstance(b.get("text"), str):
+            raise OfficeError("BAD_BLOCK", "a drafted block has an unknown role or no text")
+        paras.append((style, b["text"]))
+    if not paras:
+        raise OfficeError("BAD_BLOCK", "nothing was drafted")
+    return _build(paras)
+
+
+def from_paragraphs(paras: list) -> bytes:
+    """OD-3: a new document from (style, text) pairs (PDF text to Word). Pure."""
+    return _build(paras)
+
+
+_NOT_XML = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff￾￿]")
+
+
+def _xml_safe(text: str) -> str:
+    """Characters XML cannot hold (PDF text and model output can carry them) are dropped, never written."""
+    return _NOT_XML.sub("", text or "")
+
+
+def _build(paras: list) -> bytes:
     doc = Document()
     for sec in doc.sections:                      # A4, 2.54 cm margins
         sec.page_width, sec.page_height = Cm(21.0), Cm(29.7)
         for side in ("top", "bottom", "left", "right"):
             setattr(sec, f"{side}_margin", Cm(2.54))
-    paras = LAYOUTS[layout_id][1]
     body = doc.paragraphs
     for i, (style, text) in enumerate(paras):
         p = body[0] if i == 0 and body else doc.add_paragraph()
         p.style = doc.styles[style]
+        text = _xml_safe(text)
         if text:
             p.add_run(text)
     b = io.BytesIO()
