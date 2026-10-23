@@ -638,6 +638,43 @@ def _unusual_digit_separators(text: str) -> bool:
     return any(sum(c.isdigit() for c in m.group(0)) >= 9 for m in _LETTER_RUN.finditer(text))
 
 
+@functools.lru_cache(maxsize=8192)
+def _bridge(c: str) -> bool:
+    """A character that NFKC expands into letters, digits or more than three characters ("\\u33c2" -> "a.m.",
+    "\\ufdfa" -> an 18-letter phrase): one code point as written, but a long gap once normalized."""
+    import unicodedata
+    if c.isascii() or unicodedata.digit(c, None) is not None:
+        return False
+    n = unicodedata.normalize("NFKC", c)
+    return n != c and (len(n) > 3 or any(x.isalnum() for x in n))
+
+
+def _compat_bridges_digits(text: str) -> bool:
+    """True when a run over the digit budget, read on the text AS WRITTEN with every such character counted as one gap
+    character, spans one of them (review FB6 R3-01: "4111\\u33c21111\\u33c21111\\u33c21111" was clean in the NFKC form,
+    where each gap is "a.m.", and so the original went out with the card). Refused as doubt (LDEC-005)."""
+    import bisect
+    import unicodedata
+    if not any(_bridge(c) for c in set(text)):
+        return False
+    view, at = [], []
+    for i, c in enumerate(text):
+        if c.isascii():
+            view.append(c)
+        elif unicodedata.digit(c, None) is not None:
+            view.append(str(unicodedata.digit(c)))
+        elif _bridge(c):
+            view.append("~")
+            at.append(i)
+        else:
+            view.append(c)
+    for s, e in _long_number_spans("".join(view)):
+        k = bisect.bisect_left(at, s)
+        if k < len(at) and at[k] < e:
+            return True
+    return False
+
+
 def egress_form(text: str):
     """(text to send, disguise signals). The text to send is NFKC with punctuation look-alikes as ASCII and line or
     paragraph separators as newlines; invisible characters are removed except emoji/script shaping between non-ASCII
@@ -648,6 +685,8 @@ def egress_form(text: str):
         if _unusual_digit_separators(text):
             signals.add(DOUBT_SEPARATOR)
         return text, signals
+    if _compat_bridges_digits(text):
+        signals.add(DOUBT_SEPARATOR)
     src = unicodedata.normalize("NFKC", text)
 
     def ascii_or_digit(c):

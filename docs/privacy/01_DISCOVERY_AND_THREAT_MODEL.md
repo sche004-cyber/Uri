@@ -210,3 +210,13 @@ blocks in an e-mail. Every residual of 6.4 and 6.5 stands, including OD-7.
 
 **Stated limit:** a non-local text over the matching-cost bound (for example a 64 KB base64 blob, or 16 KB of
 `a/a/...`) is refused, not sent (LOG: fully redacted). At 64 KB the AC-14c margin is thin for scripts with combining marks: the recorded run met it, an earlier run on the same host measured 1.07 s for Hindi (see plan PC-14).
+
+### 6.7 Changes after driver run r8 and fallback review FB6 (2026-10-24; amends 6.5 and 6.6)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| Clean text leaves byte-identical also when it is not NFC (decomposed accents), and clean direct WEB_SEARCH text keeps its spacing (repair `1fa3e46e`, replacing 6.5's "already composed" condition) | `test_pc15.py::test_r8_r1_01*`, `test_r8_clean_egress.py` |
+| A run over the digit budget that spans a character NFKC expands into letters, digits or more than three characters (U+33C2, U+FDFA, squared CJK units) is refused as a disguise, read on the text as written | `test_pc15.py::test_fb6_r3_01*` (every NFKC-changing code point x card, Aadhaar, SSN, mobile) |
+
+**Stated limit added:** at 64 KB, prose in scripts with combining marks (Hindi, Arabic) takes 0.7-1.1 s per call,
+above the AC-14c bound of 1 s in some runs (plan PC-15). Every residual of 6.4-6.6 stands, including OD-7.
