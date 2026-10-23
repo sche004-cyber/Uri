@@ -544,3 +544,5 @@ PH1-GATE-1 integrated (receipt `INTEGRATION_RECEIPT_20261023_PH1_GATE_1.md`). Op
 ### P.13 2026-10-23: OPEN-02 approved (awaiting administrator run), OPEN-23 decided and handed off
 
 Details: `P0_CLOSURE_20261022.md` Addendum N; `decisions.md` DEC-100.
+
+OPEN-23 DONE 2026-10-23: authoritative Milestone Manager ledger `D:/uri-dev/state/milestone-manager` (verified). From now on the ledger is the system of record for milestones and decisions; this file and `decisions.md` stay as the imported P0 history.
