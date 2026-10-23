@@ -113,8 +113,8 @@ Every destructive step is dry-run first, approval-gated where needed, idempotent
   - `DIRTY`, approval required: uncommitted or untracked changes.
   - `EVIDENCE`, approval required: it holds untracked evidence files (`receipt.json`, `events.jsonl`, `state.json`, `RECEIPT.md`, `*.junit.xml`).
   - `DISPOSABLE`: clean, unlocked, HEAD reachable from canonical or a remote ref, not referenced, idle for at least `--min-age-hours` (default 24). Action: `git worktree remove` without `--force`, so git itself refuses a dirty tree. The receipt records the restore command (`git worktree add --detach <path> <sha>`).
-  - `PRUNABLE`: a registration whose directory is missing. Action: `git worktree prune` for that entry.
-- **Directories under `--root`** that are not worktrees:
+  - `PRUNABLE`: a registration whose directory is missing. Action: per-item `git worktree remove <path>` (§5 C-1; the global `git worktree prune` is never used).
+- **Directories under `--root`** that are not worktrees (see §5 C-3: a directory holding registered worktrees is PROTECTED):
   - `ESSENTIAL_EVIDENCE`: contains evidence markers, or is referenced by a record. Never removed; it may be archived to the cold tier as a copy.
   - `CACHE`: `__pycache__` and `.pytest_cache`. Disposable and regenerable.
   - `AMBIGUOUS`: anything else.
@@ -176,6 +176,19 @@ Each criterion has a test ID. "Test" means an automated test in `tests/dev_workf
 - **Real-disk destructive cleanup** (`apply` on the owner's machine): the owner approves the dry-run plan first.
 - **Canonical integration** of this milestone: the driver stops at `OWNER_AUTHORIZATION` (`authorized: false`).
 
-## 5. Lifecycle
+## 5. Corrections made during implementation (recorded, not overwritten)
+
+| # | Earlier plan text | Evidence | Correction |
+|---|---|---|---|
+| C-1 | §2.3 PRUNABLE action "`git worktree prune` for that entry" | `git worktree prune` is global. The real-machine inventory found a missing `.work/audit_R1` registration that belongs to P0's running PH1-GATE-1 driver run. | Per-item `git worktree remove <path>`, which works on a missing directory. Test `test_hk3_prune_is_per_item_never_global`. |
+| C-2 | §2.3 PROTECTED list had no rule for lifecycle driver work trees | The same live run (stage FIXING) | Worktrees inside a lifecycle `state_dir` (`state.json` + `events.jsonl`) whose stage is not COMPLETE are PROTECTED, missing ones included. Test `test_hk2_driver_work_trees_of_unfinished_runs_are_protected`. |
+| C-3 | §2.3 directories under `--root` classified by markers only | D:/uri-dev live-run folders hold nested registered worktrees, which a directory removal would delete behind git's back. | A directory holding registered worktrees is PROTECTED, and its worktrees are handled individually. Test `test_hk2_dir_holding_worktrees_is_protected`. |
+| C-4 | HK-1 "inventory is read-only" | `git status` may rewrite a worktree's index stat cache. | All three tools run git with `--no-optional-locks`. |
+| C-5 | §2.2 open owner questions taken from the register as they are | Live brief listed OPEN-18 and OPEN-21 as open after their commits (3def4023, ac3dcbae) were integrated. The register row had not been updated. | An open question citing a commit that canonical contains is shown as "possibly resolved" and listed last. The register row is not changed. Test `test_dm4_open_question_citing_integrated_commit_is_flagged`. |
+| C-6 | — | The CLI output garbled `§` on a Windows pipe. | stdout and stderr are forced to UTF-8. Test `test_dm_cli_output_is_utf8`. |
+| C-7 | Baseline `8ff6186b` | Canonical moved to `b1944200` (G1-02 follow-up, P0 thread) on 2026-10-22/23. No shared files. | Canonical merged into the candidate (`823fddff`). Driver baseline is `b1944200`. |
+| C-8 | §2.3 EVIDENCE vs DIRTY order | An untracked receipt also makes a tree dirty, so the tree was labelled DIRTY. | Evidence takes precedence in the label. Both classes need approval and an archive first. |
+
+## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.
