@@ -447,6 +447,34 @@ def _hidden_edits(path: Path) -> list[str] | None:
     return sorted(hidden)
 
 
+def _worktree_admin(ctx: "Ctx", path: Path) -> Path | None:
+    """The `<common dir>/worktrees/<id>` admin directory registered for ``path`` (also when the directory itself is
+    missing). None when it cannot be identified."""
+    if ctx.common_dir is None:
+        return None
+    base = ctx.common_dir / "worktrees"
+    try:
+        for adm in base.iterdir():
+            gd = adm / "gitdir"
+            if gd.is_file():
+                target = gd.read_text(encoding="utf-8", errors="replace").strip()
+                tp = Path(target) if Path(target).is_absolute() else (adm / target)
+                if norm(tp.parent) == norm(path):
+                    return adm
+    except OSError:
+        return None
+    return None
+
+
+def _per_worktree_unreferenced(ctx: "Ctx", path: Path) -> list[str] | None:
+    """Commits held only by the worktree's own refs (refs/worktree/*, refs/bisect/*, refs/rewritten/*), which go away
+    with it and which the main repository's --branches/--tags/--remotes do not see (FB-5 FB5-02). None: unknown."""
+    rc, out, _ = git(path, "for-each-ref", "--format=%(objectname)", "refs/worktree", "refs/bisect", "refs/rewritten")
+    if rc != 0:
+        return None
+    return _unreferenced(ctx, out.split())
+
+
 def _reflog_only_commits(ctx: "Ctx", path: Path) -> list[str] | None:
     """Commits in the worktree's own HEAD reflog that no branch, tag, remote or canonical holds: removing the
     worktree removes that reflog (FB-2 FB2-02). None: could not be determined."""
@@ -532,13 +560,25 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
         # FB-1 N-02: the registration may be the only thing keeping a detached commit reachable
         reach = ctx.reach(w["head"]) if w["head"] else "NONE"
         orphan = reach == "NONE"
+        # FB-5 FB5-01: removing the registration deletes its HEAD reflog and per-worktree refs
+        adm = _worktree_admin(ctx, path)
+        held = None
+        if adm is not None:
+            shas = _reflog(ctx.repo, f"worktrees/{adm.name}/HEAD")
+            held = None if shas is None else _unreferenced(ctx, shas)
+            refs_dir = adm / "refs"
+            if held is not None and refs_dir.is_dir() and any(refs_dir.rglob("*")):
+                held = None                                  # per-worktree refs present: cannot prove them safe
+        if held:
+            item["reflog_only"] = held[:20]
+        orphan = orphan or held is None or bool(held)
         keep = w["locked"] or active_run or active_task or orphan
         item.update(cls="PROTECTED" if keep else "PRUNABLE", action="none" if keep else "worktree-prune", reach=reach)
         item["reasons"].append("directory missing" + (" but locked" if w["locked"] else "")
                                + (f" inside lifecycle run {run[0].as_posix()} (stage {run[1]})" if active_run else "")
                                + ("; worktree of a non-terminal ledger task" if active_task else "")
-                               + (" and its HEAD is on no branch, tag, remote or canonical (commits would be lost)"
-                                  if orphan else ""))
+                               + (" and its HEAD, reflog or per-worktree refs hold commits that no ref keeps (or "
+                                  "cannot be checked)" if orphan else ""))
         if w["head"]:
             item["restore"] = f"git -C {ctx.repo.as_posix()} worktree add --detach {path.as_posix()} {w['head']}"
         item["fingerprint"] = sha_text(canon_json([w["head"], w["branch"], "missing", w["locked"], active_run, reach]))
@@ -549,6 +589,9 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
     ignored = _ignored_content(path)
     hidden = _hidden_edits(path)
     reflog_only = _reflog_only_commits(ctx, path)
+    wt_refs = _per_worktree_unreferenced(ctx, path)
+    if reflog_only is not None:
+        reflog_only = None if wt_refs is None else sorted(set(reflog_only) | set(wt_refs))
     reach = ctx.reach(w["head"]) if w["head"] else "NONE"
     cited = ctx.cited_under(str(path))
     idle = _idle_s(path)
@@ -794,7 +837,11 @@ def staged_patch(worktree: Path) -> bytes:
     patch). An archive of working files alone loses content that is staged and then modified again (FB2-03).
     Raises HKError when git fails, so an approved removal fails closed."""
     try:
-        p = subprocess.run([*GIT, "-C", str(worktree), "diff", "--cached", "--binary"], capture_output=True,
+        # FB-5 FB5-03: plumbing diff-index plus explicit options, so user/system diff config (external diff,
+        # color, noprefix, textconv) cannot change or empty the patch
+        p = subprocess.run([*GIT, "-C", str(worktree), "diff-index", "--cached", "-p", "--binary", "--full-index",
+                            "--no-ext-diff", "--no-textconv", "--no-color", "--src-prefix=a/", "--dst-prefix=b/",
+                            "HEAD", "--"], capture_output=True,
                            timeout=300)
     except (OSError, subprocess.SubprocessError) as e:
         raise HKError("STAGED_PATCH_FAILED", f"{worktree}: {e}")
@@ -1115,6 +1162,7 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 action = "archive-then-remove"
             journal.append("INTENT", {"plan_id": plan["plan_id"], "item": it["id"], "action": action,
                                       "path": it["path"], "paths": it.get("paths"), "fingerprint": it["fingerprint"],
+                                      "repo": str(ctx.repo),
                                       "restore": it.get("restore")})
             try:
                 detail = {}
@@ -1208,11 +1256,26 @@ def recover(journal_dir, repo=None) -> dict:
         elif ev["kind"] in ("DONE", "FAILED", "RECOVERED_DONE", "RECOVERED_NOT_DONE"):
             open_.pop(key, None)
     out = []
-    wt_paths = {norm(w["path"]) for w in _worktrees(Path(repo))} if repo else None
+    wt_cache: dict[str, set[str]] = {}
+
+    def registered(rp: str) -> set[str]:
+        if rp not in wt_cache:
+            wt_cache[rp] = {norm(w["path"]) for w in _worktrees(Path(rp))}
+        return wt_cache[rp]
     for (plan_id, item), d in open_.items():
         path = d.get("path", "")
+        rp = repo or d.get("repo")
+        is_wt = d["action"] in ("worktree-remove", "worktree-prune") or (
+            d["action"] == "archive-then-remove" and str(item).startswith("wt:"))
+        if (is_wt or d["action"] == "delete-ref") and not rp:
+            # FB-5 FB5-04: without the repository the outcome cannot be observed; never guess DONE
+            out.append({"item": item, "plan_id": plan_id, "result": "UNRESOLVED",
+                        "why": "re-run recover with --repo (the INTENT does not name the repository)"})
+            continue
+        repo_for = rp
+        wt_paths = registered(rp) if is_wt else None
         if d["action"] == "delete-ref":
-            gone = repo is not None and git(repo, "rev-parse", "--verify", "-q", path)[0] != 0
+            gone = git(repo_for, "rev-parse", "--verify", "-q", path)[0] != 0
         elif d["action"] == "rmtree-caches" and d.get("paths"):
             gone = all(not Path(q).exists() for q in d["paths"])        # FB-1 N-06: the members, not the parent
         elif d["action"] in ("worktree-remove", "worktree-prune", "archive-then-remove") and \

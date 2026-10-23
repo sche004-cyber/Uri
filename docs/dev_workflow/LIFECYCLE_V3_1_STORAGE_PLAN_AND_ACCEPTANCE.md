@@ -304,6 +304,27 @@ superseded here, and the earlier text is kept. An approved archive-then-remove o
 `verify-archive`. Restore writes it to `.housekeeping-extra/`. If git fails, the removal fails closed. Test
 `test_fb2_03_staged_content_survives_archive_and_restore`.
 
+### 5.7 Fallback review FB-5 (`3b91df77`, ACCEPT WITH FINDINGS), ledger acceptance, and the follow-up
+
+Driver run r8 stopped BLOCKED NO_INDEPENDENT_REVIEWER on `3b91df77`. The FB-5 reviewer (raw:
+`D:/uri-dev/lc-storage-evidence/fallback-review/review_FB5_3b91df77.txt`, ledger review `V5`) returned **ACCEPT WITH
+FINDINGS** with four LOW findings and confirmed all 49 earlier findings FIXED or DOCUMENTED. The full gate on
+`3b91df77` passed 1027 tests (exit 0) and is recorded on the commit. `task_ledger accept` recorded ACCEPTED (seq 182)
+with provenance SUBAGENT_FALLBACK and basis r8 NO_INDEPENDENT_REVIEWER (event seq 14). Eight blocking or fixed
+findings were closed with that evidence first. The milestone is registered in the authoritative Milestone Manager
+(`D:/uri-dev/state/milestone-manager`, DEC-100) as `LIFECYCLE-V3-1-STORAGE`, with the review, the gate evidence and
+the r8 lifecycle link.
+
+The four LOW findings are repaired in a follow-up commit, which needs its own independent review before it can
+replace `3b91df77` as the integration candidate:
+
+| Finding | Repair |
+|---|---|
+| FB5-01: a missing registration's HEAD reflog was not checked | The admin directory is found from `worktrees/*/gitdir`. Its reflog is read with `git reflog show worktrees/<id>/HEAD`, and per-worktree refs there mean PROTECTED. Unknown means PROTECTED. |
+| FB5-02: per-worktree refs (`refs/worktree/*`, `refs/bisect/*`, `refs/rewritten/*`) were ignored | They are read in the worktree and checked with `_unreferenced`. Unknown means PROTECTED. |
+| FB5-03: `staged.patch` honoured diff config (external diff, color, noprefix, textconv) | Plumbing `git diff-index --cached -p --binary --full-index --no-ext-diff --no-textconv --no-color --src-prefix=a/ --dst-prefix=b/ HEAD`. The test checks that the patch applies with each config set. |
+| FB5-04: `recover` without `--repo` marked worktree INTENTs done | The INTENT records the repository. Without it, the result is UNRESOLVED and is never guessed. |
+
 ## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.

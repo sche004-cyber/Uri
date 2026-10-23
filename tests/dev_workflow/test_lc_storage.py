@@ -1859,3 +1859,61 @@ def test_fb2_03_staged_content_survives_archive_and_restore(sandbox):
         for n in zin.namelist():
             zout.writestr(n, b"tampered" if n == "extra/staged.patch" else zin.read(n))
     assert any("extra/staged.patch" in e for e in hk._verify_zip(sb["tmp"] / "bad.zip"))
+
+
+# =========================================================================== FB-5 (fallback review of 3b91df77)
+
+def test_fb5_01_missing_registration_whose_reflog_holds_a_commit_is_protected(sandbox):
+    sb = sandbox
+    wt = sb["wt"] / "lostdir"
+    _git(sb["repo"], "worktree", "add", "-q", "--detach", str(wt), sb["base"])
+    lost = _commit(wt, "x.txt", b"x\n")
+    _git(wt, "checkout", "-q", "--detach", sb["base"])
+    import shutil
+    shutil.rmtree(wt)
+    items = {hk.norm(it["path"]): it for it in _plan(sb)["items"] if it["kind"] == "worktree"}
+    it = items[hk.norm(wt)]
+    assert it["cls"] == "PROTECTED" and lost in it.get("reflog_only", [])
+    assert _by_path(_plan(sb))["gone"]["cls"] == "PRUNABLE"         # an empty reflog stays prunable
+
+
+def test_fb5_02_commit_held_only_by_per_worktree_ref_is_protected(sandbox):
+    sb = sandbox
+    wt = sb["paths"]["disposable"]
+    tree = _git(wt, "rev-parse", "HEAD^{tree}")
+    keep = subprocess.run(["git", "-C", str(wt), "commit-tree", tree, "-p", sb["base"], "-m", "k"], text=True,
+                          capture_output=True, check=True).stdout.strip()
+    _git(wt, "update-ref", "refs/worktree/keep", keep)
+    it = _by_path(_plan(sb))["disposable"]
+    assert it["cls"] == "PROTECTED" and keep in it["reflog_only"]
+
+
+@pytest.mark.parametrize("cfg", [("diff.external", "false"), ("color.diff", "always"), ("diff.noprefix", "true")])
+def test_fb5_03_staged_patch_ignores_diff_config(sandbox, cfg):
+    sb = sandbox
+    wt = sb["paths"]["dirty"]
+    (wt / "a.txt").write_bytes(b"STAGED version\n")
+    _git(wt, "add", "a.txt")
+    (wt / "a.txt").write_bytes(b"WORKTREE version\n")
+    _git(sb["repo"], "config", cfg[0], cfg[1])
+    patch = hk.staged_patch(wt)
+    assert b"+STAGED version" in patch and b"\x1b[" not in patch and b"a/a.txt" in patch
+    check = tmp_clone = sb["tmp"] / "applycheck"
+    _git(sb["repo"], "worktree", "add", "-q", "--detach", str(tmp_clone), sb["base"])
+    r = subprocess.run(["git", "-C", str(tmp_clone), "apply", "--check", "--cached", "-"], input=patch,
+                       capture_output=True)
+    assert r.returncode == 0, r.stderr
+
+
+def test_fb5_04_recover_without_repo_never_guesses_worktree_outcomes(sandbox):
+    sb = sandbox
+    jd = sb["tmp"] / "j"
+    hk.Chain(jd / "journal.jsonl").append("INTENT", {"plan_id": "p", "item": "wt:old", "action": "worktree-prune",
+                                                     "path": str(sb["paths"]["gone"]), "fingerprint": "f"})
+    r = hk.recover(jd)
+    assert [x["result"] for x in r["recovered"]] == ["UNRESOLVED"]
+    hk.Chain(jd / "journal.jsonl").append("INTENT", {"plan_id": "p", "item": "wt:new", "action": "worktree-prune",
+                                                     "path": str(sb["paths"]["gone"]), "fingerprint": "f",
+                                                     "repo": str(sb["repo"])})
+    res = {x["item"]: x["result"] for x in hk.recover(jd)["recovered"]}
+    assert res["wt:new"] == "RECOVERED_NOT_DONE"                       # still registered: not done
