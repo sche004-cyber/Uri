@@ -387,6 +387,50 @@ def _untracked_markers(path: Path, markers: list[str]) -> list[str]:
     return [m for m in markers if m not in tracked]
 
 
+def _gitdir(path: Path) -> Path | None:
+    gitf = path / ".git"
+    try:
+        if gitf.is_file():
+            return Path(gitf.read_text(encoding="utf-8").split("gitdir:", 1)[1].strip())
+    except (OSError, IndexError):
+        pass
+    return None
+
+
+def _hidden_edits(path: Path) -> list[str] | None:
+    """Tracked files whose local state git status does not report: assume-unchanged (lowercase tag) or skip-worktree
+    ('S') index flags (FB-2 FB2-01). None: git failed."""
+    rc, out, _ = git(path, "ls-files", "-v", "-z")
+    if rc != 0:
+        return None
+    hidden = []
+    for entry in out.split("\0"):
+        if len(entry) > 2 and entry[1] == " " and (entry[0].islower() or entry[0] == "S"):
+            hidden.append(entry[2:])
+    return sorted(hidden)
+
+
+def _reflog_only_commits(ctx: "Ctx", path: Path) -> list[str] | None:
+    """Commits in the worktree's own HEAD reflog that no branch, tag, remote or canonical holds: removing the
+    worktree removes that reflog (FB-2 FB2-02). None: could not be determined."""
+    gd = _gitdir(path)
+    if gd is None:
+        return []
+    log = gd / "logs" / "HEAD"
+    if not log.is_file():
+        return []
+    try:
+        shas = sorted({line.split()[1] for line in log.read_text(encoding="utf-8", errors="replace").splitlines()
+                       if len(line.split()) > 1 and len(line.split()[1]) == 40 and set(line.split()[1]) - {"0"}})
+    except OSError:
+        return None
+    if not shas:
+        return []
+    rc, out, _ = git(ctx.repo, "rev-list", *shas[-500:], "--not", "--branches", "--tags", "--remotes",
+                     ctx.canonical)
+    return out.splitlines() if rc == 0 else None
+
+
 def _idle_s(path: Path) -> float:
     stamps = []
     gitf = path / ".git"
@@ -460,11 +504,15 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
     dirty = len(status.splitlines()) if rc == 0 else -1
     um = _untracked_markers(path, _markers(path))
     ignored = _ignored_content(path)
+    hidden = _hidden_edits(path)
+    reflog_only = _reflog_only_commits(ctx, path)
     reach = ctx.reach(w["head"]) if w["head"] else "NONE"
     cited = ctx.cited_under(str(path))
     idle = _idle_s(path)
     item.update(dirty=dirty, evidence=um[:20], evidence_count=len(um), reach=reach, cited=cited,
                 ignored=(ignored or [])[:20], ignored_count=len(ignored) if ignored is not None else -1,
+                hidden=(hidden or [])[:20], hidden_count=len(hidden) if hidden is not None else -1,
+                reflog_only=(reflog_only or [])[:20],
                 cited_by=ctx.cited_by(str(path)) if cited else [],
                 idle_hours=round(idle / 3600, 1))
     branch_short = w["branch"][len("refs/heads/"):] if w["branch"] else None
@@ -485,6 +533,12 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
         protect.append("git status failed")
     if ignored is None:
         protect.append("git ls-files (ignored entries) failed")
+    if hidden is None:
+        protect.append("git ls-files -v (index flags) failed")
+    if reflog_only is None:
+        protect.append("worktree reflog could not be checked")
+    elif reflog_only:
+        protect.append(f"{len(reflog_only)} commit(s) kept only by this worktree's HEAD reflog (would be lost)")
     if protect:
         item.update(cls="PROTECTED", action="none")
         item["reasons"] += protect
@@ -492,10 +546,12 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
         item.update(cls="EVIDENCE", action="archive-then-remove (needs --approve)")
         item["reasons"].append(f"{len(um)} untracked evidence files" + (f", {dirty} uncommitted/untracked entries"
                                                                         if dirty > 0 else ""))
-    elif dirty > 0 or ignored:
+    elif dirty > 0 or ignored or hidden:
         item.update(cls="DIRTY", action="archive-then-remove (needs --approve)")
         item["reasons"].append(", ".join(x for x in (f"{dirty} uncommitted/untracked entries" if dirty > 0 else "",
-                                                     f"{len(ignored)} ignored entries outside git" if ignored else "")
+                                                     f"{len(ignored)} ignored entries outside git" if ignored else "",
+                                                     f"{len(hidden)} tracked file(s) hidden from git status by "
+                                                     "assume-unchanged/skip-worktree" if hidden else "")
                                          if x))
     elif cited:
         item.update(cls="REFERENCED", action="remove (needs --approve; clean, nothing outside git)")
@@ -515,7 +571,7 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
     snapshot, links = content_snapshot(path) if item["cls"] != "PROTECTED" else (None, [])
     item["links"] = links
     item["fingerprint"] = sha_text(canon_json([w["head"], w["branch"], w["locked"], dirty, um, reach,
-                                                status, snapshot, ignored]))
+                                                status, snapshot, ignored, hidden, reflog_only]))
     return item
 
 
@@ -845,6 +901,24 @@ def _current(ctx: Ctx, it: dict) -> dict | None:
     return None
 
 
+def _cache_item_problem(it: dict, plan: dict) -> str | None:
+    """A cache item may name only __pycache__/.pytest_cache directories below a top-level directory of one of the
+    plan's roots (FB-2 FB2-04: a hand-edited item must not turn an arbitrary directory into an automatic delete)."""
+    if it["kind"] not in ("cache", "caches"):
+        return None
+    roots = {norm(r) for r in plan.get("roots", [])}
+    parent = norm(it["parent_path"] if it["kind"] == "cache" else it["path"])
+    if norm(Path(parent).parent) not in roots:
+        return "cache item's parent is not a top-level directory of a plan root"
+    members = [it["path"]] if it["kind"] == "cache" else list(it.get("paths") or [])
+    if not members:
+        return "cache item has no members"
+    for m in members:
+        if Path(m).name not in CACHE_DIRS or not norm(m).startswith(parent + "/"):
+            return f"{m} is not a cache directory below {parent}"
+    return None
+
+
 def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), ledger=None) -> dict:
     plan_bytes = Path(plan_path).read_bytes()
     plan = json.loads(plan_bytes)
@@ -887,6 +961,11 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 r["outcome"] = "REFUSED"
                 r["why"] = f"class {it['cls']} is never removed"
                 continue
+            why = _cache_item_problem(it, plan)
+            if why:
+                r["outcome"] = "REFUSED"
+                r["why"] = why
+                continue
             cur = _current(ctx, it)
             if cur is None:
                 r["outcome"] = "GONE_BEFORE_APPLY"
@@ -899,7 +978,7 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
             # I-2: an approved worktree with nothing outside git (clean, no evidence, HEAD kept by a ref) is removed
             # without an archive; its restore command recreates it byte for byte. Anything else is archived first.
             clean_kept = (it["kind"] == "worktree" and cur.get("dirty") == 0 and not cur.get("evidence_count")
-                          and cur.get("ignored_count") == 0
+                          and cur.get("ignored_count") == 0 and cur.get("hidden_count") == 0
                           and cur.get("reach") in ("CANONICAL", "REMOTE", "LOCAL"))
             needs_archive = approved_only and it["kind"] in ("worktree", "dir") and not clean_kept
             if needs_archive and not archive_root:

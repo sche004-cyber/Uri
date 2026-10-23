@@ -1379,3 +1379,74 @@ def test_m01_temporary_file_in_tracked_dir_keeps_result_bindable(runs, repo, tmp
                    ledger=str(lp))
     assert rec["state"] == "COMPLETED" and rec.get("source_stable") is True and not rec.get("source_changed")
     assert rec["ledger"] == {"recorded": True, "task": tid}
+
+
+# =========================================================================== FB-2 (fallback review of 573e3268)
+
+def test_fb2_01_hidden_index_edits_are_never_automatic(sandbox):
+    sb = sandbox
+    wt = sb["paths"]["disposable"]
+    (wt / "a.txt").write_bytes(b"local edit\n")
+    _git(wt, "update-index", "--assume-unchanged", "a.txt")
+    assert _git(wt, "status", "--porcelain") == ""                       # invisible to git status
+    plan = _plan(sb)
+    it = _by_path(plan)["disposable"]
+    assert it["cls"] == "DIRTY" and it["hidden"] == ["a.txt"]
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    assert (wt / "a.txt").read_bytes() == b"local edit\n"
+    _git(wt, "update-index", "--no-assume-unchanged", "a.txt")
+    _git(wt, "checkout", "--", "a.txt")
+    _git(wt, "update-index", "--skip-worktree", "a.txt")
+    assert _by_path(_plan(sb))["disposable"]["cls"] == "DIRTY"
+
+
+def test_fb2_02_commit_kept_only_by_worktree_reflog_is_protected(sandbox):
+    sb = sandbox
+    wt = sb["paths"]["disposable"]
+    lost = _commit(wt, "r.txt", b"reflog only\n")
+    _git(wt, "checkout", "-q", "--detach", sb["base"])                   # HEAD back on canonical
+    it = _by_path(_plan(sb))["disposable"]
+    assert it["cls"] == "PROTECTED" and lost in it["reflog_only"]
+
+
+def test_fb2_04_forged_cache_item_is_refused(sandbox):
+    sb = sandbox
+    docs = sb["roots"] / "tmpstuff" / "docs"
+    docs.mkdir()
+    (docs / "notes.md").write_text("keep")
+    plan = _plan(sb)
+    group = next(it for it in plan["items"] if it["kind"] == "caches")
+    forged = {**group, "id": "caches:forged", "paths": [str(docs)]}
+    forged["fingerprint"] = hk.sha_text(hk.canon_json([(str(docs), hk.content_snapshot(docs)[0])]))
+    plan["items"].append(forged)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    row = next(x for x in r["results"] if x.get("item") == "caches:forged")
+    assert row["outcome"] == "REFUSED" and (docs / "notes.md").exists()
+    real = next(x for x in r["results"] if x.get("item") == group["id"])
+    assert real["outcome"] == "DONE"
+
+
+def test_fb2_05_camel_case_secret_flags_redacted():
+    argv = ["x", "--accessToken", "v1secret", "--clientSecret", "v2secret", "--authToken", "v3secret",
+            "--passphrase", "v4secret", "--outputDir", "keep/me"]
+    joined = " ".join(tr._safe_argv(argv))
+    assert not any(v in joined for v in ("v1secret", "v2secret", "v3secret", "v4secret"))
+    assert "keep/me" in joined
+
+
+def test_fb2_06_index_refuses_to_open_a_ledger(tmp_path):
+    lp = tmp_path / "ledger.sqlite3"
+    lg = tl.Ledger(lp)
+    lg.create("t", "o", DEV)
+    lg.close()
+    import sqlite3
+    before = {r[0] for r in sqlite3.connect(lp).execute("SELECT name FROM sqlite_master")}
+    for cmd in ("stats", "brief", "refresh"):
+        r = cli("devmemory", "--index", str(lp), cmd)
+        assert r.returncode != 0 and "not a derived devmemory index" in r.stderr, cmd
+    after = {r[0] for r in sqlite3.connect(lp).execute("SELECT name FROM sqlite_master")}
+    assert after == before

@@ -155,10 +155,25 @@ class Git:
 
 # --------------------------------------------------------------------------- index
 
+def _require_derived_index(path: Path) -> None:
+    probe = sqlite3.connect(Path(path).resolve().as_uri() + "?mode=ro", uri=True)
+    try:
+        tables = {r[0] for r in probe.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        derived = "meta" in tables and probe.execute("SELECT v FROM meta WHERE k='derived'").fetchone() == ("true",)
+    except sqlite3.Error:
+        tables, derived = set(), False
+    finally:
+        probe.close()
+    if not derived or tables & {"tasks", "events", "context"}:
+        raise MemoryError_(f"{path} is not a derived devmemory index; refusing to open it")
+
+
 class Index:
     def __init__(self, path: str | Path | None = None):
         self.path = Path(path) if path else default_path()
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        if self.path.exists() and self.path.stat().st_size:
+            _require_derived_index(self.path)          # FB-2 FB2-06: never write into a ledger given by mistake
         self.db = sqlite3.connect(str(self.path), timeout=30, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         self.db.executescript(DDL)

@@ -215,6 +215,25 @@ recomputed verdict. It confirmed R1-01..R3-04 FIXED.
 `17fae297` normalises line endings to LF. It contains no content change: `git diff --ignore-cr-at-eol` is empty.
 Earlier coordinator edits on Windows had written CRLF into the three new modules.
 
+### 5.2 Fallback review FB-2 (`573e3268`, REJECT) and repairs
+
+Driver run r3 stopped BLOCKED NO_INDEPENDENT_REVIEWER on `573e3268`. The FB-2 fallback reviewer (raw:
+`D:/uri-dev/lc-storage-evidence/fallback-review/review_FB2_573e3268.txt`, ledger review `V2`) confirmed N-01..N-07 and
+M-01 FIXED, N-08/N-09 DOCUMENTED and R1-01..R3-04 not regressed. The full `tests/dev_workflow` gate on `573e3268`
+passed 998 tests (exit 0). It is the first full gate whose result `testrun` bound to its commit in the ledger, which
+confirms M-01 live.
+
+| Finding | Repair |
+|---|---|
+| FB2-01 MEDIUM blocking: a local edit hidden by assume-unchanged/skip-worktree was removed automatically | `git ls-files -v` hidden entries make a worktree DIRTY, which needs approval plus a verified archive. They are part of the fingerprint and the I-2 condition. |
+| FB2-02 LOW: commits kept only by a detached worktree's own HEAD reflog were lost on removal | A worktree whose reflog holds commits that no branch, tag, remote or canonical has is PROTECTED. |
+| FB2-03 LOW: an archive holds working files, not staged index content | Documented limit. The working-tree state is archived; a partially staged change keeps only its working version. Approve such trees only after committing or stashing what should be kept. |
+| FB2-04 LOW: a hand-edited cache item could name any directory | apply refuses cache items whose members are not `__pycache__`/`.pytest_cache` below a top-level directory of a plan root. |
+| FB2-05 LOW: camelCase secret flags (`--accessToken`) were kept | Flag names are also split on camelCase, and `passphrase` is a secret word. |
+| FB2-06 LOW: `devmemory --index <ledger>` wrote into the ledger | `Index()` refuses any existing file that is not a derived index (all commands). |
+
+Regression tests `test_fb2_*` fail on `573e3268` (5 failed) and pass after the repair.
+
 ## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.

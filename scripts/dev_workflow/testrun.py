@@ -83,7 +83,7 @@ def _sha(text: str) -> str:
 
 
 SECRET_FLAG_WORDS = {"password", "passwd", "pass", "pwd", "secret", "token", "key", "apikey", "pat", "credential",
-                     "credentials", "auth", "authorization", "bearer", "cookie", "sig", "signature"}
+                     "credentials", "auth", "authorization", "bearer", "cookie", "sig", "signature", "passphrase"}
 _HEADER_SECRET = re.compile(r"(?i)^(\s*(?:proxy-)?(?:authorization|cookie|x-api-key|x-auth-token)\s*:\s*).+")
 _BEARER = re.compile(r"(?i)\b(bearer|basic|token)\s+\S+")
 
@@ -95,8 +95,9 @@ def _secret_flag(arg: str) -> bool:
         return False
     if arg == "-p":
         return True
-    name = arg.lstrip("-").split("=", 1)[0].lower()
-    return any(part in SECRET_FLAG_WORDS for part in re.split(r"[-_.]", name) if part)
+    name = arg.lstrip("-").split("=", 1)[0]
+    parts = re.split(r"(?<=[a-z0-9])(?=[A-Z])|[-_.]", name)      # FB-2 FB2-05: camelCase too (--accessToken)
+    return any(part.lower() in SECRET_FLAG_WORDS for part in parts if part)
 
 
 def _safe_argv(argv: list[str]) -> list[str]:
