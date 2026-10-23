@@ -8,6 +8,7 @@ import 'package:uri_ui/living/office/writing_assist.dart';
 class FakeWriting implements WritingService {
   final checks = <String>[];
   final brainCalls = <String>[];
+  List<String> lastIgnore = const [];
   Map<String, dynamic> Function(String) onCheck = (t) => {'suggestions': [], 'status': {'spelling': 'ok'}};
   Map<String, dynamic>? brainAnswer;
   String? brainError;
@@ -15,8 +16,13 @@ class FakeWriting implements WritingService {
   @override
   Future<Map<String, dynamic>> writingCheck(String text, {List<String> ignore = const []}) async {
     checks.add(text);
+    lastIgnore = ignore;
     final r = onCheck(text);
-    return {...r, 'suggestions': [for (final s in r['suggestions'] as List) if (!ignore.contains((s as Map)['id'])) s]};
+    // like the engine: ignore by id or by the (lower-case) original word
+    return {...r, 'suggestions': [
+      for (final s in r['suggestions'] as List)
+        if (!ignore.contains((s as Map)['id']) && !ignore.contains('${s['original']}'.toLowerCase())) s
+    ]};
   }
 
   @override
@@ -144,6 +150,62 @@ void main() {
     c.text = 'We go';
     await tester.pump();
     expect(find.text('i  →  I'), findsNothing);
+    await tester.pump(const Duration(milliseconds: 60));
+  });
+
+  // ---- review FB1 regressions ----
+  testWidgets('R2-05: typing after an accept (or clearing the field) ends Undo', (tester) async {
+    final w = FakeWriting()
+      ..onCheck = (t) => t == 'i go'
+          ? {'suggestions': [sugg('a', 0, 1, 'i', 'I')], 'status': {'spelling': 'ok'}}
+          : {'suggestions': [], 'status': {'spelling': 'ok'}};
+    final c = await pump(tester, w, 'i go');
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-accept-0')));
+    await tester.pump();
+    expect(c.text, 'I go');
+    expect(find.byKey(const ValueKey('writing-undo')), findsOneWidget);
+    c.text = 'I go home';                       // the owner keeps typing
+    await tester.pump();
+    expect(find.byKey(const ValueKey('writing-undo')), findsNothing);
+    expect(c.text, 'I go home');
+    await tester.pump(const Duration(milliseconds: 60));
+  });
+
+  testWidgets('R2-06: a dismissed word stays dismissed when its position changes', (tester) async {
+    final w = FakeWriting()
+      ..onCheck = (t) {
+        final i = t.indexOf('recieve');
+        return {'suggestions': [if (i >= 0) sugg('id$i', i, i + 7, 'recieve', 'receive')], 'status': {'spelling': 'ok'}};
+      };
+    final c = await pump(tester, w, 'I recieve it');
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-dismiss')));
+    await tester.pump();
+    c.text = 'Yes, I recieve it';               // an earlier edit moves the word
+    await tester.pump(const Duration(milliseconds: 60));
+    await tester.pump();
+    expect(find.text('recieve  →  receive'), findsNothing);
+    expect(w.lastIgnore, contains('recieve'));
+  });
+
+  testWidgets('R2-03 / R2-01: guesses stay out of Accept all; meaning flags are shown', (tester) async {
+    final w = FakeWriting()
+      ..onCheck = ((t) => {'suggestions': [
+            sugg('a', 0, 1, 'i', 'I'),
+            {...sugg('g', 2, 14, 'mukhyamantri', 'mahamari'), 'confidence': 'guess'},
+            sugg('b', 15, 22, 'recieve', 'receive'),
+          ], 'status': {'spelling': 'ok'}})
+      ..brainAnswer = {'suggestions': [sugg('n', 0, 1, 'i', 'I', cls: 'rewrite')],
+        'flags': [{'code': 'MEANING_CHANGED', 'severity': 'error', 'detail': 'missing after correction: 3, january'}],
+        'message': ''};
+    final c = await pump(tester, w, 'i mukhyamantri recieve');
+    expect(find.text('Accept all corrections (2)'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('writing-accept-all')));
+    await tester.pump();
+    expect(c.text, 'I mukhyamantri receive');   // the guess was not applied
+    await tester.tap(find.byKey(const ValueKey('writing-proofread')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.textContaining('missing after correction: 3, january'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 60));
   });
 }

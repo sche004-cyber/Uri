@@ -35,6 +35,7 @@ String _spellingStatus(String? code) => switch (code) {
       'SPELL_UNAVAILABLE' => 'Spelling is off: the Windows spell checker is not available. Grammar rules still run.',
       'SPELL_LANGUAGE_UNAVAILABLE' => 'Spelling is off: no English dictionary is installed in Windows.',
       'SPELL_TIMEOUT' => 'Spelling did not answer in time; it will try again.',
+      'SPELL_STARTING' => 'Spelling is starting…',
       _ => 'Spelling is off right now.',
     };
 
@@ -68,7 +69,9 @@ class _WritingStripState extends State<WritingStrip> {
   final List<String> _undo = [];            // earlier texts, newest last
   String? _status;                          // spelling status or a refusal, in words
   String? _busy;                            // "Proofreading…" while the Brain works
+  List<String> _flags = [];                 // meaning checks on a Brain answer, in words (review FB1 R2-01)
   int _gen = 0;
+  bool _ownEdit = false;                    // the strip itself is changing the text (accept / undo)
 
   @override
   void initState() {
@@ -96,7 +99,16 @@ class _WritingStripState extends State<WritingStrip> {
 
   void _changed() {
     if (widget.controller.text == _checkedText) return;
-    if (_items.isNotEmpty) setState(() => _items = []);     // never show suggestions for older text
+    // Review FB1 R2-05: Undo restores the text before an accept only while nothing else changed it; any other
+    // edit (typing, the composer clearing the field after Send) ends that.
+    final clearUndo = !_ownEdit && _undo.isNotEmpty;
+    if (_items.isNotEmpty || clearUndo || _flags.isNotEmpty) {
+      setState(() {
+        _items = [];                                         // never show suggestions for older text
+        _flags = [];
+        if (clearUndo) _undo.clear();
+      });
+    }
     _schedule();
   }
 
@@ -119,6 +131,11 @@ class _WritingStripState extends State<WritingStrip> {
         _items = [for (final s in (r['suggestions'] as List? ?? const [])) (s as Map).cast<String, dynamic>()];
         _status = _spellingStatus((r['status'] as Map?)?['spelling'] as String?);
       });
+      // The spell checker starts in the background (it never holds up typing); check again once it is up.
+      if ((r['status'] as Map?)?['spelling'] == 'SPELL_STARTING') {
+        _timer?.cancel();
+        _timer = Timer(const Duration(seconds: 2), () => unawaited(_check()));
+      }
     } on SchedulerApiError catch (e) {
       if (mounted && gen == _gen) setState(() => _status = writingRefusal(e.code));
     } catch (_) {
@@ -137,6 +154,7 @@ class _WritingStripState extends State<WritingStrip> {
       setState(() {
         _checkedText = text;
         _items = got;
+        _flags = [for (final f in (r['flags'] as List? ?? const [])) '${(f as Map)['detail'] ?? ''}'];
         _status = got.isEmpty ? ((r['message'] as String?)?.isNotEmpty == true ? r['message'] as String
             : 'No changes suggested.') : null;
       });
@@ -172,12 +190,20 @@ class _WritingStripState extends State<WritingStrip> {
   }
 
   void _setText(String t) {
-    widget.controller.value = TextEditingValue(text: t, selection: TextSelection.collapsed(offset: t.length));
+    _ownEdit = true;
+    try {
+      widget.controller.value = TextEditingValue(text: t, selection: TextSelection.collapsed(offset: t.length));
+    } finally {
+      _ownEdit = false;
+    }
   }
 
   void _dismiss(Map<String, dynamic> s) {
     setState(() {
       _dismissed.add('${s['id']}');
+      // Review FB1 R2-06: a dismissed word stays dismissed after earlier text changes (ids carry offsets).
+      final word = '${s['original']}'.trim().toLowerCase();
+      if (RegExp(r'\w').hasMatch(word)) _dismissed.add(word);
       _items = [for (final x in _items) if (x['id'] != s['id']) x];
     });
   }
@@ -193,7 +219,8 @@ class _WritingStripState extends State<WritingStrip> {
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
     final on = widget.enabled && _busy == null;
-    final corrections = [for (final s in _items) if (s['class'] == 'correction') s];
+    // Review FB1 R2-03: a spelling guess for an unknown word is accepted one by one, never in "Accept all".
+    final corrections = [for (final s in _items) if (s['class'] == 'correction' && s['confidence'] != 'guess') s];
     final small = TextStyle(fontSize: UriType.label, color: colors.inkSoft);
     if (widget.hideWhenEmpty && _items.isEmpty && _undo.isEmpty) return const SizedBox.shrink();
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
@@ -213,6 +240,9 @@ class _WritingStripState extends State<WritingStrip> {
       ]),
       if (_busy != null) Text(_busy!, key: ValueKey(k('busy')), style: small),
       if (_status != null && _status!.isNotEmpty) Text(_status!, key: ValueKey(k('status')), style: small),
+      if (_flags.isNotEmpty)
+        Text('Check before accepting: ${_flags.join('; ')}', key: ValueKey(k('flags')),
+            style: TextStyle(fontSize: UriType.label, color: colors.warning)),
       if (corrections.length > 1)
         Align(
           alignment: Alignment.centerLeft,

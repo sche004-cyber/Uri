@@ -133,6 +133,11 @@ class AssistCommands:
         with self._lock:
             return self._job is not None and self._job[1].is_alive()
 
+    @property
+    def writing(self):
+        with self._lock:
+            return self._wjob is not None and self._wjob[1].is_alive()
+
     def cancel_brain_work(self, reason: str = "user_turn"):
         """Stop a running Assist answer now (Stop, Pause, or a user turn that needs the single Brain slot)."""
         with self._lock:
@@ -228,6 +233,8 @@ class AssistCommands:
             raise Refused("ARGUMENT_INVALID")
         if self.asking:
             raise Refused("ASK_IN_PROGRESS")
+        if self.writing:
+            raise Refused("WRITING_BUSY")                # review FB1 R2-07: one Assist Brain job at a time
         if self.brain_client is None:
             raise Refused("BRAIN_UNAVAILABLE")
         from uri_web.local_brain import NotLocal, require_loopback
@@ -334,8 +341,12 @@ class AssistCommands:
         ignore = c.get("ignore", [])
         if not isinstance(c["text"], str) or not isinstance(ignore, list):
             raise Refused("COMMAND_SCHEMA")
+        if not c["text"]:
+            WR.default_spell().prewarm()                 # the composer's prewarm (review FB1 R2-04)
+            return {"suggestions": [], "status": {"spelling": "ok", "lang": None}, "ms": 0.0}
         try:
-            return WR.check(c["text"], ignore=[str(x) for x in ignore[:200]])
+            # review FB1 R2-04: this runs on the worker's command loop, so it never waits for a spell worker start
+            return WR.check(c["text"], ignore=[str(x) for x in ignore[:200]], wait=False)
         except WR.WritingError as e:
             raise Refused(e.code) from None
 
@@ -356,6 +367,13 @@ class AssistCommands:
             raise Refused("COMMAND_SCHEMA")
         if self.brain_client is None:
             raise Refused("BRAIN_UNAVAILABLE")
+        from uri_web.local_brain import NotLocal, require_loopback
+        try:
+            require_loopback(getattr(self.brain_client, "base_url", ""))
+        except NotLocal:
+            raise Refused("BRAIN_ENDPOINT_NOT_LOOPBACK") from None
+        if self.asking:
+            raise Refused("ASK_IN_PROGRESS")             # review FB1 R2-07: one Assist Brain job at a time
         if not self.brain_idle():
             raise Refused("BRAIN_BUSY")                 # a user turn holds the single Brain slot
         with self._lock:

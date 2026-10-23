@@ -69,9 +69,6 @@ _A_AN_SILENT_H = ("hour", "honest", "honour", "honor", "heir")
 _A_AN_YOU = ("uni", "use", "usu", "uti", "eu", "one", "once", "ewe", "ura", "uro", "ure", "uga", "uk")
 _U_VOWEL = ("un", "up", "ug", "umb", "urg", "urb", "ush", "ust", "utt", "ult", "ump")   # "an urgent", "an upper"
 _REPEAT_OK ={"had", "that", "is", "do", "very", "bye", "so", "no", "ha", "knock"}
-_NEGATION = re.compile(r"\b(?:not|no|never|none|nor|without|cannot|n't)\b|n't\b", re.I)
-
-
 def _prev_word(text, i):
     m = re.search(r"([A-Za-z][A-Za-z.'’]*)\.\s*$", text[:i])
     return m.group(1).lower().rstrip(".") if m else None
@@ -108,20 +105,25 @@ def _rules(text: str) -> list:
         out.append(_sugg(m.start(2), m.end(2), "..", ["."], "punctuation", "correction", "rules",
                          "Two full stops."))
     # lone lower-case "i" and its contractions
-    for m in re.finditer(r"(?<![\w.'’-])i(?=(?:['’](?:m|ve|ll|d))?\b)(?![.\w-])", text):
+    # (review FB1 R2-02: "(i)" and "i)" are clause enumerations, not the pronoun)
+    for m in re.finditer(r"(?<![\w.'’(-])i(?=(?:['’](?:m|ve|ll|d))?\b)(?![.\w)-])", text):
         out.append(_sugg(m.start(), m.end(), "i", ["I"], "capital", "correction", "rules", "\"I\" is a capital."))
     # sentence starts with a lower-case letter: at the start of the text or after . ! ? and a space
     for m in re.finditer(r"(?:^|(?<=[.!?])\s+)([a-z])([a-z'’]*)", text):
         start = m.start(1)
         if re.match(r"[\w.'’]*[@/\\:]|www\.|[a-z]{1,4}\.[a-z]", text[start:start + 30]):
             continue                                       # e-mail, path, link, dotted abbreviations (e.g., w.e.f.)
-        before = text[:start].rstrip()
+        # review FB1 R2-04: look back over a short window only, so the rule stays linear on long text
+        window = text[max(0, start - 80):start]
+        before = window.rstrip()
+        if not before and start > 80:
+            continue
         if before.endswith("..."):
             continue
         if before.endswith("."):
-            pw = _prev_word(text, len(before))
-            if pw is None or pw in _ABBREV or len(pw) == 1:
-                continue                                   # "Dy. Secy. said", "No. 4", initials "R. k."
+            pw = _prev_word(before, len(before))
+            if pw is None or pw in _ABBREV or len(pw) == 1 or "." in pw:
+                continue                                   # "Dy. Secy. said", "No. 4", initials, "O.M. dated"
         out.append(_sugg(start, start + 1, m.group(1), [m.group(1).upper()], "capital", "correction", "rules",
                          "A sentence starts with a capital letter."))
     # repeated word: "the the"
@@ -157,7 +159,13 @@ class SpellWorker:
         self._worker = worker
         self._lock = threading.Lock()
         self._timer = None
+        self._warming = False
         self.unavailable: str | None = None if os.name == "nt" else "SPELL_UNAVAILABLE"
+
+    @property
+    def running(self) -> bool:
+        w = self._worker
+        return w is not None and bool(getattr(w, "running", True))
 
     def _make(self):
         from uri_office.workerproc import Worker, powershell_exe
@@ -165,9 +173,15 @@ class SpellWorker:
                                                "Bypass", "-File", _WORKER],
                       memory_limit=SPELL_MEMORY, start_timeout=20.0)
 
-    def check(self, text: str, lang: str) -> dict:
+    def check(self, text: str, lang: str, *, wait: bool = True) -> dict:
+        """`wait=False` (review FB1 R2-04): never wait for a worker start. When the worker is not running yet it is
+        started in the background and SPELL_STARTING is raised at once, so a caller on a command loop answers with
+        the rules only."""
         if self.unavailable:
             raise WritingError(self.unavailable)
+        if not wait and (self._warming or not self.running):
+            self.prewarm(lang)
+            raise WritingError("SPELL_STARTING")
         from uri_office.workerproc import WorkerFailed
         with self._lock:
             if self._worker is None:
@@ -191,7 +205,10 @@ class SpellWorker:
                 self.check("warm", lang)
             except WritingError:
                 pass
-        if not self.unavailable:
+            finally:
+                self._warming = False
+        if not self.unavailable and not self._warming and not self.running:
+            self._warming = True
             threading.Thread(target=go, daemon=True, name="spell-prewarm").start()
 
     def _arm(self):
@@ -221,7 +238,7 @@ def _utf16_to_index(text: str):
 
 
 def _sentence_initial(text, start):
-    before = text[:start].rstrip()
+    before = text[max(0, start - 80):start].rstrip()
     return not before or before[-1] in ".!?\n:"
 
 
@@ -252,7 +269,11 @@ def _spell_suggestions(text: str, res: dict) -> list:
             continue
         msg = "Spelling." if action == 2 else "Possible spelling mistake."
         kind = "capital" if reps and reps[0].lower() == word.lower() else "spelling"
-        out.append(_sugg(s, n, word, reps, kind, "correction", "windows_spell", msg))
+        x = _sugg(s, n, word, reps, kind, "correction", "windows_spell", msg)
+        # Review FB1 R2-03: Windows only guesses for a word it does not know (mukhyamantri -> mahamari); a guess is
+        # accepted one by one, never by "Accept all corrections". A letter-case fix is sure.
+        x["confidence"] = "sure" if action == 2 or kind == "capital" else "guess"
+        out.append(x)
     return out
 
 
@@ -285,7 +306,8 @@ def _merge(items: list) -> list:
     return out[:MAX_SUGGESTIONS]
 
 
-def check(text: str, *, lang: str = DEFAULT_LANG, spell: SpellWorker | None = None, ignore=()) -> dict:
+def check(text: str, *, lang: str = DEFAULT_LANG, spell: SpellWorker | None = None, ignore=(),
+          wait: bool = True) -> dict:
     """Deterministic suggestions for `text`. `ignore`: suggestion ids or original words the owner dismissed."""
     if not isinstance(text, str):
         raise WritingError("BAD_TEXT")
@@ -296,13 +318,15 @@ def check(text: str, *, lang: str = DEFAULT_LANG, spell: SpellWorker | None = No
     if text.strip():
         sp = spell if spell is not None else default_spell()
         try:
-            res = sp.check(text, lang or DEFAULT_LANG)
+            res = sp.check(text, lang or DEFAULT_LANG) if wait else sp.check(text, lang or DEFAULT_LANG, wait=False)
             status["lang"] = res.get("lang")
             items += _spell_suggestions(text, res)
         except WritingError as e:
             status["spelling"] = e.code               # rules still apply; the UI says spelling is off and why
-    ig = set(ignore or ())
+    ig = {str(x).lower() for x in ignore or ()}
     items = [x for x in _merge(items) if x["id"] not in ig and x["original"].lower() not in ig]
+    for x in items:
+        x.setdefault("confidence", "sure")
     return {"suggestions": items, "status": status, "ms": round((time.perf_counter() - t0) * 1000, 1)}
 
 
@@ -376,6 +400,11 @@ def _body(mode: str, text: str) -> dict:
 
 def _call_brain(client, mode: str, text: str, cancel=None) -> dict:
     from uri_operational_intelligence import brain_client as BC
+    from uri_web.local_brain import NotLocal, require_loopback
+    try:
+        require_loopback(getattr(client, "base_url", ""))   # review FB1 R2-07: the owner's text goes to a local Brain only
+    except NotLocal:
+        raise WritingError("BRAIN_ENDPOINT_NOT_LOOPBACK", "URI sends writing only to the local Brain.", 403) from None
     res = client.stream_chat(_body(mode, text), cancel=cancel or BC.CancelToken(),
                              deadlines=BC.Deadlines(first_token_s=60.0, idle_s=30.0, total_s=120.0))
     if res.status == BC.CANCELLED:
@@ -393,26 +422,64 @@ def _call_brain(client, mode: str, text: str, cancel=None) -> dict:
     return {"data": data, "ms": round((res.total_s or 0) * 1000), "usage": res.usage or {}}
 
 
-_PROTECTED = re.compile(r"\d|[@/]|\b[A-Z][a-z]+\b|\b[A-Z]{2,}\b")
+# Review FB1 R2-01: a Brain change is a `correction` only when it is demonstrably safe; everything else is `rewrite`
+# (accepted one by one, never by "Accept all corrections"). Safe: letter case, spacing and punctuation, changes among
+# grammar function words, and a close spelling fix of one word. Never safe: any change to numbers (digits or number
+# words), month or day names, negation, a negating prefix (unable/able), or a different word.
+_TOKEN = re.compile(r"\s+|\w+(?:['’]\w+)*|[^\w\s]")       # contractions ("can't") are one token
+_NEG_WORDS = {"not", "no", "never", "none", "nor", "neither", "nothing", "nobody", "nowhere", "without", "cannot",
+              "hardly", "barely", "unless", "against", "lack", "lacks", "lacking"}
+_NEG_PREFIX = ("un", "in", "im", "il", "ir", "dis", "non", "mis", "a")
+_GRAMMAR_WORDS = {"a", "an", "the", "is", "are", "was", "were", "be", "been", "being", "am", "has", "have", "had",
+                  "do", "does", "did", "of", "to", "in", "on", "at", "for", "by", "with", "from", "into", "onto",
+                  "it", "its", "it's", "their", "there", "they're", "your", "you're", "whose", "who's", "this",
+                  "that", "these", "those", "which", "who", "whom", "and", "as", "than", "then", "s"}
+
+
+def _negations(s: str) -> int:
+    n = 0
+    for w in re.findall(r"\w+(?:['’]\w+)*", s.lower()):
+        if w in _NEG_WORDS or w.endswith(("n't", "n’t")):
+            n += 1
+    return n
+
+
+def _dates(s: str) -> set:
+    from uri_operational_intelligence.text_verify import MONTHS, WEEKDAYS
+    words = set(re.findall(r"[a-z]+", s.lower()))
+    return {w for w in words if w in MONTHS or w in WEEKDAYS or w[:3] in {m[:3] for m in MONTHS} and len(w) == 3}
 
 
 def _touches_meaning(orig: str, rep: str) -> bool:
-    from uri_operational_intelligence.text_verify import check_meaning_preserved
-    if bool(_NEGATION.search(orig)) != bool(_NEGATION.search(rep)) or \
-            len(_NEGATION.findall(orig)) != len(_NEGATION.findall(rep)):
+    from uri_operational_intelligence.text_verify import canonical_numbers
+    o, r = orig.strip(), rep.strip()
+    if o.lower() == r.lower():
+        return False                                     # letter case / spacing only
+    if not re.search(r"\w", o + r):
+        return False                                     # punctuation and spacing only
+    if canonical_numbers(o) != canonical_numbers(r) or re.findall(r"\d+", o) != re.findall(r"\d+", r):
         return True
-    if (_PROTECTED.search(orig) or _PROTECTED.search(rep)) and orig.lower() != rep.lower():
-        # a letter-case-only fix (tuesday -> Tuesday) is a correction; any other change near a name, number,
-        # date or reference may change meaning
-        return bool(check_meaning_preserved(orig, rep)) or re.sub(r"\W", "", orig).lower() != re.sub(r"\W", "", rep).lower()
-    return False
+    if _negations(o) != _negations(r) or _dates(o) != _dates(r):
+        return True
+    ow = re.findall(r"\w+(?:['’]\w+)*", o.lower())
+    rw = re.findall(r"\w+(?:['’]\w+)*", r.lower())
+    if all(w in _GRAMMAR_WORDS for w in ow + rw):
+        return False                                     # "was" -> "were", "a" -> "an", "the" added
+    if len(ow) == 1 and len(rw) == 1:
+        a, b = ow[0], rw[0]
+        longer, shorter = (a, b) if len(a) > len(b) else (b, a)
+        if any(longer == p + shorter for p in _NEG_PREFIX):
+            return True                                  # unable / able, disagree / agree
+        if a[0] == b[0] and difflib.SequenceMatcher(None, a, b).ratio() >= 0.8:
+            return False                                 # recieve -> receive, committe -> committee
+    return True
 
 
 def _diff(original: str, edited: str, source: str = "brain") -> list:
     """Word-level diff of `edited` against `original`, as suggestions on `original`'s offsets."""
-    toks = [(m.start(), m.end()) for m in re.finditer(r"\s+|\w+|[^\w\s]", original)]
+    toks = [(m.start(), m.end()) for m in _TOKEN.finditer(original)]
     a = [original[s:e] for s, e in toks]
-    b = re.findall(r"\s+|\w+|[^\w\s]", edited)
+    b = _TOKEN.findall(edited)
     out = []
     for op, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
         if op == "equal":
@@ -440,8 +507,15 @@ def proofread(text: str, *, client, field: dict | None = None, cancel=None) -> d
     if d["status"] == "cannot":
         return {"suggestions": [], "message": d.get("message") or "", "flags": [], "ms": r["ms"]}
     from uri_operational_intelligence.text_verify import check_meaning_preserved
-    return {"suggestions": _diff(text, d["text"])[:MAX_SUGGESTIONS], "message": d.get("message") or "",
-            "flags": check_meaning_preserved(text, d["text"]), "ms": r["ms"]}
+    flags = check_meaning_preserved(text, d["text"])
+    items = _diff(text, d["text"])[:MAX_SUGGESTIONS]
+    if any(f.get("severity") == "error" for f in flags):
+        # Review FB1 R2-01: when the whole answer lost or changed a name, number or date, no item of it is offered
+        # as a plain correction.
+        for s in items:
+            s["class"] = "rewrite"
+            s["message"] = "This proofreading answer changed a name, number or date elsewhere: check each change."
+    return {"suggestions": items, "message": d.get("message") or "", "flags": flags, "ms": r["ms"]}
 
 
 def rewrite(text: str, tone: str, *, client, field: dict | None = None, cancel=None) -> dict:

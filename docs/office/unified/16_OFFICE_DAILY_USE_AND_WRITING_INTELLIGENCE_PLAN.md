@@ -79,8 +79,10 @@ The engine extends URI Assist (owner: "extend the existing URI Assist") and is r
 - Surfaces in increment 1: Office Word and PowerPoint editors (`AuthoringTextField`): underline-free suggestion strip
   under the field after a typing pause (debounce 700 ms) with Accept / Dismiss per item, Accept all corrections,
   Undo; buttons "Proofread", "Formal", "Concise"; nothing changes the document until the existing Apply op. The URI
-  composer and draft panel get the same strip. Dictation: a "Polish dictation" toggle sends scope `rewrite`
-  (existing contract), verbatim stays the default.
+  composer gets the same strip (spelling and grammar only; the draft panel keeps its own Brain editing).
+  Dictation (corrected 2026-10-23, review FB1 R2-08): Settings "Dictated words" chooses As spoken (new scope
+  `verbatim`, no Brain call), Corrected (scope `grammar`, the accepted default, unchanged) or Polished (scope
+  `rewrite`, already in the contract).
 - External text fields (Assist browser/desktop): NOT in increment 1 - blocked by D14 (no perception adapter) and by
   the A0 `INSERT` policy; recorded as owner decision OD-WI-1 (see section 6). Assist's existing `assist_check`
   gains writing findings for shareable contenteditable text only when such observation exists.
@@ -110,7 +112,7 @@ The engine extends URI Assist (owner: "extend the existing URI Assist") and is r
 | WI-5 | Sensitive fields and secret-bearing text never reach the Brain or logs | tests |
 | WI-6 | Latency: deterministic check p95 < 50 ms for 1,000 characters warm; first-use worker start < 1.5 s; no GPU use; Brain only on explicit request | measured on the PC, exact commit |
 | WI-7 | Word and PowerPoint editors show suggestions without changing the document until Apply; Accept/Dismiss/Undo work; Flutter tests | widget tests + live journey |
-| WI-8 | Dictation: verbatim default unchanged; "Polish" sends scope rewrite; tests | Flutter + OI tests |
+| WI-8 | Dictation: As spoken (verbatim, no Brain) / Corrected (grammar, default unchanged) / Polished (rewrite) chosen in Settings; tests | Flutter + OI tests |
 | OD-1 | Notesheet and Circular layouts open, render, save; no pre-filled facts | tests + real engine |
 | OD-2 | Brain draft: instruction -> correct layout chosen -> blocks written through docx ops -> preview -> Save as card; clarify honoured; every number/date/name/reference in the instruction present or warned; original files untouched | service tests (fake Brain) + live Brain corpus of 10 real-shaped tasks |
 | OD-3 | PDF text: page-labelled text, size cap, copy and to-Word; OCR only on request, Tesseract in a Job Object, refusal named when absent | tests + real engine |

@@ -170,7 +170,8 @@ class Office:
                 WR.default_spell().prewarm(body.get("lang") or WR.DEFAULT_LANG)
                 return {"ok": True}
             if verb == "check":
-                out = WR.check(text, lang=body.get("lang") or WR.DEFAULT_LANG, ignore=body.get("ignore") or ())
+                out = WR.check(text, lang=body.get("lang") or WR.DEFAULT_LANG, ignore=body.get("ignore") or (),
+                               wait=False)
             elif verb == "apply":
                 return WR.apply(text, body.get("accepted"))
             elif verb in ("proofread", "rewrite", "complete"):

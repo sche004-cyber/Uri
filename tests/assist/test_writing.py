@@ -18,7 +18,7 @@ WINDOWS = os.name == "nt"
 
 class NoSpell:
     """A spell worker that is not available: the rules must still run."""
-    def check(self, text, lang):
+    def check(self, text, lang, wait=True):
         raise W.WritingError("SPELL_UNAVAILABLE")
 
 
@@ -26,14 +26,15 @@ class FakeSpell:
     def __init__(self, errors, lang="en-IN"):
         self.errors, self.lang, self.calls = errors, lang, 0
 
-    def check(self, text, lang):
+    def check(self, text, lang, wait=True):
         self.calls += 1
         return {"ok": True, "lang": self.lang, "errors": self.errors}
 
 
 class FakeBrain:
-    def __init__(self, answer, status=BC.COMPLETE):
+    def __init__(self, answer, status=BC.COMPLETE, base_url="http://127.0.0.1:18080"):
         self.answer, self.status, self.bodies = answer, status, []
+        self.base_url = base_url
 
     def stream_chat(self, body, cancel=None, deadlines=None):
         self.bodies.append(body)
@@ -321,3 +322,89 @@ def test_bridge_brain_refuses_while_a_user_turn_holds_the_brain():
     with pytest.raises(B.Refused) as e:
         br.handle("assist_write_brain", {"command": "assist_write_brain", "text": "x", "op": "rewrite", "tone": "loud"})
     assert e.value.code == "COMMAND_SCHEMA"
+
+
+# ------------------------------------------------------------------------------------------- review FB1 regressions
+def test_r2_01_meaning_changes_are_never_plain_corrections():
+    t = "I can't approve the leave of Shri Sharma. We received nothing. Send three copies by 5 january."
+    r = W.proofread(t, client=FakeBrain({"status": "ok", "message": "", "text":
+                    "I can approve the leave of Shri Sharma. We received something. Send two copies by 5 june."}))
+    assert r["suggestions"] and all(s["class"] == "rewrite" for s in r["suggestions"]), r["suggestions"]
+    for orig, rep in [("unable", "able"), ("before", "after"), ("can't", "can"), ("nothing", "something"),
+                      ("three", "two"), ("january", "june"), ("tuesday", "monday"), ("approve", "reject"),
+                      ("disagree", "agree"), ("never", "always"), ("5", "6")]:
+        assert W._touches_meaning(orig, rep), (orig, rep)
+    for orig, rep in [("recieve", "receive"), ("committe", "committee"), ("was", "were"), ("a", "an"),
+                      ("tuesday", "Tuesday"), (" ,", ","), ("the the", "the")]:
+        assert not W._touches_meaning(orig, rep), (orig, rep)
+    # a contraction is one token: removing "n't" is not a lone "'t" edit
+    d = W._diff("I can't go.", "I can go.")
+    assert [(s["original"], s["class"]) for s in d] == [("can't", "rewrite")]
+
+
+def test_r2_01_a_clean_grammar_answer_still_offers_corrections():
+    r = W.proofread("The files was sent to the the office.",
+                    client=FakeBrain({"status": "ok", "message": "", "text": "The files were sent to the office."}))
+    assert r["flags"] == [] and r["suggestions"] and all(s["class"] == "correction" for s in r["suggestions"])
+
+
+def test_r2_02_enumerations_and_dotted_abbreviations_are_not_sentence_ends():
+    for t in ["As per clause (i) and (ii) of the order.", "Issued vide O.M. dated 3.10.2026.",
+              "Please refer to D.O. letter of the Secretary.", "All B.Tech. students may apply.",
+              "He is a M.Sc. graduate.", "See sub-para i) above."]:
+        got = [(s["original"], s["replacements"][0]) for s in rules(t)["suggestions"]]
+        assert not any(o in ("i", "d", "l", "s", "g") for o, _ in got), (t, got)
+
+
+def test_r2_03_spelling_guesses_are_marked_and_sure_fixes_are_not():
+    errs = [{"start": 0, "length": 12, "word": "mukhyamantri", "action": 1, "replacement": "", "suggestions": ["mahamari"]},
+            {"start": 13, "length": 7, "word": "recieve", "action": 2, "replacement": "receive", "suggestions": []},
+            {"start": 21, "length": 7, "word": "tuesday", "action": 1, "replacement": "", "suggestions": ["Tuesday"]}]
+    r = W.check("mukhyamantri recieve tuesday", spell=FakeSpell(errs))
+    conf = {s["original"]: s["confidence"] for s in r["suggestions"]}
+    assert conf == {"mukhyamantri": "guess", "recieve": "sure", "tuesday": "sure"}
+
+
+def test_r2_04_check_on_a_command_loop_never_waits_for_a_worker_start_and_is_linear():
+    started = []
+
+    class Cold(W.SpellWorker):
+        def prewarm(self, lang=W.DEFAULT_LANG):
+            started.append(lang)
+
+    sp = Cold()
+    sp.unavailable = None
+    t0 = time.perf_counter()
+    r = W.check("i went", spell=sp, wait=False)
+    assert (time.perf_counter() - t0) < 0.5 and r["status"]["spelling"] == "SPELL_STARTING" and started
+    assert ("i", "I") in fixes(r)
+    big = "word. " * 3300                      # about 20,000 characters of lower-case sentences
+    t0 = time.perf_counter()
+    rules(big[:W.MAX_CHECK_CHARS])
+    assert (time.perf_counter() - t0) < 0.5
+
+
+def test_r2_06_dismissed_words_stay_dismissed_after_earlier_edits():
+    assert W.check("Yes, i agree.", spell=NoSpell(), ignore=["i"])["suggestions"] == []
+    assert W.check("Yes, i agree.", spell=NoSpell())["suggestions"]
+
+
+def test_r2_07_brain_must_be_loopback_and_one_assist_brain_job_at_a_time():
+    with pytest.raises(W.WritingError) as e:
+        W.proofread("abc def.", client=FakeBrain({"status": "ok", "message": "", "text": "x"},
+                                                  base_url="https://api.example.com"))
+    assert e.value.code == "BRAIN_ENDPOINT_NOT_LOOPBACK"
+    B, br = _bridge(FakeBrain({"status": "ok", "message": "", "text": "x"}, base_url="http://10.0.0.5:8080"))
+    with pytest.raises(B.Refused) as e:
+        br.handle("assist_write_brain", {"command": "assist_write_brain", "text": "x y", "op": "proofread"})
+    assert e.value.code == "BRAIN_ENDPOINT_NOT_LOOPBACK"
+    brain = SlowBrain({"status": "ok", "message": "", "text": "y"})
+    brain.base_url = "http://127.0.0.1:18080"
+    B, br = _bridge(brain)
+    br.handle("assist_write_brain", {"command": "assist_write_brain", "text": "x y", "op": "proofread"})
+    assert br.writing
+    with pytest.raises(B.Refused) as e:
+        br.handle("assist_ask", {"command": "assist_ask", "question": "what is this?", "use_screenshot": False})
+    assert e.value.code in ("WRITING_BUSY", "ACCESS_NOT_GRANTED", "NOT_GRANTED")
+    br.cancel_brain_work("user_turn")
+    br._wjob[1].join(5)

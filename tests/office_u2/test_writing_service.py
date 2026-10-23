@@ -15,6 +15,7 @@ class FakeClient:
     def __init__(self, *answers):
         self.answers = list(answers)
         self.bodies = []
+        self.base_url = "http://127.0.0.1:18080"
 
     def stream_chat(self, body, *, cancel=None, deadlines=None):
         self.bodies.append(body)
@@ -22,7 +23,7 @@ class FakeClient:
 
 
 class NoSpell:
-    def check(self, text, lang):
+    def check(self, text, lang, wait=True):
         raise WR.WritingError("SPELL_UNAVAILABLE")
 
     def prewarm(self, lang=None):
