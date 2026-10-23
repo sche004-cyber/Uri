@@ -529,3 +529,11 @@ receipt (`P0_CLOSURE_20261022.md` Addendum J). CAP-LC3 (Lifecycle V3.1, Mileston
 repaired and integrated (live paired turn NOT VERIFIED). Remaining: OPEN-21 (G1-02), OPEN-02 (`\URIServer`),
 OPEN-22 (PH1-GATE-1), FLAKY-1, GATE-ENV-1, storage milestone P.9.
 
+### P.11 2026-10-23: canonical `b1944200`; OPEN-21 done; OPEN-22 in review; OPEN-02 owner action
+
+G1-02 integrated (`b1944200`). PH1-GATE-1 test-only `jsonschema` repair accepted by Codex, gate re-run r2 in progress.
+New LOW finding PH1-GATE-2 (test basename collisions). `\URIServer`: OWNER_ACTION_REQUIRED (elevated
+`Disable-ScheduledTask -TaskName 'URIServer'`). GRF-P0-1 closed. Watcher-incident requirement on task
+`TASK-20261022-d2ba3338`. No promoted Milestone Manager ledger (AP-12/AP-14). Details: `P0_CLOSURE_20261022.md`
+Addendum M.
+
