@@ -208,4 +208,41 @@ void main() {
     expect(find.textContaining('missing after correction: 3, january'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 60));
   });
+
+  // ---- review FB2 regressions ----
+  testWidgets('R3-04: after accepting one Brain item the others stay, moved by the change', (tester) async {
+    final w = FakeWriting()
+      ..brainAnswer = {'suggestions': [
+            sugg('x', 0, 3, 'pls', 'please', cls: 'rewrite', message: 'Wording.'),
+            sugg('y', 9, 12, 'abt', 'about', cls: 'rewrite', message: 'Wording.'),
+          ], 'message': ''};
+    final c = await pump(tester, w, 'pls send abt it');
+    await tester.tap(find.byKey(const ValueKey('writing-proofread')));
+    await tester.pump();
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-accept-0')));
+    await tester.pump();
+    expect(c.text, 'please send abt it');
+    expect(find.text('abt  →  about'), findsOneWidget);       // still offered
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-accept-0')));
+    await tester.pump();
+    expect(c.text, 'please send about it');                    // applied at its moved position
+    expect(w.brainCalls, ['proofread']);                       // no second Brain call was needed
+    await tester.pump(const Duration(milliseconds: 60));
+  });
+
+  testWidgets('R3-03: dismissing a capital or a/an item does not hide every other one', (tester) async {
+    final w = FakeWriting()
+      ..onCheck = ((t) => {'suggestions': [
+            {...sugg('c1', 0, 1, 't', 'T'), 'kind': 'capital'},
+          ], 'status': {'spelling': 'ok'}});
+    final c = await pump(tester, w, 'the end.');
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-dismiss')));
+    await tester.pump();
+    c.text = 'the end. ok';
+    await tester.pump(const Duration(milliseconds: 60));
+    await tester.pump();
+    expect(w.lastIgnore, isNot(contains('t')));
+    expect(w.lastIgnore, contains('c1'));
+  });
 }

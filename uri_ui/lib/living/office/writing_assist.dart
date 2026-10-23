@@ -124,7 +124,10 @@ class _WritingStripState extends State<WritingStrip> {
     final text = widget.controller.text;
     final gen = ++_gen;
     try {
-      final r = await widget.service.writingCheck(text, ignore: _dismissed.toList());
+      // review FB2 R3-03: the newest dismissals win when the list is long (the worker reads at most 200)
+      final ignore = _dismissed.toList();
+      final r = await widget.service.writingCheck(text,
+          ignore: ignore.length > 200 ? ignore.sublist(ignore.length - 200) : ignore);
       if (!mounted || gen != _gen || widget.controller.text != text) return;
       setState(() {
         _checkedText = text;
@@ -179,11 +182,35 @@ class _WritingStripState extends State<WritingStrip> {
       final r = await widget.service.writingApply(text, items);
       if (!mounted || widget.controller.text != text) return;
       final ids = {for (final i in items) '${i['start']}:${i['end']}:${i['original']}'};
+      final next = r['text'] as String;
+      // Review FB2 R3-04: the other suggestions stay, moved by the accepted changes (offsets are in characters as
+      // the engine counts them, so lengths are counted in runes); any that touched an accepted span is dropped.
+      final kept = <Map<String, dynamic>>[];
+      for (final s in _items) {
+        if (ids.contains('${s['start']}:${s['end']}:${s['original']}')) continue;
+        var start = s['start'] as int, end = s['end'] as int;
+        var clash = false;
+        for (final a in items) {
+          final aStart = a['start'] as int, aEnd = a['end'] as int;
+          if (start < aEnd && end > aStart || (start == end && start == aStart) ||
+              (aStart == aEnd && aStart > start && aStart < end)) {
+            clash = true;
+            break;
+          }
+          if (start >= aEnd) {
+            final d = '${a['replacement']}'.runes.length - (aEnd - aStart);
+            start += d;
+            end += d;
+          }
+        }
+        if (!clash) kept.add({...s, 'start': start, 'end': end});
+      }
       setState(() {
         _undo.add(text);
-        _items = [for (final s in _items) if (!ids.contains('${s['start']}:${s['end']}:${s['original']}')) s];
+        _items = kept;
+        _checkedText = next;
       });
-      _setText(r['text'] as String);
+      _setText(next);
     } on SchedulerApiError catch (e) {
       if (mounted) setState(() => _status = writingRefusal(e.code));
     }
@@ -202,8 +229,9 @@ class _WritingStripState extends State<WritingStrip> {
     setState(() {
       _dismissed.add('${s['id']}');
       // Review FB1 R2-06: a dismissed word stays dismissed after earlier text changes (ids carry offsets).
+      // (review FB2 R3-03: by word only for spelling, so one dismissed capital or a/an does not hide all others)
       final word = '${s['original']}'.trim().toLowerCase();
-      if (RegExp(r'\w').hasMatch(word)) _dismissed.add(word);
+      if (s['kind'] == 'spelling' && RegExp(r'\w').hasMatch(word)) _dismissed.add(word);
       _items = [for (final x in _items) if (x['id'] != s['id']) x];
     });
   }

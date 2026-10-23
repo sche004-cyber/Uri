@@ -334,9 +334,12 @@ def test_r2_01_meaning_changes_are_never_plain_corrections():
                       ("three", "two"), ("january", "june"), ("tuesday", "monday"), ("approve", "reject"),
                       ("disagree", "agree"), ("never", "always"), ("5", "6")]:
         assert W._touches_meaning(orig, rep), (orig, rep)
+    # review FB2 R3-01: a spelling fix is a correction only with Windows' agreement (the spelling map)
+    spelling = {"recieve": {"receive"}, "committe": {"committee"}}
     for orig, rep in [("recieve", "receive"), ("committe", "committee"), ("was", "were"), ("a", "an"),
                       ("tuesday", "Tuesday"), (" ,", ","), ("the the", "the")]:
-        assert not W._touches_meaning(orig, rep), (orig, rep)
+        assert not W._touches_meaning(orig, rep, spelling=spelling), (orig, rep)
+    assert W._touches_meaning("recieve", "receive", spelling=None)
     # a contraction is one token: removing "n't" is not a lone "'t" edit
     d = W._diff("I can't go.", "I can go.")
     assert [(s["original"], s["class"]) for s in d] == [("can't", "rewrite")]
@@ -408,3 +411,40 @@ def test_r2_07_brain_must_be_loopback_and_one_assist_brain_job_at_a_time():
     assert e.value.code in ("WRITING_BUSY", "ACCESS_NOT_GRANTED", "NOT_GRANTED")
     br.cancel_brain_work("user_turn")
     br._wjob[1].join(5)
+
+
+# ------------------------------------------------------------------------------------------- review FB2 regressions
+@pytest.mark.parametrize("orig,edited", [
+    ("as per clause (ii) of rule 4", "as per clause (iii) of rule 4"),
+    ("Section 5(a) applies.", "Section 5(an) applies."),
+    ("The leave of Mrs Gupta is sanctioned.", "The leave of Mr Gupta is sanctioned."),
+    ("forward to mehta for comments", "forward to mehra for comments"),
+    ("Transfer the file from Delhi to Mumbai.", "Transfer the file to Delhi from Mumbai."),
+    ("Payment is due on 5 June.", "Payment is due by 5 June."),
+    ("please confirm the date", "please conform the date"),
+    ("Report weekly.", "Report weakly."),
+    ("Permission is granted.", "Permission is grantee."),
+    ("The officer is suspended.", "The officer was suspended."),
+    ("the officer was present", "the officers were present"),
+])
+def test_r3_01_reference_name_direction_tense_and_number_changes_are_rewrites(orig, edited):
+    r = W.proofread(orig, client=FakeBrain({"status": "ok", "message": "", "text": edited}))
+    assert r["suggestions"], (orig, edited)
+    assert all(s["class"] == "rewrite" for s in r["suggestions"]), r["suggestions"]
+
+
+def test_r3_01_safe_changes_stay_corrections_with_windows_agreement(monkeypatch):
+    spell = FakeSpell([{"start": 2, "length": 7, "word": "recieve", "action": 2, "replacement": "receive",
+                        "suggestions": []}])
+    monkeypatch.setattr(W, "default_spell", lambda: spell)
+    r = W.proofread("I recieve the the files which was sent.", client=FakeBrain(
+        {"status": "ok", "message": "", "text": "I receive the files which were sent."}))
+    assert r["suggestions"] and all(s["class"] == "correction" for s in r["suggestions"]), r["suggestions"]
+
+
+@pytest.mark.parametrize("t", ["No. 12/3/2024-Estt. dated 5.6.2024.", "sub-clause i, ii and iii apply.",
+                               "see item i above.", "Annexure A is attached. Annexure a is not.",
+                               "As per para i of the order.", "File No. 4/2026-Admn. dated today."])
+def test_r3_02_more_administrative_references_are_left_alone(t):
+    got = [(s["original"], s["replacements"][0]) for s in rules(t)["suggestions"]]
+    assert not any(o in ("d", "i", "a") for o, _ in got), (t, got)

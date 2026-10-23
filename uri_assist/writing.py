@@ -64,7 +64,13 @@ def _sugg(start, end, original, replacements, kind, cls, source, message):
 _ABBREV = {"e.g", "i.e", "etc", "viz", "vs", "no", "nos", "dr", "mr", "mrs", "ms", "shri", "smt", "sri", "prof",
            "st", "jr", "sr", "dy", "jt", "addl", "secy", "govt", "dept", "deptt", "ref", "encl", "approx", "fig",
            "vol", "p", "pp", "sec", "art", "cl", "para", "rs", "inr", "a.m", "p.m", "u.s", "u.k", "w.e.f", "s.no",
-           "sl", "dt", "dtd", "hon'ble", "honble", "ltd", "pvt", "co", "inc", "min", "max"}
+           "sl", "dt", "dtd", "hon'ble", "honble", "ltd", "pvt", "co", "inc", "min", "max",
+           # file-number and office suffixes (review FB2 R3-02)
+           "estt", "estab", "admn", "admin", "coord", "genl", "gen", "pers", "vig", "accts", "acctt", "acct", "fin",
+           "misc", "encls", "recd", "distt", "dist", "engg", "mgmt", "dte", "asstt", "asst", "supdt", "dir", "addl",
+           "pr", "sr", "jr", "spl", "rev", "rly", "deptt", "secy", "u", "o", "s"}
+_REF_WORDS = r"(?:clause|sub-clause|item|para|paragraph|sub-para|rule|section|point|annexure|appendix|schedule|part|chapter|article|serial|column|row|table|figure|exhibit|option|form|grade|group|category|type|class|plan|step|phase|level)"
+_REF_BEFORE = re.compile(_REF_WORDS + r"\.?\s+$", re.I)
 _A_AN_SILENT_H = ("hour", "honest", "honour", "honor", "heir")
 _A_AN_YOU = ("uni", "use", "usu", "uti", "eu", "one", "once", "ewe", "ura", "uro", "ure", "uga", "uk")
 _U_VOWEL = ("un", "up", "ug", "umb", "urg", "urb", "ush", "ust", "utt", "ult", "ump")   # "an urgent", "an upper"
@@ -107,6 +113,10 @@ def _rules(text: str) -> list:
     # lone lower-case "i" and its contractions
     # (review FB1 R2-02: "(i)" and "i)" are clause enumerations, not the pronoun)
     for m in re.finditer(r"(?<![\w.'’(-])i(?=(?:['’](?:m|ve|ll|d))?\b)(?![.\w)-])", text):
+        # review FB2 R3-02: "sub-clause i, ii and iii", "see item i above" are references, not the pronoun
+        if _REF_BEFORE.search(text[max(0, m.start() - 30):m.start()]) or \
+                re.match(r"\s*(?:,|and|or|to)\s*(?:ii|iii|iv|v|vi)\b", text[m.end():m.end() + 12], re.I):
+            continue
         out.append(_sugg(m.start(), m.end(), "i", ["I"], "capital", "correction", "rules", "\"I\" is a capital."))
     # sentence starts with a lower-case letter: at the start of the text or after . ! ? and a space
     for m in re.finditer(r"(?:^|(?<=[.!?])\s+)([a-z])([a-z'’]*)", text):
@@ -122,8 +132,8 @@ def _rules(text: str) -> list:
             continue
         if before.endswith("."):
             pw = _prev_word(before, len(before))
-            if pw is None or pw in _ABBREV or len(pw) == 1 or "." in pw:
-                continue                                   # "Dy. Secy. said", "No. 4", initials, "O.M. dated"
+            if pw is None or pw in _ABBREV or len(pw) == 1 or "." in pw or re.search(r"[-/]\w*\.$", before[-40:]):
+                continue                                   # "Dy. Secy. said", "No. 4", initials, "O.M.", "12/3-Estt."
         out.append(_sugg(start, start + 1, m.group(1), [m.group(1).upper()], "capital", "correction", "rules",
                          "A sentence starts with a capital letter."))
     # repeated word: "the the"
@@ -135,8 +145,9 @@ def _rules(text: str) -> list:
     # a / an before an ordinary lower-case word (acronyms and "u"/"one" sounds are left alone)
     for m in re.finditer(r"\b([Aa])\s+([a-z][a-z]+)", text):
         w = m.group(2)
-        if text[max(0, m.start() - 1):m.start()] == "(" or (m.group(1) == "A" and not _sentence_initial(text, m.start())):
-            continue                                       # "item (a) is", "Annexure A is"
+        if text[max(0, m.start() - 1):m.start()] == "(" or (m.group(1) == "A" and not _sentence_initial(text, m.start())) \
+                or _REF_BEFORE.search(text[max(0, m.start() - 30):m.start()]):
+            continue                                       # "item (a) is", "Annexure A is", "Annexure a is"
         if (w[0] in "aeio" and not w.startswith(_A_AN_YOU)) or w.startswith(_A_AN_SILENT_H) or \
                 (w.startswith(_U_VOWEL) and not w.startswith(_A_AN_YOU + ("unan",))):
             out.append(_sugg(m.start(1), m.end(1), m.group(1), [m.group(1) + "n"], "grammar", "correction", "rules",
@@ -429,12 +440,6 @@ def _call_brain(client, mode: str, text: str, cancel=None) -> dict:
 _TOKEN = re.compile(r"\s+|\w+(?:['’]\w+)*|[^\w\s]")       # contractions ("can't") are one token
 _NEG_WORDS = {"not", "no", "never", "none", "nor", "neither", "nothing", "nobody", "nowhere", "without", "cannot",
               "hardly", "barely", "unless", "against", "lack", "lacks", "lacking"}
-_NEG_PREFIX = ("un", "in", "im", "il", "ir", "dis", "non", "mis", "a")
-_GRAMMAR_WORDS = {"a", "an", "the", "is", "are", "was", "were", "be", "been", "being", "am", "has", "have", "had",
-                  "do", "does", "did", "of", "to", "in", "on", "at", "for", "by", "with", "from", "into", "onto",
-                  "it", "its", "it's", "their", "there", "they're", "your", "you're", "whose", "who's", "this",
-                  "that", "these", "those", "which", "who", "whom", "and", "as", "than", "then", "s"}
-
 
 def _negations(s: str) -> int:
     n = 0
@@ -450,7 +455,29 @@ def _dates(s: str) -> set:
     return {w for w in words if w in MONTHS or w in WEEKDAYS or w[:3] in {m[:3] for m in MONTHS} and len(w) == 3}
 
 
-def _touches_meaning(orig: str, rep: str) -> bool:
+# Review FB2 R3-01: a Brain change is a `correction` only when it is one of these, checked position by position:
+# letter case, spacing or punctuation; an agreement-only swap; an article added or dropped; a repeated word removed;
+# or the spelling fix Windows itself proposes for a word it flags. Anything else, and anything touching a number, a
+# date, a negation, an honorific, a roman numeral or a single letter used as a reference, is a `rewrite`.
+_SWAPS = [frozenset(x) for x in ({"is", "are"}, {"was", "were"}, {"has", "have"}, {"do", "does"}, {"a", "an"},
+                                 {"its", "it's", "it’s"}, {"their", "there", "they're", "they’re"},
+                                 {"your", "you're", "you’re"}, {"whose", "who's", "who’s"})]
+_ARTICLES = {"a", "an", "the"}
+_HONORIFICS = {"mr", "mrs", "ms", "miss", "shri", "smt", "sri", "kumari", "km", "dr", "prof", "sir", "madam"}
+_ROMAN = re.compile(r"^(?=[ivxlc]+$)c{0,3}(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})$")
+
+
+def _swap(a: str, b: str) -> bool:
+    return a == b or any(a in g and b in g for g in _SWAPS)
+
+
+def _words(s: str) -> list:
+    return re.findall(r"\w+(?:['’]\w+)*", s.lower())
+
+
+def _touches_meaning(orig: str, rep: str, *, spelling: dict | None = None, context: str = "") -> bool:
+    """`spelling`: {lower-case word Windows flags: set of its lower-case suggestions} for the original text;
+    `context`: the characters around the change in the original (a change inside parentheses is a reference)."""
     from uri_operational_intelligence.text_verify import canonical_numbers
     o, r = orig.strip(), rep.strip()
     if o.lower() == r.lower():
@@ -461,21 +488,33 @@ def _touches_meaning(orig: str, rep: str) -> bool:
         return True
     if _negations(o) != _negations(r) or _dates(o) != _dates(r):
         return True
-    ow = re.findall(r"\w+(?:['’]\w+)*", o.lower())
-    rw = re.findall(r"\w+(?:['’]\w+)*", r.lower())
-    if all(w in _GRAMMAR_WORDS for w in ow + rw):
-        return False                                     # "was" -> "were", "a" -> "an", "the" added
-    if len(ow) == 1 and len(rw) == 1:
-        a, b = ow[0], rw[0]
-        longer, shorter = (a, b) if len(a) > len(b) else (b, a)
-        if any(longer == p + shorter for p in _NEG_PREFIX):
-            return True                                  # unable / able, disagree / agree
-        if a[0] == b[0] and difflib.SequenceMatcher(None, a, b).ratio() >= 0.8:
-            return False                                 # recieve -> receive, committe -> committee
+    ow, rw = _words(o), _words(r)
+    if "(" in context or ")" in context:
+        return True                                      # "(ii)" -> "(iii)", "5(a)" -> "5(an)"
+    for w in ow + rw:
+        if w in _HONORIFICS or (len(w) <= 4 and _ROMAN.match(w) and w not in ("i",)) or (len(w) == 1 and w not in ("a", "i")):
+            return True
+    def safe(a, b):
+        # an agreement swap, or the spelling fix Windows itself proposes for a word it flags
+        return _swap(a, b) or (spelling is not None and b in (spelling.get(a) or ()))
+    if len(ow) == len(rw):
+        return not all(safe(a, b) for a, b in zip(ow, rw))
+    longer, shorter = (ow, rw) if len(ow) > len(rw) else (rw, ow)
+    if len(longer) == len(shorter) + 1:
+        for i in range(len(longer)):
+            dropped = longer[i]
+            repeated = len(ow) > len(rw) and ((i > 0 and longer[i - 1] == dropped) or
+                                             (i + 1 < len(longer) and longer[i + 1] == dropped))
+            if dropped not in _ARTICLES and not repeated:
+                continue
+            rest = longer[:i] + longer[i + 1:]
+            pairs = zip(rest, shorter) if len(ow) > len(rw) else zip(shorter, rest)
+            if all(safe(a, b) for a, b in pairs):
+                return False                             # an article added or dropped; a repeated word removed
     return True
 
 
-def _diff(original: str, edited: str, source: str = "brain") -> list:
+def _diff(original: str, edited: str, source: str = "brain", spelling: dict | None = None) -> list:
     """Word-level diff of `edited` against `original`, as suggestions on `original`'s offsets."""
     toks = [(m.start(), m.end()) for m in _TOKEN.finditer(original)]
     a = [original[s:e] for s, e in toks]
@@ -489,10 +528,24 @@ def _diff(original: str, edited: str, source: str = "brain") -> list:
         orig, rep = original[s:e], "".join(b[j1:j2])
         if orig == rep:
             continue
-        cls = "rewrite" if _touches_meaning(orig, rep) else "correction"
-        msg = ("This change may alter a name, number, date or meaning: check it." if cls == "rewrite"
+        context = original[max(0, s - 1):s] + original[e:e + 1]
+        cls = "rewrite" if _touches_meaning(orig, rep, spelling=spelling, context=context) else "correction"
+        msg = ("This change may alter a name, number, date, reference or meaning: check it." if cls == "rewrite"
                else "Grammar or wording.")
         out.append(_sugg(s, e, orig, [rep], "grammar", cls, source, msg))
+    return out
+
+
+def _spelling_map(text: str) -> dict | None:
+    """Words Windows flags in `text` with their suggestions (lower case), or None when spelling is not available
+    (then no Brain word change counts as a spelling correction)."""
+    try:
+        res = default_spell().check(text, DEFAULT_LANG)
+    except WritingError:
+        return None
+    out = {}
+    for x in _spell_suggestions(text, res):
+        out.setdefault(x["original"].lower(), set()).update(r.lower() for r in x["replacements"])
     return out
 
 
@@ -508,7 +561,18 @@ def proofread(text: str, *, client, field: dict | None = None, cancel=None) -> d
         return {"suggestions": [], "message": d.get("message") or "", "flags": [], "ms": r["ms"]}
     from uri_operational_intelligence.text_verify import check_meaning_preserved
     flags = check_meaning_preserved(text, d["text"])
-    items = _diff(text, d["text"])[:MAX_SUGGESTIONS]
+    items = _diff(text, d["text"], spelling=_spelling_map(text))[:MAX_SUGGESTIONS]
+    # Review FB2 R3-01: an agreement swap ("was" -> "were") that sits in a sentence with a meaning change ("officer"
+    # -> "officers") follows that change, so it is not offered as a separate plain correction.
+    ends = [m.end() for m in re.finditer(r"[.!?\n]", text)]
+    def sentence(i):
+        return sum(1 for e in ends if e <= i)
+    rewrite_sentences = {sentence(x["start"]) for x in items if x["class"] == "rewrite"}
+    for x in items:
+        if x["class"] == "correction" and sentence(x["start"]) in rewrite_sentences and \
+                set(_words(x["original"])) & {"is", "are", "was", "were", "has", "have", "do", "does"}:
+            x["class"] = "rewrite"
+            x["message"] = "This goes with another change in the same sentence: check it."
     if any(f.get("severity") == "error" for f in flags):
         # Review FB1 R2-01: when the whole answer lost or changed a name, number or date, no item of it is offered
         # as a plain correction.
