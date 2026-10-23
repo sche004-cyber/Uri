@@ -250,14 +250,10 @@ class _WritingStripState extends State<WritingStrip> {
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
     final on = widget.enabled && _busy == null;
-    // Review FB1 R2-03: a spelling guess for an unknown word is accepted one by one, never in "Accept all".
-    // Bulk accept takes only edits that are safe by construction: deterministic rule fixes (spacing, doubled words
-    // and marks, letter case) and Windows letter-case fixes. Brain changes and spelling replacements, which can
-    // change a name, are accepted one by one (driver r4 BLOCKED: edit shape cannot prove a word is not a name).
-    final corrections = [
-      for (final s in _items)
-        if (s['class'] == 'correction' && s['confidence'] != 'guess' && s['source'] != 'brain') s
-    ];
+    // There is no "Accept all corrections": every suggestion is applied by its own Accept, after the owner has seen
+    // it. Reviews FB3, FB4 and FB5 and driver r4 showed that for free text no bulk set is safe by construction
+    // (doubled particles, letter case of units and acronyms, references, paths, names). Bringing back a narrow bulk
+    // accept is the owner's usability decision OD-WI-3 (plan 16).
     final small = TextStyle(fontSize: UriType.label, color: colors.inkSoft);
     if (widget.hideWhenEmpty && _items.isEmpty && _undo.isEmpty) return const SizedBox.shrink();
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
@@ -280,31 +276,9 @@ class _WritingStripState extends State<WritingStrip> {
       if (_flags.isNotEmpty)
         Text('Check before accepting: ${_flags.join('; ')}', key: ValueKey(k('flags')),
             style: TextStyle(fontSize: UriType.label, color: colors.warning)),
-      if (corrections.length > 1)
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton(
-            key: ValueKey(k('accept-all')),
-            onPressed: widget.enabled ? () => _accept(_nonOverlapping(corrections)) : null,
-            child: Text('Accept all corrections (${corrections.length})'),
-          ),
-        ),
       for (final (i, s) in _items.take(8).indexed) _row(context, i, s),
       if (_items.length > 8) Text('${_items.length - 8} more after these.', style: small),
     ]);
-  }
-
-  /// Corrections accepted together must not touch the same words (the service refuses that).
-  List<Map<String, dynamic>> _nonOverlapping(List<Map<String, dynamic>> items) {
-    final sorted = [...items]..sort((a, b) => (a['start'] as int).compareTo(b['start'] as int));
-    final out = <Map<String, dynamic>>[];
-    var end = -1;
-    for (final s in sorted) {
-      if ((s['start'] as int) < end) continue;
-      out.add(_accepted(s));
-      end = s['end'] as int;
-    }
-    return out;
   }
 
   Widget _row(BuildContext context, int i, Map<String, dynamic> s) {

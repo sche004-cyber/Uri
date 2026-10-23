@@ -77,8 +77,9 @@ The engine extends URI Assist (owner: "extend the existing URI Assist") and is r
   `redact.redact_text` refuses Brain use (`SENSITIVE_TEXT`), deterministic checks still run locally; local Brain
   only (loopback enforced by `brain_client`); nothing is stored or logged except counts.
 - Surfaces in increment 1: Office Word and PowerPoint editors (`AuthoringTextField`): underline-free suggestion strip
-  under the field after a typing pause (debounce 700 ms) with Accept / Dismiss per item, Accept all corrections,
-  Undo; buttons "Proofread", "Formal", "Concise"; nothing changes the document until the existing Apply op. The URI
+  under the field after a typing pause (debounce 700 ms) with Accept / Dismiss per item (no "Accept all": removed
+  2026-10-24 after reviews FB3-FB5 and driver r4 showed no bulk set is safe by construction for free text; see
+  OD-WI-3), Undo; buttons "Proofread", "Formal", "Concise"; nothing changes the document until the existing Apply op. The URI
   composer gets the same strip (spelling and grammar only; the draft panel keeps its own Brain editing).
   Dictation (corrected 2026-10-23, review FB1 R2-08): Settings "Dictated words" chooses As spoken (new scope
   `verbatim`, no Brain call), Corrected (scope `grammar`, the accepted default, unchanged) or Polished (scope
@@ -108,7 +109,7 @@ The engine extends URI Assist (owner: "extend the existing URI Assist") and is r
 | WI-1 | `check` finds spelling (Windows API), repeated words, spacing, punctuation, capitalisation and a/an on a corpus of 40 administrative sentences with no false positive on honorifics, abbreviations, reference numbers, dates, amounts, Indian names in the corpus | unit tests + corpus file |
 | WI-2 | Suggestions apply exactly (offsets), overlapping ones are not applied together, Undo restores the exact text | unit tests |
 | WI-3 | Spell worker absent or failing -> rules still run, status says why; never raises into typing | tests (forced failure) |
-| WI-4 | Brain proofread/tone returns suggestions; any change to numbers, dates, names, negation or reference numbers is classed `rewrite` and never offered in "Accept all corrections" | tests with a fake Brain + live Brain corpus |
+| WI-4 | Brain proofread/tone returns suggestions; any change to numbers, dates, names, negation or reference numbers is classed `rewrite` ("May change meaning"); no suggestion is ever applied except by its own Accept (corrected 2026-10-24: there is no bulk accept) | tests with a fake Brain + live Brain corpus |
 | WI-5 | Sensitive fields and secret-bearing text never reach the Brain or logs | tests |
 | WI-6 | Latency: deterministic check p95 < 50 ms for 1,000 characters warm; first-use worker start < 1.5 s; no GPU use; Brain only on explicit request | measured on the PC, exact commit |
 | WI-7 | Word and PowerPoint editors show suggestions without changing the document until Apply; Accept/Dismiss/Undo work; Flutter tests | widget tests + live journey |
@@ -137,6 +138,11 @@ and the V3.1 fallback applies. No GPU-heavy run overlaps an M95 live run; Brain 
   read-only and copy-based.
 - OD-WI-2 (preference): default language `en-IN` (Indian English spelling) - chosen by default from the owner's
   context; one line to change.
+- OD-WI-3 (usability vs risk, added 2026-10-24): "Accept all corrections" was removed. Driver r4 (7 Codex rounds) and
+  fallback reviews FB3, FB4 and FB5 each found new inputs where a bulk set changed meaning (names via Windows
+  autocorrect, references, doubled particles such as "log in in", units such as "ms" -> "Ms", paths). Every
+  suggestion now needs its own Accept. The owner may choose to bring back a narrow bulk accept (for example only
+  doubled "the"/"a" and double spaces) accepting the residual risk; until then the safe default stands.
 
 ## 7. Self-review against the Verification-First standard
 

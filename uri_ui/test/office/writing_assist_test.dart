@@ -125,7 +125,7 @@ void main() {
           : {'suggestions': [], 'status': {'spelling': 'ok'}};
     final c = await pump(tester, w, 'i recieve it');
     expect(find.text('recieve  →  receive'), findsOneWidget);
-    expect(find.text('Accept all corrections (2)'), findsOneWidget);
+    expect(find.byKey(const ValueKey('writing-accept-all')), findsNothing);       // FB5: no bulk accept
     await tester.tap(find.byKey(const ValueKey('writing-item-1-accept-0')));
     await tester.pump();
     expect(c.text, 'i receive it');
@@ -136,58 +136,31 @@ void main() {
     await tester.pump(const Duration(milliseconds: 60));
   });
 
-  testWidgets('accept all takes corrections only; rewrite items are marked and need their own accept',
+  testWidgets('FB5: there is no Accept all; each Accept applies only its own change; rewrites are marked',
       (tester) async {
-    final w = FakeWriting()
-      ..onCheck = (t) => {'suggestions': [
-            sugg('a', 0, 1, 'i', 'I'),
-            sugg('b', 2, 9, 'recieve', 'receive'),
-            sugg('c', 13, 15, '12', '14', cls: 'rewrite', message: 'A number changed.'),
-          ], 'status': {'spelling': 'ok'}};
-    final c = await pump(tester, w, 'i recieve it 12 May');
-    expect(find.textContaining('May change meaning'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('writing-accept-all')));
-    await tester.pump();
-    expect(c.text, 'I receive it 12 May');
-    await tester.pump(const Duration(milliseconds: 60));
-  });
-
-  testWidgets('R6-01: Accept all preserves a Windows-proposed name replacement', (tester) async {
-    const text = 'i forwarded the file to mehta. i saw it.';
+    const text = 'i recieve Ref. 12/3/2026 and Clause (a) to mehta 12 May.';
+    final slash = text.indexOf('/');
     final name = text.indexOf('mehta');
-    final secondI = text.lastIndexOf('i saw');
-    final w = FakeWriting()..onCheck = (_) => {'suggestions': [
-      sugg('capital1', 0, 1, 'i', 'I'),
-      {...sugg('name', name, name + 5, 'mehta', 'mehra', cls: 'rewrite'),
-       'source': 'windows_spell', 'confidence': 'guess'},
-      sugg('capital2', secondI, secondI + 1, 'i', 'I'),
-    ], 'status': {'spelling': 'ok'}};
-    final c = await pump(tester, w, text);
-    expect(find.text('Accept all corrections (2)'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('writing-accept-all')));
-    await tester.pump();
-    expect(c.text, 'I forwarded the file to mehta. I saw it.');
-  });
-
-  testWidgets('Accept all preserves reference separators and clause parentheses', (tester) async {
-    const text = 'i recieve Ref. 12/3/2026 and Clause (a).';
-    final firstSlash = text.indexOf('/');
-    final secondSlash = text.indexOf('/', firstSlash + 1);
-    final open = text.indexOf('(');
-    final close = text.indexOf(')');
+    final num = text.indexOf('12 May');
     final w = FakeWriting()..onCheck = (_) => {'suggestions': [
       sugg('capital', 0, 1, 'i', 'I'),
       sugg('spelling', 2, 9, 'recieve', 'receive'),
-      sugg('sep1', firstSlash, firstSlash + 1, '/', '-', cls: 'rewrite'),
-      sugg('sep2', secondSlash, secondSlash + 1, '/', '-', cls: 'rewrite'),
-      sugg('paren1', open, open + 1, '(', '', cls: 'rewrite'),
-      sugg('paren2', close, close + 1, ')', '', cls: 'rewrite'),
+      sugg('sep', slash, slash + 1, '/', '-', cls: 'rewrite'),
+      {...sugg('name', name, name + 5, 'mehta', 'mehra', cls: 'rewrite'), 'source': 'windows_spell',
+       'confidence': 'guess'},
+      sugg('num', num, num + 2, '12', '14', cls: 'rewrite', message: 'A number changed.'),
     ], 'status': {'spelling': 'ok'}};
     final c = await pump(tester, w, text);
-    expect(find.text('Accept all corrections (2)'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('writing-accept-all')));
+    expect(find.byKey(const ValueKey('writing-accept-all')), findsNothing);
+    expect(find.textContaining('Accept all'), findsNothing);
+    expect(find.textContaining('May change meaning'), findsNWidgets(3));
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-accept-0')));      // only the capital
     await tester.pump();
-    expect(c.text, 'I receive Ref. 12/3/2026 and Clause (a).');
+    expect(c.text, 'I recieve Ref. 12/3/2026 and Clause (a) to mehta 12 May.');
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-accept-0')));      // then only the spelling
+    await tester.pump();
+    expect(c.text, 'I receive Ref. 12/3/2026 and Clause (a) to mehta 12 May.');
+    await tester.pump(const Duration(milliseconds: 60));
   });
 
   testWidgets('dismiss hides a suggestion and it is not offered again', (tester) async {
@@ -270,7 +243,7 @@ void main() {
     expect(w.lastIgnore, contains('recieve'));
   });
 
-  testWidgets('R2-03 / R2-01: guesses stay out of Accept all; meaning flags are shown', (tester) async {
+  testWidgets('R2-03 / R2-01: a guess is applied only by its own Accept; meaning flags are shown', (tester) async {
     final w = FakeWriting()
       ..onCheck = ((t) => {'suggestions': [
             sugg('a', 0, 1, 'i', 'I'),
@@ -281,10 +254,10 @@ void main() {
         'flags': [{'code': 'MEANING_CHANGED', 'severity': 'error', 'detail': 'missing after correction: 3, january'}],
         'message': ''};
     final c = await pump(tester, w, 'i mukhyamantri recieve');
-    expect(find.text('Accept all corrections (2)'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('writing-accept-all')));
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-accept-0')));
     await tester.pump();
-    expect(c.text, 'I mukhyamantri receive');   // the guess was not applied
+    expect(c.text, 'I mukhyamantri recieve');   // only that item; the guess and the spelling stay offered
+    expect(find.text('mukhyamantri  →  mahamari'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('writing-proofread')));
     await tester.pump();
     await tester.pump();
@@ -314,7 +287,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 60));
   });
 
-  testWidgets('R5-02: retained offsets use original spans across multiple accepted edits', (tester) async {
+  testWidgets('R5-02: retained offsets stay right across several single accepts', (tester) async {
     const text = 'abcdefghijklmnopqrstu';
     final w = FakeWriting()..onCheck = (_) => {'suggestions': [
       sugg('insert', 0, 0, '', '01234567890123456789'),
@@ -322,7 +295,10 @@ void main() {
       sugg('later', 20, 21, 'u', 'UU'),
     ], 'status': {'spelling': 'ok'}};
     final c = await pump(tester, w, text);
-    await tester.tap(find.byKey(const ValueKey('writing-accept-all')));
+    await tester.tap(find.byKey(const ValueKey('writing-item-0-accept-0')));      // the insertion
+    await tester.pump();
+    expect(c.text, '01234567890123456789abcdefghijklmnopqrstu');
+    await tester.tap(find.byKey(const ValueKey('writing-item-1-accept-0')));      // 'later', moved by 20
     await tester.pump();
     expect(c.text, '01234567890123456789abcdefghijklmnopqrstUU');
     expect(find.text('k  →  K'), findsOneWidget);
@@ -346,7 +322,7 @@ void main() {
     expect(w.lastIgnore, contains('c1'));
   });
 
-  testWidgets('driver r4 redesign: Brain items are never in Accept all, even when labelled correction',
+  testWidgets('Brain items, even when labelled correction, have only their own Accept',
       (tester) async {
     final w = FakeWriting()
       ..brainAnswer = {'suggestions': [

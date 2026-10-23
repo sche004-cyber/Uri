@@ -102,8 +102,10 @@ def _rules(text: str) -> list:
     for m in re.finditer(r"([A-Za-z)][,;])([A-Za-z])", text):
         left = re.search(r"(\S*)$", text[max(0, m.start() - 60):m.start() + 1]).group(1)
         right = re.match(r"\S*", text[m.end() - 1:m.end() + 60]).group(0)
-        if not re.fullmatch(r"\(?[A-Za-z]+\)?", left) or not re.fullmatch(r"[A-Za-z]+[.,;:!?)]?", right):
-            continue                                       # C:\bin;D:\tools, Server=a;Database=b (FB4 R6-03)
+        left_start = m.start() + 1 - len(left)            # where the token before the comma begins
+        if not re.fullmatch(r"\(?[A-Za-z]+\)?", left) or not re.fullmatch(r"[A-Za-z]+[.,;:!?)]?", right) or \
+                re.search(r"(?:^|\s)--?\w[\w-]*\s+$", text[max(0, left_start - 40):left_start]):
+            continue                                       # C:\bin;D:\tools, Server=a;Database=b, --fields a,b
         p = m.start(1) + 2
         out.append(_sugg(p, p, "", [" "], "spacing", "correction", "rules", "Add a space after the punctuation."))
     # missing space after a full stop between two ordinary words: "end.The" (not e.g., file.docx, U.S.)
@@ -117,9 +119,13 @@ def _rules(text: str) -> list:
         out.append(x)
     # duplicated punctuation (an ellipsis is kept)
     for m in re.finditer(r"([,;:!?])\1+", text):
+        if m.group(1) == ":":
+            continue                                       # the :: operator (review FB5 R7-05)
         out.append(_sugg(m.start(), m.end(), m.group(0), [m.group(1)], "punctuation", "correction", "rules",
                          "Repeated punctuation."))
     for m in re.finditer(r"(?<![.\w])(\w+)(\.\.)(?!\.)", text):
+        if re.match(r"\w", text[m.end(2):m.end(2) + 1]):
+            continue                                       # a range such as A..D (review FB5 R7-05)
         out.append(_sugg(m.start(2), m.end(2), "..", ["."], "punctuation", "correction", "rules",
                          "Two full stops."))
     # lone lower-case "i" and its contractions
@@ -135,6 +141,8 @@ def _rules(text: str) -> list:
         start = m.start(1)
         if text[m.end(2):m.end(2) + 1].isupper():
             continue                                       # pH, eKYC, mRNA (review FB3 R2-03)
+        if re.match(r"\.[A-Za-z]", text[m.end(2):m.end(2) + 2]):
+            continue                                       # report.pdf, example.com (review FB5 R7-04)
         if re.match(r"[\w.'’]*[@/\\:]|www\.|[a-z]{1,4}\.[a-z]", text[start:start + 30]):
             continue                                       # e-mail, path, link, dotted abbreviations (e.g., w.e.f.)
         # review FB1 R2-04: look back over a short window only, so the rule stays linear on long text
@@ -325,8 +333,8 @@ def _spell_suggestions(text: str, res: dict) -> list:
         reps = [r for r in reps if isinstance(r, str) and r]
         # Proper nouns: a capitalised or all-capital word that Windows only "does not know" (no autocorrect) is most
         # often a name, place or office (Iyer, Nirman Bhawan, CPWD); it is not offered as a misspelling unless the
-        # only difference Windows suggests is letter case.
-        if action == 1 and (word[:1].isupper() or any(c.isdigit() for c in word)):
+        # only difference Windows suggests is letter case. The same for a word with an inner capital (eKYC, iPhone).
+        if action == 1 and (word[:1].isupper() or any(c.isupper() for c in word[1:]) or any(c.isdigit() for c in word)):
             if not any(r.lower() == word.lower() for r in reps):
                 continue
         if action == 1 and not reps:
@@ -526,7 +534,8 @@ _REFERENCE_SPAN = re.compile(
     r"\(?[A-Za-z0-9]+(?:\s*[./:-]+\s*[A-Za-z0-9]+)*\)?(?:\([A-Za-z0-9]+\))*", re.I)
 _BARE_REFERENCE_SPAN = re.compile(r"\b[A-Za-z0-9]+(?:[./:-]+[A-Za-z0-9]+)+(?:\([A-Za-z0-9]+\))*")
 _URL_SPAN = re.compile(r"\b(?:https?://|www\.)[^\s<>\"']+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+"
-                       r"|\S*[=\\]\S*", re.I)                # + key=value and Windows path tokens (FB4 R6-03)
+                       r"|\S*[=\\]\S*"                      # + key=value and Windows path tokens (FB4 R6-03)
+                       r"|(?<!\w)--?[A-Za-z][\w-]*(?:\s+[^\s-]\S*)?", re.I)   # + a command-line flag and its value
 
 
 def _rule_protected_spans(text: str) -> list[tuple[int, int]]:
