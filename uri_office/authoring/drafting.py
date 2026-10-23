@@ -272,9 +272,37 @@ def extract_facts(instruction: str) -> list:
             add("number", value, m.start(), end)
         else:
             spans.append((m.start(), m.end()))
-    # 5. names
-    for start, words in _cap_runs(text, taken):
+    # 5. Claim explicitly labelled people before looking at capitalised runs. A title-cased
+    # designation after a person can otherwise be mistaken for a second person's name.
+    person_spans = []
+    for m in _PERSON_NAME.finditer(text):
+        if not taken(m.start(1), m.end(1)):
+            add("name", m.group(1), m.start(1), m.end(1))
+            person_spans.append((m.start(1), m.end(1), False))
+
+    runs = _cap_runs(text, taken)
+    parts = [part for start, words in runs for _, part in _split_at_honorifics(start, words)]
+    for part in parts:
+        name = _trim(part)
+        if len(name) >= 2 and any(not _is_hon(w) and w.lower().rstrip(".") not in _NOT_NAME for _, w in name):
+            person_spans.append((name[0][0], name[-1][0] + len(name[-1][1]), _is_hon(name[0][1])))
+    designation_spans = []
+    for part in parts:
+        name = _trim(part)
+        if not name or _is_hon(name[0][1]):
+            continue
+        start, end = name[0][0], name[-1][0] + len(name[-1][1])
+        if any(re.fullmatch(r"\s+as\s+(?:the\s+)?", text[person_end:start], re.I)
+               or (honorific and re.fullmatch(r",\s+", text[person_end:start])
+                   and text[end:].startswith(","))
+               for _, person_end, honorific in person_spans if person_end < start):
+            designation_spans.append((start, end))
+    spans.extend(designation_spans)
+
+    for start, words in runs:
         for part_start, part in _split_at_honorifics(start, words):
+            if taken(part[0][0], part[-1][0] + len(part[-1][1])):
+                continue
             name = _trim(part)
             # FB5 R6-04: a name needs a word that is not an honorific or a designator ("Dr", "Room" alone are not)
             if len(name) >= 2 and any(not _is_hon(w) and w.lower().rstrip(".") not in _NOT_NAME for _, w in name):
@@ -289,9 +317,6 @@ def extract_facts(instruction: str) -> list:
         if taken(m.start(1), m.end(1)) or w.lower() in _NOT_NAME or w.lower() in _MONTH_SET or len(w) < 2:
             continue
         add("name", w, m.start(1), m.end(1))
-    for m in _PERSON_NAME.finditer(text):
-        if not taken(m.start(1), m.end(1)):
-            add("name", m.group(1), m.start(1), m.end(1))
     for m in _LETTER_RECIPIENT.finditer(text):
         # "letter to request transfer" is a purpose, not a recipient.
         if not taken(m.start(1), m.end(1)) and m.group(1).split()[0].lower() not in _NOT_NAME:

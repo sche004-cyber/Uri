@@ -119,7 +119,7 @@ def test_facts_are_extracted_deterministically():
     facts = DR.extract_facts(INSTR)
     assert facts == [
         {"kind": "reference", "text": "12/3/2026-Admin"}, {"kind": "date", "text": "23 October 2026"},
-        {"kind": "name", "text": "Shri Ramesh Kumar"}, {"kind": "name", "text": "Section Officer"},
+        {"kind": "name", "text": "Shri Ramesh Kumar"},
         {"kind": "name", "text": "Accounts Section"}, {"kind": "date", "text": "01.11.2026"},
         {"kind": "amount", "text": "25,000"}]
     assert DR.extract_facts("Draft a note sheet for File No. A-12011/3/2026 to buy 5 laptops for the Ministry of "

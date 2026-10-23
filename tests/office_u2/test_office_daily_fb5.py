@@ -32,6 +32,28 @@ def test_r7_01_labelled_name_ends_before_as_role(instruction, name, replacement,
     assert DR.missing_facts(instruction, rephrased) == []
 
 
+@pytest.mark.parametrize("instruction,draft,person,replacement", [
+    ("Draft a circular assigning staff member ramesh kumar as Section Officer.",
+     "Circular: ramesh kumar is assigned the role of SO.", "ramesh kumar", "suresh kumar"),
+    ("Issue an order appointing officer named asha devi as Project Coordinator.",
+     "Order: asha devi will coordinate the project.", "asha devi", "priya devi"),
+    ("Draft a notice assigning Ramesh Kumar as Nodal Officer.",
+     "Notice: Ramesh Kumar is the nodal contact.", "Ramesh Kumar", "Suresh Kumar"),
+    ("Issue an order appointing Shri Ramesh Kumar as Section Officer.",
+     "Order: Shri Ramesh Kumar is appointed SO.", "Shri Ramesh Kumar", "Shri Suresh Kumar"),
+    ("Write an order transferring Shri Ramesh Kumar, Section Officer, to Accounts Section.",
+     "Transfer Shri Ramesh Kumar, SO, to Accounts Section.", "Shri Ramesh Kumar", "Shri Suresh Kumar"),
+])
+def test_r8_01_title_cased_designation_is_not_a_person(instruction, draft, person, replacement):
+    expected = [{"kind": "name", "text": person}]
+    if "Accounts Section" in instruction:
+        expected.append({"kind": "name", "text": "Accounts Section"})
+    assert [f for f in DR.extract_facts(instruction) if f["kind"] == "name"] == expected
+    assert DR.missing_facts(instruction, draft) == []
+    assert [(w["kind"], w["text"]) for w in DR.missing_facts(
+        instruction, draft.replace(person, replacement))] == [("name", person)]
+
+
 # ---- R6-01: month and year, "Nth (day) of Month", periods -----------------------------------------------------------
 @pytest.mark.parametrize("instruction,old,new", [
     ("Prepare a notesheet on the salary bill for the month of April 2026.", "April 2026", "March 2026"),
