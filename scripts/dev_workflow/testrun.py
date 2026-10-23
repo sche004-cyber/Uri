@@ -83,7 +83,8 @@ def _sha(text: str) -> str:
 
 
 SECRET_FLAG_WORDS = {"password", "passwd", "pass", "pwd", "secret", "token", "key", "apikey", "pat", "credential",
-                     "credentials", "auth", "authorization", "bearer", "cookie", "sig", "signature", "passphrase"}
+                     "credentials", "auth", "authorization", "bearer", "cookie", "sig", "signature", "passphrase",
+                     "pw"}
 STRONG_SECRET_SUBSTRINGS = ("password", "passwd", "passphrase", "secret", "token", "apikey", "credential")
 _HEADER_SECRET = re.compile(r"(?i)^(\s*(?:proxy-)?(?:authorization|cookie|x-api-key|x-auth-token)\s*:\s*).+")
 _BEARER = re.compile(r"(?i)\b(bearer|basic|token)\s+\S+")
@@ -102,7 +103,8 @@ def _secret_flag(arg: str) -> bool:
     if any(part.lower() in SECRET_FLAG_WORDS for part in parts if part):
         return True
     low = name.lower()
-    return any(w in low for w in STRONG_SECRET_SUBSTRINGS)
+    # FB-4 FB4-06: compounds ending in key (accesskey, privatekey, sshkey)
+    return any(w in low for w in STRONG_SECRET_SUBSTRINGS) or low.endswith(("key", "keys"))
 
 
 def _safe_argv(argv: list[str]) -> list[str]:
@@ -143,7 +145,7 @@ def tree_state(cwd: Path) -> dict:
     _, tree = _git(cwd, "rev-parse", "HEAD^{tree}")
     rc_s, status = _git(cwd, "status", "--porcelain", "--untracked-files=normal")
     # FB-3 FB3-02: assume-unchanged / skip-worktree entries hide local edits from git status
-    rc_v, flags = _git(cwd, "ls-files", "-v", "-z")
+    rc_v, flags = _git(root, "ls-files", "-v", "-z")          # FB-4 FB4-01: whole repository, not the cwd subtree
     hidden = rc_v == 0 and any(len(e) > 2 and e[1] == " " and (e[0].islower() or e[0] == "S")
                                for e in flags.split("\0"))
     rel = os.path.relpath(os.path.realpath(cwd), os.path.realpath(root)).replace("\\", "/")
@@ -244,14 +246,24 @@ def _write(run_dir: Path, rec: dict) -> None:
     atomic_write_bytes(run_dir / "run.json", (json.dumps(rec, indent=1, sort_keys=True) + "\n").encode("utf-8"))
 
 
-def _load(run_dir: Path) -> dict | None:
-    try:
-        rec = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
-        if isinstance(rec.get("argv"), list) and all(isinstance(arg, str) for arg in rec["argv"]):
-            rec["argv"] = _safe_argv(rec["argv"])
-        return rec
-    except (OSError, ValueError):
-        return None
+LOAD_RETRIES = 40          # x 25 ms
+
+
+def _load(run_dir: Path, retries: int = LOAD_RETRIES) -> dict | None:
+    """run.json, or None. On Windows a read that meets the supervisor's atomic replace (heartbeat) can fail with a
+    sharing violation or see no file for a moment; such transient failures are retried (M-02: measured 4 in 4,000
+    cross-process reads), so a live run is never reported as MISSING_MARKER because of a read race."""
+    for attempt in range(retries + 1):
+        try:
+            rec = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+            if isinstance(rec.get("argv"), list) and all(isinstance(arg, str) for arg in rec["argv"]):
+                rec["argv"] = _safe_argv(rec["argv"])
+            return rec
+        except (OSError, ValueError):
+            if attempt == retries:
+                return None
+            time.sleep(0.025)
+    return None
 
 
 def all_runs(root: Path) -> list[dict]:
@@ -282,8 +294,11 @@ def status(root: Path, ident: str) -> dict:
     if d is None:
         return {"id": ident, "state": "NOT_FOUND"}
     rec = _load(d)
-    if rec is None or rec.get("id") != d.name:
-        return {"id": ident, "state": "MISSING_MARKER", "why": "run.json unreadable or run id mismatch"}
+    if rec is None:
+        # M-02: unreadable is not evidence that the supervisor died; wait keeps polling
+        return {"id": ident, "state": "UNREADABLE", "why": "run.json could not be read (retried)"}
+    if rec.get("id") != d.name:
+        return {"id": ident, "state": "MISSING_MARKER", "why": "run id mismatch"}
     out = {k: rec.get(k) for k in ("id", "name", "argv", "cwd", "head", "started_at", "ended_at", "exit_code",
                                    "duration_s", "log", "log_sha256", "env_failures", "reused_from", "lock",
                                    "contained")}
@@ -319,7 +334,7 @@ def wait(root: Path, ident: str, timeout_s: float, poll_s: float = 2.0) -> dict:
     while True:
         d = find_run(root, ident)
         st = status(root, d.name) if d else {"id": ident, "state": "NOT_FOUND"}
-        if st["state"] not in ("RUNNING", "STALLED"):
+        if st["state"] not in ("RUNNING", "STALLED", "UNREADABLE"):
             return st
         if time.monotonic() >= deadline:
             return {**st, "state": "WAIT_TIMEOUT", "run_state": st["state"]}

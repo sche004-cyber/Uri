@@ -253,6 +253,26 @@ The repair addresses each class once rather than each instance:
 
 Regression tests `test_fb3_*`: 6 fail on `7562b6e1` (and FB3-04 as noted), and all pass after the repair.
 
+### 5.4 Fallback review FB-4 (`ab983066`, REJECT), gate failure M-02, and repairs
+
+Driver run r5 stopped BLOCKED NO_INDEPENDENT_REVIEWER on `ab983066`. FB-4 (raw:
+`D:/uri-dev/lc-storage-evidence/fallback-review/review_FB4_ab983066.txt`, ledger review `V4`) found FB3-02 NOT_FIXED.
+That is a recurrence, so the root cause was diagnosed before repair: repository-wide checks depended on the cwd, and
+reflogs were parsed from files instead of read through git. The full gate on `ab983066` FAILED 1 of 1010 and was
+recorded as FAIL on the commit: `test_ts4_missing_marker_when_supervisor_dies`.
+
+| Finding | Repair |
+|---|---|
+| FB4-01 MEDIUM blocking (recurrence of FB3-02): index flags were read only below a subdirectory cwd | `tree_state` reads them from the repository root. |
+| FB4-02 MEDIUM blocking: deleting a symbolic branch deleted its target | Symbolic refs, and refs that a symbolic ref points to (found while testing this repair), are never listed and are protected at recheck. Deletion uses `update-ref --no-deref`. |
+| FB4-03 LOW: hand-edited branch items could name tags or remote refs | Apply refuses branch items that are not valid `refs/heads/*` names. |
+| FB4-04 LOW: reflog checks failed open on reftable | Reflogs are read with `git reflog show` (any ref backend). An unreadable reflog means protect. |
+| FB4-05 LOW: canonical given as a SHA: the branch holding it was listed | When canonical is not a named ref, a branch at canonical's tip is not listed. A first, broader version of this rule (any branch at canonical's tip) was too strict, because merged branches at canonical are normal, and it was narrowed before commit. |
+| FB4-06 LOW: `--accesskey`, `--privatekey`, `--sshkey`, `--pw` were kept | `pw` added. Flag names ending in `key` or `keys` are redacted. |
+| M-02 (coordinator, gate failure): `status` reported MISSING_MARKER for a live run when a read met the supervisor's atomic `run.json` replace | Reproduced cross-process: 4 of 4,000 reads before the repair, 0 after. `_load` retries transient failures. If a run is still unreadable after the retries, its state is UNREADABLE, which `wait` keeps polling through. It is never reported as MISSING_MARKER. |
+
+Regression tests `test_fb4_*` and `test_m02_*`: 7 fail on `ab983066`, and all pass after the repair (94 in total).
+
 ## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.

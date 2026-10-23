@@ -1569,3 +1569,128 @@ def test_fb3_06_more_secret_flag_spellings():
             "--SSHPassphrase", "s4secret", "--githubtoken", "s5secret", "--mysqlPwd", "s6secret", "--verbose", "keep"]
     joined = " ".join(tr._safe_argv(argv))
     assert not any(f"s{i}secret" in joined for i in range(1, 7)) and "keep" in joined
+
+
+# =========================================================================== FB-4 (fallback review of ab983066) and M-02
+
+def test_fb4_01_hidden_edit_outside_subdirectory_cwd_is_dirty(runs, repo, tmp_path):
+    (repo / "src").mkdir()
+    (repo / "tests").mkdir()
+    (repo / "src" / "v.txt").write_text("bad")
+    (repo / "tests" / "t.txt").write_text("t")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-q", "-m", "layout")
+    _git(repo, "update-index", "--skip-worktree", "src/v.txt")
+    (repo / "src" / "v.txt").write_text("good")
+    assert tr.tree_state(repo / "tests")["dirty"] is True
+    lp = tmp_path / "ledger.sqlite3"
+    lg = tl.Ledger(lp)
+    tid = lg.create("t", "o", DEV, worktree=str(repo), branch="main")
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.close()
+    rec = tr.start(pyc("print(1)"), name="sub", timeout_s=60, cwd=str(repo / "tests"), root=runs, task=tid,
+                   actor=DEV, ledger=str(lp), reuse=True)
+    assert rec["ledger"]["recorded"] is False and not rec.get("reuse_key")
+
+
+def test_fb4_02_symbolic_branch_is_never_deleted_nor_its_target(sandbox):
+    sb = sandbox
+    _git(sb["repo"], "branch", "symtarget", sb["base"])
+    _git(sb["repo"], "symbolic-ref", "refs/heads/alias", "refs/heads/symtarget")
+    refs = {it["path"] for it in _plan(sb)["items"] if it["kind"] == "branch"}
+    assert "refs/heads/alias" not in refs and "refs/heads/symtarget" not in refs   # symref and its target
+    plan = _plan(sb)
+    forged = {"id": "br:alias", "kind": "branch", "path": "refs/heads/alias", "head": sb["base"],
+              "cls": "OBSOLETE_BRANCH", "action": "delete-ref", "reasons": [],
+              "fingerprint": hk.sha_text(hk.canon_json(["refs/heads/alias", sb["base"]]))}
+    plan["items"].append(forged)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j", classes=["OBSOLETE_BRANCH"])
+    row = next(x for x in r["results"] if x.get("item") == "br:alias")
+    assert row["outcome"] != "DONE"
+    assert _git(sb["repo"], "rev-parse", "refs/heads/symtarget") == sb["base"]
+
+
+def test_fb4_03_branch_items_cannot_name_tags_or_remotes(sandbox):
+    sb = sandbox
+    _git(sb["repo"], "tag", "v1", sb["base"])
+    _git(sb["repo"], "update-ref", "refs/remotes/origin/keep", sb["base"])
+    plan = _plan(sb)
+    for ref in ("refs/tags/v1", "refs/remotes/origin/keep"):
+        plan["items"].append({"id": "br:" + ref, "kind": "branch", "path": ref, "head": sb["base"],
+                              "cls": "OBSOLETE_BRANCH", "action": "delete-ref", "reasons": [],
+                              "fingerprint": hk.sha_text(hk.canon_json([ref, sb["base"]]))})
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j", classes=["OBSOLETE_BRANCH"])
+    for ref in ("refs/tags/v1", "refs/remotes/origin/keep"):
+        row = next(x for x in r["results"] if x.get("item") == "br:" + ref)
+        assert row["outcome"] == "REFUSED"
+        assert _git(sb["repo"], "rev-parse", ref) == sb["base"]
+
+
+def test_fb4_04_reflog_check_works_on_reftable(tmp_path):
+    repo = tmp_path / "rt"
+    r = subprocess.run(["git", "init", "-q", "-b", "main", "--ref-format=reftable", str(repo)], capture_output=True)
+    if r.returncode != 0:
+        pytest.skip("git without reftable")
+    for k, v in (("user.email", "t@example.invalid"), ("user.name", "t"), ("core.autocrlf", "false")):
+        _git(repo, "config", k, v)
+    base = _commit(repo, "a.txt", b"a\n")
+    _git(repo, "update-ref", CANON, base)
+    wt = tmp_path / "wt"
+    _git(repo, "worktree", "add", "-q", "--detach", str(wt), base)
+    lost = _commit(wt, "x.txt", b"x\n")
+    _git(wt, "checkout", "-q", "--detach", base)
+    _git(repo, "branch", "old/topic", base)
+    plan = hk.inventory(repo, canonical_ref=CANON, min_age_hours=0)
+    items = {it["path"]: it for it in plan["items"]}
+    assert items[str(wt)]["cls"] == "PROTECTED" and lost in items[str(wt)]["reflog_only"]
+
+
+def test_fb4_05_branch_holding_canonical_tip_is_not_obsolete(tmp_path):
+    repo = _init(tmp_path / "r")
+    tip = _commit(repo, "b.txt", b"b\n")
+    _git(repo, "branch", "canonbr", tip)
+    _git(repo, "reset", "-q", "--hard", "HEAD~1")
+    plan = hk.inventory(repo, canonical_ref=tip, min_age_hours=0)
+    assert "refs/heads/canonbr" not in {it["path"] for it in plan["items"] if it["kind"] == "branch"}
+
+
+def test_fb4_06_key_compounds_and_pw_redacted():
+    argv = ["x", "--accesskey", "a1secret", "--privatekey", "a2secret", "--pw", "a3secret", "--sshkey", "a4secret",
+            "--keep-going", "keepme"]
+    joined = " ".join(tr._safe_argv(argv))
+    assert not any(f"a{i}secret" in joined for i in range(1, 5)) and "keepme" in joined
+
+
+def test_m02_status_never_reports_missing_marker_for_a_live_writer(tmp_path):
+    """M-02 (gate on ab983066): a read that meets the supervisor's atomic run.json replace must not be reported as
+    MISSING_MARKER; reproduced cross-process at 4 in 4,000 reads before the repair."""
+    root = tmp_path / "runs"
+    d = root / "r-1"
+    d.mkdir(parents=True)
+    writer = textwrap.dedent(f"""
+        import os, sys, time
+        sys.path.insert(0, r'{ROOT}')
+        from scripts.dev_workflow import testrun as tr
+        d = __import__('pathlib').Path(r'{d}')
+        me = os.getpid()
+        rec = {{"id": "r-1", "name": "r", "argv": ["x"], "started_at": tr.utcnow(), "supervisor_pid": me,
+               "supervisor_ctime": tr._proc_ctime(me), "final": False, "state": "RUNNING",
+               "log": str(d / "output.log")}}
+        end = time.time() + 30
+        while time.time() < end:
+            rec["heartbeat_at"] = tr.utcnow(); tr._write(d, rec)
+    """)
+    w = subprocess.Popen([PY, "-c", writer])
+    try:
+        deadline = time.monotonic() + 20
+        while not (d / "run.json").exists() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        bad = [tr.status(root, "r-1")["state"] for _ in range(3000)]
+        assert "MISSING_MARKER" not in bad
+    finally:
+        w.kill()
+        w.wait()

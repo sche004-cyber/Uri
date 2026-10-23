@@ -398,32 +398,40 @@ def _gitdir(path: Path) -> Path | None:
     return Path(out) if rc == 0 and out and Path(out).is_dir() else None
 
 
-def _commits_only_in_log(ctx: "Ctx", log: Path) -> list[str] | None:
-    """Commits named in a reflog file that no branch, tag, remote or canonical holds. Every entry is checked
-    (FB-3 FB3-04: no truncation); None when the log cannot be read or git fails (callers then protect)."""
-    if not log.is_file():
-        return []
-    try:
-        shas = {}
-        for line in log.read_text(encoding="utf-8", errors="replace").splitlines():
-            parts = line.split()
-            for s in parts[:2]:
-                if len(s) == 40 and set(s) - {"0"}:
-                    shas[s] = None
-    except OSError:
-        return None
+def _unreferenced(ctx: "Ctx", shas) -> list[str] | None:
+    """Of these commits, those that no branch, tag, remote or canonical holds. Every sha is checked (FB-3 FB3-04: no
+    truncation; rev-list --stdin has no command-line limit). None when git fails (callers then protect)."""
+    shas = list(dict.fromkeys(s for s in shas if len(s) == 40 and set(s) - {"0"}))
     if not shas:
         return []
-    existing = ctx.repo
-    rc, out, _ = git(existing, "cat-file", "--batch-check", inp="".join(f"{s}\n" for s in shas))
+    rc, out, _ = git(ctx.repo, "cat-file", "--batch-check", inp="".join(f"{s}\n" for s in shas))
     if rc != 0:
         return None
     present = [s for s, line in zip(shas, out.splitlines()) if not line.endswith("missing")]
     if not present:
         return []
-    rc, out, _ = git(existing, "rev-list", "--stdin", "--not", "--branches", "--tags", "--remotes", ctx.canonical,
+    rc, out, _ = git(ctx.repo, "rev-list", "--stdin", "--not", "--branches", "--tags", "--remotes", ctx.canonical,
                      inp="".join(f"{s}\n" for s in present))
     return out.splitlines() if rc == 0 else None
+
+
+def _reflog(where, ref: str) -> list[str] | None:
+    """Every commit a ref's reflog names, read by git itself, so any ref backend (files or reftable) works
+    (FB-4 FB4-04). None: git could not read it."""
+    rc, out, _ = git(where, "reflog", "show", "--format=%H", ref, "--")
+    return out.split() if rc == 0 else None
+
+
+def _commits_only_in_log(ctx: "Ctx", log: Path) -> list[str] | None:
+    """Reflog-file variant of the check (kept for files-backend logs read directly)."""
+    if not log.is_file():
+        return []
+    try:
+        shas = [s for line in log.read_text(encoding="utf-8", errors="replace").splitlines()
+                for s in line.split()[:2]]
+    except OSError:
+        return None
+    return _unreferenced(ctx, shas)
 
 
 def _hidden_edits(path: Path) -> list[str] | None:
@@ -442,10 +450,8 @@ def _hidden_edits(path: Path) -> list[str] | None:
 def _reflog_only_commits(ctx: "Ctx", path: Path) -> list[str] | None:
     """Commits in the worktree's own HEAD reflog that no branch, tag, remote or canonical holds: removing the
     worktree removes that reflog (FB-2 FB2-02). None: could not be determined."""
-    gd = _gitdir(path)
-    if gd is None:
-        return None if (path / ".git").exists() else []
-    return _commits_only_in_log(ctx, gd / "logs" / "HEAD")
+    shas = _reflog(path, "HEAD")
+    return None if shas is None else _unreferenced(ctx, shas)
 
 
 def _idle_s(path: Path) -> float:
@@ -657,19 +663,30 @@ def cache_group(parent: Path, parent_id: str, members: list[dict]) -> dict:
             "fingerprint": sha_text(canon_json(sorted((m["path"], m["fingerprint"]) for m in members)))}
 
 
+def _symref_targets(ctx: Ctx) -> set[str]:
+    """Refs that a symbolic ref points to (deleting one leaves the symref dangling)."""
+    _, out, _ = git(ctx.repo, "for-each-ref", "--format=%(symref)")
+    return {x for x in out.split() if x}
+
+
 def _branch_reflog_only(ctx: Ctx, name: str) -> list[str] | None:
     """Commits kept only by refs/heads/<name>'s own reflog (deleting the ref deletes that reflog)."""
-    if ctx.common_dir is None:
-        return None
-    return _commits_only_in_log(ctx, ctx.common_dir / "logs" / "refs" / "heads" / Path(*name.split("/")))
+    shas = _reflog(ctx.repo, "refs/heads/" + name)
+    return None if shas is None else _unreferenced(ctx, shas)
 
 
 def classify_branches(ctx: Ctx, checked_out: set[str]) -> list[dict]:
-    _, out, _ = git(ctx.repo, "for-each-ref", "refs/heads", "--format=%(refname) %(objectname)", check=True)
+    _, out, _ = git(ctx.repo, "for-each-ref", "refs/heads", "--format=%(refname) %(objectname) %(symref)",
+                    check=True)
     items = []
-    for line in out.splitlines():
-        ref, _, sha = line.partition(" ")
+    rows = [(line.split(" ") + ["", ""])[:3] for line in out.splitlines()]
+    sym_targets = _symref_targets(ctx)
+    for ref, sha, symref in rows:
         name = ref[len("refs/heads/"):]
+        if symref or ref in sym_targets:                    # FB-4 FB4-02: never a symref, never a symref's target
+            continue
+        if sha == ctx.canonical and not ctx.canonical_full:  # FB-4 FB4-05: canonical given as a SHA: this branch
+            continue                                          # may be the only ref holding canonical's tip
         if ref in checked_out or name.startswith(PRESERVED_BRANCH_PREFIXES) or name in ctx.task_branches:
             continue
         if ref == ctx.canonical_full:                       # FB-3 FB3-01: never the canonical ref itself
@@ -921,9 +938,11 @@ def _current(ctx: Ctx, it: dict) -> dict | None:
         cur = {**it, "head": sha, "fingerprint": sha_text(canon_json([it["path"], sha]))}
         name = it["path"][len("refs/heads/"):]
         checked_out = {w["branch"] for w in wts.values() if w.get("branch")}
+        symbolic = git(ctx.repo, "symbolic-ref", "-q", it["path"])[0] == 0 or it["path"] in _symref_targets(ctx)
         if (ctx.reach(sha) != "CANONICAL" or it["path"] in checked_out or name in ctx.task_branches
                 or name.startswith(PRESERVED_BRANCH_PREFIXES)          # FB-1 N-04
-                or it["path"] == ctx.canonical_full or _branch_reflog_only(ctx, name) != []):   # FB3-01, FB3-05
+                or it["path"] == ctx.canonical_full or _branch_reflog_only(ctx, name) != []   # FB3-01, FB3-05
+                or symbolic or (sha == ctx.canonical and not ctx.canonical_full)):   # FB4-02, FB4-05
             cur["cls"] = "PROTECTED"
         return cur
     return None
@@ -932,6 +951,11 @@ def _current(ctx: Ctx, it: dict) -> dict | None:
 def _cache_item_problem(it: dict, plan: dict) -> str | None:
     """A cache item may name only __pycache__/.pytest_cache directories below a top-level directory of one of the
     plan's roots (FB-2 FB2-04: a hand-edited item must not turn an arbitrary directory into an automatic delete)."""
+    if it["kind"] == "branch":                          # FB-4 FB4-03: never tags, remotes or other refs
+        ref = str(it.get("path") or "")
+        ok = ref.startswith("refs/heads/") and subprocess.run(
+            ["git", "check-ref-format", ref], capture_output=True).returncode == 0
+        return None if ok else f"{ref} is not a local branch ref"
     if it["kind"] not in ("cache", "caches"):
         return None
     roots = {norm(r) for r in plan.get("roots", [])}
@@ -1062,7 +1086,7 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                     for q in it["paths"]:
                         _rmtree(Path(q))
                 elif action == "delete-ref":
-                    git(ctx.repo, "update-ref", "-d", it["path"], it["head"], check=True)
+                    git(ctx.repo, "update-ref", "--no-deref", "-d", it["path"], it["head"], check=True)
                 r.update(outcome="DONE", action=action, bytes=it.get("bytes", 0), restore=it.get("restore"), **detail)
                 journal.append("DONE", {"plan_id": plan["plan_id"], "item": it["id"], "action": action,
                                         "restore": it.get("restore"), **detail})
