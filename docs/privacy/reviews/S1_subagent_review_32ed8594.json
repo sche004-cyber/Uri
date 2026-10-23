@@ -1,0 +1,121 @@
+{
+ "verdict": "REJECT",
+ "candidate": "32ed8594b0a5acb7268fb837b2fae08f12fce815",
+ "findings": [
+  {
+   "id": "S1-01",
+   "severity": "HIGH",
+   "blocking": true,
+   "title": "WEB_SEARCH sanitization assembles new sensitive values on the wire; classification is never re-run on the rewritten text",
+   "detail": "For WEB_SEARCH, _rewrite replaces REDACT spans with an empty string and prepare() then collapses whitespace. A value split by another finding becomes contiguous after the split is removed. Classification ran only on the input, so the result is sent unchecked. Reproduced end to end through TavilyProvider with httpx.MockTransport and PrivacyGateway(): query 'card 4111 1111 a@b.co 1111 1111 limit' gave status NO_RESULTS, and the wire query was 'card 4111 1111 1111 1111 limit'. classify() of that wire query returns {'FINANCIAL': 1}, so the gateway's own classifier would have stopped it. Direct gateway calls show the same effect from whitespace collapse: prepare('card 4111  1111  1111  1111', WEB_SEARCH) and prepare('card 4111\\n1111\\n1111\\n1111', WEB_SEARCH) find no categories and return 'card 4111 1111 1111 1111'. prepare('Ask Asha  Kumar about it', protected_terms=['Asha Kumar']) returns 'Ask Asha Kumar about it' with categories {}. (search.py's _clean_query collapses whitespace before prepare, so the live search path is hit by the removal case, not by double spaces.) This is a different root cause from R1-01 (Unicode separators).",
+   "files": ["uri_privacy/gateway.py:126", "uri_privacy/gateway.py:127", "uri_privacy/gateway.py:145", "uri_privacy/gateway.py:91", "uri_web/search.py:107"]
+  },
+  {
+   "id": "S1-02",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "Overlap resolution drops whole lower-tier spans: street addresses leak without any grant, and a grant for one category discloses categories inside its span that were never granted",
+   "detail": "_resolve keeps one finding per overlapping region and discards the others entirely. (a) No grant: when a higher-tier value sits inside a street line, the ADDRESS finding is dropped and only the inner value is rewritten. prepare('deliver to flat 12B, Lakeview Apartments, a/c 123456789012, MG road', WEB_SEARCH) put 'deliver to flat 12B, Lakeview Apartments, a/c , MG road' on the wire (MockTransport) with categories {'FINANCIAL': 1}, and re-classifying the wire text finds ADDRESS. The same happens with a card (EXTERNAL_MODEL: 'deliver to flat 12B, Lakeview Apartments, card [[FINANCIAL_..]], MG road') and with an SSN plus a protected name ('house 4, , SSN , 5th cross road'). Without the inner value the whole line is redacted ('deliver to'). (b) With a grant: a grant for categories=['ADDRESS'] at WEB_SEARCH made prepare('flat 12, mail asha@example.in or ring +91 98765 43210, MG road') return the text unchanged, e-mail and phone included. Categories were {'ADDRESS': 1} and actions {'ADDRESS': 'ALLOW'}, so the audit records only ADDRESS. A grant for ADDRESS at EXTERNAL_MODEL similarly sent the protected PERSON 'Asha Kumar' raw. This breaks plan 2.4 (a grant matches by category) and AC-2.",
+   "files": ["uri_privacy/classify.py:193", "uri_privacy/classify.py:200", "uri_privacy/classify.py:127", "uri_privacy/gateway.py:96", "uri_privacy/gateway.py:133"]
+  },
+  {
+   "id": "S1-03",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "PersistentVaultStore maps scope ids to file names without validation or injectivity: path traversal moves or deletes files outside the vault, and colliding ids destroy another scope's mappings",
+   "detail": "_SCOPE_ID is checked only in open(); get(), close() and _drop() build home/refs/<id>.ref from any string. Reproduced with a temp home and a synthetic key. (1) restore('x', '../../victim') with a victim.ref file two levels up raised SCOPE_UNREADABLE, and the victim file was moved into the vault's quarantine. close_scope('../../victim2') deleted victim2.ref outside the vault. (2) Id collisions: ':' is rewritten to '_' and NTFS is case-insensitive, so 'task:1' and 'task_1', or 'Task1' and 'task1', share one file. After alice prepared under scope 'task:1', a fresh store running bob's prepare(scope='task_1') was refused (PRIVACY_INTERNAL_ERROR, since the scope_id check in _load fails). Alice's file was quarantined, and her later restore(e1.text, 'task:1') was refused with PRIVACY_SCOPE_UNKNOWN: her mappings are gone. The same result held for 'Task1' and 'task1'. Windows reserved names were not a problem on this host ('CON' scope worked).",
+   "files": ["uri_privacy/vault.py:146", "uri_privacy/vault.py:147", "uri_privacy/vault.py:86", "uri_privacy/vault.py:98", "uri_privacy/vault.py:112", "uri_privacy/vault.py:159", "uri_privacy/vault.py:171", "uri_privacy/vault.py:174", "uri_privacy/gateway.py:162", "uri_privacy/gateway.py:177"]
+  },
+  {
+   "id": "S1-04",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "title": "Cubic regex backtracking in _ACCOUNT, _PASSPORT and _PAN (contradicts the PC-3 claim that M95's detectors are linear)",
+   "detail": "Three adjacent \\s* groups separated by optional groups backtrack in O(n^3) on a label followed by a run of whitespace. finditer on 'account'+' '*n+'x' took 0.003/0.021/0.163 s for n=100/200/400 (about 8x per doubling) and 29.0 s at n=2000. _PASSPORT took 0.412 s at n=400 and 81.9 s at n=2000. _PAN took 0.228 s at n=400. Through the gateway: prepare('account'+' '*1000+'x', EXTERNAL_AGENT) took 2.48 s. The live search path is not affected because _clean_query collapses whitespace first. The scheduler (EXTERNAL_AGENT, no collapse, runs synchronously in tick) and the future 64 KB hooks (OD-1) are: one realistic tabular paste with column padding after 'Account' stalls the gateway. Separately, the reused Assist rules are quadratic: classify('a/'*8000) took 3.1 s, mostly long_secret, which M95 runs twice (via redact_text and _LONG_SECRET).",
+   "files": ["uri_privacy/classify.py:110", "uri_privacy/classify.py:108", "uri_privacy/classify.py:105", "uri_privacy/classify.py:131", "uri_privacy/classify.py:169", "uri_privacy/classify.py:212"]
+  },
+  {
+   "id": "S1-05",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "title": "Recall gaps beyond R1-01: common forms of SSN, card, Aadhaar, IBAN, PAN and protected terms pass through",
+   "detail": "Observed with prepare(); 'sent raw' means categories {}. (1) SSN: 'my ssn is 123456789', 'ssn 123 45 6789', 'ssn 123.45.6789' and 'ssn 123\\u201345\\u20136789' were all sent raw (also on the wire through TavilyProvider). (2) Arabic-Indic digits: a Luhn-valid card written in U+0660-0669 digits was sent raw on the wire. Fullwidth and Devanagari happened to be flagged, but the Luhn check uses ord-48 on non-ASCII digits, so detection of those is accidental. (3) Cards with double spaces, newlines, '/', ',' or '_' separators are not detected. To EXTERNAL_AGENT (the scheduler) they are sent raw with no collapse step. (4) 'aadhaar 2345.6789.0124', lowercase IBAN 'gb82 west 1234 5698 7654 32' and unlabelled lowercase PAN 'abcpe1234f' were sent raw. (5) A protected term with different internal whitespace ('Asha  Kumar', 'Asha\\nKumar') is not matched, and a 1-character term is silently ignored. Evidence strength: AC-1 is met only on the self-fitted core corpus. measurements.json's own hard set shows CONTACT recall 0.8333 and a 10% false-positive rate, both below the AC-1 thresholds. The held-out set has only 17 positives and 15 benign texts, too few to support a >=0.98 recall claim. PC-2 discloses this partly, but AC-1 is effectively unverified.",
+   "files": ["uri_privacy/classify.py:107", "uri_privacy/classify.py:103", "uri_privacy/classify.py:109", "uri_privacy/classify.py:105", "uri_privacy/classify.py:183", "uri_assist/redact.py:121", "docs/privacy/evidence/measurements.json"]
+  },
+  {
+   "id": "S1-06",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Grants are consumed before the rewrite and success audit; a later failure burns the grant and the audit does not show which grant was used",
+   "detail": "With a single-use FINANCIAL grant at EXTERNAL_MODEL, prepare('card 4111 1111 1111 1111 mail a@b.co', scope='bad scope/!') was refused with PRIVACY_INTERNAL_ERROR (VaultError raised in _rewrite after consume). Afterwards the grant showed uses_left=0, used=1, and the only audit record was ('REFUSED', 'PRIVACY_INTERNAL_ERROR', grant_ids=[]). The same applies when the success audit write fails after consume.",
+   "files": ["uri_privacy/gateway.py:119", "uri_privacy/gateway.py:122", "uri_privacy/gateway.py:128", "uri_privacy/gateway.py:77"]
+  },
+  {
+   "id": "S1-07",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Some failures are not reported as privacy refusals: search raises on gateway construction, restore leaks non-Value exceptions unaudited, and a torn audit tail blocks all egress with no recovery path",
+   "detail": "With URI_PRIVACY_HOME holding a torn or corrupt audit.jsonl, TavilyProvider.search('weather in Kochi') raised RuntimeError('PRIVACY_AUDIT_CORRUPT') out of _call. No request was sent, so the path stays closed, but the caller gets an exception rather than SearchResult(REFUSED, privacy code) as AC-10 states. A malformed grants.json raises json errors the same way. Because PrivacyAudit refuses any non-verifying file, one crash mid-append (a torn last line) blocks every later search and scheduler run until someone repairs the file by hand. restore() catches only PrivacyRefused, ValueError and VaultError, so an OSError (for example from os.replace during quarantine) propagates without an audit record (from code; not reproduced).",
+   "files": ["uri_web/search.py:107", "uri_web/search.py:110", "uri_privacy/gateway.py:191", "uri_privacy/audit.py:32", "uri_privacy/grants.py:54", "uri_privacy/gateway.py:166", "uri_privacy/gateway.py:169"]
+  },
+  {
+   "id": "S1-08",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Scheduler integration edge cases (from code; not reproduced)",
+   "detail": "(a) _sanitize_for_harness sanitizes only string values: dict keys and non-string scalars (ints, floats) reach task.json raw. (b) The privacy-refusal branch sets NEEDS_ATTENTION and does not first check reason == 'CANCEL_REQUESTED', unlike the transaction that follows. A cancel recorded while the gate ran is overwritten by PRIVACY_REFUSED, so the owner's cancel is lost. (c) The scheduler writes its own audit at state_dir/privacy/audit.jsonl, separate from URI_PRIVACY_HOME. Grants created in the worker's store never apply there, which fits OD-5 but splits the audit. (d) scripts/run_uri_integrated_server.py persistent_secret has no fallback when os.link raises an OSError other than FileExistsError (uri_privacy/keys.py has one), so startup fails on volumes without hard-link support.",
+   "files": ["uri_scheduler/engine.py:124", "uri_scheduler/engine.py:125", "uri_scheduler/engine.py:852", "uri_scheduler/engine.py:113", "scripts/run_uri_integrated_server.py:77"]
+  }
+ ],
+ "inspected": [
+  "docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md",
+  "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md",
+  "uri_privacy/__init__.py", "uri_privacy/classify.py", "uri_privacy/policy.py", "uri_privacy/gateway.py", "uri_privacy/vault.py", "uri_privacy/grants.py", "uri_privacy/audit.py", "uri_privacy/keys.py",
+  "uri_assist/redact.py (lines 80-200)",
+  "uri_web/search.py (lines 1-200)", "uri_web/pipeline.py (lines 140-215)",
+  "uri_scheduler/engine.py (lines 100-130, 660-900)", "uri_scheduler/gif_task.py (build_package)",
+  "uri_operational_intelligence/brain_client.py (diff)", "uri_office/service.py (diff)",
+  "scripts/run_uri_integrated_server.py (diff)", "scripts/run_uri_integrated_worker.py (diff)", "scripts/oi_materialize_test_runtime.py (diff)",
+  "uri_core/core/runtime_identity.py:182-210 (dpapi)",
+  "docs/privacy/evidence/measurements.json", "docs/privacy/evidence/live_d06b0851.json", "docs/privacy/evidence/held_out_once.txt (head)",
+  "scratchpad/codex_R1_round.json", "scratchpad/review-32ed8594.diff"
+ ],
+ "tests_run": [
+  {"command": "python -B -m pytest -q -p no:cacheprovider tests/privacy (in review copy)", "result": "114 passed in 4.39s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "subagent-review-work/p1.py: classifier/gateway bypass matrix (homoglyph digits, separators, encodings, splits, protected terms)", "result": "see S1-05 and S1-01; credentials with Unicode quotes and fullwidth OTP were refused; percent/HTML-encoded passwords and e-mails passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "subagent-review-work/p3.py: reclassify sanitized output; PersistentVaultStore collisions, traversal, reserved names", "result": "card and protected term reassembled; ':' vs '_' and case collisions quarantined the other scope; traversal moved/deleted *.ref outside the vault; CON ok", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "subagent-review-work/p4.py, p5.py: overlap resolution with and without ADDRESS grant", "result": "ungranted CONTACT/PERSON disclosed; address leaked when it contains a card/account/SSN", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "subagent-review-work/p6.py: require_loopback with IPv4-mapped IPv6, 0.0.0.0, decimal/octal, userinfo, fragment, scope id, trailing dot, localhost", "result": "every accepted URL resolves to a loopback host in httpx; 0.0.0.0, decimal, octal, 127.1, localhost, trailing dot and 127.0.0.1@evil.com refused; no finding", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "subagent-review-work/p7.py: TavilyProvider + httpx.MockTransport wire capture", "result": "wire carried 'card 4111 1111 1111 1111 limit', raw SSNs without dashes, Arabic-Indic card, and street address minus account number", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "subagent-review-work/p9.py: per-regex timing with whitespace runs; prepare EXTERNAL_AGENT timing", "result": "_ACCOUNT 0.003/0.021/0.163 s, _PASSPORT 0.007/0.052/0.412 s, _PAN 0.004/0.029/0.228 s at n=100/200/400; prepare 1008 chars 2.48 s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "subagent-review-work/p8.py 2000 (background, killed after partial output)", "result": "_ACCOUNT 29.0 s and _PASSPORT 81.9 s at n=2000 (partial output recorded before kill)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "subagent-review-work/p2.py (first broad ReDoS sweep)", "result": "killed: hung on cubic patterns with 3000-space inputs; superseded by p8/p9/p10/p11", "status": "KILLED"},
+  {"command": "subagent-review-work/p10.py, p11.py: classify timing at 16K on other adversarial shapes", "result": "worst cases 'a/'*8000 3.1 s, 'a@'+'b.'*8000 2.3 s, 'a.a'*5333 1.6 s, all in the reused Assist rules (long_secret twice); M95 patterns otherwise <=0.25 s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "subagent-review-work/p12.py: grant burn on post-consume failure; search with corrupt URI_PRIVACY_HOME audit", "result": "grant uses_left 0 after refused egress, audit grant_ids []; search raised RuntimeError PRIVACY_AUDIT_CORRUPT, 0 requests", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --stat d06b0851 32ed8594 (read-only, in C:/Users/cheta/Development/Uri/_V1)", "result": "only evidence files and scripts/dev_workflow lifecycle files differ; no uri_privacy/uri_web/uri_scheduler change", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "live_observed": [
+  "The gateway's WEB_SEARCH output can hold a Luhn-valid card that the gateway's own classifier flags (S1-01), observed on a MockTransport wire.",
+  "Overlap resolution: address text leaks next to a redacted inner value; an ADDRESS-only grant releases e-mail, phone and a protected name raw (S1-02).",
+  "PersistentVaultStore: traversal via restore/close_scope moves or deletes ../../*.ref files; colliding scope ids ('task:1' and 'task_1', 'Task1' and 'task1') quarantine the first scope (S1-03).",
+  "Cubic backtracking measured in _ACCOUNT/_PASSPORT/_PAN (S1-04).",
+  "Policy table in policy.py matches the plan 2.2 table cell for cell, including the PC-1 SECRET_LIKE row and the grantable set (footnote 1 rows plus CONFIDENTIAL to external); CREDENTIAL to external is not grantable. No discrepancy found.",
+  "require_loopback: no bypass found; all accepted forms (IPv4-mapped ::ffff:127.0.0.1, ::1 with zone, userinfo 'evil.com@127.0.0.1', fragment) connect to loopback.",
+  "Scheduler refusal path: occ is re-read after the claim, so attempts=occ['attempts']-1 correctly undoes the claim increment; no stuck state found on PrivacyRefused. A corrupt scheduler privacy audit lands in EXECUTION_ERROR NEEDS_ATTENTION through _execute_settled.",
+  "Exception messages and log lines from the gateway carry codes or type names only; no values seen in PrivacyRefused, VaultError, GrantError or log.warning output in the probes."
+ ],
+ "evidence_reviewed_only": [
+  "docs/privacy/evidence/measurements.json (latency and accuracy figures not re-measured on the benign corpus; adversarial timing contradicts the 'detectors made linear' statement in PC-3)",
+  "docs/privacy/evidence/live_d06b0851.json (recorded for d06b0851; confirmed with git diff that the code under review is unchanged between d06b0851 and 32ed8594, so the commit mismatch is not material)",
+  "docs/privacy/evidence/held_out_once.txt (head only)",
+  "scratchpad/codex_R1_round.json (R1-01..R1-06 not re-reported)"
+ ],
+ "unverified": [
+  "D10 live restart behaviour of scripts/run_uri_integrated_server.py was not run; reviewed from the diff only (S1-08d is code-pointed).",
+  "Scheduler cancel-overwrite (S1-08b) and dict-key/non-string leakage (S1-08a) are from code, not reproduced with a running Scheduler.",
+  "restore() OSError escaping unaudited (S1-07, last part) is from code, not reproduced.",
+  "Full tests/web, tests/scheduler, tests/oi, tests/office suites and driver gates (AC-15/AC-16) were not run; only tests/privacy was.",
+  "File ACLs on audit, grants and vault files were not inspected (they inherit from the state directory); grants.json and audit.jsonl are plaintext JSON by design.",
+  "None of these unverified items changes the verdict: S1-01 (HIGH) and the blocking S1-02 and S1-03 were each reproduced."
+ ]
+}

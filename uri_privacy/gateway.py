@@ -10,7 +10,6 @@ from __future__ import annotations
 import logging
 import os
 import threading
-import unicodedata
 import uuid
 from collections import Counter
 from dataclasses import dataclass, field
@@ -51,17 +50,22 @@ class Egress:
 
 
 class PrivacyGateway:
-    def __init__(self, *, audit=None, grants=None, vault=None):
+    def __init__(self, *, audit=None, grants=None, vault=None, requesters=(), purposes=()):
         self.audit = audit or PrivacyAudit()
         self.grants = grants or GrantStore()
         self.vault = vault or MemoryVaultStore()
+        # Trusted identifiers: the registry plus what the wiring code that builds this gateway adds.
+        self.requesters = P.KNOWN_REQUESTERS | frozenset(requesters)
+        self.purposes = P.KNOWN_PURPOSES | frozenset(purposes)
+        self.audit.trust(self.requesters, self.purposes)
 
     # -- egress -------------------------------------------------------------------------------------------------------
     def prepare(self, text, *, requester, destination, purpose, task_id=None, scope=None, protected_terms=(),
                 reversible=True, ttl_s=DEFAULT_SCOPE_TTL_S) -> Egress:
-        meta = {"requester": str(requester), "task_id": task_id, "purpose": str(purpose),
+        meta = {"requester": requester, "task_id": task_id, "purpose": purpose,
                 "destination": str(getattr(destination, "value", destination)), "policy": P.POLICY_ID}
         try:
+            self._check_identity(meta)
             result = self._decide(text, meta, scope, protected_terms, reversible, ttl_s)
         except PrivacyRefused as exc:
             self._audit_refusal(meta, exc)
@@ -73,6 +77,12 @@ class PrivacyGateway:
             raise err from None
         return result
 
+    def _check_identity(self, meta):
+        if meta["requester"] not in self.requesters:
+            raise PrivacyRefused("PRIVACY_REQUESTER_UNKNOWN")
+        if meta["purpose"] not in self.purposes:
+            raise PrivacyRefused("PRIVACY_PURPOSE_UNKNOWN")
+
     def _audit_refusal(self, meta, exc):
         try:
             self.audit.write(**meta, decision=P.REFUSE, categories=getattr(exc, "categories", None), grant_ids=[],
@@ -83,23 +93,11 @@ class PrivacyGateway:
     def _decide(self, text, meta, scope, protected_terms, reversible, ttl_s) -> Egress:
         if not isinstance(text, str):
             raise PrivacyRefused("PRIVACY_INPUT_NOT_TEXT")
-        if not meta["requester"] or not meta["purpose"]:
-            raise PrivacyRefused("PRIVACY_REQUEST_INCOMPLETE")
         try:
             dest = P.Destination(meta["destination"])
         except ValueError:
             raise PrivacyRefused("PRIVACY_DESTINATION_UNKNOWN") from None
-        # Compatibility characters and format controls can hide separators from the
-        # ASCII credential/card detectors. Refuse ambiguous external text rather
-        # than trying to rewrite spans measured against a different string.
-        if dest not in P.LOCAL and not text.isascii():
-            folded = "".join(ch for ch in unicodedata.normalize("NFKC", text)
-                             if unicodedata.category(ch) != "Cf")
-            if folded != text:
-                folded_counts = C.classify(folded, protected_terms).categories()
-                raw_counts = C.classify(text, protected_terms).categories()
-                if any(folded_counts[c] > raw_counts[c] for c in C.CATEGORIES):
-                    raise PrivacyRefused("PRIVACY_REFUSED")
+        # Unicode, encodings and look-alikes are handled inside classify() (folding with an exact span map).
         cls = C.classify(text, protected_terms)
         counts = cls.categories()
 
@@ -128,33 +126,48 @@ class PrivacyGateway:
             e = PrivacyRefused("PRIVACY_GRANT_REQUIRED", needs)
             e.categories = cats
             raise e
-        if grant_ids and not self.grants.consume(grant_ids):
-            raise PrivacyRefused("PRIVACY_GRANT_RACE")              # used up or revoked between match and use
-
         out, scope_id = self._rewrite(text, cls, actions, dest, scope, ttl_s, meta["requester"])
         if dest == P.Destination.LOG and cls.credential_kinds:
             from uri_assist.redact import redact_text
             out = redact_text(out, Counter())
         if dest == P.Destination.WEB_SEARCH:
             out = " ".join(out.split())
+        # Re-check what will actually be sent (review S1-01): rewriting or whitespace collapse must never assemble a
+        # value the policy does not allow at this destination. Anything left over is a refusal, not a second rewrite.
+        # Unchanged output is the input already classified above (deterministic), every category of which was allowed,
+        # so the second pass only runs when something was rewritten or collapsed.
+        if dest not in P.LOCAL and out != text:
+            residual = C.classify(out, protected_terms).categories()
+            if any(actions.get(c, P.action(c, dest)) != P.ALLOW for c in residual):
+                e = PrivacyRefused("PRIVACY_REFUSED")
+                e.categories = cats
+                raise e
+        # Grants are used only once the rewrite succeeded (review S1-06), right before the decision is recorded.
+        if grant_ids and not self.grants.consume(grant_ids):
+            raise PrivacyRefused("PRIVACY_GRANT_RACE")              # used up or revoked between match and use
         self.audit.write(**meta, decision=_summary(actions), categories=cats, grant_ids=grant_ids,
                          outcome="SANITIZED" if any(a != P.ALLOW for a in actions.values()) else "ALLOWED", code=None)
         return Egress(out, dest.value, cats, actions, scope_id, grant_ids)
 
+    @staticmethod
+    def _span_action(f, actions):
+        """The strictest action over every category merged into this span (review S1-02): a grant for one category never
+        releases another category in the same span."""
+        return max((actions.get(c, P.REFUSE) for c in f.all_categories), key=lambda a: P.STRICTNESS[a])
+
     def _rewrite(self, text, cls, actions, dest, scope, ttl_s, requester):
-        rewrite = [f for f in cls.findings if actions.get(f.category) in (P.PSEUDONYMIZE, P.REDACT)]
+        plan = [(f, self._span_action(f, actions)) for f in cls.findings]
+        rewrite = [(f, a) for f, a in plan if a in (P.PSEUDONYMIZE, P.REDACT)]
         if not rewrite:
             return text, None
         sc = None
-        if any(actions[f.category] == P.PSEUDONYMIZE for f in rewrite):
+        if any(a == P.PSEUDONYMIZE for _, a in rewrite):
             sc = self.vault.open(scope or ("s-" + uuid.uuid4().hex), ttl_s, requester=requester)
         parts, pos = [], 0
-        for f in rewrite:
+        for f, a in rewrite:
             parts.append(text[pos:f.start])
-            if actions[f.category] == P.PSEUDONYMIZE:
-                parts.append(sc.token_for(f.category, text[f.start:f.end]))
-            else:
-                parts.append("" if dest == P.Destination.WEB_SEARCH else REDACTED)
+            # A visible placeholder, never an empty string: removing a value must not join its neighbours (S1-01).
+            parts.append(sc.token_for(f.category, text[f.start:f.end]) if a == P.PSEUDONYMIZE else REDACTED)
             pos = f.end
         parts.append(text[pos:])
         if sc is not None:
@@ -164,9 +177,10 @@ class PrivacyGateway:
     # -- local reconstruction -------------------------------------------------------------------------------------------
     def restore(self, text, scope, *, requester, destination=P.Destination.LOCAL_TOOL, task_id=None) -> str:
         """Resolve this scope's references, only for a local destination. Foreign tokens stay as they are."""
-        meta = {"requester": str(requester), "task_id": task_id, "purpose": "restore",
+        meta = {"requester": requester, "task_id": task_id, "purpose": "restore",
                 "destination": str(getattr(destination, "value", destination)), "policy": P.POLICY_ID}
         try:
+            self._check_identity(meta)
             if not isinstance(text, str):
                 raise PrivacyRefused("PRIVACY_INPUT_NOT_TEXT")
             if P.Destination(meta["destination"]) not in P.LOCAL:
@@ -180,8 +194,9 @@ class PrivacyGateway:
         except PrivacyRefused as exc:
             self._audit_refusal(meta, exc)
             raise
-        except (ValueError, VaultError) as exc:
-            err = PrivacyRefused(getattr(exc, "code", "PRIVACY_RESTORE_FAILED"))
+        except Exception as exc:                                    # noqa: BLE001 - fail closed and audited (S1-07)
+            code = exc.code if isinstance(exc, VaultError) else "PRIVACY_RESTORE_FAILED"
+            err = PrivacyRefused(code)
             self._audit_refusal(meta, err)
             raise err from None
         self.audit.write(**meta, decision="RESTORE", categories={"restored": restored, "foreign": foreign},
@@ -189,7 +204,10 @@ class PrivacyGateway:
         return out
 
     def close_scope(self, scope) -> None:
-        self.vault.close(scope)
+        try:
+            self.vault.close(scope)
+        except VaultError as exc:
+            raise PrivacyRefused(exc.code) from None
 
 
 def _summary(actions: dict) -> str:

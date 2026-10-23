@@ -67,3 +67,16 @@ def grantable(category: str, destination) -> bool:
         return (category, Destination(destination)) in GRANTABLE
     except ValueError:
         return False
+
+
+# --- trusted identifiers (review R1-03 / R2-03) ------------------------------------------------------------------------
+# Who may call the gateway, for which purpose. These are code constants of the wiring that calls prepare(), never
+# caller content, so the audit can record them verbatim. An unregistered requester or purpose is refused: a value
+# passed by mistake in one of these fields (an e-mail, a hash, a passport number) never reaches the audit or the
+# grant store. Wiring code that adds a consumer registers it here (or passes it to PrivacyGateway(requesters=...)).
+KNOWN_REQUESTERS = frozenset({
+    "uri_web.research",
+    "uri_web.search.tavily", "uri_web.search.brave", "uri_web.search.searxng",
+    "uri_scheduler.festival_gif.v1",
+})
+KNOWN_PURPOSES = frozenset({"web_research", "scheduled_creative", "restore"})

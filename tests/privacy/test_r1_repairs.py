@@ -6,6 +6,8 @@ import multiprocessing
 import pytest
 
 from uri_privacy import PrivacyGateway, PrivacyRefused
+
+from .helpers import TGateway
 from uri_privacy.audit import PrivacyAudit
 from uri_privacy.grants import GrantError, GrantStore
 
@@ -44,17 +46,20 @@ def test_unverified_user_label_cannot_create_a_disclosure_grant():
 def test_audit_replaces_content_in_caller_supplied_identifiers(tmp_path):
     path = tmp_path / "audit.jsonl"
     gateway = PrivacyGateway(audit=PrivacyAudit(path))
-    gateway.prepare("ordinary text", requester=EMAIL, task_id="4111 1111 1111 1111",
-                    destination="WEB_SEARCH", purpose="password: Mango#2026!")
+    # Stricter since the R2 repair: an unregistered requester is refused and only the marker is recorded.
+    with pytest.raises(PrivacyRefused) as exc:
+        gateway.prepare("ordinary text", requester=EMAIL, task_id="4111 1111 1111 1111",
+                        destination="WEB_SEARCH", purpose="password: Mango#2026!")
+    assert exc.value.code == "PRIVACY_REQUESTER_UNKNOWN"
     raw = path.read_text(encoding="utf-8")
     assert EMAIL not in raw and "4111 1111 1111 1111" not in raw and "Mango#2026!" not in raw
     record = json.loads(raw)
-    assert record["requester"] == record["task_id"] == record["purpose"] == "UNTRUSTED_IDENTIFIER"
+    assert record["requester"] == record["task_id"] == record["purpose"] == "UNTRUSTED_FIELD"
     assert gateway.audit.verify()["ok"]
 
 
 def test_scope_restoration_requires_original_requester():
-    gateway = PrivacyGateway()
+    gateway = TGateway()
     egress = gateway.prepare(EMAIL, requester="owner", destination="EXTERNAL_MODEL", purpose="p", scope="scope-a")
     with pytest.raises(PrivacyRefused) as exc:
         gateway.restore(egress.text, egress.scope, requester="outsider")

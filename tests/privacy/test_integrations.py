@@ -9,6 +9,7 @@ from pathlib import Path
 import httpx
 import pytest
 
+from .helpers import TGateway
 from uri_privacy import PrivacyGateway
 from uri_privacy.grants import GrantStore
 from uri_web import search as S
@@ -36,21 +37,34 @@ def body(req):
                                     (S.SearxngProvider, {"base_url": "https://searx.example.org"})])
 def test_secret_in_query_is_never_sent(cls, kw):
     sent, t = capture()
-    p = cls(transport=t, privacy=PrivacyGateway(), **kw)
+    p = cls(transport=t, privacy=TGateway(), **kw)
     r = p.search("my netbanking password: Mango#2026! why does login fail")
     assert r.status == S.REFUSED and r.error_code == "PRIVACY_REFUSED" and r.query == "" and sent == []
 
 
-@pytest.mark.parametrize("query", ["password\uff1a Mango#2026!", "card 4111\u200b1111\u200b1111\u200b1111"])
-def test_unicode_obfuscated_sensitive_query_never_reaches_transport(query):
+def test_unicode_obfuscated_credential_never_reaches_transport():
     sent, transport = capture()
-    result = S.TavilyProvider(api_key="k", transport=transport, privacy=PrivacyGateway()).search(query)
+    result = S.TavilyProvider(api_key="k", transport=transport, privacy=TGateway()).search("password\uff1a Mango#2026!")
     assert result.status == S.REFUSED and result.query == "" and sent == []
+
+
+@pytest.mark.parametrize("query", ["card 4111\u200b1111\u200b1111\u200b1111 limit",            # zero-width (R1-01)
+                                   "card \uff14\uff11\uff11\uff11 1111 1111 1111 limit",       # fullwidth digits
+                                   "card \u0664\u0661\u0661\u0661 1111 1111 1111 limit",       # Arabic-Indic (S1-05)
+                                   "card 4111%201111%201111%201111 limit",                    # percent-encoded (R2-02)
+                                   "card 4111&#32;1111&#32;1111&#32;1111 limit"])             # HTML entities
+def test_disguised_card_is_redacted_before_the_transport(query):
+    """Policy for a card at WEB_SEARCH is REDACT: the search runs, the card never reaches the wire (R2-01)."""
+    sent, transport = capture()
+    result = S.TavilyProvider(api_key="k", transport=transport, privacy=TGateway()).search(query)
+    from uri_privacy.classify import fold
+    wire = fold(body(sent[0]))[0].replace(" ", "")
+    assert result.status == S.OK and "4111111111111111" not in wire and "limit" in body(sent[0])
 
 
 def test_identifiers_are_removed_from_the_sent_query():
     sent, t = capture()
-    g = PrivacyGateway()
+    g = TGateway()
     r = S.TavilyProvider(api_key="k", transport=t, privacy=g).search(f"refund status card {CARD} mail {EMAIL}")
     assert r.status == S.OK and len(sent) == 1
     wire = body(sent[0])
@@ -62,13 +76,13 @@ def test_identifiers_are_removed_from_the_sent_query():
 def test_ordinary_queries_are_unchanged():
     sent, t = capture()
     q = "diwali 2026 date karnataka holiday list"
-    r = S.TavilyProvider(api_key="k", transport=t, privacy=PrivacyGateway()).search(q)
+    r = S.TavilyProvider(api_key="k", transport=t, privacy=TGateway()).search(q)
     assert r.query == q and json.loads(sent[0].content)["query"] == q
 
 
 def test_query_that_is_only_an_identifier_is_refused_not_sent_empty():
     sent, t = capture()
-    r = S.TavilyProvider(api_key="k", transport=t, privacy=PrivacyGateway()).search(EMAIL)
+    r = S.TavilyProvider(api_key="k", transport=t, privacy=TGateway()).search(EMAIL)
     assert r.status == S.REFUSED and r.error_code == "PRIVACY_QUERY_EMPTY" and sent == []
 
 
@@ -76,10 +90,10 @@ def test_user_grant_allows_the_identifier_once():
     sent, t = capture()
     owner = object()
     if "principal_verifier" in inspect.signature(GrantStore).parameters:
-        g = PrivacyGateway(grants=GrantStore(principal_verifier=lambda p: "owner" if p is owner else None))
+        g = TGateway(grants=GrantStore(principal_verifier=lambda p: "owner" if p is owner else None))
         proof = {"principal": owner}
     else:
-        g, proof = PrivacyGateway(), {}
+        g, proof = TGateway(), {}
     g.grants.grant(requester="uri_web.search.tavily", categories=["CONTACT"], purpose="web_research",
                    destination="WEB_SEARCH", authorized_by="user:owner", **proof)
     p = S.TavilyProvider(api_key="k", transport=t, privacy=g)

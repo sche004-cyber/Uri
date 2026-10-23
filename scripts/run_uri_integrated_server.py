@@ -72,12 +72,23 @@ def persistent_secret(path: Path) -> str:
     pinned packages."""
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
+        blob = dpapi(secrets.token_bytes(32))
         tmp = path.with_name(path.name + f".{os.getpid()}.tmp")
-        tmp.write_bytes(dpapi(secrets.token_bytes(32)))
+        tmp.write_bytes(blob)
         try:
             os.link(tmp, path)             # exclusive create: two first starts cannot keep different secrets
         except FileExistsError:
             pass
+        except OSError:                    # no hard links on this volume: exclusive create instead (review S1-08)
+            try:
+                fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0))
+            except FileExistsError:
+                pass
+            else:
+                with os.fdopen(fd, "wb") as f:
+                    f.write(blob)
+                    f.flush()
+                    os.fsync(f.fileno())
         finally:
             tmp.unlink(missing_ok=True)
     raw = dpapi(path.read_bytes(), True)

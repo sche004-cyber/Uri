@@ -4,6 +4,7 @@ import threading
 
 import pytest
 
+from .helpers import TGateway
 from uri_privacy import PrivacyGateway, PrivacyRefused
 from uri_privacy import policy as P
 from uri_privacy.audit import PrivacyAudit
@@ -17,7 +18,7 @@ TEXT = f"Write to {EMAIL} or {PHONE}; Aadhaar {AADHAAR}; card {CARD}. Meeting 20
 
 
 def gw(**kw):
-    return PrivacyGateway(**kw)
+    return TGateway(**kw)
 
 
 def prep(g, text, dest, **kw):

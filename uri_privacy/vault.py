@@ -19,7 +19,13 @@ import time
 from pathlib import Path
 
 TOKEN = re.compile(r"\[\[([A-Z_]{3,16})_([0-9a-f]{8})\]\]")
-_SCOPE_ID = re.compile(r"^[A-Za-z0-9_.:-]{1,96}$")
+_SCOPE_ID = re.compile(r"[A-Za-z0-9_.:-]{1,96}")
+
+
+def _check_scope_id(scope_id):
+    """Every entry point validates the id (review S1-03), not only open()."""
+    if not isinstance(scope_id, str) or not _SCOPE_ID.fullmatch(scope_id):
+        raise VaultError("SCOPE_ID_INVALID")
 
 
 class VaultError(RuntimeError):
@@ -84,8 +90,7 @@ class MemoryVaultStore:
         self._lock = threading.Lock()
 
     def open(self, scope_id: str, ttl_s: float, *, requester=None) -> Scope:
-        if not isinstance(scope_id, str) or not _SCOPE_ID.match(scope_id):
-            raise VaultError("SCOPE_ID_INVALID")
+        _check_scope_id(scope_id)
         with self._lock:
             s = self._scopes.get(scope_id)
             if s is not None and s.expired(self.clock()):
@@ -99,6 +104,7 @@ class MemoryVaultStore:
             return s
 
     def get(self, scope_id: str):
+        _check_scope_id(scope_id)
         with self._lock:
             s = self._scopes.get(scope_id) or self._load(scope_id)
             if s is None:
@@ -113,6 +119,7 @@ class MemoryVaultStore:
         pass
 
     def close(self, scope_id: str) -> None:
+        _check_scope_id(scope_id)
         with self._lock:
             self._drop(scope_id)
 
@@ -147,7 +154,10 @@ class PersistentVaultStore(MemoryVaultStore):
         self._fernet = Fernet(base64.urlsafe_b64encode(key))
 
     def _path(self, scope_id):
-        return self.home / "refs" / (scope_id.replace(":", "_") + ".ref")
+        # Hex of the id's bytes: one file per id, no two ids share a file on a case-insensitive filesystem, and the
+        # name can never hold a path separator (review S1-03).
+        _check_scope_id(scope_id)
+        return self.home / "refs" / (scope_id.encode("ascii").hex() + ".ref")
 
     def save(self, scope: Scope) -> None:
         data = self._fernet.encrypt(json.dumps(scope._dump()).encode("utf-8"))

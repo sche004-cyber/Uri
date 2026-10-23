@@ -126,6 +126,14 @@ class Scheduler:
                     self._sanitize_for_harness(v, requester=requester, task_id=task_id) for k, v in value.items()}
         if isinstance(value, list):
             return [self._sanitize_for_harness(v, requester=requester, task_id=task_id) for v in value]
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            # A number cannot hold a redaction (a phone number stored as an int, review S1-08): if its text would be
+            # changed for the harness, the task is refused instead.
+            text = str(value)
+            if self.privacy.prepare(text, requester=requester, destination="EXTERNAL_AGENT",
+                                    purpose="scheduled_creative", task_id=task_id, reversible=False).text != text:
+                from uri_privacy import PrivacyRefused
+                raise PrivacyRefused("PRIVACY_REFUSED")
         return value
 
     # ---- process lifecycle ----------------------------------------------------------------------------------------
@@ -859,6 +867,11 @@ class Scheduler:
         except PrivacyRefused as exc:
             reason = "PRIVACY_REFUSED:" + exc.code
             with self.store.tx() as db:
+                # An owner cancel recorded while the gate ran wins, exactly as in the transaction below (review S1-08).
+                if db.execute("SELECT reason FROM occurrence WHERE occ_id=?", (occ_id,)).fetchone()["reason"] == "CANCEL_REQUESTED":
+                    self._set_occ(db, occ_id, "CANCELLED", "CANCELLED_BY_OWNER", lease_owner=None)
+                    self.store.emit(db, "occurrence.cancelled_before_start", job_id=job["job_id"], occ_id=occ_id, payload={})
+                    return {"occ_id": occ_id, "result": "CANCELLED", "reason": "CANCELLED_BY_OWNER"}
                 self._set_occ(db, occ_id, "NEEDS_ATTENTION", reason, attempts=occ["attempts"] - 1, lease_owner=None)
                 self.store.emit(db, "occurrence.privacy_refused", job_id=job["job_id"], occ_id=occ_id,
                                 payload={"code": exc.code, "needs": [list(n) for n in exc.needs],

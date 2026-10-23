@@ -15,7 +15,6 @@ credential detector, not two. Everything else is detected here with checksums or
 """
 from __future__ import annotations
 
-import bisect
 import re
 from collections import Counter
 from dataclasses import dataclass
@@ -34,14 +33,19 @@ _ASSIST_NON_CREDENTIAL = {"card", "aadhaar", "long_secret"}
 
 @dataclass(frozen=True)
 class Finding:
-    category: str
+    category: str             # the highest-tier category in the span
     start: int
     end: int
     rule: str
+    members: tuple = ()       # every category merged into this span (review S1-02); empty = just `category`
 
     @property
     def tier(self) -> int:
         return TIER[self.category]
+
+    @property
+    def all_categories(self) -> tuple:
+        return self.members or (self.category,)
 
 
 @dataclass
@@ -50,7 +54,7 @@ class Classification:
     credential_kinds: Counter  # Assist kinds that are credentials (no spans: these are refused, never rewritten)
 
     def categories(self) -> Counter:
-        c = Counter(f.category for f in self.findings)
+        c = Counter(cat for f in self.findings for cat in f.all_categories)
         if self.credential_kinds:
             c[CREDENTIAL] += sum(self.credential_kinds.values())
         return c
@@ -100,14 +104,21 @@ _LABELLED = re.compile(
     r"(?<!zip )(?<!postal )(?<!error )(?<!status )(?<!area )(?<!country )\bcode\b\s*(?:is|was|:)?\s*(\d{6})(?!\d))")
 # Aadhaar: written 4-4-4 it is flagged on its Verhoeff check; twelve run-together digits also need an Aadhaar/UID word
 # nearby (Verhoeff passes one random 12-digit number in ten: order and tracking numbers stay readable).
-_AADHAAR = re.compile(r"(?<![\d-])([2-9]\d{3})([ -]?)(\d{4})([ -]?)(\d{4})(?![\d-])")
+_AADHAAR = re.compile(r"(?<![\d.-])([2-9]\d{3})([ .-]?)(\d{4})([ .-]?)(\d{4})(?![\d-]|\.\d)")
 _AADHAAR_CTX = re.compile(r"(?i)\b(?:aadhaa?r|uid|uidai|e-?kyc)\b[^\n]{0,25}$")
-_PAN = re.compile(r"\b[A-Z]{3}[PCHFATBLJG][A-Z]\d{4}[A-Z]\b|(?i:\bpan\b\s*(?:no\.?|number|card)?\s*[:\-]?\s*)"
-                  r"(?i:([a-z]{3}[pchfatbljg][a-z]\d{4}[a-z]))\b")
-_SSN = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?![\d-])")
-_PASSPORT = re.compile(r"(?i)\bpassport\s*(?:no\.?|number|num|#)?\s*[:\-]?\s*([A-Z][0-9]{7}|[A-Z0-9]{6,9}\d)\b")
-_IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
-_ACCOUNT = re.compile(r"(?i)\b(?:a/c|acct|account|bank account)\s*(?:no\.?|number|num|#)?\s*[:\-]?\s*(\d[\d -]{6,20}\d)\b")
+# Label idiom used below: "<label>[ no|number|#][ :|-] value" with single optional spaces. Folding collapses whitespace
+# runs to one space, and no two optional space runs are adjacent, so these patterns cannot backtrack (review S1-04).
+_LBL = r"(?: ?(?:no\.?|number|num|card|#))?(?: ?[:\-])? ?"
+_PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z]\d{4}[a-z]\b")
+_SSN = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?![\d-])|"
+                  # labelled: "ssn 123456789", "ssn 123 45 6789", "ssn 123.45.6789" (review S1-05)
+                  r"(?i:\b(?:ssn|social security(?: number| no\.?)?)\b" + _LBL + r"(?:is )?)"
+                  r"((?!000|666|9\d\d)\d{3}[ .\u2013\u2014-]?(?!00)\d{2}[ .\u2013\u2014-]?(?!0000)\d{4})(?!\d)")
+_PASSPORT = re.compile(r"(?i)\bpassport" + _LBL + r"([A-Z][0-9]{7}|[A-Z0-9]{6,9}\d)\b")
+_IBAN = re.compile(r"(?i)\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
+_ACCOUNT = re.compile(r"(?i)\b(?:a/c|acct|account|bank account)" + _LBL + r"(\d(?:[ -]?\d){7,20})\b")
+# Cards written with '/' or '_' between groups (the Assist rule covers spaces, dots and dashes; review S1-05).
+_CARD_ALT = re.compile(r"\b\d{4}(?:[/_]\d{3,6}){2,4}\b")
 _EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b")
 _PHONE = re.compile(r"(?<![\w+])\+\d{1,3}[ -]?\(?\d{1,5}\)?(?:[ -]?\d){5,11}(?![\w])|"
                     r"(?<![\w+-])0?[6-9]\d{4}[ -]\d{5}(?![\w-])|"                         # mobile, 5-5 grouped
@@ -122,8 +133,8 @@ _PHONE_CTX = re.compile(r"(?i)\b(?:call|phone|ph|mob|mobile|cell|whatsapp|contac
 # Luhn-valid IMEI/IMSI and hashes named as such are identifiers of devices and content, not cards or secrets.
 _NOT_CARD_CTX = re.compile(r"(?i)\b(?:imei|imsi|meid|serial)\b[^\n]{0,12}$")
 _NOT_SECRET_CTX = re.compile(r"(?i)\b(?:commit|sha-?\d*|md5|digest|hash|checksum|revision|rev|build)\b[^\n]{0,12}$")
-_PINCODE = re.compile(r"(?i)\b(?:pin ?code|pincode|postal code|post ?code|zip(?: code)?)\s*[:\-]?\s*(\d{6}|\d{5})\b|"
-                      r",\s*[A-Z][a-z]+(?: [A-Z][a-z]+)?\s*[-–]?\s*([1-9]\d{5})\b")
+_PINCODE = re.compile(r"(?i)\b(?:pin ?code|pincode|postal code|post ?code|zip(?: code)?)(?: ?[:\-])? ?(\d{6}|\d{5})\b|"
+                      r", ?[A-Z][a-z]+(?: [A-Z][a-z]+)? ?[-–]? ?([1-9]\d{5})\b")
 _STREET = re.compile(r"(?i)\b(?:flat|house|h\.? ?no\.?|plot|door|apt|apartment)\s*(?:no\.?|#)?\s*[\w/-]*\d[\w/-]*,?"
                      r"[^\n]{0,60}?\b(?:road|rd|street|st|nagar|lane|layout|cross|main|colony|sector|block|avenue|ave)\b\.?")
 _CONFIDENTIAL = re.compile(r"(?i)\b(?:strictly\s+)?(?:private\s+(?:and|&)\s+)?confidential\b|"
@@ -152,12 +163,38 @@ def _spans(text: str, protected_terms) -> list:
         if verhoeff(a + b + c) and (grouped or _AADHAAR_CTX.search(_before(text, m.start()))):
             out.append(Finding(GOV_ID, m.start(), m.end(), "aadhaar"))
     for m in _PAN.finditer(text):
-        add(GOV_ID, m, "pan", 1 if m.group(1) else 0)
+        add(GOV_ID, m, "pan", 0)
     for m in _SSN.finditer(text):
-        add(GOV_ID, m, "ssn", 0)
+        add(GOV_ID, m, "ssn", 1 if m.group(1) else 0)
     for m in _PASSPORT.finditer(text):
         add(GOV_ID, m, "passport", 1)
     for m in _assist._CARD.finditer(text):
+        if _NOT_CARD_CTX.search(_before(text, m.start())):
+            continue
+        d = re.sub(r"\D", "", m.group(0))
+        if 13 <= len(d) <= 19 and _assist._luhn(d):
+            add(FINANCIAL, m, "card", 0)
+            continue
+        # The greedy match can swallow digits next to a card ("4111 1111 1111 1111 9", review R2-01). Try the runs of
+        # whole digit groups inside it; only group-aligned windows, so a long ungrouped number is not searched for a
+        # Luhn-valid window by chance.
+        groups = [(g.start(), g.end()) for g in re.finditer(r"\d+", m.group(0))]
+        hit = None
+        for i in range(len(groups)):
+            n = 0
+            for j in range(i, len(groups)):
+                n += groups[j][1] - groups[j][0]
+                if n > 19:
+                    break
+                if n >= 13 and j > i:
+                    s0, e0 = m.start() + groups[i][0], m.start() + groups[j][1]
+                    if _assist._luhn(re.sub(r"\D", "", text[s0:e0])):
+                        hit = (s0, e0)
+            if hit:
+                break
+        if hit:
+            out.append(Finding(FINANCIAL, hit[0], hit[1], "card"))
+    for m in _CARD_ALT.finditer(text):
         d = re.sub(r"\D", "", m.group(0))
         if 13 <= len(d) <= 19 and _assist._luhn(d) and not _NOT_CARD_CTX.search(_before(text, m.start())):
             add(FINANCIAL, m, "card", 0)
@@ -191,24 +228,122 @@ def _spans(text: str, protected_terms) -> list:
 
 
 def _resolve(findings: list) -> list:
-    """Overlaps keep the highest tier, then the longest span, then the earliest."""
-    starts, ends, kept = [], [], []                    # kept spans, sorted by start (non-overlapping)
-    for f in sorted(findings, key=lambda f: (-f.tier, -(f.end - f.start), f.start)):
-        if f.end <= f.start:
+    """Overlapping findings become ONE finding covering their union, with the highest tier's category (the earliest
+    on a tie). Keeping only one of two partly overlapping spans would send the other's uncovered part (review R2)."""
+    out = []
+    for f in sorted((f for f in findings if f.end > f.start), key=lambda f: (f.start, -f.end)):
+        if out and f.start < out[-1].end:
+            k = out[-1]
+            cat, rule = (f.category, f.rule) if f.tier > k.tier else (k.category, k.rule)
+            members = tuple(dict.fromkeys(k.all_categories + f.all_categories))
+            out[-1] = Finding(cat, k.start, max(k.end, f.end), rule, members)
+        else:
+            out.append(f)
+    return out
+
+
+# --- folding (review R1-01 / R2-01 / R2-02) ---------------------------------------------------------------------------
+# Detectors are written for plain text. Before detection the text is folded: percent-encoded and HTML-entity sequences
+# are decoded, every character is NFKC-normalized, format controls (zero-width spaces, joiners, bidi marks) are removed,
+# every Unicode decimal digit becomes an ASCII digit and characters that look like ASCII letters or digits
+# (`uri_web.confusables_ascii`, Unicode UTS #39 data) become those letters. Two passes, so a doubly encoded value
+# ("%253A") is decoded too. Each folded character keeps the [start, end) range of the original characters it came from,
+# so a finding in the folded text maps back to an exact original span: the original text is what gets rewritten.
+# Whitespace runs and tabs/newlines fold to one space as well, so a value spread over several spaces or lines is found
+# (review S1-01 / S1-05) and no detector sees a long run of spaces (S1-04).
+_SPECIAL = re.compile(r"(?:%[0-9A-Fa-f]{2})+|&(?:#[0-9]{1,7}|#[xX][0-9A-Fa-f]{1,6}|[A-Za-z][A-Za-z0-9]{1,31});"
+                      r"|[^\x00-\x7f]|\s{2,}|[\t\n\r\f\v]")
+_FOLD_PASSES = 2
+
+
+def _confusables():
+    try:
+        from uri_web.confusables_ascii import CONFUSABLE_ASCII
+        return CONFUSABLE_ASCII
+    except Exception:                          # noqa: BLE001 - folding still covers NFKC, digits and format controls
+        return {}
+
+
+_CONF = _confusables()
+
+
+def _fold_char(ch: str, cf: str = "") -> str:
+    import unicodedata
+    if unicodedata.category(ch) == "Cf":
+        return cf
+    out = []
+    for c in unicodedata.normalize("NFKC", ch):
+        d = unicodedata.decimal(c, None)
+        if d is not None:
+            out.append(str(d))
+        elif unicodedata.category(c) == "Cf":
             continue
-        i = bisect.bisect_left(starts, f.start)
-        if (i < len(starts) and starts[i] < f.end) or (i > 0 and ends[i - 1] > f.start):
-            continue
-        starts.insert(i, f.start)
-        ends.insert(i, f.end)
-        kept.insert(i, f)
-    return kept
+        else:
+            out.append(c if c.isascii() else _CONF.get(c, c))
+    return "".join(out)
+
+
+def _fold_once(text: str, starts: list, ends: list, cf: str = ""):
+    import html
+    chars, S, E, pos = [], [], [], 0
+    for m in _SPECIAL.finditer(text):
+        if m.start() > pos:
+            chars.append(text[pos:m.start()])
+            S.extend(starts[pos:m.start()])
+            E.extend(ends[pos:m.start()])
+        tok = m.group(0)
+        if tok.isspace():
+            dec = " "
+        elif tok[0] == "%":
+            dec = bytes.fromhex(tok.replace("%", "")).decode("utf-8", "replace")
+        elif tok[0] == "&":
+            dec = html.unescape(tok)
+        else:
+            dec = _fold_char(tok, cf)
+        if tok[0] in "%&" and dec != tok:
+            dec = "".join(_fold_char(c, cf) if not c.isascii() else c for c in dec)
+        s, e = starts[m.start()], ends[m.end() - 1]
+        chars.append(dec)
+        S.extend([s] * len(dec))
+        E.extend([e] * len(dec))
+        pos = m.end()
+    if pos < len(text):
+        chars.append(text[pos:])
+        S.extend(starts[pos:])
+        E.extend(ends[pos:])
+    return "".join(chars), S, E
+
+
+def fold(text: str, cf: str = ""):
+    """(folded text, start map, end map): folded[i] came from text[start[i]:end[i]]. `cf` replaces format controls."""
+    starts, ends = list(range(len(text))), list(range(1, len(text) + 1))
+    for _ in range(_FOLD_PASSES):
+        if not _SPECIAL.search(text):
+            break
+        text, starts, ends = _fold_once(text, starts, ends, cf)
+    return text, starts, ends
 
 
 def classify(text: str, protected_terms=()) -> Classification:
     if not isinstance(text, str):
         raise TypeError("text must be str")
-    counts = Counter()
-    _assist.redact_text(text, counts)
-    cred = Counter({k: v for k, v in counts.items() if k not in _ASSIST_NON_CREDENTIAL and v})
-    return Classification(_resolve(_spans(text, protected_terms)), cred)
+    terms = [fold(t)[0] for t in protected_terms or () if isinstance(t, str)]
+    # A format control (zero-width space, joiner, bidi mark) can join two pieces ("4111<ZWSP>1111") or separate two
+    # values ("...1111<ZWSP>9"). Both readings are classified and their findings combined (review R2-01).
+    import unicodedata
+    readings = [""]
+    if not text.isascii() and any(unicodedata.category(ch) == "Cf" for ch in text):
+        readings.append(" ")
+    found, cred = [], Counter()
+    for cf in readings:
+        folded, S, E = fold(text, cf)
+        counts = Counter()
+        _assist.redact_text(folded, counts)
+        for k, v in counts.items():
+            if k not in _ASSIST_NON_CREDENTIAL and v:
+                cred[k] = max(cred[k], v)
+        spans = _resolve(_spans(folded, terms))
+        if folded is not text:
+            spans = [Finding(f.category, S[f.start], E[f.end - 1], f.rule, f.members) for f in spans]
+        found.extend(spans)
+    return Classification(_resolve(found), cred)

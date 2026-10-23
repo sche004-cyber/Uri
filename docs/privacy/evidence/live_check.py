@@ -164,7 +164,7 @@ def vault_dpapi_restart(tmp):
 import sys; sys.path.insert(0, sys.argv[1])
 from uri_privacy import PrivacyGateway
 from uri_privacy.vault import PersistentVaultStore
-g = PrivacyGateway(vault=PersistentVaultStore(sys.argv[2]))
+g = PrivacyGateway(vault=PersistentVaultStore(sys.argv[2]), requesters={"live"}, purposes={"live"})
 if sys.argv[3] == "write":
     print(g.prepare("mail asha.rao7@example.in", requester="live", destination="EXTERNAL_MODEL", purpose="live",
                     scope="live-1").text)

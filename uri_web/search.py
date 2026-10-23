@@ -22,6 +22,7 @@ from urllib.parse import urlsplit
 import httpx
 
 from uri_privacy import PrivacyRefused, default_gateway
+from uri_privacy.gateway import REDACTED as REDACTED_MARK
 
 from . import netpolicy as NP
 
@@ -107,9 +108,10 @@ class _HttpProvider:
         try:
             q = (self._privacy or default_gateway()).prepare(q, requester="uri_web.search." + self.name,
                                                              destination="WEB_SEARCH", purpose="web_research").text
-        except PrivacyRefused as exc:
-            return SearchResult(self.name, "", REFUSED, error_code=exc.code)
-        if not q:
+        except Exception as exc:                                    # noqa: BLE001 - no gateway, no search (S1-07)
+            code = exc.code if isinstance(exc, PrivacyRefused) else "PRIVACY_INTERNAL_ERROR"
+            return SearchResult(self.name, "", REFUSED, error_code=code)
+        if not q.replace(REDACTED_MARK, "").strip():            # nothing left to search for once values are removed
             return SearchResult(self.name, "", REFUSED, error_code="PRIVACY_QUERY_EMPTY")
         try:
             with self._client() as c:

@@ -15,10 +15,11 @@ import sys
 import time
 from collections import Counter
 
-from uri_privacy import PrivacyGateway, PrivacyRefused
+from uri_privacy import PrivacyRefused
 from uri_privacy.classify import classify
 
 from . import synth
+from .helpers import TGateway
 
 
 def rss_mb():
@@ -71,7 +72,7 @@ def doc(kb):
 
 
 def latency(kb, dest, n):
-    g = PrivacyGateway()
+    g = TGateway()
     text = doc(kb) if kb >= 1 else doc(1)[: int(kb * 1000)]
     for _ in range(3):
         g.prepare(text, requester="m", destination=dest, purpose="m")
@@ -88,7 +89,7 @@ def latency(kb, dest, n):
 def memory():
     gc.collect()
     before = rss_mb()
-    g = PrivacyGateway()
+    g = TGateway()
     text = doc(2)
     for i in range(10_000):
         g.prepare(text, requester="m", destination="WEB_SEARCH", purpose="m")
@@ -100,7 +101,7 @@ def memory():
 
 
 def token_effect():
-    g = PrivacyGateway()
+    g = TGateway()
     rows = []
     for dest in ("WEB_SEARCH", "EXTERNAL_MODEL"):
         t = doc(2)
@@ -112,7 +113,7 @@ def token_effect():
 
 def friction():
     """How often ordinary and sensitive work is interrupted (refusal / grant needed) per destination."""
-    g = PrivacyGateway()
+    g = TGateway()
     texts = [t for _, t, _ in synth.positives(n=10, seed=3)] + synth.BENIGN + synth.HELD_OUT_BENIGN
     out = {}
     for dest in ("WEB_SEARCH", "EXTERNAL_MODEL", "EXTERNAL_AGENT"):

@@ -6,6 +6,7 @@ import threading
 
 import pytest
 
+from .helpers import TGateway
 from uri_privacy import PrivacyGateway, PrivacyRefused
 from uri_privacy.audit import PrivacyAudit
 from uri_privacy.grants import GrantError, GrantStore
@@ -47,7 +48,7 @@ def grant(s, **kw):
 # --- AC-7 grants -------------------------------------------------------------------------------------------------------
 def test_grant_allows_exactly_its_scope_once():
     s = store()
-    g = PrivacyGateway(grants=s)
+    g = TGateway(grants=s)
     gr = grant(s)
     e = g.prepare(f"status of Aadhaar {AADHAAR}", requester="uri_web.search.tavily", destination="WEB_SEARCH",
                   purpose="web_research")
@@ -64,14 +65,14 @@ def test_grant_does_not_match_another_scope(field, value):
     grant(s)
     q = dict(requester="uri_web.search.tavily", destination="WEB_SEARCH", purpose="web_research")
     q[field] = value
-    e = PrivacyGateway(grants=s).prepare(f"Aadhaar {AADHAAR}", **q)
+    e = TGateway(grants=s).prepare(f"Aadhaar {AADHAAR}", **q)
     assert AADHAAR not in e.text
 
 
 def test_grant_does_not_cover_other_categories():
     s = store()
     grant(s)
-    e = PrivacyGateway(grants=s).prepare(f"Aadhaar {AADHAAR} mail {EMAIL}", requester="uri_web.search.tavily",
+    e = TGateway(grants=s).prepare(f"Aadhaar {AADHAAR} mail {EMAIL}", requester="uri_web.search.tavily",
                                          destination="WEB_SEARCH", purpose="web_research")
     assert AADHAAR in e.text and EMAIL not in e.text
 
@@ -79,7 +80,7 @@ def test_grant_does_not_cover_other_categories():
 def test_expiry_and_revocation_are_immediate():
     c = Clock()
     s = store(clock=c)
-    g = PrivacyGateway(grants=s)
+    g = TGateway(grants=s)
     a = grant(s, ttl_s=60, uses=5)
     c.t += 61
     assert s.match(requester=a.requester, category="GOV_ID", purpose=a.purpose, destination="WEB_SEARCH") is None
@@ -137,15 +138,15 @@ def test_malformed_grant_file_fails_closed(tmp_path):
 # --- AC-4 / AC-8 audit -------------------------------------------------------------------------------------------------
 def test_audit_is_value_free_and_chained(tmp_path):
     a = PrivacyAudit(tmp_path / "audit.jsonl")
-    g = PrivacyGateway(audit=a)
-    g.prepare(f"Aadhaar {AADHAAR} mail {EMAIL}", requester="r", destination="EXTERNAL_MODEL", purpose="p", task_id="T1")
+    g = TGateway(audit=a)
+    g.prepare(f"Aadhaar {AADHAAR} mail {EMAIL}", requester="r", destination="EXTERNAL_MODEL", purpose="p", task_id="TASK-20261022-b00805ff")
     with pytest.raises(PrivacyRefused):
         g.prepare("password: Tr0ub4dor&3", requester="r", destination="WEB_SEARCH", purpose="p")
     raw = (tmp_path / "audit.jsonl").read_text(encoding="utf-8")
     for v in (AADHAAR, EMAIL, "Tr0ub4dor", "[[", "asha"):
         assert v not in raw
     recs = [json.loads(x) for x in raw.splitlines()]
-    assert recs[0]["task_id"] == "T1" and recs[0]["decision"] == "PSEUDONYMIZE" and recs[0]["policy"] == "m95.policy.v1"
+    assert recs[0]["task_id"] == "TASK-20261022-b00805ff" and recs[0]["decision"] == "PSEUDONYMIZE" and recs[0]["policy"] == "m95.policy.v1"
     assert recs[1]["outcome"] == "REFUSED"
     assert a.verify() == {"ok": True, "count": 2, "head": recs[1]["hash"]}
 
@@ -162,12 +163,22 @@ def test_tampered_or_torn_audit_is_detected_and_not_appended(tmp_path):
     assert PrivacyAudit.verify(a)["error"] == "CHAIN_BROKEN"
     with pytest.raises(RuntimeError):
         PrivacyAudit(p)
-    p.write_text(lines[0] + "\n" + lines[1][:20], encoding="utf-8")          # torn tail after a crash
+    # A bad line that is NOT the last one is damage, not a crash: still refused.
+    p.write_bytes((lines[0] + "\n" + lines[1][:20] + "\n" + lines[2] + "\n").encode())
+    with pytest.raises(RuntimeError):
+        TGateway(audit=PrivacyAudit(p))
+    # A torn LAST line (crash during an append) is quarantined with a full copy kept; the chain continues and the
+    # recovery is itself recorded (review S1-07: one crash must not block every later egress).
+    p.write_bytes((lines[0] + "\n" + lines[1][:20]).encode())
     v = PrivacyAudit(None)
     v.path = p
     assert v.verify()["error"] == "TORN_OR_CORRUPT_LINE"
-    with pytest.raises(RuntimeError):
-        PrivacyGateway(audit=PrivacyAudit(p))
+    recovered = PrivacyAudit(p)
+    assert recovered.verify()["ok"] and recovered.verify()["count"] == 2
+    last = json.loads(p.read_text(encoding="utf-8").splitlines()[-1])
+    assert last["outcome"] == "RECOVERED" and last["code"] == "AUDIT_TORN_TAIL_QUARANTINED"
+    copies = list(tmp_path.glob("audit.jsonl.torn-*"))
+    assert len(copies) == 1 and copies[0].read_bytes() == (lines[0] + "\n" + lines[1][:20]).encode()
 
 
 def test_audit_rejects_unknown_fields():
@@ -179,13 +190,13 @@ def test_audit_rejects_unknown_fields():
 @windows
 def test_persistent_vault_is_ciphertext_with_dpapi_key_and_survives_restart(tmp_path):
     v = PersistentVaultStore(tmp_path)
-    g = PrivacyGateway(vault=v)
+    g = TGateway(vault=v)
     e = g.prepare(f"mail {EMAIL}", requester="r", destination="EXTERNAL_MODEL", purpose="p", scope="task-1")
     for f in tmp_path.rglob("*"):
         if f.is_file():
             assert EMAIL.encode() not in f.read_bytes() and b"asha" not in f.read_bytes()
     assert (tmp_path / "vault-key.dpapi").exists()
-    g2 = PrivacyGateway(vault=PersistentVaultStore(tmp_path))
+    g2 = TGateway(vault=PersistentVaultStore(tmp_path))
     with pytest.raises(PrivacyRefused) as wrong_owner:
         g2.restore(e.text, "task-1", requester="outsider")
     assert wrong_owner.value.code == "PRIVACY_SCOPE_OWNER_MISMATCH"
@@ -195,11 +206,11 @@ def test_persistent_vault_is_ciphertext_with_dpapi_key_and_survives_restart(tmp_
 @windows
 def test_corrupted_vault_file_is_quarantined_and_refused(tmp_path):
     v = PersistentVaultStore(tmp_path)
-    g = PrivacyGateway(vault=v)
+    g = TGateway(vault=v)
     e = g.prepare(f"mail {EMAIL}", requester="r", destination="EXTERNAL_MODEL", purpose="p", scope="task-2")
     f = next((tmp_path / "refs").glob("*.ref"))
     f.write_bytes(f.read_bytes()[:-5] + b"xxxxx")
-    g2 = PrivacyGateway(vault=PersistentVaultStore(tmp_path))
+    g2 = TGateway(vault=PersistentVaultStore(tmp_path))
     with pytest.raises(PrivacyRefused) as x:
         g2.restore(e.text, "task-2", requester="r")
     assert x.value.code == "SCOPE_UNREADABLE"
@@ -210,7 +221,7 @@ def test_corrupted_vault_file_is_quarantined_and_refused(tmp_path):
 def test_expired_references_and_interrupted_writes_are_cleaned(tmp_path):
     c = Clock()
     v = PersistentVaultStore(tmp_path, clock=c)
-    PrivacyGateway(vault=v).prepare(f"mail {EMAIL}", requester="r", destination="EXTERNAL_MODEL", purpose="p",
+    TGateway(vault=v).prepare(f"mail {EMAIL}", requester="r", destination="EXTERNAL_MODEL", purpose="p",
                                     scope="old", ttl_s=10)
     (tmp_path / "refs" / "x.ref.123.tmp").write_bytes(b"partial")
     c.t += 11
@@ -231,6 +242,6 @@ def test_dpapi_key_file_is_not_the_key(tmp_path):
 
 def test_scope_ids_are_validated():
     with pytest.raises(PrivacyRefused) as e:
-        PrivacyGateway().prepare(EMAIL, requester="r", destination="EXTERNAL_MODEL", purpose="p", scope="../../etc")
+        TGateway().prepare(EMAIL, requester="r", destination="EXTERNAL_MODEL", purpose="p", scope="../../etc")
     assert e.value.code == "PRIVACY_INTERNAL_ERROR"
     assert isinstance(VaultError("X"), RuntimeError)
