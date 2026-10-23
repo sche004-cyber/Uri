@@ -74,7 +74,7 @@ Detail per row (objective, tests, reviewers, limitations) is in the evidence fil
 | CAP-RT2 | Runtime profiles P2 (64K, no vision, no MTP) and P3 (32K, GPU vision, no MTP) | `uri_operational_intelligence/runtime_profiles.py`, `runtime_profile_selection.py`, `scripts/ws_brain_host.py` | `cd4a7963` | yes | yes | subagent AwF RPI-R1..R9 | yes | yes (`f3d5eb29`, 68/68 + 12/12) | GREEN | reviews subagent-class, records outside git | 10 |
 | CAP-RT3 | P1 (64K + GPU vision) | catalog only; refused by selection, host and QC | `4c61a0b3` (refusal) | measured | refusal tested | — | refusal only | crashed (CRASH-1), demoted (DEMOTE-P1) | YELLOW | retire or investigate (owner) | 10 |
 | CAP-RT4 | Brain Quick Controls + QC closure (thinking per turn, Vision/Context/Draft switches, mismatch line, Assist vision lock) | `uri_operational_intelligence/brain_quick_controls.py`, `uri_ui/lib/living/integration/brain_quick_controls.dart` | `feaabe3f`, `ec2fab54` | yes | yes (793p/23s at `fcc1f183`; 95p/1s at ec2fab54) | QCC-R3 ACCEPT (subagent) | yes | yes (qcc-1 32/32 on `fcc1f183`) | GREEN | none blocking | 10 |
-| CAP-RT5 | Automatic vision fallback "F-1" (Standard vision if it fits, else 32K-no-MTP, else clear refusal; keep conversation) | not implemented | — | no | — | — | no | ui-2 showed refusal case | YELLOW | product decision, then build | 10 |
+| CAP-RT5 | (status 2026-10-23: see P.14) Automatic vision fallback "F-1" (Standard vision if it fits, else 32K-no-MTP, else clear refusal; keep conversation) | not implemented | — | no | — | — | no | ui-2 showed refusal case | YELLOW | product decision, then build | 10 |
 | CAP-RT6 | Restore after failed switch (QC-F5) | `ws_brain_host.py`, `worker_bridge.py` on UI-controls branch | `e9ee7409` | yes | yes (805p/23s at `22b53b78`) | R1 AwF, R1-01 open | no | ui-2 (`22b53b78`) | BLUE | ships with CAP-UI3 | 10, 20 |
 | CAP-RT7 | GPU lease, fit check, residency/perf monitor | `uri_operational_intelligence/gpu_lease.py`, `perf_monitor.py`, `brain_health.py` | WS hardening line | yes | yes (recorded gates) | Codex WS rounds (HISTORICAL/REPORTED) | yes | yes (lease histories) | GREEN | monitor reports only, never restarts | 10 |
 | CAP-RT8 | VRAM-R1 research record (accepted code already integrated as CAP-RT2) | `research/runtime_vram_r1/` | `7c7a7776` | yes | "710 passed / 22 skipped" HISTORICAL/REPORTED, no log | r3 ACCEPT HISTORICAL/REPORTED, no review file | code yes; record no | research runs | WHITE | optional docs-only merge of the record | 10 |
@@ -258,7 +258,7 @@ Not eligible: `eaf3bf69` (REJECT), Qwen3.8 (research, no ACCEPT), any research b
 | GRF-P0-1 | MEDIUM | Graphify | working-system path rebuilds a capability-only index per turn, forwards without skill/memory filter, ignores `GRAPHIFY_HINT_ENABLED` (read only in `decision_engine.py:66`) | `uri_core/core/paired_reasoning.py:78-110` (confirmed by P0) | bounded repair + review (frozen-file check first) |
 | POL-P0-1 | MEDIUM | governance | canonical lifecycle SKILL.md says a separate Claude session review is never an independent ACCEPT, but `348677b7`, `cd4a7963`, `ec2fab54` were integrated on subagent reviews under the 2026-10-17 owner tier policy, which lives only on `67d45317` | `.claude/skills/uri-development-lifecycle/SKILL.md:97-121` | integrate Q-3 or amend text (owner) |
 | D08 | MEDIUM | FCV | secure rollback tree cannot import `uri_web` | FCV-R | owner decision |
-| UI-F-1 | MEDIUM | runtime UX | no automatic Standard->P3 vision fallback | CAP-RT5 | owner decision |
+| UI-F-1 | MEDIUM (status 2026-10-23: see P.14) | runtime UX | no automatic Standard->P3 vision fallback | CAP-RT5 | owner decision |
 | UI-R1-02..R1-06 | LOW | UI controls | live count overstated (26 not 30), false notice after 600 s gate, missing restore record, label, dialog case | `e9ee7409` | repair with R1-01 |
 | S4-01..S4-03 | LOW | Office | raw `Refused: CODE (detail)` texts, delete-card wording, related | `a2ui_hub.dart`, `office_controller.dart`, `ops.py` | repair + review |
 | AF-S1-02/03/04/06, AF-S3-01/02 | LOW | lifecycle | auditor-fallback LOW findings | lifecycle tooling | batch repair |
@@ -548,3 +548,19 @@ Details: `P0_CLOSURE_20261022.md` Addendum N; `decisions.md` DEC-100.
 OPEN-23 DONE 2026-10-23: authoritative Milestone Manager ledger `D:/uri-dev/state/milestone-manager` (verified). From now on the ledger is the system of record for milestones and decisions; this file and `decisions.md` stay as the imported P0 history.
 
 Correction 2026-10-23 (P0 Addendum O update 2): D10 (random key-store secrets per start) loses no data in the working system - the paired/integrated server never constructs the key stores; the data-loss impact applies to the legacy server path only. Severity LOW for the working system.
+
+### P.14 Status reconciliation 2026-10-23 (DEC-103 work by the Milestone Manager thread; P0-checked scope)
+
+| Item | Earlier text in this file | Status now |
+|---|---|---|
+| CAP-RT5 / UI-F-1 / OPEN-04 (F-1 vision fallback) | "not implemented", "owner decision" | Direction approved (DEC-095, DEC-103 AP-4). IMPLEMENTED `4eb1b135` on `milestone/vision-f1-fallback-20261023`: when Standard is CONTENDED and "Standard, draft off" fits, the Brain host switches to it and records `profile_switch.substituted`; tests/oi+ws 844 passed (MM report). Not REVIEWED; live and VRAM checks BLOCKED - OWNER PC REQUIRED; integration needs owner authorisation |
+| OPEN-11 (Thinking default) | owner preference | Defect fixed separately: IMPLEMENTED `bf7f845e` (escalation offer now made under Thinking Off); not REVIEWED. Default remains owner preference |
+| OPEN-03 (P1) | owner decision | Desk recommendation: retire P1 as a product profile; crash investigation steps are owner actions on the PC |
+| OPEN-12 (64K access) | owner preference | Desk recommendation: accept D-2 after F-1 lands |
+| AP-21 (GPU headroom) | owner action | Desk result: keep the -512 MiB lease rule; freeing VRAM is an owner action |
+| AP-8 (`_V1`) | owner decision | Desk result: M36, M37, dynamic planning slice 1 kept as donors; standalone dictation retired (branch kept); retiring the `_V1` worktree is an owner action after tag checks |
+| AP-9 / AP-10 | open | AP-9: 9 local branches to preserve after secret/privacy/size checks (one `sk-` pattern in `tests/test_m38_harness.py`, likely a fixture, still to be checked); AP-10: items classified, OI-SEC-1 already decided (DEC-035) |
+
+P0 checked: commits `bf7f845e` (2 files) and `4eb1b135` (4 files) exist and touch no protected path. Review queue
+(Codex, order set by the MM thread): PH1-GATE-2-r2, M95-r3, FCV-ROLLBACK-D08-r1, URI-CONTROLS-ESCALATE-r1, VISION-F1-r1.
+
