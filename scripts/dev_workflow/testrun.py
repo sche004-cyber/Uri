@@ -84,6 +84,7 @@ def _sha(text: str) -> str:
 
 SECRET_FLAG_WORDS = {"password", "passwd", "pass", "pwd", "secret", "token", "key", "apikey", "pat", "credential",
                      "credentials", "auth", "authorization", "bearer", "cookie", "sig", "signature", "passphrase"}
+STRONG_SECRET_SUBSTRINGS = ("password", "passwd", "passphrase", "secret", "token", "apikey", "credential")
 _HEADER_SECRET = re.compile(r"(?i)^(\s*(?:proxy-)?(?:authorization|cookie|x-api-key|x-auth-token)\s*:\s*).+")
 _BEARER = re.compile(r"(?i)\b(bearer|basic|token)\s+\S+")
 
@@ -96,8 +97,12 @@ def _secret_flag(arg: str) -> bool:
     if arg == "-p":
         return True
     name = arg.lstrip("-").split("=", 1)[0]
-    parts = re.split(r"(?<=[a-z0-9])(?=[A-Z])|[-_.]", name)      # FB-2 FB2-05: camelCase too (--accessToken)
-    return any(part.lower() in SECRET_FLAG_WORDS for part in parts if part)
+    # FB-2 FB2-05 camelCase (--accessToken); FB-3 FB3-06 acronyms (--APIToken, --DBPassword) and compounds
+    parts = re.split(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|[-_.]", name)
+    if any(part.lower() in SECRET_FLAG_WORDS for part in parts if part):
+        return True
+    low = name.lower()
+    return any(w in low for w in STRONG_SECRET_SUBSTRINGS)
 
 
 def _safe_argv(argv: list[str]) -> list[str]:
@@ -137,9 +142,13 @@ def tree_state(cwd: Path) -> dict:
     _, head = _git(cwd, "rev-parse", "HEAD")
     _, tree = _git(cwd, "rev-parse", "HEAD^{tree}")
     rc_s, status = _git(cwd, "status", "--porcelain", "--untracked-files=normal")
+    # FB-3 FB3-02: assume-unchanged / skip-worktree entries hide local edits from git status
+    rc_v, flags = _git(cwd, "ls-files", "-v", "-z")
+    hidden = rc_v == 0 and any(len(e) > 2 and e[1] == " " and (e[0].islower() or e[0] == "S")
+                               for e in flags.split("\0"))
     rel = os.path.relpath(os.path.realpath(cwd), os.path.realpath(root)).replace("\\", "/")
-    return {"repo": root, "head": head or None, "tree": tree or None, "dirty": bool(status) if rc_s == 0 else None,
-            "rel_cwd": rel}
+    dirty = (bool(status) or hidden) if rc_s == 0 and rc_v == 0 else None
+    return {"repo": root, "head": head or None, "tree": tree or None, "dirty": dirty, "rel_cwd": rel}
 
 
 def env_fingerprint() -> dict:

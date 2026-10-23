@@ -1450,3 +1450,122 @@ def test_fb2_06_index_refuses_to_open_a_ledger(tmp_path):
         assert r.returncode != 0 and "not a derived devmemory index" in r.stderr, cmd
     after = {r[0] for r in sqlite3.connect(lp).execute("SELECT name FROM sqlite_master")}
     assert after == before
+
+
+# =========================================================================== FB-3 (fallback review of 7562b6e1)
+
+def test_fb3_01_canonical_branch_never_listed_and_receipt_always_written(tmp_path):
+    repo = _init(tmp_path / "r")
+    base = _git(repo, "rev-parse", "HEAD")
+    _git(repo, "branch", "canon", base)
+    _git(repo, "branch", "merged/x", base)
+    plan = hk.inventory(repo, canonical_ref="canon", min_age_hours=0)
+    refs = {it["path"] for it in plan["items"] if it["kind"] == "branch"}
+    assert "refs/heads/canon" not in refs and "refs/heads/merged/x" in refs
+    pf = tmp_path / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    _git(repo, "branch", "-D", "canon")                                   # canonical vanishes before apply
+    _git(repo, "branch", "canon2", base)
+    with pytest.raises(hk.HKError):                                       # no canonical: apply refuses up front
+        hk.apply(pf, journal_dir=tmp_path / "j", classes=["OBSOLETE_BRANCH"])
+    _git(repo, "branch", "canon", base)
+    r = hk.apply(pf, journal_dir=tmp_path / "j2", classes=["OBSOLETE_BRANCH"])
+    assert Path(r["receipt"]).is_file() and _git(repo, "rev-parse", "canon") == base
+
+
+def test_fb3_01_recheck_failure_is_per_item_and_receipt_written(sandbox, monkeypatch):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    real = hk._current
+    calls = {"n": 0}
+
+    def flaky(ctx, it):
+        calls["n"] += 1
+        if it["kind"] == "worktree" and Path(it["path"]).name == "disposable":
+            raise hk.HKError("NO_CANONICAL", "simulated")
+        return real(ctx, it)
+    monkeypatch.setattr(hk, "_current", flaky)
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    row = next(x for x in r["results"] if x.get("path") == str(sb["paths"]["disposable"]))
+    assert row["outcome"] == "FAILED" and "recheck failed" in row["error"]
+    assert Path(r["receipt"]).is_file() and sb["paths"]["disposable"].exists()
+
+
+def test_fb3_02_testrun_hidden_edit_is_dirty(runs, repo, tmp_path):
+    (repo / "v.txt").write_text("bad")
+    _git(repo, "add", "v.txt")
+    _git(repo, "commit", "-q", "-m", "v")
+    _git(repo, "update-index", "--skip-worktree", "v.txt")
+    (repo / "v.txt").write_text("good")
+    assert _git(repo, "status", "--porcelain") == ""
+    ts = tr.tree_state(repo)
+    assert ts["dirty"] is True and tr.reuse_key(["x"], ts) is None
+    lp = tmp_path / "ledger.sqlite3"
+    lg = tl.Ledger(lp)
+    tid = lg.create("t", "o", DEV, worktree=str(repo), branch="main")
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.close()
+    rec = tr.start(pyc("print('5 passed')"), name="h", timeout_s=60, cwd=str(repo), root=runs, task=tid, actor=DEV,
+                   ledger=str(lp), reuse=True)
+    assert rec["ledger"]["recorded"] is False and not rec.get("reuse_key")
+
+
+def test_fb3_03_relative_path_worktree_reflog_is_checked(sandbox):
+    sb = sandbox
+    wt = sb["wt"] / "relwt"
+    r = subprocess.run(["git", "-C", str(sb["repo"]), "worktree", "add", "-q", "--relative-paths", "--detach",
+                        str(wt), sb["base"]], capture_output=True, text=True)
+    if r.returncode != 0:
+        pytest.skip("git without --relative-paths")
+    lost = _commit(wt, "x.txt", b"x\n")
+    _git(wt, "checkout", "-q", "--detach", sb["base"])
+    items = {it["path"]: it for it in _plan(sb)["items"] if it["kind"] == "worktree"}
+    it = items[str(wt)]
+    assert it["cls"] == "PROTECTED" and lost in it["reflog_only"]
+
+
+def test_fb3_04_long_reflog_is_checked_completely(tmp_path):
+    """More than 500 distinct reflog commits (the old check kept only the alphabetically last 500)."""
+    repo = _init(tmp_path / "r")
+    base = _git(repo, "rev-parse", "HEAD")
+    stream = []
+    for i in range(560):
+        stream += ["commit refs/heads/line", f"mark :{i + 1}", "committer t <t@x> 1700000000 +0000", "data 2",
+                   "c", f"from {base}" if i == 0 else f"from :{i}", ""]
+    subprocess.run(["git", "-C", str(repo), "fast-import", "--quiet"],                 # bytes: no CRLF on Windows
+                   input=("\n".join(stream) + "\n").encode(), check=True, capture_output=True)
+    tip = _git(repo, "rev-parse", "line")
+    _git(repo, "update-ref", CANON, tip)
+    shas = _git(repo, "rev-list", tip).splitlines()
+    tree = _git(repo, "rev-parse", f"{base}^{{tree}}")
+    lost = subprocess.run(["git", "-C", str(repo), "commit-tree", tree, "-p", base, "-m", "lost"], text=True,
+                          capture_output=True, check=True).stdout.strip()   # on no ref
+    entries = sorted(shas + [lost])
+    if entries.index(lost) >= len(entries) - 500:                       # make it fall outside the last 500
+        entries.remove(lost)
+        entries.insert(0, lost)
+    log = tmp_path / "HEAD.log"
+    log.write_text("".join(f"{'0' * 40} {s} t <t@x> 1700000000 +0000\tcheckout\n" for s in entries))
+    ctx = hk.Ctx(repo, CANON, [], None, 0, False)
+    assert hk._commits_only_in_log(ctx, log) == [lost]
+
+
+def test_fb3_05_branch_whose_reflog_alone_keeps_commits_is_not_obsolete(sandbox):
+    sb = sandbox
+    _git(sb["repo"], "branch", "old/topic", sb["base"])
+    side = sb["wt"] / "side"
+    _git(sb["repo"], "worktree", "add", "-q", str(side), "old/topic")
+    _commit(side, "t.txt", b"t\n")
+    _git(side, "reset", "-q", "--hard", sb["base"])
+    _git(sb["repo"], "worktree", "remove", "--force", str(side))
+    refs = {it["path"] for it in _plan(sb)["items"] if it["kind"] == "branch"}
+    assert "refs/heads/old/topic" not in refs and "refs/heads/merged/old" in refs
+
+
+def test_fb3_06_more_secret_flag_spellings():
+    argv = ["x", "--DBPassword", "s1secret", "--dbpassword", "s2secret", "--APIToken", "s3secret",
+            "--SSHPassphrase", "s4secret", "--githubtoken", "s5secret", "--mysqlPwd", "s6secret", "--verbose", "keep"]
+    joined = " ".join(tr._safe_argv(argv))
+    assert not any(f"s{i}secret" in joined for i in range(1, 7)) and "keep" in joined

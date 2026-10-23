@@ -83,10 +83,10 @@ def norm(p) -> str:
     return os.path.normcase(os.path.abspath(str(p))).replace("\\", "/").rstrip("/")
 
 
-def git(repo, *args, check=False, timeout=300) -> tuple[int, str, str]:
+def git(repo, *args, check=False, timeout=300, inp: str | None = None) -> tuple[int, str, str]:
     try:
         p = subprocess.run([*GIT, "-C", str(repo), *args], capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", timeout=timeout)
+                           errors="replace", timeout=timeout, input=inp)
     except subprocess.TimeoutExpired:
         if check:
             raise HKError("GIT_TIMEOUT", f"git {' '.join(args)}")
@@ -311,6 +311,10 @@ class Ctx:
         if rc or not sha:
             raise HKError("NO_CANONICAL", f"{canonical_ref} does not resolve in {repo}; refusing to classify")
         self.canonical_ref, self.canonical = canonical_ref, sha
+        _, full, _ = git(repo, "rev-parse", "--symbolic-full-name", canonical_ref)
+        self.canonical_full = full or None
+        _, common, _ = git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir")
+        self.common_dir = Path(common) if common else None
         self.cited = _record_paths(records)
         self.task_paths, self.task_branches = _ledger_refs(ledger)
         self.min_age_s = min_age_hours * 3600
@@ -388,13 +392,38 @@ def _untracked_markers(path: Path, markers: list[str]) -> list[str]:
 
 
 def _gitdir(path: Path) -> Path | None:
-    gitf = path / ".git"
+    """The worktree's absolute git dir, from git itself (a relative `gitdir:` line resolves against the worktree,
+    never against this process's cwd; FB-3 FB3-03). None: not determinable."""
+    rc, out, _ = git(path, "rev-parse", "--absolute-git-dir")
+    return Path(out) if rc == 0 and out and Path(out).is_dir() else None
+
+
+def _commits_only_in_log(ctx: "Ctx", log: Path) -> list[str] | None:
+    """Commits named in a reflog file that no branch, tag, remote or canonical holds. Every entry is checked
+    (FB-3 FB3-04: no truncation); None when the log cannot be read or git fails (callers then protect)."""
+    if not log.is_file():
+        return []
     try:
-        if gitf.is_file():
-            return Path(gitf.read_text(encoding="utf-8").split("gitdir:", 1)[1].strip())
-    except (OSError, IndexError):
-        pass
-    return None
+        shas = {}
+        for line in log.read_text(encoding="utf-8", errors="replace").splitlines():
+            parts = line.split()
+            for s in parts[:2]:
+                if len(s) == 40 and set(s) - {"0"}:
+                    shas[s] = None
+    except OSError:
+        return None
+    if not shas:
+        return []
+    existing = ctx.repo
+    rc, out, _ = git(existing, "cat-file", "--batch-check", inp="".join(f"{s}\n" for s in shas))
+    if rc != 0:
+        return None
+    present = [s for s, line in zip(shas, out.splitlines()) if not line.endswith("missing")]
+    if not present:
+        return []
+    rc, out, _ = git(existing, "rev-list", "--stdin", "--not", "--branches", "--tags", "--remotes", ctx.canonical,
+                     inp="".join(f"{s}\n" for s in present))
+    return out.splitlines() if rc == 0 else None
 
 
 def _hidden_edits(path: Path) -> list[str] | None:
@@ -415,28 +444,15 @@ def _reflog_only_commits(ctx: "Ctx", path: Path) -> list[str] | None:
     worktree removes that reflog (FB-2 FB2-02). None: could not be determined."""
     gd = _gitdir(path)
     if gd is None:
-        return []
-    log = gd / "logs" / "HEAD"
-    if not log.is_file():
-        return []
-    try:
-        shas = sorted({line.split()[1] for line in log.read_text(encoding="utf-8", errors="replace").splitlines()
-                       if len(line.split()) > 1 and len(line.split()[1]) == 40 and set(line.split()[1]) - {"0"}})
-    except OSError:
-        return None
-    if not shas:
-        return []
-    rc, out, _ = git(ctx.repo, "rev-list", *shas[-500:], "--not", "--branches", "--tags", "--remotes",
-                     ctx.canonical)
-    return out.splitlines() if rc == 0 else None
+        return None if (path / ".git").exists() else []
+    return _commits_only_in_log(ctx, gd / "logs" / "HEAD")
 
 
 def _idle_s(path: Path) -> float:
     stamps = []
-    gitf = path / ".git"
     try:
-        if gitf.is_file():
-            gd = Path(gitf.read_text(encoding="utf-8").split("gitdir:", 1)[1].strip())
+        gd = _gitdir(path)
+        if gd is not None:
             for n in ("HEAD", "index", "logs/HEAD"):
                 if (gd / n).exists():
                     stamps.append((gd / n).stat().st_mtime)
@@ -641,6 +657,13 @@ def cache_group(parent: Path, parent_id: str, members: list[dict]) -> dict:
             "fingerprint": sha_text(canon_json(sorted((m["path"], m["fingerprint"]) for m in members)))}
 
 
+def _branch_reflog_only(ctx: Ctx, name: str) -> list[str] | None:
+    """Commits kept only by refs/heads/<name>'s own reflog (deleting the ref deletes that reflog)."""
+    if ctx.common_dir is None:
+        return None
+    return _commits_only_in_log(ctx, ctx.common_dir / "logs" / "refs" / "heads" / Path(*name.split("/")))
+
+
 def classify_branches(ctx: Ctx, checked_out: set[str]) -> list[dict]:
     _, out, _ = git(ctx.repo, "for-each-ref", "refs/heads", "--format=%(refname) %(objectname)", check=True)
     items = []
@@ -649,7 +672,11 @@ def classify_branches(ctx: Ctx, checked_out: set[str]) -> list[dict]:
         name = ref[len("refs/heads/"):]
         if ref in checked_out or name.startswith(PRESERVED_BRANCH_PREFIXES) or name in ctx.task_branches:
             continue
+        if ref == ctx.canonical_full:                       # FB-3 FB3-01: never the canonical ref itself
+            continue
         if ctx.reach(sha) != "CANONICAL":
+            continue
+        if _branch_reflog_only(ctx, name) != []:            # FB-3 FB3-05: its reflog alone holds commits, or unknown
             continue
         items.append({"id": "br:" + sha_text(ref)[:12], "kind": "branch", "path": ref, "head": sha,
                       "cls": "OBSOLETE_BRANCH", "action": "delete-ref (needs --classes OBSOLETE_BRANCH)",
@@ -895,7 +922,8 @@ def _current(ctx: Ctx, it: dict) -> dict | None:
         name = it["path"][len("refs/heads/"):]
         checked_out = {w["branch"] for w in wts.values() if w.get("branch")}
         if (ctx.reach(sha) != "CANONICAL" or it["path"] in checked_out or name in ctx.task_branches
-                or name.startswith(PRESERVED_BRANCH_PREFIXES)):          # FB-1 N-04
+                or name.startswith(PRESERVED_BRANCH_PREFIXES)          # FB-1 N-04
+                or it["path"] == ctx.canonical_full or _branch_reflog_only(ctx, name) != []):   # FB3-01, FB3-05
             cur["cls"] = "PROTECTED"
         return cur
     return None
@@ -966,7 +994,11 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 r["outcome"] = "REFUSED"
                 r["why"] = why
                 continue
-            cur = _current(ctx, it)
+            try:
+                cur = _current(ctx, it)
+            except HKError as e:
+                r.update(outcome="FAILED", error=f"recheck failed: {e}")
+                continue
             if cur is None:
                 r["outcome"] = "GONE_BEFORE_APPLY"
                 continue

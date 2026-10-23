@@ -234,6 +234,25 @@ confirms M-01 live.
 
 Regression tests `test_fb2_*` fail on `573e3268` (5 failed) and pass after the repair.
 
+### 5.3 Fallback review FB-3 (`7562b6e1`, REJECT) and repairs
+
+Driver run r4 stopped BLOCKED NO_INDEPENDENT_REVIEWER on `7562b6e1`. The FB-3 reviewer (raw:
+`D:/uri-dev/lc-storage-evidence/fallback-review/review_FB3_7562b6e1.txt`, ledger review `V3`) confirmed every earlier
+finding FIXED or DOCUMENTED. The full gate on `7562b6e1` passed 1003 tests (exit 0) and was recorded on the commit.
+
+The repair addresses each class once rather than each instance:
+
+| Finding | Repair |
+|---|---|
+| FB3-01 MEDIUM blocking: a local canonical branch was listed as OBSOLETE_BRANCH and deleted; the next recheck aborted apply without a receipt | The ref that `--canonical-ref` resolves to is never a branch item, at inventory or at recheck. A recheck error is a per-item FAILED, so a receipt is always written. |
+| FB3-02 MEDIUM blocking: testrun treated a tree with hidden index edits as clean (false PASS bound to HEAD; REUSED pass on a failing HEAD) | `tree_state` marks such a tree dirty, so it gets no ledger binding and no reuse. |
+| FB3-03 LOW: relative-path worktree reflog not found (fail open) | The gitdir comes from `git rev-parse --absolute-git-dir`. A `.git` that cannot be resolved means PROTECTED. |
+| FB3-04 LOW: only 500 reflog commits were checked | One shared check, `_commits_only_in_log`, reads every entry and uses `cat-file --batch-check` plus `rev-list --stdin`. Note: the regression test fails on `7562b6e1` because the function did not exist there, not by exercising the truncation itself. |
+| FB3-05 LOW: deleting a branch dropped commits kept only by its reflog | A branch whose reflog alone holds commits, or whose reflog cannot be checked, is not listed. The branch recheck applies the same rule. |
+| FB3-06 LOW: `--DBPassword`, `--githubtoken` etc. were kept | Acronym boundaries split too, and strong secret words match as substrings. |
+
+Regression tests `test_fb3_*`: 6 fail on `7562b6e1` (and FB3-04 as noted), and all pass after the repair.
+
 ## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.
