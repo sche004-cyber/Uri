@@ -21,7 +21,7 @@ CORPUS = json.loads((Path(__file__).parent / "data" / "office_fact_corpus.json")
 IDS = [c["id"] for c in CORPUS]
 
 # Independent of the module under test, so the same file runs against older commits.
-_HON = re.compile(r"(?:Shri|Smt|Sh|Km|Kum|Kumari|Sushri|Dr|Mr|Mrs|Ms|Prof)\.?$")
+_HON = re.compile(r"\(?(?:Shri|Smt|Sh|Km|Kum|Kumari|Sushri|Dr|Mr|Mrs|Ms|Prof)\.?\)?$")
 _BRACKET_WORDS = re.compile(r"\s*\((?:[a-z]+[\s-]*)+\)", re.I)
 _MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october",
            "november", "december"]
@@ -62,7 +62,9 @@ def mutations(kind: str, text: str) -> list:
     out = []
     words = text.split()
     if kind == "name":
-        first = 1 if _HON.match(words[0]) and len(words) > 1 else 0
+        first = 0
+        while first < len(words) - 1 and _HON.match(words[first]):    # skip "Dr. (Smt.)"
+            first += 1
         last = words[-1].rstrip(".")
         out.append(("surname", " ".join(words[:-1] + [last + ("a" if last.endswith("i") else "i")])))
         if first < len(words) - 1:
@@ -71,14 +73,21 @@ def mutations(kind: str, text: str) -> list:
             out.append(("first name", " ".join(w)))
     elif kind == "date":
         m = re.search(r"\b(\d{1,2})(st|nd|rd|th)?\b", text)
-        day = int(m.group(1))
-        nd = day % 28 + 1
-        new_day = (str(nd).zfill(len(m.group(1)))) + (_ordinal(nd) if m.group(2) else "")
-        out.append(("day", text[:m.start()] + new_day + text[m.end():]))
-        if day < 10 and len(m.group(1)) == 1:            # "3 November" inside "13 November" (FB1 R2-01 class)
-            out.append(("day prefix", text[:m.start()] + "1" + text[m.start():]))
-        mm = re.search(r"[A-Za-z]+", text.replace(m.group(0), ""))
-        mon = mm.group(0)
+        if m:                                           # "April 2026" and "April to June" have no day
+            day = int(m.group(1))
+            nd = day % 28 + 1
+            new_day = (str(nd).zfill(len(m.group(1)))) + (_ordinal(nd) if m.group(2) else "")
+            out.append(("day", text[:m.start()] + new_day + text[m.end():]))
+            if day < 10 and len(m.group(1)) == 1:        # "3 November" inside "13 November" (FB1 R2-01 class)
+                out.append(("day prefix", text[:m.start()] + "1" + text[m.start():]))
+        y = re.search(r"\b\d{4}\b", text)
+        if y:
+            out.append(("year", text[:y.start()] + _digit_up(y.group(0), last=True) + text[y.end():]))
+        rest = text.replace(m.group(0), "", 1) if m else text
+        mon = next((w for w in re.findall(r"[A-Za-z]+", rest)
+                   if w.lower() in _MONTHS or w.lower() in _ABBR or w.lower() == "sept"), None)
+        if mon is None:                                 # "12.05.2026": the day and year changes above suffice
+            return out
         names = _MONTHS if mon.lower() in _MONTHS else _ABBR
         nxt = names[(names.index(mon.lower()) + 1) % 12]
         out.append(("month", re.sub(r"\b" + re.escape(mon) + r"\b", _same_case(nxt, mon), text, count=1)))
@@ -90,8 +99,11 @@ def mutations(kind: str, text: str) -> list:
                 out.append(("unit", " ".join(words[:-1] + [_same_case(_UNIT_SWAP[words[-1].lower()], words[-1])])))
         else:
             w = list(words)
-            w[0] = _same_case(_NUM_SWAP[w[0].lower()], w[0])
+            w[0] = _same_case(_NUM_SWAP.get(w[0].lower(), "eleven" if w[0].lower() != "eleven" else "twelve"),
+                              w[0])
             out.append(("number word", " ".join(w)))
+            if len(words) > 1 and words[-1].lower() in _UNIT_SWAP and not words[-1].lower() in _NUM_SWAP:
+                out.append(("unit", " ".join(words[:-1] + [_same_case(_UNIT_SWAP[words[-1].lower()], words[-1])])))
     elif kind == "reference":
         out.append(("digit", _digit_up(text, last=True)))
         i = re.search(r"\d", text).start()                  # "12/2026" inside "112/2026"
@@ -99,14 +111,17 @@ def mutations(kind: str, text: str) -> list:
     return out
 
 
-def _replace_fact(instruction: str, fact: str, new: str) -> str:
+def _replace_fact(instruction: str, fact: str, new: str, others=()) -> str:
+    """Replaces the fact's own occurrence: not one inside a longer fact of the same case ("Shri Anil Kumar" inside
+    "Shri Anil Kumar Singh")."""
     rx = re.compile(r"(?<![\w/])" + re.escape(fact) + r"(?![\w])(?!/(?!-))")
-    m = rx.search(instruction)
-    if m is None:                                # "3 (three) posts": the fact is read from the cleaned text
-        instruction = _BRACKET_WORDS.sub("", instruction)
-        m = rx.search(instruction)
-    assert m, (fact, instruction)
-    return instruction[:m.start()] + new + instruction[m.end():]
+    for attempt in (instruction, _BRACKET_WORDS.sub("", instruction)):   # "3 (three) posts": the cleaned text
+        covers = [(c.start(), c.end()) for o in others if len(o) > len(fact) and fact in o
+                  for c in re.finditer(re.escape(o), attempt)]
+        for m in rx.finditer(attempt):
+            if not any(a <= m.start() and m.end() <= b for a, b in covers):
+                return attempt[:m.start()] + new + attempt[m.end():]
+    raise AssertionError((fact, instruction))
 
 
 def test_corpus_is_large_and_varied():
@@ -134,7 +149,7 @@ def test_c_changing_one_fact_warns_about_it(case):
     for kind, text in case["facts"]:
         for what, new in mutations(kind, text):
             assert new != text
-            draft = _replace_fact(ins, text, new)
+            draft = _replace_fact(ins, text, new, [t for _, t in case["facts"]])
             if text not in [w["text"] for w in DR.missing_facts(ins, draft)]:
                 missed.append(f"{kind} '{text}' -> {what} '{new}'")
     assert not missed, (ins, missed)

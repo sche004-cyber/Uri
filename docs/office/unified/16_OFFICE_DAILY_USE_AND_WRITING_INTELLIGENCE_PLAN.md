@@ -252,7 +252,44 @@ The individual repairs:
   waiting is 185 s plus the time a stopped process takes to exit. Building the To Word document (at most 500,000
   characters) is the remaining part that is not itself time-limited.
 
+Repairs after fallback review FB5 of dbde00f6 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r5/fallback/FB5_subagent_dbde00f6.audit.txt`). R2-01..R5-06 were confirmed
+fixed. FB5 found two classes of silent miss that every earlier commit also had, and that this list did not mention.
+The FB4 status above was therefore incomplete: those forms were never checked.
+- R6-01: new date stages, all run before the digit stage, with the May rule kept:
+  - "Nth (day) of Month [YYYY]" ("the 5th of June, 2026", "12th day of March 2026");
+  - day ranges in one month ("9th-10th November", "3rd to 7th October 2026", "8 and 9 October 2026");
+  - month-to-month periods ("April to June 2026", "May to July", "January - March 2026");
+  - "Month[,] YYYY" ("April 2026", "May 2026", "April, 2026 to March, 2027").
+- R6-02: names are deduplicated only on exact repeats. A name's occurrence inside a longer name of the same
+  instruction does not count when the draft is checked, so "Shri Anil Kumar" next to "Shri Anil Kumar Singh" (in
+  either order), "Smt. Sunita" next to "Smt. Sunita Sharma" and "Dr. Rakesh" next to "Dr. Rakesh Gupta" are each
+  checked. The cue stage now skips only words inside a claimed span. A person named twice in the instruction needs
+  to appear once; repeats are not counted.
+- R6-03: a lone "one".."ten" is a fact when a unit from the list follows it ("seven days", "two officers").
+- R6-04:
+  - "Mohd." and "Md." do not end a sentence;
+  - a bracketed honorific stays inside the name ("Dr. (Smt.) Kavita Krishnan");
+  - a name needs a word that is not an honorific or a designator ("Dr" or "Room" alone is not a name);
+  - a possessive "'s" is not part of the name;
+  - weekday names are not names;
+  - "5-day" is a number.
+- Corpus: 281 instructions. It now has templates for month-year, "Nth (day) of", periods, shared and prefix names in
+  both orders, small number words with units, Mohd./Md. and bracketed honorifics. It also has 10 of the reviewer's
+  out-of-corpus instructions (expected facts written by hand) and 20 new hand-written instructions in other forms.
+  The 20 new ones first showed these misses:
+  - silent: "9th" in "9th-10th November" was not a fact;
+  - false facts: "Natarajan's" with the possessive, "Monday", "5-day" read as a reference;
+  - split facts: "3rd to 7th October 2026", "8 and 9 October 2026" and "14th to 28th September 2026" were split
+    into a number and a date. A change to either part still warned, so these were not silent.
+
+  All of these are repaired above, and all 281 cases pass (a), (b) and (c).
+
 Fact-check limitations that remain:
+- a month on its own, with no day and no year ("in April"), is not a date;
+- a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
+  is not reported;
+- the same person named twice in the instruction needs to appear only once in the draft;
 - lowercase names ("ramesh kumar") and a single name without a cue word;
 - a single all-capitals word such as a cadre ("LDC" against "UDC") is not a fact;
 - several people without honorifics joined by "and" form one name fact ("Ram Kumar and Sita Devi"): a change to

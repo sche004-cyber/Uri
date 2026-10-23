@@ -9,14 +9,18 @@ FB4 (plan 16): the extractor is one pipeline. Each stage claims character spans 
 never use a claimed span:
   1. references: the designator and the code together ("F.No. A-12/2026-Estt.", "O.M. No. ...", "D.O. No. ...",
      "No. ..."); the fact is the code;
-  2. dates: day and month, or month and day, with or without a year. "may" counts as the month only with an
-     ordinal day, a following year, or a preposition before it (on/by/from/till/until/dated/before/after/of);
+  2. dates: day ranges in one month, "Nth (day) of Month", day and month, or month and day (with or without a
+     year), month-to-month periods and "Month YYYY" (FB5 R6-01). "may" counts as the month only with an ordinal
+     day, a following year, a preposition before it (on/by/from/till/until/dated/before/after/of), or "May"/"MAY"
+     after a day;
   3. numbers in digits, with a following unit (days, km, posts, lakh, AM/PM, ... see UNITS) as part of the fact; an
      amount after Rs/INR/the rupee sign; "/-" is dropped;
   4. numbers in words ("twenty five thousand");
   5. names: runs of capitalised words, broken by punctuation, claimed spans and sentence ends, then split at every
      honorific so "Shri Ram Kumar and Smt. Sita Devi" is two names, each keeping its honorific;
-  6. one capitalised word after a cue ("to Ramesh", "Smt. Sharma") when no longer name contains it.
+  6. one capitalised word after a cue ("to Ramesh", "Smt. Sharma") outside every claimed span.
+Names are deduplicated only on exact repeats; a name's occurrence inside a longer name of the same instruction does
+not count in the draft (FB5 R6-02).
 A fact counts as present in a draft only as a whole token run (FB1 R2-01). The check is literal on purpose; plan 16
 lists what it does not catch.
 """
@@ -56,6 +60,16 @@ _ORD = r"(?:st|nd|rd|th)"
 _YEAR = r"(?:,?\s+\d{4}\b)"
 _DAY_MONTH = re.compile(r"\b(\d{1,2})(" + _ORD + r")?\s+(" + _MONTHS + r")\b\.?(" + _YEAR + r")?", re.I)
 _MONTH_DAY = re.compile(r"\b(" + _MONTHS + r")\b\.?\s+(\d{1,2})(" + _ORD + r")?\b(" + _YEAR + r")?", re.I)
+# FB5 R6-01: "the 5th of June, 2026", "12th day of March 2026", "April 2026", "April, 2026 to March, 2027" and
+# "April to June 2026" are dates too.
+_DAY_OF_MONTH = re.compile(r"\b(\d{1,2})(" + _ORD + r")?\s+(?:day\s+)?of\s+(" + _MONTHS + r")\b\.?(" + _YEAR + r")?",
+                           re.I)
+# A range of days in one month ("9th-10th November", "3rd to 7th October 2026", "8 and 9 October 2026") is one fact.
+_DAY_RANGE = re.compile(r"\b(\d{1,2})(" + _ORD + r")?\s*(?:-|–|to|and|&)\s*(\d{1,2})(" + _ORD + r")?\s+(" + _MONTHS
+                        + r")\b\.?(" + _YEAR + r")?", re.I)
+_MONTH_YEAR = re.compile(r"\b(" + _MONTHS + r")\b\.?,?\s+(\d{4})\b", re.I)
+_PERIOD = re.compile(r"\b(" + _MONTHS + r")\b\.?\s+(?:to|till|until|-|–)\s+(" + _MONTHS + r")\b\.?(" + _YEAR + r")?",
+                     re.I)
 _MAY_CUE = re.compile(r"\b(?:on|by|from|till|until|dated|before|after|of)\s+$", re.I)
 _DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
 # FB4 R5-04: the designator is part of the claimed span, so it never becomes a name word.
@@ -77,7 +91,8 @@ _NOT_NAME = {"write", "draft", "prepare", "compose", "please", "kindly", "issue"
              "requesting", "pay", "rs", "inr", "dt", "w.e.f", "wef", "transfer", "sanction", "ask", "hold", "grant",
              "appoint", "direct", "depute", "relieve", "post", "approve", "forward", "submit", "reply", "under",
              "f.no", "o.m", "d.o", "put", "up", "meeting", "rupees", "only", "training", "purchase", "notify",
-             "fill", "allot", "budget", "fine", "sanctioning", "granting", "relieving", "transferring", "on"}
+             "fill", "allot", "budget", "fine", "sanctioning", "granting", "relieving", "transferring", "on",
+             "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"}
 _NUM_WORD = (r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|"
              r"seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|"
              r"lakhs?|crores?)")
@@ -137,7 +152,19 @@ def extract_facts(instruction: str) -> list:
         code = _code(m.group(1))
         add("reference", code, m.start(), m.start(1) + len(code))
         spans.append((m.start(), m.start(1) + len(code)))
-    # 2. dates
+    # 2. dates. FB5 R6-01: "Nth (day) of Month" first, then day-month and month-day, then "Month YYYY" and
+    # month-to-month periods, all before the digit stage so their numbers are not read as plain numbers.
+    for m in _DAY_RANGE.finditer(text):
+        if taken(m.start(), m.end()) or not (1 <= int(m.group(1)) <= 31 and 1 <= int(m.group(3)) <= 31):
+            continue
+        mon = m.group(5)
+        if mon.lower() == "may" and not (m.group(4) or m.group(6) or mon in ("May", "MAY")) \
+                and not _MAY_CUE.search(text[:m.start()]):
+            continue
+        add("date", m.group(0).rstrip(".,;:"), m.start(), m.end())
+    for m in _DAY_OF_MONTH.finditer(text):
+        if not taken(m.start(), m.end()) and 1 <= int(m.group(1)) <= 31:
+            add("date", m.group(0).rstrip(".,;:"), m.start(), m.end())
     for rx, day_i, ord_i, mon_i, year_i in ((_DAY_MONTH, 1, 2, 3, 4), (_MONTH_DAY, 2, 3, 1, 4)):
         for m in rx.finditer(text):
             if taken(m.start(), m.end()) or not 1 <= int(m.group(day_i)) <= 31:
@@ -148,6 +175,15 @@ def extract_facts(instruction: str) -> list:
             if mon.lower() == "may" and not (m.group(ord_i) or m.group(year_i)) \
                     and not _MAY_CUE.search(text[:m.start()]) and not (rx is _DAY_MONTH and mon in ("May", "MAY")):
                 continue
+            add("date", m.group(0).rstrip(".,;:"), m.start(), m.end())
+    for m in _PERIOD.finditer(text):
+        if taken(m.start(), m.end()):
+            continue
+        if "may" in (m.group(1).lower(), m.group(2).lower()) and not (m.group(3) or _MAY_CUE.search(text[:m.start()])):
+            continue                              # "you may to June" is not a period; "from May to June" is
+        add("date", m.group(0).rstrip(".,;:"), m.start(), m.end())
+    for m in _MONTH_YEAR.finditer(text):           # a following year satisfies the "may" rule
+        if not taken(m.start(), m.end()):
             add("date", m.group(0).rstrip(".,;:"), m.start(), m.end())
     # 3. numbers in digits (amounts, numbers with units, numeric dates, codes without a designator)
     for m in re.finditer(r"\S+", text):
@@ -161,6 +197,8 @@ def extract_facts(instruction: str) -> list:
             continue
         if _DATE_NUM.match(tok):
             kind = "date"
+        elif re.fullmatch(r"(?i)\d+-(?:day|week|month|year|hour)s?", tok):       # "5-day workshop"
+            kind = "number"
         elif "/" in tok or (re.search(r"[A-Za-z]", tok) and "-" in tok):
             kind = "reference"
         elif _AMOUNT_PREFIX.search(text[:m.start()]) or re.match(r"(?i)(?:rs\.?|inr|₹)\d", m.group(0)) \
@@ -179,11 +217,13 @@ def extract_facts(instruction: str) -> list:
         if taken(m.start(), m.end()):
             continue
         words = m.group(0).lower().split()
-        if len(words) >= 2 or words[0] not in _SMALL_NUMS:
+        u = _UNIT.match(text[m.end():])
+        unit = u if u and not _NUM_WORD_RX.match(u.group(1)) else None
+        # FB5 R6-03: a lone "one".."ten" is a fact when a unit follows it ("seven days", "two officers")
+        if len(words) >= 2 or words[0] not in _SMALL_NUMS or unit:
             value, end = m.group(0), m.end()
-            u = _UNIT.match(text[end:])
-            if u and not _NUM_WORD_RX.match(u.group(1)):
-                value, end = f"{value} {u.group(1)}", end + u.end()
+            if unit:
+                value, end = f"{value} {unit.group(1)}", end + unit.end()
             add("number", value, m.start(), end)
         else:
             spans.append((m.start(), m.end()))
@@ -191,27 +231,36 @@ def extract_facts(instruction: str) -> list:
     for start, words in _cap_runs(text, taken):
         for part_start, part in _split_at_honorifics(start, words):
             name = _trim(part)
-            if len(name) >= 2:
-                value = " ".join(w for _, w in name).rstrip(".,;:")
-                if not any(value.lower() in f["text"].lower() for f in out if f["kind"] == "name"):
-                    add("name", value, name[0][0])
+            # FB5 R6-04: a name needs a word that is not an honorific or a designator ("Dr", "Room" alone are not)
+            if len(name) >= 2 and any(not _is_hon(w) and w.lower().rstrip(".") not in _NOT_NAME for _, w in name):
+                value = re.sub(r"['’]s$", "", " ".join(w for _, w in name).rstrip(".,;:"))   # "Natarajan's"
+                # FB5 R6-02: only an exact repeat is a duplicate ("Shri Anil Kumar" next to "Shri Anil Kumar
+                # Singh" is a second person)
+                add("name", value, name[0][0], name[-1][0] + len(name[-1][1]))
     # 6. one capitalised word after a cue
     for m in _CUE_NAME.finditer(text):
         w = m.group(1).rstrip(_TRAIL)
+        # FB5 R6-02: only a word inside a claimed span (a name, date, number or reference) is skipped
         if taken(m.start(1), m.end(1)) or w.lower() in _NOT_NAME or w.lower() in _MONTH_SET or len(w) < 2:
             continue
-        if not any(re.search(r"(?<!\w)" + re.escape(w.lower()) + r"(?!\w)", f["text"].lower())
-                   for f in out if f["kind"] == "name"):
-            add("name", w, m.start(1))
+        add("name", w, m.start(1), m.end(1))
     out.sort(key=lambda f: f["_at"])
     return [{"kind": f["kind"], "text": f["text"]} for f in out]
 
 
-_WORD = re.compile(r"[^\s,;:()\[\]\"]+")
+# A bracketed honorific ("Dr. (Smt.) Kavita Krishnan") is one word of the name (FB5 R6-04).
+_BRACKET_HON = r"\((?:" + "|".join(HONORIFICS) + r")\.?\)"
+_WORD = re.compile(_BRACKET_HON + r"|[^\s,;:()\[\]\"]+")
+# Abbreviations that end in a dot without ending a sentence (FB5 R6-04).
+_NON_TERMINAL = {"mohd.", "md.", "mohd", "md", "jr.", "sr.", "st."}
+
+
+def _is_hon(w: str) -> bool:
+    return bool(_HON_RX.match(w) or re.fullmatch(_BRACKET_HON, w))
 
 
 def _is_cap(w: str) -> bool:
-    return bool(re.match(r"[A-Z][A-Za-z'.-]*$", w))
+    return bool(re.match(r"[A-Z][A-Za-z'.-]*$", w) or re.fullmatch(_BRACKET_HON, w))
 
 
 def _cap_runs(text: str, taken):
@@ -224,8 +273,10 @@ def _cap_runs(text: str, taken):
         breaks = bool(re.search(r"[,;:()\[\]\"]", gap)) or taken(a, b)
         if run and not breaks and prev_end is not None:
             last = run[-1][1]
-            # a word ending in "." ends the sentence unless it is an honorific or an initial ("A.", "O.M.")
-            if last.endswith(".") and not _HON_RX.match(last) and len(last.rstrip(".").replace(".", "")) > 2:
+            # a word ending in "." ends the sentence unless it is an honorific, an initial ("A.", "O.M.") or a
+            # name abbreviation ("Mohd.")
+            if last.endswith(".") and not _is_hon(last) and last.lower() not in _NON_TERMINAL \
+                    and len(last.rstrip(".").replace(".", "")) > 2:
                 breaks = True
         if breaks or not (_is_cap(w) or w.lower() in _CONNECTORS):
             if run:
@@ -245,7 +296,8 @@ def _split_at_honorifics(start, words):
     """FB4 R5-01: every honorific starts a new name ("Shri Ram Kumar and Smt. Sita Devi" is two names)."""
     parts, cur = [], []
     for a, w in words:
-        if _HON_RX.match(w) and cur:
+        # a second honorific right after one ("Dr. (Smt.)") belongs to the same person
+        if _is_hon(w) and cur and not all(_is_hon(x) for _, x in cur):
             parts.append(cur)
             cur = []
         cur.append((a, w))
@@ -259,7 +311,7 @@ def _trim(words):
         k = w.lower().rstrip(".")
         return k in _NOT_NAME or k in _MONTH_SET or k in _CONNECTORS
     words = list(words)
-    while words and bad(words[0][1]) and not _HON_RX.match(words[0][1]):
+    while words and bad(words[0][1]) and not _is_hon(words[0][1]):
         words.pop(0)
     while words and bad(words[-1][1]):
         words.pop()
@@ -276,6 +328,21 @@ def _after_word(hay: str, end: int) -> str:
     return m.group(0).lower() if m else ""
 
 
+def _fact_rx(t: str):
+    body = re.escape(t)
+    body = re.sub(r"(?i)\b(lakh|crore)s?\b", r"\1s?", body)
+    return re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + body + r"(?![^\W_])(?!/(?!-))(?![,.]\d)", re.I)
+
+
+def _name_hits(name: str, text: str, longer: list) -> int:
+    """FB5 R6-02: occurrences of a name that are not part of a longer name of the same instruction ("Shri Anil
+    Kumar" inside "Shri Anil Kumar Singh" does not count)."""
+    hay = _norm(text)
+    covers = [(m.start(), m.end()) for big in longer for m in _fact_rx(_norm(big)).finditer(hay)]
+    return sum(1 for m in _fact_rx(_norm(name)).finditer(hay)
+               if not any(a <= m.start() and m.end() <= b and (b - a) > (m.end() - m.start()) for a, b in covers))
+
+
 def fact_present(fact: str, draft_text: str, instruction: str | None = None) -> bool:
     """A fact counts as present only as a whole token run: no letter or digit or '/' directly before or after it, and
     no digit group continuing it ("25,000" is not inside "1,25,000"; "Kumar" is not inside "Kumari"). Spacing and
@@ -286,9 +353,7 @@ def fact_present(fact: str, draft_text: str, instruction: str | None = None) -> 
     t = _norm(fact)
     if not t:
         return True
-    body = re.escape(t)
-    body = re.sub(r"(?i)\b(lakh|crore)s?\b", r"\1s?", body)
-    rx = re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + body + r"(?![^\W_])(?!/(?!-))(?![,.]\d)", re.I)
+    rx = _fact_rx(t)
     hay = _norm(draft_text)
     words = t.split()
     ends_num_word = bool(_NUM_WORD_RX.match(words[-1]))
@@ -315,8 +380,18 @@ def missing_facts(instruction: str, draft_text: str) -> list:
     """Facts from the instruction that the draft does not contain as whole tokens (case and spacing ignored).
     Returns warnings {code: FACT_MISSING, kind, text, message}."""
     out = []
-    for f in extract_facts(instruction):
-        if not fact_present(f["text"], draft_text, instruction):
+    facts = extract_facts(instruction)
+    names = [f["text"] for f in facts if f["kind"] == "name"]
+    for f in facts:
+        if f["kind"] == "name":
+            # FB5 R6-02: an occurrence inside a longer name of the instruction ("Shri Anil Kumar" inside "Shri Anil
+            # Kumar Singh") does not count, so each distinct person must appear on their own. The same person named
+            # twice in the instruction needs to appear once (repeats are not counted, to avoid false warnings).
+            longer = [n for n in names if n != f["text"] and _norm(f["text"]).lower() in _norm(n).lower()]
+            present = _name_hits(f["text"], draft_text, longer) >= 1
+        else:
+            present = fact_present(f["text"], draft_text, instruction)
+        if not present:
             out.append({"code": "FACT_MISSING", "kind": f["kind"], "text": f["text"],
                         "message": f"The draft does not contain the {f['kind']} '{f['text']}' from your instruction. "
                                    "Check it before saving."})

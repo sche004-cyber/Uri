@@ -48,7 +48,9 @@ def test_single_cue_names_and_number_words_are_checked():
     assert {"kind": "name", "text": "Dr. Rao"} in DR.extract_facts("Send it from Dr. Rao.")
     facts = DR.extract_facts("Sanction twenty five thousand rupees.")
     assert {"kind": "number", "text": "twenty five thousand"} in facts
-    assert DR.extract_facts("send one copy") == []                    # a lone small number word is not a fact
+    assert DR.extract_facts("send one letter") == []                  # a lone small number word is not a fact
+    # FB5 R6-03: unless a unit follows it
+    assert DR.extract_facts("send one copy") == [{"kind": "number", "text": "one copy"}]
     w = DR.missing_facts("Write a memo to Ramesh about leave of twenty days.", "Memo to Suresh about leave of "
                                                                              "thirty days.")
     assert {x["text"] for x in w} == {"Ramesh", "twenty days"}             # FB2 R3-02: the unit is part of the fact
