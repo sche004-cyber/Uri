@@ -121,6 +121,31 @@ The engine extends URI Assist (owner: "extend the existing URI Assist") and is r
 Not claimed by increment 1: physical keyboard/mouse input (owner check), external-app writing (OD-WI-1), PDF Q&A,
 presentation from outline, blank workbook, installer, production use.
 
+### Implementation status (OD-A, 2026-10-23, branch milestone/office-daily-use-20261023)
+
+Implemented (unit, service and widget tests only; no live run, no real Brain):
+- OD-1: layouts `notesheet` (Note Sheet, File No., subject, List Number paragraphs, signature, name, designation,
+  date) and `circular` (Circular, No. and Date line, subject, body, issuing authority, Distribution list); placeholders
+  only. Python-docx, save-as and real LibreOffice render tests (the engine test ran on this PC).
+- OD-2: `POST /authoring/draft {instruction, layout?}`; kind chosen from keywords (earliest keyword wins; none ->
+  clarify without a Brain call); `OfficeBrain.draft_document` (FAST tier, strict schema, 60 blocks x 1,500 chars,
+  20,000 chars total; over-cap answers refused, not truncated); blocks written by a pure function into a new working
+  copy in the layout's page setup; FACT_MISSING warnings for numbers, dates, references, amounts and capitalised names
+  not present verbatim; no Brain -> BRAIN_UNAVAILABLE. `write_document` available through this route only;
+  `edit_document` stays planned:O3. Tests use a fake Brain client.
+- OD-3: worker op `text` (page text, 2,000,000-character cap, `truncated`), `POST /document/<id>/text`,
+  `POST /document/<id>/to_word` (new working copy, one heading per page, Save as card as usual). OCR on explicit
+  request (`{ocr: true}`): Tesseract at the `engines.json` `tesseract.path` entry or the default install folder, on
+  page images from the existing raster path (1240 px), one Job Object per page (1 GiB, 90 s), at most 20 pages per
+  request (the rest listed), `OCR_UNAVAILABLE` when absent. A real Tesseract test reads a generated page image.
+- UI: "Draft with URI…" on Office Home (instruction + optional kind), composer requests routed to `write_document`,
+  clarify/cannot/missing facts in words, "Copy text" and "To Word" on the PDF view, "Read scanned pages" chip.
+
+Not implemented / not verified: live Brain corpus of 10 tasks (OD-2 evidence) and live G-3 journeys D01/P01; OCR on a
+page rendered by the WinRT raster worker end to end (only the Tesseract step and the routing were tested); Tesseract
+is not hash-pinned like LibreOffice (no pin recorded); only the `eng` language pack is installed (Hindi text is not
+read); a "Read scanned pages" option for To Word exists in the API (`ocr: true`) but has no button.
+
 ## 5. Coordination
 
 M95 owns `uri_privacy/` and touches `uri_office/service.py` `main()` only: this work does not edit `main()`. Vision F-1
