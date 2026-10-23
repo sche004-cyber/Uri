@@ -272,6 +272,7 @@ class _BlockPanel extends StatelessWidget {
         multiline: true,
         enabled: !e.busy,
         onApply: (t) => e.op({'op': 'set_paragraph_text', ...e.at(i), 'text': t}),
+        writing: e.client,
       ),
       Row(children: [
         Expanded(

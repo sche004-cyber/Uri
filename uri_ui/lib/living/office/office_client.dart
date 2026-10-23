@@ -5,13 +5,14 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 import '../integration/scheduler_client.dart' show SchedulerApiError;
+import 'writing_assist.dart';
 
 /// HTTP client for the URI Office service (`python -m uri_office.service run`), the same discovery as the
 /// scheduler: `<state>/service.json` gives the port, `<state>/api-token` (current user only) the bearer token.
 /// The state folder is `URI_OFFICE_STATE`, or `%LOCALAPPDATA%\URI\office`.
 ///
 /// Only Dart talks to the service; the sheet page never does (it has no network access at all).
-class OfficeClient {
+class OfficeClient implements WritingService {
   OfficeClient._(this._base, this._token, {http.Client? client}) : _http = client ?? http.Client();
 
   final Uri _base;
@@ -141,6 +142,24 @@ class OfficeClient {
   Future<Map<String, dynamic>> authoringSave(String aid, {String? saveAsPath}) =>
       _post('/authoring/$aid/save', {'save_as_path': ?saveAsPath});
   Future<Map<String, dynamic>> authoringClose(String aid) => _post('/authoring/$aid/close');
+  // ---- Writing Intelligence (plan 16, WI-A): suggestions only; nothing here changes a document ----
+  @override
+  Future<Map<String, dynamic>> writingCheck(String text, {List<String> ignore = const []}) =>
+      _post('/writing/check', {'text': text, 'ignore': ignore});
+  @override
+  Future<Map<String, dynamic>> writingApply(String text, List<Map<String, dynamic>> accepted) =>
+      _post('/writing/apply', {'text': text, 'accepted': accepted});
+  @override
+  Future<Map<String, dynamic>> writingProofread(String text) => _post('/writing/proofread', {'text': text});
+  @override
+  Future<Map<String, dynamic>> writingRewrite(String text, String tone) =>
+      _post('/writing/rewrite', {'text': text, 'tone': tone});
+  @override
+  Future<Map<String, dynamic>> writingComplete(String text) => _post('/writing/complete', {'text': text});
+  @override
+  Future<void> writingPrewarm() async {
+    await _post('/writing/prewarm', {'text': ''});
+  }
   // OD-R1: folders URI may use (the user folder plus folders the owner added).
   Future<Map<String, dynamic>> folders() => _get('/folders');
   Future<Map<String, dynamic>> addFolder(String path) => _post('/folders/add', {'path': path});

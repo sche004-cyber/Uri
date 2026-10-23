@@ -7,6 +7,7 @@ import '../../theme/uri_theme.dart';
 import '../integration/scheduler_client.dart' show SchedulerApiError;
 import 'document_controller.dart';
 import 'office_client.dart';
+import 'writing_assist.dart';
 
 /// Authoring error texts (uri_office/authoring), in the words the owner sees.
 const authoringErrorText = <String, String>{
@@ -550,6 +551,7 @@ class _ItemsPanel extends StatelessWidget {
           multiline: true,
           enabled: !e.busy,
           onApply: (t) => e.op({'op': 'set_notes', 'slide': sid, 'text': t}),
+          writing: e.client,
         ),
         const Divider(),
         const Text('INSERT', style: TextStyle(fontSize: UriType.caption, letterSpacing: 1.2)),
@@ -604,6 +606,7 @@ class _ItemsPanel extends StatelessWidget {
             multiline: true,
             enabled: !e.busy,
             onApply: (t) => e.op({'op': 'set_text', 'slide': sid, 'shape': shape, 'paragraphs': t.split('\n')}),
+            writing: e.client,
           ),
           Row(children: [
             IconButton(
@@ -686,7 +689,7 @@ class _ItemsPanel extends StatelessWidget {
 /// A text field that sends its text when the owner presses Apply (or Enter on a one-line field).
 class AuthoringTextField extends StatefulWidget {
   const AuthoringTextField({super.key, required this.fieldKey, required this.label, required this.initial,
-      required this.onApply, this.multiline = false, this.dense = false, this.enabled = true});
+      required this.onApply, this.multiline = false, this.dense = false, this.enabled = true, this.writing});
   final Key fieldKey;
   final String label;
   final String initial;
@@ -694,6 +697,9 @@ class AuthoringTextField extends StatefulWidget {
   final bool dense;
   final bool enabled;
   final Future<bool> Function(String) onApply;
+  /// Writing Intelligence (plan 16): spelling, grammar and tone suggestions under the field. They change only the
+  /// field's text; the document changes when the owner presses Apply.
+  final WritingService? writing;
 
   @override
   State<AuthoringTextField> createState() => _AuthoringTextFieldState();
@@ -736,11 +742,20 @@ class _AuthoringTextFieldState extends State<AuthoringTextField> {
       ),
       onSubmitted: widget.multiline ? null : (_) => _apply(),
     );
-    if (widget.dense && !_changed) return field;
+    final w = widget.writing;
+    if (widget.dense && !_changed && w == null) return field;
     return Padding(
       padding: const EdgeInsets.only(bottom: UriSpace.xs),
       child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
         field,
+        if (w != null)
+          WritingStrip(
+            key: ValueKey('${(widget.fieldKey as ValueKey).value}-writing'),
+            controller: _t,
+            service: w,
+            enabled: widget.enabled,
+            keyPrefix: '${(widget.fieldKey as ValueKey).value}-writing',
+          ),
         if (_changed)
           TextButton(
             key: ValueKey('${(widget.fieldKey as ValueKey).value}-apply'),
