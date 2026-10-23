@@ -265,6 +265,24 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets('OD-3 (live-driver finding): the toolbar Read scans switch sends OCR for Copy text and To Word',
+      (tester) async {
+    final fake = await _pump(tester);
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async => null);
+    addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+    await tester.tap(find.byKey(const ValueKey('office-open-document')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('office-pdf-ocr')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('office-pdf-copy-text')));
+    await _settle(tester);
+    expect(fake.bodies['/document/0123456789abcdef/text']!.last, {'ocr': true});
+    await tester.tap(find.byKey(const ValueKey('office-pdf-to-word')));
+    await _settle(tester);
+    expect(fake.bodies['/document/0123456789abcdef/to_word']!.last, {'ocr': true});
+    await _unmount(tester);
+  });
+
   testWidgets('OD-3: a Word document view has no PDF text buttons', (tester) async {
     await _pump(tester, docKind: 'docx');
     await tester.tap(find.byKey(const ValueKey('office-open-document')));

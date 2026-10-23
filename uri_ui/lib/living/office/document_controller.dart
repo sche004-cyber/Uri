@@ -178,6 +178,13 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   @override
   bool busy = false;
+  /// OD-3: read scanned PDF pages with OCR for Copy text and To Word (off by default; only when the owner turns
+  /// it on in the PDF toolbar).
+  bool pdfOcr = false;
+  void setPdfOcr(bool on) {
+    pdfOcr = on;
+    notifyListeners();
+  }
   String? lastError;
   String? lastErrorCode;
   String? stepLabel;

@@ -451,7 +451,7 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
           message: 'Copy the text of every page to the clipboard. Your file is not changed.',
           child: TextButton.icon(
             key: const ValueKey('office-pdf-copy-text'),
-            onPressed: c.busy || d.previewState != 'ready' ? null : () => c.copyPdfText(),
+            onPressed: c.busy || d.previewState != 'ready' ? null : () => c.copyPdfText(ocr: c.pdfOcr),
             icon: const Icon(Icons.content_copy_rounded, size: 18),
             label: const Text('Copy text'),
           ),
@@ -460,9 +460,20 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
           message: 'Make a new Word document from the text. It is saved only when you approve Save as.',
           child: TextButton.icon(
             key: const ValueKey('office-pdf-to-word'),
-            onPressed: c.busy || c.editor != null || d.previewState != 'ready' ? null : () => c.pdfToWord(),
+            onPressed: c.busy || c.editor != null || d.previewState != 'ready' ? null : () => c.pdfToWord(ocr: c.pdfOcr),
             icon: const Icon(Icons.description_outlined, size: 18),
             label: const Text('To Word'),
+          ),
+        ),
+        // Live-driver finding (2026-10-23): OCR was reachable only as a chip in the URI pane, and To Word could not
+        // use it. It is a visible toolbar switch now; off by default.
+        Tooltip(
+          message: 'Also read scanned pages (OCR) for Copy text and To Word. Slower; only text is read.',
+          child: FilterChip(
+            key: const ValueKey('office-pdf-ocr'),
+            label: const Text('Read scans'),
+            selected: c.pdfOcr,
+            onSelected: c.busy ? null : c.setPdfOcr,
           ),
         ),
       ],
