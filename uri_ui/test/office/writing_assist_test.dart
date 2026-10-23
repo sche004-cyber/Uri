@@ -2,8 +2,15 @@
 // Brain buttons only on request, rewrite-class items marked, refusals in words, the document untouched.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:uri_ui/living/integration/scheduler_client.dart' show SchedulerApiError;
+import 'package:uri_ui/living/office/document_controller.dart';
+import 'package:uri_ui/living/office/office_client.dart';
+import 'package:uri_ui/living/office/presentation_editor.dart';
+import 'package:uri_ui/living/office/word_editor.dart';
 import 'package:uri_ui/living/office/writing_assist.dart';
+import 'package:uri_ui/theme/uri_theme.dart';
 
 class FakeWriting implements WritingService {
   final checks = <String>[];
@@ -71,6 +78,44 @@ Future<TextEditingController> pump(WidgetTester tester, FakeWriting w, String te
 }
 
 void main() {
+  testWidgets('Word and PowerPoint authoring fields expose writing help', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1600, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final client = OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't',
+        MockClient((_) async => http.Response('{}', 404)));
+    final workspace = OfficeWorkspaceController(client: client);
+    final slide = PresentationEditController(client, {
+      'authoring_id': 'test', 'kind': 'pptx', 'name': 'Test',
+      'deck': {'slides': [
+        {'id': 1, 'title_id': 2, 'title': 'Draft title', 'notes': '', 'items': [
+          {'id': 2, 'kind': 'text', 'paragraphs': ['Draft title']},
+          {'id': 3, 'kind': 'table', 'cells': [['Draft cell']]},
+        ]}
+      ]},
+    });
+    await tester.pumpWidget(MaterialApp(theme: ThemeData(extensions: const [UriColors.graphite]),
+        home: Scaffold(body: PresentationEditor(workspace: workspace, editor: slide))));
+    expect(find.byKey(const ValueKey('authoring-title-writing')), findsOneWidget);
+    expect(find.byKey(const ValueKey('authoring-cell-3-0-0-writing')), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    slide.dispose();
+
+    final word = PresentationEditController(client, {
+      'authoring_id': 'test', 'kind': 'docx', 'name': 'Test',
+      'doc': {'blocks': [
+        {'index': 0, 'expect': 'test', 'kind': 'table', 'cells': [['Draft cell']]}
+      ], 'header': 'Draft header', 'footer': 'Draft footer'},
+    });
+    await tester.pumpWidget(MaterialApp(theme: ThemeData(extensions: const [UriColors.graphite]),
+        home: Scaffold(body: WordEditor(workspace: workspace, editor: word))));
+    expect(find.byKey(const ValueKey('authoring-header-writing')), findsOneWidget);
+    expect(find.byKey(const ValueKey('authoring-footer-writing')), findsOneWidget);
+    expect(find.byKey(const ValueKey('authoring-wcell-0-0-writing')), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    word.dispose();
+    workspace.dispose();
+  });
+
   testWidgets('suggestions appear after a pause; accept changes only the field text; undo restores it',
       (tester) async {
     final w = FakeWriting()
@@ -105,6 +150,27 @@ void main() {
     await tester.pump();
     expect(c.text, 'I receive it 12 May');
     await tester.pump(const Duration(milliseconds: 60));
+  });
+
+  testWidgets('Accept all preserves reference separators and clause parentheses', (tester) async {
+    const text = 'i recieve Ref. 12/3/2026 and Clause (a).';
+    final firstSlash = text.indexOf('/');
+    final secondSlash = text.indexOf('/', firstSlash + 1);
+    final open = text.indexOf('(');
+    final close = text.indexOf(')');
+    final w = FakeWriting()..onCheck = (_) => {'suggestions': [
+      sugg('capital', 0, 1, 'i', 'I'),
+      sugg('spelling', 2, 9, 'recieve', 'receive'),
+      sugg('sep1', firstSlash, firstSlash + 1, '/', '-', cls: 'rewrite'),
+      sugg('sep2', secondSlash, secondSlash + 1, '/', '-', cls: 'rewrite'),
+      sugg('paren1', open, open + 1, '(', '', cls: 'rewrite'),
+      sugg('paren2', close, close + 1, ')', '', cls: 'rewrite'),
+    ], 'status': {'spelling': 'ok'}};
+    final c = await pump(tester, w, text);
+    expect(find.text('Accept all corrections (2)'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('writing-accept-all')));
+    await tester.pump();
+    expect(c.text, 'I receive Ref. 12/3/2026 and Clause (a).');
   });
 
   testWidgets('dismiss hides a suggestion and it is not offered again', (tester) async {

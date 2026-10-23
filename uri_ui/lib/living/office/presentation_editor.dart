@@ -540,6 +540,7 @@ class _ItemsPanel extends StatelessWidget {
             initial: '${s['title'] ?? ''}',
             enabled: !e.busy,
             onApply: (t) => e.op({'op': 'set_title', 'slide': sid, 'text': t}),
+            writing: e.client,
           ),
         for (final it in items)
           if (it['id'] != titleId) _item(context, e, sid, it),
@@ -669,6 +670,7 @@ class _ItemsPanel extends StatelessWidget {
                       enabled: !e.busy,
                       onApply: (t) => e.op({'op': 'set_table_cell', 'slide': sid, 'shape': shape, 'row': r,
                           'col': col, 'text': t}),
+                      writing: e.client,
                     ),
                   ),
                 ),

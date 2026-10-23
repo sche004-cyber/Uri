@@ -158,6 +158,25 @@ def test_proofread_pure_grammar_fix_is_a_correction():
     assert out["text"] == "The files were sent yesterday."
 
 
+@pytest.mark.parametrize(("original", "edited", "protected"), [
+    ("Ref. 12/3/2026 applies. They was informed.",
+     "Ref. 12-3-2026 applies. They were informed.", "12/3/2026"),
+    ("Clause (a) applies. They was informed.",
+     "Clause a applies. They were informed.", "(a)"),
+])
+def test_proofread_reference_punctuation_requires_individual_accept(original, edited, protected):
+    result = W.proofread(original, client=FakeBrain({"status": "ok", "message": "", "text": edited}))
+    changes = result["suggestions"]
+    assert changes
+    reference_changes = [s for s in changes if s["original"] in {"/", "(", ")"}]
+    assert len(reference_changes) == 2
+    assert all(s["class"] == "rewrite" for s in reference_changes)
+    accepted = [s for s in changes if s["class"] == "correction"]
+    applied = W.apply(original, _acc({"suggestions": accepted}, original))["text"]
+    assert protected in applied
+    assert "They were informed." in applied
+
+
 def test_negation_change_is_never_a_correction():
     t = "The proposal is approved."
     r = W.proofread(t, client=FakeBrain({"status": "ok", "message": "", "text": "The proposal is not approved."}))

@@ -217,6 +217,7 @@ class _BlockPanel extends StatelessWidget {
           initial: '${e.doc['header'] ?? ''}',
           enabled: !e.busy,
           onApply: (t) => e.op({'op': 'set_header_text', 'text': t}),
+          writing: e.client,
         ),
         AuthoringTextField(
           key: ValueKey('authoring-footer-${e.doc['footer']}'),
@@ -225,6 +226,7 @@ class _BlockPanel extends StatelessWidget {
           initial: '${e.doc['footer'] ?? ''}',
           enabled: !e.busy,
           onApply: (t) => e.op({'op': 'set_footer_text', 'text': t}),
+          writing: e.client,
         ),
         Wrap(spacing: UriSpace.xs, runSpacing: UriSpace.xs, children: [
           OutlinedButton(
@@ -336,6 +338,7 @@ class _BlockPanel extends StatelessWidget {
                   dense: true,
                   enabled: !e.busy,
                   onApply: (t) => e.op({'op': 'set_table_cell', ...e.at(i), 'row': r, 'col': c, 'text': t}),
+                  writing: e.client,
                 ),
               ),
             ),
