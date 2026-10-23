@@ -157,7 +157,12 @@ def reuse_key(argv: list[str], ts: dict) -> str | None:
 
 
 def source_file_identity(ts: dict) -> str | None:
-    """Detect a tracked file rewritten and restored while the command runs."""
+    """Detect a tracked file rewritten and restored while the command runs.
+
+    Only tracked files are fingerprinted. Directory mtimes are not (M-01): a test that creates and deletes a temporary
+    file changes its directory's mtime, which made every full tests/dev_workflow gate "source changed" (measured
+    2026-10-23: only the mtime of tests/dev_workflow changed). Untracked files still present at the end are caught by the
+    final git status; an untracked file created and removed during the run is not detected (documented limit)."""
     if not ts["repo"] or ts["dirty"] is not False:
         return None
     rc, names = _git(Path(ts["repo"]), "ls-files", "-z")
@@ -165,19 +170,11 @@ def source_file_identity(ts: dict) -> str | None:
         return None
     digest = hashlib.sha256()
     try:
-        directories = {Path(ts["repo"])}
         for name in names.split("\0"):
             if not name:
                 continue
-            path = Path(ts["repo"]) / name
-            directories.update(p for p in path.parents if p == Path(ts["repo"]) or
-                               Path(ts["repo"]) in p.parents)
-            st = path.lstat()
+            st = (Path(ts["repo"]) / name).lstat()
             digest.update(json.dumps([name, st.st_mode, st.st_size, st.st_mtime_ns, st.st_ctime_ns],
-                                     separators=(",", ":")).encode("utf-8"))
-        for path in sorted(directories):
-            st = path.stat()
-            digest.update(json.dumps([str(path), st.st_mtime_ns, st.st_ctime_ns],
                                      separators=(",", ":")).encode("utf-8"))
     except OSError:
         return None

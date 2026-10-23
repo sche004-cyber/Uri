@@ -1363,3 +1363,19 @@ def test_fb1_n07_cache_walk_stops_at_nested_repositories(sandbox):
     plan = _plan(sb)
     group = next(it for it in plan["items"] if it["kind"] == "caches")
     assert str(nested / "__pycache__") not in group["paths"]
+
+
+def test_m01_temporary_file_in_tracked_dir_keeps_result_bindable(runs, repo, tmp_path):
+    """M-01: a command that creates and deletes a temporary file in a tracked directory (as the real
+    tests/dev_workflow gate does) is still source-stable and recorded on its commit."""
+    lp = tmp_path / "ledger.sqlite3"
+    lg = tl.Ledger(lp)
+    tid = lg.create("t", "o", DEV, worktree=str(repo), branch="main")
+    lg.transition(tid, "IN_PROGRESS", DEV)
+    lg.close()
+    code = f"import os, time; p = os.path.join(r'{repo}', 'tmp_probe.txt'); open(p, 'w').write('x'); " \
+           "time.sleep(0.2); os.remove(p); print('ok')"
+    rec = tr.start(pyc(code), name="m01", timeout_s=60, cwd=str(repo), root=runs, task=tid, actor=DEV,
+                   ledger=str(lp))
+    assert rec["state"] == "COMPLETED" and rec.get("source_stable") is True and not rec.get("source_changed")
+    assert rec["ledger"] == {"recorded": True, "task": tid}
