@@ -155,6 +155,46 @@ def latency(kb, dest, n):
             "p95_ms": round(xs[int(0.95 * (n - 1))], 3), "max_ms": round(xs[-1], 3)}
 
 
+SCRIPTS = {   # ordinary prose in three scripts with the same synthetic values as doc() (review FB5 R1-02)
+    "hindi": "यह एक साधारण वाक्य है। ",
+    "japanese": "今日はとても良い天気ですね。東京の駅。",
+    "arabic": "هذه جملة عادية لا تحتوي. ",
+}
+
+
+def script_doc(script, size):
+    base = SCRIPTS[script] * 6 + "mail asha.rao7@example.in card 4111 1111 1111 1111. "
+    return (base * (size // len(base) + 1))[:size]
+
+
+def latency_scripts():
+    out = []
+    for script in sorted(SCRIPTS):
+        for size, dest, n in ((400, "WEB_SEARCH", 300), (2048, "EXTERNAL_MODEL", 150), (65536, "EXTERNAL_MODEL", 12)):
+            g, text = TGateway(), script_doc(script, size)
+            for _ in range(3):
+                g.prepare(text, requester="m", destination=dest, purpose="m")
+            xs = []
+            for _ in range(n):
+                t = time.perf_counter()
+                g.prepare(text, requester="m", destination=dest, purpose="m")
+                xs.append((time.perf_counter() - t) * 1000)
+            xs.sort()
+            out.append({"script": script, "chars": size, "destination": dest, "n": n,
+                        "p50_ms": round(statistics.median(xs), 3), "p95_ms": round(xs[int(0.95 * (n - 1))], 3)})
+    # Adversarial worst case: refused before any matching (PRIVACY_INPUT_TOO_COMPLEX), and the largest accepted shape.
+    g, adv = TGateway(), []
+    for text in ("a/" * 32768, "a/" * 1024, "a/" * 200):
+        t = time.perf_counter()
+        try:
+            g.prepare(text, requester="m", destination="EXTERNAL_MODEL", purpose="m")
+            res = "sent"
+        except PrivacyRefused as exc:
+            res = exc.code
+        adv.append({"input": f"'a/' x {len(text) // 2}", "ms": round((time.perf_counter() - t) * 1000, 3), "result": res})
+    return {"scripts": out, "adversarial": adv}
+
+
 def memory():
     gc.collect()
     before = rss_mb()
@@ -212,7 +252,7 @@ def main(path=None):
            "accuracy": accuracy(), "generated_ldec006": generated(),
            "latency": [latency(0.4, "WEB_SEARCH", 500), latency(2, "WEB_SEARCH", 300), latency(2, "EXTERNAL_MODEL", 300),
                        latency(64, "EXTERNAL_MODEL", 60), latency(64, "LOG", 60)],
-           "memory": memory(), "token_effect": token_effect(), "friction": friction()}
+           "latency_non_ascii": latency_scripts(), "memory": memory(), "token_effect": token_effect(), "friction": friction()}
     res["elapsed_s"] = round(time.perf_counter() - t0, 2)
     s = json.dumps(res, indent=1)
     if path:

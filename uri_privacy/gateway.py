@@ -106,6 +106,8 @@ class PrivacyGateway:
         # A log line in doubt is written fully redacted.
         if dest not in P.LOCAL:
             original = text
+            if C.scan_cost(text) > C.MAX_SCAN_COST:            # review FB5 R1-02: seconds to minutes of matching
+                return self._doubt(meta, dest, C.Classification([], Counter(), False, False), {"TOO_COMPLEX"})
             text, signals = C.egress_form(text)
             cls = C.classify(text, protected_terms)
             if cls.decoded_only:
@@ -192,7 +194,8 @@ class PrivacyGateway:
 
     def _doubt(self, meta, dest, cls, signals):
         cats = dict(sorted(cls.categories().items()))
-        code = ("PRIVACY_ENCODING_UNRESOLVED" if signals == {"ENCODING_UNRESOLVED"} else "PRIVACY_DISGUISE_REFUSED")
+        code = ("PRIVACY_ENCODING_UNRESOLVED" if signals == {"ENCODING_UNRESOLVED"} else
+                "PRIVACY_INPUT_TOO_COMPLEX" if signals == {"TOO_COMPLEX"} else "PRIVACY_DISGUISE_REFUSED")
         if dest == P.Destination.LOG:
             self.audit.write(**meta, decision=P.REDACT, categories=cats, grant_ids=[], outcome="SANITIZED", code=code)
             return Egress(REDACTED, dest.value, cats, {c: P.REDACT for c in cats}, None, [])

@@ -28,7 +28,7 @@ CODES = frozenset({
     "SCOPE_UNREADABLE", "SCOPE_ID_INVALID", "SCOPE_OWNER_MISMATCH", "FOREIGN_TOKENS",
     "AUDIT_TORN_TAIL_QUARANTINED", "PRIVACY_ENCODING_UNRESOLVED",
     "PRIVACY_INSTRUCTION_UNVERIFIED", "PRIVACY_INSTRUCTION_CHANGED",
-    "PRIVACY_DISGUISE_REFUSED"})
+    "PRIVACY_DISGUISE_REFUSED", "PRIVACY_INPUT_TOO_COMPLEX"})
 COUNT_KEYS = frozenset({"CREDENTIAL", "SECRET_LIKE", "GOV_ID", "FINANCIAL", "LONG_NUMBER", "CONTACT", "ADDRESS", "PERSON",
                         "CONFIDENTIAL", "restored", "foreign"})
 # Task identifiers URI generates: Lifecycle V3.1 task ids and scheduler attempt keys. Anything else is not recorded.

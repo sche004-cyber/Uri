@@ -189,3 +189,24 @@ value before a label that does not end the sentence ("x is my password manager")
 reason. **Removed from the residual list:** digits separated by 4 or more punctuation or whitespace characters (now
 redacted); split keys with a fixed-length prefix whose groups are lower-case words or hold fewer than two digits.
 Every other residual in 6.4 stands, including OD-7.
+
+### 6.6 Changes after fallback review FB5 (2026-10-23; amends 6.4 and 6.5)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| Every character with a digit value (decimal digits of any script, dingbat, circled and double-circled digits, Ethiopic numerals and other number forms) reads as its ASCII digit for every rule, including the digit budget | `test_pc14.py::test_fb5_r1_01*` (every digit family x card/Aadhaar x 5 destinations) |
+| E-mail with single spaces or a line break around `@`, with `(at)`/`[at]`/`{at}` and `(dot)`/`[dot]`, and with Indic letters and marks in the domain | `test_fb5_r1_03*` |
+| PAN with one punctuation separator anywhere (upper case) or between its groups (any case, years excluded); the spaced form is upper case only | `test_fb5_r1_04*`, `test_c5_01*` |
+| `pin/otp/cvv number/no./#` before the digits; `pass is X`; Wi-Fi / WPA / network-key labels; PEM private-key blocks (CREDENTIAL, refused) | `test_fb5_r1_05_r1_07*` |
+| Invisible format characters (zero-width space, bidi marks, BOM) between non-ASCII letters are dropped without doubt; next to an ASCII letter or any digit they stay a disguise signal | `test_fb5_r1_06*` |
+| Text whose matching cost for the reused Assist long-secret rule is pathological (long runs of `/` or `+`) is refused for non-local destinations before matching | `test_fb5_r1_02_pathological*` |
+
+**Residuals added (not protected):** the free digits an exempt token can carry - up to 9 in a clock-time fraction
+(`10:00:00.123456789`) and 5 in an IPv4 port; phone numbers of 8 digits or fewer even with a context word ("call 2345
+6789"); credential labels outside the listed English set ("creds", letter-spaced labels such as `p a s s w o r d:`);
+a lower-case PAN with single spaces (`abcpe 1234 f`) or a PAN whose 4 digits form a year 1900-2099 written lower case
+with separators; e-mail addresses written with " at " / " dot " in words; combining marks outside the Latin and Indic
+blocks in an e-mail. Every residual of 6.4 and 6.5 stands, including OD-7.
+
+**Stated limit:** a non-local text over the matching-cost bound (for example a 64 KB base64 blob, or 16 KB of
+`a/a/...`) is refused, not sent (LOG: fully redacted). At 64 KB the AC-14c margin is thin for scripts with combining marks: the recorded run met it, an earlier run on the same host measured 1.07 s for Hindi (see plan PC-14).

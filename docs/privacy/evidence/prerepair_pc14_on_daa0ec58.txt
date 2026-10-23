@@ -1,0 +1,40 @@
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_01_no_digit_valued_character_carries_a_card_or_aadhaar
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_01_dingbat_card_never_reaches_the_wire
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_02_ordinary_non_ascii_query_is_read_once_and_fast[arabic]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_02_ordinary_non_ascii_query_is_read_once_and_fast[hindi]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_02_ordinary_non_ascii_query_is_read_once_and_fast[japanese]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_02_readings_are_still_taken_when_they_can_differ
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_02_pathological_input_is_refused_fast_and_redacted_in_logs
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_02_linear_long_secret_spans_cover_the_assist_rule
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_03_spaced_bracketed_and_indic_domain_emails_are_redacted[mail riya.sharma @ examplemail.com]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_03_spaced_bracketed_and_indic_domain_emails_are_redacted[mail riya.sharma@ examplemail.com]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_03_spaced_bracketed_and_indic_domain_emails_are_redacted[mail riya.sharma @examplemail.com]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_03_spaced_bracketed_and_indic_domain_emails_are_redacted[riya.sharma@\nexamplemail.com]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_03_spaced_bracketed_and_indic_domain_emails_are_redacted[mail riya(at)example(dot)com]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_03_spaced_bracketed_and_indic_domain_emails_are_redacted[mail riya [at] example [dot] com]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_03_spaced_bracketed_and_indic_domain_emails_are_redacted[mail riya{at}example.com]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_03_spaced_bracketed_and_indic_domain_emails_are_redacted[mail \u0905\u0928\u093f\u0932@\u0909\u0926\u093e\u0939\u0930\u0923.\u092d\u093e\u0930\u0924]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_03_spaced_bracketed_and_indic_domain_emails_are_redacted[mail anil@\u0909\u0926\u093e\u0939\u0930\u0923.in]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_04_pan_with_separators_is_redacted
+FAILED tests/privacy/test_pc14.py::test_c5_01_words_and_years_are_not_a_pan[hello 2024 a]
+FAILED tests/privacy/test_pc14.py::test_c5_01_words_and_years_are_not_a_pan[place 1234 x]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_05_r1_07_labelled_credentials_are_refused[pin number 1234]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_05_r1_07_labelled_credentials_are_refused[ATM pin number 4821 blocked]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_05_r1_07_labelled_credentials_are_refused[pin no 4821]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_05_r1_07_labelled_credentials_are_refused[pin no. 4821]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_05_r1_07_labelled_credentials_are_refused[otp number 482913]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_05_r1_07_labelled_credentials_are_refused[cvv no 123]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_05_r1_07_labelled_credentials_are_refused[username alice pass is hunter2]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_05_r1_07_labelled_credentials_are_refused[wifi key is Sunflower2026]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_05_r1_07_labelled_credentials_are_refused[network key: Sunflower2026]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_05_r1_07_labelled_credentials_are_refused[-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAKj34GkxFhD90vcNLYLInFEX6Ppy1tPf9Cnzj4p4WGeKLs1Pt8Qu\nKUpRKfFLfRYC9AIKjbJTWit+CqvjWYzvQwECAwEAAQ\n-----END RSA PRIVATE KEY-----]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_06_ordinary_non_english_invisibles_are_not_refused[\u0e2a\u0e27\u0e31\u0e2a\u0e14\u0e35\u200b\u0e04\u0e23\u0e31\u0e1a]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_06_ordinary_non_english_invisibles_are_not_refused[\u1019\u1004\u103a\u1039\u1002\u101c\u102c\u200b\u1015\u102b]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_06_ordinary_non_english_invisibles_are_not_refused[\u65e5\u672c\u200b\u8a9e]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_06_ordinary_non_english_invisibles_are_not_refused[\u0928\u092e\u0938\u094d\u0924\u0947\u200b\u0926\u094b\u0938\u094d\u0924]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_06_ordinary_non_english_invisibles_are_not_refused[\u05e9\u05dc\u05d5\u05dd\u200f \u05e2\u05d5\u05dc\u05dd]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_06_ordinary_non_english_invisibles_are_not_refused[\u0645\u0631\u062d\u0628\u0627\u200f \u0628\u0643]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_06_ordinary_non_english_invisibles_are_not_refused[\u0645\u0631\u062d\ufeff\u0628\u0627]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_06_ordinary_non_english_invisibles_are_not_refused[\ufeffhello world]
+FAILED tests/privacy/test_pc14.py::test_fb5_r1_08_log_redacts_both_halves_of_a_split_key
+39 failed, 15 passed in 5.31s

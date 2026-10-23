@@ -15,6 +15,7 @@ credential detector, not two. Everything else is detected here with checksums or
 """
 from __future__ import annotations
 
+import functools
 import re
 from collections import Counter
 from dataclasses import dataclass
@@ -103,7 +104,8 @@ def iban_ok(raw: str) -> bool:
 # FB4 R1-06).
 _LABELLED = re.compile(
     r"(?i)\b(?:(?:otp|one[- ]time (?:password|code|pin)|verification code|security code|auth(?:entication)? code|"
-    r"cvv|cvc|m?pin(?! ?code)|upi pin|atm pin)\b(?:\s*(?:is|was|=|:|-|#)\s*|\s+)(\d{3,8})\b|"
+    r"cvv|cvc|m?pin(?! ?code)|upi pin|atm pin)\b(?: ?(?:number|num|no)\b\.?| ?#)?(?:\s*(?:is|was|=|:|-|#)\s*|\s+)"
+    r"(\d{3,8})\b|"
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token)"
     r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,})|"
     # "API key abcdefghijklmnop": a key label followed by one long letter-only token (review r6 R3-01).
@@ -111,6 +113,9 @@ _LABELLED = re.compile(
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
     r"\b(?:pass|pw)\s*[:=]\s*[\"']?([^\s\"',;]{4,})|"
+    # "pass is X" and Wi-Fi keys (review FB5 R1-07); the value holds a digit or symbol.
+    r"\b(?:pass|wi-?fi key|wpa2? key|network key|wifi pass)\s*(?:is|was|=|:)\s*[\"']?"
+    r"(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     # Word secrets written without "is"/":" ("password - X", "password -> X", "password X" after a line break) or a few
     # words before it ("the password for wifi is X", review FB1 R1-04). The value must then hold a digit or a symbol,
     # so ordinary prose ("the password policy is strict", "password field is required.") stays readable.
@@ -143,9 +148,16 @@ _AADHAAR_CTX = re.compile(r"(?i)\b(?:aadhaa?r|uid|uidai|e-?kyc)\b[^\n]{0,25}$")
 # Label idiom used below: "<label>[ no|number|#][ :|-] value" with single optional spaces. Folding collapses whitespace
 # runs to one space, and no two optional space runs are adjacent, so these patterns cannot backtrack (review S1-04).
 _LBL = r"(?: ?(?:no\.?|number|num|card|#))?(?: ?[:\-])? ?"
-_PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z] ?\d{4} ?[a-z]\b|"           # also "ABCPE 1234 F"
-                  # upper case with a single space anywhere: "ABCP E123 4F" (review FB4 R1-05)
-                  r"\b[A-Z] ?[A-Z] ?[A-Z] ?[PCHFATBLJG] ?[A-Z] ?\d ?\d ?\d ?\d ?[A-Z]\b")
+_PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z]\d{4}[a-z]\b|"                # "ABCPE1234F", any case
+                  r"(?-i:\b[A-Z]{3}[PCHFATBLJG][A-Z] ?\d{4} ?[A-Z]\b)|"           # "ABCPE 1234 F"
+                  # upper case with a single space anywhere: "ABCP E123 4F" (review FB4 R1-05). (?-i: the leading (?i)
+                  # applies to the whole pattern, so without it "hello 2024 a" was a PAN; coordinator finding C5-01.)
+                  r"(?-i:\b[A-Z] ?[A-Z] ?[A-Z] ?[PCHFATBLJG] ?[A-Z] ?\d ?\d ?\d ?\d ?[A-Z]\b)|"
+                  # one punctuation separator anywhere in upper case, or between the 5-4-1 groups in any case unless
+                  # the digits are a year ("graph-2023-a") (review FB5 R1-04)
+                  r"(?-i:\b[A-Z](?:[-._/,] ?)?[A-Z](?:[-._/,] ?)?[A-Z](?:[-._/,] ?)?[PCHFATBLJG](?:[-._/,] ?)?[A-Z]"
+                  r"(?:[-._/,] ?)?\d(?:[-._/,] ?)?\d(?:[-._/,] ?)?\d(?:[-._/,] ?)?\d(?:[-._/,] ?)?[A-Z]\b)|"
+                  r"\b[a-z]{3}[pchfatbljg][a-z] ?[-._/,] ?(?!(?:19|20)\d\d)\d{4} ?[-._/,] ?[a-z]\b")
 # Known API key prefixes followed by groups split by single spaces or dashes: "AKIA TWII 6XUU IX2C IXU3" (review FB4
 # R1-05). A prefix with a fixed body length (AWS, Google, GitHub, GitLab) is a key when the groups add up to exactly
 # that length, digits or not (r6 R5-01). Otherwise the groups hold at least 16 characters and either two digits with a
@@ -154,7 +166,10 @@ _PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z] ?\d{4} ?[a-z]\b|"           
 _KEY_BODY = {"AKIA": 16, "ASIA": 16, "AIza": 35, "ghp_": 36, "gho_": 36, "ghs_": 36, "ghu_": 36, "glpat-": 20}
 _KEY_SPLIT = re.compile(r"(?<![A-Za-z0-9])(AKIA|ASIA|AIza|ghp_|gho_|ghs_|ghu_|github_pat_|glpat-|xox[abpr]-|"
                         r"sk-(?:proj-|ant-)?|sk_live_|sk_test_|rk_live_|tvly-)"
-                        r"([A-Za-z0-9_]{0,40}(?:[ -][A-Za-z0-9_]{1,12}){1,15})(?![A-Za-z0-9_])")
+                        r"([A-Za-z0-9_]{0,40}(?:[ -][A-Za-z0-9_]{1,40}){1,15})(?![A-Za-z0-9_])")
+# A PEM private key block, whole (review FB5 R1-07: it was SECRET_LIKE per body line and its last line was sent).
+_PEM = re.compile(r"-----BEGIN [A-Z0-9 ]{0,40}PRIVATE KEY-----(?:(?!-----END)[\s\S]){0,20000}?"
+                  r"(?:-----END [A-Z0-9 ]{0,40}PRIVATE KEY-----|$)")
 _SSN_SEP = r" ?[-./,:()] ?|[^\w\n]|_"          # one standard (optionally spaced) or any single punctuation separator
 _SSN = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?![\d-])|"
                   # labelled: "ssn 123456789", "ssn 123 45 6789", "ssn 123.45.6789" (review S1-05)
@@ -177,7 +192,11 @@ _EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9
                     # combining marks inside the local part (Indic vowel signs and viramas, Latin accents) are part of it
                     # (review FB4 R1-06: an address whose local part has a Devanagari vowel sign was cut at the sign)
                     r"(?<![\w.+\-" + _MARKS + r"])[^\W_](?:[\w.%+\-" + _MARKS + r"]*[^\W_])?"
-                    r"@[^\W_][\w-]*(?:\.[\w-]+)*\.[^\W\d_]{2,}")
+                    r"@[^\W_][\w\-" + _MARKS + r"]*(?:\.[\w\-" + _MARKS + r"]+)*\.[^\W\d_](?:[^\W\d_]|[" + _MARKS + r"])+|"
+                    # a single space around "@" (or a line break, folded to a space), and "(at)" / "[at]" / "(dot)"
+                    # forms (review FB5 R1-03); " at " and " dot " in prose stay a residual (words)
+                    r"(?<![\w.+-])[A-Za-z0-9._%+-]+(?: ?@ ?| ?[(\[{] ?at ?[)\]}] ?)[A-Za-z0-9-]+"
+                    r"(?:(?:\.| ?[(\[{] ?dot ?[)\]}] ?)[A-Za-z0-9-]+)*(?:\.| ?[(\[{] ?dot ?[)\]}] ?)[A-Za-z]{2,}\b")
 _PHONE = re.compile(r"(?<![\w+])\+\d{1,3}[ -]?\(?\d{1,5}\)?(?:[ -]?\d){5,11}(?![\w])|"
                     r"(?<![\w+-])0?[6-9]\d{4}[ .-]\d{5}(?![\w-])|"                        # mobile, 5-5 grouped
                     r"(?<![\w-])\(0\d{2,4}\)\s?\d{3,4}[ -]?\d{4}(?![\w-])|"              # landline (080) 2345 6789
@@ -205,6 +224,50 @@ _STREET = re.compile(r"(?i)\b(?:flat|house|h\.? ?no\.?|plot|door|apt|apartment) 
 _CONFIDENTIAL = re.compile(r"(?i)\b(?:strictly\s+)?(?:private\s+(?:and|&)\s+)?confidential\b|"
                            r"\bdo not (?:share|forward|distribute|disclose)\b")
 _LONG_SECRET = dict(_assist._TEXT_RULES)["long_secret"]
+# The Assist long_secret rule restarts its look-aheads at every word boundary inside a run of [A-Za-z0-9+/], so a run
+# like "a/a/a/..." costs boundaries x run length (review FB5 R1-02: 52 s for 64 KB). M95 finds the same values in linear
+# time: the hex alternative as written (a hex run has one boundary), and for each run of the second alternative's
+# characters only its first word boundary, because its conditions (a digit, an upper- and a lower-case letter, 40+
+# characters) can only fail later in the run if they fail there. The spans are a superset of the rule's matches.
+_HEX_SECRET = re.compile(r"\b(?=[A-Fa-f0-9]*[A-Fa-f])(?=[A-Fa-f0-9]*\d)[A-Fa-f0-9]{32,}\b")
+_B64_RUN = re.compile(r"[A-Za-z0-9+/]+")
+_MIXED = (re.compile(r"\d"), re.compile(r"[A-Z]"), re.compile(r"[a-z]"))
+
+
+def _word(c: str) -> bool:
+    return bool(c) and (c.isalnum() or c == "_")
+
+
+def _long_secret_spans(text: str):
+    out = [(m.start(), m.end()) for m in _HEX_SECRET.finditer(text)]
+    for m in _B64_RUN.finditer(text):
+        s, e = m.start(), m.end()
+        if e - s < 40:
+            continue
+        i = next((j for j in range(s, e) if _word(text[j - 1] if j else "") != _word(text[j])), None)
+        if i is None or e - i < 40 or not all(rx.search(text, i, e) for rx in _MIXED):
+            continue
+        k = e
+        while k < len(text) and k - e < 2 and text[k] == "=":
+            k += 1
+        out.append((i, k))
+    return out
+
+
+# Work the reused Assist long_secret rule does on a text (it runs inside uri_assist.redact_text, which M95 cannot
+# change). Above the bound a non-local egress is refused as doubt (PRIVACY_INPUT_TOO_COMPLEX; LOG: fully redacted)
+# instead of taking seconds to minutes. Ordinary text, URLs and base64 blobs of a few KB stay far below it.
+MAX_SCAN_COST = 8_000_000
+
+
+def scan_cost(text: str) -> int:
+    total = 0
+    for m in _B64_RUN.finditer(text):
+        n = m.end() - m.start()
+        if n >= 40:
+            run = m.group(0)
+            total += (2 * (run.count("/") + run.count("+")) + 1) * n
+    return total
 # LONG_NUMBER: the digit budget, owner decision LDEC-006 (2026-10-23). Text bound for a non-local destination may not
 # carry 9 or more digits in one run, whatever the grouping, separators or line breaks. A run is digit groups joined by
 # punctuation/whitespace gaps of any length, or gaps of 1-3 characters holding at most 2 letters. Digits that
@@ -274,7 +337,7 @@ def _before(text: str, i: int) -> str:
 # contains one of these words cannot match a text without them, so its scan is skipped. Each hint is checked against
 # the alternatives of its pattern above; `test_pc13.py::test_hints_are_necessary` checks it on every positive sample.
 _HINTS = {
-    "labelled": re.compile(r"(?i)p[a@4][s5$]{2}|pw|otp|one[- ]time|code|cv[vc]|pin|api|secret|token"),
+    "labelled": re.compile(r"(?i)p[a@4][s5$]{2}|pw|otp|one[- ]time|code|cv[vc]|pin|api|secret|token|key"),
     "passport": re.compile(r"(?i)passport"),
     "spaced_code": re.compile(r"(?i)otp|cv[vc]|pin|passcode"),
     "key_split": re.compile(r"AKIA|ASIA|AIza|gh[opsu]_|github_pat_|glpat-|xox[abpr]-|sk-|sk_|rk_live_|tvly-"),
@@ -285,7 +348,12 @@ _HINTS = {
 
 
 def _scan(rx, text, hint):
-    return rx.finditer(text) if (hint == "@" and "@" in text) or (hint != "@" and _HINTS[hint].search(text)) else ()
+    if hint == "@":
+        return rx.finditer(text) if ("@" in text or _AT_WORD.search(text)) else ()
+    return rx.finditer(text) if _HINTS[hint].search(text) else ()
+
+
+_AT_WORD = re.compile(r"(?i)[(\[{] ?at ?[)\]}]")
 
 
 def _spans(text: str, protected_terms) -> list:
@@ -349,9 +417,9 @@ def _spans(text: str, protected_terms) -> list:
             add(FINANCIAL, m, "iban", 0)
     for m in _scan(_ACCOUNT, text, "account"):
         add(FINANCIAL, m, "account", 1)
-    for m in _LONG_SECRET.finditer(text):
-        if not _NOT_SECRET_CTX.search(_before(text, m.start())):
-            add(SECRET_LIKE, m, "long_secret", 0)
+    for s, e in _long_secret_spans(text):
+        if not _NOT_SECRET_CTX.search(_before(text, s)):
+            out.append(Finding(SECRET_LIKE, s, e, "long_secret"))
     for m in _scan(_EMAIL, text, "@"):
         add(CONTACT, m, "email", 0)
     for m in _PHONE.finditer(text):
@@ -363,6 +431,8 @@ def _spans(text: str, protected_terms) -> list:
         add(CONTACT, m, "phone_spaced", 0)
     for m in _scan(_SPACED_CODE, text, "spaced_code"):
         add(CREDENTIAL, m, "spaced_code", 1)
+    for m in _PEM.finditer(text) if "PRIVATE KEY" in text else ():
+        add(CREDENTIAL, m, "private_key", 0)
     for m in _scan(_KEY_SPLIT, text, "key_split"):
         # Trailing space-separated lower-case words are prose after the key ("... IXU3 leaked"), not key groups.
         # A fixed-length prefix is checked on the groups as written (a lower-case key body is still a key).
@@ -454,10 +524,35 @@ def _resolve(findings: list) -> list:
 # Whitespace runs and tabs/newlines fold to one space as well, so a value spread over several spaces or lines is found
 # (review S1-01 / S1-05) and no detector sees a long run of spaces (S1-04).
 _SPECIAL = re.compile(r"(?:%[0-9A-Fa-f]{2})+|&(?:#[0-9]{1,7}|#[xX][0-9A-Fa-f]{1,6}|[A-Za-z][A-Za-z0-9]{1,31});"
-                      r"|[^\x00-\x7f]|\s{2,}|[\t\n\r\f\v]|[\x00-\x08\x0e-\x1f\x7f]")
+                      r"|[^\x00-\x7f]+|\s{2,}|[\t\n\r\f\v]|[\x00-\x08\x0e-\x1f\x7f]")
 _FOLD_PASSES = 4          # deeper encoding is reported (Classification.residual_encoding) and refused externally
 _ENCODED = re.compile(r"%[0-9A-Fa-f]{2}|&(?:#[0-9]{1,7}|#[xX][0-9A-Fa-f]{1,6}|[A-Za-z][A-Za-z0-9]{1,31});")
 _NEEDS_READINGS = re.compile(r"[^\x00-\x7f]|%[0-9A-Fa-f]{2}|&[#A-Za-z]|[\x00-\x08\x0e-\x1f\x7f]")
+
+
+def _needs_readings(text: str) -> bool:
+    """The readings differ only in how they treat invisible characters, marks right after an ASCII letter or digit,
+    and encoded sequences (`cf`, `encoded`). A text with none of these reads the same every way, so one reading is
+    exact (FB5 R1-02: Hindi and Japanese text was read four times). Decided on the distinct characters."""
+    import unicodedata
+    if not _NEEDS_READINGS.search(text):
+        return False
+    if _ENCODED.search(text) or _ASCII_CONTROL.search(text):
+        return True
+    marks = False
+    for c in set(text):
+        if c.isascii():
+            continue
+        if _invisible(c):
+            return True
+        if unicodedata.category(c) in ("Mn", "Me"):
+            marks = True
+        elif any(_invisible(x) for x in unicodedata.normalize("NFKC", c)):
+            return True
+    if marks:                               # a mark directly after an ASCII letter or digit (read with `cf`)
+        return any(unicodedata.category(c) in ("Mn", "Me") and text[i - 1].isascii() and text[i - 1].isalnum()
+                   for i, c in enumerate(text) if i and not c.isascii())
+    return False
 # Default-ignorable code points outside category Cf (Unicode DerivedCoreProperties): combining grapheme joiner, Hangul
 # fillers, Khmer inherent vowels, Mongolian and other variation selectors (review FB1 R1-01).
 _DI_RANGES = ((0x034F, 0x034F), (0x115F, 0x1160), (0x17B4, 0x17B5), (0x180B, 0x180F), (0x3164, 0x3164),
@@ -469,6 +564,7 @@ _ASCII_CONTROL = re.compile(r"[\x00-\x08\x0e-\x1f\x7f]")
 _BLANKS = frozenset({0x2800, 0x3164, 0x115F, 0x1160, 0xFFA0, 0x2063})
 
 
+@functools.lru_cache(maxsize=8192)       # pure, per character (FB5 R1-02)
 def _invisible(ch: str) -> bool:
     """True for anything a reader cannot see that is not ordinary whitespace: format controls (Cf), control characters
     (Cc other than tab/newline/CR/FF/VT), private-use (Co) and unassigned (Cn) code points, default-ignorables and
@@ -494,6 +590,7 @@ DOUBT_ENCODED = "SENSITIVE_ONLY_WHEN_DECODED"
 _SHAPING = frozenset({0x200C, 0x200D, 0xFE0E, 0xFE0F})
 
 
+@functools.lru_cache(maxsize=8192)
 def _punct_ascii(ch: str):
     """ASCII stand-in for a punctuation look-alike (review FB3 R1-03), by Unicode name, so the whole class is covered:
     hyphens, dashes and minus signs, colon and ratio signs, full stops, commercial at, slashes, low lines, quotes."""
@@ -552,30 +649,57 @@ def egress_form(text: str):
             signals.add(DOUBT_SEPARATOR)
         return text, signals
     src = unicodedata.normalize("NFKC", text)
-    out = []
-    skip = 0
-    for i, ch in enumerate(src):
-        if skip:
-            skip -= 1
+
+    def ascii_or_digit(c):
+        return bool(c) and ((c.isascii() and c.isalnum()) or unicodedata.category(c) == "Nd"
+                            or unicodedata.digit(c, None) is not None)
+
+    def ascii_like(c):                     # an ASCII letter or any digit; look-alikes are read through by the
+        return ascii_or_digit(c)           # classifier in both readings (an Arabic alef looks like "l")
+
+    def visible(j, step):                  # nearest non-invisible neighbour (bounded; a long run is doubt)
+        for _ in range(8):
+            j += step
+            if j < 0 or j >= len(src):
+                return ""
+            if not _invisible(src[j]):
+                return src[j]
+        return "a"
+    # Characters that need no handling are copied in slices; only the others go through the loop below (review FB5
+    # R1-02: one Python step per character dominated long non-ASCII texts). Exact: a character outside `special` takes
+    # the final append-as-is branch of the loop.
+    keycaps = "⃣" in src
+    special = {c for c in set(src) if _invisible(c) or unicodedata.category(c) in ("Zl", "Zp", "Mn", "Me")
+               or _punct_ascii(c) is not None or (keycaps and c in "0123456789#*")}
+    out, last, skip_to = [], 0, 0
+    marks = re.compile("[" + "".join(re.escape(c) for c in special) + "]") if special else None
+    for m in (marks.finditer(src) if marks else ()):
+        i = m.start()
+        if i < skip_to:
             continue
+        out.append(src[last:i])
+        last = i + 1
+        ch = src[i]
         cat = unicodedata.category(ch)
         prev = src[i - 1] if i else ""
         nxt = src[i + 1] if i + 1 < len(src) else ""
-
-        def ascii_or_digit(c):
-            return bool(c) and ((c.isascii() and c.isalnum()) or unicodedata.category(c) == "Nd")
         if cat in ("Zl", "Zp"):
             out.append("\n")
             continue
         if ch in "0123456789#*" and src[i + 1:i + 3] in ("\ufe0f\u20e3", "\u20e3"):
             keycap = 3 if src[i + 1:i + 3] == "\ufe0f\u20e3" else 2       # RGI keycap 1\ufe0f\u20e3 (FB4 R1-08)
             out.append(src[i:i + keycap])
-            skip = keycap - 1
+            last = skip_to = i + keycap
             continue
         mark_off_letter = cat in ("Mn", "Me") and not (prev and unicodedata.category(prev)[0] in "LM")
+        if i == 0 and ch == "\ufeff":
+            continue                               # a byte-order mark from a pasted file (FB5 R1-06)
         if _invisible(ch) or (cat in ("Mn", "Me") and ascii_or_digit(prev)) or mark_off_letter:
             if ord(ch) in _SHAPING and not ascii_or_digit(prev) and not ascii_or_digit(nxt):
                 out.append(ch)                     # emoji / script shaping, kept as written
+            elif (cat == "Cf" and ord(ch) not in _SHAPING and not ascii_like(visible(i, -1))
+                  and not ascii_like(visible(i, 1))):
+                pass       # a format character among non-ASCII letters (Thai U+200B, Hebrew RLM): dropped, no doubt
             elif cat in ("Mn", "Me") and not ascii_or_digit(prev) and not mark_off_letter:
                 out.append(ch)
             else:
@@ -583,6 +707,7 @@ def egress_form(text: str):
             continue
         rep = _punct_ascii(ch)
         out.append(rep if rep is not None else ch)
+    out.append(src[last:])
     sent = "".join(out)
     if _unusual_digit_separators(sent):
         signals.add(DOUBT_SEPARATOR)
@@ -605,6 +730,7 @@ def _confusables():
 _CONF = _confusables()
 
 
+@functools.lru_cache(maxsize=8192)       # pure: memoized for long non-ASCII texts (FB5 R1-02)
 def _fold_char(ch: str, cf: str = "", on_ascii: bool = False) -> str:
     """One character, folded. `cf` replaces invisible characters; a combining mark on a plain ASCII letter or digit only
     disguises it ("p\\u0336assword", "41\\u03011 ...") and is treated the same way; marks on other scripts stay
@@ -616,7 +742,11 @@ def _fold_char(ch: str, cf: str = "", on_ascii: bool = False) -> str:
         return cf
     out = []
     for c in unicodedata.normalize("NFKC", ch):
+        # Any character with a digit value 0-9 reads as that digit: decimal digits of every script, and digits that
+        # are not decimal (dingbat and double-circled digits, Ethiopic numerals; review FB5 R1-01).
         d = unicodedata.decimal(c, None)
+        if d is None:
+            d = unicodedata.digit(c, None)
         if d is not None:
             out.append(str(d))
         elif _invisible(c):
@@ -668,10 +798,28 @@ def _fold_once(text: str, starts: list, ends: list, cf: str = "", encoded: str =
                 if dec != tok:
                     dec = "".join(c if c.isascii() else _fold_char(c, cf, on_ascii) for c in dec)
                 emit(dec, s, e)
-        else:
+        elif len(tok) == 1:
             dec = _fold_char(tok, cf, on_ascii)
             if dec:
                 emit(dec, s, e)
+        else:
+            # A run of non-ASCII characters (each would be its own match: no other alternative starts with one),
+            # folded character by character; stretches that fold to themselves are emitted as one slice (FB5 R1-02).
+            keep = None
+            for j in range(m.start(), m.end()):
+                c = text[j]
+                dec = " " if c.isspace() else _fold_char(c, cf, on_ascii)       # as the whitespace branch above
+                if dec == c:
+                    keep = j if keep is None else keep
+                    on_ascii = False                       # c is visible and not ASCII
+                    continue
+                if keep is not None:
+                    emit(text[keep:j], starts[keep:j], ends[keep:j])
+                    keep = None
+                if dec:
+                    emit(dec, starts[j], ends[j])
+            if keep is not None:
+                emit(text[keep:m.end()], starts[keep:m.end()], ends[keep:m.end()])
         pos = m.end()
     if pos < len(text):
         emit(text[pos:], starts[pos:], ends[pos:])
@@ -685,8 +833,36 @@ def fold(text: str, cf: str = "", encoded: str = "decode"):
     for _ in range(_FOLD_PASSES):
         if not _SPECIAL.search(text):
             break
-        text, starts, ends = _fold_once(text, starts, ends, cf, encoded)
+        new, starts, ends = _fold_once(text, starts, ends, cf, encoded)
+        if new == text or _fold_fixed(new, cf):   # a fixed point: another pass returns the same text and maps
+            text = new
+            break
+        text = new
     return text, starts, ends
+
+
+_FOLD_CHANGES = re.compile(r"%[0-9A-Fa-f]{2}|&[#A-Za-z]|\s{2,}|[\t\n\r\f\v]|[\x00-\x08\x0e-\x1f\x7f]")
+
+
+def _fold_fixed(text: str, cf: str) -> bool:
+    """True when a further folding pass cannot change `text` (FB5 R1-02: the confirming pass doubled the cost of every
+    non-ASCII text): nothing encoded, no whitespace run or control, and every distinct non-ASCII character folds to
+    itself whatever precedes it."""
+    if _FOLD_CHANGES.search(text):
+        return False
+    after_ascii = set()                    # characters that only fold differently right after an ASCII letter or digit
+    for c in set(text):
+        if c.isascii():
+            continue
+        if _fold_char(c, cf, False) != c:
+            return False
+        if _fold_char(c, cf, True) != c:
+            after_ascii.add(c)
+    if not after_ascii:
+        return True
+    # emit() tracks the last visible character; with cf=" " spaces in between do not reset it
+    gap = " *" if cf == " " else ""
+    return not re.search("[A-Za-z0-9]" + gap + "[" + "".join(re.escape(c) for c in after_ascii) + "]", text)
 
 
 def _still_encoded(text: str) -> bool:
@@ -707,7 +883,7 @@ def classify(text: str, protected_terms=()) -> Classification:
     # three ways - joined, separated, and with each encoded sequence as a separator - and the findings of all readings
     # are combined (reviews R2-01, FB1 R1-01/R1-02). Deciding this on the raw text missed encoded controls.
     readings = [("", "decode")]
-    if _NEEDS_READINGS.search(text):
+    if _needs_readings(text):
         readings += [(" ", "decode"), (" ", "space"), ("", "literal")]
     literal_cats, decoded_cats = set(), set()
     found, cred, residual = [], Counter(), False
