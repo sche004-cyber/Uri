@@ -325,6 +325,43 @@ replace `3b91df77` as the integration candidate:
 | FB5-03: `staged.patch` honoured diff config (external diff, color, noprefix, textconv) | Plumbing `git diff-index --cached -p --binary --full-index --no-ext-diff --no-textconv --no-color --src-prefix=a/ --dst-prefix=b/ HEAD`. The test checks that the patch applies with each config set. |
 | FB5-04: `recover` without `--repo` marked worktree INTENTs done | The INTENT records the repository. Without it, the result is UNRESOLVED and is never guessed. |
 
+### 5.8 FB-6 (`7cdf97d0`, ACCEPT WITH FINDINGS), second ledger acceptance, and the P-1 performance repair
+
+Driver run r9 stopped BLOCKED NO_INDEPENDENT_REVIEWER on `7cdf97d0`. FB-6 (raw:
+`D:/uri-dev/lc-storage-evidence/fallback-review/review_FB6_7cdf97d0.txt`, ledger review `V25`) returned **ACCEPT WITH
+FINDINGS** with two LOW residuals:
+
+- FB6-01: `GIT_DIFF_OPTS` can make a zero-context staged patch.
+- FB6-02: `recover` with a relative or mismatched repo can mark a prune done.
+
+The full gate on `7cdf97d0` passed 1033 tests (exit 0, recorded on the commit), and `task_ledger accept` recorded
+ACCEPTED (seq 208).
+
+**P-1 finding after acceptance (coordinator, live).** The read-only real-machine inventory on the accepted code
+TIMED_OUT at its 3 h bound. `testrun` killed it as designed. Profiling showed two causes:
+
+- The record scan walked the driver `.work` checkouts under `D:/uri-dev/lifecycle` and read every `.md`/`.json` in
+  them. The context took 186 s, and apply rebuilds it for every recheck.
+- `content_snapshot` hashed every file of every worktree (8,300 opens for three worktrees, 10-26 s per worktree).
+
+Repair (this commit):
+
+- The record walk skips `.work` and nested checkouts, and caches parsed record files by (path, size, mtime).
+- The snapshot binds scandir metadata (mode, size, mtime_ns) without opening files. Tracked content stays bound by
+  git status and HEAD, and archives still hash every stored byte.
+
+Measured on the real repository and records:
+
+| Step | Before | After |
+|---|---|---|
+| Context build | 186 s | 3.6 s |
+| Recheck context | 186 s | 0.8 s (cached records) |
+| Per-worktree classification | 10-26 s | 0.7-1.5 s |
+
+Cited paths fell from 8,228 to 8,038. The 190 removed came only from `.work` copies, which were false citations.
+Tests `test_p1_*`. A performance change after acceptance needs its own independent review before it replaces
+`7cdf97d0`.
+
 ## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.

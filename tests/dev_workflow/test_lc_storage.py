@@ -1917,3 +1917,35 @@ def test_fb5_04_recover_without_repo_never_guesses_worktree_outcomes(sandbox):
                                                      "repo": str(sb["repo"])})
     res = {x["item"]: x["result"] for x in hk.recover(jd)["recovered"]}
     assert res["wt:new"] == "RECOVERED_NOT_DONE"                       # still registered: not done
+
+
+# =========================================================================== P-1 performance repairs (live inventory timeout)
+
+def test_p1_snapshot_detects_same_size_rewrite_without_reading_files(tmp_path, monkeypatch):
+    root = tmp_path / "t"
+    (root / "d").mkdir(parents=True)
+    f = root / "d" / "f.txt"
+    f.write_bytes(b"aaaa")
+    opened = []
+    real_open = Path.open
+    monkeypatch.setattr(Path, "open", lambda self, *a, **k: (opened.append(self), real_open(self, *a, **k))[1])
+    s1, _ = hk.content_snapshot(root)
+    assert not opened                                                   # no file content is read
+    time.sleep(0.01)
+    f.write_bytes(b"bbbb")                                              # same size, new content
+    s2, _ = hk.content_snapshot(root)
+    assert s1 != s2
+
+
+def test_p1_record_scan_skips_driver_work_trees_and_nested_checkouts(tmp_path):
+    rec = tmp_path / "lifecycle"
+    (rec / "RUN" / "state" / ".work" / "qualify" / "docs").mkdir(parents=True)
+    (rec / "RUN" / "state" / ".work" / "qualify" / "docs" / "x.md").write_text("C:/work/tree/path")
+    (rec / "RUN" / "clone").mkdir()
+    (rec / "RUN" / "clone" / ".git").write_text("gitdir: elsewhere")
+    (rec / "RUN" / "clone" / "y.md").write_text("C:/nested/clone/path")
+    (rec / "RUN" / "RECEIPT.md").write_text("evidence in C:/real/cited/dir")
+    found = hk._record_paths([str(rec)])
+    assert hk.norm("C:/real/cited/dir") in found
+    assert hk.norm("C:/work/tree/path") not in found and hk.norm("C:/nested/clone/path") not in found
+    hk._RECORD_CACHE.clear()

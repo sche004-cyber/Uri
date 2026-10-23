@@ -134,15 +134,22 @@ def tree_size(root: Path, budget_s: float = 120.0) -> tuple[int, bool]:
 
 
 def content_snapshot(root: Path) -> tuple[str, list[str]]:
-    """Hash every entry without traversing links; fail closed if an entry cannot be read."""
+    """Fingerprint every entry (name, type, mode, size, mtime_ns) without traversing links; fail closed if an entry
+    cannot be read. P-1 (live run 2026-10-23): hashing file contents opened every file of every worktree (8,300 opens,
+    10-26 s per worktree on Windows; the real-machine inventory timed out at 3 h). Directory metadata from scandir
+    needs no open; any rewrite changes mtime_ns (NTFS 100 ns resolution). Tracked content is additionally bound by git
+    status/HEAD, and an archive still hashes every byte it stores."""
     h = hashlib.sha256()
     links = []
 
     def visit(d: Path):
-        for p in sorted(d.iterdir(), key=lambda p: p.name):
+        with os.scandir(d) as it:
+            entries = sorted(it, key=lambda e: e.name)
+        for e in entries:
+            p = Path(e.path)
             rel = p.relative_to(root).as_posix()
-            st = p.lstat()
-            if is_link(p):
+            st = e.stat(follow_symlinks=False)
+            if e.is_symlink() or is_link(p):
                 links.append(rel)
                 try:
                     target = os.readlink(p)
@@ -154,7 +161,7 @@ def content_snapshot(root: Path) -> tuple[str, list[str]]:
                 h.update(canon_json([rel, "dir"]).encode())
                 visit(p)
             elif stat.S_ISREG(st.st_mode):
-                h.update(canon_json([rel, "file", st.st_mode, st.st_size, file_sha256(p)]).encode())
+                h.update(canon_json([rel, "file", st.st_mode, st.st_size, st.st_mtime_ns]).encode())
             else:
                 raise HKError("UNSUPPORTED_ENTRY", f"{p} is not a regular file, directory or link")
 
@@ -246,9 +253,16 @@ def _worktrees(repo: Path) -> list[dict]:
     return wts
 
 
+_RECORD_CACHE: dict[tuple[str, int, int], frozenset[str]] = {}
+
+
 def _record_paths(records: list[str]) -> dict[str, set[str]]:
     """Absolute paths cited by authoritative records (decisions.md, developmental.md, audit/MM docs, receipts), each
-    with the record files that cite it (I-1: the owner judges a citation by its source)."""
+    with the record files that cite it (I-1: the owner judges a citation by its source).
+
+    P-1: a record directory is walked without entering driver work trees (`.work`) or nested checkouts (a directory
+    holding `.git`) - those are repository copies, not records - and each record file is parsed once per
+    (path, size, mtime) for the life of the process (apply rebuilds its context for every recheck)."""
     found: dict[str, set[str]] = {}
     files: list[Path] = []
     for r in records:
@@ -256,17 +270,24 @@ def _record_paths(records: list[str]) -> dict[str, set[str]]:
         if p.is_file():
             files.append(p)
         elif p.is_dir():
-            for d, _dirs, fs in walk(p, skip=SKIP_WALK):
+            for d, dirs, fs in walk(p, skip=SKIP_WALK | {".work"}):
+                dirs[:] = [x for x in dirs if not (d / x / ".git").exists()]
                 files += [d / f for f in fs if f.endswith((".md", ".json", ".txt"))]
     for f in files:
         try:
-            if f.stat().st_size > RECORD_MAX_BYTES:
+            st = f.stat()
+            if st.st_size > RECORD_MAX_BYTES:
                 continue
-            text = f.read_text(encoding="utf-8", errors="replace")
+            key = (f.as_posix(), st.st_size, st.st_mtime_ns)
+            cited = _RECORD_CACHE.get(key)
+            if cited is None:
+                text = f.read_text(encoding="utf-8", errors="replace")
+                cited = frozenset(norm(m.group(1).rstrip(".:")) for m in PATH_RE.finditer(text))
+                _RECORD_CACHE[key] = cited
         except OSError:
             continue
-        for m in PATH_RE.finditer(text):
-            found.setdefault(norm(m.group(1).rstrip(".:")), set()).add(f.as_posix())
+        for c in cited:
+            found.setdefault(c, set()).add(f.as_posix())
     return found
 
 
