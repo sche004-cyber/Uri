@@ -75,6 +75,7 @@ _PERIOD = re.compile(r"\b(" + _MONTHS + r")\b\.?\s+(?:to|till|until|through|-|â€
 _MAY_CUE = re.compile(r"\b(?:on|by|from|till|until|dated|before|after|of)\s+$", re.I)
 _STANDALONE_MONTH = re.compile(r"\b(?:in|during|by|before|after|throughout|for|of|from|until|till|on)\s+"
                                r"(?:the\s+month\s+of\s+)?(" + _MONTHS + r")\b", re.I)
+_MONTH_TOPIC = re.compile(r"\b(" + _MONTHS + r")\b\s+(?:salary|attendance)\b", re.I)
 _RELATIVE_MONTH = re.compile(r"\b(?:next|this|last)\s+(" + _MONTHS + r")\b", re.I)
 _DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
 # FB4 R5-04: the designator is part of the claimed span, so it never becomes a name word.
@@ -87,10 +88,10 @@ _HONORIFIC = r"(?:" + "|".join(HONORIFICS) + r")\.?"
 _HON_RX = re.compile(_HONORIFIC + r"$")
 _CUE_NAME = re.compile(r"\b(?:to|from|" + "|".join(HONORIFICS) + r")\.?\s+([A-Z][A-Za-z'-]+)")
 # An explicit person label lets a lowercase full name be checked without treating arbitrary lowercase prose as names.
-_PERSON_NAME_WORD = r"(?!(?:is|was|will|shall|has|had|who|to|for|from|and|the|a|an|be|can|may|must|should|would|could)\b)[A-Za-z][A-Za-z'-]+"
+_PERSON_NAME_WORD = r"(?!(?:is|was|will|shall|has|had|who|to|for|from|and|about|regarding|the|a|an|be|can|may|must|should|would|could)\b)[A-Za-z][A-Za-z'-]+"
 _PERSON_NAME = re.compile(r"\b(?:staff\s+member|employee\s+named|officer\s+named|person\s+named)\s+("
                           + _PERSON_NAME_WORD + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
-                          + r"(?=\s*(?:[.,;:]|$|\b(?:is|was|will|shall|has|had|who|to|for|from|and|about)\b))",
+                          + r"(?=\s*(?:[.,;:]|$|\b(?:is|was|will|shall|has|had|who|to|for|from|and|about|regarding)\b))",
                           re.I)
 _CONNECTORS = {"of", "and", "for", "the"}
 # Words that start or end a capitalised run without being part of a name (verbs, document words, designators).
@@ -201,10 +202,11 @@ def extract_facts(instruction: str) -> list:
         mon = m.group(1)
         if not taken(m.start(), m.end()) and (mon.lower() != "may" or mon in ("May", "MAY")):
             add("date", m.group(0), m.start(), m.end())
-    for m in _STANDALONE_MONTH.finditer(text):
-        mon = m.group(1)
-        if not taken(m.start(1), m.end(1)) and (mon.lower() != "may" or mon in ("May", "MAY")):
-            add("date", mon, m.start(1), m.end(1))
+    for rx in (_STANDALONE_MONTH, _MONTH_TOPIC):
+        for m in rx.finditer(text):
+            mon = m.group(1)
+            if not taken(m.start(1), m.end(1)) and (mon.lower() != "may" or mon in ("May", "MAY")):
+                add("date", mon, m.start(1), m.end(1))
     # 3. numbers in digits (amounts, numbers with units, numeric dates, codes without a designator)
     for m in re.finditer(r"\S+", text):
         if taken(m.start(), m.end()) or not re.search(r"\d", m.group(0)):
@@ -370,9 +372,9 @@ def fact_present(fact: str, draft_text: str, instruction: str | None = None) -> 
     """A fact counts as present only as a whole token run: no letter or digit or '/' directly before or after it, and
     no digit group continuing it ("25,000" is not inside "1,25,000"; "Kumar" is not inside "Kumari"). Spacing and
     case are ignored; "lakh" also matches "lakhs"; an amount may end in "/-".
-    FB4 R5-03: a number-word fact ("two lakh") followed in the draft by another number word ("two lakh fifty
-    thousand") is a changed number, unless the instruction has the same following word (an identical draft never
-    warns)."""
+    FB4 R5-03: a number-word fact ("two lakh") or a digit fact ("12") followed in the draft by another number
+    word ("two lakh fifty thousand", "12 thousand") is a changed number, unless the instruction has the same
+    following word (an identical draft never warns)."""
     t = _norm(fact)
     if not t:
         return True
@@ -380,14 +382,15 @@ def fact_present(fact: str, draft_text: str, instruction: str | None = None) -> 
     hay = _norm(draft_text)
     words = t.split()
     ends_num_word = bool(_NUM_WORD_RX.match(words[-1]))
+    ends_plain_digit = bool(re.fullmatch(r"\d[\d,]*(?:\.\d+)?", words[-1]))
     starts_num_word = bool(_NUM_WORD_RX.match(words[0]))
     same_after = set()
-    if instruction is not None and ends_num_word:
+    if instruction is not None and (ends_num_word or ends_plain_digit):
         src = _norm(instruction)
         for m in rx.finditer(src):
             same_after.add(_after_word(src, m.end()))
     for m in rx.finditer(hay):
-        if ends_num_word:
+        if ends_num_word or ends_plain_digit:
             after = hay[m.end():]
             cont = re.match(r"[\s-]+" + _NUM_WORD + r"\b", after, re.I) or \
                 re.match(r"\s+and\s+" + _NUM_WORD + r"[\s-]+" + _NUM_WORD + r"\b", after, re.I)

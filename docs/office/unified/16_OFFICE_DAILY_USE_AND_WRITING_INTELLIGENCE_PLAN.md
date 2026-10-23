@@ -291,8 +291,15 @@ The FB4 status above was therefore incomplete: those forms were never checked.
 
   All of these are repaired above, and all 281 cases pass (a), (b) and (c).
 
+OFFICE-DAILY-USE-r6 R3 repair:
+- A lowercase full name after an explicit person label ends before "about" or "regarding"; a draft that keeps the
+  person and rephrases the topic does not receive a false FACT_MISSING warning.
+- A digit amount such as "Rs. 12" is not counted as present when the draft grows it to "Rs. 12 thousand".
+- A standalone month modifying "salary" or "attendance" is a date fact, including "April salary processing".
+  Replacing that month in the draft produces FACT_MISSING.
+
 Fact-check limitations that remain:
-- a standalone month without a time preposition or relative cue may not be read as a date;
+- a standalone month without a time preposition, relative cue, or recognised period topic may not be read as a date;
 - a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
   is not reported;
 - the same person named twice in the instruction needs to appear only once in the draft;
@@ -302,9 +309,6 @@ Fact-check limitations that remain:
   either still warns, but the warning names the pair;
 - ordinal and fraction words ("first", "half");
 - "and <number word>" followed by a noun ("Rs. 25,000 and fifty rupees more") is not read as part of the number;
-- a digit fact followed in the draft by a number word ("Rs. 12" in the instruction, "Rs. 12 thousand" in the draft)
-  is NOT reported. Only number-word facts ("two lakh") are checked for a following number word, so that an
-  identical draft never warns;
 - "May 3" without a preposition, ordinal or year before it (for example at the start of a sentence) is not a date;
 - a fact written differently in the draft: "11 AM" against "11 a.m." or "23rd" against "23" is reported, not matched;
 - swapped numbers and a fact present but used in the wrong place;

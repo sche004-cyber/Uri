@@ -117,3 +117,38 @@ def test_r2_03_lowercase_name_in_person_context_warns():
     assert DR.missing_facts(instruction, instruction) == []
     assert [(w["code"], w["kind"], w["text"]) for w in warns(instruction, "ramesh kumar", "suresh kumar")] == [
         ("FACT_MISSING", "name", "ramesh kumar")]
+
+
+# ---- OFFICE-DAILY-USE-r6 R3 review repair ---------------------------------------------------------------------------
+@pytest.mark.parametrize("instruction,draft,name", [
+    ("Draft a notice to staff member ramesh kumar about training.",
+     "Notice: ramesh kumar must attend training.", "ramesh kumar"),
+    ("Draft a letter for employee named asha devi regarding pension.",
+     "Letter: asha devi requests pension processing.", "asha devi"),
+])
+def test_r3_01_person_name_stops_before_topic(instruction, draft, name):
+    assert [f for f in DR.extract_facts(instruction) if f["kind"] == "name"] == [
+        {"kind": "name", "text": name}]
+    assert DR.missing_facts(instruction, draft) == []
+    assert [(w["kind"], w["text"]) for w in DR.missing_facts(instruction, draft.replace(name, "another person"))] == [
+        ("name", name)]
+
+
+def test_r3_02_digit_amount_grown_by_number_word_warns():
+    instruction = "Draft a memo approving Rs. 12 for stationery."
+    assert {f["text"] for f in DR.extract_facts(instruction) if f["kind"] == "amount"} == {"12"}
+    assert DR.missing_facts(instruction, "The memo approves Rs. 12 for stationery.") == []
+    assert [(w["kind"], w["text"]) for w in DR.missing_facts(
+        instruction, "The memo approves Rs. 12 thousand for stationery.")] == [("amount", "12")]
+    exact = "Draft a memo approving Rs. 12 thousand for stationery."
+    assert DR.missing_facts(exact, exact) == []
+
+
+@pytest.mark.parametrize("instruction,old,new", [
+    ("Draft a notice: April salary processing starts soon.", "April", "March"),
+    ("Draft a circular: March attendance records are due.", "March", "April"),
+])
+def test_r3_03_month_modifying_period_topic_warns(instruction, old, new):
+    assert {f["text"] for f in DR.extract_facts(instruction) if f["kind"] == "date"} == {old}
+    assert DR.missing_facts(instruction, instruction) == []
+    assert [(w["kind"], w["text"]) for w in warns(instruction, old, new)] == [("date", old)]
