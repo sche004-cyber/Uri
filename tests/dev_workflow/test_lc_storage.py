@@ -110,6 +110,66 @@ def test_r2_04_test_command_secrets_are_redacted_but_identity_uses_raw_args(runs
     assert all(secret not in printed for secret in ("hunter2", key, "separated-secret"))
 
 
+def test_r3_02_separated_secret_flags_stay_out_of_records_and_cli(runs, repo, capsys):
+    argv = pyc("pass") + ["--api_key", "hunter2", "--client-secret", "othersecret",
+                           "--access-token", "thirdsecret"]
+    tr.main(["--runs", str(runs), "start", "--name", "redacted", "--timeout", "30",
+             "--cwd", str(repo), "--", *argv])
+    start_output = capsys.readouterr().out
+    rec = next(iter(tr.all_runs(runs)))
+    stored = (runs / rec["id"] / "run.json").read_text(encoding="utf-8")
+    tr.main(["--runs", str(runs), "status", rec["id"]])
+    tr.main(["--runs", str(runs), "list"])
+    output = start_output + capsys.readouterr().out + stored + json.dumps(rec)
+    assert all(s not in output for s in ("hunter2", "othersecret", "thirdsecret"))
+    assert output.count("[REDACTED:") >= 3
+
+
+def test_r3_03_rewritten_then_restored_source_cannot_be_reused(runs, repo):
+    source = repo / "a.txt"
+    code = ("import os; from pathlib import Path; "
+            f"p=Path({str(source)!r}); p.write_bytes(b'changed'); "
+            "p.write_bytes(b'one\\n'); "
+            "os.utime(p, ns=(2_000_000_000_000_000_000, 2_000_000_000_000_000_000))")
+    argv = pyc(code)
+    first = tr.start(argv, name="transient", timeout_s=30, cwd=str(repo), root=runs, reuse=True)
+    assert first["state"] == "COMPLETED" and not first.get("reuse_key")
+    assert tr.tree_state(repo)["dirty"] is False
+    second = tr.start(argv, name="transient", timeout_s=30, cwd=str(repo), root=runs, reuse=True)
+    assert second["state"] == "COMPLETED" and second["id"] != first["id"]
+
+
+def test_r3_03_legacy_run_without_final_source_evidence_is_not_reused(runs, repo):
+    argv = pyc("print('ok')")
+    first = tr.start(argv, name="legacy", timeout_s=30, cwd=str(repo), root=runs)
+    path = runs / first["id"] / "run.json"
+    stored = json.loads(path.read_text(encoding="utf-8"))
+    stored.pop("source_stable", None)
+    path.write_text(json.dumps(stored), encoding="utf-8")
+    second = tr.start(argv, name="legacy", timeout_s=30, cwd=str(repo), root=runs, reuse=True)
+    assert second["state"] == "COMPLETED" and second["id"] != first["id"]
+
+
+@pytest.mark.parametrize("assigned", [False, True])
+def test_r3_04_uncontained_windows_run_is_never_certified(runs, repo, monkeypatch, assigned):
+    from scripts.dev_workflow import containment
+
+    def uncontained_spawn(argv, **kw):
+        proc = subprocess.Popen(argv, **kw)
+        if assigned:
+            proc._uri_job = object()
+        return proc
+
+    monkeypatch.setattr(containment, "WINDOWS", True)
+    monkeypatch.setattr(containment, "spawn", uncontained_spawn)
+    monkeypatch.setattr(containment, "kill_tree", lambda proc: proc.kill() if proc.poll() is None else None)
+    monkeypatch.setattr(containment, "finish", lambda proc: {"contained": False, "reason": "no job object"})
+    rec = tr.start(pyc("print('ran')"), name="uncontained", timeout_s=30, cwd=str(repo), root=runs)
+    saved = json.loads((runs / rec["id"] / "run.json").read_text(encoding="utf-8"))
+    assert rec["state"] == saved["state"] == "CONTAINMENT_FAILED"
+    assert rec["final"] and rec["contained"]["contained"] is False and tr.exit_code_for(rec) == 126
+
+
 def test_ts2_timeout_kills_the_whole_tree(runs, repo, tmp_path):
     pidf = tmp_path / "grandchild.pid"
     code = f"""
@@ -725,6 +785,47 @@ def test_r2_01_inventory_excludes_cache_beneath_registered_worktree(sandbox):
     plan = _plan(sb)
     assert _by_path(plan)["live-run"]["cls"] == "PROTECTED"
     assert not any(it["kind"] == "cache" and it["path"] == str(cache) for it in plan["items"])
+
+
+def test_r3_01_cache_evidence_is_never_automatic(sandbox):
+    sb = sandbox
+    cache = sb["roots"] / "tmpstuff" / "__pycache__"
+    evidence = cache / "nested" / "receipt.json"
+    evidence.parent.mkdir()
+    evidence.write_text("evidence", encoding="utf-8")
+    plan = _plan(sb)
+    item = next(it for it in plan["items"] if it["path"] == str(cache))
+    assert item["cls"] == "ESSENTIAL_EVIDENCE"
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    result = hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    row = next(x for x in result["results"] if x.get("path") == str(cache))
+    assert row["outcome"] == "NOT_SELECTED" and evidence.read_text(encoding="utf-8") == "evidence"
+
+
+def test_r3_01_record_cited_cache_is_never_automatic(sandbox):
+    sb = sandbox
+    cache = sb["roots"] / "tmpstuff" / "__pycache__"
+    with (sb["records"] / "decisions.md").open("a", encoding="utf-8") as record:
+        record.write(f"\nEvidence at `{(cache / 'x.pyc').as_posix()}`\n")
+    plan = _plan(sb)
+    item = next(it for it in plan["items"] if it["path"] == str(cache))
+    assert item["cls"] in hk.NEVER and item["cited"]
+
+
+def test_r3_01_cache_recheck_rejects_new_parent_evidence(sandbox):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    parent = sb["roots"] / "tmpstuff"
+    cache = parent / "__pycache__"
+    receipt = parent / "receipt.json"
+    receipt.write_text("keep", encoding="utf-8")
+    result = hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    row = next(x for x in result["results"] if x.get("path") == str(cache))
+    assert row["outcome"] == "SKIPPED_CHANGED"
+    assert cache.is_dir() and receipt.read_text(encoding="utf-8") == "keep"
 
 
 @pytest.mark.parametrize("protection", ["worktree", "task"])

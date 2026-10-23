@@ -350,9 +350,12 @@ class Ctx:
         return self._reach[sha]
 
 
-def _markers(path: Path) -> list[str]:
+def _markers(path: Path, *, cache: bool = False) -> list[str]:
     hits = []
-    for d, _dirs, files in walk(path, skip=SKIP_WALK, max_depth=MARKER_WALK_DEPTH):
+    # A cache is about to be deleted in full: inspect its full contents, including
+    # nested cache directories that the normal inventory walk intentionally skips.
+    for d, _dirs, files in walk(path, skip=frozenset() if cache else SKIP_WALK,
+                                max_depth=None if cache else MARKER_WALK_DEPTH):
         for f in files:
             if f in EVIDENCE_MARKERS or f.endswith(EVIDENCE_SUFFIXES):
                 hits.append((d / f).relative_to(path).as_posix())
@@ -505,6 +508,22 @@ def _caches(root: Path) -> list[Path]:
     return out
 
 
+def classify_cache(ctx: Ctx, path: Path, parent: Path) -> dict:
+    markers = _markers(path, cache=True)
+    cited = ctx.cited_under(str(path))
+    ancestors = [parent]
+    ancestors.extend(a for a in path.parents if a != parent and norm(a).startswith(norm(parent) + "/"))
+    protected = [str(a) for a in ancestors if classify_dir(ctx, a)["cls"] in NEVER]
+    cls = "PROTECTED" if protected else "ESSENTIAL_EVIDENCE" if markers or cited else "CACHE"
+    snapshot, links = content_snapshot(path)
+    return {"id": "cache:" + sha_text(norm(path))[:12], "kind": "cache", "path": str(path),
+            "cls": cls, "action": "delete (regenerable)" if cls == "CACHE" else "none",
+            "reasons": (["protected or evidence-bearing ancestor: " + ", ".join(protected)] if protected else
+                        ["evidence markers or authoritative references"] if cls == "ESSENTIAL_EVIDENCE" else
+                        ["regenerable cache"]), "evidence": markers[:20], "evidence_count": len(markers),
+            "cited": cited, "parent_path": str(parent), "fingerprint": snapshot, "links": links}
+
+
 def classify_branches(ctx: Ctx, checked_out: set[str]) -> list[dict]:
     _, out, _ = git(ctx.repo, "for-each-ref", "refs/heads", "--format=%(refname) %(objectname)", check=True)
     items = []
@@ -543,11 +562,9 @@ def inventory(repo, *, canonical_ref=CANONICAL_REF, roots=(), records=(), ledger
             if it["cls"] == "PROTECTED":
                 continue
             for c in _caches(child):
-                snapshot, links = content_snapshot(c)
-                items.append({"id": "cache:" + sha_text(norm(c))[:12], "kind": "cache", "path": str(c),
-                              "cls": "CACHE", "action": "delete (regenerable)", "reasons": ["regenerable cache"],
-                              "parent": it["id"], "parent_path": str(child),
-                              "fingerprint": snapshot, "links": links})
+                cache_item = classify_cache(ctx, c, child)
+                cache_item["parent"] = it["id"]
+                items.append(cache_item)
     items += classify_branches(ctx, {w["branch"] for w in wts if w["branch"]})
     if sizes:
         for it in items:
@@ -728,12 +745,10 @@ def _current(ctx: Ctx, it: dict) -> dict | None:
         location = norm(path)
         if (parent is None or not parent.is_dir() or (parent / ".git").exists() or
                 not location.startswith(norm(parent) + "/") or
-                classify_dir(ctx, parent)["cls"] == "PROTECTED" or
                 any(location == w or location.startswith(w + "/") for w in ctx.wt_paths) or
                 any(location == t or location.startswith(t + "/") for t in ctx.task_paths)):
             return {**it, "cls": "PROTECTED", "reasons": ["cache location is now protected"]}
-        snapshot, links = content_snapshot(path)
-        return {**it, "fingerprint": snapshot, "links": links}
+        return classify_cache(ctx, path, parent)
     if it["kind"] == "branch":
         rc, sha, _ = git(ctx.repo, "rev-parse", "--verify", "-q", it["path"])
         if rc or not sha:

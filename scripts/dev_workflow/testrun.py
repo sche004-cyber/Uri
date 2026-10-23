@@ -37,13 +37,14 @@ from scripts.dev_workflow import containment
 from scripts.dev_workflow.task_ledger import redact
 from scripts.dev_workflow.milestones.store import StoreError, atomic_write_bytes, file_sha256, os_lock
 
-FINAL = ("COMPLETED", "FAILED", "TIMED_OUT", "STALLED_KILLED", "INTERRUPTED")
+FINAL = ("COMPLETED", "FAILED", "TIMED_OUT", "STALLED_KILLED", "INTERRUPTED", "CONTAINMENT_FAILED")
 MAX_TIMEOUT_S = 86400.0
 HEARTBEAT_S = 5.0
 POLL_S = 0.25
 LOCK_WAIT_S = 0.5
 # Exit codes. COMPLETED/FAILED return the command's own exit code (FAILED with no exit code: 127).
-EXIT = {"TIMED_OUT": 124, "STALLED_KILLED": 125, "INTERRUPTED": 130, "DUPLICATE_RUN": 75, "NOT_FOUND": 3,
+EXIT = {"TIMED_OUT": 124, "STALLED_KILLED": 125, "INTERRUPTED": 130, "CONTAINMENT_FAILED": 126,
+        "DUPLICATE_RUN": 75, "NOT_FOUND": 3,
         "MISSING_MARKER": 4, "WAIT_TIMEOUT": 6, "USAGE": 2}
 GIT = ["git", "--no-optional-locks", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]
 
@@ -85,7 +86,10 @@ def _safe_argv(argv: list[str]) -> list[str]:
     """Keep command identity raw while making persisted and returned argv display-safe."""
     safe = [redact(arg)[0] for arg in argv]
     for i, arg in enumerate(argv[:-1]):
-        if re.fullmatch(r"(?i)(?:--?(?:password|passwd|pass|pwd|token|secret|api-key)|-p)", arg):
+        flag = arg.lstrip("-").lower().replace("_", "-")
+        if arg.startswith("-") and (arg == "-p" or re.fullmatch(
+                r"(?:password|passwd|pass|pwd|token|secret|"
+                r"(?:api|access|auth|refresh|client|private)-(?:key|token|secret))", flag)):
             safe[i + 1] = "[REDACTED:cli_password]"
     return safe
 
@@ -126,6 +130,34 @@ def reuse_key(argv: list[str], ts: dict) -> str | None:
     return _sha(json.dumps({"argv": argv, "repo": os.path.normcase(os.path.realpath(ts["repo"])),
                             "cwd": ts["rel_cwd"], "tree": ts["tree"], "env": env_fingerprint()},
                            sort_keys=True))
+
+
+def source_file_identity(ts: dict) -> str | None:
+    """Detect a tracked file rewritten and restored while the command runs."""
+    if not ts["repo"] or ts["dirty"] is not False:
+        return None
+    rc, names = _git(Path(ts["repo"]), "ls-files", "-z")
+    if rc:
+        return None
+    digest = hashlib.sha256()
+    try:
+        directories = {Path(ts["repo"])}
+        for name in names.split("\0"):
+            if not name:
+                continue
+            path = Path(ts["repo"]) / name
+            directories.update(p for p in path.parents if p == Path(ts["repo"]) or
+                               Path(ts["repo"]) in p.parents)
+            st = path.lstat()
+            digest.update(json.dumps([name, st.st_mode, st.st_size, st.st_mtime_ns, st.st_ctime_ns],
+                                     separators=(",", ":")).encode("utf-8"))
+        for path in sorted(directories):
+            st = path.stat()
+            digest.update(json.dumps([str(path), st.st_mtime_ns, st.st_ctime_ns],
+                                     separators=(",", ":")).encode("utf-8"))
+    except OSError:
+        return None
+    return digest.hexdigest()
 
 
 def lock_name(mode: str, argv: list[str], cwd: Path) -> str | None:
@@ -265,7 +297,8 @@ def wait(root: Path, ident: str, timeout_s: float, poll_s: float = 2.0) -> dict:
 
 def _find_reusable(root: Path, key: str) -> dict | None:
     for rec in sorted(all_runs(root), key=lambda r: r["started_at"], reverse=True):
-        if rec.get("reuse_key") != key or not rec.get("final") or rec.get("state") not in ("COMPLETED", "FAILED"):
+        if (rec.get("reuse_key") != key or rec.get("source_stable") is not True or
+                not rec.get("final") or rec.get("state") not in ("COMPLETED", "FAILED")):
             continue
         if rec.get("reused_from"):
             continue
@@ -281,7 +314,7 @@ def _find_reusable(root: Path, key: str) -> dict | None:
 def _record_ledger(rec: dict, task: str, actor: str, ledger_path: str | None) -> dict:
     if rec["state"] not in ("COMPLETED", "FAILED"):
         return {"recorded": False, "why": f"state {rec['state']} is not a test result"}
-    if rec.get("dirty") is not False or not rec.get("head"):
+    if rec.get("dirty") is not False or not rec.get("head") or rec.get("source_changed"):
         return {"recorded": False, "why": "tree not clean (or not git): a result cannot be bound to a commit"}
     from scripts.dev_workflow.task_ledger import Ledger, LedgerError
     try:
@@ -342,6 +375,14 @@ def start(argv: list[str], *, name: str, timeout_s: float, cwd: str | None = Non
 
 def _run(argv, name, timeout_s, wd, ts, key, stall_s, kill_on_stall, lname, task, actor, root, ledger,
          heartbeat_s) -> dict:
+    # The queue/lock may have waited while another process changed the checkout.
+    entry = tree_state(wd)
+    if reuse_key(argv, entry) != key:
+        key = None
+    ts = entry
+    source_identity = source_file_identity(entry) if key else None
+    if source_identity is None:
+        key = None
     run_id = f"{name}-{datetime.datetime.now(datetime.timezone.utc):%Y%m%dT%H%M%SZ}-{secrets.token_hex(3)}"
     d = root / run_id
     d.mkdir(parents=True)
@@ -367,6 +408,14 @@ def _run(argv, name, timeout_s, wd, ts, key, stall_s, kill_on_stall, lname, task
             state, rc = "FAILED", None
             rec["launch_error"] = safe_error
             proc = None
+        if proc is not None:
+            if containment.WINDOWS and getattr(proc, "_uri_job", None) is None:
+                containment.kill_tree(proc)
+                proc.wait()
+                contained = containment.finish(proc)
+                rec["containment_error"] = "Windows Job Object assignment unavailable"
+                state, rc = "CONTAINMENT_FAILED", None
+                proc = None
         if proc is not None:
             rec.update(child_pid=proc.pid, child_ctime=_proc_ctime(proc.pid))
             _write(d, rec)
@@ -403,6 +452,14 @@ def _run(argv, name, timeout_s, wd, ts, key, stall_s, kill_on_stall, lname, task
                 proc.wait()
                 state, rc = "INTERRUPTED", proc.returncode
             contained = containment.finish(proc)
+            if containment.WINDOWS and not contained.get("contained"):
+                state, rc = "CONTAINMENT_FAILED", None
+    final_tree = tree_state(wd) if key else None
+    if key and (reuse_key(argv, final_tree) != key or source_file_identity(final_tree) != source_identity):
+        key = None
+        rec["source_changed"] = True
+    rec["reuse_key"] = key
+    rec["source_stable"] = bool(key) and state in ("COMPLETED", "FAILED")
     rec.update(state=state, final=True, exit_code=rc, ended_at=utcnow(),
                duration_s=round(time.monotonic() - t0, 3), log_sha256=file_sha256(log), contained=contained,
                env_failures=classify_env(log) if state != "COMPLETED" else [])
